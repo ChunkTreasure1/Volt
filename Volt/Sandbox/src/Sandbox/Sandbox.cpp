@@ -25,6 +25,7 @@
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
 #include "Sandbox/Window/EditorIconLibrary.h"
 #include "Sandbox/Window/EditorLibrary.h"
+#include "Sandbox/Window/VTCinema.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
@@ -167,6 +168,7 @@ void Sandbox::OnAttach()
 
 	myEditorWindows.emplace_back(CreateRef<AssetRegistryPanel>());
 
+	myEditorWindows.emplace_back(CreateRef<VTCinemaPanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<LogPanel>());
 	myEditorWindows.emplace_back(CreateRef<SplinePanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<EngineStatisticsPanel>(myRuntimeScene));
