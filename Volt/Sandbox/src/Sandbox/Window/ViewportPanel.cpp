@@ -245,10 +245,10 @@ void ViewportPanel::UpdateMainContent()
 						{
 							GizmoCommand<gem::vec3>::GizmoData data;
 							data.positionAdress = &transComp.position;
-							data.rotationAdress = &transComp.rotation;
+							//data.rotationAdress = &transComp.rotation;
 							data.scaleAdress = &transComp.scale;
 							data.previousPositionValue = transComp.position;
-							data.previousRotationValue = transComp.rotation;
+							data.previousRotationValue = gem::eulerAngles(transComp.rotation);
 							data.previousScaleValue = transComp.scale;
 
 							Ref<GizmoCommand<gem::vec3>> command = CreateRef<GizmoCommand<gem::vec3>>(data);
@@ -265,17 +265,18 @@ void ViewportPanel::UpdateMainContent()
 						}
 
 						gem::vec3 p = 0.f, r = 0.f, s = 1.f;
-						Volt::Math::DecomposeTransform(averageTransform, p, r, s);
+						gem::decompose(averageTransform, p, r, s);
 
-						gem::vec3 deltaRot = r - transComp.rotation;
+						const gem::vec3 originalRot = gem::eulerAngles(transComp.rotation);
+						const gem::vec3 deltaRot = r - originalRot;
 
 						transComp.position = p;
-						transComp.rotation += deltaRot;
+						transComp.rotation = gem::quat{ deltaRot + originalRot };
 						transComp.scale = s;
 					}
 					else
 					{
-						gem::vec3 newPos, newRot, newScale, oldPos, oldRot, oldScale;
+						gem::vec3 newPos, newScale, newRot, oldPos, oldScale, oldRot;
 
 						gem::decompose(averageTransform, newPos, newRot, newScale);
 						gem::decompose(averageStartTransform, oldPos, oldRot, oldScale);

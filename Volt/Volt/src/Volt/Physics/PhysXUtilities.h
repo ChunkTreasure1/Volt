@@ -10,7 +10,7 @@ namespace Volt
 	namespace PhysXUtilities
 	{
 		physx::PxTransform ToPhysXTransform(const gem::mat4& transform);
-		physx::PxTransform ToPhysXTransform(const gem::vec3& position, const gem::vec3& rotation);
+		physx::PxTransform ToPhysXTransform(const gem::vec3& position, const gem::quat& rotation);
 		physx::PxMat44 ToPhysXMatrix(const gem::mat4& mat);
 
 		const physx::PxVec3& ToPhysXVector(const gem::vec3& vec);

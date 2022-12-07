@@ -391,7 +391,7 @@ void Sandbox::NewScene()
 			auto& trans = ent.GetComponent<Volt::TransformComponent>();
 			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Directional Light";
 
-			trans.rotation = { gem::pi() / 4.f, gem::pi() / 4.f, gem::pi() / 4.f };
+			trans.rotation = gem::quat{ gem::vec3{ gem::pi() / 4.f, gem::pi() / 4.f, gem::pi() / 4.f } };
 		}
 
 		// Skylight
@@ -804,11 +804,11 @@ void Sandbox::SetupRenderCallbacks()
 						auto ent = Volt::Entity{ id, myRuntimeScene.get() };
 						auto trs = myRuntimeScene->GetWorldSpaceTRS(ent);
 
-						gem::vec3 newRot = trs.rotation;
-						newRot.x += gem::radians(-90.f);
+						gem::quat newRot = trs.rotation;
+						newRot *= gem::quat{ gem::vec3{ gem::radians(-90.f), 0.f, 0.f } };
 
 						constexpr float uniformScale = 0.25f * 0.25f;
-						gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(gem::quat(newRot)) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
+						gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(newRot) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
 
 						Volt::Renderer::DrawMesh(arrowMesh, material, transform);
 					});

@@ -42,7 +42,7 @@ namespace Volt
 		entity.SetWorldPosition(*translation);
 	}
 
-	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::vec3* outRotation)
+	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::quat* outRotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -50,7 +50,7 @@ namespace Volt
 		*outRotation = entity.GetWorldRotation();
 	}
 
-	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::vec3* rotation)
+	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::quat* rotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };

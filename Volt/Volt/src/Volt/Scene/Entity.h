@@ -47,11 +47,11 @@ namespace Volt
 		const gem::vec3 GetUp() const;
 
 		const gem::vec3 GetPosition() const;
-		const gem::vec3 GetRotation() const;
+		const gem::quat GetRotation() const;
 		const gem::vec3 GetScale() const;
 
 		const gem::vec3 GetWorldPosition() const;
-		const gem::vec3 GetWorldRotation() const;
+		const gem::quat GetWorldRotation() const;
 		const gem::vec3 GetWorldScale() const;
 
 		const std::vector<Volt::Entity> GetChilden() const;
@@ -62,7 +62,7 @@ namespace Volt
 		void SetWorldPosition(const gem::vec3& position, bool updatePhysics = true);
 
 		void SetPosition(const gem::vec3& position, bool updatePhysics = true);
-		void SetRotation(const gem::vec3& degreeRotation);
+		void SetRotation(const gem::quat& rotation);
 		void SetScale(const gem::vec3& scale);
 
 		template<typename T>

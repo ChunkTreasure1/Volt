@@ -99,7 +99,7 @@ namespace Volt
 		}
 	}
 
-	void PhysicsActor::SetKinematicTarget(const gem::vec3& position, const gem::vec3& rotation)
+	void PhysicsActor::SetKinematicTarget(const gem::vec3& position, const gem::quat& rotation)
 	{
 		if (!IsKinematic())
 		{
@@ -244,7 +244,7 @@ namespace Volt
 		return PhysXUtilities::FromPhysXVector(target.p);
 	}
 
-	const gem::vec3 PhysicsActor::GetKinematicTargetRotation() const
+	const gem::quat PhysicsActor::GetKinematicTargetRotation() const
 	{
 		if (!IsKinematic())
 		{
@@ -256,7 +256,7 @@ namespace Volt
 		VT_CORE_ASSERT(actor, "Actor is null!");
 		physx::PxTransform target;
 		actor->getKinematicTarget(target);
-		return gem::eulerAngles(PhysXUtilities::FromPhysXQuat(target.q));
+		return PhysXUtilities::FromPhysXQuat(target.q);
 	}
 
 	void PhysicsActor::SetPosition(const gem::vec3& position, bool autoWake)
@@ -277,10 +277,10 @@ namespace Volt
 		}
 	}
 
-	void PhysicsActor::SetRotation(const gem::vec3& rotation, bool autoWake)
+	void PhysicsActor::SetRotation(const gem::quat& rotation, bool autoWake)
 	{
 		physx::PxTransform transform = myRigidActor->getGlobalPose();
-		transform.q = PhysXUtilities::ToPhysXQuat(gem::quat(rotation));
+		transform.q = PhysXUtilities::ToPhysXQuat(rotation);
 
 		myRigidActor->setGlobalPose(transform);
 

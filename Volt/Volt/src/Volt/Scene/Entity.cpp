@@ -93,7 +93,7 @@ namespace Volt
 		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const gem::vec3 Entity::GetRotation() const
+	const gem::quat Entity::GetRotation() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -121,7 +121,7 @@ namespace Volt
 		return trs.position;
 	}
 
-	const gem::vec3 Entity::GetWorldRotation() const
+	const gem::quat Entity::GetWorldRotation() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.rotation;
@@ -189,7 +189,7 @@ namespace Volt
 		}
 	}
 
-	void Entity::SetRotation(const gem::vec3& rotation)
+	void Entity::SetRotation(const gem::quat& rotation)
 	{
 		myScene->GetRegistry().GetComponent<TransformComponent>(myId).rotation = rotation;
 		if (myScene->GetRegistry().HasComponent<RigidbodyComponent>(myId))
@@ -347,6 +347,7 @@ namespace Volt
 							case Wire::ComponentRegistry::PropertyType::Vector2: (*(gem::vec2*)&otherComponent[prop.offset]) = (*(gem::vec2*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: (*(gem::quat*)&otherComponent[prop.offset]) = (*(gem::quat*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::String: (*(std::string*)&otherComponent[prop.offset]) = (*(std::string*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::Int64: (*(int64_t*)&otherComponent[prop.offset]) = (*(int64_t*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::UInt64: (*(uint64_t*)&otherComponent[prop.offset]) = (*(uint64_t*)&thisComponent[prop.offset]); break;
@@ -374,6 +375,7 @@ namespace Volt
 									case Wire::ComponentRegistry::PropertyType::Vector2: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::Vector3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::Vector4: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
+									case Wire::ComponentRegistry::PropertyType::Quaternion: (*(std::vector<gem::quat>*) & otherComponent[prop.offset]) = (*(std::vector<gem::quat>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::String: (*(std::vector<std::string>*) & otherComponent[prop.offset]) = (*(std::vector<std::string>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::Int64: (*(std::vector<int64_t>*) & otherComponent[prop.offset]) = (*(std::vector<int64_t>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::UInt64: (*(std::vector<uint64_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint64_t>*) & thisComponent[prop.offset]); break;
