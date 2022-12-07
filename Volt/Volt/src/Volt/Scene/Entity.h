@@ -35,35 +35,35 @@ namespace Volt
 		void RemoveScript(const std::string& scriptName);
 		void RemoveScript(WireGUID scriptGUID);
 
-		const gem::mat4 GetWorldTransform() const;
 		const gem::mat4 GetTransform() const;
-
-		const gem::vec3 GetWorldForward() const;
-		const gem::vec3 GetWorldRight() const;
-		const gem::vec3 GetWorldUp() const;
+		const gem::mat4 GetLocalTransform() const;
 
 		const gem::vec3 GetForward() const;
 		const gem::vec3 GetRight() const;
 		const gem::vec3 GetUp() const;
 
+		const gem::vec3 GetLocalForward() const;
+		const gem::vec3 GetLocalRight() const;
+		const gem::vec3 GetLocalUp() const;
+
+		const gem::vec3 GetLocalPosition() const;
+		const gem::quat GetLocalRotation() const;
+		const gem::vec3 GetLocalScale() const;
+
 		const gem::vec3 GetPosition() const;
 		const gem::quat GetRotation() const;
 		const gem::vec3 GetScale() const;
-
-		const gem::vec3 GetWorldPosition() const;
-		const gem::quat GetWorldRotation() const;
-		const gem::vec3 GetWorldScale() const;
 
 		const std::vector<Volt::Entity> GetChilden() const;
 		const Volt::Entity GetParent() const;
 
 		const Ref<PhysicsActor> GetPhysicsActor() const;
 
-		void SetWorldPosition(const gem::vec3& position, bool updatePhysics = true);
-
 		void SetPosition(const gem::vec3& position, bool updatePhysics = true);
-		void SetRotation(const gem::quat& rotation);
-		void SetScale(const gem::vec3& scale);
+
+		void SetLocalPosition(const gem::vec3& position, bool updatePhysics = true);
+		void SetLocalRotation(const gem::quat& rotation);
+		void SetLocalScale(const gem::vec3& scale);
 
 		template<typename T>
 		T& AddComponent(void* componentInitData = nullptr);

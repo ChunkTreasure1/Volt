@@ -431,7 +431,7 @@ namespace Volt
 		gem::mat4 transform = { 1 };
 		if (myEntity.HasComponent<Volt::TransformComponent>())
 		{
-			transform = myEntity.GetWorldTransform();
+			transform = myEntity.GetTransform();
 		}
 
 		if (myRigidBodyData.bodyType == BodyType::Static)
@@ -475,7 +475,7 @@ namespace Volt
 		TransformComponent& transComp = myEntity.GetComponent<TransformComponent>();
 		physx::PxTransform actorPose = myRigidActor->getGlobalPose();
 
-		myEntity.SetWorldPosition(PhysXUtilities::FromPhysXVector(actorPose.p), false);
+		myEntity.SetPosition(PhysXUtilities::FromPhysXVector(actorPose.p), false);
 
 		if (!IsAllRotationLocked() && myEntity.GetId())
 		{

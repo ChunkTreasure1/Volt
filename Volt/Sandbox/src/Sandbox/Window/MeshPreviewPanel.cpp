@@ -49,7 +49,7 @@ MeshPreviewPanel::MeshPreviewPanel()
 		comp.castShadows = false;
 		comp.intensity = 2.f;
 
-		entity.SetRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
+		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
 	}
 
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);

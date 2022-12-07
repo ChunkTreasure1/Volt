@@ -368,16 +368,16 @@ void ParticleEmitterEditor::UpdateEmitter(float aDeltaTime)
 {
 	if (myIsMoving)
 	{
-		gem::vec3 entPos = myEmitterEntity.GetPosition();
+		gem::vec3 entPos = myEmitterEntity.GetLocalPosition();
 
 		if (entPos.x > myMoveLength || entPos.x < - myMoveLength)
 		{
 			myMoveSpeed *= -1;
 		}
-		myEmitterEntity.SetPosition(entPos + myEmitterEntity.GetRight() * myMoveSpeed * aDeltaTime);
+		myEmitterEntity.SetLocalPosition(entPos + myEmitterEntity.GetLocalRight() * myMoveSpeed * aDeltaTime);
 	}
 	else
 	{
-		myEmitterEntity.SetPosition(0);
+		myEmitterEntity.SetLocalPosition(0);
 	}
 }

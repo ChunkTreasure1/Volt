@@ -1261,7 +1261,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			if (SelectionManager::GetSelectedCount() > 0)
 			{
 				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
-				myEditorCameraController->Focus(ent.GetWorldPosition());
+				myEditorCameraController->Focus(ent.GetPosition());
 			}
 
 			break;

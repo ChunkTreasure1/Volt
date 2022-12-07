@@ -895,7 +895,7 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 		targetPos += dir;
 	}
 
-	myCreatedEntity.SetPosition({ targetPos.x, 0.f, targetPos.z });
+	myCreatedEntity.SetLocalPosition({ targetPos.x, 0.f, targetPos.z });
 }
 
 void ViewportPanel::Resize(const gem::vec2& viewportSize)
