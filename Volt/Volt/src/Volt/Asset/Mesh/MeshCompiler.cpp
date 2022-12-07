@@ -44,7 +44,6 @@ namespace Volt
 		* uint32_t: Index count
 		* uint32_t: Vertex start offset
 		* uint32_t: Index start offset
-		* mat4: transform
 		*/
 
 		std::vector<uint8_t> bytes;
@@ -108,9 +107,6 @@ namespace Volt
 
 				memcpy_s(&bytes[offset], sizeof(uint32_t), &subMesh.indexStartOffset, sizeof(uint32_t));
 				offset += sizeof(uint32_t);
-
-				memcpy_s(&bytes[offset], sizeof(gem::mat4), &subMesh.transform, sizeof(gem::mat4));
-				offset += sizeof(gem::mat4);
 			}
 		}
 
@@ -145,7 +141,6 @@ namespace Volt
 			size += sizeof(uint32_t); // Index count
 			size += sizeof(uint32_t); // Vertex start offset
 			size += sizeof(uint32_t); // Index start offset
-			size += sizeof(gem::mat4); // transform
 		}
 
 		return size;

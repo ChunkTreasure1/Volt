@@ -78,7 +78,7 @@ namespace Volt
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
-			cmd.transform = aTransform * subMesh.transform;
+			cmd.transform = aTransform;
 			cmd.id = aId;
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
@@ -103,7 +103,7 @@ namespace Volt
 		cmd.mesh = aMesh;
 		cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 		cmd.subMesh = subMesh;
-		cmd.transform = aTransform * subMesh.transform;
+		cmd.transform = aTransform;
 		cmd.id = aId;
 		cmd.timeSinceCreation = aTimeSinceCreation;
 		cmd.castShadows = castShadows;
@@ -121,7 +121,7 @@ namespace Volt
 			cmd.mesh = aMesh;
 			cmd.material = aMaterial;
 			cmd.subMesh = subMesh;
-			cmd.transform = aTransform * subMesh.transform;
+			cmd.transform = aTransform;
 			cmd.id = aId;
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
@@ -142,7 +142,7 @@ namespace Volt
 			cmd.mesh = aMesh;
 			cmd.material = it != aMaterial->GetSubMaterials().end() ? it->second : aMaterial->GetSubMaterials().at(0);
 			cmd.subMesh = subMesh;
-			cmd.transform = aTransform * subMesh.transform;
+			cmd.transform = aTransform;
 			cmd.id = aId;
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
@@ -161,7 +161,7 @@ namespace Volt
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
-			cmd.transform = aTransform * subMesh.transform;
+			cmd.transform = aTransform;
 			cmd.boneTransforms = aBoneTransforms;
 			cmd.id = aId;
 			cmd.timeSinceCreation = aTimeSinceCreation;

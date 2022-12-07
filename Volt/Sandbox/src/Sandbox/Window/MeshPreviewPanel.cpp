@@ -31,7 +31,7 @@ MeshPreviewPanel::MeshPreviewPanel()
 	{
 		auto entity = myScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh")->handle;
+		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh")->handle;
 		myPreviewEntity = entity;
 	}
 
