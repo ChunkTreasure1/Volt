@@ -1,0 +1,5 @@
+name: "CopyTextureToTarget"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl"
+  - "Engine/Shaders/HLSL/Utility/CopyTextureToTarget_ps.hlsl"

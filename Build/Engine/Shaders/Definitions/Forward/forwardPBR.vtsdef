@@ -1,0 +1,12 @@
+name: "ForwardPBR"
+internal: false
+paths:
+  - "Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl"
+  - "Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl"
+inputTextures:
+  - binding: 0
+    name: "Albedo"
+  - binding: 1
+    name: "Normal"
+  - binding: 2
+    name: "Material"

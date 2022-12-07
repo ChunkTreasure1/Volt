@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{1a91cdd9-31e6-4386-a0f3-7aa9c35c6506}">
+		<property name="assetPath">
+			<value>ZombieAttack1.ogg</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>0.499546485260771</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{48cc38fe-99b6-40a0-8d1a-2f5766071bda}</destination>
+		</relationship>
+	</object>
+</objects>

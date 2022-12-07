@@ -1,0 +1,5 @@
+name: "HeightFog"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl"
+  - "Engine/Shaders/HLSL/PostProcessing/HeightFog_ps.hlsl"

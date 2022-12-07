@@ -1,0 +1,4 @@
+name: "BRDFGeneration"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Utility/BRDFGeneration_cs.hlsl"

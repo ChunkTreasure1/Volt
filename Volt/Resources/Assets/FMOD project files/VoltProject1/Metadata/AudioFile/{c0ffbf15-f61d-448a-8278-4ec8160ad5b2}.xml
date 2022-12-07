@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{c0ffbf15-f61d-448a-8278-4ec8160ad5b2}">
+		<property name="assetPath">
+			<value>boat-54081.mp3</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>24</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>69.623999999999995</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{48cc38fe-99b6-40a0-8d1a-2f5766071bda}</destination>
+		</relationship>
+	</object>
+</objects>

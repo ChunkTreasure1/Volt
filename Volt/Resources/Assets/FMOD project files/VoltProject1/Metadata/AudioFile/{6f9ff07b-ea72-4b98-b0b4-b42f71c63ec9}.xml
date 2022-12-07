@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{6f9ff07b-ea72-4b98-b0b4-b42f71c63ec9}">
+		<property name="assetPath">
+			<value>Ancient_Game_Dark_Fantasty_Hex_Buff_1.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>4.5</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{48cc38fe-99b6-40a0-8d1a-2f5766071bda}</destination>
+		</relationship>
+	</object>
+</objects>

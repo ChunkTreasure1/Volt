@@ -1,0 +1,4 @@
+name: "EnvironmentMipFilter"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl"

@@ -1,0 +1,71 @@
+IncludeDir = {}
+IncludeDir["GLFW"] = "%{wks.location}/Volt/vendor/GLFW/include"
+IncludeDir["ImGui"] = "%{wks.location}/Volt/vendor/ImGui"
+IncludeDir["Wire"] = "%{wks.location}/Volt/vendor/Wire/Wire/src"
+IncludeDir["spdlog"] = "%{wks.location}/Volt/vendor/spdlog/include"
+IncludeDir["yaml"] = "%{wks.location}/Volt/vendor/yaml-cpp/include"
+IncludeDir["Optick"] = "%{wks.location}/Volt/vendor/Optick/src"
+IncludeDir["tinyddsloader"] = "%{wks.location}/Volt/vendor/tinyddsloader/"
+IncludeDir["imgui_notify"] = "%{wks.location}/Volt/vendor/imgui-notify/"
+IncludeDir["ImGuizmo"] = "%{wks.location}/Volt/vendor/ImGuizmo/"
+IncludeDir["GEM"] = "%{wks.location}/Volt/vendor/GEM"
+IncludeDir["fbxsdk"] = "%{wks.location}/Volt/vendor/fbxsdk/include"
+IncludeDir["DirectXTK"] = "%{wks.location}/Volt/vendor/DirectXTK"
+IncludeDir["fmod"] = "%{wks.location}/Volt/vendor/fmod/include"
+IncludeDir["imgui_node_editor"] = "%{wks.location}/Volt/vendor/imgui-node-editor/"
+IncludeDir["cr"] = "%{wks.location}/Volt/vendor/cr"
+IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdf-atlas-gen"
+IncludeDir["msdfgen"] = "%{wks.location}/Volt/vendor/msdf-atlas-gen/msdfgen"
+IncludeDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/include"
+IncludeDir["stb_image"] = "%{wks.location}/Volt/vendor/stb_image/"
+IncludeDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/include/"
+IncludeDir["mono"] = "%{wks.location}/Volt/vendor/mono/include/"
+IncludeDir["DirectXTex"] = "%{wks.location}/Volt/vendor/DirectXTex/src"
+
+IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
+IncludeDir["dpp"] = "%{wks.location}/Sandbox/vendor/dpp/include/"
+
+LibraryDir = {}
+LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
+LibraryDir["fbxsdk"] = "%{wks.location}/Volt/vendor/fbxsdk/lib/%{cfg.buildcfg}"
+LibraryDir["fmod"] = "%{wks.location}/Volt/vendor/fmod/lib/%{cfg.buildcfg}"
+LibraryDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/lib/"
+LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
+
+LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
+LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
+LibraryDir["dpp"] = "%{wks.location}/Sandbox/vendor/dpp/lib/%{cfg.buildcfg}"
+
+Library = {}
+Library["fbxsdk"] = "%{LibraryDir.fbxsdk}/libfbxsdk-md.lib"
+Library["libxml2"] = "%{LibraryDir.fbxsdk}/libxml2-md.lib"
+Library["zlib"] = "%{LibraryDir.fbxsdk}/zlib-md.lib"
+Library["fmod"] = "%{LibraryDir.fmod}/fmod_vc.lib"
+Library["fmodstudio"] = "%{LibraryDir.fmod}/fmodstudio_vc.lib"
+Library["fsbank"] = "%{LibraryDir.fmod}/fsbank_vc.lib"
+
+Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
+
+Library["P4_client"] = "%{LibraryDir.P4}/libclient.lib"
+Library["P4_api"] = "%{LibraryDir.P4}/libp4api.lib"
+Library["P4_script"] = "%{LibraryDir.P4}/libp4script.lib"
+Library["P4_script_c"] = "%{LibraryDir.P4}/libp4script_c.lib"
+Library["P4_script_curl"] = "%{LibraryDir.P4}/libp4script_curl.lib"
+Library["P4_script_sqlite"] = "%{LibraryDir.P4}/libp4script_sqlite.lib"
+Library["P4_rpc"] = "%{LibraryDir.P4}/librpc.lib"
+Library["P4_supp"] = "%{LibraryDir.P4}/libsupp.lib"
+
+Library["OpenSSL_Crypto"] = "%{LibraryDir.OpenSSL}/libcrypto.lib"
+Library["OpenSSL_SSL"] = "%{LibraryDir.OpenSSL}/libssl.lib"
+
+Library["dpp"] = "%{LibraryDir.dpp}/dpp.lib"
+
+Library["PhysX"] = "%{LibraryDir.PhysX}/PhysX.lib"
+
+Library["avcodec"] = "%{LibraryDir.ffmpeg}/libavcodec.lib"  
+Library["avdevice"] = "%{LibraryDir.ffmpeg}/libavdevice.lib"
+Library["avfilter"] = "%{LibraryDir.ffmpeg}/libavfilter.lib"
+Library["avformat"] = "%{LibraryDir.ffmpeg}/libavformat.lib"
+Library["avutil"] = "%{LibraryDir.ffmpeg}/libavutil.lib"
+Library["swresample"] = "%{LibraryDir.ffmpeg}/libswresample.lib"
+Library["swscale"] = "%{LibraryDir.ffmpeg}/libswscale.lib"

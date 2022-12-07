@@ -1,32 +1,22 @@
-# Prerequisites
-*.d
+.vs/
+.vscode/
+bin/
+bin-int/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+Build/User
+Build/Engine/Shaders/Cache
+Build/Scripts/Intermediates
 
-# Precompiled Headers
-*.gch
-*.pch
+Volt/ProjectTemplate/Assets/Scripts/Intermediates/
+Volt/ProjectTemplate/Assets/Scripts/.vs/
+Volt/ProjectTemplate/Assets/Scripts/*.csproj
+Volt/ProjectTemplate/Assets/Scripts/*.sln
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.csproj
 
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+Volt/scripts/data/__pycache__
+Volt/scripts/data/premake5.exe

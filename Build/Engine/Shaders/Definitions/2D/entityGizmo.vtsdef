@@ -1,0 +1,6 @@
+name: "EntityGizmo"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/2D/EntityGizmo_vs.hlsl"
+  - "Engine/Shaders/HLSL/2D/EntityGizmo_gs.hlsl"
+  - "Engine/Shaders/HLSL/2D/EntityGizmo_ps.hlsl"

@@ -1,0 +1,143 @@
+//
+//	Description:
+//		This script posts the LEP file translator options.
+//		The optionsString is of the form:
+//			varName1=value1;varName2=value2;...
+//		for the LEP translator, there is only one option named "t",
+//		which can have 2 value.  If it is "1" (or true), then on writing
+//		Dag node type names are written, otherwise, it is "0" and type
+//		names are not written.
+//
+//	Parameters:
+//		$parent	- the elf parent layout for this options layout. It is
+//					always a scrollLayout.
+//		$action	- the action that is to be performed with this invokation
+//					of this proc. Valid options are:
+//						"query" - construct the options string and pass it
+//									to the resultCallback.
+//						"post"	- post all the elf controls.
+//		$initialSettings - the current options string in effect at the
+//						   time this script is invoked.
+//		$resultCallback	-
+//				This is the proc to be called with the result string. 
+//				resultCallback ( string $optionsString )
+//
+//	Returns:
+//		1 if successfull.
+//		0 otherwise.
+//
+global proc int voltTranslatorOpts ( string $parent, string $action, string $initialSettings, string $resultCallback )
+{
+	int	$bResult;
+	int	$index;
+	string	$currentOptions;
+	string	$optionList[];
+	string	$optionBreakDown[];
+	string $materialNames[];
+
+	if ($action == "post") 
+	{
+		$voltPath = `getenv "VOLT_PATH"`;
+
+		string $registryPath = $voltPath + "/Assets/AssetRegistry.vtreg";
+		$fileId = `fopen $registryPath "r"`;
+
+		string $line = `fgetline $fileId`;
+
+		while(size($line) > 0)
+		{
+    		string $cleanLine = strip($line);
+    
+    		if (`match "Path:" $line` == "Path:")
+    		{
+        		if (`match ".vtmat" $line` == ".vtmat")
+        		{
+            		string $path = substring($line, 11, size($line));
+            
+            		$path = $voltPath + "/" + $path;
+            		$materialId = `fopen $path "r"`;
+            
+            		string $materialLine = `fgetline $materialId`;
+            
+            		while(size($materialLine) > 0)
+            		{
+                		if (`match "name:" $materialLine` == "name:")
+                		{
+                    		string $materialName = substring($materialLine, 9, size($materialLine));
+                    		$materialNames[size($materialNames)] = $materialName;
+                    		break;
+                		}
+                
+                		$materialLine = `fgetline $materialId`;
+            		}
+        		}
+    		}
+    
+    		$line = `fgetline $fileId`;
+		}
+
+		setParent $parent;
+
+	    formLayout voltOptsForm;
+            optionMenu -label "Material:" -annotation "The material to use in engine" resFormatOpts;
+                for($index = 0; $index < size($materialNames); $index++)
+				{
+					menuItem -label $materialNames[$index];
+				}
+				
+            formLayout -e -attachPosition  resFormatOpts left -77 25  -attachPosition resFormatOpts top 0 0 voltOptsForm;
+            checkBox -label "Create Material" createMaterial;
+            formLayout -e -attachPosition  createMaterial left 25 25 -attachPosition createMaterial right 0 75 -attachPosition createMaterial top 0 75 voltOptsForm;
+                    
+		$result = 1;
+	
+		if (size($initialSettings) > 0)
+		{
+			tokenize($initialSettings, ";", $optionList);
+			for ($index = 0; $index < size($optionList); $index++)
+			{
+				tokenize($optionList[$index], "=", $optionBreakDown);
+				if ($optionBreakDown[0] == "createMaterial")
+				{
+					if ($optionBreakDown[1] == "0")
+					{
+						checkBox -edit -value 0 createMaterial;
+					}
+					else
+					{
+						checkBox -edit -value 1 createMaterial;
+					}
+				}
+			}
+		}
+	} 
+	else if ($action == "query") 
+	{
+		// Set verbose option
+        $currentOptions = "";
+
+		for ($index = 0; $index < size($materialNames); $index++)
+		{
+			if (`optionMenu -q -select resFormatOpts` == $index)
+			{
+				$currentOptions = $currentOptions + "material=" + $materialNames[$index] + ";";
+			}
+		}
+
+        if (`checkBox -q -value createMaterial` == 0) 
+		{
+			$currentOptions = $currentOptions + "createMaterial=0;";
+		} else 
+		{
+			$currentOptions = $currentOptions + "createMaterial=1;";
+		}
+		eval($resultCallback+" \""+$currentOptions+"\"");
+		$result = 1;
+	} 
+	else 
+	{
+		$bResult = 0;
+	}
+	
+	return $bResult;
+}    

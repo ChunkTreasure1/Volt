@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{10c4c0f6-3e4b-4d36-a008-e8341657eeac}">
+		<property name="assetPath">
+			<value>BossDeathCry.mp3</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>7.6538775510204085</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{48cc38fe-99b6-40a0-8d1a-2f5766071bda}</destination>
+		</relationship>
+	</object>
+</objects>

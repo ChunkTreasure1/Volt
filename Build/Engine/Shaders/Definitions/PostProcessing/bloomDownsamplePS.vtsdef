@@ -1,0 +1,5 @@
+name: "BloomDownsamplePS"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/PostProcessing/BloomDownsample_ps.hlsl"
+  - "Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl"

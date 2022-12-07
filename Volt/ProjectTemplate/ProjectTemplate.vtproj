@@ -1,0 +1,6 @@
+Project:
+    Name: ProjectTemplate
+    AssetRegistry: Assets/AssetRegistry.vtreg
+    AssetsPath: Assets
+    EnginePath: Engine
+    ShadersPath: Engine/Shaders
