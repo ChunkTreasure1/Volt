@@ -33,18 +33,6 @@ Assets:
     Path: Assets\Meshes\Primitives\Cylinder.vtmesh
   - Handle: 9021814921374099161
     Path: Assets\Meshes\Primitives\Plane.vtmesh
-  - Handle: 7227426446191474595
-    Path: Assets\Meshes\Primitives\SM_Capsule.vtmesh
-  - Handle: 15027641384822908817
-    Path: Assets\Meshes\Primitives\SM_Cube.vtmat
-  - Handle: 8596761635148022478
-    Path: Assets\Meshes\Primitives\SM_Cube.vtmesh
-  - Handle: 6195735077325810491
-    Path: Assets\Meshes\Primitives\SM_Cylinder.vtmesh
-  - Handle: 11677289898715508812
-    Path: Assets\Meshes\Primitives\SM_Plane.vtmesh
-  - Handle: 12696682086189695316
-    Path: Assets\Meshes\Primitives\SM_Sphere.vtmesh
   - Handle: 14081923515998489032
     Path: Assets\Meshes\Primitives\Sphere.vtmesh
   - Handle: 8253805205175632348
@@ -191,10 +179,6 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
-  - Handle: 16735924117573893286
-    Path: Assets\Test\subTransformTest.vtmat
-  - Handle: 7392326728644606896
-    Path: Assets\Test\subTransformTest.vtmesh
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 2713074256263182464
