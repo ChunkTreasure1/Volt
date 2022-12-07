@@ -51,6 +51,8 @@ private:
 	void CheckDragDrop();
 	void UpdateCreatedEntityPosition();
 
+	void DuplicateSelection();
+
 	void Resize(const gem::vec2& viewportSize);
 
 	gem::vec2 GetViewportLocalPosition(const ImVec2& mousePos);

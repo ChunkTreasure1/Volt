@@ -27,7 +27,7 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/Math.h>
+#include <Volt/Math/MatrixUtilities.h>
 
 #include <Volt/Utility/StringUtility.h>
 
@@ -78,11 +78,9 @@ void ViewportPanel::UpdateMainContent()
 		{
 			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0)), { myViewportSize.x, myViewportSize.y });
 		}
-
 	}
 	else
 	{
-
 		const auto& passes = mySceneRenderer->GetAllFramebuffers();
 		const auto& [name, framebuffer] = passes.at(myCurrentRenderPass);
 
@@ -208,7 +206,6 @@ void ViewportPanel::UpdateMainContent()
 				gem::value_ptr(myEditorCameraController->GetCamera()->GetProjection()),
 				myGizmoOperation, gizmoMode, gem::value_ptr(averageTransform), nullptr, snap ? snapValues : nullptr);
 
-
 			isUsing = ImGuizmo::IsUsing();
 
 			if (isUsing)
@@ -217,20 +214,7 @@ void ViewportPanel::UpdateMainContent()
 
 				if (duplicate && !hasDuplicated)
 				{
-					myEditorCameraController->ForceLooseControl();
-
-					std::vector<Wire::EntityId> duplicated;
-					for (const auto& ent : SelectionManager::GetSelectedEntities())
-					{
-						duplicated.emplace_back(Volt::Entity::Duplicate(myEditorScene->GetRegistry(), ent));
-					}
-
-					SelectionManager::DeselectAll();
-
-					for (const auto& ent : duplicated)
-					{
-						SelectionManager::Select(ent);
-					}
+					DuplicateSelection();
 
 					hasDuplicated = true;
 				}
@@ -281,8 +265,14 @@ void ViewportPanel::UpdateMainContent()
 						gem::decompose(averageTransform, newPos, newRot, newScale);
 						gem::decompose(averageStartTransform, oldPos, oldRot, oldScale);
 
-						gem::vec3 deltaPos = newPos - oldPos;
-						gem::vec3 deltaScale = newScale - oldScale;
+						const gem::vec3 deltaPos = newPos - oldPos;
+						const gem::vec3 deltaScale = newScale - oldScale;
+						const gem::vec3 deltaRot = newRot - oldRot;
+
+						const gem::mat4 deltaTransform = gem::translate(gem::mat4{ 1.f }, deltaPos) *
+							gem::rotate(gem::mat4{ 1.f }, deltaRot.z, { 0.f, 0.f, 1.f }) *
+							gem::rotate(gem::mat4{ 1.f }, deltaRot.y, { 0.f, 1.f, 0.f }) *
+							gem::rotate(gem::mat4{ 1.f }, deltaRot.x, { 1.f, 0.f, 0.f });
 
 						for (const auto& ent : SelectionManager::GetSelectedEntities())
 						{
@@ -290,13 +280,11 @@ void ViewportPanel::UpdateMainContent()
 							auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
 
 							gem::vec3 p = 0.f, r = 0.f, s = 1.f;
-							Volt::Math::DecomposeTransform(averageTransform, p, r, s);
+							gem::decompose(deltaTransform * transComp.GetTransform(), p, r, s);
 
-							//gem::vec3 deltaRot = r - transComp.rotation;
-
-							transComp.position += deltaPos;
-							//transComp.rotation += deltaRot;
-							transComp.scale += deltaScale;
+							transComp.position = p;
+							transComp.rotation = r;
+							//transComp.scale = s;
 						}
 					}
 				}
@@ -896,6 +884,24 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 	}
 
 	myCreatedEntity.SetLocalPosition({ targetPos.x, 0.f, targetPos.z });
+}
+
+void ViewportPanel::DuplicateSelection()
+{
+	myEditorCameraController->ForceLooseControl();
+
+	std::vector<Wire::EntityId> duplicated;
+	for (const auto& ent : SelectionManager::GetSelectedEntities())
+	{
+		duplicated.emplace_back(Volt::Entity::Duplicate(myEditorScene->GetRegistry(), ent));
+	}
+
+	SelectionManager::DeselectAll();
+
+	for (const auto& ent : duplicated)
+	{
+		SelectionManager::Select(ent);
+	}
 }
 
 void ViewportPanel::Resize(const gem::vec2& viewportSize)

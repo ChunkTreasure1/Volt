@@ -22,7 +22,7 @@
 #include "Volt/Scripting/ScriptBase.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
-#include "Volt/Utility/Math.h"
+#include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Rendering/RendererStructs.h"
@@ -622,7 +622,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldForward(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 0.f, 0.f, 1.f });
@@ -631,7 +631,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldRight(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 1.f, 0.f, 0.f });
@@ -640,7 +640,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldUp(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 0.f, 1.f, 0.f });

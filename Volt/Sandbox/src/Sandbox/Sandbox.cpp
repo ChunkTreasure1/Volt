@@ -61,7 +61,6 @@
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/Math.h>
 
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 #include <Volt/AI/NavMesh2/NavMesh2.h>
@@ -688,7 +687,7 @@ void Sandbox::SetupRenderCallbacks()
 						if (transformComp.visible && myShouldRenderGizmos)
 						{
 							gem::vec3 p, s, r;
-							Volt::Math::DecomposeTransform(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
+							gem::decompose(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
 
 							const float maxDist = 5000.f;
 							const float lerpStartDist = 4000.f;
