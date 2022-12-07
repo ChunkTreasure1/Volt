@@ -39,6 +39,7 @@ namespace Utility
 		switch (type)
 		{
 			case Volt::AssetType::Mesh: return { 0.73f, 0.9f, 0.26f, 1.f };
+			case Volt::AssetType::NavMesh: return { 0.25f, 0.93f, 0.92f, 1.f };
 			case Volt::AssetType::MeshSource: return { 0.43f, 0.9f, 0.26f, 1.f };
 			case Volt::AssetType::Animation: return { 0.65f, 0.18f, 0.69f, 1.f };
 			case Volt::AssetType::Skeleton: return { 1.f, 0.49f, 0.8f, 1.f };
@@ -73,6 +74,7 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene)
 
 	myAssetIcons[Volt::AssetType::Material] = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_material.dds");
 	myAssetIcons[Volt::AssetType::Mesh] = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_mesh.dds");
+	myAssetIcons[Volt::AssetType::NavMesh] = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_navmesh.dds");
 	myAssetIcons[Volt::AssetType::MeshSource] = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_meshSource.dds");
 	myAssetIcons[Volt::AssetType::Skeleton] = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_skeleton.dds");
 	myAssetIcons[Volt::AssetType::Animation] = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_animation.dds");

@@ -63,9 +63,9 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/Math.h>
 
-#include <Volt/AI/NavMesh/NavigationsSystem.h>
-#include <Volt/AI/NavMesh2/NavMesh2.h>
-#include "Volt/Audio/AudioManager.h"
+#include <Volt/Audio/AudioManager.h>
+
+#include <Volt/AI/NavigationSystem.h>
 
 #include <Game/Game.h>
 
@@ -143,7 +143,7 @@ void Sandbox::OnAttach()
 
 	NewScene();
 
-	myNavigationsSystem = CreateRef<Volt::NavigationsSystem>(myRuntimeScene);
+	myNavigationSystem = CreateRef<Volt::NavigationSystem>(myRuntimeScene);
 
 	myEditorWindows.emplace_back(CreateRef<PropertiesPanel>(myRuntimeScene));
 
@@ -209,7 +209,7 @@ void Sandbox::OnDetach()
 	mySceneRenderer = nullptr;
 	myGizmoShader = nullptr;
 	myGridShader = nullptr;
-	myNavigationsSystem = nullptr;
+	myNavigationSystem = nullptr;
 
 	myRuntimeScene = nullptr;
 	myIntermediateScene = nullptr;
@@ -1037,7 +1037,7 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 			AUDIOMANAGER.Update(e.GetTimestep());
 
 			// AI
-			myNavigationsSystem->OnRuntimeUpdate(e.GetTimestep());
+			myNavigationSystem->OnRuntimeUpdate(e.GetTimestep());
 			break;
 
 		case SceneState::Pause:
@@ -1136,12 +1136,10 @@ bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 	switch (mySceneState)
 	{
 		case SceneState::Edit:
-			Volt::NavigationsSystem::Get().Draw();
 			mySceneRenderer->OnRenderEditor(myEditorCameraController->GetCamera());
 			break;
 
 		case SceneState::Play:
-			Volt::NavigationsSystem::Get().Draw();
 			mySceneRenderer->OnRenderRuntime();
 			break;
 
@@ -1310,9 +1308,9 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 	OnViewportResizeEvent(e2);
 
 	// AI
-	if (myNavigationsSystem)
+	if (myNavigationSystem)
 	{
-		myNavigationsSystem->OnSceneLoad();
+		myNavigationSystem->OnSceneLoad((mySceneState == SceneState::Play) ? true : false); // #SAMUEL_TODO: maybe make it nicer
 	}
 
 	return false;

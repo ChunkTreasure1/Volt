@@ -3,8 +3,6 @@
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/AssetPacker.h"
 
-#include "Volt/AI/NavMesh/NavMeshData.h"
-
 namespace Volt
 {
 	class AssetImporter

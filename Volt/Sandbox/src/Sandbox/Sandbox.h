@@ -21,7 +21,7 @@
 namespace Volt
 {
 	class SceneRenderer;
-	class NavigationsSystem;
+	class NavigationSystem;
 	class Scene;
 	class Mesh;
 	class Framebuffer;
@@ -149,7 +149,7 @@ private:
 
 	SceneState mySceneState = SceneState::Edit;
 
-	Ref<Volt::NavigationsSystem> myNavigationsSystem;
+	Ref<Volt::NavigationSystem> myNavigationSystem;
 	Ref<ViewportPanel> myViewportPanel;
 
 	gem::vec2ui myViewportSize = { 1280, 720 };

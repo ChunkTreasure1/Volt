@@ -3,8 +3,6 @@ Assets:
     Path: Assets\Materials\M_ColliderDebug.vtmat
   - Handle: 16380998834732311984
     Path: Assets\Materials\M_FullMetal.vtmat
-  - Handle: 10940367927715095055
-    Path: Assets\Materials\M_NavMeshDebug.vtmat
   - Handle: 2932326804834381373
     Path: Assets\Meshes\Editor\3dpil.vtmat
   - Handle: 4235162108492430969
@@ -179,6 +177,10 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
+  - Handle: 1041983903881781590
+    Path: Assets\Scenes\NavMeshTest\NavMesh.vtnavmesh
+  - Handle: 11449557049520162786
+    Path: Assets\Scenes\NavMeshTest\NavMeshTest.vtscene
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 2713074256263182464
@@ -195,6 +197,8 @@ Assets:
     Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr
   - Handle: 9660052707747284857
     Path: Assets\Textures\lutTest.dds
+  - Handle: 16337784361855354559
+    Path: Editor\Materials\M_NavMeshDebug.vtmat
   - Handle: 8187072774580702017
     Path: Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
   - Handle: 14833944971717813604
@@ -205,6 +209,8 @@ Assets:
     Path: Editor\Textures\Icons\AssetIcons\icon_mesh.dds
   - Handle: 5796038497130143484
     Path: Editor\Textures\Icons\AssetIcons\icon_meshSource.dds
+  - Handle: 17885897971795252773
+    Path: Editor\Textures\Icons\AssetIcons\icon_navmesh.dds
   - Handle: 17846305020489329193
     Path: Editor\Textures\Icons\AssetIcons\icon_particlePreset.dds
   - Handle: 9295230600413916747
@@ -369,6 +375,8 @@ Assets:
     Path: Engine\Shaders\Definitions\Editor\jumpFloodInit.vtsdef
   - Handle: 10172123990313441088
     Path: Engine\Shaders\Definitions\Editor\jumpFloodPass.vtsdef
+  - Handle: 8252220610878512453
+    Path: Engine\Shaders\Definitions\Editor\navmeshDebug.vtsdef
   - Handle: 13494898670534588124
     Path: Engine\Shaders\Definitions\Editor\selectedGeometry.vtsdef
   - Handle: 2341968034183710483

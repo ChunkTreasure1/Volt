@@ -7,7 +7,6 @@
 #include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/Text/Font.h"
 #include "Volt/Asset/Video/Video.h"
-#include "Volt/AI/NavMesh/NavMeshData.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"
 

@@ -6,6 +6,7 @@
 #include "Volt/Asset/Importers/MeshTypeImporter.h"
 #include "Volt/Asset/Importers/TextureImporter.h"
 #include "Volt/Asset/Importers/MeshSourceImporter.h"
+#include "Volt/Asset/Importers/VTNavMeshImporter.h"
 #include "Volt/Asset/Importers/SkeletonImporter.h"
 #include "Volt/Asset/Importers/AnimationImporter.h"
 #include "Volt/Asset/Importers/SceneImporter.h"
@@ -50,6 +51,7 @@ namespace Volt
 		myAssetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>());
 		myAssetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
 		myAssetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
+		myAssetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
 		myAssetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
 		myAssetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>());
 		myAssetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>());

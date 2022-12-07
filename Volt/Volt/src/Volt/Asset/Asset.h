@@ -36,7 +36,8 @@ namespace Volt
 		Font = BIT(12),
 		PhysicsMaterial = BIT(13),
 		Video = BIT(14),
-		RenderPipeline = BIT(15)
+		RenderPipeline = BIT(15),
+		NavMesh = BIT(16)
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)
@@ -60,6 +61,7 @@ namespace Volt
 		{ ".gltf", AssetType::MeshSource },
 		{ ".glb", AssetType::MeshSource },
 		{ ".vtmesh", AssetType::Mesh },
+		{ ".vtnavmesh", AssetType::NavMesh },
 
 		{ ".vtsk", AssetType::Skeleton },
 		{ ".vtanim", AssetType::Animation },
@@ -93,6 +95,7 @@ namespace Volt
 	{
 		{ "Mesh Source", AssetType::MeshSource },
 		{ "Mesh", AssetType::Mesh },
+		{ "NavMesh", AssetType::NavMesh },
 
 		{ "Skeleton", AssetType::Skeleton },
 		{ "Animation", AssetType::Animation },

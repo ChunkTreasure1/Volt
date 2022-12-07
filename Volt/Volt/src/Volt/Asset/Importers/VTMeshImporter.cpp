@@ -58,7 +58,7 @@ namespace Volt
 		memcpy_s(mesh->myIndices.data(), sizeof(uint32_t) * indexCount, &totalData[offset], sizeof(uint32_t) * indexCount);
 		offset += sizeof(uint32_t) * indexCount;
 
-		if (!IsValid(subMeshCount, vertexCount, indexCount, srcSize))
+		if (!IsValid(subMeshCount, vertexCount, indexCount, srcSize) && path.extension() != ".vtnavmesh")
 		{
 			VT_CORE_ERROR("Mesh {0} is invalid! It needs to be recompiled!", path.string());
 			mesh->SetFlag(AssetFlag::Invalid, true);
