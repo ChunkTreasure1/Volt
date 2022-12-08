@@ -179,6 +179,8 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
+  - Handle: 11223725156781065066
+    Path: Assets\Scenes\Ivar_Test\Ivar_Test.vtscene
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 2713074256263182464

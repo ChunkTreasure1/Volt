@@ -52,6 +52,13 @@ private:
 	void UpdateCreatedEntityPosition();
 
 	void DuplicateSelection();
+	void HandleSingleSelect();
+	void HandleMultiSelect();
+	void HandleSingleGizmoInteraction(const gem::mat4& avgTransform);
+	void HandleMultiGizmoInteraction(const gem::mat4& avgTransform, const gem::mat4& avgStartTransform);
+
+	void UpdateModals();
+	void HandleNonMeshDragDrop();
 
 	void Resize(const gem::vec2& viewportSize);
 
