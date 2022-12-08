@@ -1509,8 +1509,6 @@ namespace Volt
 		auto& registry = myScene->GetRegistry();
 		std::vector<std::vector<Wire::EntityId>> perThreadViews;
 
-		std::vector<uint32_t> perThreadCounts;
-		std::vector<const Wire::EntityId*> perThreadPtrs;
 		const auto meshViews = registry.GetSingleComponentView<MeshComponent>();
 
 		if (meshViews.empty())
@@ -1518,120 +1516,72 @@ namespace Volt
 			return;
 		}
 
+		for (const auto& id : meshViews)
 		{
-			VT_PROFILE_SCOPE("Setup Collection")
+			const auto& meshComp = registry.GetComponent<MeshComponent>(id);
+			auto& transformComp = registry.GetComponent<TransformComponent>(id);
+			const auto& dataComp = registry.GetComponent<EntityDataComponent>(id);
 
-				const uint32_t collectionThreads = gem::max(gem::min((uint32_t)meshViews.size(), myMaxCollectionThreads), 1u);
-
-			perThreadViews = std::vector<std::vector<Wire::EntityId>>(collectionThreads);
-			perThreadCounts = std::vector<uint32_t>(collectionThreads);
-
-			const uint32_t perThreadEntityCount = (uint32_t)meshViews.size() / collectionThreads;
-
-			for (uint32_t index = 0, offset = 0; auto & count : perThreadCounts)
+			if (meshComp.handle != Asset::Null() && transformComp.visible)
 			{
-				index++;
-
-				if (index == (uint32_t)perThreadCounts.size())
+				if (!AssetManager::Get().IsLoaded(meshComp.handle))
 				{
-					count = ((uint32_t)meshViews.size() - (index - 1) * perThreadEntityCount);
-				}
-				else
-				{
-					count = perThreadEntityCount;
+					AssetManager::QueueAsset<Mesh>(meshComp.handle);
+					continue;
 				}
 
-				perThreadPtrs.emplace_back(&meshViews[offset]);
-				offset += perThreadEntityCount;
-
-			}
-		}
-
-		auto collectionFunc = [&](const Wire::EntityId* ptr, uint32_t entityCount, Wire::Registry& registry)
-		{
-			VT_PROFILE_THREAD("Collection");
-			VT_PROFILE_SCOPE("Collect");
-
-			for (uint32_t i = 0; i < entityCount; i++)
-			{
-				const auto& id = ptr[i];
-
-				const auto& meshComp = registry.GetComponent<MeshComponent>(id);
-				auto& transformComp = registry.GetComponent<TransformComponent>(id);
-				const auto& dataComp = registry.GetComponent<EntityDataComponent>(id);
-
-				if (meshComp.handle != Asset::Null() && transformComp.visible)
+				auto mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
+				if (!mesh || !mesh->IsValid())
 				{
-					if (!AssetManager::Get().IsLoaded(meshComp.handle))
-					{
-						AssetManager::QueueAsset<Mesh>(meshComp.handle);
-						continue;
-					}
+					continue;
+				}
 
-					auto mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
-					if (!mesh || !mesh->IsValid())
-					{
-						continue;
-					}
+				if (dataComp.isHighlighted)
+				{
+					myHighlightedMeshes.emplace_back(meshComp.handle, id);
+				}
 
-					if (dataComp.isHighlighted)
+				Ref<Material> material;
+				if (meshComp.overrideMaterial != Asset::Null())
+				{
+					auto overrideMat = AssetManager::GetAsset<Material>(meshComp.overrideMaterial);
+					if (overrideMat && overrideMat->IsValid())
 					{
-						myHighlightedMeshes.emplace_back(meshComp.handle, id);
+						material = overrideMat;
 					}
+				}
 
-					Ref<Material> material;
-					if (meshComp.overrideMaterial != Asset::Null())
-					{
-						auto overrideMat = AssetManager::GetAsset<Material>(meshComp.overrideMaterial);
-						if (overrideMat && overrideMat->IsValid())
-						{
-							material = overrideMat;
-						}
-					}
+				const gem::mat4 transform = myScene->GetWorldSpaceTransform(Entity(id, myScene.get()), myScene->IsPlaying());
 
-					const gem::mat4 transform = myScene->GetWorldSpaceTransform(Entity(id, myScene.get()), myScene->IsPlaying());
-
-					// #TODO: Add ability to have override materials on single submesh draws
-					if (meshComp.subMeshIndex != -1)
+				// #TODO: Add ability to have override materials on single submesh draws
+				if (meshComp.subMeshIndex != -1)
+				{
+					Renderer::Submit(mesh, (uint32_t)meshComp.subMeshIndex, transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
+				}
+				else if (material)
+				{
+					if (meshComp.subMaterialIndex != -1)
 					{
-						Renderer::Submit(mesh, (uint32_t)meshComp.subMeshIndex, transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
-					}
-					else if (material)
-					{
-						if (meshComp.subMaterialIndex != -1)
-						{
-							Renderer::Submit(mesh, material->GetSubMaterials().at(meshComp.subMaterialIndex), transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
-						}
-						else
-						{
-							Renderer::Submit(mesh, material, transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
-						}
+						Renderer::Submit(mesh, material->GetSubMaterials().at(meshComp.subMaterialIndex), transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
 					}
 					else
 					{
-						if (meshComp.subMaterialIndex != -1)
-						{
-							Renderer::Submit(mesh, mesh->GetMaterial()->GetSubMaterials().at(meshComp.subMaterialIndex), transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
-						}
-						else
-						{
-							Renderer::Submit(mesh, transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
-						}
+						Renderer::Submit(mesh, material, transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
+					}
+				}
+				else
+				{
+					if (meshComp.subMaterialIndex != -1)
+					{
+						Renderer::Submit(mesh, mesh->GetMaterial()->GetSubMaterials().at(meshComp.subMaterialIndex), transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
+					}
+					else
+					{
+						Renderer::Submit(mesh, transform, id, dataComp.timeSinceCreation, meshComp.castShadows, meshComp.castAO);
 					}
 				}
 			}
 		};
-
-		std::vector<std::future<void>> threadResults;
-		for (size_t i = 0; i < perThreadCounts.size(); i++)
-		{
-			threadResults.emplace_back(std::async(std::launch::async, collectionFunc, perThreadPtrs.at(i), perThreadCounts.at(i), std::reference_wrapper(registry)));
-		}
-
-		for (const auto& future : threadResults)
-		{
-			future.wait();
-		}
 	}
 
 	void SceneRenderer::CollectAnimatedMeshCommands()
@@ -1649,81 +1599,44 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t perThreadEntityCount = (uint32_t)meshViews.size() / myMaxCollectionThreads;
-
-		for (uint32_t index = 0, offset = 0; auto & perThreadView : perThreadViews)
+		for (const auto& id : meshViews)
 		{
-			index++;
-			if (index == perThreadViews.size())
-			{
-				perThreadView = { meshViews.begin() + offset, meshViews.end() };
-			}
-			else
-			{
-				perThreadView = { meshViews.begin() + offset, meshViews.begin() + offset + perThreadEntityCount };
-			}
+			const auto& animCharComp = registry.GetComponent<AnimatedCharacterComponent>(id);
+			const auto& dataComp = registry.GetComponent<EntityDataComponent>(id);
+			const auto& transformComp = registry.GetComponent<TransformComponent>(id);
 
-			offset += perThreadEntityCount;
-		}
-
-		auto collectionFunc = [&](const std::vector<Wire::EntityId>& entityIds, Wire::Registry& registry)
-		{
-			for (const auto& id : entityIds)
+			if (animCharComp.animatedCharacter != Asset::Null() && transformComp.visible)
 			{
-				const auto& animCharComp = registry.GetComponent<AnimatedCharacterComponent>(id);
-				const auto& dataComp = registry.GetComponent<EntityDataComponent>(id);
-				const auto& transformComp = registry.GetComponent<TransformComponent>(id);
-
-				if (animCharComp.animatedCharacter != Asset::Null() && transformComp.visible)
+				if (!AssetManager::Get().IsLoaded(animCharComp.animatedCharacter))
 				{
-					if (!AssetManager::Get().IsLoaded(animCharComp.animatedCharacter))
+					AssetManager::QueueAsset<AnimatedCharacter>(animCharComp.animatedCharacter);
+					continue;
+				}
+
+				auto character = AssetManager::GetAsset<AnimatedCharacter>(animCharComp.animatedCharacter);
+				if (character && character->IsValid())
+				{
+					if (dataComp.isHighlighted)
 					{
-						AssetManager::QueueAsset<AnimatedCharacter>(animCharComp.animatedCharacter);
-						continue;
+						myHighlightedAnimatedMeshes.emplace_back(animCharComp.animatedCharacter, id, animCharComp);
 					}
 
-					auto character = AssetManager::GetAsset<AnimatedCharacter>(animCharComp.animatedCharacter);
-					if (character && character->IsValid())
+					const gem::mat4 transform = myScene->GetWorldSpaceTransform(Entity(id, myScene.get()));
+
+					std::vector<gem::mat4> animSamples;
+
+					if (animCharComp.characterStateMachine && animCharComp.characterStateMachine->GetStateCount() > 0)
 					{
-						if (dataComp.isHighlighted)
-						{
-							myHighlightedAnimatedMeshes.emplace_back(animCharComp.animatedCharacter, id, animCharComp);
-						}
-
-						const gem::mat4 transform = myScene->GetWorldSpaceTransform(Entity(id, myScene.get()));
-
-						std::vector<gem::mat4> animSamples;
-
-						if (animCharComp.characterStateMachine && animCharComp.characterStateMachine->GetStateCount() > 0)
-						{
-							animSamples = animCharComp.characterStateMachine->Sample();
-						}
-						else
-						{
-							animSamples = character->SampleAnimation(animCharComp.currentAnimation, animCharComp.currentStartTime, animCharComp.isLooping);
-						}
-
-						for (const auto& [bone, overrides] : animCharComp.boneOverrides)
-						{
-							size_t index = character->GetSkeleton()->GetJointIndexFromName(bone);
-							animSamples[index] = overrides;
-						}
-
-						Renderer::Submit(character->GetSkin(), transform, animSamples, id, dataComp.timeSinceCreation, animCharComp.castShadows);
+						animSamples = animCharComp.characterStateMachine->Sample();
 					}
+					else
+					{
+						animSamples = character->SampleAnimation(animCharComp.currentAnimation, animCharComp.currentStartTime, animCharComp.isLooping);
+					}
+
+					Renderer::Submit(character->GetSkin(), transform, animSamples, id, dataComp.timeSinceCreation, animCharComp.castShadows);
 				}
 			}
-		};
-
-		std::vector<std::future<void>> threadResults;
-		for (const auto& perThreadView : perThreadViews)
-		{
-			threadResults.emplace_back(std::async(std::launch::async, collectionFunc, std::reference_wrapper(perThreadView), std::reference_wrapper(registry)));
-		}
-
-		for (const auto& future : threadResults)
-		{
-			future.wait();
 		}
 	}
 

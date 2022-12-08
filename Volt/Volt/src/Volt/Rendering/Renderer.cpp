@@ -28,6 +28,7 @@
 #include "Volt/Rendering/SamplerState.h"
 #include "Volt/Rendering/ComputePipeline.h"
 #include "Volt/Rendering/Shape.h"
+#include "Volt/Rendering/CommandBuffer.h"
 
 #include "Volt/Utility/StringUtility.h"
 
@@ -36,8 +37,6 @@
 
 namespace Volt
 {
-	static std::mutex globalSubmitMutex;
-
 	void Renderer::Initialize()
 	{
 		myRendererData = CreateScope<RendererData>();
@@ -50,6 +49,7 @@ namespace Volt
 		CreateTextData();
 		CreateInstancingData();
 		CreateDecalData();
+		CreateCommandBuffers();
 
 		GenerateBRDFLut();
 	}
@@ -73,7 +73,6 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
 			auto& cmd = myRendererData->renderCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
@@ -83,6 +82,10 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
+
+#ifdef VT_THREADED_RENDERING
+			myRendererData->currentCPUBuffer->Submit(cmd);
+#endif
 		}
 	}
 
@@ -98,7 +101,6 @@ namespace Volt
 
 		const auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
 
-		std::lock_guard<std::mutex> lock(globalSubmitMutex);
 		auto& cmd = myRendererData->renderCommands.emplace_back();
 		cmd.mesh = aMesh;
 		cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
@@ -108,6 +110,10 @@ namespace Volt
 		cmd.timeSinceCreation = aTimeSinceCreation;
 		cmd.castShadows = castShadows;
 		cmd.castAO = castAO;
+
+#ifdef VT_THREADED_RENDERING
+		myRendererData->currentCPUBuffer->Submit(cmd);
+#endif
 	}
 
 	void Renderer::Submit(Ref<Mesh> aMesh, Ref<SubMaterial> aMaterial, const gem::mat4& aTransform, uint32_t aId /* = 0 */, float aTimeSinceCreation, bool castShadows, bool castAO)
@@ -116,7 +122,6 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
 			auto& cmd = myRendererData->renderCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMaterial;
@@ -126,6 +131,10 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
+
+#ifdef VT_THREADED_RENDERING
+			myRendererData->currentCPUBuffer->Submit(cmd);
+#endif
 		}
 	}
 
@@ -137,7 +146,6 @@ namespace Volt
 		{
 			auto it = aMaterial->GetSubMaterials().find(subMesh.materialIndex);
 
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
 			auto& cmd = myRendererData->renderCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = it != aMaterial->GetSubMaterials().end() ? it->second : aMaterial->GetSubMaterials().at(0);
@@ -147,6 +155,10 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
+
+#ifdef VT_THREADED_RENDERING
+			myRendererData->currentCPUBuffer->Submit(cmd);
+#endif
 		}
 	}
 
@@ -156,7 +168,6 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
 			auto& cmd = myRendererData->renderCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
@@ -167,6 +178,10 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
+
+#ifdef VT_THREADED_RENDERING
+			myRendererData->currentCPUBuffer->Submit(cmd);
+#endif
 		}
 	}
 
@@ -675,14 +690,51 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([&]() 
+			{
+				RunResourceChanges();
+				UpdatePerFrameBuffers();
+				SortRenderCommands(currentCommandBuffer->myRenderCommands);
+				UploadObjectData(currentCommandBuffer->myRenderCommands);
+
+				// Bind samplers
+				{
+					myRendererData->samplers.linearWrap->Bind(0);
+					myRendererData->samplers.linearPointWrap->Bind(1);
+
+					myRendererData->samplers.pointWrap->Bind(2);
+					myRendererData->samplers.pointLinearWrap->Bind(3);
+
+					myRendererData->samplers.linearClamp->Bind(4);
+					myRendererData->samplers.linearPointClamp->Bind(5);
+
+					myRendererData->samplers.pointClamp->Bind(6);
+					myRendererData->samplers.pointLinearClamp->Bind(7);
+
+					myRendererData->samplers.anisotropic->Bind(8);
+					myRendererData->samplers.shadow->Bind(9);
+				}
+
+				ConstantBufferRegistry::Get(1)->Bind(1);
+				ConstantBufferRegistry::Get(4)->Bind(4);
+				ConstantBufferRegistry::Get(6)->Bind(6);
+				ConstantBufferRegistry::Get(7)->Bind(7);
+
+				StructuredBufferRegistry::Get(102)->Bind(102);
+			});
+
+#else
+
 		BeginAnnotatedSection(context);
 		myRendererData->currentContext = context;
 
 		RunResourceChanges();
 		UpdatePerFrameBuffers();
 
-		SortRenderCommands();
-		UploadObjectData();
+		SortRenderCommands(myRendererData->renderCommands);
+		UploadObjectData(myRendererData->renderCommands);
 
 		// Bind samplers
 		{
@@ -708,6 +760,7 @@ namespace Volt
 		ConstantBufferRegistry::Get(7)->Bind(7);
 
 		StructuredBufferRegistry::Get(102)->Bind(102);
+#endif
 	}
 
 	void Renderer::End()
@@ -1423,6 +1476,15 @@ namespace Volt
 		myRendererData->decalData.cubeMesh = Shape::CreateUnitCube();
 	}
 
+	void Renderer::CreateCommandBuffers()
+	{
+		myRendererData->commandBuffers[0] = CommandBuffer::Create();
+		myRendererData->commandBuffers[1] = CommandBuffer::Create();
+	
+		myRendererData->currentCPUBuffer = myRendererData->commandBuffers[0];
+		myRendererData->currentGPUBuffer = myRendererData->commandBuffers[1];
+	}
+
 	void Renderer::GenerateBRDFLut()
 	{
 		constexpr uint32_t BRDFSize = 512;
@@ -1596,18 +1658,14 @@ namespace Volt
 		// Directional light
 		{
 			DirectionalLight* dirLight = ConstantBufferRegistry::Get(4)->Map<DirectionalLight>();
-
 			*dirLight = myRendererData->directionalLight;
-
 			ConstantBufferRegistry::Get(4)->Unmap();
 		}
 
 		// Point lights
 		{
 			PointLight* data = StructuredBufferRegistry::Get(102)->Map<PointLight>();
-
 			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, myRendererData->pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)myRendererData->pointLights.size()));
-
 			StructuredBufferRegistry::Get(102)->Unmap();
 		}
 
@@ -1621,7 +1679,7 @@ namespace Volt
 		}
 	}
 
-	void Renderer::UploadObjectData()
+	void Renderer::UploadObjectData(std::vector<RenderCommand>& renderCommands)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1631,7 +1689,7 @@ namespace Volt
 			ObjectData* objData = StructuredBufferRegistry::Get(100)->Map<ObjectData>();
 			gem::mat4* animData = StructuredBufferRegistry::Get(101)->Map<gem::mat4>();
 
-			for (uint32_t i = 0; auto & cmd : myRendererData->renderCommands)
+			for (uint32_t i = 0; auto & cmd : renderCommands)
 			{
 				cmd.objectBufferId = i;
 
@@ -1662,11 +1720,9 @@ namespace Volt
 		}
 	}
 
-	void Renderer::SortRenderCommands()
+	void Renderer::SortRenderCommands(std::vector<RenderCommand>& renderCommands)
 	{
 		VT_PROFILE_FUNCTION();
-
-		auto& renderCommands = myRendererData->renderCommands;
 
 		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const RenderCommand& lhs, const RenderCommand& rhs)
 			{
@@ -1988,6 +2044,11 @@ namespace Volt
 
 		aComputePipeline->Execute(groupX, groupY, 1);
 		aComputePipeline->Clear();
+	}
+
+	void Renderer::SyncAndWait()
+	{
+		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
 	}
 
 	void Renderer::DispatchLines()

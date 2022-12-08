@@ -6,6 +6,8 @@
 #include "Volt/Rendering/Texture/SubTexture2D.h"
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/RenderPass.h"
+#include "Volt/Rendering/RendererInfo.h"
+
 #include "Volt/Scene/Scene.h"
 
 #include <GEM/gem.h>
@@ -34,44 +36,13 @@ namespace Volt
 	class Camera;
 	class VertexBuffer;
 	class IndexBuffer;
+	class CommandBuffer;
 	class Font;
 
 	struct SpriteVertex;
 	struct BillboardVertex;
 	struct LineVertex;
 	struct TextVertex;
-
-	struct RenderCommand
-	{
-		SubMesh subMesh;
-		gem::mat4 transform;
-
-		std::vector<gem::mat4> boneTransforms;
-
-		Ref<Mesh> mesh;
-		Ref<SubMaterial> material;
-
-		float timeSinceCreation = 0.f;
-		uint32_t id = 0;
-		uint32_t objectBufferId = 0;
-
-		bool castShadows = true;
-		bool castAO = true;
-	};
-
-	enum class DepthState : uint32_t
-	{
-		ReadWrite = 0,
-		Read = 1,
-		None = 2
-	};
-
-	enum class RasterizerState : uint32_t
-	{
-		CullBack = 0,
-		CullFront,
-		CullNone
-	};
 
 	class Renderer
 	{
@@ -227,10 +198,11 @@ namespace Volt
 		static void DispatchSpritesWithShader(Ref<Shader> aShader);
 		static void DispatchBillboardsWithShader(Ref<Shader> aShader);
 		static void DispatchDecalsWithShader(Ref<Shader> aShader);
-
 		static void DispatchSpritesWithMaterial(Ref<Material> aMaterial);
 
 		static void ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer);
+
+		static void SyncAndWait();
 
 		static void SetSceneData(const SceneData& aSceneData);
 		static void SetDepthState(DepthState aDepthState);
@@ -256,16 +228,16 @@ namespace Volt
 		static void CreateProfilingData();
 		static void CreateInstancingData();
 		static void CreateDecalData();
+		static void CreateCommandBuffers();
 
 		static void GenerateBRDFLut();
 
 		static void UpdatePerPassBuffers();
 		static void UpdatePerFrameBuffers();
+		static void UploadObjectData(std::vector<RenderCommand>& renderCommands);
 
-		static void UploadObjectData();
 		static void RunResourceChanges();
-
-		static void SortRenderCommands();
+		static void SortRenderCommands(std::vector<RenderCommand>& renderCommands);
 		static void CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
 		static std::vector<RenderCommand> CullRenderCommands(const std::vector<RenderCommand>& renderCommands, Ref<Camera> camera);
 
@@ -399,6 +371,12 @@ namespace Volt
 			inline static constexpr uint32_t MAX_CULL_THREAD_COUNT = 4;
 			inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
 
+			///// Threading /////
+			Ref<CommandBuffer> currentCPUBuffer = nullptr;
+			Ref<CommandBuffer> currentGPUBuffer = nullptr;
+
+			Ref<CommandBuffer> commandBuffers[2];
+			////////////////////
 			std::vector<RenderCommand> renderCommands;
 
 			std::mutex resourceMutex;

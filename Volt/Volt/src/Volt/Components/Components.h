@@ -176,9 +176,6 @@ namespace Volt
 		uint32_t crossfadeFrom = 0;
 		uint32_t crossfadeTo = 0;
 
-		// Override
-		std::unordered_map<std::string, gem::mat4> boneOverrides;
-
 		// Test
 		Ref<AnimationStateMachine> characterStateMachine;
 
