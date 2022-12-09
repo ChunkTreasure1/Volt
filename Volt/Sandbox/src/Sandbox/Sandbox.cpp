@@ -129,7 +129,15 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	float n = gem::perlin(gem::vec2{ 0.f, 0.f });
+	// Set working directory
+	if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
+	{
+		const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
+		if (!pathEnv.empty())
+		{
+			std::filesystem::current_path(pathEnv);
+		}
+	}
 
 	EditorIconLibrary::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);

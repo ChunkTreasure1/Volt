@@ -33,16 +33,6 @@ namespace Volt
 		VT_CORE_ASSERT(!myInstance, "Application already exists!");
 		myInstance = this;
 
-		// Set working directory
-		if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
-		{
-			const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
-			if (!pathEnv.empty())
-			{
-				std::filesystem::current_path(pathEnv);
-			}
-		}
-
 		myInfo = info;
 		Log::Initialize();
 
