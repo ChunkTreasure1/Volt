@@ -35,6 +35,7 @@ void AnimationTreeEditor::UpdateMainContent()
 	ShowAnimationPanel();
 	ShowPropertiesPanel();
 	ShowParameterPanel();
+
 	ImGui::SameLine();
 	{
 		static ImVec2 WindowSize = { 1024,1024 };
@@ -285,7 +286,6 @@ void AnimationTreeEditor::UpdateMainContent()
 	mySelectedLinks.resize(linkCount);
 
 	ed::SetCurrentEditor(nullptr);
-	//ImGui::ShowDemoWindow();
 
 }
 
@@ -571,8 +571,6 @@ void AnimationTreeEditor::BuildNode(AnimNode* node)
 
 void AnimationTreeEditor::Save()
 {
-	//TODO: re-jig the IDs??
-
 	myDefaultConfig.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
 	{
 		auto node = FindNode(nodeId);

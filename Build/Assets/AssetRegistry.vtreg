@@ -1,4 +1,28 @@
 Assets:
+  - Handle: 17997003873033377063
+    Path: Assets\Animations\None.vtchr
+  - Handle: 16100385923924148682
+    Path: Assets\Animations\Player.vtchr
+  - Handle: 3549492640663316326
+    Path: Assets\Animations\TreeTest\avatar_tx_c.dds
+  - Handle: 9264807240693990246
+    Path: Assets\Animations\TreeTest\avatar_tx_m.dds
+  - Handle: 136755671005657583
+    Path: Assets\Animations\TreeTest\avatar_tx_n.dds
+  - Handle: 16943385056314726268
+    Path: Assets\Animations\TreeTest\player_ability03Fear_anim.vtanim
+  - Handle: 12963454689845770817
+    Path: Assets\Animations\TreeTest\player_die_anim.vtanim
+  - Handle: 4698206107750746861
+    Path: Assets\Animations\TreeTest\player_idle_anim.vtanim
+  - Handle: 13891381688798248820
+    Path: Assets\Animations\TreeTest\player_run_anim.vtanim
+  - Handle: 17069129661454609820
+    Path: Assets\Animations\TreeTest\player_sk.vtmat
+  - Handle: 15852468523418555391
+    Path: Assets\Animations\TreeTest\player_sk.vtmesh
+  - Handle: 11096070763149173155
+    Path: Assets\Animations\TreeTest\player_sk.vtsk
   - Handle: 16625774910016950853
     Path: Assets\Materials\M_ColliderDebug.vtmat
   - Handle: 16380998834732311984
