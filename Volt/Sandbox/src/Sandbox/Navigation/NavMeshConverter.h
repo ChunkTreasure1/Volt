@@ -8,7 +8,7 @@
 
 namespace Volt
 {
-	class NMConverter
+	class NavMeshConverter
 	{
 	public:
 		static Ref<Mesh> CombineMeshes(const std::vector<Volt::Entity>& entities, float unitModifier = 1.f);

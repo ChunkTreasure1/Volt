@@ -41,17 +41,19 @@ namespace Volt
 
 		void Update(float aTimestep, Entity aEntity);
 		void MoveToTarget(float aTimestep, Entity aEntity);
+		gem::vec3 GetSteeringForce();
+		void DrawDebugLines();
 
-		void Seek();
-		void Flee();
-		void Arrive();
-		void Align();
-		void Pursue();
-		void Evade();
-		void Wander();
-		void PathFollowing();
-		void Separation();
-		void CollisionAvoidance();
+		gem::vec3 Seek();
+		gem::vec3 Flee();
+		gem::vec3 Arrive();
+		gem::vec3 Align();
+		gem::vec3 Pursue();
+		gem::vec3 Evade();
+		gem::vec3 Wander();
+		gem::vec3 PathFollowing();
+		gem::vec3 Separation();
+		gem::vec3 CollisionAvoidance();
 
 		gem::vec3 myCurrent;
 		gem::vec3 myTarget;
@@ -60,7 +62,10 @@ namespace Volt
 
 		AgentSteeringBehaviors myBehavior = AgentSteeringBehaviors::Seek;
 		bool myIsKinematic = true;
-		
+		gem::vec3 myVelocity = 0.f;
+		float myMaxVelocity = 500.f;
+		float myMaxForce = 100.f;
+
 		bool myActive = true;
 	};
 }

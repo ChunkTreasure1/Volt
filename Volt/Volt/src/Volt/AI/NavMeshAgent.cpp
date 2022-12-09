@@ -5,6 +5,7 @@
 #include "Volt/AI/NavigationSystem.h"
 #include "Volt/Components/NavigationComponents.h"
 
+#include <Volt/Rendering/Renderer.h>
 #include <Volt/Core/Profiling.h>
 
 namespace Volt
@@ -16,7 +17,6 @@ namespace Volt
 		{
 			myTarget = aPosition;
 			auto path = navmesh->GetNavMeshData().findPath(VTtoPF(myCurrent), VTtoPF(myTarget));
-			myPath.resize(path.size());
 			for (const auto& p : path)
 			{
 				myPath.emplace_back(PFtoVT(p));
@@ -28,7 +28,10 @@ namespace Volt
 	{
 		if (!myPath.empty())
 		{
-			*outMilestone = myPath.back();
+			if (outMilestone)
+			{
+				*outMilestone = myPath.back();
+			}
 			return true;
 		}
 		else
@@ -43,59 +46,103 @@ namespace Volt
 		if (myActive && GetCurrentMilestone())
 		{
 			MoveToTarget(aTimestep, aEntity);
+			DrawDebugLines();
 		}
 	}
 
 	void NavMeshAgent::MoveToTarget(float aTimestep, Entity aEntity)
 	{
+		auto steeringForce = GetSteeringForce();
+
+		auto acceleration = steeringForce;
+		myVelocity = myVelocity + acceleration * aTimestep;
+		myVelocity = gem::clamp(myVelocity, gem::vec3(-1.f) * myMaxVelocity, gem::vec3(1.f) * myMaxVelocity);
+
+		VT_INFO(std::format("Vel: {0}, {1}, {2}", myVelocity.x, myVelocity.y, myVelocity.z));
+
+		aEntity.SetWorldPosition(myCurrent + myVelocity * aTimestep);
+
+		gem::vec3 milestone;
+		if (GetCurrentMilestone(&milestone))
+		{
+			float dist = gem::distance(myCurrent, milestone);
+			if (dist < 10.f) // continue to next milestone if close enough to current milestone
+			{
+				myPath.pop_back();
+			}
+		}
+	}
+
+	gem::vec3 NavMeshAgent::GetSteeringForce()
+	{
 		switch (myBehavior)
 		{
 		case AgentSteeringBehaviors::Seek:
-			Seek();
-			break;
+			return Seek();
 
 		case AgentSteeringBehaviors::Flee:
-			Flee();
-			break;
+			return Flee();
 
 		case AgentSteeringBehaviors::Arrive:
-			Arrive();
-			break;
+			return Arrive();
 
 		case AgentSteeringBehaviors::Align:
-			Align();
-			break;
+			return Align();
 
 		case AgentSteeringBehaviors::Pursue:
-			Pursue();
-			break;
+			return Pursue();
 
 		case AgentSteeringBehaviors::Evade:
-			Evade();
-			break;
+			return Evade();
 
 		case AgentSteeringBehaviors::Wander:
-			Wander();
-			break;
+			return Wander();
 
 		case AgentSteeringBehaviors::PathFollowing:
-			PathFollowing();
-			break;
+			return PathFollowing();
 
 		case AgentSteeringBehaviors::Separation:
-			Separation();
-			break;
+			return Separation();
 
 		case AgentSteeringBehaviors::CollisionAvoidance:
-			CollisionAvoidance();
-			break;
+			return CollisionAvoidance();
 
 		default:
-			break;
+			return Seek();
 		}
 	}
 
-	void NavMeshAgent::Seek()
+	void NavMeshAgent::DrawDebugLines()
+	{
+		//Renderer::SubmitLine(myCurrent, myTarget);
+		Renderer::SubmitLine(myCurrent, myCurrent + myVelocity, gem::vec4(0.f, 0.f, 1.f, 1.f));
+	}
+
+	gem::vec3 NavMeshAgent::Seek()
+	{
+		if (myIsKinematic)
+		{
+			gem::vec3 currentTarget;
+			if (GetCurrentMilestone(&currentTarget))
+			{
+				gem::vec3 desiredVelocity = currentTarget - myCurrent;
+				desiredVelocity = gem::normalize(desiredVelocity);
+				desiredVelocity *= myMaxVelocity;
+				gem::vec3 steeringForce = desiredVelocity - myVelocity;
+				steeringForce /= myMaxVelocity;
+				steeringForce *= myMaxForce;
+
+				return steeringForce;
+			}
+		}
+		else
+		{
+
+		}
+		return gem::vec3();
+	}
+
+	gem::vec3 NavMeshAgent::Flee()
 	{
 		if (myIsKinematic)
 		{
@@ -105,9 +152,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Flee()
+	gem::vec3 NavMeshAgent::Arrive()
 	{
 		if (myIsKinematic)
 		{
@@ -117,9 +165,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Arrive()
+	gem::vec3 NavMeshAgent::Align()
 	{
 		if (myIsKinematic)
 		{
@@ -129,9 +178,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Align()
+	gem::vec3 NavMeshAgent::Pursue()
 	{
 		if (myIsKinematic)
 		{
@@ -141,9 +191,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Pursue()
+	gem::vec3 NavMeshAgent::Evade()
 	{
 		if (myIsKinematic)
 		{
@@ -153,9 +204,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Evade()
+	gem::vec3 NavMeshAgent::Wander()
 	{
 		if (myIsKinematic)
 		{
@@ -165,9 +217,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Wander()
+	gem::vec3 NavMeshAgent::PathFollowing()
 	{
 		if (myIsKinematic)
 		{
@@ -177,9 +230,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::PathFollowing()
+	gem::vec3 NavMeshAgent::Separation()
 	{
 		if (myIsKinematic)
 		{
@@ -189,9 +243,10 @@ namespace Volt
 		{
 
 		}
+		return gem::vec3();
 	}
 
-	void NavMeshAgent::Separation()
+	gem::vec3 NavMeshAgent::CollisionAvoidance()
 	{
 		if (myIsKinematic)
 		{
@@ -201,17 +256,6 @@ namespace Volt
 		{
 
 		}
-	}
-
-	void NavMeshAgent::CollisionAvoidance()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
+		return gem::vec3();
 	}
 }

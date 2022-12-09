@@ -1,11 +1,11 @@
 #include "sbpch.h"
-#include "NMConverter.h"
+#include "NavMeshConverter.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/AI/NavMesh.h"
 
 namespace Volt
 {
-	Ref<Volt::Mesh> NMConverter::CombineMeshes(const std::vector<Volt::Entity>& entities, float unitModifier)
+	Ref<Volt::Mesh> NavMeshConverter::CombineMeshes(const std::vector<Volt::Entity>& entities, float unitModifier)
 	{
 		std::vector<Vertex> v;
 		std::vector<uint32_t> i;

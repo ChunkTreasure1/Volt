@@ -567,11 +567,6 @@ void Sandbox::SetupRenderCallbacks()
 {
 	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		{
-			if (mySceneState == SceneState::Play)
-			{
-				return;
-			}
-
 			// Selected geometry pass
 			{
 				Volt::Renderer::SetDepthState(Volt::DepthState::ReadWrite);

@@ -80,6 +80,7 @@ namespace Pathfinder
 
 		// #SAMUEL_TODO: Fix funnel to different heights
 		pathPositions = finder.Funnel(pathPositions, portals);
+		std::reverse(pathPositions.begin(), pathPositions.end());
 		return pathPositions;
 	}
 

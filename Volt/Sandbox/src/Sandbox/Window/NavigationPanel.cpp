@@ -164,7 +164,7 @@ void NavigationPanel::ObjectsTab()
 				}
 			});
 
-		auto navmesh = Volt::NMConverter::CombineMeshes(walkableMeshes, 0.1f);
+		auto navmesh = Volt::NavMeshConverter::CombineMeshes(walkableMeshes, 0.1f);
 		if (navmesh) 
 		{
 			auto scenePath = myCurrentScene->path;

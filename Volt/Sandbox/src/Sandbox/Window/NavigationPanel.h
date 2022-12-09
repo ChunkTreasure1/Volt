@@ -6,7 +6,7 @@
 #include "Volt/AI/NavigationSystem.h"
 #include "Volt/Scene/Scene.h"
 
-#include "Sandbox/Navigation/NMConverter.h"
+#include "Sandbox/Navigation/NavMeshConverter.h"
 #include "Sandbox/Navigation/NavMeshBuilder.h"
 #include "Sandbox/Navigation/ext/MeshLoaderObj.h"
 
