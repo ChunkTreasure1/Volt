@@ -78,20 +78,57 @@ namespace Pathfinder
 			*outPortals = portals;
 		}
 
+		pathPositions.insert(pathPositions.begin(), start);
+		pathPositions.insert(pathPositions.end(), end);
+
 		// #SAMUEL_TODO: Fix funnel to different heights
 		pathPositions = finder.Funnel(pathPositions, portals);
 		std::reverse(pathPositions.begin(), pathPositions.end());
 		return pathPositions;
 	}
 
+	bool pfNavMesh::pointInPolygon(const vec3& point, const std::vector<uint32_t>& polygon) const
+	{
+		// Initialize the crossing number counter
+		int crossingNumber = 0;
+
+		// Loop through all sides of the polygon
+		for (int i = 0; i < polygon.size(); i++) 
+		{
+			vec3 p1 = m_verts[polygon[i]];
+			vec3 p2 = m_verts[polygon[(i + 1) % polygon.size()]];
+
+			// Check if the point is on the same side of the line as the vertex,
+			// if the point is on the line, or if the point is on the other side of the line
+			if ((p1.z > point.z) != (p2.z > point.z)) 
+			{
+				// Compute the x-coordinate of the point of intersection of the line with a horizontal line
+				// through the point, using the equation of the line
+				double x = (point.z - p1.z) * (p2.x - p1.x) / (p2.z - p1.z) + p1.x;
+
+				// Check if the point of intersection is to the right of the point
+				if (x > point.x) 
+				{
+					crossingNumber++;
+				}
+			}
+		}
+
+		// Return true if the crossing number is odd, false otherwise
+		return crossingNumber % 2 == 1;
+	}
+
 	uint32_t pfNavMesh::calcPolyLoc(const vec3& pos) const
 	{ 
-		// #SAMUEL_TODO: Change this to check if inside triangle
-
 		uint32_t closest = 0;
 		float lowestDistance = std::numeric_limits<float>::max();
 		for (uint32_t i = 0; i < getPolyCount(); i++)
 		{
+			if (pointInPolygon(pos, getPoly(i).verts))
+			{
+				return i;
+			}
+
 			if (auto dist = Pathfinder::distance(getCenter(i), pos); dist < lowestDistance)
 			{
 				lowestDistance = dist;

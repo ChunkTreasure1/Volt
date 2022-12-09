@@ -28,12 +28,17 @@ namespace Volt
 		void StartNavigation() { myActive = true; };
 		void StopNavigation() { myActive = false; };
 
+		void SetTarget(const gem::vec3& aPosition);
+
 		void SetSteeringBehavior(const AgentSteeringBehaviors& behavior) { myBehavior = behavior; };
 		void SetKinematic(const bool& value) { myIsKinematic = value; };
-		void SetTarget(const gem::vec3& aPosition);
-		void SetSpeed(const float& aSpeed) { mySpeed = aSpeed; };
+		void SetMaxVelocity(const float& aMaxVelocity) { myMaxVelocity = aMaxVelocity; };
+		void SetMaxForce(const float& aMaxForce) { myMaxForce = aMaxForce; };
 
-		float GetSpeed() const { return mySpeed; };
+		AgentSteeringBehaviors GetSteeringBehavior() const { return myBehavior; };
+		bool GetKinematic() const { return myIsKinematic; };
+		float GetMaxVelocity() const { return myMaxVelocity; };
+		float GetMaxForce() const { return myMaxForce; };
 		bool GetCurrentMilestone(gem::vec3* outMilestone = nullptr) const;
 
 	private:
@@ -58,13 +63,12 @@ namespace Volt
 		gem::vec3 myCurrent;
 		gem::vec3 myTarget;
 		std::vector<gem::vec3> myPath;
-		float mySpeed = 250.f;
 
 		AgentSteeringBehaviors myBehavior = AgentSteeringBehaviors::Seek;
 		bool myIsKinematic = true;
 		gem::vec3 myVelocity = 0.f;
 		float myMaxVelocity = 500.f;
-		float myMaxForce = 100.f;
+		float myMaxForce = 500.f;
 
 		bool myActive = true;
 	};

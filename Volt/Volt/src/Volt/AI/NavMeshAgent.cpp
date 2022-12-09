@@ -17,10 +17,12 @@ namespace Volt
 		{
 			myTarget = aPosition;
 			auto path = navmesh->GetNavMeshData().findPath(VTtoPF(myCurrent), VTtoPF(myTarget));
+			if (!path.empty()) { myPath.clear(); }
 			for (const auto& p : path)
 			{
 				myPath.emplace_back(PFtoVT(p));
 			}
+			myPath.pop_back();
 		}
 	};
 
@@ -54,13 +56,18 @@ namespace Volt
 	{
 		auto steeringForce = GetSteeringForce();
 
-		auto acceleration = steeringForce;
-		myVelocity = myVelocity + acceleration * aTimestep;
-		myVelocity = gem::clamp(myVelocity, gem::vec3(-1.f) * myMaxVelocity, gem::vec3(1.f) * myMaxVelocity);
+		if (myIsKinematic)
+		{
+			aEntity.SetWorldPosition(myCurrent + steeringForce * aTimestep);
+		}
+		else
+		{
+			auto acceleration = steeringForce;
+			myVelocity = myVelocity + acceleration * aTimestep;
+			myVelocity = gem::clamp(myVelocity, gem::vec3(-1.f) * myMaxVelocity, gem::vec3(1.f) * myMaxVelocity);
 
-		VT_INFO(std::format("Vel: {0}, {1}, {2}", myVelocity.x, myVelocity.y, myVelocity.z));
-
-		aEntity.SetWorldPosition(myCurrent + myVelocity * aTimestep);
+			aEntity.SetWorldPosition(myCurrent + myVelocity * aTimestep);
+		}
 
 		gem::vec3 milestone;
 		if (GetCurrentMilestone(&milestone))
@@ -114,32 +121,24 @@ namespace Volt
 
 	void NavMeshAgent::DrawDebugLines()
 	{
-		//Renderer::SubmitLine(myCurrent, myTarget);
 		Renderer::SubmitLine(myCurrent, myCurrent + myVelocity, gem::vec4(0.f, 0.f, 1.f, 1.f));
 	}
 
 	gem::vec3 NavMeshAgent::Seek()
 	{
-		if (myIsKinematic)
+		gem::vec3 currentTarget;
+		gem::vec3 desiredVelocity;
+		gem::vec3 steeringForce;
+		if (GetCurrentMilestone(&currentTarget))
 		{
-			gem::vec3 currentTarget;
-			if (GetCurrentMilestone(&currentTarget))
-			{
-				gem::vec3 desiredVelocity = currentTarget - myCurrent;
-				desiredVelocity = gem::normalize(desiredVelocity);
-				desiredVelocity *= myMaxVelocity;
-				gem::vec3 steeringForce = desiredVelocity - myVelocity;
-				steeringForce /= myMaxVelocity;
-				steeringForce *= myMaxForce;
-
-				return steeringForce;
-			}
+			desiredVelocity = currentTarget - myCurrent;
+			desiredVelocity = gem::normalize(desiredVelocity);
+			desiredVelocity *= myMaxVelocity;
+			steeringForce = desiredVelocity - myVelocity;
+			steeringForce /= myMaxVelocity;
+			steeringForce *= myMaxForce;
 		}
-		else
-		{
-
-		}
-		return gem::vec3();
+		return steeringForce;
 	}
 
 	gem::vec3 NavMeshAgent::Flee()

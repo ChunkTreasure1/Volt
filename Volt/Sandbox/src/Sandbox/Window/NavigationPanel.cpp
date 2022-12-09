@@ -263,9 +263,9 @@ void NavigationPanel::DebugTab()
 					Volt::Renderer::SubmitLine(start, end, gem::vec4(0.f, 0.f, 0.f, 1.f));
 				}
 
-				if (!path.empty())
+				if (!path.empty() && !usedPortals.empty())
 				{
-					gem::vec3 apex = { path.front().x, path.front().y, path.front().z };
+					gem::vec3 apex = { path.back().x, path.back().y, path.back().z };
 					for (uint32_t i = 0; i < usedPortals.size(); i++)
 					{
 						const auto& portal_edge = navMeshData.getLinkEdge(usedPortals[i]);

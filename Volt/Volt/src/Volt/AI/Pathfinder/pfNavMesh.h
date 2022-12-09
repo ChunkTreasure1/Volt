@@ -65,6 +65,8 @@ namespace Pathfinder
 		uint32_t getPolyCount() const { return m_polygons.size(); };
 
 	private:
+		bool pointInPolygon(const vec3& point, const std::vector<uint32_t>& polygon) const;
+
 		std::vector<vec3> m_verts;
 		std::vector<pfPoly> m_polygons;
 	};

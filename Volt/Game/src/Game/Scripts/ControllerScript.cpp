@@ -119,24 +119,6 @@ bool ControllerScript::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		}
 		break;
 	}
-	case VT_KEY_X:
-	{
-		if (myEntity.HasComponent<Volt::AgentComponent>())
-		{
-			auto& agent = myEntity.GetComponent<Volt::AgentComponent>().agent;
-			agent.SetSpeed(agent.GetSpeed() + 50.f);
-		}
-		break;
-	}
-	case VT_KEY_Z:
-	{
-		if (myEntity.HasComponent<Volt::AgentComponent>())
-		{
-			auto& agent = myEntity.GetComponent<Volt::AgentComponent>().agent;
-			agent.SetSpeed(agent.GetSpeed() - 50.f);
-		}
-		break;
-	}
 	}
 
 	return false;
