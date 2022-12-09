@@ -603,7 +603,7 @@ void Sandbox::SetupRenderCallbacks()
 				Volt::Renderer::EndPass();
 			}
 
-			auto context = Volt::GraphicsContext::GetContext(); // #TODO: Find better way to bind textures here
+			auto context = Volt::GraphicsContext::GetImmediateContext(); // #TODO: Find better way to bind textures here
 
 			// Jump Flood Init
 			{

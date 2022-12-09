@@ -24,13 +24,21 @@ namespace Volt
 		inline const uint32_t GetSize() const { return mySize; }
 
 		void SetData(const void* aData, uint32_t aSize, bool deferr = false);
+		void RT_SetData(const void* aData, uint32_t aSize);
+
 		void Bind(uint32_t aSlot);
+		void RT_Bind(uint32_t aSlot);
+		
 		void AddStage(ShaderStage aStage);
 
 		template<typename T>
 		T* Map();
 
+		template<typename T>
+		T* RT_Map();
+
 		void Unmap();
+		void RT_Unmap();
 
 		static Ref<ConstantBuffer> Create(const void* aData, uint32_t aSize, ShaderStage aUsageStage);
 
@@ -44,8 +52,17 @@ namespace Volt
 	template<typename T>
 	inline T* ConstantBuffer::Map()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		
+		D3D11_MAPPED_SUBRESOURCE subresource{};
+		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
+		return reinterpret_cast<T*>(subresource.pData);
+	}
+	template<typename T>
+	inline T* ConstantBuffer::RT_Map()
+	{
+		auto context = GraphicsContext::GetDeferredContext();
+
 		D3D11_MAPPED_SUBRESOURCE subresource{};
 		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
 		return reinterpret_cast<T*>(subresource.pData);

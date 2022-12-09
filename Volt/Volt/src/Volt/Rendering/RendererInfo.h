@@ -3,6 +3,8 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Asset/Mesh/SubMesh.h"
 
+#include "Volt/Rendering/RendererStructs.h"
+
 #include <GEM/gem.h>
 #include <vector>
 
@@ -10,6 +12,20 @@ namespace Volt
 {
 	class Mesh;
 	class SubMaterial;
+
+	enum class DepthState : uint32_t
+	{
+		ReadWrite = 0,
+		Read = 1,
+		None = 2
+	};
+
+	enum class RasterizerState : uint32_t
+	{
+		CullBack = 0,
+		CullFront,
+		CullNone
+	};
 
 	struct RenderCommand
 	{
@@ -29,17 +45,16 @@ namespace Volt
 		bool castAO = true;
 	};
 
-	enum class DepthState : uint32_t
+	struct InstancedRenderCommand
 	{
-		ReadWrite = 0,
-		Read = 1,
-		None = 2
-	};
+		SubMesh subMesh;
 
-	enum class RasterizerState : uint32_t
-	{
-		CullBack = 0,
-		CullFront,
-		CullNone
+		std::vector<gem::mat4> boneTransforms;
+		std::vector<InstanceData> objectDataIds;
+
+		Ref<Mesh> mesh;
+		Ref<SubMaterial> material;
+
+		uint32_t count = 0;
 	};
 }

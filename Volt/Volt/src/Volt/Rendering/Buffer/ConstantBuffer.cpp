@@ -40,7 +40,7 @@ namespace Volt
 
 			Renderer::SubmitResourceChange([data = dataBuffer, buffer = myBuffer]() 
 				{
-					auto context = GraphicsContext::GetContext();
+					auto context = GraphicsContext::GetImmediateContext();
 
 					D3D11_MAPPED_SUBRESOURCE subresource;
 					VT_DX_CHECK(context->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
@@ -50,7 +50,7 @@ namespace Volt
 		}
 		else
 		{
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 
 			D3D11_MAPPED_SUBRESOURCE subresource;
 			VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
@@ -60,9 +60,54 @@ namespace Volt
 
 	}
 
+	void ConstantBuffer::RT_SetData(const void* aData, uint32_t aSize)
+	{
+		auto context = GraphicsContext::GetDeferredContext();
+
+		D3D11_MAPPED_SUBRESOURCE subresource;
+		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
+		memcpy(subresource.pData, aData, aSize);
+		context->Unmap(myBuffer.Get(), 0);
+	}
+
 	void ConstantBuffer::Bind(uint32_t aSlot)
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+
+		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
+		{
+			context->VSSetConstantBuffers(aSlot, 1, myBuffer.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Pixel) != ShaderStage::None)
+		{
+			context->PSSetConstantBuffers(aSlot, 1, myBuffer.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Compute) != ShaderStage::None)
+		{
+			context->CSSetConstantBuffers(aSlot, 1, myBuffer.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Domain) != ShaderStage::None)
+		{
+			context->DSSetConstantBuffers(aSlot, 1, myBuffer.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Hull) != ShaderStage::None)
+		{
+			context->HSSetConstantBuffers(aSlot, 1, myBuffer.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Geometry) != ShaderStage::None)
+		{
+			context->GSSetConstantBuffers(aSlot, 1, myBuffer.GetAddressOf());
+		}
+	}
+
+	void ConstantBuffer::RT_Bind(uint32_t aSlot)
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 
 		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
 		{
@@ -102,7 +147,13 @@ namespace Volt
 
 	void ConstantBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+		context->Unmap(myBuffer.Get(), 0);
+	}
+
+	void ConstantBuffer::RT_Unmap()
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 		context->Unmap(myBuffer.Get(), 0);
 	}
 

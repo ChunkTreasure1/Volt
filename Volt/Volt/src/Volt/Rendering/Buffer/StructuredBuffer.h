@@ -29,11 +29,17 @@ namespace Volt
 		void SetData(const T* data, uint32_t count);
 		
 		void Bind(uint32_t slot) const;
+		void RT_Bind(uint32_t slot) const;
 		void AddStage(ShaderStage stage);
 		
 		template<typename T>
 		T* Map();
+
+		template<typename T>
+		T* RT_Map();
+
 		void Unmap();
+		void RT_Unmap();
 
 		static Ref<StructuredBuffer> Create(uint32_t elementSize, uint32_t count, ShaderStage usageStage, bool shaderWriteable = false);
 
@@ -56,7 +62,7 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(count <= myMaxCount, "The data cannot be larger than the buffer!");
 			
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		D3D11_MAPPED_SUBRESOURCE subresource;
 		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
@@ -67,7 +73,17 @@ namespace Volt
 	template<typename T>
 	inline T* StructuredBuffer::Map()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+
+		D3D11_MAPPED_SUBRESOURCE subresource{};
+		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
+
+		return reinterpret_cast<T*>(subresource.pData);
+	}
+	template<typename T>
+	inline T* StructuredBuffer::RT_Map()
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 
 		D3D11_MAPPED_SUBRESOURCE subresource{};
 		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));

@@ -20,7 +20,7 @@ namespace Volt
 
 	void ComputePipeline::Execute(uint32_t aGroupX, uint32_t aGroupY, uint32_t aGroupZ)
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		const size_t maxSRVs = gem::max(myImagesT.size(), myTexturesT.size());
 		std::vector<ID3D11ShaderResourceView*> allSRVs{ maxSRVs, nullptr };
@@ -63,7 +63,7 @@ namespace Volt
 
 	void ComputePipeline::Clear()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		const size_t maxSRVs = gem::max(myTexturesT.size(), myImagesT.size());
 		if (maxSRVs > 0)

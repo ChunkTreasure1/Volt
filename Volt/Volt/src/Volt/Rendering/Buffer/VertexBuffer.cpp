@@ -51,7 +51,7 @@ namespace Volt
 
 	void VertexBuffer::SetData(const void* aData, uint32_t aSize)
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		D3D11_MAPPED_SUBRESOURCE data;
 		context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &data);
@@ -61,16 +61,27 @@ namespace Volt
 
 	void VertexBuffer::Bind(uint32_t aSlot) const
 	{
-		auto context = GraphicsContext::GetContext();
-
+		auto context = GraphicsContext::GetImmediateContext();
 		const uint32_t offset = 0;
+		context->IASetVertexBuffers(aSlot, 1, myBuffer.GetAddressOf(), &myStride, &offset);
+	}
 
+	void VertexBuffer::RT_Bind(uint32_t aSlot) const
+	{
+		auto context = GraphicsContext::GetDeferredContext();
+		const uint32_t offset = 0;
 		context->IASetVertexBuffers(aSlot, 1, myBuffer.GetAddressOf(), &myStride, &offset);
 	}
 
 	void VertexBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+		context->Unmap(myBuffer.Get(), 0);
+	}
+
+	void VertexBuffer::RT_Unmap()
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 		context->Unmap(myBuffer.Get(), 0);
 	}
 

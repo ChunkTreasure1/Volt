@@ -304,6 +304,18 @@ namespace Volt
 				myVignetteSettings.width = comp.width;
 			});
 
+#ifdef VT_THREADED_RENDERING
+		Renderer::Begin("Test");
+
+		Renderer::BeginPass(myDeferredPass, aCamera);
+		Renderer::DispatchRenderCommandsInstanced();
+		Renderer::EndPass();
+
+		Renderer::End();
+
+		Renderer::SyncAndWait();
+#else
+
 		Renderer::SetDepthState(DepthState::ReadWrite);
 		Renderer::ResetStatistics();
 		Renderer::Begin(myContext);
@@ -382,7 +394,7 @@ namespace Volt
 		// Decals
 		{
 			VT_PROFILE_SCOPE("SceneRenderer::Decals");
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 
 			Renderer::BeginSection("Decals");
 
@@ -407,7 +419,7 @@ namespace Volt
 			Renderer::SetRasterizerState(RasterizerState::CullFront);
 			Renderer::BeginPass(mySkyboxPass, aCamera);
 
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 			context->PSSetShaderResources(11, 1, sceneEnvironment.radianceMap->GetSRV().GetAddressOf());
 
 			mySkyboxData.intensity = sceneEnvironment.intensity;
@@ -430,7 +442,7 @@ namespace Volt
 			Renderer::SetDepthState(DepthState::ReadWrite);
 			Renderer::BeginPass(myForwardPass, aCamera);
 
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 
 			context->PSSetShaderResources(11, 1, Renderer::GetDefaultData().brdfLut->GetSRV().GetAddressOf());
 			context->PSSetShaderResources(12, 1, sceneEnvironment.irradianceMap->GetSRV().GetAddressOf());
@@ -468,6 +480,7 @@ namespace Volt
 
 		Renderer::End();
 		Renderer::SetDepthState(DepthState::ReadWrite);
+#endif
 	}
 
 	void SceneRenderer::OnRenderRuntime()
@@ -1076,7 +1089,7 @@ namespace Volt
 
 			// AO Composite
 			{
-				auto context = GraphicsContext::GetContext();
+				auto context = GraphicsContext::GetImmediateContext();
 				Renderer::BeginFullscreenPass(myAOCompositePass, aCamera);
 
 				context->PSSetShaderResources(0, 1, myHBAOBlurPass[1].framebuffer->GetColorAttachment(0)->GetSRV().GetAddressOf());
@@ -1122,7 +1135,7 @@ namespace Volt
 				Renderer::EndPass();
 			}
 
-			auto context = GraphicsContext::GetContext(); // #TODO: Find better way to bind textures here
+			auto context = GraphicsContext::GetImmediateContext(); // #TODO: Find better way to bind textures here
 
 			// Jump Flood Init
 			{
@@ -1203,7 +1216,7 @@ namespace Volt
 
 		// Height Fog
 		{
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 
 			myHeightFogPass.framebuffer->SetColorAttachment(lastFramebuffer->GetColorAttachment(0), 0);
 			Renderer::BeginFullscreenPass(myHeightFogPass, aCamera);
@@ -1224,7 +1237,7 @@ namespace Volt
 		// FXAA
 		if (myFXAASettings.enabled)
 		{
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 
 			Renderer::BeginFullscreenPass(myFXAAPass, aCamera);
 
@@ -1254,7 +1267,7 @@ namespace Volt
 
 		// Gamma Correction
 		{
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 			Renderer::BeginFullscreenPass(myGammaCorrectionPass, aCamera);
 
 			context->PSSetShaderResources(0, 1, myVignettePass.framebuffer->GetColorAttachment(0)->GetSRV().GetAddressOf());
@@ -1273,7 +1286,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		Renderer::BeginSection("Deferred Shading");
 
@@ -1307,7 +1320,7 @@ namespace Volt
 		Renderer::BeginSection("Bloom");
 
 		Ref<Image2D> lastSource = sourceImage;
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		// Downsample
 		{
@@ -1367,7 +1380,7 @@ namespace Volt
 	void SceneRenderer::HBAOPass(Ref<Camera> aCamera)
 	{
 		Renderer::BeginAnnotatedSection("HBAO");
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		const gem::mat4& projectionMat = aCamera->GetProjection();
 		const float width = (float)myHBAOPass.framebuffer->GetWidth();

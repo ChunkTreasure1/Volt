@@ -37,8 +37,11 @@ namespace Volt
 			D3D_FEATURE_LEVEL_11_0
 		};
 
-		VT_DX_CHECK(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, myDevice.GetAddressOf(), &maxSupportedFeatureLevel, myContext.GetAddressOf()));
-		myContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)myAnnotations.GetAddressOf());
+		VT_DX_CHECK(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, myDevice.GetAddressOf(), &maxSupportedFeatureLevel, myImmediateContext.GetAddressOf()));
+		myImmediateContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)myImmediateAnnotations.GetAddressOf());
+	
+		myDevice->CreateDeferredContext(0, myDeferredContext.GetAddressOf());
+		myDeferredContext->QueryInterface(__uuidof(ID3DUserDefinedAnnotation), (void**)myDeferredAnnotations.GetAddressOf());
 	}
 
 	void GraphicsContext::Shutdown()
@@ -50,7 +53,11 @@ namespace Volt
 		debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 		debug->Release();
 #endif
-		myContext = nullptr;
+		myImmediateAnnotations = nullptr;
+		myDeferredAnnotations = nullptr;
+
+		myDeferredContext = nullptr;
+		myImmediateContext = nullptr;
 		myDevice = nullptr;
 
 	}

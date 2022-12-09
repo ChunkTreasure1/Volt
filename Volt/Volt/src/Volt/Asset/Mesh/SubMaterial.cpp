@@ -50,6 +50,30 @@ namespace Volt
 		}
 	}
 
+	void SubMaterial::RT_Bind(bool aBindShader)
+	{
+		if (aBindShader)
+		{
+			myShader->RT_Bind();
+
+			if (myMaterialBuffer)
+			{
+				myMaterialBuffer->RT_SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size);
+				if (myMaterialBufferDirty)
+				{
+					myMaterialBufferDirty = false;
+				}
+
+				myMaterialBuffer->RT_Bind(MATERIAL_BUFFER_BINDING);
+			}
+		}
+
+		for (const auto& [binding, texture] : myTextures)
+		{
+			texture->RT_Bind(binding);
+		}
+	}
+
 	void SubMaterial::UpdateBuffer(bool deferr)
 	{
 		if (myMaterialBuffer)

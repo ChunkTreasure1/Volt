@@ -37,8 +37,13 @@ namespace Volt
 
 	void Texture2D::Bind(uint32_t aSlot) const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+		context->PSSetShaderResources(aSlot, 1, myImage->GetSRV().GetAddressOf()); // TODO: How should we handle other shaders?
+	}
 
+	void Texture2D::RT_Bind(uint32_t aSlot) const
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 		context->PSSetShaderResources(aSlot, 1, myImage->GetSRV().GetAddressOf()); // TODO: How should we handle other shaders?
 	}
 

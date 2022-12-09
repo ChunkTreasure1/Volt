@@ -25,15 +25,19 @@ namespace Volt
 
 		inline static GraphicsContext& Get() { return *myInstance; }
 		inline static ComPtr<ID3D11Device> GetDevice() { return myInstance->myDevice; }
-		inline static ComPtr<ID3D11DeviceContext> GetContext() { return myInstance->myContext; }
-		inline static ComPtr<ID3DUserDefinedAnnotation> GetAnnotations() { return myInstance->myAnnotations; }
+		inline static ComPtr<ID3D11DeviceContext> GetImmediateContext() { return myInstance->myImmediateContext; }
+		inline static ComPtr<ID3D11DeviceContext> GetDeferredContext() { return myInstance->myDeferredContext; }
+		inline static ComPtr<ID3DUserDefinedAnnotation> GetImmediateAnnotations() { return myInstance->myImmediateAnnotations; }
+		inline static ComPtr<ID3DUserDefinedAnnotation> GetDeferredAnnotations() { return myInstance->myDeferredAnnotations; }
 
 		static Ref<GraphicsContext> Create(GLFWwindow* aWindow);
 
 	private:
 		ComPtr<ID3D11Device> myDevice = nullptr;
-		ComPtr<ID3D11DeviceContext> myContext = nullptr;
-		ComPtr<ID3DUserDefinedAnnotation> myAnnotations = nullptr;
+		ComPtr<ID3D11DeviceContext> myImmediateContext = nullptr;
+		ComPtr<ID3D11DeviceContext> myDeferredContext = nullptr;
+		ComPtr<ID3DUserDefinedAnnotation> myImmediateAnnotations = nullptr;
+		ComPtr<ID3DUserDefinedAnnotation> myDeferredAnnotations = nullptr;
 
 		GLFWwindow* myWindow;
 

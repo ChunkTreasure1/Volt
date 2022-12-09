@@ -27,7 +27,42 @@ namespace Volt
 
 	void StructuredBuffer::Bind(uint32_t slot) const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+
+		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
+		{
+			context->VSSetShaderResources(slot, 1, mySRV.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Pixel) != ShaderStage::None)
+		{
+			context->PSSetShaderResources(slot, 1, mySRV.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Compute) != ShaderStage::None)
+		{
+			context->CSSetShaderResources(slot, 1, mySRV.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Domain) != ShaderStage::None)
+		{
+			context->DSSetShaderResources(slot, 1, mySRV.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Hull) != ShaderStage::None)
+		{
+			context->HSSetShaderResources(slot, 1, mySRV.GetAddressOf());
+		}
+
+		if ((myUsageStages & ShaderStage::Geometry) != ShaderStage::None)
+		{
+			context->GSSetShaderResources(slot, 1, mySRV.GetAddressOf());
+		}
+	}
+
+	void StructuredBuffer::RT_Bind(uint32_t slot) const
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 
 		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
 		{
@@ -62,7 +97,13 @@ namespace Volt
 
 	void StructuredBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+		context->Unmap(myBuffer.Get(), 0);
+	}
+
+	void StructuredBuffer::RT_Unmap()
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 		context->Unmap(myBuffer.Get(), 0);
 	}
 
@@ -96,7 +137,7 @@ namespace Volt
 
 		if (resize)
 		{
-			auto context = GraphicsContext::GetContext();
+			auto context = GraphicsContext::GetImmediateContext();
 
 			D3D11_BUFFER_DESC oldBufferDesc{};
 			myBuffer->GetDesc(&oldBufferDesc);

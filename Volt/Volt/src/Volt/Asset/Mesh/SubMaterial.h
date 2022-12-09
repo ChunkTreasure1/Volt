@@ -19,6 +19,8 @@ namespace Volt
 		~SubMaterial();
 
 		void Bind(bool aBindShader = true);
+		void RT_Bind(bool aBindShader = true);
+
 		void SetTexture(uint32_t binding, Ref<Texture2D> texture);
 		void Invalidate();
 		void UpdateBuffer(bool deferr = false);

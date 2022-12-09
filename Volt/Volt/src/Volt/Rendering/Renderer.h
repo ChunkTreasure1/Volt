@@ -19,6 +19,9 @@
 
 using namespace Microsoft::WRL;
 
+#define VT_THREADED_RENDERING 1
+
+
 namespace Volt
 {
 	class SamplerState;
@@ -139,7 +142,7 @@ namespace Volt
 		static void Begin(const std::string& context = "");
 		static void End();
 
-		static void BeginPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear = true, bool isShadowPass = false, bool isAOPass = false, bool sortByCamera = false);
+		static void BeginPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear = true, bool isShadowPass = false, bool isAOPass = false);
 		static void EndPass();
 
 		static void BeginFullscreenPass(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear = true);
@@ -161,23 +164,19 @@ namespace Volt
 		static void Submit(Ref<Mesh> aMesh, Ref<SubMaterial> aMaterial, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
 		static void Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
 
+		static void SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, uint32_t id = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, uint32_t id = 0);
-
-		static void SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 
 		static void SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId = 0);
 
 		static void SubmitLine(const gem::vec3& aStart, const gem::vec3& aEnd, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-
 		static void SubmitLight(const PointLight& pointLight);
 		static void SubmitLight(const DirectionalLight& dirLight);
 
 		static void SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor = { 1.f });
-
 		static void SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-
 		static void SubmitResourceChange(const std::function<void()>&& func);
 
 		static void SetAmbianceMultiplier(float multiplier); // #TODO: we should probably not do it like this
@@ -241,9 +240,19 @@ namespace Volt
 		static void CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
 		static std::vector<RenderCommand> CullRenderCommands(const std::vector<RenderCommand>& renderCommands, Ref<Camera> camera);
 
-		static void SortRenderCommandsByCamera(std::vector<RenderCommand>& passCommands);
-
 		static ProfilingData& GetContextProfilingData();
+
+		///// Threading //////
+		static void RT_UpdatePerFrameBuffers();
+		static void RT_SortRenderCommands(std::vector<RenderCommand>& renderCommands);
+		static void RT_UploadObjectData(std::vector<RenderCommand>& renderCommands);
+		static void RT_BeginAnnotatedSection(const std::string& name);
+		static void RT_EndAnnotatedSection();
+
+		static void RT_UpdatePerPassBuffers();
+		static void RT_CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
+		static void RT_DispatchRenderCommandsInstanced();
+		//////////////////////
 
 		struct Samplers
 		{
@@ -261,19 +270,6 @@ namespace Volt
 
 			Ref<SamplerState> anisotropic;
 			Ref<SamplerState> shadow;
-		};
-
-		struct InstancedRenderCommand
-		{
-			SubMesh subMesh;
-
-			std::vector<gem::mat4> boneTransforms;
-			std::vector<InstanceData> objectDataIds;
-
-			Ref<Mesh> mesh;
-			Ref<SubMaterial> material;
-
-			uint32_t count = 0;
 		};
 
 		struct DecalRenderCommand

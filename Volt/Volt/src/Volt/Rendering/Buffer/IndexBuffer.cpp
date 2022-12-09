@@ -23,9 +23,15 @@ namespace Volt
 		myBuffer.Reset();
 	}
 
-	void IndexBuffer::Bind()
+	void IndexBuffer::Bind() const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+		context->IASetIndexBuffer(myBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	}
+
+	void IndexBuffer::RT_Bind() const
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 		context->IASetIndexBuffer(myBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	}
 

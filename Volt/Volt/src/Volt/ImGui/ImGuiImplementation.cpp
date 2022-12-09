@@ -165,7 +165,7 @@ namespace Volt
 		myWindowPtr = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 
 		ImGui_ImplGlfw_InitForVulkan(myWindowPtr, true);
-		ImGui_ImplDX11_Init(GraphicsContext::GetDevice().Get(), GraphicsContext::GetContext().Get());
+		ImGui_ImplDX11_Init(GraphicsContext::GetDevice().Get(), GraphicsContext::GetImmediateContext().Get());
 	}
 
 	ImGuiImplementation::~ImGuiImplementation()
@@ -195,7 +195,7 @@ namespace Volt
 		ImGui::PopStyleVar(1); // Don't forget to Pop()
 		ImGui::PopStyleColor(1);
 
-		GraphicsContext::GetAnnotations()->BeginEvent(L"Render ImGui");
+		GraphicsContext::GetImmediateAnnotations()->BeginEvent(L"Render ImGui");
 
 		//Rendering
 		ImGui::Render();
@@ -210,7 +210,7 @@ namespace Volt
 			app.GetWindow().GetSwapchain().Bind();
 		}
 
-		GraphicsContext::GetAnnotations()->EndEvent();
+		GraphicsContext::GetImmediateAnnotations()->EndEvent();
 	}
 
 	Scope<ImGuiImplementation> ImGuiImplementation::Create()

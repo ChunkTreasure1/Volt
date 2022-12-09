@@ -140,7 +140,7 @@ namespace Volt
 
 	void Swapchain::BeginFrame()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 #ifdef VT_PROFILE_GPU
 		for (auto& [name, c] : Renderer::GetProfilingData())
@@ -165,7 +165,7 @@ namespace Volt
 
 		Bind();
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 #ifdef VT_PROFILE_GPU
 		for (auto& [name, c] : Renderer::GetProfilingData())
@@ -181,7 +181,7 @@ namespace Volt
 
 	void Swapchain::Bind() const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		context->OMSetRenderTargets(1, myRenderTarget.GetAddressOf(), nullptr);
 		context->RSSetViewports(1, &myViewport);
 	}
@@ -202,7 +202,7 @@ namespace Volt
 
 		using namespace std::chrono_literals;
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		for (auto& [name, profilingData] : Renderer::GetProfilingData())
 		{

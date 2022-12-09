@@ -7,6 +7,15 @@ namespace Volt
 	{
 		myCommands.clear();
 		myRenderCommands.clear();
+		myCurrentRenderCommands.clear();
+	}
+
+	void CommandBuffer::Execute()
+	{
+		for (const auto& cmd : myCommands)
+		{
+			cmd();
+		}
 	}
 
 	void CommandBuffer::Submit(const std::function<void()> && func)

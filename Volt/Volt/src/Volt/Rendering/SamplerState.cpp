@@ -34,7 +34,14 @@ namespace Volt
 
 	void SamplerState::Bind(uint32_t aSlot)
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+		context->CSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
+		context->PSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
+	}
+
+	void SamplerState::RT_Bind(uint32_t aSlot)
+	{
+		auto context = GraphicsContext::GetDeferredContext();
 		context->CSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
 		context->PSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
 	}
