@@ -751,7 +751,7 @@ void AssetBrowserPanel::RenderDirectory(const Ref<DirectoryData> dirData)
 	auto flags = (dirData->selected ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None) | ImGuiTreeNodeFlags_OpenOnArrow;
 
 	bool open = UI::TreeNodeImage(EditorIconLibrary::GetIcon(EditorIcon::Directory), id, flags);
-	if (ImGui::IsItemClicked())
+	if (ImGui::IsItemClicked() && !dirData->selected)
 	{
 		dirData->selected = true;
 		myNextDirectory = dirData.get();
@@ -1168,9 +1168,12 @@ bool AssetBrowserPanel::RenderFilePopup(AssetData& data)
 
 	if (UI::BeginPopupItem(data.path.string(), ImGuiPopupFlags_MouseButtonRight))
 	{
-		DeselectAllAssets(myCurrentDirectory);
-		DeselectAllDirectories(myCurrentDirectory);
-		data.selected = true;
+		if (!data.selected)
+		{
+			DeselectAllAssets(myCurrentDirectory);
+			DeselectAllDirectories(myCurrentDirectory);
+			data.selected = true;
+		}
 
 		if (ImGui::MenuItem("Open Externally"))
 		{

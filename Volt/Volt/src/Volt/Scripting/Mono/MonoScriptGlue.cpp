@@ -7,6 +7,7 @@
 
 #include "Volt/Input/Input.h"
 #include <Volt/Components/Components.h>
+#include <Volt/Components/PhysicsComponents.h>
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -175,7 +176,7 @@ namespace Volt
 		return BodyType::Static;
 	}
 
-	inline static void RigidbodyComponent_SetBodyType(Wire::EntityId entity, BodyType* bodyType)
+	inline static void RigidbodyComponent_SetBodyType(Wire::EntityId entityId, BodyType* bodyType)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -193,7 +194,7 @@ namespace Volt
 
 		if (entity.HasComponent<RigidbodyComponent>())
 		{
-			return entity.GetComponent<RigidbodyComponent>();
+			return entity.GetComponent<RigidbodyComponent>().layerId;
 		}
 
 		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
@@ -225,7 +226,7 @@ namespace Volt
 		return 0.f;
 	}
 
-	inline static void RigidbodyComponent_SetMass(Wire::EntityId entityId float* mass)
+	inline static void RigidbodyComponent_SetMass(Wire::EntityId entityId, float* mass)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -236,7 +237,7 @@ namespace Volt
 		}
 	}
 
-	inline static void RigidbodyComponent_SetLinearDrag(Wire::EntityId entityId float* linearDrag)
+	inline static void RigidbodyComponent_SetLinearDrag(Wire::EntityId entityId, float* linearDrag)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -261,7 +262,7 @@ namespace Volt
 		return 0.f;
 	}
 
-	inline static void RigidbodyComponent_SetAngularDrag(Wire::EntityId entityId float* angularDrag)
+	inline static void RigidbodyComponent_SetAngularDrag(Wire::EntityId entityId, float* angularDrag)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -453,6 +454,36 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(RelationshipComponent_SetParent);
 			VT_ADD_INTERNAL_CALL(RelationshipComponent_GetParent);
 			VT_ADD_INTERNAL_CALL(RelationshipComponent_GetChildren);
+		}
+
+		// Rigidbody Component
+		{
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetCollisionDetectionType);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetCollisionDetectionType);
+			
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetDisableGravity);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetDisableGravity);
+			
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetIsKinematic);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetIsKinematic);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetLockFlags);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetLockFlags);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetBodyType);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetBodyType);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetLayerId);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetLayerId);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetMass);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetMass);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetLinearDrag);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetLinearDrag);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetAngularDrag);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetAngularDrag);
 		}
 
 		// Input
