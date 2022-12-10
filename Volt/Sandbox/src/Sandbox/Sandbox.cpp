@@ -65,7 +65,7 @@
 
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 #include <Volt/AI/NavMesh2/NavMesh2.h>
-#include "Volt/Audio/AudioManager.h"
+#include <Amp/AudioManager/AudioManager.h>
 
 #include <Game/Game.h>
 
@@ -487,8 +487,6 @@ void Sandbox::TransitionToNewScene()
 
 	myRuntimeScene = myStoredScene;
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-
-	AUDIOMANAGER.ResetListener();
 
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
@@ -1028,14 +1026,14 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		case SceneState::Edit:
 			myRuntimeScene->UpdateEditor(e.GetTimestep());
-			AUDIOMANAGER.StopAll();
 			initiated = false;
+			//#TODO(Andreas): AMP : Stop all sounds
 			break;
 
 		case SceneState::Play:
 			myRuntimeScene->Update(e.GetTimestep());
-			AUDIOMANAGER.Update(e.GetTimestep());
 
+			//#TODO(Andreas): AMP : Update Amp
 			// AI
 			myNavigationsSystem->OnRuntimeUpdate(e.GetTimestep());
 			break;

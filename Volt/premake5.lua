@@ -35,6 +35,7 @@ VoltRootDir = "../../"
 group "Core"
 include "Volt"
 include "Volt-ScriptCore"
+include "Amp"
 
 group "Game"
 include "Game"

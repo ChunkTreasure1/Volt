@@ -49,6 +49,7 @@ project "Launcher"
 	{
 		"src/",
 		"../Volt/src/",
+		"../Amp/src/",
 		"../Game/src/",
 
         "%{IncludeDir.GLFW}",

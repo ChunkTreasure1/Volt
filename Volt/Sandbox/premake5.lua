@@ -52,6 +52,7 @@ project "Sandbox"
 	{
 		"src/",
 		"../Volt/src/",
+		"../Amp/src/",
 		"../Game/src/",
 		"../NodeEditor/src",
 

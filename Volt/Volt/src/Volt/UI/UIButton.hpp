@@ -67,11 +67,11 @@ public:
 		if (myButtonFunction == "") { return false; }
 		if (myButtonFunction == "SetToGameState") 
 		{
-			AUDIOMANAGER.PlayOnce(AudioEvents::UIPlay);
+			
 		}
 		else 
 		{
-			AUDIOMANAGER.PlayOnce(AudioEvents::UIClick);
+			
 		}
 		return Volt::UIFunctionRegistry::Execute(myButtonFunction);
 	}
@@ -83,7 +83,7 @@ private:
 		{
 			originalScale = mySprite.GetScale();
 			mySprite.SetScale(originalScale + 0.1f);
-			AUDIOMANAGER.PlayOnce(AudioEvents::UIHover);
+			
 			isEntered = true;
 		}
 	}
