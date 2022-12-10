@@ -380,7 +380,7 @@ void Sandbox::NewScene()
 			auto ent = myRuntimeScene->CreateEntity();
 			auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Cube";
-			meshComp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh")->handle;
+			meshComp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh")->handle;
 		}
 
 		// Light

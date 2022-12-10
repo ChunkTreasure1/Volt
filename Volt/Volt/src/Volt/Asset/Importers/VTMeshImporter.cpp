@@ -90,8 +90,8 @@ namespace Volt
 			subMesh.indexStartOffset = *(uint32_t*)&totalData[offset];
 			offset += sizeof(uint32_t);
 
-			//subMesh.transform = *(gem::mat4*)&totalData[offset];
-			//offset += sizeof(gem::mat4);
+			subMesh.transform = *(gem::mat4*)&totalData[offset];
+			offset += sizeof(gem::mat4);
 
 			subMesh.GenerateHash();
 		}
@@ -132,7 +132,7 @@ namespace Volt
 			uint32_t indexCount = 0;
 			uint32_t vertexStartOffset = 0;
 			uint32_t indexStartOffset = 0;
-			//gem::mat4 transform = { 1.f };
+			gem::mat4 transform = { 1.f };
 		};
 
 		size_t dynamicSize = sizeof(SubMesh) * subMeshCount;
