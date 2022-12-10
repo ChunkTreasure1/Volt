@@ -1409,7 +1409,7 @@ void AssetBrowserPanel::RenderMeshPopup(const AssetData& data)
 				auto newFbxMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(fbxPath);
 				if (newFbxMesh && newFbxMesh->IsValid())
 				{
-					if (newFbxMesh->GetMaterial()->GetSubMaterials().size() != material->GetSubMaterials().size())
+					if (materialHandle != Volt::Asset::Null() && newFbxMesh->GetMaterial()->GetSubMaterials().size() != material->GetSubMaterials().size())
 					{
 						materialHandle = Volt::Asset::Null();
 						recreatedMaterial = true;

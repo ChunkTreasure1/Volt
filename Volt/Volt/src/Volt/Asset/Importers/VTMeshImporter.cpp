@@ -71,6 +71,23 @@ namespace Volt
 		mesh->myBoundingSphere.radius = *(float*)&totalData[offset];
 		offset += sizeof(float);
 
+		const uint32_t nameCount = *(uint32_t*)&totalData[offset];
+		offset += sizeof(uint32_t);
+
+		std::vector<std::string> names;
+		names.reserve(nameCount);
+
+		for (uint32_t i = 0; i < subMeshCount; i++)
+		{
+			const uint32_t nameSize = *(uint32_t*)&totalData[offset];
+			offset += sizeof(uint32_t);
+
+			const char* nameData = (const char*)&totalData[offset];
+			names.emplace_back(nameData);
+
+			offset += nameSize;
+		}
+
 		for (uint32_t i = 0; i < subMeshCount; i++)
 		{
 			auto& subMesh = mesh->mySubMeshes.emplace_back();
@@ -92,6 +109,11 @@ namespace Volt
 
 			subMesh.transform = *(gem::mat4*)&totalData[offset];
 			offset += sizeof(gem::mat4);
+
+			if (i < (uint32_t)names.size())
+			{
+				subMesh.name = names.at(i);
+			}
 
 			subMesh.GenerateHash();
 		}
@@ -124,6 +146,7 @@ namespace Volt
 		staticSize += sizeof(uint32_t); // Index count
 		staticSize += sizeof(gem::vec3); // Bounding Sphere center
 		staticSize += sizeof(float); // Bounding Sphere radius
+		staticSize += sizeof(uint32_t); // Name count
 
 		struct SubMesh
 		{
@@ -141,6 +164,6 @@ namespace Volt
 
 		const size_t totalSize = dynamicSize + staticSize;
 
-		return srcSize == totalSize;
-	} 
+		return srcSize >= totalSize;
+	}
 }
