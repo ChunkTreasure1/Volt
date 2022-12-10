@@ -41,13 +41,6 @@ project "Amp"
 		"%{IncludeDir.GEM}"
 	}
 
-	links
-	{
-		"GLFW",
-		"Optick",
-		"YamlCPP"
-	}
-
 	defines
 	{
 		"NOMINMAX",

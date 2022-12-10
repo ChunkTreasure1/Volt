@@ -77,6 +77,7 @@ project "Launcher"
     links
     {
         "Volt",
+		"Amp",
 
 		"Game",
 

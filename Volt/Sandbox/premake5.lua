@@ -85,6 +85,7 @@ project "Sandbox"
     {
         "Volt",
 		"NodeEditor",
+		"Amp",
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",
