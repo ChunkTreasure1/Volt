@@ -127,6 +127,8 @@ void AssetBrowserPanel::UpdateMainContent()
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 
+		bool reload = false;
+
 		//Draw outline
 		{
 			ImGuiStyle& style = ImGui::GetStyle();
@@ -154,12 +156,24 @@ void AssetBrowserPanel::UpdateMainContent()
 
 				for (const auto& subDir : myAssetsDirectory->subDirectories)
 				{
-					RenderDirectory(subDir);
+					reload |= RenderDirectory(subDir);
+					if (reload)
+					{
+						break;
+					}
 				}
 				UI::TreeNodePop();
 			}
 
 			ImGui::EndChild();
+		}
+
+		if (reload)
+		{
+			Reload();
+			ImGui::EndTable();
+			UI::PopId();
+			return;
 		}
 
 		ImGui::TableNextColumn();
@@ -637,8 +651,10 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 	ImGui::EndChild();
 }
 
-void AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData)
+bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData)
 {
+	bool reload = false;
+
 	const std::string id = dirData->path.stem().string() + "##" + dirData->path.string();
 	const bool selected = mySelectionManager->IsSelected(dirData.get());
 
@@ -651,11 +667,37 @@ void AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 		myNextDirectory = dirData.get();
 	}
 
-	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
+	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM", "ASSET_BROWSER_FOLDER"}))
 	{
-		Volt::AssetHandle handle = *(Volt::AssetHandle*)ptr;
-		Volt::AssetManager::Get().MoveAsset(handle, dirData->path);
-		Reload();
+		for (const auto& item : mySelectionManager->GetSelectedItems())
+		{
+			if (item->isDirectory && item != dirData.get())
+			{
+				const std::filesystem::path newPath = dirData->path / item->path.stem();
+				Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+				FileSystem::MoveFolder(item->path, newPath);
+			}
+		}
+
+		for (const auto& item : mySelectionManager->GetSelectedItems())
+		{
+			if (!item->isDirectory && item != dirData.get() && std::filesystem::exists(item->path))
+			{
+				// Check for thumbnail PNG
+				if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
+				{
+					const std::filesystem::path thumbnailPath = item->path.parent_path() / (item->path.filename().string() + ".vtthumb.png");
+					if (FileSystem::Exists(thumbnailPath))
+					{
+						FileSystem::Move(thumbnailPath, dirData->path);
+					}
+				}
+
+				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), dirData->path);
+			}
+		}
+
+		reload = true;
 	}
 
 	if (open)
@@ -673,6 +715,8 @@ void AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 
 		ImGui::TreePop();
 	}
+
+	return reload;
 }
 
 void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets)

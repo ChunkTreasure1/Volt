@@ -17,7 +17,9 @@ namespace AssetBrowser
 		const bool IsSelected(const Item* item) const;
 	
 		inline const bool IsAnySelected() const { return !mySelectedItems.empty(); }
+		inline const size_t GetSelectedCount() const { return mySelectedItems.size(); }
 		inline const std::vector<const Item*>& GetSelectedItems() const { return mySelectedItems; }
+
 	private:
 		std::vector<const Item*> mySelectedItems;
 	};

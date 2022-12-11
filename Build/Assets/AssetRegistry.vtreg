@@ -327,6 +327,8 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
   - Handle: 899736020468677305
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds.vtthumb.png
+  - Handle: 16337070533146925493
+    Path: Assets\Meshes\lutTest.dds.vtthumb.png
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 16571327495501234789
@@ -357,7 +359,7 @@ Assets:
     Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr.vtthumb.png
   - Handle: 9660052707747284857
     Path: Assets\Textures\lutTest.dds
-  - Handle: 18291355316050825177
+  - Handle: 5045631590908337605
     Path: Assets\Textures\lutTest.dds.vtthumb.png
   - Handle: 16625774910016950853
     Path: Editor\Materials\M_ColliderDebug.vtmat

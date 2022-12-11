@@ -223,6 +223,45 @@ namespace Volt
 		SaveAssetRegistry();
 	}
 
+	void AssetManager::MoveFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir)
+	{
+		if (!targetDir.empty() && !sourceDir.empty())
+		{
+			std::vector<std::filesystem::path> filesToMove{};
+
+			for (const auto& [path, handle] : myAssetRegistry)
+			{
+				if (path.string().contains(sourceDir.string()))
+				{
+					filesToMove.emplace_back(path);
+				}
+			}
+
+			std::vector<std::pair<std::filesystem::path, AssetHandle>> filesToAddToRegistry{};
+
+			for (const auto& p : filesToMove)
+			{
+				const auto& handle = GetAssetHandleFromPath(p);
+
+				std::string newPath = p.string();
+				const size_t dirLoc = newPath.find(sourceDir.string());
+
+				newPath.erase(dirLoc, sourceDir.string().length());
+				newPath.insert(dirLoc, targetDir.string());
+
+				filesToAddToRegistry.emplace_back(std::make_pair<>(newPath, handle));
+				myAssetRegistry.erase(p);
+			}
+
+			for (const auto& f : filesToAddToRegistry)
+			{
+				myAssetRegistry.emplace(f);
+			}
+		}
+
+		SaveAssetRegistry();
+	}
+
 	void AssetManager::RenameAsset(AssetHandle asset, const std::string& newName)
 	{
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);

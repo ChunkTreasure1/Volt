@@ -360,7 +360,8 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			{
 				ImGui::PushID((uint32_t)material->GetName().c_str());
 
-				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize();
+				constexpr float thumbnailSize = 85.f;
+				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemMinPos();
 

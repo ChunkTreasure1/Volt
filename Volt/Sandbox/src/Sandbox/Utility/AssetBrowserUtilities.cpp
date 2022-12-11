@@ -21,9 +21,8 @@ namespace AssetBrowser
 		return 10.f;
 	}
 
-	const ImVec2 AssetBrowserUtilities::GetBrowserItemSize()
+	const ImVec2 AssetBrowserUtilities::GetBrowserItemSize(const float thumbnailSize)
 	{
-		constexpr float thumbnailSize = 85.f;
 		constexpr float itemHeightModifier = 40.f;
 		const float itemPadding = GetBrowserItemPadding();
 

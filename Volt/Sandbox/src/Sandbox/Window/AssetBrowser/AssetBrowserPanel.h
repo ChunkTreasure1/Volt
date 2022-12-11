@@ -41,7 +41,7 @@ private:
 	std::vector<AssetBrowser::DirectoryItem*> FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory);
 
 	void RenderControlsBar(float height);
-	void RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData);
+	bool RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData);
 	void RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets);
 	void RenderFileInfo(const AssetData& data);
 	void RenderWindowRightClickPopup();

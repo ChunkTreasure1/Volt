@@ -32,6 +32,7 @@ namespace Volt
 
 		void MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir);
 		void MoveAsset(AssetHandle asset, const std::filesystem::path& targetDir);
+		void MoveFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir);
 		
 		void RenameAsset(AssetHandle asset, const std::string& newName);
 		void RenameAssetFolder(AssetHandle asset, const std::filesystem::path& targetPath);

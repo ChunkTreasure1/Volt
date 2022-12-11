@@ -26,7 +26,7 @@ namespace AssetBrowser
 
 		const bool selected = mySelectionManager->IsSelected(this);
 
-		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize();
+		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(myThumbnailSize);
 		const ImVec2 minChildPos = AssetBrowserUtilities::GetBrowserItemMinPos();
 		const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 
@@ -58,11 +58,82 @@ namespace AssetBrowser
 						UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
 						ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Directory)), { myThumbnailSize - itemPadding, myThumbnailSize - itemPadding });
 
+						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+						{
+							//Data being copied
+							ImGui::SetDragDropPayload("ASSET_BROWSER_FOLDER", path.wstring().c_str(), path.wstring().size() * sizeof(wchar_t), ImGuiCond_Once);
+							ImGui::TextUnformatted("Move:");
+							
+							constexpr uint32_t maxShownPaths = 3;
+							for (uint32_t i = 0; const auto& selected : mySelectionManager->GetSelectedItems())
+							{
+								if (i == maxShownPaths)
+								{
+									ImGui::TextUnformatted("...");
+									break;
+								}
+								ImGui::TextUnformatted(selected->path.string().c_str());
+								i++;
+							}
+
+							ImGui::EndDragDropSource();
+						}
+
 						if (void* ptr = UI::DragDropTarget("ASSET_BROWSER_ITEM"))
 						{
-							Volt::AssetHandle handle = *(Volt::AssetHandle*)ptr;
-							Volt::AssetManager::Get().MoveAsset(handle, path);
+							for (const auto& item : mySelectionManager->GetSelectedItems())
+							{
+								if (item->isDirectory && item != this)
+								{
+									const std::filesystem::path newPath = path / item->path.stem();
+									Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+									FileSystem::MoveFolder(item->path, newPath);
+								}
+							}
 
+							for (const auto& item : mySelectionManager->GetSelectedItems())
+							{
+								if (!item->isDirectory && item != this && std::filesystem::exists(item->path))
+								{
+									Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), path);
+								}
+							}
+
+							reload = true;
+							ImGui::EndChild();
+							goto renderEnd;
+						}
+
+						if (void* ptr = UI::DragDropTarget("ASSET_BROWSER_FOLDER"))
+						{
+							for (const auto& item : mySelectionManager->GetSelectedItems())
+							{
+								if (item->isDirectory && item != this)
+								{
+									const std::filesystem::path newPath = path / item->path.stem();
+									Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+									FileSystem::MoveFolder(item->path, newPath);
+								}
+							}
+
+							for (const auto& item : mySelectionManager->GetSelectedItems())
+							{
+								if (!item->isDirectory && item != this && std::filesystem::exists(item->path))
+								{
+									// Check for thumbnail PNG
+									if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
+									{
+										const std::filesystem::path thumbnailPath = item->path.parent_path() / (item->path.stem().string() + ".vtthumb.png");
+										if (FileSystem::Exists(thumbnailPath))
+										{
+											FileSystem::Move(thumbnailPath, path);
+										}
+									}
+
+									Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), path);
+								}
+							}
+							 
 							reload = true;
 							ImGui::EndChild();
 							goto renderEnd;
@@ -138,7 +209,14 @@ namespace AssetBrowser
 					isNext = true;
 				}
 
-				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered)
+				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && hovered && !mySelectionManager->IsSelected(this))
+				{
+					mySelectionManager->DeselectAll();
+					mySelectionManager->Select(this);
+				}
+
+				const bool mouseDown = (!mySelectionManager->IsAnySelected()) ? ImGui::IsMouseClicked(ImGuiMouseButton_Left) : ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+				if (mouseDown && hovered)
 				{
 					if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
 					{

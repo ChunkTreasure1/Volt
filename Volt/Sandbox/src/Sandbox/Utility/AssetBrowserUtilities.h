@@ -13,7 +13,7 @@ namespace AssetBrowser
 	public:
 		static const float GetBrowserItemPadding();
 
-		static const ImVec2 GetBrowserItemSize();
+		static const ImVec2 GetBrowserItemSize(const float thumbnailSize);
 		static const ImVec2 GetBrowserItemMinPos();
 
 		static const ImVec4 GetBrowserItemHoveredColor();

@@ -33,7 +33,7 @@ namespace AssetBrowser
 		const Ref<Volt::Image2D> icon = GetIcon();
 		const bool selected = mySelectionManager->IsSelected(this);
 
-		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize();
+		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(myThumbnailSize);
 		const ImVec2 minChildPos = AssetBrowserUtilities::GetBrowserItemMinPos();
 		const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 		const ImVec4 assetTypeColor = GetBackgroundColorFromType(type);
@@ -74,6 +74,19 @@ namespace AssetBrowser
 						{
 							//Data being copied
 							ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(Volt::AssetHandle), ImGuiCond_Once);
+							ImGui::TextUnformatted("Move:");
+
+							constexpr uint32_t maxShownPaths = 3;
+							for (uint32_t i = 0; const auto & selected : mySelectionManager->GetSelectedItems())
+							{
+								if (i == maxShownPaths)
+								{
+									ImGui::TextUnformatted("...");
+									break;
+								}
+								ImGui::TextUnformatted(selected->path.string().c_str());
+								i++;
+							}
 
 							// Viewport Drag drop
 							GlobalEditorStates::dragStartedInAssetBrowser = true;
@@ -160,7 +173,8 @@ namespace AssetBrowser
 					EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
 				}
 
-				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered)
+				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+				if (mouseDown && hovered)
 				{
 					if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
 					{
