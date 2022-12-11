@@ -1,16 +1,6 @@
 Assets:
-  - Handle: 16625774910016950853
-    Path: Assets\Materials\M_ColliderDebug.vtmat
-  - Handle: 16380998834732311984
+  - Handle: 7774068659233115813
     Path: Assets\Materials\M_FullMetal.vtmat
-  - Handle: 10940367927715095055
-    Path: Assets\Materials\M_NavMeshDebug.vtmat
-  - Handle: 1900435248564289851
-    Path: Assets\Materials\M_Test.vtmat
-  - Handle: 2932326804834381373
-    Path: Assets\Meshes\Editor\3dpil.vtmat
-  - Handle: 4235162108492430969
-    Path: Assets\Meshes\Editor\3dpil.vtmesh
   - Handle: 16064368788976833353
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_c.dds
   - Handle: 8939544165404260508
@@ -193,6 +183,8 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
+  - Handle: 13011991503512690028
+    Path: Assets\NewTestDir\M_TestMaterial.vtmat
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 16571327495501234789
@@ -225,6 +217,14 @@ Assets:
     Path: Assets\Textures\lutTest.dds
   - Handle: 18291355316050825177
     Path: Assets\Textures\lutTest.dds.vtthumb.png
+  - Handle: 16625774910016950853
+    Path: Editor\Materials\M_ColliderDebug.vtmat
+  - Handle: 10940367927715095055
+    Path: Editor\Materials\M_NavMeshDebug.vtmat
+  - Handle: 2932326804834381373
+    Path: Editor\Meshes\Arrow\3dpil.vtmat
+  - Handle: 4235162108492430969
+    Path: Editor\Meshes\Arrow\3dpil.vtmesh
   - Handle: 8187072774580702017
     Path: Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
   - Handle: 14833944971717813604

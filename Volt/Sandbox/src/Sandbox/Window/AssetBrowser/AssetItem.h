@@ -30,6 +30,7 @@ namespace AssetBrowser
 		bool RenderRightClickPopup();
 
 		float& myThumbnailSize;
+		bool myLastRenaming = false;
 
 		Ref<Volt::Image2D> GetIcon() const;
 		const ImVec4 GetBackgroundColorFromType(Volt::AssetType type);

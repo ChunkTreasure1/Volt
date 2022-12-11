@@ -2,6 +2,7 @@
 #include "DirectoryItem.h"
 
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
+#include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 #include "Sandbox/Utility/EditorIconLibrary.h"
@@ -18,7 +19,6 @@ namespace AssetBrowser
 	bool DirectoryItem::Render()
 	{
 		bool reload = false;
-		const bool wasRenamingAtStart = isRenaming;
 
 		ImGui::PushID(path.string().c_str());
 
@@ -85,15 +85,15 @@ namespace AssetBrowser
 					UI::ScopedColor background{ ImGuiCol_FrameBg, { 0.1f, 0.1f, 0.1f, 0.1f } };
 					if (ImGui::InputTextString(renameId.c_str(), &currentRenamingName, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						const std::filesystem::path newDir = path.parent_path() / currentRenamingName;
-
+						Rename(currentRenamingName);
+					
 						isRenaming = false;
 						reload = true;
 						ImGui::PopItemWidth();
 						goto renderEnd;
 					}
 
-					if (isRenaming != wasRenamingAtStart)
+					if (isRenaming != myLastRenaming)
 					{
 						const ImGuiID widgetId = ImGui::GetCurrentWindow()->GetID(renameId.c_str());
 						ImGui::SetFocusID(widgetId, ImGui::GetCurrentWindow());
@@ -102,6 +102,8 @@ namespace AssetBrowser
 
 					if (!ImGui::IsItemFocused())
 					{
+						Rename(currentRenamingName);
+
 						isRenaming = false;
 						reload = true;
 
@@ -112,7 +114,7 @@ namespace AssetBrowser
 
 					if (!ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
-						const std::filesystem::path newDir = path.parent_path() / currentRenamingName;
+						Rename(currentRenamingName);
 
 						isRenaming = false;
 						reload = true;
@@ -120,9 +122,12 @@ namespace AssetBrowser
 						ImGui::PopItemWidth();
 						goto renderEnd;
 					}
+
+					myLastRenaming = true;
 				}
 				else
 				{
+					myLastRenaming = false;
 					ImGui::TextWrapped("%s", path.stem().string().c_str());
 				}
 
@@ -190,5 +195,28 @@ namespace AssetBrowser
 		}
 
 		return removed;
+	}
+
+	void DirectoryItem::Rename(const std::string& newName)
+	{
+		const std::filesystem::path newDir = path.parent_path() / currentRenamingName;
+		RecursivlyRenameAssets(this, newDir);
+
+		FileSystem::Rename(path, currentRenamingName);
+	}
+
+	void DirectoryItem::RecursivlyRenameAssets(DirectoryItem* directory, const std::filesystem::path& targetDirectory)
+	{
+		for (const auto& asset : directory->assets)
+		{
+			const std::filesystem::path newPath = targetDirectory / asset->path.filename();
+			Volt::AssetManager::Get().RenameAssetFolder(asset->handle, newPath);
+		}
+
+		for (const auto& dir : directory->subDirectories)
+		{
+			const std::filesystem::path newPath = targetDirectory / dir->path.stem();
+			RecursivlyRenameAssets(dir.get(), newPath);
+		}
 	}
 }

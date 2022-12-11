@@ -1,4 +1,5 @@
 name: "Skybox"
+internal: true
 paths:
   - "Engine/Shaders/HLSL/Environment/Skybox_vs.hlsl"
   - "Engine/Shaders/HLSL/Environment/Skybox_ps.hlsl"

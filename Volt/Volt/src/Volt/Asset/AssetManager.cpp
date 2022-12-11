@@ -214,7 +214,13 @@ namespace Volt
 		FileSystem::Move(oldPath, targetDir);
 
 		myAssetRegistry.erase(oldPath);
+		auto it = myAssetCache.find(asset);
+		if (it != myAssetCache.end())
+		{
+			it->second->path = newPath;
+		}
 		myAssetRegistry.emplace(newPath, asset);
+		SaveAssetRegistry();
 	}
 
 	void AssetManager::RenameAsset(AssetHandle asset, const std::string& newName)
@@ -230,6 +236,20 @@ namespace Volt
 			it->second->path = newPath;
 		}
 		myAssetRegistry.emplace(newPath, asset);
+		SaveAssetRegistry();
+	}
+
+	void AssetManager::RenameAssetFolder(AssetHandle asset, const std::filesystem::path& targetPath)
+	{
+		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
+		myAssetRegistry.erase(oldPath);
+		auto it = myAssetCache.find(asset);
+		if (it != myAssetCache.end())
+		{
+			it->second->path = targetPath;
+		}
+		myAssetRegistry.emplace(targetPath, asset);
+		SaveAssetRegistry();
 	}
 
 	void AssetManager::RemoveAsset(AssetHandle asset)
@@ -239,6 +259,7 @@ namespace Volt
 		myAssetCache.erase(asset);
 
 		FileSystem::Remove(path);
+		SaveAssetRegistry();
 	}
 
 	void AssetManager::RemoveFromRegistry(AssetHandle asset)
@@ -293,7 +314,7 @@ namespace Volt
 		return asset;
 	}
 
-	AssetType AssetManager::GetAssetTypeFromHandle(const AssetHandle& handle) const
+	AssetType AssetManager::GetAssetTypeFromHandle(const AssetHandle& handle)
 	{
 		return GetAssetTypeFromExtension(GetPathFromAssetHandle(handle).extension().string());
 	}
@@ -303,7 +324,7 @@ namespace Volt
 		return GetAssetTypeFromExtension(path.extension().string());
 	}
 
-	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension) const
+	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
 		std::string ext = Utils::ToLower(extension);
 		if (!s_assetExtensionsMap.contains(ext)) [[unlikely]]
@@ -316,17 +337,17 @@ namespace Volt
 
 	AssetHandle AssetManager::GetAssetHandleFromPath(const std::filesystem::path& path)
 	{
-		if (!myAssetRegistry.contains(path))
+		if (!Get().myAssetRegistry.contains(path))
 		{
-			myAssetRegistry[path] = AssetHandle{};
+			Get().myAssetRegistry[path] = AssetHandle{};
 		}
 
-		return myAssetRegistry.at(path);
+		return Get().myAssetRegistry.at(path);
 	}
 
-	std::filesystem::path AssetManager::GetPathFromAssetHandle(AssetHandle handle) const
+	std::filesystem::path AssetManager::GetPathFromAssetHandle(AssetHandle handle)
 	{
-		for (const auto& [path, asset] : myAssetRegistry)
+		for (const auto& [path, asset] : Get().myAssetRegistry)
 		{
 			if (asset == handle)
 			{
@@ -337,7 +358,7 @@ namespace Volt
 		return "";
 	}
 
-	std::string AssetManager::GetExtensionFromAssetType(AssetType type) const
+	std::string AssetManager::GetExtensionFromAssetType(AssetType type)
 	{
 		for (const auto& [ext, asset] : s_assetExtensionsMap)
 		{

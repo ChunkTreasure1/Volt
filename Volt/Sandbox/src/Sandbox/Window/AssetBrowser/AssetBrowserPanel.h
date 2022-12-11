@@ -38,7 +38,6 @@ private:
 	bool OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e);
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
 
-	Ref<DirectoryData> ProcessDirectory(const std::filesystem::path& path, Ref<DirectoryData> parent);
 	std::vector<AssetBrowser::DirectoryItem*> FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory);
 
 	void RenderControlsBar(float height);
@@ -100,11 +99,10 @@ private:
 	Ref<Volt::AnimatedCharacter> myNewAnimatedCharacter;
 
 
-	Ref<AssetBrowser::DirectoryItem> ProcessTestDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
-	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myTestDirectories;
+	Ref<AssetBrowser::DirectoryItem> ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
+	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myDirectories;
 	Ref<AssetBrowser::SelectionManager> mySelectionManager;
 
-	AssetBrowser::DirectoryItem* myCurrentTestDirectory;
-	AssetBrowser::DirectoryItem* myNextTestDirectory = nullptr;
-
+	AssetBrowser::DirectoryItem* myCurrentDirectory = nullptr;
+	AssetBrowser::DirectoryItem* myNextDirectory = nullptr;
 };

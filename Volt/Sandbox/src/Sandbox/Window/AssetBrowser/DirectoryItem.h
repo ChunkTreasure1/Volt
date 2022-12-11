@@ -24,6 +24,10 @@ namespace AssetBrowser
 
 	private:
 		bool RenderRightClickPopup();
+		void Rename(const std::string& newName);
+		void RecursivlyRenameAssets(DirectoryItem* directory, const std::filesystem::path& targetDirectory);
+
 		float& myThumbnailSize;
+		bool myLastRenaming = false;
 	};
 }

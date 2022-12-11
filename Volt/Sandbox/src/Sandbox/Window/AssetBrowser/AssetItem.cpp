@@ -27,7 +27,6 @@ namespace AssetBrowser
 	bool AssetItem::Render()
 	{
 		bool reload = false;
-		const bool wasRenamingAtStart = isRenaming;
 
 		ImGui::PushID((uint32_t)handle);
 
@@ -116,7 +115,7 @@ namespace AssetBrowser
 						goto renderEnd;
 					}
 
-					if (isRenaming != wasRenamingAtStart)
+					if (isRenaming != myLastRenaming)
 					{
 						const ImGuiID widgetId = ImGui::GetCurrentWindow()->GetID(renameId.c_str());
 						ImGui::SetFocusID(widgetId, ImGui::GetCurrentWindow());
@@ -145,10 +144,12 @@ namespace AssetBrowser
 						goto renderEnd;
 					}
 
+					myLastRenaming = true;
 					ImGui::PopItemWidth();
 				}
 				else
 				{
+					myLastRenaming = false;
 					ImGui::TextWrapped("%s", path.stem().string().c_str());
 				}
 

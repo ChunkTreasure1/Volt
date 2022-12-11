@@ -2,7 +2,6 @@
 #include "Application.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Mesh/MaterialRegistry.h"
 
 #include "Volt/Animation/AnimationManager.h"
 
@@ -58,7 +57,6 @@ namespace Volt
 		ConstantBufferRegistry::Initialize();
 		Renderer::InitializeBuffers();
 		ShaderRegistry::Initialize();
-		MaterialRegistry::Initialize();
 		Renderer::Initialize();
 
 #ifdef VT_ENABLE_MONO	
@@ -96,7 +94,6 @@ namespace Volt
 #endif
 
 		Renderer::Shutdown();
-		MaterialRegistry::Shutdown();
 		ShaderRegistry::Shutdown();
 		ConstantBufferRegistry::Shutdown();
 		Log::Shutdown();

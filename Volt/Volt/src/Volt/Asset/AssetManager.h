@@ -33,6 +33,7 @@ namespace Volt
 		void MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir);
 		void MoveAsset(AssetHandle asset, const std::filesystem::path& targetDir);
 		void RenameAsset(AssetHandle asset, const std::string& newName);
+		void RenameAssetFolder(AssetHandle asset, const std::filesystem::path& targetPath);
 		void RemoveAsset(AssetHandle asset);
 
 		void RemoveFromRegistry(AssetHandle asset);
@@ -50,12 +51,12 @@ namespace Volt
 		Ref<Asset> GetAssetRaw(AssetHandle assetHandle);
 		Ref<Asset> QueueAssetRaw(AssetHandle assetHandle);
 
-		AssetType GetAssetTypeFromHandle(const AssetHandle& handle) const;
-		AssetType GetAssetTypeFromPath(const std::filesystem::path& path);
-		AssetType GetAssetTypeFromExtension(const std::string& extension) const;
-		AssetHandle GetAssetHandleFromPath(const std::filesystem::path& path);
-		std::filesystem::path GetPathFromAssetHandle(AssetHandle handle) const;
-		std::string GetExtensionFromAssetType(AssetType type) const;
+		static AssetType GetAssetTypeFromHandle(const AssetHandle& handle);
+		static AssetType GetAssetTypeFromPath(const std::filesystem::path& path);
+		static AssetType GetAssetTypeFromExtension(const std::string& extension);
+		static std::filesystem::path GetPathFromAssetHandle(AssetHandle handle);
+		static AssetHandle GetAssetHandleFromPath(const std::filesystem::path& path);
+		static std::string GetExtensionFromAssetType(AssetType type);
 
 		inline static AssetManager& Get() { return *s_instance; }
 
@@ -76,6 +77,12 @@ namespace Volt
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args&&... args);
+
+		template<typename T>
+		static const std::vector<Ref<T>> GetAllCachedAssetsOfType();
+
+		template<typename T>
+		static const std::vector<std::filesystem::path> GetAllAssetsOfType();
 
 	private:
 		struct LoadJob
@@ -222,5 +229,36 @@ namespace Volt
 		Get().SaveAssetRegistry();
 
 		return asset;
+	}
+	template<typename T>
+	inline const std::vector<Ref<T>> AssetManager::GetAllCachedAssetsOfType()
+	{
+		std::vector<Ref<T>> result{};
+
+		for (const auto& [handle, asset] : Get().myAssetCache)
+		{
+			if (asset->GetType() == T::GetStaticType())
+			{
+				result.push_back(reinterpret_pointer_cast<T>(asset));
+			}
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	inline const std::vector<std::filesystem::path> AssetManager::GetAllAssetsOfType()
+	{
+		std::vector<std::filesystem::path> result{};
+
+		for (const auto& [path, handle] : Get().myAssetRegistry)
+		{
+			if (GetAssetTypeFromPath(path) == T::GetStaticType())
+			{
+				result.emplace_back(path);
+			}
+		}
+
+		return result;
 	}
 }

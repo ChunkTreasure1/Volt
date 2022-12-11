@@ -72,30 +72,30 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene)
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
 
 
-	myTestDirectories[FileSystem::GetAssetsPath()] = ProcessTestDirectory(FileSystem::GetAssetsPath(), nullptr);
-	myTestDirectories[FileSystem::GetEnginePath()] = ProcessTestDirectory(FileSystem::GetEnginePath(), nullptr);
+	myDirectories[FileSystem::GetAssetsPath()] = ProcessDirectory(FileSystem::GetAssetsPath(), nullptr);
+	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
-	myEngineDirectory = myTestDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myTestDirectories[FileSystem::GetAssetsPath()].get();
+	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
+	myAssetsDirectory = myDirectories[FileSystem::GetAssetsPath()].get();
 
-	myCurrentTestDirectory = myAssetsDirectory;
+	myCurrentDirectory = myAssetsDirectory;
 	GenerateAssetPreviewsInCurrentDirectory();
 
-	myDirectoryButtons.emplace_back(myCurrentTestDirectory);
+	myDirectoryButtons.emplace_back(myCurrentDirectory);
 }
 
 void AssetBrowserPanel::UpdateMainContent()
 {
 	float cellSize = myThumbnailSize + myThumbnailPadding;
 
-	if (myNextTestDirectory)
+	if (myNextDirectory)
 	{
 		mySelectionManager->DeselectAll();
-		myCurrentTestDirectory = myNextTestDirectory;
-		myNextTestDirectory = nullptr;
+		myCurrentDirectory = myNextDirectory;
+		myNextDirectory = nullptr;
 
 		myDirectoryButtons.clear();
-		myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentTestDirectory);
+		myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentDirectory);
 		GenerateAssetPreviewsInCurrentDirectory();
 	}
 
@@ -145,7 +145,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			if (ImGui::IsItemClicked())
 			{
 				mySelectionManager->DeselectAll();
-				myNextTestDirectory = myAssetsDirectory;
+				myNextDirectory = myAssetsDirectory;
 			}
 
 			if (open)
@@ -197,6 +197,8 @@ void AssetBrowserPanel::UpdateMainContent()
 				{
 					RenderView();
 				}
+
+				RenderWindowRightClickPopup();
 
 				ImGui::PopStyleColor();
 			}
@@ -290,13 +292,13 @@ bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 				std::string tempName = originalName;
 
 				uint32_t i = 0;
-				while (FileSystem::Exists(myCurrentTestDirectory->path / (tempName + path.extension().string())))
+				while (FileSystem::Exists(myCurrentDirectory->path / (tempName + path.extension().string())))
 				{
 					tempName = originalName + " (" + std::to_string(i) + ")";
 					i++;
 				}
 
-				const std::filesystem::path targetPath = myCurrentTestDirectory->path / (tempName + path.extension().string());
+				const std::filesystem::path targetPath = myCurrentDirectory->path / (tempName + path.extension().string());
 				FileSystem::Copy(path, targetPath);
 
 				const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromPath(targetPath);
@@ -364,46 +366,7 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 	return false;
 }
 
-Ref<DirectoryData> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, Ref<DirectoryData> parent)
-{
-	Ref<DirectoryData> dirData = CreateRef<DirectoryData>();
-	dirData->path = path;
-	dirData->parentDir = parent.get();
-
-	for (const auto& entry : std::filesystem::directory_iterator(path))
-	{
-		if (!entry.is_directory())
-		{
-			AssetData assetData;
-			assetData.path = entry;
-			assetData.type = Volt::AssetManager::Get().GetAssetTypeFromPath(entry);
-
-			if (assetData.type != Volt::AssetType::None && !assetData.path.filename().string().contains(".vtthumb.png"))
-			{
-				if (myAssetMask == Volt::AssetType::None || (myAssetMask & assetData.type) != Volt::AssetType::None)
-				{
-					assetData.handle = Volt::AssetManager::Get().GetAssetHandleFromPath(entry);
-					dirData->assets.emplace_back(assetData);
-				}
-			}
-		}
-		else
-		{
-			auto nextDirData = ProcessDirectory(entry, dirData);
-			if ((!nextDirData->assets.empty() || !nextDirData->subDirectories.empty()) || myAssetMask == Volt::AssetType::None)
-			{
-				dirData->subDirectories.emplace_back(nextDirData);
-			}
-		}
-	}
-
-	std::sort(dirData->subDirectories.begin(), dirData->subDirectories.end(), [](const Ref<DirectoryData>& a, const Ref<DirectoryData>& b) { return a->path.string() < b->path.string(); });
-	std::sort(dirData->assets.begin(), dirData->assets.end(), [](const AssetData& a, const AssetData& b) { return a.path.stem().string() < b.path.stem().string(); });
-
-	return dirData;
-}
-
-Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessTestDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
+Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
 {
 	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), path, myThumbnailSize);
 	dirData->parentDirectory = parent;
@@ -425,7 +388,7 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessTestDirectory(const s
 		}
 		else
 		{
-			auto nextDirData = ProcessTestDirectory(entry.path(), dirData.get());
+			auto nextDirData = ProcessDirectory(entry.path(), dirData.get());
 			if ((!nextDirData->assets.empty() || !nextDirData->subDirectories.empty()) || myAssetMask == Volt::AssetType::None)
 			{
 				dirData->subDirectories.emplace_back(nextDirData);
@@ -503,9 +466,9 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 					myHasSearchQuery = false;
 					mySearchQuery.clear();
 
-					if (myCurrentTestDirectory->path != FileSystem::GetAssetsPath() && myCurrentTestDirectory->path != FileSystem::GetEnginePath())
+					if (myCurrentDirectory->path != FileSystem::GetAssetsPath() && myCurrentDirectory->path != FileSystem::GetEnginePath())
 					{
-						myNextTestDirectory = myCurrentTestDirectory->parentDirectory;
+						myNextDirectory = myCurrentDirectory->parentDirectory;
 
 						offsetToRemove = (uint32_t)(myDirectoryButtons.size() - 1);
 						shouldRemove = true;
@@ -555,7 +518,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
 					{
-						myNextTestDirectory = myDirectoryButtons[i];
+						myNextDirectory = myDirectoryButtons[i];
 
 						offsetToRemove = (int32_t)(i + 1);
 						shouldRemove = true;
@@ -593,11 +556,11 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 					myShowEngineAssets = (bool)currentValue;
 					if (currentValue == 0)
 					{
-						myCurrentTestDirectory = myAssetsDirectory;
+						myCurrentDirectory = myAssetsDirectory;
 					}
 					else
 					{
-						myCurrentTestDirectory = myEngineDirectory;
+						myCurrentDirectory = myEngineDirectory;
 					}
 
 				}
@@ -685,7 +648,7 @@ void AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 	if (ImGui::IsItemClicked() && !selected)
 	{
 		mySelectionManager->Select(dirData.get());
-		myNextTestDirectory = dirData.get();
+		myNextDirectory = dirData.get();
 	}
 
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
@@ -716,7 +679,7 @@ void AssetBrowserPanel::RenderView()
 {
 	bool reload = false;
 
-	for (const auto& dir : myCurrentTestDirectory->subDirectories)
+	for (const auto& dir : myCurrentDirectory->subDirectories)
 	{
 		if (dir->Render())
 		{
@@ -726,7 +689,7 @@ void AssetBrowserPanel::RenderView()
 
 		if (dir->isNext)
 		{
-			myNextTestDirectory = dir.get();
+			myNextDirectory = dir.get();
 			dir->isNext = false;
 		}
 
@@ -739,7 +702,7 @@ void AssetBrowserPanel::RenderView()
 		Reload();
 	}
 
-	for (const auto& asset : myCurrentTestDirectory->assets)
+	for (const auto& asset : myCurrentDirectory->assets)
 	{
 		if (asset->Render())
 		{
@@ -793,21 +756,21 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 			std::string tempName = originalName;
 
 			uint32_t i = 0;
-			while (FileSystem::Exists(myCurrentTestDirectory->path / tempName))
+			while (FileSystem::Exists(myCurrentDirectory->path / tempName))
 			{
 				tempName = originalName + " (" + std::to_string(i) + ")";
 				i++;
 			}
 
-			FileSystem::CreateFolder(myCurrentTestDirectory->path / tempName);
+			FileSystem::CreateFolder(myCurrentDirectory->path / tempName);
 			Reload();
 
-			auto dirIt = std::find_if(myCurrentTestDirectory->subDirectories.begin(), myCurrentTestDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
+			auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
 				{
 					return data->path.stem().string() == tempName;
 				});
 
-			if (dirIt != myCurrentTestDirectory->subDirectories.end())
+			if (dirIt != myCurrentDirectory->subDirectories.end())
 			{
 				(*dirIt)->isRenaming = true;
 				(*dirIt)->currentRenamingName = tempName;
@@ -897,27 +860,27 @@ void AssetBrowserPanel::DeleteFilesModal()
 
 void AssetBrowserPanel::Reload()
 {
-	const std::filesystem::path currentPath = myCurrentTestDirectory ? myCurrentTestDirectory->path : FileSystem::GetAssetsPath();
+	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : FileSystem::GetAssetsPath();
 
-	myCurrentTestDirectory = nullptr;
-	myNextTestDirectory = nullptr;
+	myCurrentDirectory = nullptr;
+	myNextDirectory = nullptr;
 
-	myTestDirectories[FileSystem::GetAssetsPath()] = ProcessTestDirectory(FileSystem::GetAssetsPath(), nullptr);
-	myTestDirectories[FileSystem::GetEnginePath()] = ProcessTestDirectory(FileSystem::GetEnginePath(), nullptr);
+	myDirectories[FileSystem::GetAssetsPath()] = ProcessDirectory(FileSystem::GetAssetsPath(), nullptr);
+	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
-	myEngineDirectory = myTestDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myTestDirectories[FileSystem::GetAssetsPath()].get();
+	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
+	myAssetsDirectory = myDirectories[FileSystem::GetAssetsPath()].get();
 
 	//Find directory
-	myCurrentTestDirectory = FindDirectoryWithPath(currentPath);
-	if (!myCurrentTestDirectory)
+	myCurrentDirectory = FindDirectoryWithPath(currentPath);
+	if (!myCurrentDirectory)
 	{
-		myCurrentTestDirectory = myAssetsDirectory;
+		myCurrentDirectory = myAssetsDirectory;
 	}
 
 	//Setup new file path buttons
 	myDirectoryButtons.clear();
-	myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentTestDirectory);
+	myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentDirectory);
 
 	GenerateAssetPreviewsInCurrentDirectory();
 }
@@ -996,7 +959,7 @@ void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<Asset
 AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPath(const std::filesystem::path& path)
 {
 	std::vector<Ref<AssetBrowser::DirectoryItem>> dirList;
-	for (const auto& dir : myTestDirectories)
+	for (const auto& dir : myDirectories)
 	{
 		dirList.emplace_back(dir.second);
 	}
@@ -1032,7 +995,7 @@ void AssetBrowserPanel::CreatePrefabAndSetupEntities(Wire::EntityId entity)
 	std::string name = tagComp.tag + ".vtprefab";
 	name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 
-	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(myCurrentTestDirectory->path, name, myEditorScene->GetRegistry(), entity);
+	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(myCurrentDirectory->path, name, myEditorScene->GetRegistry(), entity);
 	Volt::AssetManager::Get().SaveAsset(prefab);
 
 	SetupEntityAsPrefab(entity, prefab->handle);
@@ -1099,7 +1062,7 @@ void AssetBrowserPanel::RecursiceRenameFolderContents(DirectoryData* aDir, const
 
 void AssetBrowserPanel::GenerateAssetPreviewsInCurrentDirectory()
 {
-	for (const auto& asset : myCurrentTestDirectory->assets)
+	for (const auto& asset : myCurrentDirectory->assets)
 	{
 		switch (asset->type)
 		{
@@ -1132,7 +1095,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 	tempName = originalName;
 
-	while (FileSystem::Exists(myCurrentTestDirectory->path / (tempName + extension)))
+	while (FileSystem::Exists(myCurrentDirectory->path / (tempName + extension)))
 	{
 		tempName = originalName + " (" + std::to_string(i) + ")";
 		i++;
@@ -1142,7 +1105,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 	{
 		case Volt::AssetType::Material:
 		{
-			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(myCurrentTestDirectory->path, tempName + extension);
+			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(myCurrentDirectory->path, tempName + extension);
 			material->SetName(std::filesystem::path(tempName).stem().string());
 			material->CreateSubMaterial(Volt::ShaderRegistry::Get("Deferred"));
 			Volt::AssetManager::Get().SaveAsset(material);
@@ -1153,7 +1116,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::AnimatedCharacter:
 		{
-			myNewCharacterData.destination = myCurrentTestDirectory->path;
+			myNewCharacterData.destination = myCurrentDirectory->path;
 			myNewCharacterData.name = tempName;
 
 			UI::OpenModal("New Character##assetBrowser");
@@ -1178,7 +1141,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::ParticlePreset:
 		{
-			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(myCurrentTestDirectory->path, tempName + extension);
+			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(myCurrentDirectory->path, tempName + extension);
 			Volt::AssetManager::Get().SaveAsset(particlePreset);
 
 			newAssetHandle = particlePreset->handle;
@@ -1186,14 +1149,14 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		}
 	}
 
-	auto assetIt = std::find_if(myCurrentTestDirectory->assets.begin(), myCurrentTestDirectory->assets.end(), [&tempName](const auto& lhs) 
+	Reload();
+
+	auto assetIt = std::find_if(myCurrentDirectory->assets.begin(), myCurrentDirectory->assets.end(), [&tempName](const auto& lhs)
 		{
 			return lhs->path.stem().string() == tempName;
 		});
 
-	Reload();
-
-	if (assetIt != myCurrentTestDirectory->assets.end())
+	if (assetIt != myCurrentDirectory->assets.end())
 	{
 		(*assetIt)->currentRenamingName = tempName;
 		(*assetIt)->isRenaming = true;
