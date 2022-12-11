@@ -1,6 +1,6 @@
 #pragma once
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/AssetCommon.h"
+#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 
 #include "Sandbox/Utility/EditorUtilities.h"
 
@@ -15,6 +15,13 @@ namespace Volt
 {
 	class Texture2D;
 	class Scene;
+}
+
+namespace AssetBrowser
+{
+	class DirectoryItem;
+	class AssetItem;
+	class SelectionManager;
 }
 
 class AssetBrowserPanel : public EditorWindow
@@ -32,38 +39,26 @@ private:
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
 
 	Ref<DirectoryData> ProcessDirectory(const std::filesystem::path& path, Ref<DirectoryData> parent);
-	std::vector<DirectoryData*> FindParentDirectoriesOfDirectory(DirectoryData* directory);
+	std::vector<AssetBrowser::DirectoryItem*> FindParentDirectoriesOfDirectory(AssetBrowser::DirectoryItem* directory);
 
 	void RenderControlsBar(float height);
-	void RenderDirectory(const Ref<DirectoryData> dirData);
-	void RenderView(std::vector<Ref<DirectoryData>>& dirData, std::vector<AssetData>& assetData);
-	bool RenderFilePopup(AssetData& data);
-	bool RenderFolderPopup(DirectoryData* data);
+	void RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData);
+	void RenderView();
 	void RenderFileInfo(const AssetData& data);
+	void RenderWindowRightClickPopup();
 
 	void DeleteFilesModal();
 
 	void Reload();
-	void RenderDirectories(std::vector<Ref<DirectoryData>>& dirData);
-	void RenderAssets(std::vector<AssetData>& assetData);
-
-	void RenderShaderPopup(const AssetData& data);
-	void RenderMeshSourcePopup(const AssetData& data);
-	void RenderMeshPopup(const AssetData& data);
-	void RenderAnimationPopup(const AssetData& data);
-	void RenderSkeletonPopup(const AssetData& data);
 
 	void Search(const std::string& query);
-	void FindFoldersAndFilesWithQuery(const std::vector<Ref<DirectoryData>>& dirList, std::vector<Ref<DirectoryData>>& directories, std::vector<AssetData>& assets, const std::string& query);
+	void FindFoldersAndFilesWithQuery(const std::vector<Ref<AssetBrowser::DirectoryItem>>& dirList, std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query);
 
-	DirectoryData* FindDirectoryWithPath(const std::filesystem::path& path);
-	DirectoryData* FindDirectoryWithPathRecursivly(const std::vector<Ref<DirectoryData>> dirList, const std::filesystem::path& path);
+	AssetBrowser::DirectoryItem* FindDirectoryWithPath(const std::filesystem::path& path);
+	AssetBrowser::DirectoryItem* FindDirectoryWithPathRecursivly(const std::vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path);
 
 	void CreatePrefabAndSetupEntities(Wire::EntityId entity);
 	void SetupEntityAsPrefab(Wire::EntityId entity, Volt::AssetHandle prefabId);
-
-	void DeselectAllDirectories(DirectoryData* rootDir);
-	void DeselectAllAssets(DirectoryData* rootDir);
 
 	void RecursiveRemoveFolderContents(DirectoryData* aDir);
 	void RecursiceRenameFolderContents(DirectoryData* aDir, const std::filesystem::path& newDir);
@@ -73,39 +68,25 @@ private:
 
 	Ref<Volt::Scene>& myEditorScene;
 
-	std::unordered_map<std::string, Ref<DirectoryData>> myDirectories;
 	std::unordered_map<Volt::AssetHandle, Ref<AssetPreview>> myAssetPreviews;
 
 	std::vector<Ref<AssetPreview>> myPreviewsToUpdate;
-	std::vector<DirectoryData*> myDirectoryButtons;
+	std::vector<AssetBrowser::DirectoryItem*> myDirectoryButtons;
 
-	DirectoryData* myCurrentDirectory = nullptr;
-	DirectoryData* myNextDirectory = nullptr;
-
-	DirectoryData* myEngineDirectory = nullptr;
-	DirectoryData* myAssetsDirectory = nullptr;
+	AssetBrowser::DirectoryItem* myEngineDirectory = nullptr;
+	AssetBrowser::DirectoryItem* myAssetsDirectory = nullptr;
 
 	float myThumbnailPadding = 16.f;
 	float myThumbnailSize = 85.f;
 	bool myShowEngineAssets = false;
 	bool myHasSearchQuery = false;
 	bool myShouldDeleteSelected = false;
-	
-	Volt::AssetHandle myCurrentlyRenamingAsset = Volt::Asset::Null();
-	Volt::AssetHandle myLastRenamingAsset = Volt::Asset::Null();
-	std::string myCurrentlyRenamingAssetName;
-
-	DirectoryData* myCurrentlyRenamingDirectory = nullptr;
-	DirectoryData* myLastRenamingDirectory = nullptr;
-	std::string myCurrentlyRenamingDirectoryName;
 
 	gem::vec2 myViewBounds[2];
 
 	std::string mySearchQuery;
-	std::vector<Ref<DirectoryData>> mySearchDirectories;
-	std::vector<AssetData> mySearchAssets;
-
-	std::unordered_map<Volt::AssetType, Ref<Volt::Texture2D>> myAssetIcons;
+	std::vector<Ref<AssetBrowser::DirectoryItem>> mySearchDirectories;
+	std::vector<Ref<AssetBrowser::AssetItem>> mySearchAssets;
 
 	///// Mesh import data //////
 	AssetData myMeshToImport;
@@ -117,4 +98,13 @@ private:
 	///// Animated Character creation /////
 	NewCharacterData myNewCharacterData{};
 	Ref<Volt::AnimatedCharacter> myNewAnimatedCharacter;
+
+
+	Ref<AssetBrowser::DirectoryItem> ProcessTestDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
+	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myTestDirectories;
+	Ref<AssetBrowser::SelectionManager> mySelectionManager;
+
+	AssetBrowser::DirectoryItem* myCurrentTestDirectory;
+	AssetBrowser::DirectoryItem* myNextTestDirectory = nullptr;
+
 };

@@ -2,7 +2,7 @@
 #include "ViewportPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/UserSettingsManager.h"

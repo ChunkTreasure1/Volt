@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "SelectiveAssetBrowserPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Asset/AssetManager.h>

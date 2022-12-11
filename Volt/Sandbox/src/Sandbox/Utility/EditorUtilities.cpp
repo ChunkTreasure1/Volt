@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "EditorUtilities.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>

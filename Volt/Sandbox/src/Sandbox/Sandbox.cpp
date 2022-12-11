@@ -6,7 +6,7 @@
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
-#include "Sandbox/Window/AssetBrowserPanel.h"
+#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Window/CreatePanel.h"
 #include "Sandbox/Window/LogPanel.h"
 #include "Sandbox/Window/AnimationTreeEditor.h"
@@ -23,8 +23,9 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
-#include "Sandbox/Window/EditorLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/AssetIconLibrary.h"
+#include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
@@ -140,6 +141,7 @@ void Sandbox::OnAttach()
 	}
 
 	EditorIconLibrary::Initialize();
+	AssetIconLibrary::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
 
 	Volt::Application::Get().GetWindow().Maximize();
@@ -224,6 +226,7 @@ void Sandbox::OnDetach()
 	myGame = nullptr;
 
 	VersionControl::Shutdown();
+	AssetIconLibrary::Shutdowm();
 	EditorIconLibrary::Shutdown();
 }
 

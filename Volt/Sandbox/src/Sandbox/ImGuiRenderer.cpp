@@ -2,7 +2,7 @@
 #include "Sandbox.h"
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>

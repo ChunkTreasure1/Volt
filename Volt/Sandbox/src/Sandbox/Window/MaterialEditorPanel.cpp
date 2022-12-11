@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "MaterialEditorPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
@@ -334,6 +334,8 @@ void MaterialEditorPanel::UpdatePreview()
 
 void MaterialEditorPanel::UpdateSubMaterials()
 {
+	using namespace AssetBrowser;
+
 	ImGui::Begin("Sub materials");
 	{
 		if (mySelectedMaterial)

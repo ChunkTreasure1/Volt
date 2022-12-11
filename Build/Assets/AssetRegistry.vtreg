@@ -5,22 +5,36 @@ Assets:
     Path: Assets\Materials\M_FullMetal.vtmat
   - Handle: 10940367927715095055
     Path: Assets\Materials\M_NavMeshDebug.vtmat
+  - Handle: 1900435248564289851
+    Path: Assets\Materials\M_Test.vtmat
   - Handle: 2932326804834381373
     Path: Assets\Meshes\Editor\3dpil.vtmat
   - Handle: 4235162108492430969
     Path: Assets\Meshes\Editor\3dpil.vtmesh
   - Handle: 16064368788976833353
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_c.dds
+  - Handle: 8939544165404260508
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_c.dds.vtthumb.png
   - Handle: 773653731773011089
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_m.dds
+  - Handle: 17123043506680185661
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_m.dds.vtthumb.png
   - Handle: 4444257076546408062
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_n.dds
+  - Handle: 1405057957712162183
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_n.dds.vtthumb.png
   - Handle: 10401998868675885776
     Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_c.dds
+  - Handle: 12717973388659073461
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_c.dds.vtthumb.png
   - Handle: 13006918838546982570
     Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_m.dds
+  - Handle: 10458197093063795097
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_m.dds.vtthumb.png
   - Handle: 3923396619436279614
     Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_n.dds
+  - Handle: 4022956327438299136
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_n.dds.vtthumb.png
   - Handle: 7848357758191138748
     Path: Assets\Meshes\Primitives\Capsule.vtmesh
   - Handle: 9016504729640018304
@@ -181,20 +195,36 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
+  - Handle: 16571327495501234789
+    Path: Assets\Textures\FullMetal\T_FullMetal_N.dds.vtthumb.png
   - Handle: 2713074256263182464
     Path: Assets\Textures\FullMetal\T_FullMetal_c.dds
+  - Handle: 5554954938850865700
+    Path: Assets\Textures\FullMetal\T_FullMetal_c.dds.vtthumb.png
   - Handle: 14746645601432467892
     Path: Assets\Textures\FullMetal\T_FullMetal_m.dds
+  - Handle: 7825378870719609033
+    Path: Assets\Textures\FullMetal\T_FullMetal_m.dds.vtthumb.png
   - Handle: 9825013552701077123
     Path: Assets\Textures\HDRIs\kloppenheim_02_4k.hdr
+  - Handle: 6659359989947488615
+    Path: Assets\Textures\HDRIs\kloppenheim_02_4k.hdr.vtthumb.png
   - Handle: 14196038218015924795
     Path: Assets\Textures\HDRIs\moonless_golf_4k.hdr
+  - Handle: 9207518934507991952
+    Path: Assets\Textures\HDRIs\moonless_golf_4k.hdr.vtthumb.png
   - Handle: 14128002601943817176
     Path: Assets\Textures\HDRIs\newport_loft.hdr
+  - Handle: 8972359318681805287
+    Path: Assets\Textures\HDRIs\newport_loft.hdr.vtthumb.png
   - Handle: 9275899362807312744
     Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr
+  - Handle: 14539253010350785407
+    Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr.vtthumb.png
   - Handle: 9660052707747284857
     Path: Assets\Textures\lutTest.dds
+  - Handle: 18291355316050825177
+    Path: Assets\Textures\lutTest.dds.vtthumb.png
   - Handle: 8187072774580702017
     Path: Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
   - Handle: 14833944971717813604
