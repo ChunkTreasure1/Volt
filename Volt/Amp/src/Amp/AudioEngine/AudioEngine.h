@@ -14,6 +14,10 @@ struct Event
 	std::string Path;
 	bool isLoaded;
 	FMOD::Studio::EventDescription* FmodEventDesc = nullptr;
+
+	typedef std::unordered_map<int, FMOD::Studio::EventInstance*> InstanceMap;
+	InstanceMap instances;
+
 };
 
 struct Listener
@@ -29,19 +33,19 @@ struct Listener
 
 class AudioEngine
 {
-	FMOD::Studio::System* myStudioSystem = NULL;
-	FMOD::System* myCoreSystem = NULL;
+	FMOD::Studio::System* studioSystem = NULL;
+	FMOD::System* coreSystem = NULL;
 
-	FMOD::Studio::Bank* myMasterBank = NULL;
-	FMOD::Studio::Bank* myMasterStringBank = NULL;
+	FMOD::Studio::Bank* masterBank = NULL;
+	FMOD::Studio::Bank* masterStringBank = NULL;
 
 	typedef std::unordered_map<std::string, Event> EventMap;
 	typedef std::unordered_map<std::string, FMOD::Studio::Bank*> BankMap;
 
-	EventMap myEvents;
-	BankMap myBanks;
+	EventMap events;
+	BankMap banks;
 
-	Listener testListener;
+	Listener mainListener;
 
 public:
 	AudioEngine() = default;
@@ -71,13 +75,14 @@ public:
 
 	bool InitListener(int aListenerID, std::array<float,3> aPosition, std::array<float,3> aForwardDir, std::array<float,3> aUpVector);
 	bool InitListener(int aListenerID, gem::vec3 aPosition, gem::vec3 aForwardDir, gem::vec3 aUpVector);
+
 	bool UpdateListener(int aListenerID, std::array<float, 3> aPosition, std::array<float, 3> aForwardDir, std::array<float, 3> aUp, std::array<float, 3> aVelocity);
 	bool UpdateListener(int aListenerID, gem::vec3 aPosition, gem::vec3 aForwardDir, gem::vec3 aUp, gem::vec3 aVelocity = {0,0,0});
 
 	bool SetMixerVolume(const std::string& aBusName, float aVolume);
 
 private:
-	std::string myRootDirectory;
+	std::string rootDirectory;
 	bool isInitialized;
 	FMOD_RESULT lastResult = FMOD_OK;
 

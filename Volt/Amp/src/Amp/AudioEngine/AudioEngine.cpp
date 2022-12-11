@@ -8,23 +8,23 @@
 
 bool AudioEngine::Init(const std::string aFileDirectory)
 {
-	myRootDirectory = aFileDirectory;
+	rootDirectory = aFileDirectory;
 
-	if (!myRootDirectory.empty() && myRootDirectory.back() != '\\')
+	if (!rootDirectory.empty() && rootDirectory.back() != '\\')
 	{
-		myRootDirectory.append("\\");
+		rootDirectory.append("\\");
 	}
 
-	ErrorCheck_Critical(FMOD::Studio::System::create(&myStudioSystem));
+	ErrorCheck_Critical(FMOD::Studio::System::create(&studioSystem));
 
-	ErrorCheck_Critical(myStudioSystem->getCoreSystem(&myCoreSystem));
+	ErrorCheck_Critical(studioSystem->getCoreSystem(&coreSystem));
 
-	ErrorCheck_Critical(myCoreSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_STEREO, 0));
+	ErrorCheck_Critical(coreSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_STEREO, 0));
 
-	ErrorCheck_Critical(myStudioSystem->initialize(1024, FMOD_STUDIO_INIT_NORMAL | FMOD_STUDIO_INIT_LIVEUPDATE, FMOD_INIT_NORMAL, nullptr));
+	ErrorCheck_Critical(studioSystem->initialize(1024, FMOD_STUDIO_INIT_NORMAL | FMOD_STUDIO_INIT_LIVEUPDATE, FMOD_INIT_NORMAL, nullptr));
 
-	myCoreSystem->set3DNumListeners(1);
-	myCoreSystem->set3DSettings(1.f, 100.f, 1.f);
+	coreSystem->set3DNumListeners(1);
+	coreSystem->set3DSettings(1.f, 100.f, 1.f);
 
 	isInitialized = true;
 
@@ -33,40 +33,40 @@ bool AudioEngine::Init(const std::string aFileDirectory)
 
 void AudioEngine::Release()
 {
-	myStudioSystem->unloadAll();
-	myStudioSystem->release();
-	myCoreSystem->release();
+	studioSystem->unloadAll();
+	studioSystem->release();
+	coreSystem->release();
 }
 
 bool AudioEngine::LoadMasterBank(const std::string& aMasterFileName, const std::string& aMasterStringFileName, FMOD_STUDIO_LOAD_BANK_FLAGS)
 {
-	if (myStudioSystem == nullptr) { return false; }
+	if (studioSystem == nullptr) { return false; }
 
 	bool isOK = false;
 
-	isOK = ErrorCheck(myStudioSystem->loadBankFile((myRootDirectory + aMasterStringFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myMasterStringBank));
+	isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aMasterStringFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterStringBank));
 	
-	isOK = ErrorCheck(myStudioSystem->loadBankFile((myRootDirectory + aMasterFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myMasterBank));
+	isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aMasterFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank));
 
 	if (isOK)
 	{
-		myBanks[aMasterFileName] = myMasterBank;
+		banks[aMasterFileName] = masterBank;
 
 		//load all the files in the bank
 		FMOD::Studio::EventDescription* eventList[512]{};
 
 		int eventCount = 0;
-		myMasterBank->getEventCount(&eventCount);
+		masterBank->getEventCount(&eventCount);
 		if (eventCount > 0)
 		{
-			FMOD_RESULT result = myMasterBank->getEventList(&*eventList, 512, &eventCount);
+			FMOD_RESULT result = masterBank->getEventList(&*eventList, 512, &eventCount);
 			for (auto ptr : eventList)
 			{
 				char path[512];
 				int size = 0;
 				result = ptr->getPath(path, 512, &size);
 				std::string p(path);
-				myEvents[path] = { path, false, nullptr };
+				events[path] = { path, false, nullptr };
 			}
 		}
 	}
@@ -76,8 +76,8 @@ bool AudioEngine::LoadMasterBank(const std::string& aMasterFileName, const std::
 
 bool AudioEngine::UnloadBank(const std::string& aFileName)
 {
-	auto bank = myBanks.find(aFileName);
-	if (myBanks.find(aFileName) == myBanks.end())
+	auto bank = banks.find(aFileName);
+	if (banks.find(aFileName) == banks.end())
 	{
 		return false;
 	}
@@ -87,17 +87,17 @@ bool AudioEngine::UnloadBank(const std::string& aFileName)
 
 bool AudioEngine::LoadBank(const std::string& aFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags)
 {
-	if (myStudioSystem == nullptr) { return false; }
+	if (studioSystem == nullptr) { return false; }
 
-	if (myBanks.find(aFileName) != myBanks.end())
+	if (banks.find(aFileName) != banks.end())
 		return true;
 
 	FMOD::Studio::Bank* audioBank = nullptr;
-	bool isOK = ErrorCheck(myStudioSystem->loadBankFile((myRootDirectory + aFileName).c_str(), someFlags, &audioBank));
+	bool isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aFileName).c_str(), someFlags, &audioBank));
 
 	if (isOK)
 	{
-		myBanks[aFileName] = audioBank;
+		banks[aFileName] = audioBank;
 
 		//load all the files in the bank
 		FMOD::Studio::EventDescription* eventList[512]{};
@@ -113,7 +113,7 @@ bool AudioEngine::LoadBank(const std::string& aFileName, FMOD_STUDIO_LOAD_BANK_F
 				int size = 0;
 				result = ptr->getPath(path, 512, &size);
 				std::string p(path);
-				myEvents[path] = { path, false, nullptr };
+				events[path] = { path, false, nullptr };
 			}
 		}
 	}
@@ -125,17 +125,18 @@ void AudioEngine::Update()
 {
 	VT_PROFILE_FUNCTION();
 
-	myStudioSystem->update();
+	coreSystem->update();
+	studioSystem->update();
 }
 
 bool AudioEngine::LoadEvent(const std::string aEventPath)
 {
-	if (auto It = myEvents.find(aEventPath); It != myEvents.end())
+	if (auto It = events.find(aEventPath); It != events.end())
 	{
 		if (!It->second.isLoaded)
 		{
 			FMOD::Studio::EventDescription* eventDesc = nullptr;
-			ErrorCheck(myStudioSystem->getEvent(aEventPath.c_str(), &eventDesc));
+			ErrorCheck(studioSystem->getEvent(aEventPath.c_str(), &eventDesc));
 			if (eventDesc)
 			{
 				It->second.FmodEventDesc = eventDesc;
@@ -149,8 +150,8 @@ bool AudioEngine::LoadEvent(const std::string aEventPath)
 
 FMOD::Studio::EventInstance* AudioEngine::CreateEventInstance(const std::string aEventPath)
 {
-	auto foundEvent = myEvents.find(aEventPath);
-	if (foundEvent == myEvents.end() || !foundEvent->second.isLoaded)
+	auto foundEvent = events.find(aEventPath);
+	if (foundEvent == events.end() || !foundEvent->second.isLoaded)
 	{
 		LoadEvent(aEventPath);
 	}
@@ -172,12 +173,12 @@ bool AudioEngine::PlayEvent(FMOD::Studio::EventInstance* aEventInstance)
 
 bool AudioEngine::PlayOneShot(const std::string aEventPath)
 {
-	auto foundEvent = myEvents.find(aEventPath);
-	if (foundEvent == myEvents.end() || !foundEvent->second.isLoaded)
+	auto foundEvent = events.find(aEventPath);
+	if (foundEvent == events.end() || !foundEvent->second.isLoaded)
 	{
 		LoadEvent(aEventPath);
-		foundEvent = myEvents.find(aEventPath);
-		if (foundEvent == myEvents.end() || !foundEvent->second.isLoaded)
+		foundEvent = events.find(aEventPath);
+		if (foundEvent == events.end() || !foundEvent->second.isLoaded)
 			return false;
 	}
 
@@ -194,12 +195,12 @@ bool AudioEngine::PlayOneShot(const std::string aEventPath)
 
 bool AudioEngine::PlayOneShot(const std::string aEventPath, const std::string aEventParameter, const float aParameterValue)
 {
-	auto foundEvent = myEvents.find(aEventPath);
-	if (foundEvent == myEvents.end() || !foundEvent->second.isLoaded)
+	auto foundEvent = events.find(aEventPath);
+	if (foundEvent == events.end() || !foundEvent->second.isLoaded)
 	{
 		LoadEvent(aEventPath);
-		foundEvent = myEvents.find(aEventPath);
-		if (foundEvent == myEvents.end() || !foundEvent->second.isLoaded)
+		foundEvent = events.find(aEventPath);
+		if (foundEvent == events.end() || !foundEvent->second.isLoaded)
 			return false;
 	}
 
@@ -224,7 +225,7 @@ bool AudioEngine::StopEvent(FMOD::Studio::EventInstance* aEventInstance, bool im
 bool AudioEngine::StopAll(const int aStopMode)
 {
 	FMOD::Studio::Bus* aMasterBus = nullptr;
-	if (!myStudioSystem->getBus("bus:/", &aMasterBus))
+	if (!studioSystem->getBus("bus:/", &aMasterBus))
 	{
 		return aMasterBus->stopAllEvents(static_cast<FMOD_STUDIO_STOP_MODE>(aStopMode));
 	}
@@ -281,27 +282,6 @@ bool AudioEngine::ErrorCheck_Critical(FMOD_RESULT result)
 	return true;
 }
 
-bool AudioEngine::InitListener(int, std::array<float, 3> aPosition, std::array<float, 3> aForwardDir, std::array<float, 3> aUpVector)
-{
-	testListener.position.x = aPosition[0] * 0.1f;
-	testListener.position.y = aPosition[1] * 0.1f;
-	testListener.position.z = aPosition[2] * 0.1f;
-
-	testListener.up.x = aUpVector[0];
-	testListener.up.y = aUpVector[1];
-	testListener.up.z = aUpVector[2];
-
-	testListener.forward.x = aForwardDir[0];
-	testListener.forward.y = aForwardDir[1];
-	testListener.forward.z = aForwardDir[2];
-
-	testListener.attributes.position = testListener.position;
-	testListener.attributes.up = testListener.up;
-	testListener.attributes.forward = testListener.forward;
-
-	return ErrorCheck(myStudioSystem->setListenerAttributes(0, &testListener.attributes));
-}
-
 bool AudioEngine::InitListener(int aListenerID, gem::vec3 aPosition, gem::vec3 aForwardDir, gem::vec3 aUpVector)
 {
 	std::array<float, 3> position;
@@ -323,33 +303,55 @@ bool AudioEngine::InitListener(int aListenerID, gem::vec3 aPosition, gem::vec3 a
 	return (InitListener(aListenerID, position, forward, up));
 }
 
+bool AudioEngine::InitListener(int, std::array<float, 3> aPosition, std::array<float, 3> aForwardDir, std::array<float, 3> aUpVector)
+{
+	mainListener.position.x = aPosition[0] * 0.1f;
+	mainListener.position.y = aPosition[1] * 0.1f;
+	mainListener.position.z = aPosition[2] * 0.1f;
+
+	mainListener.up.x = aUpVector[0];
+	mainListener.up.y = aUpVector[1];
+	mainListener.up.z = aUpVector[2];
+
+	mainListener.forward.x = aForwardDir[0];
+	mainListener.forward.y = aForwardDir[1];
+	mainListener.forward.z = aForwardDir[2];
+
+	mainListener.attributes.position = mainListener.position;
+	mainListener.attributes.up = mainListener.up;
+	mainListener.attributes.forward = mainListener.forward;
+
+	return ErrorCheck(studioSystem->setListenerAttributes(0, &mainListener.attributes));
+}
+
+
 bool AudioEngine::UpdateListener(int, std::array<float, 3> aPosition, std::array<float, 3> aForwardDir, std::array<float, 3> aUpDir, std::array<float, 3> aVelocity)
 {
 	VT_PROFILE_FUNCTION();
 
-	testListener.position.x = aPosition[0];
-	testListener.position.y = aPosition[1];
-	testListener.position.z = aPosition[2];
+	mainListener.position.x = aPosition[0];
+	mainListener.position.y = aPosition[1];
+	mainListener.position.z = aPosition[2];
 
-	testListener.forward.x = aForwardDir[0];
-	testListener.forward.y = aForwardDir[1];
-	testListener.forward.z = aForwardDir[2];
+	mainListener.forward.x = aForwardDir[0];
+	mainListener.forward.y = aForwardDir[1];
+	mainListener.forward.z = aForwardDir[2];
 
-	testListener.up.x = aUpDir[0];
-	testListener.up.y = aUpDir[1];
-	testListener.up.z = aUpDir[2];
+	mainListener.up.x = aUpDir[0];
+	mainListener.up.y = aUpDir[1];
+	mainListener.up.z = aUpDir[2];
 
-	testListener.velocity.x = aVelocity[0];
-	testListener.velocity.y = aVelocity[1];
-	testListener.velocity.z = aVelocity[2];
+	mainListener.velocity.x = aVelocity[0];
+	mainListener.velocity.y = aVelocity[1];
+	mainListener.velocity.z = aVelocity[2];
 
-	testListener.attributes.position = testListener.position;
-	testListener.attributes.forward = testListener.forward;
-	testListener.attributes.up = testListener.up;
-	testListener.attributes.velocity = testListener.velocity;
+	mainListener.attributes.position = mainListener.position;
+	mainListener.attributes.forward = mainListener.forward;
+	mainListener.attributes.up = mainListener.up;
+	mainListener.attributes.velocity = mainListener.velocity;
 
-	ErrorCheck(myCoreSystem->set3DListenerAttributes(0, &testListener.position, &testListener.velocity, &testListener.forward, &testListener.up));
-	return ErrorCheck(myStudioSystem->setListenerAttributes(0, &testListener.attributes));
+	ErrorCheck(coreSystem->set3DListenerAttributes(0, &mainListener.position, &mainListener.velocity, &mainListener.forward, &mainListener.up));
+	return ErrorCheck(studioSystem->setListenerAttributes(0, &mainListener.attributes));
 }
 
 bool AudioEngine::UpdateListener(int aListenerID, gem::vec3 aPosition, gem::vec3 aForwardDir, gem::vec3 aUp, gem::vec3 aVelocity)
@@ -381,7 +383,7 @@ bool AudioEngine::UpdateListener(int aListenerID, gem::vec3 aPosition, gem::vec3
 bool AudioEngine::SetMixerVolume(const std::string& aBusName, float aVolume)
 {
 	FMOD::Studio::Bus* aBus = nullptr;
-	if (!myStudioSystem->getBus(aBusName.c_str(), &aBus))
+	if (!studioSystem->getBus(aBusName.c_str(), &aBus))
 	{
 		return aBus->setVolume(aVolume);
 	}

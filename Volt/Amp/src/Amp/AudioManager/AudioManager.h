@@ -33,6 +33,7 @@ namespace Amp
 		static void InitNewListener();
 
 		static void Update();
+		static void UpdateListener(ListenerData aListenerData);
 
 		//Event Handling
 
