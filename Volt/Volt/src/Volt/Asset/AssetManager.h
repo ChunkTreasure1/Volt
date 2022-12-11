@@ -32,12 +32,16 @@ namespace Volt
 
 		void MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir);
 		void MoveAsset(AssetHandle asset, const std::filesystem::path& targetDir);
+		
 		void RenameAsset(AssetHandle asset, const std::string& newName);
 		void RenameAssetFolder(AssetHandle asset, const std::filesystem::path& targetPath);
+
 		void RemoveAsset(AssetHandle asset);
+		void RemoveAsset(const std::filesystem::path& path);
 
 		void RemoveFromRegistry(AssetHandle asset);
 		void RemoveFromRegistry(const std::filesystem::path& path);
+		void RemoveFolderFromRegistry(const std::filesystem::path& path);
 
 		void ReloadAsset(AssetHandle handle);
 		void ReloadAsset(const std::filesystem::path& path);
@@ -45,6 +49,7 @@ namespace Volt
 		bool IsSourceFile(AssetHandle handle) const;
 		bool IsLoaded(AssetHandle handle) const;
 		bool ExistsInRegistry(AssetHandle handle) const;
+		bool ExistsInRegistry(const std::filesystem::path& path) const;
 
 		inline const std::map<std::filesystem::path, AssetHandle>& GetAssetRegistry() const { return myAssetRegistry; }
 

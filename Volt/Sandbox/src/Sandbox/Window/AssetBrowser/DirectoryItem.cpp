@@ -14,7 +14,9 @@ namespace AssetBrowser
 {
 	DirectoryItem::DirectoryItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize)
 		: Item(selectionManager, path), myThumbnailSize(thumbnailSize)
-	{}
+	{
+		isDirectory = true;
+	}
 
 	bool DirectoryItem::Render()
 	{

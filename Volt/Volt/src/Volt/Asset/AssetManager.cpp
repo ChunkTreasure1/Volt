@@ -262,6 +262,15 @@ namespace Volt
 		SaveAssetRegistry();
 	}
 
+	void AssetManager::RemoveAsset(const std::filesystem::path& path)
+	{
+		myAssetCache.erase(GetAssetHandleFromPath(path));
+		myAssetRegistry.erase(path);
+
+		FileSystem::Remove(path);
+		SaveAssetRegistry();
+	}
+
 	void AssetManager::RemoveFromRegistry(AssetHandle asset)
 	{
 		const std::filesystem::path path = GetPathFromAssetHandle(asset);
@@ -270,6 +279,8 @@ namespace Volt
 		{
 			myAssetRegistry.erase(path);
 			myAssetCache.erase(asset);
+		
+			SaveAssetRegistry();
 		}
 		else
 		{
@@ -284,6 +295,23 @@ namespace Volt
 			myAssetCache.erase(GetAssetHandleFromPath(path));
 			myAssetRegistry.erase(path);
 		}
+	}
+
+	void AssetManager::RemoveFolderFromRegistry(const std::filesystem::path& folderPath)
+	{
+		if (!folderPath.empty())
+		{
+			for (const auto& [path, handle] : myAssetRegistry)
+			{
+				if (path.string().contains(folderPath.string()))
+				{
+					myAssetCache.erase(GetAssetHandleFromPath(path));
+					myAssetRegistry.erase(path);
+				}
+			}
+		}
+
+		SaveAssetRegistry();
 	}
 
 	bool AssetManager::IsLoaded(AssetHandle handle) const
@@ -393,6 +421,11 @@ namespace Volt
 		}
 
 		return false;
+	}
+
+	bool AssetManager::ExistsInRegistry(const std::filesystem::path& path) const
+	{
+		return myAssetRegistry.contains(path);
 	}
 
 	void AssetManager::QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset)

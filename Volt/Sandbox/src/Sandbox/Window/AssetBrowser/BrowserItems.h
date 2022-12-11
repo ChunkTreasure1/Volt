@@ -16,6 +16,8 @@ namespace AssetBrowser
 
 		std::filesystem::path path;
 
+		bool isDirectory = false;
+
 	protected:
 		SelectionManager* mySelectionManager;
 	};
