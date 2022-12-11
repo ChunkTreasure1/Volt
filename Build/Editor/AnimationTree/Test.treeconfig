@@ -1,7 +1,7 @@
-CHRPath: C:\Users\andreas.isaksson\Documents\P6\VOLT\Build\Assets\Animations\Duke\CHR_DeepOne.vtchr
+CHRPath: Assets\Animations\Player.vtchr
 Nodes:
   0:
-    Name: ANIM_DukeOfTheDeep_Idle
+    Name: player_idle_anim
     ID: 1
     AnimationIndex: 0
     InputPin: 2
@@ -9,35 +9,19 @@ Nodes:
     OutputPin: 3
     OutputPinType: 0
   1:
-    Name: ANIM_DukeOfTheDeep_Spawn
+    Name: player_run_anim
     ID: 4
-    AnimationIndex: 4
+    AnimationIndex: 1
     InputPin: 5
     InputPinType: 0
     OutputPin: 6
     OutputPinType: 0
-  2:
-    Name: AMIN_theDeepOne_giveAbility
-    ID: 12
-    AnimationIndex: 3
-    InputPin: 13
-    InputPinType: 0
-    OutputPin: 14
-    OutputPinType: 0
 Links:
   0:
     linkID: 7
-    startPinID: 6
-    endPinID: 2
+    startPinID: 2
+    endPinID: 6
   1:
-    linkID: 15
-    startPinID: 14
-    endPinID: 5
-  2:
-    linkID: 16
-    startPinID: 3
-    endPinID: 5
-  3:
-    linkID: 17
-    startPinID: 14
-    endPinID: 2
+    linkID: 8
+    startPinID: 5
+    endPinID: 3
