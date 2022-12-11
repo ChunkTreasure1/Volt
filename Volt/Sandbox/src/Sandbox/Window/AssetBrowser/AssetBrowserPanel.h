@@ -42,7 +42,7 @@ private:
 
 	void RenderControlsBar(float height);
 	void RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData);
-	void RenderView();
+	void RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets);
 	void RenderFileInfo(const AssetData& data);
 	void RenderWindowRightClickPopup();
 

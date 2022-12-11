@@ -191,11 +191,11 @@ void AssetBrowserPanel::UpdateMainContent()
 
 				if (!myHasSearchQuery)
 				{
-					RenderView();
+					RenderView(myCurrentDirectory->subDirectories, myCurrentDirectory->assets);
 				}
 				else
 				{
-					RenderView();
+					RenderView(mySearchDirectories, mySearchAssets);
 				}
 
 				RenderWindowRightClickPopup();
@@ -675,11 +675,11 @@ void AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 	}
 }
 
-void AssetBrowserPanel::RenderView()
+void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets)
 {
 	bool reload = false;
 
-	for (const auto& dir : myCurrentDirectory->subDirectories)
+	for (const auto& dir : directories)
 	{
 		if (dir->Render())
 		{
@@ -702,7 +702,7 @@ void AssetBrowserPanel::RenderView()
 		Reload();
 	}
 
-	for (const auto& asset : myCurrentDirectory->assets)
+	for (const auto& asset : assets)
 	{
 		if (asset->Render())
 		{

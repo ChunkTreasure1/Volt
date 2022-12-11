@@ -49,7 +49,9 @@ namespace AssetBrowser
 			ImGui::BeginChild("item", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			{
 				UI::ShiftCursor(itemPadding / 2.f, 10.f);
-				UI::ScopedColor innerChild{ ImGuiCol_ChildBg, { assetTypeColor.x, assetTypeColor.y, assetTypeColor.z, assetTypeColor.w } };
+
+				constexpr float colorModifier = 0.6f;
+				UI::ScopedColor innerChild{ ImGuiCol_ChildBg, { assetTypeColor.x * colorModifier, assetTypeColor.y * colorModifier, assetTypeColor.z * colorModifier, assetTypeColor.w } };
 				ImGui::BeginChild("Image", { myThumbnailSize, myThumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 				{
 					// Right bar
