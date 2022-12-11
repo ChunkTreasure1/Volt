@@ -1,0 +1,21 @@
+#pragma once
+#include "Volt/Scene/Entity.h"
+#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Log/Log.h"
+
+class TestController : public Volt::ScriptBase
+{
+public:
+	TestController(const Volt::Entity& aEntity);
+
+	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<TestController>(aEntity); }
+	static WireGUID GetStaticGUID() { return "{2EF02AA8-E13C-4C5D-AB5E-78DCD24C0F13}"_guid; };
+	WireGUID GetGUID() override { return GetStaticGUID(); }
+
+private:
+
+	float myMoveSpeed = 0.f;
+
+	void OnAwake() override;
+	void OnUpdate(float aDeltaTime) override;
+};

@@ -5,11 +5,12 @@
 #include <Volt/Scripting/ScriptRegistry.h>
 #include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/Random.h>
 
 #include <Volt/VTCinema/Director.h>
 
 VTCinemaPanel::VTCinemaPanel(Ref<Volt::Scene>& aScene)
-	:EditorWindow("VOLT CINEMA", true), myCurrentScene(aScene)
+	:EditorWindow("VTCinema", true), myCurrentScene(aScene)
 {
 }
 
@@ -49,8 +50,19 @@ void VTCinemaPanel::UpdateCameraProperties()
 	auto& baseCamComp = selectedCam.GetComponent<Volt::CameraComponent>();
 	auto& vtCamComp = selectedCam.GetComponent<Volt::VTCamComponent>();
 
-	std::string labelName = "Volt Cam: " + selectedCam.GetComponent<Volt::TagComponent>().tag;
+	std::string labelName = "Cam: " + selectedCam.GetComponent<Volt::TagComponent>().tag;
 	ImGui::LabelText("##CamName", labelName.c_str());
+
+	ImGui::SameLine();
+	if (ImGui::Button("Set As Default"))
+	{
+		for (auto& cam : myVTCams)
+		{
+			cam.GetComponent<Volt::VTCamComponent>().isDefault = false;
+		}
+
+		vtCamComp.isDefault = true;
+	}
 
 	ImGui::Spacing();
 	ImGui::Separator();
@@ -72,12 +84,12 @@ void VTCinemaPanel::UpdateCameraProperties()
 
 	if (UI::BeginProperties("Transform")) 
 	{
-		UI::PropertyEntity("Target", myCurrentScene, vtCamComp.targetId);
+		UI::PropertyEntity("Target", myCurrentScene, vtCamComp.followId);
 
 		ImGui::SameLine();
 		if (ImGui::Button("Clear Target")) 
 		{
-			vtCamComp.targetId = 0;
+			vtCamComp.followId = 0;
 		}
 
 		UI::PropertyEntity("LookAt", myCurrentScene, vtCamComp.lookAtId);
@@ -88,9 +100,10 @@ void VTCinemaPanel::UpdateCameraProperties()
 			vtCamComp.lookAtId = 0;
 		}
 
-		if (vtCamComp.targetId != 0) 
+		if (vtCamComp.followId != 0)
 		{
 			UI::Property("Offset", vtCamComp.offset);
+			UI::Property("Damping", vtCamComp.damping);
 		}
 
 		UI::EndProperties();
@@ -143,7 +156,12 @@ void VTCinemaPanel::UpdateSetDetails()
 
 			char buf[32];
 
-			sprintf_s(buf, tagComp.tag.c_str(), n);
+			std::string camName = tagComp.tag;
+
+			if (myVTCams[n].GetComponent<Volt::VTCamComponent>().isDefault)
+				camName += " (default)";
+
+			sprintf_s(buf, camName.c_str(), n);
 
 			if (ImGui::Selectable(buf, selected == n))
 				selected = n;
@@ -290,9 +308,9 @@ void VTCinemaPanel::UpdateSelectedCamera()
 	Volt::Entity selectedEnt = myVTCams[mySelectedEntity];
 	auto& vtCamComp = selectedEnt.GetComponent<Volt::VTCamComponent>();
 
-	if (vtCamComp.targetId != 0) 
+	if (vtCamComp.followId != 0)
 	{
-		Volt::Entity target = Volt::Entity{ vtCamComp.targetId, myCurrentScene.get() };
+		Volt::Entity target = Volt::Entity{ vtCamComp.followId, myCurrentScene.get() };
 		selectedEnt.SetPosition(target.GetWorldPosition() + vtCamComp.offset);
 	}
 
