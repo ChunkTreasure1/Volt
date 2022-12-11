@@ -164,8 +164,8 @@ private:
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;
+	uint32_t myAssetBrowserCount = 0;
 
 	inline static Sandbox* myInstance = nullptr;
 
-	bool initiated = false;
 };

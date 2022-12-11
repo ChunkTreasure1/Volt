@@ -161,7 +161,7 @@ void Sandbox::OnAttach()
 	myViewportPanel = std::reinterpret_pointer_cast<ViewportPanel>(myEditorWindows.back()); // #TODO: This is bad
 
 	myEditorWindows.emplace_back(CreateRef<SceneViewPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene));
+	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Main"));
 
 	myEditorWindows.emplace_back(CreateRef<CharacterEditorPanel>());
 	EditorLibrary::Register(Volt::AssetType::AnimatedCharacter, myEditorWindows.back());
@@ -1040,7 +1040,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		case SceneState::Edit:
 			myRuntimeScene->UpdateEditor(e.GetTimestep());
 			AUDIOMANAGER.StopAll();
-			initiated = false;
 			break;
 
 		case SceneState::Play:
@@ -1273,6 +1272,29 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			{
 				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
 				myEditorCameraController->Focus(ent.GetWorldPosition());
+			}
+
+			break;
+		}
+
+		case VT_KEY_SPACE:
+		{
+			if (ctrlPressed)
+			{
+				for (const auto& window : myEditorWindows)
+				{
+					if (window->GetTitle() == "Asset Browser##Main")
+					{
+						if (!window->IsOpen())
+						{
+							window->Open();
+						}
+						else
+						{
+							window->Close();
+						}
+					}
+				}
 			}
 
 			break;

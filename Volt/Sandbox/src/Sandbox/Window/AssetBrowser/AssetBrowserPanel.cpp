@@ -61,13 +61,13 @@ namespace Utility
 	}
 }
 
-AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene)
-	: EditorWindow("Asset Browser"), myEditorScene(aScene)
+AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id)
+	: EditorWindow("Asset Browser" + id), myEditorScene(aScene)
 {
 	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myIsOpen = true;
 
-	SetMinWindowSize({ -1.f, 100.f });
+	SetMinWindowSize({ 700.f, 300.f});
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
 

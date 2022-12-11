@@ -27,7 +27,7 @@ namespace AssetBrowser
 class AssetBrowserPanel : public EditorWindow
 {
 public:
-	AssetBrowserPanel(Ref<Volt::Scene>& aScene);
+	AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id);
 
 	void UpdateMainContent() override;
 	void OnEvent(Volt::Event& e) override;

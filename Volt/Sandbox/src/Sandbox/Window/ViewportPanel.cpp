@@ -474,7 +474,7 @@ void ViewportPanel::UpdateContent()
 				for (const auto& window : Sandbox::Get().GetEditorWindows())
 				{
 					if (window->GetTitle() == "Scene View" || 
-						window->GetTitle() == "Asset Browser" ||
+						window->GetTitle() == "Asset Browser##Main" ||
 						window->GetTitle() == "Properties")
 					{
 						const_cast<bool&>(window->IsOpen()) = false;
