@@ -97,6 +97,24 @@ std::filesystem::path FileSystem::GetDocumentsPath()
 	return documentsPath;
 }
 
+void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
+{
+	if (!std::filesystem::exists(path))
+	{
+		return;
+	}
+
+	std::wstring wstr = path.wstring() + std::wstring(1, L'\0');
+
+	SHFILEOPSTRUCT fileOp;
+	fileOp.hwnd = NULL;
+	fileOp.wFunc = FO_DELETE;
+	fileOp.pFrom = wstr.c_str();
+	fileOp.pTo = NULL;
+	fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_SILENT;
+	int32_t result = SHFileOperation(&fileOp);
+}
+
 bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
 {
 	auto absolutePath = std::filesystem::canonical(aPath);

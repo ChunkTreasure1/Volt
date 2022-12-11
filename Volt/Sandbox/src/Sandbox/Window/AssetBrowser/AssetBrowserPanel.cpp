@@ -841,7 +841,8 @@ void AssetBrowserPanel::DeleteFilesModal()
 				if (item->isDirectory)
 				{
 					Volt::AssetManager::Get().RemoveFolderFromRegistry(item->path);
-					std::filesystem::remove_all(item->path);
+
+					FileSystem::MoveToRecycleBin(item->path);
 				}
 			}
 

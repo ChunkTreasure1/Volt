@@ -95,6 +95,7 @@ public:
 		return std::filesystem::remove_all(aPath);
 	}
 
+	static void MoveToRecycleBin(const std::filesystem::path& path);
 	static bool Rename(const std::filesystem::path& aPath, const std::string& aName)
 	{
 		if (!Exists(aPath))

@@ -258,7 +258,7 @@ namespace Volt
 		myAssetRegistry.erase(path);
 		myAssetCache.erase(asset);
 
-		FileSystem::Remove(path);
+		FileSystem::MoveToRecycleBin(path);
 		SaveAssetRegistry();
 	}
 
@@ -267,7 +267,7 @@ namespace Volt
 		myAssetCache.erase(GetAssetHandleFromPath(path));
 		myAssetRegistry.erase(path);
 
-		FileSystem::Remove(path);
+		FileSystem::MoveToRecycleBin(path);
 		SaveAssetRegistry();
 	}
 
@@ -279,7 +279,7 @@ namespace Volt
 		{
 			myAssetRegistry.erase(path);
 			myAssetCache.erase(asset);
-		
+
 			SaveAssetRegistry();
 		}
 		else
@@ -301,13 +301,26 @@ namespace Volt
 	{
 		if (!folderPath.empty())
 		{
+			std::vector<std::filesystem::path> filesToRemove{};
+
 			for (const auto& [path, handle] : myAssetRegistry)
 			{
 				if (path.string().contains(folderPath.string()))
 				{
-					myAssetCache.erase(GetAssetHandleFromPath(path));
-					myAssetRegistry.erase(path);
+					filesToRemove.emplace_back(path);
 				}
+			}
+
+			for (const auto& p : filesToRemove)
+			{
+				const auto& handle = GetAssetHandleFromPath(p);
+
+				if (myAssetCache.contains(handle))
+				{
+					myAssetCache.erase(handle);
+				}
+
+				myAssetRegistry.erase(p);
 			}
 		}
 
