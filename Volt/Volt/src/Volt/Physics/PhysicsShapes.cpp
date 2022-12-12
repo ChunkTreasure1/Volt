@@ -350,6 +350,7 @@ namespace Volt
 					shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true); // add collision complexity stuff
 					shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
 					shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+					shape->setLocalPose(PhysXUtilities::ToPhysXTransform(colliderData.transform));
 					shape->userData = this;
 					actor.GetActor().attachShape(*shape);
 
@@ -461,6 +462,7 @@ namespace Volt
 					shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true); // add collision complexity stuff
 					shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
 					shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+					shape->setLocalPose(PhysXUtilities::ToPhysXTransform(colliderData.transform));
 					shape->userData = this;
 					actor.GetActor().attachShape(*shape);
 
