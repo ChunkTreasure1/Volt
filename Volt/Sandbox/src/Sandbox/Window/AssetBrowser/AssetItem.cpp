@@ -10,6 +10,7 @@
 
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/Utility/EditorLibrary.h"
+#include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -248,6 +249,11 @@ namespace AssetBrowser
 			{
 				removed = true;
 				UI::OpenModal("Delete Selected Files?");
+			}
+
+			if (ImGui::MenuItem("Checkout"))
+			{
+				VersionControl::Edit(FileSystem::GetAbsolute(path));
 			}
 
 			UI::EndPopup();

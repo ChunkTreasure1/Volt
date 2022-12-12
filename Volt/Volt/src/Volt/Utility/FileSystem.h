@@ -50,6 +50,11 @@ public:
 		return std::filesystem::relative(aPath, std::filesystem::current_path());
 	}
 
+	static std::filesystem::path GetAbsolute(const std::filesystem::path& path)
+	{
+		return std::filesystem::absolute(path);
+	}
+
 	static bool IsWriteable(const std::filesystem::path& aPath)
 	{
 		std::filesystem::file_status status = std::filesystem::status(aPath);
