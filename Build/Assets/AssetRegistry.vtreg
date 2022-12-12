@@ -329,6 +329,8 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds.vtthumb.png
   - Handle: 16337070533146925493
     Path: Assets\Meshes\lutTest.dds.vtthumb.png
+  - Handle: 18143315910555508333
+    Path: Assets\Scenes\MonoTest\MonoTest.vtscene
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 16571327495501234789

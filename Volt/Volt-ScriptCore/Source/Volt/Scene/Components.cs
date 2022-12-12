@@ -141,6 +141,14 @@ namespace Volt
         Dynamic
     }
 
+    public enum ForceMode
+    {
+        Force,
+        Impulse,
+        VelocityChange,
+        Acceleration
+    }
+
     public class RigidbodyComponent : Component
     {
         public BodyType bodyType
@@ -245,6 +253,63 @@ namespace Volt
             {
                 InternalCalls.RigidbodyComponent_SetIsKinematic(entity.Id, ref value);
             }
+        }
+
+        public void SetKinematicTarget(Vector3 position, Quaternion rotation)
+        {
+            InternalCalls.PhysicsActor_SetKinematicTarget(entity.Id, ref position, ref rotation);
+        }
+
+        public void SetLinearVelocity(Vector3 velocity)
+        {
+            InternalCalls.PhysicsActor_SetLinearVelocity(entity.Id, ref velocity);
+        }
+
+        public void SetAngularVelocity(Vector3 velocity)
+        { 
+            InternalCalls.PhysicsActor_SetAngularVelocity(entity.Id, ref velocity);
+        }
+
+        public void SetMaxLinearVelocity(float velocity)
+        {
+            InternalCalls.PhysicsActor_SetMaxLinearVelocity(entity.Id, ref velocity);
+        }
+
+        public void SetMaxAngularVelocity(float velocity)
+        {
+            InternalCalls.PhysicsActor_SetMaxAngularVelocity(entity.Id, ref velocity);
+        }
+
+        public Vector3 GetKinematicTargetPosition()
+        {
+            InternalCalls.PhysicsActor_GetKinematicTargetPosition(entity.Id, out Vector3 position);
+            return position;
+        }
+
+        public Quaternion GetKinematicTargetRotation()
+        {
+            InternalCalls.PhysicsActor_GetKinematicTargetRotation(entity.Id, out Quaternion rotation);
+            return rotation;
+        }
+
+        public void AddForce(Vector3 force, ForceMode forceMode)
+        {
+            InternalCalls.PhysicsActor_AddForce(entity.Id, ref force, forceMode);
+        }
+
+        public void AddTorque(Vector3 torque, ForceMode forceMode)
+        { 
+            InternalCalls.PhysicsActor_AddTorque(entity.Id, ref torque, forceMode);
+        }
+
+        public void WakeUp()
+        { 
+            InternalCalls.PhysicsActor_WakeUp(entity.Id);
+        }
+
+        public void PutToSleep()
+        { 
+            InternalCalls.PhysicsActor_PutToSleep(entity.Id);
         }
     }
 
