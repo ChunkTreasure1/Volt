@@ -41,6 +41,16 @@ void TestController::OnUpdate(float aDeltaTime)
 
 	if (Volt::Input::IsKeyDown(VT_KEY_B))
 	{
-		Director::Get()->SetActiveCamera("Target Cam");
+		Director::Get().SetActiveCamera(1);
+	}
+
+	if (Volt::Input::IsKeyDown(VT_KEY_V))
+	{
+		Director::Get().SetActiveCamera(0);
+	}
+
+	if (Volt::Input::IsKeyDown(VT_KEY_N))
+	{
+		Director::Get().SetActiveCamera(2);
 	}
 }

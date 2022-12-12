@@ -6,8 +6,9 @@ class Director : public Volt::ScriptBase
 {
 public:
 	Director(const Volt::Entity& aEntity);
+	~Director() override { myInstance = nullptr; };
 
-	const inline static Ref<Director> Get() { return myInstance; }
+	inline static Director& Get() { return *myInstance; }
 
 	void SetActiveCamera(std::string aCamName);
 	void SetActiveCamera(size_t aIndex);
@@ -17,17 +18,23 @@ public:
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 
 private:
-	inline static Ref<Director> myInstance;
+	inline static Director* myInstance;
 
 	void OnAwake() override;
 	void OnUpdate(float aDeltaTime) override;
+
 	void InitTransitionCam();
+	Volt::Entity CreateTransitionCamera();
+
+	void BlendCameras(float aDeltaTime);
 
 	std::vector<Volt::Entity> myVTCams;
 
 	Volt::Entity myActiveCamera = Volt::Entity{ 0,nullptr };
+	Volt::Entity myTransitionCamera = Volt::Entity{ 0,nullptr };
 
-	bool myChangeCamera = false;
-	bool myIsChangingCamera = false;
+	bool myIsBlending = false;
 
+	float myLerpTime = 0.f;
+	float myCurrentLerpTime = 0.f;
 };

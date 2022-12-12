@@ -7,6 +7,7 @@ namespace Volt
 {
 	SERIALIZE_ENUM((enum class eCameraType : uint32_t
 	{
+		Default,
 		Free,
 		ThirdPerson,
 		FirstPerson
@@ -24,7 +25,7 @@ namespace Volt
 	{
 		PROPERTY(Name = Is Default, Visible = false) bool isDefault = false;
 
-		PROPERTY(Name = Camera Type, SpecialType = Enum, Visible = false) eCameraType cameraType = eCameraType::Free;
+		PROPERTY(Name = Camera Type, SpecialType = Enum, Visible = false) eCameraType cameraType = eCameraType::Default;
 
 		PROPERTY(Name = FOV, Visible = false) float fov = 60.f;
 		PROPERTY(Name = Damping, Visible = false) float damping = 0.f;
@@ -33,6 +34,8 @@ namespace Volt
 
 		PROPERTY(Name = Follow, Visible = false) Wire::EntityId followId = Wire::NullID;
 		PROPERTY(Name = LookAt, Visible = false) Wire::EntityId lookAtId = Wire::NullID;
+
+		PROPERTY(Name = Sensitivity, Visible = false) float sensitivity = 100.f;
 
 		CREATE_COMPONENT_GUID("{2C5E4323-6F22-4AFD-BE83-9DC419B8C45F}"_guid)
 	}), VTCamComponent);

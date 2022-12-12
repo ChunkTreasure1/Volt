@@ -6,6 +6,7 @@
 #include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/Random.h>
+#include <Volt/Core/Application.h>
 
 #include <Volt/VTCinema/Director.h>
 
@@ -22,7 +23,11 @@ void VTCinemaPanel::UpdateContent()
 {
 	UpdateSetDetails();
 	UpdateCameraProperties();
-	UpdateSelectedCamera();
+
+	if (!Volt::Application::Get().IsRuntime())
+	{
+		UpdateSelectedCamera();
+	}
 }
 
 void VTCinemaPanel::OnEvent(Volt::Event& e)
@@ -50,10 +55,10 @@ void VTCinemaPanel::UpdateCameraProperties()
 	auto& baseCamComp = selectedCam.GetComponent<Volt::CameraComponent>();
 	auto& vtCamComp = selectedCam.GetComponent<Volt::VTCamComponent>();
 
-	std::string labelName = "Cam: " + selectedCam.GetComponent<Volt::TagComponent>().tag;
+	std::string labelName = "Cam: " + selectedCam.GetComponent<Volt::TagComponent>().tag + " [" + std::to_string(mySelectedEntity) + "]";;
 	ImGui::LabelText("##CamName", labelName.c_str());
 
-	ImGui::SameLine();
+	ImGui::SameLine(0, -1000);
 	if (ImGui::Button("Set As Default"))
 	{
 		for (auto& cam : myVTCams)
@@ -71,6 +76,11 @@ void VTCinemaPanel::UpdateCameraProperties()
 	{
 		auto& enumData = Wire::ComponentRegistry::EnumData();
 		UI::ComboProperty("CameraType", *(int32_t*)&vtCamComp.cameraType, enumData.at("eCameraType"));
+
+		if (vtCamComp.cameraType == Volt::eCameraType::FirstPerson || vtCamComp.cameraType == Volt::eCameraType::ThirdPerson)
+		{
+			UI::Property("Mouse Sensitivity", vtCamComp.sensitivity);
+		}
 
 		if (UI::Property("FOV", vtCamComp.fov)) 
 		{
@@ -156,7 +166,7 @@ void VTCinemaPanel::UpdateSetDetails()
 
 			char buf[32];
 
-			std::string camName = tagComp.tag;
+			std::string camName = tagComp.tag + " [" + std::to_string(n)+ "]";
 
 			if (myVTCams[n].GetComponent<Volt::VTCamComponent>().isDefault)
 				camName += " (default)";
@@ -178,10 +188,10 @@ void VTCinemaPanel::UpdateSetDetails()
 		{
 			for (auto& cam : myVTCams)
 			{
-				cam.GetComponent<Volt::CameraComponent>().priority = 1;
+				cam.GetComponent<Volt::CameraComponent>().priority = 2;
 			}
 
-			myVTCams[selected].GetComponent<Volt::CameraComponent>().priority = 0;
+			myVTCams[selected].GetComponent<Volt::CameraComponent>().priority = 1;
 		}
 
 		mySelectedEntity = selected;
@@ -351,6 +361,8 @@ Volt::Entity VTCinemaPanel::CreateNewCamera()
 
 	auto& baseCamComp = camEnt.AddComponent<Volt::CameraComponent>();
 	baseCamComp.fieldOfView = vtCamComp.fov;
+
+	camEnt.AddScript("VTCameraController");
 
 	return camEnt;
 }
