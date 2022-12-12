@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include "Sandbox/Window/EditorWindow.h"
 #include "Sandbox/Window/AssetCommon.h"
@@ -55,7 +54,7 @@ private:
 	void HandleSingleSelect();
 	void HandleMultiSelect();
 	void HandleSingleGizmoInteraction(const gem::mat4& avgTransform);
-	void HandleMultiGizmoInteraction(const gem::mat4& avgTransform, const gem::mat4& avgStartTransform);
+	void HandleMultiGizmoInteraction(const gem::mat4& deltaTransform);
 
 	void UpdateModals();
 	void HandleNonMeshDragDrop();

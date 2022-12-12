@@ -159,10 +159,12 @@ void ViewportPanel::UpdateMainContent()
 
 			ImGuizmo::SetRect(myPerspectiveBounds[0].x, myPerspectiveBounds[0].y, myPerspectiveBounds[1].x - myPerspectiveBounds[0].x, myPerspectiveBounds[1].y - myPerspectiveBounds[0].y);
 
+			gem::mat4 deltaMatrix = { 1.f };
+
 			ImGuizmo::Manipulate(
 				gem::value_ptr(myEditorCameraController->GetCamera()->GetView()),
 				gem::value_ptr(myEditorCameraController->GetCamera()->GetProjection()),
-				myGizmoOperation, gizmoMode, gem::value_ptr(averageTransform), nullptr, snap ? snapValues : nullptr);
+				myGizmoOperation, gizmoMode, gem::value_ptr(averageTransform), gem::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
 
 			isUsing = ImGuizmo::IsUsing();
 
@@ -183,7 +185,7 @@ void ViewportPanel::UpdateMainContent()
 					}
 					else
 					{
-						HandleMultiGizmoInteraction(averageTransform, averageStartTransform);
+						HandleMultiGizmoInteraction(deltaMatrix);
 					}
 				}
 			}
@@ -819,23 +821,8 @@ void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
 	transComp.scale = s;
 }
 
-void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& avgTransform, const gem::mat4& avgStartTransform)
+void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& deltaTransform)
 {
-	const gem::mat4& averageTransform = avgTransform;
-	const gem::mat4& averageStartTransform = avgStartTransform;
-
-	gem::vec3 newPos, newScale, newRot, oldPos, oldScale, oldRot;
-
-	gem::decompose(averageTransform, newPos, newRot, newScale);
-	gem::decompose(averageStartTransform, oldPos, oldRot, oldScale);
-
-	const gem::vec3 deltaPos = newPos - oldPos;
-	const gem::vec3 deltaScale = newScale - oldScale;
-	const gem::vec3 deltaRot = newRot - oldRot;
-
-	const gem::mat4 deltaTransform = gem::translate(gem::mat4{ 1.f }, deltaPos) *
-		gem::mat4_cast(gem::quat{ deltaRot });
-
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
 		auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(ent);
@@ -856,7 +843,7 @@ void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& avgTransform, c
 
 		transComp.position = p;
 		transComp.rotation = r;
-		//transComp.scale = s;
+		transComp.scale = s;
 	}
 }
 
