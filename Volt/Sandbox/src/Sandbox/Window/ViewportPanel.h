@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/AssetCommon.h"
+#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/AnimatedIcon.h"
 

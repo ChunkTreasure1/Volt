@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "SceneViewPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 

@@ -6,7 +6,7 @@
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
-#include "Sandbox/Window/AssetBrowserPanel.h"
+#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Window/CreatePanel.h"
 #include "Sandbox/Window/LogPanel.h"
 #include "Sandbox/Window/AnimationTreeEditor.h"
@@ -23,8 +23,9 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
-#include "Sandbox/Window/EditorLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/AssetIconLibrary.h"
+#include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
@@ -140,6 +141,7 @@ void Sandbox::OnAttach()
 	}
 
 	EditorIconLibrary::Initialize();
+	AssetIconLibrary::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
 
 	Volt::Application::Get().GetWindow().Maximize();
@@ -159,7 +161,7 @@ void Sandbox::OnAttach()
 	myViewportPanel = std::reinterpret_pointer_cast<ViewportPanel>(myEditorWindows.back()); // #TODO: This is bad
 
 	myEditorWindows.emplace_back(CreateRef<SceneViewPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene));
+	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Main"));
 
 	myEditorWindows.emplace_back(CreateRef<CharacterEditorPanel>());
 	EditorLibrary::Register(Volt::AssetType::AnimatedCharacter, myEditorWindows.back());
@@ -224,6 +226,7 @@ void Sandbox::OnDetach()
 	myGame = nullptr;
 
 	VersionControl::Shutdown();
+	AssetIconLibrary::Shutdowm();
 	EditorIconLibrary::Shutdown();
 }
 
@@ -731,7 +734,7 @@ void Sandbox::SetupRenderCallbacks()
 				Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
 				Volt::Renderer::SetDepthState(Volt::DepthState::ReadWrite);
 
-				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
+				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
 				registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
 					{
 						if (!SelectionManager::IsSelected(id))
@@ -798,8 +801,8 @@ void Sandbox::SetupRenderCallbacks()
 			//////////////////////////////////
 
 			{
-				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
-				auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Editor/3dpil.vtmesh");
+				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
+				auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Arrow/3dpil.vtmesh");
 
 				Volt::Renderer::BeginPass(myForwardExtraPass, camera);
 				registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
@@ -1037,7 +1040,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		case SceneState::Edit:
 			myRuntimeScene->UpdateEditor(e.GetTimestep());
 			AUDIOMANAGER.StopAll();
-			initiated = false;
 			break;
 
 		case SceneState::Play:
@@ -1270,6 +1272,29 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			{
 				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
 				myEditorCameraController->Focus(ent.GetWorldPosition());
+			}
+
+			break;
+		}
+
+		case VT_KEY_SPACE:
+		{
+			if (ctrlPressed)
+			{
+				for (const auto& window : myEditorWindows)
+				{
+					if (window->GetTitle() == "Asset Browser##Main")
+					{
+						if (!window->IsOpen())
+						{
+							window->Open();
+						}
+						else
+						{
+							window->Close();
+						}
+					}
+				}
 			}
 
 			break;

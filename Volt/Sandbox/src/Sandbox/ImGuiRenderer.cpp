@@ -2,7 +2,8 @@
 #include "Sandbox.h"
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
@@ -579,6 +580,16 @@ void Sandbox::DrawMenuBar()
 				if (ImGui::MenuItem("Install Maya tools..."))
 				{
 					InstallMayaTools();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Asset Browser"))
+			{
+				if (ImGui::MenuItem("Open new Asset Browser"))
+				{
+					myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Secondary" + std::to_string(myAssetBrowserCount++)));
 				}
 
 				ImGui::EndMenu();

@@ -1,4 +1,5 @@
 name: "PointLightShadow"
+internal: true
 paths:
   - "Engine/Shaders/HLSL/Shadows/PointLightShadow_vs.hlsl"
   - "Engine/Shaders/HLSL/Shadows/PointLightShadow_gs.hlsl"

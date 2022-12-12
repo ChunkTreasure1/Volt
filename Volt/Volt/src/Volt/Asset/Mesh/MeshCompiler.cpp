@@ -3,7 +3,6 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/MaterialRegistry.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Log/Log.h"
 
@@ -150,7 +149,5 @@ namespace Volt
 	{
 		mesh->myMaterial->path = destination.parent_path().string() + "\\" + mesh->path.stem().string() + ".vtmat";
 		AssetManager::Get().SaveAsset(mesh->myMaterial);
-
-		MaterialRegistry::Register(mesh->myMaterial->GetName(), mesh->myMaterial->path);
 	}
 }

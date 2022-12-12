@@ -2,7 +2,7 @@
 #include "ViewportPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/UserSettingsManager.h"
@@ -474,7 +474,7 @@ void ViewportPanel::UpdateContent()
 				for (const auto& window : Sandbox::Get().GetEditorWindows())
 				{
 					if (window->GetTitle() == "Scene View" || 
-						window->GetTitle() == "Asset Browser" ||
+						window->GetTitle() == "Asset Browser##Main" ||
 						window->GetTitle() == "Properties")
 					{
 						const_cast<bool&>(window->IsOpen()) = false;
