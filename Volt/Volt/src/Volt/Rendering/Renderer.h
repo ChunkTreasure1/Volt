@@ -252,6 +252,8 @@ namespace Volt
 		static void RT_UpdatePerPassBuffers();
 		static void RT_CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
 		static void RT_DispatchRenderCommandsInstanced();
+
+		static void RT_Execute();
 		//////////////////////
 
 		struct Samplers
@@ -405,6 +407,11 @@ namespace Volt
 
 			std::unordered_map<AssetHandle, SceneEnvironment> environmentCache;
 			gem::vec2 fullRenderSize = { 1.f, 1.f };
+
+			///// Threading /////
+			std::atomic_bool isRunning = false;
+			std::thread renderThread;
+			/////////////////////
 		};
 
 		inline static std::vector<ComPtr<ID3D11DepthStencilState>> myDepthStates;

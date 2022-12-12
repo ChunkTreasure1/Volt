@@ -50,8 +50,10 @@ namespace Volt
 		CreateInstancingData();
 		CreateDecalData();
 		CreateCommandBuffers();
-
 		GenerateBRDFLut();
+
+		myRendererData->isRunning = true;
+		myRendererData->renderThread = std::thread(RT_Execute);
 	}
 
 	void Renderer::InitializeBuffers()
@@ -791,6 +793,8 @@ namespace Volt
 				const std::string tag = "Begin " + renderPass.debugName;
 				VT_PROFILE_SCOPE(tag.c_str());
 
+				RT_BeginAnnotatedSection(renderPass.debugName);
+
 				myRendererData->currentPass = renderPass;
 				myRendererData->currentPassCamera = camera;
 
@@ -862,6 +866,8 @@ namespace Volt
 				myRendererData->currentPass = {};
 				myRendererData->currentPassCamera = nullptr;
 				myRendererData->instancingData.passRenderCommands.clear();
+
+				RT_EndAnnotatedSection();
 			});
 #else
 
@@ -2065,6 +2071,14 @@ namespace Volt
 				cmd.material->RT_Bind(myRendererData->currentPass.overrideShader == nullptr);
 			}
 			context->DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
+		}
+	}
+
+	void Renderer::RT_Execute()
+	{
+		while (myRendererData->isRunning)
+		{
+
 		}
 	}
 

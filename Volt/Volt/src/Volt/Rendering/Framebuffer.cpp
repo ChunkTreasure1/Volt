@@ -243,10 +243,20 @@ namespace Volt
 	void Framebuffer::RT_Clear()
 	{
 		auto context = GraphicsContext::GetDeferredContext();
-		std::vector<ID3D11RenderTargetView*> views(myColorAttachmentImages.size(), nullptr);
+		uint32_t attachmentIndex = 0;
+		for (const auto& image : myColorAttachmentImages)
+		{
+			if (mySpecification.existingImages.find(attachmentIndex) == mySpecification.existingImages.end() && !Utility::IsTypeless(mySpecification.attachments[attachmentIndex].format))
+			{
+				context->ClearRenderTargetView(image->GetRTV().Get(), (float*)&mySpecification.attachments[attachmentIndex].clearColor);
+			}
+			attachmentIndex++;
+		}
 
-		context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-		context->OMSetRenderTargets((uint32_t)myColorAttachmentImages.size(), views.data(), nullptr);
+		if (myDepthAttachmentImage && myOwnsDepth)
+		{
+			context->ClearDepthStencilView(myDepthAttachmentImage->GetDSV().Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+		}
 	}
 
 	void Framebuffer::Resize(uint32_t width, uint32_t height)
