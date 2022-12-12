@@ -286,8 +286,8 @@ namespace Volt
 
 				const auto& monitorMode = mySwapchain->GetMonitorMode();
 
-				const int32_t xPos = (int32_t)((monitorMode.width / 2) - (myProperties.width /2));
-				const int32_t yPos = (int32_t)((monitorMode.height / 2) - (myProperties.height /2));
+				const int32_t xPos = (int32_t)((monitorMode.width / 2) - (myProperties.width / 2));
+				const int32_t yPos = (int32_t)((monitorMode.height / 2) - (myProperties.height / 2));
 
 				glfwSetWindowMonitor(myWindow, nullptr, 0, 0, myProperties.width, myProperties.height, (int32_t)monitorMode.refreshRate);
 				glfwSetWindowPos(myWindow, xPos, yPos);
@@ -307,15 +307,13 @@ namespace Volt
 				glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 				const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-				const auto& monitorMode = mySwapchain->GetMonitorMode();
-				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, monitorMode.width, monitorMode.height, mode->refreshRate);
+				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
 
 				myIsFullscreen = false;
-				mySwapchain->Resize(monitorMode.width, monitorMode.height, myIsFullscreen);
+				mySwapchain->Resize(mode->width, mode->height, myIsFullscreen);
 
-				myData.width = monitorMode.width;
-				myData.height = monitorMode.height;
+				myData.width = mode->width;
+				myData.height = mode->height;
 				break;
 			}
 		}

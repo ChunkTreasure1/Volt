@@ -99,6 +99,8 @@ private:
 	void SaveUserSettings();
 	void LoadUserSettings();
 
+	void SetupWatches();
+
 	/////ImGui/////
 	void UpdateDockSpace();
 	void SaveSceneAsModal();

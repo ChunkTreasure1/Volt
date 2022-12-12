@@ -21,9 +21,9 @@ IncludeDir["stb_image"] = "%{wks.location}/Volt/vendor/stb_image/"
 IncludeDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/include/"
 IncludeDir["mono"] = "%{wks.location}/Volt/vendor/mono/include/"
 IncludeDir["DirectXTex"] = "%{wks.location}/Volt/vendor/DirectXTex/src"
+IncludeDir["efsw"] = "%{wks.location}/Volt/vendor/efsw/include"
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
-IncludeDir["dpp"] = "%{wks.location}/Sandbox/vendor/dpp/include/"
 
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"

@@ -182,6 +182,4 @@ public:
 	{
 		system(aCommand.c_str());
 	}
-
-	inline static std::atomic_bool globalIsOpenSaveFileOpen = false;
 };

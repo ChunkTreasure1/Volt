@@ -168,6 +168,7 @@ namespace Volt
 
 	void AssetManager::SaveAsset(const Ref<Asset> asset)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		if (myAssetImporters.find(asset->GetType()) == myAssetImporters.end())
 		{
 			VT_CORE_ERROR("No exporter for asset found!");
@@ -197,6 +198,7 @@ namespace Volt
 
 	void AssetManager::MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		FileSystem::Move(asset->path, targetDir);
 
 		const std::filesystem::path newPath = targetDir / asset->path.filename();
@@ -209,6 +211,7 @@ namespace Volt
 
 	void AssetManager::MoveAsset(AssetHandle asset, const std::filesystem::path& targetDir)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		const std::filesystem::path newPath = targetDir / oldPath.filename();
 		FileSystem::Move(oldPath, targetDir);
@@ -227,6 +230,7 @@ namespace Volt
 	{
 		if (!targetDir.empty() && !sourceDir.empty())
 		{
+			std::scoped_lock lk{ myAssetRegistryMutex };
 			std::vector<std::filesystem::path> filesToMove{};
 
 			for (const auto& [path, handle] : myAssetRegistry)
@@ -264,6 +268,7 @@ namespace Volt
 
 	void AssetManager::RenameAsset(AssetHandle asset, const std::string& newName)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		const std::filesystem::path newPath = oldPath.parent_path() / (newName + oldPath.extension().string());
 		FileSystem::Rename(GetPathFromAssetHandle(asset), newName);
@@ -280,6 +285,7 @@ namespace Volt
 
 	void AssetManager::RenameAssetFolder(AssetHandle asset, const std::filesystem::path& targetPath)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		myAssetRegistry.erase(oldPath);
 		auto it = myAssetCache.find(asset);
@@ -293,21 +299,32 @@ namespace Volt
 
 	void AssetManager::RemoveAsset(AssetHandle asset)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path path = GetPathFromAssetHandle(asset);
 		myAssetRegistry.erase(path);
 		myAssetCache.erase(asset);
 
 		FileSystem::MoveToRecycleBin(path);
 		SaveAssetRegistry();
+
+#ifdef VT_DEBUG
+		VT_CORE_INFO("Removing asset {0} with handle {1}!", asset, path.string());
+#endif
 	}
 
 	void AssetManager::RemoveAsset(const std::filesystem::path& path)
 	{
-		myAssetCache.erase(GetAssetHandleFromPath(path));
+		std::scoped_lock lk{ myAssetRegistryMutex };
+		const auto handle = GetAssetHandleFromPath(path);
+		myAssetCache.erase(handle);
 		myAssetRegistry.erase(path);
 
 		FileSystem::MoveToRecycleBin(path);
 		SaveAssetRegistry();
+
+#ifdef VT_DEBUG
+		VT_CORE_INFO("Removing asset {0} with handle {1}!", handle, path.string());
+#endif
 	}
 
 	void AssetManager::RemoveFromRegistry(AssetHandle asset)
@@ -316,6 +333,7 @@ namespace Volt
 
 		if (!path.empty() && myAssetRegistry.contains(path))
 		{
+			std::scoped_lock lk{ myAssetRegistryMutex };
 			myAssetRegistry.erase(path);
 			myAssetCache.erase(asset);
 
@@ -331,8 +349,15 @@ namespace Volt
 	{
 		if (!path.empty() && myAssetRegistry.contains(path))
 		{
-			myAssetCache.erase(GetAssetHandleFromPath(path));
+			std::scoped_lock lk{ myAssetRegistryMutex };
+			const auto handle = GetAssetHandleFromPath(path);
+
+			myAssetCache.erase(handle);
 			myAssetRegistry.erase(path);
+
+#ifdef VT_DEBUG
+			VT_CORE_INFO("Removing asset {0} with handle {1} from registry!", handle, path.string());
+#endif
 		}
 	}
 
@@ -340,6 +365,7 @@ namespace Volt
 	{
 		if (!folderPath.empty())
 		{
+			std::scoped_lock lk{ myAssetRegistryMutex };
 			std::vector<std::filesystem::path> filesToRemove{};
 
 			for (const auto& [path, handle] : myAssetRegistry)
@@ -359,6 +385,9 @@ namespace Volt
 					myAssetCache.erase(handle);
 				}
 
+#ifdef VT_DEBUG
+				VT_CORE_INFO("Removing asset {0} with handle {1} from registry!", handle, p.string());
+#endif
 				myAssetRegistry.erase(p);
 			}
 		}
@@ -482,6 +511,7 @@ namespace Volt
 
 	void AssetManager::QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset)
 	{
+		std::scoped_lock lk{ myAssetRegistryMutex };
 		AssetHandle handle = Asset::Null();
 
 		// Check if asset is loaded

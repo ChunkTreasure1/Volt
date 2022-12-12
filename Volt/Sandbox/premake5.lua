@@ -70,6 +70,7 @@ project "Sandbox"
 		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.efsw}",
 
 		"%{IncludeDir.imgui_node_editor}",
 

@@ -85,7 +85,7 @@ std::string GetSIGEventFromInt(int signal)
 		case 8: return "Floating point exception"; break;
 		case 11: return "Memory access violation"; break;
 		case 22: return "Abort"; break;
-	
+
 		default:
 			return "Unknown";
 	}
@@ -161,9 +161,8 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
 	myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
 
-	myFileWatcher = CreateRef<FileWatcher>(std::chrono::milliseconds(2000));
-	myFileWatcher->WatchFolder("Engine/Shaders/HLSL/");
-	myFileWatcher->WatchFolder("Assets/");
+	myFileWatcher = CreateRef<FileWatcher>();
+	SetupWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
 
@@ -176,6 +175,72 @@ void Sandbox::OnAttach()
 	}
 }
 
+void Sandbox::SetupWatches()
+{
+	myFileWatcher->AddWatch("Engine");
+	myFileWatcher->AddWatch("Assets");
+
+	myFileWatcher->AddCallback(efsw::Actions::Modified, [](const auto newPath, const auto oldPath)
+		{
+			Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+			switch (assetType)
+			{
+				case Volt::AssetType::Mesh:
+				case Volt::AssetType::Video:
+				case Volt::AssetType::Prefab:
+				case Volt::AssetType::Material:
+				case Volt::AssetType::Texture:
+					Volt::AssetManager::Get().ReloadAsset(newPath);
+					break;
+
+				case Volt::AssetType::ShaderSource:
+					Volt::ShaderRegistry::ReloadShadersWithShader(newPath);
+					break;
+
+				case Volt::AssetType::None:
+					break;
+				default:
+					break;
+			}
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Delete, [](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+		{
+			if (!newPath.has_extension())
+			{
+				Volt::AssetManager::Get().RemoveFolderFromRegistry(newPath);
+			}
+			else
+			{
+				Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+				if (assetType != Volt::AssetType::None)
+				{
+					if (Volt::AssetManager::Get().ExistsInRegistry(newPath))
+					{
+						Volt::AssetManager::Get().RemoveFromRegistry(newPath);
+					}
+				}
+			}
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Add, [](const std::filesystem::path newPath, const std::filesystem::path oldPath) 
+		{
+			
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Moved, [](const std::filesystem::path newPath, const std::filesystem::path oldPath) 
+		{
+			if (!newPath.has_extension())
+			{
+				Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
+			}
+			else
+			{
+				//Volt::AssetManager::Get().
+			}
+		});
+}
+
 void Sandbox::OnDetach()
 {
 	if (myRuntimeScene && !myRuntimeScene->path.empty())
@@ -185,7 +250,7 @@ void Sandbox::OnDetach()
 
 	UserSettingsManager::SaveUserSettings(myEditorWindows);
 
- 	myEditorWindows.clear();
+	myEditorWindows.clear();
 	EditorLibrary::Clear();
 
 	myFileWatcher = nullptr;
@@ -422,7 +487,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		{
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}
-		
+
 		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
 		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
@@ -969,7 +1034,7 @@ void Sandbox::SetupEditorRenderPasses()
 
 void Sandbox::HandleChangedFiles()
 {
-	if (myFileWatcher->AnyFileChanged())
+	/*if (myFileWatcher->AnyFileChanged())
 	{
 		const auto changedFile = myFileWatcher->QueryChangedFile();
 		Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(changedFile.filePath);
@@ -1001,7 +1066,7 @@ void Sandbox::HandleChangedFiles()
 				break;
 			}
 		}
-	}
+	}*/
 }
 
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)

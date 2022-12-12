@@ -113,6 +113,8 @@ namespace Volt
 
 		std::thread myLoadThread;
 		std::mutex myLoadMutex;
+		std::mutex myAssetRegistryMutex;
+
 		std::atomic_bool myIsLoadThreadRunning = false;
 		std::condition_variable myThreadConditionVariable;
 

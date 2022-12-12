@@ -24,16 +24,19 @@ namespace Volt
 
 	void CreateProxy(std::filesystem::path& dmpPath, const std::filesystem::path& path)
 	{
+#ifndef VT_DEBUG
 		__try
 		{
 			Create(path);
 		}
 		__except (ExceptionFilterFunction(GetExceptionInformation(), dmpPath))
 		{
-#ifndef VT_DEBUG
 			StartCrashHandler();
-#endif
 		}
+#else
+		Create(path);
+#endif
+
 	}
 
 	int Main(const std::filesystem::path& appPath)
