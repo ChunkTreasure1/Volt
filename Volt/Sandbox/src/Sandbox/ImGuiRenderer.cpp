@@ -466,7 +466,6 @@ float Sandbox::DrawTitlebar()
 	//UI::ShiftCursor(4.f, 4.f);
 
 	ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Volt)), { iconSize, iconSize });
-
 	ImGui::SameLine();
 
 	// Menu bar
@@ -608,6 +607,12 @@ void Sandbox::DrawMenuBar()
 			if (ImGui::MenuItem("Reset layout"))
 			{
 				myShouldResetLayout = true;
+			}
+
+			if (ImGui::MenuItem("Crash"))
+			{
+				int* ptr = nullptr;
+				*ptr = 0;
 			}
 
 			ImGui::EndMenu();

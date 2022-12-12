@@ -66,7 +66,8 @@
 
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 #include <Volt/AI/NavMesh2/NavMesh2.h>
-#include "Volt/Audio/AudioManager.h"
+#include <Volt/Platform/ExceptionHandling.h>
+#include <Volt/Audio/AudioManager.h>
 
 #include <Game/Game.h>
 
@@ -91,36 +92,10 @@ std::string GetSIGEventFromInt(int signal)
 	}
 }
 
-void SignalHandler(int signal)
-{
-	dpp::cluster bot("");
-	dpp::webhook wh("https://discord.com/api/webhooks/1044616206520438825/lA7ONWakE8XwFQbSFY-ip9aleuAiMaGF8WiinDq1-eBLOLSqqD0MdhSNe-7KNMovnApL");
-
-	const std::string user = FileSystem::GetCurrentUserName();
-
-	auto msg = dpp::message(std::format("{0} just crashed! <:ivar_point:1044955145139662878> It was a {1} error!", user, GetSIGEventFromInt(signal)));
-	bot.execute_webhook_sync(wh, msg);
-}
-
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
 	myInstance = this;
-
-	if (std::signal(SIGSEGV, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
-
-	if (std::signal(SIGFPE, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
-
-	if (std::signal(SIGABRT, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
 }
 
 Sandbox::~Sandbox()
