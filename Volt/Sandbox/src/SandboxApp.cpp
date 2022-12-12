@@ -7,8 +7,6 @@
 
 #include <Volt/Platform/ExceptionHandling.h>
 
-#include <dpp/dpp.h>
-
 class SandboxApp : public Volt::Application
 {
 public:

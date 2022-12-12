@@ -34,7 +34,6 @@ LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
 
 LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
 LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
-LibraryDir["dpp"] = "%{wks.location}/Sandbox/vendor/dpp/lib/%{cfg.buildcfg}"
 
 Library = {}
 Library["fbxsdk"] = "%{LibraryDir.fbxsdk}/libfbxsdk-md.lib"
@@ -57,8 +56,6 @@ Library["P4_supp"] = "%{LibraryDir.P4}/libsupp.lib"
 
 Library["OpenSSL_Crypto"] = "%{LibraryDir.OpenSSL}/libcrypto.lib"
 Library["OpenSSL_SSL"] = "%{LibraryDir.OpenSSL}/libssl.lib"
-
-Library["dpp"] = "%{LibraryDir.dpp}/dpp.lib"
 
 Library["PhysX"] = "%{LibraryDir.PhysX}/PhysX.lib"
 

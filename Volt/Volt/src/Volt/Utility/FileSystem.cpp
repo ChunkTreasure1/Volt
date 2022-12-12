@@ -289,3 +289,18 @@ std::string FileSystem::GetCurrentUserName()
 	GetUserName(name, &size);
 	return std::filesystem::path(name).string();
 }
+
+void FileSystem::StartProcess(const std::filesystem::path& processPath)
+{
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+
+	si.cb = sizeof(STARTUPINFO);
+
+	CreateProcess(processPath.wstring().c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+}

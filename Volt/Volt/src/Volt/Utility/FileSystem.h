@@ -176,6 +176,7 @@ public:
 	static std::string GetEnvVariable(const std::string& key);
 	static std::string GetCurrentUserName();
 
+	static void StartProcess(const std::filesystem::path& processName);
 
 	static void RunCommand(const std::string& aCommand)
 	{

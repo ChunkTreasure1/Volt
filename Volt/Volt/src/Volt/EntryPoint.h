@@ -30,7 +30,9 @@ namespace Volt
 		}
 		__except (ExceptionFilterFunction(GetExceptionInformation(), dmpPath))
 		{
+#ifndef VT_DEBUG
 			StartCrashHandler();
+#endif
 		}
 	}
 

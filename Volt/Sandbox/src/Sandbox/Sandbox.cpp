@@ -74,7 +74,6 @@
 #include <imgui.h>
 #include <csignal>
 
-#include <dpp/dpp.h>
 #include <ShlObj.h>
 
 #include <gem/noise.h>
