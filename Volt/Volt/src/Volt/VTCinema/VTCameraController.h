@@ -18,5 +18,7 @@ private:
 	void FreeController(float aDeltaTime);
 	void TPSController(float aDeltaTime);
 
-	gem::vec2 myLastMousePos = {0};
+	float myYawDelta = { 0 };
+	float myPitchDelta = { 0 };
+	gem::vec2 myDeltaMousePos = { 0 };
 };

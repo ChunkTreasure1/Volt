@@ -29,13 +29,13 @@ namespace Volt
 
 		PROPERTY(Name = FOV, Visible = false) float fov = 60.f;
 		PROPERTY(Name = Damping, Visible = false) float damping = 0.f;
-		
 		PROPERTY(Name = Offset, Visible = false) gem::vec3 offset = { 0 };
 
 		PROPERTY(Name = Follow, Visible = false) Wire::EntityId followId = Wire::NullID;
 		PROPERTY(Name = LookAt, Visible = false) Wire::EntityId lookAtId = Wire::NullID;
 
-		PROPERTY(Name = Sensitivity, Visible = false) float sensitivity = 100.f;
+		PROPERTY(Name = Focal Distance, Visible = false) float focalDistance = 0.f;
+		PROPERTY(Name = Mouse Sensitivity, Visible = false) float mouseSensitivity = 0.f;
 
 		CREATE_COMPONENT_GUID("{2C5E4323-6F22-4AFD-BE83-9DC419B8C45F}"_guid)
 	}), VTCamComponent);
