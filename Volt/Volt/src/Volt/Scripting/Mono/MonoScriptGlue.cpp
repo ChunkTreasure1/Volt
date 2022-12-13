@@ -80,7 +80,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outRotation = entity.GetRotation();
+		*outRotation = entity.GetLocalRotation();
 	}
 
 	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::quat* rotation)
@@ -96,7 +96,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outScale = entity.GetScale();
+		*outScale = entity.GetLocalScale();
 	}
 
 	inline static void TransformComponent_SetScale(Wire::EntityId entityId, gem::vec3* scale)

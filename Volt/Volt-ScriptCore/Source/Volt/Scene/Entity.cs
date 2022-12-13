@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Volt
 {
@@ -12,7 +9,6 @@ namespace Volt
         public static uint Null = 0;
 
         private Dictionary<string, Component> myComponentCache;
-
 
         protected Entity() { Id = 0; }
 
@@ -39,11 +35,27 @@ namespace Volt
         {
             get
             {
+                InternalCalls.TransformComponent_GetRotation(Id, out Quaternion rot);
+                return rot;
             }
 
             set
             {
+                InternalCalls.TransformComponent_SetRotation(Id, ref value);
+            }
+        }
 
+        public Vector3 scale
+        {
+            get
+            {
+                InternalCalls.TransformComponent_GetScale(Id, out Vector3 scale);
+                return scale;
+            }
+
+            set
+            {
+                InternalCalls.TransformComponent_SetScale(Id, ref value);
             }
         }
 

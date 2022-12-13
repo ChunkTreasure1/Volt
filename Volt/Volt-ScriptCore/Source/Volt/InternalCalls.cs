@@ -24,10 +24,10 @@ namespace Volt
         internal extern static void TransformComponent_SetPosition(uint entityId, ref Vector3 position);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetRotation(uint entityId, out Vector3 rotation);
+        internal extern static void TransformComponent_GetRotation(uint entityId, out Quaternion rotation);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_SetRotation(uint entityId, ref Vector3 rotation);
+        internal extern static void TransformComponent_SetRotation(uint entityId, ref Quaternion rotation);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetScale(uint entityId, out Vector3 scale);
