@@ -9,6 +9,15 @@
 
 namespace Volt
 {
+	enum class LogLevel : uint32_t
+	{
+		Trace = 0,
+		Info,
+		Warning,
+		Error,
+		Critical
+	};
+
 	class Log
 	{
 	public:

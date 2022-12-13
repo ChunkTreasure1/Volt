@@ -8,6 +8,12 @@ namespace Volt
         #region Entity
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Entity_HasComponent(uint entityId, string componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Entity_RemoveComponent(uint entityId, string componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Entity_AddComponent(uint entityId, string componentType);
         #endregion
 
         #region TransformComponent
@@ -252,6 +258,11 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Input_SetMousePosition(float x, float y);
+        #endregion
+
+        #region Log
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Log_String(ref string text, LogLevel logLevel);
         #endregion
     }
 }

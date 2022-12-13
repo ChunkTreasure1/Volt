@@ -24,9 +24,37 @@ namespace Volt
 	inline static bool Entity_HasComponent(Wire::EntityId entityId, MonoString* componentType)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		std::string name = mono_string_to_utf8(componentType);
 
-		return scene->GetRegistry().HasComponent(Wire::ComponentRegistry::GetRegistryDataFromName(name).guid, entityId);
+		char* cStr = mono_string_to_utf8(componentType);
+		std::string compName(cStr);
+		
+		mono_free(cStr);
+
+		return scene->GetRegistry().HasComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
+	}
+
+	inline static void Entity_RemoveComponent(Wire::EntityId entityId, MonoString* componentType)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+
+		char* cStr = mono_string_to_utf8(componentType);
+		std::string compName(cStr);
+
+		mono_free(cStr);
+
+		scene->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
+	}
+
+	inline static void Entity_AddComponent(Wire::EntityId entityId, MonoString* componentType)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+
+		char* cStr = mono_string_to_utf8(componentType);
+		std::string compName(cStr);
+
+		mono_free(cStr);
+
+		scene->GetRegistry().AddComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
 	}
 #pragma endregion
 
@@ -123,6 +151,34 @@ namespace Volt
 		Volt::Entity entity{ entityId, scene };
 
 		outString = mono_string_new(MonoScriptEngine::GetAppDomain(), entity.GetComponent<TagComponent>().tag.c_str());
+	}
+#pragma endregion
+
+#pragma region Log
+	inline static void Log_String(MonoString* string, LogLevel logLevel)
+	{
+		char* cStr = mono_string_to_utf8(string);
+		std::string str(cStr);
+		mono_free(cStr);
+
+		switch (logLevel)
+		{
+			case LogLevel::Trace:
+				VT_CORE_TRACE(str);
+				break;
+			case LogLevel::Info:
+				VT_CORE_INFO(str);
+				break;
+			case LogLevel::Warning:
+				VT_CORE_WARN(str);
+				break;
+			case LogLevel::Error:
+				VT_CORE_ERROR(str);
+				break;
+			case LogLevel::Critical:
+				VT_CORE_CRITICAL(str);
+				break;
+		}
 	}
 #pragma endregion
 
@@ -1044,6 +1100,8 @@ namespace Volt
 		// Entity
 		{
 			VT_ADD_INTERNAL_CALL(Entity_HasComponent);
+			VT_ADD_INTERNAL_CALL(Entity_RemoveComponent);
+			VT_ADD_INTERNAL_CALL(Entity_AddComponent);
 		}
 
 		// Transform component
