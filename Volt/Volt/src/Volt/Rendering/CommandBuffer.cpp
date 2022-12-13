@@ -18,7 +18,7 @@ namespace Volt
 		}
 	}
 
-	void CommandBuffer::Submit(const std::function<void()> && func)
+	void CommandBuffer::Submit(const std::function<void()>&& func)
 	{
 		myCommands.emplace_back(func);
 	}
@@ -26,5 +26,15 @@ namespace Volt
 	void CommandBuffer::Submit(const RenderCommand& cmd)
 	{
 		myRenderCommands.emplace_back(cmd);
+	}
+
+	ID3D11CommandList*& CommandBuffer::GetAndReleaseCommandList()
+	{
+		if (myCommandList)
+		{
+			myCommandList->Release();
+		}
+		
+		return myCommandList;
 	}
 }

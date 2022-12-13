@@ -4,7 +4,8 @@
 
 #include <vector>
 #include <functional>
-#include <d3d11.h>
+
+struct ID3D11CommandList;
 
 namespace Volt
 {
@@ -19,13 +20,15 @@ namespace Volt
 
 		inline std::vector<RenderCommand>& GetRenderCommands() { return myRenderCommands; }
 		inline std::vector<InstancedRenderCommand>& GetCurrentRenderCommands() { return myCurrentRenderCommands; }
-
 		inline static Ref<CommandBuffer> Create() { return CreateRef<CommandBuffer>(); }
+
+		ID3D11CommandList*& GetAndReleaseCommandList();
 
 	private:
 
 		std::vector<std::function<void()>> myCommands;
 		std::vector<RenderCommand> myRenderCommands;
 		std::vector<InstancedRenderCommand> myCurrentRenderCommands;
+		ID3D11CommandList* myCommandList = nullptr;
 	};
 }

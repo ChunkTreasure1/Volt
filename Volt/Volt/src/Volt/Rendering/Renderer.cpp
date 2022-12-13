@@ -529,9 +529,7 @@ namespace Volt
 		}
 	}
 
-	VT_OPTIMIZE_ON
-
-		void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
+	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
 	{
 		auto& decal = myRendererData->decalData.renderCommands.emplace_back();
 		decal.material = aMaterial;
@@ -555,7 +553,7 @@ namespace Volt
 	{
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([shader = aShader]() 
+		currentCommandBuffer->Submit([shader = aShader]()
 			{
 				auto context = GraphicsContext::GetDeferredContext();
 
@@ -2419,15 +2417,15 @@ namespace Volt
 			myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->renderReady; });
 		}
 
+		ID3D11CommandList*& commandList = myRendererData->currentGPUBuffer->GetAndReleaseCommandList();
+
 		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
 
-		ID3D11CommandList* commandList = nullptr;
-		deferredContext->FinishCommandList(false, &commandList);
+		VT_DX_CHECK(deferredContext->FinishCommandList(false, &commandList));
 
 		if (commandList)
 		{
-			immediateContext->ExecuteCommandList(commandList, true);
-			commandList->Release();
+			immediateContext->ExecuteCommandList(commandList, false);
 		}
 
 		myRendererData->updateReady = true;
@@ -2437,11 +2435,36 @@ namespace Volt
 	void Renderer::BindTexturesToStage(ShaderStage stage, const std::vector<ID3D11ShaderResourceView*>& textures, const uint32_t startSlot)
 	{
 #ifdef VT_THREADED_RENDERING
-		auto context = GraphicsContext::GetDeferredContext();
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([stage, textures, startSlot]()
+			{
+				auto context = GraphicsContext::GetDeferredContext();
+				switch (stage)
+				{
+					case ShaderStage::Vertex:
+						context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Pixel:
+						context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Hull:
+						context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Domain:
+						context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Geometry:
+						context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Compute:
+						context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					default:
+						break;
+				}
+			});
 #else
 		auto context = GraphicsContext::GetImmediateContext();
-#endif
-
 		switch (stage)
 		{
 			case ShaderStage::Vertex:
@@ -2465,16 +2488,46 @@ namespace Volt
 			default:
 				break;
 		}
+#endif
+
+
 	}
 
 	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
 	{
 #ifdef VT_THREADED_RENDERING
-		auto context = GraphicsContext::GetDeferredContext();
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([stage, startSlot, count]()
+			{
+				auto context = GraphicsContext::GetDeferredContext();
+				std::vector<ID3D11ShaderResourceView*> textures{ count, nullptr };
+
+				switch (stage)
+				{
+					case ShaderStage::Vertex:
+						context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Pixel:
+						context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Hull:
+						context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Domain:
+						context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Geometry:
+						context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					case ShaderStage::Compute:
+						context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+						break;
+					default:
+						break;
+				}
+			});
 #else
 		auto context = GraphicsContext::GetImmediateContext();
-#endif
-		
 		std::vector<ID3D11ShaderResourceView*> textures{ count, nullptr };
 
 		switch (stage)
@@ -2500,6 +2553,8 @@ namespace Volt
 			default:
 				break;
 		}
+#endif
+
 	}
 
 	void Renderer::DispatchLines()
