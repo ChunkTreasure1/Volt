@@ -9,84 +9,129 @@
 
 #include "GEM/gem.h"
 
-struct Event
+namespace Amp
 {
-	std::string Path;
-	bool isLoaded;
-	FMOD::Studio::EventDescription* FmodEventDesc = nullptr;
+	struct InitInsturct
+	{
+		std::string aFileDirectory;
+		std::string aMasterbank;
+		std::string aMasterStringsBank;
+		FMOD_STUDIO_LOAD_BANK_FLAGS aLoadBankFlags;
+	};
 
-	typedef std::unordered_map<int, FMOD::Studio::EventInstance*> InstanceMap;
-	InstanceMap instances;
+	struct EventInstance
+	{
+		int ID = -1;
+		FMOD::Studio::EventInstance* instance = nullptr;
+		FMOD_VECTOR position{0,0,0};
+		FMOD_VECTOR prevPosition{ 0,0,0 };
+		FMOD_VECTOR velocity{ 0,0,0 };
+		FMOD_VECTOR forward{ 0,0,0 };
+		FMOD_VECTOR up{ 0,0,0 };
+	};
 
-};
+	struct Event
+	{
+		std::string Path = "";
+		bool isLoaded = false;
+		FMOD::Studio::EventDescription* FmodEventDesc = nullptr;
 
-struct Listener
-{
-	int listenerID;
-	FMOD_VECTOR position;
-	FMOD_VECTOR velocity;
-	FMOD_VECTOR forward;
-	FMOD_VECTOR up;
+		int instanceIDpool = 0;
+		typedef std::unordered_map<int, std::unique_ptr<EventInstance>> InstanceMap;
+		InstanceMap instances;
+	};
 
-	FMOD_3D_ATTRIBUTES attributes;
-};
+	struct EventData
+	{
+		FMOD_VECTOR position;
+		FMOD_VECTOR forward;
+		FMOD_VECTOR up;
+	};
 
-class AudioEngine
-{
-	FMOD::Studio::System* studioSystem = NULL;
-	FMOD::System* coreSystem = NULL;
+	struct Listener
+	{
+		int listenerID = -1;
+		FMOD_VECTOR position{0,0,0};
+		FMOD_VECTOR prevPosition{ 0,0,0 };
+		FMOD_VECTOR velocity{ 0,0,0 };
+		FMOD_VECTOR forward{ 0,0,0 };
+		FMOD_VECTOR up{ 0,0,0 };
 
-	FMOD::Studio::Bank* masterBank = NULL;
-	FMOD::Studio::Bank* masterStringBank = NULL;
+		FMOD_3D_ATTRIBUTES attributes{};
+	};
 
-	typedef std::unordered_map<std::string, Event> EventMap;
-	typedef std::unordered_map<std::string, FMOD::Studio::Bank*> BankMap;
+	struct ListenerData
+	{
+		int ID = -1;
+		float aDeltaTime = 0;
+		std::array<float, 3> position;
+		std::array<float, 3> forward;
+		std::array<float, 3> up;
+	};
 
-	EventMap events;
-	BankMap banks;
+	class AudioEngine
+	{
+		FMOD::Studio::System* studioSystem = NULL;
+		FMOD::System* coreSystem = NULL;
 
-	Listener mainListener;
+		FMOD::Studio::Bank* masterBank = NULL;
+		FMOD::Studio::Bank* masterStringBank = NULL;
 
-public:
-	AudioEngine() = default;
-	~AudioEngine() = default;
+		typedef std::unordered_map<std::string, Event> EventMap;
+		typedef std::unordered_map<std::string, FMOD::Studio::Bank*> BankMap;
+		typedef std::unordered_map<int, Listener> ListenerMap;
 
-	bool Init(const std::string aFileDirectory);
-	void Update();
-	void Release();
+		EventMap events;
+		BankMap banks;
+		ListenerMap listeners;
 
-	bool LoadMasterBank(const std::string& aMasterFileName, const std::string& aMasterStringFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags);
-	bool LoadBank(const std::string& aFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags);
-	bool UnloadBank(const std::string& aFileName);
+		//TODO: Make to map
+		Listener mainListener;
 
-	bool LoadEvent(const std::string aEventPath);
-	FMOD::Studio::EventInstance* CreateEventInstance(const std::string aEventPath);
+	public:
+		AudioEngine() = default;
+		~AudioEngine() = default;
 
-	bool PlayEvent(FMOD::Studio::EventInstance* aEventInstance);
-	bool PlayOneShot(const std::string aEventPath);
-	bool PlayOneShot(const std::string aEventPath, const std::string aEventParameter, const float aParameterValue);
+		bool Init(const std::string aFileDirectory);
+		void Update();
+		void Release();
 
-	bool StopEvent(FMOD::Studio::EventInstance* aEventInstance, bool immediately);
-	bool StopAll(const int aStopMode);
+		bool LoadMasterBank(const std::string& aMasterFileName, const std::string& aMasterStringFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags);
+		bool LoadBank(const std::string& aFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags);
+		bool UnloadBank(const std::string& aFileName);
 
-	bool SetEventParameter(FMOD::Studio::EventInstance* aEventInstance, const std::string aEventParameter, const float aParameterValue);
-	bool SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, std::vector<float> aPosition);
-	bool SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, gem::vec3 aPosition);
+		bool LoadEvent(const std::string aEventPath);
 
-	bool InitListener(int aListenerID, std::array<float,3> aPosition, std::array<float,3> aForwardDir, std::array<float,3> aUpVector);
-	bool InitListener(int aListenerID, gem::vec3 aPosition, gem::vec3 aForwardDir, gem::vec3 aUpVector);
+		EventInstance& CreateEventInstance(const std::string aEventPath);
+		bool RemoveEvent(EventInstance& aEventHandle);
 
-	bool UpdateListener(int aListenerID, std::array<float, 3> aPosition, std::array<float, 3> aForwardDir, std::array<float, 3> aUp, std::array<float, 3> aVelocity);
-	bool UpdateListener(int aListenerID, gem::vec3 aPosition, gem::vec3 aForwardDir, gem::vec3 aUp, gem::vec3 aVelocity = {0,0,0});
+		bool PlayEvent(FMOD::Studio::EventInstance* aEventInstance);
+		bool PlayOneShot(const std::string aEventPath);
+		//TODO 3D OneShot
+		bool PlayOneShot(const std::string aEventPath, const std::string aEventParameter, const float aParameterValue);
+		//TODO 3D OneShot with parameters
 
-	bool SetMixerVolume(const std::string& aBusName, float aVolume);
+		bool StopEvent(FMOD::Studio::EventInstance* aEventInstance, bool immediately);
+		bool StopAll(const int aStopMode);
 
-private:
-	std::string rootDirectory;
-	bool isInitialized;
-	FMOD_RESULT lastResult = FMOD_OK;
+		bool SetEventParameter(FMOD::Studio::EventInstance* aEventInstance, const std::string aEventParameter, const float aParameterValue);
 
-	bool ErrorCheck_Critical(FMOD_RESULT result);
-	bool ErrorCheck(FMOD_RESULT result);
+		bool SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, EventData aEventData);
 
-};
+		bool InitListener(ListenerData aListenerData);
+		bool UpdateListener(ListenerData aListenerData);
+
+		bool SetMixerVolume(const std::string& aBusName, float aVolume);
+
+	private:
+		std::string rootDirectory;
+		bool isInitialized;
+		FMOD_RESULT lastResult = FMOD_OK;
+
+		bool ErrorCheck_Critical(FMOD_RESULT result);
+		bool ErrorCheck(FMOD_RESULT result);
+
+	};
+}
+
+

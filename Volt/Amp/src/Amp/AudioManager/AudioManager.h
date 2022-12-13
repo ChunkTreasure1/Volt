@@ -3,26 +3,6 @@
 
 namespace Amp
 {
-	struct InitInsturct 
-	{
-		std::string aFileDirectory;
-		std::string aMasterbank;
-		std::string aMasterStringsBank;
-		FMOD_STUDIO_LOAD_BANK_FLAGS aLoadBankFlags;
-	};
-
-	struct ListenerData 
-	{
-
-	};
-
-	struct EventData
-	{
-		int myId;
-		std::string myName;
-		FMOD::Studio::EventInstance* myEventInstance;
-	};
-
 	class AudioManager 
 	{
 	public:
@@ -30,21 +10,21 @@ namespace Amp
 		static void Init(InitInsturct aSetUpInstruction);
 		static void Shutdown();
 
-		static void InitNewListener();
-
+		//Listener Handling
+		static bool InitListener(int ID);
 		static void Update();
 		static void UpdateListener(ListenerData aListenerData);
 
 		//Event Handling
+		static bool CreateEventInstance(std::string aPath, EventInstance& aEvent);
+		static bool PlayEvent(EventInstance& aEvent);
+		static bool RemoveEvent(EventInstance& aEvent);
 
 		//Mixer Handling
 		static bool SetMasterVolume(float aVolPerct);
 		static bool SetMixerVolume(std::string aMixerPath, float aVolPerct);
 
 	private:
-		inline static std::vector<Listener> activeListeners;
-
 		inline static AudioEngine myAudioEngine = AudioEngine();
-
 	};
 }
