@@ -63,6 +63,11 @@ namespace Volt
 
 	void Renderer::Shutdown()
 	{
+		myRendererData->isRunning = false;
+		myRendererData->updateReady = true;
+		myRendererData->syncVariable.notify_all();
+		myRendererData->renderThread.join();
+
 		myDepthStates.clear();
 		myRasterizerStates.clear();
 		myDefaultData = nullptr;
@@ -692,7 +697,7 @@ namespace Volt
 	{
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([&context]()
+		currentCommandBuffer->Submit([context]()
 			{
 				const std::string profData = "Volt::Renderer::Begin: " + context;
 				VT_PROFILE_SCOPE(profData.c_str());
@@ -2033,7 +2038,7 @@ namespace Volt
 
 		auto context = GraphicsContext::GetDeferredContext();
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		
+
 		auto currentCommandBuffer = myRendererData->currentGPUBuffer;
 		myRendererData->instancingData.instancedVertexBuffer->RT_Bind(1);
 
@@ -2076,10 +2081,29 @@ namespace Volt
 
 	void Renderer::RT_Execute()
 	{
-		while (myRendererData->isRunning)
-		{
+		VT_PROFILE_THREAD("Render Thread")
 
-		}
+			while (myRendererData->isRunning)
+			{
+				// Execute commands
+				{
+					VT_PROFILE_SCOPE("Execute Commands");
+					myRendererData->currentGPUBuffer->Execute();
+					myRendererData->currentGPUBuffer->Clear();
+
+					myRendererData->renderReady = true;
+					myRendererData->syncVariable.notify_one();
+				}
+
+				{
+					VT_PROFILE_SCOPE("Wait for update");
+
+					std::unique_lock lk{ myRendererData->renderMutex };
+					myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->updateReady; });
+					myRendererData->renderReady = false;
+					myRendererData->updateReady = false;
+				}
+			}
 	}
 
 	void Renderer::CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass, bool isAOPass)
@@ -2298,22 +2322,26 @@ namespace Volt
 		auto immediateContext = GraphicsContext::GetImmediateContext();
 		auto deferredContext = GraphicsContext::GetDeferredContext();
 
-		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
-
-		// Execute commands
 		{
-			myRendererData->currentGPUBuffer->Execute();
-			myRendererData->currentGPUBuffer->Clear();
+			VT_PROFILE_SCOPE("Wait for render");
+			std::unique_lock lk{ myRendererData->renderMutex };
+			myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->renderReady; });
 		}
+
+		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
 
 		ID3D11CommandList* commandList = nullptr;
 		deferredContext->FinishCommandList(false, &commandList);
+
+		myRendererData->updateReady = true;
+		myRendererData->syncVariable.notify_one();
 
 		if (commandList)
 		{
 			immediateContext->ExecuteCommandList(commandList, true);
 			commandList->Release();
 		}
+
 	}
 
 	void Renderer::DispatchLines()

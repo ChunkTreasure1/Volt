@@ -410,6 +410,11 @@ namespace Volt
 
 			///// Threading /////
 			std::atomic_bool isRunning = false;
+			bool renderReady = false;
+			bool updateReady = false;
+
+			std::mutex renderMutex;
+			std::condition_variable syncVariable;
 			std::thread renderThread;
 			/////////////////////
 		};
