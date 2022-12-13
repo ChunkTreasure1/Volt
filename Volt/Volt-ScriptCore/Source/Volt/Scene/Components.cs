@@ -27,11 +27,11 @@ namespace Volt
             }
         }
 
-        public Vector3 rotation
+        public Quaternion rotation
         {
             get
             {
-                InternalCalls.TransformComponent_GetRotation(entity.Id, out Vector3 rotation);
+                InternalCalls.TransformComponent_GetRotation(entity.Id, out Quaternion rotation);
                 return rotation;
             }
 
