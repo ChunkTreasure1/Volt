@@ -553,6 +553,24 @@ namespace Volt
 
 	void Renderer::DrawFullscreenTriangleWithShader(Ref<Shader> aShader)
 	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]() 
+			{
+				auto context = GraphicsContext::GetDeferredContext();
+
+				shader->RT_Bind();
+
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+				context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+
+				SetDepthState(DepthState::None);
+
+				context->Draw(3, 0);
+				shader->RT_Unbind();
+			});
+#else 
 		auto context = GraphicsContext::GetImmediateContext();
 
 		aShader->Bind();
@@ -565,6 +583,7 @@ namespace Volt
 
 		context->Draw(3, 0);
 		aShader->Unbind();
+#endif
 	}
 
 	void Renderer::DrawFullscreenTriangleWithMaterial(Ref<Material> aMaterial)
@@ -703,6 +722,7 @@ namespace Volt
 				VT_PROFILE_SCOPE(profData.c_str());
 
 				RT_BeginAnnotatedSection(context);
+				Renderer::SetDepthState(DepthState::ReadWrite);
 				myRendererData->currentContext = context;
 
 				RunResourceChanges();
@@ -868,11 +888,11 @@ namespace Volt
 					myRendererData->currentPass.framebuffer->RT_Unbind();
 				}
 
+				EndSection(myRendererData->currentPass.debugName);
+
 				myRendererData->currentPass = {};
 				myRendererData->currentPassCamera = nullptr;
 				myRendererData->instancingData.passRenderCommands.clear();
-
-				RT_EndAnnotatedSection();
 			});
 #else
 
@@ -898,8 +918,36 @@ namespace Volt
 #endif
 	}
 
-	void Renderer::BeginFullscreenPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear)
+	void Renderer::BeginFullscreenPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool shouldClear)
 	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([renderPass = aRenderPass, camera = aCamera, shouldClear]()
+			{
+				const std::string tag = "Begin " + renderPass.debugName;
+				VT_PROFILE_SCOPE(tag.c_str());
+
+				BeginSection(renderPass.debugName);
+
+				myRendererData->currentPass = renderPass;
+				myRendererData->currentPassCamera = camera;
+
+				if (shouldClear && myRendererData->currentPass.framebuffer)
+				{
+					myRendererData->currentPass.framebuffer->RT_Clear();
+				}
+
+				if (myRendererData->currentPass.framebuffer)
+				{
+					myRendererData->currentPass.framebuffer->RT_Bind();
+				}
+
+				RT_UpdatePerPassBuffers();
+
+				ConstantBufferRegistry::Get(0)->RT_Bind(0);
+				ConstantBufferRegistry::Get(3)->RT_Bind(3);
+			});
+#else
 		const std::string tag = "Begin " + aRenderPass.debugName;
 		VT_PROFILE_SCOPE(tag.c_str());
 
@@ -922,10 +970,35 @@ namespace Volt
 
 		ConstantBufferRegistry::Get(0)->Bind(0);
 		ConstantBufferRegistry::Get(3)->Bind(3);
+#endif
 	}
 
 	void Renderer::EndFullscreenPass()
 	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				const std::string tag = "End " + myRendererData->currentPass.debugName;
+				VT_PROFILE_SCOPE(tag.c_str());
+
+				if (myRendererData->currentPass.overrideShader)
+				{
+					myRendererData->currentPass.overrideShader->RT_Unbind();
+				}
+
+				if (myRendererData->currentPass.framebuffer)
+				{
+					myRendererData->currentPass.framebuffer->RT_Unbind();
+				}
+
+				EndSection(myRendererData->currentPass.debugName);
+
+				myRendererData->currentPass = {};
+				myRendererData->currentPassCamera = nullptr;
+			});
+#else
+
 		const std::string tag = "End " + myRendererData->currentPass.debugName;
 		VT_PROFILE_SCOPE(tag.c_str());
 
@@ -943,6 +1016,7 @@ namespace Volt
 
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
+#endif
 	}
 
 	void Renderer::SetFullResolution(const gem::vec2& renderSize)
@@ -952,6 +1026,9 @@ namespace Volt
 
 	void Renderer::BeginSection(const std::string& name)
 	{
+#ifdef VT_THREADED_RENDERING
+		RT_BeginAnnotatedSection(name);
+#else
 		BeginAnnotatedSection(name);
 
 #ifdef VT_PROFILE_GPU
@@ -1012,10 +1089,14 @@ namespace Volt
 		GetContextProfilingData().sectionNames.at(GetContextProfilingData().currentFrame).emplace_back(name);
 #endif
 		myRendererData->statistics.perSectionStatistics.emplace(name, SectionStatistics{});
+#endif
 	}
 
 	void Renderer::EndSection(const std::string& name)
 	{
+#ifdef VT_THREADED_RENDERING
+		RT_EndAnnotatedSection();
+#else
 		auto context = GraphicsContext::GetImmediateContext();
 
 #ifdef VT_PROFILE_GPU
@@ -1023,6 +1104,7 @@ namespace Volt
 		context->End(GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
 #endif
 		EndAnnotatedSection();
+#endif
 	}
 
 	void Renderer::BeginAnnotatedSection(const std::string& name)
@@ -1179,13 +1261,22 @@ namespace Volt
 
 	void Renderer::SetDepthState(DepthState aDepthState)
 	{
+#ifdef VT_THREADED_RENDERING
+		auto context = GraphicsContext::GetDeferredContext();
+#else
 		auto context = GraphicsContext::GetImmediateContext();
+#endif
 		context->OMSetDepthStencilState(myDepthStates[(uint32_t)aDepthState].Get(), 0);
 	}
 
 	void Renderer::SetRasterizerState(RasterizerState aRasterizerState)
 	{
+#ifdef VT_THREADED_RENDERING
+		auto context = GraphicsContext::GetDeferredContext();
+#else
 		auto context = GraphicsContext::GetImmediateContext();
+#endif
+
 		context->RSSetState(myRasterizerStates[(uint32_t)aRasterizerState].Get());
 	}
 
@@ -2333,15 +2424,82 @@ namespace Volt
 		ID3D11CommandList* commandList = nullptr;
 		deferredContext->FinishCommandList(false, &commandList);
 
-		myRendererData->updateReady = true;
-		myRendererData->syncVariable.notify_one();
-
 		if (commandList)
 		{
 			immediateContext->ExecuteCommandList(commandList, true);
 			commandList->Release();
 		}
 
+		myRendererData->updateReady = true;
+		myRendererData->syncVariable.notify_one();
+	}
+
+	void Renderer::BindTexturesToStage(ShaderStage stage, const std::vector<ID3D11ShaderResourceView*>& textures, const uint32_t startSlot)
+	{
+#ifdef VT_THREADED_RENDERING
+		auto context = GraphicsContext::GetDeferredContext();
+#else
+		auto context = GraphicsContext::GetImmediateContext();
+#endif
+
+		switch (stage)
+		{
+			case ShaderStage::Vertex:
+				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Pixel:
+				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Hull:
+				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Domain:
+				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Geometry:
+				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Compute:
+				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			default:
+				break;
+		}
+	}
+
+	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
+	{
+#ifdef VT_THREADED_RENDERING
+		auto context = GraphicsContext::GetDeferredContext();
+#else
+		auto context = GraphicsContext::GetImmediateContext();
+#endif
+		
+		std::vector<ID3D11ShaderResourceView*> textures{ count, nullptr };
+
+		switch (stage)
+		{
+			case ShaderStage::Vertex:
+				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Pixel:
+				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Hull:
+				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Domain:
+				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Geometry:
+				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Compute:
+				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			default:
+				break;
+		}
 	}
 
 	void Renderer::DispatchLines()

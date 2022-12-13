@@ -7,6 +7,7 @@
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/RenderPass.h"
 #include "Volt/Rendering/RendererInfo.h"
+#include "Volt/Rendering/Shader/ShaderCommon.h"
 
 #include "Volt/Scene/Scene.h"
 
@@ -202,6 +203,9 @@ namespace Volt
 		static void ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer);
 
 		static void SyncAndWait();
+
+		static void BindTexturesToStage(ShaderStage stage, const std::vector<ID3D11ShaderResourceView*>& textures, const uint32_t startSlot);
+		static void ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count);
 
 		static void SetSceneData(const SceneData& aSceneData);
 		static void SetDepthState(DepthState aDepthState);

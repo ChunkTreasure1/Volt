@@ -306,13 +306,15 @@ namespace Volt
 
 #ifdef VT_THREADED_RENDERING
 		Renderer::Begin("Test");
+		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
 
 		Renderer::BeginPass(myDeferredPass, aCamera);
 		Renderer::DispatchRenderCommandsInstanced();
 		Renderer::EndPass();
 
-		Renderer::End();
+		ShadingPass(sceneEnvironment);
 
+		Renderer::End();
 		Renderer::SyncAndWait();
 #else
 
@@ -528,7 +530,7 @@ namespace Volt
 
 	Ref<Framebuffer> SceneRenderer::GetFinalFramebuffer()
 	{
-		return myGammaCorrectionPass.framebuffer;
+		return myShadingPass.framebuffer;
 	}
 
 	Ref<Framebuffer> SceneRenderer::GetFinalObjectFramebuffer()
@@ -1288,29 +1290,27 @@ namespace Volt
 
 		auto context = GraphicsContext::GetImmediateContext();
 
-		Renderer::BeginSection("Deferred Shading");
+		Renderer::BeginFullscreenPass(myShadingPass, nullptr);
 
-		context->PSSetShaderResources(0, 1, myDeferredPass.framebuffer->GetColorAttachment(0)->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(1, 1, myDeferredPass.framebuffer->GetColorAttachment(1)->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(2, 1, myDeferredPass.framebuffer->GetColorAttachment(2)->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(3, 1, myDeferredPass.framebuffer->GetColorAttachment(3)->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(4, 1, myDeferredPass.framebuffer->GetColorAttachment(5)->GetSRV().GetAddressOf());
+		std::vector<ID3D11ShaderResourceView*> mainSRVs =
+		{
+			myDeferredPass.framebuffer->GetColorAttachment(0)->GetSRV().Get(),
+			myDeferredPass.framebuffer->GetColorAttachment(1)->GetSRV().Get(),
+			myDeferredPass.framebuffer->GetColorAttachment(2)->GetSRV().Get(),
+			myDeferredPass.framebuffer->GetColorAttachment(3)->GetSRV().Get(),
+			myDeferredPass.framebuffer->GetColorAttachment(5)->GetSRV().Get(),
+			nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+			Renderer::GetDefaultData().brdfLut->GetSRV().Get(),
+			sceneEnv.irradianceMap->GetSRV().Get(),
+			sceneEnv.radianceMap->GetSRV().Get(),
+			myDirectionalShadowPass.framebuffer->GetDepthAttachment()->GetSRV().Get(),
+			myPointLightPass.framebuffer->GetDepthAttachment()->GetSRV().Get()
+		};
 
-		context->PSSetShaderResources(11, 1, Renderer::GetDefaultData().brdfLut->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(12, 1, sceneEnv.irradianceMap->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(13, 1, sceneEnv.radianceMap->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(14, 1, myDirectionalShadowPass.framebuffer->GetDepthAttachment()->GetSRV().GetAddressOf());
-		context->PSSetShaderResources(15, 1, myPointLightPass.framebuffer->GetDepthAttachment()->GetSRV().GetAddressOf());
-
-		myShadingPass.framebuffer->Bind();
-		myShadingPass.framebuffer->Clear();
+		Renderer::BindTexturesToStage(ShaderStage::Pixel, mainSRVs, 0);
 		Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("Shading"));
-		myShadingPass.framebuffer->Unbind();
-
-		std::vector<ID3D11ShaderResourceView*> nullSRV = { 16, nullptr };
-		context->PSSetShaderResources(0, 16, nullSRV.data());
-
-		Renderer::EndSection("Deferred Shading");
+		Renderer::ClearTexturesAtStage(ShaderStage::Pixel, 0, 16);
+		Renderer::EndFullscreenPass();
 	}
 
 	void SceneRenderer::BloomPass(Ref<Image2D> sourceImage)
