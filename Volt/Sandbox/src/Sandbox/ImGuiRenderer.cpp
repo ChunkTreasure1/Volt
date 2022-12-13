@@ -2,7 +2,8 @@
 #include "Sandbox.h"
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
@@ -465,7 +466,6 @@ float Sandbox::DrawTitlebar()
 	//UI::ShiftCursor(4.f, 4.f);
 
 	ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Volt)), { iconSize, iconSize });
-
 	ImGui::SameLine();
 
 	// Menu bar
@@ -584,6 +584,16 @@ void Sandbox::DrawMenuBar()
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Asset Browser"))
+			{
+				if (ImGui::MenuItem("Open new Asset Browser"))
+				{
+					myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Secondary" + std::to_string(myAssetBrowserCount++)));
+				}
+
+				ImGui::EndMenu();
+			}
+
 			for (const auto& window : myEditorWindows)
 			{
 				ImGui::MenuItem(window->GetTitle().c_str(), "", &const_cast<bool&>(window->IsOpen()));
@@ -597,6 +607,12 @@ void Sandbox::DrawMenuBar()
 			if (ImGui::MenuItem("Reset layout"))
 			{
 				myShouldResetLayout = true;
+			}
+
+			if (ImGui::MenuItem("Crash"))
+			{
+				int* ptr = nullptr;
+				*ptr = 0;
 			}
 
 			ImGui::EndMenu();

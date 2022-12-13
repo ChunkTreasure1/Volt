@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Core/Application.h"
+#include "Volt/Platform/ExceptionHandling.h"
 
 #include <filesystem>
 
@@ -8,12 +9,37 @@ extern Volt::Application* Volt::CreateApplication(const std::filesystem::path& a
 
 namespace Volt
 {
-	int Main(const std::filesystem::path& appPath)
+	void Create(const std::filesystem::path& appPath)
 	{
 		Application* app = Volt::CreateApplication(appPath);
 		app->Run();
 
 		delete app;
+	}
+
+	void StartCrashHandler()
+	{
+		FileSystem::StartProcess("CrashHandler.exe");
+	}
+
+	void CreateProxy(std::filesystem::path& dmpPath, const std::filesystem::path& path)
+	{
+		__try
+		{
+			Create(path);
+		}
+		__except (ExceptionFilterFunction(GetExceptionInformation(), dmpPath))
+		{
+#ifndef VT_DEBUG
+			StartCrashHandler();
+#endif
+		}
+	}
+
+	int Main(const std::filesystem::path& appPath)
+	{
+		std::filesystem::path dmpPath;
+		CreateProxy(dmpPath, appPath);
 		return 0;
 	}
 }

@@ -17,7 +17,19 @@ bool EditorWindow::Begin()
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	}
 
+	bool minSize = false;
+	if (myMinSize.x != -1.f || myMinSize.y != -1.f)
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, myMinSize);
+		minSize = true;
+	}
+
 	ImGui::Begin(myTitle.c_str(), &myIsOpen, myWindowFlags);
+
+	if (minSize)
+	{
+		ImGui::PopStyleVar();
+	}
 
 	if (myHasDockSpace)
 	{

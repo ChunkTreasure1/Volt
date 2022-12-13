@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sandbox/Window/AssetCommon.h"
+#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/AssetBrowserPopup.h"
 
 #include <Volt/Asset/Asset.h>

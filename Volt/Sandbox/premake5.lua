@@ -75,7 +75,6 @@ project "Sandbox"
 
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.P4}",
-		"%{IncludeDir.dpp}",
 
 		"%{IncludeDir.ffmpeg}"
 	}
@@ -114,8 +113,6 @@ project "Sandbox"
 		"%{Library.P4_script_sqlite}",
 		"%{Library.P4_rpc}",
 		"%{Library.P4_supp}",
-
-		"%{Library.dpp}",
 
 		"%{Library.OpenSSL_Crypto}",
 		"%{Library.OpenSSL_SSL}",

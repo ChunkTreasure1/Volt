@@ -3,7 +3,7 @@
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>

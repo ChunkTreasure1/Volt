@@ -6,7 +6,7 @@
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
-#include "Sandbox/Window/AssetBrowserPanel.h"
+#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Window/CreatePanel.h"
 #include "Sandbox/Window/LogPanel.h"
 #include "Sandbox/Window/AnimationTreeEditor.h"
@@ -23,8 +23,9 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
-#include "Sandbox/Window/EditorLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/AssetIconLibrary.h"
+#include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
@@ -64,14 +65,14 @@
 
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 #include <Volt/AI/NavMesh2/NavMesh2.h>
-#include "Volt/Audio/AudioManager.h"
+#include <Volt/Platform/ExceptionHandling.h>
+#include <Volt/Audio/AudioManager.h>
 
 #include <Game/Game.h>
 
 #include <imgui.h>
 #include <csignal>
 
-#include <dpp/dpp.h>
 #include <ShlObj.h>
 
 #include <gem/noise.h>
@@ -89,36 +90,10 @@ std::string GetSIGEventFromInt(int signal)
 	}
 }
 
-void SignalHandler(int signal)
-{
-	dpp::cluster bot("");
-	dpp::webhook wh("https://discord.com/api/webhooks/1044616206520438825/lA7ONWakE8XwFQbSFY-ip9aleuAiMaGF8WiinDq1-eBLOLSqqD0MdhSNe-7KNMovnApL");
-
-	const std::string user = FileSystem::GetCurrentUserName();
-
-	auto msg = dpp::message(std::format("{0} just crashed! <:ivar_point:1044955145139662878> It was a {1} error!", user, GetSIGEventFromInt(signal)));
-	bot.execute_webhook_sync(wh, msg);
-}
-
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
 	myInstance = this;
-
-	if (std::signal(SIGSEGV, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
-
-	if (std::signal(SIGFPE, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
-
-	if (std::signal(SIGABRT, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
 }
 
 Sandbox::~Sandbox()
@@ -128,9 +103,18 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	float n = gem::perlin(gem::vec2{ 0.f, 0.f });
+	// Set working directory
+	if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
+	{
+		const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
+		if (!pathEnv.empty())
+		{
+			std::filesystem::current_path(pathEnv);
+		}
+	}
 
 	EditorIconLibrary::Initialize();
+	AssetIconLibrary::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
 
 	Volt::Application::Get().GetWindow().Maximize();
@@ -150,7 +134,7 @@ void Sandbox::OnAttach()
 	myViewportPanel = std::reinterpret_pointer_cast<ViewportPanel>(myEditorWindows.back()); // #TODO: This is bad
 
 	myEditorWindows.emplace_back(CreateRef<SceneViewPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene));
+	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Main"));
 
 	myEditorWindows.emplace_back(CreateRef<CharacterEditorPanel>());
 	EditorLibrary::Register(Volt::AssetType::AnimatedCharacter, myEditorWindows.back());
@@ -215,6 +199,7 @@ void Sandbox::OnDetach()
 	myGame = nullptr;
 
 	VersionControl::Shutdown();
+	AssetIconLibrary::Shutdowm();
 	EditorIconLibrary::Shutdown();
 }
 
@@ -722,7 +707,7 @@ void Sandbox::SetupRenderCallbacks()
 				Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
 				Volt::Renderer::SetDepthState(Volt::DepthState::ReadWrite);
 
-				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
+				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
 				registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
 					{
 						if (!SelectionManager::IsSelected(id))
@@ -789,8 +774,8 @@ void Sandbox::SetupRenderCallbacks()
 			//////////////////////////////////
 
 			{
-				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
-				auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Editor/3dpil.vtmesh");
+				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
+				auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Arrow/3dpil.vtmesh");
 
 				Volt::Renderer::BeginPass(myForwardExtraPass, camera);
 				registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
@@ -1028,7 +1013,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		case SceneState::Edit:
 			myRuntimeScene->UpdateEditor(e.GetTimestep());
 			AUDIOMANAGER.StopAll();
-			initiated = false;
 			break;
 
 		case SceneState::Play:
@@ -1261,6 +1245,29 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			{
 				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
 				myEditorCameraController->Focus(ent.GetPosition());
+			}
+
+			break;
+		}
+
+		case VT_KEY_SPACE:
+		{
+			if (ctrlPressed)
+			{
+				for (const auto& window : myEditorWindows)
+				{
+					if (window->GetTitle() == "Asset Browser##Main")
+					{
+						if (!window->IsOpen())
+						{
+							window->Open();
+						}
+						else
+						{
+							window->Close();
+						}
+					}
+				}
 			}
 
 			break;

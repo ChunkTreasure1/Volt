@@ -58,6 +58,154 @@ namespace Volt
         internal extern static void RelationshipComponent_SetParent(uint entityId, ref Entity parentId);
         #endregion
 
+        #region RigidbodyComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static BodyType RigidbodyComponent_GetBodyType(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetBodyType(uint entityId, ref BodyType bodyType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static uint RigidbodyComponent_GetLayerId(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetLayerId(uint entityId, ref uint layerId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float RigidbodyComponent_GetMass(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetMass(uint entityId, ref float mass);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float RigidbodyComponent_GetLinearDrag(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetLinearDrag(uint entityId, ref float linearDrag);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static uint RigidbodyComponent_GetLockFlags(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetLockFlags(uint entityId, ref uint lockFlags);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float RigidbodyComponent_GetAngularDrag(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetAngularDrag(uint entityId, ref float angularDrag);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool RigidbodyComponent_GetDisableGravity(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetDisableGravity(uint entityId, ref bool disableGravity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool RigidbodyComponent_GetIsKinematic(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponent_SetIsKinematic(uint entityId, ref bool isKinematic);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static CollisionDetectionType RigidbodyComponent_GetCollisionType(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidbodyComponentSetCollisionType(uint entityId, ref CollisionDetectionType collisionType);
+        #endregion
+
+        #region BoxColliderComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void BoxColliderComponent_GetHalfSize(uint entityId, out Vector3 halfSize);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void BoxColliderComponent_SetHalfSize(uint entityId, ref Vector3 halfSize);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void BoxColliderComponent_GetOffset(uint entityId, out Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void BoxColliderComponent_SetOffset(uint entityId, ref Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool BoxColliderComponent_GetIsTrigger(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void BoxColliderComponent_SetIsTrigger(uint entityId, ref bool isTrigger);
+        #endregion
+
+        #region SphereColliderComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float SphereColliderComponent_GetRadius(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SphereColliderComponent_SetRadius(uint entityId, ref float radius);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SphereColliderComponent_GetOffset(uint entityId, out Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SphereColliderComponent_SetOffset(uint entityId, ref Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool SphereColliderComponent_GetIsTrigger(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SphereColliderComponent_SetIsTrigger(uint entityId, ref bool isTrigger);
+        #endregion
+
+        #region CapsuleColliderComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float CapsuleColliderComponent_GetRadius(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void CapsuleColliderComponent_SetRadius(uint entityId, ref float radius);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float CapsuleColliderComponent_GetHeight(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void CapsuleColliderComponent_SetHeight(uint entityId, ref float height);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void CapsuleColliderComponent_GetOffset(uint entityId, out Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void CapsuleColliderComponent_SetOffset(uint entityId, ref Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool CapsuleColliderComponent_GetIsTrigger(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void CapsuleColliderComponent_SetIsTrigger(uint entityId, ref bool isTrigger);
+        #endregion
+
+        #region MeshColliderComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool MeshColliderComponent_GetIsConvex(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void MeshColliderComponent_SetIsConvex(uint entityId, ref bool isConvex);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool MeshColliderComponent_GetIsTrigger(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void MeshColliderComponent_SetIsTrigger(uint entityId, ref bool isTrigger);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void MeshColliderComponent_GetOffset(uint entityId, out Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void MeshColliderComponent_SetOffset(uint entityId, ref Vector3 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static int MeshColliderComponent_GetSubMeshIndex(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void MeshColliderComponent_SetSubMeshIndex(uint entityId, ref int isTrigger);
+        #endregion
+
         #region Input
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Input_KeyDown(KeyCode keyCode);

@@ -1,26 +1,30 @@
 Assets:
-  - Handle: 16625774910016950853
-    Path: Assets\Materials\M_ColliderDebug.vtmat
-  - Handle: 16380998834732311984
+  - Handle: 7774068659233115813
     Path: Assets\Materials\M_FullMetal.vtmat
-  - Handle: 10940367927715095055
-    Path: Assets\Materials\M_NavMeshDebug.vtmat
-  - Handle: 2932326804834381373
-    Path: Assets\Meshes\Editor\3dpil.vtmat
-  - Handle: 4235162108492430969
-    Path: Assets\Meshes\Editor\3dpil.vtmesh
   - Handle: 16064368788976833353
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_c.dds
+  - Handle: 8939544165404260508
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_c.dds.vtthumb.png
   - Handle: 773653731773011089
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_m.dds
+  - Handle: 17123043506680185661
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_m.dds.vtthumb.png
   - Handle: 4444257076546408062
     Path: Assets\Meshes\MaterialBall\Textures\Matball_One_n.dds
+  - Handle: 1405057957712162183
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_n.dds.vtthumb.png
   - Handle: 10401998868675885776
     Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_c.dds
+  - Handle: 12717973388659073461
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_c.dds.vtthumb.png
   - Handle: 13006918838546982570
     Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_m.dds
+  - Handle: 10458197093063795097
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_m.dds.vtthumb.png
   - Handle: 3923396619436279614
     Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_n.dds
+  - Handle: 4022956327438299136
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_n.dds.vtthumb.png
   - Handle: 7848357758191138748
     Path: Assets\Meshes\Primitives\Capsule.vtmesh
   - Handle: 9016504729640018304
@@ -37,166 +41,336 @@ Assets:
     Path: Assets\Meshes\Primitives\Sphere.vtmesh
   - Handle: 8253805205175632348
     Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_c.dds
+  - Handle: 14867352842498999259
+    Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_c.dds.vtthumb.png
   - Handle: 12239499127865166961
     Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_m.dds
+  - Handle: 7309352180680371701
+    Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_m.dds.vtthumb.png
   - Handle: 14532998315320751407
     Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_n.dds
+  - Handle: 15170596056039100040
+    Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_n.dds.vtthumb.png
   - Handle: 15269736904814709166
     Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_c.dds
+  - Handle: 3488394335054790600
+    Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_c.dds.vtthumb.png
   - Handle: 1703055111831681974
     Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_m.dds
+  - Handle: 7863601710042091738
+    Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_m.dds.vtthumb.png
   - Handle: 800976299048342015
     Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_n.dds
+  - Handle: 10531782022015552978
+    Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_n.dds.vtthumb.png
   - Handle: 3498151568272581999
     Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_c.dds
+  - Handle: 4632050329501110657
+    Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_c.dds.vtthumb.png
   - Handle: 5683783158402736185
     Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_m.dds
+  - Handle: 3674113523784568583
+    Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_m.dds.vtthumb.png
   - Handle: 9659323147820641528
     Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_n.dds
+  - Handle: 15608129735301709731
+    Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_n.dds.vtthumb.png
   - Handle: 2001019368477329805
     Path: Assets\Meshes\Sponza\Textures\arch_mat_c.dds
+  - Handle: 2807476644048648905
+    Path: Assets\Meshes\Sponza\Textures\arch_mat_c.dds.vtthumb.png
   - Handle: 18283093444010650386
     Path: Assets\Meshes\Sponza\Textures\arch_mat_m.dds
+  - Handle: 7928015637163918704
+    Path: Assets\Meshes\Sponza\Textures\arch_mat_m.dds.vtthumb.png
   - Handle: 9412023068922198787
     Path: Assets\Meshes\Sponza\Textures\arch_mat_n.dds
+  - Handle: 5777388383518935286
+    Path: Assets\Meshes\Sponza\Textures\arch_mat_n.dds.vtthumb.png
   - Handle: 10699007444771289818
     Path: Assets\Meshes\Sponza\Textures\background_mat_c.dds
+  - Handle: 14017553548538998799
+    Path: Assets\Meshes\Sponza\Textures\background_mat_c.dds.vtthumb.png
   - Handle: 15886377797882625246
     Path: Assets\Meshes\Sponza\Textures\background_mat_m.dds
+  - Handle: 10531821194071371165
+    Path: Assets\Meshes\Sponza\Textures\background_mat_m.dds.vtthumb.png
   - Handle: 15429965513091184407
     Path: Assets\Meshes\Sponza\Textures\background_mat_n.dds
+  - Handle: 17335739145902117957
+    Path: Assets\Meshes\Sponza\Textures\background_mat_n.dds.vtthumb.png
   - Handle: 7265356541062846258
     Path: Assets\Meshes\Sponza\Textures\bricks_mat_c.dds
+  - Handle: 12183777858055561321
+    Path: Assets\Meshes\Sponza\Textures\bricks_mat_c.dds.vtthumb.png
   - Handle: 1486501502949561156
     Path: Assets\Meshes\Sponza\Textures\bricks_mat_m.dds
+  - Handle: 16186898886989848106
+    Path: Assets\Meshes\Sponza\Textures\bricks_mat_m.dds.vtthumb.png
   - Handle: 18262845383082975617
     Path: Assets\Meshes\Sponza\Textures\bricks_mat_n.dds
+  - Handle: 16980519039409720159
+    Path: Assets\Meshes\Sponza\Textures\bricks_mat_n.dds.vtthumb.png
   - Handle: 4767563135684291891
     Path: Assets\Meshes\Sponza\Textures\ceiling_mat_c.dds
+  - Handle: 662729398062694698
+    Path: Assets\Meshes\Sponza\Textures\ceiling_mat_c.dds.vtthumb.png
   - Handle: 6497799326510774250
     Path: Assets\Meshes\Sponza\Textures\ceiling_mat_m.dds
+  - Handle: 8966304076822925394
+    Path: Assets\Meshes\Sponza\Textures\ceiling_mat_m.dds.vtthumb.png
   - Handle: 14943383953798098840
     Path: Assets\Meshes\Sponza\Textures\ceiling_mat_n.dds
+  - Handle: 2243481181079022449
+    Path: Assets\Meshes\Sponza\Textures\ceiling_mat_n.dds.vtthumb.png
   - Handle: 6939709303763323841
     Path: Assets\Meshes\Sponza\Textures\chain_mat_c.dds
+  - Handle: 15743596338186337140
+    Path: Assets\Meshes\Sponza\Textures\chain_mat_c.dds.vtthumb.png
   - Handle: 7223916106098044735
     Path: Assets\Meshes\Sponza\Textures\chain_mat_m.dds
+  - Handle: 6348404907862961393
+    Path: Assets\Meshes\Sponza\Textures\chain_mat_m.dds.vtthumb.png
   - Handle: 3625214505758138434
     Path: Assets\Meshes\Sponza\Textures\chain_mat_n.dds
+  - Handle: 5849744114600625495
+    Path: Assets\Meshes\Sponza\Textures\chain_mat_n.dds.vtthumb.png
   - Handle: 14011937184264605034
     Path: Assets\Meshes\Sponza\Textures\column_a_mat_c.dds
+  - Handle: 3896791578587221858
+    Path: Assets\Meshes\Sponza\Textures\column_a_mat_c.dds.vtthumb.png
   - Handle: 5500622580630127453
     Path: Assets\Meshes\Sponza\Textures\column_a_mat_m.dds
+  - Handle: 12199920536611341069
+    Path: Assets\Meshes\Sponza\Textures\column_a_mat_m.dds.vtthumb.png
   - Handle: 11730031834677853091
     Path: Assets\Meshes\Sponza\Textures\column_a_mat_n.dds
+  - Handle: 8769003376072420469
+    Path: Assets\Meshes\Sponza\Textures\column_a_mat_n.dds.vtthumb.png
   - Handle: 17462733754442792958
     Path: Assets\Meshes\Sponza\Textures\column_b_mat_c.dds
+  - Handle: 825273003205127534
+    Path: Assets\Meshes\Sponza\Textures\column_b_mat_c.dds.vtthumb.png
   - Handle: 10379760993043437644
     Path: Assets\Meshes\Sponza\Textures\column_b_mat_m.dds
+  - Handle: 2351530237760440345
+    Path: Assets\Meshes\Sponza\Textures\column_b_mat_m.dds.vtthumb.png
   - Handle: 9142095654238318895
     Path: Assets\Meshes\Sponza\Textures\column_b_mat_n.dds
+  - Handle: 3213756777782569340
+    Path: Assets\Meshes\Sponza\Textures\column_b_mat_n.dds.vtthumb.png
   - Handle: 2757842027530970313
     Path: Assets\Meshes\Sponza\Textures\column_c_mat_c.dds
+  - Handle: 14529330513909651631
+    Path: Assets\Meshes\Sponza\Textures\column_c_mat_c.dds.vtthumb.png
   - Handle: 9899784014643737429
     Path: Assets\Meshes\Sponza\Textures\column_c_mat_m.dds
+  - Handle: 12407050415770019460
+    Path: Assets\Meshes\Sponza\Textures\column_c_mat_m.dds.vtthumb.png
   - Handle: 8919836399324540490
     Path: Assets\Meshes\Sponza\Textures\column_c_mat_n.dds
+  - Handle: 16630731972871351713
+    Path: Assets\Meshes\Sponza\Textures\column_c_mat_n.dds.vtthumb.png
   - Handle: 9131901217523409994
     Path: Assets\Meshes\Sponza\Textures\details_mat_c.dds
+  - Handle: 225727266100951065
+    Path: Assets\Meshes\Sponza\Textures\details_mat_c.dds.vtthumb.png
   - Handle: 651729755867848628
     Path: Assets\Meshes\Sponza\Textures\details_mat_m.dds
+  - Handle: 15205651496169052944
+    Path: Assets\Meshes\Sponza\Textures\details_mat_m.dds.vtthumb.png
   - Handle: 9839134675584013090
     Path: Assets\Meshes\Sponza\Textures\details_mat_n.dds
+  - Handle: 5894486771443918948
+    Path: Assets\Meshes\Sponza\Textures\details_mat_n.dds.vtthumb.png
   - Handle: 7720425706621059487
     Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_c.dds
+  - Handle: 12346409380575224730
+    Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_c.dds.vtthumb.png
   - Handle: 12442402523433264885
     Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_m.dds
+  - Handle: 5490838921209835062
+    Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_m.dds.vtthumb.png
   - Handle: 14511700106665090755
     Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_n.dds
+  - Handle: 963858003446171192
+    Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_n.dds.vtthumb.png
   - Handle: 16497328384717551436
     Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_c.dds
+  - Handle: 6220863015147502871
+    Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_c.dds.vtthumb.png
   - Handle: 10575093371249477675
     Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_m.dds
+  - Handle: 8315344287640682161
+    Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_m.dds.vtthumb.png
   - Handle: 12805849797351167815
     Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_n.dds
+  - Handle: 7327827829469487808
+    Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_n.dds.vtthumb.png
   - Handle: 18145229327196526511
     Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_c.dds
+  - Handle: 1420619413853545723
+    Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_c.dds.vtthumb.png
   - Handle: 7641242776403170724
     Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_m.dds
+  - Handle: 13255785800093320190
+    Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_m.dds.vtthumb.png
   - Handle: 14617797857478732364
     Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_n.dds
+  - Handle: 3406284312662773796
+    Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_n.dds.vtthumb.png
   - Handle: 18051920105137205528
     Path: Assets\Meshes\Sponza\Textures\flagpole_mat_c.dds
+  - Handle: 10051434111044386091
+    Path: Assets\Meshes\Sponza\Textures\flagpole_mat_c.dds.vtthumb.png
   - Handle: 15345175631991923357
     Path: Assets\Meshes\Sponza\Textures\flagpole_mat_m.dds
+  - Handle: 5035864736243620566
+    Path: Assets\Meshes\Sponza\Textures\flagpole_mat_m.dds.vtthumb.png
   - Handle: 3708626838951678244
     Path: Assets\Meshes\Sponza\Textures\flagpole_mat_n.dds
+  - Handle: 6252561894300685188
+    Path: Assets\Meshes\Sponza\Textures\flagpole_mat_n.dds.vtthumb.png
   - Handle: 2998205517774474509
     Path: Assets\Meshes\Sponza\Textures\floor_mat_c.dds
+  - Handle: 17362944464707711226
+    Path: Assets\Meshes\Sponza\Textures\floor_mat_c.dds.vtthumb.png
   - Handle: 14752805983966352194
     Path: Assets\Meshes\Sponza\Textures\floor_mat_m.dds
+  - Handle: 1984674030917735639
+    Path: Assets\Meshes\Sponza\Textures\floor_mat_m.dds.vtthumb.png
   - Handle: 10775644496596102116
     Path: Assets\Meshes\Sponza\Textures\floor_mat_n.dds
+  - Handle: 4470065228495529479
+    Path: Assets\Meshes\Sponza\Textures\floor_mat_n.dds.vtthumb.png
   - Handle: 2392048472949987361
     Path: Assets\Meshes\Sponza\Textures\flowers_mat_c.dds
+  - Handle: 8758074027562364866
+    Path: Assets\Meshes\Sponza\Textures\flowers_mat_c.dds.vtthumb.png
   - Handle: 3737446680840429382
     Path: Assets\Meshes\Sponza\Textures\flowers_mat_m.dds
+  - Handle: 1714509088095349476
+    Path: Assets\Meshes\Sponza\Textures\flowers_mat_m.dds.vtthumb.png
   - Handle: 9472982983984785396
     Path: Assets\Meshes\Sponza\Textures\flowers_mat_n.dds
+  - Handle: 15277295105126853923
+    Path: Assets\Meshes\Sponza\Textures\flowers_mat_n.dds.vtthumb.png
   - Handle: 3111183347595988310
     Path: Assets\Meshes\Sponza\Textures\lion_mat_c.dds
+  - Handle: 6721832130072966916
+    Path: Assets\Meshes\Sponza\Textures\lion_mat_c.dds.vtthumb.png
   - Handle: 16703565501485544507
     Path: Assets\Meshes\Sponza\Textures\lion_mat_m.dds
+  - Handle: 18300020843873264452
+    Path: Assets\Meshes\Sponza\Textures\lion_mat_m.dds.vtthumb.png
   - Handle: 18068653231491018481
     Path: Assets\Meshes\Sponza\Textures\lion_mat_n.dds
+  - Handle: 11873115330674635485
+    Path: Assets\Meshes\Sponza\Textures\lion_mat_n.dds.vtthumb.png
   - Handle: 12864344970575622580
     Path: Assets\Meshes\Sponza\Textures\roof_mat_c.dds
+  - Handle: 6480529782149772246
+    Path: Assets\Meshes\Sponza\Textures\roof_mat_c.dds.vtthumb.png
   - Handle: 4364955977460232106
     Path: Assets\Meshes\Sponza\Textures\roof_mat_m.dds
+  - Handle: 12980312401587108945
+    Path: Assets\Meshes\Sponza\Textures\roof_mat_m.dds.vtthumb.png
   - Handle: 14970859681500673708
     Path: Assets\Meshes\Sponza\Textures\roof_mat_n.dds
+  - Handle: 5414480388650599660
+    Path: Assets\Meshes\Sponza\Textures\roof_mat_n.dds.vtthumb.png
   - Handle: 3464576460296371848
     Path: Assets\Meshes\Sponza\Textures\thorn_mat_c.dds
+  - Handle: 11892910362718791835
+    Path: Assets\Meshes\Sponza\Textures\thorn_mat_c.dds.vtthumb.png
   - Handle: 16382396956752597286
     Path: Assets\Meshes\Sponza\Textures\thorn_mat_m.dds
+  - Handle: 7710810608065085044
+    Path: Assets\Meshes\Sponza\Textures\thorn_mat_m.dds.vtthumb.png
   - Handle: 4149868440891141893
     Path: Assets\Meshes\Sponza\Textures\thorn_mat_n.dds
+  - Handle: 8729712866298233846
+    Path: Assets\Meshes\Sponza\Textures\thorn_mat_n.dds.vtthumb.png
   - Handle: 7792584344886554550
     Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_c.dds
+  - Handle: 11963941806692945659
+    Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_c.dds.vtthumb.png
   - Handle: 18358892558089094001
     Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_m.dds
+  - Handle: 488507042925223704
+    Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_m.dds.vtthumb.png
   - Handle: 16776112148023897339
     Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_n.dds
+  - Handle: 1387353549557180769
+    Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_n.dds.vtthumb.png
   - Handle: 14911054873044800957
     Path: Assets\Meshes\Sponza\Textures\vase_mat_c.dds
+  - Handle: 15460711935400866130
+    Path: Assets\Meshes\Sponza\Textures\vase_mat_c.dds.vtthumb.png
   - Handle: 16682924957060906804
     Path: Assets\Meshes\Sponza\Textures\vase_mat_m.dds
+  - Handle: 14949150032576604488
+    Path: Assets\Meshes\Sponza\Textures\vase_mat_m.dds.vtthumb.png
   - Handle: 10627427248153753984
     Path: Assets\Meshes\Sponza\Textures\vase_mat_n.dds
+  - Handle: 5807227932822112203
+    Path: Assets\Meshes\Sponza\Textures\vase_mat_n.dds.vtthumb.png
   - Handle: 9365429789750248891
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_c.dds
+  - Handle: 454981015292084014
+    Path: Assets\Meshes\Sponza\Textures\vase_round_mat_c.dds.vtthumb.png
   - Handle: 9004061343334027905
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
+  - Handle: 10616994267690742752
+    Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds.vtthumb.png
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
   - Handle: 11223725156781065066
     Path: Assets\Scenes\Ivar_Test\Ivar_Test.vtscene
+  - Handle: 899736020468677305
+    Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds.vtthumb.png
+  - Handle: 16337070533146925493
+    Path: Assets\Meshes\lutTest.dds.vtthumb.png
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
+  - Handle: 16571327495501234789
+    Path: Assets\Textures\FullMetal\T_FullMetal_N.dds.vtthumb.png
   - Handle: 2713074256263182464
     Path: Assets\Textures\FullMetal\T_FullMetal_c.dds
+  - Handle: 5554954938850865700
+    Path: Assets\Textures\FullMetal\T_FullMetal_c.dds.vtthumb.png
   - Handle: 14746645601432467892
     Path: Assets\Textures\FullMetal\T_FullMetal_m.dds
+  - Handle: 7825378870719609033
+    Path: Assets\Textures\FullMetal\T_FullMetal_m.dds.vtthumb.png
   - Handle: 9825013552701077123
     Path: Assets\Textures\HDRIs\kloppenheim_02_4k.hdr
+  - Handle: 6659359989947488615
+    Path: Assets\Textures\HDRIs\kloppenheim_02_4k.hdr.vtthumb.png
   - Handle: 14196038218015924795
     Path: Assets\Textures\HDRIs\moonless_golf_4k.hdr
+  - Handle: 9207518934507991952
+    Path: Assets\Textures\HDRIs\moonless_golf_4k.hdr.vtthumb.png
   - Handle: 14128002601943817176
     Path: Assets\Textures\HDRIs\newport_loft.hdr
+  - Handle: 8972359318681805287
+    Path: Assets\Textures\HDRIs\newport_loft.hdr.vtthumb.png
   - Handle: 9275899362807312744
     Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr
+  - Handle: 14539253010350785407
+    Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr.vtthumb.png
   - Handle: 9660052707747284857
     Path: Assets\Textures\lutTest.dds
+  - Handle: 5045631590908337605
+    Path: Assets\Textures\lutTest.dds.vtthumb.png
+  - Handle: 16625774910016950853
+    Path: Editor\Materials\M_ColliderDebug.vtmat
+  - Handle: 10940367927715095055
+    Path: Editor\Materials\M_NavMeshDebug.vtmat
+  - Handle: 2932326804834381373
+    Path: Editor\Meshes\Arrow\3dpil.vtmat
+  - Handle: 4235162108492430969
+    Path: Editor\Meshes\Arrow\3dpil.vtmesh
   - Handle: 8187072774580702017
     Path: Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
   - Handle: 14833944971717813604

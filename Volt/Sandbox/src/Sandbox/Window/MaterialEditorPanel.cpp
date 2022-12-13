@@ -1,13 +1,12 @@
 #include "sbpch.h"
 #include "MaterialEditorPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 
-#include <Volt/Asset/Mesh/MaterialRegistry.h>
 #include <Volt/Asset/Mesh/SubMaterial.h>
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
@@ -334,6 +333,8 @@ void MaterialEditorPanel::UpdatePreview()
 
 void MaterialEditorPanel::UpdateSubMaterials()
 {
+	using namespace AssetBrowser;
+
 	ImGui::Begin("Sub materials");
 	{
 		if (mySelectedMaterial)
@@ -359,7 +360,8 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			{
 				ImGui::PushID((uint32_t)material->GetName().c_str());
 
-				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize();
+				constexpr float thumbnailSize = 85.f;
+				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemMinPos();
 
@@ -430,7 +432,7 @@ void MaterialEditorPanel::UpdateMaterials()
 {
 	ImGui::Begin("Materials", nullptr, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 	{
-		const auto& materials = Volt::MaterialRegistry::GetMaterials();
+		const auto& materials = Volt::AssetManager::GetAllAssetsOfType<Volt::Material>();
 
 		if (EditorUtils::SearchBar(mySearchQuery, myHasSearchQuery))
 		{
@@ -438,9 +440,9 @@ void MaterialEditorPanel::UpdateMaterials()
 
 		ImGui::BeginChild("Scrollable");
 		{
-			for (auto& [name, material] : materials)
+			for (auto& material : materials)
 			{
-				if (myHasSearchQuery && !Utils::ToLower(name).contains(Utils::ToLower(mySearchQuery)))
+				if (myHasSearchQuery && !Utils::ToLower(material.stem().string()).contains(Utils::ToLower(mySearchQuery)))
 				{
 					continue;
 				}
@@ -451,7 +453,7 @@ void MaterialEditorPanel::UpdateMaterials()
 					selected = material == mySelectedMaterial->path;
 				}
 
-				if (ImGui::Selectable(name.c_str(), &selected))
+				if (ImGui::Selectable(material.stem().string().c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);

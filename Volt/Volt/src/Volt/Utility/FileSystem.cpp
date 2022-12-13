@@ -97,6 +97,24 @@ std::filesystem::path FileSystem::GetDocumentsPath()
 	return documentsPath;
 }
 
+void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
+{
+	if (!std::filesystem::exists(path))
+	{
+		return;
+	}
+
+	std::wstring wstr = path.wstring() + std::wstring(1, L'\0');
+
+	SHFILEOPSTRUCT fileOp;
+	fileOp.hwnd = NULL;
+	fileOp.wFunc = FO_DELETE;
+	fileOp.pFrom = wstr.c_str();
+	fileOp.pTo = NULL;
+	fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_SILENT;
+	int32_t result = SHFileOperation(&fileOp);
+}
+
 bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
 {
 	auto absolutePath = std::filesystem::canonical(aPath);
@@ -270,4 +288,19 @@ std::string FileSystem::GetCurrentUserName()
 
 	GetUserName(name, &size);
 	return std::filesystem::path(name).string();
+}
+
+void FileSystem::StartProcess(const std::filesystem::path& processPath)
+{
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+
+	si.cb = sizeof(STARTUPINFO);
+
+	CreateProcess(processPath.wstring().c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }
