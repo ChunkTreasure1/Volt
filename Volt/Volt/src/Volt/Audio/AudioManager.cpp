@@ -31,14 +31,14 @@ void AudioManager::Update(float aDeltaTime)
 	if (myHasListener)
 	{
 		// IMPORTANT! Optimized specifically for being parented to >>player camera<<.
-		myAudioEngine.UpdateListener(myListenerData->myListenerId, myListenerData->myParentsParent.GetPosition(), myListenerData->myParent.GetForward(), myListenerData->myParent.GetUp());
+		myAudioEngine.UpdateListener(myListenerData->myListenerId, myListenerData->myParentsParent.GetLocalPosition(), myListenerData->myParent.GetLocalForward(), myListenerData->myParent.GetLocalUp());
 	}
 
 	for (EventData& audioEvent : myEventInstances)
 	{
 		if (!audioEvent.myParent.IsNull() && myListenerData)
 		{
-			myAudioEngine.SetEvent3Dattributes(audioEvent.myEventInstance, audioEvent.myParent.GetWorldPosition());
+			myAudioEngine.SetEvent3Dattributes(audioEvent.myEventInstance, audioEvent.myParent.GetPosition());
 		}
 
 		if (audioEvent.myWaiting)
@@ -72,7 +72,7 @@ void AudioManager::InitListener(int aListenerID, Volt::Entity aParent)
 
 	myHasListener = true;
 
-	AUDIOENGINE.InitListener(myListenerData->myListenerId, myListenerData->myParentsParent.GetPosition() + myListenerData->myParent.GetPosition(), myListenerData->myParent.GetForward(), myListenerData->myParent.GetUp());
+	AUDIOENGINE.InitListener(myListenerData->myListenerId, myListenerData->myParentsParent.GetLocalPosition() + myListenerData->myParent.GetLocalPosition(), myListenerData->myParent.GetLocalForward(), myListenerData->myParent.GetLocalUp());
 }
 
 void AudioManager::ResetListener()
@@ -135,7 +135,7 @@ int AudioManager::Play3D(EventName anEventName, bool aShouldLoop, bool aShouldFo
 
 	FMOD::Studio::EventInstance* eventInstance = myAudioEngine.CreateEventInstance(anEventName);
 
-	myAudioEngine.SetEvent3Dattributes(eventInstance, aParent.GetWorldPosition());
+	myAudioEngine.SetEvent3Dattributes(eventInstance, aParent.GetPosition());
 	EventData eventData;
 	eventData.myId = ourIdCounter;
 	eventData.myName = anEventName;
@@ -163,7 +163,7 @@ int AudioManager::Play3DAfter(EventName anEventName, bool aShouldLoop, bool aSho
 	}
 
 	FMOD::Studio::EventInstance* eventInstance = myAudioEngine.CreateEventInstance(anEventName);
-	myAudioEngine.SetEvent3Dattributes(eventInstance, aParent.GetWorldPosition());
+	myAudioEngine.SetEvent3Dattributes(eventInstance, aParent.GetPosition());
 
 	EventData eventData;
 	eventData.myId = ourIdCounter;

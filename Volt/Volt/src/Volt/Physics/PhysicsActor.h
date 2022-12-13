@@ -25,7 +25,7 @@ namespace Volt
 		void SetKinematic(bool isKinematic);
 		void SetSimulationData(uint32_t layerId);
 		
-		void SetKinematicTarget(const gem::vec3& position, const gem::vec3& rotation);
+		void SetKinematicTarget(const gem::vec3& position, const gem::quat& rotation);
 		void SetLinearVelocity(const gem::vec3& velocity);
 		void SetAngularVelocity(const gem::vec3& velocity);
 
@@ -40,10 +40,10 @@ namespace Volt
 		const float GetMaxAngularVelocity() const;
 
 		const gem::vec3 GetKinematicTargetPosition() const;
-		const gem::vec3 GetKinematicTargetRotation() const;
+		const gem::quat GetKinematicTargetRotation() const;
 
 		void SetPosition(const gem::vec3& position, bool autoWake = true);
-		void SetRotation(const gem::vec3& rotation, bool autoWake = true);
+		void SetRotation(const gem::quat& rotation, bool autoWake = true);
 
 		Ref<ColliderShape> GetColliderOfType(ColliderType aType) const;
 

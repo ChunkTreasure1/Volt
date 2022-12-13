@@ -36,7 +36,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Particles/ParticleSystem.h"
 
-#include "Volt/Utility/Math.h"
+#include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/Noise.h"
 
 #include <GEM/gem.h>

@@ -17,9 +17,9 @@ struct SceneSettings
 	bool use16by9 = false;
 	bool fullscreenOnPlay = false;
 
-	float gridSnapValue;
-	float rotationSnapValue;
-	float scaleSnapValue;
+	float gridSnapValue = 0.f;
+	float rotationSnapValue = 0.f;
+	float scaleSnapValue = 0.f;
 
 	std::filesystem::path lastOpenScene;
 };
