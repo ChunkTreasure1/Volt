@@ -39,7 +39,7 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	mySceneState(aSceneState), myAnimatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
 {
 	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	myWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar;
 	myMidEvent = false;
 }
 
@@ -48,6 +48,7 @@ void ViewportPanel::UpdateMainContent()
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.07f, 0.07f, 0.07f, 1.f });
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -393,7 +394,7 @@ void ViewportPanel::UpdateMainContent()
 	}
 
 	ImGui::PopStyleColor();
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(4);
 
 	if (ImportState returnVal = EditorUtils::MeshImportModal("Import Mesh##viewport", myMeshImportData, myMeshToImport); returnVal == ImportState::Imported)
 	{
@@ -446,7 +447,7 @@ void ViewportPanel::UpdateContent()
 	UI::ScopedColor hovered(ImGuiCol_ButtonHovered, { 0.3f, 0.305f, 0.31f, 0.5f });
 	UI::ScopedColor active(ImGuiCol_ButtonActive, { 0.5f, 0.505f, 0.51f, 0.5f });
 
-	ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar);
 
 	const uint32_t rightButtonCount = 12;
 	const float buttonSize = 22.f;
@@ -506,7 +507,7 @@ void ViewportPanel::UpdateContent()
 	Ref<Volt::Texture2D> physicsIcon = myAnimatedPhysicsIcon.GetCurrentFrame();
 	static Volt::Texture2D* physicsId = physicsIcon.get();
 
-	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { size, size }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
+	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { buttonSize, buttonSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 	{
 		if (mySceneState == SceneState::Edit)
 		{
