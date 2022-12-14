@@ -82,7 +82,6 @@ void ViewportPanel::UpdateMainContent()
 	}
 	else
 	{
-
 		const auto& passes = mySceneRenderer->GetAllFramebuffers();
 		const auto& [name, framebuffer] = passes.at(myCurrentRenderPass);
 
@@ -306,7 +305,7 @@ void ViewportPanel::UpdateMainContent()
 			}
 		}
 
-		myEditorCameraController->SetIsControllable(myIsFocused && !isUsing);
+		myEditorCameraController->SetIsControllable(myIsHovered && !isUsing);
 	}
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && mySceneState != SceneState::Play && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{

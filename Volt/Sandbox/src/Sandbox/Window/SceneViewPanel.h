@@ -21,6 +21,8 @@ private:
 
 	bool SearchRecursivly(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth = 0);
 	bool MatchesQuery(const std::string& text, const std::string& filter);
+	
+	void DrawMainRightClickPopup();
 
 	std::string mySearchQuery;
 	bool myHasSearchQuery = false;

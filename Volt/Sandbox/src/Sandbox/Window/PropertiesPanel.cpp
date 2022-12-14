@@ -660,7 +660,7 @@ void PropertiesPanel::AddComponentPopup()
 
 		std::sort(componentNames.begin(), componentNames.end());
 
-		// Seach bar
+		// Search bar
 		{
 			if (EditorUtils::SearchBar(myComponentSearchQuery, myHasComponentSearchQuery))
 			{

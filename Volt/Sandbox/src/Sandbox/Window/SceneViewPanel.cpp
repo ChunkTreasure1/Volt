@@ -91,27 +91,18 @@ void SceneViewPanel::UpdateMainContent()
 
 			ImGui::EndTable();
 
-			const ImRect windowRect = { ImGui::GetWindowContentRegionMin(), ImGui::GetWindowContentRegionMax() };
+			const ImRect windowRect = ImGui::GetCurrentWindow()->Rect();
 
-			if (ImGui::IsMouseHoveringRect(windowRect.Min, windowRect.Max, false) && !ImGui::IsAnyItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			if (ImGui::IsMouseHoveringRect(windowRect.Min, windowRect.Max, false) && !ImGui::IsAnyItemHovered())
 			{
-				SelectionManager::DeselectAll();
-			}
-
-			// Right-click on blank space
-			if (ImGui::BeginPopupContextWindow("RightClickPanel", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverExistingPopup))
-			{
-				if (ImGui::MenuItem("Create Empty Entity"))
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 				{
-					auto ent = myScene->CreateEntity();
-
-					Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(ent, ObjectStateAction::Create);
-					EditorCommandStack::GetInstance().PushUndo(command);
 					SelectionManager::DeselectAll();
-					SelectionManager::Select(ent.GetId());
 				}
-
-				ImGui::EndPopup();
+				else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					UI::OpenPopup("MainRightClickMenu");
+				}
 			}
 
 
@@ -204,6 +195,8 @@ void SceneViewPanel::UpdateMainContent()
 			}
 		}
 	}
+
+	DrawMainRightClickPopup();
 }
 
 VT_OPTIMIZE_OFF
@@ -312,7 +305,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	{
 		ImGui::SetNextItemOpen(true);
 		ImGui::PushStyleColor(ImGuiCol_Header, { 0.17f, 0.196f, 0.227f, 1.f });
-		
+
 		treeFlags |= ImGuiTreeNodeFlags_Selected;
 	}
 
@@ -405,7 +398,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 			std::vector<Wire::EntityId> selectedEntities = SelectionManager::GetSelectedEntities();
 
 			constexpr uint32_t maxEntNames = 5;
-			for (uint32_t i = 0; const auto& id : selectedEntities)
+			for (uint32_t i = 0; const auto & id : selectedEntities)
 			{
 				if (i >= 5)
 				{
@@ -693,4 +686,23 @@ bool SceneViewPanel::MatchesQuery(const std::string& text, const std::string& fi
 	}
 
 	return false;
+}
+
+void SceneViewPanel::DrawMainRightClickPopup()
+{
+	if (UI::BeginPopup("MainRightClickMenu", ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	{
+		if (ImGui::MenuItem("Create Empty Entity"))
+		{
+			auto ent = myScene->CreateEntity();
+
+			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(ent, ObjectStateAction::Create);
+			EditorCommandStack::GetInstance().PushUndo(command);
+			SelectionManager::DeselectAll();
+			SelectionManager::Select(ent.GetId());
+		}
+
+		ImGui::EndPopup();
+	}
+
 }
