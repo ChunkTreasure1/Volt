@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <Volt/Log/Log.h>
 
 #include <imgui.h>

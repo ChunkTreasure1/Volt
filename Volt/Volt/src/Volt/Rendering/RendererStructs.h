@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 namespace Volt
 {

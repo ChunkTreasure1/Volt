@@ -4,7 +4,7 @@
 #include "Volt/Scene/Scene.h"
 
 #include <Wire/Serialization.h>
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 namespace Volt
 {

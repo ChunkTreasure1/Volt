@@ -12,7 +12,7 @@
 
 #include "Volt/Rendering/Shader/ShaderRegistry.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 // Based on Daniel Borghammars TGA FBX Importer
 

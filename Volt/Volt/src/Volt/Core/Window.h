@@ -6,7 +6,7 @@
 #include <functional>
 #include <Windows.h>
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 struct GLFWwindow;
 struct GLFWcursor;

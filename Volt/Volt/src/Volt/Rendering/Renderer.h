@@ -8,7 +8,7 @@
 #include "Volt/Rendering/RenderPass.h"
 #include "Volt/Scene/Scene.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 #include <d3d11.h>
 #include <wrl.h>

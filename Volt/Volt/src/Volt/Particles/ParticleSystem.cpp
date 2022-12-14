@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ParticleSystem.h"
 
-#include "GEM/gem.h"
+#include "gem/gem.h"
 #include "../Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 #include "Volt/Rendering/Renderer.h"

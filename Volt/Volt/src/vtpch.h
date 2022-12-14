@@ -20,7 +20,7 @@
 #include <d3dcompiler.h>
 #include <wrl.h>
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <imgui.h>
 
 #include <yaml-cpp/yaml.h>

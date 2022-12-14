@@ -1,6 +1,6 @@
 #pragma once
 #include <Volt/Core/Base.h>
-#include "GEM/gem.h"
+#include "gem/gem.h"
 #include <vector>
 #include <Volt/Scene/Scene.h>
 #include "Volt/Scene/Entity.h"

@@ -6,7 +6,7 @@
 #include "fmod_studio.hpp"
 #include "fmod.hpp"
 #include "fmod_errors.h"
-#include "GEM/gem.h"
+#include "gem/gem.h"
 #include "Volt/Log/Log.h"
 
 #define AUDIOENGINE AudioEngine::GetInstance()
