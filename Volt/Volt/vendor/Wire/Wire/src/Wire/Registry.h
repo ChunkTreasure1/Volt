@@ -20,6 +20,7 @@ namespace Wire
 
 		void RemoveEntity(EntityId aId);
 		void Clear();
+		void Sort(std::function<bool(const uint32_t lhs, const uint32_t rhs)> sortFunc);
 		bool Exists(EntityId aId) const;
 
 		inline const std::vector<EntityId>& GetAllEntities() const { return m_usedIds; }

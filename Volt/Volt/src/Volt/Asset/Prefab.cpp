@@ -34,7 +34,7 @@ namespace Volt
 
 		auto& rootTransform = aTargetRegistry.GetComponent<TransformComponent>(newRoot);
 		rootTransform.position = { 0.f, 0.f, 0.f };
-		rootTransform.rotation = { 0.f, 0.f, 0.f };
+		rootTransform.rotation = { 1.f, 0.f, 0.f, 0.f };
 		rootTransform.scale = aTargetRegistry.GetComponent<TransformComponent>(newRoot).scale;
 
 		auto& tagComp = aTargetRegistry.GetComponent<TagComponent>(newRoot);
