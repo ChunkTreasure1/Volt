@@ -110,7 +110,7 @@ bool ControllerScript::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 		if (myEntity.HasComponent<Volt::AgentComponent>())
 		{
-			myEntity.GetComponent<Volt::AgentComponent>().agent.SetTarget(target);
+			myEntity.GetComponent<Volt::AgentComponent>().target = target;
 
 			std::stringstream ss;
 			ss << "TARGET: " << target.x << ", " << target.y << ", " << target.z;

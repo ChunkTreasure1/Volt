@@ -5,8 +5,10 @@
 #include "Volt/AI/NavigationSystem.h"
 #include "Volt/Components/NavigationComponents.h"
 
-#include <Volt/Rendering/Renderer.h>
-#include <Volt/Core/Profiling.h>
+#include "Volt/AI/SteeringBehavior.h"
+
+#include "Volt/Rendering/Renderer.h"
+#include "Volt/Core/Profiling.h"
 
 namespace Volt
 {
@@ -54,9 +56,10 @@ namespace Volt
 
 	void NavMeshAgent::MoveToTarget(float aTimestep, Entity aEntity)
 	{
-		auto steeringForce = GetSteeringForce();
+		auto& agentComp = aEntity.GetComponent<AgentComponent>();
+		auto steeringForce = GetSteeringForce(aEntity);
 
-		if (myIsKinematic)
+		if (agentComp.kinematic)
 		{
 			aEntity.SetWorldPosition(myCurrent + steeringForce * aTimestep);
 		}
@@ -64,11 +67,12 @@ namespace Volt
 		{
 			auto acceleration = steeringForce;
 			myVelocity = myVelocity + acceleration * aTimestep;
-			myVelocity = gem::clamp(myVelocity, gem::vec3(-1.f) * myMaxVelocity, gem::vec3(1.f) * myMaxVelocity);
+			myVelocity = gem::clamp(myVelocity, gem::vec3(-1.f) * agentComp.maxVelocity, gem::vec3(1.f) * agentComp.maxVelocity);
 
 			aEntity.SetWorldPosition(myCurrent + myVelocity * aTimestep);
 		}
 
+		// #SAMUEL_TODO: this needs to be better implemented
 		gem::vec3 milestone;
 		if (GetCurrentMilestone(&milestone))
 		{
@@ -80,181 +84,51 @@ namespace Volt
 		}
 	}
 
-	gem::vec3 NavMeshAgent::GetSteeringForce()
-	{
-		switch (myBehavior)
+	gem::vec3 NavMeshAgent::GetSteeringForce(Entity aEntity)
+{
+		gem::vec3 target;
+		if (GetCurrentMilestone(&target))
 		{
-		case AgentSteeringBehaviors::Seek:
-			return Seek();
+			switch (myBehavior)
+			{
+			case AgentSteeringBehaviors::Seek:
+				return SteeringBehavior::Seek(aEntity, target);
 
-		case AgentSteeringBehaviors::Flee:
-			return Flee();
+			case AgentSteeringBehaviors::Flee:
+				return SteeringBehavior::Flee(aEntity, target);
 
-		case AgentSteeringBehaviors::Arrive:
-			return Arrive();
+			case AgentSteeringBehaviors::Arrive:
+				return SteeringBehavior::Arrive(aEntity, target);
 
-		case AgentSteeringBehaviors::Align:
-			return Align();
+			case AgentSteeringBehaviors::Align:
+				return SteeringBehavior::Align(aEntity, target);
 
-		case AgentSteeringBehaviors::Pursue:
-			return Pursue();
+			case AgentSteeringBehaviors::Pursue:
+				return SteeringBehavior::Pursue(aEntity, target);
 
-		case AgentSteeringBehaviors::Evade:
-			return Evade();
+			case AgentSteeringBehaviors::Evade:
+				return SteeringBehavior::Evade(aEntity, target);
 
-		case AgentSteeringBehaviors::Wander:
-			return Wander();
+			case AgentSteeringBehaviors::Wander:
+				return SteeringBehavior::Wander(aEntity, target);
 
-		case AgentSteeringBehaviors::PathFollowing:
-			return PathFollowing();
+			case AgentSteeringBehaviors::PathFollowing:
+				return SteeringBehavior::PathFollowing(aEntity, target);
 
-		case AgentSteeringBehaviors::Separation:
-			return Separation();
+			case AgentSteeringBehaviors::Separation:
+				return SteeringBehavior::Separation(aEntity, target);
 
-		case AgentSteeringBehaviors::CollisionAvoidance:
-			return CollisionAvoidance();
+			case AgentSteeringBehaviors::CollisionAvoidance:
+				return SteeringBehavior::CollisionAvoidance(aEntity, target);
 
-		default:
-			return Seek();
+			default:
+				return SteeringBehavior::Seek(aEntity, target);
+			}
 		}
 	}
 
 	void NavMeshAgent::DrawDebugLines()
 	{
 		Renderer::SubmitLine(myCurrent, myCurrent + myVelocity, gem::vec4(0.f, 0.f, 1.f, 1.f));
-	}
-
-	gem::vec3 NavMeshAgent::Seek()
-	{
-		gem::vec3 currentTarget;
-		gem::vec3 desiredVelocity;
-		gem::vec3 steeringForce;
-		if (GetCurrentMilestone(&currentTarget))
-		{
-			desiredVelocity = currentTarget - myCurrent;
-			desiredVelocity = gem::normalize(desiredVelocity);
-			desiredVelocity *= myMaxVelocity;
-			steeringForce = desiredVelocity - myVelocity;
-			steeringForce /= myMaxVelocity;
-			steeringForce *= myMaxForce;
-		}
-		return steeringForce;
-	}
-
-	gem::vec3 NavMeshAgent::Flee()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::Arrive()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::Align()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::Pursue()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::Evade()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::Wander()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::PathFollowing()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::Separation()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
-	}
-
-	gem::vec3 NavMeshAgent::CollisionAvoidance()
-	{
-		if (myIsKinematic)
-		{
-
-		}
-		else
-		{
-
-		}
-		return gem::vec3();
 	}
 }

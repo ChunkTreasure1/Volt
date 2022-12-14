@@ -5,6 +5,8 @@
 namespace Volt
 {
 	class Scene;
+	class Entity;
+	class AgentComponent;
 
 	class NavigationSystem
 	{
@@ -19,6 +21,9 @@ namespace Volt
 		static NavigationSystem& Get() { return *myInstance; };
 
 	private:
+		void UpdateAgent(const uint32_t& id, AgentComponent& comp, const float& ts);
+		gem::vec3 GetSteeringForce(const Entity& aEntity) const;
+
 		Ref<NavMesh> myNavMesh;
 
 		Ref<Scene>& myCurrentScene;
