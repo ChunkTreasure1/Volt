@@ -15,7 +15,7 @@ namespace Volt
 		desiredVelocity = target - agent.GetWorldPosition();
 		desiredVelocity = gem::normalize(desiredVelocity);
 		desiredVelocity *= agentComp.maxVelocity;
-		steeringForce = desiredVelocity - agentComp.agent.GetVelocity();
+		steeringForce = desiredVelocity - agentComp.myVelocity;
 		steeringForce /= agentComp.maxVelocity;
 		steeringForce *= agentComp.maxForce;
 
@@ -33,7 +33,7 @@ namespace Volt
 		desiredVelocity = agent.GetWorldPosition() - target;
 		desiredVelocity = gem::normalize(desiredVelocity);
 		desiredVelocity *= agentComp.maxVelocity;
-		steeringForce = desiredVelocity - agentComp.agent.GetVelocity();
+		steeringForce = desiredVelocity - agentComp.myVelocity;
 		steeringForce /= agentComp.maxVelocity;
 		steeringForce *= agentComp.maxForce;
 

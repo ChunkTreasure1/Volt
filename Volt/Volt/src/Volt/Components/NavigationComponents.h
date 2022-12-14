@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-#include "Volt/AI/NavMeshAgent.h"
 
 #include <Wire/Serialization.h>
 #include <gem/gem.h>
@@ -32,7 +31,6 @@ namespace Volt
 		PROPERTY(Name = Kinematic) bool kinematic = true;
 
 		gem::vec3 target;
-		NavMeshAgent agent;
 
 		inline void StartNavigation() { myActive = true; };
 		inline void StopNavigation() { myActive = false; };
@@ -40,6 +38,7 @@ namespace Volt
 
 	private:
 		friend class NavigationSystem;
+		friend class SteeringBehavior;
 
 		std::vector<gem::vec3> myPath;
 		gem::vec3 myVelocity;

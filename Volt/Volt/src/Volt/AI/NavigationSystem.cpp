@@ -69,6 +69,7 @@ namespace Volt
 
 			if (comp.kinematic)
 			{
+				comp.myVelocity = gem::vec3(0.f);
 				e.SetWorldPosition(currentPos + steeringForce * ts);
 			}
 			else
