@@ -22,6 +22,7 @@ namespace Amp
 	struct EventInstance
 	{
 		int ID = -1;
+		std::string EventName = "";
 		FMOD::Studio::EventInstance* instance = nullptr;
 		FMOD_VECTOR position{0,0,0};
 		FMOD_VECTOR prevPosition{ 0,0,0 };

@@ -84,9 +84,9 @@ namespace Volt
 		//Init AudioEngine
 		{
 			Amp::InitInsturct instruct;
-			instruct.aFileDirectory = "Assets/Audio/Banks";
-			instruct.aMasterbank = "Master.bank";
-			instruct.aMasterStringsBank = "Master.strings.bank";
+			instruct.aFileDirectory = "Assets/Audio/Banks/";
+			instruct.aMasterbank = "Master/Master.bank";
+			instruct.aMasterStringsBank = "Master/Master.strings.bank";
 			Amp::AudioManager::Init(instruct);
 		}
 

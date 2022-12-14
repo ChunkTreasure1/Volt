@@ -14,10 +14,10 @@ namespace Amp
 	{
 		rootDirectory = aFileDirectory;
 
-		if (!rootDirectory.empty() && rootDirectory.back() != '\\')
-		{
-			rootDirectory.append("\\");
-		}
+		//if (!rootDirectory.empty() && rootDirectory.back() != '\\')
+		//{
+		//	rootDirectory.append("\\");
+		//}
 
 		ErrorCheck_Critical(FMOD::Studio::System::create(&studioSystem));
 
@@ -50,7 +50,11 @@ namespace Amp
 
 		isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aMasterStringFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterStringBank));
 
+		if (!isOK) { VT_CORE_ERROR("AMP ERROR: A master string file could not be loaded in AudioEngine::LoadMasterBank()"); }
+
 		isOK = ErrorCheck(studioSystem->loadBankFile((rootDirectory + aMasterFileName).c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank));
+
+		if (!isOK) { VT_CORE_ERROR("AMP ERROR: A master bank file could not be loaded in AudioEngine::LoadMasterBank()"); }
 
 		if (isOK)
 		{
@@ -69,7 +73,7 @@ namespace Amp
 					char path[512];
 					int size = 0;
 					result = ptr->getPath(path, 512, &size);
-					events[path] = { path, false, nullptr };
+					events[path] = { path, false, ptr };
 				}
 			}
 		}
@@ -84,6 +88,8 @@ namespace Amp
 		{
 			return false;
 		}
+
+		//Unload all events from map
 
 		return ErrorCheck(bank->second->unload());
 	}
@@ -173,6 +179,7 @@ namespace Amp
 		EventInstance& eventInstanceHandle = *foundEvent->second.instances.end()->second;
 
 		eventInstanceHandle.ID = aNewID;
+		eventInstanceHandle.EventName = foundEvent->second.Path;
 		eventInstanceHandle.instance = eventInstance;
 
 		return eventInstanceHandle;
@@ -180,8 +187,23 @@ namespace Amp
 
 	bool AudioEngine::RemoveEvent(EventInstance& aEventHandle)
 	{
-		//TODO Remove Event
-		return false;
+		auto foundEvent = events.find(aEventHandle.EventName);
+		if (foundEvent == events.end() || !foundEvent->second.isLoaded)
+		{
+			//Print warning that event was not found
+			return false;
+		}
+
+		auto foundInstance = foundEvent->second.instances.find(aEventHandle.ID);
+		if (foundEvent == events.end())
+		{
+			//Print warning that instance not found was not found
+			return false;
+		}
+
+		foundEvent->second.instances.erase(aEventHandle.ID);
+
+		return true;
 	}
 
 	bool AudioEngine::PlayEvent(FMOD::Studio::EventInstance* aEventInstance)
