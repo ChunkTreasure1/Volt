@@ -39,7 +39,7 @@ private:
 	void TransitionToNewScene();
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::NavigationsSystem> myNavigationsSystem;
+	Ref<Volt::NavigationSystem> myNavigationSystem;
 	Ref<Volt::Scene> myScene;
 	Ref<Game> myGame;
 

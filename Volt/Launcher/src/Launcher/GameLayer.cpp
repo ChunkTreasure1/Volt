@@ -6,7 +6,7 @@
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Framebuffer.h>
 
-#include <Volt/AI/NavMesh/NavigationsSystem.h>
+#include <Volt/AI/NavigationSystem.h>
 
 #include <Volt/Core/Application.h>
 #include <Volt/Audio/AudioManager.h>
@@ -15,7 +15,7 @@ void GameLayer::OnAttach()
 {
 	myScene = Volt::AssetManager::GetAsset<Volt::Scene>("Assets/Levels/LogoLevel/LogoLevel.vtscene");
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);
-	myNavigationsSystem = CreateRef<Volt::NavigationsSystem>(myScene);
+	myNavigationSystem = CreateRef<Volt::NavigationSystem>(myScene);
 }
 
 void GameLayer::OnDetach()
@@ -24,7 +24,7 @@ void GameLayer::OnDetach()
 
 	mySceneRenderer = nullptr;
 	myScene = nullptr;
-	myNavigationsSystem = nullptr;
+	myNavigationSystem = nullptr;
 }
 
 void GameLayer::OnEvent(Volt::Event& e)
@@ -52,7 +52,7 @@ bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	if (!isPaused && !myIsLoadingScene)
 	{
 		myScene->Update(e.GetTimestep());
-		myNavigationsSystem->OnRuntimeUpdate(e.GetTimestep());
+		myNavigationSystem->OnRuntimeUpdate(e.GetTimestep());
 		AUDIOMANAGER.Update(e.GetTimestep());
 	}
 
@@ -136,7 +136,7 @@ void GameLayer::TransitionToNewScene()
 	mySceneRenderer->Resize(myLastWidth, myLastHeight);
 	myScene->SetRenderSize(myLastWidth, myLastHeight);
 
-	myNavigationsSystem->OnSceneLoad();
+	myNavigationSystem->OnSceneLoad();
 
 	Volt::Scene::PreloadSceneAssets(myScene->path);
 	AUDIOMANAGER.ResetListener();

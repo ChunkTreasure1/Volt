@@ -21,6 +21,12 @@ namespace Volt
 
 	void NavigationSystem::OnRuntimeUpdate(float aTimestep)
 	{
+		myAgentPositions.clear(); // This might not be needed.
+		myCurrentScene->GetRegistry().ForEach<Volt::AgentComponent>([&](Wire::EntityId id, Volt::AgentComponent& agentComp)
+			{
+				myAgentPositions[id] = Entity(id, myCurrentScene.get()).GetWorldPosition();
+			});
+
 		myCurrentScene->GetRegistry().ForEach<Volt::AgentComponent>([&](Wire::EntityId id, Volt::AgentComponent& agentComp)
 			{
 				//agentComp.agent.Update(aTimestep, Entity(id, myCurrentScene.get()));
@@ -46,7 +52,9 @@ namespace Volt
 
 		Entity e(id, myCurrentScene.get());
 
-		// #SAMUEL_TODO: Somehow make this only happen when new target is set
+		// #SAMUEL_TODO: I would like this to look a bit cleaner
+		if (myAgentTargets.find(id) == myAgentTargets.end()) { myAgentTargets[id] = comp.target; }
+		if (myAgentTargets.at(id) != comp.target)
 		{
 			if (comp.myPath.empty() || gem::distance(comp.target, comp.myPath.front()) > 10.f) // Ignore small movements
 			{
@@ -57,6 +65,7 @@ namespace Volt
 					comp.myPath.emplace_back(PFtoVT(p));
 				}
 				comp.myPath.pop_back();
+				myAgentTargets[id] = comp.target;
 			}
 		}
 
