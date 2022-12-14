@@ -53,25 +53,25 @@ public:
 		{
 			auto& colors = ImGui::GetStyle().Colors;
 			colors[m_Color] = m_OldColor;
-		}
+			}
 
-	private:
-		ImVec4 m_OldColor;
-		ImGuiCol_ m_Color;
-	};
+		private:
+			ImVec4 m_OldColor;
+			ImGuiCol_ m_Color;
+		};
 
-	class ScopedStyleFloat
-	{
-	public:
-		ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+		class ScopedStyleFloat
 		{
-			ImGui::PushStyleVar(var, value);
-		}
+		public:
+			ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+			{
+				ImGui::PushStyleVar(var, value);
+			}
 
-		~ScopedStyleFloat()
-		{
-			ImGui::PopStyleVar();
-		}
+			~ScopedStyleFloat()
+			{
+				ImGui::PopStyleVar();
+			}
 	};
 
 	class ScopedStyleFloat2

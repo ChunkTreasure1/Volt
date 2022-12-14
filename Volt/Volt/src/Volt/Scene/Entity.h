@@ -35,6 +35,8 @@ namespace Volt
 		void RemoveScript(const std::string& scriptName);
 		void RemoveScript(WireGUID scriptGUID);
 
+		const std::string GetTag();
+
 		const gem::mat4 GetWorldTransform() const;
 		const gem::mat4 GetTransform() const;
 
@@ -134,7 +136,7 @@ namespace Volt
 			return nullptr;
 		}
 
-		ScriptBase* script = ScriptEngine::GetScript(myId, guid).get();
+		Script* script = ScriptEngine::GetScript(myId, guid).get();
 		return reinterpret_cast<T*>(script);
 	}
 

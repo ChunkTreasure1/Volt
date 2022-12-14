@@ -15,19 +15,15 @@ public:
 	void UpdateMainContent() override;
 
 private:
-	void Search(const std::string query);
-
-	void DrawEntity(Wire::EntityId id, const std::vector<Wire::EntityId>& usedEntities);
+	void DrawEntity(Wire::EntityId id, const std::string& filter);
 	void CreatePrefabAndSetupEntities(Wire::EntityId entity);
 	void SetupEntityAsPrefab(Wire::EntityId entity, Volt::AssetHandle prefabId);
 
-	void SelectEntitiesBetweenClosest(Wire::EntityId entity, const std::vector<Wire::EntityId>& usedEntities);
-	void RecursivlySelectChildren(Wire::EntityId entity);
+	bool SearchRecursivly(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth = 0);
+	bool MatchesQuery(const std::string& text, const std::string& filter);
 
 	std::string mySearchQuery;
 	bool myHasSearchQuery = false;
-
-	std::vector<Wire::EntityId> mySearchEntities;
 
 	Ref<Volt::Scene>& myScene;
 };

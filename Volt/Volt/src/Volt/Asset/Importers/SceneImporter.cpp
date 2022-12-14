@@ -160,6 +160,8 @@ namespace Volt
 						Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
 					}
 				});
+
+			scene->SortScene();
 		}
 
 		return true;
@@ -663,16 +665,6 @@ namespace Volt
 						}
 					}
 				}
-			}
-		}
-
-		if (registry.HasComponent<RelationshipComponent>(entityId))
-		{
-			VT_PROFILE_SCOPE("Sort ID")
-			auto& relComp = registry.GetComponent<RelationshipComponent>(entityId);
-			if (relComp.sortId == 0)
-			{
-				relComp.sortId = entityId;
 			}
 		}
 

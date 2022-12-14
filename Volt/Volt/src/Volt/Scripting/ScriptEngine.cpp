@@ -1,12 +1,12 @@
 ﻿#include "vtpch.h"
 #include "ScriptEngine.h"
 
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 #include "Volt/Log/Log.h"
 
 namespace Volt
 {
-	bool ScriptEngine::RegisterToEntity(Ref<ScriptBase> script, Wire::EntityId entity)
+	bool ScriptEngine::RegisterToEntity(Ref<Script> script, Wire::EntityId entity)
 	{
 		auto& entScripts = s_scripts[entity];
 		if (const auto& it = entScripts.find(script->GetGUID()); it != entScripts.end())
@@ -43,7 +43,7 @@ namespace Volt
 		s_scripts.clear();
 	}
 
-	Ref<ScriptBase> ScriptEngine::GetScript(Wire::EntityId entity, const WireGUID& guid)
+	Ref<Script> ScriptEngine::GetScript(Wire::EntityId entity, const WireGUID& guid)
 	{
 		const auto& entScripts = s_scripts[entity];
 
@@ -55,9 +55,9 @@ namespace Volt
 		return nullptr;
 	}
 
-	std::vector<Ref<ScriptBase>> ScriptEngine::GetScriptsAttachedToEntity(Wire::EntityId entity)
+	std::vector<Ref<Script>> ScriptEngine::GetScriptsAttachedToEntity(Wire::EntityId entity)
 	{
-		std::vector<Ref<ScriptBase>> result;
+		std::vector<Ref<Script>> result;
 		if (s_scripts.find(entity) == s_scripts.end())
 		{
 			return result;

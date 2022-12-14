@@ -19,7 +19,7 @@
 #include "Volt/Particles/ParticleSystem.h"
 
 #include "Volt/Scripting/ScriptEngine.h"
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
 #include "Volt/Utility/Math.h"
@@ -63,7 +63,7 @@ namespace Volt
 			{
 				for (const auto& scriptId : scriptComp.scripts)
 				{
-					Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(id, scriptId);
+					Ref<Script> scriptInstance = ScriptEngine::GetScript(id, scriptId);
 
 					if (scriptInstance)
 					{
@@ -109,7 +109,7 @@ namespace Volt
 			{
 				for (const auto& scriptId : scriptComp.scripts)
 				{
-					Ref<ScriptBase> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
+					Ref<Script> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
 					if (!scriptInstance)
 					{
 						VT_CORE_WARN("Unable to create script with name {0} on entity {1}!", ScriptRegistry::GetNameFromGUID(scriptId), id);
@@ -248,7 +248,7 @@ namespace Volt
 					}
 					else
 					{
-						Ref<ScriptBase> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
+						Ref<Script> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
 						if (!scriptInstance)
 						{
 							VT_CORE_WARN("Unable to create script with name {0} on entity {1}!", ScriptRegistry::GetNameFromGUID(scriptId), id);
@@ -269,7 +269,7 @@ namespace Volt
 				}
 			});
 
-		myRegistry.ForEach<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent&) 
+		myRegistry.ForEach<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent&)
 			{
 				MonoScriptEngine::OnUpdateEntityInstance(id, aDeltaTime);
 			});
@@ -423,7 +423,7 @@ namespace Volt
 		}
 	}
 
-	Entity Scene::CreateEntity()
+	Entity Scene::CreateEntity(const std::string& tag)
 	{
 		Wire::EntityId id = myRegistry.CreateEntity();
 
@@ -433,17 +433,21 @@ namespace Volt
 		transform.rotation = { 0.f, 0.f, 0.f };
 		transform.scale = { 1.f, 1.f, 1.f };
 
-		auto& tag = newEntity.AddComponent<TagComponent>();
-		tag.tag = "New Entity";
+		auto& tagComp = newEntity.AddComponent<TagComponent>();
 
-		auto& relComp = newEntity.AddComponent<RelationshipComponent>();
-		relComp.sortId = (uint32_t)myRegistry.GetAllEntities().size();
+		if (tag.empty())
+		{
+			tagComp.tag = "New Entity";
+		}
+		else
+		{
+			tagComp.tag = tag;
+		}
 
+		newEntity.AddComponent<RelationshipComponent>();
 		newEntity.AddComponent<EntityDataComponent>();
 
-		std::vector<Volt::Entity> entities;
-		entities.push_back(newEntity);
-
+		SortScene();
 		return newEntity;
 	}
 
@@ -491,6 +495,7 @@ namespace Volt
 		}
 
 		myRegistry.RemoveEntity(entity.GetId());
+		SortScene();
 	}
 
 	void Scene::RemoveEntity(Entity entity, float aTimeToDestroy)
@@ -949,5 +954,13 @@ namespace Volt
 		const gem::mat4 localTransform = gem::inverse(parentTransform) * transform.GetTransform();
 
 		gem::decompose(localTransform, transform.position, transform.rotation, transform.scale);
+	}
+
+	void Scene::SortScene()
+	{
+		myRegistry.Sort([](const auto& lhs, const auto& rhs)
+			{
+				return lhs < rhs;
+			});
 	}
 }

@@ -4,7 +4,7 @@
 
 #include "Volt/Components/Components.h"
 #include "Volt/Components/PhysicsComponents.h"
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
@@ -48,7 +48,7 @@ namespace Volt
 
 		auto& scriptComp = GetComponent<ScriptComponent>();
 
-		Ref<ScriptBase> scriptInstance = ScriptRegistry::Create(scriptName, Entity{ myId, myScene });
+		Ref<Script> scriptInstance = ScriptRegistry::Create(scriptName, Entity{ myId, myScene });
 		scriptComp.scripts.emplace_back(scriptInstance->GetGUID());
 		ScriptEngine::RegisterToEntity(scriptInstance, myId);
 
@@ -77,9 +77,19 @@ namespace Volt
 		auto it = std::find(scriptComp.scripts.begin(), scriptComp.scripts.end(), scriptGUID);
 		scriptComp.scripts.erase(it);
 
-		Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(myId, scriptGUID);
+		Ref<Script> scriptInstance = ScriptEngine::GetScript(myId, scriptGUID);
 		scriptInstance->OnDetach();
 		ScriptEngine::UnregisterFromEntity(scriptGUID, myId);
+	}
+
+	const std::string Entity::GetTag()
+	{
+		if (HasComponent<TagComponent>())
+		{
+			return GetComponent<TagComponent>().tag;
+		}
+
+		return {};
 	}
 
 	const gem::vec3 Entity::GetPosition() const

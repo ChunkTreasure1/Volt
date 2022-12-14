@@ -9,12 +9,12 @@
 
 namespace Volt
 {
-	class ScriptBase;
+	class Script;
 	class Entity;
 
 	struct ScriptMetadata
 	{
-		using CreateMethod = Ref<ScriptBase>(*)(Entity entity);
+		using CreateMethod = Ref<Script>(*)(Entity entity);
 
 		std::string name;
 		CreateMethod createMethod = nullptr;
@@ -27,8 +27,8 @@ namespace Volt
 		ScriptRegistry() = delete;
 
 		static bool Register(const WireGUID& guid, const ScriptMetadata& data);
-		static Ref<ScriptBase> Create(const WireGUID& guid, Entity ownerEntity);
-		static Ref<ScriptBase> Create(const std::string& name, Entity ownerEntity);
+		static Ref<Script> Create(const WireGUID& guid, Entity ownerEntity);
+		static Ref<Script> Create(const std::string& name, Entity ownerEntity);
 		static const WireGUID GetGUIDFromName(const std::string& name);
 		static const std::string GetNameFromGUID(const WireGUID& guid);
 

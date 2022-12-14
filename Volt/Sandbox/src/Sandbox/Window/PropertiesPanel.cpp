@@ -8,7 +8,7 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scripting/ScriptRegistry.h>
 #include <Volt/Scripting/ScriptEngine.h>
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
