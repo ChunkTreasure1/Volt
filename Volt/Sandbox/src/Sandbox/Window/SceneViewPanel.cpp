@@ -36,11 +36,10 @@ void SceneViewPanel::UpdateMainContent()
 		UI::ScopedColor hovered(ImGuiCol_ButtonHovered, { 0.3f, 0.305f, 0.31f, 0.5f });
 		UI::ScopedColor active(ImGuiCol_ButtonActive, { 0.5f, 0.505f, 0.51f, 0.5f });
 		UI::ScopedColor tableRow(ImGuiCol_TableRowBg, { 0.18f, 0.18f, 0.18f, 1.f });
-		UI::ScopedStyleFloat2 padd{ ImGuiStyleVar_FramePadding, { 4.f, 2.f } };
+		UI::ScopedStyleFloat2 padd{ ImGuiStyleVar_FramePadding, { 4.f, 4.f } };
 		UI::ScopedStyleFloat2 padd1{ ImGuiStyleVar_CellPadding, { 4.f, 0.f } };
 
-		const auto flags =
-			ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoPadInnerX;
+		const auto flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoPadInnerX;
 
 		constexpr uint32_t columnCount = 2;
 		if (ImGui::BeginTable("entitiesTable", columnCount, flags, ImGui::GetContentRegionAvail()))
@@ -61,9 +60,10 @@ void SceneViewPanel::UpdateMainContent()
 				{
 					ImGui::TableSetColumnIndex(i);
 
-					UI::ShiftCursor(3.f, 0.f);
+					UI::ShiftCursor(3.f, 3.f);
 					ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImColor{ 0.2f, 0.2f, 0.2f, 1.000f }, i);
 					ImGui::TableHeader(ImGui::TableGetColumnName());
+					UI::ShiftCursor(3.f, -3.f);
 				}
 
 				ImGui::PopStyleColor(3);
@@ -205,8 +205,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 {
 	VT_PROFILE_FUNCTION();
 
-	const float imageSize = 20.f;
-	const float imagePadding = 5.f;
 	bool entityDeleted = false;
 
 	auto& registry = myScene->GetRegistry();
@@ -245,7 +243,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	window->DC.CurrLineTextBaseOffset = 3.f;
 
 	const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
-	const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x - 20.f, rowAreaMin.y + rowHeight };
+	const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 2).Max.x - 20.f, rowAreaMin.y + rowHeight };
 
 	const bool isSelected = SelectionManager::IsSelected(entity);
 
@@ -269,7 +267,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	}
 
 	ImGuiTreeNodeFlags treeFlags = isSelected ? ImGuiTreeNodeFlags_Selected : 0;
-	treeFlags |= ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_FramePadding;
+	treeFlags |= ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 	if (hasMatchingChild)
 	{
@@ -323,6 +321,8 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		}
 		ImGui::TreeNodeEx(entityId.c_str(), treeFlags);
 	}
+
+	ImGui::SetItemAllowOverlap();
 
 	if (!isSelected && descendantSelected)
 	{
@@ -549,6 +549,9 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 	// Modifiers
 	{
+		const float imageSize = 21.f;
+		UI::ShiftCursor(0.f, 2.f);
+
 		if (myScene->GetRegistry().HasComponent<Volt::TransformComponent>(entity))
 		{
 			auto& transformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(entity);
@@ -557,12 +560,20 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 			std::string visibleId = "##visible" + std::to_string(entity);
 			if (UI::ImageButton(visibleId, UI::GetTextureID(visibleIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 			{
-				auto newVal = !transformComponent.visible;
-				for (const auto& e : SelectionManager::GetSelectedEntities())
+				const auto newVal = !transformComponent.visible;
+				if (!SelectionManager::IsSelected(entity))
 				{
-					auto& eTransformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(e);
-					eTransformComponent.visible = newVal;
+					transformComponent.visible = newVal;
 				}
+				else
+				{
+					for (const auto& e : SelectionManager::GetSelectedEntities())
+					{
+						auto& eTransformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(e);
+						eTransformComponent.visible = newVal;
+					}
+				}
+
 			}
 
 			ImGui::SameLine();
@@ -571,12 +582,20 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 			std::string lockedId = "##locked" + std::to_string(entity);
 			if (UI::ImageButton(lockedId, UI::GetTextureID(lockedIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 			{
-				auto newVal = !transformComponent.locked;
-				for (const auto& e : SelectionManager::GetSelectedEntities())
+				const auto newVal = !transformComponent.locked;
+				if (!SelectionManager::IsSelected(entity))
 				{
-					auto& eTransformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(e);
-					eTransformComponent.locked = newVal;
+					transformComponent.locked = newVal;
 				}
+				else
+				{
+					for (const auto& e : SelectionManager::GetSelectedEntities())
+					{
+						auto& eTransformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(e);
+						eTransformComponent.locked = newVal;
+					}
+				}
+
 			}
 		}
 	}

@@ -330,13 +330,19 @@ void ViewportPanel::UpdateMainContent()
 
 			if (pixelData != Wire::NullID)
 			{
-				if (deselect)
+				Volt::Entity ent{ pixelData, myEditorScene.get() };
+				if (ent.HasComponent<Volt::TransformComponent>())
 				{
-					SelectionManager::Deselect(pixelData);
-				}
-				else
-				{
-					SelectionManager::Select(pixelData);
+					const bool locked = ent.GetComponent<Volt::TransformComponent>().locked;
+
+					if (deselect)
+					{
+						SelectionManager::Deselect(pixelData);
+					}
+					else if (!locked)
+					{
+						SelectionManager::Select(pixelData);
+					}
 				}
 			}
 		}
@@ -468,12 +474,12 @@ void ViewportPanel::UpdateContent()
 			Sandbox::Get().OnScenePlay();
 			Volt::ViewportResizeEvent resizeEvent{ (uint32_t)myPerspectiveBounds[0].x, (uint32_t)myPerspectiveBounds[0].y, (uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y };
 			Volt::Application::Get().OnEvent(resizeEvent);
-			
+
 			if (settings.sceneSettings.fullscreenOnPlay)
 			{
 				for (const auto& window : Sandbox::Get().GetEditorWindows())
 				{
-					if (window->GetTitle() == "Scene View" || 
+					if (window->GetTitle() == "Scene View" ||
 						window->GetTitle() == "Asset Browser##Main" ||
 						window->GetTitle() == "Properties")
 					{
