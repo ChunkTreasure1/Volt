@@ -331,8 +331,6 @@ namespace Volt
 		return false;
 	}
 
-	VT_OPTIMIZE_OFF
-
 	void Renderer::SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
 	{
 		if (aString.empty())
@@ -506,8 +504,6 @@ namespace Volt
 			}
 		}
 	}
-
-	VT_OPTIMIZE_ON
 
 	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
 	{

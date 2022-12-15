@@ -92,6 +92,14 @@ namespace Volt
 		return {};
 	}
 
+	void Entity::SetTag(const std::string& tag)
+	{
+		if (HasComponent<TagComponent>())
+		{
+			GetComponent<TagComponent>().tag = tag;
+		}
+	}
+
 	const gem::vec3 Entity::GetPosition() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))

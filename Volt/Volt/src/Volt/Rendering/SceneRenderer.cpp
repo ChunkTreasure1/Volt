@@ -189,7 +189,6 @@ namespace Volt
 					const gem::vec3 dir = gem::normalize(gem::mat3(transformComp.GetTransform()) * gem::vec3(1.f)) * -1.f;
 					light.direction = gem::vec4(dir.x, dir.y, dir.z, 1.f);
 					light.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
-					light.shadowBias = dirLightComp.shadowBias;
 
 					if (dirLightComp.castShadows)
 					{

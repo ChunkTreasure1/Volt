@@ -203,16 +203,16 @@ void PropertiesPanel::UpdateMainContent()
 
 			bool removeComp = false;
 			bool open = UI::TreeNodeFramed(registryInfo.name, true, 2.f);
-			float buttonSize = 21.f + GImGui->Style.FramePadding.y;
+			float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 			float availRegion = ImGui::GetContentRegionAvail().x;
 
 			if (!open)
 			{
-				UI::SameLine(availRegion - buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+				UI::SameLine(availRegion - buttonSize * 0.5f);
 			}
 			else
 			{
-				UI::SameLine(availRegion + buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+				UI::SameLine(availRegion + buttonSize * 0.5f);
 			}
 			std::string id = "-###Remove" + registryInfo.name;
 

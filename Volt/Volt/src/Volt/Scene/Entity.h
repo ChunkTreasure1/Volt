@@ -36,6 +36,7 @@ namespace Volt
 		void RemoveScript(WireGUID scriptGUID);
 
 		const std::string GetTag();
+		void SetTag(const std::string& tag);
 
 		const gem::mat4 GetWorldTransform() const;
 		const gem::mat4 GetTransform() const;

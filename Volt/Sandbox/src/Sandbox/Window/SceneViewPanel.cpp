@@ -14,6 +14,7 @@
 #include <Volt/Utility/StringUtility.h>
 
 #include <Volt/Components/Components.h>
+#include <Volt/Components/LightComponents.h>
 
 SceneViewPanel::SceneViewPanel(Ref<Volt::Scene>& scene)
 	: EditorWindow("Scene View"), myScene(scene)
@@ -198,8 +199,6 @@ void SceneViewPanel::UpdateMainContent()
 
 	DrawMainRightClickPopup();
 }
-
-VT_OPTIMIZE_OFF
 
 void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter)
 {
@@ -721,7 +720,117 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			SelectionManager::Select(ent.GetId());
 		}
 
+		if (ImGui::BeginMenu("New"))
+		{
+			if (ImGui::BeginMenu("Primitives"))
+			{
+				if (ImGui::MenuItem("Cube"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Cube.vtmesh");
+					ent.SetTag("New Cube");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Capsule"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Capsule.vtmesh");
+					ent.SetTag("New Capsule");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Cone"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Cone.vtmesh");
+					ent.SetTag("New Cone");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Cylinder"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Cylinder.vtmesh");
+					ent.SetTag("New Cylinder");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Sphere"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Sphere.vtmesh");
+					ent.SetTag("New Sphere");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Plane"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Plane.vtmesh");
+					ent.SetTag("New Plane");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Lights"))
+			{
+				if (ImGui::MenuItem("Point Light"))
+				{
+					auto ent = myScene->CreateEntity();
+					ent.AddComponent<Volt::PointLightComponent>();
+					ent.SetTag("New Point Light");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Directional Light"))
+				{
+					auto ent = myScene->CreateEntity();
+					ent.AddComponent<Volt::DirectionalLightComponent>();
+					ent.SetTag("New Directional Light");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem("Skylight"))
+				{
+					auto ent = myScene->CreateEntity();
+					ent.AddComponent<Volt::SkylightComponent>();
+					ent.SetTag("New Skylight");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndPopup();
 	}
-
 }
