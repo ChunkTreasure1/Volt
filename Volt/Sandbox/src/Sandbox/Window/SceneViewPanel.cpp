@@ -225,6 +225,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 	constexpr uint32_t maxSearchDepth = 10;
 	const bool hasMatchingChild = SearchRecursivly(entity, filter, 10);
+	const bool matchesQuery = MatchesQuery(entityName, filter) && !filter.empty();
 
 	if (!MatchesQuery(entityName, filter) && !hasMatchingChild)
 	{
@@ -306,6 +307,18 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		treeFlags |= ImGuiTreeNodeFlags_Selected;
 	}
 
+	if (hasMatchingChild)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Header, { 0.17f, 0.196f, 0.227f, 1.f });
+		treeFlags |= ImGuiTreeNodeFlags_Selected;
+	}
+
+	if (matchesQuery)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 0.3f, 0.54f, 0.8f, 1.f });
+		treeFlags |= ImGuiTreeNodeFlags_Selected;
+	}
+
 	if (!children.empty())
 	{
 		treeFlags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding;
@@ -322,6 +335,16 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	}
 
 	ImGui::SetItemAllowOverlap();
+
+	if (matchesQuery)
+	{
+		ImGui::PopStyleColor();
+	}
+
+	if (hasMatchingChild)
+	{
+		ImGui::PopStyleColor();
+	}
 
 	if (!isSelected && descendantSelected)
 	{

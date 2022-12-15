@@ -106,7 +106,7 @@ namespace Volt
 		// Duplicated an entire entity tree
 		static Wire::EntityId Duplicate(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity);
 
-		static Volt::Entity GetNullEntity() { return Volt::Entity(0, nullptr); }
+		static Volt::Entity Null() { return Volt::Entity(0, nullptr); }
 
 	private:
 		static Wire::EntityId DuplicateInternal(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aParent);

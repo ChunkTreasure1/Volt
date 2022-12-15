@@ -68,6 +68,7 @@ namespace Volt
 	void AssetManager::Shutdown()
 	{
 		myIsLoadThreadRunning = false;
+		mySyncVariable.notify_one();
 		myLoadThread.join();
 
 		SaveAssetRegistry();
@@ -514,6 +515,8 @@ namespace Volt
 			VT_CORE_INFO("Queued asset {0}", path.string());
 #endif
 		}
+
+		mySyncVariable.notify_one();
 	}
 
 	void AssetManager::QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset)
@@ -538,53 +541,49 @@ namespace Volt
 		myIsLoadThreadRunning = true;
 		while (myIsLoadThreadRunning)
 		{
-			if (!myLoadQueue.empty())
+			std::unique_lock lock(myLoadMutex);
+			mySyncVariable.wait(lock, [&]() { return !myLoadQueue.empty() || !myIsLoadThreadRunning; });
+
+			if (!myIsLoadThreadRunning)
 			{
+				break;
+			}
+			
+			LoadJob job;
 
-				LoadJob job;
+			job = myLoadQueue.back();
+			myLoadQueue.pop_back();
 
-				{
-					std::scoped_lock<std::mutex> lock(myLoadMutex);
+			const auto type = GetAssetTypeFromPath(job.path);
+			if (myAssetImporters.find(type) == myAssetImporters.end())
+			{
+				VT_CORE_ERROR("No importer for asset found!");
+				continue;
+			}
 
-					job = myLoadQueue.back();
-					myLoadQueue.pop_back();
-				}
+			VT_PROFILE_SCOPE(std::format("Import {0}", job.path.string()).c_str());
 
-				const auto type = GetAssetTypeFromPath(job.path);
-				if (myAssetImporters.find(type) == myAssetImporters.end())
-				{
-					VT_CORE_ERROR("No importer for asset found!");
-					continue;
-				}
+			Ref<Asset> asset;
+			asset = myAssetCache.at(job.handle);
 
-				VT_PROFILE_SCOPE(std::format("Import {0}", job.path.string()).c_str());
-
-				Ref<Asset> asset;
-				asset = myAssetCache.at(job.handle);
-
-				myAssetImporters.at(type)->Load(job.path, asset);
-				if (job.handle != Asset::Null())
-				{
-					asset->handle = job.handle;
-				}
+			myAssetImporters.at(type)->Load(job.path, asset);
+			if (job.handle != Asset::Null())
+			{
+				asset->handle = job.handle;
+			}
 
 #ifdef VT_DEBUG
-				VT_CORE_INFO("Loaded asset {0} with handle {1}!", job.path.string().c_str(), asset->handle);
+			VT_CORE_INFO("Loaded asset {0} with handle {1}!", job.path.string().c_str(), asset->handle);
 #endif
 
-				asset->path = job.path;
-				asset->SetFlag(AssetFlag::Queued, false);
+			asset->path = job.path;
+			asset->SetFlag(AssetFlag::Queued, false);
 
-				{
-					std::scoped_lock<std::mutex> lock(myLoadMutex);
+			myAssetCache[job.handle] = asset;
 
-					myAssetCache[job.handle] = asset;
-
-					if (job.handle == Asset::Null())
-					{
-						myAssetRegistry.emplace(job.path, asset->handle);
-					}
-				}
+			if (job.handle == Asset::Null())
+			{
+				myAssetRegistry.emplace(job.path, asset->handle);
 			}
 		}
 	}
