@@ -70,19 +70,21 @@ void VTCinemaPanel::UpdateCameraProperties()
 	}
 
 	ImGui::Spacing();
+
 	ImGui::Separator();
 
+	ImGui::LabelText("", "Core Settings");
 	if (UI::BeginProperties("Core Settings"))
 	{
 		auto& enumData = Wire::ComponentRegistry::EnumData();
-		UI::ComboProperty("CameraType", *(int32_t*)&vtCamComp.cameraType, enumData.at("eCameraType"));
-		UI::ComboProperty("BlendType", *(int32_t*)&vtCamComp.blendType, enumData.at("eBlendType"));
+		UI::ComboProperty("Camera Type", *(int32_t*)&vtCamComp.cameraType, enumData.at("eCameraType"));
+		UI::ComboProperty("Blend Type", *(int32_t*)&vtCamComp.blendType, enumData.at("eBlendType"));
 		if (vtCamComp.blendType != Volt::eBlendType::None)
 		{
-			UI::Property("Blend Time", vtCamComp.blendTime);
+			UI::Property("Blend Time", vtCamComp.blendTime, "Time it takes blending from this camera to another");
 		}
 
-		if (UI::Property("FOV", vtCamComp.fov)) 
+		if (UI::Property("FOV", vtCamComp.fov, "Field of view"))
 		{
 			baseCamComp.fieldOfView = vtCamComp.fov;
 		}
@@ -92,24 +94,15 @@ void VTCinemaPanel::UpdateCameraProperties()
 
 	ImGui::Separator();
 
+	ImGui::LabelText("", "Transform");
 	if (UI::BeginProperties("Transform")) 
 	{
-		UI::PropertyEntity("Target", myCurrentScene, vtCamComp.followId);
+		UI::PropertyEntity("Follow", myCurrentScene, vtCamComp.followId, nullptr, "Camera follows this entity");
 
-		UI::PropertyEntity("LookAt", myCurrentScene, vtCamComp.lookAtId);
+		UI::PropertyEntity("LookAt", myCurrentScene, vtCamComp.lookAtId, nullptr, "Camera looks at this entity");
 
 		if (vtCamComp.followId != 0)
 		{
-			if (vtCamComp.cameraType == Volt::eCameraType::FirstPerson || vtCamComp.cameraType == Volt::eCameraType::ThirdPerson)
-			{
-				UI::Property("Mouse Sensitivity", vtCamComp.mouseSensitivity);
-
-				if (vtCamComp.cameraType == Volt::eCameraType::ThirdPerson) 
-				{
-					UI::Property("Focal Distance", vtCamComp.focalDistance);
-				}
-			}
-
 			UI::Property("Offset", vtCamComp.offset);
 			UI::Property("Damping", vtCamComp.damping);
 		}
@@ -117,6 +110,25 @@ void VTCinemaPanel::UpdateCameraProperties()
 		UI::EndProperties();
 	}
 
+	ImGui::Separator();
+
+	ImGui::LabelText("", "Controller");
+
+	if (UI::BeginProperties("Controller"))
+	{
+		if (vtCamComp.cameraType == Volt::eCameraType::FirstPerson || vtCamComp.cameraType == Volt::eCameraType::ThirdPerson)
+		{
+			UI::Property("Mouse Sensitivity", vtCamComp.mouseSensitivity);
+
+			if (vtCamComp.cameraType == Volt::eCameraType::ThirdPerson)
+			{
+				UI::Property("Focal Distance", vtCamComp.focalDistance);
+			}
+		}
+
+		UI::EndProperties();
+	}
+	
 	UI::PopId();
 
 	ImGui::End();
