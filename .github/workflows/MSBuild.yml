@@ -25,13 +25,14 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
       
     - name: Get Premake
+      working-directory: ${{env.GITHUB_WORKSPACE}}/Volt
       run: |
-        cd Volt/scripts
+        cd scripts
         python data\SetupActions.py
 
     - name: Premake
+      working-directory: ${{env.GITHUB_WORKSPACE}}/Volt
       run: |
-          cd ..
           scripts\data\premake5.exe vs2022
 
     - name: Build
