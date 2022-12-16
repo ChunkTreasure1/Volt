@@ -23,25 +23,19 @@ jobs:
         
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
       
     - name: Get Premake
-      run: python Volt\scripts\data\SetupActions.py
+      run: |
+        cd Volt/scripts
+        python data\SetupActions.py
 
     - name: Premake
       run: |
-          cd Volt
-          cd
+          cd ..
           scripts\data\premake5.exe vs2022
 
-    - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-
     - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}/Volt
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
