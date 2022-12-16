@@ -288,6 +288,7 @@ namespace Volt
 							case Wire::ComponentRegistry::PropertyType::Vector2: VT_SERIALIZE_PROPERTY(data, *(gem::vec2*)&componentData[prop.offset], out); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: VT_SERIALIZE_PROPERTY(data, *(gem::vec3*)&componentData[prop.offset], out); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: VT_SERIALIZE_PROPERTY(data, *(gem::vec4*)&componentData[prop.offset], out); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: VT_SERIALIZE_PROPERTY(data, *(gem::quat*)&componentData[prop.offset], out); break;
 							case Wire::ComponentRegistry::PropertyType::String:
 							{
 								std::string str = *(std::string*)&componentData[prop.offset];
@@ -322,6 +323,7 @@ namespace Volt
 									case Wire::ComponentRegistry::PropertyType::Vector2: SerializeVector<gem::vec2>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::Vector3: SerializeVector<gem::vec3>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::Vector4: SerializeVector<gem::vec4>(componentData, prop.offset, out); break;
+									case Wire::ComponentRegistry::PropertyType::Quaternion: SerializeVector<gem::quat>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::String: SerializeVector<std::string>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::Int64: SerializeVector<int64_t>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::UInt64: SerializeVector<uint64_t>(componentData, prop.offset, out); break;
@@ -531,6 +533,14 @@ namespace Volt
 									break;
 								}
 
+								case Wire::ComponentRegistry::PropertyType::Quaternion:
+								{
+									gem::quat input;
+									VT_DESERIALIZE_PROPERTY(data, input, propNode, gem::quat(1.f, 0.f, 0.f, 0.f));
+									memcpy_s(&componentData[it->offset], sizeof(gem::quat), &input, sizeof(gem::quat));
+									break;
+								}
+
 								case Wire::ComponentRegistry::PropertyType::String:
 								{
 									std::string input;
@@ -644,6 +654,7 @@ namespace Volt
 										case Wire::ComponentRegistry::PropertyType::Vector2: DeserializeVector<gem::vec2>(componentData, it->offset, propNode["data"], 0); break;
 										case Wire::ComponentRegistry::PropertyType::Vector3: DeserializeVector<gem::vec3>(componentData, it->offset, propNode["data"], 0); break;
 										case Wire::ComponentRegistry::PropertyType::Vector4: DeserializeVector<gem::vec4>(componentData, it->offset, propNode["data"], 0); break;
+										case Wire::ComponentRegistry::PropertyType::Quaternion: DeserializeVector<gem::quat>(componentData, it->offset, propNode["data"], gem::quat{ 1.f, 0.f, 0.f, 0.f }); break;
 										case Wire::ComponentRegistry::PropertyType::String: DeserializeVector<std::string>(componentData, it->offset, propNode["data"], "Null"); break;
 										case Wire::ComponentRegistry::PropertyType::Int64: DeserializeVector<int64_t>(componentData, it->offset, propNode["data"], 0); break;
 										case Wire::ComponentRegistry::PropertyType::UInt64: DeserializeVector<uint64_t>(componentData, it->offset, propNode["data"], 0); break;
@@ -663,16 +674,6 @@ namespace Volt
 						}
 					}
 				}
-			}
-		}
-
-		if (registry.HasComponent<RelationshipComponent>(entityId))
-		{
-			VT_PROFILE_SCOPE("Sort ID")
-			auto& relComp = registry.GetComponent<RelationshipComponent>(entityId);
-			if (relComp.sortId == 0)
-			{
-				relComp.sortId = entityId;
 			}
 		}
 

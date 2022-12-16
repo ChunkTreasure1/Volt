@@ -76,13 +76,13 @@ void Volt::ParticleSystem::Update(const float& deltaTime)
 							if (particleEmitterComponent.isLooping)
 							{
 								particleEmitterComponent.emittionTimer = 1.f;
-								SendParticles(particleEmitterComponent, ent.GetWorldPosition(), deltaTime, -myTimeBtwSends);
+								SendParticles(particleEmitterComponent, ent.GetPosition(), deltaTime, -myTimeBtwSends);
 							}
 							else
 							{
 								if (particleEmitterComponent.emittionTimer >= 0)
 								{
-									SendParticles(particleEmitterComponent, ent.GetWorldPosition(), deltaTime, -myTimeBtwSends);
+									SendParticles(particleEmitterComponent, ent.GetPosition(), deltaTime, -myTimeBtwSends);
 								}
 							}
 							myTimeBtwSends += 1 / preset->intensity;

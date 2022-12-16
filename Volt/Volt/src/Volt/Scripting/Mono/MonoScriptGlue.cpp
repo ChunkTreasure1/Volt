@@ -32,7 +32,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outPosition = entity.GetWorldPosition();
+		*outPosition = entity.GetPosition();
 	}
 
 	inline static void TransformComponent_SetPosition(Wire::EntityId entityId, gem::vec3* translation)
@@ -40,23 +40,23 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.SetWorldPosition(*translation);
+		entity.SetPosition(*translation);
 	}
 
-	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::vec3* outRotation)
+	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::quat* outRotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outRotation = entity.GetWorldRotation();
+		*outRotation = entity.GetRotation();
 	}
 
-	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::vec3* rotation)
+	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::quat* rotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.SetRotation(*rotation);
+		entity.SetLocalRotation(*rotation);
 	}
 
 	inline static void TransformComponent_GetScale(Wire::EntityId entityId, gem::vec3* outScale)
@@ -64,7 +64,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outScale = entity.GetWorldScale();
+		*outScale = entity.GetScale();
 	}
 
 	inline static void TransformComponent_SetScale(Wire::EntityId entityId, gem::vec3* scale)
@@ -72,7 +72,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.SetScale(*scale);
+		entity.SetLocalScale(*scale);
 	}
 
 	inline static void TransformComponent_GetForward(Wire::EntityId entityId, gem::vec3* outForward)
@@ -80,7 +80,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outForward = entity.GetWorldForward();
+		*outForward = entity.GetForward();
 	}
 
 	inline static void TransformComponent_GetRight(Wire::EntityId entityId, gem::vec3* outRight)
@@ -88,7 +88,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outRight = entity.GetWorldRight();
+		*outRight = entity.GetRight();
 	}
 
 	inline static void TransformComponent_GetUp(Wire::EntityId entityId, gem::vec3* outUp)
@@ -96,7 +96,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outUp = entity.GetWorldUp();
+		*outUp = entity.GetUp();
 	}
 #pragma endregion TransformComponent
 

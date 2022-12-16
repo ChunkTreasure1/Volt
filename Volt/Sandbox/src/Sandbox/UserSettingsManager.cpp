@@ -54,7 +54,10 @@ void UserSettingsManager::LoadUserSettings(const std::vector<Ref<EditorWindow>>&
 	VT_DESERIALIZE_PROPERTY(gridSnapValue, s_editorSettings.sceneSettings.gridSnapValue, sceneSettingsNode, 50.f);
 	VT_DESERIALIZE_PROPERTY(rotationSnapValue, s_editorSettings.sceneSettings.rotationSnapValue, sceneSettingsNode, 45.f);
 	VT_DESERIALIZE_PROPERTY(scaleSnapValue, s_editorSettings.sceneSettings.scaleSnapValue, sceneSettingsNode, 0.1f);
-	VT_DESERIALIZE_PROPERTY(lastOpenScene, s_editorSettings.sceneSettings.lastOpenScene.string(), sceneSettingsNode, std::string());
+
+	std::string sceneInput;
+	VT_DESERIALIZE_PROPERTY(lastOpenScene, sceneInput, sceneSettingsNode, std::string());
+	s_editorSettings.sceneSettings.lastOpenScene = sceneInput;
 
 	YAML::Node versionControlnode = settingsNode["VersionControlSettings"];
 	VT_DESERIALIZE_PROPERTY(server, s_editorSettings.versionControlSettings.server, versionControlnode, std::string("localhost:1666"));

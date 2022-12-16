@@ -2,6 +2,8 @@ import sys
 import zipfile
 import urllib.request as urlReq
 
+from sys import platform
+
 from colorama import Fore, Back, Style
 
 class Utility:
@@ -12,9 +14,10 @@ class Utility:
     
         sys.stdout.write('\r')
         sys.stdout.write('[')
-    
-        for i in range(int(progress)):
-            sys.stdout.write('█')
+
+        if platform == "win32":
+            for i in range(int(progress)):
+                sys.stdout.write('O')
 
         for i in range(progressBarLength - int(progress)):
             sys.stdout.write('-')
