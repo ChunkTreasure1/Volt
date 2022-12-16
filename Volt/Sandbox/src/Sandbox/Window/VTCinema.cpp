@@ -76,6 +76,11 @@ void VTCinemaPanel::UpdateCameraProperties()
 	{
 		auto& enumData = Wire::ComponentRegistry::EnumData();
 		UI::ComboProperty("CameraType", *(int32_t*)&vtCamComp.cameraType, enumData.at("eCameraType"));
+		UI::ComboProperty("BlendType", *(int32_t*)&vtCamComp.blendType, enumData.at("eBlendType"));
+		if (vtCamComp.blendType != Volt::eBlendType::None)
+		{
+			UI::Property("Blend Time", vtCamComp.blendTime);
+		}
 
 		if (UI::Property("FOV", vtCamComp.fov)) 
 		{

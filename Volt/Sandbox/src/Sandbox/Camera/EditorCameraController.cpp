@@ -92,7 +92,6 @@ bool EditorCameraController::OnMousePressedEvent(Volt::MouseButtonPressedEvent& 
 
 bool EditorCameraController::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 {
-	
 	return false;
 }
 

@@ -12,13 +12,34 @@ TestController::TestController(const Volt::Entity& aEntity)
 {
 }
 
+void TestController::DoCameraSequence()
+{
+	Director::Get().SetActiveCamera(myCamIndex);
+
+	if (Director::Get().IsCameraActive(myCamIndex))
+	{
+		myCamIndex++;
+		if (myCamIndex >= Director::Get().GetAllCamerasInScene().size())
+		{
+			myCamIndex = 0;
+		}
+	}
+
+}
+
 void TestController::OnAwake()
 {
+	myCamIndex = 0;
 	myMoveSpeed = 300.f;
 }
 
 void TestController::OnUpdate(float aDeltaTime)
 {
+	if (myCameraSequenceOn)
+	{
+		DoCameraSequence();
+	}
+
 	if (Volt::Input::IsKeyDown(VT_KEY_W)) 
 	{
 		myEntity.SetPosition(myEntity.GetPosition() + myEntity.GetForward() * myMoveSpeed * aDeltaTime);
@@ -51,6 +72,16 @@ void TestController::OnUpdate(float aDeltaTime)
 
 	if (Volt::Input::IsKeyDown(VT_KEY_N))
 	{
-		Director::Get().SetActiveCamera(2);
+		myCameraSequenceOn = true;
 	}
+
+	//if (Volt::Input::IsMouseButtonPressed(1))
+	//{
+	//	Director::Get().SetActiveCamera(0);
+	//}
+	//else
+	//{
+	//	Director::Get().SetActiveCamera(1);
+	//}
+
 }

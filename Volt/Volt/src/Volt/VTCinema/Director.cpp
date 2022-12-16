@@ -64,10 +64,15 @@ void Director::InitTransitionCam()
 		myTransitionCamera.SetPosition(myActiveCamera.GetPosition());
 		myTransitionCamera.SetRotation(myActiveCamera.GetRotation());
 	}
-
+	
 	myTransitionCamera.GetComponent<Volt::CameraComponent>().priority = 0;
+	myTransitionCamera.GetComponent<Volt::VTCamComponent>().blendType = myActiveCamera.GetComponent<Volt::VTCamComponent>().blendType;
 
-	myLerpTime = 2.f;
+	myTransitionCamStartPos = myTransitionCamera.GetPosition();
+	myTransitionCamStartRot = myTransitionCamera.GetRotation();
+	myTransitionCameraStartFoV = myTransitionCamera.GetComponent<Volt::CameraComponent>().fieldOfView;
+
+	myLerpTime = myActiveCamera.GetComponent<Volt::VTCamComponent>().blendTime;
 	myCurrentLerpTime = 0.f;
 
 	myIsBlending = true;
@@ -80,20 +85,27 @@ Volt::Entity Director::CreateTransitionCamera()
 	
 	auto baseCamComp = myActiveCamera.GetComponent<Volt::CameraComponent>();
 
-	cam.AddComponent<Volt::CameraComponent>();
+	auto& newBaseCamComp = cam.AddComponent<Volt::CameraComponent>();
 	cam.AddComponent<Volt::VTCamComponent>();
 
+	newBaseCamComp.fieldOfView = baseCamComp.fieldOfView;
+	
 	return cam;
 }
 
 void Director::BlendCameras(float aDeltaTime)
 {
+	auto& transitionBaseCamComp = myTransitionCamera.GetComponent<Volt::CameraComponent>();
+	auto& activeBaseCamComp = myActiveCamera.GetComponent<Volt::CameraComponent>();
+
+	auto& transitionVtCamComp = myTransitionCamera.GetComponent<Volt::VTCamComponent>();
+
 	myCurrentLerpTime += aDeltaTime;
 
-	if (myCurrentLerpTime > myLerpTime)
+	if (myCurrentLerpTime >= myLerpTime)
 	{
-		myTransitionCamera.GetComponent<Volt::CameraComponent>().priority = 2;
-		myActiveCamera.GetComponent<Volt::CameraComponent>().priority = 1;
+		transitionBaseCamComp.priority = 2;
+		activeBaseCamComp.priority = 1;
 
 		myCurrentLerpTime = 0.f;
 		myIsBlending = false;
@@ -102,10 +114,35 @@ void Director::BlendCameras(float aDeltaTime)
 	}
 
 	float t = myCurrentLerpTime / myLerpTime;
-	t = t * t * (3.f - 2.f * t);
 
-	myTransitionCamera.SetPosition(gem::lerp(myTransitionCamera.GetPosition(), myActiveCamera.GetPosition(), t));
-	myTransitionCamera.SetRotation(gem::lerp(myTransitionCamera.GetRotation(), myActiveCamera.GetRotation(), t));
+	switch (transitionVtCamComp.blendType)
+	{
+		case Volt::eBlendType::None:
+			t = 1.f;
+			myCurrentLerpTime = myLerpTime;
+			break;
+
+		case Volt::eBlendType::EaseInAndOut:
+			t = t * t * t * (t * (6.f * t - 15.f) + 10.f);
+			break;
+
+		case Volt::eBlendType::EaseIn:
+			t = 1.f - gem::cos(t * gem::pi() * 0.5f);
+			break;
+
+		case Volt::eBlendType::EaseOut:
+			t = gem::sin(t * gem::pi() * 0.5f);
+			break;
+
+	default:
+		break;
+	}
+
+
+	myTransitionCamera.SetPosition(gem::lerp(myTransitionCamStartPos, myActiveCamera.GetPosition(), t));
+	myTransitionCamera.SetRotation(gem::lerp(myTransitionCamStartRot, myActiveCamera.GetRotation(), t));
+
+	transitionBaseCamComp.fieldOfView = gem::lerp(myTransitionCameraStartFoV, activeBaseCamComp.fieldOfView, t);
 }
 
 void Director::SetActiveCamera(std::string aCamName)
@@ -140,4 +177,18 @@ void Director::SetActiveCamera(size_t aIndex)
 	InitTransitionCam();
 
 	myActiveCamera = myVTCams[aIndex];
+}
+
+const bool Director::IsCameraActive(size_t aIndex)
+{
+	if (myVTCams[aIndex].GetComponent<Volt::CameraComponent>().priority == 1)
+	{
+		return true;
+	}
+	return false;
+}
+
+const std::vector<Volt::Entity> Director::GetAllCamerasInScene()
+{
+	return myVTCams;
 }

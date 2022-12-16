@@ -20,5 +20,5 @@ private:
 
 	float myYawDelta = { 0 };
 	float myPitchDelta = { 0 };
-	gem::vec2 myDeltaMousePos = { 0 };
+	gem::vec2 myLastMousePos = { 0 };
 };

@@ -14,6 +14,15 @@ namespace Volt
 
 	}), eCameraType)
 
+	SERIALIZE_ENUM((enum class eBlendType : uint32_t
+	{
+		None,
+		EaseIn,
+		EaseOut,
+		EaseInAndOut
+
+	}), eBlendType)
+
 	SERIALIZE_COMPONENT((struct DirectorComponent
 	{
 		PROPERTY(Name = Active Camera, Visible = true) Wire::EntityId activeCam = Wire::NullID;
@@ -26,6 +35,8 @@ namespace Volt
 		PROPERTY(Name = Is Default, Visible = false) bool isDefault = false;
 
 		PROPERTY(Name = Camera Type, SpecialType = Enum, Visible = false) eCameraType cameraType = eCameraType::Default;
+		PROPERTY(Name = Blend Type, SpecialType = Enum, Visible = false) eBlendType blendType = eBlendType::None;
+		PROPERTY(Name = Blend Time, Visible = false) float blendTime = 1.f;
 
 		PROPERTY(Name = FOV, Visible = false) float fov = 60.f;
 		PROPERTY(Name = Damping, Visible = false) float damping = 0.f;
@@ -34,8 +45,8 @@ namespace Volt
 		PROPERTY(Name = Follow, Visible = false) Wire::EntityId followId = Wire::NullID;
 		PROPERTY(Name = LookAt, Visible = false) Wire::EntityId lookAtId = Wire::NullID;
 
-		PROPERTY(Name = Focal Distance, Visible = false) float focalDistance = 0.f;
-		PROPERTY(Name = Mouse Sensitivity, Visible = false) float mouseSensitivity = 0.f;
+		PROPERTY(Name = Focal Distance, Visible = false) float focalDistance = 1000.f;
+		PROPERTY(Name = Mouse Sensitivity, Visible = false) float mouseSensitivity = 0.15f;
 
 		CREATE_COMPONENT_GUID("{2C5E4323-6F22-4AFD-BE83-9DC419B8C45F}"_guid)
 	}), VTCamComponent);

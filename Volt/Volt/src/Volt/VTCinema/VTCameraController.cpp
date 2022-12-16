@@ -66,7 +66,7 @@ void VTCameraController::TPSController(float aDeltaTime)
 	auto& vtCamComp = myEntity.GetComponent<Volt::VTCamComponent>();
 
 	const gem::vec2 mousePos = { Volt::Input::GetMouseX(), Volt::Input::GetMouseY() };
-	const gem::vec2 deltaPos = (mousePos - myDeltaMousePos);
+	const gem::vec2 deltaPos = (mousePos - myLastMousePos);
 
 	myYawDelta = 0.f;
 	myPitchDelta = 0.f;
@@ -79,7 +79,10 @@ void VTCameraController::TPSController(float aDeltaTime)
 
 	if (target) 
 	{
-		myEntity.SetPosition(target.GetPosition() - myEntity.GetForward() * vtCamComp.focalDistance + vtCamComp.offset);
-		myEntity.SetRotation(gem::radians(gem::vec3{myPitchDelta, myYawDelta, 0.f}));
+		const gem::vec3 focalPoint = target.GetPosition() + vtCamComp.offset;
+		myEntity.SetPosition(focalPoint - myEntity.GetForward() * vtCamComp.focalDistance);
+		myEntity.SetRotation(myEntity.GetRotation() + gem::radians(gem::vec3{myPitchDelta, myYawDelta, 0.f}));
 	}
+
+	myLastMousePos = mousePos;
 }
