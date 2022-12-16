@@ -25,18 +25,18 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
       
     - name: Get Premake
-      working-directory: ${{env.GITHUB_WORKSPACE}}/Volt
+      working-directory: ${{env.GITHUB_WORKSPACE}}Volt/
       run: |
         cd scripts
         python data\SetupActions.py
 
     - name: Premake
-      working-directory: ${{env.GITHUB_WORKSPACE}}/Volt
+      working-directory: ${{env.GITHUB_WORKSPACE}}Volt/
       run: |
           scripts\data\premake5.exe vs2022
 
     - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}/Volt
+      working-directory: ${{env.GITHUB_WORKSPACE}}Volt/
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
