@@ -11,6 +11,7 @@ Volt/ProjectTemplate/Assets/Scripts/Intermediates/
 Volt/ProjectTemplate/Assets/Scripts/.vs/
 Volt/ProjectTemplate/Assets/Scripts/*.csproj
 Volt/ProjectTemplate/Assets/Scripts/*.sln
+Volt/JSON
 
 *.sln
 *.vcxproj
