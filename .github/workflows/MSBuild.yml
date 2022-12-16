@@ -32,7 +32,9 @@ jobs:
       run: python Volt\scripts\data\SetupActions.py
 
     - name: Premake
-      run: Volt\scripts\data\premake5.exe vs2022
+      run: |
+          cd Volt
+          scripts\data\premake5.exe vs2022
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
