@@ -17,7 +17,7 @@ class Utility:
 
         if platform == "win32":
             for i in range(int(progress)):
-                sys.stdout.write('█')
+                sys.stdout.write('O')
 
         for i in range(progressBarLength - int(progress)):
             sys.stdout.write('-')
