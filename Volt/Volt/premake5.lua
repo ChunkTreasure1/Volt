@@ -40,6 +40,7 @@ project "Volt"
 	{
 		"src/",
 		"../Game/src",
+		"../GraphKey/src/",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -72,7 +73,8 @@ project "Volt"
 		"Optick",
 		"msdf-atlas-gen",
 		"YamlCPP",
-		"DirectXTex"
+		"DirectXTex",
+		"GraphKey"
 	}
 
 	defines

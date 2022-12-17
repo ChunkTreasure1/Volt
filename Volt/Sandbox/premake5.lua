@@ -54,6 +54,7 @@ project "Sandbox"
 		"../Volt/src/",
 		"../Game/src/",
 		"../NodeEditor/src",
+		"../GraphKey/src/",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",

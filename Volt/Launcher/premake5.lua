@@ -50,6 +50,7 @@ project "Launcher"
 		"src/",
 		"../Volt/src/",
 		"../Game/src/",
+		"../GraphKey/src/",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
