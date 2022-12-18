@@ -12,13 +12,13 @@ namespace utils = ax::NodeEditor::Utilities;
 
 namespace NE
 {
-	Node::Node(const std::string& aName, ImColor aColor)
-		: myName(aName), myColor(aColor)
+	Node::Node(const std::string& aName, ImTextureID aHeaderTextureId, int32_t aTextureWidth, int32_t aTextureHeight, ImColor aColor)
+		: myName(aName), myColor(aColor), myTextureWidth(aTextureWidth), myTextureHeight(aTextureHeight)
 	{}
 
 	void Node::Draw()
 	{
-		utils::BlueprintNodeBuilder builder{};
+		utils::BlueprintNodeBuilder builder{ myTextureId, myTextureWidth, myTextureHeight };
 
 		builder.Begin(ed::NodeId(myId));
 

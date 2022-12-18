@@ -23,6 +23,7 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
+#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/AssetIconLibrary.h"
 #include "Sandbox/Utility/EditorLibrary.h"
@@ -159,6 +160,7 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<PhysicsPanel>());
 	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
 	myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
+	myEditorWindows.emplace_back(CreateRef<GraphKeyPanel>());
 
 	myFileWatcher = CreateRef<FileWatcher>(std::chrono::milliseconds(2000));
 	myFileWatcher->WatchFolder("Engine/Shaders/HLSL/");

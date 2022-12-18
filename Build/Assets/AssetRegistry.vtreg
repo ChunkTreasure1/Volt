@@ -371,6 +371,8 @@ Assets:
     Path: Editor\Meshes\Arrow\3dpil.vtmat
   - Handle: 4235162108492430969
     Path: Editor\Meshes\Arrow\3dpil.vtmesh
+  - Handle: 10996334716833102909
+    Path: Editor\Textures\Graph\Translucency.dds
   - Handle: 8187072774580702017
     Path: Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
   - Handle: 14833944971717813604

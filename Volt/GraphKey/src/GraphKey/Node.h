@@ -1,7 +1,15 @@
 #pragma once
 
+#include <Volt/Core/Base.h>
+
 #include <Wire/Entity.h>
+
 #include <any>
+#include <vector>
+#include <string>
+#include <functional>
+
+#define GK_BIND_FUNCTION(fn) std::bind(&fn, this)
 
 namespace GraphKey
 {
@@ -32,12 +40,16 @@ namespace GraphKey
 
 	struct InputAttribute : public Attribute
 	{
+		InputAttribute() = default;
+
 		InputAttribute(const std::string& name, bool linkable);
 		std::function<void()> function = nullptr;
 	};
 
 	struct OutputAttribute : public Attribute
 	{
+		OutputAttribute() = default;
+
 		OutputAttribute(const std::string& name, bool linkable);
 		std::function<void()> function = nullptr;
 	};
@@ -58,6 +70,9 @@ namespace GraphKey
 
 		template<typename T>
 		void ActivateOutput(uint32_t index, const T& data);
+
+		template<typename T>
+		void SetOutputData(uint32_t index, const T& data);
 
 		uint32_t id = 0;
 		Wire::EntityId entity = Wire::NullID;
@@ -98,8 +113,10 @@ namespace GraphKey
 		VT_CORE_ASSERT(index < inputs.size(), "Index out of bounds!");
 
 		// If the requested input does not have a value, try to get it from the connected node
-		if (!inputs[index].data.has_value() && !inputs[index].links.empty())
+		if (!inputs[index].links.empty())
 		{
+			inputs[index].data.reset();
+			
 			for (const auto& link : inputs[index].links)
 			{
 				if (link->output->function)
@@ -107,9 +124,8 @@ namespace GraphKey
 					link->output->function();
 				}
 			}
-			VT_CORE_ASSERT(inputs[index].data.has_value(), "Input data is empty!");
 		}
-
+		VT_CORE_ASSERT(inputs[index].data.has_value(), "Input data is empty!");
 		return std::any_cast<const T&>(inputs[index].data);
 	}
 
@@ -123,6 +139,16 @@ namespace GraphKey
 			{
 				link->input->function();
 			}
+		}
+	}
+
+	template<typename T>
+	inline void Node::SetOutputData(uint32_t index, const T& data)
+	{
+		VT_CORE_ASSERT(index < outputs.size(), "Index out of bounds!");
+		for (const auto& link : outputs[index].links)
+		{
+			link->input->data = data;
 		}
 	}
 }

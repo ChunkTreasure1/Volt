@@ -2,8 +2,8 @@
 
 namespace GraphKey
 {
-	class Node;
-	class Link;
+	struct Node;
+	struct Link;
 
 	struct GraphSpecification
 	{
