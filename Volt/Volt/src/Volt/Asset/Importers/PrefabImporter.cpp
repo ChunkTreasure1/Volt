@@ -379,11 +379,13 @@ namespace Volt
 		prefab->myRegistry = registry;
 		prefab->myVersion = version;
 		prefab->path = path;
-
+		
 		if (prefab->handle != assetHandle && assetHandle != Asset::Null())
 		{
 			VT_CORE_ERROR("Asset handle mismatch in prefab {0}! Please correct the asset registry! Registry: {1}, Asset: {2}", path.string(), prefab->handle, assetHandle);
 		}
+
+		prefab->handle = assetHandle;
 
 		return true;
 	}

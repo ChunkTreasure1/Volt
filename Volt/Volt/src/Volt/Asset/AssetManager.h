@@ -225,7 +225,6 @@ namespace Volt
 	{
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
 		asset->path = targetDir / filename;
-		asset->handle = AssetHandle();
 
 		std::scoped_lock lock(Get().myLoadMutex);
 

@@ -869,17 +869,7 @@ void ViewportPanel::UpdateModals()
 			Sandbox::Get().SaveScene();
 		}
 
-		if (myEditorScene->handle == mySceneToOpen)
-		{
-			Volt::AssetManager::Get().ReloadAsset(myEditorScene->handle);
-		}
-
-		myEditorScene = Volt::AssetManager::GetAsset<Volt::Scene>(mySceneToOpen);
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myEditorScene);
-
-		Volt::OnSceneLoadedEvent loadEvent{ myEditorScene };
-		Volt::Application::Get().OnEvent(loadEvent);
-
+		Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
 		mySceneToOpen = Volt::Asset::Null();
 	}
 }

@@ -143,23 +143,31 @@ namespace Volt
 					thread.join();
 				}
 
+				std::vector<Wire::EntityId> dirtyPrefabs{};
 				for (auto& registry : threadRegistries)
 				{
+					registry.ForEach<PrefabComponent>([&](Wire::EntityId id, PrefabComponent& prefabComp)
+						{
+							if (prefabComp.isDirty)
+							{
+								dirtyPrefabs.emplace_back(id);
+							}
+						});
+
 					for (const auto& entity : registry.GetAllEntities())
 					{
 						scene->myRegistry.AddEntity(entity);
 						Entity::Copy(registry, scene->myRegistry, entity, entity);
 					}
 				}
-			}
 
-			scene->myRegistry.ForEach<PrefabComponent>([&](Wire::EntityId id, PrefabComponent& prefabComp)
+				for (const auto& id : dirtyPrefabs)
 				{
-					if (prefabComp.isDirty)
-					{
-						Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
-					}
-				});
+					auto& prefabComp = scene->myRegistry.GetComponent<PrefabComponent>(id);
+					Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
+					prefabComp.isDirty = false;
+				}
+			}
 		}
 
 		return true;

@@ -84,7 +84,7 @@ std::string GetSIGEventFromInt(int signal)
 		case 8: return "Floating point exception"; break;
 		case 11: return "Memory access violation"; break;
 		case 22: return "Abort"; break;
-	
+
 		default:
 			return "Unknown";
 	}
@@ -184,7 +184,7 @@ void Sandbox::OnDetach()
 
 	UserSettingsManager::SaveUserSettings(myEditorWindows);
 
- 	myEditorWindows.clear();
+	myEditorWindows.clear();
 	EditorLibrary::Clear();
 
 	myFileWatcher = nullptr;
@@ -355,6 +355,11 @@ void Sandbox::ExecuteUndo()
 void Sandbox::NewScene()
 {
 	SelectionManager::DeselectAll();
+	if (myRuntimeScene)
+	{
+		Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
+	}
+
 	myRuntimeScene = CreateRef<Volt::Scene>("New Scene");
 
 	// Setup new scene
@@ -421,7 +426,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		{
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}
-		
+
 		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
 		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
