@@ -4,6 +4,7 @@
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scripting/ScriptRegistry.h>
@@ -19,6 +20,7 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
+#include <GraphKey/Graph.h>
 #include <Wire/Serialization.h>
 
 #include <vector>
@@ -39,7 +41,6 @@ void PropertiesPanel::UpdateMainContent()
 	{
 		if (Volt::Input::IsMouseButtonReleased(VT_MOUSE_BUTTON_LEFT))
 		{
-
 			myMidEvent = false;
 		}
 	}
@@ -231,8 +232,17 @@ void PropertiesPanel::UpdateMainContent()
 
 			if (open)
 			{
+				const std::vector<std::string> excludedComponents =
+				{
+					"ScriptComponent",
+					"MonoScriptComponent",
+					"VisualScriptingComponent",
+				};
+
+				const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
+
 				UI::PushId();
-				if (registryInfo.name != "ScriptComponent" && registryInfo.name != "MonoScriptComponent" && UI::BeginProperties(registryInfo.name))
+				if (!isExcluded && UI::BeginProperties(registryInfo.name))
 				{
 					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
 					for (auto& prop : registryInfo.properties)
@@ -315,6 +325,24 @@ void PropertiesPanel::UpdateMainContent()
 				else if (registryInfo.name == "MonoScriptComponent")
 				{
 					DrawMonoProperties(registry, registryInfo, entity);
+				}
+				else if (registryInfo.name == "VisualScriptingComponent")
+				{
+					Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
+					if (!vsComp.graph)
+					{
+						if (ImGui::Button("Create"))
+						{
+							vsComp.graph = CreateRef<GraphKey::Graph>();
+						}
+					}
+					else
+					{
+						if (ImGui::Button("Open"))
+						{
+							GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
+						}
+					}
 				}
 				UI::PopId();
 

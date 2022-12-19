@@ -1,6 +1,10 @@
 #pragma once
 
+#include "Graph.h"
+
+#include <Volt/Core/UUID.h>
 #include <Volt/Core/Base.h>
+#include <Volt/Events/Event.h>
 
 #include <Wire/Entity.h>
 
@@ -13,15 +17,27 @@
 
 namespace GraphKey
 {
+	enum class AttributeType
+	{
+		Flow,
+		Type,
+	};
+
+	enum class AttributeDirection
+	{
+		Input,
+		Output,
+	};
+
 	struct InputAttribute;
 	struct OutputAttribute;
 
 	struct Link
 	{
-		InputAttribute* input = nullptr;
-		OutputAttribute* output = nullptr;
+		Volt::UUID input = 0;
+		Volt::UUID output = 0;
 
-		uint32_t id;
+		Volt::UUID id{};
 	};
 
 	struct Attribute
@@ -31,81 +47,70 @@ namespace GraphKey
 		virtual ~Attribute() = default;
 
 		std::string name;
-		uint32_t id;
+		Volt::UUID id{};
 
-		std::vector<Link*> links;
+		std::vector<Volt::UUID> links;
+		std::function<void()> function;
+
 		std::any data;
-		bool linkable = true;
-	};
-
-	struct InputAttribute : public Attribute
-	{
-		InputAttribute() = default;
-
-		InputAttribute(const std::string& name, bool linkable);
-		std::function<void()> function = nullptr;
-	};
-
-	struct OutputAttribute : public Attribute
-	{
-		OutputAttribute() = default;
-
-		OutputAttribute(const std::string& name, bool linkable);
-		std::function<void()> function = nullptr;
+		bool hidden = false;
+		
+		AttributeType type = AttributeType::Flow;
+		AttributeDirection direction;
 	};
 
 	struct Node
 	{
 		Node() = default;
+		virtual ~Node() = default;
 		Node(const Ref<Node> node);
 
-		template<typename T>
-		InputAttribute InputAttributeConfig(const std::string& name, bool linkable = true, const std::function<void()>& function = nullptr);
+		virtual void OnEvent(Volt::Event& e) {  }
+		
+		virtual const std::string GetName() = 0;
+		virtual const std::string GetCategory() { return "Default"; }
+		virtual const gem::vec4 GetColor() = 0;
 
 		template<typename T>
-		OutputAttribute OutputAttributeConfig(const std::string& name, bool linkable = true, const std::function<void()>& function = nullptr);
+		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden = false, const std::function<void()>& function = nullptr);
+		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function);
 
 		template<typename T>
 		const T& GetInput(uint32_t index);
 
 		template<typename T>
 		void ActivateOutput(uint32_t index, const T& data);
+		void ActivateOutput(uint32_t index);
 
 		template<typename T>
 		void SetOutputData(uint32_t index, const T& data);
 
-		uint32_t id = 0;
+		Volt::UUID id{};
 		Wire::EntityId entity = Wire::NullID;
 
-		std::string name;
-		std::vector<Ref<Link>> links;
-		std::vector<InputAttribute> inputs;
-		std::vector<OutputAttribute> outputs;
+		std::vector<Attribute> inputs;
+		std::vector<Attribute> outputs;
+
+	private:
+		friend class Graph;
+
+		Graph* myGraph = nullptr;
 	};
 
 	template<typename T>
-	inline InputAttribute Node::InputAttributeConfig(const std::string& name, bool linkable, const std::function<void()>& function)
+	inline Attribute Node::AttributeConfig(const std::string& name, AttributeDirection direction, bool linkable, const std::function<void()>& function)
 	{
-		InputAttribute attr{};
+		Attribute attr{};
 		attr.name = name;
-		attr.linkable = linkable;
+		attr.direction = direction;
+		attr.hidden = linkable;
 		attr.function = function;
 		attr.data = T();
+		attr.type = AttributeType::Type;
 
 		return attr;
 	}
 
-	template<typename T>
-	inline OutputAttribute Node::OutputAttributeConfig(const std::string& name, bool linkable, const std::function<void()>& function)
-	{
-		OutputAttribute attr{};
-		attr.name = name;
-		attr.linkable = linkable;
-		attr.function = function;
-		attr.data = T();
-
-		return attr;
-	}
 
 	template<typename T>
 	inline const T& Node::GetInput(uint32_t index)
@@ -117,11 +122,18 @@ namespace GraphKey
 		{
 			inputs[index].data.reset();
 			
-			for (const auto& link : inputs[index].links)
+			for (const auto& linkId : inputs[index].links)
 			{
-				if (link->output->function)
+				const auto link = myGraph->GetLinkByID(linkId);
+				if (!link)
 				{
-					link->output->function();
+					continue;
+				}
+
+				const auto attr = myGraph->GetAttributeByID(link->output);
+				if (attr)
+				{
+					attr->function();
 				}
 			}
 		}
@@ -132,12 +144,24 @@ namespace GraphKey
 	template<typename T>
 	inline void Node::ActivateOutput(uint32_t index, const T& data)
 	{
-		for (const auto& link : outputs[index].links)
+		for (const auto& linkId : outputs[index].links)
 		{
-			link->input->data = data;
-			if (link->input->function != nullptr)
+			const auto link = myGraph->GetLinkByID(linkId);
+			if (!link)
 			{
-				link->input->function();
+				continue;
+			}
+
+			const auto attr = myGraph->GetAttributeByID(link->input);
+			if (!attr)
+			{
+				continue;
+			}
+
+			attr->data = data;
+			if (attr->function)
+			{
+				attr->function();
 			}
 		}
 	}
@@ -146,9 +170,21 @@ namespace GraphKey
 	inline void Node::SetOutputData(uint32_t index, const T& data)
 	{
 		VT_CORE_ASSERT(index < outputs.size(), "Index out of bounds!");
-		for (const auto& link : outputs[index].links)
+		for (const auto& linkId : outputs[index].links)
 		{
-			link->input->data = data;
+			const auto link = myGraph->GetLinkByID(linkId);
+			if (!link)
+			{
+				continue;
+			}
+
+			const auto attr = myGraph->GetAttributeByID(link->input);
+			if (!attr)
+			{
+				continue;
+			}
+
+			attr->data = data;
 		}
 	}
 }

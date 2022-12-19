@@ -10,6 +10,10 @@
 #include <gem/gem.h>
 #include <string>
 
+namespace GraphKey
+{
+	class Graph;
+}
 
 namespace Volt
 {
@@ -222,4 +226,10 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 	}), AnimationControllerComponent);
 
+	SERIALIZE_COMPONENT((struct VisualScriptingComponent
+	{
+		Ref<GraphKey::Graph> graph;
+
+		CREATE_COMPONENT_GUID("{1BC207FE-D06C-41C2-83F4-E153F3A75770}"_guid);
+	}), VisualScriptingComponent);
 }

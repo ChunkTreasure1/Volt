@@ -18,7 +18,8 @@ project "Volt"
 	linkoptions 
 	{
 		"/ignore:4006",
-		"/ignore:4099"
+		"/ignore:4099",
+		"/WHOLEARCHIVE:GraphKey"
 	}
 
 	files

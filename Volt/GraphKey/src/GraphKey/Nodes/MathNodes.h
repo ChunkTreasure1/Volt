@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphKey/Node.h"
+#include "GraphKey/Registry.h"
 
 namespace GraphKey
 {
@@ -9,22 +10,23 @@ namespace GraphKey
 	public:
 		inline AddNode()
 		{
-			name = "Add";
-
 			inputs =
 			{
-				InputAttributeConfig<float>("A"),
-				InputAttributeConfig<float>("B")
+				AttributeConfig<float>("A", AttributeDirection::Input),
+				AttributeConfig<float>("B", AttributeDirection::Input)
 			};
 
 			outputs =
 			{
-				OutputAttributeConfig<float>("Result", true, GK_BIND_FUNCTION(AddNode::Add))
+				AttributeConfig<float>("Result", AttributeDirection::Output, true, GK_BIND_FUNCTION(AddNode::Add))
 			};
 		}
 
+		inline const std::string GetName() override { return "Add"; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+
 	private:
-		void Add()
+		inline void Add()
 		{
 			const float val = GetInput<float>(0) + GetInput<float>(1);
 			SetOutputData(0, val);
@@ -36,22 +38,23 @@ namespace GraphKey
 	public:
 		inline SubtractNode()
 		{
-			name = "Subtract";
-
 			inputs =
 			{
-				InputAttributeConfig<float>("A"),
-				InputAttributeConfig<float>("B")
+				AttributeConfig<float>("A", AttributeDirection::Input),
+				AttributeConfig<float>("B", AttributeDirection::Input)
 			};
 
 			outputs =
 			{
-				OutputAttributeConfig<float>("Result", true, GK_BIND_FUNCTION(SubtractNode::Subtract))
+				AttributeConfig<float>("Result", AttributeDirection::Output, true, GK_BIND_FUNCTION(SubtractNode::Subtract))
 			};
 		}
 
+		inline const std::string GetName() override { return "Subtract"; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+
 	private:
-		void Subtract()
+		inline void Subtract()
 		{
 			const float val = GetInput<float>(0) - GetInput<float>(1);
 			SetOutputData(0, val);
@@ -63,22 +66,23 @@ namespace GraphKey
 	public:
 		inline MultiplyNode()
 		{
-			name = "Multiply";
-
 			inputs =
 			{
-				InputAttributeConfig<float>("A"),
-				InputAttributeConfig<float>("B")
+				AttributeConfig<float>("A", AttributeDirection::Input),
+				AttributeConfig<float>("B", AttributeDirection::Input)
 			};
 
 			outputs =
 			{
-				OutputAttributeConfig<float>("Result", true, GK_BIND_FUNCTION(MultiplyNode::Multiply))
+				AttributeConfig<float>("Result", AttributeDirection::Output, true, GK_BIND_FUNCTION(MultiplyNode::Multiply))
 			};
 		}
 
+		inline const std::string GetName() override { return "Multiply"; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+
 	private:
-		void Multiply()
+		inline void Multiply()
 		{
 			const float val = GetInput<float>(0) * GetInput<float>(1);
 			SetOutputData(0, val);
@@ -90,25 +94,31 @@ namespace GraphKey
 	public:
 		inline DivisionNode()
 		{
-			name = "Division";
-
 			inputs =
 			{
-				InputAttributeConfig<float>("A"),
-				InputAttributeConfig<float>("B")
+				AttributeConfig<float>("A", AttributeDirection::Input),
+				AttributeConfig<float>("B", AttributeDirection::Input)
 			};
 
 			outputs =
 			{
-				OutputAttributeConfig<float>("Result", true, GK_BIND_FUNCTION(DivisionNode::Divide))
+				AttributeConfig<float>("Result", AttributeDirection::Output, true, GK_BIND_FUNCTION(DivisionNode::Divide))
 			};
 		}
 
+		inline const std::string GetName() override { return "Division"; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+
 	private:
-		void Divide()
+		inline void Divide()
 		{
 			const float val = GetInput<float>(0) / GetInput<float>(1);
 			SetOutputData(0, val);
 		}
 	};
+
+	GK_REGISTER_NODE(AddNode);
+	GK_REGISTER_NODE(SubtractNode);
+	GK_REGISTER_NODE(MultiplyNode);
+	GK_REGISTER_NODE(DivisionNode);
 }

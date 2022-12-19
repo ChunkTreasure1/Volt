@@ -155,11 +155,11 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<SplinePanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<EngineStatisticsPanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<NavigationPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AnimationTreeEditor>());
+	//myEditorWindows.emplace_back(CreateRef<AnimationTreeEditor>());
 	myEditorWindows.emplace_back(CreateRef<EditorSettingsPanel>(UserSettingsManager::GetSettings()));
 	myEditorWindows.emplace_back(CreateRef<PhysicsPanel>());
 	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
-	myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
+	//myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
 	myEditorWindows.emplace_back(CreateRef<GraphKeyPanel>());
 
 	myFileWatcher = CreateRef<FileWatcher>(std::chrono::milliseconds(2000));
