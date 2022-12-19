@@ -15,7 +15,7 @@ namespace GraphKey
 class GraphKeyPanel : public EditorWindow
 {
 public:
-	GraphKeyPanel();
+	GraphKeyPanel(Ref<Volt::Scene>& aScene);
 	~GraphKeyPanel() override;
 
 	void UpdateMainContent() override;
@@ -29,7 +29,8 @@ private:
 	void UpdateNodesPanel();
 	void UpdatePropertiesPanel();
 	void UpdateEditorPanel();
-	
+	void UpdateContextPopups();
+
 	void CreateAttributeFunctions();
 	void CreateAttributeColors();
 
@@ -40,11 +41,16 @@ private:
 
 	inline static GraphKeyPanel* myInstance = nullptr;
 
-	ax::NodeEditor::EditorContext* myEditorContext = nullptr;
 	Ref<GraphKey::Graph> myCurrentGraph;
+	Ref<Volt::Scene>& myCurrentScene;
 
 	std::unordered_map<std::type_index, std::function<void(std::any& data)>> myAttributeFunctions;
 	std::unordered_map<std::type_index, gem::vec4> myAttributeColors;
-
+	
 	gem::vec4 myDefaultPinColor;
+
+	ax::NodeEditor::EditorContext* myEditorContext = nullptr;
+	ax::NodeEditor::NodeId myContextNodeId;
+	ax::NodeEditor::PinId myContextPinId;
+	ax::NodeEditor::LinkId myContextLinkId;
 };

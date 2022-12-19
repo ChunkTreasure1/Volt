@@ -4,6 +4,8 @@
 #include "Sandbox/Window/GraphKey/PinDrawing.h"
 #include "Sandbox/Window/GraphKey/GraphKeyHelpers.h"
 
+#include "Sandbox/Utility/SelectionManager.h"
+
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Utility/UIUtility.h>
@@ -17,8 +19,14 @@
 namespace ed = ax::NodeEditor;
 namespace utils = ax::NodeEditor::Utilities;
 
-GraphKeyPanel::GraphKeyPanel()
-	: EditorWindow("Graph Key", true)
+template<typename T>
+inline constexpr std::type_index GetTypeIndex()
+{
+	return std::type_index(typeid(T));
+}
+
+GraphKeyPanel::GraphKeyPanel(Ref<Volt::Scene>& aScene)
+	: EditorWindow("Graph Key", true), myCurrentScene(aScene)
 {
 	myInstance = this;
 
@@ -75,7 +83,7 @@ void GraphKeyPanel::UpdateEditorPanel()
 		ed::Link(ed::LinkId(link->id), ed::PinId(link->output), ed::PinId(link->input));
 	}
 
-	if (ed::BeginCreate())
+	if (ed::BeginCreate({ 1.f, 1.f, 1.f, 1.f }, 2.f))
 	{
 		ed::PinId startPinId = 0, endPinId = 0;
 		if (ed::QueryNewLink(&startPinId, &endPinId))
@@ -114,28 +122,120 @@ void GraphKeyPanel::UpdateEditorPanel()
 	}
 	ed::EndCreate();
 
+	ed::Suspend();
+	if (ed::ShowNodeContextMenu(&myContextNodeId))
+	{
+		UI::OpenPopup("NodeContextMenu");
+	}
+	else if (ed::ShowPinContextMenu(&myContextPinId))
+	{
+		UI::OpenPopup("PinContextMenu");
+	}
+	else if (ed::ShowLinkContextMenu(&myContextLinkId))
+	{
+		UI::OpenPopup("LinkContextMenu");
+	}
+	else if (ed::ShowBackgroundContextMenu())
+	{
+		UI::OpenPopup("BackgroundContextMenu");
+	}
+
+	UpdateContextPopups();
+	ed::Resume();
+
 	ed::End();
 	ImGui::End();
 }
 
+void GraphKeyPanel::UpdateContextPopups()
+{
+	if (UI::BeginPopup("NodeContextMenu"))
+	{
+		ImGui::MenuItem("Delete");
+
+		UI::EndPopup();
+	}
+
+	if (UI::BeginPopup("PinContextMenu"))
+	{
+		GraphKey::Attribute* pin = myCurrentGraph->GetAttributeByID(myContextPinId.Get());
+		if (pin->data.has_value())
+		{
+			const bool isEntity = pin->data.type() == GetTypeIndex<Volt::Entity>();
+			if (isEntity)
+			{
+				if (SelectionManager::IsAnySelected() && ImGui::MenuItem("Assign Selected Entity"))
+				{
+					pin->data = Volt::Entity{ SelectionManager::GetSelectedEntities().at(0), myCurrentScene.get()};
+				}
+
+				//if (ImGui::MenuItem("Assign Current Entity"))
+				//{
+				//	pin->data = 
+				//}
+			}
+		}
+
+		UI::EndPopup();
+	}
+
+	if (UI::BeginPopup("LinkContextMenu"))
+	{
+		ImGui::MenuItem("Delete");
+
+		UI::EndPopup();
+	}
+
+	bool isNewNodePoppedUp = false;
+
+	static ImVec2 newNodePostion{ 0.0f, 0.0f };
+
+	if (UI::BeginPopup("BackgroundContextMenu"))
+	{
+		isNewNodePoppedUp = true;
+		newNodePostion = ed::ScreenToCanvas(ImGui::GetMousePosOnOpeningCurrentPopup());
+		
+		Ref<GraphKey::Node> node;
+
+		for (const auto& [name, func] : GraphKey::Registry::GetRegistry())
+		{
+			if (ImGui::MenuItem(name.c_str()))
+			{
+				node = func();
+				myCurrentGraph->AddNode(node);
+			}
+		}
+		
+		if (node)
+		{
+			ed::SetNodePosition(ed::NodeId(node->id), newNodePostion);
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndPopup();
+	}
+}
+
 void GraphKeyPanel::CreateAttributeFunctions()
 {
-	myAttributeFunctions[std::type_index(typeid(bool))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<bool&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(int32_t))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<int32_t&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(uint32_t))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<uint32_t&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(int16_t))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<int16_t&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(uint16_t))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<uint16_t&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(int8_t))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<int8_t&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(uint8_t))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<uint8_t&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(double))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<double&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(float))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<float&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(gem::vec2))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec2&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(gem::vec3))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec3&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(gem::vec4))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec4&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(gem::vec2ui))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec2ui&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(gem::vec3ui))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec3ui&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(gem::vec4ui))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec4ui&>(value)); };
-	myAttributeFunctions[std::type_index(typeid(std::string))] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<std::string&>(value)); };
+	myAttributeFunctions[GetTypeIndex<bool>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<bool&>(value)); };
+	myAttributeFunctions[GetTypeIndex<int32_t>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<int32_t&>(value)); };
+	myAttributeFunctions[GetTypeIndex<uint32_t>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<uint32_t&>(value)); };
+	myAttributeFunctions[GetTypeIndex<int16_t>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<int16_t&>(value)); };
+	myAttributeFunctions[GetTypeIndex<uint16_t>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<uint16_t&>(value)); };
+	myAttributeFunctions[GetTypeIndex<int8_t>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<int8_t&>(value)); };
+	myAttributeFunctions[GetTypeIndex<uint8_t>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<uint8_t&>(value)); };
+	myAttributeFunctions[GetTypeIndex<double>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<double&>(value)); };
+	myAttributeFunctions[GetTypeIndex<float>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<float&>(value)); };
+	myAttributeFunctions[GetTypeIndex<gem::vec2>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec2&>(value)); };
+	myAttributeFunctions[GetTypeIndex<gem::vec3>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec3&>(value)); };
+	myAttributeFunctions[GetTypeIndex<gem::vec4>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec4&>(value)); };
+	myAttributeFunctions[GetTypeIndex<gem::vec2ui>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec2ui&>(value)); };
+	myAttributeFunctions[GetTypeIndex<gem::vec3ui>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec3ui&>(value)); };
+	myAttributeFunctions[GetTypeIndex<gem::vec4ui>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<gem::vec4ui&>(value)); };
+	myAttributeFunctions[GetTypeIndex<std::string>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<std::string&>(value)); };
+
+	myAttributeFunctions[GetTypeIndex<Volt::Entity>()] = [](std::any& value) { GraphKeyHelpers::Attribute(std::any_cast<Volt::Entity&>(value)); };
 }
 
 void GraphKeyPanel::CreateAttributeColors()
@@ -149,22 +249,29 @@ void GraphKeyPanel::CreateAttributeColors()
 	// Default: Orange
 	///////////////////
 
-	myAttributeColors[std::type_index(typeid(bool))] = { 0.58f, 0.f, 0.01f, 1.f };
-	myAttributeColors[std::type_index(typeid(int32_t))] = { 0.12f, 0.72f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(uint32_t))] = { 0.12f, 0.72f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(int16_t))] = { 0.12f, 0.72f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(uint16_t))] = { 0.12f, 0.72f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(int8_t))] = { 0.12f, 0.72f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(uint8_t))] = { 0.12f, 0.72f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(double))] = { 0.15f, 0.29f, 0.83f, 1.f };
-	myAttributeColors[std::type_index(typeid(float))] = { 0.15f, 0.29f, 0.83f, 1.f };
-	myAttributeColors[std::type_index(typeid(gem::vec2))] = { 0.96f, 0.99f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(gem::vec3))] = { 0.96f, 0.99f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(gem::vec4))] = { 0.96f, 0.99f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(gem::vec2ui))] = { 0.96f, 0.99f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(gem::vec3ui))] = { 0.96f, 0.99f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(gem::vec4ui))] = { 0.96f, 0.99f, 0.f, 1.f };
-	myAttributeColors[std::type_index(typeid(std::string))] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<bool>()] = { 0.58f, 0.f, 0.01f, 1.f };
+	
+	myAttributeColors[GetTypeIndex<int32_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<uint32_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<int16_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<uint16_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<int8_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<uint8_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
+	
+	myAttributeColors[GetTypeIndex<double>()] = { 0.15f, 0.29f, 0.83f, 1.f };
+	myAttributeColors[GetTypeIndex<float>()] = { 0.15f, 0.29f, 0.83f, 1.f };
+	
+	myAttributeColors[GetTypeIndex<gem::vec2>()] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<gem::vec3>()] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<gem::vec4>()] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<gem::quat>()] = { 0.96f, 0.99f, 0.f, 1.f };
+
+	myAttributeColors[GetTypeIndex<gem::vec2ui>()] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<gem::vec3ui>()] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<gem::vec4ui>()] = { 0.96f, 0.99f, 0.f, 1.f };
+	myAttributeColors[GetTypeIndex<std::string>()] = { 0.96f, 0.99f, 0.f, 1.f };
+
+	myAttributeColors[GetTypeIndex<Volt::Entity>()] = { 0.3f, 1.f, 0.49f, 1.f };
 
 	myDefaultPinColor = { 0.99f, 0.51f, 0.f, 1.f };
 }

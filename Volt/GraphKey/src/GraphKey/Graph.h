@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Volt/Core/UUID.h>
+#include <Volt/Events/Event.h>
 
 namespace GraphKey
 {
@@ -21,6 +22,8 @@ namespace GraphKey
 	public:
 		Graph();
 		Graph(const GraphSpecification& spec);
+
+		void OnEvent(Volt::Event& e);
 
 		void AddNode(Ref<Node> node);
 		void AddLink(Ref<Link> link);

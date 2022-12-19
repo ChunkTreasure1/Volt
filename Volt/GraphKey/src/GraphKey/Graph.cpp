@@ -12,6 +12,14 @@ namespace GraphKey
 		: mySpecification(spec)
 	{}
 
+	void Graph::OnEvent(Volt::Event & e)
+	{
+		for (const auto& n : mySpecification.nodes)
+		{
+			n->OnEvent(e);
+		}
+	}
+
 	void Graph::AddNode(Ref<Node> node)
 	{
 		node->myGraph = this;

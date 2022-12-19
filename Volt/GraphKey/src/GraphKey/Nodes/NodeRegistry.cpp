@@ -7,6 +7,8 @@
 #include "GraphKey/Nodes/PrintNodes.h"
 #include "GraphKey/Nodes/UtilityNodes.h"
 
+#include "GraphKey/Nodes/Entity/TransformNodes.h"
+
 namespace GraphKey
 {
 	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeFloat, ToStringNode<float>);
@@ -27,4 +29,7 @@ namespace GraphKey
 
 	GK_REGISTER_NODE(KeyPressedNode);
 	GK_REGISTER_NODE(KeyReleasedNode);
+
+	GK_REGISTER_NODE(SetEntityTransformNode);
+	GK_REGISTER_NODE(GetEntityTransformNode);
 }

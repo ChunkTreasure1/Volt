@@ -184,6 +184,30 @@ void PropertiesPanel::UpdateMainContent()
 		UI::PopId();
 	}
 
+	// Visual Scripting
+	{
+		auto& entity = SelectionManager::GetSelectedEntities().front();
+
+		if (registry.HasComponent<Volt::VisualScriptingComponent>(entity))
+		{
+			Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
+			if (!vsComp.graph)
+			{
+				if (ImGui::Button("Create")) 
+				{
+					vsComp.graph = CreateRef<GraphKey::Graph>();
+				}
+			}
+			else
+			{
+				if (ImGui::Button("Open"))
+				{
+					GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
+				}
+			}
+		}
+	}
+
 	if (singleSelected)
 	{
 		const auto entity = SelectionManager::GetSelectedEntities().front();
@@ -197,7 +221,7 @@ void PropertiesPanel::UpdateMainContent()
 
 			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
 			if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
-				registryInfo.name == "EntityDataComponent")
+				registryInfo.name == "EntityDataComponent" || registryInfo.name == "VisualScriptingComponent")
 			{
 				continue;
 			}
@@ -236,7 +260,6 @@ void PropertiesPanel::UpdateMainContent()
 				{
 					"ScriptComponent",
 					"MonoScriptComponent",
-					"VisualScriptingComponent",
 				};
 
 				const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
@@ -326,24 +349,7 @@ void PropertiesPanel::UpdateMainContent()
 				{
 					DrawMonoProperties(registry, registryInfo, entity);
 				}
-				else if (registryInfo.name == "VisualScriptingComponent")
-				{
-					Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
-					if (!vsComp.graph)
-					{
-						if (ImGui::Button("Create"))
-						{
-							vsComp.graph = CreateRef<GraphKey::Graph>();
-						}
-					}
-					else
-					{
-						if (ImGui::Button("Open"))
-						{
-							GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
-						}
-					}
-				}
+
 				UI::PopId();
 
 				UI::TreeNodePop();

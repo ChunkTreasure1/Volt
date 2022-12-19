@@ -160,7 +160,7 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<PhysicsPanel>());
 	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
 	//myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
-	myEditorWindows.emplace_back(CreateRef<GraphKeyPanel>());
+	myEditorWindows.emplace_back(CreateRef<GraphKeyPanel>(myRuntimeScene));
 
 	myFileWatcher = CreateRef<FileWatcher>(std::chrono::milliseconds(2000));
 	myFileWatcher->WatchFolder("Engine/Shaders/HLSL/");
