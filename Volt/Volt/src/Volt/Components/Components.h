@@ -21,6 +21,9 @@ namespace Volt
 
 	SERIALIZE_COMPONENT((struct TagComponent
 	{
+		TagComponent(const std::string& aTag) : tag(aTag) {}
+		TagComponent() = default;
+
 		PROPERTY(Name = Tag) std::string tag;
 
 		CREATE_COMPONENT_GUID("{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"_guid);
