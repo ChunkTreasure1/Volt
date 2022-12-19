@@ -24,7 +24,8 @@ project "Launcher"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:Game",
-		"/WHOLEARCHIVE:PhysX"
+		"/WHOLEARCHIVE:PhysX",
+		"/WHOLEARCHIVE:GraphKey"
 	}
 
     defines
@@ -77,6 +78,7 @@ project "Launcher"
     links
     {
         "Volt",
+		"GraphKey",
 
 		"Game",
 

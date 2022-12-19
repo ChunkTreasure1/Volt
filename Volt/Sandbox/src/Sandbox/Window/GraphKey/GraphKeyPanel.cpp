@@ -10,10 +10,7 @@
 
 #include <GraphKey/Graph.h>
 #include <GraphKey/Node.h>
-#include <GraphKey/Nodes/MathNodes.h>
-#include <GraphKey/Nodes/PrintNodes.h>
-#include <GraphKey/Nodes/BaseNodes.h>
-#include <GraphKey/Nodes/UtilityNodes.h>
+#include <GraphKey/Registry.h>
 
 #include <builders.h>
 
@@ -108,7 +105,7 @@ void GraphKeyPanel::UpdateEditorPanel()
 					}
 				}
 
-				if (ed::AcceptNewItem() && startAttr->type == endAttr->type && sameType) // #TODO_Ivar: Check for correct type
+				if (startAttr->linkable && endAttr->linkable && ed::AcceptNewItem() && sameType && startAttr->direction != endAttr->direction)
 				{
 					myCurrentGraph->CreateLink(endAttr->id, startAttr->id);
 				}
@@ -261,11 +258,15 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 			}
 		}
 
-		DrawPinIcon(input, connected, ImColor{ color.x, color.y, color.z, color.w }, 255);
+		if (input.linkable)
+		{
+			DrawPinIcon(input, connected, ImColor{ color.x, color.y, color.z, color.w }, 255);
+		}
+
 		ImGui::Spring(0.f);
 		ImGui::TextUnformatted(input.name.c_str());
 
-		if (!input.hidden && !connected && input.data.has_value())
+		if (!input.inputHidden && !connected && input.data.has_value())
 		{
 			if (myAttributeFunctions.contains(typeIndex))
 			{
@@ -287,7 +288,7 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 
 		ImGui::Spring(0.f);
 
-		if (!output.hidden && !connected && output.data.has_value())
+		if (!output.inputHidden && !connected && output.data.has_value())
 		{
 			if (myAttributeFunctions.contains(typeIndex))
 			{
@@ -316,7 +317,12 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 			}
 		}
 
-		DrawPinIcon(output, connected, ImColor{ color.x, color.y, color.z, color.w }, 255);
+
+		if (output.linkable)
+		{
+			DrawPinIcon(output, connected, ImColor{ color.x, color.y, color.z, color.w }, 255);
+		}
+
 		builder.EndOutput();
 	}
 
@@ -349,7 +355,7 @@ const std::vector<Ref<GraphKey::Node>> GraphKeyPanel::GetSelectedNodes() const
 	std::vector<Ref<GraphKey::Node>> selectedNodes;
 	for (const auto& node : myCurrentGraph->GetSpecification().nodes)
 	{
-		auto it = std::find_if(selectedNodeIds.begin(), selectedNodeIds.end(), [&](const ed::NodeId& id) 
+		auto it = std::find_if(selectedNodeIds.begin(), selectedNodeIds.end(), [&](const ed::NodeId& id)
 			{
 				return id.Get() == node->id;
 			});

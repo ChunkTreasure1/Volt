@@ -13,7 +13,7 @@ namespace GraphKey
 		newAttr.name = name;
 		newAttr.direction = direction;
 		newAttr.function = function;
-		newAttr.hidden = true;
+		newAttr.inputHidden = true;
 		newAttr.type = AttributeType::Flow;
 
 		return newAttr;

@@ -19,7 +19,6 @@ project "Volt"
 	{
 		"/ignore:4006",
 		"/ignore:4099",
-		"/WHOLEARCHIVE:GraphKey"
 	}
 
 	files
@@ -74,8 +73,7 @@ project "Volt"
 		"Optick",
 		"msdf-atlas-gen",
 		"YamlCPP",
-		"DirectXTex",
-		"GraphKey"
+		"DirectXTex"
 	}
 
 	defines

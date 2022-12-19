@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GraphKey/Node.h"
-#include "GraphKey/Registry.h"
 
 namespace GraphKey
 {
@@ -60,7 +59,7 @@ namespace GraphKey
 			SetOutputData(0, val);
 		}
 	};
-	
+
 	class MultiplyNode : public Node
 	{
 	public:
@@ -117,8 +116,5 @@ namespace GraphKey
 		}
 	};
 
-	GK_REGISTER_NODE(AddNode);
-	GK_REGISTER_NODE(SubtractNode);
-	GK_REGISTER_NODE(MultiplyNode);
-	GK_REGISTER_NODE(DivisionNode);
+
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GraphKey/Node.h"
-#include "GraphKey/Registry.h"
 
 #include <Volt/Log/Log.h>
 
@@ -35,6 +34,4 @@ namespace GraphKey
 			ActivateOutput(0);
 		}
 	};
-
-	GK_REGISTER_NODE(PrintNode);
 }

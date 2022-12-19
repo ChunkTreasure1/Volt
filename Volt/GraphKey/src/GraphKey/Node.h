@@ -53,8 +53,9 @@ namespace GraphKey
 		std::function<void()> function;
 
 		std::any data;
-		bool hidden = false;
-		
+		bool inputHidden = false;
+		bool linkable = true;
+
 		AttributeType type = AttributeType::Flow;
 		AttributeDirection direction;
 	};
@@ -72,8 +73,8 @@ namespace GraphKey
 		virtual const gem::vec4 GetColor() = 0;
 
 		template<typename T>
-		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden = false, const std::function<void()>& function = nullptr);
-		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function);
+		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden = false, const std::function<void()>& function = nullptr, bool linkable = true);
+		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
 
 		template<typename T>
 		const T& GetInput(uint32_t index);
@@ -98,12 +99,13 @@ namespace GraphKey
 	};
 
 	template<typename T>
-	inline Attribute Node::AttributeConfig(const std::string& name, AttributeDirection direction, bool linkable, const std::function<void()>& function)
+	inline Attribute Node::AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden, const std::function<void()>& function, bool linkable)
 	{
 		Attribute attr{};
 		attr.name = name;
 		attr.direction = direction;
-		attr.hidden = linkable;
+		attr.inputHidden = hidden;
+		attr.linkable = linkable;
 		attr.function = function;
 		attr.data = T();
 		attr.type = AttributeType::Type;

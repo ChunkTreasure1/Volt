@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GraphKey/Node.h"
-#include "GraphKey/Registry.h"
 
 #include <Volt/Events/ApplicationEvent.h>
 
@@ -34,13 +33,4 @@ namespace GraphKey
 			SetOutputData(0, std::to_string(val));
 		}
 	};
-
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeFloat, ToStringNode<float>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeDouble, ToStringNode<double>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeInt32, ToStringNode<int32_t>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeUInt32, ToStringNode<uint32_t>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeInt16, ToStringNode<int16_t>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeUInt16, ToStringNode<uint16_t>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeInt8, ToStringNode<int8_t>);
-	GK_REGISTER_NODE_SPECIALIZED(ToStringNodeUInt8, ToStringNode<uint8_t>);
 }
