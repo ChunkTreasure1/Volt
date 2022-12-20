@@ -14,6 +14,9 @@
 
 #include "Volt/Scene/Entity.h"
 
+#include <GraphKey/Graph.h>
+#include <GraphKey/Node.h>
+
 #include <yaml-cpp/yaml.h>
 
 namespace Volt
@@ -241,6 +244,69 @@ namespace Volt
 		return false;
 	}
 
+	void SceneImporter::SerializeGraph(Ref<GraphKey::Graph> graph, const std::string& graphState, const Wire::Registry& registry, YAML::Emitter& out) const
+	{
+		out << YAML::BeginMap;
+		out << YAML::Key << "Graph" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			{
+				out << YAML::Key << "Nodes" << YAML::BeginSeq;
+				for (const auto& n : graph->GetSpecification().nodes)
+				{
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(node, n->id, out);
+						//out << YAML::Key << "type" << YAML::Value << n.type;
+
+						out << YAML::Key << "inputs" << YAML::BeginSeq;
+						{
+							for (const auto& i : n->inputs)
+							{
+								out << YAML::BeginMap;
+								{
+									VT_SERIALIZE_PROPERTY(id, i.id, out);
+								}
+								out << YAML::EndMap;
+							}
+						}
+						out << YAML::EndSeq;
+						
+						out << YAML::Key << "outputs" << YAML::BeginSeq;
+						{
+							for (const auto& o : n->outputs)
+							{
+								out << YAML::BeginMap;
+								{
+									VT_SERIALIZE_PROPERTY(id, o.id, out);
+								}
+								out << YAML::EndMap;
+							}
+							out << YAML::EndSeq;
+						}
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+
+				out << YAML::Key << "Links" << YAML::BeginSeq;
+				for (const auto& l : graph->GetSpecification().links)
+				{
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(id, l->id, out);
+						VT_SERIALIZE_PROPERTY(output, l->output, out);
+						VT_SERIALIZE_PROPERTY(input, l->input, out);
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+			}
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
+	}
+
 	void SceneImporter::SerializeEntity(Wire::EntityId id, const Wire::Registry& registry, const std::filesystem::path& targetDir) const
 	{
 		VT_PROFILE_FUNCTION();
@@ -348,6 +414,15 @@ namespace Volt
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
+
+			if (registry.HasComponent<VisualScriptingComponent>(id))
+			{
+				auto* vsComp = (VisualScriptingComponent*)registry.GetComponentPtr(VisualScriptingComponent::comp_guid, id);
+				if (vsComp->graph)
+				{
+					SerializeGraph(vsComp->graph, vsComp->graphState, registry, out);
+				}
+			}
 
 			out << YAML::EndMap;
 		}
@@ -681,7 +756,7 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Prefab Version Check")
 
-			auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
+				auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
 			const uint32_t prefabVersion = Prefab::GetPrefabVersion(prefabComp.prefabAsset);
 			const bool isParent = Prefab::IsParentInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
 

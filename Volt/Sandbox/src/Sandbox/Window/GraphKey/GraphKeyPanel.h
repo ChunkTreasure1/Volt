@@ -22,6 +22,8 @@ public:
 	void UpdateContent() override;
 
 	void SetActiveGraph(Ref<GraphKey::Graph> graph);
+	bool SetNodeSettings(const char* data);
+	const std::string GetNodeSettings() const;
 
 	inline static GraphKeyPanel& Get() { return *myInstance; }
 

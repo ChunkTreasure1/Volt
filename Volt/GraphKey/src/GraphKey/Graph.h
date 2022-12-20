@@ -3,6 +3,8 @@
 #include <Volt/Core/UUID.h>
 #include <Volt/Events/Event.h>
 
+#include <Volt/Scene/Entity.h>
+
 namespace GraphKey
 {
 	struct Node;
@@ -21,6 +23,7 @@ namespace GraphKey
 	{
 	public:
 		Graph();
+		Graph(Volt::Entity entity);
 		Graph(const GraphSpecification& spec);
 
 		void OnEvent(Volt::Event& e);
@@ -41,11 +44,12 @@ namespace GraphKey
 		const bool IsAttributeLinked(const Volt::UUID id) const;
 
 		inline GraphSpecification& GetSpecification() { return mySpecification; }
-		inline const uint32_t GetNextId() { return myCurrentId++; }
-		inline void SetCurrentId(uint32_t id) { myCurrentId = id; }
+		inline const Volt::Entity GetEntity() const { return myEntity; }
+
+		static void Copy(Ref<Graph> srcGraph, Ref<Graph> dstGraph);
 
 	private:
+		Volt::Entity myEntity;
 		GraphSpecification mySpecification;
-		uint32_t myCurrentId = 0;
 	};
 }

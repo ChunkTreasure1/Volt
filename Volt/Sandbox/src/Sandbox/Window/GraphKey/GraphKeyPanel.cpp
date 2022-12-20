@@ -34,7 +34,27 @@ GraphKeyPanel::GraphKeyPanel(Ref<Volt::Scene>& aScene)
 	CreateAttributeColors();
 
 	ax::NodeEditor::Config cfg{};
-	cfg.SettingsFile = "";
+	cfg.SettingsFile = nullptr;
+	cfg.UserPointer = this;
+
+	cfg.SaveSettings = [](const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer)
+	{
+		GraphKeyPanel* panel = static_cast<GraphKeyPanel*>(userPointer);
+		return panel->SetNodeSettings(data);
+	};
+
+	cfg.LoadSettings = [](char* data, void* userPointer) -> size_t
+	{
+		GraphKeyPanel* panel = static_cast<GraphKeyPanel*>(userPointer);
+		const std::string graphContext = panel->GetNodeSettings();
+
+		if (data)
+		{
+			memcpy_s(data, graphContext.size(), graphContext.c_str(), graphContext.size());
+		}
+
+		return graphContext.size();
+	};
 
 	myEditorContext = ed::CreateEditor(&cfg);
 	myCurrentGraph = CreateRef<GraphKey::Graph>();
@@ -436,6 +456,52 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 	GraphKeyHelpers::EndAttributes();
 
 	builder.End();
+}
+
+bool GraphKeyPanel::SetNodeSettings(const char* data)
+{
+	if (!myCurrentGraph)
+	{
+		return false;
+	}
+
+	auto entity = myCurrentGraph->GetEntity();
+
+	if (!entity)
+	{
+		return false;
+	}
+
+	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	{
+		return false;
+	}
+
+	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	vsComp.graphState = data;
+}
+
+const std::string GraphKeyPanel::GetNodeSettings() const
+{
+	if (!myCurrentGraph)
+	{
+		return {};
+	}
+
+	auto entity = myCurrentGraph->GetEntity();
+
+	if (!entity)
+	{
+		return {};
+	}
+
+	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	{
+		return {};
+	}
+
+	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	return vsComp.graphState;
 }
 
 void GraphKeyPanel::UpdatePropertiesPanel()

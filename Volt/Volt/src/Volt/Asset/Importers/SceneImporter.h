@@ -5,6 +5,11 @@
 #include <Wire/Wire.h>
 #include <thread>
 
+namespace GraphKey
+{
+	class Graph;
+}
+
 namespace Volt
 {
 	class SceneImporter : public AssetImporter
@@ -17,6 +22,8 @@ namespace Volt
 		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
 
 	private:
+		void SerializeGraph(Ref<GraphKey::Graph> graph, const std::string& graphState, const Wire::Registry& registry, YAML::Emitter& out) const;
+
 		void SerializeEntity(Wire::EntityId id, const Wire::Registry& registry, const std::filesystem::path& targetDir) const;
 		void DeserializeEntity(const std::filesystem::path& path, Wire::Registry& registry) const;
 	};

@@ -10,6 +10,8 @@
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Core/Profiling.h"
 
+#include <GraphKey/Graph.h>
+
 namespace Volt
 {
 	Entity::Entity()
@@ -302,6 +304,23 @@ namespace Volt
 			if (std::find(aExcludedComponents.begin(), aExcludedComponents.end(), guid) != aExcludedComponents.end())
 			{
 				continue;
+			}
+
+			if (guid == VisualScriptingComponent::comp_guid && pool->HasComponent(aSrcEntity))
+			{
+				if (!aTargetRegistry.HasComponent(guid, aTargetEntity))
+				{
+					aTargetRegistry.AddComponent(guid, aTargetEntity);
+				}
+
+				VisualScriptingComponent* srcComp = (VisualScriptingComponent*)pool->GetComponent(aSrcEntity);
+				VisualScriptingComponent* otherComponent = (VisualScriptingComponent*)aTargetRegistry.GetComponentPtr(guid, aTargetEntity);
+			
+				if (srcComp->graph)
+				{
+					otherComponent->graph = CreateRef<GraphKey::Graph>();
+					GraphKey::Graph::Copy(srcComp->graph, otherComponent->graph);
+				}
 			}
 
 			if (guid == ScriptComponent::comp_guid && pool->HasComponent(aSrcEntity))

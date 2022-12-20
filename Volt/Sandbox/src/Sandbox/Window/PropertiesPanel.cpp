@@ -195,7 +195,7 @@ void PropertiesPanel::UpdateMainContent()
 			{
 				if (ImGui::Button("Create")) 
 				{
-					vsComp.graph = CreateRef<GraphKey::Graph>();
+					vsComp.graph = CreateRef<GraphKey::Graph>(Volt::Entity{ entity, myCurrentScene.get()});
 				}
 			}
 			else

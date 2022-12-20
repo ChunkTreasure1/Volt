@@ -231,6 +231,7 @@ namespace Volt
 
 	SERIALIZE_COMPONENT((struct VisualScriptingComponent
 	{
+		PROPERTY(Name = GraphState, Visible = false) std::string graphState;
 		Ref<GraphKey::Graph> graph;
 
 		CREATE_COMPONENT_GUID("{1BC207FE-D06C-41C2-83F4-E153F3A75770}"_guid);

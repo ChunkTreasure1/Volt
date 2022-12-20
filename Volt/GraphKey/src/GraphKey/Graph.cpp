@@ -8,6 +8,10 @@ namespace GraphKey
 	Graph::Graph()
 	{}
 
+	Graph::Graph(Volt::Entity entity)
+		: myEntity(entity)
+	{}
+
 	Graph::Graph(const GraphSpecification& spec)
 		: mySpecification(spec)
 	{}
@@ -105,5 +109,10 @@ namespace GraphKey
 		}
 
 		return false;
+	}
+
+	void Graph::Copy(Ref<Graph> srcGraph, Ref<Graph> dstGraph)
+	{
+		dstGraph->mySpecification = srcGraph->mySpecification;
 	}
 }
