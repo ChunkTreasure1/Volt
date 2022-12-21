@@ -131,15 +131,16 @@ namespace Amp
 		return isOK;
 	}
 
-	void AudioEngine::Update()
+	void AudioEngine::Update(float aDeltaTime)
 	{
 		VT_PROFILE_FUNCTION();
 
 		coreSystem->update();
 		studioSystem->update();
+		Update3DEvents(aDeltaTime);
 	}
 
-	bool AudioEngine::LoadEvent(const std::string aEventPath)
+	bool AudioEngine::LoadEvent(const std::string& aEventPath)
 	{
 		if (auto It = events.find(aEventPath); It != events.end())
 		{
@@ -158,7 +159,17 @@ namespace Amp
 		return false;
 	}
 
-	EventInstance& AudioEngine::CreateEventInstance(const std::string aEventPath)
+	FMOD::Studio::EventDescription* AudioEngine::FindEvent(const std::string& aEventPath)
+	{
+		auto foundEvent = events.find(aEventPath);
+		if (auto It = events.find(aEventPath); It != events.end())
+		{
+			return foundEvent->second.FmodEventDesc;
+		}
+		return nullptr;
+	}
+
+	EventInstance& AudioEngine::CreateEventInstance(const std::string& aEventPath)
 	{
 		auto foundEvent = events.find(aEventPath);
 		if (foundEvent == events.end() || !foundEvent->second.isLoaded)
@@ -175,12 +186,14 @@ namespace Amp
 
 		foundEvent->second.instanceIDpool++;
 		int aNewID = foundEvent->second.instanceIDpool;
-		foundEvent->second.instances.insert({ aNewID, std::make_unique<EventInstance>()});
-		EventInstance& eventInstanceHandle = *foundEvent->second.instances.end()->second;
+		EventInstance newInstance;
+		foundEvent->second.instances.insert({ aNewID, newInstance});
+		EventInstance& eventInstanceHandle = foundEvent->second.instances.find(aNewID)->second;
 
 		eventInstanceHandle.ID = aNewID;
 		eventInstanceHandle.EventName = foundEvent->second.Path;
 		eventInstanceHandle.instance = eventInstance;
+		eventInstanceHandle.EventDesc = foundEvent->second.FmodEventDesc;
 
 		return eventInstanceHandle;
 	}
@@ -201,9 +214,24 @@ namespace Amp
 			return false;
 		}
 
+		foundInstance->second.instance->stop(FMOD_STUDIO_STOP_IMMEDIATE);
+		foundInstance->second.instance->release();
 		foundEvent->second.instances.erase(aEventHandle.ID);
 
 		return true;
+	}
+
+	void AudioEngine::ReleaseAll()
+	{
+		for (auto event : events)
+		{
+			for (auto instance : event.second.instances)
+			{
+				instance.second.instance->stop(FMOD_STUDIO_STOP_IMMEDIATE);
+				instance.second.instance->release();
+			}
+			event.second.instances.clear();
+		}
 	}
 
 	bool AudioEngine::PlayEvent(FMOD::Studio::EventInstance* aEventInstance)
@@ -211,7 +239,7 @@ namespace Amp
 		return ErrorCheck(aEventInstance->start());
 	}
 
-	bool AudioEngine::PlayOneShot(const std::string aEventPath)
+	bool AudioEngine::PlayOneShot(const std::string& aEventPath, EventData& aEventData)
 	{
 		auto foundEvent = events.find(aEventPath);
 		if (foundEvent == events.end() || !foundEvent->second.isLoaded)
@@ -224,34 +252,21 @@ namespace Amp
 
 		FMOD::Studio::EventInstance* eventInstance;
 		lastResult = foundEvent->second.FmodEventDesc->createInstance(&eventInstance);
-		if (eventInstance)
+		if(lastResult != FMOD_OK)
 		{
-			lastResult = eventInstance->start();
-			lastResult = eventInstance->release();
+			return false;
 		}
 
-		return lastResult == FMOD_OK;
-	}
-
-	bool AudioEngine::PlayOneShot(const std::string aEventPath, const std::string aEventParameter, const float aParameterValue)
-	{
-		auto foundEvent = events.find(aEventPath);
-		if (foundEvent == events.end() || !foundEvent->second.isLoaded)
+		lastResult = eventInstance->start();
+		if (aEventData.is3D) 
 		{
-			LoadEvent(aEventPath);
-			foundEvent = events.find(aEventPath);
-			if (foundEvent == events.end() || !foundEvent->second.isLoaded)
-				return false;
+			SetEvent3Dattributes(eventInstance, aEventData);
 		}
-
-		FMOD::Studio::EventInstance* eventInstance;
-		lastResult = foundEvent->second.FmodEventDesc->createInstance(&eventInstance);
-		if (eventInstance)
+		if (aEventData.changeParameter) 
 		{
-			lastResult = eventInstance->start();
-			lastResult = eventInstance->setParameterByName(aEventParameter.c_str(), aParameterValue);
-			lastResult = eventInstance->release();
+			eventInstance->setParameterByName(aEventData.aParameterPath.c_str(), aEventData.aParameterValue);
 		}
+		lastResult = eventInstance->release();
 
 		return lastResult == FMOD_OK;
 	}
@@ -273,10 +288,36 @@ namespace Amp
 		return false;
 	}
 
-	bool AudioEngine::SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, EventData aEventData)
+	void AudioEngine::Update3DEvents(float aDeltaTime)
 	{
-		VT_PROFILE_FUNCTION();
+		for (auto event : events)
+		{
+			for (auto instance : event.second.instances) 
+			{
+				SetEvent3Dattributes(instance.second, aDeltaTime);
+			}
+		}
+	}
 
+	void AudioEngine::SetEvent3Dattributes(EventInstance& aEventInstance, float aDeltaTime)
+	{
+		FMOD_3D_ATTRIBUTES new3Dattributes = { { 0 } };
+
+		new3Dattributes.velocity.x = (aEventInstance.position.x - aEventInstance.prevPosition.x) * aDeltaTime;
+		new3Dattributes.velocity.y = (aEventInstance.position.y - aEventInstance.prevPosition.y) * aDeltaTime;
+		new3Dattributes.velocity.z = (aEventInstance.position.z - aEventInstance.prevPosition.z) * aDeltaTime;
+
+		aEventInstance.prevPosition = aEventInstance.position;
+
+		new3Dattributes.position = aEventInstance.position;
+		new3Dattributes.up = aEventInstance.up;
+		new3Dattributes.forward = aEventInstance.forward;
+
+		ErrorCheck(aEventInstance.instance->set3DAttributes(&new3Dattributes));
+	}
+
+	bool AudioEngine::SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, EventData& aEventData)
+	{
 		FMOD_3D_ATTRIBUTES new3Dattributes = { { 0 } };
 
 		new3Dattributes.position.x = aEventData.position.x;
@@ -287,9 +328,9 @@ namespace Amp
 		new3Dattributes.up.y = aEventData.up.y;
 		new3Dattributes.up.z = aEventData.up.z;
 
-		new3Dattributes.forward.x = 0;
-		new3Dattributes.forward.y = 0;
-		new3Dattributes.forward.z = 1.0f;
+		new3Dattributes.forward.x = aEventData.forward.x;
+		new3Dattributes.forward.y = aEventData.forward.y;
+		new3Dattributes.forward.z = aEventData.forward.z;
 
 		return ErrorCheck(aEventInstance->set3DAttributes(&new3Dattributes));
 	}

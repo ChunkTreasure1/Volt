@@ -296,6 +296,9 @@ void Sandbox::OnSceneStop()
 
 	Volt::OnSceneStopEvent stopEvent{};
 	Volt::Application::Get().OnEvent(stopEvent);
+	myRuntimeScene->OnEvent(stopEvent);
+	//Amp::AudioManager::StopAll(1);
+	Amp::AudioManager::ReleaseAll();
 
 	myRuntimeScene->OnRuntimeEnd();
 	myGame->OnStop();

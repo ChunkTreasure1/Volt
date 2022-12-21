@@ -13,6 +13,11 @@ namespace Amp
 		myAudioEngine.Release();
 	}
 
+	void AudioManager::ReleaseAll() 
+	{
+		myAudioEngine.ReleaseAll();
+	}
+
 	bool AudioManager::InitListener(int ID = 0)
 	{
 		//TODO: Add check if listeners exists
@@ -23,30 +28,55 @@ namespace Amp
 		return myAudioEngine.InitListener(aNewListener);
 	}
 
-	void AudioManager::Update()
+	void AudioManager::Update(float aDeltaTime)
 	{
-		myAudioEngine.Update();
+		myAudioEngine.Update(aDeltaTime);
 	}
 
 	void AudioManager::UpdateListener(ListenerData aListenerData)
 	{
+
 		myAudioEngine.UpdateListener(aListenerData);
 	}
 
-	bool AudioManager::CreateEventInstance(std::string aPath, EventInstance& aEvent)
+	FMOD::Studio::EventDescription* AudioManager::FindEvent(const std::string& aPath)
 	{
-		aEvent = myAudioEngine.CreateEventInstance(aPath);
-
-		return false;
+		return myAudioEngine.FindEvent(aPath);
 	}
+
+	EventInstance& AudioManager::CreateEventInstance(std::string aPath)
+	{
+		return myAudioEngine.CreateEventInstance(aPath);
+	}
+
 	bool AudioManager::PlayEvent(EventInstance& aEvent)
 	{
-		myAudioEngine.PlayEvent(aEvent.instance);
-		return false;
+		return myAudioEngine.PlayEvent(aEvent.instance);
 	}
+
 	bool AudioManager::RemoveEvent(EventInstance& aEvent)
 	{
-		return false;
+		return myAudioEngine.RemoveEvent(aEvent);
+	}
+
+	bool AudioManager::StopEvent(EventInstance& aEvent, FMOD_STUDIO_STOP_MODE aMode)
+	{
+		return myAudioEngine.StopEvent(aEvent.instance, aMode);
+	}
+
+	bool AudioManager::PlayOneShot(const std::string& aPath)
+	{
+		EventData aEmptyData;
+		aEmptyData.position = { 0,0,0 };
+		aEmptyData.forward = { 0,0,0 };
+		aEmptyData.up = { 0,0,0 };
+
+		return myAudioEngine.PlayOneShot(aPath, aEmptyData);
+	}
+
+	bool AudioManager::PlayOneShot(const std::string& aPath, EventData& aEventData)
+	{
+		return myAudioEngine.PlayOneShot(aPath, aEventData);
 	}
 }
 

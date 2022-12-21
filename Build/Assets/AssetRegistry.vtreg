@@ -1,4 +1,6 @@
 Assets:
+  - Handle: 16681838937112031146
+    Path: Assets\Levels\WorkLevels\AudioWS\AudioWS.vtscene
   - Handle: 16625774910016950853
     Path: Assets\Materials\M_ColliderDebug.vtmat
   - Handle: 16380998834732311984
@@ -179,6 +181,8 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
+  - Handle: 12642287888537830102
+    Path: Assets\Prefabs\AUDIO.vtprefab
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 2713074256263182464

@@ -176,6 +176,7 @@ namespace Volt
 
 				AppUpdateEvent updateEvent(myCurrentFrameTime);
 				OnEvent(updateEvent);
+				Amp::AudioManager::Update(myCurrentFrameTime);
 			}
 
 			{

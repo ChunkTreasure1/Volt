@@ -19,16 +19,20 @@ namespace Amp
 		FMOD_STUDIO_LOAD_BANK_FLAGS aLoadBankFlags;
 	};
 
+
+
 	struct EventInstance
 	{
 		int ID = -1;
 		std::string EventName = "";
+		FMOD::Studio::EventDescription* EventDesc = nullptr;
 		FMOD::Studio::EventInstance* instance = nullptr;
 		FMOD_VECTOR position{0,0,0};
 		FMOD_VECTOR prevPosition{ 0,0,0 };
 		FMOD_VECTOR velocity{ 0,0,0 };
 		FMOD_VECTOR forward{ 0,0,0 };
 		FMOD_VECTOR up{ 0,0,0 };
+		//FMOD_STUDIO_STOP_MODE stopMode = FMOD_STUDIO_STOP_IMMEDIATE; // Might need later?
 	};
 
 	struct Event
@@ -38,15 +42,20 @@ namespace Amp
 		FMOD::Studio::EventDescription* FmodEventDesc = nullptr;
 
 		int instanceIDpool = 0;
-		typedef std::unordered_map<int, std::unique_ptr<EventInstance>> InstanceMap;
+		typedef std::unordered_map<int, EventInstance> InstanceMap;
 		InstanceMap instances;
 	};
 
 	struct EventData
 	{
-		FMOD_VECTOR position;
-		FMOD_VECTOR forward;
-		FMOD_VECTOR up;
+		float aDeltaTime = 0;
+		bool is3D = false;
+		FMOD_VECTOR position{0,0,0};
+		FMOD_VECTOR forward{ 0,0,0 };
+		FMOD_VECTOR up{ 0,0,0 };
+		bool changeParameter = false;
+		std::string aParameterPath = "";
+		float aParameterValue;
 	};
 
 	struct Listener
@@ -65,9 +74,9 @@ namespace Amp
 	{
 		int ID = -1;
 		float aDeltaTime = 0;
-		std::array<float, 3> position;
-		std::array<float, 3> forward;
-		std::array<float, 3> up;
+		gem::vec3 position;
+		gem::vec3 forward;
+		gem::vec3 up;
 	};
 
 	class AudioEngine
@@ -94,30 +103,32 @@ namespace Amp
 		~AudioEngine() = default;
 
 		bool Init(const std::string aFileDirectory);
-		void Update();
+		void Update(float aDeltaTime);
 		void Release();
 
 		bool LoadMasterBank(const std::string& aMasterFileName, const std::string& aMasterStringFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags);
 		bool LoadBank(const std::string& aFileName, FMOD_STUDIO_LOAD_BANK_FLAGS someFlags);
 		bool UnloadBank(const std::string& aFileName);
 
-		bool LoadEvent(const std::string aEventPath);
+		bool LoadEvent(const std::string& aEventPath);
+		FMOD::Studio::EventDescription* FindEvent(const std::string& aEventPath);
 
-		EventInstance& CreateEventInstance(const std::string aEventPath);
+		EventInstance& CreateEventInstance(const std::string& aEventPath);
 		bool RemoveEvent(EventInstance& aEventHandle);
+		void ReleaseAll();
 
 		bool PlayEvent(FMOD::Studio::EventInstance* aEventInstance);
-		bool PlayOneShot(const std::string aEventPath);
-		//TODO 3D OneShot
-		bool PlayOneShot(const std::string aEventPath, const std::string aEventParameter, const float aParameterValue);
-		//TODO 3D OneShot with parameters
+
+		bool PlayOneShot(const std::string& aEventPath, EventData& a3DData);
 
 		bool StopEvent(FMOD::Studio::EventInstance* aEventInstance, bool immediately);
 		bool StopAll(const int aStopMode);
 
-		bool SetEventParameter(FMOD::Studio::EventInstance* aEventInstance, const std::string aEventParameter, const float aParameterValue);
+		bool SetEventParameter(FMOD::Studio::EventInstance* aEventInstance, const std::string& aEventParameter, const float aParameterValue);
 
-		bool SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, EventData aEventData);
+		void Update3DEvents(float aDeltaTime);
+		void SetEvent3Dattributes(EventInstance& aEventInstance, float aDeltaTime);
+		bool SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, EventData& aEventData);
 
 		bool InitListener(ListenerData aListenerData);
 		bool UpdateListener(ListenerData aListenerData);
