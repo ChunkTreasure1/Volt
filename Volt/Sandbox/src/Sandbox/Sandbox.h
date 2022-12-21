@@ -76,8 +76,8 @@ public:
 private:
 	struct SaveSceneAsData
 	{
-		std::string name = "New Level";
-		std::filesystem::path destinationPath = "Assets/Levels/";
+		std::string name = "New Scene";
+		std::filesystem::path destinationPath = "Assets/Scenes/";
 	} mySaveSceneData;
 
 	void ExecuteUndo();

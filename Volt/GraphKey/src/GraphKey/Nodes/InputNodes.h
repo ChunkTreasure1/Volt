@@ -116,7 +116,7 @@ namespace GraphKey
 
 		inline const std::string GetName() override { return "Key Released"; }
 		inline const gem::vec4 GetColor() override { return { 1.f, 0.37f, 0.53f, 1.f }; }
-
+	
 		inline void OnEvent(Volt::Event& e) override
 		{
 			Volt::EventDispatcher dispatcher(e);

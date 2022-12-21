@@ -1,4 +1,6 @@
 Assets:
+  - Handle: 17404791876292778768
+    Path: Assets\Levels\TestSave\TestSave.vtscene
   - Handle: 7774068659233115813
     Path: Assets\Materials\M_FullMetal.vtmat
   - Handle: 16064368788976833353
@@ -331,6 +333,14 @@ Assets:
     Path: Assets\Meshes\lutTest.dds.vtthumb.png
   - Handle: 11223725156781065066
     Path: Assets\Scenes\Ivar_Test\Ivar_Test.vtscene
+  - Handle: 2453628235852493245
+    Path: Assets\Scenes\New Scene\New Scene.vtscene
+  - Handle: 11581551954173548175
+    Path: Assets\Scenes\Test1\Test1.vtscene
+  - Handle: 8744418003149589413
+    Path: Assets\Scenes\test\test.vtscene
+  - Handle: 17589723102499413210
+    Path: Assets\Scenes\test2\test2.vtscene
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 16571327495501234789
