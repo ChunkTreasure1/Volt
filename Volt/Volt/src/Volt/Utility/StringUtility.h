@@ -28,7 +28,20 @@ namespace Utils
 		return newStr;
 	}
 
+
 #pragma warning(disable : 4996)
+
+	inline std::string ToString(std::wstring_view str)
+	{
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		return converter.to_bytes(str.data());
+	}
+
+	inline std::wstring ToWString(std::string_view str)
+	{
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		return converter.from_bytes(str.data());
+	}
 
 	// From https://stackoverflow.com/questions/31302506/stdu32string-conversion-to-from-stdstring-and-stdu16string
 	inline std::u32string To_UTF32(const std::string& s)

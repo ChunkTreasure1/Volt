@@ -3,6 +3,8 @@
 
 #include "Volt/Core/Graphics/GraphicsContext.h"
 
+#include "Volt/Rendering/RenderCommand.h"
+
 namespace Volt
 {
 	SamplerState::SamplerState(D3D11_FILTER aFilter, D3D11_TEXTURE_ADDRESS_MODE aAddressMode, D3D11_COMPARISON_FUNC aComparison)
@@ -34,16 +36,7 @@ namespace Volt
 
 	void SamplerState::Bind(uint32_t aSlot)
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-		context->CSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
-		context->PSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
-	}
-
-	void SamplerState::RT_Bind(uint32_t aSlot)
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-		context->CSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
-		context->PSSetSamplers(aSlot, 1, mySampler.GetAddressOf());
+		RenderCommand::Sampler_Bind(this, aSlot);
 	}
 
 	Ref<SamplerState> SamplerState::Create(D3D11_FILTER aFilter, D3D11_TEXTURE_ADDRESS_MODE aAddressMode, D3D11_COMPARISON_FUNC aComparison)

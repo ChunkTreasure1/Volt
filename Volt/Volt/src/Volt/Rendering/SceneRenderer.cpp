@@ -305,12 +305,23 @@ namespace Volt
 			});
 
 #ifdef VT_THREADED_RENDERING
-		Renderer::Begin("Test");
+		Renderer::Begin(Context::Deferred, "Test");
 		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
 
-		Renderer::BeginPass(myDeferredPass, aCamera);
-		Renderer::DispatchRenderCommandsInstanced();
-		Renderer::EndPass();
+		// Skybox
+		{
+			Renderer::BeginPass(mySkyboxPass, aCamera);
+			Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap->GetSRV().Get() }, 11);
+			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
+			Renderer::EndPass();
+		}
+
+		// Deferred
+		{
+			Renderer::BeginPass(myDeferredPass, aCamera);
+			Renderer::DispatchRenderCommandsInstanced();
+			Renderer::EndPass();
+		}
 
 		ShadingPass(sceneEnvironment);
 
@@ -483,7 +494,7 @@ namespace Volt
 		Renderer::End();
 		Renderer::SetDepthState(DepthState::ReadWrite);
 #endif
-	}
+		}
 
 	void SceneRenderer::OnRenderRuntime()
 	{
@@ -635,8 +646,10 @@ namespace Volt
 			mySkyboxPass.framebuffer = Framebuffer::Create(spec);
 			mySkyboxPass.debugName = "Skybox";
 			mySkyboxPass.overrideShader = ShaderRegistry::Get("Skybox");
-			mySkyboxMesh = Shape::CreateUnitCube();
+			mySkyboxPass.cullState = CullState::CullFront;
+			mySkyboxPass.depthState = DepthState::None;
 
+			mySkyboxMesh = Shape::CreateUnitCube();
 			mySkyboxBuffer = ConstantBuffer::Create(&mySkyboxData, sizeof(SkyboxData), ShaderStage::Pixel);
 		}
 
@@ -661,6 +674,7 @@ namespace Volt
 
 			myShadingPass.framebuffer = Framebuffer::Create(spec);
 			myShadingPass.debugName = "Shading";
+			myShadingPass.depthState = DepthState::None;
 
 			myFramebuffers.emplace(1, std::make_pair("Deferred Shading", myShadingPass.framebuffer));
 		}
@@ -813,6 +827,7 @@ namespace Volt
 				myJumpFloodCompositePass.framebuffer = Framebuffer::Create(spec);
 				myJumpFloodCompositePass.overrideShader = ShaderRegistry::Get("JumpFloodComposite");
 				myJumpFloodCompositePass.debugName = "Highlighted Jump Flood Composite";
+				myJumpFloodCompositePass.depthState = DepthState::None;
 			}
 		}
 
@@ -1081,7 +1096,7 @@ namespace Volt
 
 	void SceneRenderer::PostProcessPasses(Ref<Camera> aCamera)
 	{
-		Renderer::BeginAnnotatedSection("Post Process");
+		RenderCommand::BeginAnnotation("Post Process");
 
 		Ref<Framebuffer> lastFramebuffer = myForwardPass.framebuffer;
 
@@ -1111,7 +1126,6 @@ namespace Volt
 		{
 			// Highlighted Geometry
 			{
-				Renderer::SetDepthState(DepthState::ReadWrite);
 				Renderer::BeginPass(myHighlightedGeometryPass, aCamera);
 
 				for (const auto& [handle, id] : myHighlightedMeshes)
@@ -1196,7 +1210,6 @@ namespace Volt
 
 			// Jump Flood Composite
 			{
-				Renderer::SetDepthState(DepthState::None);
 				Renderer::BeginPass(myJumpFloodCompositePass, aCamera);
 
 				const gem::vec4 color = { 1.f, 0.f, 0.f, 1.f };
@@ -1281,14 +1294,13 @@ namespace Volt
 
 			Renderer::EndFullscreenPass();
 		}
-		Renderer::EndAnnotatedSection();
+
+		RenderCommand::EndAnnotation();
 	}
 
 	void SceneRenderer::ShadingPass(const SceneEnvironment& sceneEnv)
 	{
 		VT_PROFILE_FUNCTION();
-
-		auto context = GraphicsContext::GetImmediateContext();
 
 		Renderer::BeginFullscreenPass(myShadingPass, nullptr);
 
@@ -1379,7 +1391,7 @@ namespace Volt
 
 	void SceneRenderer::HBAOPass(Ref<Camera> aCamera)
 	{
-		Renderer::BeginAnnotatedSection("HBAO");
+		RenderCommand::BeginAnnotation("HBAO");
 		auto context = GraphicsContext::GetImmediateContext();
 
 		const gem::mat4& projectionMat = aCamera->GetProjection();
@@ -1503,7 +1515,7 @@ namespace Volt
 			}
 		}
 
-		Renderer::EndAnnotatedSection();
+		RenderCommand::EndAnnotation();
 	}
 
 	void SceneRenderer::VoxelPass(Ref<Camera> aCamera)
@@ -1674,4 +1686,4 @@ namespace Volt
 
 		return myPizza;
 	}
-}
+	}

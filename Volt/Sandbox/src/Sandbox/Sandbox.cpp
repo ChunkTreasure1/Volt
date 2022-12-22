@@ -574,7 +574,6 @@ void Sandbox::SetupRenderCallbacks()
 
 			// Selected geometry pass
 			{
-				Volt::Renderer::SetDepthState(Volt::DepthState::ReadWrite);
 				Volt::Renderer::BeginPass(mySelectedGeometryPass, camera);
 
 				auto& registry = scene->GetRegistry();
@@ -662,7 +661,6 @@ void Sandbox::SetupRenderCallbacks()
 
 			// Jump Flood Composite
 			{
-				Volt::Renderer::SetDepthState(Volt::DepthState::None);
 				Volt::Renderer::BeginPass(myJumpFloodCompositePass, camera);
 
 				const gem::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
@@ -721,7 +719,6 @@ void Sandbox::SetupRenderCallbacks()
 			///// Collider Visualization /////
 			{
 				Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
-				Volt::Renderer::SetDepthState(Volt::DepthState::ReadWrite);
 
 				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
 				registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
@@ -902,6 +899,7 @@ void Sandbox::SetupEditorRenderPasses()
 			myJumpFloodCompositePass.framebuffer = Volt::Framebuffer::Create(spec);
 			myJumpFloodCompositePass.overrideShader = Volt::ShaderRegistry::Get("JumpFloodComposite");
 			myJumpFloodCompositePass.debugName = "Jump Flood Composite";
+			myJumpFloodCompositePass.depthState = Volt::DepthState::None;
 		}
 	}
 

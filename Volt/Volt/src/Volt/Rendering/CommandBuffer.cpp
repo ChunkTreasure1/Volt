@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "CommandBuffer.h"
 
+#include <d3d11.h>
+
 namespace Volt
 {
 	void CommandBuffer::Clear()
@@ -23,7 +25,7 @@ namespace Volt
 		myCommands.emplace_back(func);
 	}
 
-	void CommandBuffer::Submit(const RenderCommand& cmd)
+	void CommandBuffer::Submit(const SubmitCommand& cmd)
 	{
 		myRenderCommands.emplace_back(cmd);
 	}

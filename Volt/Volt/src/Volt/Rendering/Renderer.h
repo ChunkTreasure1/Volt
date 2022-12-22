@@ -1,27 +1,24 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
 #include "Volt/Asset/Mesh/SubMesh.h"
+#include "Volt/Core/Base.h"
+#include "Volt/Scene/Scene.h"
 
 #include "Volt/Rendering/Texture/SubTexture2D.h"
+#include "Volt/Rendering/Shader/ShaderCommon.h"
+
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/RenderPass.h"
 #include "Volt/Rendering/RendererInfo.h"
-#include "Volt/Rendering/Shader/ShaderCommon.h"
-
-#include "Volt/Scene/Scene.h"
+#include "Volt/Rendering/RenderCommand.h"
 
 #include <GEM/gem.h>
 
-#include <d3d11.h>
-#include <wrl.h>
-
 #include <mutex>
-
-using namespace Microsoft::WRL;
 
 #define VT_THREADED_RENDERING 1
 
+struct ID3D11ShaderResourceView;
 
 namespace Volt
 {
@@ -63,72 +60,6 @@ namespace Volt
 			Ref<Image2D> blackCubeImage;
 		};
 
-		struct SectionStatistics
-		{
-			uint32_t drawCalls = 0;
-			uint32_t materialBinds = 0;
-			uint32_t vertexIndexBufferBinds = 0;
-		};
-
-		struct Statistics
-		{
-			void Reset()
-			{
-				drawCalls = 0;
-				materialBinds = 0;
-				vertexIndexBufferBinds = 0;
-				spriteCount = 0;
-				billboardCount = 0;
-				lineCount = 0;
-
-				perSectionStatistics.clear();
-			}
-
-			uint32_t drawCalls = 0;
-			uint32_t materialBinds = 0;
-			uint32_t vertexIndexBufferBinds = 0;
-			uint32_t spriteCount = 0;
-			uint32_t billboardCount = 0;
-			uint32_t lineCount = 0;
-
-			std::unordered_map<std::string, SectionStatistics> perSectionStatistics;
-		};
-
-		struct ProfilingData
-		{
-			struct SectionPipelineData
-			{
-				uint64_t vertexCount;
-				uint64_t primitiveCount;
-				uint64_t psInvocations;
-				uint64_t vsInvocations;
-			};
-
-			uint32_t currentFrame = 0;
-			uint32_t lastFrame = 0;
-
-			uint32_t currentQueryIndex = 0;
-
-			std::array<ComPtr<ID3D11Query>, 2> disjointQuery;
-			std::array<ComPtr<ID3D11Query>, 2> beginFrameQuery;
-			std::array<ComPtr<ID3D11Query>, 2> endFrameQuery;
-
-			std::array<std::unordered_map<std::string, ComPtr<ID3D11Query>>, 2> sectionTimeQueries;
-			std::array<std::unordered_map<std::string, ComPtr<ID3D11Query>>, 2> sectionPipelineQueries;
-
-			std::array<std::vector<std::string>, 2> sectionNames;
-			std::array<std::vector<float>, 2> sectionTimes;
-
-			std::unordered_map<std::string, float> sectionAverageTimes;
-			std::unordered_map<std::string, float> sectionTotalAverageTimes;
-
-			std::array<std::unordered_map<std::string, SectionPipelineData>, 2> sectionPipelineDatas;
-		
-			std::array<float, 2> frameGPUTime;
-			float frameAverageGPUTime;
-			float frameTotalAverageGPUTime;
-		};
-
 		struct Settings
 		{
 			float exposure = 1.f;
@@ -140,7 +71,7 @@ namespace Volt
 		static void InitializeBuffers();
 		static void Shutdown();
 
-		static void Begin(const std::string& context = "");
+		static void Begin(Context context, const std::string& debugName = "");
 		static void End();
 
 		static void BeginPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear = true, bool isShadowPass = false, bool isAOPass = false);
@@ -153,11 +84,6 @@ namespace Volt
 
 		static void BeginSection(const std::string& name);
 		static void EndSection(const std::string& name);
-
-		static void BeginAnnotatedSection(const std::string& name);
-		static void EndAnnotatedSection();
-
-		static void ResetStatistics();
 
 		static void Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
 		static void Submit(Ref<Mesh> aMesh, uint32_t subMeshIndex, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
@@ -208,27 +134,21 @@ namespace Volt
 		static void ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count);
 
 		static void SetSceneData(const SceneData& aSceneData);
-		static void SetDepthState(DepthState aDepthState);
-		static void SetRasterizerState(RasterizerState aRasterizerState);
+
 		static SceneEnvironment GenerateEnvironmentMap(AssetHandle aTextureHandle);
 
 		inline static const DefaultData& GetDefaultData() { return *myDefaultData; }
-		inline static const Statistics& GetStatistics() { return myRendererData->statistics; }
 		inline static Settings& GetSettings() { return myRendererData->settings; }
-		inline static std::unordered_map<std::string, ProfilingData>& GetProfilingData() { return myRendererData->profilingData; }
 
 	private:
 		Renderer() = delete;
 
-		static void CreateDepthStates();
-		static void CreateRasterizerStates();
 		static void CreateDefaultBuffers();
 		static void CreateDefaultData();
 		static void CreateSpriteData();
 		static void CreateBillboardData();
 		static void CreateLineData();
 		static void CreateTextData();
-		static void CreateProfilingData();
 		static void CreateInstancingData();
 		static void CreateDecalData();
 		static void CreateCommandBuffers();
@@ -237,25 +157,22 @@ namespace Volt
 
 		static void UpdatePerPassBuffers();
 		static void UpdatePerFrameBuffers();
-		static void UploadObjectData(std::vector<RenderCommand>& renderCommands);
+		static void UploadObjectData(std::vector<SubmitCommand>& submitCommands);
 
 		static void RunResourceChanges();
-		static void SortRenderCommands(std::vector<RenderCommand>& renderCommands);
-		static void CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
-		static std::vector<RenderCommand> CullRenderCommands(const std::vector<RenderCommand>& renderCommands, Ref<Camera> camera);
-
-		static ProfilingData& GetContextProfilingData();
+		static void SortSubmitCommands(std::vector<SubmitCommand>& submitCommands);
+		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
+		static std::vector<SubmitCommand> CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera);
 
 		///// Threading //////
 		static void RT_UpdatePerFrameBuffers();
-		static void RT_SortRenderCommands(std::vector<RenderCommand>& renderCommands);
-		static void RT_UploadObjectData(std::vector<RenderCommand>& renderCommands);
-		static void RT_BeginAnnotatedSection(const std::string& name);
-		static void RT_EndAnnotatedSection();
+		static void RT_SortRenderCommands(std::vector<SubmitCommand>& submitCommands);
+		static void RT_UploadObjectData(std::vector<SubmitCommand>& submitCommands);
 
 		static void RT_UpdatePerPassBuffers();
-		static void RT_CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
+		static void RT_CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
 		static void RT_DispatchRenderCommandsInstanced();
+		static void RT_DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
 
 		static void RT_Execute();
 		//////////////////////
@@ -285,7 +202,7 @@ namespace Volt
 			Ref<Material> material;
 			uint32_t id;
 		};
-
+		
 		struct SpriteData
 		{
 			inline static constexpr uint32_t MAX_QUADS = 5000;
@@ -379,18 +296,16 @@ namespace Volt
 
 			Ref<CommandBuffer> commandBuffers[2];
 			////////////////////
-			std::vector<RenderCommand> renderCommands;
+			std::vector<SubmitCommand> renderCommands;
 
 			std::mutex resourceMutex;
 			std::vector<std::function<void()>> resourceChangeQueue;
 
 			std::vector<PointLight> pointLights;
 			DirectionalLight directionalLight{};
-			Statistics statistics{};
 			Settings settings{};
 			InstancingData instancingData{};
 
-			std::unordered_map<std::string, ProfilingData> profilingData{};
 			std::string currentContext;
 
 			Samplers samplers{};
@@ -422,9 +337,6 @@ namespace Volt
 			std::thread renderThread;
 			/////////////////////
 		};
-
-		inline static std::vector<ComPtr<ID3D11DepthStencilState>> myDepthStates;
-		inline static std::vector<ComPtr<ID3D11RasterizerState>> myRasterizerStates;
 
 		inline static Scope<DefaultData> myDefaultData;
 		inline static Scope<RendererData> myRendererData;

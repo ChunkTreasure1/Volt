@@ -195,7 +195,7 @@ namespace Volt
 		ImGui::PopStyleVar(1); // Don't forget to Pop()
 		ImGui::PopStyleColor(1);
 
-		GraphicsContext::GetImmediateAnnotations()->BeginEvent(L"Render ImGui");
+		RenderCommand::BeginAnnotation("Render ImGui");
 
 		//Rendering
 		ImGui::Render();
@@ -210,7 +210,7 @@ namespace Volt
 			app.GetWindow().GetSwapchain().Bind();
 		}
 
-		GraphicsContext::GetImmediateAnnotations()->EndEvent();
+		RenderCommand::EndAnnotation();
 	}
 
 	Scope<ImGuiImplementation> ImGuiImplementation::Create()

@@ -58,13 +58,13 @@ namespace Volt
 
 			if (myMaterialBuffer)
 			{
-				myMaterialBuffer->RT_SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size);
+				myMaterialBuffer->SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size);
 				if (myMaterialBufferDirty)
 				{
 					myMaterialBufferDirty = false;
 				}
 
-				myMaterialBuffer->RT_Bind(MATERIAL_BUFFER_BINDING);
+				myMaterialBuffer->Bind(MATERIAL_BUFFER_BINDING);
 			}
 		}
 

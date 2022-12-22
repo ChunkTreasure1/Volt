@@ -4,6 +4,8 @@
 #include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Utility/DirectXUtils.h"
 
+#include <d3d11.h>
+
 namespace Volt
 {
 	IndexBuffer::IndexBuffer(const std::vector<uint32_t>& aIndices, uint32_t aCount)

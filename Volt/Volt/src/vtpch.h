@@ -16,10 +16,6 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <wrl.h>
-
 #include <GEM/gem.h>
 #include <imgui.h>
 

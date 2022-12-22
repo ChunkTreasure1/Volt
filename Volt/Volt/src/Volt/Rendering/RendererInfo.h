@@ -13,21 +13,7 @@ namespace Volt
 	class Mesh;
 	class SubMaterial;
 
-	enum class DepthState : uint32_t
-	{
-		ReadWrite = 0,
-		Read = 1,
-		None = 2
-	};
-
-	enum class RasterizerState : uint32_t
-	{
-		CullBack = 0,
-		CullFront,
-		CullNone
-	};
-
-	struct RenderCommand
+	struct SubmitCommand
 	{
 		SubMesh subMesh;
 		gem::mat4 transform;

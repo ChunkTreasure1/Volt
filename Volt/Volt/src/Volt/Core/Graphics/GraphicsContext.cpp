@@ -6,6 +6,8 @@
 
 #include "Volt/Utility/DirectXUtils.h"
 
+#include <d3d11_1.h>
+
 namespace Volt
 {
 	GraphicsContext::GraphicsContext(GLFWwindow* aWindow)
@@ -60,6 +62,31 @@ namespace Volt
 		myImmediateContext = nullptr;
 		myDevice = nullptr;
 
+	}
+
+	ComPtr<ID3D11Device> GraphicsContext::GetDevice()
+	{
+		return myInstance->myDevice;
+	}
+
+	ComPtr<ID3D11DeviceContext> GraphicsContext::GetImmediateContext()
+	{
+		return myInstance->myImmediateContext;
+	}
+
+	ComPtr<ID3D11DeviceContext> GraphicsContext::GetDeferredContext()
+	{
+		return myInstance->myDeferredContext;
+	}
+
+	ComPtr<ID3DUserDefinedAnnotation> GraphicsContext::GetImmediateAnnotations()
+	{
+		return myInstance->myImmediateAnnotations;
+	}
+
+	ComPtr<ID3DUserDefinedAnnotation> GraphicsContext::GetDeferredAnnotations()
+	{
+		return myInstance->myDeferredAnnotations;
 	}
 
 	Ref<GraphicsContext> GraphicsContext::Create(GLFWwindow* aWindow)
