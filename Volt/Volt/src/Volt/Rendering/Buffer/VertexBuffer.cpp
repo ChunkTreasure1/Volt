@@ -4,16 +4,22 @@
 #include "Volt/Log/Log.h"
 #include "Volt/Utility/DirectXUtils.h"
 
+#include "Volt/Core/Graphics/GraphicsContext.h"
+
+#include <d3d11.h>
+
 namespace Volt
 {
-	VertexBuffer::VertexBuffer(const void* aData, uint32_t aSize, uint32_t aStride, D3D11_USAGE usage)
+	VertexBuffer::VertexBuffer(const void* aData, uint32_t aSize, uint32_t aStride, BufferUsage usage)
 		: myStride(aStride)
 	{
+		const D3D11_USAGE usageType = (D3D11_USAGE)usage;
+
 		D3D11_BUFFER_DESC vertexBuffer{};
 		vertexBuffer.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBuffer.Usage = usage;
+		vertexBuffer.Usage = usageType;
 		vertexBuffer.ByteWidth = aSize;
-		vertexBuffer.CPUAccessFlags = usage == D3D11_USAGE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
+		vertexBuffer.CPUAccessFlags = usageType == D3D11_USAGE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
 		vertexBuffer.MiscFlags = 0;
 		vertexBuffer.StructureByteStride = aStride;
 
@@ -51,41 +57,22 @@ namespace Volt
 
 	void VertexBuffer::SetData(const void* aData, uint32_t aSize)
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-
-		D3D11_MAPPED_SUBRESOURCE data;
-		context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &data);
-		memcpy(data.pData, aData, aSize);
-		context->Unmap(myBuffer.Get(), 0);
+		void* mappedData = RenderCommand::VertexBuffer_Map(this);
+		memcpy(mappedData, aData, aSize);
+		RenderCommand::VertexBuffer_Unmap(this);
 	}
 
 	void VertexBuffer::Bind(uint32_t aSlot) const
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-		const uint32_t offset = 0;
-		context->IASetVertexBuffers(aSlot, 1, myBuffer.GetAddressOf(), &myStride, &offset);
-	}
-
-	void VertexBuffer::RT_Bind(uint32_t aSlot) const
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-		const uint32_t offset = 0;
-		context->IASetVertexBuffers(aSlot, 1, myBuffer.GetAddressOf(), &myStride, &offset);
+		RenderCommand::VertexBuffer_Bind(this, aSlot, myStride);
 	}
 
 	void VertexBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-		context->Unmap(myBuffer.Get(), 0);
+		RenderCommand::VertexBuffer_Unmap(this);
 	}
 
-	void VertexBuffer::RT_Unmap()
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-		context->Unmap(myBuffer.Get(), 0);
-	}
-
-	Ref<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t aSize, uint32_t aStride, D3D11_USAGE usage)
+	Ref<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t aSize, uint32_t aStride, BufferUsage usage)
 	{
 		return CreateRef<VertexBuffer>(data, aSize, aStride, usage);
 	}

@@ -53,10 +53,6 @@ namespace Volt
 		void Unbind();
 		void Clear();
 
-		void RT_Bind();
-		void RT_Unbind();
-		void RT_Clear();
-
 		void Resize(uint32_t width, uint32_t height);
 		void SetColorAttachment(Ref<Image2D> image, uint32_t index);
 

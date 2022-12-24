@@ -14,6 +14,8 @@
 
 #include "Volt/Log/Log.h"
 
+#include <d3d11.h>
+
 namespace Volt
 {
 	Shader::Shader(const std::string& aName, std::initializer_list<std::filesystem::path> aPaths, bool aForceCompile)
@@ -88,7 +90,7 @@ namespace Volt
 
 	void Shader::Bind() const
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		if (!myShaders.contains(ShaderStage::Compute))
 		{
@@ -103,31 +105,7 @@ namespace Volt
 
 	void Shader::Unbind() const
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-		for (const auto& [stage, shader] : myShaders)
-		{
-			myUnbindFunctions[stage](shader, context);
-		}
-	}
-
-	void Shader::RT_Bind() const
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-
-		if (!myShaders.contains(ShaderStage::Compute))
-		{
-			context->IASetInputLayout(myInputLayout.Get());
-		}
-
-		for (const auto& [stage, shader] : myShaders)
-		{
-			myBindFunctions[stage](shader, context);
-		}
-	}
-
-	void Shader::RT_Unbind() const
-	{
-		auto context = GraphicsContext::GetDeferredContext();
+		auto context = RenderCommand::GetCurrentContext();
 		for (const auto& [stage, shader] : myShaders)
 		{
 			myUnbindFunctions[stage](shader, context);

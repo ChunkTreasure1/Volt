@@ -15,6 +15,8 @@
 #include <imgui_notify.h>
 #include <tahoma.h>
 
+#include <d3d11.h>
+
 namespace Volt
 {
 	std::filesystem::path GetOrCreateIniPath()
@@ -195,6 +197,7 @@ namespace Volt
 		ImGui::PopStyleVar(1); // Don't forget to Pop()
 		ImGui::PopStyleColor(1);
 
+		RenderCommand::SetContext(Context::Immidiate);
 		RenderCommand::BeginAnnotation("Render ImGui");
 
 		//Rendering
@@ -209,7 +212,7 @@ namespace Volt
 			Application& app = Application::Get();
 			app.GetWindow().GetSwapchain().Bind();
 		}
-
+		
 		RenderCommand::EndAnnotation();
 	}
 

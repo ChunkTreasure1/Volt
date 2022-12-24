@@ -1,14 +1,17 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Utility/DirectXUtils.h"
 #include "Volt/Rendering/Shader/ShaderUtility.h"
+#include "Volt/Rendering/RenderCommand.h"
 
 #include <wrl.h>
-#include <d3d11.h>
 
 using namespace Microsoft::WRL;
+
+struct ID3D11Buffer;
+struct ID3D11ShaderResourceView;
+struct ID3D11UnorderedAccessView;
+
 namespace Volt
 {
 	class StructuredBuffer
@@ -29,17 +32,11 @@ namespace Volt
 		void SetData(const T* data, uint32_t count);
 		
 		void Bind(uint32_t slot) const;
-		void RT_Bind(uint32_t slot) const;
 		void AddStage(ShaderStage stage);
 		
 		template<typename T>
 		T* Map();
-
-		template<typename T>
-		T* RT_Map();
-
 		void Unmap();
-		void RT_Unmap();
 
 		static Ref<StructuredBuffer> Create(uint32_t elementSize, uint32_t count, ShaderStage usageStage, bool shaderWriteable = false);
 
@@ -61,33 +58,14 @@ namespace Volt
 	inline void StructuredBuffer::SetData(const T* data, uint32_t count)
 	{
 		VT_CORE_ASSERT(count <= myMaxCount, "The data cannot be larger than the buffer!");
-			
-		auto context = GraphicsContext::GetImmediateContext();
-
-		D3D11_MAPPED_SUBRESOURCE subresource;
-		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
-		memcpy(subresource.pData, data, sizeof(T) * count);
-		context->Unmap(myBuffer.Get(), 0);
+		void* mappedData = RenderCommand::StructuredBuffer_Map(this);
+		memcpy(mappedData, data, sizeof(T) * count);
+		RenderCommand::StructuredBuffer_Unmap(this);
 	}
 
 	template<typename T>
 	inline T* StructuredBuffer::Map()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-
-		D3D11_MAPPED_SUBRESOURCE subresource{};
-		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
-
-		return reinterpret_cast<T*>(subresource.pData);
-	}
-	template<typename T>
-	inline T* StructuredBuffer::RT_Map()
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-
-		D3D11_MAPPED_SUBRESOURCE subresource{};
-		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
-
-		return reinterpret_cast<T*>(subresource.pData);
+		return reinterpret_cast<T*>(RenderCommand::StructuredBuffer_Map(this));
 	}
 }

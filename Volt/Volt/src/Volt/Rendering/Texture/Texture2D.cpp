@@ -3,6 +3,8 @@
 
 #include "Volt/Core/Graphics/GraphicsContext.h"
 
+#include "Volt/Rendering/RenderCommand.h"
+
 namespace Volt
 {
 	Texture2D::Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data)
@@ -37,14 +39,7 @@ namespace Volt
 
 	void Texture2D::Bind(uint32_t aSlot) const
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-		context->PSSetShaderResources(aSlot, 1, myImage->GetSRV().GetAddressOf()); // TODO: How should we handle other shaders?
-	}
-
-	void Texture2D::RT_Bind(uint32_t aSlot) const
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-		context->PSSetShaderResources(aSlot, 1, myImage->GetSRV().GetAddressOf()); // TODO: How should we handle other shaders?
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, { myImage }, aSlot);
 	}
 
 	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data)

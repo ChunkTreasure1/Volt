@@ -1,6 +1,11 @@
 #include "vtpch.h"
 #include "StructuredBuffer.h"
 
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Utility/DirectXUtils.h"
+
+#include <d3d11.h>
+
 namespace Volt
 {
 	StructuredBuffer::StructuredBuffer(uint32_t elementSize, uint32_t count, ShaderStage usageStage, bool shaderWriteable)
@@ -27,42 +32,7 @@ namespace Volt
 
 	void StructuredBuffer::Bind(uint32_t slot) const
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-
-		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
-		{
-			context->VSSetShaderResources(slot, 1, mySRV.GetAddressOf());
-		}
-
-		if ((myUsageStages & ShaderStage::Pixel) != ShaderStage::None)
-		{
-			context->PSSetShaderResources(slot, 1, mySRV.GetAddressOf());
-		}
-
-		if ((myUsageStages & ShaderStage::Compute) != ShaderStage::None)
-		{
-			context->CSSetShaderResources(slot, 1, mySRV.GetAddressOf());
-		}
-
-		if ((myUsageStages & ShaderStage::Domain) != ShaderStage::None)
-		{
-			context->DSSetShaderResources(slot, 1, mySRV.GetAddressOf());
-		}
-
-		if ((myUsageStages & ShaderStage::Hull) != ShaderStage::None)
-		{
-			context->HSSetShaderResources(slot, 1, mySRV.GetAddressOf());
-		}
-
-		if ((myUsageStages & ShaderStage::Geometry) != ShaderStage::None)
-		{
-			context->GSSetShaderResources(slot, 1, mySRV.GetAddressOf());
-		}
-	}
-
-	void StructuredBuffer::RT_Bind(uint32_t slot) const
-	{
-		auto context = GraphicsContext::GetDeferredContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
 		{
@@ -97,14 +67,7 @@ namespace Volt
 
 	void StructuredBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-		context->Unmap(myBuffer.Get(), 0);
-	}
-
-	void StructuredBuffer::RT_Unmap()
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-		context->Unmap(myBuffer.Get(), 0);
+		RenderCommand::StructuredBuffer_Unmap(this);
 	}
 
 	void StructuredBuffer::AddStage(ShaderStage stage)

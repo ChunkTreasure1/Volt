@@ -62,7 +62,7 @@ namespace Volt
 
 	void ConstantBuffer::Bind(uint32_t aSlot)
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
 		{

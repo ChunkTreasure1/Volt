@@ -130,7 +130,7 @@ namespace Volt
 
 		static void SyncAndWait();
 
-		static void BindTexturesToStage(ShaderStage stage, const std::vector<ID3D11ShaderResourceView*>& textures, const uint32_t startSlot);
+		static void BindTexturesToStage(ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot);
 		static void ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count);
 
 		static void SetSceneData(const SceneData& aSceneData);
@@ -161,21 +161,27 @@ namespace Volt
 
 		static void RunResourceChanges();
 		static void SortSubmitCommands(std::vector<SubmitCommand>& submitCommands);
-		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
+		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass = false, bool aoPass = false);
 		static std::vector<SubmitCommand> CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera);
 
 		///// Threading //////
-		static void RT_UpdatePerFrameBuffers();
-		static void RT_SortRenderCommands(std::vector<SubmitCommand>& submitCommands);
-		static void RT_UploadObjectData(std::vector<SubmitCommand>& submitCommands);
-
-		static void RT_UpdatePerPassBuffers();
-		static void RT_CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, bool shadowPass = false, bool aoPass = false);
-		static void RT_DispatchRenderCommandsInstanced();
-		static void RT_DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
+		static void DispatchRenderCommandsInstancedInternal();
+		static void DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
 
 		static void RT_Execute();
 		//////////////////////
+
+		static void DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader);
+		static void DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial);
+		static void DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader);
+
+		static void BeginInternal(Context context, const std::string& debugName);
+		
+		static void BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass);
+		static void EndPassInternal();
+
+		static void BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear /* = true */);
+		static void EndFullscreenPassInternal();
 
 		struct Samplers
 		{
@@ -274,7 +280,7 @@ namespace Volt
 		struct InstancingData
 		{
 			Ref<VertexBuffer> instancedVertexBuffer;
-			std::vector<InstancedRenderCommand> passRenderCommands;
+			std::vector<InstancedSubmitCommand> passRenderCommands;
 		};
 
 		struct DecalData

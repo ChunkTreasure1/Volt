@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "Framebuffer.h"
 
+#include "Volt/Rendering/RenderCommand.h"
+
 #include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Utility/ImageUtility.h"
 
@@ -174,7 +176,7 @@ namespace Volt
 
 	void Framebuffer::Bind()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		std::vector<ID3D11RenderTargetView*> rtvs;
 		for (const auto& image : myColorAttachmentImages)
@@ -189,7 +191,7 @@ namespace Volt
 
 	void Framebuffer::Unbind()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		auto context = RenderCommand::GetCurrentContext();
 		std::vector<ID3D11RenderTargetView*> views(myColorAttachmentImages.size(), nullptr);
 
 		context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
@@ -198,51 +200,8 @@ namespace Volt
 
 	void Framebuffer::Clear()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		auto context = RenderCommand::GetCurrentContext();
 
-		uint32_t attachmentIndex = 0;
-		for (const auto& image : myColorAttachmentImages)
-		{
-			if (mySpecification.existingImages.find(attachmentIndex) == mySpecification.existingImages.end() && !Utility::IsTypeless(mySpecification.attachments[attachmentIndex].format))
-			{
-				context->ClearRenderTargetView(image->GetRTV().Get(), (float*)&mySpecification.attachments[attachmentIndex].clearColor);
-			}
-			attachmentIndex++;
-		}
-
-		if (myDepthAttachmentImage && myOwnsDepth)
-		{
-			context->ClearDepthStencilView(myDepthAttachmentImage->GetDSV().Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
-		}
-	}
-
-	void Framebuffer::RT_Bind()
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-
-		std::vector<ID3D11RenderTargetView*> rtvs;
-		for (const auto& image : myColorAttachmentImages)
-		{
-			rtvs.emplace_back(image->GetRTV().Get());
-		}
-
-		context->OMSetBlendState(myBlendState.Get(), nullptr, 0xffffffff);
-		context->OMSetRenderTargets((uint32_t)myColorAttachmentImages.size(), rtvs.data(), myDepthAttachmentImage ? myDepthAttachmentImage->GetDSV().Get() : nullptr);
-		context->RSSetViewports(1, &myViewport);
-	}
-
-	void Framebuffer::RT_Unbind()
-	{
-		auto context = GraphicsContext::GetDeferredContext();
-		std::vector<ID3D11RenderTargetView*> views(myColorAttachmentImages.size(), nullptr);
-
-		context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-		context->OMSetRenderTargets((uint32_t)myColorAttachmentImages.size(), views.data(), nullptr);
-	}
-
-	void Framebuffer::RT_Clear()
-	{
-		auto context = GraphicsContext::GetDeferredContext();
 		uint32_t attachmentIndex = 0;
 		for (const auto& image : myColorAttachmentImages)
 		{

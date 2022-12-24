@@ -2,12 +2,20 @@
 #include "RenderCommand.h"
 
 #include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Profiling.h"
 
 #include "Volt/Rendering/SamplerState.h"
 #include "Volt/Rendering/Buffer/ConstantBuffer.h"
+#include "Volt/Rendering/Buffer/StructuredBuffer.h"
+#include "Volt/Rendering/Buffer/VertexBuffer.h"
+#include "Volt/Rendering/Buffer/IndexBuffer.h"
+
+#include "Volt/Rendering/Texture/Image2D.h"
 
 #include "Volt/Utility/DirectXUtils.h"
 #include "Volt/Utility/StringUtility.h"
+
+#include <unordered_map>
 
 #include <d3d11.h>
 #include <d3d11_1.h>
@@ -22,7 +30,6 @@ namespace Volt
 		Topology topology = Topology::None;
 		CullState cullState = CullState::CullBack;
 		DepthState depthState = DepthState::ReadWrite;
-
 		Context context = Context::Immidiate;
 	};
 
@@ -33,25 +40,27 @@ namespace Volt
 
 		std::vector<ComPtr<ID3D11DeviceContext>> deviceContexts;
 		std::vector<ComPtr<ID3DUserDefinedAnnotation>> annotations;
+
+		std::unordered_map<std::thread::id, RenderContext> threadContexts;
 	};
 
-	inline static Scope<RenderContext> s_renderContext;
 	inline static Scope<RenderCommandData> s_renderCommandData;
-
-	inline static ComPtr<ID3D11DeviceContext> GetCurrentContext()
-	{
-		return s_renderCommandData->deviceContexts.at((uint32_t)s_renderContext->context);
-	}
 
 	inline static ComPtr<ID3DUserDefinedAnnotation> GetCurrentAnnotations()
 	{
-		return s_renderCommandData->annotations.at((uint32_t)s_renderContext->context);
+		const std::thread::id threadId = std::this_thread::get_id();
+		return s_renderCommandData->annotations.at((uint32_t)s_renderCommandData->threadContexts[threadId].context);
+	}
+
+	inline static RenderContext& GetCurrentContextData()
+	{
+		const std::thread::id threadId = std::this_thread::get_id();
+		return s_renderCommandData->threadContexts[threadId];
 	}
 
 	void RenderCommand::Initialize()
 	{
 		s_renderCommandData = CreateScope<RenderCommandData>();
-		s_renderContext = CreateScope<RenderContext>();
 
 		s_renderCommandData->deviceContexts.emplace_back(GraphicsContext::GetImmediateContext());
 		s_renderCommandData->deviceContexts.emplace_back(GraphicsContext::GetDeferredContext());
@@ -128,76 +137,103 @@ namespace Volt
 
 	void RenderCommand::Shutdown()
 	{
-		s_renderContext = nullptr;
 		s_renderCommandData = nullptr;
 	}
 
 	void RenderCommand::SetTopology(Topology topology)
 	{
-		if (topology != s_renderContext->topology)
+		VT_PROFILE_FUNCTION();
+
+		auto& context = GetCurrentContextData();
+
+		if (topology != context.topology)
 		{
-			s_renderContext->topology = topology;
+			context.topology = topology;
 			GetCurrentContext()->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)topology);
 		}
 	}
 
 	void RenderCommand::SetCullState(CullState cullState)
 	{
-		if (cullState != s_renderContext->cullState)
+		VT_PROFILE_FUNCTION();
+
+		auto& context = GetCurrentContextData();
+
+		if (cullState != context.cullState)
 		{
-			s_renderContext->cullState = cullState;
+			context.cullState = cullState;
 			GetCurrentContext()->RSSetState(s_renderCommandData->cullStates.at((uint32_t)cullState).Get());
 		}
 	}
 
 	void RenderCommand::SetDepthState(DepthState depthState)
 	{
-		if (depthState != s_renderContext->depthState)
+		VT_PROFILE_FUNCTION();
+
+		auto& context = GetCurrentContextData();
+
+		if (depthState != context.depthState)
 		{
-			s_renderContext->depthState = depthState;
+			context.depthState = depthState;
 			GetCurrentContext()->OMSetDepthStencilState(s_renderCommandData->depthStates.at((uint32_t)depthState).Get(), 0);
 		}
 	}
 
 	void RenderCommand::SetContext(Context context)
 	{
-		if (s_renderContext->context != context)
+		VT_PROFILE_FUNCTION();
+
+		auto& threadContext = GetCurrentContextData();
+
+		if (threadContext.context != context)
 		{
-			s_renderContext->context = context;
+			threadContext.context = context;
 			RestoreDefaultState();
 		}
 	}
 
 	void RenderCommand::Draw(uint32_t vertexCount, uint32_t startVertexLocation)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 		context->Draw(vertexCount, startVertexLocation);
 	}
 
 	void RenderCommand::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 		context->DrawIndexed(indexCount, startIndexLocation, baseVertexLocation);
 	}
 
 	void RenderCommand::DrawIndexedInstanced(uint32_t indexCountPerInstance, uint32_t instanceCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, uint32_t startInstanceLocation)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 		context->DrawIndexedInstanced(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
 	}
 
 	void RenderCommand::BeginAnnotation(std::string_view name)
 	{
+		VT_PROFILE_FUNCTION();
+
 		GetCurrentAnnotations()->BeginEvent(Utils::ToWString(name).c_str());
 	}
 
 	void RenderCommand::EndAnnotation()
 	{
+		VT_PROFILE_FUNCTION();
+
 		GetCurrentAnnotations()->EndEvent();
 	}
 
-	void RenderCommand::Sampler_Bind(SamplerState* samplerState, uint32_t slot)
+	void RenderCommand::Sampler_Bind(const SamplerState* samplerState, uint32_t slot)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 		context->CSSetSamplers(slot, 1, samplerState->GetSampler().GetAddressOf());
 		context->PSSetSamplers(slot, 1, samplerState->GetSampler().GetAddressOf());
@@ -205,6 +241,8 @@ namespace Volt
 
 	void RenderCommand::Sampler_BindMultiple(const std::vector<SamplerState*>& samplerStates, uint32_t startSlot)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 
 		std::vector<ID3D11SamplerState*> samplers{ samplerStates.size() };
@@ -219,8 +257,10 @@ namespace Volt
 		context->PSSetSamplers(startSlot, (uint32_t)samplers.size(), samplers.data());
 	}
 
-	void* RenderCommand::ConstantBuffer_Map(ConstantBuffer* constantBuffer)
+	void* RenderCommand::ConstantBuffer_Map(const ConstantBuffer* constantBuffer)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 
 		D3D11_MAPPED_SUBRESOURCE subresource{};
@@ -228,23 +268,181 @@ namespace Volt
 		return subresource.pData;
 	}
 
-	void RenderCommand::ConstantBuffer_Unmap(ConstantBuffer* constantBuffer)
+	void RenderCommand::ConstantBuffer_Unmap(const ConstantBuffer* constantBuffer)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 		context->Unmap(constantBuffer->GetHandle().Get(), 0);
 	}
 
-	void RenderCommand::RestoreDefaultState()
+	void* RenderCommand::StructuredBuffer_Map(const StructuredBuffer* structuredBuffer)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto context = GetCurrentContext();
 
-		s_renderContext->topology = Topology::TriangleList;
+		D3D11_MAPPED_SUBRESOURCE subresource{};
+		VT_DX_CHECK(context->Map(structuredBuffer->GetHandle().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
+		return subresource.pData;
+	}
+
+	void RenderCommand::StructuredBuffer_Unmap(const StructuredBuffer* structuredBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+		context->Unmap(structuredBuffer->GetHandle().Get(), 0);
+	}
+
+	void RenderCommand::VertexBuffer_Bind(const VertexBuffer* vertexBuffer, uint32_t slot, uint32_t stride, uint32_t offset)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+
+		if (!vertexBuffer)
+		{
+			context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+		}
+		else
+		{
+			context->IASetVertexBuffers(slot, 1, vertexBuffer->GetHandle().GetAddressOf(), &stride, &offset);
+		}
+	}
+
+	void* RenderCommand::VertexBuffer_Map(const VertexBuffer* vertexBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+
+		D3D11_MAPPED_SUBRESOURCE subresource{};
+		VT_DX_CHECK(context->Map(vertexBuffer->GetHandle().Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
+		return subresource.pData;
+	}
+
+	void RenderCommand::VertexBuffer_Unmap(const VertexBuffer* vertexBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+		context->Unmap(vertexBuffer->GetHandle().Get(), 0);
+	}
+
+	void RenderCommand::IndexBuffer_Bind(const IndexBuffer* indexBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+
+		if (!indexBuffer)
+		{
+			context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
+		}
+		else
+		{
+			context->IASetIndexBuffer(indexBuffer->GetHandle().Get(), DXGI_FORMAT_R32_UINT, 0);
+		}
+	}
+
+	void RenderCommand::BindTexturesToStage(const ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+
+		std::vector<ID3D11ShaderResourceView*> texturesToBind{ textures.size() };
+		for (uint32_t i = 0; const auto & t : textures)
+		{
+			if (t)
+			{
+				texturesToBind[i] = t->GetSRV().Get();
+			}
+			else
+			{
+				texturesToBind[i] = nullptr;
+			}
+			i++;
+		}
+
+		switch (stage)
+		{
+			case ShaderStage::Vertex:
+				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				break;
+			case ShaderStage::Pixel:
+				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				break;
+			case ShaderStage::Hull:
+				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				break;
+			case ShaderStage::Domain:
+				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				break;
+			case ShaderStage::Geometry:
+				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				break;
+			case ShaderStage::Compute:
+				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				break;
+			default:
+				break;
+		}
+	}
+
+	void RenderCommand::ClearTexturesAtStage(const ShaderStage stage, const uint32_t startSlot, const uint32_t count)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+		std::vector<ID3D11ShaderResourceView*> textures{ count, nullptr };
+
+		switch (stage)
+		{
+			case ShaderStage::Vertex:
+				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Pixel:
+				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Hull:
+				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Domain:
+				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Geometry:
+				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			case ShaderStage::Compute:
+				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
+				break;
+			default:
+				break;
+		}
+	}
+
+	ID3D11DeviceContext* RenderCommand::GetCurrentContext()
+	{
+		const auto& contextData = GetCurrentContextData();
+		return s_renderCommandData->deviceContexts.at((uint32_t)contextData.context).Get();
+	}
+
+	void RenderCommand::RestoreDefaultState()
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& contextData = GetCurrentContextData();
+		auto context = GetCurrentContext();
+
+		contextData.topology = Topology::TriangleList;
 		context->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)Topology::TriangleList);
 
-		s_renderContext->cullState = CullState::CullBack;
+		contextData.cullState = CullState::CullBack;
 		context->RSSetState(s_renderCommandData->cullStates.at((uint32_t)CullState::CullBack).Get());
 
-		s_renderContext->depthState = DepthState::ReadWrite;
+		contextData.depthState = DepthState::ReadWrite;
 		context->OMSetDepthStencilState(s_renderCommandData->depthStates.at((uint32_t)DepthState::ReadWrite).Get(), 0);
 	}
 }

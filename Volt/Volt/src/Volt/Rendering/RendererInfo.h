@@ -31,7 +31,7 @@ namespace Volt
 		bool castAO = true;
 	};
 
-	struct InstancedRenderCommand
+	struct InstancedSubmitCommand
 	{
 		SubMesh subMesh;
 

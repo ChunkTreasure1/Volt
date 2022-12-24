@@ -353,9 +353,7 @@ namespace Volt
 		return false;
 	}
 
-	VT_OPTIMIZE_OFF
-
-		void Renderer::SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
+	void Renderer::SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
 	{
 		if (aString.empty())
 		{
@@ -555,62 +553,37 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([shader = aShader]()
 			{
-				auto context = GraphicsContext::GetDeferredContext();
-
-				shader->RT_Bind();
-
-				RenderCommand::SetTopology(Topology::TriangleList);
-				RenderCommand::SetDepthState(DepthState::None);
-
-				context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
-				context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-
-				RenderCommand::Draw(3, 0);
-				shader->RT_Unbind();
+				DrawFullscreenTriangleWithShaderInternal(shader);
 			});
 #else 
-		auto context = GraphicsContext::GetImmediateContext();
-
-		aShader->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::SetDepthState(DepthState::None);
-
-		context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
-		context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-
-		RenderCommand::Draw(3, 0);
-		aShader->Unbind();
+		DrawFullscreenTriangleWithShaderInternal(aShader);
 #endif
 	}
 
 	void Renderer::DrawFullscreenTriangleWithMaterial(Ref<Material> aMaterial)
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-
-		aMaterial->GetSubMaterials().at(0)->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::SetDepthState(DepthState::None);
-
-		context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
-		context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-
-		RenderCommand::Draw(3, 0);
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([material = aMaterial]()
+			{
+				DrawFullscreenTriangleWithMaterialInternal(material);
+			});
+#else 
+		DrawFullscreenTriangleWithMaterialInternal(aMaterial);
+#endif
 	}
 
 	void Renderer::DrawFullscreenQuadWithShader(Ref<Shader> aShader)
 	{
-		aShader->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::SetDepthState(DepthState::None);
-
-		myRendererData->quadVertexBuffer->Bind();
-		myRendererData->quadIndexBuffer->Bind();
-
-		RenderCommand::DrawIndexed(6, 0, 0);
-		aShader->Unbind();
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]()
+			{
+				DrawFullscreenQuadWithShaderInternal(shader);
+			});
+#else 
+		DrawFullscreenQuadWithShaderInternal(aShader);
+#endif
 	}
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, const std::vector<gem::mat4>& aBoneTransforms, const gem::mat4& aTransform)
@@ -649,67 +622,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([mesh = aMesh, material = aMaterial, subMeshIndex = aSubMeshIndex, transform = aTransform, boneTransforms = aBoneTransforms]()
 			{
-				RT_DrawMesh(mesh, material, subMeshIndex, transform, boneTransforms);
+				DrawMeshInternal(mesh, material, subMeshIndex, transform, boneTransforms);
 			});
 #else
-		auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
-		uint32_t subMaterialIndex = subMesh.materialIndex;
-		if ((uint32_t)material->GetSubMaterials().size() >= subMeshIndex)
-		{
-			subMaterialIndex = (uint32_t)material->GetSubMaterials().size() - 1;
-		}
-
-		auto subMaterial = material->GetSubMaterials().at(subMaterialIndex);
-
-		if (auto it = std::find(myRendererData->currentPass.excludedShaderHashes.begin(), myRendererData->currentPass.excludedShaderHashes.end(), subMaterial->GetShaderHash()); it != myRendererData->currentPass.excludedShaderHashes.end())
-		{
-			return;
-		}
-
-		if (myRendererData->currentPass.exclusiveShaderHash != 0 && myRendererData->currentPass.exclusiveShaderHash != subMaterial->GetShaderHash())
-		{
-			return;
-		}
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Bind();
-		}
-
-		subMaterial->Bind(myRendererData->currentPass.overrideShader == nullptr);
-
-		myRendererData->statistics.materialBinds++;
-		myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).materialBinds++;
-
-		aMesh->GetVertexBuffer()->Bind();
-		aMesh->GetIndexBuffer()->Bind();
-		myRendererData->statistics.vertexIndexBufferBinds++;
-		myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).vertexIndexBufferBinds++;
-
-		// Update object buffer
-		{
-			ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-
-			mapped->transform = aTransform;
-			//mapped->id = cmds[i].id;
-			mapped->isAnimated = !aBoneTransforms.empty();
-
-			ConstantBufferRegistry::Get(1)->Unmap();
-		}
-
-		// Update animation buffer
-		if (!aBoneTransforms.empty())
-		{
-			AnimationData* mapped = ConstantBufferRegistry::Get(6)->Map<AnimationData>();
-			memcpy_s(mapped, sizeof(gem::mat4) * RendererData::MAX_BONES_PER_MESH, aBoneTransforms.data(), sizeof(gem::mat4) * aBoneTransforms.size());
-			ConstantBufferRegistry::Get(6)->Unmap();
-		}
-
-		ConstantBufferRegistry::Get(1)->Bind(1);
-		ConstantBufferRegistry::Get(6)->Bind(6);
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::DrawIndexed(subMesh.indexCount, subMesh.indexStartOffset, subMesh.vertexStartOffset)
+		DrawMeshInternal(aMesh, aMaterial, aSubMeshIndex, aTransform, aBoneTransforms);
 #endif // VT_THREADED_RENDERING
 	}
 
@@ -719,85 +635,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([debugName, context]()
 			{
-				const std::string profData = "Volt::Renderer::Begin: " + debugName;
-				VT_PROFILE_SCOPE(profData.c_str());
-
-				RenderCommand::SetContext(context);
-				RenderCommand::BeginAnnotation(debugName);
-
-				myRendererData->currentContext = debugName;
-
-				RunResourceChanges();
-				RT_UpdatePerFrameBuffers();
-				RT_SortRenderCommands(myRendererData->currentGPUBuffer->GetRenderCommands());
-				RT_UploadObjectData(myRendererData->currentGPUBuffer->GetRenderCommands());
-
-				// Bind samplers
-				{
-					myRendererData->samplers.linearWrap->Bind(0);
-					myRendererData->samplers.linearPointWrap->Bind(1);
-
-					myRendererData->samplers.pointWrap->Bind(2);
-					myRendererData->samplers.pointLinearWrap->Bind(3);
-
-					myRendererData->samplers.linearClamp->Bind(4);
-					myRendererData->samplers.linearPointClamp->Bind(5);
-
-					myRendererData->samplers.pointClamp->Bind(6);
-					myRendererData->samplers.pointLinearClamp->Bind(7);
-
-					myRendererData->samplers.anisotropic->Bind(8);
-					myRendererData->samplers.shadow->Bind(9);
-				}
-
-				ConstantBufferRegistry::Get(0)->Bind(0);
-				ConstantBufferRegistry::Get(1)->Bind(1);
-				ConstantBufferRegistry::Get(3)->Bind(3);
-				ConstantBufferRegistry::Get(4)->Bind(4);
-				ConstantBufferRegistry::Get(6)->Bind(6);
-				ConstantBufferRegistry::Get(7)->Bind(7);
-
-				StructuredBufferRegistry::Get(100)->RT_Bind(100);
-				StructuredBufferRegistry::Get(101)->RT_Bind(101);
-				StructuredBufferRegistry::Get(102)->RT_Bind(102);
+				BeginInternal(context, debugName);
 			});
 #else
-
-		VT_PROFILE_FUNCTION();
-
-		BeginAnnotatedSection(debugName);
-		myRendererData->currentContext = debugName;
-
-		RunResourceChanges();
-		UpdatePerFrameBuffers();
-
-		SortSubmitCommands(myRendererData->renderCommands);
-		UploadObjectData(myRendererData->renderCommands);
-
-		// Bind samplers
-		{
-			myRendererData->samplers.linearWrap->Bind(0);
-			myRendererData->samplers.linearPointWrap->Bind(1);
-
-			myRendererData->samplers.pointWrap->Bind(2);
-			myRendererData->samplers.pointLinearWrap->Bind(3);
-
-			myRendererData->samplers.linearClamp->Bind(4);
-			myRendererData->samplers.linearPointClamp->Bind(5);
-
-			myRendererData->samplers.pointClamp->Bind(6);
-			myRendererData->samplers.pointLinearClamp->Bind(7);
-
-			myRendererData->samplers.anisotropic->Bind(8);
-			myRendererData->samplers.shadow->Bind(9);
-		}
-
-		ConstantBufferRegistry::Get(1)->Bind(1);
-		ConstantBufferRegistry::Get(4)->Bind(4);
-		ConstantBufferRegistry::Get(6)->Bind(6);
-		ConstantBufferRegistry::Get(7)->Bind(7);
-
-		StructuredBufferRegistry::Get(102)->Bind(102);
+		BeginInternal(context, debugName);
 #endif
 	}
 
@@ -807,10 +648,6 @@ namespace Volt
 		myRendererData->renderCommands.clear();
 		myRendererData->pointLights.clear();
 		myRendererData->directionalLight = DirectionalLight{};
-
-#ifndef VT_THREADED_RENDERING
-		EndAnnotatedSection();
-#endif
 	}
 
 	void Renderer::BeginPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
@@ -819,57 +656,11 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([cmdBuffer = currentCommandBuffer, renderPass = aRenderPass, camera = aCamera, shouldClear = aShouldClear, isShadowPass = aIsShadowPass, isAOPass = aIsAOPass]()
 			{
-				const std::string tag = "Begin " + renderPass.debugName;
-				VT_PROFILE_SCOPE(tag.c_str());
-
-				RenderCommand::BeginAnnotation(renderPass.debugName);
-
-				myRendererData->currentPass = renderPass;
-				myRendererData->currentPassCamera = camera;
-
-				if (shouldClear && myRendererData->currentPass.framebuffer)
-				{
-					myRendererData->currentPass.framebuffer->RT_Clear();
-				}
-
-				if (myRendererData->currentPass.framebuffer)
-				{
-					myRendererData->currentPass.framebuffer->RT_Bind();
-				}
-
-				RenderCommand::SetCullState(renderPass.cullState);
-				RenderCommand::SetDepthState(renderPass.depthState);
-
-				RT_UpdatePerPassBuffers();
-				std::vector<SubmitCommand> culledCommands = CullRenderCommands(cmdBuffer->GetRenderCommands(), camera);
-				RT_CollectSubmitCommands(culledCommands, isShadowPass, isAOPass);
+				BeginPassInternal(renderPass, camera, shouldClear, isShadowPass, isAOPass);
 			});
 
 #else
-		const std::string tag = "Begin " + aRenderPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		BeginSection(aRenderPass.debugName);
-
-		myRendererData->currentPass = aRenderPass;
-		myRendererData->currentPassCamera = aCamera;
-
-		if (aShouldClear && myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Clear();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Bind();
-		}
-
-		UpdatePerPassBuffers();
-		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->renderCommands, aCamera);
-		CollectSubmitCommands(culledCommands, aIsShadowPass, aIsAOPass);
-
-		ConstantBufferRegistry::Get(0)->Bind(0);
-		ConstantBufferRegistry::Get(3)->Bind(3);
+		BeginPassInternal(aRenderPass, aCamera, aShouldClear, aIsShadowPass, aIsAOPass);
 #endif
 	}
 
@@ -879,46 +670,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([]()
 			{
-				const std::string tag = "End " + myRendererData->currentPass.debugName;
-				VT_PROFILE_SCOPE(tag.c_str());
-
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->RT_Unbind();
-				}
-
-				if (myRendererData->currentPass.framebuffer)
-				{
-					myRendererData->currentPass.framebuffer->RT_Unbind();
-				}
-
-				EndSection(myRendererData->currentPass.debugName);
-
-				myRendererData->currentPass = {};
-				myRendererData->currentPassCamera = nullptr;
-				myRendererData->instancingData.passRenderCommands.clear();
+				EndPassInternal();
 			});
 #else
-
-		const std::string tag = "End " + myRendererData->currentPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Unbind();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Unbind();
-		}
-
-		EndSection(myRendererData->currentPass.debugName);
-
-		myRendererData->currentPass = {};
-		myRendererData->currentPassCamera = nullptr;
-		myRendererData->instancingData.passRenderCommands.clear();
-
+		EndPassInternal();
 #endif
 	}
 
@@ -928,49 +683,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([renderPass = aRenderPass, camera = aCamera, shouldClear]()
 			{
-				const std::string tag = "Begin " + renderPass.debugName;
-				VT_PROFILE_SCOPE(tag.c_str());
-
-				BeginSection(renderPass.debugName);
-
-				myRendererData->currentPass = renderPass;
-				myRendererData->currentPassCamera = camera;
-
-				if (shouldClear && myRendererData->currentPass.framebuffer)
-				{
-					myRendererData->currentPass.framebuffer->RT_Clear();
-				}
-
-				if (myRendererData->currentPass.framebuffer)
-				{
-					myRendererData->currentPass.framebuffer->RT_Bind();
-				}
-
-				RT_UpdatePerPassBuffers();
+				BeginFullscreenPassInternal(renderPass, camera, shouldClear);
 			});
 #else
-		const std::string tag = "Begin " + aRenderPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		BeginSection(aRenderPass.debugName);
-
-		myRendererData->currentPass = aRenderPass;
-		myRendererData->currentPassCamera = camera;
-
-		if (shouldClear && myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Clear();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Bind();
-		}
-
-		UpdatePerPassBuffers();
-
-		ConstantBufferRegistry::Get(0)->Bind(0);
-		ConstantBufferRegistry::Get(3)->Bind(3);
+		BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
 #endif
 	}
 
@@ -980,43 +696,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([]()
 			{
-				const std::string tag = "End " + myRendererData->currentPass.debugName;
-				VT_PROFILE_SCOPE(tag.c_str());
-
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->RT_Unbind();
-				}
-
-				if (myRendererData->currentPass.framebuffer)
-				{
-					myRendererData->currentPass.framebuffer->RT_Unbind();
-				}
-
-				EndSection(myRendererData->currentPass.debugName);
-
-				myRendererData->currentPass = {};
-				myRendererData->currentPassCamera = nullptr;
+				EndFullscreenPassInternal();
 			});
 #else
-
-		const std::string tag = "End " + myRendererData->currentPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Unbind();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Unbind();
-		}
-
-		EndSection(myRendererData->currentPass.debugName);
-
-		myRendererData->currentPass = {};
-		myRendererData->currentPassCamera = nullptr;
+		EndFullscreenPassInternal();
 #endif
 	}
 
@@ -1027,85 +710,12 @@ namespace Volt
 
 	void Renderer::BeginSection(const std::string& name)
 	{
-#ifdef VT_THREADED_RENDERING
 		RenderCommand::BeginAnnotation(name);
-#else
-		BeginAnnotatedSection(name);
-
-#ifdef VT_PROFILE_GPU
-		if (!myRendererData->profilingData.contains(myRendererData->currentContext))
-		{
-			CreateProfilingData();
-		}
-
-		auto& frameTimeQueries = GetContextProfilingData().sectionTimeQueries.at(GetContextProfilingData().currentFrame);
-		auto& framePipelineQueries = GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame);
-
-		// Time queries
-		{
-			auto it = frameTimeQueries.find(name);
-			if (it == frameTimeQueries.end())
-			{
-				// Create time query
-				ComPtr<ID3D11Query> query0;
-				ComPtr<ID3D11Query> query1;
-
-				D3D11_QUERY_DESC desc{};
-				desc.Query = D3D11_QUERY_TIMESTAMP;
-
-				auto device = GraphicsContext::GetDevice();
-				device->CreateQuery(&desc, query0.GetAddressOf());
-				device->CreateQuery(&desc, query1.GetAddressOf());
-
-				GetContextProfilingData().sectionTimeQueries.at(0).emplace(name, query0);
-				GetContextProfilingData().sectionTimeQueries.at(1).emplace(name, query1);
-
-				GetContextProfilingData().sectionNames.at(GetContextProfilingData().currentFrame).emplace_back(name);
-			}
-		}
-
-		// Pipeline queries
-		{
-			auto it = framePipelineQueries.find(name);
-			if (it == framePipelineQueries.end())
-			{
-				// Create time query
-				ComPtr<ID3D11Query> query0;
-				ComPtr<ID3D11Query> query1;
-
-				D3D11_QUERY_DESC desc{};
-				desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
-
-				auto device = GraphicsContext::GetDevice();
-				device->CreateQuery(&desc, query0.GetAddressOf());
-				device->CreateQuery(&desc, query1.GetAddressOf());
-
-				GetContextProfilingData().sectionPipelineQueries.at(0).emplace(name, query0);
-				GetContextProfilingData().sectionPipelineQueries.at(1).emplace(name, query1);
-			}
-
-			auto context = GraphicsContext::GetImmediateContext();
-			context->Begin(GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
-		}
-		GetContextProfilingData().sectionNames.at(GetContextProfilingData().currentFrame).emplace_back(name);
-#endif
-		myRendererData->statistics.perSectionStatistics.emplace(name, SectionStatistics{});
-#endif
 	}
 
 	void Renderer::EndSection(const std::string& name)
 	{
-#ifdef VT_THREADED_RENDERING
 		RenderCommand::EndAnnotation();
-#else
-		auto context = GraphicsContext::GetImmediateContext();
-
-#ifdef VT_PROFILE_GPU
-		context->End(GetContextProfilingData().sectionTimeQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
-		context->End(GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
-#endif
-		RenderCommand::EndAnnotation();
-#endif
 	}
 
 	void Renderer::DispatchRenderCommands(bool shadowPass, bool aoPass)
@@ -1183,51 +793,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([]()
 			{
-				RT_DispatchRenderCommandsInstanced();
+				DispatchRenderCommandsInstancedInternal(); //#TODO_Ivar: Fix submit commands
 			});
 #else
-		VT_PROFILE_FUNCTION();
-
-		// TODO: Add statistics stuff
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
-
-		for (const auto& cmd : myRendererData->instancingData.passRenderCommands)
-		{
-			// Update instanced vertex buffer
-			{
-				VT_PROFILE_SCOPE("Update instance vertex buffer");
-
-				const uint32_t size = sizeof(InstanceData) * (uint32_t)cmd.objectDataIds.size();
-
-				InstanceData* instanceData = myRendererData->instancingData.instancedVertexBuffer->Map<InstanceData>();
-
-				{
-					VT_PROFILE_SCOPE("Memcpy");
-					memcpy_s(instanceData, size, cmd.objectDataIds.data(), size);
-				}
-
-				{
-					VT_PROFILE_SCOPE("Unmap");
-					myRendererData->instancingData.instancedVertexBuffer->Unmap();
-				}
-			}
-
-			// Bind mesh data
-			{
-				cmd.mesh->GetVertexBuffer()->Bind(0);
-				cmd.mesh->GetIndexBuffer()->Bind();
-
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->Bind();
-				}
-
-				cmd.material->Bind(myRendererData->currentPass.overrideShader == nullptr);
-			}
-			RenderCommand::DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
-		}
+		DispatchRenderCommandsInstancedInternal();
 #endif
 	}
 
@@ -1377,7 +946,7 @@ namespace Volt
 		// Vertex buffer
 		{
 			SpriteVertex* tempVertPtr = new SpriteVertex[SpriteData::MAX_VERTICES];
-			spriteData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * SpriteData::MAX_VERTICES, sizeof(SpriteVertex), D3D11_USAGE_DYNAMIC);
+			spriteData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * SpriteData::MAX_VERTICES, sizeof(SpriteVertex), BufferUsage::Dynamic);
 			delete[] tempVertPtr;
 		}
 
@@ -1422,7 +991,7 @@ namespace Volt
 	void Renderer::CreateBillboardData()
 	{
 		BillboardVertex* tempVertPtr = new BillboardVertex[BillboardData::MAX_BILLBOARDS];
-		myRendererData->billboardData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(BillboardVertex) * BillboardData::MAX_BILLBOARDS, sizeof(BillboardVertex), D3D11_USAGE_DYNAMIC);
+		myRendererData->billboardData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(BillboardVertex) * BillboardData::MAX_BILLBOARDS, sizeof(BillboardVertex), BufferUsage::Dynamic);
 		delete[] tempVertPtr;
 
 		myRendererData->billboardData.vertexBufferBase = new BillboardVertex[BillboardData::MAX_BILLBOARDS];
@@ -1435,7 +1004,7 @@ namespace Volt
 		auto& lineData = myRendererData->lineData;
 
 		LineVertex* tempVertPtr = new LineVertex[LineData::MAX_VERTICES];
-		lineData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(LineVertex) * LineData::MAX_VERTICES, sizeof(LineVertex), D3D11_USAGE_DYNAMIC);
+		lineData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(LineVertex) * LineData::MAX_VERTICES, sizeof(LineVertex), BufferUsage::Dynamic);
 		delete[] tempVertPtr;
 
 		lineData.vertexBufferBase = new LineVertex[LineData::MAX_VERTICES];
@@ -1468,7 +1037,7 @@ namespace Volt
 		// Vertex buffer
 		{
 			TextVertex* tempVertPtr = new TextVertex[TextData::MAX_VERTICES];
-			textData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(TextVertex) * TextData::MAX_VERTICES, sizeof(TextVertex), D3D11_USAGE_DYNAMIC);
+			textData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(TextVertex) * TextData::MAX_VERTICES, sizeof(TextVertex), BufferUsage::Dynamic);
 			delete[] tempVertPtr;
 		}
 
@@ -1737,9 +1306,6 @@ namespace Volt
 			StructuredBufferRegistry::Get(100)->Unmap();
 			StructuredBufferRegistry::Get(101)->Unmap();
 		}
-
-		StructuredBufferRegistry::Get(100)->Bind(100);
-		StructuredBufferRegistry::Get(101)->Bind(101);
 	}
 
 	void Renderer::RunResourceChanges()
@@ -1797,188 +1363,14 @@ namespace Volt
 		return result;
 	}
 
-	void Renderer::RT_UpdatePerFrameBuffers()
-	{
-		VT_PROFILE_FUNCTION();
-
-		// Directional Light
-		{
-			auto* dirLight = ConstantBufferRegistry::Get(4)->Map<DirectionalLight>();
-			*dirLight = myRendererData->directionalLight;
-			ConstantBufferRegistry::Get(4)->Unmap();
-		}
-
-		// Point lights
-		{
-			auto* data = StructuredBufferRegistry::Get(102)->Map<PointLight>();
-			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, myRendererData->pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)myRendererData->pointLights.size()));
-			StructuredBufferRegistry::Get(102)->Unmap();
-		}
-
-		// Scene data
-		{
-			auto* data = ConstantBufferRegistry::Get(7)->Map<SceneData>();
-			data->deltaTime = myRendererData->sceneData.deltaTime;
-			data->timeSinceStart = myRendererData->sceneData.timeSinceStart;
-			data->pointLightCount = (uint32_t)myRendererData->pointLights.size();
-			ConstantBufferRegistry::Get(7)->Unmap();
-		}
-	}
-
-	void Renderer::RT_SortRenderCommands(std::vector<SubmitCommand>& renderCommands)
-	{
-		VT_PROFILE_FUNCTION();
-		std::sort(renderCommands.begin(), renderCommands.end(), [](const auto& lhs, const auto& rhs)
-			{
-				if (lhs.material < rhs.material)
-				{
-					return true;
-				}
-				else if (lhs.material > rhs.material)
-				{
-					return false;
-				}
-
-				if (lhs.subMesh < rhs.subMesh)
-				{
-					return true;
-				}
-				else if (lhs.subMesh > rhs.subMesh)
-				{
-					return false;
-				}
-
-				return false;
-			});
-	}
-
-	void Renderer::RT_UploadObjectData(std::vector<SubmitCommand>& renderCommands)
-	{
-		VT_PROFILE_FUNCTION();
-
-		{
-			auto* objData = StructuredBufferRegistry::Get(100)->RT_Map<ObjectData>();
-			auto* animData = StructuredBufferRegistry::Get(101)->RT_Map<gem::mat4>();
-
-			for (uint32_t i = 0; auto & cmd : renderCommands)
-			{
-				cmd.objectBufferId = i;
-
-				objData[i].id = cmd.id;
-				objData[i].isAnimated = !cmd.boneTransforms.empty();
-				objData[i].timeSinceCreation = cmd.timeSinceCreation;
-				objData[i].transform = cmd.transform;
-
-				memcpy_s(&animData[i * RendererData::MAX_BONES_PER_MESH], sizeof(gem::mat4) * RendererData::MAX_BONES_PER_MESH, cmd.boneTransforms.data(), sizeof(gem::mat4) * cmd.boneTransforms.size());
-				++i;
-			}
-
-			StructuredBufferRegistry::Get(100)->RT_Unmap();
-			StructuredBufferRegistry::Get(101)->RT_Unmap();
-		}
-	}
-
-	void Renderer::RT_UpdatePerPassBuffers()
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (myRendererData->currentPassCamera)
-		{
-			auto* cameraData = ConstantBufferRegistry::Get(0)->Map<CameraData>();
-
-			cameraData->proj = myRendererData->currentPassCamera->GetProjection();
-			cameraData->view = myRendererData->currentPassCamera->GetView();
-			cameraData->viewProj = cameraData->proj * cameraData->view;
-
-			cameraData->inverseProj = gem::inverse(cameraData->proj);
-			cameraData->inverseView = gem::inverse(cameraData->view);
-			cameraData->inverseViewProj = gem::inverse(cameraData->viewProj);
-
-			cameraData->ambianceMultiplier = myRendererData->settings.ambianceMultiplier;
-			cameraData->exposure = myRendererData->settings.exposure;
-
-			const auto pos = myRendererData->currentPassCamera->GetPosition();
-			cameraData->position = gem::vec4(pos.x, pos.y, pos.z, 0.f);
-			cameraData->nearPlane = myRendererData->currentPassCamera->GetNearPlane();
-			cameraData->farPlane = myRendererData->currentPassCamera->GetFarPlane();
-
-			ConstantBufferRegistry::Get(0)->Unmap();
-		}
-
-		// Pass data
-		{
-			if (myRendererData->currentPass.framebuffer)
-			{
-				Volt::PassData* passData = ConstantBufferRegistry::Get(3)->Map<Volt::PassData>();
-
-				passData->targetSize = { myRendererData->currentPass.framebuffer->GetWidth(), myRendererData->currentPass.framebuffer->GetHeight() };
-				passData->inverseTargetSize = { 1.f / (float)myRendererData->currentPass.framebuffer->GetWidth(), 1.f / (float)myRendererData->currentPass.framebuffer->GetHeight() };
-				passData->inverseFullSize = { 1.f / myRendererData->fullRenderSize.x, 1.f / myRendererData->fullRenderSize.y };
-
-				ConstantBufferRegistry::Get(3)->Unmap();
-			}
-		}
-	}
-
-	void Renderer::RT_CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, bool shadowPass, bool aoPass)
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto currentCommandBuffer = myRendererData->currentGPUBuffer;
-
-		auto& allCmds = passCommands;
-		auto& instanceCmds = currentCommandBuffer->GetCurrentRenderCommands();
-		const auto& currentPass = myRendererData->currentPass;
-
-		for (size_t i = 0; i < allCmds.size(); ++i)
-		{
-			Ref<SubMaterial> currentMaterial = allCmds[i].material;
-			if (!currentMaterial)
-			{
-				currentMaterial = GetDefaultData().defaultMaterial;
-			}
-
-			if ((shadowPass && !allCmds[i].castShadows) || (aoPass && !allCmds[i].castAO))
-			{
-				continue;
-			}
-
-			if (auto it = std::find(currentPass.excludedShaderHashes.begin(), currentPass.excludedShaderHashes.end(), currentMaterial->GetShaderHash()); it != currentPass.excludedShaderHashes.end())
-			{
-				continue;
-			}
-
-			if (currentPass.exclusiveShaderHash != 0 && currentPass.exclusiveShaderHash != currentMaterial->GetShaderHash())
-			{
-				continue;
-			}
-
-			if (i == 0 || instanceCmds.empty() || instanceCmds.back().subMesh != allCmds.at(i).subMesh || instanceCmds.back().material != allCmds.at(i).material)
-			{
-				auto& instancedCmd = instanceCmds.emplace_back();
-				instancedCmd.subMesh = allCmds.at(i).subMesh;
-				instancedCmd.boneTransforms = allCmds.at(i).boneTransforms;
-				instancedCmd.mesh = allCmds.at(i).mesh;
-				instancedCmd.material = currentMaterial;
-				instancedCmd.objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
-				instancedCmd.count = 1;
-			}
-			else
-			{
-				instanceCmds.back().objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
-				instanceCmds.back().count++;
-			}
-		}
-	}
-
-	void Renderer::RT_DispatchRenderCommandsInstanced()
+	void Renderer::DispatchRenderCommandsInstancedInternal()
 	{
 		VT_PROFILE_FUNCTION();
 
 		RenderCommand::SetTopology(Topology::TriangleList);
 
 		auto currentCommandBuffer = myRendererData->currentGPUBuffer;
-		myRendererData->instancingData.instancedVertexBuffer->RT_Bind(1);
+		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
 
 		for (const auto& cmd : currentCommandBuffer->GetCurrentRenderCommands())
 		{
@@ -1988,7 +1380,7 @@ namespace Volt
 
 				const uint32_t size = sizeof(InstanceData) * (uint32_t)cmd.objectDataIds.size();
 
-				InstanceData* instanceData = myRendererData->instancingData.instancedVertexBuffer->RT_Map<InstanceData>();
+				InstanceData* instanceData = myRendererData->instancingData.instancedVertexBuffer->Map<InstanceData>();
 
 				{
 					VT_PROFILE_SCOPE("Memcpy");
@@ -1997,28 +1389,28 @@ namespace Volt
 
 				{
 					VT_PROFILE_SCOPE("Unmap");
-					myRendererData->instancingData.instancedVertexBuffer->RT_Unmap();
+					myRendererData->instancingData.instancedVertexBuffer->Unmap();
 				}
 			}
 
 			// Bind mesh data
 			{
-				cmd.mesh->GetVertexBuffer()->RT_Bind(0);
-				cmd.mesh->GetIndexBuffer()->RT_Bind();
+				cmd.mesh->GetVertexBuffer()->Bind(0);
+				cmd.mesh->GetIndexBuffer()->Bind();
 
 				if (myRendererData->currentPass.overrideShader)
 				{
-					myRendererData->currentPass.overrideShader->RT_Bind();
+					myRendererData->currentPass.overrideShader->Bind();
 				}
 
-				cmd.material->RT_Bind(myRendererData->currentPass.overrideShader == nullptr);
+				cmd.material->Bind(myRendererData->currentPass.overrideShader == nullptr);
 			}
 			
 			RenderCommand::DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
 		}
 	}
 
-	void Renderer::RT_DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
+	void Renderer::DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
 	{
 		auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
 		uint32_t subMaterialIndex = subMesh.materialIndex;
@@ -2041,12 +1433,12 @@ namespace Volt
 
 		if (myRendererData->currentPass.overrideShader)
 		{
-			myRendererData->currentPass.overrideShader->RT_Bind();
+			myRendererData->currentPass.overrideShader->Bind();
 		}
 
-		subMaterial->RT_Bind(myRendererData->currentPass.overrideShader == nullptr);
-		aMesh->GetVertexBuffer()->RT_Bind();
-		aMesh->GetIndexBuffer()->RT_Bind();
+		subMaterial->Bind(myRendererData->currentPass.overrideShader == nullptr);
+		aMesh->GetVertexBuffer()->Bind();
+		aMesh->GetIndexBuffer()->Bind();
 
 		// Update object buffer
 		{
@@ -2097,16 +1489,199 @@ namespace Volt
 					myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->updateReady; });
 					myRendererData->renderReady = false;
 					myRendererData->updateReady = false;
+
+					RenderCommand::RestoreDefaultState();
 				}
 			}
 	}
 
-	void Renderer::CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, bool shadowPass, bool isAOPass)
+	void Renderer::DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader)
+	{
+		shader->Bind();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::SetDepthState(DepthState::None);
+
+		RenderCommand::IndexBuffer_Bind(nullptr);
+		RenderCommand::VertexBuffer_Bind(nullptr);
+
+		RenderCommand::Draw(3, 0);
+		shader->Unbind();
+	}
+
+	void Renderer::DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial)
+	{
+		aMaterial->GetSubMaterials().at(0)->Bind();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::SetDepthState(DepthState::None);
+
+		RenderCommand::IndexBuffer_Bind(nullptr);
+		RenderCommand::VertexBuffer_Bind(nullptr);
+
+		RenderCommand::Draw(3, 0);
+	}
+
+	void Renderer::DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader)
+	{
+		aShader->Bind();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::SetDepthState(DepthState::None);
+
+		myRendererData->quadVertexBuffer->Bind();
+		myRendererData->quadIndexBuffer->Bind();
+
+		RenderCommand::DrawIndexed(6, 0, 0);
+		aShader->Unbind();
+	}
+
+	void Renderer::BeginInternal(Context context, const std::string& debugName)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const std::string profData = "Volt::Renderer::Begin: " + debugName;
+		VT_PROFILE_SCOPE(profData.c_str());
+
+		RenderCommand::SetContext(context);
+		RenderCommand::BeginAnnotation(debugName);
+
+		myRendererData->currentContext = debugName;
+
+		RunResourceChanges();
+		UpdatePerFrameBuffers();
+		SortSubmitCommands(myRendererData->currentGPUBuffer->GetRenderCommands());
+		UploadObjectData(myRendererData->currentGPUBuffer->GetRenderCommands());
+
+		// Bind samplers
+		{
+			myRendererData->samplers.linearWrap->Bind(0);
+			myRendererData->samplers.linearPointWrap->Bind(1);
+
+			myRendererData->samplers.pointWrap->Bind(2);
+			myRendererData->samplers.pointLinearWrap->Bind(3);
+
+			myRendererData->samplers.linearClamp->Bind(4);
+			myRendererData->samplers.linearPointClamp->Bind(5);
+
+			myRendererData->samplers.pointClamp->Bind(6);
+			myRendererData->samplers.pointLinearClamp->Bind(7);
+
+			myRendererData->samplers.anisotropic->Bind(8);
+			myRendererData->samplers.shadow->Bind(9);
+		}
+
+		ConstantBufferRegistry::Get(0)->Bind(0);
+		ConstantBufferRegistry::Get(1)->Bind(1);
+		ConstantBufferRegistry::Get(3)->Bind(3);
+		ConstantBufferRegistry::Get(4)->Bind(4);
+		ConstantBufferRegistry::Get(6)->Bind(6);
+		ConstantBufferRegistry::Get(7)->Bind(7);
+
+		StructuredBufferRegistry::Get(100)->Bind(100);
+		StructuredBufferRegistry::Get(101)->Bind(101);
+		StructuredBufferRegistry::Get(102)->Bind(102);
+	}
+
+	void Renderer::BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
+	{
+		const std::string tag = "Begin " + aRenderPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		RenderCommand::BeginAnnotation(aRenderPass.debugName);
+
+		myRendererData->currentPass = aRenderPass;
+		myRendererData->currentPassCamera = aCamera;
+
+		if (aShouldClear && myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Clear();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Bind();
+		}
+
+		RenderCommand::SetCullState(aRenderPass.cullState);
+		RenderCommand::SetDepthState(aRenderPass.depthState);
+
+		UpdatePerPassBuffers();
+		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->currentCPUBuffer->GetRenderCommands(), aCamera);
+		CollectSubmitCommands(culledCommands, myRendererData->currentCPUBuffer->GetCurrentRenderCommands(), aIsShadowPass, aIsAOPass);
+	}
+
+	void Renderer::EndPassInternal()
+	{
+		const std::string tag = "End " + myRendererData->currentPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		if (myRendererData->currentPass.overrideShader)
+		{
+			myRendererData->currentPass.overrideShader->Unbind();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Unbind();
+		}
+
+		EndSection(myRendererData->currentPass.debugName);
+
+		myRendererData->currentPass = {};
+		myRendererData->currentPassCamera = nullptr;
+		myRendererData->instancingData.passRenderCommands.clear();
+	}
+
+	void Renderer::BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear)
+	{
+		const std::string tag = "Begin " + renderPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		BeginSection(renderPass.debugName);
+
+		myRendererData->currentPass = renderPass;
+		myRendererData->currentPassCamera = camera;
+
+		if (shouldClear && myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Clear();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Bind();
+		}
+
+		UpdatePerPassBuffers();
+	}
+
+	void Renderer::EndFullscreenPassInternal()
+	{
+		const std::string tag = "End " + myRendererData->currentPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		if (myRendererData->currentPass.overrideShader)
+		{
+			myRendererData->currentPass.overrideShader->Unbind();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Unbind();
+		}
+
+		EndSection(myRendererData->currentPass.debugName);
+
+		myRendererData->currentPass = {};
+		myRendererData->currentPassCamera = nullptr;
+	}
+	
+	void Renderer::CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass, bool isAOPass)
 	{
 		VT_PROFILE_FUNCTION();
 
 		auto& allCmds = passCommands;
-		auto& instanceCmds = myRendererData->instancingData.passRenderCommands;
 		const auto& currentPass = myRendererData->currentPass;
 
 		for (size_t i = 0; i < allCmds.size(); ++i)
@@ -2132,9 +1707,9 @@ namespace Volt
 				continue;
 			}
 
-			if (i == 0 || instanceCmds.empty() || instanceCmds.back().subMesh != allCmds.at(i).subMesh || instanceCmds.back().material != allCmds.at(i).material)
+			if (i == 0 || instanceCommands.empty() || instanceCommands.back().subMesh != allCmds.at(i).subMesh || instanceCommands.back().material != allCmds.at(i).material)
 			{
-				auto& instancedCmd = instanceCmds.emplace_back();
+				auto& instancedCmd = instanceCommands.emplace_back();
 				instancedCmd.subMesh = allCmds.at(i).subMesh;
 				instancedCmd.boneTransforms = allCmds.at(i).boneTransforms;
 				instancedCmd.mesh = allCmds.at(i).mesh;
@@ -2144,8 +1719,8 @@ namespace Volt
 			}
 			else
 			{
-				instanceCmds.back().objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
-				instanceCmds.back().count++;
+				instanceCommands.back().objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
+				instanceCommands.back().count++;
 			}
 		}
 	}
@@ -2336,71 +1911,25 @@ namespace Volt
 			immediateContext->ExecuteCommandList(commandList, false);
 		}
 
-		RenderCommand::RestoreDefaultState();
-
 		myRendererData->updateReady = true;
 		myRendererData->syncVariable.notify_one();
 	}
 
-	void Renderer::BindTexturesToStage(ShaderStage stage, const std::vector<ID3D11ShaderResourceView*>& textures, const uint32_t startSlot)
+	void Renderer::BindTexturesToStage(ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot)
 	{
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([stage, textures, startSlot]()
 			{
-				auto context = GraphicsContext::GetDeferredContext();
-				switch (stage)
-				{
-					case ShaderStage::Vertex:
-						context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Pixel:
-						context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Hull:
-						context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Domain:
-						context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Geometry:
-						context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Compute:
-						context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					default:
-						break;
-				}
+				RenderCommand::BindTexturesToStage(stage, textures, startSlot);
 			});
 #else
 		auto context = GraphicsContext::GetImmediateContext();
 		switch (stage)
 		{
-			case ShaderStage::Vertex:
-				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Pixel:
-				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Hull:
-				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Domain:
-				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Geometry:
-				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Compute:
-				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			default:
-				break;
+			RenderCommand::BindTexturesToStage(stage, textures, startSlot);
 		}
 #endif
-
-
 	}
 
 	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
@@ -2409,60 +1938,10 @@ namespace Volt
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([stage, startSlot, count]()
 			{
-				auto context = GraphicsContext::GetDeferredContext();
-				std::vector<ID3D11ShaderResourceView*> textures{ count, nullptr };
-
-				switch (stage)
-				{
-					case ShaderStage::Vertex:
-						context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Pixel:
-						context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Hull:
-						context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Domain:
-						context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Geometry:
-						context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					case ShaderStage::Compute:
-						context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-						break;
-					default:
-						break;
-				}
+				RenderCommand::ClearTexturesAtStage(stage, startSlot, count);
 			});
 #else
-		auto context = GraphicsContext::GetImmediateContext();
-		std::vector<ID3D11ShaderResourceView*> textures{ count, nullptr };
-
-		switch (stage)
-		{
-			case ShaderStage::Vertex:
-				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Pixel:
-				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Hull:
-				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Domain:
-				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Geometry:
-				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			case ShaderStage::Compute:
-				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), textures.data());
-				break;
-			default:
-				break;
-		}
+		RenderCommand::ClearTexturesAtStage(stage, startSlot, count);
 #endif
 
 	}
@@ -2534,6 +2013,6 @@ namespace Volt
 		textData.vertexBufferPtr = textData.vertexBufferBase;
 		textData.textureSlotIndex = 0;
 
-		textData.shader->Unbind();
+		textData.shader->Unbind(); 
 	}
 }

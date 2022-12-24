@@ -311,7 +311,7 @@ namespace Volt
 		// Skybox
 		{
 			Renderer::BeginPass(mySkyboxPass, aCamera);
-			Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap->GetSRV().Get() }, 11);
+			Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap }, 11);
 			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
 			Renderer::EndPass();
 		}
@@ -1304,22 +1304,22 @@ namespace Volt
 
 		Renderer::BeginFullscreenPass(myShadingPass, nullptr);
 
-		std::vector<ID3D11ShaderResourceView*> mainSRVs =
+		std::vector<Ref<Image2D>> mainImages =
 		{
-			myDeferredPass.framebuffer->GetColorAttachment(0)->GetSRV().Get(),
-			myDeferredPass.framebuffer->GetColorAttachment(1)->GetSRV().Get(),
-			myDeferredPass.framebuffer->GetColorAttachment(2)->GetSRV().Get(),
-			myDeferredPass.framebuffer->GetColorAttachment(3)->GetSRV().Get(),
-			myDeferredPass.framebuffer->GetColorAttachment(5)->GetSRV().Get(),
+			myDeferredPass.framebuffer->GetColorAttachment(0),
+			myDeferredPass.framebuffer->GetColorAttachment(1),
+			myDeferredPass.framebuffer->GetColorAttachment(2),
+			myDeferredPass.framebuffer->GetColorAttachment(3),
+			myDeferredPass.framebuffer->GetColorAttachment(5),
 			nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-			Renderer::GetDefaultData().brdfLut->GetSRV().Get(),
-			sceneEnv.irradianceMap->GetSRV().Get(),
-			sceneEnv.radianceMap->GetSRV().Get(),
-			myDirectionalShadowPass.framebuffer->GetDepthAttachment()->GetSRV().Get(),
-			myPointLightPass.framebuffer->GetDepthAttachment()->GetSRV().Get()
+			Renderer::GetDefaultData().brdfLut,
+			sceneEnv.irradianceMap,
+			sceneEnv.radianceMap,
+			myDirectionalShadowPass.framebuffer->GetDepthAttachment(),
+			myPointLightPass.framebuffer->GetDepthAttachment()
 		};
 
-		Renderer::BindTexturesToStage(ShaderStage::Pixel, mainSRVs, 0);
+		Renderer::BindTexturesToStage(ShaderStage::Pixel, mainImages, 0);
 		Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("Shading"));
 		Renderer::ClearTexturesAtStage(ShaderStage::Pixel, 0, 16);
 		Renderer::EndFullscreenPass();
