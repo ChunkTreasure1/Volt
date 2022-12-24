@@ -62,7 +62,7 @@ namespace Volt
 
 		LoadAssetRegistry();
 		myLoadThread = std::thread(&AssetManager::Thread_LoadAsset, this);
-		SetThreadName((DWORD)myLoadThread.native_handle(), "Asset Manager Thread");
+		SetThreadName(myLoadThread.native_handle(), "Asset Manager Thread");
 	}
 
 	void AssetManager::Shutdown()

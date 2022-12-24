@@ -39,7 +39,7 @@ namespace Utils
 
 	inline std::wstring ToWString(std::string_view str)
 	{
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter; //#TODO_Ivar: Might be taking a long time (over 0.1ms)
 		return converter.from_bytes(str.data());
 	}
 

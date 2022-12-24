@@ -219,7 +219,6 @@ namespace Volt
 	void RenderCommand::BeginAnnotation(std::string_view name)
 	{
 		VT_PROFILE_FUNCTION();
-
 		GetCurrentAnnotations()->BeginEvent(Utils::ToWString(name).c_str());
 	}
 

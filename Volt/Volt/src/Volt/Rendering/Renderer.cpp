@@ -31,6 +31,7 @@
 #include "Volt/Rendering/CommandBuffer.h"
 
 #include "Volt/Utility/StringUtility.h"
+#include "Volt/Platform/ThreadUtility.h"
 
 #include <thread>
 #include <future>
@@ -54,6 +55,7 @@ namespace Volt
 
 		myRendererData->isRunning = true;
 		myRendererData->renderThread = std::thread(RT_Execute);
+		SetThreadName(myRendererData->renderThread.native_handle(), "Render Thread");
 	}
 
 	void Renderer::InitializeBuffers()
@@ -540,6 +542,12 @@ namespace Volt
 	{
 		std::scoped_lock lock(myRendererData->resourceMutex);
 		myRendererData->resourceChangeQueue.emplace_back(func);
+	}
+
+	void Renderer::SubmitCustom(std::function<void()>&& func)
+	{
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit(std::move(func));
 	}
 
 	void Renderer::SetAmbianceMultiplier(float multiplier)
@@ -1607,8 +1615,8 @@ namespace Volt
 		RenderCommand::SetDepthState(aRenderPass.depthState);
 
 		UpdatePerPassBuffers();
-		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->currentCPUBuffer->GetRenderCommands(), aCamera);
-		CollectSubmitCommands(culledCommands, myRendererData->currentCPUBuffer->GetCurrentRenderCommands(), aIsShadowPass, aIsAOPass);
+		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->currentGPUBuffer->GetRenderCommands(), aCamera);
+		CollectSubmitCommands(culledCommands, myRendererData->currentGPUBuffer->GetCurrentRenderCommands(), aIsShadowPass, aIsAOPass);
 	}
 
 	void Renderer::EndPassInternal()

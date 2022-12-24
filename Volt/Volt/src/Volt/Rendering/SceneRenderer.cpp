@@ -308,18 +308,49 @@ namespace Volt
 		Renderer::Begin(Context::Deferred, "Test");
 		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
 
-		// Skybox
-		{
-			Renderer::BeginPass(mySkyboxPass, aCamera);
-			Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap }, 11);
-			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
-			Renderer::EndPass();
-		}
+		//// Directional Shadow Pass
+		//{
+		//	VT_PROFILE_SCOPE("SceneRenderer::DirectionalLightShadow");
+
+		//	if (dirLightCamera)
+		//	{
+		//		Renderer::BeginPass(myDirectionalShadowPass, dirLightCamera, true, true);
+		//		Renderer::DispatchRenderCommandsInstanced();
+		//		Renderer::EndPass();
+		//	}
+		//}
+
+		//// Pre depth
+		//{
+		//	Renderer::BeginPass(myPreDepthPass, aCamera, true, false, true);
+		//	Renderer::DispatchRenderCommandsInstanced();
+		//	Renderer::EndPass();
+		//}
 
 		// Deferred
 		{
 			Renderer::BeginPass(myDeferredPass, aCamera);
 			Renderer::DispatchRenderCommandsInstanced();
+			Renderer::EndPass();
+		}
+
+		// Skybox
+		{
+			Renderer::BeginPass(mySkyboxPass, aCamera);
+			//Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap }, 11);
+			//
+			////Renderer::SubmitCustom([&sceneEnvironment, skyboxData = mySkyboxData, buffer = mySkyboxBuffer]() 
+			////	{
+			////		SkyboxData data = skyboxData;
+			////		
+			////		data.intensity = sceneEnvironment.intensity;
+			////		data.textureLod = sceneEnvironment.lod;
+			////		
+			////		buffer->SetData(&data, sizeof(SkyboxData));
+			////		buffer->Bind(13);
+			////	});
+			//
+			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
 			Renderer::EndPass();
 		}
 
@@ -674,6 +705,7 @@ namespace Volt
 
 			myShadingPass.framebuffer = Framebuffer::Create(spec);
 			myShadingPass.debugName = "Shading";
+			mySkyboxPass.cullState = CullState::CullBack;
 			myShadingPass.depthState = DepthState::None;
 
 			myFramebuffers.emplace(1, std::make_pair("Deferred Shading", myShadingPass.framebuffer));

@@ -106,6 +106,8 @@ namespace Volt
 		static void SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitResourceChange(const std::function<void()>&& func);
 
+		static void SubmitCustom(std::function<void()>&& func);
+
 		static void SetAmbianceMultiplier(float multiplier); // #TODO: we should probably not do it like this
 
 		static void DrawFullscreenTriangleWithShader(Ref<Shader> aShader);
