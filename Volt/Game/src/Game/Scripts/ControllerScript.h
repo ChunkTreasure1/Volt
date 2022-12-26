@@ -24,5 +24,8 @@ private:
 	gem::vec2 myViewportMousePos;
 	gem::vec2 myViewportSize;
 
+	gem::vec3 myTarget;
+	gem::vec3 myDirection;
+
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 };

@@ -56,7 +56,13 @@ void ControllerScript::OnEvent(Volt::Event& e)
 
 void ControllerScript::OnUpdate(float aDeltaTime)
 {
-
+	if (myEntity.HasComponent<Volt::AgentComponent>())
+	{
+		//auto force = Volt::SteeringBehavior::Seek(myEntity, myTarget);
+		auto force = Volt::SteeringBehavior::Wander(myEntity, myDirection, 100.f, 200.f);
+		//force += Volt::SteeringBehavior::Separation(myEntity, 100.f);
+		myEntity.GetComponent<Volt::AgentComponent>().steeringForce = force;
+	}
 }
 
 gem::vec3 ControllerScript::GetWorldPosFromMouse()
@@ -106,14 +112,15 @@ bool ControllerScript::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 	{
 	case VT_KEY_SPACE:
 	{
-  		auto target = GetWorldPosFromMouse();
+  		myTarget = GetWorldPosFromMouse();
 
 		if (myEntity.HasComponent<Volt::AgentComponent>())
 		{
-			myEntity.GetComponent<Volt::AgentComponent>().target = target;
+			myEntity.GetComponent<Volt::AgentComponent>().target = myTarget;
+			myDirection = myTarget - myEntity.GetWorldPosition();
 
 			std::stringstream ss;
-			ss << "TARGET: " << target.x << ", " << target.y << ", " << target.z;
+			ss << "TARGET: " << myTarget.x << ", " << myTarget.y << ", " << myTarget.z;
 
 			VT_INFO(ss.str());
 		}

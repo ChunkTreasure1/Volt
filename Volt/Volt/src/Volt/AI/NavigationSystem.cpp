@@ -29,7 +29,6 @@ namespace Volt
 
 		myCurrentScene->GetRegistry().ForEach<Volt::AgentComponent>([&](Wire::EntityId id, Volt::AgentComponent& agentComp)
 			{
-				//agentComp.agent.Update(aTimestep, Entity(id, myCurrentScene.get()));
 				UpdateAgent(id, agentComp, aTimestep);
 			});
 	}
@@ -52,7 +51,7 @@ namespace Volt
 
 		Entity e(id, myCurrentScene.get());
 
-		// #SAMUEL_TODO: I would like this to look a bit cleaner
+		// #SAMUEL_TODO: Change this to use PathFollow seek behaviour later
 		if (myAgentTargets.find(id) == myAgentTargets.end()) { myAgentTargets[id] = comp.target; }
 		if (myAgentTargets.at(id) != comp.target)
 		{
@@ -74,16 +73,15 @@ namespace Volt
 		// Move to current milestone
 		{
 			auto currentPos = e.GetWorldPosition();
-			auto steeringForce = GetSteeringForce(e);
 
 			if (comp.kinematic)
 			{
 				comp.myVelocity = gem::vec3(0.f);
-				e.SetWorldPosition(currentPos + steeringForce * ts);
+				e.SetWorldPosition(currentPos + comp.steeringForce * ts);
 			}
 			else
 			{
-				auto acceleration = steeringForce;
+				auto acceleration = comp.steeringForce; // Divide with mass if want to use later on.
 				comp.myVelocity = comp.myVelocity + acceleration * ts;
 				comp.myVelocity = gem::clamp(comp.myVelocity, gem::vec3(-1.f) * comp.maxVelocity, gem::vec3(1.f) * comp.maxVelocity);
 
@@ -98,50 +96,6 @@ namespace Volt
 				{
 					comp.myPath.pop_back();
 				}
-			}
-		}
-	}
-
-	gem::vec3 NavigationSystem::GetSteeringForce(const Entity& aEntity) const
-	{
-		auto& comp = aEntity.GetComponent<AgentComponent>();
-
-		if (auto milestone = comp.GetCurrentMilestone(); milestone.has_value())
-		{
-			switch (comp.steering)
-			{
-			case AgentSteeringBehavior::Seek:
-				return SteeringBehavior::Seek(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Flee:
-				return SteeringBehavior::Flee(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Arrive:
-				return SteeringBehavior::Arrive(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Align:
-				return SteeringBehavior::Align(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Pursue:
-				return SteeringBehavior::Pursue(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Evade:
-				return SteeringBehavior::Evade(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Wander:
-				return SteeringBehavior::Wander(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::PathFollowing:
-				return SteeringBehavior::PathFollowing(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::Separation:
-				return SteeringBehavior::Separation(aEntity, milestone.value());
-
-			case AgentSteeringBehavior::CollisionAvoidance:
-				return SteeringBehavior::CollisionAvoidance(aEntity, milestone.value());
-
-			default:
-				return SteeringBehavior::Seek(aEntity, milestone.value());
 			}
 		}
 	}
