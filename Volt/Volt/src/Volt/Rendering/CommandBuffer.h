@@ -16,19 +16,12 @@ namespace Volt
 		void Execute();
 
 		void Submit(const std::function<void()>&& func);
-		void Submit(const SubmitCommand& cmd);
-
-		inline std::vector<SubmitCommand>& GetRenderCommands() { return myRenderCommands; }
-		inline std::vector<InstancedSubmitCommand>& GetCurrentRenderCommands() { return myCurrentRenderCommands; }
 		inline static Ref<CommandBuffer> Create() { return CreateRef<CommandBuffer>(); }
 
 		ID3D11CommandList*& GetAndReleaseCommandList();
 
 	private:
-
 		std::vector<std::function<void()>> myCommands;
-		std::vector<SubmitCommand> myRenderCommands;
-		std::vector<InstancedSubmitCommand> myCurrentRenderCommands;
 		ID3D11CommandList* myCommandList = nullptr;
 	};
 }

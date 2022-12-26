@@ -208,6 +208,13 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{15F85B2A-F8B2-48E1-8841-3BA946FFD172}"_guid);
 	}), VideoPlayerComponent);
 
+	SERIALIZE_COMPONENT((struct SpriteComponent
+	{
+		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle materialHandle = Volt::Asset::Null();
+
+		CREATE_COMPONENT_GUID("{FDB47734-1B69-4558-B460-0975365DB400}"_guid);
+	}), SpriteComponent);
+
 	SERIALIZE_COMPONENT((struct AudioListenerComponent
 	{
 		CREATE_COMPONENT_GUID("{3272F31A-F0C7-463E-A790-80A5B42D64BB}"_guid);

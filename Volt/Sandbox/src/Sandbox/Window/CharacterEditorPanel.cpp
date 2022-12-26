@@ -11,6 +11,7 @@
 #include <Volt/Rendering/Shader/ShaderRegistry.h>
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+#include <Volt/Asset/Mesh/Material.h>
 
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Animation/Animation.h>
@@ -31,19 +32,10 @@ CharacterEditorPanel::CharacterEditorPanel()
 	myWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 
 	myScene = CreateRef<Volt::Scene>();
 	mySceneRenderer = CreateScope<Volt::SceneRenderer>(myScene);
-
-	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
-
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
-
-			Volt::Renderer::EndPass();
-		});
 
 	// Forward Extra
 	{
@@ -70,6 +62,16 @@ CharacterEditorPanel::CharacterEditorPanel()
 		myForwardExtraPass.framebuffer = Volt::Framebuffer::Create(spec);
 		myForwardExtraPass.debugName = "Forward Extra";
 	}
+
+	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
+		{
+			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
+
+			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+			Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
+
+			Volt::Renderer::EndPass();
+		});
 
 	// Skylight
 	{

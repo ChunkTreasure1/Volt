@@ -46,10 +46,10 @@ namespace Volt
 
 	inline static Scope<RenderCommandData> s_renderCommandData;
 
-	inline static ComPtr<ID3DUserDefinedAnnotation> GetCurrentAnnotations()
+	inline static ID3DUserDefinedAnnotation* GetCurrentAnnotations()
 	{
 		const std::thread::id threadId = std::this_thread::get_id();
-		return s_renderCommandData->annotations.at((uint32_t)s_renderCommandData->threadContexts[threadId].context);
+		return s_renderCommandData->annotations.at((uint32_t)s_renderCommandData->threadContexts[threadId].context).Get();
 	}
 
 	inline static RenderContext& GetCurrentContextData()
@@ -219,14 +219,15 @@ namespace Volt
 	void RenderCommand::BeginAnnotation(std::string_view name)
 	{
 		VT_PROFILE_FUNCTION();
-		GetCurrentAnnotations()->BeginEvent(Utils::ToWString(name).c_str());
+		auto annotations = GetCurrentAnnotations();
+		annotations->BeginEvent(Utils::ToWString(name).c_str());
 	}
 
 	void RenderCommand::EndAnnotation()
 	{
 		VT_PROFILE_FUNCTION();
-
-		GetCurrentAnnotations()->EndEvent();
+		auto annotations = GetCurrentAnnotations();
+		annotations->EndEvent();
 	}
 
 	void RenderCommand::Sampler_Bind(const SamplerState* samplerState, uint32_t slot)

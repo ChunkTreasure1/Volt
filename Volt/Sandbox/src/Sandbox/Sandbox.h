@@ -25,6 +25,7 @@ namespace Volt
 	class Scene;
 	class Mesh;
 	class Framebuffer;
+	class Material;
 	class Shader;
 	class ConstantBuffer;
 }
@@ -120,7 +121,7 @@ private:
 	Ref<EditorCameraController> myEditorCameraController;
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Shader> myGridShader;
+	Ref<Volt::Material> myGridMaterial;
 	Ref<FileWatcher> myFileWatcher;
 
 	Ref<Volt::Scene> myRuntimeScene;

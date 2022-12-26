@@ -52,6 +52,7 @@ namespace Volt
 		{
 			Ref<Shader> defaultShader;
 			Ref<SubMaterial> defaultMaterial;
+			Ref<Material> defaultSpriteMaterial;
 
 			Ref<Texture2D> whiteTexture;
 			Ref<Texture2D> emptyNormal;
@@ -91,9 +92,9 @@ namespace Volt
 		static void Submit(Ref<Mesh> aMesh, Ref<SubMaterial> aMaterial, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
 		static void Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
 
-		static void SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-		static void SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, uint32_t id = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-		static void SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, uint32_t id = 0);
+		static void SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, Ref<Material> material = nullptr, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f }, uint32_t aId = 0);
+		static void SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, Ref<Material> material = nullptr, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f }, uint32_t id = 0);
+		static void SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, Ref<Material> material = nullptr, uint32_t id = 0);
 
 		static void SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId = 0);
@@ -118,15 +119,13 @@ namespace Volt
 		static void DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, const gem::mat4& aTransform);
 		static void DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
 
-		static void DispatchRenderCommands(bool shadowPass = false, bool aoPass = false);
 		static void DispatchRenderCommandsInstanced();
 
 		static void DispatchLines();
 		static void DispatchText();
-		static void DispatchSpritesWithShader(Ref<Shader> aShader);
 		static void DispatchBillboardsWithShader(Ref<Shader> aShader);
 		static void DispatchDecalsWithShader(Ref<Shader> aShader);
-		static void DispatchSpritesWithMaterial(Ref<Material> aMaterial);
+		static void DispatchSpritesWithMaterial(Ref<Material> aMaterial = nullptr);
 
 		static void ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer);
 
@@ -145,6 +144,9 @@ namespace Volt
 	private:
 		Renderer() = delete;
 
+		struct PerThreadCommands;
+		struct SpriteSubmitCommand;
+
 		static void CreateDefaultBuffers();
 		static void CreateDefaultData();
 		static void CreateSpriteData();
@@ -156,15 +158,19 @@ namespace Volt
 		static void CreateCommandBuffers();
 
 		static void GenerateBRDFLut();
+		static void RunResourceChanges();
 
 		static void UpdatePerPassBuffers();
 		static void UpdatePerFrameBuffers();
 		static void UploadObjectData(std::vector<SubmitCommand>& submitCommands);
 
-		static void RunResourceChanges();
 		static void SortSubmitCommands(std::vector<SubmitCommand>& submitCommands);
 		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass = false, bool aoPass = false);
 		static std::vector<SubmitCommand> CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera);
+
+		static void SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands);
+		static void CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial);
+		static void DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial);
 
 		///// Threading //////
 		static void DispatchRenderCommandsInstancedInternal();
@@ -184,6 +190,8 @@ namespace Volt
 
 		static void BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear /* = true */);
 		static void EndFullscreenPassInternal();
+
+		static void DispatchDecalsWithShaderInternal(Ref<Shader> aShader);
 
 		struct Samplers
 		{
@@ -209,6 +217,16 @@ namespace Volt
 			gem::vec4 color;
 			Ref<Material> material;
 			uint32_t id;
+		};
+
+		struct SpriteSubmitCommand
+		{
+			gem::mat4 transform = { 1.f };
+			gem::vec4 color = { 1.f };
+			gem::vec2 uv[4] = { { 0.f, 1.f }, { 1.f, 1.f }, { 1.f, 0.f }, { 0.f, 0.f } };
+			Ref<Material> material;
+			Ref<Texture2D> texture;
+			uint32_t id = 0;
 		};
 		
 		struct SpriteData
@@ -282,13 +300,26 @@ namespace Volt
 		struct InstancingData
 		{
 			Ref<VertexBuffer> instancedVertexBuffer;
-			std::vector<InstancedSubmitCommand> passRenderCommands;
 		};
 
 		struct DecalData
 		{
-			std::vector<DecalRenderCommand> renderCommands;
 			Ref<Mesh> cubeMesh;
+		};
+
+		struct PerThreadCommands
+		{
+			std::vector<SubmitCommand> submitCommands;
+			std::vector<InstancedSubmitCommand> instancedCommands;
+			std::vector<SpriteSubmitCommand> spriteCommands;
+			std::vector<DecalRenderCommand> decalCommands;
+
+			inline void Clear()
+			{
+				submitCommands.clear();
+				instancedCommands.clear();
+				spriteCommands.clear();
+			}
 		};
 
 		struct RendererData
@@ -297,14 +328,6 @@ namespace Volt
 			inline static constexpr uint32_t MAX_BONES_PER_MESH = 128;
 			inline static constexpr uint32_t MAX_CULL_THREAD_COUNT = 4;
 			inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
-
-			///// Threading /////
-			Ref<CommandBuffer> currentCPUBuffer = nullptr;
-			Ref<CommandBuffer> currentGPUBuffer = nullptr;
-
-			Ref<CommandBuffer> commandBuffers[2];
-			////////////////////
-			std::vector<SubmitCommand> renderCommands;
 
 			std::mutex resourceMutex;
 			std::vector<std::function<void()>> resourceChangeQueue;
@@ -336,6 +359,14 @@ namespace Volt
 			gem::vec2 fullRenderSize = { 1.f, 1.f };
 
 			///// Threading /////
+			CommandBuffer* currentCPUBuffer = nullptr;
+			CommandBuffer* currentGPUBuffer = nullptr;
+			Ref<CommandBuffer> commandBuffers[2];
+
+			PerThreadCommands* currentCPUCommands = nullptr;
+			PerThreadCommands* currentGPUCommands = nullptr;
+			Ref<PerThreadCommands> perThreadCommands[2];
+
 			std::atomic_bool isRunning = false;
 			bool renderReady = false;
 			bool updateReady = false;

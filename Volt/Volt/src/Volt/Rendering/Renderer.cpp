@@ -82,7 +82,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
@@ -91,10 +91,6 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
-
-#ifdef VT_THREADED_RENDERING
-			myRendererData->currentCPUBuffer->Submit(cmd);
-#endif
 		}
 	}
 
@@ -110,7 +106,7 @@ namespace Volt
 
 		const auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
 
-		auto& cmd = myRendererData->renderCommands.emplace_back();
+		auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
 		cmd.mesh = aMesh;
 		cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 		cmd.subMesh = subMesh;
@@ -119,10 +115,6 @@ namespace Volt
 		cmd.timeSinceCreation = aTimeSinceCreation;
 		cmd.castShadows = castShadows;
 		cmd.castAO = castAO;
-
-#ifdef VT_THREADED_RENDERING
-		myRendererData->currentCPUBuffer->Submit(cmd);
-#endif
 	}
 
 	void Renderer::Submit(Ref<Mesh> aMesh, Ref<SubMaterial> aMaterial, const gem::mat4& aTransform, uint32_t aId /* = 0 */, float aTimeSinceCreation, bool castShadows, bool castAO)
@@ -131,7 +123,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMaterial;
 			cmd.subMesh = subMesh;
@@ -140,10 +132,6 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
-
-#ifdef VT_THREADED_RENDERING
-			myRendererData->currentCPUBuffer->Submit(cmd);
-#endif
 		}
 	}
 
@@ -155,7 +143,7 @@ namespace Volt
 		{
 			auto it = aMaterial->GetSubMaterials().find(subMesh.materialIndex);
 
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = it != aMaterial->GetSubMaterials().end() ? it->second : aMaterial->GetSubMaterials().at(0);
 			cmd.subMesh = subMesh;
@@ -164,10 +152,6 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
-
-#ifdef VT_THREADED_RENDERING
-			myRendererData->currentCPUBuffer->Submit(cmd);
-#endif
 		}
 	}
 
@@ -177,7 +161,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
@@ -187,92 +171,44 @@ namespace Volt
 			cmd.timeSinceCreation = aTimeSinceCreation;
 			cmd.castShadows = castShadows;
 			cmd.castAO = castAO;
-
-#ifdef VT_THREADED_RENDERING
-			myRendererData->currentCPUBuffer->Submit(cmd);
-#endif
 		}
 	}
 
-	void Renderer::SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, uint32_t id /* = 0 */)
+	void Renderer::SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, Ref<Material> material, uint32_t id /* = 0 */)
 	{
-		SubmitSprite(nullptr, aTransform, id, aColor);
+		SubmitSprite(nullptr, aTransform, material, aColor, id);
 	}
 
-	void Renderer::SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, uint32_t aId, const gem::vec4& aColor)
+	void Renderer::SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t aId)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
-
-		uint32_t texIndex = 0;
-		if (aTexture.GetTexture())
+		if (!aTexture.GetTexture())
 		{
-			for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
-			{
-				if (spriteData.textureSlots[slot] == aTexture.GetTexture())
-				{
-					texIndex = slot;
-					break;
-				}
-			}
-
-			if (texIndex == 0)
-			{
-				texIndex = spriteData.textureSlotIndex;
-				spriteData.textureSlots[texIndex] = aTexture.GetTexture();
-				spriteData.textureSlotIndex++;
-			}
+			return;
 		}
+
+		auto& cmd = myRendererData->currentCPUCommands->spriteCommands.emplace_back();
+		cmd.transform = aTransform;
+		cmd.color = aColor;
+		cmd.id = aId;
+		cmd.texture = aTexture.GetTexture();
+		cmd.material = material ? material : myDefaultData->defaultSpriteMaterial;
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			spriteData.vertexBufferPtr->position = aTransform * spriteData.vertices[i];
-			spriteData.vertexBufferPtr->color = aColor;
-			spriteData.vertexBufferPtr->texCoords = aTexture.GetTexCoords()[i];
-			spriteData.vertexBufferPtr->textureIndex = texIndex;
-			spriteData.vertexBufferPtr->id = aId;
-			spriteData.vertexBufferPtr++;
+			cmd.uv[i] = aTexture.GetTexCoords()[i];
 		}
-
-		spriteData.indexCount += 6;
 	}
 
-	void Renderer::SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
+	void Renderer::SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t id)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
-
-		uint32_t texIndex = 0;
-		if (aTexture)
-		{
-			for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
-			{
-				if (spriteData.textureSlots[slot] == aTexture)
-				{
-					texIndex = slot;
-					break;
-				}
-			}
-
-			if (texIndex == 0)
-			{
-				texIndex = spriteData.textureSlotIndex;
-				spriteData.textureSlots[texIndex] = aTexture;
-				spriteData.textureSlotIndex++;
-			}
-		}
-
-		for (uint32_t i = 0; i < 4; i++)
-		{
-			spriteData.vertexBufferPtr->position = aTransform * spriteData.vertices[i];
-			spriteData.vertexBufferPtr->color = aColor;
-			spriteData.vertexBufferPtr->texCoords = spriteData.texCoords[i];
-			spriteData.vertexBufferPtr->textureIndex = texIndex;
-			spriteData.vertexBufferPtr->id = id;
-			spriteData.vertexBufferPtr++;
-		}
-
-		spriteData.indexCount += 6;
+		auto& cmd = myRendererData->currentCPUCommands->spriteCommands.emplace_back();
+		cmd.transform = aTransform;
+		cmd.color = aColor;
+		cmd.id = id;
+		cmd.texture = aTexture;
+		cmd.material = material ? material : myDefaultData->defaultSpriteMaterial;
 	}
 
 	void Renderer::SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId)
@@ -531,7 +467,7 @@ namespace Volt
 
 	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
 	{
-		auto& decal = myRendererData->decalData.renderCommands.emplace_back();
+		auto& decal = myRendererData->currentGPUCommands->decalCommands.emplace_back();
 		decal.material = aMaterial;
 		decal.transform = aTransform;
 		decal.id = id;
@@ -653,7 +589,6 @@ namespace Volt
 	void Renderer::End()
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->renderCommands.clear();
 		myRendererData->pointLights.clear();
 		myRendererData->directionalLight = DirectionalLight{};
 	}
@@ -724,75 +659,6 @@ namespace Volt
 	void Renderer::EndSection(const std::string& name)
 	{
 		RenderCommand::EndAnnotation();
-	}
-
-	void Renderer::DispatchRenderCommands(bool shadowPass, bool aoPass)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (myRendererData->renderCommands.empty())
-		{
-			return;
-		}
-
-		auto& cmds = myRendererData->renderCommands;
-
-		for (size_t i = 0; i < myRendererData->renderCommands.size(); i++)
-		{
-			if ((shadowPass && !cmds[i].castShadows) || (aoPass && !cmds[i].castAO))
-			{
-				continue;
-			}
-
-			if (auto it = std::find(myRendererData->currentPass.excludedShaderHashes.begin(), myRendererData->currentPass.excludedShaderHashes.end(), cmds[i].material->GetShaderHash()); it != myRendererData->currentPass.excludedShaderHashes.end())
-			{
-				continue;
-			}
-
-			if (myRendererData->currentPass.exclusiveShaderHash != 0 && myRendererData->currentPass.exclusiveShaderHash != cmds[i].material->GetShaderHash())
-			{
-				continue;
-			}
-
-			if (i == 0 || (i > 0 && cmds[i].material != cmds[i - 1].material))
-			{
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->Bind();
-				}
-
-				cmds[i].material->Bind(myRendererData->currentPass.overrideShader == nullptr);
-			}
-
-			if (i == 0 || (i > 0 && cmds[i].mesh != cmds[i - 1].mesh))
-			{
-				cmds[i].mesh->GetVertexBuffer()->Bind();
-				cmds[i].mesh->GetIndexBuffer()->Bind();
-			}
-
-			// Update object buffer
-			{
-				ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-
-				mapped->transform = cmds[i].transform;
-				mapped->id = cmds[i].id;
-				mapped->isAnimated = !cmds[i].boneTransforms.empty();
-				mapped->timeSinceCreation = cmds[i].timeSinceCreation;
-
-				ConstantBufferRegistry::Get(1)->Unmap();
-			}
-
-			// Update animation buffer
-			if (!cmds[i].boneTransforms.empty())
-			{
-				AnimationData* mapped = ConstantBufferRegistry::Get(6)->Map<AnimationData>();
-				memcpy_s(mapped, sizeof(gem::mat4) * RendererData::MAX_BONES_PER_MESH, cmds[i].boneTransforms.data(), sizeof(gem::mat4) * cmds[i].boneTransforms.size());
-				ConstantBufferRegistry::Get(6)->Unmap();
-			}
-
-			RenderCommand::SetTopology(Topology::TriangleList);
-			RenderCommand::DrawIndexed(cmds[i].subMesh.indexCount, cmds[i].subMesh.indexStartOffset, cmds[i].subMesh.vertexStartOffset);
-		}
 	}
 
 	void Renderer::DispatchRenderCommandsInstanced()
@@ -1090,8 +956,14 @@ namespace Volt
 		myRendererData->commandBuffers[0] = CommandBuffer::Create();
 		myRendererData->commandBuffers[1] = CommandBuffer::Create();
 
-		myRendererData->currentCPUBuffer = myRendererData->commandBuffers[0];
-		myRendererData->currentGPUBuffer = myRendererData->commandBuffers[1];
+		myRendererData->currentCPUBuffer = myRendererData->commandBuffers[0].get();
+		myRendererData->currentGPUBuffer = myRendererData->commandBuffers[1].get();
+
+		myRendererData->perThreadCommands[0] = CreateRef<PerThreadCommands>();
+		myRendererData->perThreadCommands[1] = CreateRef<PerThreadCommands>();
+
+		myRendererData->currentCPUCommands = myRendererData->perThreadCommands[0].get();
+		myRendererData->currentGPUCommands = myRendererData->perThreadCommands[1].get();
 	}
 
 	void Renderer::GenerateBRDFLut()
@@ -1118,6 +990,7 @@ namespace Volt
 		myDefaultData->defaultShader = ShaderRegistry::Get("Default");
 
 		myDefaultData->defaultMaterial = SubMaterial::Create("Null", 0, GetDefaultData().defaultShader);
+		myDefaultData->defaultSpriteMaterial = Material::Create(ShaderRegistry::Get("Quad"));
 
 		// White texture
 		{
@@ -1371,16 +1244,112 @@ namespace Volt
 		return result;
 	}
 
+	void Renderer::SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands)
+	{
+		VT_PROFILE_FUNCTION();
+
+		std::sort(commands.begin(), commands.end(), [](const SpriteSubmitCommand& lhs, const SpriteSubmitCommand& rhs)
+			{
+				return lhs.material < rhs.material;
+			});
+	}
+
+	void Renderer::CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial)
+	{
+		VT_PROFILE_FUNCTION();
+		for (const auto& cmd : myRendererData->currentGPUCommands->spriteCommands)
+		{
+			if (cmd.material != aMaterial) //#TODO_Ivar: Add early out
+			{
+				continue;
+			}
+
+			auto& spriteData = myRendererData->spriteData;
+
+			uint32_t texIndex = 0;
+			if (cmd.texture)
+			{
+				for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
+				{
+					if (spriteData.textureSlots[slot] == cmd.texture)
+					{
+						texIndex = slot;
+						break;
+					}
+				}
+
+				if (texIndex == 0)
+				{
+					texIndex = spriteData.textureSlotIndex++;
+					spriteData.textureSlots[texIndex] = cmd.texture;
+				}
+			}
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				spriteData.vertexBufferPtr->position = cmd.transform * spriteData.vertices[i];
+				spriteData.vertexBufferPtr->color = cmd.color;
+				spriteData.vertexBufferPtr->texCoords = cmd.uv[i];
+				spriteData.vertexBufferPtr->textureIndex = texIndex;
+				spriteData.vertexBufferPtr->id = cmd.id;
+				spriteData.vertexBufferPtr++;
+			}
+
+			spriteData.indexCount += 6;
+		}
+	}
+
+	void Renderer::DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial)
+	{
+		auto& spriteData = myRendererData->spriteData;
+		if (!aMaterial)
+		{
+			aMaterial = myDefaultData->defaultSpriteMaterial;
+		}
+		
+		CollectSpriteCommandsWithMaterial(aMaterial);
+		
+		if (spriteData.indexCount == 0)
+		{
+			return;
+		}
+
+		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
+		spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
+		
+		aMaterial->GetSubMaterialAt(0)->Bind(true, false); //#TODO_Ivar: Will bind textures as well, is this something we want?
+		
+		std::vector<Ref<Image2D>> imagesToBind{ spriteData.textureSlotIndex };
+		
+		for (uint32_t i = 0; i < spriteData.textureSlotIndex; i++)
+		{
+			imagesToBind[i] = spriteData.textureSlots[i]->GetImage();
+		}
+
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
+		RenderCommand::SetTopology(Topology::TriangleList);
+
+		spriteData.vertexBuffer->Bind();
+		spriteData.indexBuffer->Bind();
+		
+		RenderCommand::DrawIndexed(spriteData.indexCount, 0, 0);
+		RenderCommand::ClearTexturesAtStage(ShaderStage::Pixel, 0, spriteData.textureSlotIndex);
+		
+		spriteData.indexCount = 0;
+		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
+		spriteData.textureSlotIndex = 0;
+	}
+
 	void Renderer::DispatchRenderCommandsInstancedInternal()
 	{
 		VT_PROFILE_FUNCTION();
 
 		RenderCommand::SetTopology(Topology::TriangleList);
 
-		auto currentCommandBuffer = myRendererData->currentGPUBuffer;
+		auto gpuCommands = myRendererData->currentGPUCommands;
 		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
 
-		for (const auto& cmd : currentCommandBuffer->GetCurrentRenderCommands())
+		for (const auto& cmd : gpuCommands->instancedCommands)
 		{
 			// Update instanced vertex buffer
 			{
@@ -1413,7 +1382,7 @@ namespace Volt
 
 				cmd.material->Bind(myRendererData->currentPass.overrideShader == nullptr);
 			}
-			
+
 			RenderCommand::DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
 		}
 	}
@@ -1476,31 +1445,33 @@ namespace Volt
 
 	void Renderer::RT_Execute()
 	{
-		VT_PROFILE_THREAD("Render Thread")
+		VT_PROFILE_THREAD("Render Thread");
+		RenderCommand::SetContext(Context::Deferred);
 
-			while (myRendererData->isRunning)
+		while (myRendererData->isRunning)
+		{
+			// Execute commands
 			{
-				// Execute commands
-				{
-					VT_PROFILE_SCOPE("Execute Commands");
-					myRendererData->currentGPUBuffer->Execute();
-					myRendererData->currentGPUBuffer->Clear();
+				VT_PROFILE_SCOPE("Execute Commands");
+				myRendererData->currentGPUBuffer->Execute();
+				myRendererData->currentGPUBuffer->Clear();
+				myRendererData->currentGPUCommands->Clear();
 
-					myRendererData->renderReady = true;
-					myRendererData->syncVariable.notify_one();
-				}
-
-				{
-					VT_PROFILE_SCOPE("Wait for update");
-
-					std::unique_lock lk{ myRendererData->renderMutex };
-					myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->updateReady; });
-					myRendererData->renderReady = false;
-					myRendererData->updateReady = false;
-
-					RenderCommand::RestoreDefaultState();
-				}
+				myRendererData->renderReady = true;
+				myRendererData->syncVariable.notify_one();
 			}
+
+			{
+				VT_PROFILE_SCOPE("Wait for update");
+
+				std::unique_lock lk{ myRendererData->renderMutex };
+				myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->updateReady; });
+				myRendererData->renderReady = false;
+				myRendererData->updateReady = false;
+
+				RenderCommand::RestoreDefaultState();
+			}
+		}
 	}
 
 	void Renderer::DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader)
@@ -1558,8 +1529,9 @@ namespace Volt
 
 		RunResourceChanges();
 		UpdatePerFrameBuffers();
-		SortSubmitCommands(myRendererData->currentGPUBuffer->GetRenderCommands());
-		UploadObjectData(myRendererData->currentGPUBuffer->GetRenderCommands());
+		SortSubmitCommands(myRendererData->currentGPUCommands->submitCommands);
+		SortSpriteCommands(myRendererData->currentGPUCommands->spriteCommands);
+		UploadObjectData(myRendererData->currentGPUCommands->submitCommands);
 
 		// Bind samplers
 		{
@@ -1615,8 +1587,8 @@ namespace Volt
 		RenderCommand::SetDepthState(aRenderPass.depthState);
 
 		UpdatePerPassBuffers();
-		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->currentGPUBuffer->GetRenderCommands(), aCamera);
-		CollectSubmitCommands(culledCommands, myRendererData->currentGPUBuffer->GetCurrentRenderCommands(), aIsShadowPass, aIsAOPass);
+		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->currentGPUCommands->submitCommands, aCamera);
+		CollectSubmitCommands(culledCommands, myRendererData->currentGPUCommands->instancedCommands, aIsShadowPass, aIsAOPass);
 	}
 
 	void Renderer::EndPassInternal()
@@ -1638,7 +1610,7 @@ namespace Volt
 
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
-		myRendererData->instancingData.passRenderCommands.clear();
+		myRendererData->currentGPUCommands->instancedCommands.clear();
 	}
 
 	void Renderer::BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear)
@@ -1660,6 +1632,9 @@ namespace Volt
 		{
 			myRendererData->currentPass.framebuffer->Bind();
 		}
+
+		RenderCommand::SetCullState(renderPass.cullState);
+		RenderCommand::SetDepthState(renderPass.depthState);
 
 		UpdatePerPassBuffers();
 	}
@@ -1684,7 +1659,7 @@ namespace Volt
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
 	}
-	
+
 	void Renderer::CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass, bool isAOPass)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1733,52 +1708,6 @@ namespace Volt
 		}
 	}
 
-	void Renderer::DispatchSpritesWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
-
-		if (spriteData.indexCount == 0)
-		{
-			return;
-		}
-
-		{
-			VT_PROFILE_SCOPE("Update vertex buffer");
-			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
-			spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
-		}
-
-		std::vector<ID3D11ShaderResourceView*> textures;
-		for (uint32_t i = 0; i < spriteData.textureSlotIndex; i++)
-		{
-			if (!spriteData.textureSlots[i])
-			{
-				textures.emplace_back(GetDefaultData().whiteTexture->GetImage()->GetSRV().Get());
-			}
-			else
-			{
-				textures.emplace_back(spriteData.textureSlots[i]->GetImage()->GetSRV().Get());
-			}
-		}
-
-		auto context = GraphicsContext::GetImmediateContext();
-		aShader->Bind();
-		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-
-		spriteData.vertexBuffer->Bind();
-		spriteData.indexBuffer->Bind();
-		
-		RenderCommand::DrawIndexed(spriteData.indexCount, 0, 0);
-
-		spriteData.indexCount = 0;
-		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-		spriteData.textureSlotIndex = 0;
-		aShader->Unbind();
-	}
-
 	void Renderer::DispatchBillboardsWithShader(Ref<Shader> aShader)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1811,11 +1740,11 @@ namespace Volt
 		auto context = GraphicsContext::GetImmediateContext();
 		aShader->Bind();
 		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-		
+
 		RenderCommand::SetTopology(Topology::PointList);
 
 		billboardData.vertexBuffer->Bind();
-		
+
 		RenderCommand::Draw(billboardData.vertexCount, 0);
 
 		billboardData.vertexCount = 0;
@@ -1825,6 +1754,20 @@ namespace Volt
 
 	void Renderer::DispatchDecalsWithShader(Ref<Shader> aShader)
 	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]()
+			{
+				DispatchDecalsWithShaderInternal(shader);
+			});
+
+#else
+		DispatchDecalsWithShaderInternal(aShader);
+#endif
+	}
+
+	void Renderer::DispatchDecalsWithShaderInternal(Ref<Shader> aShader)
+	{
 		RenderCommand::SetDepthState(DepthState::Read);
 		RenderCommand::SetTopology(Topology::TriangleList);
 
@@ -1832,12 +1775,12 @@ namespace Volt
 		myRendererData->decalData.cubeMesh->GetVertexBuffer()->Bind();
 		myRendererData->decalData.cubeMesh->GetIndexBuffer()->Bind();
 
-		for (const auto& cmd : myRendererData->decalData.renderCommands)
+		for (const auto& cmd : myRendererData->currentGPUCommands->decalCommands)
 		{
 			// Update object buffer
 			{
 				ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-				
+
 				mapped->transform = cmd.transform;
 				mapped->id = cmd.id;
 
@@ -1848,35 +1791,20 @@ namespace Volt
 
 			RenderCommand::DrawIndexed((uint32_t)myRendererData->decalData.cubeMesh->GetIndexCount(), 0, 0);
 		}
-
-		myRendererData->decalData.renderCommands.clear();
 	}
 
 	void Renderer::DispatchSpritesWithMaterial(Ref<Material> aMaterial)
 	{
-		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([material = aMaterial]()
+			{
+				DispatchSpritesWithMaterialInternal(material);
+			});
 
-		if (spriteData.indexCount == 0)
-		{
-			return;
-		}
-
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
-		spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
-
-		aMaterial->GetSubMaterials().at(0)->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-
-		spriteData.vertexBuffer->Bind();
-		spriteData.indexBuffer->Bind();
-
-		RenderCommand::DrawIndexed(spriteData.indexCount, 0, 0);
-
-		spriteData.indexCount = 0;
-		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-		spriteData.textureSlotIndex = 0;
+#else
+		DispatchSpritesWithMaterialInternal(aMaterial);
+#endif
 	}
 
 	void Renderer::ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer)
@@ -1911,6 +1839,7 @@ namespace Volt
 		ID3D11CommandList*& commandList = myRendererData->currentGPUBuffer->GetAndReleaseCommandList();
 
 		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
+		std::swap(myRendererData->currentCPUCommands, myRendererData->currentGPUCommands);
 
 		VT_DX_CHECK(deferredContext->FinishCommandList(false, &commandList));
 
@@ -1932,11 +1861,7 @@ namespace Volt
 				RenderCommand::BindTexturesToStage(stage, textures, startSlot);
 			});
 #else
-		auto context = GraphicsContext::GetImmediateContext();
-		switch (stage)
-		{
-			RenderCommand::BindTexturesToStage(stage, textures, startSlot);
-		}
+		RenderCommand::BindTexturesToStage(stage, textures, startSlot);
 #endif
 	}
 
@@ -2014,13 +1939,13 @@ namespace Volt
 
 		textData.vertexBuffer->Bind();
 		textData.indexBuffer->Bind();
-		
+
 		RenderCommand::DrawIndexed(textData.indexCount, 0, 0);
 
 		textData.indexCount = 0;
 		textData.vertexBufferPtr = textData.vertexBufferBase;
 		textData.textureSlotIndex = 0;
 
-		textData.shader->Unbind(); 
+		textData.shader->Unbind();
 	}
 }

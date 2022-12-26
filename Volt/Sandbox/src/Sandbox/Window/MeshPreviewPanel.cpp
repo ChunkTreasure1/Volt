@@ -24,6 +24,7 @@
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
+	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = CreateRef<Volt::Scene>();
 
@@ -55,11 +56,11 @@ MeshPreviewPanel::MeshPreviewPanel()
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);
 	mySceneRenderer->Resize(1280, 720);
 
-	mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
-		});
+	//mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
+	//	{
+	//		Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+	//		Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
+	//	});
 }
 
 void MeshPreviewPanel::UpdateContent()

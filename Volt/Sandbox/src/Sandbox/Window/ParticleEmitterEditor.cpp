@@ -66,8 +66,8 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		{
 			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
 
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
+			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+			Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
 
 			Volt::Renderer::EndPass();
 		});

@@ -31,7 +31,6 @@ namespace Volt
 		void OnRenderRuntime();
 
 		void Resize(uint32_t width, uint32_t height);
-		void AddForwardCallback(std::function<void(Ref<Scene>, Ref<Camera>)>&& callback);
 		void AddExternalPassCallback(std::function<void(Ref<Scene>, Ref<Camera>)>&& callback);
 		void UpdateVignetteSettings();
 
@@ -254,7 +253,6 @@ namespace Volt
 
 		Ref<ConstantBuffer> myPointLightBuffer;
 		//////////////////////////////
-		std::vector<std::function<void(Ref<Scene>, Ref<Camera>)>> myForwardRenderCallbacks;
 		std::vector<std::function<void(Ref<Scene>, Ref<Camera>)>> myExternalPassRenderCallbacks;
 
 		std::unordered_map<uint32_t, std::pair<std::string, Ref<Framebuffer>>> myFramebuffers;

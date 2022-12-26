@@ -8,8 +8,6 @@ namespace Volt
 	void CommandBuffer::Clear()
 	{
 		myCommands.clear();
-		myRenderCommands.clear();
-		myCurrentRenderCommands.clear();
 	}
 
 	void CommandBuffer::Execute()
@@ -23,11 +21,6 @@ namespace Volt
 	void CommandBuffer::Submit(const std::function<void()>&& func)
 	{
 		myCommands.emplace_back(func);
-	}
-
-	void CommandBuffer::Submit(const SubmitCommand& cmd)
-	{
-		myRenderCommands.emplace_back(cmd);
 	}
 
 	ID3D11CommandList*& CommandBuffer::GetAndReleaseCommandList()

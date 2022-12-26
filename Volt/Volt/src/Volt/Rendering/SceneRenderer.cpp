@@ -251,9 +251,27 @@ namespace Volt
 					Ref<Video> video = AssetManager::GetAsset<Video>(videoPlayer.videoHandle);
 					if (video && video->IsValid())
 					{
-						Renderer::SubmitSprite(video->GetTexture(), myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), id);
+						Renderer::SubmitSprite(video->GetTexture(), myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), nullptr, { 1.f, 1.f, 1.f, 1.f }, id);
 					}
 				}
+			});
+
+		registry.ForEach<SpriteComponent>([&](Wire::EntityId id, const SpriteComponent& comp)
+			{
+				Ref<Texture2D> texture = nullptr;
+				Ref<Material> material = nullptr;
+				if (comp.materialHandle != Asset::Null())
+				{
+					material = AssetManager::GetAsset<Material>(comp.materialHandle);
+					if (material && material->IsValid())
+					{
+						if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
+						{
+							texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
+						}
+					}
+				}
+				Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
 			});
 
 		registry.ForEach<DecalComponent, TransformComponent>([&](Wire::EntityId id, const DecalComponent& decalComponent, const TransformComponent& transComp)
@@ -308,24 +326,24 @@ namespace Volt
 		Renderer::Begin(Context::Deferred, "Test");
 		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
 
-		//// Directional Shadow Pass
-		//{
-		//	VT_PROFILE_SCOPE("SceneRenderer::DirectionalLightShadow");
+		// Directional Shadow Pass
+		{
+			VT_PROFILE_SCOPE("SceneRenderer::DirectionalLightShadow");
 
-		//	if (dirLightCamera)
-		//	{
-		//		Renderer::BeginPass(myDirectionalShadowPass, dirLightCamera, true, true);
-		//		Renderer::DispatchRenderCommandsInstanced();
-		//		Renderer::EndPass();
-		//	}
-		//}
+			if (dirLightCamera)
+			{
+				Renderer::BeginPass(myDirectionalShadowPass, dirLightCamera, true, true);
+				Renderer::DispatchRenderCommandsInstanced();
+				Renderer::EndPass();
+			}
+		}
 
-		//// Pre depth
-		//{
-		//	Renderer::BeginPass(myPreDepthPass, aCamera, true, false, true);
-		//	Renderer::DispatchRenderCommandsInstanced();
-		//	Renderer::EndPass();
-		//}
+		// Pre depth
+		{
+			Renderer::BeginPass(myPreDepthPass, aCamera, true, false, true);
+			Renderer::DispatchRenderCommandsInstanced();
+			Renderer::EndPass();
+		}
 
 		// Deferred
 		{
@@ -337,24 +355,81 @@ namespace Volt
 		// Skybox
 		{
 			Renderer::BeginPass(mySkyboxPass, aCamera);
-			//Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap }, 11);
-			//
-			////Renderer::SubmitCustom([&sceneEnvironment, skyboxData = mySkyboxData, buffer = mySkyboxBuffer]() 
-			////	{
-			////		SkyboxData data = skyboxData;
-			////		
-			////		data.intensity = sceneEnvironment.intensity;
-			////		data.textureLod = sceneEnvironment.lod;
-			////		
-			////		buffer->SetData(&data, sizeof(SkyboxData));
-			////		buffer->Bind(13);
-			////	});
-			//
+			Renderer::BindTexturesToStage(ShaderStage::Pixel, { sceneEnvironment.radianceMap }, 11);
+
+			Renderer::SubmitCustom([env = sceneEnvironment, skyboxData = mySkyboxData, buffer = mySkyboxBuffer]()
+				{
+					SkyboxData data = skyboxData;
+
+					data.intensity = env.intensity;
+					data.textureLod = env.lod;
+
+					buffer->SetData(&data, sizeof(SkyboxData));
+					buffer->Bind(13);
+				});
+
 			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
 			Renderer::EndPass();
 		}
 
+		// Decals
+		{
+			auto context = GraphicsContext::GetImmediateContext();
+
+			Renderer::BeginSection("Decals");
+			Renderer::BindTexturesToStage(ShaderStage::Pixel, { myDeferredPass.framebuffer->GetColorAttachment(5), myDeferredPass.framebuffer->GetColorAttachment(3) }, 11);
+
+			Renderer::SubmitCustom([&]()
+				{
+					myDecalPass.framebuffer->Clear();
+					myDecalPass.framebuffer->Bind();
+				});
+
+			Renderer::DispatchDecalsWithShader(myDecalPass.overrideShader);
+
+			Renderer::SubmitCustom([&]
+				{
+					myDecalPass.framebuffer->Unbind();
+				});
+
+			Renderer::ClearTexturesAtStage(ShaderStage::Pixel, 11, 2);
+			Renderer::EndSection("Decals");
+		}
+
 		ShadingPass(sceneEnvironment);
+
+		// Forward Pass
+		{
+			Renderer::BeginPass(myForwardPass, aCamera);
+
+			auto context = GraphicsContext::GetImmediateContext();
+
+			Renderer::BindTexturesToStage(ShaderStage::Pixel,
+				{
+					Renderer::GetDefaultData().brdfLut,
+					sceneEnvironment.irradianceMap,
+					sceneEnvironment.radianceMap,
+					myDirectionalShadowPass.framebuffer->GetDepthAttachment(),
+					myPointLightPass.framebuffer->GetDepthAttachment(),
+				}, 11);
+
+			Renderer::BindTexturesToStage(ShaderStage::Pixel, { myPreDepthPass.framebuffer->GetDepthAttachment() }, 20);
+			Renderer::DispatchRenderCommandsInstanced();
+			//Renderer::DispatchBillboardsWithShader(myBillboardShader);
+
+			//RenderCommand::SetDepthState(DepthState::Read);
+			//myScene->myParticleSystem->RenderParticles();
+			//Renderer::DispatchText();
+
+			Renderer::DispatchSpritesWithMaterial();
+			//Renderer::DispatchSpritesWithShader(ShaderRegistry::Get("Quad"));
+			Renderer::EndPass();
+		}
+
+		for (const auto& callback : myExternalPassRenderCallbacks)
+		{
+			callback(myScene, aCamera);
+		}
 
 		Renderer::End();
 		Renderer::SyncAndWait();
@@ -447,7 +522,7 @@ namespace Volt
 
 			myDecalPass.framebuffer->Clear();
 			myDecalPass.framebuffer->Bind();
-			Renderer::DispatchDecalsWithShader(myDecalPass.overrideShader);
+			Renderer::DispatchDecalsWithShaderInternal(myDecalPass.overrideShader);
 			myDecalPass.framebuffer->Unbind();
 
 			ID3D11ShaderResourceView* nullSRV[12] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
@@ -525,7 +600,7 @@ namespace Volt
 		Renderer::End();
 		Renderer::SetDepthState(DepthState::ReadWrite);
 #endif
-		}
+	}
 
 	void SceneRenderer::OnRenderRuntime()
 	{
@@ -551,11 +626,6 @@ namespace Volt
 	{
 		myShouldResize = true;
 		myResizeSize = { width, height };
-	}
-
-	void SceneRenderer::AddForwardCallback(std::function<void(Ref<Scene>, Ref<Camera>)>&& callback)
-	{
-		myForwardRenderCallbacks.emplace_back(callback);
 	}
 
 	void SceneRenderer::AddExternalPassCallback(std::function<void(Ref<Scene>, Ref<Camera>)>&& callback)
@@ -705,7 +775,6 @@ namespace Volt
 
 			myShadingPass.framebuffer = Framebuffer::Create(spec);
 			myShadingPass.debugName = "Shading";
-			mySkyboxPass.cullState = CullState::CullBack;
 			myShadingPass.depthState = DepthState::None;
 
 			myFramebuffers.emplace(1, std::make_pair("Deferred Shading", myShadingPass.framebuffer));
@@ -718,7 +787,7 @@ namespace Volt
 			spec.attachments =
 			{
 				{ ImageFormat::RGBA32F }, // Color
-				{ ImageFormat::RGBA32F }, // Lumincance
+				{ ImageFormat::RGBA32F }, // Luminance
 				{ ImageFormat::RGBA16F }, // View normals
 				{ ImageFormat::R32UI }, // ID
 				{ ImageFormat::DEPTH32F, { 0.f, 0.f, 0.f, 0.f }, TextureBlend::None, "Main Depth" }
@@ -1718,4 +1787,4 @@ namespace Volt
 
 		return myPizza;
 	}
-	}
+}
