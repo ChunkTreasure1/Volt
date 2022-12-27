@@ -15,7 +15,7 @@ namespace GraphKey
 		{
 			inputs =
 			{
-				AttributeConfig<Volt::Entity>("Entity", GraphKey::AttributeDirection::Input)
+				AttributeConfig<Volt::Entity>("Entity", AttributeDirection::Input)
 			};
 
 			outputs =
@@ -25,7 +25,7 @@ namespace GraphKey
 				AttributeConfig<gem::vec3>("Scale", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetScale)),
 			};
 		}
-
+		
 		inline const std::string GetName() override { return "Get Entity Transform"; }
 		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 	

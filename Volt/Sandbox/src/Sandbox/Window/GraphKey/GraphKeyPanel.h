@@ -10,6 +10,7 @@ namespace GraphKey
 	class Graph;
 	struct Node;
 	struct Link;
+	struct Attribute;
 }
 
 class GraphKeyPanel : public EditorWindow
@@ -39,6 +40,10 @@ private:
 	void CreateAttributeColors();
 
 	void DrawNode(Ref<GraphKey::Node> node);
+	Ref<GraphKey::Node> DrawNodeList(std::string& query);
+
+	const gem::vec4 GetColorFromAttribute(const GraphKey::Attribute& attr);
+	const bool CanLinkAttributes(ax::NodeEditor::PinId& input, ax::NodeEditor::PinId& output);
 
 	const std::vector<Ref<GraphKey::Node>> GetSelectedNodes() const;
 	const std::vector<Ref<GraphKey::Link>> GetSelectedLinks() const;
@@ -52,6 +57,12 @@ private:
 	std::unordered_map<std::type_index, gem::vec4> myAttributeColors;
 	
 	gem::vec4 myDefaultPinColor;
+	std::string mySearchQuery;
+	std::string myContextSearchQuery;
+
+	bool myCreateNewNode = false;
+	Volt::UUID myNewNodeLinkPinId = Volt::UUID(0);
+	Volt::UUID myNewLinkPinId = Volt::UUID(0);
 
 	ax::NodeEditor::EditorContext* myEditorContext = nullptr;
 	ax::NodeEditor::NodeId myContextNodeId;

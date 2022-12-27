@@ -5,10 +5,12 @@
 #include "Sandbox/Window/GraphKey/GraphKeyHelpers.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
+#include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/StringUtility.h>
 
 #include <GraphKey/Graph.h>
 #include <GraphKey/Node.h>
@@ -65,7 +67,6 @@ void GraphKeyPanel::SetActiveGraph(Ref<GraphKey::Graph> graph)
 void GraphKeyPanel::UpdateEditorPanel()
 {
 	ImGui::Begin("Editor##graphKey", nullptr);
-
 	ed::Begin("Editor##graphKey");
 
 	if (myCurrentGraph)
@@ -74,7 +75,7 @@ void GraphKeyPanel::UpdateEditorPanel()
 		{
 			DrawNode(node);
 		}
-		
+
 		for (const auto& link : myCurrentGraph->GetSpecification().links)
 		{
 			ed::Link(ed::LinkId(link->id), ed::PinId(link->output), ed::PinId(link->input));
@@ -82,42 +83,103 @@ void GraphKeyPanel::UpdateEditorPanel()
 
 		if (ed::BeginCreate({ 1.f, 1.f, 1.f, 1.f }, 2.f))
 		{
-			ed::PinId startPinId = 0, endPinId = 0;
-			if (ed::QueryNewLink(&startPinId, &endPinId))
+			if (!myCreateNewNode)
 			{
-				auto* startAttr = myCurrentGraph->GetAttributeByID(startPinId.Get());
-				auto* endAttr = myCurrentGraph->GetAttributeByID(endPinId.Get());
-
-				if (startAttr && endAttr)
+				ed::PinId outputPinId = 0, inputPinId = 0;
+				if (ed::QueryNewLink(&inputPinId, &outputPinId))
 				{
-					if (startAttr->direction == GraphKey::AttributeDirection::Input)
-					{
-						std::swap(startAttr, endAttr);
-						std::swap(startPinId, endPinId);
-					}
+					auto* startAttr = myCurrentGraph->GetAttributeByID(inputPinId.Get());
+					auto* endAttr = myCurrentGraph->GetAttributeByID(outputPinId.Get());
 
-					bool sameType = false;
-					if (startAttr->type == GraphKey::AttributeType::Flow && endAttr->type == GraphKey::AttributeType::Flow)
-					{
-						sameType = true;
-					}
+					myNewLinkPinId = startAttr ? startAttr->id : endAttr->id;
 
-					if (!sameType)
+					if (CanLinkAttributes(inputPinId, outputPinId) && ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f))
 					{
-						if (startAttr->data.has_value() && endAttr->data.has_value())
+						auto* inputPin = myCurrentGraph->GetAttributeByID(outputPinId.Get());
+						if (!inputPin->links.empty())
 						{
-							sameType = startAttr->data.type() == endAttr->data.type();
-						}
-					}
+							for (const auto& l : inputPin->links)
+							{
+								myCurrentGraph->RemoveLink(l);
+							}
 
-					if (startAttr->linkable && endAttr->linkable && ed::AcceptNewItem() && sameType && startAttr->direction != endAttr->direction)
+							inputPin->links.clear();
+						}
+
+						myCurrentGraph->CreateLink(inputPinId.Get(), outputPinId.Get());
+					}
+				}
+
+				ed::PinId pinId = 0;
+				if (ed::QueryNewNode(&pinId))
+				{
+					myNewLinkPinId = pinId.Get();
+					auto newLinkPin = myCurrentGraph->GetAttributeByID(pinId.Get());
+
+					const gem::vec4 draggedLinkColor = newLinkPin ? GetColorFromAttribute(*newLinkPin) : gem::vec4(1.f, 1.f, 1.f, 1.f);
+					const float lineThickness = 2.f;
+
+					if (ed::AcceptNewItem(ImColor{ draggedLinkColor.x, draggedLinkColor.y, draggedLinkColor.z }, lineThickness))
 					{
-						myCurrentGraph->CreateLink(endAttr->id, startAttr->id);
+						myCreateNewNode = true;
+						myNewNodeLinkPinId = pinId.Get();
+						myNewLinkPinId = 0;
+
+						ed::Suspend();
+						UI::OpenPopup("BackgroundContextMenu");
+						ed::Resume();
 					}
 				}
 			}
 		}
+		else
+		{
+			myNewLinkPinId = 0;
+		}
 		ed::EndCreate();
+
+		if (ed::BeginShortcut())
+		{
+			if (ed::AcceptCopy())
+			{
+
+			}
+			
+			if (ed::AcceptCut())
+			{
+			}
+
+			if (ed::AcceptPaste())
+			{
+			}
+
+			if (ed::AcceptDuplicate())
+			{
+			}
+		}
+		ed::EndShortcut();
+
+		if (ed::BeginDelete())
+		{
+			ed::LinkId linkId;
+			while (ed::QueryDeletedLink(&linkId))
+			{
+				if (ed::AcceptDeletedItem())
+				{
+					myCurrentGraph->RemoveLink(linkId.Get());
+				}
+			}
+
+			ed::NodeId nodeId;
+			while (ed::QueryDeletedNode(&nodeId))
+			{
+				if (ed::AcceptDeletedItem())
+				{
+					myCurrentGraph->RemoveNode(nodeId.Get());
+				}
+			}
+		}
+		ed::EndDelete();
 
 		ed::Suspend();
 		if (ed::ShowNodeContextMenu(&myContextNodeId))
@@ -140,7 +202,6 @@ void GraphKeyPanel::UpdateEditorPanel()
 		UpdateContextPopups();
 		ed::Resume();
 	}
-
 
 	ed::End();
 	ImGui::End();
@@ -185,33 +246,59 @@ void GraphKeyPanel::UpdateContextPopups()
 		UI::EndPopup();
 	}
 
-	bool isNewNodePoppedUp = false;
-
+	ImGui::SetNextWindowSize({ 200.f, 300.f });
 	static ImVec2 newNodePostion{ 0.0f, 0.0f };
 
 	if (UI::BeginPopup("BackgroundContextMenu"))
 	{
-		isNewNodePoppedUp = true;
+		auto node = DrawNodeList(myContextSearchQuery);
 		newNodePostion = ed::ScreenToCanvas(ImGui::GetMousePosOnOpeningCurrentPopup());
-
-		Ref<GraphKey::Node> node;
-
-		for (const auto& [name, func] : GraphKey::Registry::GetRegistry())
-		{
-			if (ImGui::MenuItem(name.c_str()))
-			{
-				node = func();
-				myCurrentGraph->AddNode(node);
-			}
-		}
 
 		if (node)
 		{
-			ed::SetNodePosition(ed::NodeId(node->id), newNodePostion);
+			myCreateNewNode = false;
+			ed::SetNodePosition(ed::NodeId{ node->id }, newNodePostion);
+
+			if (auto* startPin = myCurrentGraph->GetAttributeByID(myNewNodeLinkPinId))
+			{
+				auto& pins = startPin->direction == GraphKey::AttributeDirection::Input ? node->outputs : node->inputs;
+				VT_CORE_ASSERT(!pins.empty());
+
+				for (auto& pin : pins)
+				{
+					ed::PinId startId = { startPin->id };
+					ed::PinId endId = { pin.id };
+
+					if (CanLinkAttributes(startId, endId))
+					{
+						auto* inputPin = myCurrentGraph->GetAttributeByID(endId.Get());
+						if (!inputPin->links.empty())
+						{
+							for (const auto& l : inputPin->links)
+							{
+								myCurrentGraph->RemoveLink(l);
+							}
+
+							inputPin->links.clear();
+						}
+
+						myCurrentGraph->CreateLink(startId.Get(), endId.Get());
+						break;
+					}
+				}
+
+			}
+
+			myNewNodeLinkPinId = 0;
 			ImGui::CloseCurrentPopup();
 		}
-
 		UI::EndPopup();
+	}
+	else
+	{
+		myCreateNewNode = false;
+		myContextSearchQuery.clear();
+		myNewNodeLinkPinId = 0;
 	}
 }
 
@@ -312,28 +399,22 @@ void GraphKeyPanel::CreateAttributeColors()
 
 void GraphKeyPanel::UpdateNodesPanel()
 {
-	ImGui::Begin("Nodes Panel");
+	ImGui::Begin("Nodes Panel", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	for (const auto& [name, func] : GraphKey::Registry::GetRegistry())
-	{
-		if (ImGui::Button(name.c_str()) && myCurrentGraph)
-		{
-			myCurrentGraph->AddNode(GraphKey::Registry::Create(name));
-		}
-	}
+	DrawNodeList(mySearchQuery);
 
-	if (ImGui::Button("TestPlay")) //#TODO_Ivar: Change how this works
-	{
-		for (const auto& node : myCurrentGraph->GetSpecification().nodes)
-		{
-			if (node->GetName() == "Start")
-			{
-				Volt::OnScenePlayEvent e{};
-				node->OnEvent(e);
-				break;
-			}
-		}
-	}
+	//if (ImGui::Button("TestPlay")) //#TODO_Ivar: Change how this works
+	//{
+	//	for (const auto& node : myCurrentGraph->GetSpecification().nodes)
+	//	{
+	//		if (node->GetName() == "Start")
+	//		{
+	//			Volt::OnScenePlayEvent e{};
+	//			node->OnEvent(e);
+	//			break;
+	//		}
+	//	}
+	//}
 
 	ImGui::End();
 }
@@ -377,31 +458,26 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 
 	for (auto& input : node->inputs)
 	{
+		float alpha = ImGui::GetStyle().Alpha;
+		ed::PinId linkStartPin = { myNewLinkPinId };
+		ed::PinId inputPin = { input.id };
+
+		if (myNewLinkPinId && !CanLinkAttributes(linkStartPin, inputPin) && input.id != myNewLinkPinId)
+		{
+			alpha = alpha * (48.f / 255.f);
+		}
+
 		const auto typeIndex = std::type_index(input.data.type());
+
+		UI::ScopedStyleFloat alphaStyle{ ImGuiStyleVar_Alpha, alpha };
 		builder.Input(ed::PinId(input.id));
 
 		const bool connected = !input.links.empty();
-
-		gem::vec4 color{};
-		if (input.type == GraphKey::AttributeType::Flow)
-		{
-			color = { 1.f, 1.f, 1.f, 1.f };
-		}
-		else
-		{
-			if (myAttributeColors.contains(typeIndex))
-			{
-				color = myAttributeColors.at(typeIndex);
-			}
-			else
-			{
-				color = myDefaultPinColor;
-			}
-		}
+		gem::vec4 color = GetColorFromAttribute(input);
 
 		if (input.linkable)
 		{
-			DrawPinIcon(input, connected, ImColor{ color.x, color.y, color.z, color.w }, 255);
+			DrawPinIcon(input, connected, ImColor{ color.x, color.y, color.z, color.w }, alpha * 255);
 		}
 
 		ImGui::Spring(0.f);
@@ -422,7 +498,19 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 
 	for (auto& output : node->outputs)
 	{
+		float alpha = ImGui::GetStyle().Alpha;
+		ed::PinId linkStartPin = { myNewLinkPinId };
+		ed::PinId outputPin = { output.id };
+
+		if (myNewLinkPinId && !CanLinkAttributes(linkStartPin, outputPin) && output.id != myNewLinkPinId)
+		{
+			alpha = alpha * (48.f / 255.f);
+		}
+
 		const auto typeIndex = std::type_index(output.data.type());
+
+		UI::ScopedStyleFloat alphaStyle{ ImGuiStyleVar_Alpha, alpha };
+
 		builder.Output(ed::PinId(output.id));
 
 		const bool connected = !output.links.empty();
@@ -440,28 +528,11 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 		ImGui::TextUnformatted(output.name.c_str());
 		ImGui::Spring(0.f);
 
-		gem::vec4 color{};
-
-		if (output.type == GraphKey::AttributeType::Flow)
-		{
-			color = { 1.f, 1.f, 1.f, 1.f };
-		}
-		else
-		{
-			if (myAttributeColors.contains(typeIndex))
-			{
-				color = myAttributeColors.at(typeIndex);
-			}
-			else
-			{
-				color = myDefaultPinColor;
-			}
-		}
-
+		gem::vec4 color = GetColorFromAttribute(output);
 
 		if (output.linkable)
 		{
-			DrawPinIcon(output, connected, ImColor{ color.x, color.y, color.z, color.w }, 255);
+			DrawPinIcon(output, connected, ImColor{ color.x, color.y, color.z, color.w }, alpha * 255);
 		}
 
 		builder.EndOutput();
@@ -470,6 +541,134 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 	GraphKeyHelpers::EndAttributes();
 
 	builder.End();
+}
+
+
+Ref<GraphKey::Node> GraphKeyPanel::DrawNodeList(std::string& query)
+{
+	std::map<std::string, std::vector<std::string>> nodeCategories;
+	Ref<GraphKey::Node> node;
+
+	for (const auto& [name, func] : GraphKey::Registry::GetRegistry())
+	{
+		const auto& category = GraphKey::Registry::GetCategory(name);
+		nodeCategories[category].emplace_back(name);
+	}
+
+	UI::PushId();
+	ImGui::BeginChild("Main", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	{
+		bool hasQuery;
+		EditorUtils::SearchBar(query, hasQuery);
+
+		ImGui::BeginChild("Scrollable", ImGui::GetContentRegionAvail());
+		{
+			for (const auto& [category, names] : nodeCategories)
+			{
+				auto nodeInCategoryVisible = [&]()
+				{
+					if (query.empty())
+					{
+						return true;
+					}
+
+					bool visible = false;
+					const std::string lowerQuery = Utils::ToLower(query);
+
+					for (const auto& n : names)
+					{
+						const std::string lowerName = Utils::ToLower(n);
+						visible |= lowerName.contains(lowerQuery);
+					}
+
+					const std::string lowerCategory = Utils::ToLower(category);
+					visible |= lowerCategory.contains(lowerQuery);
+
+					return visible;
+				};
+
+				const bool nodeInCategory = nodeInCategoryVisible();
+
+				if (nodeInCategory && !query.empty())
+				{
+					ImGui::SetNextItemOpen(true);
+				}
+
+				if (nodeInCategory && ImGui::TreeNodeEx(category.c_str()))
+				{
+					for (const auto& name : names)
+					{
+						if (ImGui::MenuItem(name.c_str()))
+						{
+							node = GraphKey::Registry::Create(name);
+							myCurrentGraph->AddNode(node);
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
+		}
+		ImGui::EndChild();
+	}
+	ImGui::EndChild();
+	UI::PopId();
+
+	return node;
+}
+
+const gem::vec4 GraphKeyPanel::GetColorFromAttribute(const GraphKey::Attribute& attr)
+{
+	const auto typeIndex = std::type_index(attr.data.type());
+	if (attr.type == GraphKey::AttributeType::Flow)
+	{
+		return { 1.f, 1.f, 1.f, 1.f };
+	}
+	else
+	{
+		if (myAttributeColors.contains(typeIndex))
+		{
+			return myAttributeColors.at(typeIndex);
+		}
+	}
+
+	return myDefaultPinColor;
+}
+
+const bool GraphKeyPanel::CanLinkAttributes(ax::NodeEditor::PinId& input, ax::NodeEditor::PinId& output)
+{
+	auto* startAttr = myCurrentGraph->GetAttributeByID(input.Get());
+	auto* endAttr = myCurrentGraph->GetAttributeByID(output.Get());
+
+	if (startAttr && endAttr)
+	{
+		if (startAttr->direction == GraphKey::AttributeDirection::Input)
+		{
+			std::swap(startAttr, endAttr);
+			std::swap(input, output);
+		}
+
+		bool sameType = false;
+		if (startAttr->type == GraphKey::AttributeType::Flow && endAttr->type == GraphKey::AttributeType::Flow)
+		{
+			sameType = true;
+		}
+
+		if (!sameType)
+		{
+			if (startAttr->data.has_value() && endAttr->data.has_value())
+			{
+				sameType = startAttr->data.type() == endAttr->data.type();
+			}
+		}
+
+		if (startAttr->linkable && endAttr->linkable && sameType && startAttr->direction != endAttr->direction)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool GraphKeyPanel::SetNodeSettings(const char* data)

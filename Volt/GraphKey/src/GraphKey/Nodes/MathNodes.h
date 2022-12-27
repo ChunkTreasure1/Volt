@@ -22,6 +22,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Add"; }
+
 		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 
 	private:
@@ -50,6 +51,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Subtract"; }
+
 		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 
 	private:
@@ -115,6 +117,4 @@ namespace GraphKey
 			SetOutputData(0, val);
 		}
 	};
-
-
 }

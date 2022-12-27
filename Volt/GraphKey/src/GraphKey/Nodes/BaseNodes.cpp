@@ -5,9 +5,6 @@
 
 namespace GraphKey
 {
-	GK_REGISTER_NODE(StartNode);
-	GK_REGISTER_NODE(UpdateNode);
-
 	StartNode::StartNode()
 	{
 		outputs =

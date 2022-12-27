@@ -33,8 +33,8 @@ namespace GraphKey
 
 		void CreateLink(const Volt::UUID inputId, const Volt::UUID outputId);
 
-		void RemoveNode(uint32_t id);
-		void RemoveLink(uint32_t id);
+		void RemoveNode(Volt::UUID id);
+		void RemoveLink(Volt::UUID id);
 
 		Attribute* GetAttributeByID(const Volt::UUID id) const;
 		

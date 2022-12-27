@@ -69,7 +69,6 @@ namespace GraphKey
 		virtual void OnEvent(Volt::Event& e) {  }
 		
 		virtual const std::string GetName() = 0;
-		virtual const std::string GetCategory() { return "Default"; }
 		virtual const gem::vec4 GetColor() = 0;
 
 		inline const std::string& GetRegistryName() const { return myRegistryName; }

@@ -141,42 +141,42 @@ void PropertiesPanel::UpdateMainContent()
 					}
 				}
 
-					gem::vec3 rotDegrees = gem::degrees(gem::eulerAngles(transform.rotation));
-					if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
-						{
-							for (auto& ent : entities)
-							{
-								auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
-								entTransform.rotation = gem::radians(val);
-							}
-						}))
+				gem::vec3 rotDegrees = gem::degrees(gem::eulerAngles(transform.rotation));
+				if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
 					{
-						transform.rotation = gem::quat{ gem::radians(rotDegrees) };
-
-						if (myMidEvent == false)
+						for (auto& ent : entities)
 						{
-							Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
-							EditorCommandStack::PushUndo(command);
-							myMidEvent = true;
+							auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
+							entTransform.rotation = gem::radians(val);
 						}
+					}))
+				{
+					transform.rotation = gem::quat{ gem::radians(rotDegrees) };
+
+					if (myMidEvent == false)
+					{
+						Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
+						EditorCommandStack::PushUndo(command);
+						myMidEvent = true;
 					}
+				}
 
-						if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
-							{
-								for (auto& ent : entities)
-								{
-									auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
-									entTransform.scale = val;
-								}
-							}))
+				if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
+					{
+						for (auto& ent : entities)
 						{
-							if (myMidEvent == false)
-							{
-								Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
-								EditorCommandStack::PushUndo(command);
-								myMidEvent = true;
-							}
+							auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
+							entTransform.scale = val;
 						}
+					}))
+				{
+					if (myMidEvent == false)
+					{
+						Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
+						EditorCommandStack::PushUndo(command);
+						myMidEvent = true;
+					}
+				}
 			}
 
 			UI::EndProperties();
@@ -193,7 +193,7 @@ void PropertiesPanel::UpdateMainContent()
 			Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
 			if (!vsComp.graph)
 			{
-				if (ImGui::Button("Create")) 
+				if (ImGui::Button("Create"))
 				{
 					vsComp.graph = CreateRef<GraphKey::Graph>(entity);
 				}
@@ -203,6 +203,7 @@ void PropertiesPanel::UpdateMainContent()
 				if (ImGui::Button("Open"))
 				{
 					GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
+					GraphKeyPanel::Get().Open();
 				}
 			}
 		}

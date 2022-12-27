@@ -50,11 +50,60 @@ namespace GraphKey
 		output->links.emplace_back(newLink->id);
 	}
 
-	void Graph::RemoveNode(uint32_t id)
-	{}
+	void Graph::RemoveNode(Volt::UUID id)
+	{
+		auto it = std::find_if(mySpecification.nodes.begin(), mySpecification.nodes.end(), [&id](const auto& lhs)
+			{
+				return lhs->id == id;
+			});
 
-	void Graph::RemoveLink(uint32_t id)
-	{}
+		if (it == mySpecification.nodes.end())
+		{
+			return;
+		}
+
+		Ref<Node> node = *it;
+		for (const auto& attr : node->inputs)
+		{
+			for (const auto& l : attr.links)
+			{
+				RemoveLink(l);
+			}
+		}
+
+		for (const auto& attr : node->outputs)
+		{
+			for (const auto& l : attr.links)
+			{
+				RemoveLink(l);
+			}
+		}
+
+		mySpecification.nodes.erase(it);
+	}
+
+	void Graph::RemoveLink(Volt::UUID id)
+	{
+		auto it = std::find_if(mySpecification.links.begin(), mySpecification.links.end(), [&id](const auto& lhs)
+			{
+				return lhs->id == id;
+			});
+
+		if (it == mySpecification.links.end())
+		{
+			return;
+		}
+
+		auto link = *it;
+		
+		Attribute* input = GetAttributeByID(link->input);
+		Attribute* output = GetAttributeByID(link->output);
+		
+		input->links.erase(std::remove(input->links.begin(), input->links.end(), link->id), input->links.end());
+		output->links.erase(std::remove(output->links.begin(), output->links.end(), link->id), output->links.end());
+
+		mySpecification.links.erase(it);
+	}
 
 	Attribute* Graph::GetAttributeByID(const Volt::UUID id) const
 	{
