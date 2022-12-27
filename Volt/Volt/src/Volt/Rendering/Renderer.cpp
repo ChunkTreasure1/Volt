@@ -218,36 +218,19 @@ namespace Volt
 
 	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
 	{
+		SubmitBillboard(aTexture, myDefaultData->defaultBillboardShader, aPosition, aScale, aId, aColor);
+	}
+
+	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, Ref<Shader> shader, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
+	{
 		VT_PROFILE_FUNCTION();
-		auto& billboardData = myRendererData->billboardData;
-
-		uint32_t texIndex = 0;
-		if (aTexture)
-		{
-			for (uint32_t slot = 1; slot < billboardData.textureSlotIndex; slot++)
-			{
-				if (billboardData.textureSlots[slot] == aTexture)
-				{
-					texIndex = slot;
-					break;
-				}
-			}
-
-			if (texIndex == 0)
-			{
-				texIndex = billboardData.textureSlotIndex;
-				billboardData.textureSlots[texIndex] = aTexture;
-				billboardData.textureSlotIndex++;
-			}
-		}
-
-		billboardData.vertexBufferPtr->postition = { aPosition.x, aPosition.y, aPosition.z, 1.f };
-		billboardData.vertexBufferPtr->id = aId;
-		billboardData.vertexBufferPtr->color = aColor;
-		billboardData.vertexBufferPtr->textureIndex = texIndex;
-		billboardData.vertexBufferPtr->scale = aScale;
-		billboardData.vertexBufferPtr++;
-		billboardData.vertexCount++;
+		auto& cmd = myRendererData->currentCPUCommands->billboardCommands.emplace_back();
+		cmd.position = aPosition;
+		cmd.shader = shader ? shader : myDefaultData->defaultBillboardShader;
+		cmd.scale = aScale;
+		cmd.texture = aTexture;
+		cmd.id = aId;
+		cmd.color = aColor;
 	}
 
 	void Renderer::SubmitLine(const gem::vec3& aStart, const gem::vec3& aEnd, const gem::vec4& aColor /* = */)
@@ -467,6 +450,8 @@ namespace Volt
 
 	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto& decal = myRendererData->currentGPUCommands->decalCommands.emplace_back();
 		decal.material = aMaterial;
 		decal.transform = aTransform;
@@ -482,6 +467,8 @@ namespace Volt
 
 	void Renderer::SubmitCustom(std::function<void()>&& func)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit(std::move(func));
 	}
@@ -493,6 +480,8 @@ namespace Volt
 
 	void Renderer::DrawFullscreenTriangleWithShader(Ref<Shader> aShader)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([shader = aShader]()
@@ -506,6 +495,8 @@ namespace Volt
 
 	void Renderer::DrawFullscreenTriangleWithMaterial(Ref<Material> aMaterial)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([material = aMaterial]()
@@ -519,6 +510,8 @@ namespace Volt
 
 	void Renderer::DrawFullscreenQuadWithShader(Ref<Shader> aShader)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([shader = aShader]()
@@ -532,6 +525,8 @@ namespace Volt
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, const std::vector<gem::mat4>& aBoneTransforms, const gem::mat4& aTransform)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
 		{
 			subMesh;
@@ -542,6 +537,8 @@ namespace Volt
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, const gem::mat4& aTransform)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
 		{
 			subMesh;
@@ -552,6 +549,8 @@ namespace Volt
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, const gem::mat4& aTransform)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
 		{
 			subMesh;
@@ -562,6 +561,8 @@ namespace Volt
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> aMaterial, uint32_t aSubMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([mesh = aMesh, material = aMaterial, subMeshIndex = aSubMeshIndex, transform = aTransform, boneTransforms = aBoneTransforms]()
@@ -575,6 +576,8 @@ namespace Volt
 
 	void Renderer::Begin(Context context, const std::string& debugName)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([debugName, context]()
@@ -595,6 +598,8 @@ namespace Volt
 
 	void Renderer::BeginPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([cmdBuffer = currentCommandBuffer, renderPass = aRenderPass, camera = aCamera, shouldClear = aShouldClear, isShadowPass = aIsShadowPass, isAOPass = aIsAOPass]()
@@ -609,6 +614,8 @@ namespace Volt
 
 	void Renderer::EndPass()
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([]()
@@ -622,6 +629,8 @@ namespace Volt
 
 	void Renderer::BeginFullscreenPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool shouldClear)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([renderPass = aRenderPass, camera = aCamera, shouldClear]()
@@ -635,6 +644,8 @@ namespace Volt
 
 	void Renderer::EndFullscreenPass()
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([]()
@@ -663,6 +674,8 @@ namespace Volt
 
 	void Renderer::DispatchRenderCommandsInstanced()
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([]()
@@ -681,6 +694,8 @@ namespace Volt
 
 	SceneEnvironment Renderer::GenerateEnvironmentMap(AssetHandle aTextureHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (myRendererData->environmentCache.find(aTextureHandle) != myRendererData->environmentCache.end())
 		{
 			return myRendererData->environmentCache.at(aTextureHandle);
@@ -988,6 +1003,7 @@ namespace Volt
 	{
 		myDefaultData = CreateScope<DefaultData>();
 		myDefaultData->defaultShader = ShaderRegistry::Get("Default");
+		myDefaultData->defaultBillboardShader = ShaderRegistry::Get("Billboard");
 
 		myDefaultData->defaultMaterial = SubMaterial::Create("Null", 0, GetDefaultData().defaultShader);
 		myDefaultData->defaultSpriteMaterial = Material::Create(ShaderRegistry::Get("Quad"));
@@ -1219,6 +1235,16 @@ namespace Volt
 			});
 	}
 
+	void Renderer::SortBillboardCommands(std::vector<BillboardSubmitCommand>& billboardCommads)
+	{
+		VT_PROFILE_FUNCTION();
+
+		std::sort(billboardCommads.begin(), billboardCommads.end(), [](const auto& lhs, const auto& rhs)
+			{
+				return lhs.shader < rhs.shader;
+			});
+	}
+
 	std::vector<SubmitCommand> Renderer::CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1299,8 +1325,53 @@ namespace Volt
 		}
 	}
 
+	void Renderer::CollectBillboardCommandsWithShader(Ref<Shader> aShader)
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (const auto& cmd : myRendererData->currentGPUCommands->billboardCommands)
+		{
+			if (aShader != cmd.shader) // #TODO_Ivar: Early out
+			{
+				continue;
+			}
+
+			auto& billboardData = myRendererData->billboardData;
+
+			uint32_t texIndex = 0;
+			if (cmd.texture)
+			{
+				for (uint32_t slot = 1; slot < billboardData.textureSlotIndex; slot++)
+				{
+					if (billboardData.textureSlots[slot] == cmd.texture)
+					{
+						texIndex = slot;
+						break;
+					}
+				}
+
+				if (texIndex == 0)
+				{
+					texIndex = billboardData.textureSlotIndex;
+					billboardData.textureSlots[texIndex] = cmd.texture;
+					billboardData.textureSlotIndex++;
+				}
+			}
+
+			billboardData.vertexBufferPtr->postition = { cmd.position.x, cmd.position.y, cmd.position.z, 1.f };
+			billboardData.vertexBufferPtr->id = cmd.id;
+			billboardData.vertexBufferPtr->color = cmd.color;
+			billboardData.vertexBufferPtr->textureIndex = texIndex;
+			billboardData.vertexBufferPtr->scale = cmd.scale;
+			billboardData.vertexBufferPtr++;
+			billboardData.vertexCount++;
+		}
+	}
+
 	void Renderer::DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto& spriteData = myRendererData->spriteData;
 		if (!aMaterial)
 		{
@@ -1337,7 +1408,50 @@ namespace Volt
 		
 		spriteData.indexCount = 0;
 		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-		spriteData.textureSlotIndex = 0;
+		spriteData.textureSlotIndex = 1;
+	}
+
+	void Renderer::DispatchBillboardsWithShaderInternal(Ref<Shader> aShader)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& billboardData = myRendererData->billboardData;
+		if (!aShader)
+		{
+			aShader = myDefaultData->defaultBillboardShader;
+		}
+
+		CollectBillboardCommandsWithShader(aShader);
+		
+		if (billboardData.vertexCount == 0)
+		{
+			return;
+		}
+
+		{
+			VT_PROFILE_SCOPE("Update Data");
+			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(billboardData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(billboardData.vertexBufferBase));
+			billboardData.vertexBuffer->SetData(billboardData.vertexBufferBase, dataSize);
+		}
+
+		std::vector<Ref<Image2D>> imagesToBind{ billboardData.textureSlotIndex };
+		for (uint32_t i = 0; i < billboardData.textureSlotIndex; i++)
+		{
+			imagesToBind[i] = billboardData.textureSlots[i]->GetImage();
+		}
+
+		aShader->Bind();
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
+		RenderCommand::SetTopology(Topology::PointList);
+		
+		billboardData.vertexBuffer->Bind();
+		
+		RenderCommand::Draw(billboardData.vertexCount, 0);
+
+		billboardData.vertexCount = 0;
+		billboardData.vertexBufferPtr = billboardData.vertexBufferBase;
+		billboardData.textureSlotIndex = 1;
+		aShader->Unbind();
 	}
 
 	void Renderer::DispatchRenderCommandsInstancedInternal()
@@ -1389,6 +1503,8 @@ namespace Volt
 
 	void Renderer::DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
 		uint32_t subMaterialIndex = subMesh.materialIndex;
 		if ((uint32_t)material->GetSubMaterials().size() >= subMeshIndex)
@@ -1476,6 +1592,8 @@ namespace Volt
 
 	void Renderer::DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader)
 	{
+		VT_PROFILE_FUNCTION();
+
 		shader->Bind();
 
 		RenderCommand::SetTopology(Topology::TriangleList);
@@ -1490,6 +1608,8 @@ namespace Volt
 
 	void Renderer::DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial)
 	{
+		VT_PROFILE_FUNCTION();
+
 		aMaterial->GetSubMaterials().at(0)->Bind();
 
 		RenderCommand::SetTopology(Topology::TriangleList);
@@ -1503,6 +1623,8 @@ namespace Volt
 
 	void Renderer::DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader)
 	{
+		VT_PROFILE_FUNCTION();
+
 		aShader->Bind();
 
 		RenderCommand::SetTopology(Topology::TriangleList);
@@ -1529,8 +1651,11 @@ namespace Volt
 
 		RunResourceChanges();
 		UpdatePerFrameBuffers();
+		
 		SortSubmitCommands(myRendererData->currentGPUCommands->submitCommands);
 		SortSpriteCommands(myRendererData->currentGPUCommands->spriteCommands);
+		SortBillboardCommands(myRendererData->currentGPUCommands->billboardCommands);
+
 		UploadObjectData(myRendererData->currentGPUCommands->submitCommands);
 
 		// Bind samplers
@@ -1712,48 +1837,22 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& billboardData = myRendererData->billboardData;
-		if (billboardData.vertexCount == 0)
-		{
-			return;
-		}
-
-		{
-			VT_PROFILE_SCOPE("Update Data");
-			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(billboardData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(billboardData.vertexBufferBase));
-			billboardData.vertexBuffer->SetData(billboardData.vertexBufferBase, dataSize);
-		}
-
-		std::vector<ID3D11ShaderResourceView*> textures;
-		for (uint32_t i = 0; i < billboardData.textureSlotIndex; i++)
-		{
-			if (!billboardData.textureSlots[i])
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]()
 			{
-				textures.emplace_back(GetDefaultData().whiteTexture->GetImage()->GetSRV().Get());
-			}
-			else
-			{
-				textures.emplace_back(billboardData.textureSlots[i]->GetImage()->GetSRV().Get());
-			}
-		}
+				DispatchBillboardsWithShaderInternal(shader);
+			});
 
-		auto context = GraphicsContext::GetImmediateContext();
-		aShader->Bind();
-		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-
-		RenderCommand::SetTopology(Topology::PointList);
-
-		billboardData.vertexBuffer->Bind();
-
-		RenderCommand::Draw(billboardData.vertexCount, 0);
-
-		billboardData.vertexCount = 0;
-		billboardData.vertexBufferPtr = billboardData.vertexBufferBase;
-		aShader->Unbind();
+#else
+		DispatchBillboardsWithShaderInternal(aShader);
+#endif
 	}
 
 	void Renderer::DispatchDecalsWithShader(Ref<Shader> aShader)
 	{
+		VT_PROFILE_FUNCTION();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([shader = aShader]()

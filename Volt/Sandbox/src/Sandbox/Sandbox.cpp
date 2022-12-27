@@ -138,7 +138,7 @@ void Sandbox::OnAttach()
 
 	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
-	myGizmoShader = Volt::ShaderRegistry::Get("EntityGizmo");
+	myGizmoShader = Volt::ShaderRegistry::Get("Billboard");
 	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 
 	NewScene();

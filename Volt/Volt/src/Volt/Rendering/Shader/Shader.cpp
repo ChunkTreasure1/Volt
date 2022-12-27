@@ -269,7 +269,7 @@ namespace Volt
 	void Shader::ReflectAllStages()
 	{
 #ifdef VT_SHADER_PRINT
-		VT_CORE_INFO("Shader - Reflecting {0}", myName.c_str());
+		VT_CORE_TRACE("Shader - Reflecting {0}", myName.c_str());
 #endif
 
 		for (const auto& [stage, blob] : myShaderBlobs)
@@ -281,7 +281,7 @@ namespace Volt
 	void Shader::ReflectStage(ShaderStage aStage, ComPtr<ID3D10Blob> aBlob)
 	{
 #ifdef VT_SHADER_PRINT
-		VT_CORE_INFO("	Reflecting stage {0}", Utility::StageToString(aStage).c_str());
+		VT_CORE_TRACE("	Reflecting stage {0}", Utility::StageToString(aStage).c_str());
 #endif
 
 		ID3D11ShaderReflection* reflector = nullptr;
@@ -450,8 +450,8 @@ namespace Volt
 		}
 
 #ifdef VT_SHADER_PRINT
-		VT_CORE_INFO("		Constant Buffers: {0}", myPerStageCBCount[aStage].count);
-		VT_CORE_INFO("		Textures: {0}", myPerStageTextureCount[aStage].count);
+		VT_CORE_TRACE("		Constant Buffers: {0}", myPerStageCBCount[aStage].count);
+		VT_CORE_TRACE("		Textures: {0}", myPerStageTextureCount[aStage].count);
 #endif
 
 		reflector->Release();

@@ -369,22 +369,22 @@ namespace Volt
 		switch (stage)
 		{
 			case ShaderStage::Vertex:
-				context->VSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				context->VSSetShaderResources(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data());
 				break;
 			case ShaderStage::Pixel:
-				context->PSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				context->PSSetShaderResources(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data());
 				break;
 			case ShaderStage::Hull:
-				context->HSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				context->HSSetShaderResources(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data());
 				break;
 			case ShaderStage::Domain:
-				context->DSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				context->DSSetShaderResources(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data());
 				break;
 			case ShaderStage::Geometry:
-				context->GSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				context->GSSetShaderResources(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data());
 				break;
 			case ShaderStage::Compute:
-				context->CSSetShaderResources(startSlot, (uint32_t)textures.size(), texturesToBind.data());
+				context->CSSetShaderResources(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data());
 				break;
 			default:
 				break;

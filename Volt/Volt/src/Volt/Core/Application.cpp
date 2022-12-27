@@ -60,7 +60,8 @@ namespace Volt
 
 		if (!myInfo.isRuntime)
 		{
-			myWindow->SetOpacity(0.f);
+			//myWindow->SetOpacity(0.f);
+			//myShouldFancyOpen = true;
 		}
 
 		myAssetManager = CreateScope<AssetManager>();
@@ -84,11 +85,6 @@ namespace Volt
 		if (info.enableImGui)
 		{
 			myImGuiImplementation = ImGuiImplementation::Create();
-		}
-
-		if (!myInfo.isRuntime)
-		{
-			myShouldFancyOpen = true;
 		}
 	}
 

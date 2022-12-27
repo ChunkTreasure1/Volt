@@ -51,6 +51,8 @@ namespace Volt
 		struct DefaultData
 		{
 			Ref<Shader> defaultShader;
+			Ref<Shader> defaultBillboardShader;
+
 			Ref<SubMaterial> defaultMaterial;
 			Ref<Material> defaultSpriteMaterial;
 
@@ -97,6 +99,7 @@ namespace Volt
 		static void SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, Ref<Material> material = nullptr, uint32_t id = 0);
 
 		static void SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
+		static void SubmitBillboard(Ref<Texture2D> aTexture, Ref<Shader> shader, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId = 0);
 
 		static void SubmitLine(const gem::vec3& aStart, const gem::vec3& aEnd, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
@@ -123,7 +126,7 @@ namespace Volt
 
 		static void DispatchLines();
 		static void DispatchText();
-		static void DispatchBillboardsWithShader(Ref<Shader> aShader);
+		static void DispatchBillboardsWithShader(Ref<Shader> aShader = nullptr);
 		static void DispatchDecalsWithShader(Ref<Shader> aShader);
 		static void DispatchSpritesWithMaterial(Ref<Material> aMaterial = nullptr);
 
@@ -146,6 +149,7 @@ namespace Volt
 
 		struct PerThreadCommands;
 		struct SpriteSubmitCommand;
+		struct BillboardSubmitCommand;
 
 		static void CreateDefaultBuffers();
 		static void CreateDefaultData();
@@ -165,20 +169,20 @@ namespace Volt
 		static void UploadObjectData(std::vector<SubmitCommand>& submitCommands);
 
 		static void SortSubmitCommands(std::vector<SubmitCommand>& submitCommands);
+		static void SortBillboardCommands(std::vector<BillboardSubmitCommand>& billboardCommads);
+		static void SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands);
+
 		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass = false, bool aoPass = false);
+		static void CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial);
+		static void CollectBillboardCommandsWithShader(Ref<Shader> aShader);
+
 		static std::vector<SubmitCommand> CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera);
 
-		static void SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands);
-		static void CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial);
-		static void DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial);
-
 		///// Threading //////
-		static void DispatchRenderCommandsInstancedInternal();
-		static void DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
-
 		static void RT_Execute();
 		//////////////////////
 
+		static void DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
 		static void DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader);
 		static void DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial);
 		static void DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader);
@@ -191,6 +195,9 @@ namespace Volt
 		static void BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear /* = true */);
 		static void EndFullscreenPassInternal();
 
+		static void DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial);
+		static void DispatchBillboardsWithShaderInternal(Ref<Shader> aShader);
+		static void DispatchRenderCommandsInstancedInternal();
 		static void DispatchDecalsWithShaderInternal(Ref<Shader> aShader);
 
 		struct Samplers
@@ -227,6 +234,17 @@ namespace Volt
 			Ref<Material> material;
 			Ref<Texture2D> texture;
 			uint32_t id = 0;
+		};
+
+		struct BillboardSubmitCommand
+		{
+			gem::vec4 color;
+			gem::vec3 position;
+			gem::vec3 scale;
+			
+			Ref<Texture2D> texture;
+			Ref<Shader> shader;
+			uint32_t id;
 		};
 		
 		struct SpriteData
@@ -313,12 +331,14 @@ namespace Volt
 			std::vector<InstancedSubmitCommand> instancedCommands;
 			std::vector<SpriteSubmitCommand> spriteCommands;
 			std::vector<DecalRenderCommand> decalCommands;
+			std::vector<BillboardSubmitCommand> billboardCommands;
 
 			inline void Clear()
 			{
 				submitCommands.clear();
 				instancedCommands.clear();
 				spriteCommands.clear();
+				billboardCommands.clear();
 			}
 		};
 

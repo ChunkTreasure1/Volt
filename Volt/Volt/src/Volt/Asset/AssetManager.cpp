@@ -111,7 +111,7 @@ namespace Volt
 		}
 
 #ifdef VT_DEBUG
-		VT_CORE_INFO("Loaded asset {0} with handle {1}!", path.string().c_str(), asset->handle);
+		VT_CORE_TRACE("Loaded asset {0} with handle {1}!", path.string().c_str(), asset->handle);
 #endif
 
 		asset->path = path;
@@ -405,7 +405,7 @@ namespace Volt
 			myLoadQueue.emplace_back(LoadJob{ handle, path });
 
 #ifdef VT_DEBUG
-			VT_CORE_INFO("Queued asset {0}", path.string());
+			VT_CORE_TRACE("Queued asset {0}", path.string());
 #endif
 		}
 	}
@@ -463,7 +463,7 @@ namespace Volt
 				}
 
 #ifdef VT_DEBUG
-				VT_CORE_INFO("Loaded asset {0} with handle {1}!", job.path.string().c_str(), asset->handle);
+				VT_CORE_TRACE("Loaded asset {0} with handle {1}!", job.path.string().c_str(), asset->handle);
 #endif
 
 				asset->path = job.path;
