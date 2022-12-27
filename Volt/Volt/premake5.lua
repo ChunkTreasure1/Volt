@@ -73,7 +73,8 @@ project "Volt"
 		"Optick",
 		"msdf-atlas-gen",
 		"YamlCPP",
-		"DirectXTex"
+		"DirectXTex",
+		
 	}
 
 	defines

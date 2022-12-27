@@ -72,6 +72,8 @@ namespace GraphKey
 		virtual const std::string GetCategory() { return "Default"; }
 		virtual const gem::vec4 GetColor() = 0;
 
+		inline const std::string& GetRegistryName() const { return myRegistryName; }
+
 		template<typename T>
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden = false, const std::function<void()>& function = nullptr, bool linkable = true);
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
@@ -94,7 +96,9 @@ namespace GraphKey
 
 	private:
 		friend class Graph;
+		friend class Registry;
 
+		std::string myRegistryName;
 		Graph* myGraph = nullptr;
 	};
 

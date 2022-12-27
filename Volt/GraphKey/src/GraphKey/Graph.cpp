@@ -8,7 +8,7 @@ namespace GraphKey
 	Graph::Graph()
 	{}
 
-	Graph::Graph(Volt::Entity entity)
+	Graph::Graph(Wire::EntityId entity)
 		: myEntity(entity)
 	{}
 
@@ -114,5 +114,6 @@ namespace GraphKey
 	void Graph::Copy(Ref<Graph> srcGraph, Ref<Graph> dstGraph)
 	{
 		dstGraph->mySpecification = srcGraph->mySpecification;
+		dstGraph->myEntity = srcGraph->myEntity;
 	}
 }

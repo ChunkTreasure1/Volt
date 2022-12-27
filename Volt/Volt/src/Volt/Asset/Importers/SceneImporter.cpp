@@ -16,6 +16,7 @@
 
 #include <GraphKey/Graph.h>
 #include <GraphKey/Node.h>
+#include <GraphKey/Registry.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -255,8 +256,8 @@ namespace Volt
 				{
 					out << YAML::BeginMap;
 					{
-						VT_SERIALIZE_PROPERTY(node, n->id, out);
-						//out << YAML::Key << "type" << YAML::Value << n.type;
+						VT_SERIALIZE_PROPERTY(id, n->id, out);
+						VT_SERIALIZE_PROPERTY(type, n->GetRegistryName(), out);
 
 						out << YAML::Key << "inputs" << YAML::BeginSeq;
 						{
@@ -264,6 +265,7 @@ namespace Volt
 							{
 								out << YAML::BeginMap;
 								{
+									VT_SERIALIZE_PROPERTY(name, i.name, out);
 									VT_SERIALIZE_PROPERTY(id, i.id, out);
 								}
 								out << YAML::EndMap;
@@ -277,6 +279,7 @@ namespace Volt
 							{
 								out << YAML::BeginMap;
 								{
+									VT_SERIALIZE_PROPERTY(name, o.name, out);
 									VT_SERIALIZE_PROPERTY(id, o.id, out);
 								}
 								out << YAML::EndMap;
@@ -307,13 +310,19 @@ namespace Volt
 
 	void SceneImporter::DeserializeGraph(Ref<GraphKey::Graph> graph, const YAML::Node& node) const
 	{
+		struct Attribute
+		{
+			std::string name;
+			UUID id;
+		};
+
 		struct NodeData
 		{
 			UUID id;
 			std::string type;
 			
-			std::vector<UUID> inputs;
-			std::vector<UUID> outputs;
+			std::vector<Attribute> inputs;
+			std::vector<Attribute> outputs;
 		};
 
 		struct LinkData
@@ -331,17 +340,20 @@ namespace Volt
 		{
 			auto& data = nodes.emplace_back();
 			VT_DESERIALIZE_PROPERTY(id, data.id, n, UUID(0));
+			VT_DESERIALIZE_PROPERTY(type, data.type, n, std::string(""));
 			
 			for (const auto& i : n["inputs"])
 			{
 				auto& inData = data.inputs.emplace_back();
-				VT_DESERIALIZE_PROPERTY(id, inData, i, UUID(0));
+				VT_DESERIALIZE_PROPERTY(id, inData.id, i, UUID(0));
+				VT_DESERIALIZE_PROPERTY(name, inData.name, i, std::string("Null"));
 			}
 			
 			for (const auto& o : n["outputs"])
 			{
 				auto& outData = data.outputs.emplace_back();
-				VT_DESERIALIZE_PROPERTY(id, outData, o, UUID(0));
+				VT_DESERIALIZE_PROPERTY(id, outData.id, o, UUID(0));
+				VT_DESERIALIZE_PROPERTY(name, outData.name, o, std::string("Null"));
 			}
 		}
 
@@ -357,7 +369,36 @@ namespace Volt
 
 		for (const auto& n : nodes)
 		{
-			
+			auto node = GraphKey::Registry::Create(n.type);
+			node->id = n.id;
+		
+			for (const auto& i : n.inputs)
+			{
+				auto it = std::find_if(node->inputs.begin(), node->inputs.end(), [&i](const auto& lhs) 
+					{
+						return lhs.name == i.name;
+					});
+
+				if (it != node->inputs.end())
+				{
+					it->id = i.id;
+				}
+			}
+
+			for (const auto& o : n.outputs)
+			{
+				auto it = std::find_if(node->outputs.begin(), node->outputs.end(), [&o](const auto& lhs)
+					{
+						return lhs.name == o.name;
+					});
+
+				if (it != node->outputs.end())
+				{
+					it->id = o.id;
+				}
+			}
+		
+			spec.nodes.emplace_back(node);
 		}
 
 		for (const auto& l : links)
@@ -366,6 +407,12 @@ namespace Volt
 			newLink->id = l.id;
 			newLink->input = l.input;
 			newLink->output = l.output;
+
+			auto inAttr = graph->GetAttributeByID(l.input);
+			inAttr->links.emplace_back(l.id);
+
+			auto outAttr = graph->GetAttributeByID(l.output);
+			outAttr->links.emplace_back(l.id);
 
 			spec.links.emplace_back(newLink);
 		}
@@ -478,7 +525,6 @@ namespace Volt
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
-			out << YAML::EndMap;
 
 			if (registry.HasComponent<VisualScriptingComponent>(id))
 			{
@@ -488,6 +534,7 @@ namespace Volt
 					SerializeGraph(vsComp->graph, vsComp->graphState, registry, out);
 				}
 			}
+			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
 
@@ -548,7 +595,7 @@ namespace Volt
 				YAML::Node propertiesNode = compNode["properties"];
 				if (propertiesNode)
 				{
-					auto regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
+					const auto& regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
 
 					for (auto propNode : propertiesNode)
 					{
@@ -819,7 +866,7 @@ namespace Volt
 		if (graphNode && registry.HasComponent<VisualScriptingComponent>(entityId))
 		{
 			auto& vsComp = registry.GetComponent<VisualScriptingComponent>(entityId);
-			vsComp.graph = CreateRef<GraphKey::Graph>(Volt::Entity{ entityId, scene.get() });
+			vsComp.graph = CreateRef<GraphKey::Graph>(entityId);
 
 			DeserializeGraph(vsComp.graph, graphNode);
 		}

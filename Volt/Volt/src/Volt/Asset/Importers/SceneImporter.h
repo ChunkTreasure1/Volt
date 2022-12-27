@@ -8,6 +8,7 @@
 namespace GraphKey
 {
 	class Graph;
+	struct Node;
 }
 
 namespace Volt

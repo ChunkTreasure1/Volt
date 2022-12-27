@@ -33,6 +33,8 @@ private:
 	void UpdateEditorPanel();
 	void UpdateContextPopups();
 
+	void InitializeEditor();
+
 	void CreateAttributeFunctions();
 	void CreateAttributeColors();
 

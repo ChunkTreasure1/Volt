@@ -23,7 +23,7 @@ namespace GraphKey
 	{
 	public:
 		Graph();
-		Graph(Volt::Entity entity);
+		Graph(Wire::EntityId entity);
 		Graph(const GraphSpecification& spec);
 
 		void OnEvent(Volt::Event& e);
@@ -44,12 +44,12 @@ namespace GraphKey
 		const bool IsAttributeLinked(const Volt::UUID id) const;
 
 		inline GraphSpecification& GetSpecification() { return mySpecification; }
-		inline const Volt::Entity GetEntity() const { return myEntity; }
+		inline const Wire::EntityId GetEntity() const { return myEntity; }
 
 		static void Copy(Ref<Graph> srcGraph, Ref<Graph> dstGraph);
 
 	private:
-		Volt::Entity myEntity;
+		Wire::EntityId myEntity;
 		GraphSpecification mySpecification;
 	};
 }

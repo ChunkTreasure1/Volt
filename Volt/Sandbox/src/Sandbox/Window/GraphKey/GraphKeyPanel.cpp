@@ -33,31 +33,7 @@ GraphKeyPanel::GraphKeyPanel(Ref<Volt::Scene>& aScene)
 	CreateAttributeFunctions();
 	CreateAttributeColors();
 
-	ax::NodeEditor::Config cfg{};
-	cfg.SettingsFile = nullptr;
-	cfg.UserPointer = this;
-
-	cfg.SaveSettings = [](const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer)
-	{
-		GraphKeyPanel* panel = static_cast<GraphKeyPanel*>(userPointer);
-		return panel->SetNodeSettings(data);
-	};
-
-	cfg.LoadSettings = [](char* data, void* userPointer) -> size_t
-	{
-		GraphKeyPanel* panel = static_cast<GraphKeyPanel*>(userPointer);
-		const std::string graphContext = panel->GetNodeSettings();
-
-		if (data)
-		{
-			memcpy_s(data, graphContext.size(), graphContext.c_str(), graphContext.size());
-		}
-
-		return graphContext.size();
-	};
-
-	myEditorContext = ed::CreateEditor(&cfg);
-	myCurrentGraph = CreateRef<GraphKey::Graph>();
+	InitializeEditor();
 }
 
 GraphKeyPanel::~GraphKeyPanel()
@@ -83,11 +59,13 @@ void GraphKeyPanel::UpdateContent()
 void GraphKeyPanel::SetActiveGraph(Ref<GraphKey::Graph> graph)
 {
 	myCurrentGraph = graph;
+	InitializeEditor();
 }
 
 void GraphKeyPanel::UpdateEditorPanel()
 {
 	ImGui::Begin("Editor##graphKey", nullptr);
+
 	ed::Begin("Editor##graphKey");
 
 	if (myCurrentGraph)
@@ -96,72 +74,73 @@ void GraphKeyPanel::UpdateEditorPanel()
 		{
 			DrawNode(node);
 		}
-	}
-
-	for (const auto& link : myCurrentGraph->GetSpecification().links)
-	{
-		ed::Link(ed::LinkId(link->id), ed::PinId(link->output), ed::PinId(link->input));
-	}
-
-	if (ed::BeginCreate({ 1.f, 1.f, 1.f, 1.f }, 2.f))
-	{
-		ed::PinId startPinId = 0, endPinId = 0;
-		if (ed::QueryNewLink(&startPinId, &endPinId))
+		
+		for (const auto& link : myCurrentGraph->GetSpecification().links)
 		{
-			auto* startAttr = myCurrentGraph->GetAttributeByID(startPinId.Get());
-			auto* endAttr = myCurrentGraph->GetAttributeByID(endPinId.Get());
+			ed::Link(ed::LinkId(link->id), ed::PinId(link->output), ed::PinId(link->input));
+		}
 
-			if (startAttr && endAttr)
+		if (ed::BeginCreate({ 1.f, 1.f, 1.f, 1.f }, 2.f))
+		{
+			ed::PinId startPinId = 0, endPinId = 0;
+			if (ed::QueryNewLink(&startPinId, &endPinId))
 			{
-				if (startAttr->direction == GraphKey::AttributeDirection::Input)
-				{
-					std::swap(startAttr, endAttr);
-					std::swap(startPinId, endPinId);
-				}
+				auto* startAttr = myCurrentGraph->GetAttributeByID(startPinId.Get());
+				auto* endAttr = myCurrentGraph->GetAttributeByID(endPinId.Get());
 
-				bool sameType = false;
-				if (startAttr->type == GraphKey::AttributeType::Flow && endAttr->type == GraphKey::AttributeType::Flow)
+				if (startAttr && endAttr)
 				{
-					sameType = true;
-				}
-
-				if (!sameType)
-				{
-					if (startAttr->data.has_value() && endAttr->data.has_value())
+					if (startAttr->direction == GraphKey::AttributeDirection::Input)
 					{
-						sameType = startAttr->data.type() == endAttr->data.type();
+						std::swap(startAttr, endAttr);
+						std::swap(startPinId, endPinId);
 					}
-				}
 
-				if (startAttr->linkable && endAttr->linkable && ed::AcceptNewItem() && sameType && startAttr->direction != endAttr->direction)
-				{
-					myCurrentGraph->CreateLink(endAttr->id, startAttr->id);
+					bool sameType = false;
+					if (startAttr->type == GraphKey::AttributeType::Flow && endAttr->type == GraphKey::AttributeType::Flow)
+					{
+						sameType = true;
+					}
+
+					if (!sameType)
+					{
+						if (startAttr->data.has_value() && endAttr->data.has_value())
+						{
+							sameType = startAttr->data.type() == endAttr->data.type();
+						}
+					}
+
+					if (startAttr->linkable && endAttr->linkable && ed::AcceptNewItem() && sameType && startAttr->direction != endAttr->direction)
+					{
+						myCurrentGraph->CreateLink(endAttr->id, startAttr->id);
+					}
 				}
 			}
 		}
-	}
-	ed::EndCreate();
+		ed::EndCreate();
 
-	ed::Suspend();
-	if (ed::ShowNodeContextMenu(&myContextNodeId))
-	{
-		UI::OpenPopup("NodeContextMenu");
-	}
-	else if (ed::ShowPinContextMenu(&myContextPinId))
-	{
-		UI::OpenPopup("PinContextMenu");
-	}
-	else if (ed::ShowLinkContextMenu(&myContextLinkId))
-	{
-		UI::OpenPopup("LinkContextMenu");
-	}
-	else if (ed::ShowBackgroundContextMenu())
-	{
-		UI::OpenPopup("BackgroundContextMenu");
+		ed::Suspend();
+		if (ed::ShowNodeContextMenu(&myContextNodeId))
+		{
+			UI::OpenPopup("NodeContextMenu");
+		}
+		else if (ed::ShowPinContextMenu(&myContextPinId))
+		{
+			UI::OpenPopup("PinContextMenu");
+		}
+		else if (ed::ShowLinkContextMenu(&myContextLinkId))
+		{
+			UI::OpenPopup("LinkContextMenu");
+		}
+		else if (ed::ShowBackgroundContextMenu())
+		{
+			UI::OpenPopup("BackgroundContextMenu");
+		}
+
+		UpdateContextPopups();
+		ed::Resume();
 	}
 
-	UpdateContextPopups();
-	ed::Resume();
 
 	ed::End();
 	ImGui::End();
@@ -186,7 +165,7 @@ void GraphKeyPanel::UpdateContextPopups()
 			{
 				if (SelectionManager::IsAnySelected() && ImGui::MenuItem("Assign Selected Entity"))
 				{
-					pin->data = Volt::Entity{ SelectionManager::GetSelectedEntities().at(0), myCurrentScene.get()};
+					pin->data = Volt::Entity{ SelectionManager::GetSelectedEntities().at(0), myCurrentScene.get() };
 				}
 
 				//if (ImGui::MenuItem("Assign Current Entity"))
@@ -214,7 +193,7 @@ void GraphKeyPanel::UpdateContextPopups()
 	{
 		isNewNodePoppedUp = true;
 		newNodePostion = ed::ScreenToCanvas(ImGui::GetMousePosOnOpeningCurrentPopup());
-		
+
 		Ref<GraphKey::Node> node;
 
 		for (const auto& [name, func] : GraphKey::Registry::GetRegistry())
@@ -225,7 +204,7 @@ void GraphKeyPanel::UpdateContextPopups()
 				myCurrentGraph->AddNode(node);
 			}
 		}
-		
+
 		if (node)
 		{
 			ed::SetNodePosition(ed::NodeId(node->id), newNodePostion);
@@ -234,6 +213,41 @@ void GraphKeyPanel::UpdateContextPopups()
 
 		UI::EndPopup();
 	}
+}
+
+void GraphKeyPanel::InitializeEditor()
+{
+	if (myEditorContext)
+	{
+		ed::DestroyEditor(myEditorContext);
+	}
+
+	ax::NodeEditor::Config cfg{};
+	cfg.SettingsFile = nullptr;
+	cfg.UserPointer = this;
+
+	cfg.SaveSettings = [](const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer)
+	{
+		GraphKeyPanel* panel = static_cast<GraphKeyPanel*>(userPointer);
+		return panel->SetNodeSettings(data);
+	};
+
+	cfg.LoadSettings = [](char* data, void* userPointer) -> size_t
+	{
+		GraphKeyPanel* panel = static_cast<GraphKeyPanel*>(userPointer);
+		const std::string graphContext = panel->GetNodeSettings();
+
+		if (data)
+		{
+			memcpy_s(data, graphContext.size(), graphContext.c_str(), graphContext.size());
+		}
+
+		return graphContext.size();
+	};
+
+	myEditorContext = ed::CreateEditor(&cfg);
+	ed::SetCurrentEditor(myEditorContext);
+	ed::EnableShortcuts(true);
 }
 
 void GraphKeyPanel::CreateAttributeFunctions()
@@ -270,17 +284,17 @@ void GraphKeyPanel::CreateAttributeColors()
 	///////////////////
 
 	myAttributeColors[GetTypeIndex<bool>()] = { 0.58f, 0.f, 0.01f, 1.f };
-	
+
 	myAttributeColors[GetTypeIndex<int32_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<uint32_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<int16_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<uint16_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<int8_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<uint8_t>()] = { 0.12f, 0.72f, 0.f, 1.f };
-	
+
 	myAttributeColors[GetTypeIndex<double>()] = { 0.15f, 0.29f, 0.83f, 1.f };
 	myAttributeColors[GetTypeIndex<float>()] = { 0.15f, 0.29f, 0.83f, 1.f };
-	
+
 	myAttributeColors[GetTypeIndex<gem::vec2>()] = { 0.96f, 0.99f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<gem::vec3>()] = { 0.96f, 0.99f, 0.f, 1.f };
 	myAttributeColors[GetTypeIndex<gem::vec4>()] = { 0.96f, 0.99f, 0.f, 1.f };
@@ -302,9 +316,9 @@ void GraphKeyPanel::UpdateNodesPanel()
 
 	for (const auto& [name, func] : GraphKey::Registry::GetRegistry())
 	{
-		if (ImGui::Button(name.c_str()))
+		if (ImGui::Button(name.c_str()) && myCurrentGraph)
 		{
-			myCurrentGraph->AddNode(func());
+			myCurrentGraph->AddNode(GraphKey::Registry::Create(name));
 		}
 	}
 
@@ -465,7 +479,8 @@ bool GraphKeyPanel::SetNodeSettings(const char* data)
 		return false;
 	}
 
-	auto entity = myCurrentGraph->GetEntity();
+	auto entityId = myCurrentGraph->GetEntity();
+	Volt::Entity entity = { entityId, myCurrentScene.get() };
 
 	if (!entity)
 	{
@@ -479,6 +494,8 @@ bool GraphKeyPanel::SetNodeSettings(const char* data)
 
 	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
 	vsComp.graphState = data;
+
+	return true;
 }
 
 const std::string GraphKeyPanel::GetNodeSettings() const
@@ -488,7 +505,8 @@ const std::string GraphKeyPanel::GetNodeSettings() const
 		return {};
 	}
 
-	auto entity = myCurrentGraph->GetEntity();
+	auto entityId = myCurrentGraph->GetEntity();
+	Volt::Entity entity = { entityId, myCurrentScene.get() };
 
 	if (!entity)
 	{
@@ -507,12 +525,6 @@ const std::string GraphKeyPanel::GetNodeSettings() const
 void GraphKeyPanel::UpdatePropertiesPanel()
 {
 	ImGui::Begin("Properties##Nodes");
-
-	const auto selectedNodes = GetSelectedNodes();
-	if (selectedNodes.size() == 1)
-	{
-		//selectedNodes.at(0)->DrawContent();
-	}
 
 	ImGui::End();
 }
