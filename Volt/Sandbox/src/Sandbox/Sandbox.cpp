@@ -49,6 +49,7 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
+#include <Volt/Scene/SceneManager.h>
 
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
@@ -263,12 +264,15 @@ void Sandbox::OnScenePlay()
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-
+	
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+	
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
 
 	myGame = CreateRef<Game>();
 	myGame->OnStart();
+
 	myRuntimeScene->OnRuntimeStart();
 
 	Volt::OnScenePlayEvent playEvent{};
@@ -290,6 +294,8 @@ void Sandbox::OnSceneStop()
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 	SetupRenderCallbacks();
 
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+	
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
 
@@ -307,6 +313,8 @@ void Sandbox::OnSimulationStart()
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
+
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
@@ -330,6 +338,8 @@ void Sandbox::OnSimulationStop()
 	myRuntimeScene = myIntermediateScene;
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 	SetupRenderCallbacks();
+
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
@@ -358,6 +368,7 @@ void Sandbox::NewScene()
 {
 	SelectionManager::DeselectAll();
 	myRuntimeScene = CreateRef<Volt::Scene>("New Scene");
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	// Setup new scene
 	{
@@ -425,6 +436,8 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		}
 		
 		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
+		Volt::SceneManager::SetActiveScene(myRuntimeScene);
+
 		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
 		Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
@@ -472,6 +485,8 @@ void Sandbox::TransitionToNewScene()
 	Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 
 	myRuntimeScene = myStoredScene;
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
 	AUDIOMANAGER.ResetListener();

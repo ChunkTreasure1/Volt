@@ -6,8 +6,9 @@
 #include <functional>
 #include <memory>
 
+#define UNPACK(...) __VA_ARGS__
 #define GK_REGISTER_NODE_SPECIALIZED(name, category, node) \
-	inline static bool name ## _entry = GraphKey::Registry::Register(#name, category, [](){ return std::make_shared<node>(); });
+	inline static bool name ## _entry = GraphKey::Registry::Register(#name, category, [](){ return std::make_shared<UNPACK node>(); });
 
 #define GK_REGISTER_NODE(node, category) \
 	inline static bool node ## _entry = GraphKey::Registry::Register(#node, category, [](){ return std::make_shared<node>(); });

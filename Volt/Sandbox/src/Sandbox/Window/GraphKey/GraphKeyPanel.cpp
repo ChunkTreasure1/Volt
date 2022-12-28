@@ -81,10 +81,28 @@ void GraphKeyPanel::UpdateEditorPanel()
 			ed::Link(ed::LinkId(link->id), ed::PinId(link->output), ed::PinId(link->input));
 		}
 
-		if (ed::BeginCreate({ 1.f, 1.f, 1.f, 1.f }, 2.f))
+		if (!myCreateNewNode)
 		{
-			if (!myCreateNewNode)
+			if (ed::BeginCreate({ 1.f, 1.f, 1.f, 1.f }, 2.f))
 			{
+				auto showLabel = [](const char* label, ImColor color)
+				{
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+					const auto size = ImGui::CalcTextSize(label);
+					
+					const auto padding = ImGui::GetStyle().FramePadding;
+					const auto spacing = ImGui::GetStyle().ItemSpacing;
+
+					ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2{ spacing.x, -spacing.y });
+					
+					const auto rectMin = ImGui::GetCursorScreenPos() - padding;
+					const auto rectMax = ImGui::GetCursorScreenPos() + size + padding;
+				
+					auto drawList = ImGui::GetWindowDrawList();
+					drawList->AddRectFilled(rectMin, rectMax, color, size.y * 0.15f);
+					ImGui::TextUnformatted(label);
+				};
+
 				ed::PinId outputPinId = 0, inputPinId = 0;
 				if (ed::QueryNewLink(&inputPinId, &outputPinId))
 				{
@@ -93,7 +111,27 @@ void GraphKeyPanel::UpdateEditorPanel()
 
 					myNewLinkPinId = startAttr ? startAttr->id : endAttr->id;
 
-					if (CanLinkAttributes(inputPinId, outputPinId) && ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f))
+					const auto reason = CanLinkAttributes(inputPinId, outputPinId);
+					if (reason == IncompatiblePinReason::SamePin)
+					{
+						ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
+					}
+					else if (reason == IncompatiblePinReason::IncompatibleType)
+					{
+						showLabel("x Incompatible Type", ImColor{ 255, 0, 0 });
+						ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
+					}
+					else if (reason == IncompatiblePinReason::IncompatibleDirection)
+					{
+						showLabel("x Incompatible Direction", ImColor{ 255, 0, 0 });
+						ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
+					}
+					else if (reason == IncompatiblePinReason::NonLinkable)
+					{
+						showLabel("x Pin is not linkable", ImColor{ 255, 0, 0 });
+						ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
+					}
+					else if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f))
 					{
 						auto* inputPin = myCurrentGraph->GetAttributeByID(outputPinId.Get());
 						if (!inputPin->links.empty())
@@ -115,6 +153,10 @@ void GraphKeyPanel::UpdateEditorPanel()
 				{
 					myNewLinkPinId = pinId.Get();
 					auto newLinkPin = myCurrentGraph->GetAttributeByID(pinId.Get());
+					if (newLinkPin)
+					{
+						showLabel("+ Create Node", ImColor(32, 45, 32, 180));
+					}
 
 					const gem::vec4 draggedLinkColor = newLinkPin ? GetColorFromAttribute(*newLinkPin) : gem::vec4(1.f, 1.f, 1.f, 1.f);
 					const float lineThickness = 2.f;
@@ -131,55 +173,55 @@ void GraphKeyPanel::UpdateEditorPanel()
 					}
 				}
 			}
-		}
-		else
-		{
-			myNewLinkPinId = 0;
-		}
-		ed::EndCreate();
-
-		if (ed::BeginShortcut())
-		{
-			if (ed::AcceptCopy())
+			else
 			{
-
-			}
-			
-			if (ed::AcceptCut())
-			{
+				myNewLinkPinId = 0;
 			}
 
-			if (ed::AcceptPaste())
-			{
-			}
+			ed::EndCreate();
 
-			if (ed::AcceptDuplicate())
+			if (ed::BeginShortcut())
 			{
-			}
-		}
-		ed::EndShortcut();
-
-		if (ed::BeginDelete())
-		{
-			ed::LinkId linkId;
-			while (ed::QueryDeletedLink(&linkId))
-			{
-				if (ed::AcceptDeletedItem())
+				if (ed::AcceptCopy())
 				{
-					myCurrentGraph->RemoveLink(linkId.Get());
+				}
+
+				if (ed::AcceptCut())
+				{
+				}
+
+				if (ed::AcceptPaste())
+				{
+				}
+
+				if (ed::AcceptDuplicate())
+				{
 				}
 			}
+			ed::EndShortcut();
 
-			ed::NodeId nodeId;
-			while (ed::QueryDeletedNode(&nodeId))
+			if (ed::BeginDelete())
 			{
-				if (ed::AcceptDeletedItem())
+				ed::LinkId linkId;
+				while (ed::QueryDeletedLink(&linkId))
 				{
-					myCurrentGraph->RemoveNode(nodeId.Get());
+					if (ed::AcceptDeletedItem())
+					{
+						myCurrentGraph->RemoveLink(linkId.Get());
+					}
+				}
+
+				ed::NodeId nodeId;
+				while (ed::QueryDeletedNode(&nodeId))
+				{
+					if (ed::AcceptDeletedItem())
+					{
+						myCurrentGraph->RemoveNode(nodeId.Get());
+					}
 				}
 			}
+			ed::EndDelete();
 		}
-		ed::EndDelete();
 
 		ed::Suspend();
 		if (ed::ShowNodeContextMenu(&myContextNodeId))
@@ -251,7 +293,13 @@ void GraphKeyPanel::UpdateContextPopups()
 
 	if (UI::BeginPopup("BackgroundContextMenu"))
 	{
-		auto node = DrawNodeList(myContextSearchQuery);
+		std::type_index idx = std::type_index{ typeid(void) };
+		if (auto* startPin = myCurrentGraph->GetAttributeByID(myNewNodeLinkPinId))
+		{
+			idx = startPin->data.type();
+		}
+
+		auto node = DrawNodeList(myContextSearchQuery, idx);
 		newNodePostion = ed::ScreenToCanvas(ImGui::GetMousePosOnOpeningCurrentPopup());
 
 		if (node)
@@ -269,7 +317,9 @@ void GraphKeyPanel::UpdateContextPopups()
 					ed::PinId startId = { startPin->id };
 					ed::PinId endId = { pin.id };
 
-					if (CanLinkAttributes(startId, endId))
+					const auto reason = CanLinkAttributes(startId, endId);
+
+					if (reason == IncompatiblePinReason::None)
 					{
 						auto* inputPin = myCurrentGraph->GetAttributeByID(endId.Get());
 						if (!inputPin->links.empty())
@@ -462,7 +512,8 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 		ed::PinId linkStartPin = { myNewLinkPinId };
 		ed::PinId inputPin = { input.id };
 
-		if (myNewLinkPinId && !CanLinkAttributes(linkStartPin, inputPin) && input.id != myNewLinkPinId)
+		const auto reason = CanLinkAttributes(linkStartPin, inputPin);
+		if (myNewLinkPinId && reason != IncompatiblePinReason::None && input.id != myNewLinkPinId)
 		{
 			alpha = alpha * (48.f / 255.f);
 		}
@@ -477,7 +528,7 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 
 		if (input.linkable)
 		{
-			DrawPinIcon(input, connected, ImColor{ color.x, color.y, color.z, color.w }, alpha * 255);
+			DrawPinIcon(input, connected, ImColor{ color.x, color.y, color.z, color.w }, (int32_t)(alpha * 255.f));
 		}
 
 		ImGui::Spring(0.f);
@@ -499,10 +550,11 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 	for (auto& output : node->outputs)
 	{
 		float alpha = ImGui::GetStyle().Alpha;
-		ed::PinId linkStartPin = { myNewLinkPinId };
-		ed::PinId outputPin = { output.id };
+		ed::PinId linkStartPin{ myNewLinkPinId };
+		ed::PinId outputPin{ output.id };
 
-		if (myNewLinkPinId && !CanLinkAttributes(linkStartPin, outputPin) && output.id != myNewLinkPinId)
+		const auto reason = CanLinkAttributes(linkStartPin, outputPin);
+		if (myNewLinkPinId && reason != IncompatiblePinReason::None && output.id != myNewLinkPinId)
 		{
 			alpha = alpha * (48.f / 255.f);
 		}
@@ -532,7 +584,7 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 
 		if (output.linkable)
 		{
-			DrawPinIcon(output, connected, ImColor{ color.x, color.y, color.z, color.w }, alpha * 255);
+			DrawPinIcon(output, connected, ImColor{ color.x, color.y, color.z, color.w }, (int32_t)(alpha * 255.f));
 		}
 
 		builder.EndOutput();
@@ -544,7 +596,7 @@ void GraphKeyPanel::DrawNode(Ref<GraphKey::Node> node)
 }
 
 
-Ref<GraphKey::Node> GraphKeyPanel::DrawNodeList(std::string& query)
+Ref<GraphKey::Node> GraphKeyPanel::DrawNodeList(std::string& query, std::type_index typeIndex)
 {
 	std::map<std::string, std::vector<std::string>> nodeCategories;
 	Ref<GraphKey::Node> node;
@@ -587,6 +639,33 @@ Ref<GraphKey::Node> GraphKeyPanel::DrawNodeList(std::string& query)
 					return visible;
 				};
 
+				auto nodeHasPinOfType = [&](const std::string& name)
+				{
+					if (typeIndex == typeid(void))
+					{
+						return true;
+					}
+
+					Ref<GraphKey::Node> n = GraphKey::Registry::Create(name);
+					for (const auto& input : n->inputs)
+					{
+						if (std::type_index{ input.data.type() } == typeIndex)
+						{
+							return true;
+						}
+					}
+
+					for (const auto& output : n->outputs)
+					{
+						if (std::type_index{ output.data.type() } == typeIndex)
+						{
+							return true;
+						}
+					}
+
+					return false;
+				};
+
 				const bool nodeInCategory = nodeInCategoryVisible();
 
 				if (nodeInCategory && !query.empty())
@@ -598,7 +677,10 @@ Ref<GraphKey::Node> GraphKeyPanel::DrawNodeList(std::string& query)
 				{
 					for (const auto& name : names)
 					{
-						if (ImGui::MenuItem(name.c_str()))
+						const bool nodeHasPin = nodeHasPinOfType(name);
+						const bool containsQuery = Utils::ToLower(name).contains(Utils::ToLower(query));
+
+						if (containsQuery && nodeHasPin && ImGui::MenuItem(name.c_str()) && myCurrentGraph)
 						{
 							node = GraphKey::Registry::Create(name);
 							myCurrentGraph->AddNode(node);
@@ -635,13 +717,18 @@ const gem::vec4 GraphKeyPanel::GetColorFromAttribute(const GraphKey::Attribute& 
 	return myDefaultPinColor;
 }
 
-const bool GraphKeyPanel::CanLinkAttributes(ax::NodeEditor::PinId& input, ax::NodeEditor::PinId& output)
+const GraphKeyPanel::IncompatiblePinReason GraphKeyPanel::CanLinkAttributes(ax::NodeEditor::PinId& input, ax::NodeEditor::PinId& output)
 {
 	auto* startAttr = myCurrentGraph->GetAttributeByID(input.Get());
 	auto* endAttr = myCurrentGraph->GetAttributeByID(output.Get());
 
 	if (startAttr && endAttr)
 	{
+		if (startAttr == endAttr)
+		{
+			return IncompatiblePinReason::SamePin;
+		}
+
 		if (startAttr->direction == GraphKey::AttributeDirection::Input)
 		{
 			std::swap(startAttr, endAttr);
@@ -662,13 +749,23 @@ const bool GraphKeyPanel::CanLinkAttributes(ax::NodeEditor::PinId& input, ax::No
 			}
 		}
 
-		if (startAttr->linkable && endAttr->linkable && sameType && startAttr->direction != endAttr->direction)
+		if (!sameType)
 		{
-			return true;
+			return IncompatiblePinReason::IncompatibleType;
+		}
+
+		if (!startAttr->linkable || !endAttr->linkable)
+		{
+			return IncompatiblePinReason::NonLinkable;
+		}
+
+		if (startAttr->direction == endAttr->direction)
+		{
+			return IncompatiblePinReason::IncompatibleDirection;
 		}
 	}
 
-	return false;
+	return IncompatiblePinReason::None;
 }
 
 bool GraphKeyPanel::SetNodeSettings(const char* data)

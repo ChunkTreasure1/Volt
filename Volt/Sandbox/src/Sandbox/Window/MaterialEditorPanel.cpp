@@ -358,7 +358,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			const auto& subMaterials = mySelectedMaterial->GetSubMaterials();
 			for (auto& [index, material] : subMaterials)
 			{
-				ImGui::PushID((uint32_t)material->GetName().c_str());
+				ImGui::PushID(material->GetName().c_str());
 
 				constexpr float thumbnailSize = 85.f;
 				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);

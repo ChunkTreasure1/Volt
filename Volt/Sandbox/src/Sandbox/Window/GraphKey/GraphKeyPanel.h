@@ -29,6 +29,15 @@ public:
 	inline static GraphKeyPanel& Get() { return *myInstance; }
 
 private:
+	enum class IncompatiblePinReason
+	{
+		None = 0,
+		IncompatibleType,
+		IncompatibleDirection,
+		SamePin,
+		NonLinkable
+	};
+	
 	void UpdateNodesPanel();
 	void UpdatePropertiesPanel();
 	void UpdateEditorPanel();
@@ -40,10 +49,10 @@ private:
 	void CreateAttributeColors();
 
 	void DrawNode(Ref<GraphKey::Node> node);
-	Ref<GraphKey::Node> DrawNodeList(std::string& query);
+	Ref<GraphKey::Node> DrawNodeList(std::string& query, std::type_index typeIndex = std::type_index{ typeid(void) });
 
 	const gem::vec4 GetColorFromAttribute(const GraphKey::Attribute& attr);
-	const bool CanLinkAttributes(ax::NodeEditor::PinId& input, ax::NodeEditor::PinId& output);
+	const IncompatiblePinReason CanLinkAttributes(ax::NodeEditor::PinId& input, ax::NodeEditor::PinId& output);
 
 	const std::vector<Ref<GraphKey::Node>> GetSelectedNodes() const;
 	const std::vector<Ref<GraphKey::Link>> GetSelectedLinks() const;
@@ -55,7 +64,7 @@ private:
 
 	std::unordered_map<std::type_index, std::function<void(std::any& data)>> myAttributeFunctions;
 	std::unordered_map<std::type_index, gem::vec4> myAttributeColors;
-	
+
 	gem::vec4 myDefaultPinColor;
 	std::string mySearchQuery;
 	std::string myContextSearchQuery;
