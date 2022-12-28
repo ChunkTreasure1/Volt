@@ -274,178 +274,15 @@ namespace Volt
 		return false;
 	}
 
-	void Renderer::SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
+	void Renderer::SubmitText(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
 	{
-		if (aString.empty())
-		{
-			return;
-		}
-
-		auto& textData = myRendererData->textData;
-		int32_t textureIndex = -1;
-
-		std::u32string utf32string = Utils::To_UTF32(aString);
-
-		Ref<Texture2D> fontAtlas = aFont->GetAtlas();
-		VT_CORE_ASSERT(fontAtlas, "Font Atlas was nullptr!");
-
-		if (textData.textureSlotIndex >= 32)
-		{
-			return;
-		}
-
-		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
-		{
-			if (textData.textureSlots[i] == fontAtlas)
-			{
-				textureIndex = (int32_t)i;
-				break;
-			}
-		}
-
-		if (textureIndex == -1)
-		{
-			textureIndex = (int32_t)textData.textureSlotIndex;
-			textData.textureSlots[textureIndex] = fontAtlas;
-			textData.textureSlotIndex++;
-		}
-
-		auto& fontGeom = aFont->GetMSDFData()->fontGeometry;
-		const auto& metrics = fontGeom.getMetrics();
-
-		std::vector<int32_t> nextLines;
-		{
-			double x = 0.0;
-			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-			double y = -fsScale * metrics.ascenderY;
-
-			int32_t lastSpace = -1;
-
-			for (int32_t i = 0; i < utf32string.size(); i++)
-			{
-				char32_t character = utf32string[i];
-				if (character == '\n')
-				{
-					x = 0.0;
-					y -= fsScale * metrics.lineHeight;
-					continue;
-				}
-
-				auto glyph = fontGeom.getGlyph(character);
-				if (!glyph)
-				{
-					glyph = fontGeom.getGlyph('?');
-				}
-
-				if (!glyph)
-				{
-					continue;
-				}
-
-				if (character != ' ')
-				{
-					// Calculate geometry
-					double pl, pb, pr, pt;
-					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-					gem::vec2 quadMin((float)pl, (float)pb);
-					gem::vec2 quadMax((float)pl, (float)pb);
-
-					quadMin *= (float)fsScale;
-					quadMax *= (float)fsScale;
-					quadMin += gem::vec2((float)x, (float)y);
-					quadMax += gem::vec2((float)x, (float)y);
-
-					if (quadMax.x > aMaxWidth && lastSpace != -1)
-					{
-						i = lastSpace;
-						nextLines.emplace_back(lastSpace);
-						lastSpace = -1;
-						x = 0.0;
-						y -= fsScale * metrics.lineHeight;
-					}
-				}
-				else
-				{
-					lastSpace = i;
-				}
-
-				double advance = glyph->getAdvance();
-				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-				x += fsScale * advance;
-			}
-		}
-
-		{
-			double x = 0.0;
-			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-			double y = 0.0;
-			for (int32_t i = 0; i < utf32string.size(); i++)
-			{
-				char32_t character = utf32string[i];
-				if (character == '\n' || NextLine(i, nextLines))
-				{
-					x = 0.0;
-					y -= fsScale * metrics.lineHeight;
-					continue;
-				}
-
-				auto glyph = fontGeom.getGlyph(character);
-
-				if (!glyph)
-				{
-					glyph = fontGeom.getGlyph('?');
-				}
-
-				if (!glyph)
-				{
-					continue;
-				}
-
-				double l, b, r, t;
-				glyph->getQuadAtlasBounds(l, b, r, t);
-
-				double pl, pb, pr, pt;
-				glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-
-				pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
-				pl += x, pb += y, pr += x, pt += y;
-
-				double texelWidth = 1.0 / fontAtlas->GetWidth();
-				double texelHeight = 1.0 / fontAtlas->GetHeight();
-
-				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pl, (float)pb, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pr, (float)pb, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pr, (float)pt, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pl, (float)pt, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.indexCount += 6;
-
-				double advance = glyph->getAdvance();
-				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-				x += fsScale * advance;
-			}
-		}
+		VT_PROFILE_FUNCTION();
+		auto& cmd = myRendererData->currentCPUCommands->textCommands.emplace_back();
+		cmd.text = aString;
+		cmd.font = aFont;
+		cmd.transform = aTransform;
+		cmd.maxWidth = aMaxWidth;
+		cmd.color = aColor;
 	}
 
 	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
@@ -633,9 +470,9 @@ namespace Volt
 
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([renderPass = aRenderPass, camera = aCamera, shouldClear]()
+		currentCommandBuffer->Submit([aRenderPass, aCamera, shouldClear]()
 			{
-				BeginFullscreenPassInternal(renderPass, camera, shouldClear);
+				BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
 			});
 #else
 		BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
@@ -664,12 +501,28 @@ namespace Volt
 
 	void Renderer::BeginSection(const std::string& name)
 	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([name]()
+			{
+				RenderCommand::BeginAnnotation(name);
+			});
+#else
 		RenderCommand::BeginAnnotation(name);
+#endif
 	}
 
 	void Renderer::EndSection(const std::string& name)
 	{
-		RenderCommand::EndAnnotation();
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				RenderCommand::EndAnnotation();
+			});
+#else
+		RenderCommand::EndAnnotation(name);
+#endif
 	}
 
 	void Renderer::DispatchRenderCommandsInstanced()
@@ -743,44 +596,44 @@ namespace Volt
 			{
 				float roughness;
 				float padding[3];
-			} irradianceRoughness{};
+		} irradianceRoughness{};
 
-			ImageSpecification imageSpec{};
-			imageSpec.format = ImageFormat::RGBA32F;
-			imageSpec.width = cubeMapSize;
-			imageSpec.height = cubeMapSize;
-			imageSpec.usage = ImageUsage::Storage;
-			imageSpec.layers = 6;
-			imageSpec.isCubeMap = true;
-			imageSpec.mips = Utility::CalculateMipCount(cubeMapSize, cubeMapSize);
+		ImageSpecification imageSpec{};
+		imageSpec.format = ImageFormat::RGBA32F;
+		imageSpec.width = cubeMapSize;
+		imageSpec.height = cubeMapSize;
+		imageSpec.usage = ImageUsage::Storage;
+		imageSpec.layers = 6;
+		imageSpec.isCubeMap = true;
+		imageSpec.mips = Utility::CalculateMipCount(cubeMapSize, cubeMapSize);
 
-			environmentFiltered = Image2D::Create(imageSpec);
-			environmentFiltered->CreateMipUAVs();
+		environmentFiltered = Image2D::Create(imageSpec);
+		environmentFiltered->CreateMipUAVs();
 
-			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::Get("EnvironmentMipFilter"));
-			Ref<ConstantBuffer> constantBuffer = ConstantBuffer::Create(&irradianceRoughness, sizeof(irradianceRoughness), ShaderStage::Compute);
-			constantBuffer->Bind(0);
+		Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::Get("EnvironmentMipFilter"));
+		Ref<ConstantBuffer> constantBuffer = ConstantBuffer::Create(&irradianceRoughness, sizeof(irradianceRoughness), ShaderStage::Compute);
+		constantBuffer->Bind(0);
 
 
-			const float deltaRoughness = 1.f / gem::max((float)environmentFiltered->GetMipCount() - 1.f, 1.f);
-			for (uint32_t i = 0, size = cubeMapSize; i < environmentFiltered->GetMipCount(); i++, size /= 2)
-			{
-				const uint32_t numGroups = gem::max(1u, size / 32);
-				const float roughness = gem::max(i * deltaRoughness, 0.05f);
+		const float deltaRoughness = 1.f / gem::max((float)environmentFiltered->GetMipCount() - 1.f, 1.f);
+		for (uint32_t i = 0, size = cubeMapSize; i < environmentFiltered->GetMipCount(); i++, size /= 2)
+		{
+			const uint32_t numGroups = gem::max(1u, size / 32);
+			const float roughness = gem::max(i * deltaRoughness, 0.05f);
 
-				irradianceRoughness.roughness = roughness;
-				constantBuffer->SetData(&irradianceRoughness, sizeof(IrradianceRougness));
+			irradianceRoughness.roughness = roughness;
+			constantBuffer->SetData(&irradianceRoughness, sizeof(IrradianceRougness));
 
-				filterPipeline->SetImage(environmentUnfiltered, 0);
-				auto mipUAV = environmentFiltered->GetUAV(i);
-				context->CSSetUnorderedAccessViews(0, 1, mipUAV.GetAddressOf(), nullptr);
-				filterPipeline->Execute(numGroups, numGroups, 6);
-				filterPipeline->Clear();
-			}
-
-			ID3D11UnorderedAccessView* nullUAV = nullptr;
-			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+			filterPipeline->SetImage(environmentUnfiltered, 0);
+			auto mipUAV = environmentFiltered->GetUAV(i);
+			context->CSSetUnorderedAccessViews(0, 1, mipUAV.GetAddressOf(), nullptr);
+			filterPipeline->Execute(numGroups, numGroups, 6);
+			filterPipeline->Clear();
 		}
+
+		ID3D11UnorderedAccessView* nullUAV = nullptr;
+		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+	}
 
 		// Irradiance
 		{
@@ -806,7 +659,7 @@ namespace Volt
 		myRendererData->environmentCache.emplace(aTextureHandle, env);
 
 		return env;
-	}
+}
 
 	void Renderer::CreateDefaultBuffers()
 	{
@@ -1368,6 +1221,185 @@ namespace Volt
 		}
 	}
 
+	void Renderer::CollectTextCommands()
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (const auto& cmd : myRendererData->currentGPUCommands->textCommands)
+		{
+			if (cmd.text.empty())
+			{
+				return;
+			}
+
+			auto& textData = myRendererData->textData;
+			int32_t textureIndex = -1;
+
+			std::u32string utf32string = Utils::To_UTF32(cmd.text);
+
+			Ref<Texture2D> fontAtlas = cmd.font->GetAtlas();
+			VT_CORE_ASSERT(fontAtlas, "Font Atlas was nullptr!");
+
+			if (textData.textureSlotIndex >= 32)
+			{
+				return;
+			}
+
+			for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
+			{
+				if (textData.textureSlots[i] == fontAtlas)
+				{
+					textureIndex = (int32_t)i;
+					break;
+				}
+			}
+
+			if (textureIndex == -1)
+			{
+				textureIndex = (int32_t)textData.textureSlotIndex;
+				textData.textureSlots[textureIndex] = fontAtlas;
+				textData.textureSlotIndex++;
+			}
+
+			auto& fontGeom = cmd.font->GetMSDFData()->fontGeometry;
+			const auto& metrics = fontGeom.getMetrics();
+
+			std::vector<int32_t> nextLines;
+			{
+				double x = 0.0;
+				double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+				double y = -fsScale * metrics.ascenderY;
+
+				int32_t lastSpace = -1;
+
+				for (int32_t i = 0; i < utf32string.size(); i++)
+				{
+					char32_t character = utf32string[i];
+					if (character == '\n')
+					{
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+						continue;
+					}
+
+					auto glyph = fontGeom.getGlyph(character);
+					if (!glyph)
+					{
+						glyph = fontGeom.getGlyph('?');
+					}
+
+					if (!glyph)
+					{
+						continue;
+					}
+
+					if (character != ' ')
+					{
+						// Calculate geometry
+						double pl, pb, pr, pt;
+						glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+						gem::vec2 quadMin((float)pl, (float)pb);
+						gem::vec2 quadMax((float)pl, (float)pb);
+
+						quadMin *= (float)fsScale;
+						quadMax *= (float)fsScale;
+						quadMin += gem::vec2((float)x, (float)y);
+						quadMax += gem::vec2((float)x, (float)y);
+
+						if (quadMax.x > cmd.maxWidth && lastSpace != -1)
+						{
+							i = lastSpace;
+							nextLines.emplace_back(lastSpace);
+							lastSpace = -1;
+							x = 0.0;
+							y -= fsScale * metrics.lineHeight;
+						}
+					}
+					else
+					{
+						lastSpace = i;
+					}
+
+					double advance = glyph->getAdvance();
+					fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+					x += fsScale * advance;
+				}
+			}
+
+			{
+				double x = 0.0;
+				double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+				double y = 0.0;
+				for (int32_t i = 0; i < utf32string.size(); i++)
+				{
+					char32_t character = utf32string[i];
+					if (character == '\n' || NextLine(i, nextLines))
+					{
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+						continue;
+					}
+
+					auto glyph = fontGeom.getGlyph(character);
+
+					if (!glyph)
+					{
+						glyph = fontGeom.getGlyph('?');
+					}
+
+					if (!glyph)
+					{
+						continue;
+					}
+
+					double l, b, r, t;
+					glyph->getQuadAtlasBounds(l, b, r, t);
+
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+					pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+					pl += x, pb += y, pr += x, pt += y;
+
+					double texelWidth = 1.0 / fontAtlas->GetWidth();
+					double texelHeight = 1.0 / fontAtlas->GetHeight();
+
+					l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pl, (float)pb, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pr, (float)pb, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pr, (float)pt, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pl, (float)pt, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.indexCount += 6;
+
+					double advance = glyph->getAdvance();
+					fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+					x += fsScale * advance;
+				}
+			}
+		}
+	}
+
 	void Renderer::DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial)
 	{
 		VT_PROFILE_FUNCTION();
@@ -1377,9 +1409,9 @@ namespace Volt
 		{
 			aMaterial = myDefaultData->defaultSpriteMaterial;
 		}
-		
+
 		CollectSpriteCommandsWithMaterial(aMaterial);
-		
+
 		if (spriteData.indexCount == 0)
 		{
 			return;
@@ -1387,11 +1419,10 @@ namespace Volt
 
 		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
 		spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
-		
+
 		aMaterial->GetSubMaterialAt(0)->Bind(true, false); //#TODO_Ivar: Will bind textures as well, is this something we want?
-		
+
 		std::vector<Ref<Image2D>> imagesToBind{ spriteData.textureSlotIndex };
-		
 		for (uint32_t i = 0; i < spriteData.textureSlotIndex; i++)
 		{
 			imagesToBind[i] = spriteData.textureSlots[i]->GetImage();
@@ -1402,10 +1433,10 @@ namespace Volt
 
 		spriteData.vertexBuffer->Bind();
 		spriteData.indexBuffer->Bind();
-		
+
 		RenderCommand::DrawIndexed(spriteData.indexCount, 0, 0);
 		RenderCommand::ClearTexturesAtStage(ShaderStage::Pixel, 0, spriteData.textureSlotIndex);
-		
+
 		spriteData.indexCount = 0;
 		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
 		spriteData.textureSlotIndex = 1;
@@ -1422,7 +1453,7 @@ namespace Volt
 		}
 
 		CollectBillboardCommandsWithShader(aShader);
-		
+
 		if (billboardData.vertexCount == 0)
 		{
 			return;
@@ -1443,9 +1474,9 @@ namespace Volt
 		aShader->Bind();
 		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
 		RenderCommand::SetTopology(Topology::PointList);
-		
+
 		billboardData.vertexBuffer->Bind();
-		
+
 		RenderCommand::Draw(billboardData.vertexCount, 0);
 
 		billboardData.vertexCount = 0;
@@ -1651,7 +1682,7 @@ namespace Volt
 
 		RunResourceChanges();
 		UpdatePerFrameBuffers();
-		
+
 		SortSubmitCommands(myRendererData->currentGPUCommands->submitCommands);
 		SortSpriteCommands(myRendererData->currentGPUCommands->spriteCommands);
 		SortBillboardCommands(myRendererData->currentGPUCommands->billboardCommands);
@@ -1731,7 +1762,7 @@ namespace Volt
 			myRendererData->currentPass.framebuffer->Unbind();
 		}
 
-		EndSection(myRendererData->currentPass.debugName);
+		RenderCommand::EndAnnotation();
 
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
@@ -1743,7 +1774,7 @@ namespace Volt
 		const std::string tag = "Begin " + renderPass.debugName;
 		VT_PROFILE_SCOPE(tag.c_str());
 
-		BeginSection(renderPass.debugName);
+		RenderCommand::BeginAnnotation(renderPass.debugName);
 
 		myRendererData->currentPass = renderPass;
 		myRendererData->currentPassCamera = camera;
@@ -1779,8 +1810,7 @@ namespace Volt
 			myRendererData->currentPass.framebuffer->Unbind();
 		}
 
-		EndSection(myRendererData->currentPass.debugName);
-
+		RenderCommand::EndAnnotation();
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
 	}
@@ -1855,9 +1885,9 @@ namespace Volt
 
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([shader = aShader]()
+		currentCommandBuffer->Submit([aShader]()
 			{
-				DispatchDecalsWithShaderInternal(shader);
+				DispatchDecalsWithShaderInternal(aShader);
 			});
 
 #else
@@ -1892,13 +1922,52 @@ namespace Volt
 		}
 	}
 
+	void Renderer::DispatchTextInternal()
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& textData = myRendererData->textData;
+
+		CollectTextCommands();
+
+		if (textData.indexCount == 0)
+		{
+			return;
+		}
+
+		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
+		textData.vertexBuffer->SetData(textData.vertexBufferBase, dataSize);
+
+		textData.shader->Bind();
+
+		std::vector<Ref<Image2D>> imagesToBind{ textData.textureSlotIndex };
+		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
+		{
+			imagesToBind[i] = textData.textureSlots[i]->GetImage();
+		}
+
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
+		RenderCommand::SetTopology(Topology::TriangleList);
+
+		textData.vertexBuffer->Bind();
+		textData.indexBuffer->Bind();
+
+		RenderCommand::DrawIndexed(textData.indexCount, 0, 0);
+
+		textData.indexCount = 0;
+		textData.vertexBufferPtr = textData.vertexBufferBase;
+		textData.textureSlotIndex = 0;
+
+		textData.shader->Unbind();
+	}
+
 	void Renderer::DispatchSpritesWithMaterial(Ref<Material> aMaterial)
 	{
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([material = aMaterial]()
+		currentCommandBuffer->Submit([aMaterial]()
 			{
-				DispatchSpritesWithMaterialInternal(material);
+				DispatchSpritesWithMaterialInternal(aMaterial);
 			});
 
 #else
@@ -1962,7 +2031,7 @@ namespace Volt
 #else
 		RenderCommand::BindTexturesToStage(stage, textures, startSlot);
 #endif
-	}
+		}
 
 	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
 	{
@@ -2005,46 +2074,14 @@ namespace Volt
 
 	void Renderer::DispatchText()
 	{
-		VT_PROFILE_FUNCTION();
-
-		auto& textData = myRendererData->textData;
-
-		if (textData.indexCount == 0)
-		{
-			return;
-		}
-
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
-		textData.vertexBuffer->SetData(textData.vertexBufferBase, dataSize);
-
-		std::vector<ID3D11ShaderResourceView*> textures;
-		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
-		{
-			if (!textData.textureSlots[i])
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
 			{
-				textures.emplace_back(GetDefaultData().whiteTexture->GetImage()->GetSRV().Get());
-			}
-			else
-			{
-				textures.emplace_back(textData.textureSlots[i]->GetImage()->GetSRV().Get());
-			}
-		}
-
-		auto context = GraphicsContext::GetImmediateContext();
-		textData.shader->Bind();
-		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-
-		textData.vertexBuffer->Bind();
-		textData.indexBuffer->Bind();
-
-		RenderCommand::DrawIndexed(textData.indexCount, 0, 0);
-
-		textData.indexCount = 0;
-		textData.vertexBufferPtr = textData.vertexBufferBase;
-		textData.textureSlotIndex = 0;
-
-		textData.shader->Unbind();
+				DispatchTextInternal();
+			});
+#else
+		DispatchTextInternal();
+#endif
 	}
 }

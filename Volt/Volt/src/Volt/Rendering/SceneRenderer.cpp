@@ -240,7 +240,7 @@ namespace Volt
 				Ref<Font> fontAsset = AssetManager::GetAsset<Font>(textComp.fontHandle);
 		if (fontAsset && fontAsset->IsValid())
 		{
-			Renderer::SubmitString(textComp.text, fontAsset, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), textComp.maxWidth);
+			Renderer::SubmitText(textComp.text, fontAsset, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), textComp.maxWidth);
 		}
 			});
 
@@ -286,24 +286,22 @@ namespace Volt
 				}
 			});
 
-		Renderer::SubmitBillboard({ 100.f, 0.f, 0.f }, { 1.f, 1.f, 1.f }, { 1.f, 1.f, 1.f, 1.f });
-
 		ResetPostProcess();
 
 		registry.ForEach<HeightFogComponent>([&](Wire::EntityId id, const HeightFogComponent& comp)
 			{
 				myHeightFogData.fogColor = comp.color;
-		myHeightFogData.fogMinY = comp.minY;
-		myHeightFogData.fogMaxY = comp.maxY;
-		myHeightFogData.strength = comp.strength;
+				myHeightFogData.fogMinY = comp.minY;
+				myHeightFogData.fogMaxY = comp.maxY;
+				myHeightFogData.strength = comp.strength;
 			});
 
 		registry.ForEach<HBAOComponent>([&](Wire::EntityId id, const HBAOComponent& comp)
 			{
 				myHBAOSettings.radius = comp.radius;
-		myHBAOSettings.intensity = comp.intensity;
-		myHBAOSettings.bias = comp.bias;
-		myHBAOSettings.enabled = true;
+				myHBAOSettings.intensity = comp.intensity;
+				myHBAOSettings.bias = comp.bias;
+				myHBAOSettings.enabled = true;
 			});
 
 		registry.ForEach<BloomComponent>([&](Wire::EntityId id, const BloomComponent& comp)
@@ -319,9 +317,9 @@ namespace Volt
 		registry.ForEach<VignetteComponent>([&](Wire::EntityId id, const VignetteComponent& comp)
 			{
 				myVignetteSettings.enabled = true;
-		myVignetteSettings.color = comp.color;
-		myVignetteSettings.sharpness = comp.sharpness;
-		myVignetteSettings.width = comp.width;
+				myVignetteSettings.color = comp.color;
+				myVignetteSettings.sharpness = comp.sharpness;
+				myVignetteSettings.width = comp.width;
 			});
 
 #ifdef VT_THREADED_RENDERING
@@ -363,11 +361,11 @@ namespace Volt
 				{
 					SkyboxData data = skyboxData;
 
-			data.intensity = env.intensity;
-			data.textureLod = env.lod;
+					data.intensity = env.intensity;
+					data.textureLod = env.lod;
 
-			buffer->SetData(&data, sizeof(SkyboxData));
-			buffer->Bind(13);
+					buffer->SetData(&data, sizeof(SkyboxData));
+					buffer->Bind(13);
 				});
 
 			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
@@ -384,7 +382,7 @@ namespace Volt
 			Renderer::SubmitCustom([&]()
 				{
 					myDecalPass.framebuffer->Clear();
-			myDecalPass.framebuffer->Bind();
+					myDecalPass.framebuffer->Bind();
 				});
 
 			Renderer::DispatchDecalsWithShader(myDecalPass.overrideShader);
@@ -427,8 +425,13 @@ namespace Volt
 			Renderer::DispatchBillboardsWithShader();
 
 			//myScene->myParticleSystem->RenderParticles();
-			//Renderer::DispatchText();
 
+			Renderer::SubmitCustom([]()
+				{
+					RenderCommand::SetDepthState(DepthState::ReadWrite);
+				});
+
+			Renderer::DispatchText();
 			Renderer::DispatchSpritesWithMaterial();
 			Renderer::EndPass();
 		}

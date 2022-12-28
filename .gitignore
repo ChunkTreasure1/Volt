@@ -17,6 +17,7 @@ Volt/ProjectTemplate/Assets/Scripts/*.sln
 *.vcxproj.filters
 *.vcxproj.user
 *.csproj
+*.cached
 
 Volt/scripts/data/__pycache__
 Volt/scripts/data/premake5.exe

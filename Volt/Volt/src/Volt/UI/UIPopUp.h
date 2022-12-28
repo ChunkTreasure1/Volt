@@ -47,7 +47,7 @@ public:
 
 			newTextTransform *= gem::scale(gem::mat4(1.0f), gem::vec3{ text.GetSize().x * GetScale().x * GetCanvas()->globalScaleX, text.GetSize().y * GetScale().y * GetCanvas()->globalScaleY, 1 });
 
-			Volt::Renderer::SubmitString(text.GetText(), text.GetFont(), newTextTransform, text.GetMaxWidth(), text.GetColor());
+			Volt::Renderer::SubmitText(text.GetText(), text.GetFont(), newTextTransform, text.GetMaxWidth(), text.GetColor());
 		}
 	}
 

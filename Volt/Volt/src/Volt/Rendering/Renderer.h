@@ -106,7 +106,7 @@ namespace Volt
 		static void SubmitLight(const PointLight& pointLight);
 		static void SubmitLight(const DirectionalLight& dirLight);
 
-		static void SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor = { 1.f });
+		static void SubmitText(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor = { 1.f });
 		static void SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
 		static void SubmitResourceChange(const std::function<void()>&& func);
 
@@ -175,6 +175,7 @@ namespace Volt
 		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass = false, bool aoPass = false);
 		static void CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial);
 		static void CollectBillboardCommandsWithShader(Ref<Shader> aShader);
+		static void CollectTextCommands();
 
 		static std::vector<SubmitCommand> CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera);
 
@@ -199,6 +200,7 @@ namespace Volt
 		static void DispatchBillboardsWithShaderInternal(Ref<Shader> aShader);
 		static void DispatchRenderCommandsInstancedInternal();
 		static void DispatchDecalsWithShaderInternal(Ref<Shader> aShader);
+		static void DispatchTextInternal();
 
 		struct Samplers
 		{
@@ -245,6 +247,15 @@ namespace Volt
 			Ref<Texture2D> texture;
 			Ref<Shader> shader;
 			uint32_t id;
+		};
+
+		struct TextSubmitCommand
+		{
+			gem::mat4 transform;
+			std::string text;
+			gem::vec4 color;
+			Ref<Font> font;
+			float maxWidth;
 		};
 		
 		struct SpriteData
@@ -332,6 +343,7 @@ namespace Volt
 			std::vector<SpriteSubmitCommand> spriteCommands;
 			std::vector<DecalRenderCommand> decalCommands;
 			std::vector<BillboardSubmitCommand> billboardCommands;
+			std::vector<TextSubmitCommand> textCommands;
 
 			inline void Clear()
 			{
@@ -339,6 +351,7 @@ namespace Volt
 				instancedCommands.clear();
 				spriteCommands.clear();
 				billboardCommands.clear();
+				textCommands.clear();
 			}
 		};
 
