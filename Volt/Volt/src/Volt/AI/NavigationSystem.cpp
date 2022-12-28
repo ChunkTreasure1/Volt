@@ -52,50 +52,41 @@ namespace Volt
 		Entity e(id, myCurrentScene.get());
 
 		// #SAMUEL_TODO: Change this to use PathFollow seek behaviour later
-		if (myAgentTargets.find(id) == myAgentTargets.end()) { myAgentTargets[id] = comp.target; }
-		if (myAgentTargets.at(id) != comp.target)
-		{
-			if (comp.myPath.empty() || gem::distance(comp.target, comp.myPath.front()) > 10.f) // Ignore small movements
-			{
-				auto path = myNavMesh->GetNavMeshData().findPath(VTtoPF(e.GetWorldPosition()), VTtoPF(comp.target));
-				if (!path.empty()) { comp.myPath.clear(); }
-				for (const auto& p : path)
-				{
-					comp.myPath.emplace_back(PFtoVT(p));
-				}
-				comp.myPath.pop_back();
-				myAgentTargets[id] = comp.target;
-			}
-		}
+		//if (myAgentTargets.find(id) == myAgentTargets.end()) { myAgentTargets[id] = comp.target; }
+		//if (myAgentTargets.at(id) != comp.target)
+		//{
+		//	if (comp.myPath.empty() || gem::distance(comp.target, comp.myPath.front()) > 10.f) // Ignore small movements
+		//	{
+		//		auto path = myNavMesh->GetNavMeshData().findPath(VTtoPF(e.GetWorldPosition()), VTtoPF(comp.target));
+		//		if (!path.empty()) { comp.myPath.clear(); }
+		//		for (const auto& p : path)
+		//		{
+		//			comp.myPath.emplace_back(PFtoVT(p));
+		//		}
+		//		comp.myPath.pop_back();
+		//		myAgentTargets[id] = comp.target;
+		//	}
+		//}
 
-		if (comp.myPath.empty()) return;
+		//if (comp.myPath.empty()) return;
 
 		// Move to current milestone
 		{
 			auto currentPos = e.GetWorldPosition();
 
+			// Negative maxVelocity values will cause movement in y.
 			if (comp.kinematic)
 			{
-				comp.myVelocity = gem::vec3(0.f);
-				e.SetWorldPosition(currentPos + comp.steeringForce * ts);
+				auto acceleration = comp.steeringForce;
+				acceleration = gem::clamp(acceleration, gem::vec3(-1.f) * comp.maxVelocity, gem::vec3(1.f) * comp.maxVelocity);
+				e.SetWorldPosition(currentPos + acceleration * ts);
 			}
 			else
 			{
 				auto acceleration = comp.steeringForce; // Divide with mass if want to use later on.
 				comp.myVelocity = comp.myVelocity + acceleration * ts;
 				comp.myVelocity = gem::clamp(comp.myVelocity, gem::vec3(-1.f) * comp.maxVelocity, gem::vec3(1.f) * comp.maxVelocity);
-
 				e.SetWorldPosition(currentPos + comp.myVelocity * ts);
-			}
-
-			// #SAMUEL_TODO: this needs to be better implemented
-			if (auto milestone = comp.GetCurrentMilestone(); milestone.has_value())
-			{
-				float dist = gem::distance(currentPos, milestone.value());
-				if (dist < 10.f) // continue to next milestone if close enough to current milestone
-				{
-					comp.myPath.pop_back();
-				}
 			}
 		}
 	}

@@ -1,8 +1,14 @@
 Assets:
+  - Handle: 16549118385688969145
+    Path: Assets\Materials\Green.vtmat
   - Handle: 16625774910016950853
     Path: Assets\Materials\M_ColliderDebug.vtmat
   - Handle: 16380998834732311984
     Path: Assets\Materials\M_FullMetal.vtmat
+  - Handle: 2688449064751813681
+    Path: Assets\Materials\Red.vtmat
+  - Handle: 4581204068274011909
+    Path: Assets\Materials\Yellow.vtmat
   - Handle: 2932326804834381373
     Path: Assets\Meshes\Editor\3dpil.vtmat
   - Handle: 4235162108492430969
@@ -181,6 +187,12 @@ Assets:
     Path: Assets\Scenes\NavMeshTest\NavMesh.vtnavmesh
   - Handle: 11449557049520162786
     Path: Assets\Scenes\NavMeshTest\NavMeshTest.vtscene
+  - Handle: 2552230700054794826
+    Path: Assets\Scenes\U3\NavMesh.vtnavmesh
+  - Handle: 12043462807232796965
+    Path: Assets\Scenes\U3\U3.vtnavmesh
+  - Handle: 12520843396132217383
+    Path: Assets\Scenes\U3\U3.vtscene
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 2713074256263182464

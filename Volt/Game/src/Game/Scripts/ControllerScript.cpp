@@ -58,9 +58,7 @@ void ControllerScript::OnUpdate(float aDeltaTime)
 {
 	if (myEntity.HasComponent<Volt::AgentComponent>())
 	{
-		//auto force = Volt::SteeringBehavior::Seek(myEntity, myTarget);
-		auto force = Volt::SteeringBehavior::Wander(myEntity, myDirection, 100.f, 200.f);
-		//force += Volt::SteeringBehavior::Separation(myEntity, 100.f);
+		auto force = Volt::SteeringBehavior::Seek(myEntity, myTarget);
 		myEntity.GetComponent<Volt::AgentComponent>().steeringForce = force;
 	}
 }
@@ -112,7 +110,7 @@ bool ControllerScript::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 	{
 	case VT_KEY_SPACE:
 	{
-  		myTarget = GetWorldPosFromMouse();
+		myTarget = GetWorldPosFromMouse();
 
 		if (myEntity.HasComponent<Volt::AgentComponent>())
 		{

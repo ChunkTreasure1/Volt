@@ -10,7 +10,6 @@
 #include <gem/gem.h>
 #include <string>
 
-
 namespace Volt
 {
 	class AnimationStateMachine;

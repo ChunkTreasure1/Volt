@@ -90,6 +90,7 @@ namespace Volt
 	gem::vec3 SteeringBehavior::Separation(Entity agent, float radius)
 	{
 		gem::vec3 steeringForce;
+		float decayCoefficient = 1000.f;
 
 		auto agentPositions = NavigationSystem::Get().myAgentPositions;
 
@@ -97,10 +98,10 @@ namespace Volt
 		{
 			if (entry.first == agent.GetId()) { continue; }
 			const auto& entryPos = entry.second;
-			if (gem::distance(entryPos, agent.GetWorldPosition()) < radius)
+			if (auto distance = gem::distance(entryPos, agent.GetWorldPosition()); distance < radius)
 			{
-				// Add Strength
-				steeringForce += Flee(agent, entryPos);
+				auto strength = agent.GetComponent<AgentComponent>().maxForce * (radius - distance) / radius;
+				steeringForce = gem::normalize(Flee(agent, entryPos)) * strength;
 			}
 		}
 
