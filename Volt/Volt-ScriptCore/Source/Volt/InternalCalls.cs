@@ -14,6 +14,9 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Entity_AddComponent(uint entityId, string componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object GetScriptInstance(uint entityId);
         #endregion
 
         #region TransformComponent
@@ -238,6 +241,14 @@ namespace Volt
         internal extern static void PhysicsActor_WakeUp(uint entityId);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void PhysicsActor_PutToSleep(uint entityId);
+        #endregion
+
+        #region Physics
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Physics_Raycast(ref Vector3 origin, ref Vector3 direction, out RaycastHit hit, float maxDistance);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Physics_RaycastLayerMask(ref Vector3 origin, ref Vector3 direction, out RaycastHit hit, float maxDistance, uint layerMask);
         #endregion
 
         #region Input

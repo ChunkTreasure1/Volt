@@ -4,6 +4,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
+#include "Volt/Scripting/Mono/MonoScriptInstance.h"
 
 #include "Volt/Input/Input.h"
 #include "Volt/Components/Components.h"
@@ -27,7 +28,7 @@ namespace Volt
 
 		char* cStr = mono_string_to_utf8(componentType);
 		std::string compName(cStr);
-		
+
 		mono_free(cStr);
 
 		return scene->GetRegistry().HasComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
@@ -55,6 +56,17 @@ namespace Volt
 		mono_free(cStr);
 
 		scene->GetRegistry().AddComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
+	}
+
+	inline static MonoObject* GetScriptInstance(Wire::EntityId entityId)
+	{
+		auto instance = MonoScriptEngine::GetInstanceFromEntityId(entityId);
+		if (instance)
+		{
+			return instance->GetManagedObject();
+		}
+
+		return nullptr;
 	}
 #pragma endregion
 
@@ -1095,6 +1107,18 @@ namespace Volt
 	}
 #pragma endregion
 
+#pragma region Physics
+	inline static bool Physics_Raycast(gem::vec3* origin, gem::vec3* direction, RaycastHit* outHit, float maxDistance)
+	{
+		return Physics::GetScene()->Raycast(*origin, *direction, maxDistance, outHit);
+	}
+
+	inline static bool Physics_RaycastLayerMask(gem::vec3* origin, gem::vec3* direction, RaycastHit* outHit, float maxDistance, uint32_t layerMask)
+	{
+		return Physics::GetScene()->Raycast(*origin, *direction, maxDistance, outHit, layerMask);
+	}
+#pragma endregion Physics
+
 	void MonoScriptGlue::RegisterFunctions()
 	{
 		// Entity
@@ -1102,6 +1126,7 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Entity_HasComponent);
 			VT_ADD_INTERNAL_CALL(Entity_RemoveComponent);
 			VT_ADD_INTERNAL_CALL(Entity_AddComponent);
+			VT_ADD_INTERNAL_CALL(GetScriptInstance);
 		}
 
 		// Transform component
@@ -1217,13 +1242,13 @@ namespace Volt
 		// Physics Actor
 		{
 			VT_ADD_INTERNAL_CALL(PhysicsActor_SetKinematicTarget);
-			
+
 			VT_ADD_INTERNAL_CALL(PhysicsActor_SetLinearVelocity);
 			VT_ADD_INTERNAL_CALL(PhysicsActor_SetMaxLinearVelocity);
 
 			VT_ADD_INTERNAL_CALL(PhysicsActor_SetAngularVelocity);
 			VT_ADD_INTERNAL_CALL(PhysicsActor_SetMaxAngularVelocity);
-		
+
 			VT_ADD_INTERNAL_CALL(PhysicsActor_GetKinematicTargetPosition);
 			VT_ADD_INTERNAL_CALL(PhysicsActor_GetKinematicTargetRotation);
 
@@ -1232,6 +1257,12 @@ namespace Volt
 
 			VT_ADD_INTERNAL_CALL(PhysicsActor_WakeUp);
 			VT_ADD_INTERNAL_CALL(PhysicsActor_PutToSleep);
+		}
+
+		// Physics
+		{
+			VT_ADD_INTERNAL_CALL(Physics_Raycast);
+			VT_ADD_INTERNAL_CALL(Physics_RaycastLayerMask);
 		}
 
 		// Input

@@ -111,5 +111,11 @@ namespace Volt
             myComponentCache.Add(componentType.Name, newComp);
             return newComp;
         }
+
+        public T As<T>() where T : Entity, new()
+        {
+            object instance = InternalCalls.GetScriptInstance(Id);
+            return instance as T;
+        }
     }
 }
