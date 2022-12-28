@@ -170,6 +170,7 @@ namespace Volt
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
+				Renderer::SyncAndWait();
 			}
 
 			myWindow->GetSwapchain().Bind();

@@ -13,6 +13,8 @@
 #include <Volt/Rendering/Camera/Camera.h>
 #include <Volt/Rendering/Framebuffer.h>
 
+#include <Volt/Components/PostProcessComponents.h>
+
 #include <Volt/Asset/AssetManager.h>
 
 AssetPreview::AssetPreview(const std::filesystem::path& path)
@@ -43,6 +45,14 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 		comp.intensity = 3.f;
 
 		entity.SetRotation({ 70.f, 0.f, 100.f });
+	}
+
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 }
 

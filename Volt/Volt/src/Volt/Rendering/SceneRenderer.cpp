@@ -297,12 +297,12 @@ namespace Volt
 		registry.ForEach<VignetteComponent>([&](Wire::EntityId id, const VignetteComponent& comp)
 			{
 				myVignetteSettings.enabled = true;
-		myVignetteSettings.color = comp.color;
-		myVignetteSettings.sharpness = comp.sharpness;
-		myVignetteSettings.width = comp.width;
+				myVignetteSettings.color = comp.color;
+				myVignetteSettings.sharpness = comp.sharpness;
+				myVignetteSettings.width = comp.width;
 			});
 
-		Renderer::Begin(Context::Deferred, "Test");
+		Renderer::Begin(Context::Deferred, myContext);
 		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
 
 		// Point Light Shadow Pass
@@ -449,7 +449,6 @@ namespace Volt
 		}
 
 		Renderer::End();
-		Renderer::SyncAndWait();
 	}
 
 	void SceneRenderer::OnRenderRuntime()

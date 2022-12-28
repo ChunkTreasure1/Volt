@@ -1627,7 +1627,6 @@ namespace Volt
 				VT_PROFILE_SCOPE("Execute Commands");
 				myRendererData->currentGPUBuffer->Execute();
 				myRendererData->currentGPUBuffer->Clear();
-				myRendererData->currentGPUCommands->Clear();
 			}
 			
 			myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
@@ -1734,7 +1733,10 @@ namespace Volt
 	}
 
 	void Renderer::EndInternal()
-	{}
+	{
+		RenderCommand::EndAnnotation();
+		myRendererData->currentGPUCommands->Clear();
+	}
 
 	void Renderer::BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
 	{
