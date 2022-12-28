@@ -68,54 +68,56 @@ namespace Volt
 		// Handle resize
 		if (myShouldResize)
 		{
-			VT_PROFILE_SCOPE("Resize");
-
 			myShouldResize = false;
+			Renderer::SubmitCustom([&]()
+				{
+					VT_PROFILE_SCOPE("Resize");
 
-			const uint32_t width = myResizeSize.x;
-			const uint32_t height = myResizeSize.y;
+					const uint32_t width = myResizeSize.x;
+					const uint32_t height = myResizeSize.y;
 
-			const uint32_t quarterWidth = width / 4;
-			const uint32_t quarterHeight = height / 4;
+					const uint32_t quarterWidth = width / 4;
+					const uint32_t quarterHeight = height / 4;
 
-			myPreDepthPass.framebuffer->Resize(width, height);
-			mySkyboxPass.framebuffer->Resize(width, height);
-			myDeferredPass.framebuffer->Resize(width, height);
-			myShadingPass.framebuffer->Resize(width, height);
-			myForwardPass.framebuffer->Resize(width, height);
-			myFXAAPass.framebuffer->Resize(width, height);
-			myBloomCompositePass.framebuffer->Resize(width, height);
-			myGammaCorrectionPass.framebuffer->Resize(width, height);
-			myDecalPass.framebuffer->Resize(width, height);
+					myPreDepthPass.framebuffer->Resize(width, height);
+					mySkyboxPass.framebuffer->Resize(width, height);
+					myDeferredPass.framebuffer->Resize(width, height);
+					myShadingPass.framebuffer->Resize(width, height);
+					myForwardPass.framebuffer->Resize(width, height);
+					myFXAAPass.framebuffer->Resize(width, height);
+					myBloomCompositePass.framebuffer->Resize(width, height);
+					myGammaCorrectionPass.framebuffer->Resize(width, height);
+					myDecalPass.framebuffer->Resize(width, height);
 
-			myReinterleavingPass.framebuffer->Resize(width, height);
-			myHBAOBlurPass[0].framebuffer->Resize(width, height);
-			myHBAOBlurPass[1].framebuffer->Resize(width, height);
-			myAOCompositePass.framebuffer->Resize(width, height);
+					myReinterleavingPass.framebuffer->Resize(width, height);
+					myHBAOBlurPass[0].framebuffer->Resize(width, height);
+					myHBAOBlurPass[1].framebuffer->Resize(width, height);
+					myAOCompositePass.framebuffer->Resize(width, height);
 
-			myDeinterleavingPass[0].framebuffer->Resize(quarterWidth, quarterHeight);
-			myDeinterleavingPass[1].framebuffer->Resize(quarterWidth, quarterHeight);
-			myHBAOPass.framebuffer->Resize(quarterWidth, quarterHeight);
+					myDeinterleavingPass[0].framebuffer->Resize(quarterWidth, quarterHeight);
+					myDeinterleavingPass[1].framebuffer->Resize(quarterWidth, quarterHeight);
+					myHBAOPass.framebuffer->Resize(quarterWidth, quarterHeight);
 
-			gem::vec2ui mipSize = { width, height };
+					gem::vec2ui mipSize = { width, height };
 
-			for (auto& pass : myBloomDownsamplePasses)
-			{
-				mipSize /= 2;
-				mipSize = gem::max(mipSize, 1u);
+					for (auto& pass : myBloomDownsamplePasses)
+					{
+						mipSize /= 2;
+						mipSize = gem::max(mipSize, 1u);
 
-				pass.framebuffer->Resize(mipSize.x, mipSize.y);
-			}
+						pass.framebuffer->Resize(mipSize.x, mipSize.y);
+					}
 
-			mipSize = { width, height };
+					mipSize = { width, height };
 
-			for (auto& myBloomUpsamplePass : std::ranges::reverse_view(myBloomUpsamplePasses))
-			{
-				mipSize /= 2;
-				mipSize = gem::max(mipSize, 1u);
+					for (auto& myBloomUpsamplePass : std::ranges::reverse_view(myBloomUpsamplePasses))
+					{
+						mipSize /= 2;
+						mipSize = gem::max(mipSize, 1u);
 
-				myBloomUpsamplePass.framebuffer->Resize(mipSize.x, mipSize.y);
-			}
+						myBloomUpsamplePass.framebuffer->Resize(mipSize.x, mipSize.y);
+					}
+				});
 		}
 
 		auto& registry = myScene->GetRegistry();
@@ -245,19 +247,19 @@ namespace Volt
 		registry.ForEach<SpriteComponent>([&](Wire::EntityId id, const SpriteComponent& comp)
 			{
 				Ref<Texture2D> texture = nullptr;
-				Ref<Material> material = nullptr;
-				if (comp.materialHandle != Asset::Null())
+		Ref<Material> material = nullptr;
+		if (comp.materialHandle != Asset::Null())
+		{
+			material = AssetManager::GetAsset<Material>(comp.materialHandle);
+			if (material && material->IsValid())
+			{
+				if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
 				{
-					material = AssetManager::GetAsset<Material>(comp.materialHandle);
-					if (material && material->IsValid())
-					{
-						if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
-						{
-							texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
-						}
-					}
+					texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
 				}
-				Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
+			}
+		}
+		Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
 			});
 
 		registry.ForEach<DecalComponent, TransformComponent>([&](Wire::EntityId id, const DecalComponent& decalComponent, const TransformComponent& transComp)
@@ -1020,7 +1022,7 @@ namespace Volt
 				Renderer::SubmitCustom([p = pass]()
 					{
 						p.framebuffer->Clear();
-						p.framebuffer->Bind();
+				p.framebuffer->Bind();
 					});
 
 				Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("BloomDownsamplePS"));
@@ -1039,14 +1041,14 @@ namespace Volt
 			Renderer::SubmitCustom([&]()
 				{
 					struct BloomUpsampleData
-					{
-						float filterRadius;
-						gem::vec3 padding;
-					} data{};
+			{
+				float filterRadius;
+				gem::vec3 padding;
+			} data{};
 
-					data.filterRadius = 0.005f;
-					myBloomUpsampleBuffer->SetData(&data, sizeof(BloomUpsampleData));
-					myBloomUpsampleBuffer->Bind(13);
+			data.filterRadius = 0.005f;
+			myBloomUpsampleBuffer->SetData(&data, sizeof(BloomUpsampleData));
+			myBloomUpsampleBuffer->Bind(13);
 				});
 
 
@@ -1075,7 +1077,7 @@ namespace Volt
 			Renderer::SubmitCustom([&]()
 				{
 					myBloomCompositePass.framebuffer->Clear();
-					myBloomCompositePass.framebuffer->Bind();
+			myBloomCompositePass.framebuffer->Bind();
 				});
 
 			Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("BloomComposite"));
@@ -1131,7 +1133,7 @@ namespace Volt
 			Renderer::SubmitCustom([hbaoData = myHBAOData, hbaoBuffer = myHBAOBuffer]()
 				{
 					hbaoBuffer->SetData(&hbaoData, sizeof(HBAOData));
-					hbaoBuffer->Bind(13);
+			hbaoBuffer->Bind(13);
 				});
 
 			Renderer::BindTexturesToStage(ShaderStage::Pixel, { myPreDepthPass.framebuffer->GetDepthAttachment() }, 0);
@@ -1151,22 +1153,22 @@ namespace Volt
 						myHBAOPipeline->SetTarget(myHBAOPass.framebuffer->GetColorAttachment(i), i);
 					}
 
-					myHBAOPipeline->SetImage(myPreDepthPass.framebuffer->GetColorAttachment(0), 0);
+			myHBAOPipeline->SetImage(myPreDepthPass.framebuffer->GetColorAttachment(0), 0);
 
-					for (uint32_t i = 0; i < 2; i++)
-					{
-						for (uint32_t j = 0; j < 8; j++)
-						{
-							myHBAOPipeline->SetImage(myDeinterleavingPass[i].framebuffer->GetColorAttachment(j), i * 8 + j + 1);
-						}
-					}
+			for (uint32_t i = 0; i < 2; i++)
+			{
+				for (uint32_t j = 0; j < 8; j++)
+				{
+					myHBAOPipeline->SetImage(myDeinterleavingPass[i].framebuffer->GetColorAttachment(j), i * 8 + j + 1);
+				}
+			}
 
-					constexpr uint32_t WORK_GROUP_SIZE = 16;
-					gem::vec2ui size = { myHBAOPass.framebuffer->GetWidth(), myHBAOPass.framebuffer->GetHeight() };
-					size = { size.x + WORK_GROUP_SIZE - size.x % WORK_GROUP_SIZE, size.y + WORK_GROUP_SIZE - size.y % WORK_GROUP_SIZE };
+			constexpr uint32_t WORK_GROUP_SIZE = 16;
+			gem::vec2ui size = { myHBAOPass.framebuffer->GetWidth(), myHBAOPass.framebuffer->GetHeight() };
+			size = { size.x + WORK_GROUP_SIZE - size.x % WORK_GROUP_SIZE, size.y + WORK_GROUP_SIZE - size.y % WORK_GROUP_SIZE };
 
-					myHBAOPipeline->Execute(size.x / 16u, size.y / 16u, 16u);
-					myHBAOPipeline->Clear();
+			myHBAOPipeline->Execute(size.x / 16u, size.y / 16u, 16u);
+			myHBAOPipeline->Clear();
 				});
 
 			Renderer::EndSection("HBAO Main");

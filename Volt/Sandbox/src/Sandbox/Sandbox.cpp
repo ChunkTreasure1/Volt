@@ -1139,6 +1139,32 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 
 bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 {
+	if (myShouldResize)
+	{
+		myShouldResize = false;
+
+		Volt::Renderer::SubmitCustom([&]()
+			{
+				const uint32_t width = myViewportSize.x;
+				const uint32_t height = myViewportSize.y;
+
+				myGizmoPass.framebuffer->Resize(width, height);
+
+				mySelectedGeometryPass.framebuffer->Resize(width, height);
+				myJumpFloodInitPass.framebuffer->Resize(width, height);
+
+				for (const auto& pass : myJumpFloodPass)
+				{
+					pass.framebuffer->Resize(width, height);
+				}
+
+				myJumpFloodCompositePass.framebuffer->Resize(width, height);
+
+				myForwardExtraPass.framebuffer->Resize(width, height);
+				myColliderVisualizationPass.framebuffer->Resize(width, height);
+			});
+	}
+
 	switch (mySceneState)
 	{
 		case SceneState::Edit:
@@ -1282,25 +1308,11 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 bool Sandbox::OnViewportResizeEvent(Volt::ViewportResizeEvent& e)
 {
+	myRuntimeScene->SetRenderSize(e.GetWidth(), e.GetHeight());
 	myViewportSize = { e.GetWidth(), e.GetHeight() };
 	myViewportPosition = { e.GetX(), e.GetY() };
-
-	myRuntimeScene->SetRenderSize(e.GetWidth(), e.GetHeight());
-	myGizmoPass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-
-	mySelectedGeometryPass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-	myJumpFloodInitPass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-
-	for (const auto& pass : myJumpFloodPass)
-	{
-		pass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-	}
-
-	myJumpFloodCompositePass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-
-	myForwardExtraPass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-	myColliderVisualizationPass.framebuffer->Resize(e.GetWidth(), e.GetHeight());
-
+	myShouldResize = true;
+	
 	return false;
 }
 

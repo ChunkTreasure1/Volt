@@ -162,6 +162,8 @@ private:
 	bool myShouldRenderGizmos = true;
 	bool myTitlebarHovered = false;
 	bool myBuildStarted = false;
+	
+	bool myShouldResize = false;
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;
