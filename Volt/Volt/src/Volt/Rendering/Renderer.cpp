@@ -66,7 +66,6 @@ namespace Volt
 	void Renderer::Shutdown()
 	{
 		myRendererData->isRunning = false;
-		myRendererData->updateReady = true;
 		myRendererData->syncVariable.notify_all();
 		myRendererData->renderThread.join();
 
@@ -252,13 +251,13 @@ namespace Volt
 	void Renderer::SubmitLight(const PointLight& pointLight)
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->pointLights.push_back(pointLight);
+		myRendererData->currentCPUCommands->pointLights.push_back(pointLight);
 	}
 
 	void Renderer::SubmitLight(const DirectionalLight& dirLight)
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->directionalLight = dirLight;
+		myRendererData->currentCPUCommands->directionalLight = dirLight;
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
@@ -429,8 +428,16 @@ namespace Volt
 	void Renderer::End()
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->pointLights.clear();
-		myRendererData->directionalLight = DirectionalLight{};
+
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				EndInternal();
+			});
+#else
+		EndInternal();
+#endif
 	}
 
 	void Renderer::BeginPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
@@ -596,44 +603,44 @@ namespace Volt
 			{
 				float roughness;
 				float padding[3];
-		} irradianceRoughness{};
+			} irradianceRoughness{};
 
-		ImageSpecification imageSpec{};
-		imageSpec.format = ImageFormat::RGBA32F;
-		imageSpec.width = cubeMapSize;
-		imageSpec.height = cubeMapSize;
-		imageSpec.usage = ImageUsage::Storage;
-		imageSpec.layers = 6;
-		imageSpec.isCubeMap = true;
-		imageSpec.mips = Utility::CalculateMipCount(cubeMapSize, cubeMapSize);
+			ImageSpecification imageSpec{};
+			imageSpec.format = ImageFormat::RGBA32F;
+			imageSpec.width = cubeMapSize;
+			imageSpec.height = cubeMapSize;
+			imageSpec.usage = ImageUsage::Storage;
+			imageSpec.layers = 6;
+			imageSpec.isCubeMap = true;
+			imageSpec.mips = Utility::CalculateMipCount(cubeMapSize, cubeMapSize);
 
-		environmentFiltered = Image2D::Create(imageSpec);
-		environmentFiltered->CreateMipUAVs();
+			environmentFiltered = Image2D::Create(imageSpec);
+			environmentFiltered->CreateMipUAVs();
 
-		Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::Get("EnvironmentMipFilter"));
-		Ref<ConstantBuffer> constantBuffer = ConstantBuffer::Create(&irradianceRoughness, sizeof(irradianceRoughness), ShaderStage::Compute);
-		constantBuffer->Bind(0);
+			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::Get("EnvironmentMipFilter"));
+			Ref<ConstantBuffer> constantBuffer = ConstantBuffer::Create(&irradianceRoughness, sizeof(irradianceRoughness), ShaderStage::Compute);
+			constantBuffer->Bind(0);
 
 
-		const float deltaRoughness = 1.f / gem::max((float)environmentFiltered->GetMipCount() - 1.f, 1.f);
-		for (uint32_t i = 0, size = cubeMapSize; i < environmentFiltered->GetMipCount(); i++, size /= 2)
-		{
-			const uint32_t numGroups = gem::max(1u, size / 32);
-			const float roughness = gem::max(i * deltaRoughness, 0.05f);
+			const float deltaRoughness = 1.f / gem::max((float)environmentFiltered->GetMipCount() - 1.f, 1.f);
+			for (uint32_t i = 0, size = cubeMapSize; i < environmentFiltered->GetMipCount(); i++, size /= 2)
+			{
+				const uint32_t numGroups = gem::max(1u, size / 32);
+				const float roughness = gem::max(i * deltaRoughness, 0.05f);
 
-			irradianceRoughness.roughness = roughness;
-			constantBuffer->SetData(&irradianceRoughness, sizeof(IrradianceRougness));
+				irradianceRoughness.roughness = roughness;
+				constantBuffer->SetData(&irradianceRoughness, sizeof(IrradianceRougness));
 
-			filterPipeline->SetImage(environmentUnfiltered, 0);
-			auto mipUAV = environmentFiltered->GetUAV(i);
-			context->CSSetUnorderedAccessViews(0, 1, mipUAV.GetAddressOf(), nullptr);
-			filterPipeline->Execute(numGroups, numGroups, 6);
-			filterPipeline->Clear();
+				filterPipeline->SetImage(environmentUnfiltered, 0);
+				auto mipUAV = environmentFiltered->GetUAV(i);
+				context->CSSetUnorderedAccessViews(0, 1, mipUAV.GetAddressOf(), nullptr);
+				filterPipeline->Execute(numGroups, numGroups, 6);
+				filterPipeline->Clear();
+			}
+
+			ID3D11UnorderedAccessView* nullUAV = nullptr;
+			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 		}
-
-		ID3D11UnorderedAccessView* nullUAV = nullptr;
-		context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
-	}
 
 		// Irradiance
 		{
@@ -659,7 +666,7 @@ namespace Volt
 		myRendererData->environmentCache.emplace(aTextureHandle, env);
 
 		return env;
-}
+	}
 
 	void Renderer::CreateDefaultBuffers()
 	{
@@ -1009,14 +1016,16 @@ namespace Volt
 		// Directional light
 		{
 			DirectionalLight* dirLight = ConstantBufferRegistry::Get(4)->Map<DirectionalLight>();
-			*dirLight = myRendererData->directionalLight;
+			*dirLight = myRendererData->currentGPUCommands->directionalLight;
 			ConstantBufferRegistry::Get(4)->Unmap();
 		}
 
 		// Point lights
 		{
+			const auto& pointLights = myRendererData->currentGPUCommands->pointLights;
+
 			PointLight* data = StructuredBufferRegistry::Get(102)->Map<PointLight>();
-			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, myRendererData->pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)myRendererData->pointLights.size()));
+			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)pointLights.size()));
 			StructuredBufferRegistry::Get(102)->Unmap();
 		}
 
@@ -1025,7 +1034,7 @@ namespace Volt
 			SceneData* data = ConstantBufferRegistry::Get(7)->Map<SceneData>();
 			data->deltaTime = myRendererData->sceneData.deltaTime;
 			data->timeSinceStart = myRendererData->sceneData.timeSinceStart;
-			data->pointLightCount = (uint32_t)myRendererData->pointLights.size();
+			data->pointLightCount = (uint32_t)myRendererData->currentGPUCommands->pointLights.size();
 			ConstantBufferRegistry::Get(7)->Unmap();
 		}
 	}
@@ -1072,19 +1081,27 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const SubmitCommand& lhs, const SubmitCommand& rhs)
+		std::sort(renderCommands.begin(), renderCommands.end(), [](const SubmitCommand& lhs, const SubmitCommand& rhs)
 			{
-				return lhs.subMesh < rhs.subMesh;
-			});
+				if (lhs.subMesh < rhs.subMesh)
+				{
+					return true;
+				}
+				else if (lhs.subMesh > rhs.subMesh)
+				{
+					return false;
+				}
 
-		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const SubmitCommand& lhs, const SubmitCommand& rhs)
-			{
-				return lhs.material < rhs.material;
-			});
+		if (lhs.material < rhs.material)
+		{
+			return true;
+		}
+		else if (lhs.material > rhs.material)
+		{
+			return false;
+		}
 
-		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const SubmitCommand& lhs, const SubmitCommand& rhs)
-			{
-				return lhs.transform[3][1] + lhs.mesh->GetBoundingBox().max.y < rhs.transform[3][1] + rhs.mesh->GetBoundingBox().max.y;
+		return false;
 			});
 	}
 
@@ -1597,27 +1614,24 @@ namespace Volt
 
 		while (myRendererData->isRunning)
 		{
+			std::unique_lock lk{ myRendererData->renderMutex };
+			{
+				VT_PROFILE_SCOPE("Wait for update");
+
+				myRendererData->syncVariable.wait(lk, []() { return myRendererData->primaryBufferUsed || !myRendererData->isRunning; });
+				RenderCommand::RestoreDefaultState();
+			}
+
 			// Execute commands
 			{
 				VT_PROFILE_SCOPE("Execute Commands");
 				myRendererData->currentGPUBuffer->Execute();
 				myRendererData->currentGPUBuffer->Clear();
 				myRendererData->currentGPUCommands->Clear();
-
-				myRendererData->renderReady = true;
-				myRendererData->syncVariable.notify_one();
 			}
-
-			{
-				VT_PROFILE_SCOPE("Wait for update");
-
-				std::unique_lock lk{ myRendererData->renderMutex };
-				myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->updateReady; });
-				myRendererData->renderReady = false;
-				myRendererData->updateReady = false;
-
-				RenderCommand::RestoreDefaultState();
-			}
+			
+			myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
+			myRendererData->syncVariable.notify_one();
 		}
 	}
 
@@ -1718,6 +1732,9 @@ namespace Volt
 		StructuredBufferRegistry::Get(101)->Bind(101);
 		StructuredBufferRegistry::Get(102)->Bind(102);
 	}
+
+	void Renderer::EndInternal()
+	{}
 
 	void Renderer::BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
 	{
@@ -1998,17 +2015,10 @@ namespace Volt
 		auto immediateContext = GraphicsContext::GetImmediateContext();
 		auto deferredContext = GraphicsContext::GetDeferredContext();
 
-		{
-			VT_PROFILE_SCOPE("Wait for render");
-			std::unique_lock lk{ myRendererData->renderMutex };
-			myRendererData->syncVariable.wait(lk, [&]() { return myRendererData->renderReady; });
-		}
+		std::unique_lock lk{ myRendererData->renderMutex };
+		myRendererData->syncVariable.wait(lk, []() { return !myRendererData->primaryBufferUsed; });
 
 		ID3D11CommandList*& commandList = myRendererData->currentGPUBuffer->GetAndReleaseCommandList();
-
-		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
-		std::swap(myRendererData->currentCPUCommands, myRendererData->currentGPUCommands);
-
 		VT_DX_CHECK(deferredContext->FinishCommandList(false, &commandList));
 
 		if (commandList)
@@ -2016,7 +2026,9 @@ namespace Volt
 			immediateContext->ExecuteCommandList(commandList, false);
 		}
 
-		myRendererData->updateReady = true;
+		myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
+		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
+		std::swap(myRendererData->currentCPUCommands, myRendererData->currentGPUCommands);
 		myRendererData->syncVariable.notify_one();
 	}
 
@@ -2031,7 +2043,7 @@ namespace Volt
 #else
 		RenderCommand::BindTexturesToStage(stage, textures, startSlot);
 #endif
-		}
+	}
 
 	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
 	{

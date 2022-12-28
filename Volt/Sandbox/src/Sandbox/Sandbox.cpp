@@ -679,46 +679,46 @@ void Sandbox::SetupRenderCallbacks()
 			//	Volt::Renderer::EndPass();
 			//}
 
-			//// Gizmo pass
-			//{
-			//	Volt::Renderer::BeginPass(myGizmoPass, camera, false);
+			// Gizmo pass
+			{
+				Volt::Renderer::BeginPass(myGizmoPass, camera, false);
 
-			//	auto& registry = scene->GetRegistry();
-			//	Ref<Volt::Texture2D> gizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_entityGizmo.dds");
-			//	Ref<Volt::Texture2D> lightGizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_lightGizmo.dds");
+				auto& registry = scene->GetRegistry();
+				Ref<Volt::Texture2D> gizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_entityGizmo.dds");
+				Ref<Volt::Texture2D> lightGizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_lightGizmo.dds");
 
-			//	registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
-			//		{
-			//			if (transformComp.visible && myShouldRenderGizmos)
-			//			{
-			//				gem::vec3 p, s, r;
-			//				Volt::Math::DecomposeTransform(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
+				registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
+					{
+						if (transformComp.visible && myShouldRenderGizmos)
+						{
+							gem::vec3 p, s, r;
+							Volt::Math::DecomposeTransform(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
 
-			//				const float maxDist = 5000.f;
-			//				const float lerpStartDist = 4000.f;
-			//				const float maxScale = 1.f;
-			//				const float distance = gem::distance(camera->GetPosition(), p);
+							const float maxDist = 5000.f;
+							const float lerpStartDist = 4000.f;
+							const float maxScale = 1.f;
+							const float distance = gem::distance(camera->GetPosition(), p);
 
-			//				float alpha = 1.f;
+							float alpha = 1.f;
 
-			//				if (distance >= lerpStartDist)
-			//				{
-			//					alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
-			//				}
+							if (distance >= lerpStartDist)
+							{
+								alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
+							}
 
-			//				if (distance < maxDist)
-			//				{
-			//					float scale = gem::min(distance / maxDist, maxScale);
+							if (distance < maxDist)
+							{
+								float scale = gem::min(distance / maxDist, maxScale);
 
-			//					Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? lightGizmoTexture : gizmoTexture;
-			//					Volt::Renderer::SubmitBillboard(gizmo, p, gem::vec3{ scale }, id, gem::vec4{ 1.f, 1.f, 1.f, alpha });
-			//				}
-			//			}
-			//		});
+								Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? lightGizmoTexture : gizmoTexture;
+								Volt::Renderer::SubmitBillboard(gizmo, p, gem::vec3{ scale }, id, gem::vec4{ 1.f, 1.f, 1.f, alpha });
+							}
+						}
+					});
 
-			//	Volt::Renderer::DispatchBillboardsWithShader(myGizmoShader);
-			//	Volt::Renderer::EndPass();
-			//}
+				Volt::Renderer::DispatchBillboardsWithShader(myGizmoShader);
+				Volt::Renderer::EndPass();
+			}
 
 			//auto& registry = scene->GetRegistry();
 

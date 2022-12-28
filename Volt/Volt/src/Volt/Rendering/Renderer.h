@@ -189,7 +189,8 @@ namespace Volt
 		static void DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader);
 
 		static void BeginInternal(Context context, const std::string& debugName);
-		
+		static void EndInternal();
+
 		static void BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass);
 		static void EndPassInternal();
 
@@ -345,6 +346,9 @@ namespace Volt
 			std::vector<BillboardSubmitCommand> billboardCommands;
 			std::vector<TextSubmitCommand> textCommands;
 
+			std::vector<PointLight> pointLights;
+			DirectionalLight directionalLight{};
+
 			inline void Clear()
 			{
 				submitCommands.clear();
@@ -352,6 +356,9 @@ namespace Volt
 				spriteCommands.clear();
 				billboardCommands.clear();
 				textCommands.clear();
+
+				pointLights.clear();
+				directionalLight = {};
 			}
 		};
 
@@ -365,8 +372,6 @@ namespace Volt
 			std::mutex resourceMutex;
 			std::vector<std::function<void()>> resourceChangeQueue;
 
-			std::vector<PointLight> pointLights;
-			DirectionalLight directionalLight{};
 			Settings settings{};
 			InstancingData instancingData{};
 
@@ -401,8 +406,7 @@ namespace Volt
 			Ref<PerThreadCommands> perThreadCommands[2];
 
 			std::atomic_bool isRunning = false;
-			bool renderReady = false;
-			bool updateReady = false;
+			bool primaryBufferUsed = false;
 
 			std::mutex renderMutex;
 			std::condition_variable syncVariable;
