@@ -193,7 +193,6 @@ namespace Volt
 		////////////////////
 
 		Ref<Scene> myScene;
-		Ref<Material> myVignetteMaterial;
 		Ref<Shader> myBillboardShader;
 
 		RenderPass myForwardPass;
@@ -202,13 +201,9 @@ namespace Volt
 		RenderPass myShadingPass;
 		RenderPass myDirectionalShadowPass;
 		RenderPass myFXAAPass;
-		RenderPass myVignettePass;
 		RenderPass myGammaCorrectionPass;
+		RenderPass myDebandingPass;
 		RenderPass myPreDepthPass;
-
-		RenderPass myHeightFogPass;
-		Ref<ConstantBuffer> myHeightFogBuffer;
-		HeightFogData myHeightFogData;
 
 		///// Skybox /////
 		RenderPass mySkyboxPass;
@@ -238,15 +233,6 @@ namespace Volt
 		Ref<ComputePipeline> myHBAOPipeline;
 		RenderPass myHBAOPass;
 		////////////////
-
-		///// Outline /////
-		RenderPass myHighlightedGeometryPass;
-		RenderPass myJumpFloodInitPass;
-		RenderPass myJumpFloodCompositePass;
-
-		RenderPass myJumpFloodPass[2];
-		Ref<ConstantBuffer> myJumpFloodBuffer;
-		///////////////////
 
 		///// Point light shadow /////
 		RenderPass myPointLightPass;

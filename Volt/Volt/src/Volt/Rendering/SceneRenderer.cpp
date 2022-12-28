@@ -86,9 +86,7 @@ namespace Volt
 			myFXAAPass.framebuffer->Resize(width, height);
 			myBloomCompositePass.framebuffer->Resize(width, height);
 			myGammaCorrectionPass.framebuffer->Resize(width, height);
-			myVignettePass.framebuffer->Resize(width, height);
 			myDecalPass.framebuffer->Resize(width, height);
-			myHeightFogPass.framebuffer->Resize(width, height);
 
 			myReinterleavingPass.framebuffer->Resize(width, height);
 			myHBAOBlurPass[0].framebuffer->Resize(width, height);
@@ -98,18 +96,6 @@ namespace Volt
 			myDeinterleavingPass[0].framebuffer->Resize(quarterWidth, quarterHeight);
 			myDeinterleavingPass[1].framebuffer->Resize(quarterWidth, quarterHeight);
 			myHBAOPass.framebuffer->Resize(quarterWidth, quarterHeight);
-
-			// Outline
-			{
-				myHighlightedGeometryPass.framebuffer->Resize(width, height);
-				myJumpFloodInitPass.framebuffer->Resize(width, height);
-				myJumpFloodCompositePass.framebuffer->Resize(width, height);
-
-				for (uint32_t i = 0; i < 2; i++)
-				{
-					myJumpFloodPass[i].framebuffer->Resize(width, height);
-				}
-			}
 
 			gem::vec2ui mipSize = { width, height };
 
@@ -259,19 +245,19 @@ namespace Volt
 		registry.ForEach<SpriteComponent>([&](Wire::EntityId id, const SpriteComponent& comp)
 			{
 				Ref<Texture2D> texture = nullptr;
-		Ref<Material> material = nullptr;
-		if (comp.materialHandle != Asset::Null())
-		{
-			material = AssetManager::GetAsset<Material>(comp.materialHandle);
-			if (material && material->IsValid())
-			{
-				if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
+				Ref<Material> material = nullptr;
+				if (comp.materialHandle != Asset::Null())
 				{
-					texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
+					material = AssetManager::GetAsset<Material>(comp.materialHandle);
+					if (material && material->IsValid())
+					{
+						if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
+						{
+							texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
+						}
+					}
 				}
-			}
-		}
-		Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
+				Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
 			});
 
 		registry.ForEach<DecalComponent, TransformComponent>([&](Wire::EntityId id, const DecalComponent& decalComponent, const TransformComponent& transComp)
@@ -287,14 +273,6 @@ namespace Volt
 			});
 
 		ResetPostProcess();
-
-		registry.ForEach<HeightFogComponent>([&](Wire::EntityId id, const HeightFogComponent& comp)
-			{
-				myHeightFogData.fogColor = comp.color;
-		myHeightFogData.fogMinY = comp.minY;
-		myHeightFogData.fogMaxY = comp.maxY;
-		myHeightFogData.strength = comp.strength;
-			});
 
 		registry.ForEach<HBAOComponent>([&](Wire::EntityId id, const HBAOComponent& comp)
 			{
@@ -322,9 +300,34 @@ namespace Volt
 		myVignetteSettings.width = comp.width;
 			});
 
-#ifdef VT_THREADED_RENDERING
 		Renderer::Begin(Context::Deferred, "Test");
 		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
+
+		// Point Light Shadow Pass
+		{
+			//VT_PROFILE_SCOPE("SceneRenderer::PointLightShadow");
+			//Renderer::BeginPass(myPointLightPass, aCamera, true, true);
+
+			//uint32_t lightIndex = 0;
+			//registry.ForEach<PointLightComponent, TransformComponent>([&](Wire::EntityId id, const PointLightComponent& pointLightComp, const TransformComponent& transformComp)
+			//	{
+			//		if (transformComp.visible)
+			//		{
+			//			if (pointLightComp.castShadows)
+			//			{
+			//				const uint32_t data[4] = { lightIndex, 0, 0, 0 };
+
+			//				myPointLightBuffer->SetData(data, sizeof(uint32_t) * 4);
+			//				myPointLightBuffer->Bind(13);
+			//				Renderer::DispatchRenderCommandsInstanced();
+			//			}
+
+			//			lightIndex++;
+			//		}
+			//	});
+
+			//Renderer::EndPass();
+		}
 
 		// Directional Shadow Pass
 		{
@@ -445,173 +448,6 @@ namespace Volt
 
 		Renderer::End();
 		Renderer::SyncAndWait();
-#else
-
-		Renderer::SetDepthState(DepthState::ReadWrite);
-		Renderer::ResetStatistics();
-		Renderer::Begin(myContext);
-		Renderer::SetFullResolution({ (float)myResizeSize.x, (float)myResizeSize.y });
-
-		// Directional Shadow Pass
-		{
-			VT_PROFILE_SCOPE("SceneRenderer::DirectionalLightShadow");
-
-			if (dirLightCamera)
-			{
-				Renderer::BeginPass(myDirectionalShadowPass, dirLightCamera, true, true);
-				Renderer::DispatchRenderCommandsInstanced();
-				Renderer::EndPass();
-			}
-		}
-
-		// Point Light Shadow Pass
-		{
-			//VT_PROFILE_SCOPE("SceneRenderer::PointLightShadow");
-			//Renderer::BeginPass(myPointLightPass, aCamera, true, true);
-
-			//uint32_t lightIndex = 0;
-			//registry.ForEach<PointLightComponent, TransformComponent>([&](Wire::EntityId id, const PointLightComponent& pointLightComp, const TransformComponent& transformComp)
-			//	{
-			//		if (transformComp.visible)
-			//		{
-			//			if (pointLightComp.castShadows)
-			//			{
-			//				const uint32_t data[4] = { lightIndex, 0, 0, 0 };
-
-			//				myPointLightBuffer->SetData(data, sizeof(uint32_t) * 4);
-			//				myPointLightBuffer->Bind(13);
-			//				Renderer::DispatchRenderCommandsInstanced();
-			//			}
-
-			//			lightIndex++;
-			//		}
-			//	});
-
-			//Renderer::EndPass();
-		}
-
-		// Pre depth
-		{
-			Renderer::BeginPass(myPreDepthPass, aCamera, true, false, true);
-			Renderer::DispatchRenderCommandsInstanced();
-			Renderer::EndPass();
-		}
-
-		// Test Voxel
-		{
-			//Renderer::BeginPass(myVoxelPass, aCamera);
-
-			//VoxelSceneData data{};
-			//myVoxelBuffer->SetData(&data, sizeof(VoxelSceneData));
-			//myVoxelBuffer->Bind(13);
-
-			//auto context = GraphicsContext::GetContext();
-			//context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, nullptr, 0, 1, myVoxelResultBuffer->GetUAV().GetAddressOf(), nullptr);
-			//context->PSSetShaderResources(14, 1, myDirectionalShadowPass.framebuffer->GetDepthAttachment()->GetSRV().GetAddressOf());
-
-			//Renderer::DispatchRenderCommandsInstanced();
-			//Renderer::EndPass();
-		}
-
-		// Deferred Pass
-		{
-			VT_PROFILE_SCOPE("SceneRenderer::Deferred");
-
-			Renderer::BeginPass(myDeferredPass, aCamera);
-			Renderer::DispatchRenderCommandsInstanced();
-			Renderer::EndPass();
-		}
-
-		// Decals
-		{
-			VT_PROFILE_SCOPE("SceneRenderer::Decals");
-			auto context = GraphicsContext::GetImmediateContext();
-
-			Renderer::BeginSection("Decals");
-
-			context->PSSetShaderResources(11, 1, myDeferredPass.framebuffer->GetColorAttachment(5)->GetSRV().GetAddressOf());
-			context->PSSetShaderResources(12, 1, myDeferredPass.framebuffer->GetColorAttachment(3)->GetSRV().GetAddressOf());
-
-			myDecalPass.framebuffer->Clear();
-			myDecalPass.framebuffer->Bind();
-			Renderer::DispatchDecalsWithShaderInternal(myDecalPass.overrideShader);
-			myDecalPass.framebuffer->Unbind();
-
-			ID3D11ShaderResourceView* nullSRV[12] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-			context->PSSetShaderResources(0, 12, nullSRV);
-
-
-			Renderer::EndSection("Decals");
-		}
-
-		// Skybox
-		{
-			Renderer::SetDepthState(DepthState::None);
-			Renderer::SetRasterizerState(RasterizerState::CullFront);
-			Renderer::BeginPass(mySkyboxPass, aCamera);
-
-			auto context = GraphicsContext::GetImmediateContext();
-			context->PSSetShaderResources(11, 1, sceneEnvironment.radianceMap->GetSRV().GetAddressOf());
-
-			mySkyboxData.intensity = sceneEnvironment.intensity;
-			mySkyboxData.textureLod = sceneEnvironment.lod;
-			mySkyboxBuffer->SetData(&mySkyboxData, sizeof(SkyboxData));
-			mySkyboxBuffer->Bind(13);
-			Renderer::DrawMesh(mySkyboxMesh, gem::mat4{ 1.f });
-
-			Renderer::EndPass();
-			Renderer::SetRasterizerState(RasterizerState::CullBack);
-			Renderer::SetDepthState(DepthState::ReadWrite);
-		}
-
-		ShadingPass(sceneEnvironment);
-
-		// Forward Pass
-		{
-			VT_PROFILE_SCOPE("SceneRenderer::Forward");
-
-			Renderer::SetDepthState(DepthState::ReadWrite);
-			Renderer::BeginPass(myForwardPass, aCamera);
-
-			auto context = GraphicsContext::GetImmediateContext();
-
-			context->PSSetShaderResources(11, 1, Renderer::GetDefaultData().brdfLut->GetSRV().GetAddressOf());
-			context->PSSetShaderResources(12, 1, sceneEnvironment.irradianceMap->GetSRV().GetAddressOf());
-			context->PSSetShaderResources(13, 1, sceneEnvironment.radianceMap->GetSRV().GetAddressOf());
-			context->PSSetShaderResources(14, 1, myDirectionalShadowPass.framebuffer->GetDepthAttachment()->GetSRV().GetAddressOf());
-			context->PSSetShaderResources(15, 1, myPointLightPass.framebuffer->GetDepthAttachment()->GetSRV().GetAddressOf());
-
-			context->PSSetShaderResources(20, 1, myPreDepthPass.framebuffer->GetDepthAttachment()->GetSRV().GetAddressOf());
-
-			Renderer::DispatchRenderCommandsInstanced();
-			Renderer::DispatchBillboardsWithShader(myBillboardShader);
-
-			Renderer::SetDepthState(DepthState::Read);
-			myScene->myParticleSystem->RenderParticles();
-			Renderer::DispatchText();
-			Renderer::DispatchSpritesWithShader(ShaderRegistry::Get("Quad"));
-			Renderer::EndPass();
-		}
-
-		// Forward callbacks
-		{
-			VT_PROFILE_SCOPE("SceneRenderer::ForwardCallbacks");
-			for (const auto& callback : myForwardRenderCallbacks)
-			{
-				callback(myScene, aCamera);
-			}
-		}
-
-		PostProcessPasses(aCamera);
-
-		for (const auto& callback : myExternalPassRenderCallbacks)
-		{
-			callback(myScene, aCamera);
-		}
-
-		Renderer::End();
-		Renderer::SetDepthState(DepthState::ReadWrite);
-#endif
 	}
 
 	void SceneRenderer::OnRenderRuntime()
@@ -647,9 +483,9 @@ namespace Volt
 
 	void SceneRenderer::UpdateVignetteSettings()
 	{
-		myVignetteMaterial->GetSubMaterials().at(0)->SetParameter("width", myVignetteSettings.width);
-		myVignetteMaterial->GetSubMaterials().at(0)->SetParameter("sharpness", myVignetteSettings.sharpness);
-		myVignetteMaterial->GetSubMaterials().at(0)->SetParameter("colorTint", myVignetteSettings.color);
+		//myVignetteMaterial->GetSubMaterials().at(0)->SetParameter("width", myVignetteSettings.width);
+		//myVignetteMaterial->GetSubMaterials().at(0)->SetParameter("sharpness", myVignetteSettings.sharpness);
+		//myVignetteMaterial->GetSubMaterials().at(0)->SetParameter("colorTint", myVignetteSettings.color);
 	}
 
 	Ref<Framebuffer> SceneRenderer::GetFinalFramebuffer()
@@ -861,89 +697,6 @@ namespace Volt
 			myPointLightPass.debugName = "Point Light Shadow";
 		}
 
-		// Outline
-		{
-			// Hightlighted Geometry
-			{
-				FramebufferSpecification spec{};
-				spec.attachments =
-				{
-					{ ImageFormat::RGBA32F, gem::vec4{ 0.f, 0.f, 0.f, 0.f }},
-					ImageFormat::DEPTH32F
-				};
-
-				spec.width = isLowRes ? 640 : 1920;
-				spec.height = isLowRes ? 360 : 1080;
-
-				myHighlightedGeometryPass.framebuffer = Framebuffer::Create(spec);
-				myHighlightedGeometryPass.overrideShader = ShaderRegistry::Get("SelectedGeometry");
-				myHighlightedGeometryPass.debugName = "Highlighted Geometry";
-			}
-
-			// Jump Flood Init
-			{
-				FramebufferSpecification spec{};
-				spec.attachments =
-				{
-					{ ImageFormat::RGBA32F, gem::vec4{ 1.f, 1.f, 1.f, 0.f }},
-				};
-
-				spec.width = isLowRes ? 640 : 1920;
-				spec.height = isLowRes ? 360 : 1080;
-
-				myJumpFloodInitPass.framebuffer = Framebuffer::Create(spec);
-				myJumpFloodInitPass.overrideShader = ShaderRegistry::Get("JumpFloodInit");
-				myJumpFloodInitPass.debugName = "Highlighted Jump Flood Init";
-			}
-
-			// Jump Flood Passes
-			{
-				myJumpFloodBuffer = ConstantBuffer::Create(nullptr, sizeof(gem::vec2) + sizeof(int32_t) * 2, ShaderStage::Vertex | ShaderStage::Pixel);
-
-				for (uint32_t i = 0; i < 2; i++)
-				{
-					FramebufferSpecification spec{};
-					spec.attachments =
-					{
-						ImageFormat::RGBA32F
-					};
-
-					spec.width = isLowRes ? 640 : 1920;
-					spec.height = isLowRes ? 360 : 1080;
-
-					myJumpFloodPass[i].framebuffer = Framebuffer::Create(spec);
-					myJumpFloodPass[i].overrideShader = ShaderRegistry::Get("JumpFloodPass");
-					myJumpFloodPass[i].debugName = "Highlighted Jump Flood Pass" + std::to_string(i);
-				}
-
-				myFramebuffers.emplace(3, std::make_pair("Jump Flood", myJumpFloodPass[0].framebuffer));
-			}
-
-			// Jump Flood Composite
-			{
-				FramebufferSpecification spec{};
-				spec.attachments =
-				{
-					{ ImageFormat::RGBA32F },
-				};
-
-				spec.existingImages =
-				{
-					{ 0, myForwardPass.framebuffer->GetColorAttachment(0) },
-				};
-
-				spec.existingDepth = myForwardPass.framebuffer->GetDepthAttachment();
-
-				spec.width = isLowRes ? 640 : 1920;
-				spec.height = isLowRes ? 360 : 1080;
-
-				myJumpFloodCompositePass.framebuffer = Framebuffer::Create(spec);
-				myJumpFloodCompositePass.overrideShader = ShaderRegistry::Get("JumpFloodComposite");
-				myJumpFloodCompositePass.debugName = "Highlighted Jump Flood Composite";
-				myJumpFloodCompositePass.depthState = DepthState::None;
-			}
-		}
-
 		// HBAO
 		{
 			// Deinterleaving
@@ -1104,36 +857,28 @@ namespace Volt
 			myBloomUpsampleBuffer = ConstantBuffer::Create(nullptr, sizeof(gem::vec4), ShaderStage::Pixel);
 		}
 
-		// Height Fog
-		{
-			FramebufferSpecification spec{};
-
-			spec.attachments =
-			{
-				{ ImageFormat::RGBA32F, { 1.f, 1.f, 1.f, 1.f }, TextureBlend::Alpha, "Height Fog" }
-			};
-
-			spec.width = isLowRes ? 640 : 1920;
-			spec.height = isLowRes ? 360 : 1080;
-
-			spec.existingImages =
-			{
-				{ 0, myBloomCompositePass.framebuffer->GetColorAttachment(0) }
-			};
-
-			myHeightFogPass.framebuffer = Framebuffer::Create(spec);
-			myHeightFogPass.overrideShader = ShaderRegistry::Get("HeightFog");
-			myHeightFogPass.debugName = "Height Fog";
-
-			myHeightFogBuffer = ConstantBuffer::Create(&myHeightFogData, sizeof(HeightFogData), ShaderStage::Pixel);
-		}
-
 		// Voxel
 		{
 			myVoxelPass.overrideShader = ShaderRegistry::Get("Voxelization");
 			myVoxelPass.debugName = "Voxel Pass";
 			myVoxelBuffer = ConstantBuffer::Create(nullptr, sizeof(VoxelSceneData), ShaderStage::Geometry | ShaderStage::Pixel);
 			myVoxelResultBuffer = StructuredBuffer::Create(sizeof(VoxelType), 100000, ShaderStage::Pixel, true);
+		}
+
+		// Debanding
+		{
+			FramebufferSpecification spec{};
+
+			spec.attachments =
+			{
+				{ ImageFormat::RGBA32F, { 0.05f, 0.05f, 0.05f, 1.f }, TextureBlend::Alpha, "Debanding Output" },
+			};
+
+			spec.width = isLowRes ? 640 : 1920;
+			spec.height = isLowRes ? 360 : 1080;
+
+			myDebandingPass.framebuffer = Framebuffer::Create(spec);
+			myDebandingPass.debugName = "Debanding";
 		}
 
 		// FXAA pass
@@ -1150,32 +895,6 @@ namespace Volt
 
 			myFXAAPass.framebuffer = Framebuffer::Create(spec);
 			myFXAAPass.debugName = "FXAA";
-		}
-
-		// Vignette
-		{
-			FramebufferSpecification spec{};
-
-			spec.attachments =
-			{
-				{ ImageFormat::RGBA32F, { 1.f, 1.f, 1.f, 1.f }, TextureBlend::Alpha, "Vignette" },
-			};
-
-			spec.existingImages =
-			{
-				{ 0, myFXAAPass.framebuffer->GetColorAttachment(0) }
-			};
-
-			spec.width = isLowRes ? 640 : 1920;
-			spec.height = isLowRes ? 360 : 1080;
-
-			myVignettePass.framebuffer = Framebuffer::Create(spec);
-			myVignettePass.debugName = "Vignette";
-			myVignettePass.overrideShader = ShaderRegistry::Get("Vignette");
-
-			myVignetteMaterial = CreateRef<Material>();
-			myVignetteMaterial->CreateSubMaterial(ShaderRegistry::Get("Vignette"));
-			UpdateVignetteSettings();
 		}
 
 		// Gamma Correction
@@ -1200,7 +919,6 @@ namespace Volt
 
 	void SceneRenderer::ResetPostProcess()
 	{
-		myHeightFogData.strength = 0.f;
 		myHBAOSettings.enabled = false;
 		myBloomSettings.enabled = false;
 		myFXAASettings.enabled = false;
@@ -1226,6 +944,15 @@ namespace Volt
 		}
 
 		BloomPass(myForwardPass.framebuffer->GetColorAttachment(1));
+
+		//// Debanding
+		//{
+		//	Renderer::BeginFullscreenPass(myDebandingPass, aCamera);
+		//	Renderer::BindTexturesToStage(ShaderStage::Pixel, { myBloomCompositePass.framebuffer->GetColorAttachment(0) }, 0);
+		//	Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("Debanding"));
+		//	Renderer::ClearTexturesAtStage(ShaderStage::Pixel, 0, 1);
+		//	Renderer::EndFullscreenPass();
+		//}
 
 		// FXAA
 		if (myFXAASettings.enabled)
