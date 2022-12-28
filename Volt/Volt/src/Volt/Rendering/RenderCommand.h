@@ -37,6 +37,7 @@ namespace Volt
 		static void Draw(uint32_t vertexCount, uint32_t startVertexLocation);
 		static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation);
 		static void DrawIndexedInstanced(uint32_t indexCountPerInstance, uint32_t instanceCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, uint32_t startInstanceLocation);
+		static void Dispatch(uint32_t groupX, uint32_t groupY, uint32_t groupZ);
 
 		static void BeginAnnotation(std::string_view name);
 		static void EndAnnotation();
@@ -57,7 +58,9 @@ namespace Volt
 		static void IndexBuffer_Bind(const IndexBuffer* indexBuffer);
 
 		static void BindTexturesToStage(const ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot = 0);
+		static void BindComputeResources(const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot = 0);
 		static void ClearTexturesAtStage(const ShaderStage stage, const uint32_t startSlot, const uint32_t count);
+		static void ClearComputeResources(const uint32_t startSlot, const uint32_t count);
 
 		static ID3D11DeviceContext* GetCurrentContext();
 		static void RestoreDefaultState();

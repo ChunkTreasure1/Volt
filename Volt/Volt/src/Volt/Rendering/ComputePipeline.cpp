@@ -6,6 +6,7 @@
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Framebuffer.h"
+#include "Volt/Rendering/RenderCommand.h"
 
 namespace Volt
 {
@@ -20,45 +21,43 @@ namespace Volt
 
 	void ComputePipeline::Execute(uint32_t aGroupX, uint32_t aGroupY, uint32_t aGroupZ)
 	{
-		auto context = GraphicsContext::GetImmediateContext();
-
 		const size_t maxSRVs = gem::max(myImagesT.size(), myTexturesT.size());
-		std::vector<ID3D11ShaderResourceView*> allSRVs{ maxSRVs, nullptr };
+		std::vector<Ref<Image2D>> allSRVs{ maxSRVs, nullptr };
 
 		for (size_t i = 0; i < maxSRVs; i++)
 		{
 			if (i < myImagesT.size() && myImagesT.at(i))
 			{
-				allSRVs[i] = myImagesT.at(i)->GetSRV().Get();
+				allSRVs[i] = myImagesT.at(i);
 			}
 
 			if (i < myTexturesT.size() && myTexturesT.at(i))
 			{
-				allSRVs[i] = myTexturesT.at(i)->GetImage()->GetSRV().Get();
+				allSRVs[i] = myTexturesT.at(i)->GetImage();
 			}
 		}
 
 		if (!allSRVs.empty())
 		{
-			context->CSSetShaderResources(0, (uint32_t)allSRVs.size(), allSRVs.data());
+			RenderCommand::BindTexturesToStage(ShaderStage::Compute, allSRVs);
 		}
 
-		std::vector<ID3D11UnorderedAccessView*> allUAVs{ myTargetsT.size(), nullptr };
+		std::vector<Ref<Image2D>> allUAVs{ myTargetsT.size(), nullptr };
 		for (size_t i = 0; i < allUAVs.size(); i++)
 		{
 			if (myTargetsT[i])
 			{
-				allUAVs[i] = myTargetsT[i]->GetUAV().Get();
+				allUAVs[i] = myTargetsT[i];
 			}
 		}
 
 		if (!allUAVs.empty())
 		{
-			context->CSSetUnorderedAccessViews(0, (uint32_t)allUAVs.size(), allUAVs.data(), nullptr);
+			RenderCommand::BindComputeResources(allUAVs);
 		}
 
 		myShader->Bind();
-		context->Dispatch(aGroupX, aGroupY, aGroupZ);
+		RenderCommand::Dispatch(aGroupX, aGroupY, aGroupZ);
 	}
 
 	void ComputePipeline::Clear()
@@ -66,17 +65,9 @@ namespace Volt
 		auto context = GraphicsContext::GetImmediateContext();
 
 		const size_t maxSRVs = gem::max(myTexturesT.size(), myImagesT.size());
-		if (maxSRVs > 0)
-		{
-			std::vector<ID3D11ShaderResourceView*> nullSRVs = { maxSRVs, nullptr };
-			context->CSSetShaderResources(0, (uint32_t)nullSRVs.size(), nullSRVs.data());
-		}
 
-		if (!myTargetsT.empty())
-		{
-			std::vector<ID3D11UnorderedAccessView*> nullUAVs = { myTargetsT.size(), nullptr };
-			context->CSSetUnorderedAccessViews(0, (uint32_t)nullUAVs.size(), nullUAVs.data(), nullptr);
-		}
+		RenderCommand::ClearTexturesAtStage(ShaderStage::Compute, 0, maxSRVs);
+		RenderCommand::ClearComputeResources(0, myTargetsT.size());
 	}
 
 	void ComputePipeline::SetImage(Ref<Image2D> aImage, uint32_t binding)

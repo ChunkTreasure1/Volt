@@ -179,6 +179,10 @@ Assets:
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
   - Handle: 10419921219775360523
     Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
+  - Handle: 3755072560515208085
+    Path: Assets\Meshes\Sponza\sponzaForTGE.vtmat
+  - Handle: 3898402967110684748
+    Path: Assets\Meshes\Sponza\sponzaForTGE.vtmesh
   - Handle: 6416126894839105837
     Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
   - Handle: 2713074256263182464
@@ -341,6 +345,8 @@ Assets:
     Path: Engine\Fonts\Inter\Inter-Regular.ttf
   - Handle: 12693617945550574548
     Path: Engine\Fonts\OpenSans-Regular.ttf
+  - Handle: 8122480834726170393
+    Path: Engine\Shaders\Definitions\2D\billboard.vtsdef
   - Handle: 16470809019740148419
     Path: Engine\Shaders\Definitions\2D\entityGizmo.vtsdef
   - Handle: 18063575715979531818
@@ -445,6 +451,8 @@ Assets:
     Path: Engine\Shaders\Definitions\Forward\forwardPBR.vtsdef
   - Handle: 8627709591623656013
     Path: Engine\Shaders\Definitions\Forward\testWater.vtsdef
+  - Handle: 313343840599582286
+    Path: Engine\Shaders\Definitions\PostProcessing\Debanding.vtsdef
   - Handle: 2705929307601662472
     Path: Engine\Shaders\Definitions\PostProcessing\FXAA.vtsdef
   - Handle: 14165588085222037548

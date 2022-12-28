@@ -216,6 +216,13 @@ namespace Volt
 		context->DrawIndexedInstanced(indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
 	}
 
+	void RenderCommand::Dispatch(uint32_t groupX, uint32_t groupY, uint32_t groupZ)
+	{
+		VT_PROFILE_FUNCTION();
+		auto context = GetCurrentContext();
+		context->Dispatch(groupX, groupY, groupZ);
+	}
+
 	void RenderCommand::BeginAnnotation(std::string_view name)
 	{
 		VT_PROFILE_FUNCTION();
@@ -391,6 +398,29 @@ namespace Volt
 		}
 	}
 
+	void RenderCommand::BindComputeResources(const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+
+		std::vector<ID3D11UnorderedAccessView*> texturesToBind{ textures.size() };
+		for (uint32_t i = 0; const auto & t : textures)
+		{
+			if (t)
+			{
+				texturesToBind[i] = t->GetUAV().Get();
+			}
+			else
+			{
+				texturesToBind[i] = nullptr;
+			}
+			i++;
+		}
+
+		context->CSSetUnorderedAccessViews(startSlot, (uint32_t)texturesToBind.size(), texturesToBind.data(), nullptr);
+	}
+
 	void RenderCommand::ClearTexturesAtStage(const ShaderStage stage, const uint32_t startSlot, const uint32_t count)
 	{
 		VT_PROFILE_FUNCTION();
@@ -421,6 +451,16 @@ namespace Volt
 			default:
 				break;
 		}
+	}
+
+	void RenderCommand::ClearComputeResources(const uint32_t startSlot, const uint32_t count)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto context = GetCurrentContext();
+		std::vector<ID3D11UnorderedAccessView*> resources{ count, nullptr };
+
+		context->CSSetUnorderedAccessViews(startSlot, (uint32_t)resources.size(), resources.data(), nullptr);
 	}
 
 	ID3D11DeviceContext* RenderCommand::GetCurrentContext()
