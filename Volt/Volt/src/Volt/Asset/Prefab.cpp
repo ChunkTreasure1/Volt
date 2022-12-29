@@ -34,8 +34,8 @@ namespace Volt
 
 		auto& rootTransform = aTargetRegistry.GetComponent<TransformComponent>(newRoot);
 		rootTransform.position = { 0.f, 0.f, 0.f };
-		rootTransform.rotation = { 1.f, 0.f, 0.f, 0.f };
-		rootTransform.scale = aTargetRegistry.GetComponent<TransformComponent>(newRoot).scale;
+		rootTransform.rotation = myRegistry.GetComponent<TransformComponent>(rootEntity).rotation;
+		rootTransform.scale = myRegistry.GetComponent<TransformComponent>(rootEntity).scale;
 
 		auto& tagComp = aTargetRegistry.GetComponent<TagComponent>(newRoot);
 		tagComp.tag = path.stem().string();
@@ -181,6 +181,7 @@ namespace Volt
 		}
 
 		Entity::Copy(srcRegistry, aTargetRegistry, targetPrefabComp.prefabEntity, aEntity, excludedComponents, true);
+		targetPrefabComp.version = aPrefab->myVersion;
 
 		for (const auto& child : targetRelationshipComponent.Children)
 		{

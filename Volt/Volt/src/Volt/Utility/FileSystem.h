@@ -5,11 +5,6 @@
 class FileSystem
 {
 public:
-	static std::filesystem::path GetAssetsPath()
-	{
-		return "Assets";
-	}
-
 	static std::filesystem::path GetEnginePath()
 	{
 		return "Engine";
@@ -18,11 +13,6 @@ public:
 	static std::filesystem::path GetShadersPath()
 	{
 		return "Engine/Shaders";
-	}
-
-	static std::filesystem::path GetGameDLLPath()
-	{
-		return "Game.dll";
 	}
 
 	static std::filesystem::path GetDebugDumpPath()
@@ -38,16 +28,6 @@ public:
 	static std::filesystem::path GetPhysicsLayersPath()
 	{
 		return "Engine/Physics/PhysicsLayers.yaml";
-	}
-
-	static std::filesystem::path GetMeshColliderCache()
-	{
-		return GetAssetsPath() / "Cache" / "Colliders";
-	}
-
-	static std::filesystem::path GetPathRelativeToBaseFolder(const std::filesystem::path& aPath)
-	{
-		return std::filesystem::relative(aPath, std::filesystem::current_path());
 	}
 
 	static bool IsWriteable(const std::filesystem::path& aPath)
@@ -176,6 +156,7 @@ public:
 	static std::string GetEnvVariable(const std::string& key);
 	static std::string GetCurrentUserName();
 
+	static void StartProcess(const std::filesystem::path& processName);
 
 	static void RunCommand(const std::string& aCommand)
 	{

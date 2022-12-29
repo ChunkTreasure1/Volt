@@ -2,9 +2,9 @@
 #include "ViewportPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/Sandbox.h"
 
@@ -255,10 +255,10 @@ void ViewportPanel::UpdateContent()
 	auto& settings = UserSettingsManager::GetSettings();
 
 	float size = ImGui::GetWindowHeight() - 4.f;
-	Ref<Volt::Texture2D> playIcon = EditorIconLibrary::GetIcon(EditorIcon::Play);
+	Ref<Volt::Texture2D> playIcon = EditorResources::GetEditorIcon(EditorIcon::Play);
 	if (mySceneState == SceneState::Play)
 	{
-		playIcon = EditorIconLibrary::GetIcon(EditorIcon::Stop);
+		playIcon = EditorResources::GetEditorIcon(EditorIcon::Stop);
 	}
 
 	if (UI::ImageButton("##play", UI::GetTextureID(playIcon), { buttonSize, buttonSize }))
@@ -326,11 +326,11 @@ void ViewportPanel::UpdateContent()
 	Ref<Volt::Texture2D> localWorldIcon;
 	if (settings.sceneSettings.worldSpace)
 	{
-		localWorldIcon = EditorIconLibrary::GetIcon(EditorIcon::WorldSpace);
+		localWorldIcon = EditorResources::GetEditorIcon(EditorIcon::WorldSpace);
 	}
 	else
 	{
-		localWorldIcon = EditorIconLibrary::GetIcon(EditorIcon::LocalSpace);
+		localWorldIcon = EditorResources::GetEditorIcon(EditorIcon::LocalSpace);
 	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
@@ -357,7 +357,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##snapToGrid", settings.sceneSettings.snapToGrid, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SnapGrid)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##snapToGrid", settings.sceneSettings.snapToGrid, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapGrid)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.snapToGrid = !settings.sceneSettings.snapToGrid;
 	}
@@ -380,7 +380,7 @@ void ViewportPanel::UpdateContent()
 	}
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##snapRotation", settings.sceneSettings.snapRotation, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SnapRotation)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##snapRotation", settings.sceneSettings.snapRotation, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapRotation)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.snapRotation = !settings.sceneSettings.snapRotation;
 	}
@@ -402,7 +402,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##snapScale", settings.sceneSettings.snapScale, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SnapScale)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##snapScale", settings.sceneSettings.snapScale, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapScale)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.snapScale = !settings.sceneSettings.snapScale;
 	}
@@ -424,7 +424,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##showGizmos", settings.sceneSettings.showGizmos, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::ShowGizmos)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##showGizmos", settings.sceneSettings.showGizmos, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::ShowGizmos)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.showGizmos = !settings.sceneSettings.showGizmos;
 		Sandbox::Get().SetShouldRenderGizmos(settings.sceneSettings.showGizmos);
@@ -869,17 +869,7 @@ void ViewportPanel::UpdateModals()
 			Sandbox::Get().SaveScene();
 		}
 
-		if (myEditorScene->handle == mySceneToOpen)
-		{
-			Volt::AssetManager::Get().ReloadAsset(myEditorScene->handle);
-		}
-
-		myEditorScene = Volt::AssetManager::GetAsset<Volt::Scene>(mySceneToOpen);
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myEditorScene);
-
-		Volt::OnSceneLoadedEvent loadEvent{ myEditorScene };
-		Volt::Application::Get().OnEvent(loadEvent);
-
+		Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
 		mySceneToOpen = Volt::Asset::Null();
 	}
 }

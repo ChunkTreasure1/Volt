@@ -6,7 +6,7 @@ project "Launcher"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++latest"
-	debugdir "../../Build"
+	debugdir "../../Engine"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -138,5 +138,5 @@ project "Launcher"
 
 			postbuildcommands
 			{
-				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/Launcher.exe" "../../Build/"'
+				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/Launcher.exe" "../../Engine/"'
 			}

@@ -3,7 +3,7 @@
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -178,7 +178,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	ImGui::Begin("##toolbarMeshPreview", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	if (UI::ImageButton("##Save", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
 		if (myCurrentMesh)
 		{
@@ -188,7 +188,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##Load", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
 		const std::filesystem::path characterPath = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
 		if (!characterPath.empty() && FileSystem::Exists(characterPath))

@@ -3,7 +3,7 @@
 
 #include "Sandbox/Window/EditorWindow.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
@@ -465,8 +465,7 @@ float Sandbox::DrawTitlebar()
 
 	//UI::ShiftCursor(4.f, 4.f);
 
-	ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Volt)), { iconSize, iconSize });
-
+	ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Volt)), { iconSize, iconSize });
 	ImGui::SameLine();
 
 	// Menu bar
@@ -488,7 +487,7 @@ float Sandbox::DrawTitlebar()
 	{
 		UI::ScopedColor button(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
 
-		if (UI::ImageButton("##minimize", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Minimize)), { buttonSize, buttonSize }))
+		if (UI::ImageButton("##minimize", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Minimize)), { buttonSize, buttonSize }))
 		{
 			Volt::Application::Get().GetWindow().Minimize();
 		}
@@ -496,7 +495,7 @@ float Sandbox::DrawTitlebar()
 		ImGui::SameLine();
 
 		const bool isMaximized = Volt::Application::Get().GetWindow().IsMaximized();
-		Ref<Volt::Texture2D> maximizeTexture = isMaximized ? EditorIconLibrary::GetIcon(EditorIcon::Windowize) : EditorIconLibrary::GetIcon(EditorIcon::Maximize);
+		Ref<Volt::Texture2D> maximizeTexture = isMaximized ? EditorResources::GetEditorIcon(EditorIcon::Windowize) : EditorResources::GetEditorIcon(EditorIcon::Maximize);
 
 		if (UI::ImageButton("##maximize", UI::GetTextureID(maximizeTexture), { buttonSize, buttonSize }))
 		{
@@ -512,7 +511,7 @@ float Sandbox::DrawTitlebar()
 
 		ImGui::SameLine();
 
-		if (UI::ImageButton("##close", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Close)), { buttonSize, buttonSize }))
+		if (UI::ImageButton("##close", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Close)), { buttonSize, buttonSize }))
 		{
 			Volt::WindowCloseEvent e{};
 			Volt::Application::Get().OnEvent(e);
@@ -608,6 +607,12 @@ void Sandbox::DrawMenuBar()
 			if (ImGui::MenuItem("Reset layout"))
 			{
 				myShouldResetLayout = true;
+			}
+
+			if (ImGui::MenuItem("Crash"))
+			{
+				int* ptr = nullptr;
+				*ptr = 0;
 			}
 
 			ImGui::EndMenu();

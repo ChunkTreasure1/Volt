@@ -109,7 +109,7 @@ namespace Volt
 			}
 		}
 
-		std::ofstream output(destination, std::ios::binary);
+		std::ofstream output(Volt::ProjectManager::GetPath() / destination, std::ios::binary);
 		output.write(reinterpret_cast<char*>(bytes.data()), bytes.size());
 		output.close();
 

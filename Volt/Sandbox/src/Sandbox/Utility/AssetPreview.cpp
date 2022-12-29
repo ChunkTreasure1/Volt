@@ -62,7 +62,7 @@ void AssetPreview::Render()
 	myCamera->SetPosition(position);
 	mySceneRenderer->OnRenderEditor(myCamera);
 
-    if (wasLoaded)
+    if (!wasLoaded)
     {
         Volt::AssetManager::Get().Unload(myAssetHandle);
     }
