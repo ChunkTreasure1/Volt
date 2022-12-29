@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "MaterialEditorPanel.h"
 
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
@@ -107,7 +107,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::Begin("##toolbarMatEditor", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	if (UI::ImageButton("##Save", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
 		if (mySelectedMaterial)
 		{
@@ -126,7 +126,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##Reload", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Reload)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Reload", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Reload)), { myButtonSize, myButtonSize }))
 	{
 		if (mySelectedMaterial)
 		{
@@ -136,7 +136,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##GetMaterial", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::GetMaterial)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##GetMaterial", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::GetMaterial)), { myButtonSize, myButtonSize }))
 	{
 		if (SelectionManager::GetSelectedCount() > 0)
 		{
@@ -168,7 +168,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##SetMaterial", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SetMaterial)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##SetMaterial", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SetMaterial)), { myButtonSize, myButtonSize }))
 	{
 		if (SelectionManager::GetSelectedCount() > 0)
 		{
@@ -395,7 +395,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 
 						ImGui::BeginChild("image", { thumbnailSize, thumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 						{
-							ImGui::Image(UI::GetTextureID(Volt::AssetManager::GetAssetEngine<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_material.dds")), { thumbnailSize, thumbnailSize });
+							ImGui::Image(UI::GetTextureID(EditorResources::GetAssetIcon(Volt::AssetType::Material)), { thumbnailSize, thumbnailSize });
 						}
 						ImGui::EndChild();
 						ImGui::PopStyleVar();

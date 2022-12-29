@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "AssetBrowserPanel.h"
 
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/EditorUtilities.h"
@@ -142,7 +142,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			UI::ShiftCursor(5.f, 5.f);
 			const auto flags = ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-			bool open = UI::TreeNodeImage(EditorIconLibrary::GetIcon(EditorIcon::Directory), "Assets", flags);
+			bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), "Assets", flags);
 
 			if (ImGui::IsItemClicked())
 			{
@@ -395,7 +395,7 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), entry.path(), myThumbnailSize, myMeshImportData);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData);
 					dirData->assets.emplace_back(assetItem);
 				}
 			}
@@ -443,7 +443,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 		UI::ShiftCursor(5.f, 4.f);
 		{
 			UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-			ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Search)), { height - buttonSizeOffset, height - buttonSizeOffset });
+			ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Search)), { height - buttonSizeOffset, height - buttonSizeOffset });
 
 			ImGui::SameLine();
 			UI::ShiftCursor(0.f, -0.5f);
@@ -468,14 +468,14 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			{
 				UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
 
-				if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Reload)), { height - buttonSizeOffset, height - buttonSizeOffset }))
+				if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Reload)), { height - buttonSizeOffset, height - buttonSizeOffset }))
 				{
 					Reload();
 				}
 
 				ImGui::SameLine();
 
-				if (UI::ImageButton("##backButton", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Back)), { height - buttonSizeOffset, height - buttonSizeOffset }))
+				if (UI::ImageButton("##backButton", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Back)), { height - buttonSizeOffset, height - buttonSizeOffset }))
 				{
 					myHasSearchQuery = false;
 					mySearchQuery.clear();
@@ -587,7 +587,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			{
 				{
 					UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-					UI::ImageButton("##filter", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Filter)), { height - buttonSizeOffset, height - buttonSizeOffset });
+					UI::ImageButton("##filter", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Filter)), { height - buttonSizeOffset, height - buttonSizeOffset });
 				}
 
 				if (ImGui::BeginPopupContextItem("filterMenu", ImGuiPopupFlags_MouseButtonLeft))
@@ -627,7 +627,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			{
 				UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
 
-				ImGui::ImageButton(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Settings)), { height - buttonSizeOffset, height - buttonSizeOffset });
+				ImGui::ImageButton(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Settings)), { height - buttonSizeOffset, height - buttonSizeOffset });
 				if (ImGui::BeginPopupContextItem("settingsMenu", ImGuiPopupFlags_MouseButtonLeft))
 				{
 					ImGui::PushItemWidth(100.f);
@@ -660,7 +660,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 
 	const auto flags = (selected ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None) | ImGuiTreeNodeFlags_OpenOnArrow;
 
-	const bool open = UI::TreeNodeImage(EditorIconLibrary::GetIcon(EditorIcon::Directory), id, flags);
+	const bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), id, flags);
 	if (ImGui::IsItemClicked() && !selected)
 	{
 		mySelectionManager->Select(dirData.get());

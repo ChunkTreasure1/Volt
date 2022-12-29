@@ -3,8 +3,7 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
 
-#include "Sandbox/Utility/AssetIconLibrary.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 
@@ -20,8 +19,12 @@ namespace AssetBrowser
 	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& aMeshImportData)
 		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData)
 	{
-		type = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
-		handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+		type = Volt::AssetManager::GetAssetTypeFromPath(path);
+		handle = Volt::AssetManager::GetAssetHandleFromPath(path);
+		if (handle == Volt::Asset::Null())
+		{
+			handle = Volt::AssetManager::Get().AddToRegistry(path);
+		}
 	}
 
 	bool AssetItem::Render()
@@ -216,12 +219,12 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Open Externally"))
 			{
-				FileSystem::OpenFileExternally(path);
+				FileSystem::OpenFileExternally(Volt::ProjectManager::GetPath() / path);
 			}
 
 			if (ImGui::MenuItem("Show In Explorer"))
 			{
-				FileSystem::ShowFileInExplorer(path);
+				FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetPath() / path);
 			}
 
 			if (ImGui::MenuItem("Reload"))
@@ -259,9 +262,9 @@ namespace AssetBrowser
 	Ref<Volt::Image2D> AssetItem::GetIcon() const
 	{
 		Ref<Volt::Image2D> icon = (preview && preview->IsRendered()) ? preview->GetPreview() : nullptr;
-		if (!icon && AssetIconLibrary::Get(type))
+		if (!icon && EditorResources::GetAssetIcon(type))
 		{
-			icon = AssetIconLibrary::Get(type)->GetImage();
+			icon = EditorResources::GetAssetIcon(type)->GetImage();
 		}
 
 		if (type == Volt::AssetType::Texture)
@@ -278,7 +281,7 @@ namespace AssetBrowser
 
 		if (!icon)
 		{
-			icon = EditorIconLibrary::GetIcon(EditorIcon::GenericFile)->GetImage();
+			icon = EditorResources::GetEditorIcon(EditorIcon::GenericFile)->GetImage();
 		}
 
 		return icon;

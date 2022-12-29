@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Volt/Core/Base.h>
-
-#include <unordered_map>
+#include <Volt/Asset/Asset.h>
 
 namespace Volt
 {
@@ -50,18 +48,20 @@ enum class EditorIcon
 	Volt
 };
 
-class EditorIconLibrary
+class EditorResources
 {
 public:
 	static void Initialize();
 	static void Shutdown();
 
-	static Ref<Volt::Texture2D> GetIcon(EditorIcon icon);
+	static Ref<Volt::Texture2D> GetAssetIcon(Volt::AssetType type);
+	static Ref<Volt::Texture2D> GetEditorIcon(EditorIcon icon);
 
 private:
-	static void TryLoadIcon(EditorIcon icon, const std::filesystem::path& path);
+	static Ref<Volt::Texture2D> TryLoadIcon(const std::filesystem::path& path);
 
-	EditorIconLibrary() = delete;
+	inline static std::unordered_map<Volt::AssetType, Ref<Volt::Texture2D>> myAssetIcons;
+	inline static std::unordered_map<EditorIcon, Ref<Volt::Texture2D>> myEditorIcons;
 
-	inline static std::unordered_map<EditorIcon, Ref<Volt::Texture2D>> s_icons;
- };
+	EditorResources() = delete;
+};

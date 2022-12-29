@@ -27,14 +27,15 @@ namespace Volt
 	bool TextureSourceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Texture2D>();
+		const auto filePath = ProjectManager::GetPath() / path;
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
-		auto mesh = TextureImporter::ImportTexture(path);
+		auto mesh = TextureImporter::ImportTexture(filePath);
 
 		if (!mesh) [[unlikely]]
 		{
@@ -176,14 +177,16 @@ namespace Volt
 	bool MaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Material>();
-		if (!std::filesystem::exists(path))
+		const auto filePath = ProjectManager::GetPath() / path;
+		
+		if (!std::filesystem::exists(filePath))
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream file(path);
+		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
@@ -400,7 +403,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(asset->path);
+		std::ofstream fout(ProjectManager::GetPath() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}
@@ -416,14 +419,16 @@ namespace Volt
 	bool FontImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Font>();
-		if (!std::filesystem::exists(path))
+		const auto filePath = ProjectManager::GetPath() / path;
+
+		if (!std::filesystem::exists(filePath))
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		asset = CreateRef<Font>(path);
+		asset = CreateRef<Font>(filePath);
 		asset->path = path;
 		return true;
 	}
@@ -439,14 +444,16 @@ namespace Volt
 	bool PhysicsMaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<PhysicsMaterial>();
-		if (!std::filesystem::exists(path))
+		const auto filePath = ProjectManager::GetPath() / path;
+
+		if (!std::filesystem::exists(filePath))
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream file(path);
+		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
@@ -498,7 +505,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(asset->path);
+		std::ofstream fout(ProjectManager::GetPath() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}
@@ -514,15 +521,16 @@ namespace Volt
 	bool VideoImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Video>();
+		const auto filePath = ProjectManager::GetPath() / path;
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		asset = CreateRef<Video>(path);
+		asset = CreateRef<Video>(filePath);
 		asset->path = path;
 		return true;
 	}

@@ -32,41 +32,33 @@ public:
 
 	static bool IsWriteable(const std::filesystem::path& aPath)
 	{
-		const auto cannonicalPath = std::filesystem::canonical(aPath);
-
-		std::filesystem::file_status status = std::filesystem::status(cannonicalPath);
+		std::filesystem::file_status status = std::filesystem::status(aPath);
 		return (status.permissions() & std::filesystem::perms::owner_write) != std::filesystem::perms::none;
 	}
 
 	static bool Copy(const std::filesystem::path& aSource, const std::filesystem::path& aDestination)
 	{
-		const auto cannonicalSource = std::filesystem::canonical(aSource);
-		const auto cannonicalDest = std::filesystem::canonical(aDestination);
-
-		if (!Exists(cannonicalSource))
+		if (!Exists(aSource))
 		{
 			return false;
 		}
 
-		std::filesystem::copy(cannonicalSource, cannonicalDest);
+		std::filesystem::copy(aSource, aDestination);
 		return true;
 	}
 
 	static bool CopyFileTo(const std::filesystem::path& aSource, const std::filesystem::path& aDestDir)
 	{
-		const auto cannonicalSource = std::filesystem::canonical(aSource);
-		const auto cannonicalDest = std::filesystem::canonical(aDestDir);
-
-		if (!Exists(cannonicalDest))
+		if (!Exists(aDestDir))
 		{
 			return false;
 		}
 
-		std::filesystem::path newPath = cannonicalDest / cannonicalSource.filename();
+		std::filesystem::path newPath = aDestDir / aSource.filename();
 
 		if (!Exists(newPath))
 		{
-			Copy(cannonicalSource, newPath);
+			Copy(aSource, newPath);
 			return true;
 		}
 
@@ -80,38 +72,32 @@ public:
 
 	static bool Remove(const std::filesystem::path& aPath)
 	{
-		const auto cannonicalPath = std::filesystem::canonical(aPath);
-		return std::filesystem::remove_all(cannonicalPath);
+		return std::filesystem::remove_all(aPath);
 	}
 
 	static void MoveToRecycleBin(const std::filesystem::path& path);
 	static bool Rename(const std::filesystem::path& aPath, const std::string& aName)
 	{
-		const auto cannonicalPath = std::filesystem::canonical(aPath);
-
-		if (!Exists(cannonicalPath))
+		if (!Exists(aPath))
 		{
 			return false;
 		}
 
-		const std::filesystem::path newPath = cannonicalPath.parent_path() / (aName + cannonicalPath.extension().string());
-		std::filesystem::rename(cannonicalPath, newPath);
+		const std::filesystem::path newPath = aPath.parent_path() / (aName + aPath.extension().string());
+		std::filesystem::rename(aPath, newPath);
 
 		return true;
 	}
 
 	static bool Move(const std::filesystem::path& file, const std::filesystem::path& destinationFolder)
 	{
-		const auto canonicalFile = std::filesystem::canonical(file);
-		const auto canonicalDest = std::filesystem::canonical(destinationFolder);
-
-		if (!Exists(canonicalFile))
+		if (!Exists(file))
 		{
 			return false;
 		}
 
-		const std::filesystem::path newPath = canonicalDest/ file.filename();
-		std::filesystem::rename(canonicalFile, newPath);
+		const std::filesystem::path newPath = destinationFolder / file.filename();
+		std::filesystem::rename(file, newPath);
 
 		return true;
 	}

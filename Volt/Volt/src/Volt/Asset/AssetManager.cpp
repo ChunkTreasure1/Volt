@@ -73,64 +73,32 @@ namespace Volt
 		MeshTypeImporter::Shutdown();
 	}
 
-	void AssetManager::LoadAsset(const std::filesystem::path& path, Ref<Asset>& asset)
-	{
-		AssetHandle handle = Asset::Null();
-		if (myAssetRegistry.contains(path))
-		{
-			handle = myAssetRegistry.at(path);
-		}
-
-		if (handle != Asset::Null() && myAssetCache.contains(handle))
-		{
-			asset = myAssetCache[handle];
-			return;
-		}
-
-		const auto type = GetAssetTypeFromPath(path);
-
-		if (myAssetImporters.find(type) == myAssetImporters.end())
-		{
-			VT_CORE_ERROR("No importer for asset found!");
-			return;
-		}
-
-		myAssetImporters[type]->Load(path, asset);
-		asset->path = path;
-		
-		if (handle != Asset::Null())
-		{
-			asset->handle = handle;
-		}
-		else
-		{
-			AssetHandle newHandle{};
-
-			myAssetRegistry.emplace(path, newHandle);
-			asset->handle = newHandle;
-		}
-
-#ifdef VT_DEBUG
-		VT_CORE_INFO("Loaded asset {0} with handle {1}!", path.string().c_str(), asset->handle);
-#endif
-
-		asset->path = path;
-		myAssetCache.emplace(asset->handle, asset);
-	}
-
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
 	{
-		auto it = myAssetCache.find(assetHandle);
-		if (it != myAssetCache.end())
+		if (myAssetCache.contains(assetHandle))
 		{
-			asset = it->second;
+			asset = myAssetCache.at(assetHandle);
 			return;
 		}
 
 		const auto path = GetPathFromAssetHandle(assetHandle);
 		if (!path.empty())
 		{
-			LoadAsset(path, asset);
+			const auto type = GetAssetTypeFromPath(path);
+			if (!myAssetImporters.contains(type))
+			{
+				VT_CORE_WARN("[AssetManager] No importer for asset found!");
+				return;
+			}
+
+			myAssetImporters.at(type)->Load(path, asset);
+#ifdef VT_DEBUG
+			VT_CORE_TRACE("Tried loading asset {0} with handle {1}!", path.string(), assetHandle);
+#endif	
+
+			asset->path = path;
+			asset->handle = assetHandle;
+			myAssetCache.emplace(asset->handle, asset);
 		}
 	}
 
@@ -180,9 +148,7 @@ namespace Volt
 			return;
 		}
 
-		asset->path = std::filesystem::canonical(asset->path);
 		myAssetImporters[asset->GetType()]->Save(asset);
-		asset->path = Volt::ProjectManager::GetPathRelativeToProject(asset->path);
 
 		if (myAssetRegistry.find(asset->path) == myAssetRegistry.end())
 		{
@@ -199,7 +165,9 @@ namespace Volt
 
 	void AssetManager::MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir)
 	{
-		FileSystem::Move(asset->path, targetDir);
+		const auto projDir = ProjectManager::GetPath();
+
+		FileSystem::Move(projDir / asset->path, projDir / targetDir);
 
 		const std::filesystem::path newPath = targetDir / asset->path.filename();
 
@@ -213,7 +181,9 @@ namespace Volt
 	{
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		const std::filesystem::path newPath = targetDir / oldPath.filename();
-		FileSystem::Move(oldPath, targetDir);
+		const auto projDir = ProjectManager::GetPath();
+		
+		FileSystem::Move(projDir / oldPath, projDir / targetDir);
 
 		myAssetRegistry.erase(oldPath);
 		auto it = myAssetCache.find(asset);
@@ -268,7 +238,9 @@ namespace Volt
 	{
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		const std::filesystem::path newPath = oldPath.parent_path() / (newName + oldPath.extension().string());
-		FileSystem::Rename(GetPathFromAssetHandle(asset), newName);
+		const auto projDir = ProjectManager::GetPath();
+
+		FileSystem::Rename(projDir / GetPathFromAssetHandle(asset), newName);
 
 		myAssetRegistry.erase(oldPath);
 		auto it = myAssetCache.find(asset);
@@ -296,10 +268,12 @@ namespace Volt
 	void AssetManager::RemoveAsset(AssetHandle asset)
 	{
 		const std::filesystem::path path = GetPathFromAssetHandle(asset);
+		const auto projDir = ProjectManager::GetPath();
+
 		myAssetRegistry.erase(path);
 		myAssetCache.erase(asset);
 
-		FileSystem::MoveToRecycleBin(path);
+		FileSystem::MoveToRecycleBin(projDir / path);
 		SaveAssetRegistry();
 	}
 
@@ -308,7 +282,8 @@ namespace Volt
 		myAssetCache.erase(GetAssetHandleFromPath(path));
 		myAssetRegistry.erase(path);
 
-		FileSystem::MoveToRecycleBin(path);
+		const auto projDir = ProjectManager::GetPath();
+		FileSystem::MoveToRecycleBin(projDir / path);
 		SaveAssetRegistry();
 	}
 
@@ -368,6 +343,13 @@ namespace Volt
 		SaveAssetRegistry();
 	}
 
+	const AssetHandle AssetManager::AddToRegistry(const std::filesystem::path& path)
+	{
+		const auto newHandle = AssetHandle{};
+		myAssetRegistry.emplace(path, newHandle);
+		return newHandle;
+	}
+
 	bool AssetManager::IsLoaded(AssetHandle handle) const
 	{
 		return myAssetCache.contains(handle);
@@ -421,7 +403,7 @@ namespace Volt
 	{
 		if (!Get().myAssetRegistry.contains(path))
 		{
-			Get().myAssetRegistry[path] = AssetHandle{};
+			return 0;
 		}
 
 		return Get().myAssetRegistry.at(path);
@@ -437,7 +419,7 @@ namespace Volt
 			}
 		}
 
-		return "";
+		return {};
 	}
 
 	std::string AssetManager::GetExtensionFromAssetType(AssetType type)
@@ -480,6 +462,28 @@ namespace Volt
 	bool AssetManager::ExistsInRegistry(const std::filesystem::path& path) const
 	{
 		return myAssetRegistry.contains(path);
+	}
+
+	const std::filesystem::path AssetManager::GetFilesystemPath(AssetHandle handle)
+	{
+		const auto path = GetPathFromAssetHandle(handle);
+		return ProjectManager::GetPath() / path;
+	}
+
+	const std::filesystem::path AssetManager::GetRelativePath(const std::filesystem::path& path)
+	{
+		std::filesystem::path relativePath = path.lexically_normal();
+		std::string temp = path.string();
+		if (temp.find(ProjectManager::GetPath().string()) != std::string::npos)
+		{
+			relativePath = std::filesystem::relative(path, ProjectManager::GetPath());
+			if (relativePath.empty())
+			{
+				relativePath = path.lexically_normal();
+			}
+		}
+
+		return relativePath;
 	}
 
 	void AssetManager::QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset)
@@ -565,7 +569,6 @@ namespace Volt
 				asset = myAssetCache.at(job.handle);
 
 				myAssetImporters.at(type)->Load(job.path, asset);
-				asset->path = Volt::ProjectManager::GetPathRelativeToProject(job.path);
 				if (job.handle != Asset::Null())
 				{
 					asset->handle = job.handle;
@@ -575,7 +578,6 @@ namespace Volt
 				VT_CORE_INFO("Loaded asset {0} with handle {1}!", job.path.string().c_str(), asset->handle);
 #endif
 
-				asset->path = job.path;
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{
@@ -594,19 +596,29 @@ namespace Volt
 
 	void AssetManager::SaveAssetRegistry()
 	{
+		std::map<AssetHandle, std::string> sortedRegistry;
+		for (auto& [path, handle] : myAssetRegistry)
+		{
+			if (IsSourceFile(handle))
+			{
+				continue;
+			}
+
+			std::string pathToSerialize = path.string();
+			std::replace(pathToSerialize.begin(), pathToSerialize.end(), '\\', '/');
+			sortedRegistry[handle] = pathToSerialize;
+		}
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "Assets" << YAML::BeginSeq;
-		for (const auto& [path, handle] : myAssetRegistry)
+		for (const auto& [handle, path] : sortedRegistry)
 		{
-			if (!IsSourceFile(handle))
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "Handle" << YAML::Value << handle;
-				out << YAML::Key << "Path" << YAML::Value << Volt::ProjectManager::GetPathRelativeToProject(path).string();
-				out << YAML::EndMap;
-			}
+			out << YAML::BeginMap;
+			out << YAML::Key << "Handle" << YAML::Value << handle;
+			out << YAML::Key << "Path" << YAML::Value << path;
+			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;

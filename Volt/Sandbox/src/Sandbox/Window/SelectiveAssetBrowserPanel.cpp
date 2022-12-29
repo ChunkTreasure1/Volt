@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "SelectiveAssetBrowserPanel.h"
 
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Asset/AssetManager.h>
@@ -41,7 +41,7 @@ void SelectiveAssetBrowserPanel::UpdateMainContent()
 			{
 				ImGui::PushID(asset.path.filename().string().c_str());
 
-				Ref<Volt::Texture2D> icon = EditorIconLibrary::GetIcon(EditorIcon::GenericFile);
+				Ref<Volt::Texture2D> icon = EditorResources::GetEditorIcon(EditorIcon::GenericFile);
 
 				UI::ImageButton(asset.path.filename().string(), UI::GetTextureID(icon), { myThumbnailSize, myThumbnailSize });
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered())
@@ -105,7 +105,7 @@ void SelectiveAssetBrowserPanel::RenderControlsBar()
 		UI::ShiftCursor(5.f, 2.f);
 		{
 			UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-			ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Search)), { myControlsBarHeight - buttonSizeOffset, myControlsBarHeight - buttonSizeOffset });
+			ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Search)), { myControlsBarHeight - buttonSizeOffset, myControlsBarHeight - buttonSizeOffset });
 
 			ImGui::SameLine();
 			ImGui::PushItemWidth(200.f);
@@ -118,7 +118,7 @@ void SelectiveAssetBrowserPanel::RenderControlsBar()
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
 
-			if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Reload)), { myControlsBarHeight - buttonSizeOffset, myControlsBarHeight - buttonSizeOffset }))
+			if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Reload)), { myControlsBarHeight - buttonSizeOffset, myControlsBarHeight - buttonSizeOffset }))
 			{
 				UpdateAssetList();
 			}

@@ -25,9 +25,7 @@ namespace Volt
 
 	void CreateProxy(std::filesystem::path& dmpPath, const std::filesystem::path& path)
 	{
-		Create(path);
-
-#ifndef VT_DEBUG
+#ifdef VT_DIST
 		__try
 		{
 			Create(path);
@@ -36,6 +34,8 @@ namespace Volt
 		{
 			StartCrashHandler();
 		}
+#else
+		Create(path);
 #endif
 	}
 
