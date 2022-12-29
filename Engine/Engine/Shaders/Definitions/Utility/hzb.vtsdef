@@ -1,0 +1,4 @@
+name: "HZB"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Utility/HZB_cs.hlsl"

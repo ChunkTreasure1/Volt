@@ -6,7 +6,7 @@ project "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++latest"
-	debugdir "../../Build"
+	debugdir "../../Engine"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -136,6 +136,11 @@ project "Sandbox"
 		["SandboxOnlyDebug"] = "Debug"
 	}
 
+	debugargs 
+	{
+		"../Project/Project.vtproj"
+	}
+
 	filter "system:windows"
 		systemversion "latest"
 
@@ -160,5 +165,5 @@ project "Sandbox"
 
 			postbuildcommands
 			{
-				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/Sandbox.exe" "../../Build/"'
+				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/Sandbox.exe" "../../Engine/"'
 			}

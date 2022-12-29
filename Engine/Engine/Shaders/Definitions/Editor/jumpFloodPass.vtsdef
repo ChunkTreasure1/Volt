@@ -1,0 +1,5 @@
+name: "JumpFloodPass"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Editor/JumpFloodPass_vs.hlsl"
+  - "Engine/Shaders/HLSL/Editor/JumpFloodPass_ps.hlsl"

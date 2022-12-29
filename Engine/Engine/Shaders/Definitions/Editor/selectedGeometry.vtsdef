@@ -1,0 +1,5 @@
+name: "SelectedGeometry"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl"
+  - "Engine/Shaders/HLSL/Editor/SelectedGeometry_ps.hlsl"

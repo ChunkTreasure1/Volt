@@ -1,0 +1,4 @@
+name: "Default"
+paths:
+  - "Engine/Shaders/HLSL/Default_vs.hlsl"
+  - "Engine/Shaders/HLSL/Default_ps.hlsl"

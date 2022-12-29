@@ -20,7 +20,7 @@ AnimatedIcon::AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t fra
 	for (uint32_t frame = 1; frame <= frameCount; frame++)
 	{
 		const std::filesystem::path path = dirPath / (filename + std::to_string(frame) + firstFrame.extension().string());
-		myTextures.emplace_back(Volt::AssetManager::GetAsset<Volt::Texture2D>(path));
+		myTextures.emplace_back(Volt::AssetManager::GetAssetEngine<Volt::Texture2D>(path));
 	}
 
 	VT_CORE_ASSERT(!myTextures.empty(), "No frames found!");

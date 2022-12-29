@@ -1,0 +1,5 @@
+name: "Text"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/2D/Text_vs.hlsl"
+  - "Engine/Shaders/HLSL/2D/Text_ps.hlsl"

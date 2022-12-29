@@ -24,8 +24,6 @@
 
 namespace Volt
 {
-	static const std::filesystem::path s_assetRegistryPath = "Assets/AssetRegistry.vtreg";
-
 	AssetManager::AssetManager()
 	{
 		VT_CORE_ASSERT(!s_instance, "AssetManager already exists!");
@@ -98,6 +96,8 @@ namespace Volt
 		}
 
 		myAssetImporters[type]->Load(path, asset);
+		asset->path = path;
+		
 		if (handle != Asset::Null())
 		{
 			asset->handle = handle;
@@ -180,7 +180,9 @@ namespace Volt
 			return;
 		}
 
+		asset->path = std::filesystem::canonical(asset->path);
 		myAssetImporters[asset->GetType()]->Save(asset);
+		asset->path = Volt::ProjectManager::GetPathRelativeToProject(asset->path);
 
 		if (myAssetRegistry.find(asset->path) == myAssetRegistry.end())
 		{
@@ -563,6 +565,7 @@ namespace Volt
 				asset = myAssetCache.at(job.handle);
 
 				myAssetImporters.at(type)->Load(job.path, asset);
+				asset->path = Volt::ProjectManager::GetPathRelativeToProject(job.path);
 				if (job.handle != Asset::Null())
 				{
 					asset->handle = job.handle;
@@ -601,29 +604,30 @@ namespace Volt
 			{
 				out << YAML::BeginMap;
 				out << YAML::Key << "Handle" << YAML::Value << handle;
-				out << YAML::Key << "Path" << YAML::Value << FileSystem::GetPathRelativeToBaseFolder(path).string();
+				out << YAML::Key << "Path" << YAML::Value << Volt::ProjectManager::GetPathRelativeToProject(path).string();
 				out << YAML::EndMap;
 			}
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(s_assetRegistryPath);
+		const auto regPath = Volt::ProjectManager::GetAssetRegistryPath();
+		std::ofstream fout(regPath);
 		fout << out.c_str();
 		fout.close();
 	}
 
 	void AssetManager::LoadAssetRegistry()
 	{
-		if (!std::filesystem::exists(s_assetRegistryPath))
+		if (!std::filesystem::exists(Volt::ProjectManager::GetAssetRegistryPath()))
 		{
 			return;
 		}
 
-		std::ifstream file(s_assetRegistryPath);
+		std::ifstream file(Volt::ProjectManager::GetAssetRegistryPath());
 		if (!file.is_open()) [[unlikely]]
 		{
-			VT_CORE_CRITICAL("Failed to open asset registry file: {0}!", s_assetRegistryPath.string().c_str());
+			VT_CORE_CRITICAL("Failed to open asset registry file: {0}!", Volt::ProjectManager::GetAssetRegistryPath().string().c_str());
 			return;
 		}
 

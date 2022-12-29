@@ -1,0 +1,11 @@
+name: "Decal"
+paths:
+  - "Engine/Shaders/HLSL/Deferred/Decal_vs.hlsl"
+  - "Engine/Shaders/HLSL/Deferred/Decal_ps.hlsl"
+inputTextures:
+  - binding: 0
+    name: "Albedo"
+  - binding: 1
+    name: "Normal"
+  - binding: 2
+    name: "Material"

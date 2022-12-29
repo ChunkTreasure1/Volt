@@ -5,11 +5,6 @@
 class FileSystem
 {
 public:
-	static std::filesystem::path GetAssetsPath()
-	{
-		return "Assets";
-	}
-
 	static std::filesystem::path GetEnginePath()
 	{
 		return "Engine";
@@ -18,11 +13,6 @@ public:
 	static std::filesystem::path GetShadersPath()
 	{
 		return "Engine/Shaders";
-	}
-
-	static std::filesystem::path GetGameDLLPath()
-	{
-		return "Game.dll";
 	}
 
 	static std::filesystem::path GetDebugDumpPath()
@@ -40,45 +30,43 @@ public:
 		return "Engine/Physics/PhysicsLayers.yaml";
 	}
 
-	static std::filesystem::path GetMeshColliderCache()
-	{
-		return GetAssetsPath() / "Cache" / "Colliders";
-	}
-
-	static std::filesystem::path GetPathRelativeToBaseFolder(const std::filesystem::path& aPath)
-	{
-		return std::filesystem::relative(aPath, std::filesystem::current_path());
-	}
-
 	static bool IsWriteable(const std::filesystem::path& aPath)
 	{
-		std::filesystem::file_status status = std::filesystem::status(aPath);
+		const auto cannonicalPath = std::filesystem::canonical(aPath);
+
+		std::filesystem::file_status status = std::filesystem::status(cannonicalPath);
 		return (status.permissions() & std::filesystem::perms::owner_write) != std::filesystem::perms::none;
 	}
 
 	static bool Copy(const std::filesystem::path& aSource, const std::filesystem::path& aDestination)
 	{
-		if (!Exists(aSource))
+		const auto cannonicalSource = std::filesystem::canonical(aSource);
+		const auto cannonicalDest = std::filesystem::canonical(aDestination);
+
+		if (!Exists(cannonicalSource))
 		{
 			return false;
 		}
 
-		std::filesystem::copy(aSource, aDestination);
+		std::filesystem::copy(cannonicalSource, cannonicalDest);
 		return true;
 	}
 
 	static bool CopyFileTo(const std::filesystem::path& aSource, const std::filesystem::path& aDestDir)
 	{
-		if (!Exists(aDestDir))
+		const auto cannonicalSource = std::filesystem::canonical(aSource);
+		const auto cannonicalDest = std::filesystem::canonical(aDestDir);
+
+		if (!Exists(cannonicalDest))
 		{
 			return false;
 		}
 
-		std::filesystem::path newPath = aDestDir / aSource.filename();
+		std::filesystem::path newPath = cannonicalDest / cannonicalSource.filename();
 
 		if (!Exists(newPath))
 		{
-			Copy(aSource, newPath);
+			Copy(cannonicalSource, newPath);
 			return true;
 		}
 
@@ -92,32 +80,38 @@ public:
 
 	static bool Remove(const std::filesystem::path& aPath)
 	{
-		return std::filesystem::remove_all(aPath);
+		const auto cannonicalPath = std::filesystem::canonical(aPath);
+		return std::filesystem::remove_all(cannonicalPath);
 	}
 
 	static void MoveToRecycleBin(const std::filesystem::path& path);
 	static bool Rename(const std::filesystem::path& aPath, const std::string& aName)
 	{
-		if (!Exists(aPath))
+		const auto cannonicalPath = std::filesystem::canonical(aPath);
+
+		if (!Exists(cannonicalPath))
 		{
 			return false;
 		}
 
-		const std::filesystem::path newPath = aPath.parent_path() / (aName + aPath.extension().string());
-		std::filesystem::rename(aPath, newPath);
+		const std::filesystem::path newPath = cannonicalPath.parent_path() / (aName + cannonicalPath.extension().string());
+		std::filesystem::rename(cannonicalPath, newPath);
 
 		return true;
 	}
 
 	static bool Move(const std::filesystem::path& file, const std::filesystem::path& destinationFolder)
 	{
-		if (!Exists(file))
+		const auto canonicalFile = std::filesystem::canonical(file);
+		const auto canonicalDest = std::filesystem::canonical(destinationFolder);
+
+		if (!Exists(canonicalFile))
 		{
 			return false;
 		}
 
-		const std::filesystem::path newPath = destinationFolder / file.filename();
-		std::filesystem::rename(file, newPath);
+		const std::filesystem::path newPath = canonicalDest/ file.filename();
+		std::filesystem::rename(canonicalFile, newPath);
 
 		return true;
 	}

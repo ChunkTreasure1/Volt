@@ -1,4 +1,0 @@
-name: "EnvironmentIrradiance"
-internal: true
-paths:
-  - "Engine/Shaders/HLSL/Environment/EnvironmentIrradiance_cs.hlsl"

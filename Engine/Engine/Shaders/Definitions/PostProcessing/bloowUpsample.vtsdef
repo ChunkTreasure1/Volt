@@ -1,0 +1,4 @@
+name: "BloomUpsample"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/PostProcessing/BloomUpsample_cs.hlsl"

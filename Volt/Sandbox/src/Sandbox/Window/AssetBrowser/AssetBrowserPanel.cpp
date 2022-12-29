@@ -25,6 +25,7 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Scene/Scene.h>
+#include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Shader/ShaderRegistry.h>
@@ -71,12 +72,11 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
 
-
-	myDirectories[FileSystem::GetAssetsPath()] = ProcessDirectory(FileSystem::GetAssetsPath(), nullptr);
+	myDirectories[Volt::ProjectManager::GetAssetsPath()] = ProcessDirectory(Volt::ProjectManager::GetAssetsPath(), nullptr);
 	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
 	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myDirectories[FileSystem::GetAssetsPath()].get();
+	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsPath()].get();
 
 	myCurrentDirectory = myAssetsDirectory;
 	GenerateAssetPreviewsInCurrentDirectory();
@@ -480,7 +480,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 					myHasSearchQuery = false;
 					mySearchQuery.clear();
 
-					if (myCurrentDirectory->path != FileSystem::GetAssetsPath() && myCurrentDirectory->path != FileSystem::GetEnginePath())
+					if (myCurrentDirectory->path != Volt::ProjectManager::GetAssetsPath() && myCurrentDirectory->path != FileSystem::GetEnginePath())
 					{
 						myNextDirectory = myCurrentDirectory->parentDirectory;
 
@@ -917,16 +917,17 @@ void AssetBrowserPanel::DeleteFilesModal()
 
 void AssetBrowserPanel::Reload()
 {
-	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : FileSystem::GetAssetsPath();
+	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : Volt::ProjectManager::GetAssetsPath();
 
 	myCurrentDirectory = nullptr;
 	myNextDirectory = nullptr;
+	mySelectionManager->DeselectAll();
 
-	myDirectories[FileSystem::GetAssetsPath()] = ProcessDirectory(FileSystem::GetAssetsPath(), nullptr);
+	myDirectories[Volt::ProjectManager::GetAssetsPath()] = ProcessDirectory(Volt::ProjectManager::GetAssetsPath(), nullptr);
 	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
 	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myDirectories[FileSystem::GetAssetsPath()].get();
+	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsPath()].get();
 
 	//Find directory
 	myCurrentDirectory = FindDirectoryWithPath(currentPath);

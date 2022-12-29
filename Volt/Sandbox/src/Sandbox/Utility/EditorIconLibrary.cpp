@@ -64,7 +64,7 @@ Ref<Volt::Texture2D> EditorIconLibrary::GetIcon(EditorIcon icon)
 
 void EditorIconLibrary::TryLoadIcon(EditorIcon icon, const std::filesystem::path& path)
 {
-	Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAsset<Volt::Texture2D>(path);
+	Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAssetEngine<Volt::Texture2D>(path);
 	if (!texture)
 	{
 		//texture = Volt::Renderer::GetDefaultData().whiteTexture;

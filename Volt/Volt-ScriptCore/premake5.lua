@@ -5,8 +5,8 @@ project "Volt-ScriptCore"
 	dotnetframework "4.7.2"
 	namespace "Volt"
 
-	targetdir ("../../Build/Scripts/")
-	objdir ("../../Build/Scripts/Intermediates")
+	targetdir ("../../Engine/Scripts/")
+	objdir ("../../Engine/Scripts/Intermediates")
 
 	files
 	{

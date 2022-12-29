@@ -395,7 +395,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 
 						ImGui::BeginChild("image", { thumbnailSize, thumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 						{
-							ImGui::Image(UI::GetTextureID(Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_material.dds")), { thumbnailSize, thumbnailSize });
+							ImGui::Image(UI::GetTextureID(Volt::AssetManager::GetAssetEngine<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_material.dds")), { thumbnailSize, thumbnailSize });
 						}
 						ImGui::EndChild();
 						ImGui::PopStyleVar();

@@ -71,7 +71,7 @@ namespace Volt
 			AssetType type = AssetManager::Get().GetAssetTypeFromPath(path.path());
 			if (type == AssetType::Shader)
 			{
-				Ref<Shader> shader = AssetManager::GetAsset<Shader>(path.path());
+				Ref<Shader> shader = AssetManager::GetAssetEngine<Shader>(path.path());
 				Register(shader->GetName(), shader);
 			}
 		}

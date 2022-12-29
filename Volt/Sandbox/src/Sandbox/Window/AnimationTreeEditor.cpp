@@ -316,7 +316,7 @@ void AnimationTreeEditor::ShowAnimationPanel()
 			{
 				if (ImGui::MenuItem("Open Character"))
 				{
-					const std::filesystem::path path = FileSystem::GetPathRelativeToBaseFolder(FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0"));
+					const std::filesystem::path path = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
 					if (!path.empty() && FileSystem::Exists(path))
 					{
 						myCurrentCharacter = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(path);

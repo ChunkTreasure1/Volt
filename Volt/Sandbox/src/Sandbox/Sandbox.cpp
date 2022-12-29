@@ -7,7 +7,6 @@
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
-#include "Sandbox/Window/CreatePanel.h"
 #include "Sandbox/Window/LogPanel.h"
 #include "Sandbox/Window/AnimationTreeEditor.h"
 #include "Sandbox/Window/MaterialEditorPanel.h"
@@ -67,6 +66,7 @@
 #include <Volt/AI/NavMesh2/NavMesh2.h>
 #include <Volt/Platform/ExceptionHandling.h>
 #include <Volt/Audio/AudioManager.h>
+#include <Volt/Project/ProjectManager.h>
 
 #include <Game/Game.h>
 
@@ -103,16 +103,6 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	// Set working directory
-	if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
-	{
-		const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
-		if (!pathEnv.empty())
-		{
-			std::filesystem::current_path(pathEnv);
-		}
-	}
-
 	EditorIconLibrary::Initialize();
 	AssetIconLibrary::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
@@ -162,7 +152,7 @@ void Sandbox::OnAttach()
 
 	myFileWatcher = CreateRef<FileWatcher>(std::chrono::milliseconds(2000));
 	myFileWatcher->WatchFolder("Engine/Shaders/HLSL/");
-	myFileWatcher->WatchFolder("Assets/");
+	myFileWatcher->WatchFolder(Volt::ProjectManager::GetAssetsPath());
 
 	ImGuizmo::AllowAxisFlip(false);
 
@@ -669,8 +659,8 @@ void Sandbox::SetupRenderCallbacks()
 				Volt::Renderer::BeginPass(myGizmoPass, camera, false);
 
 				auto& registry = scene->GetRegistry();
-				Ref<Volt::Texture2D> gizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_entityGizmo.dds");
-				Ref<Volt::Texture2D> lightGizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_lightGizmo.dds");
+				Ref<Volt::Texture2D> gizmoTexture = Volt::AssetManager::GetAssetEngine<Volt::Texture2D>("Editor/Textures/Icons/icon_entityGizmo.dds");
+				Ref<Volt::Texture2D> lightGizmoTexture = Volt::AssetManager::GetAssetEngine<Volt::Texture2D>("Editor/Textures/Icons/icon_lightGizmo.dds");
 
 				registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
 					{
@@ -712,7 +702,7 @@ void Sandbox::SetupRenderCallbacks()
 				Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
 				Volt::Renderer::SetDepthState(Volt::DepthState::ReadWrite);
 
-				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
+				auto collisionMaterial = Volt::AssetManager::GetAssetEngine<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
 				registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
 					{
 						if (!SelectionManager::IsSelected(id))
@@ -727,7 +717,7 @@ void Sandbox::SetupRenderCallbacks()
 						const gem::vec3 resultScale = colliderScale * trs.scale;
 						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
 
-						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh");
+						auto cubeMesh = Volt::AssetManager::GetAssetEngine<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh");
 
 						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
 					});
@@ -746,7 +736,7 @@ void Sandbox::SetupRenderCallbacks()
 						const gem::vec3 resultScale = maxScale * collider.radius / sphereRadius;
 						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
 
-						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Sphere.vtmesh");
+						auto cubeMesh = Volt::AssetManager::GetAssetEngine<Volt::Mesh>("Assets/Meshes/Primitives/Sphere.vtmesh");
 
 						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
 					});
@@ -769,7 +759,7 @@ void Sandbox::SetupRenderCallbacks()
 						const gem::vec3 resultScale = { radiusScale * collider.radius / capsuleRadius, heightScale * collider.height / capsuleHeight, radiusScale * collider.radius / capsuleRadius };
 						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
 
-						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Capsule.vtmesh");
+						auto cubeMesh = Volt::AssetManager::GetAssetEngine<Volt::Mesh>("Assets/Meshes/Primitives/Capsule.vtmesh");
 
 						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
 					});
@@ -779,8 +769,8 @@ void Sandbox::SetupRenderCallbacks()
 			//////////////////////////////////
 
 			{
-				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
-				auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Arrow/3dpil.vtmesh");
+				auto material = Volt::AssetManager::GetAssetEngine<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
+				auto arrowMesh = Volt::AssetManager::GetAssetEngine<Volt::Mesh>("Editor/Meshes/Arrow/3dpil.vtmesh");
 
 				Volt::Renderer::BeginPass(myForwardExtraPass, camera);
 				registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
@@ -1012,7 +1002,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	EditorCommandStack::GetInstance().Update(100);
 
-	Volt::Entity a(1, myRuntimeScene.get());
 	switch (mySceneState)
 	{
 		case SceneState::Edit:

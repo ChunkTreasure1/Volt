@@ -3,14 +3,19 @@
 bin/
 bin-int/
 
-Build/User
-Build/Engine/Shaders/Cache
-Build/Scripts/Intermediates
+Engine/User
+Engine/Engine/Shaders/Cache
+Engine/Scripts/Intermediates
 
 Volt/ProjectTemplate/Assets/Scripts/Intermediates/
 Volt/ProjectTemplate/Assets/Scripts/.vs/
 Volt/ProjectTemplate/Assets/Scripts/*.csproj
 Volt/ProjectTemplate/Assets/Scripts/*.sln
+
+Project/ProjectTemplate/Assets/Scripts/Intermediates/
+Project/ProjectTemplate/Assets/Scripts/.vs/
+Project/ProjectTemplate/Assets/Scripts/*.csproj
+Project/ProjectTemplate/Assets/Scripts/*.sln
 
 *.sln
 *.vcxproj

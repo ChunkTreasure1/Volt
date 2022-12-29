@@ -1,5 +1,0 @@
-name: "BloomTest"
-internal: false
-paths:
-  - "Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl"
-  - "Engine/Shaders/HLSL/PostProcessing/BloomTest_ps.hlsl"

@@ -1,0 +1,5 @@
+name: "Grid"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/2D/Grid_vs.hlsl"
+  - "Engine/Shaders/HLSL/2D/Grid_ps.hlsl"

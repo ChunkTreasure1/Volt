@@ -1,0 +1,5 @@
+name: "JumpFloodComposite"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl"
+  - "Engine/Shaders/HLSL/Utility/FullscreenQuad_vs.hlsl"

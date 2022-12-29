@@ -359,7 +359,7 @@ bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCh
 		if (ImGui::Button("Create"))
 		{
 			created = true;
-			outCharacter = Volt::AssetManager::CreateAsset<Volt::AnimatedCharacter>(FileSystem::GetPathRelativeToBaseFolder(aCharacterData.destination), aCharacterData.name + ".vtchr");
+			outCharacter = Volt::AssetManager::CreateAsset<Volt::AnimatedCharacter>(Volt::ProjectManager::GetPathRelativeToProject(aCharacterData.destination), aCharacterData.name + ".vtchr");
 
 			if (aCharacterData.skeletonHandle != Volt::Asset::Null())
 			{

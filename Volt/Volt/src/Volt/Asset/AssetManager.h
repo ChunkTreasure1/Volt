@@ -8,6 +8,7 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include <map>
 #include <filesystem>
@@ -25,8 +26,6 @@ namespace Volt
 		void Initialize();
 		void Shutdown();
 
-		void LoadAsset(const std::filesystem::path& path, Ref<Asset>& asset);
-		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
 		void Unload(AssetHandle assetHandle);
 		void SaveAsset(const Ref<Asset> asset);
 
@@ -73,6 +72,9 @@ namespace Volt
 		static Ref<T> GetAsset(const std::filesystem::path& path);
 
 		template<typename T>
+		static Ref<T> GetAssetEngine(const std::filesystem::path& path);
+
+		template<typename T>
 		static Ref<T> QueueAsset(const std::filesystem::path& path);
 
 		template<typename T>
@@ -99,6 +101,9 @@ namespace Volt
 
 		inline static AssetManager* s_instance = nullptr;
 
+		void LoadAsset(const std::filesystem::path& path, Ref<Asset>& asset);
+		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
+		
 		void QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset);
 		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset);
 
@@ -166,6 +171,27 @@ namespace Volt
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& path)
 	{
+		const std::filesystem::path projectRelPath = Volt::ProjectManager::GetPath() / path;
+		if (!std::filesystem::exists(projectRelPath))
+		{
+			VT_CORE_ERROR("Unable to load asset {0}! It does not exist!", projectRelPath.string().c_str());
+			return nullptr;
+		}
+
+		Ref<Asset> asset;
+		Get().LoadAsset(projectRelPath, asset);
+
+		if (asset->GetType() != T::GetStaticType())
+		{
+			asset = nullptr;
+		}
+
+		return std::reinterpret_pointer_cast<T>(asset);
+	}
+
+	template<typename T>
+	inline Ref<T> AssetManager::GetAssetEngine(const std::filesystem::path& path)
+	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("Unable to load asset {0}! It does not exist!", path.string().c_str());
@@ -186,15 +212,16 @@ namespace Volt
 	template<typename T>
 	inline Ref<T> AssetManager::QueueAsset(const std::filesystem::path& path)
 	{
-		if (!std::filesystem::exists(path))
+		const std::filesystem::path projectRelPath = Volt::ProjectManager::GetPath() / path;
+		if (!std::filesystem::exists(projectRelPath))
 		{
-			VT_CORE_ERROR("Unable to load asset {0}! It does not exist!", path.string().c_str());
+			VT_CORE_ERROR("Unable to load asset {0}! It does not exist!", projectRelPath.string().c_str());
 			return nullptr;
 		}
 
 		Ref<Asset> asset = CreateRef<T>();
 		asset->SetFlag(AssetFlag::Queued, true);
-		Get().QueueAssetInternal(path, asset);
+		Get().QueueAssetInternal(projectRelPath, asset);
 
 		if (asset->GetType() != T::GetStaticType())
 		{
@@ -223,8 +250,10 @@ namespace Volt
 	template<typename T, typename ...Args>
 	inline Ref<T> AssetManager::CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args && ...args)
 	{
+		const std::filesystem::path projectRelDir = Volt::ProjectManager::GetPath() / targetDir;
+
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
-		asset->path = targetDir / filename;
+		asset->path = projectRelDir / filename;
 
 		std::scoped_lock lock(Get().myLoadMutex);
 

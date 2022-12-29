@@ -6,6 +6,8 @@
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Scene/Scene.h>
 
+#include <Volt/Project/ProjectManager.h>
+
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 #include <Volt/Utility/SerializationMacros.h>
 
@@ -185,7 +187,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 		const auto assetsPath = buildInfo.buildDirectory / "Assets";
 		FileSystem::CreateFolder(assetsPath);
 
-		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetAssetsPath()))
+		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsPath()))
 		{
 			if (!file.is_directory())
 			{
@@ -204,7 +206,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 					}
 				}
 
-				const auto relPath = std::filesystem::relative(file.path(), FileSystem::GetAssetsPath()).parent_path();
+				const auto relPath = std::filesystem::relative(file.path(), Volt::ProjectManager::GetAssetsPath()).parent_path();
 
 				if (!FileSystem::Exists(assetsPath / relPath))
 				{
@@ -323,7 +325,7 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 		const auto assetsPath = buildInfo.buildDirectory / "Assets";
 		FileSystem::CreateFolder(assetsPath);
 
-		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetAssetsPath()))
+		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsPath()))
 		{
 			if (!file.is_directory())
 			{

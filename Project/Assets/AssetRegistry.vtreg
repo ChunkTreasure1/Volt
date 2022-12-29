@@ -1,0 +1,961 @@
+Assets:
+  - Handle: 7774068659233115813
+    Path: ""
+  - Handle: 16625774910016950853
+    Path: ..\Engine\Editor\Materials\M_ColliderDebug.vtmat
+  - Handle: 10940367927715095055
+    Path: ..\Engine\Editor\Materials\M_NavMeshDebug.vtmat
+  - Handle: 2932326804834381373
+    Path: ..\Engine\Editor\Meshes\Arrow\3dpil.vtmat
+  - Handle: 4235162108492430969
+    Path: ..\Engine\Editor\Meshes\Arrow\3dpil.vtmesh
+  - Handle: 8187072774580702017
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
+  - Handle: 14833944971717813604
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_animation.dds
+  - Handle: 16590870944127233868
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_material.dds
+  - Handle: 10232603794782685383
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_mesh.dds
+  - Handle: 5796038497130143484
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_meshSource.dds
+  - Handle: 17846305020489329193
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_particlePreset.dds
+  - Handle: 9295230600413916747
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_prefab.dds
+  - Handle: 370022796758919483
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_scene.dds
+  - Handle: 1966644595933122215
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_skeleton.dds
+  - Handle: 9482229155976747136
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim1.dds
+  - Handle: 14981522707679205122
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim10.dds
+  - Handle: 10535231148579340719
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim11.dds
+  - Handle: 16048127799038507530
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim12.dds
+  - Handle: 8620934418716921629
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim13.dds
+  - Handle: 13391763166812988680
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim14.dds
+  - Handle: 4180822364840326713
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim15.dds
+  - Handle: 544897006312726435
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim16.dds
+  - Handle: 7703666528466695603
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim17.dds
+  - Handle: 17693415118976187046
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim18.dds
+  - Handle: 11517110254615813914
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim19.dds
+  - Handle: 3036649235446013659
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim2.dds
+  - Handle: 3544291371840758838
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim20.dds
+  - Handle: 8362827769008220897
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim21.dds
+  - Handle: 9496066074499155472
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim22.dds
+  - Handle: 18040254980888882731
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim23.dds
+  - Handle: 6727202829020171032
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim24.dds
+  - Handle: 12222398879835983731
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim25.dds
+  - Handle: 13180861265520176617
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim26.dds
+  - Handle: 243810508544871135
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim27.dds
+  - Handle: 10439795439165808779
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim28.dds
+  - Handle: 9767673561965952729
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim29.dds
+  - Handle: 17428816548839180317
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim3.dds
+  - Handle: 1576705226273994068
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim30.dds
+  - Handle: 4132042108358469391
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim4.dds
+  - Handle: 12754302418717017400
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim5.dds
+  - Handle: 18217955387428918605
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim6.dds
+  - Handle: 15144210751092094042
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim7.dds
+  - Handle: 9698885133910853067
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim8.dds
+  - Handle: 15503052940662302921
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim9.dds
+  - Handle: 3925098330888776984
+    Path: ..\Engine\Editor\Textures\Icons\icon_add.dds
+  - Handle: 164759902194098167
+    Path: ..\Engine\Editor\Textures\Icons\icon_back.dds
+  - Handle: 4266016752403471926
+    Path: ..\Engine\Editor\Textures\Icons\icon_close.dds
+  - Handle: 14489425932391114890
+    Path: ..\Engine\Editor\Textures\Icons\icon_directory.dds
+  - Handle: 16928570362690233814
+    Path: ..\Engine\Editor\Textures\Icons\icon_entityGizmo.dds
+  - Handle: 18010748652908997518
+    Path: ..\Engine\Editor\Textures\Icons\icon_file.dds
+  - Handle: 15920446419610408052
+    Path: ..\Engine\Editor\Textures\Icons\icon_filter.dds
+  - Handle: 10811778964296272904
+    Path: ..\Engine\Editor\Textures\Icons\icon_getMaterial.dds
+  - Handle: 9915032510890904074
+    Path: ..\Engine\Editor\Textures\Icons\icon_hidden.dds
+  - Handle: 17236959330310855777
+    Path: ..\Engine\Editor\Textures\Icons\icon_lightGizmo.dds
+  - Handle: 12207231778846377918
+    Path: ..\Engine\Editor\Textures\Icons\icon_localSpace.dds
+  - Handle: 17217080394774844854
+    Path: ..\Engine\Editor\Textures\Icons\icon_locked.dds
+  - Handle: 16234935568398840990
+    Path: ..\Engine\Editor\Textures\Icons\icon_maximize.dds
+  - Handle: 11189384719749572081
+    Path: ..\Engine\Editor\Textures\Icons\icon_minimize.dds
+  - Handle: 13384440671427017131
+    Path: ..\Engine\Editor\Textures\Icons\icon_open.dds
+  - Handle: 6657803022161987344
+    Path: ..\Engine\Editor\Textures\Icons\icon_play.dds
+  - Handle: 13196023657186865411
+    Path: ..\Engine\Editor\Textures\Icons\icon_reload.dds
+  - Handle: 14776488685857701619
+    Path: ..\Engine\Editor\Textures\Icons\icon_save.dds
+  - Handle: 12019700226714702845
+    Path: ..\Engine\Editor\Textures\Icons\icon_search.dds
+  - Handle: 16265715887590932077
+    Path: ..\Engine\Editor\Textures\Icons\icon_setMaterial.dds
+  - Handle: 18058757820127901143
+    Path: ..\Engine\Editor\Textures\Icons\icon_settings.dds
+  - Handle: 11949624701147338141
+    Path: ..\Engine\Editor\Textures\Icons\icon_showGizmo.dds
+  - Handle: 16833251545878952411
+    Path: ..\Engine\Editor\Textures\Icons\icon_snapRotation.dds
+  - Handle: 13168455589850667860
+    Path: ..\Engine\Editor\Textures\Icons\icon_snapScale.dds
+  - Handle: 1433550780287578521
+    Path: ..\Engine\Editor\Textures\Icons\icon_snapToGrid.dds
+  - Handle: 12526631587399594474
+    Path: ..\Engine\Editor\Textures\Icons\icon_stop.dds
+  - Handle: 9279799424539996759
+    Path: ..\Engine\Editor\Textures\Icons\icon_unlocked.dds
+  - Handle: 6816651054917098088
+    Path: ..\Engine\Editor\Textures\Icons\icon_visible.dds
+  - Handle: 1602129805040538017
+    Path: ..\Engine\Editor\Textures\Icons\icon_volt.dds
+  - Handle: 2084751217786813380
+    Path: ..\Engine\Editor\Textures\Icons\icon_windowize.dds
+  - Handle: 16092370904037868035
+    Path: ..\Engine\Editor\Textures\Icons\icon_worldSpace.dds
+  - Handle: 14553266771352698532
+    Path: ..\Engine\Engine\Fonts\Futura\futura-light.ttf
+  - Handle: 1569012551374683422
+    Path: ..\Engine\Engine\Fonts\Inter\Inter-Regular.ttf
+  - Handle: 12693617945550574548
+    Path: ..\Engine\Engine\Fonts\OpenSans-Regular.ttf
+  - Handle: 16470809019740148419
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\entityGizmo.vtsdef
+  - Handle: 18063575715979531818
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\grid.vtsdef
+  - Handle: 16698830110700212400
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\line.vtsdef
+  - Handle: 7402936938109236978
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\sprite.vtsdef
+  - Handle: 3980579857401565125
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\text.vtsdef
+  - Handle: 11027231272351065953
+    Path: ..\Engine\Engine\Shaders\Definitions\AxeSlash.vtsdef
+  - Handle: 10384487290914722549
+    Path: ..\Engine\Engine\Shaders\Definitions\Deferred\decal.vtsdef
+  - Handle: 14393079068627242759
+    Path: ..\Engine\Engine\Shaders\Definitions\Deferred\deferred.vtsdef
+  - Handle: 15727294522255304863
+    Path: ..\Engine\Engine\Shaders\Definitions\Deferred\shading.vtsdef
+  - Handle: 11336257896967141863
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\colliderDebug.vtsdef
+  - Handle: 7483648076745432374
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\editorPBR.vtsdef
+  - Handle: 7177841372252094272
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\jumpFloodComposite.vtsdef
+  - Handle: 4519501574711539436
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\jumpFloodInit.vtsdef
+  - Handle: 10172123990313441088
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\jumpFloodPass.vtsdef
+  - Handle: 13494898670534588124
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\selectedGeometry.vtsdef
+  - Handle: 2341968034183710483
+    Path: ..\Engine\Engine\Shaders\Definitions\EnemyRangedFX_def.vtsdef
+  - Handle: 16911202853197133534
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\environmentIrradiance.vtsdef
+  - Handle: 11148424957776363393
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\environmentMipFilter.vtsdef
+  - Handle: 1884557577704279188
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\equirectangularToCubemap.vtsdef
+  - Handle: 1943264849264391678
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\skybox.vtsdef
+  - Handle: 6064073839386163917
+    Path: ..\Engine\Engine\Shaders\Definitions\FXBossAoE_def.vtsdef
+  - Handle: 4358162984593129900
+    Path: ..\Engine\Engine\Shaders\Definitions\FXBossShiel_def.vtsdef
+  - Handle: 11562478946072854358
+    Path: ..\Engine\Engine\Shaders\Definitions\FXBossSlam_def.vtsdef
+  - Handle: 14187281806559555795
+    Path: ..\Engine\Engine\Shaders\Definitions\FXFlipbook_def.vtsdef
+  - Handle: 15417521708516881914
+    Path: ..\Engine\Engine\Shaders\Definitions\FXLifeLeech_def.vtsdef
+  - Handle: 7400353598960534698
+    Path: ..\Engine\Engine\Shaders\Definitions\FXbase1_def.vtsdef
+  - Handle: 5765592174077043009
+    Path: ..\Engine\Engine\Shaders\Definitions\FXbase2_def.vtsdef
+  - Handle: 1127986559879581146
+    Path: ..\Engine\Engine\Shaders\Definitions\FXbossHealth_def.vtsdef
+  - Handle: 11093732162104011299
+    Path: ..\Engine\Engine\Shaders\Definitions\FXcooldownBlink_def.vtsdef
+  - Handle: 3047722314407417716
+    Path: ..\Engine\Engine\Shaders\Definitions\FXcooldown_def.vtsdef
+  - Handle: 6614729181652104657
+    Path: ..\Engine\Engine\Shaders\Definitions\FXdashSmoke_def.vtsdef
+  - Handle: 16832572068844025564
+    Path: ..\Engine\Engine\Shaders\Definitions\FXdashTrail_def.vtsdef
+  - Handle: 17048084060367581016
+    Path: ..\Engine\Engine\Shaders\Definitions\FXdash_def.vtsdef
+  - Handle: 12325591991400483124
+    Path: ..\Engine\Engine\Shaders\Definitions\FXenemyMelee_def.vtsdef
+  - Handle: 17147012468096783978
+    Path: ..\Engine\Engine\Shaders\Definitions\FXfear_def.vtsdef
+  - Handle: 11126815676166643705
+    Path: ..\Engine\Engine\Shaders\Definitions\FXhealthOrb_def.vtsdef
+  - Handle: 315994293167192709
+    Path: ..\Engine\Engine\Shaders\Definitions\FXhitIndicator_def.vtsdef
+  - Handle: 2286529739542691404
+    Path: ..\Engine\Engine\Shaders\Definitions\FXimpact_def.vtsdef
+  - Handle: 14783396600476602956
+    Path: ..\Engine\Engine\Shaders\Definitions\FXline_def.vtsdef
+  - Handle: 3270079597099892730
+    Path: ..\Engine\Engine\Shaders\Definitions\FXmainMenuRipple_def.vtsdef
+  - Handle: 12611529621858025470
+    Path: ..\Engine\Engine\Shaders\Definitions\FXnewVignette_def.vtsdef
+  - Handle: 16774342600726705572
+    Path: ..\Engine\Engine\Shaders\Definitions\FXportal_def.vtsdef
+  - Handle: 482012120528842527
+    Path: ..\Engine\Engine\Shaders\Definitions\FXrageRocks_def.vtsdef
+  - Handle: 13708919645685696886
+    Path: ..\Engine\Engine\Shaders\Definitions\FXrage_def.vtsdef
+  - Handle: 330552089959459787
+    Path: ..\Engine\Engine\Shaders\Definitions\FXranged_def.vtsdef
+  - Handle: 18268940267138064459
+    Path: ..\Engine\Engine\Shaders\Definitions\FXscriptedEventCircle_def.vtsdef
+  - Handle: 12101444368882650964
+    Path: ..\Engine\Engine\Shaders\Definitions\FXswipe_def.vtsdef
+  - Handle: 12468629872448889201
+    Path: ..\Engine\Engine\Shaders\Definitions\FXtentacleSwipe_def.vtsdef
+  - Handle: 2224812618381030116
+    Path: ..\Engine\Engine\Shaders\Definitions\FXvignette_def.vtsdef
+  - Handle: 5771851746155119436
+    Path: ..\Engine\Engine\Shaders\Definitions\Fog.vtsdef
+  - Handle: 15649206824518032292
+    Path: ..\Engine\Engine\Shaders\Definitions\Forward\forwardPBR.vtsdef
+  - Handle: 8627709591623656013
+    Path: ..\Engine\Engine\Shaders\Definitions\Forward\testWater.vtsdef
+  - Handle: 2705929307601662472
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\FXAA.vtsdef
+  - Handle: 14165588085222037548
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\AOComposite.vtsdef
+  - Handle: 2272396581450152956
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\Deinterleaving.vtsdef
+  - Handle: 17405175672729435374
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\HBAO.vtsdef
+  - Handle: 14918896777724295900
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\HBAOBlur.vtsdef
+  - Handle: 11234102023403030815
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\Reinterleaving.vtsdef
+  - Handle: 12611790215944995367
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomComposite.vtsdef
+  - Handle: 7695286178380974200
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomDownsample.vtsdef
+  - Handle: 1798962368108994008
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomDownsamplePS.vtsdef
+  - Handle: 10322918714843037865
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomTest.vtsdef
+  - Handle: 4028296246275624982
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomUpsamplePS.vtsdef
+  - Handle: 8231885067113333348
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloowUpsample.vtsdef
+  - Handle: 10072029487956092037
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\colorGrading.vtsdef
+  - Handle: 2860989982543649131
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\gammaCorrection.vtsdef
+  - Handle: 9601156702989144251
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\heightFog.vtsdef
+  - Handle: 13077336869322115625
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\vignette.vtsdef
+  - Handle: 8022232202377806109
+    Path: ..\Engine\Engine\Shaders\Definitions\ProjectionBlend_def.vtsdef
+  - Handle: 14576650873211501198
+    Path: ..\Engine\Engine\Shaders\Definitions\Shadows\directionalShadow.vtsdef
+  - Handle: 15055688489208296871
+    Path: ..\Engine\Engine\Shaders\Definitions\Shadows\pointLightShadow.vtsdef
+  - Handle: 1004128255384193027
+    Path: ..\Engine\Engine\Shaders\Definitions\TextureLerp_def.vtsdef
+  - Handle: 6094322589209737874
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\PreDepth.vtsdef
+  - Handle: 10339981266060805608
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\brdfGeneration.vtsdef
+  - Handle: 3277724565071216775
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\copyTextureToTarget.vtsdef
+  - Handle: 13007790114920449811
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\hzb.vtsdef
+  - Handle: 17671300138228258975
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\lightCull.vtsdef
+  - Handle: 7422095615364089055
+    Path: ..\Engine\Engine\Shaders\Definitions\VoxelGI\voxelization.vtsdef
+  - Handle: 4210542023405171046
+    Path: ..\Engine\Engine\Shaders\Definitions\decal.vtsdef
+  - Handle: 14051134914706901178
+    Path: ..\Engine\Engine\Shaders\Definitions\default.vtsdef
+  - Handle: 8762605438056676406
+    Path: ..\Engine\Engine\Shaders\Definitions\deferred.vtsdef
+  - Handle: 17040825517183784410
+    Path: ..\Engine\Engine\Shaders\Definitions\emissiveGizmo.vtsdef
+  - Handle: 4281789076748308017
+    Path: ..\Engine\Engine\Shaders\Definitions\fireGizmo.vtsdef
+  - Handle: 13436339502784460135
+    Path: ..\Engine\Engine\Shaders\Definitions\fire_def.vtsdef
+  - Handle: 10006043658321537381
+    Path: ..\Engine\Engine\Shaders\Definitions\forwardPBR.vtsdef
+  - Handle: 148723510958879576
+    Path: ..\Engine\Engine\Shaders\Definitions\glow_def.vtsdef
+  - Handle: 14062536132310595681
+    Path: ..\Engine\Engine\Shaders\Definitions\shading.vtsdef
+  - Handle: 15057332218353844460
+    Path: ..\Engine\Engine\Shaders\Definitions\simpleShader.vtsdef
+  - Handle: 8916005547291345709
+    Path: ..\Engine\Engine\Shaders\Definitions\swampshader.vtsdef
+  - Handle: 2678663713858823338
+    Path: ..\Engine\Engine\Shaders\Definitions\tilingTexture.vtsdef
+  - Handle: 9437371582151971369
+    Path: ""
+  - Handle: 4235782291458797946
+    Path: ""
+  - Handle: 6060191853528431692
+    Path: ""
+  - Handle: 8898433600249673181
+    Path: ""
+  - Handle: 13625944521624127215
+    Path: ""
+  - Handle: 10126256200334779044
+    Path: ""
+  - Handle: 9547784220610606608
+    Path: ""
+  - Handle: 12929184935019141691
+    Path: ""
+  - Handle: 14942159979670443583
+    Path: ""
+  - Handle: 2971962909458506921
+    Path: ""
+  - Handle: 5854434146039472560
+    Path: ""
+  - Handle: 9934568339858054636
+    Path: ""
+  - Handle: 6941664286875718715
+    Path: ""
+  - Handle: 13837574305281586482
+    Path: ""
+  - Handle: 9244453886966270540
+    Path: ""
+  - Handle: 1013840847306027387
+    Path: ""
+  - Handle: 9181869727808627299
+    Path: ""
+  - Handle: 6193287608403048825
+    Path: ""
+  - Handle: 12844075880951566607
+    Path: ""
+  - Handle: 1262088491858235516
+    Path: ""
+  - Handle: 14707436693198189512
+    Path: ""
+  - Handle: 18277615059328382976
+    Path: ""
+  - Handle: 10855788705615743226
+    Path: ""
+  - Handle: 13583885023159462178
+    Path: ""
+  - Handle: 9863762152333364606
+    Path: ""
+  - Handle: 11806820121457231530
+    Path: ""
+  - Handle: 14006883105799061301
+    Path: ""
+  - Handle: 16973010488176562150
+    Path: ""
+  - Handle: 6103330894324138607
+    Path: ""
+  - Handle: 4963777300102748074
+    Path: ""
+  - Handle: 10858407764936481459
+    Path: ""
+  - Handle: 2077969538619560618
+    Path: ""
+  - Handle: 4301958497345426012
+    Path: ""
+  - Handle: 17573562131253360129
+    Path: ""
+  - Handle: 5796201927895590602
+    Path: ""
+  - Handle: 16412278387459466921
+    Path: ""
+  - Handle: 2505882911480623464
+    Path: ""
+  - Handle: 9931291067501456703
+    Path: ""
+  - Handle: 15761506295407093573
+    Path: ""
+  - Handle: 14102280786665911251
+    Path: ""
+  - Handle: 6901429803110511903
+    Path: ""
+  - Handle: 11555395674959904470
+    Path: ""
+  - Handle: 7896423091160316059
+    Path: ""
+  - Handle: 8204353031403850564
+    Path: ""
+  - Handle: 3928751416169088008
+    Path: ""
+  - Handle: 4417895801089159976
+    Path: ""
+  - Handle: 17625014511722013699
+    Path: ""
+  - Handle: 16560362882612094448
+    Path: ""
+  - Handle: 921444109998237676
+    Path: ""
+  - Handle: 7944399908877409864
+    Path: ""
+  - Handle: 2186643343457560209
+    Path: ""
+  - Handle: 2620565341984795135
+    Path: ""
+  - Handle: 14977530919315934415
+    Path: ""
+  - Handle: 16378198042039136824
+    Path: ""
+  - Handle: 12362548949448811980
+    Path: ""
+  - Handle: 11228307922684941397
+    Path: ""
+  - Handle: 13907762276901481398
+    Path: ""
+  - Handle: 14557895205493576049
+    Path: ""
+  - Handle: 16091229494988327815
+    Path: ""
+  - Handle: 14732538847148241969
+    Path: ""
+  - Handle: 12761602665342983098
+    Path: ""
+  - Handle: 11061000731991809686
+    Path: ""
+  - Handle: 918053066946241828
+    Path: ""
+  - Handle: 2460218361710529368
+    Path: ""
+  - Handle: 2317385361846960132
+    Path: ""
+  - Handle: 10805961201955618336
+    Path: ""
+  - Handle: 7515126539251448695
+    Path: ""
+  - Handle: 17234314739639246028
+    Path: ""
+  - Handle: 3807668015522024081
+    Path: ""
+  - Handle: 772629837402073406
+    Path: ""
+  - Handle: 6605867788767148536
+    Path: ""
+  - Handle: 2126585674020612729
+    Path: ""
+  - Handle: 5139460951893465281
+    Path: ""
+  - Handle: 9372353097602478513
+    Path: ""
+  - Handle: 13719055921990844706
+    Path: ""
+  - Handle: 8604587666958799982
+    Path: ""
+  - Handle: 6079780735596897349
+    Path: ""
+  - Handle: 14780078478631436002
+    Path: ""
+  - Handle: 12708449795885969597
+    Path: ""
+  - Handle: 2402847294447289299
+    Path: ""
+  - Handle: 7729105446775926835
+    Path: ""
+  - Handle: 7890608983474736723
+    Path: ""
+  - Handle: 13072397734921770493
+    Path: ""
+  - Handle: 6633919328222257465
+    Path: ""
+  - Handle: 13804862177997923308
+    Path: ""
+  - Handle: 14249168963952200485
+    Path: ""
+  - Handle: 10342247621149978628
+    Path: ""
+  - Handle: 9548687290785652219
+    Path: ""
+  - Handle: 11609768601826837983
+    Path: ""
+  - Handle: 2232730914359239265
+    Path: ""
+  - Handle: 1703678134815599223
+    Path: ""
+  - Handle: 15288239525103918237
+    Path: ""
+  - Handle: 12731329389912030969
+    Path: ""
+  - Handle: 17555746977550587942
+    Path: ""
+  - Handle: 12493865667848336870
+    Path: ""
+  - Handle: 1722585753398747439
+    Path: ""
+  - Handle: 4854970042439861777
+    Path: ..\Engine\Editor\Materials\M_ColliderDebug.vtmat
+  - Handle: 11636450440260799376
+    Path: ..\Engine\Editor\Meshes\Arrow\3dpil.vtmesh
+  - Handle: 8518965527912591679
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
+  - Handle: 3821420964151086502
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_animation.dds
+  - Handle: 258074644688726170
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_material.dds
+  - Handle: 12513604431147561416
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_mesh.dds
+  - Handle: 9872037881000284403
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_meshSource.dds
+  - Handle: 3768761004691017460
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_particlePreset.dds
+  - Handle: 283634110917973203
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_prefab.dds
+  - Handle: 17106921072603809349
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_scene.dds
+  - Handle: 15731067208237489539
+    Path: ..\Engine\Editor\Textures\Icons\AssetIcons\icon_skeleton.dds
+  - Handle: 14620630078430457451
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim1.dds
+  - Handle: 12976449010179299544
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim10.dds
+  - Handle: 11228504887900108321
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim11.dds
+  - Handle: 17582192733491978144
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim12.dds
+  - Handle: 2200016518430719697
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim13.dds
+  - Handle: 1214851518468360323
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim14.dds
+  - Handle: 15478236394308418395
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim15.dds
+  - Handle: 14725768756741796901
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim16.dds
+  - Handle: 11360541808320493105
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim17.dds
+  - Handle: 2510671445319048691
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim18.dds
+  - Handle: 3382215101390568676
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim19.dds
+  - Handle: 3307773415202535893
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim2.dds
+  - Handle: 12786533605130680611
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim20.dds
+  - Handle: 15610848917851820658
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim21.dds
+  - Handle: 4396745427619377233
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim22.dds
+  - Handle: 16963034585909864816
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim23.dds
+  - Handle: 15364028783213672515
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim24.dds
+  - Handle: 4614342236996251558
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim25.dds
+  - Handle: 770991391698603901
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim26.dds
+  - Handle: 6054824101603616750
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim27.dds
+  - Handle: 6399855532803167362
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim28.dds
+  - Handle: 17866950364030974661
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim29.dds
+  - Handle: 5419617767463778410
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim3.dds
+  - Handle: 18225399157225435433
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim30.dds
+  - Handle: 4889068376777469790
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim4.dds
+  - Handle: 17553421580382878412
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim5.dds
+  - Handle: 4557452428252870112
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim6.dds
+  - Handle: 3800239891819782554
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim7.dds
+  - Handle: 7311755002839184814
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim8.dds
+  - Handle: 13555902863549497872
+    Path: ..\Engine\Editor\Textures\Icons\Physics\LampPhysicsAnim9.dds
+  - Handle: 8019145999225177522
+    Path: ..\Engine\Editor\Textures\Icons\icon_add.dds
+  - Handle: 3576729398326957900
+    Path: ..\Engine\Editor\Textures\Icons\icon_back.dds
+  - Handle: 16831067224389593115
+    Path: ..\Engine\Editor\Textures\Icons\icon_close.dds
+  - Handle: 3807529298094365362
+    Path: ..\Engine\Editor\Textures\Icons\icon_directory.dds
+  - Handle: 11820780047649570146
+    Path: ..\Engine\Editor\Textures\Icons\icon_entityGizmo.dds
+  - Handle: 6231188375660523316
+    Path: ..\Engine\Editor\Textures\Icons\icon_file.dds
+  - Handle: 8402091193639513545
+    Path: ..\Engine\Editor\Textures\Icons\icon_filter.dds
+  - Handle: 663719996118039774
+    Path: ..\Engine\Editor\Textures\Icons\icon_getMaterial.dds
+  - Handle: 6607233445587175040
+    Path: ..\Engine\Editor\Textures\Icons\icon_hidden.dds
+  - Handle: 8379338754518989861
+    Path: ..\Engine\Editor\Textures\Icons\icon_lightGizmo.dds
+  - Handle: 7942362208403082455
+    Path: ..\Engine\Editor\Textures\Icons\icon_localSpace.dds
+  - Handle: 14715160635508395239
+    Path: ..\Engine\Editor\Textures\Icons\icon_locked.dds
+  - Handle: 14758386275311395948
+    Path: ..\Engine\Editor\Textures\Icons\icon_maximize.dds
+  - Handle: 7067266014770522706
+    Path: ..\Engine\Editor\Textures\Icons\icon_minimize.dds
+  - Handle: 378810213946552335
+    Path: ..\Engine\Editor\Textures\Icons\icon_open.dds
+  - Handle: 9572841153426241725
+    Path: ..\Engine\Editor\Textures\Icons\icon_play.dds
+  - Handle: 3674774742657853659
+    Path: ..\Engine\Editor\Textures\Icons\icon_reload.dds
+  - Handle: 5502909569982232038
+    Path: ..\Engine\Editor\Textures\Icons\icon_save.dds
+  - Handle: 6793751309056999543
+    Path: ..\Engine\Editor\Textures\Icons\icon_search.dds
+  - Handle: 15704692970336670295
+    Path: ..\Engine\Editor\Textures\Icons\icon_setMaterial.dds
+  - Handle: 1059818054304551686
+    Path: ..\Engine\Editor\Textures\Icons\icon_settings.dds
+  - Handle: 15335713811105764852
+    Path: ..\Engine\Editor\Textures\Icons\icon_showGizmo.dds
+  - Handle: 18433806637429331446
+    Path: ..\Engine\Editor\Textures\Icons\icon_snapRotation.dds
+  - Handle: 117555852516172843
+    Path: ..\Engine\Editor\Textures\Icons\icon_snapScale.dds
+  - Handle: 17965480803377715206
+    Path: ..\Engine\Editor\Textures\Icons\icon_snapToGrid.dds
+  - Handle: 5686738207842344557
+    Path: ..\Engine\Editor\Textures\Icons\icon_stop.dds
+  - Handle: 3908225794301336050
+    Path: ..\Engine\Editor\Textures\Icons\icon_unlocked.dds
+  - Handle: 18089530044257683541
+    Path: ..\Engine\Editor\Textures\Icons\icon_visible.dds
+  - Handle: 2604893500266580179
+    Path: ..\Engine\Editor\Textures\Icons\icon_volt.dds
+  - Handle: 1595244739917869556
+    Path: ..\Engine\Editor\Textures\Icons\icon_windowize.dds
+  - Handle: 14415051307558075862
+    Path: ..\Engine\Editor\Textures\Icons\icon_worldSpace.dds
+  - Handle: 4954280863735941523
+    Path: ..\Engine\Engine\Fonts\Futura\futura-light.ttf
+  - Handle: 11404183778496024079
+    Path: ..\Engine\Engine\Fonts\Inter\Inter-Regular.ttf
+  - Handle: 8777570827565165617
+    Path: ..\Engine\Engine\Fonts\OpenSans-Regular.ttf
+  - Handle: 3510855515691338241
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\entityGizmo.vtsdef
+  - Handle: 4262758741246530320
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\grid.vtsdef
+  - Handle: 16154061499344951916
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\line.vtsdef
+  - Handle: 12871242479603611394
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\sprite.vtsdef
+  - Handle: 5609777800760802537
+    Path: ..\Engine\Engine\Shaders\Definitions\2D\text.vtsdef
+  - Handle: 351353774362755839
+    Path: ..\Engine\Engine\Shaders\Definitions\Deferred\decal.vtsdef
+  - Handle: 4923720098626293437
+    Path: ..\Engine\Engine\Shaders\Definitions\Deferred\deferred.vtsdef
+  - Handle: 12885633610728161281
+    Path: ..\Engine\Engine\Shaders\Definitions\Deferred\shading.vtsdef
+  - Handle: 11496874695146836258
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\colliderDebug.vtsdef
+  - Handle: 4183950604628949986
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\editorPBR.vtsdef
+  - Handle: 16632651438595242954
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\jumpFloodComposite.vtsdef
+  - Handle: 14779333478987477379
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\jumpFloodInit.vtsdef
+  - Handle: 13019014884815674681
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\jumpFloodPass.vtsdef
+  - Handle: 3264444387302470833
+    Path: ..\Engine\Engine\Shaders\Definitions\Editor\selectedGeometry.vtsdef
+  - Handle: 1760949417288495251
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\environmentIrradiance.vtsdef
+  - Handle: 8428604081381065229
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\environmentMipFilter.vtsdef
+  - Handle: 15991078473310110230
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\equirectangularToCubemap.vtsdef
+  - Handle: 7583598389965461314
+    Path: ..\Engine\Engine\Shaders\Definitions\Environment\skybox.vtsdef
+  - Handle: 14334349446820995584
+    Path: ..\Engine\Engine\Shaders\Definitions\Forward\forwardPBR.vtsdef
+  - Handle: 3938519765353961808
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\FXAA.vtsdef
+  - Handle: 4065305566807366516
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\AOComposite.vtsdef
+  - Handle: 2984253879879836174
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\Deinterleaving.vtsdef
+  - Handle: 16748879460474496464
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\HBAO.vtsdef
+  - Handle: 6018129830453783361
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\HBAOBlur.vtsdef
+  - Handle: 15161308039899498078
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\HBAO\Reinterleaving.vtsdef
+  - Handle: 15405970002325315662
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomComposite.vtsdef
+  - Handle: 14907192409630732354
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomDownsample.vtsdef
+  - Handle: 1737640478704700622
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomDownsamplePS.vtsdef
+  - Handle: 16605049673329842369
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomTest.vtsdef
+  - Handle: 5741079473631833525
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloomUpsamplePS.vtsdef
+  - Handle: 11051671491721525654
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\bloowUpsample.vtsdef
+  - Handle: 8937886734635288267
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\colorGrading.vtsdef
+  - Handle: 9503293567416226144
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\gammaCorrection.vtsdef
+  - Handle: 18000789668605484314
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\heightFog.vtsdef
+  - Handle: 13657905986524119043
+    Path: ..\Engine\Engine\Shaders\Definitions\PostProcessing\vignette.vtsdef
+  - Handle: 6844096335781166327
+    Path: ..\Engine\Engine\Shaders\Definitions\Shadows\directionalShadow.vtsdef
+  - Handle: 3575075854166745053
+    Path: ..\Engine\Engine\Shaders\Definitions\Shadows\pointLightShadow.vtsdef
+  - Handle: 14103853492028449031
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\PreDepth.vtsdef
+  - Handle: 13719125944665305404
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\brdfGeneration.vtsdef
+  - Handle: 8614740761128473750
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\copyTextureToTarget.vtsdef
+  - Handle: 7485384753454451939
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\hzb.vtsdef
+  - Handle: 13865883021216206107
+    Path: ..\Engine\Engine\Shaders\Definitions\Utility\lightCull.vtsdef
+  - Handle: 11708300292126228262
+    Path: ..\Engine\Engine\Shaders\Definitions\VoxelGI\voxelization.vtsdef
+  - Handle: 6606435455296583619
+    Path: ..\Engine\Engine\Shaders\Definitions\default.vtsdef
+  - Handle: 4445623540712113330
+    Path: Assets\Scenes\Ivar_Test\Ivar_Test.vtscene
+  - Handle: 2870834753766980575
+    Path: Assets\Materials\M_FullMetal.vtmat
+  - Handle: 13264966828467793701
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_c.dds
+  - Handle: 6545688184287567690
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_m.dds
+  - Handle: 15953713314477897467
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_One_n.dds
+  - Handle: 10369382592650657072
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_c.dds
+  - Handle: 12856762408566418601
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_m.dds
+  - Handle: 384993951746355638
+    Path: Assets\Meshes\MaterialBall\Textures\Matball_Two_n.dds
+  - Handle: 17430248591238401647
+    Path: Assets\Meshes\Primitives\Capsule.vtmesh
+  - Handle: 1243719857498069290
+    Path: Assets\Meshes\Primitives\Cone.vtmesh
+  - Handle: 2611161973325348034
+    Path: Assets\Meshes\Primitives\Cube.vtmat
+  - Handle: 9240795498671686531
+    Path: Assets\Meshes\Primitives\Cube.vtmesh
+  - Handle: 12745464646857133407
+    Path: Assets\Meshes\Primitives\Cylinder.vtmesh
+  - Handle: 257793802309481114
+    Path: Assets\Meshes\Primitives\Plane.vtmesh
+  - Handle: 5356366709417423527
+    Path: Assets\Meshes\Primitives\Sphere.vtmesh
+  - Handle: 4701602251600885475
+    Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_c.dds
+  - Handle: 16190561352208421993
+    Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_m.dds
+  - Handle: 2124958660464470250
+    Path: Assets\Meshes\Sponza\Textures\Curtain_blue_mat_n.dds
+  - Handle: 2399618292741811276
+    Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_c.dds
+  - Handle: 7618950919840162214
+    Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_m.dds
+  - Handle: 8656380762252974640
+    Path: Assets\Meshes\Sponza\Textures\Curtain_green_mat_n.dds
+  - Handle: 15919604763125495527
+    Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_c.dds
+  - Handle: 11674817563731288978
+    Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_m.dds
+  - Handle: 6046206870517041189
+    Path: Assets\Meshes\Sponza\Textures\Curtain_red_mat_n.dds
+  - Handle: 1534758641971801727
+    Path: Assets\Meshes\Sponza\Textures\arch_mat_c.dds
+  - Handle: 18110674277662984048
+    Path: Assets\Meshes\Sponza\Textures\arch_mat_m.dds
+  - Handle: 12199405395866279881
+    Path: Assets\Meshes\Sponza\Textures\arch_mat_n.dds
+  - Handle: 14988664348847589724
+    Path: Assets\Meshes\Sponza\Textures\background_mat_c.dds
+  - Handle: 18351821883393022291
+    Path: Assets\Meshes\Sponza\Textures\background_mat_m.dds
+  - Handle: 4592580022574510645
+    Path: Assets\Meshes\Sponza\Textures\background_mat_n.dds
+  - Handle: 3641728430687781901
+    Path: Assets\Meshes\Sponza\Textures\bricks_mat_c.dds
+  - Handle: 16348078542211510485
+    Path: Assets\Meshes\Sponza\Textures\bricks_mat_m.dds
+  - Handle: 497516997375387820
+    Path: Assets\Meshes\Sponza\Textures\bricks_mat_n.dds
+  - Handle: 15263894308930963685
+    Path: Assets\Meshes\Sponza\Textures\ceiling_mat_c.dds
+  - Handle: 8735074187071659967
+    Path: Assets\Meshes\Sponza\Textures\ceiling_mat_m.dds
+  - Handle: 4996455985704316769
+    Path: Assets\Meshes\Sponza\Textures\ceiling_mat_n.dds
+  - Handle: 3677847419917336727
+    Path: Assets\Meshes\Sponza\Textures\chain_mat_c.dds
+  - Handle: 10471070214355734592
+    Path: Assets\Meshes\Sponza\Textures\chain_mat_m.dds
+  - Handle: 7783417187040738727
+    Path: Assets\Meshes\Sponza\Textures\chain_mat_n.dds
+  - Handle: 12565242232482326990
+    Path: Assets\Meshes\Sponza\Textures\column_a_mat_c.dds
+  - Handle: 9202820161402163910
+    Path: Assets\Meshes\Sponza\Textures\column_a_mat_m.dds
+  - Handle: 1141217449573647838
+    Path: Assets\Meshes\Sponza\Textures\column_a_mat_n.dds
+  - Handle: 16799890336686024882
+    Path: Assets\Meshes\Sponza\Textures\column_b_mat_c.dds
+  - Handle: 8036736788598772740
+    Path: Assets\Meshes\Sponza\Textures\column_b_mat_m.dds
+  - Handle: 15404872538132118827
+    Path: Assets\Meshes\Sponza\Textures\column_b_mat_n.dds
+  - Handle: 9729350828405750011
+    Path: Assets\Meshes\Sponza\Textures\column_c_mat_c.dds
+  - Handle: 7412341197541101084
+    Path: Assets\Meshes\Sponza\Textures\column_c_mat_m.dds
+  - Handle: 5430747802497378766
+    Path: Assets\Meshes\Sponza\Textures\column_c_mat_n.dds
+  - Handle: 14216853341029428778
+    Path: Assets\Meshes\Sponza\Textures\details_mat_c.dds
+  - Handle: 8080405946760243323
+    Path: Assets\Meshes\Sponza\Textures\details_mat_m.dds
+  - Handle: 11657656650920851696
+    Path: Assets\Meshes\Sponza\Textures\details_mat_n.dds
+  - Handle: 16262258615514846223
+    Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_c.dds
+  - Handle: 12551181015635457403
+    Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_m.dds
+  - Handle: 10800397250577857832
+    Path: Assets\Meshes\Sponza\Textures\fabric_blue_mat_n.dds
+  - Handle: 14226172037389712114
+    Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_c.dds
+  - Handle: 3560038494886769833
+    Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_m.dds
+  - Handle: 9525723045035197191
+    Path: Assets\Meshes\Sponza\Textures\fabric_green_mat_n.dds
+  - Handle: 3015883886386652972
+    Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_c.dds
+  - Handle: 16005984856533366904
+    Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_m.dds
+  - Handle: 16784128640895424840
+    Path: Assets\Meshes\Sponza\Textures\fabric_red_mat_n.dds
+  - Handle: 2816359159575366656
+    Path: Assets\Meshes\Sponza\Textures\flagpole_mat_c.dds
+  - Handle: 11209342842831803214
+    Path: Assets\Meshes\Sponza\Textures\flagpole_mat_m.dds
+  - Handle: 1937622155154356163
+    Path: Assets\Meshes\Sponza\Textures\flagpole_mat_n.dds
+  - Handle: 11972235040979249227
+    Path: Assets\Meshes\Sponza\Textures\floor_mat_c.dds
+  - Handle: 6810523828647003338
+    Path: Assets\Meshes\Sponza\Textures\floor_mat_m.dds
+  - Handle: 6590239387256888182
+    Path: Assets\Meshes\Sponza\Textures\floor_mat_n.dds
+  - Handle: 10829443143475499123
+    Path: Assets\Meshes\Sponza\Textures\flowers_mat_c.dds
+  - Handle: 16240064840224855163
+    Path: Assets\Meshes\Sponza\Textures\flowers_mat_m.dds
+  - Handle: 16920380592407944792
+    Path: Assets\Meshes\Sponza\Textures\flowers_mat_n.dds
+  - Handle: 13755242589097933691
+    Path: Assets\Meshes\Sponza\Textures\lion_mat_c.dds
+  - Handle: 8493729208060521666
+    Path: Assets\Meshes\Sponza\Textures\lion_mat_m.dds
+  - Handle: 8190564583920943501
+    Path: Assets\Meshes\Sponza\Textures\lion_mat_n.dds
+  - Handle: 4002873279149812095
+    Path: Assets\Meshes\Sponza\Textures\roof_mat_c.dds
+  - Handle: 4677961478726698277
+    Path: Assets\Meshes\Sponza\Textures\roof_mat_m.dds
+  - Handle: 1522144238226268581
+    Path: Assets\Meshes\Sponza\Textures\roof_mat_n.dds
+  - Handle: 8229802785198882197
+    Path: Assets\Meshes\Sponza\Textures\thorn_mat_c.dds
+  - Handle: 17459969324288817500
+    Path: Assets\Meshes\Sponza\Textures\thorn_mat_m.dds
+  - Handle: 10812137631749275685
+    Path: Assets\Meshes\Sponza\Textures\thorn_mat_n.dds
+  - Handle: 2884113621279610920
+    Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_c.dds
+  - Handle: 10848677194059646085
+    Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_m.dds
+  - Handle: 11044130023892224429
+    Path: Assets\Meshes\Sponza\Textures\vase_hanging_mat_n.dds
+  - Handle: 18115863387998331914
+    Path: Assets\Meshes\Sponza\Textures\vase_mat_c.dds
+  - Handle: 16264127821390742671
+    Path: Assets\Meshes\Sponza\Textures\vase_mat_m.dds
+  - Handle: 2049595649767385814
+    Path: Assets\Meshes\Sponza\Textures\vase_mat_n.dds
+  - Handle: 994897831893607321
+    Path: Assets\Meshes\Sponza\Textures\vase_round_mat_c.dds
+  - Handle: 17730197761358715173
+    Path: Assets\Meshes\Sponza\Textures\vase_round_mat_m.dds
+  - Handle: 17601974509240128387
+    Path: Assets\Meshes\Sponza\Textures\vase_round_mat_n.dds
+  - Handle: 15011366199557469318
+    Path: Assets\Prefabs\Cube.vtprefab
+  - Handle: 3654338765910610375
+    Path: Assets\Scenes\Ivar_Test\Ivar_Test.vtscene
+  - Handle: 17705740763688653837
+    Path: Assets\Textures\FullMetal\T_FullMetal_N.dds
+  - Handle: 2112673101594194076
+    Path: Assets\Textures\FullMetal\T_FullMetal_c.dds
+  - Handle: 4767289948682500991
+    Path: Assets\Textures\FullMetal\T_FullMetal_m.dds
+  - Handle: 7814962140272313871
+    Path: Assets\Textures\HDRIs\kloppenheim_02_4k.hdr
+  - Handle: 5481428271663006363
+    Path: Assets\Textures\HDRIs\moonless_golf_4k.hdr
+  - Handle: 1342408837699567205
+    Path: Assets\Textures\HDRIs\newport_loft.hdr
+  - Handle: 14043982525701282978
+    Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr
+  - Handle: 9718101759624847427
+    Path: Assets\Textures\lutTest.dds

@@ -2,9 +2,18 @@
 #include "MeshColliderCache.h"
 
 #include "Volt/Utility/FileSystem.h"
+#include "Volt/Project/ProjectManager.h"
 
 namespace Volt
 {
+	namespace Utility
+	{
+		inline static std::filesystem::path GetOrCreateCachePath()
+		{
+			return ProjectManager::GetCachePath() / "Colliders";
+		}
+	}
+
 	void MeshColliderCache::Initialize()
 	{}
 
@@ -21,7 +30,7 @@ namespace Volt
 
 	const bool MeshColliderCache::IsCached(const std::string& colliderName)
 	{
-		return myCache.find(colliderName) != myCache.end() || FileSystem::Exists(FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll"));
+		return myCache.find(colliderName) != myCache.end() || FileSystem::Exists(Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll"));
 	}
 
 	void MeshColliderCache::AddToCache(const std::string& colliderName, const MeshColliderCacheData& cacheData)
@@ -37,7 +46,7 @@ namespace Volt
 
 	void MeshColliderCache::LoadCached(const std::string& colliderName)
 	{
-		const std::filesystem::path cachedPath = FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll");
+		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
 		
 		if (!FileSystem::Exists(cachedPath))
 		{
@@ -104,13 +113,8 @@ namespace Volt
 			memcpy_s(&outData[offset], size, mesh.data.As<uint8_t>(), size);
 			offset += size;
 		}
-		
-		if (!FileSystem::Exists(FileSystem::GetMeshColliderCache()))
-		{
-			std::filesystem::create_directories(FileSystem::GetMeshColliderCache());
-		}
 
-		const std::filesystem::path cachedPath = FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll");
+		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
 		std::ofstream output{ cachedPath, std::ios::binary | std::ios::out };
 		if (!output.is_open())
 		{
