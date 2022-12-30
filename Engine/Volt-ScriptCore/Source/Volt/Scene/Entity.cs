@@ -8,7 +8,7 @@ namespace Volt
         public readonly uint Id;
         public static uint Null = 0;
 
-        private Dictionary<string, Component> myComponentCache;
+        private Dictionary<string, Component> myComponentCache = new Dictionary<string, Component>();
 
         protected Entity() { Id = 0; }
 

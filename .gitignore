@@ -7,6 +7,7 @@ Engine/User
 Engine/Engine/Shaders/Cache
 Engine/Scripts/Intermediates
 Engine/Volt-ScriptCore/Scripts/Intermediates
+Engine/MonoDebugger.log
 
 Volt/ProjectTemplate/Intermediates/
 Volt/ProjectTemplate/Binaries
