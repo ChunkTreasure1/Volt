@@ -349,6 +349,8 @@ Assets:
     Path: Engine\Shaders\Definitions\2D\billboard.vtsdef
   - Handle: 16470809019740148419
     Path: Engine\Shaders\Definitions\2D\entityGizmo.vtsdef
+  - Handle: 12107613699152385597
+    Path: Engine\Shaders\Definitions\2D\gizmo.vtsdef
   - Handle: 18063575715979531818
     Path: Engine\Shaders\Definitions\2D\grid.vtsdef
   - Handle: 16698830110700212400

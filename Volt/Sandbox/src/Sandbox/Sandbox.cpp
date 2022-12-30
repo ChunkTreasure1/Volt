@@ -138,7 +138,7 @@ void Sandbox::OnAttach()
 
 	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
-	myGizmoShader = Volt::ShaderRegistry::Get("Billboard");
+	myGizmoShader = Volt::ShaderRegistry::Get("Gizmo");
 	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 
 	NewScene();
@@ -828,7 +828,7 @@ void Sandbox::SetupRenderCallbacks()
 		});
 }
 
-void Sandbox::SetupEditorRenderPasses()
+void Sandbox::CreateEditorRenderPasses()
 {
 	// Selected Geometry
 	{
@@ -1318,7 +1318,7 @@ bool Sandbox::OnViewportResizeEvent(Volt::ViewportResizeEvent& e)
 
 bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 {
-	SetupEditorRenderPasses();
+	CreateEditorRenderPasses();
 	SetupRenderCallbacks();
 
 	mySceneRenderer->Resize(myViewportSize.x, myViewportSize.y);

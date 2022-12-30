@@ -87,7 +87,7 @@ private:
 	void InstallMayaTools();
 	void HandleChangedFiles();
 	void SetupRenderCallbacks();
-	void SetupEditorRenderPasses();
+	void CreateEditorRenderPasses();
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e);

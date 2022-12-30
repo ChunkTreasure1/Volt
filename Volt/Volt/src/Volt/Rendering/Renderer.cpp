@@ -1789,6 +1789,7 @@ namespace Volt
 
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
+		GetCurrentGPUCommandCollection().instancedCommands.clear();
 	}
 
 	void Renderer::BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear)
