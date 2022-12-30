@@ -375,7 +375,7 @@ namespace Volt
 
 		struct RendererData
 		{
-			inline static constexpr uint32_t MAX_OBJECTS_PER_FRAME = 5000;
+			inline static constexpr uint32_t MAX_OBJECTS_PER_FRAME = 20000;
 			inline static constexpr uint32_t MAX_BONES_PER_MESH = 128;
 			inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
 
