@@ -35,6 +35,8 @@ public:
 	void PlayEvent();
 	void StopEvent();
 
+	Amp::EventInstance& GetEventInstance();
+
 	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<AudioEventEmitterScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{2CE06BC9-2BFE-46AD-84CF-B272458735C7}"_guid; }
 	WireGUID GetGUID() override { return GetStaticGUID(); }
@@ -50,7 +52,7 @@ private:
 	bool isPlayTriggered = false;
 	bool isStopTriggered = false;
 
-	AudioSourceScript* audioSource;
+	AudioSourceScript* audioSource = nullptr;
 
 	int playingEventID = -1;
 	Amp::EmitterStatus currentStatus = Amp::EmitterStatus::WAITING;

@@ -4,6 +4,8 @@
 #include <Volt/Events/KeyEvent.h>
 #include <Volt/Input/KeyCodes.h>
 
+#include <Audio/AudioSource.h>
+
 #include <Volt/Scripting/ScriptRegistry.h>
 
 VT_REGISTER_SCRIPT(AudioTestScript);
@@ -42,6 +44,26 @@ bool AudioTestScript::OnKeyEvent(Volt::KeyPressedEvent& e)
 	{
 		rotationVeloctiy = -1;
 	}
+
+	AudioSourceScript* audioSource = myEntity.GetScript<AudioSourceScript>();
+
+	if (e.GetKeyCode() == VT_KEY_1)
+	{
+		audioSource->Play("event:/TestDoot2D");
+	}
+	if (e.GetKeyCode() == VT_KEY_2)
+	{
+		audioSource->Play("event:/TestDoot3D");
+	}
+	if (e.GetKeyCode() == VT_KEY_3)
+	{
+		audioSource->Play("event:/TestTone2DLoop");
+	}
+	if (e.GetKeyCode() == VT_KEY_4)
+	{
+		audioSource->Play("event:/TestTone3DLoop");
+	}
+
 	return false;
 }
 

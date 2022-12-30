@@ -17,22 +17,6 @@ void AudioSourceScript::OnEvent(Volt::Event& e)
 
 bool AudioSourceScript::OnKeyEvent(Volt::KeyPressedEvent& e)
 {
-	if (e.GetKeyCode() == VT_KEY_1)
-	{
-		Play("event:/TestDoot2D");
-	}
-	if (e.GetKeyCode() == VT_KEY_2)
-	{
-		Play("event:/TestDoot3D");
-	}
-	if (e.GetKeyCode() == VT_KEY_3)
-	{
-		Play("event:/TestTone2DLoop");
-	}
-	if (e.GetKeyCode() == VT_KEY_4)
-	{
-		Play("event:/TestTone3DLoop");
-	}
 	return false;
 }
 
@@ -125,6 +109,21 @@ int AudioSourceScript::GetLatestID()
 	return instanceIDpool;
 }
 
+Amp::EventInstance* AudioSourceScript::GetInstanceFromID(const int aID)
+{
+	if (auto It = instances2DMap.find(aID); It != instances2DMap.end())
+	{
+		return &(It->second);
+	}
+
+	if (auto It = instances3DMap.find(aID); It != instances3DMap.end())
+	{
+		return &(It->second);
+	}
+
+	return nullptr;
+}
+
 bool AudioSourceScript::Stop(int aID)
 {
 	if (auto It = instances2DMap.find(aID); It != instances2DMap.end())
@@ -153,4 +152,34 @@ void AudioSourceScript::StopAll()
 	}
 	instances3DMap.clear();
 	instanceIDpool = -1;
+}
+
+bool AudioSourceScript::Pause(int aID)
+{
+	if (auto It = instances2DMap.find(aID); It != instances2DMap.end())
+	{
+		Amp::AudioManager::PauseEvent(It->second);
+	}
+
+	if (auto It = instances3DMap.find(aID); It != instances3DMap.end())
+	{
+		Amp::AudioManager::PauseEvent(It->second);
+	}
+
+	return false;
+}
+
+bool AudioSourceScript::Unpause(int aID)
+{
+	if (auto It = instances2DMap.find(aID); It != instances2DMap.end())
+	{
+		Amp::AudioManager::UnpauseEvent(It->second);
+	}
+
+	if (auto It = instances3DMap.find(aID); It != instances3DMap.end())
+	{
+		Amp::AudioManager::UnpauseEvent(It->second);
+	}
+
+	return false;
 }

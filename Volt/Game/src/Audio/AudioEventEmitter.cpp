@@ -115,4 +115,9 @@ void AudioEventEmitterScript::StopEvent()
 	}
 }
 
+Amp::EventInstance& AudioEventEmitterScript::GetEventInstance()
+{
+	return *audioSource->GetInstanceFromID(playingEventID);
+}
+
 

@@ -288,6 +288,21 @@ namespace Amp
 		return false;
 	}
 
+	bool AudioEngine::PauseEvent(FMOD::Studio::EventInstance* aEventInstance)
+	{
+		return ErrorCheck(aEventInstance->setPaused(true));
+	}
+
+	bool AudioEngine::UnpauseEvent(FMOD::Studio::EventInstance* aEventInstance)
+	{
+		return ErrorCheck(aEventInstance->setPaused(false));
+	}
+
+	bool AudioEngine::SetEventParameter(FMOD::Studio::EventInstance* aEventInstance, const std::string& aEventParameter, const float aParameterValue)
+	{
+		return ErrorCheck(aEventInstance->setParameterByName(aEventParameter.c_str(), aParameterValue));
+	}
+
 	void AudioEngine::Update3DEvents(float aDeltaTime)
 	{
 		for (auto event : events)

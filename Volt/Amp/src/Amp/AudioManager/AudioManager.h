@@ -33,11 +33,17 @@ namespace Amp
 		static bool RemoveEvent(EventInstance& aEvent);
 		static bool StopEvent(EventInstance& aEvent, FMOD_STUDIO_STOP_MODE aMode);
 		static void StopAll(const int aStopMode);
+		static bool PauseEvent(EventInstance& aEvent);
+		static bool UnpauseEvent(EventInstance& aEvent);
 
 		static FMOD::Studio::EventDescription* FindEvent(const std::string&);
 
 		static bool PlayOneShot(const std::string& aPath);
 		static bool PlayOneShot(const std::string& aPath, EventData& aEventData);
+
+		//Parameter Handling
+		static bool SetEventParameter(EventInstance& aInstance, EventData& aEventData);
+		static bool SetEventParameter(EventInstance& aInstance, const std::string& aParameterPath, const float aValue);
 
 		//Mixer Handling
 		static bool SetMasterVolume(float aVolPerct);

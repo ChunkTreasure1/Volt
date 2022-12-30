@@ -64,6 +64,16 @@ namespace Amp
 		return myAudioEngine.StopEvent(aEvent.instance, aMode);
 	}
 
+	bool AudioManager::PauseEvent(EventInstance& aEvent)
+	{
+		return myAudioEngine.PauseEvent(aEvent.instance);
+	}
+
+	bool AudioManager::UnpauseEvent(EventInstance& aEvent)
+	{
+		return myAudioEngine.UnpauseEvent(aEvent.instance);
+	}
+
 	bool AudioManager::PlayOneShot(const std::string& aPath)
 	{
 		EventData aEmptyData;
@@ -77,6 +87,16 @@ namespace Amp
 	bool AudioManager::PlayOneShot(const std::string& aPath, EventData& aEventData)
 	{
 		return myAudioEngine.PlayOneShot(aPath, aEventData);
+	}
+
+	bool AudioManager::SetEventParameter(EventInstance& aInstance, EventData& aEventData)
+	{
+		return myAudioEngine.SetEventParameter(aInstance.instance, aEventData.aParameterPath, aEventData.aParameterValue);
+	}
+
+	bool AudioManager::SetEventParameter(EventInstance& aInstance, const std::string& aParameterPath, const float aValue)
+	{
+		return myAudioEngine.SetEventParameter(aInstance.instance, aParameterPath, aValue);
 	}
 }
 

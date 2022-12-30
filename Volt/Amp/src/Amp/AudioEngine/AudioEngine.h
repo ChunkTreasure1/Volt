@@ -124,6 +124,9 @@ namespace Amp
 		bool StopEvent(FMOD::Studio::EventInstance* aEventInstance, bool immediately);
 		bool StopAll(const int aStopMode);
 
+		bool PauseEvent(FMOD::Studio::EventInstance* aEventInstance);
+		bool UnpauseEvent(FMOD::Studio::EventInstance* aEventInstance);
+
 		bool SetEventParameter(FMOD::Studio::EventInstance* aEventInstance, const std::string& aEventParameter, const float aParameterValue);
 
 		void Update3DEvents(float aDeltaTime);

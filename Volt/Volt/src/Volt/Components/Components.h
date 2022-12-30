@@ -240,10 +240,11 @@ namespace Volt
 
 	SERIALIZE_COMPONENT((struct AudioParameterTriggerComponent
 	{
-		PROPERTY(Name = Target ID) UINT targetID = 0;
+		PROPERTY(Name = Entity ID) UINT entityID = 0;
 		PROPERTY(Name = Trigger, SpecialType = Enum) EventTriggerCondition triggerCondition = EventTriggerCondition::None;
-		PROPERTY(Name = ParameterName) std::string eventPath = "";
+		PROPERTY(Name = Parameter Path) std::string eventPath = "";
 		PROPERTY(Name = Value) float parameterValue;
+		PROPERTY(Name = Trigger Once) bool isTriggerOnce = false;
 
 		CREATE_COMPONENT_GUID("{63ECE9EF-2DC6-405F-ABAD-3B364DF08BE0}"_guid);
 	}), AudioParameterTriggerComponent);
