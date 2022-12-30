@@ -27,6 +27,7 @@ namespace Volt
 	class Framebuffer;
 	class Shader;
 	class ConstantBuffer;
+	class Texture2D;
 }
 
 enum class SceneState
@@ -140,11 +141,15 @@ private:
 	/////Gizmos/////
 	Ref<Volt::Shader> myGizmoShader;
 	Volt::RenderPass myGizmoPass;
+
+	Ref<Volt::Texture2D> myEntityGizmoTexture;
+	Ref<Volt::Texture2D> myLightGizmoTexture;
 	//////////////////
 
 	///// Forward Extra /////
 	Volt::RenderPass myColliderVisualizationPass;
 	Volt::RenderPass myForwardExtraPass;
+	Ref<Volt::Mesh> myDecalArrowMesh;
 	/////////////////////////
 
 	Ref<Game> myGame;

@@ -4,6 +4,7 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Log/Log.h"
 
@@ -16,14 +17,16 @@ namespace Volt
 		asset = CreateRef<Skeleton>();
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(asset);
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		const auto filePath = ProjectManager::GetPath() / path;
+
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream file(path);
+		std::ifstream file(filePath);
 		if (!file.is_open()) [[unlikely]]
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
@@ -114,7 +117,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(asset->path);
+		std::ofstream fout(ProjectManager::GetPath() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}

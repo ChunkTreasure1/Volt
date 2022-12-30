@@ -5,6 +5,7 @@
 #include "Volt/Log/Log.h"
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Buffer.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
@@ -17,7 +18,7 @@ namespace Volt
 	{
 		const std::filesystem::path GetAndCreateCacheFolder()
 		{
-			const std::filesystem::path cachePath = FileSystem::GetAssetsPath() / "Cache" / "Fonts";
+			const std::filesystem::path cachePath = ProjectManager::GetAssetsPath() / "Cache" / "Fonts";
 			if (!std::filesystem::exists(cachePath))
 			{
 				std::filesystem::create_directories(cachePath);

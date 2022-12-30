@@ -24,7 +24,7 @@ namespace Volt
 
 	void CreateProxy(std::filesystem::path& dmpPath, const std::filesystem::path& path)
 	{
-#ifndef VT_DEBUG
+#ifdef VT_DIST
 		__try
 		{
 			Create(path);
@@ -36,7 +36,6 @@ namespace Volt
 #else
 		Create(path);
 #endif
-
 	}
 
 	int Main(const std::filesystem::path& appPath)
@@ -60,7 +59,12 @@ int APIENTRY WinMain(HINSTANCE aHInstance, HINSTANCE aPrevHInstance, PSTR aCmdLi
 
 int main(int argc, char** argv)
 {
-	return Volt::Main(argv[0]);
+	if (argc > 1)
+	{
+		return Volt::Main(argv[1]);
+	}
+
+	return Volt::Main("");
 }
 
 #endif

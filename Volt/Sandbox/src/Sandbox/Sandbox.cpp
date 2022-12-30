@@ -7,7 +7,6 @@
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
-#include "Sandbox/Window/CreatePanel.h"
 #include "Sandbox/Window/LogPanel.h"
 #include "Sandbox/Window/AnimationTreeEditor.h"
 #include "Sandbox/Window/MaterialEditorPanel.h"
@@ -23,8 +22,7 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
-#include "Sandbox/Utility/AssetIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
@@ -35,6 +33,8 @@
 #include <Volt/Core/Window.h>
 
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Importers/TextureImporter.h>
+#include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Components/Components.h>
@@ -67,28 +67,11 @@
 #include <Volt/AI/NavMesh2/NavMesh2.h>
 #include <Volt/Platform/ExceptionHandling.h>
 #include <Volt/Audio/AudioManager.h>
+#include <Volt/Project/ProjectManager.h>
 
 #include <Game/Game.h>
 
 #include <imgui.h>
-#include <csignal>
-
-#include <ShlObj.h>
-
-#include <gem/noise.h>
-
-std::string GetSIGEventFromInt(int signal)
-{
-	switch (signal)
-	{
-		case 8: return "Floating point exception"; break;
-		case 11: return "Memory access violation"; break;
-		case 22: return "Abort"; break;
-
-		default:
-			return "Unknown";
-	}
-}
 
 Sandbox::Sandbox()
 {
@@ -103,19 +86,13 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	// Set working directory
-	if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
-	{
-		const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
-		if (!pathEnv.empty())
-		{
-			std::filesystem::current_path(pathEnv);
-		}
-	}
-
-	EditorIconLibrary::Initialize();
-	AssetIconLibrary::Initialize();
+	EditorResources::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
+
+	myEntityGizmoTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Icons/icon_entityGizmo.dds");
+	myLightGizmoTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Icons/icon_lightGizmo.dds");
+	myDecalArrowMesh = Volt::MeshTypeImporter::ImportMesh("Editor/Meshes/Arrow/3dpil.vtmesh");
+
 
 	Volt::Application::Get().GetWindow().Maximize();
 
@@ -165,7 +142,6 @@ void Sandbox::OnAttach()
 
 	ImGuizmo::AllowAxisFlip(false);
 
-	//SetupProjectInfo();
 	UserSettingsManager::LoadUserSettings(myEditorWindows);
 
 	if (!UserSettingsManager::GetSettings().sceneSettings.lastOpenScene.empty())
@@ -264,8 +240,7 @@ void Sandbox::OnDetach()
 	myGame = nullptr;
 
 	VersionControl::Shutdown();
-	AssetIconLibrary::Shutdowm();
-	EditorIconLibrary::Shutdown();
+	EditorResources::Shutdown();
 }
 
 void Sandbox::OnEvent(Volt::Event& e)
@@ -420,6 +395,11 @@ void Sandbox::ExecuteUndo()
 void Sandbox::NewScene()
 {
 	SelectionManager::DeselectAll();
+	if (myRuntimeScene)
+	{
+		Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
+	}
+
 	myRuntimeScene = CreateRef<Volt::Scene>("New Scene");
 
 	// Setup new scene
@@ -729,8 +709,6 @@ void Sandbox::SetupRenderCallbacks()
 				Volt::Renderer::BeginPass(myGizmoPass, camera, false);
 
 				auto& registry = scene->GetRegistry();
-				Ref<Volt::Texture2D> gizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_entityGizmo.dds");
-				Ref<Volt::Texture2D> lightGizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_lightGizmo.dds");
 
 				registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
 					{
@@ -755,7 +733,7 @@ void Sandbox::SetupRenderCallbacks()
 							{
 								float scale = gem::min(distance / maxDist, maxScale);
 
-								Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? lightGizmoTexture : gizmoTexture;
+								Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? myLightGizmoTexture : myEntityGizmoTexture;
 								Volt::Renderer::SubmitBillboard(gizmo, p, gem::vec3{ scale }, id, gem::vec4{ 1.f, 1.f, 1.f, alpha });
 							}
 						}
@@ -840,7 +818,6 @@ void Sandbox::SetupRenderCallbacks()
 
 			{
 				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
-				auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Editor/Meshes/Arrow/3dpil.vtmesh");
 
 				Volt::Renderer::BeginPass(myForwardExtraPass, camera);
 				registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
@@ -859,7 +836,7 @@ void Sandbox::SetupRenderCallbacks()
 						constexpr float uniformScale = 0.25f * 0.25f;
 						gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(newRot) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
 
-						Volt::Renderer::DrawMesh(arrowMesh, material, transform);
+						Volt::Renderer::DrawMesh(myDecalArrowMesh, material, transform);
 					});
 
 				Volt::Renderer::DispatchLines();
@@ -1072,7 +1049,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	EditorCommandStack::GetInstance().Update(100);
 
-	Volt::Entity a(1, myRuntimeScene.get());
 	switch (mySceneState)
 	{
 		case SceneState::Edit:

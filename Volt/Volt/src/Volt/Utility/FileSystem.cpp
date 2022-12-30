@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 
 #include "Volt/Core/Application.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include <commdlg.h>
 #include <shellapi.h>
@@ -51,7 +52,7 @@ std::filesystem::path FileSystem::OpenFolder()
 		openFolderDialog->Release();
 	}
 
-	return GetPathRelativeToBaseFolder(resultPath);
+	return Volt::ProjectManager::GetPathRelativeToProject(resultPath);
 }
 
 std::filesystem::path FileSystem::SaveFile(const char* filter)
@@ -72,7 +73,7 @@ std::filesystem::path FileSystem::SaveFile(const char* filter)
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	if (GetSaveFileNameA(&ofn) == TRUE)
 	{
-		return GetPathRelativeToBaseFolder(ofn.lpstrFile);
+		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
 	}
 
 	return std::string();
@@ -91,12 +92,14 @@ std::filesystem::path FileSystem::GetDocumentsPath()
 
 void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
 {
-	if (!std::filesystem::exists(path))
+	const auto canonicalPath = std::filesystem::canonical(path);
+
+	if (!std::filesystem::exists(canonicalPath))
 	{
 		return;
 	}
 
-	std::wstring wstr = path.wstring() + std::wstring(1, L'\0');
+	std::wstring wstr = canonicalPath.wstring() + std::wstring(1, L'\0');
 
 	SHFILEOPSTRUCT fileOp;
 	fileOp.hwnd = NULL;
@@ -151,7 +154,7 @@ std::filesystem::path FileSystem::OpenFile(const char* filter)
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	if (GetOpenFileNameA(&ofn) == TRUE)
 	{
-		return GetPathRelativeToBaseFolder(ofn.lpstrFile);
+		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
 	}
 	return "";
 }

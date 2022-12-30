@@ -5,7 +5,7 @@
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Input/KeyCodes.h>
@@ -56,7 +56,7 @@ namespace AssetBrowser
 					// Icon
 					{
 						UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
-						ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Directory)), { myThumbnailSize - itemPadding, myThumbnailSize - itemPadding });
+						ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Directory)), { myThumbnailSize - itemPadding, myThumbnailSize - itemPadding });
 
 						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 						{

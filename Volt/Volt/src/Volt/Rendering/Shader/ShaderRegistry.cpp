@@ -68,9 +68,14 @@ namespace Volt
 		auto shaderSearchFolder = FileSystem::GetShadersPath();
 		for (const auto& path : std::filesystem::recursive_directory_iterator(shaderSearchFolder))
 		{
-			AssetType type = AssetManager::Get().GetAssetTypeFromPath(path.path());
+			AssetType type = AssetManager::GetAssetTypeFromPath(path.path());
 			if (type == AssetType::Shader)
 			{
+				if (!AssetManager::Get().ExistsInRegistry(path.path()))
+				{
+					AssetManager::Get().AddToRegistry(path.path());
+				}
+
 				Ref<Shader> shader = AssetManager::GetAsset<Shader>(path.path());
 				Register(shader->GetName(), shader);
 			}
