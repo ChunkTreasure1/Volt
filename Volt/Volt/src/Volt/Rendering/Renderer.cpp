@@ -414,6 +414,8 @@ namespace Volt
 	void Renderer::Begin(Context context, const std::string& debugName)
 	{
 		VT_PROFILE_FUNCTION();
+		RunResourceChanges();
+
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([debugName, context]()
@@ -1714,7 +1716,6 @@ namespace Volt
 
 		myRendererData->currentContext = debugName;
 
-		RunResourceChanges();
 		UpdatePerFrameBuffers();
 
 		SortSubmitCommands(GetCurrentGPUCommandCollection().submitCommands);

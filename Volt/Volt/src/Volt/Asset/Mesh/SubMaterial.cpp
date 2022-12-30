@@ -57,7 +57,7 @@ namespace Volt
 	{
 		if (myMaterialBuffer)
 		{
-			myMaterialBuffer->SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size, deferr);
+			myMaterialBuffer->SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size);
 		}
 	}
 
