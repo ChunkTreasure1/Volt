@@ -65,6 +65,21 @@ namespace Volt
 		}
 	}
 
+	void StructuredBuffer::BindUAV(uint32_t slot, ShaderStage stage) const
+	{
+		auto context = RenderCommand::GetCurrentContext();
+
+		if ((stage & ShaderStage::Pixel) != ShaderStage::None)
+		{
+			context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, nullptr, slot, 1, myUAV.GetAddressOf(), nullptr);
+		}
+
+		if ((stage & ShaderStage::Compute) != ShaderStage::None)
+		{
+			context->CSSetUnorderedAccessViews(slot, 1, myUAV.GetAddressOf(), nullptr);
+		}
+	}
+
 	void StructuredBuffer::Unmap()
 	{
 		RenderCommand::StructuredBuffer_Unmap(this);
@@ -100,11 +115,20 @@ namespace Volt
 
 		if (resize)
 		{
-			auto context = GraphicsContext::GetImmediateContext();
+			auto context = RenderCommand::GetCurrentContext();
 
 			D3D11_BUFFER_DESC oldBufferDesc{};
 			myBuffer->GetDesc(&oldBufferDesc);
-			context->CopySubresourceRegion(tempBuffer.Get(), 0, 0, 0, 0, myBuffer.Get(), 0, nullptr);
+
+			D3D11_BOX box{};
+			box.left = 0;
+			box.right = std::min(oldBufferDesc.ByteWidth, myElementSize * myMaxCount);
+			box.top = 0;
+			box.bottom = 1;
+			box.front = 0;
+			box.back = 1;
+
+			context->CopySubresourceRegion(tempBuffer.Get(), 0, 0, 0, 0, myBuffer.Get(), 0, &box);
 		}
 
 		myBuffer = tempBuffer;

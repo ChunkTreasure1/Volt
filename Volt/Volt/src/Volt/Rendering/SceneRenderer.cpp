@@ -984,6 +984,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		Renderer::BeginFullscreenPass(myShadingPass, nullptr);
+		//Renderer::ExecuteLightCulling(myPreDepthPass.framebuffer->GetDepthAttachment());
 
 		std::vector<Ref<Image2D>> mainImages =
 		{

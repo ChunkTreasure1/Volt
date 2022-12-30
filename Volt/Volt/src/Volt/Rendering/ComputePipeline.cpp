@@ -67,7 +67,11 @@ namespace Volt
 		const size_t maxSRVs = gem::max(myTexturesT.size(), myImagesT.size());
 
 		RenderCommand::ClearTexturesAtStage(ShaderStage::Compute, 0, maxSRVs);
-		RenderCommand::ClearComputeResources(0, myTargetsT.size());
+
+		if (!myTargetsT.empty())
+		{
+			RenderCommand::ClearComputeResources(0, myTargetsT.size());
+		}
 	}
 
 	void ComputePipeline::SetImage(Ref<Image2D> aImage, uint32_t binding)

@@ -50,6 +50,7 @@ namespace Volt
 		CreateTextData();
 		CreateInstancingData();
 		CreateDecalData();
+		CreateLightCullingData();
 		CreateCommandBuffers();
 		GenerateBRDFLut();
 
@@ -688,7 +689,7 @@ namespace Volt
 		{
 			StructuredBufferRegistry::Register(100, StructuredBuffer::Create(sizeof(ObjectData), RendererData::MAX_OBJECTS_PER_FRAME, ShaderStage::Vertex));
 			StructuredBufferRegistry::Register(101, StructuredBuffer::Create(sizeof(gem::mat4), RendererData::MAX_OBJECTS_PER_FRAME * RendererData::MAX_BONES_PER_MESH, ShaderStage::Vertex));
-			StructuredBufferRegistry::Register(102, StructuredBuffer::Create(sizeof(PointLight), RendererData::MAX_POINT_LIGHTS, ShaderStage::Pixel));
+			StructuredBufferRegistry::Register(102, StructuredBuffer::Create(sizeof(PointLight), RendererData::MAX_POINT_LIGHTS, ShaderStage::Compute | ShaderStage::Pixel));
 		}
 	}
 
@@ -828,6 +829,22 @@ namespace Volt
 	void Renderer::CreateDecalData()
 	{
 		myRendererData->decalData.cubeMesh = Shape::CreateUnitCube();
+	}
+
+	void Renderer::CreateLightCullingData()
+	{
+		constexpr uint32_t width = 1280;
+		constexpr uint32_t height = 720;
+
+		auto& cullData = myRendererData->lightCullData;
+		auto& sceneData = myRendererData->sceneData;
+
+		sceneData.tileCount.x = (width + (width % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+		sceneData.tileCount.y = (height + (height % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+		const uint32_t tileCount = sceneData.tileCount.x * sceneData.tileCount.y;
+
+		cullData.lightCullingIndexBuffer = StructuredBuffer::Create(sizeof(VisibleLightIndex), RendererData::MAX_POINT_LIGHTS * tileCount, ShaderStage::Compute | ShaderStage::Pixel, true);
+		cullData.lightCullingPipeline = ComputePipeline::Create(ShaderRegistry::Get("LightCull"));
 	}
 
 	void Renderer::CreateCommandBuffers()
@@ -2014,6 +2031,43 @@ namespace Volt
 
 		aComputePipeline->Execute(groupX, groupY, 1);
 		aComputePipeline->Clear();
+	}
+
+	void Renderer::ExecuteLightCulling(Ref<Image2D> depthMap)
+	{
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([depthMap]()
+			{
+				StructuredBufferRegistry::Get(102)->Bind(102);
+
+				const uint32_t width = myRendererData->currentPass.framebuffer->GetWidth();
+				const uint32_t height = myRendererData->currentPass.framebuffer->GetHeight();
+
+				const uint32_t xTiles = (width + (width % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+				const uint32_t yTiles = (height + (height % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+
+				auto& cullData = myRendererData->lightCullData;
+				auto& sceneData = myRendererData->sceneData;
+
+				if (cullData.lastWidth != width ||
+					cullData.lastHeight != height)
+				{
+					cullData.lightCullingIndexBuffer->Resize(xTiles * yTiles * RendererData::MAX_POINT_LIGHTS);
+					cullData.lastWidth = width;
+					cullData.lastHeight = height;
+				}
+
+				sceneData.tileCount.x = xTiles;
+				sceneData.tileCount.y = yTiles;
+
+				cullData.lightCullingIndexBuffer->BindUAV(10, ShaderStage::Compute);
+
+				cullData.lightCullingPipeline->SetImage(depthMap, 0);
+				cullData.lightCullingPipeline->Execute(xTiles, yTiles, 1);
+				cullData.lightCullingPipeline->Clear();
+
+				myRendererData->currentPass.framebuffer->Bind();
+			});
 	}
 
 	void Renderer::SyncAndWait()

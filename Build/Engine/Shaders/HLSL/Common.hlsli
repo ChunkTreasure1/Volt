@@ -30,6 +30,7 @@ struct PointLight
 struct PointLightVisible
 {
 	int index;
+	uint3 padding;
 };
 
 struct AnimationData
@@ -86,6 +87,9 @@ struct SceneData
 
 	uint pointLightCount;
 	float padding;
+	
+	uint2 tileCount;
+	float2 padding2;
 };
 
 ///// Samplers /////

@@ -132,6 +132,7 @@ namespace Volt
 		static void DispatchSpritesWithMaterial(Ref<Material> aMaterial = nullptr);
 
 		static void ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer);
+		static void ExecuteLightCulling(Ref<Image2D> depthMap);
 
 		static void SyncAndWait();
 
@@ -162,6 +163,7 @@ namespace Volt
 		static void CreateTextData();
 		static void CreateInstancingData();
 		static void CreateDecalData();
+		static void CreateLightCullingData();
 		static void CreateCommandBuffers();
 
 		static void GenerateBRDFLut();
@@ -333,6 +335,15 @@ namespace Volt
 			TextVertex* vertexBufferPtr = nullptr;
 		};
 
+		struct LightCullingData
+		{
+			Ref<ComputePipeline> lightCullingPipeline;
+			Ref<StructuredBuffer> lightCullingIndexBuffer;
+
+			uint32_t lastWidth = 1280;
+			uint32_t lastHeight = 720;
+		};
+
 		struct InstancingData
 		{
 			Ref<VertexBuffer> instancedVertexBuffer;
@@ -396,7 +407,7 @@ namespace Volt
 			BillboardData billboardData{};
 			LineData lineData{};
 			TextData textData{};
-
+			LightCullingData lightCullData{};
 			DecalData decalData{};
 
 			// Fullscreen quad

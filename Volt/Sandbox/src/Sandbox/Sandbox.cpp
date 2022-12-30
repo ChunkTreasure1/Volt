@@ -394,6 +394,17 @@ void Sandbox::NewScene()
 			trans.rotation = { gem::pi() / 4.f, gem::pi() / 4.f, gem::pi() / 4.f };
 		}
 
+		// Point light
+		{
+			auto ent = myRuntimeScene->CreateEntity();
+			ent.AddComponent<Volt::PointLightComponent>();
+		
+			auto& trans = ent.GetComponent<Volt::TransformComponent>();
+			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Point Light";
+		
+			trans.position.x = 100.f;
+		}
+
 		// Skylight
 		{
 			auto ent = myRuntimeScene->CreateEntity();

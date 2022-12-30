@@ -32,6 +32,7 @@ namespace Volt
 		void SetData(const T* data, uint32_t count);
 		
 		void Bind(uint32_t slot) const;
+		void BindUAV(uint32_t slot, ShaderStage stage) const;
 		void AddStage(ShaderStage stage);
 		
 		template<typename T>
