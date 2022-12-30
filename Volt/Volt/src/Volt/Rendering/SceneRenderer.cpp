@@ -65,6 +65,8 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		Renderer::PushCollection();
+
 		// Handle resize
 		if (myShouldResize)
 		{
@@ -1132,7 +1134,7 @@ namespace Volt
 			Renderer::SubmitCustom([hbaoData = myHBAOData, hbaoBuffer = myHBAOBuffer]()
 				{
 					hbaoBuffer->SetData(&hbaoData, sizeof(HBAOData));
-			hbaoBuffer->Bind(13);
+					hbaoBuffer->Bind(13);
 				});
 
 			Renderer::BindTexturesToStage(ShaderStage::Pixel, { myPreDepthPass.framebuffer->GetDepthAttachment() }, 0);
@@ -1152,22 +1154,22 @@ namespace Volt
 						myHBAOPipeline->SetTarget(myHBAOPass.framebuffer->GetColorAttachment(i), i);
 					}
 
-			myHBAOPipeline->SetImage(myPreDepthPass.framebuffer->GetColorAttachment(0), 0);
+					myHBAOPipeline->SetImage(myPreDepthPass.framebuffer->GetColorAttachment(0), 0);
 
-			for (uint32_t i = 0; i < 2; i++)
-			{
-				for (uint32_t j = 0; j < 8; j++)
-				{
-					myHBAOPipeline->SetImage(myDeinterleavingPass[i].framebuffer->GetColorAttachment(j), i * 8 + j + 1);
-				}
-			}
+					for (uint32_t i = 0; i < 2; i++)
+					{
+						for (uint32_t j = 0; j < 8; j++)
+						{
+							myHBAOPipeline->SetImage(myDeinterleavingPass[i].framebuffer->GetColorAttachment(j), i * 8 + j + 1);
+						}
+					}
 
-			constexpr uint32_t WORK_GROUP_SIZE = 16;
-			gem::vec2ui size = { myHBAOPass.framebuffer->GetWidth(), myHBAOPass.framebuffer->GetHeight() };
-			size = { size.x + WORK_GROUP_SIZE - size.x % WORK_GROUP_SIZE, size.y + WORK_GROUP_SIZE - size.y % WORK_GROUP_SIZE };
+					constexpr uint32_t WORK_GROUP_SIZE = 16;
+					gem::vec2ui size = { myHBAOPass.framebuffer->GetWidth(), myHBAOPass.framebuffer->GetHeight() };
+					size = { size.x + WORK_GROUP_SIZE - size.x % WORK_GROUP_SIZE, size.y + WORK_GROUP_SIZE - size.y % WORK_GROUP_SIZE };
 
-			myHBAOPipeline->Execute(size.x / 16u, size.y / 16u, 16u);
-			myHBAOPipeline->Clear();
+					myHBAOPipeline->Execute(size.x / 16u, size.y / 16u, 16u);
+					myHBAOPipeline->Clear();
 				});
 
 			Renderer::EndSection("HBAO Main");

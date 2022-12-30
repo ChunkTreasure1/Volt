@@ -24,6 +24,8 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 CharacterEditorPanel::CharacterEditorPanel()
@@ -94,6 +96,14 @@ CharacterEditorPanel::CharacterEditorPanel()
 	{
 		myCharacterEntity = myScene->CreateEntity();
 		myCharacterEntity.AddComponent<Volt::AnimatedCharacterComponent>();
+	}
+
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 }
 

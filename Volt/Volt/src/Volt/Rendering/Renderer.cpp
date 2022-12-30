@@ -81,7 +81,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
@@ -105,7 +105,7 @@ namespace Volt
 
 		const auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
 
-		auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
+		auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 		cmd.mesh = aMesh;
 		cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 		cmd.subMesh = subMesh;
@@ -122,7 +122,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMaterial;
 			cmd.subMesh = subMesh;
@@ -142,7 +142,7 @@ namespace Volt
 		{
 			auto it = aMaterial->GetSubMaterials().find(subMesh.materialIndex);
 
-			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = it != aMaterial->GetSubMaterials().end() ? it->second : aMaterial->GetSubMaterials().at(0);
 			cmd.subMesh = subMesh;
@@ -160,7 +160,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			auto& cmd = myRendererData->currentCPUCommands->submitCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
@@ -186,7 +186,7 @@ namespace Volt
 			return;
 		}
 
-		auto& cmd = myRendererData->currentCPUCommands->spriteCommands.emplace_back();
+		auto& cmd = GetCurrentCPUCommandCollection().spriteCommands.emplace_back();
 		cmd.transform = aTransform;
 		cmd.color = aColor;
 		cmd.id = aId;
@@ -202,7 +202,7 @@ namespace Volt
 	void Renderer::SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t id)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& cmd = myRendererData->currentCPUCommands->spriteCommands.emplace_back();
+		auto& cmd = GetCurrentCPUCommandCollection().spriteCommands.emplace_back();
 		cmd.transform = aTransform;
 		cmd.color = aColor;
 		cmd.id = id;
@@ -223,7 +223,7 @@ namespace Volt
 	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, Ref<Shader> shader, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& cmd = myRendererData->currentCPUCommands->billboardCommands.emplace_back();
+		auto& cmd = GetCurrentCPUCommandCollection().billboardCommands.emplace_back();
 		cmd.position = aPosition;
 		cmd.shader = shader ? shader : myDefaultData->defaultBillboardShader;
 		cmd.scale = aScale;
@@ -251,13 +251,13 @@ namespace Volt
 	void Renderer::SubmitLight(const PointLight& pointLight)
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->currentCPUCommands->pointLights.push_back(pointLight);
+		GetCurrentCPUCommandCollection().pointLights.push_back(pointLight);
 	}
 
 	void Renderer::SubmitLight(const DirectionalLight& dirLight)
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->currentCPUCommands->directionalLight = dirLight;
+		GetCurrentCPUCommandCollection().directionalLight = dirLight;
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
@@ -276,7 +276,7 @@ namespace Volt
 	void Renderer::SubmitText(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& cmd = myRendererData->currentCPUCommands->textCommands.emplace_back();
+		auto& cmd = GetCurrentCPUCommandCollection().textCommands.emplace_back();
 		cmd.text = aString;
 		cmd.font = aFont;
 		cmd.transform = aTransform;
@@ -288,7 +288,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& decal = myRendererData->currentGPUCommands->decalCommands.emplace_back();
+		auto& decal = GetCurrentCPUCommandCollection().decalCommands.emplace_back();
 		decal.material = aMaterial;
 		decal.transform = aTransform;
 		decal.id = id;
@@ -413,7 +413,6 @@ namespace Volt
 	void Renderer::Begin(Context context, const std::string& debugName)
 	{
 		VT_PROFILE_FUNCTION();
-
 #ifdef VT_THREADED_RENDERING
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([debugName, context]()
@@ -550,6 +549,11 @@ namespace Volt
 	void Renderer::SetSceneData(const SceneData& aSceneData)
 	{
 		myRendererData->sceneData = aSceneData;
+	}
+
+	void Renderer::PushCollection()
+	{
+		myRendererData->currentCPUCommands->commandCollections.emplace();
 	}
 
 	SceneEnvironment Renderer::GenerateEnvironmentMap(AssetHandle aTextureHandle)
@@ -1016,13 +1020,13 @@ namespace Volt
 		// Directional light
 		{
 			DirectionalLight* dirLight = ConstantBufferRegistry::Get(4)->Map<DirectionalLight>();
-			*dirLight = myRendererData->currentGPUCommands->directionalLight;
+			*dirLight = GetCurrentGPUCommandCollection().directionalLight;
 			ConstantBufferRegistry::Get(4)->Unmap();
 		}
 
 		// Point lights
 		{
-			const auto& pointLights = myRendererData->currentGPUCommands->pointLights;
+			const auto& pointLights = GetCurrentGPUCommandCollection().pointLights;
 
 			PointLight* data = StructuredBufferRegistry::Get(102)->Map<PointLight>();
 			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)pointLights.size()));
@@ -1034,7 +1038,7 @@ namespace Volt
 			SceneData* data = ConstantBufferRegistry::Get(7)->Map<SceneData>();
 			data->deltaTime = myRendererData->sceneData.deltaTime;
 			data->timeSinceStart = myRendererData->sceneData.timeSinceStart;
-			data->pointLightCount = (uint32_t)myRendererData->currentGPUCommands->pointLights.size();
+			data->pointLightCount = (uint32_t)GetCurrentGPUCommandCollection().pointLights.size();
 			ConstantBufferRegistry::Get(7)->Unmap();
 		}
 	}
@@ -1153,7 +1157,7 @@ namespace Volt
 	void Renderer::CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial)
 	{
 		VT_PROFILE_FUNCTION();
-		for (const auto& cmd : myRendererData->currentGPUCommands->spriteCommands)
+		for (const auto& cmd : GetCurrentGPUCommandCollection().spriteCommands)
 		{
 			if (cmd.material != aMaterial) //#TODO_Ivar: Add early out
 			{
@@ -1199,7 +1203,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		for (const auto& cmd : myRendererData->currentGPUCommands->billboardCommands)
+		for (const auto& cmd : GetCurrentGPUCommandCollection().billboardCommands)
 		{
 			if (aShader != cmd.shader) // #TODO_Ivar: Early out
 			{
@@ -1242,7 +1246,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		for (const auto& cmd : myRendererData->currentGPUCommands->textCommands)
+		for (const auto& cmd : GetCurrentGPUCommandCollection().textCommands)
 		{
 			if (cmd.text.empty())
 			{
@@ -1508,10 +1512,10 @@ namespace Volt
 
 		RenderCommand::SetTopology(Topology::TriangleList);
 
-		auto gpuCommands = myRendererData->currentGPUCommands;
+		auto& gpuCommands = GetCurrentGPUCommandCollection();
 		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
 
-		for (const auto& cmd : gpuCommands->instancedCommands)
+		for (const auto& cmd : gpuCommands.instancedCommands)
 		{
 			// Update instanced vertex buffer
 			{
@@ -1696,11 +1700,11 @@ namespace Volt
 		RunResourceChanges();
 		UpdatePerFrameBuffers();
 
-		SortSubmitCommands(myRendererData->currentGPUCommands->submitCommands);
-		SortSpriteCommands(myRendererData->currentGPUCommands->spriteCommands);
-		SortBillboardCommands(myRendererData->currentGPUCommands->billboardCommands);
+		SortSubmitCommands(GetCurrentGPUCommandCollection().submitCommands);
+		SortSpriteCommands(GetCurrentGPUCommandCollection().spriteCommands);
+		SortBillboardCommands(GetCurrentGPUCommandCollection().billboardCommands);
 
-		UploadObjectData(myRendererData->currentGPUCommands->submitCommands);
+		UploadObjectData(GetCurrentGPUCommandCollection().submitCommands);
 
 		// Bind samplers
 		{
@@ -1735,7 +1739,7 @@ namespace Volt
 	void Renderer::EndInternal()
 	{
 		RenderCommand::EndAnnotation();
-		myRendererData->currentGPUCommands->Clear();
+		myRendererData->currentGPUCommands->commandCollections.pop();
 	}
 
 	void Renderer::BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
@@ -1762,8 +1766,8 @@ namespace Volt
 		RenderCommand::SetDepthState(aRenderPass.depthState);
 
 		UpdatePerPassBuffers();
-		std::vector<SubmitCommand> culledCommands = CullRenderCommands(myRendererData->currentGPUCommands->submitCommands, aCamera);
-		CollectSubmitCommands(culledCommands, myRendererData->currentGPUCommands->instancedCommands, aIsShadowPass, aIsAOPass);
+		std::vector<SubmitCommand> culledCommands = CullRenderCommands(GetCurrentGPUCommandCollection().submitCommands, aCamera);
+		CollectSubmitCommands(culledCommands, GetCurrentGPUCommandCollection().instancedCommands, aIsShadowPass, aIsAOPass);
 	}
 
 	void Renderer::EndPassInternal()
@@ -1785,7 +1789,6 @@ namespace Volt
 
 		myRendererData->currentPass = {};
 		myRendererData->currentPassCamera = nullptr;
-		myRendererData->currentGPUCommands->instancedCommands.clear();
 	}
 
 	void Renderer::BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear)
@@ -1923,7 +1926,7 @@ namespace Volt
 		myRendererData->decalData.cubeMesh->GetVertexBuffer()->Bind();
 		myRendererData->decalData.cubeMesh->GetIndexBuffer()->Bind();
 
-		for (const auto& cmd : myRendererData->currentGPUCommands->decalCommands)
+		for (const auto& cmd : GetCurrentGPUCommandCollection().decalCommands)
 		{
 			// Update object buffer
 			{

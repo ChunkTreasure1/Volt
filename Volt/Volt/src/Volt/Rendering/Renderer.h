@@ -15,6 +15,7 @@
 #include <GEM/gem.h>
 
 #include <mutex>
+#include <queue>
 
 #define VT_THREADED_RENDERING 1
 
@@ -138,6 +139,7 @@ namespace Volt
 		static void ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count);
 
 		static void SetSceneData(const SceneData& aSceneData);
+		static void PushCollection();
 
 		static SceneEnvironment GenerateEnvironmentMap(AssetHandle aTextureHandle);
 
@@ -150,6 +152,7 @@ namespace Volt
 		struct PerThreadCommands;
 		struct SpriteSubmitCommand;
 		struct BillboardSubmitCommand;
+		struct CommandCollection;
 
 		static void CreateDefaultBuffers();
 		static void CreateDefaultData();
@@ -202,6 +205,9 @@ namespace Volt
 		static void DispatchRenderCommandsInstancedInternal();
 		static void DispatchDecalsWithShaderInternal(Ref<Shader> aShader);
 		static void DispatchTextInternal();
+
+		inline static CommandCollection& GetCurrentCPUCommandCollection() { return myRendererData->currentCPUCommands->commandCollections.back(); }
+		inline static CommandCollection& GetCurrentGPUCommandCollection() { return myRendererData->currentGPUCommands->commandCollections.front(); }
 
 		struct Samplers
 		{
@@ -337,7 +343,7 @@ namespace Volt
 			Ref<Mesh> cubeMesh;
 		};
 
-		struct PerThreadCommands
+		struct CommandCollection
 		{
 			std::vector<SubmitCommand> submitCommands;
 			std::vector<InstancedSubmitCommand> instancedCommands;
@@ -362,11 +368,15 @@ namespace Volt
 			}
 		};
 
+		struct PerThreadCommands
+		{
+			std::queue<CommandCollection> commandCollections;
+		};
+
 		struct RendererData
 		{
 			inline static constexpr uint32_t MAX_OBJECTS_PER_FRAME = 5000;
 			inline static constexpr uint32_t MAX_BONES_PER_MESH = 128;
-			inline static constexpr uint32_t MAX_CULL_THREAD_COUNT = 4;
 			inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
 
 			std::mutex resourceMutex;

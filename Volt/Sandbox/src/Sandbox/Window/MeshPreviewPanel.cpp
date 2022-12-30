@@ -19,6 +19,7 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
 MeshPreviewPanel::MeshPreviewPanel()
@@ -51,6 +52,14 @@ MeshPreviewPanel::MeshPreviewPanel()
 		comp.intensity = 2.f;
 
 		entity.SetRotation({ 70.f, 0.f, 100.f });
+	}
+	
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);
