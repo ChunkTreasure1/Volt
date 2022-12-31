@@ -256,7 +256,7 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Checkout"))
 			{
-				VersionControl::Edit(FileSystem::GetAbsolute(path));
+				VersionControl::Edit(Volt::AssetManager::Get().GetFilesystemPath(handle));
 			}
 
 			UI::EndPopup();

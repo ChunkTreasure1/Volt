@@ -68,6 +68,7 @@
 #include <Volt/Platform/ExceptionHandling.h>
 #include <Volt/Audio/AudioManager.h>
 #include <Volt/Project/ProjectManager.h>
+#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Game/Game.h>
 
@@ -138,7 +139,7 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
 
 	myFileWatcher = CreateRef<FileWatcher>();
-	SetupWatches();
+	CreateWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
 
@@ -150,13 +151,18 @@ void Sandbox::OnAttach()
 	}
 }
 
-void Sandbox::SetupWatches()
+void Sandbox::CreateWatches()
 {
 	myFileWatcher->AddWatch("Engine");
-	myFileWatcher->AddWatch("Assets");
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsPath());
 
 	myFileWatcher->AddCallback(efsw::Actions::Modified, [](const auto newPath, const auto oldPath)
 		{
+			if (newPath.string().contains(Volt::ProjectManager::GetMonoAssemblyPath().string()))
+			{
+				Volt::MonoScriptEngine::ReloadAssembly();
+			}
+
 			Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
 			switch (assetType)
 			{
@@ -170,6 +176,9 @@ void Sandbox::SetupWatches()
 
 				case Volt::AssetType::ShaderSource:
 					Volt::ShaderRegistry::ReloadShadersWithShader(newPath);
+					break;
+
+				case Volt::AssetType::MeshSource:
 					break;
 
 				case Volt::AssetType::None:

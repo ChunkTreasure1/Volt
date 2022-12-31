@@ -253,18 +253,21 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 		if (ImGui::Button("Import"))
 		{
 			const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
-			bool succeded = true;
+			bool succeded = false;
 
 			if (aImportData.importMesh)
 			{
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(aMeshToImport);
 				if (importMesh && importMesh->IsValid())
 				{
-					succeded = succeded && Volt::MeshCompiler::TryCompile(importMesh, aImportData.destination, material);
+					succeded = Volt::MeshCompiler::TryCompile(importMesh, aImportData.destination, material);
 					if (!succeded)
 					{
 						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", aImportData.destination.string()));
 					}
+
+					auto handle = Volt::AssetManager::Get().AddToRegistry(aImportData.destination);
+					Volt::AssetManager::Get().AddDependency(handle, aMeshToImport);
 				}
 				else
 				{
@@ -288,6 +291,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				{
 					skeleton->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtsk");
 					Volt::AssetManager::Get().SaveAsset(skeleton);
+					Volt::AssetManager::Get().AddDependency(skeleton->handle, aMeshToImport);
+					succeded = true;
 				}
 			}
 
@@ -302,6 +307,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				{
 					animation->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
 					Volt::AssetManager::Get().SaveAsset(animation);
+					Volt::AssetManager::Get().AddDependency(animation->handle, aMeshToImport);
+					succeded = true;
 				}
 			}
 
@@ -309,9 +316,6 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 			{
 				UI::Notify(NotificationType::Success, "Mesh compilation succeded!", std::format("Successfully compiled mesh to {}!", aImportData.destination.string()));
 				imported = ImportState::Imported;
-			}
-			else
-			{
 			}
 
 			ImGui::CloseCurrentPopup();

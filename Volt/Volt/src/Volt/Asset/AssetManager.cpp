@@ -20,7 +20,7 @@
 
 #include "Volt/Platform/ThreadUtility.h"
 
-#include <yaml-cpp/yaml.h>
+#include "Volt/Utility/YAMLSerializationHelpers.h"
 
 namespace Volt
 {
@@ -71,6 +71,31 @@ namespace Volt
 		SaveAssetRegistry();
 		TextureImporter::Shutdown();
 		MeshTypeImporter::Shutdown();
+	}
+
+	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
+	{
+		if (myAssetDependencies.contains(asset))
+		{
+			auto& dependencies = myAssetDependencies.at(asset);
+			if (std::find(dependencies.begin(), dependencies.end(), dependency) != dependencies.end())
+			{
+				return;
+			}
+		}
+
+		myAssetDependencies[asset].emplace_back(dependency);
+	}
+
+	const std::vector<std::filesystem::path>& AssetManager::GetDependencies(AssetHandle asset) const
+	{
+		static std::vector<std::filesystem::path> emptyDependency;
+		if (!myAssetDependencies.contains(asset))
+		{
+			return emptyDependency;
+		}
+
+		return myAssetDependencies.at(asset);
 	}
 
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
@@ -374,6 +399,11 @@ namespace Volt
 
 	const AssetHandle AssetManager::AddToRegistry(const std::filesystem::path& path)
 	{
+		if (myAssetRegistry.contains(path))
+		{
+			return myAssetRegistry.at(path);
+		}
+
 		const auto newHandle = AssetHandle{};
 		myAssetRegistry.emplace(path, newHandle);
 		return newHandle;
@@ -629,11 +659,6 @@ namespace Volt
 		std::map<AssetHandle, std::string> sortedRegistry;
 		for (auto& [path, handle] : myAssetRegistry)
 		{
-			if (IsSourceFile(handle))
-			{
-				continue;
-			}
-
 			std::string pathToSerialize = path.string();
 			std::replace(pathToSerialize.begin(), pathToSerialize.end(), '\\', '/');
 			sortedRegistry[handle] = pathToSerialize;
@@ -648,6 +673,16 @@ namespace Volt
 			out << YAML::BeginMap;
 			out << YAML::Key << "Handle" << YAML::Value << handle;
 			out << YAML::Key << "Path" << YAML::Value << path;
+
+			std::vector<std::string> dependenciesToSerialize;
+			for (const auto& d : GetDependencies(handle))
+			{
+				std::string depToSerialize = d.string();
+				std::replace(depToSerialize.begin(), depToSerialize.end(), '\\', '/');
+				dependenciesToSerialize.push_back(depToSerialize);
+			}
+
+			out << YAML::Key << "Dependencies" << YAML::Value << dependenciesToSerialize;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
@@ -710,6 +745,11 @@ namespace Volt
 			else
 			{
 				myAssetRegistry.emplace(path, handle);
+			}
+
+			for (const auto& d : entry["Dependencies"])
+			{
+				AddDependency(handle, d.as<std::string>());
 			}
 		}
 	}

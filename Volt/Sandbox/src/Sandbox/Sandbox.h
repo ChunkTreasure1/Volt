@@ -100,7 +100,7 @@ private:
 	void SaveUserSettings();
 	void LoadUserSettings();
 
-	void SetupWatches();
+	void CreateWatches();
 
 	/////ImGui/////
 	void UpdateDockSpace();

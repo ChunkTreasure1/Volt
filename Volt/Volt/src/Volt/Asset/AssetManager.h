@@ -26,6 +26,9 @@ namespace Volt
 		void Initialize();
 		void Shutdown();
 
+		void AddDependency(AssetHandle asset, const std::filesystem::path& dependency);
+		const std::vector<std::filesystem::path>& GetDependencies(AssetHandle asset) const;
+
 		void Unload(AssetHandle assetHandle);
 		void SaveAsset(const Ref<Asset> asset);
 
@@ -112,6 +115,7 @@ namespace Volt
 		std::unordered_map<AssetType, Scope<AssetImporter>> myAssetImporters;
 		std::unordered_map<std::filesystem::path, AssetHandle> myAssetRegistry;
 		std::unordered_map<AssetHandle, Ref<Asset>> myAssetCache;
+		std::unordered_map <AssetHandle, std::vector<std::filesystem::path>> myAssetDependencies;
 
 		std::thread myLoadThread;
 		std::mutex myLoadMutex;

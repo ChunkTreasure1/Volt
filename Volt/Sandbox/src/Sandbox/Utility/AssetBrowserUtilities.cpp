@@ -98,7 +98,7 @@ namespace AssetBrowser
 		{
 			renderFunctions[Volt::AssetType::Shader] = [](AssetItem* item)
 			{
-				if (ImGui::MenuItem("Recompile Shaders"))
+				if (ImGui::MenuItem("Recompile Shader"))
 				{
 					Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 					if (shader->Reload(true))

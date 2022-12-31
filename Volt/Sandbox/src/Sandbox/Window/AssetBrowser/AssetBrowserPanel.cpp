@@ -235,11 +235,11 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	if (!myDragDroppedMeshes.empty() && !myIsImporting)
 	{
-		const auto path = myDragDroppedMeshes.back();
+		const auto path = Volt::AssetManager::Get().GetRelativePath(myDragDroppedMeshes.back());
 		myDragDroppedMeshes.pop_back();
 
 		AssetData assetData;
-		assetData.handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+		assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
 		assetData.path = path;
 		assetData.type = Volt::AssetType::MeshSource;
 
