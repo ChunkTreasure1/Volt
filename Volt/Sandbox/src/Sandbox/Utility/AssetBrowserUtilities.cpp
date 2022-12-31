@@ -118,6 +118,9 @@ namespace AssetBrowser
 				{
 					item->meshImportData = {};
 					item->meshImportData.destination = item->path.parent_path().string() + "\\" + item->path.stem().string() + ".vtmesh";
+					item->meshToImportData.handle = item->handle;
+					item->meshToImportData.path = item->path;
+					item->meshToImportData.type = Volt::AssetType::MeshSource;
 
 					UI::OpenModal("Import Mesh##assetBrowser");
 				}
@@ -127,83 +130,7 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Reimport"))
 				{
-					const std::filesystem::path fbxPath = item->path.parent_path() / (item->path.stem().string() + ".fbx");
-					if (FileSystem::Exists(fbxPath))
-					{
-						Ref<Volt::Mesh> currentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(item->handle);
-						if (currentMesh)
-						{
-							if (!FileSystem::IsWriteable(currentMesh->path))
-							{
-								UI::Notify(NotificationType::Error, "Unable to Compile Mesh!", std::format("Mesh {0} is not writeable!", item->path.string()), 5000);
-								return;
-							}
-
-							Ref<Volt::Material> material;
-							if (currentMesh->GetMaterial() && currentMesh->GetMaterial()->IsValid())
-							{
-								material = currentMesh->GetMaterial();
-							}
-							else
-							{
-								VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", currentMesh->path);
-							}
-
-							Volt::AssetHandle materialHandle = material ? material->handle : Volt::Asset::Null();
-							bool recreatedMaterial = false;
-
-							auto newFbxMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(fbxPath);
-							if (newFbxMesh && newFbxMesh->IsValid())
-							{
-								if (newFbxMesh->GetMaterial()->GetSubMaterials().size() != material->GetSubMaterials().size())
-								{
-									materialHandle = Volt::Asset::Null();
-									recreatedMaterial = true;
-								}
-
-								if (Volt::MeshCompiler::TryCompile(newFbxMesh, item->path, materialHandle))
-								{
-									UI::Notify(NotificationType::Success, "Mesh Compiled!", std::format("Mesh {0} compiled successfully!", fbxPath.string()));
-									Volt::AssetManager::Get().ReloadAsset(item->path);
-
-									if (recreatedMaterial && material)
-									{
-										auto newMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(item->path);
-										const size_t subMaterialCount = gem::min(newMesh->GetMaterial()->GetSubMaterials().size(), material->GetSubMaterials().size());
-
-										// Set textures from old material
-										for (size_t i = 0; i < subMaterialCount; i++)
-										{
-											for (const auto& [binding, tex] : material->GetSubMaterials().at(i)->GetTextures())
-											{
-												newMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
-											}
-										}
-
-										Volt::AssetManager::Get().SaveAsset(newMesh->GetMaterial());
-										Volt::AssetManager::Get().ReloadAsset(newMesh->GetMaterial()->path);
-									}
-								}
-								else
-								{
-									UI::Notify(NotificationType::Error, "Mesh Failed to Compile!", std::format("Mesh {0} failed to compile!", fbxPath.string()));
-								}
-							}
-							else
-							{
-								UI::Notify(NotificationType::Error, "Mesh Failed to Compile!", std::format("Mesh {0} failed to compile!", fbxPath.string()));
-							}
-
-							if (newFbxMesh)
-							{
-								Volt::AssetManager::Get().Unload(newFbxMesh->handle);
-							}
-						}
-						else
-						{
-							UI::Notify(NotificationType::Error, "Unable to Compile Mesh!", std::format("Mesh {0} is invalid or cannot be found!", item->path.string()));
-						}
-					}
+					EditorUtils::ReimportSourceMesh(item->handle);
 				}
 			};
 			
@@ -211,43 +138,7 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Reimport"))
 				{
-					const std::filesystem::path fbxPath = item->path.parent_path() / (item->path.stem().string() + ".fbx");
-					if (FileSystem::Exists(fbxPath))
-					{
-						Ref<Volt::Animation> originalAnimation = Volt::AssetManager::GetAsset<Volt::Animation>(item->handle);
-						if (originalAnimation)
-						{
-							if (!FileSystem::IsWriteable(originalAnimation->path))
-							{
-								UI::Notify(NotificationType::Error, "Unable to Reimport Animation!", std::format("Animation {0} is not writeable!", item->path.string()), 5000);
-								return;
-							}
-
-							Ref<Volt::Animation> newAnimation = Volt::MeshTypeImporter::ImportAnimation(fbxPath);
-							if (newAnimation && newAnimation->IsValid())
-							{
-								newAnimation->handle = originalAnimation->handle;
-								newAnimation->path = originalAnimation->path;
-
-								Volt::AssetManager::Get().Unload(item->handle);
-								Volt::AssetManager::Get().SaveAsset(newAnimation);
-
-								UI::Notify(NotificationType::Success, "Animation Re imported!", std::format("Animation {0} was re imported successfully!", fbxPath.string()));
-							}
-							else
-							{
-								UI::Notify(NotificationType::Error, "Failed to Reimport Animation!", std::format("Animation {0} failed to import!", fbxPath.string()));
-							}
-						}
-						else
-						{
-							UI::Notify(NotificationType::Error, "Failed to Reimport Animation!", std::format("Animation {0} failed was not found or is invalid!", item->path.string()));
-						}
-					}
-					else
-					{
-						UI::Notify(NotificationType::Error, "Failed to Reimport Animation!", std::format("Animation {0} failed was not found!", fbxPath.string()));
-					}
+					EditorUtils::ReimportSourceMesh(item->handle);
 				}
 			};
 
@@ -255,43 +146,7 @@ namespace AssetBrowser
 			{
 				if (ImGui::MenuItem("Reimport"))
 				{
-					const std::filesystem::path fbxPath = item->path.parent_path() / (item->path.stem().string() + ".fbx");
-					if (FileSystem::Exists(fbxPath))
-					{
-						Ref<Volt::Skeleton> originalSkeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(item->handle);
-						if (originalSkeleton)
-						{
-							if (!FileSystem::IsWriteable(originalSkeleton->path))
-							{
-								UI::Notify(NotificationType::Error, "Unable to Reimport Skeleton!", std::format("Skeleton {0} is not writeable!", item->path.string()), 5000);
-								return;
-							}
-
-							Ref<Volt::Skeleton> newSkeleton = Volt::MeshTypeImporter::ImportSkeleton(fbxPath);
-							if (newSkeleton && newSkeleton->IsValid())
-							{
-								newSkeleton->handle = originalSkeleton->handle;
-								newSkeleton->path = originalSkeleton->path;
-
-								Volt::AssetManager::Get().Unload(item->handle);
-								Volt::AssetManager::Get().SaveAsset(newSkeleton);
-
-								UI::Notify(NotificationType::Success, "Skeleton Re imported!", std::format("Skeleton {0} was reimported successfully!", fbxPath.string()));
-							}
-							else
-							{
-								UI::Notify(NotificationType::Error, "Failed to Reimport Skeleton!", std::format("Skeleton {0} failed to import!", fbxPath.string()));
-							}
-						}
-						else
-						{
-							UI::Notify(NotificationType::Error, "Failed to Reimport Skeleton!", std::format("Skeleton {0} failed was not found or is invalid!", item->path.string()));
-						}
-					}
-					else
-					{
-						UI::Notify(NotificationType::Error, "Failed to Reimport Skeleton!", std::format("Skeleton {0} failed was not found or is invalid!", fbxPath.string()));
-					}
+					EditorUtils::ReimportSourceMesh(item->handle);
 				}
 			};
 		}

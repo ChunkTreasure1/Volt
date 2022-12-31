@@ -156,72 +156,106 @@ void Sandbox::CreateWatches()
 	myFileWatcher->AddWatch("Engine");
 	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsPath());
 
-	myFileWatcher->AddCallback(efsw::Actions::Modified, [](const auto newPath, const auto oldPath)
+	myFileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
 		{
-			if (newPath.string().contains(Volt::ProjectManager::GetMonoAssemblyPath().string()))
-			{
-				Volt::MonoScriptEngine::ReloadAssembly();
-			}
-
-			Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
-			switch (assetType)
-			{
-				case Volt::AssetType::Mesh:
-				case Volt::AssetType::Video:
-				case Volt::AssetType::Prefab:
-				case Volt::AssetType::Material:
-				case Volt::AssetType::Texture:
-					Volt::AssetManager::Get().ReloadAsset(newPath);
-					break;
-
-				case Volt::AssetType::ShaderSource:
-					Volt::ShaderRegistry::ReloadShadersWithShader(newPath);
-					break;
-
-				case Volt::AssetType::MeshSource:
-					break;
-
-				case Volt::AssetType::None:
-					break;
-				default:
-					break;
-			}
-		});
-
-	myFileWatcher->AddCallback(efsw::Actions::Delete, [](const std::filesystem::path newPath, const std::filesystem::path oldPath)
-		{
-			if (!newPath.has_extension())
-			{
-				Volt::AssetManager::Get().RemoveFolderFromRegistry(newPath);
-			}
-			else
-			{
-				Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
-				if (assetType != Volt::AssetType::None)
+			std::scoped_lock lock(myFileWatcherMutex);
+			myFileChangeQueue.emplace_back([newPath, oldPath]()
 				{
-					if (Volt::AssetManager::Get().ExistsInRegistry(newPath))
+					if (newPath.string().contains(Volt::ProjectManager::GetMonoAssemblyPath().string()))
 					{
-						Volt::AssetManager::Get().RemoveFromRegistry(newPath);
+						Volt::MonoScriptEngine::ReloadAssembly();
+						UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
+						return;
 					}
-				}
-			}
+
+					Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+					switch (assetType)
+					{
+						case Volt::AssetType::Mesh:
+						case Volt::AssetType::Video:
+						case Volt::AssetType::Prefab:
+						case Volt::AssetType::Material:
+						case Volt::AssetType::Texture:
+							Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::Get().GetRelativePath(newPath));
+							break;
+
+						case Volt::AssetType::ShaderSource:
+						{
+							const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(newPath);
+							for (const auto& asset : assets)
+							{
+								Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
+								shader->Reload(true);
+
+								UI::Notify(NotificationType::Success, "Reloaded shader!", std::format("Shader {0} has been reloaded!", shader->GetName()));
+							}
+							break;
+						}
+
+
+						case Volt::AssetType::MeshSource:
+						{
+							const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(newPath);
+							for (const auto& asset : assets)
+							{
+								if (EditorUtils::ReimportSourceMesh(asset))
+								{
+									UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reloaded!", Volt::AssetManager::GetPathFromAssetHandle(asset).string()));
+								}
+							}
+							break;
+						}
+
+						case Volt::AssetType::None:
+							break;
+						default:
+							break;
+					}
+				});
 		});
 
-	myFileWatcher->AddCallback(efsw::Actions::Add, [](const std::filesystem::path newPath, const std::filesystem::path oldPath) 
+	myFileWatcher->AddCallback(efsw::Actions::Delete, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
 		{
-			
+			std::scoped_lock lock(myFileWatcherMutex);
+			myFileChangeQueue.emplace_back([newPath, oldPath]()
+				{
+					if (!newPath.has_extension())
+					{
+						Volt::AssetManager::Get().RemoveFolderFromRegistry(newPath);
+					}
+					else
+					{
+						Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+						if (assetType != Volt::AssetType::None)
+						{
+							if (Volt::AssetManager::Get().ExistsInRegistry(newPath))
+							{
+								Volt::AssetManager::Get().RemoveFromRegistry(newPath);
+							}
+						}
+					}
+				});
 		});
 
-	myFileWatcher->AddCallback(efsw::Actions::Moved, [](const std::filesystem::path newPath, const std::filesystem::path oldPath) 
+	myFileWatcher->AddCallback(efsw::Actions::Add, [](const std::filesystem::path newPath, const std::filesystem::path oldPath)
 		{
-			if (!newPath.has_extension())
-			{
-				Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
-			}
-			else
-			{
-				//Volt::AssetManager::Get().
-			}
+
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Moved, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+		{
+			std::scoped_lock lock(myFileWatcherMutex);
+			myFileChangeQueue.emplace_back([newPath, oldPath]()
+				{
+					if (!newPath.has_extension())
+					{
+						Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
+					}
+					else
+					{
+						//Volt::AssetManager::Get().
+					}
+				});
 		});
 }
 
@@ -1017,43 +1051,6 @@ void Sandbox::SetupEditorRenderPasses()
 	}
 }
 
-void Sandbox::HandleChangedFiles()
-{
-	/*if (myFileWatcher->AnyFileChanged())
-	{
-		const auto changedFile = myFileWatcher->QueryChangedFile();
-		Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(changedFile.filePath);
-		switch (changedFile.status)
-		{
-			case FileStatus::Modified:
-			{
-				switch (assetType)
-				{
-					case Volt::AssetType::ShaderSource:
-						Volt::ShaderRegistry::ReloadShadersWithShader(changedFile.filePath);
-						break;
-				}
-
-				break;
-			}
-
-			case FileStatus::Removed:
-			{
-				if (assetType != Volt::AssetType::None)
-				{
-					Volt::AssetManager::Get().RemoveFromRegistry(changedFile.filePath);
-				}
-				break;
-			}
-
-			case FileStatus::Added:
-			{
-				break;
-			}
-		}
-	}*/
-}
-
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	EditorCommandStack::GetInstance().Update(100);
@@ -1104,7 +1101,15 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		}
 	}
 
-	HandleChangedFiles();
+	{
+		std::scoped_lock lock{ myFileWatcherMutex };
+		for (const auto& f : myFileChangeQueue)
+		{
+			f();
+		}
+
+		myFileChangeQueue.clear();
+	}
 
 	return true;
 }

@@ -19,7 +19,7 @@ namespace Volt
 		asset = CreateRef<AnimatedCharacter>();
 		Ref<AnimatedCharacter> character = std::reinterpret_pointer_cast<AnimatedCharacter>(asset);
 
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -117,7 +117,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetPath() / asset->path);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}

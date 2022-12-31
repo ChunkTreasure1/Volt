@@ -10,7 +10,7 @@
 
 bool Volt::ParticlePresetImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 {
-	const auto filePath = ProjectManager::GetPath() / path;
+	const auto filePath = ProjectManager::GetDirectory() / path;
 
 	if (!std::filesystem::exists(filePath)) [[unlikely]]
 	{
@@ -112,7 +112,7 @@ void Volt::ParticlePresetImporter::Save(const Ref<Asset>& asset) const
 		out << YAML::EndMap;
 	}
 	out << YAML::EndMap;
-	std::ofstream fout(ProjectManager::GetPath() / asset->path);
+	std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
 	fout << out.c_str();
 	fout.close();
 }

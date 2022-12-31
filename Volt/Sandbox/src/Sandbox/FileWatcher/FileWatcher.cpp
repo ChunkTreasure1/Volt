@@ -30,7 +30,10 @@ FileWatcher::~FileWatcher()
 
 void FileWatcher::AddWatch(const std::filesystem::path& path, bool recursive) 
 {
-	efsw::WatchID watchId = myFileWatcher->addWatch(path.string(), myFileListener.get());
+	std::string watchPath = path.string();
+	std::replace(watchPath.begin(), watchPath.end(), '\\', '/');
+
+	efsw::WatchID watchId = myFileWatcher->addWatch(watchPath, myFileListener.get(), recursive);
 	myWatchIds.emplace_back(watchId);
 }
 

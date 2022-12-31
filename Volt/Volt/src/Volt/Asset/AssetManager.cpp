@@ -98,6 +98,24 @@ namespace Volt
 		return myAssetDependencies.at(asset);
 	}
 
+	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath)
+	{
+		std::vector<AssetHandle> result{};
+
+		std::string pathString = Get().GetRelativePath(dependencyPath).string();
+		std::replace(pathString.begin(), pathString.end(), '\\', '/');
+
+		for (const auto& [handle, dependencies] : Get().myAssetDependencies)
+		{
+			if (std::find(dependencies.begin(), dependencies.end(), pathString) != dependencies.end())
+			{
+				result.push_back(handle);
+			}
+		}
+
+		return result;
+	}
+
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
 	{
 		if (myAssetCache.contains(assetHandle))
@@ -192,7 +210,7 @@ namespace Volt
 	void AssetManager::MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir)
 	{
 		std::scoped_lock lk{ myAssetRegistryMutex };
-		const auto projDir = ProjectManager::GetPath();
+		const auto projDir = ProjectManager::GetDirectory();
 
 		FileSystem::Move(projDir / asset->path, projDir / targetDir);
 
@@ -209,7 +227,7 @@ namespace Volt
 		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		const std::filesystem::path newPath = targetDir / oldPath.filename();
-		const auto projDir = ProjectManager::GetPath();
+		const auto projDir = ProjectManager::GetDirectory();
 		
 		FileSystem::Move(projDir / oldPath, projDir / targetDir);
 
@@ -268,7 +286,7 @@ namespace Volt
 		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
 		const std::filesystem::path newPath = oldPath.parent_path() / (newName + oldPath.extension().string());
-		const auto projDir = ProjectManager::GetPath();
+		const auto projDir = ProjectManager::GetDirectory();
 
 		FileSystem::Rename(projDir / GetPathFromAssetHandle(asset), newName);
 
@@ -300,7 +318,7 @@ namespace Volt
 	{
 		std::scoped_lock lk{ myAssetRegistryMutex };
 		const std::filesystem::path path = GetPathFromAssetHandle(asset);
-		const auto projDir = ProjectManager::GetPath();
+		const auto projDir = ProjectManager::GetDirectory();
 
 		myAssetRegistry.erase(path);
 		myAssetCache.erase(asset);
@@ -320,7 +338,7 @@ namespace Volt
 		myAssetCache.erase(handle);
 		myAssetRegistry.erase(path);
 
-		const auto projDir = ProjectManager::GetPath();
+		const auto projDir = ProjectManager::GetDirectory();
 		FileSystem::MoveToRecycleBin(projDir / path);
 		SaveAssetRegistry();
 
@@ -526,16 +544,16 @@ namespace Volt
 	const std::filesystem::path AssetManager::GetFilesystemPath(AssetHandle handle)
 	{
 		const auto path = GetPathFromAssetHandle(handle);
-		return ProjectManager::GetPath() / path;
+		return ProjectManager::GetDirectory() / path;
 	}
 
 	const std::filesystem::path AssetManager::GetRelativePath(const std::filesystem::path& path)
 	{
 		std::filesystem::path relativePath = path.lexically_normal();
 		std::string temp = path.string();
-		if (temp.find(ProjectManager::GetPath().string()) != std::string::npos)
+		if (temp.find(ProjectManager::GetDirectory().string()) != std::string::npos)
 		{
-			relativePath = std::filesystem::relative(path, ProjectManager::GetPath());
+			relativePath = std::filesystem::relative(path, ProjectManager::GetDirectory());
 			if (relativePath.empty())
 			{
 				relativePath = path.lexically_normal();

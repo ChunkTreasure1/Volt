@@ -93,6 +93,8 @@ namespace Volt
 		template<typename T>
 		static const std::vector<std::filesystem::path> GetAllAssetsOfType();
 
+		static const std::vector<AssetHandle> GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath);
+
 	private:
 		struct LoadJob
 		{

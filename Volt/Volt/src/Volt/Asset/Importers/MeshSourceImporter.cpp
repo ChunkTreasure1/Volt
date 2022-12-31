@@ -12,7 +12,7 @@ namespace Volt
 	bool MeshSourceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Mesh>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{

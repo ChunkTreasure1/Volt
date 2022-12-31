@@ -48,7 +48,7 @@ namespace Volt
 		asset = CreateRef<Scene>();
 		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(asset);
 
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -181,7 +181,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 		const Ref<Scene> scene = std::reinterpret_pointer_cast<Scene>(asset);
 
-		std::filesystem::path folderPath = ProjectManager::GetPath() / asset->path;
+		std::filesystem::path folderPath = ProjectManager::GetDirectory() / asset->path;
 		if (!std::filesystem::is_directory(folderPath))
 		{
 			folderPath = folderPath.parent_path();
