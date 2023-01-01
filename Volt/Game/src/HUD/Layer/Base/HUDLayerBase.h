@@ -43,12 +43,12 @@ namespace HUD
 		virtual bool OnRender(Volt::AppRenderEvent& e);
 		virtual bool OnUpdate(Volt::AppUpdateEvent& e);
 
-		virtual bool OnPlay(Volt::OnScenePlayEvent& e);
-		virtual bool OnStop(Volt::OnSceneStopEvent& e);
-		bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
-		virtual bool OnKeyEvent(Volt::KeyPressedEvent& e);
-		virtual bool OnMouseEvent(Volt::MouseButtonPressedEvent& e);
-		virtual bool OnViewportResize(Volt::ViewportResizeEvent& e);
+		//virtual bool OnPlay(Volt::OnScenePlayEvent& e);
+		//virtual bool OnStop(Volt::OnSceneStopEvent& e);
+		//bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
+		//virtual bool OnKeyEvent(Volt::KeyPressedEvent& e);
+		//virtual bool OnMouseEvent(Volt::MouseButtonPressedEvent& e);
+		//virtual bool OnViewportResize(Volt::ViewportResizeEvent& e);
 
 
 

@@ -7,6 +7,7 @@
 
 #include "Volt/Input/Input.h"
 #include <Volt/Components/Components.h>
+#include <Volt/Components/PhysicsComponents.h>
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -175,7 +176,7 @@ namespace Volt
 		return BodyType::Static;
 	}
 
-	inline static void RigidbodyComponent_SetBodyType(Wire::EntityId entity, BodyType* bodyType)
+	inline static void RigidbodyComponent_SetBodyType(Wire::EntityId entityId, BodyType* bodyType)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -193,7 +194,7 @@ namespace Volt
 
 		if (entity.HasComponent<RigidbodyComponent>())
 		{
-			return entity.GetComponent<RigidbodyComponent>();
+			return entity.GetComponent<RigidbodyComponent>().layerId;
 		}
 
 		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
@@ -225,7 +226,7 @@ namespace Volt
 		return 0.f;
 	}
 
-	inline static void RigidbodyComponent_SetMass(Wire::EntityId entityId float* mass)
+	inline static void RigidbodyComponent_SetMass(Wire::EntityId entityId, float* mass)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -236,7 +237,7 @@ namespace Volt
 		}
 	}
 
-	inline static void RigidbodyComponent_SetLinearDrag(Wire::EntityId entityId float* linearDrag)
+	inline static void RigidbodyComponent_SetLinearDrag(Wire::EntityId entityId, float* linearDrag)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -261,7 +262,7 @@ namespace Volt
 		return 0.f;
 	}
 
-	inline static void RigidbodyComponent_SetAngularDrag(Wire::EntityId entityId float* angularDrag)
+	inline static void RigidbodyComponent_SetAngularDrag(Wire::EntityId entityId, float* angularDrag)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
