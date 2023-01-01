@@ -7,6 +7,8 @@
 
 #include <Volt/Rendering/Renderer.h>
 
+#include <Volt/UI/Elements/Sprite.hpp>
+
 HUD::LayerBase::LayerBase(Ref<Volt::SceneRenderer>& aSceneRenderer, const std::string& aLayerName) : renderpassRef(aSceneRenderer)
 {
 	layerName = aLayerName;
@@ -38,7 +40,7 @@ void HUD::LayerBase::OnDetach()
 void HUD::LayerBase::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
-	//dispatcher.Dispatch<Volt::OnSceneStopEvent>(VT_BIND_EVENT_FN(UIBaseLayer::OnStop));
+	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(HUD::LayerBase::OnKeyEvent));
 	//dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(UIBaseLayer::OnViewportResize));
 
 	if (!isEnabled) { return; }
@@ -54,7 +56,23 @@ bool HUD::LayerBase::OnRender(Volt::AppRenderEvent& e)
 
 	Volt::Renderer::SetDepthState(Volt::DepthState::None);
 
+	for (auto& element : elements) 
+	{
+		if (element.second->GetType() == UI::ElementType::SPRITE)
+		{
+			Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(element.second);
+			sprite->Render();
+		}
 
+		for (auto& child : element.second->children) 
+		{
+			if (child.second->GetType() == UI::ElementType::SPRITE)
+			{
+				Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(child.second);
+				sprite->Render();
+			}
+		}
+	}
 
 	Volt::Renderer::DispatchSpritesWithShader(screenspaceShader);
 	Volt::Renderer::DispatchText();
@@ -66,6 +84,11 @@ bool HUD::LayerBase::OnRender(Volt::AppRenderEvent& e)
 }
 
 bool HUD::LayerBase::OnUpdate(Volt::AppUpdateEvent& e)
+{
+	return false;
+}
+
+bool HUD::LayerBase::OnKeyEvent(Volt::KeyPressedEvent& e)
 {
 	return false;
 }

@@ -46,13 +46,13 @@ namespace HUD
 		//virtual bool OnPlay(Volt::OnScenePlayEvent& e);
 		//virtual bool OnStop(Volt::OnSceneStopEvent& e);
 		//bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
-		//virtual bool OnKeyEvent(Volt::KeyPressedEvent& e);
+		virtual bool OnKeyEvent(Volt::KeyPressedEvent& e);
 		//virtual bool OnMouseEvent(Volt::MouseButtonPressedEvent& e);
 		//virtual bool OnViewportResize(Volt::ViewportResizeEvent& e);
 
 
 
-	private:
+	protected:
 		Ref<Volt::SceneRenderer>& renderpassRef;
 		Ref<UI::Canvas> canvas;
 
@@ -65,7 +65,7 @@ namespace HUD
 		std::string settingPath;
 		std::string layerName;
 
-		std::unordered_map<std::string, UI::Element> elements;
+		std::unordered_map<std::string, Ref<UI::Element>> elements;
 
 	};
 }

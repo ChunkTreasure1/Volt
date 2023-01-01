@@ -195,6 +195,8 @@ Assets:
     Path: Assets\Textures\HDRIs\studio_small_08_4k.hdr
   - Handle: 9660052707747284857
     Path: Assets\Textures\lutTest.dds
+  - Handle: 987004036486346245
+    Path: Assets\UI\Default\spriteTest.dds
   - Handle: 8187072774580702017
     Path: Editor\Textures\Icons\AssetIcons\icon_animatedCharacter.dds
   - Handle: 14833944971717813604
