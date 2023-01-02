@@ -27,7 +27,7 @@ namespace Volt
 	bool TextureSourceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Texture2D>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -177,7 +177,7 @@ namespace Volt
 	bool MaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Material>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 		
 		if (!std::filesystem::exists(filePath))
 		{
@@ -403,7 +403,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetPath() / asset->path);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}
@@ -419,7 +419,7 @@ namespace Volt
 	bool FontImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Font>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath))
 		{
@@ -444,7 +444,7 @@ namespace Volt
 	bool PhysicsMaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<PhysicsMaterial>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath))
 		{
@@ -505,7 +505,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetPath() / asset->path);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}
@@ -521,7 +521,7 @@ namespace Volt
 	bool VideoImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Video>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{

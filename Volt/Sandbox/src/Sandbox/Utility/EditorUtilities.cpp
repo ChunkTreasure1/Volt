@@ -7,6 +7,8 @@
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 
+#include <Volt/Asset/Mesh/Material.h>
+#include <Volt/Asset/Mesh/SubMaterial.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Project/ProjectManager.h>
@@ -161,6 +163,156 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 	return returnVal;
 }
 
+bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle)
+{
+	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(assetHandle);
+
+	if (assetType != Volt::AssetType::Mesh &&
+		assetType != Volt::AssetType::Animation &&
+		assetType != Volt::AssetType::Skeleton)
+	{
+		return false;
+	}
+
+	// An asset can have multiple dependencies, we must find the source mesh
+	std::filesystem::path sourcePath;
+	const auto& dependencies = Volt::AssetManager::Get().GetDependencies(assetHandle);
+	for (const auto& d : dependencies)
+	{
+		if (d.extension().string() == ".fbx")
+		{
+			sourcePath = d;
+			break;
+		}
+	}
+
+	if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / sourcePath))
+	{
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The source mesh {0} does not exist!", sourcePath.string()));
+		return false;
+	}
+
+	Ref<Volt::Asset> originalAsset = Volt::AssetManager::Get().GetAssetRaw(assetHandle);
+	if (!originalAsset || !originalAsset->IsValid())
+	{
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is invalid!", originalAsset->path.string()));
+		return false;
+	}
+
+	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / originalAsset->path))
+	{
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is not writeable!", originalAsset->path.string()));
+		return false;
+	}
+
+	switch (originalAsset->GetType())
+	{
+		case Volt::AssetType::Animation:
+		{
+			Ref<Volt::Animation> newAnim = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / sourcePath);
+			if (!newAnim)
+			{
+				UI::Notify(NotificationType::Error, "Unable to re import animation!", std::format("Failed to import animation from {0}!", sourcePath.string()));
+				break;
+			}
+
+			newAnim->handle = originalAsset->handle;
+			newAnim->path = originalAsset->path;
+
+			Volt::AssetManager::Get().Unload(assetHandle);
+			Volt::AssetManager::Get().SaveAsset(newAnim);
+
+			UI::Notify(NotificationType::Success, "Animation re imported!", std::format("Animation {0} was re imported successfully!", sourcePath.string()));
+
+			break;
+		}
+
+		case Volt::AssetType::Skeleton:
+		{
+			Ref<Volt::Skeleton> newSkel = Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / sourcePath);
+			if (!newSkel)
+			{
+				UI::Notify(NotificationType::Error, "Unable to re import skeleton!", std::format("Failed to import skeleton from {0}!", sourcePath.string()));
+				break;
+			}
+
+			newSkel->handle = originalAsset->handle;
+			newSkel->path = originalAsset->path;
+
+			Volt::AssetManager::Get().Unload(assetHandle);
+			Volt::AssetManager::Get().SaveAsset(newSkel);
+
+			UI::Notify(NotificationType::Success, "Skeleton re imported!", std::format("Skeleton {0} was re imported successfully!", sourcePath.string()));
+
+			break;
+		}
+
+		case Volt::AssetType::Mesh:
+		{
+			Ref<Volt::Mesh> originalMesh = std::reinterpret_pointer_cast<Volt::Mesh>(originalAsset);
+
+			Ref<Volt::Mesh> newMesh = Volt::MeshTypeImporter::ImportMesh(Volt::ProjectManager::GetDirectory() / sourcePath);
+			if (!newMesh || !newMesh->IsValid())
+			{
+				UI::Notify(NotificationType::Error, "Unable to re import mesh!", std::format("Failed to import mesh from {0}!", sourcePath.string()));
+				break;
+			}
+
+			Ref<Volt::Material> material = originalMesh->GetMaterial();
+			Volt::AssetHandle materialHandle = Volt::Asset::Null();
+			bool shouldCreateNewMaterial = false;
+
+			if (!material || !material->IsValid())
+			{
+				material = nullptr;
+				shouldCreateNewMaterial = true;
+				VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", originalMesh->path);
+			}
+			else
+			{
+				if (newMesh->GetMaterial()->GetSubMaterialCount() != material->GetSubMaterialCount())
+				{
+					materialHandle = Volt::Asset::Null();
+					shouldCreateNewMaterial = true;
+
+				}
+				else
+				{
+					materialHandle = material->handle;
+				}
+			}
+
+			if (Volt::MeshCompiler::TryCompile(newMesh, originalAsset->path, materialHandle))
+			{
+				Volt::AssetManager::Get().ReloadAsset(originalAsset->handle);
+				
+				if (shouldCreateNewMaterial && material)
+				{
+					Ref<Volt::Mesh> reimportedMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(originalAsset->path);
+					const uint32_t subMaterialCount = gem::min(reimportedMesh->GetMaterial()->GetSubMaterialCount(), material->GetSubMaterialCount());
+					
+					for (uint32_t i = 0; i < subMaterialCount; i++)
+					{
+						for (const auto& [binding, tex] : material->GetSubMaterials().at(i)->GetTextures())
+						{
+							reimportedMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
+						}
+					}
+
+					Volt::AssetManager::Get().SaveAsset(reimportedMesh->GetMaterial());	
+					Volt::AssetManager::Get().ReloadAsset(reimportedMesh->GetMaterial()->path);
+				}
+
+				UI::Notify(NotificationType::Success, "Mesh re imported!", std::format("Mesh {0} was re imported successfully!", sourcePath.string()));
+			}
+
+			break;
+		}
+	}
+
+	return true;
+}
+
 bool EditorUtils::AssetBrowserPopupInternal(const std::string& popupId, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType, std::function<void(Volt::AssetHandle& value)> callback)
 {
 	bool changed = false;
@@ -253,18 +405,21 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 		if (ImGui::Button("Import"))
 		{
 			const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
-			bool succeded = true;
+			bool succeded = false;
 
 			if (aImportData.importMesh)
 			{
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(aMeshToImport);
 				if (importMesh && importMesh->IsValid())
 				{
-					succeded = succeded && Volt::MeshCompiler::TryCompile(importMesh, aImportData.destination, material);
+					succeded = Volt::MeshCompiler::TryCompile(importMesh, aImportData.destination, material);
 					if (!succeded)
 					{
 						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", aImportData.destination.string()));
 					}
+
+					auto handle = Volt::AssetManager::Get().AddToRegistry(aImportData.destination);
+					Volt::AssetManager::Get().AddDependency(handle, aMeshToImport);
 				}
 				else
 				{
@@ -288,6 +443,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				{
 					skeleton->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtsk");
 					Volt::AssetManager::Get().SaveAsset(skeleton);
+					Volt::AssetManager::Get().AddDependency(skeleton->handle, aMeshToImport);
+					succeded = true;
 				}
 			}
 
@@ -302,6 +459,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				{
 					animation->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
 					Volt::AssetManager::Get().SaveAsset(animation);
+					Volt::AssetManager::Get().AddDependency(animation->handle, aMeshToImport);
+					succeded = true;
 				}
 			}
 
@@ -309,9 +468,6 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 			{
 				UI::Notify(NotificationType::Success, "Mesh compilation succeded!", std::format("Successfully compiled mesh to {}!", aImportData.destination.string()));
 				imported = ImportState::Imported;
-			}
-			else
-			{
 			}
 
 			ImGui::CloseCurrentPopup();
@@ -449,7 +605,7 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 	const std::filesystem::path thumbnailPath = GetThumbnailPathFromPath(path);
 
 	constexpr int32_t channels = 4;
-	stbi_write_png((Volt::ProjectManager::GetPath() / thumbnailPath).string().c_str(), imageSpec.width, imageSpec.height, channels, buffer.As<void>(), imageSpec.width * Volt::Utility::PerPixelSizeFromFormat(imageSpec.format));
+	stbi_write_png((Volt::ProjectManager::GetDirectory() / thumbnailPath).string().c_str(), imageSpec.width, imageSpec.height, channels, buffer.As<void>(), imageSpec.width * Volt::Utility::PerPixelSizeFromFormat(imageSpec.format));
 	Ref<Volt::Texture2D> thumbnailAsset = Volt::AssetManager::CreateAsset<Volt::Texture2D>(thumbnailPath.parent_path(), thumbnailPath.filename().string(), image);
 
 	buffer.Release();
@@ -459,7 +615,7 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 
 bool EditorUtils::HasThumbnail(const std::filesystem::path& path)
 {
-	return FileSystem::Exists(Volt::ProjectManager::GetPath() / GetThumbnailPathFromPath(path));
+	return FileSystem::Exists(Volt::ProjectManager::GetDirectory() / GetThumbnailPathFromPath(path));
 }
 
 std::filesystem::path EditorUtils::GetThumbnailPathFromPath(const std::filesystem::path& path)

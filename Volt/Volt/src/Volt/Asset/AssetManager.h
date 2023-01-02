@@ -26,6 +26,9 @@ namespace Volt
 		void Initialize();
 		void Shutdown();
 
+		void AddDependency(AssetHandle asset, const std::filesystem::path& dependency);
+		const std::vector<std::filesystem::path>& GetDependencies(AssetHandle asset) const;
+
 		void Unload(AssetHandle assetHandle);
 		void SaveAsset(const Ref<Asset> asset);
 
@@ -90,6 +93,8 @@ namespace Volt
 		template<typename T>
 		static const std::vector<std::filesystem::path> GetAllAssetsOfType();
 
+		static const std::vector<AssetHandle> GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath);
+
 	private:
 		struct LoadJob
 		{
@@ -112,11 +117,14 @@ namespace Volt
 		std::unordered_map<AssetType, Scope<AssetImporter>> myAssetImporters;
 		std::unordered_map<std::filesystem::path, AssetHandle> myAssetRegistry;
 		std::unordered_map<AssetHandle, Ref<Asset>> myAssetCache;
+		std::unordered_map <AssetHandle, std::vector<std::filesystem::path>> myAssetDependencies;
 
 		std::thread myLoadThread;
 		std::mutex myLoadMutex;
+		std::mutex myAssetRegistryMutex;
+
 		std::atomic_bool myIsLoadThreadRunning = false;
-		std::condition_variable myThreadConditionVariable;
+		std::condition_variable mySyncVariable;
 
 		std::vector<LoadJob> myLoadQueue;
 	};

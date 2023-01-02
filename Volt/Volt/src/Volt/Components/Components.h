@@ -59,7 +59,6 @@ namespace Volt
 	{
 		PROPERTY(Name = Children) std::vector<Wire::EntityId> Children;
 		PROPERTY(Name = Parent) Wire::EntityId Parent = 0;
-		PROPERTY(Name = SortId, Visible = false) uint32_t sortId = 0;
 		CREATE_COMPONENT_GUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 
 	}), RelationshipComponent);

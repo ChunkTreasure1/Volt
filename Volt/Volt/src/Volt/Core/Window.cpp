@@ -3,6 +3,7 @@
 
 #include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Core/Graphics/Swapchain.h"
+#include "Volt/Core/Application.h"
 
 #include "Volt/Events/ApplicationEvent.h"
 #include "Volt/Events/KeyEvent.h"
@@ -81,7 +82,7 @@ namespace Volt
 		glfwSetErrorCallback(GLFWErrorCallback);
 		glfwWindowHint(GLFW_SAMPLES, 0);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_TITLEBAR, GLFW_FALSE);
+		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 		myWindow = glfwCreateWindow((int32_t)myData.width, (int32_t)myData.height, myData.title.c_str(), nullptr, nullptr);
@@ -261,9 +262,11 @@ namespace Volt
 			{
 				const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-				glfwWindowHint(GLFW_DECORATED, false);
-				glfwWindowHint(GLFW_TITLEBAR, false);
-				glfwWindowHint(GLFW_AUTO_ICONIFY, true);
+				glfwSetWindowAttrib(myWindow, GLFW_DECORATED, false);
+				glfwSetWindowAttrib(myWindow, GLFW_TITLEBAR, false);
+				glfwSetWindowAttrib(myWindow, GLFW_AUTO_ICONIFY, false);
+				glfwSetWindowAttrib(myWindow, GLFW_FLOATING, false);
+				glfwSetWindowAttrib(myWindow, GLFW_RESIZABLE, false);
 
 				glfwWindowHint(GLFW_RED_BITS, mode->redBits);
 				glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
@@ -280,14 +283,16 @@ namespace Volt
 
 			case WindowMode::Windowed:
 			{
-				glfwWindowHint(GLFW_TITLEBAR, true);
-				glfwWindowHint(GLFW_DECORATED, true);
-				glfwWindowHint(GLFW_AUTO_ICONIFY, false);
+				glfwSetWindowAttrib(myWindow, GLFW_DECORATED, Application::Get().GetInfo().isRuntime ? GLFW_FALSE : GLFW_TRUE);
+				glfwSetWindowAttrib(myWindow, GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
+				glfwSetWindowAttrib(myWindow, GLFW_AUTO_ICONIFY, false);
+				glfwSetWindowAttrib(myWindow, GLFW_FLOATING, true);
+				glfwSetWindowAttrib(myWindow, GLFW_RESIZABLE, true);
 
 				const auto& monitorMode = mySwapchain->GetMonitorMode();
 
-				const int32_t xPos = (int32_t)((monitorMode.width / 2) - (myProperties.width /2));
-				const int32_t yPos = (int32_t)((monitorMode.height / 2) - (myProperties.height /2));
+				const int32_t xPos = (int32_t)((monitorMode.width / 2) - (myProperties.width / 2));
+				const int32_t yPos = (int32_t)((monitorMode.height / 2) - (myProperties.height / 2));
 
 				glfwSetWindowMonitor(myWindow, nullptr, 0, 0, myProperties.width, myProperties.height, (int32_t)monitorMode.refreshRate);
 				glfwSetWindowPos(myWindow, xPos, yPos);
@@ -302,20 +307,20 @@ namespace Volt
 
 			case WindowMode::Borderless:
 			{
-				glfwWindowHint(GLFW_DECORATED, false);
-				glfwWindowHint(GLFW_TITLEBAR, false);
-				glfwWindowHint(GLFW_AUTO_ICONIFY, false);
+				glfwSetWindowAttrib(myWindow, GLFW_DECORATED, false);
+				glfwSetWindowAttrib(myWindow, GLFW_TITLEBAR, false);
+				glfwSetWindowAttrib(myWindow, GLFW_AUTO_ICONIFY, false);
+				glfwSetWindowAttrib(myWindow, GLFW_FLOATING, true);
+				glfwSetWindowAttrib(myWindow, GLFW_RESIZABLE, false);
 
 				const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-				const auto& monitorMode = mySwapchain->GetMonitorMode();
-				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, monitorMode.width, monitorMode.height, mode->refreshRate);
+				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
 
 				myIsFullscreen = false;
-				mySwapchain->Resize(monitorMode.width, monitorMode.height, myIsFullscreen);
+				mySwapchain->Resize(mode->width, mode->height, myIsFullscreen);
 
-				myData.width = monitorMode.width;
-				myData.height = monitorMode.height;
+				myData.width = mode->width;
+				myData.height = mode->height;
 				break;
 			}
 		}

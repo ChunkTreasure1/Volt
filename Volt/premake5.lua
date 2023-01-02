@@ -31,6 +31,7 @@ include "Volt/vendor/imgui-node-editor"
 include "Volt/vendor/msdf-atlas-gen"
 include "Volt/vendor/yaml-cpp"
 include "Volt/vendor/DirectXTex"
+include "Volt/vendor/efsw"
 
 group "Core"
 include "Volt"

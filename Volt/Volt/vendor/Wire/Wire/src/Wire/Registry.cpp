@@ -7,7 +7,6 @@ namespace Wire
 	Registry::Registry(const Registry& registry)
 	{
 		m_nextEntityId = registry.m_nextEntityId;
-		m_availiableIds = registry.m_availiableIds;
 		m_pools = registry.m_pools;
 	}
 
@@ -18,17 +17,7 @@ namespace Wire
 
 	EntityId Registry::CreateEntity()
 	{
-		EntityId id;
-		if (!m_availiableIds.empty())
-		{
-			id = m_availiableIds.back();
-			m_availiableIds.pop_back();
-		}
-		else
-		{
-			id = m_nextEntityId++;
-		}
-		
+		EntityId id = m_nextEntityId++;
 		m_usedIds.emplace_back(id);
 
 		return id;
@@ -42,11 +31,6 @@ namespace Wire
  		if (m_nextEntityId <= aId)
 		{
 			m_nextEntityId = aId + 1;
-		}
-
-		if (auto it = std::find(m_availiableIds.begin(), m_availiableIds.end(), aId); it != m_availiableIds.end())
-		{
-			m_availiableIds.erase(it);
 		}
 
 		m_usedIds.emplace_back(aId);
@@ -69,13 +53,11 @@ namespace Wire
 
 		auto it = std::find(m_usedIds.begin(), m_usedIds.end(), aId);
 		m_usedIds.erase(it);
-		m_availiableIds.emplace_back(aId);
 	}
 
 	void Registry::Clear()
 	{
 		m_pools.clear();
-		m_availiableIds.clear();
 		m_usedIds.clear();
 		m_nextEntityId = 1;
 	}

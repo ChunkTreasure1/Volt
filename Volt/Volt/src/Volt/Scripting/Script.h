@@ -7,11 +7,11 @@
 namespace Volt
 {
 	class Entity;
-	class ScriptBase
+	class Script
 	{
 	public:
-		ScriptBase(Entity entity);
-		virtual ~ScriptBase() = default;
+		Script(Entity entity);
+		virtual ~Script() = default;
 
 		// This is called when the script is added to an entity
 		virtual void OnAwake() {}

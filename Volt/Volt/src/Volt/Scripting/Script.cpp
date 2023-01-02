@@ -1,9 +1,9 @@
 ﻿#include "vtpch.h"
-#include "ScriptBase.h"
+#include "Script.h"
 
 namespace Volt
 {
-	ScriptBase::ScriptBase(Entity entity)
+	Script::Script(Entity entity)
 		: myEntity(entity)
 	{}
 }

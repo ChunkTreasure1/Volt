@@ -49,6 +49,7 @@ public:
 
 	static bool SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery);
 
+	static bool ReimportSourceMesh(Volt::AssetHandle assetHandle);
 	static ImportState MeshImportModal(const std::string& aId, MeshImportData& aImportData, const std::filesystem::path& aMeshToImport);
 	static bool NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCharacter>& outCharacter, NewCharacterData& aCharacterData);
 

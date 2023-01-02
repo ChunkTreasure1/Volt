@@ -213,7 +213,7 @@ void MeshPreviewPanel::UpdateMeshList()
 
 	for (uint32_t i = 0; const auto & subMesh : myCurrentMesh->GetSubMeshes())
 	{
-		std::string id = "Mesh#" + std::to_string(i);
+		std::string id = subMesh.name + "##subMesh" + std::to_string(i);
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 		if (mySelectedSubMesh == i)

@@ -26,6 +26,8 @@ bool SelectionManager::Deselect(Wire::EntityId entity)
 
 void SelectionManager::DeselectAll()
 {
+	myFirstSelectedRow = -1;
+	myLastSelectedRow = -1;
 	myEntities.clear();
 }
 

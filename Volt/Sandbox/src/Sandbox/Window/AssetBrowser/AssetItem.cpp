@@ -9,6 +9,7 @@
 
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/Utility/EditorLibrary.h"
+#include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -16,8 +17,8 @@
 
 namespace AssetBrowser
 {
-	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& aMeshImportData)
-		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData)
+	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& aMeshImportData, AssetData& aMeshToImportData)
+		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData), meshToImportData(aMeshToImportData)
 	{
 		type = Volt::AssetManager::GetAssetTypeFromPath(path);
 		handle = Volt::AssetManager::GetAssetHandleFromPath(path);
@@ -176,6 +177,13 @@ namespace AssetBrowser
 					EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
 				}
 
+
+				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && hovered && !mySelectionManager->IsSelected(this))
+				{
+					mySelectionManager->DeselectAll();
+					mySelectionManager->Select(this);
+				}
+
 				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 				if (mouseDown && hovered)
 				{
@@ -219,12 +227,12 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Open Externally"))
 			{
-				FileSystem::OpenFileExternally(Volt::ProjectManager::GetPath() / path);
+				FileSystem::OpenFileExternally(Volt::ProjectManager::GetDirectory() / path);
 			}
 
 			if (ImGui::MenuItem("Show In Explorer"))
 			{
-				FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetPath() / path);
+				FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
 			}
 
 			if (ImGui::MenuItem("Reload"))
@@ -251,6 +259,11 @@ namespace AssetBrowser
 			{
 				removed = true;
 				UI::OpenModal("Delete Selected Files?");
+			}
+
+			if (ImGui::MenuItem("Checkout"))
+			{
+				VersionControl::Edit(Volt::AssetManager::Get().GetFilesystemPath(handle));
 			}
 
 			UI::EndPopup();

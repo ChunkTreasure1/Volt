@@ -4,7 +4,6 @@
 #include "Volt/Platform/ExceptionHandling.h"
 
 #include <filesystem>
-#include <iostream>
 
 extern Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath);
 

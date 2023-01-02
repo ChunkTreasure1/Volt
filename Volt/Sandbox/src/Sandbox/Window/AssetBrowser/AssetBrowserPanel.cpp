@@ -235,11 +235,11 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	if (!myDragDroppedMeshes.empty() && !myIsImporting)
 	{
-		const auto path = myDragDroppedMeshes.back();
+		const auto path = Volt::AssetManager::Get().GetRelativePath(myDragDroppedMeshes.back());
 		myDragDroppedMeshes.pop_back();
 
 		AssetData assetData;
-		assetData.handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+		assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
 		assetData.path = path;
 		assetData.type = Volt::AssetType::MeshSource;
 
@@ -395,7 +395,7 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData, myMeshToImport);
 					dirData->assets.emplace_back(assetItem);
 				}
 			}
@@ -791,68 +791,73 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 	if (ImGui::BeginPopupContextWindow("CreateMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_NoOpenOverItems))
 	{
-		ImGui::SetCursorPosX(300.f);
+		ImGui::SetCursorPosX(150.f);
 		ImGui::SetCursorPosX(ImGui::GetStyle().WindowPadding.x);
 
-		if (ImGui::MenuItem("New Folder"))
+		if (ImGui::BeginMenu("New"))
 		{
-			const std::string originalName = "New Folder";
-			std::string tempName = originalName;
-
-			uint32_t i = 0;
-			while (FileSystem::Exists(myCurrentDirectory->path / tempName))
+			if (ImGui::MenuItem("New Folder"))
 			{
-				tempName = originalName + " (" + std::to_string(i) + ")";
-				i++;
-			}
+				const std::string originalName = "New Folder";
+				std::string tempName = originalName;
 
-			FileSystem::CreateFolder(myCurrentDirectory->path / tempName);
-			Reload();
-
-			auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
+				uint32_t i = 0;
+				while (FileSystem::Exists(myCurrentDirectory->path / tempName))
 				{
-					return data->path.stem().string() == tempName;
-				});
+					tempName = originalName + " (" + std::to_string(i) + ")";
+					i++;
+				}
 
-			if (dirIt != myCurrentDirectory->subDirectories.end())
-			{
-				(*dirIt)->isRenaming = true;
-				(*dirIt)->currentRenamingName = tempName;
+				FileSystem::CreateFolder(myCurrentDirectory->path / tempName);
+				Reload();
 
-				mySelectionManager->Select((*dirIt).get());
+				auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
+					{
+						return data->path.stem().string() == tempName;
+					});
+
+				if (dirIt != myCurrentDirectory->subDirectories.end())
+				{
+					(*dirIt)->isRenaming = true;
+					(*dirIt)->currentRenamingName = tempName;
+
+					mySelectionManager->Select((*dirIt).get());
+				}
 			}
-		}
 
-		ImGui::Separator();
+			ImGui::Separator();
 
-		if (ImGui::MenuItem("Create Material"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
-		}
+			if (ImGui::MenuItem("New Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
+			}
 
-		if (ImGui::MenuItem("Create Animated Character"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
-		}
+			if (ImGui::MenuItem("New Animated Character"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
+			}
 
-		if (ImGui::MenuItem("Create Shader"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
-		}
+			if (ImGui::MenuItem("New Shader"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
+			}
 
-		if (ImGui::MenuItem("Create Physics Material"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
-		}
+			if (ImGui::MenuItem("New Physics Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
+			}
 
-		if (ImGui::MenuItem("Create Scene"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::Scene);
-		}
+			if (ImGui::MenuItem("New Scene"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Scene);
+			}
 
-		if (ImGui::MenuItem("Create Particle Preset"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::ParticlePreset);
+			if (ImGui::MenuItem("New Particle Preset"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::ParticlePreset);
+			}
+
+			ImGui::EndMenu();
 		}
 
 		ImGui::Separator();
