@@ -614,7 +614,7 @@ namespace Volt
 				submesh.vertexStartOffset = (uint32_t)preVertexCount;
 				submesh.materialIndex = matIndex;
 				submesh.transform = localTransform;
-				submesh.name = fbxMesh->GetName();
+				submesh.name = fbxMesh->GetNode()->GetName();
 				submesh.GenerateHash();
 			}
 		}

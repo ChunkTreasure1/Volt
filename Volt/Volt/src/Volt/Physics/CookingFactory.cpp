@@ -152,6 +152,7 @@ namespace Volt
 
 		outData.data.Allocate(buf.getSize());
 		outData.data.Copy(buf.getData(), buf.getSize());
+		outData.transform = submesh.transform;
 		cookingResult = CookingResult::Success;
 
 		return cookingResult;
@@ -187,6 +188,7 @@ namespace Volt
 
 		outData.data.Allocate(buf.getSize());
 		outData.data.Copy(buf.getData(), buf.getSize());
+		outData.transform = submesh.transform;
 		cookingResult = CookingResult::Success;
 
 		return cookingResult;
