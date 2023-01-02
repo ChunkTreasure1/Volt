@@ -17,6 +17,7 @@ namespace Volt
 	class ComputePipeline;
 	class Scene;
 	class SceneRenderer;
+	class Material;
 }
 
 class EditorCameraController;
@@ -58,6 +59,8 @@ private:
 
 	Ref<Volt::Scene> myScene;
 	Scope<Volt::SceneRenderer> mySceneRenderer;
+	Ref<Volt::Material> myGridMaterial;
+
 	Volt::RenderPass myForwardExtraPass;
 
 	Ref<Volt::AnimatedCharacter> myCurrentCharacter;

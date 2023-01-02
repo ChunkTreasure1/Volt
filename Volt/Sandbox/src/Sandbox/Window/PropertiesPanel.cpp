@@ -3,12 +3,12 @@
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scripting/ScriptRegistry.h>
 #include <Volt/Scripting/ScriptEngine.h>
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
@@ -19,6 +19,7 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
+#include <GraphKey/Graph.h>
 #include <Wire/Serialization.h>
 
 #include <vector>
@@ -39,7 +40,6 @@ void PropertiesPanel::UpdateMainContent()
 	{
 		if (Volt::Input::IsMouseButtonReleased(VT_MOUSE_BUTTON_LEFT))
 		{
-
 			myMidEvent = false;
 		}
 	}
@@ -140,47 +140,72 @@ void PropertiesPanel::UpdateMainContent()
 					}
 				}
 
-					gem::vec3 rotDegrees = gem::degrees(transform.rotation);
-					if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
-						{
-							for (auto& ent : entities)
-							{
-								auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
-								entTransform.rotation = gem::radians(val);
-							}
-						}))
+				gem::vec3 rotDegrees = gem::degrees(gem::eulerAngles(transform.rotation));
+				if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
 					{
-						transform.rotation = gem::radians(rotDegrees);
-
-						if (myMidEvent == false)
+						for (auto& ent : entities)
 						{
-							Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.rotation, transform.rotation);
-							EditorCommandStack::PushUndo(command);
-							myMidEvent = true;
+							auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
+							entTransform.rotation = gem::radians(val);
 						}
+					}))
+				{
+					transform.rotation = gem::quat{ gem::radians(rotDegrees) };
+
+					if (myMidEvent == false)
+					{
+						Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
+						EditorCommandStack::PushUndo(command);
+						myMidEvent = true;
 					}
+				}
 
-						if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
-							{
-								for (auto& ent : entities)
-								{
-									auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
-									entTransform.scale = val;
-								}
-							}))
+				if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
+					{
+						for (auto& ent : entities)
 						{
-							if (myMidEvent == false)
-							{
-								Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
-								EditorCommandStack::PushUndo(command);
-								myMidEvent = true;
-							}
+							auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
+							entTransform.scale = val;
 						}
+					}))
+				{
+					if (myMidEvent == false)
+					{
+						Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
+						EditorCommandStack::PushUndo(command);
+						myMidEvent = true;
+					}
+				}
 			}
 
 			UI::EndProperties();
 		}
 		UI::PopId();
+	}
+
+	// Visual Scripting
+	{
+		auto& entity = SelectionManager::GetSelectedEntities().front();
+
+		if (registry.HasComponent<Volt::VisualScriptingComponent>(entity))
+		{
+			Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
+			if (!vsComp.graph)
+			{
+				if (ImGui::Button("Create"))
+				{
+					vsComp.graph = CreateRef<GraphKey::Graph>(entity);
+				}
+			}
+			else
+			{
+				if (ImGui::Button("Open"))
+				{
+					GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
+					GraphKeyPanel::Get().Open();
+				}
+			}
+		}
 	}
 
 	if (singleSelected)
@@ -196,23 +221,23 @@ void PropertiesPanel::UpdateMainContent()
 
 			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
 			if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
-				registryInfo.name == "EntityDataComponent")
+				registryInfo.name == "EntityDataComponent" || registryInfo.name == "VisualScriptingComponent")
 			{
 				continue;
 			}
 
 			bool removeComp = false;
 			bool open = UI::TreeNodeFramed(registryInfo.name, true, 2.f);
-			float buttonSize = 21.f + GImGui->Style.FramePadding.y;
+			float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 			float availRegion = ImGui::GetContentRegionAvail().x;
 
 			if (!open)
 			{
-				UI::SameLine(availRegion - buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+				UI::SameLine(availRegion - buttonSize * 0.5f);
 			}
 			else
 			{
-				UI::SameLine(availRegion + buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+				UI::SameLine(availRegion + buttonSize * 0.5f);
 			}
 			std::string id = "-###Remove" + registryInfo.name;
 
@@ -231,8 +256,16 @@ void PropertiesPanel::UpdateMainContent()
 
 			if (open)
 			{
+				const std::vector<std::string> excludedComponents =
+				{
+					"ScriptComponent",
+					"MonoScriptComponent",
+				};
+
+				const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
+
 				UI::PushId();
-				if (registryInfo.name != "ScriptComponent" && registryInfo.name != "MonoScriptComponent" && UI::BeginProperties(registryInfo.name))
+				if (!isExcluded && UI::BeginProperties(registryInfo.name))
 				{
 					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
 					for (auto& prop : registryInfo.properties)
@@ -262,6 +295,7 @@ void PropertiesPanel::UpdateMainContent()
 							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(gem::vec2*)(&data[prop.offset])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(gem::vec3*)(&data[prop.offset])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset])); break;
 							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset])); break;
 
 							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(gem::vec3*)(&data[prop.offset])); break;
@@ -315,6 +349,7 @@ void PropertiesPanel::UpdateMainContent()
 				{
 					DrawMonoProperties(registry, registryInfo, entity);
 				}
+
 				UI::PopId();
 
 				UI::TreeNodePop();
@@ -520,6 +555,15 @@ void PropertiesPanel::UpdateMainContent()
 									}
 								}); break;
 
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec4& val)
+								{
+									for (auto& ent : entities)
+									{
+										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+										*(gem::vec4*)&entData[prop.offset] = val;
+									}
+								}); break;
+
 							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(gem::vec3*)(&data[prop.offset]), [&](gem::vec3& val)
 								{
 									for (auto& ent : entities)
@@ -660,7 +704,7 @@ void PropertiesPanel::AddComponentPopup()
 
 		std::sort(componentNames.begin(), componentNames.end());
 
-		// Seach bar
+		// Search bar
 		{
 			if (EditorUtils::SearchBar(myComponentSearchQuery, myHasComponentSearchQuery))
 			{
@@ -949,6 +993,18 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 						break;
 					}
 
+					case Wire::ComponentRegistry::PropertyType::Quaternion:
+					{
+						gem::vec4 value = scriptInstance->GetField<gem::vec4>(name);
+
+						if (UI::Property(name, value))
+						{
+							scriptInstance->SetField(name, &value);
+						}
+
+						break;
+					}
+
 					case Wire::ComponentRegistry::PropertyType::EntityId:
 					{
 						Wire::EntityId value = scriptInstance->GetField<Wire::EntityId>(name);
@@ -995,6 +1051,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(name, *(gem::vec2*)(&entField.data[0])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(name, *(gem::vec3*)(&entField.data[0])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(name, *(gem::vec4*)(&entField.data[0])); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(name, *(gem::vec4*)(&entField.data[0])); break;
 							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(name, myCurrentScene, *(Wire::EntityId*)(&entField.data[0])); break;
 
 							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(name, *(gem::vec3*)(&entField.data[0])); break;
@@ -1138,6 +1195,18 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							}
 
 							case Wire::ComponentRegistry::PropertyType::Vector4:
+							{
+								gem::vec4 value = 0.f;
+
+								if (UI::Property(name, value))
+								{
+									entityFields[name].SetValue(value);
+								}
+
+								break;
+							}
+
+							case Wire::ComponentRegistry::PropertyType::Quaternion:
 							{
 								gem::vec4 value = 0.f;
 

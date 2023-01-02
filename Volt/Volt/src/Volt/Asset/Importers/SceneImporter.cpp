@@ -8,11 +8,16 @@
 
 #include "Volt/Components/Components.h"
 #include "Volt/Asset/Prefab.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Core/Profiling.h"
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Scene/Entity.h"
+
+#include <GraphKey/Graph.h>
+#include <GraphKey/Node.h>
+#include <GraphKey/Registry.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -47,14 +52,16 @@ namespace Volt
 		asset = CreateRef<Scene>();
 		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(asset);
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		const auto filePath = ProjectManager::GetDirectory() / path;
+
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream file(path);
+		std::ifstream file(filePath);
 		if (!file.is_open()) [[unlikely]]
 		{
 			VT_CORE_ERROR("Failed to open file {0}!", path.string().c_str());
@@ -62,7 +69,7 @@ namespace Volt
 			return false;
 		}
 
-		const std::filesystem::path& scenePath = path;
+		const std::filesystem::path& scenePath = filePath;
 		std::filesystem::path folderPath = scenePath.parent_path();
 		std::filesystem::path entitiesFolderPath = folderPath / "Entities";
 
@@ -125,7 +132,7 @@ namespace Volt
 					VT_PROFILE_THREAD(name.c_str());
 					for (const auto& item : paths)
 					{
-						DeserializeEntity(item, registry);
+						DeserializeEntity(item, registry, scene);
 					}
 				};
 
@@ -143,23 +150,31 @@ namespace Volt
 					thread.join();
 				}
 
+				std::vector<Wire::EntityId> dirtyPrefabs{};
 				for (auto& registry : threadRegistries)
 				{
+					registry.ForEach<PrefabComponent>([&](Wire::EntityId id, PrefabComponent& prefabComp)
+						{
+							if (prefabComp.isDirty)
+							{
+								dirtyPrefabs.emplace_back(id);
+							}
+						});
+
 					for (const auto& entity : registry.GetAllEntities())
 					{
 						scene->myRegistry.AddEntity(entity);
 						Entity::Copy(registry, scene->myRegistry, entity, entity);
 					}
 				}
-			}
 
-			scene->myRegistry.ForEach<PrefabComponent>([&](Wire::EntityId id, PrefabComponent& prefabComp)
+				for (const auto& id : dirtyPrefabs)
 				{
-					if (prefabComp.isDirty)
-					{
-						Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
-					}
-				});
+					auto& prefabComp = scene->myRegistry.GetComponent<PrefabComponent>(id);
+					Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
+					prefabComp.isDirty = false;
+				}
+			}
 		}
 
 		return true;
@@ -170,7 +185,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 		const Ref<Scene> scene = std::reinterpret_pointer_cast<Scene>(asset);
 
-		std::filesystem::path folderPath = asset->path;
+		std::filesystem::path folderPath = ProjectManager::GetDirectory() / asset->path;
 		if (!std::filesystem::is_directory(folderPath))
 		{
 			folderPath = folderPath.parent_path();
@@ -241,6 +256,179 @@ namespace Volt
 		return false;
 	}
 
+	void SceneImporter::SerializeGraph(Ref<GraphKey::Graph> graph, const std::string& graphState, const Wire::Registry& registry, YAML::Emitter& out) const
+	{
+		out << YAML::Key << "Graph" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			{
+				out << YAML::Key << "Nodes" << YAML::BeginSeq;
+				for (const auto& n : graph->GetSpecification().nodes)
+				{
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(id, n->id, out);
+						VT_SERIALIZE_PROPERTY(type, n->GetRegistryName(), out);
+
+						out << YAML::Key << "inputs" << YAML::BeginSeq;
+						{
+							for (const auto& i : n->inputs)
+							{
+								out << YAML::BeginMap;
+								{
+									VT_SERIALIZE_PROPERTY(name, i.name, out);
+									VT_SERIALIZE_PROPERTY(id, i.id, out);
+								}
+								out << YAML::EndMap;
+							}
+						}
+						out << YAML::EndSeq;
+
+						out << YAML::Key << "outputs" << YAML::BeginSeq;
+						{
+							for (const auto& o : n->outputs)
+							{
+								out << YAML::BeginMap;
+								{
+									VT_SERIALIZE_PROPERTY(name, o.name, out);
+									VT_SERIALIZE_PROPERTY(id, o.id, out);
+								}
+								out << YAML::EndMap;
+							}
+							out << YAML::EndSeq;
+						}
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+
+				out << YAML::Key << "Links" << YAML::BeginSeq;
+				for (const auto& l : graph->GetSpecification().links)
+				{
+					out << YAML::BeginMap;
+					{
+						VT_SERIALIZE_PROPERTY(id, l->id, out);
+						VT_SERIALIZE_PROPERTY(output, l->output, out);
+						VT_SERIALIZE_PROPERTY(input, l->input, out);
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+			}
+			out << YAML::EndMap;
+		}
+	}
+
+	void SceneImporter::DeserializeGraph(Ref<GraphKey::Graph> graph, const YAML::Node& node) const
+	{
+		struct Attribute
+		{
+			std::string name;
+			UUID id;
+		};
+
+		struct NodeData
+		{
+			UUID id;
+			std::string type;
+			
+			std::vector<Attribute> inputs;
+			std::vector<Attribute> outputs;
+		};
+
+		struct LinkData
+		{
+			UUID id;
+			
+			UUID input;
+			UUID output;
+		};
+
+		std::vector<NodeData> nodes;
+		std::vector<LinkData> links;
+
+		for (const auto& n : node["Nodes"])
+		{
+			auto& data = nodes.emplace_back();
+			VT_DESERIALIZE_PROPERTY(id, data.id, n, UUID(0));
+			VT_DESERIALIZE_PROPERTY(type, data.type, n, std::string(""));
+			
+			for (const auto& i : n["inputs"])
+			{
+				auto& inData = data.inputs.emplace_back();
+				VT_DESERIALIZE_PROPERTY(id, inData.id, i, UUID(0));
+				VT_DESERIALIZE_PROPERTY(name, inData.name, i, std::string("Null"));
+			}
+			
+			for (const auto& o : n["outputs"])
+			{
+				auto& outData = data.outputs.emplace_back();
+				VT_DESERIALIZE_PROPERTY(id, outData.id, o, UUID(0));
+				VT_DESERIALIZE_PROPERTY(name, outData.name, o, std::string("Null"));
+			}
+		}
+
+		for (const auto& l : node["Links"])
+		{
+			auto& data = links.emplace_back();
+			VT_DESERIALIZE_PROPERTY(id, data.id, l, UUID(0));
+			VT_DESERIALIZE_PROPERTY(input, data.input, l, UUID(0));
+			VT_DESERIALIZE_PROPERTY(output, data.output, l, UUID(0));
+		}
+
+		auto& spec = graph->GetSpecification();
+
+		for (const auto& n : nodes)
+		{
+			auto node = GraphKey::Registry::Create(n.type);
+			node->id = n.id;
+		
+			for (const auto& i : n.inputs)
+			{
+				auto it = std::find_if(node->inputs.begin(), node->inputs.end(), [&i](const auto& lhs) 
+					{
+						return lhs.name == i.name;
+					});
+
+				if (it != node->inputs.end())
+				{
+					it->id = i.id;
+				}
+			}
+
+			for (const auto& o : n.outputs)
+			{
+				auto it = std::find_if(node->outputs.begin(), node->outputs.end(), [&o](const auto& lhs)
+					{
+						return lhs.name == o.name;
+					});
+
+				if (it != node->outputs.end())
+				{
+					it->id = o.id;
+				}
+			}
+		
+			spec.nodes.emplace_back(node);
+		}
+
+		for (const auto& l : links)
+		{
+			Ref<GraphKey::Link> newLink = CreateRef<GraphKey::Link>();
+			newLink->id = l.id;
+			newLink->input = l.input;
+			newLink->output = l.output;
+
+			auto inAttr = graph->GetAttributeByID(l.input);
+			inAttr->links.emplace_back(l.id);
+
+			auto outAttr = graph->GetAttributeByID(l.output);
+			outAttr->links.emplace_back(l.id);
+
+			spec.links.emplace_back(newLink);
+		}
+	}
+
 	void SceneImporter::SerializeEntity(Wire::EntityId id, const Wire::Registry& registry, const std::filesystem::path& targetDir) const
 	{
 		VT_PROFILE_FUNCTION();
@@ -288,6 +476,7 @@ namespace Volt
 							case Wire::ComponentRegistry::PropertyType::Vector2: VT_SERIALIZE_PROPERTY(data, *(gem::vec2*)&componentData[prop.offset], out); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: VT_SERIALIZE_PROPERTY(data, *(gem::vec3*)&componentData[prop.offset], out); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: VT_SERIALIZE_PROPERTY(data, *(gem::vec4*)&componentData[prop.offset], out); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: VT_SERIALIZE_PROPERTY(data, *(gem::quat*)&componentData[prop.offset], out); break;
 							case Wire::ComponentRegistry::PropertyType::String:
 							{
 								std::string str = *(std::string*)&componentData[prop.offset];
@@ -322,6 +511,7 @@ namespace Volt
 									case Wire::ComponentRegistry::PropertyType::Vector2: SerializeVector<gem::vec2>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::Vector3: SerializeVector<gem::vec3>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::Vector4: SerializeVector<gem::vec4>(componentData, prop.offset, out); break;
+									case Wire::ComponentRegistry::PropertyType::Quaternion: SerializeVector<gem::quat>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::String: SerializeVector<std::string>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::Int64: SerializeVector<int64_t>(componentData, prop.offset, out); break;
 									case Wire::ComponentRegistry::PropertyType::UInt64: SerializeVector<uint64_t>(componentData, prop.offset, out); break;
@@ -347,6 +537,14 @@ namespace Volt
 			}
 			out << YAML::EndSeq;
 
+			if (registry.HasComponent<VisualScriptingComponent>(id))
+			{
+				auto* vsComp = (VisualScriptingComponent*)registry.GetComponentPtr(VisualScriptingComponent::comp_guid, id);
+				if (vsComp->graph)
+				{
+					SerializeGraph(vsComp->graph, vsComp->graphState, registry, out);
+				}
+			}
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -356,7 +554,7 @@ namespace Volt
 		output.close();
 	}
 
-	void SceneImporter::DeserializeEntity(const std::filesystem::path& path, Wire::Registry& registry) const
+	void SceneImporter::DeserializeEntity(const std::filesystem::path& path, Wire::Registry& registry, Ref<Scene> scene) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -408,7 +606,7 @@ namespace Volt
 				YAML::Node propertiesNode = compNode["properties"];
 				if (propertiesNode)
 				{
-					auto regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
+					const auto& regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
 
 					for (auto propNode : propertiesNode)
 					{
@@ -531,6 +729,14 @@ namespace Volt
 									break;
 								}
 
+								case Wire::ComponentRegistry::PropertyType::Quaternion:
+								{
+									gem::quat input;
+									VT_DESERIALIZE_PROPERTY(data, input, propNode, gem::quat(1.f, 0.f, 0.f, 0.f));
+									memcpy_s(&componentData[it->offset], sizeof(gem::quat), &input, sizeof(gem::quat));
+									break;
+								}
+
 								case Wire::ComponentRegistry::PropertyType::String:
 								{
 									std::string input;
@@ -644,6 +850,7 @@ namespace Volt
 										case Wire::ComponentRegistry::PropertyType::Vector2: DeserializeVector<gem::vec2>(componentData, it->offset, propNode["data"], 0); break;
 										case Wire::ComponentRegistry::PropertyType::Vector3: DeserializeVector<gem::vec3>(componentData, it->offset, propNode["data"], 0); break;
 										case Wire::ComponentRegistry::PropertyType::Vector4: DeserializeVector<gem::vec4>(componentData, it->offset, propNode["data"], 0); break;
+										case Wire::ComponentRegistry::PropertyType::Quaternion: DeserializeVector<gem::quat>(componentData, it->offset, propNode["data"], gem::quat{ 1.f, 0.f, 0.f, 0.f }); break;
 										case Wire::ComponentRegistry::PropertyType::String: DeserializeVector<std::string>(componentData, it->offset, propNode["data"], "Null"); break;
 										case Wire::ComponentRegistry::PropertyType::Int64: DeserializeVector<int64_t>(componentData, it->offset, propNode["data"], 0); break;
 										case Wire::ComponentRegistry::PropertyType::UInt64: DeserializeVector<uint64_t>(componentData, it->offset, propNode["data"], 0); break;
@@ -666,21 +873,20 @@ namespace Volt
 			}
 		}
 
-		if (registry.HasComponent<RelationshipComponent>(entityId))
+		YAML::Node graphNode = entityNode["Graph"];
+		if (graphNode && registry.HasComponent<VisualScriptingComponent>(entityId))
 		{
-			VT_PROFILE_SCOPE("Sort ID")
-			auto& relComp = registry.GetComponent<RelationshipComponent>(entityId);
-			if (relComp.sortId == 0)
-			{
-				relComp.sortId = entityId;
-			}
+			auto& vsComp = registry.GetComponent<VisualScriptingComponent>(entityId);
+			vsComp.graph = CreateRef<GraphKey::Graph>(entityId);
+
+			DeserializeGraph(vsComp.graph, graphNode);
 		}
 
 		if (registry.HasComponent<PrefabComponent>(entityId))
 		{
 			VT_PROFILE_SCOPE("Prefab Version Check")
 
-			auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
+				auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
 			const uint32_t prefabVersion = Prefab::GetPrefabVersion(prefabComp.prefabAsset);
 			const bool isParent = Prefab::IsParentInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
 

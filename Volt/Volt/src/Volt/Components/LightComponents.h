@@ -25,7 +25,6 @@ namespace Volt
 		PROPERTY(Name = Intensity) float intensity = 1.f;
 		PROPERTY(Name = Color, SpecialType = Color) gem::vec3 color = { 1.f, 1.f, 1.f };
 		PROPERTY(Name = Cast Shadows) bool castShadows = true;
-		PROPERTY(Name = Shadow Bias) float shadowBias = 0.00001f;
 
 		CREATE_COMPONENT_GUID("{EC5514FF-9DE7-44CA-BCD9-8A9F08883F59}"_guid)
 	}), DirectionalLightComponent);

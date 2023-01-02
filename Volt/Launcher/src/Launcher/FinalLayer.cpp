@@ -65,7 +65,7 @@ bool FinalLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	Volt::Application::Get().GetWindow().GetSwapchain().Bind();
 
-	auto context = Volt::GraphicsContext::GetContext();
+	auto context = Volt::GraphicsContext::GetImmediateContext();
 
 	if (!myDebugTargets)
 	{

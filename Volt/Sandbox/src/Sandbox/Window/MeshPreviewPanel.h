@@ -10,6 +10,7 @@ namespace Volt
 	class SceneRenderer;
 	class Scene;
 	class Mesh;
+	class Material;
 }
 
 class EditorCameraController;
@@ -38,6 +39,7 @@ private:
 
 	Ref<Volt::Scene> myScene;
 	Ref<Volt::SceneRenderer> mySceneRenderer;
+	Ref<Volt::Material> myGridMaterial;
 
 	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
 	gem::vec2 myViewportSize = { 1280.f, 720.f };

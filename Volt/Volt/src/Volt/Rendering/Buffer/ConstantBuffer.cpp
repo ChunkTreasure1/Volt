@@ -1,8 +1,14 @@
 #include "vtpch.h"
 #include "ConstantBuffer.h"
 
-#include "Volt/Rendering/Renderer.h"
 #include "Volt/Core/Buffer.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
+
+#include "Volt/Rendering/Renderer.h"
+
+#include "Volt/Utility/DirectXUtils.h"
+
+#include <d3d11.h>
 
 namespace Volt
 {
@@ -38,31 +44,25 @@ namespace Volt
 			Buffer dataBuffer{ aSize };
 			dataBuffer.Copy(aData, aSize);
 
-			Renderer::SubmitResourceChange([data = dataBuffer, buffer = myBuffer]() 
+			Renderer::SubmitResourceChange([this, data = dataBuffer]() 
 				{
-					auto context = GraphicsContext::GetContext();
-
-					D3D11_MAPPED_SUBRESOURCE subresource;
-					VT_DX_CHECK(context->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
-					memcpy(subresource.pData, data.As<void>(), data.GetSize());
-					context->Unmap(buffer.Get(), 0);
+					void* mappedData = RenderCommand::ConstantBuffer_Map(this);
+					memcpy(mappedData, data.As<void>(), data.GetSize());
+					RenderCommand::ConstantBuffer_Unmap(this);
 				});
 		}
 		else
 		{
-			auto context = GraphicsContext::GetContext();
-
-			D3D11_MAPPED_SUBRESOURCE subresource;
-			VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
-			memcpy(subresource.pData, aData, aSize);
-			context->Unmap(myBuffer.Get(), 0);
+			void* mappedData = RenderCommand::ConstantBuffer_Map(this);
+			memcpy(mappedData, aData, aSize);
+			RenderCommand::ConstantBuffer_Unmap(this);
 		}
 
 	}
 
 	void ConstantBuffer::Bind(uint32_t aSlot)
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
 		{
@@ -102,8 +102,7 @@ namespace Volt
 
 	void ConstantBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetContext();
-		context->Unmap(myBuffer.Get(), 0);
+		RenderCommand::ConstantBuffer_Unmap(this);
 	}
 
 	Ref<ConstantBuffer> ConstantBuffer::Create(const void* aData, uint32_t aSize, ShaderStage aUsageStage)

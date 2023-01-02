@@ -98,7 +98,7 @@ bool EditorCameraController::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent
 void EditorCameraController::DisableMouse()
 {
 	Volt::Application::Get().GetWindow().ShowCursor(false);
-	//UI::SetInputEnabled(false);
+	UI::SetInputEnabled(false);
 }
 
 void EditorCameraController::EnableMouse()
@@ -161,7 +161,7 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		m_isControllable = true;
 		m_cameraMode = Mode::Fly;
 
-		//DisableMouse();
+		DisableMouse();
 
 		const float yawSign = m_camera->GetUp().y < 0 ? -1.0f : 1.0f;
 
@@ -205,18 +205,18 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 		if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_LEFT))
 		{
-			//DisableMouse();
+			DisableMouse();
 			ArcBall(deltaPos);
 		}
 		else if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_MIDDLE))
 		{
-			//DisableMouse();
+			DisableMouse();
 			m_focalPoint += -1.f * m_camera->GetRight() * deltaPos.x;
 			m_focalPoint += m_camera->GetUp() * deltaPos.y;
 		}
 		else if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT))
 		{
-			//DisableMouse();
+			DisableMouse();
 			ArcZoom(deltaPos.x + deltaPos.y);
 		}
 		else

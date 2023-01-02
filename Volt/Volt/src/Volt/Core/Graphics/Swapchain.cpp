@@ -7,6 +7,8 @@
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Core/Profiling.h"
 
+#include <d3d11.h>
+
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -18,12 +20,6 @@ namespace Volt
 		: myGraphicsContext(aGraphicsContext), myHeight(1), myWidth(1)
 	{
 		myWindowHandle = glfwGetWin32Window(aWindow);
-		myViewport.TopLeftX = 0.f;
-		myViewport.TopLeftY = 0.f;
-		myViewport.Width = (float)myWidth;
-		myViewport.Height = (float)myHeight;
-		myViewport.MinDepth = 0.f;
-		myViewport.MaxDepth = 1.f;
 	}
 
 	Swapchain::~Swapchain()
@@ -129,31 +125,12 @@ namespace Volt
 		backBuffer->Release();
 
 		Bind();
-
-		myViewport.TopLeftX = 0.f;
-		myViewport.TopLeftY = 0.f;
-		myViewport.Width = (float)myWidth;
-		myViewport.Height = (float)myHeight;
-		myViewport.MinDepth = 0.f;
-		myViewport.MaxDepth = 1.f;
 	}
 
 	void Swapchain::BeginFrame()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
-#ifdef VT_PROFILE_GPU
-		for (auto& [name, c] : Renderer::GetProfilingData())
-		{
-			c.lastFrame = c.currentFrame;
-			c.currentFrame = (c.currentFrame + 1) % 2;
-			const uint32_t currentFrame = c.currentFrame;
-
-			context->Begin(c.disjointQuery[currentFrame].Get());
-			context->End(c.beginFrameQuery[currentFrame].Get());
-		}
-
-#endif
 		const float color[4] = { 0.f, 0.f, 0.f, 1.f };
 		context->ClearRenderTargetView(myRenderTarget.Get(), color);
 	}
@@ -164,26 +141,22 @@ namespace Volt
 		VT_DX_CHECK(mySwapchain->Present(aUseVSync ? 1 : 0, 0));
 
 		Bind();
-
-		auto context = GraphicsContext::GetContext();
-
-#ifdef VT_PROFILE_GPU
-		for (auto& [name, c] : Renderer::GetProfilingData())
-		{
-			const uint32_t currentFrame = c.currentFrame;
-			context->End(c.endFrameQuery[currentFrame].Get());
-			context->End(c.disjointQuery[currentFrame].Get());
-		}
-
-		CalculateFrameGPUTimes();
-#endif
 	}
 
 	void Swapchain::Bind() const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
+
+		D3D11_VIEWPORT viewport{};
+		viewport.Width = (float)myWidth;
+		viewport.Height = (float)myHeight;
+		viewport.MaxDepth = 1.f;
+		viewport.MinDepth = 0.f;
+		viewport.TopLeftY = 0.f;
+		viewport.TopLeftX = 0.f;
+
 		context->OMSetRenderTargets(1, myRenderTarget.GetAddressOf(), nullptr);
-		context->RSSetViewports(1, &myViewport);
+		context->RSSetViewports(1, &viewport);
 	}
 
 	void Swapchain::Resize(uint32_t width, uint32_t height, bool aFullscreen)
@@ -194,94 +167,5 @@ namespace Volt
 	Ref<Swapchain> Swapchain::Create(GLFWwindow* aWindow, Ref<GraphicsContext> aGraphicsContext)
 	{
 		return CreateScope<Swapchain>(aWindow, aGraphicsContext);
-	}
-
-	void Swapchain::CalculateFrameGPUTimes()
-	{
-		VT_PROFILE_FUNCTION();
-
-		using namespace std::chrono_literals;
-
-		auto context = GraphicsContext::GetContext();
-
-		for (auto& [name, profilingData] : Renderer::GetProfilingData())
-		{
-			const uint32_t lastFrame = profilingData.lastFrame;
-			{
-				VT_PROFILE_SCOPE("Wait for GPU");
-				while (context->GetData(profilingData.disjointQuery.at(lastFrame).Get(), nullptr, 0, 0) == S_FALSE)
-				{
-				}
-			}
-
-			D3D10_QUERY_DATA_TIMESTAMP_DISJOINT disjointData{};
-			context->GetData(profilingData.disjointQuery.at(lastFrame).Get(), &disjointData, sizeof(disjointData), 0);
-			if (disjointData.Disjoint)
-			{
-				return;
-			}
-
-			if (myFirstFrame)
-			{
-				myFirstFrame = false;
-				return;
-			}
-
-			profilingData.sectionPipelineDatas.at(lastFrame).clear();
-			profilingData.sectionTimes.at(lastFrame).clear();
-
-			auto& frameTimeQueries = profilingData.sectionTimeQueries.at(lastFrame);
-			auto& framePipelineQueries = profilingData.sectionPipelineQueries.at(lastFrame);
-
-			uint64_t beginTimestamp;
-			context->GetData(profilingData.beginFrameQuery.at(lastFrame).Get(), &beginTimestamp, sizeof(uint64_t), 0);
-			uint64_t lastTimestamp = beginTimestamp;
-
-			for (const auto& sectionName : profilingData.sectionNames.at(lastFrame))
-			{
-				uint64_t timestamp;
-				context->GetData(frameTimeQueries.at(sectionName).Get(), &timestamp, sizeof(uint64_t), 0);
-
-				float sectionTime = float(timestamp - lastTimestamp) / float(disjointData.Frequency) * 1000.f;
-				profilingData.sectionTimes.at(lastFrame).emplace_back(sectionTime);
-				profilingData.sectionTotalAverageTimes[sectionName] += sectionTime;
-				lastTimestamp = timestamp;
-			}
-
-			for (const auto& sectionName : profilingData.sectionNames.at(lastFrame))
-			{
-				D3D11_QUERY_DATA_PIPELINE_STATISTICS stats{};
-				context->GetData(framePipelineQueries.at(sectionName).Get(), &stats, sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS), 0);
-
-				auto& pipelineData = profilingData.sectionPipelineDatas.at(lastFrame)[sectionName];
-				pipelineData.vertexCount = stats.IAVertices;
-				pipelineData.primitiveCount = stats.IAPrimitives;
-				pipelineData.vsInvocations = stats.VSInvocations;
-				pipelineData.psInvocations = stats.PSInvocations;
-			}
-
-			uint64_t endTimestamp;
-			context->GetData(profilingData.endFrameQuery.at(lastFrame).Get(), &endTimestamp, sizeof(uint64_t), 0);
-			profilingData.frameGPUTime.at(lastFrame) = float(endTimestamp - beginTimestamp) / float(disjointData.Frequency) * 1000.f;
-			profilingData.frameTotalAverageGPUTime += profilingData.frameGPUTime.at(lastFrame);
-
-			++myAverageGPUTimingFrames;
-			if ((float)glfwGetTime() > myAverageGPUTimingStart + 0.5f)
-			{
-				profilingData.frameAverageGPUTime = profilingData.frameTotalAverageGPUTime / myAverageGPUTimingFrames;
-				profilingData.frameTotalAverageGPUTime = 0.f;
-
-				for (const auto& sectionName : profilingData.sectionNames.at(lastFrame))
-				{
-					profilingData.sectionAverageTimes[sectionName] = profilingData.sectionTotalAverageTimes.at(sectionName) / myAverageGPUTimingFrames;
-					profilingData.sectionTotalAverageTimes.at(sectionName) = 0.f;
-				}
-
-				myAverageGPUTimingFrames = 0;
-				myAverageGPUTimingStart = (float)glfwGetTime();
-			}
-
-			profilingData.sectionNames.at(lastFrame).clear();
-		}
 	}
 }

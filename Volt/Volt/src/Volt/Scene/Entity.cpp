@@ -4,11 +4,13 @@
 
 #include "Volt/Components/Components.h"
 #include "Volt/Components/PhysicsComponents.h"
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Core/Profiling.h"
+
+#include <GraphKey/Graph.h>
 
 namespace Volt
 {
@@ -48,7 +50,7 @@ namespace Volt
 
 		auto& scriptComp = GetComponent<ScriptComponent>();
 
-		Ref<ScriptBase> scriptInstance = ScriptRegistry::Create(scriptName, Entity{ myId, myScene });
+		Ref<Script> scriptInstance = ScriptRegistry::Create(scriptName, Entity{ myId, myScene });
 		scriptComp.scripts.emplace_back(scriptInstance->GetGUID());
 		ScriptEngine::RegisterToEntity(scriptInstance, myId);
 
@@ -77,12 +79,30 @@ namespace Volt
 		auto it = std::find(scriptComp.scripts.begin(), scriptComp.scripts.end(), scriptGUID);
 		scriptComp.scripts.erase(it);
 
-		Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(myId, scriptGUID);
+		Ref<Script> scriptInstance = ScriptEngine::GetScript(myId, scriptGUID);
 		scriptInstance->OnDetach();
 		ScriptEngine::UnregisterFromEntity(scriptGUID, myId);
 	}
 
-	const gem::vec3 Entity::GetPosition() const
+	const std::string Entity::GetTag()
+	{
+		if (HasComponent<TagComponent>())
+		{
+			return GetComponent<TagComponent>().tag;
+		}
+
+		return {};
+	}
+
+	void Entity::SetTag(const std::string& tag)
+	{
+		if (HasComponent<TagComponent>())
+		{
+			GetComponent<TagComponent>().tag = tag;
+		}
+	}
+
+	const gem::vec3 Entity::GetLocalPosition() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -93,7 +113,7 @@ namespace Volt
 		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const gem::vec3 Entity::GetRotation() const
+	const gem::quat Entity::GetLocalRotation() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -104,7 +124,7 @@ namespace Volt
 		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const gem::vec3 Entity::GetScale() const
+	const gem::vec3 Entity::GetLocalScale() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -115,19 +135,19 @@ namespace Volt
 		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const gem::vec3 Entity::GetWorldPosition() const
+	const gem::vec3 Entity::GetPosition() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.position;
 	}
 
-	const gem::vec3 Entity::GetWorldRotation() const
+	const gem::quat Entity::GetRotation() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.rotation;
 	}
 
-	const gem::vec3 Entity::GetWorldScale() const
+	const gem::vec3 Entity::GetScale() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.scale;
@@ -139,7 +159,7 @@ namespace Volt
 
 		for (auto& id : GetComponent<Volt::RelationshipComponent>().Children)
 		{
-			children.push_back(Volt::Entity{ id, myScene });
+			children.emplace_back(id, myScene);
 		}
 
 		return children;
@@ -155,7 +175,7 @@ namespace Volt
 		return Physics::GetScene()->GetActor(*this);
 	}
 
-	void Entity::SetWorldPosition(const gem::vec3& position, bool updatePhysics)
+	void Entity::SetPosition(const gem::vec3& position, bool updatePhysics)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -173,10 +193,10 @@ namespace Volt
 		gem::vec3 t, r, s;
 		gem::decompose(transform, t, r, s);
 
-		SetPosition(t, updatePhysics);
+		SetLocalPosition(t, updatePhysics);
 	}
 
-	void Entity::SetPosition(const gem::vec3& position, bool updatePhysics)
+	void Entity::SetLocalPosition(const gem::vec3& position, bool updatePhysics)
 	{
 		myScene->GetRegistry().GetComponent<TransformComponent>(myId).position = position;
 		if (myScene->GetRegistry().HasComponent<RigidbodyComponent>(myId) && Physics::GetScene() && updatePhysics)
@@ -184,12 +204,12 @@ namespace Volt
 			auto actor = Physics::GetScene()->GetActor(*this);
 			if (actor)
 			{
-				actor->SetPosition(GetWorldPosition());
+				actor->SetPosition(GetPosition());
 			}
 		}
 	}
 
-	void Entity::SetRotation(const gem::vec3& rotation)
+	void Entity::SetLocalRotation(const gem::quat& rotation)
 	{
 		myScene->GetRegistry().GetComponent<TransformComponent>(myId).rotation = rotation;
 		if (myScene->GetRegistry().HasComponent<RigidbodyComponent>(myId))
@@ -197,17 +217,17 @@ namespace Volt
 			auto actor = Physics::GetScene()->GetActor(*this);
 			if (actor)
 			{
-				actor->SetRotation(GetWorldRotation());
+				actor->SetRotation(GetRotation());
 			}
 		}
 	}
 
-	void Entity::SetScale(const gem::vec3& scale)
+	void Entity::SetLocalScale(const gem::vec3& scale)
 	{
 		myScene->GetRegistry().GetComponent<TransformComponent>(myId).scale = scale;
 	}
 
-	const gem::mat4 Entity::GetTransform() const
+	const gem::mat4 Entity::GetLocalTransform() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -218,12 +238,12 @@ namespace Volt
 		return gem::mat4{ 1.f };
 	}
 
-	const gem::mat4 Entity::GetWorldTransform() const
+	const gem::mat4 Entity::GetTransform() const
 	{
 		return myScene->GetWorldSpaceTransform(*this);
 	}
 
-	const gem::vec3 Entity::GetForward() const
+	const gem::vec3 Entity::GetLocalForward() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -234,7 +254,7 @@ namespace Volt
 		return gem::vec3{ 0.f, 0.f, 1.f };
 	}
 
-	const gem::vec3 Entity::GetRight() const
+	const gem::vec3 Entity::GetLocalRight() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -245,7 +265,7 @@ namespace Volt
 		return gem::vec3{ 1.f, 0.f, 0.f };
 	}
 
-	const gem::vec3 Entity::GetUp() const
+	const gem::vec3 Entity::GetLocalUp() const
 	{
 		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
 		{
@@ -256,17 +276,17 @@ namespace Volt
 		return gem::vec3{ 0.f, 1.f, 0.f };
 	}
 
-	const gem::vec3 Entity::GetWorldForward() const
+	const gem::vec3 Entity::GetForward() const
 	{
 		return myScene->GetWorldForward(*this);
 	}
 
-	const gem::vec3 Entity::GetWorldRight() const
+	const gem::vec3 Entity::GetRight() const
 	{
 		return myScene->GetWorldRight(*this);
 	}
 
-	const gem::vec3 Entity::GetWorldUp() const
+	const gem::vec3 Entity::GetUp() const
 	{
 		return myScene->GetWorldUp(*this);
 	}
@@ -302,6 +322,23 @@ namespace Volt
 			if (std::find(aExcludedComponents.begin(), aExcludedComponents.end(), guid) != aExcludedComponents.end())
 			{
 				continue;
+			}
+
+			if (guid == VisualScriptingComponent::comp_guid && pool->HasComponent(aSrcEntity))
+			{
+				if (!aTargetRegistry.HasComponent(guid, aTargetEntity))
+				{
+					aTargetRegistry.AddComponent(guid, aTargetEntity);
+				}
+
+				VisualScriptingComponent* srcComp = (VisualScriptingComponent*)pool->GetComponent(aSrcEntity);
+				VisualScriptingComponent* otherComponent = (VisualScriptingComponent*)aTargetRegistry.GetComponentPtr(guid, aTargetEntity);
+			
+				if (srcComp->graph)
+				{
+					otherComponent->graph = CreateRef<GraphKey::Graph>();
+					GraphKey::Graph::Copy(srcComp->graph, otherComponent->graph);
+				}
 			}
 
 			if (guid == ScriptComponent::comp_guid && pool->HasComponent(aSrcEntity))
@@ -347,6 +384,7 @@ namespace Volt
 							case Wire::ComponentRegistry::PropertyType::Vector2: (*(gem::vec2*)&otherComponent[prop.offset]) = (*(gem::vec2*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: (*(gem::quat*)&otherComponent[prop.offset]) = (*(gem::quat*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::String: (*(std::string*)&otherComponent[prop.offset]) = (*(std::string*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::Int64: (*(int64_t*)&otherComponent[prop.offset]) = (*(int64_t*)&thisComponent[prop.offset]); break;
 							case Wire::ComponentRegistry::PropertyType::UInt64: (*(uint64_t*)&otherComponent[prop.offset]) = (*(uint64_t*)&thisComponent[prop.offset]); break;
@@ -374,6 +412,7 @@ namespace Volt
 									case Wire::ComponentRegistry::PropertyType::Vector2: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::Vector3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::Vector4: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
+									case Wire::ComponentRegistry::PropertyType::Quaternion: (*(std::vector<gem::quat>*) & otherComponent[prop.offset]) = (*(std::vector<gem::quat>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::String: (*(std::vector<std::string>*) & otherComponent[prop.offset]) = (*(std::vector<std::string>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::Int64: (*(std::vector<int64_t>*) & otherComponent[prop.offset]) = (*(std::vector<int64_t>*) & thisComponent[prop.offset]); break;
 									case Wire::ComponentRegistry::PropertyType::UInt64: (*(std::vector<uint64_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint64_t>*) & thisComponent[prop.offset]); break;

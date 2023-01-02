@@ -77,7 +77,7 @@ namespace gem
 	vec<L, T> normalize(const vec<L, T>& x)
 	{
 		assert(std::numeric_limits<T>::is_iec559 && "only accepts floating-point inputs");
-		return x * inversesqrt(dot(x, x));;
+		return x * inversesqrt(dot(x, x));
 	};
 
 	template<typename T>

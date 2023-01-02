@@ -1,0 +1,6 @@
+C:\Users\casper.bengtsson3\Documents\GitHub\Volt\Build\Scripts\Intermediates\Debug\Volt-ScriptCore.csproj.AssemblyReference.cache
+C:\Users\casper.bengtsson3\Documents\GitHub\Volt\Build\Scripts\Intermediates\Debug\Volt-ScriptCore.csproj.CoreCompileInputs.cache
+C:\Users\casper.bengtsson3\Documents\GitHub\Volt\Build\Scripts\Intermediates\Debug\Volt-ScriptCore.dll
+C:\Users\casper.bengtsson3\Documents\GitHub\Volt\Build\Scripts\Intermediates\Debug\Volt-ScriptCore.pdb
+C:\Users\casper.bengtsson3\Documents\GitHub\Volt\Build\Scripts\Volt-ScriptCore.dll
+C:\Users\casper.bengtsson3\Documents\GitHub\Volt\Build\Scripts\Volt-ScriptCore.pdb

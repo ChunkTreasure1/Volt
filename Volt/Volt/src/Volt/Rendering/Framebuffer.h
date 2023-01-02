@@ -51,7 +51,6 @@ namespace Volt
 		void Invalidate();
 		void Bind();
 		void Unbind();
-
 		void Clear();
 
 		void Resize(uint32_t width, uint32_t height);
