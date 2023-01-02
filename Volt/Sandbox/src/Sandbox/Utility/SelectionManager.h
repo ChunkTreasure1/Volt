@@ -12,11 +12,16 @@ public:
 	static bool IsAnySelected();
 	static bool IsSelected(Wire::EntityId entity);
 
+	inline static int32_t& GetFirstSelectedRow() { return myFirstSelectedRow; }
+	inline static int32_t& GetLastSelectedRow() { return myLastSelectedRow; }
+
 	inline static const size_t GetSelectedCount() { return myEntities.size(); }
 	inline static const std::vector<Wire::EntityId>& GetSelectedEntities() { return myEntities; }
 
 private:
 	SelectionManager() = delete;
 
+	inline static int32_t myFirstSelectedRow = -1;
+	inline static int32_t myLastSelectedRow = -1;
 	inline static std::vector<Wire::EntityId> myEntities;
 };

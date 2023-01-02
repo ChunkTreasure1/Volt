@@ -176,6 +176,13 @@ namespace AssetBrowser
 					EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
 				}
 
+
+				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && hovered && !mySelectionManager->IsSelected(this))
+				{
+					mySelectionManager->DeselectAll();
+					mySelectionManager->Select(this);
+				}
+
 				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 				if (mouseDown && hovered)
 				{

@@ -119,8 +119,6 @@ bool GameLayer::OnGameStateChanged(Volt::OnGameStateChangedEvent& e)
 	return false;
 }
 
-VT_OPTIMIZE_OFF
-
 void GameLayer::TransitionToNewScene()
 {
 	myScene->OnRuntimeEnd();
@@ -143,5 +141,3 @@ void GameLayer::TransitionToNewScene()
 	myIsLoadingScene = true;
 	myShouldLoadNewScene = false;
 }
-
-VT_OPTIMIZE_ON
