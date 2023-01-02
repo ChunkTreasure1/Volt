@@ -26,7 +26,7 @@ void VTCinemaPanel::UpdateContent()
 
 	if (!Volt::Application::Get().IsRuntime())
 	{
-		UpdateSelectedCamera();
+		//UpdateSelectedCamera();
 	}
 }
 
@@ -77,8 +77,10 @@ void VTCinemaPanel::UpdateCameraProperties()
 	if (UI::BeginProperties("Core Settings"))
 	{
 		auto& enumData = Wire::ComponentRegistry::EnumData();
+
 		UI::ComboProperty("Camera Type", *(int32_t*)&vtCamComp.cameraType, enumData.at("eCameraType"));
 		UI::ComboProperty("Blend Type", *(int32_t*)&vtCamComp.blendType, enumData.at("eBlendType"));
+
 		if (vtCamComp.blendType != Volt::eBlendType::None)
 		{
 			UI::Property("Blend Time", vtCamComp.blendTime, "Time it takes blending from this camera to another");

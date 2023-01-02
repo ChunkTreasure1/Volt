@@ -4,6 +4,7 @@
 #include <Volt/Components/Components.h>
 #include <Volt/Components/VTCinemaComponents.h>
 #include <Volt/Input/Input.h>
+#include <Volt/Utility/UIUtility.h>
 
 VT_REGISTER_SCRIPT(VTCameraController);
 
@@ -14,6 +15,13 @@ VTCameraController::VTCameraController(const Volt::Entity& aEntity)
 
 void VTCameraController::OnAwake()
 {
+	auto& vtCamComp = myEntity.GetComponent<Volt::VTCamComponent>();
+
+	if (vtCamComp.cameraType == Volt::eCameraType::ThirdPerson) 
+	{
+		Volt::Application::Get().GetWindow().ShowCursor(false);
+		UI::SetInputEnabled(false);
+	}
 }
 
 void VTCameraController::OnUpdate(float aDeltaTime)
@@ -80,8 +88,8 @@ void VTCameraController::TPSController(float aDeltaTime)
 	if (target) 
 	{
 		const gem::vec3 focalPoint = target.GetPosition() + vtCamComp.offset;
-		myEntity.SetPosition(focalPoint - myEntity.GetForward() * vtCamComp.focalDistance);
 		myEntity.SetRotation(myEntity.GetRotation() + gem::radians(gem::vec3{myPitchDelta, myYawDelta, 0.f}));
+		myEntity.SetPosition(focalPoint - myEntity.GetForward() * vtCamComp.focalDistance);
 	}
 
 	myLastMousePos = mousePos;

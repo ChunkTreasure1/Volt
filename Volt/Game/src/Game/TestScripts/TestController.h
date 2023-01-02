@@ -16,6 +16,9 @@ public:
 
 private:
 
+	Volt::Entity myLookCamera = Volt::Entity{ 0,nullptr };
+	Volt::Entity myAimCamera = Volt::Entity{ 0,nullptr };
+
 	bool myShouldAim = false;
 	bool myIsAiming = false;
 

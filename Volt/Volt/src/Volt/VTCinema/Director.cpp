@@ -33,10 +33,12 @@ void Director::OnAwake()
 
 	if (!myActiveCamera)
 	{
-		myActiveCamera = myVTCams[0];
+		if (!myVTCams.empty()) 
+		{
+			myActiveCamera = myVTCams[0];
+			myActiveCamera.GetComponent<Volt::CameraComponent>().priority = 1;
+		}
 	}
-
-	myActiveCamera.GetComponent<Volt::CameraComponent>().priority = 1;
 }
 
 void Director::OnUpdate(float aDeltaTime)

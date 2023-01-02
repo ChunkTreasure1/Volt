@@ -4,6 +4,7 @@
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/VTCinema/Director.h>
+#include <Volt/Components/VTCinemaComponents.h>
 
 VT_REGISTER_SCRIPT(TestController)
 
@@ -24,13 +25,19 @@ void TestController::DoCameraSequence()
 			myCamIndex = 0;
 		}
 	}
-
 }
 
 void TestController::OnAwake()
 {
+	Volt::Entity aimCam = Volt::Entity{ myEntity.GetComponent<Volt::TestControllerComponent>().AimCamera, myEntity.GetScene() };
+
+	if (aimCam)
+	{
+		myLookCamera = aimCam;
+	}
+
 	myCamIndex = 0;
-	myMoveSpeed = 300.f;
+	myMoveSpeed = 700.f;
 }
 
 void TestController::OnUpdate(float aDeltaTime)
@@ -42,22 +49,26 @@ void TestController::OnUpdate(float aDeltaTime)
 
 	if (Volt::Input::IsKeyDown(VT_KEY_W)) 
 	{
-		myEntity.SetPosition(myEntity.GetPosition() + myEntity.GetForward() * myMoveSpeed * aDeltaTime);
+		gem::vec3 walkDir = { myLookCamera.GetForward().x, 0, myLookCamera.GetForward().z };
+		myEntity.SetPosition(myEntity.GetPosition() + gem::normalize(walkDir) * myMoveSpeed * aDeltaTime);
 	}
 
 	if (Volt::Input::IsKeyDown(VT_KEY_S))
 	{
-		myEntity.SetPosition(myEntity.GetPosition() - myEntity.GetForward() * myMoveSpeed * aDeltaTime);
+		gem::vec3 walkDir = { myLookCamera.GetForward().x, 0, myLookCamera.GetForward().z };
+		myEntity.SetPosition(myEntity.GetPosition() - gem::normalize(walkDir) * myMoveSpeed * aDeltaTime);
 	}
 
 	if (Volt::Input::IsKeyDown(VT_KEY_D))
 	{
-		myEntity.SetPosition(myEntity.GetPosition() + myEntity.GetRight() * myMoveSpeed * aDeltaTime);
+		gem::vec3 walkDir = { myLookCamera.GetRight().x, 0, myLookCamera.GetRight().z };
+		myEntity.SetPosition(myEntity.GetPosition() + gem::normalize(walkDir) * myMoveSpeed * aDeltaTime);
 	}
 
 	if (Volt::Input::IsKeyDown(VT_KEY_A))
 	{
-		myEntity.SetPosition(myEntity.GetPosition() - myEntity.GetRight() * myMoveSpeed * aDeltaTime);
+		gem::vec3 walkDir = { myLookCamera.GetRight().x, 0, myLookCamera.GetRight().z };
+		myEntity.SetPosition(myEntity.GetPosition() - gem::normalize(walkDir) * myMoveSpeed * aDeltaTime);
 	}
 
 	if (Volt::Input::IsKeyDown(VT_KEY_B))
@@ -75,13 +86,13 @@ void TestController::OnUpdate(float aDeltaTime)
 		myCameraSequenceOn = true;
 	}
 
-	//if (Volt::Input::IsMouseButtonPressed(1))
-	//{
-	//	Director::Get().SetActiveCamera(0);
-	//}
-	//else
-	//{
-	//	Director::Get().SetActiveCamera(1);
-	//}
+	if (Volt::Input::IsMouseButtonPressed(1))
+	{
+		Director::Get().SetActiveCamera(0);
+	}
+	else
+	{
+		Director::Get().SetActiveCamera(1);
+	}
 
 }
