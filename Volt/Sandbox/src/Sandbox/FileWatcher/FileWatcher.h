@@ -1,52 +1,23 @@
 #pragma once
 
-#include <mutex>
-#include <thread>
-#include <filesystem>
-#include <queue>
+#include <efsw/efsw.hpp>
 
-enum class FileStatus
-{
-	Added,
-	Removed,
-	Modified,
-	Moved
-};
-
-struct FileChangedData
-{
-	FileStatus status;
-	std::filesystem::path filePath;
-	std::filesystem::file_time_type lastWriteTime;
-};
-
+class FileListener;
 class FileWatcher
 {
 public:
-	FileWatcher(std::chrono::duration<int32_t, std::milli> threadDelay);
+	FileWatcher();
 	~FileWatcher();
 
-	void WatchFolder(const std::filesystem::path& pathToFolder);
-	void WatchFile(const std::filesystem::path& pathToFile);
+	void AddWatch(const std::filesystem::path& path, bool recursive = true);
+	void AddCallback(efsw::Actions::Action action, std::function<void(const std::filesystem::path, const std::filesystem::path)>&& callback);
 
-	inline const bool AnyFileChanged() const { return !myChangedFiles.empty(); }
-	const FileChangedData QueryChangedFile();
-
+	inline static FileWatcher& Get() { return *myInstance; }
 private:
-	void AddPathToWatch(const std::filesystem::path& path);
-	void AddChangedFile(const FileChangedData& changedFile);
-	
-	void Thread_QueryFileChanges();
+	inline static FileWatcher* myInstance = nullptr;
 
-	std::queue<FileChangedData> myChangedFiles;
-	std::chrono::duration<int32_t, std::milli> myThreadDelay;
+	Scope<efsw::FileWatcher> myFileWatcher;
+	Scope<FileListener> myFileListener;
 
-	std::vector<std::filesystem::path> myPathsToWatch;
-	std::unordered_map<std::filesystem::path, std::filesystem::file_time_type> myWatchedPathsTimes;
-
-	std::thread myWatcherThread;
-	std::mutex myChangedFilesMutex;
-	std::atomic_bool myIsRunning = false;
-
-	std::filesystem::path myWorkingDirectory;
+	std::vector<efsw::WatchID> myWatchIds;
 };

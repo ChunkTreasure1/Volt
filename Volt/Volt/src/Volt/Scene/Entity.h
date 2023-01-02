@@ -35,6 +35,9 @@ namespace Volt
 		void RemoveScript(const std::string& scriptName);
 		void RemoveScript(WireGUID scriptGUID);
 
+		const std::string GetTag();
+		void SetTag(const std::string& tag);
+
 		const gem::mat4 GetTransform() const;
 		const gem::mat4 GetLocalTransform() const;
 
@@ -103,7 +106,7 @@ namespace Volt
 		// Duplicated an entire entity tree
 		static Wire::EntityId Duplicate(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity);
 
-		static Volt::Entity GetNullEntity() { return Volt::Entity(0, nullptr); }
+		static Volt::Entity Null() { return Volt::Entity(0, nullptr); }
 
 	private:
 		static Wire::EntityId DuplicateInternal(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aParent);
@@ -134,7 +137,7 @@ namespace Volt
 			return nullptr;
 		}
 
-		ScriptBase* script = ScriptEngine::GetScript(myId, guid).get();
+		Script* script = ScriptEngine::GetScript(myId, guid).get();
 		return reinterpret_cast<T*>(script);
 	}
 

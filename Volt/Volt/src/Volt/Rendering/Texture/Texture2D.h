@@ -18,6 +18,7 @@ namespace Volt
 		const uint32_t GetHeight() const;
 
 		void Bind(uint32_t aSlot) const;
+		void RT_Bind(uint32_t aSlot) const;
 
 		inline const Ref<Image2D> GetImage() const { return myImage; }
 

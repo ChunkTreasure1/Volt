@@ -19,7 +19,7 @@ namespace Volt
 		uint32_t castShadows = 0;
 		gem::mat4 viewProjectionMatrices[6];
 	};
-
+		
 	struct DirectionalLight
 	{
 		gem::vec4 direction = { 0.f, 0.f, 0.f, 0.f };
@@ -30,6 +30,20 @@ namespace Volt
 		uint32_t castShadows;
 		float shadowBias = 0.00001f;
 		uint32_t padding[2];
+	};
+
+	struct VisibleLightIndex
+	{
+		int32_t index;
+		gem::vec3ui padding;
+	};
+	
+	struct LightCullingData
+	{
+		inline static constexpr uint32_t TILE_SIZE = 16;
+
+		gem::vec2ui	tileCount = { 0 };
+		gem::vec2 padding;
 	};
 
 	///// Buffers /////
@@ -88,34 +102,10 @@ namespace Volt
 		float deltaTime = 0.f;
 
 		uint32_t pointLightCount = 0;
-
 		float padding = 0.f;
-	};
 
-	struct GTAOConstants
-	{
-		gem::vec2ui viewportSize;
-		gem::vec2 viewportPixelSize; // .zw == 1.0 / ViewportSize.xy
-
-		gem::vec2 depthUnpackConsts;
-		gem::vec2 cameraTanHalfFov;
-
-		gem::vec2 NDCToViewMul;
-		gem::vec2 NDCToViewAdd;
-
-		gem::vec2 NDCToViewMul_x_PixelSize;
-		float effectRadius; // world (viewspace) maximum size of the shadow
-		float effectFalloffRange;
-
-		float radiusMultiplier;
-		float finalValuePower;
-
-		float sampleDistributionPower;
-		float thinOccluderCompensation;
-		float depthMIPSamplingOffset;
-		int noiseIndex = 0; // frameIndex % 64 if using TAA or 0 otherwise
-
-		gem::vec2 hzbUVFactor;
+		gem::vec2ui tileCount = { 0 };
+		gem::vec2 padding2;
 	};
 
 	struct HZBData

@@ -26,7 +26,7 @@ namespace Volt
 		}
 	}
 
-	void SubMaterial::Bind(bool aBindShader)
+	void SubMaterial::Bind(bool aBindShader, bool aBindTextures)
 	{
 		if (aBindShader)
 		{
@@ -44,9 +44,12 @@ namespace Volt
 			}
 		}
 
-		for (const auto& [binding, texture] : myTextures)
+		if (aBindTextures) // #TODO_Ivar: This is a bit of a hack
 		{
-			texture->Bind(binding);
+			for (const auto& [binding, texture] : myTextures)
+			{
+				texture->Bind(binding);
+			}
 		}
 	}
 
@@ -54,7 +57,7 @@ namespace Volt
 	{
 		if (myMaterialBuffer)
 		{
-			myMaterialBuffer->SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size, deferr);
+			myMaterialBuffer->SetData(myShaderResources.materialBuffer.data.data(), myShaderResources.materialBuffer.size);
 		}
 	}
 

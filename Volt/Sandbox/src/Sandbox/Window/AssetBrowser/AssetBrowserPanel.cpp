@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "AssetBrowserPanel.h"
 
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/EditorUtilities.h"
@@ -25,6 +25,7 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Scene/Scene.h>
+#include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Shader/ShaderRegistry.h>
@@ -71,12 +72,11 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
 
-
-	myDirectories[FileSystem::GetAssetsPath()] = ProcessDirectory(FileSystem::GetAssetsPath(), nullptr);
+	myDirectories[Volt::ProjectManager::GetAssetsPath()] = ProcessDirectory(Volt::ProjectManager::GetAssetsPath(), nullptr);
 	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
 	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myDirectories[FileSystem::GetAssetsPath()].get();
+	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsPath()].get();
 
 	myCurrentDirectory = myAssetsDirectory;
 	GenerateAssetPreviewsInCurrentDirectory();
@@ -142,7 +142,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			UI::ShiftCursor(5.f, 5.f);
 			const auto flags = ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-			bool open = UI::TreeNodeImage(EditorIconLibrary::GetIcon(EditorIcon::Directory), "Assets", flags);
+			bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), "Assets", flags);
 
 			if (ImGui::IsItemClicked())
 			{
@@ -235,11 +235,11 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	if (!myDragDroppedMeshes.empty() && !myIsImporting)
 	{
-		const auto path = myDragDroppedMeshes.back();
+		const auto path = Volt::AssetManager::Get().GetRelativePath(myDragDroppedMeshes.back());
 		myDragDroppedMeshes.pop_back();
 
 		AssetData assetData;
-		assetData.handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+		assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
 		assetData.path = path;
 		assetData.type = Volt::AssetType::MeshSource;
 
@@ -395,7 +395,7 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), entry.path(), myThumbnailSize, myMeshImportData);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData, myMeshToImport);
 					dirData->assets.emplace_back(assetItem);
 				}
 			}
@@ -443,7 +443,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 		UI::ShiftCursor(5.f, 4.f);
 		{
 			UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-			ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Search)), { height - buttonSizeOffset, height - buttonSizeOffset });
+			ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Search)), { height - buttonSizeOffset, height - buttonSizeOffset });
 
 			ImGui::SameLine();
 			UI::ShiftCursor(0.f, -0.5f);
@@ -468,19 +468,19 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			{
 				UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
 
-				if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Reload)), { height - buttonSizeOffset, height - buttonSizeOffset }))
+				if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Reload)), { height - buttonSizeOffset, height - buttonSizeOffset }))
 				{
 					Reload();
 				}
 
 				ImGui::SameLine();
 
-				if (UI::ImageButton("##backButton", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Back)), { height - buttonSizeOffset, height - buttonSizeOffset }))
+				if (UI::ImageButton("##backButton", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Back)), { height - buttonSizeOffset, height - buttonSizeOffset }))
 				{
 					myHasSearchQuery = false;
 					mySearchQuery.clear();
 
-					if (myCurrentDirectory->path != FileSystem::GetAssetsPath() && myCurrentDirectory->path != FileSystem::GetEnginePath())
+					if (myCurrentDirectory->path != Volt::ProjectManager::GetAssetsPath() && myCurrentDirectory->path != FileSystem::GetEnginePath())
 					{
 						myNextDirectory = myCurrentDirectory->parentDirectory;
 
@@ -587,7 +587,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			{
 				{
 					UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-					UI::ImageButton("##filter", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Filter)), { height - buttonSizeOffset, height - buttonSizeOffset });
+					UI::ImageButton("##filter", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Filter)), { height - buttonSizeOffset, height - buttonSizeOffset });
 				}
 
 				if (ImGui::BeginPopupContextItem("filterMenu", ImGuiPopupFlags_MouseButtonLeft))
@@ -627,7 +627,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			{
 				UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
 
-				ImGui::ImageButton(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Settings)), { height - buttonSizeOffset, height - buttonSizeOffset });
+				ImGui::ImageButton(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Settings)), { height - buttonSizeOffset, height - buttonSizeOffset });
 				if (ImGui::BeginPopupContextItem("settingsMenu", ImGuiPopupFlags_MouseButtonLeft))
 				{
 					ImGui::PushItemWidth(100.f);
@@ -660,7 +660,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 
 	const auto flags = (selected ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None) | ImGuiTreeNodeFlags_OpenOnArrow;
 
-	const bool open = UI::TreeNodeImage(EditorIconLibrary::GetIcon(EditorIcon::Directory), id, flags);
+	const bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), id, flags);
 	if (ImGui::IsItemClicked() && !selected)
 	{
 		mySelectionManager->Select(dirData.get());
@@ -791,68 +791,73 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 	if (ImGui::BeginPopupContextWindow("CreateMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_NoOpenOverItems))
 	{
-		ImGui::SetCursorPosX(300.f);
+		ImGui::SetCursorPosX(150.f);
 		ImGui::SetCursorPosX(ImGui::GetStyle().WindowPadding.x);
 
-		if (ImGui::MenuItem("New Folder"))
+		if (ImGui::BeginMenu("New"))
 		{
-			const std::string originalName = "New Folder";
-			std::string tempName = originalName;
-
-			uint32_t i = 0;
-			while (FileSystem::Exists(myCurrentDirectory->path / tempName))
+			if (ImGui::MenuItem("New Folder"))
 			{
-				tempName = originalName + " (" + std::to_string(i) + ")";
-				i++;
-			}
+				const std::string originalName = "New Folder";
+				std::string tempName = originalName;
 
-			FileSystem::CreateFolder(myCurrentDirectory->path / tempName);
-			Reload();
-
-			auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
+				uint32_t i = 0;
+				while (FileSystem::Exists(myCurrentDirectory->path / tempName))
 				{
-					return data->path.stem().string() == tempName;
-				});
+					tempName = originalName + " (" + std::to_string(i) + ")";
+					i++;
+				}
 
-			if (dirIt != myCurrentDirectory->subDirectories.end())
-			{
-				(*dirIt)->isRenaming = true;
-				(*dirIt)->currentRenamingName = tempName;
+				FileSystem::CreateFolder(myCurrentDirectory->path / tempName);
+				Reload();
 
-				mySelectionManager->Select((*dirIt).get());
+				auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
+					{
+						return data->path.stem().string() == tempName;
+					});
+
+				if (dirIt != myCurrentDirectory->subDirectories.end())
+				{
+					(*dirIt)->isRenaming = true;
+					(*dirIt)->currentRenamingName = tempName;
+
+					mySelectionManager->Select((*dirIt).get());
+				}
 			}
-		}
 
-		ImGui::Separator();
+			ImGui::Separator();
 
-		if (ImGui::MenuItem("Create Material"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
-		}
+			if (ImGui::MenuItem("New Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
+			}
 
-		if (ImGui::MenuItem("Create Animated Character"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
-		}
+			if (ImGui::MenuItem("New Animated Character"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
+			}
 
-		if (ImGui::MenuItem("Create Shader"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
-		}
+			if (ImGui::MenuItem("New Shader"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
+			}
 
-		if (ImGui::MenuItem("Create Physics Material"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
-		}
+			if (ImGui::MenuItem("New Physics Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
+			}
 
-		if (ImGui::MenuItem("Create Scene"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::Scene);
-		}
+			if (ImGui::MenuItem("New Scene"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Scene);
+			}
 
-		if (ImGui::MenuItem("Create Particle Preset"))
-		{
-			CreateNewAssetInCurrentDirectory(Volt::AssetType::ParticlePreset);
+			if (ImGui::MenuItem("New Particle Preset"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::ParticlePreset);
+			}
+
+			ImGui::EndMenu();
 		}
 
 		ImGui::Separator();
@@ -917,16 +922,17 @@ void AssetBrowserPanel::DeleteFilesModal()
 
 void AssetBrowserPanel::Reload()
 {
-	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : FileSystem::GetAssetsPath();
+	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : Volt::ProjectManager::GetAssetsPath();
 
 	myCurrentDirectory = nullptr;
 	myNextDirectory = nullptr;
+	mySelectionManager->DeselectAll();
 
-	myDirectories[FileSystem::GetAssetsPath()] = ProcessDirectory(FileSystem::GetAssetsPath(), nullptr);
+	myDirectories[Volt::ProjectManager::GetAssetsPath()] = ProcessDirectory(Volt::ProjectManager::GetAssetsPath(), nullptr);
 	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
 	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myDirectories[FileSystem::GetAssetsPath()].get();
+	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsPath()].get();
 
 	//Find directory
 	myCurrentDirectory = FindDirectoryWithPath(currentPath);

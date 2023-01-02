@@ -66,7 +66,7 @@ namespace Volt
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
-		Entity CreateEntity();
+		Entity CreateEntity(const std::string& tag = "");
 		void RemoveEntity(Entity entity);
 		void RemoveEntity(Entity entity, float aTimeToDestroy);
 
@@ -105,6 +105,8 @@ namespace Volt
 		void IsRecursiveChildOf(Entity mainParent, Entity currentEntity, bool& outChild);
 		void ConvertToWorldSpace(Entity entity);
 		void ConvertToLocalSpace(Entity entity);
+
+		void SortScene();
 
 		SceneEnvironment myEnvironment;
 		Statistics myStatistics;

@@ -45,16 +45,10 @@ namespace Volt
 
 		std::string lowName = Utils::ToLower(name);
 		myRegistry[lowName] = shader;
-	}
 
-	void ShaderRegistry::ReloadShadersWithShader(const std::filesystem::path& shaderPath)
-	{
-		for (const auto& [name, shader] : myRegistry)
+		for (const auto& p : shader->GetSources())
 		{
-			if (shader->ContainsShader(shaderPath))
-			{
-				shader->Reload(true);
-			}
+			AssetManager::Get().AddDependency(shader->handle, p);
 		}
 	}
 
@@ -68,9 +62,14 @@ namespace Volt
 		auto shaderSearchFolder = FileSystem::GetShadersPath();
 		for (const auto& path : std::filesystem::recursive_directory_iterator(shaderSearchFolder))
 		{
-			AssetType type = AssetManager::Get().GetAssetTypeFromPath(path.path());
+			AssetType type = AssetManager::GetAssetTypeFromPath(path.path());
 			if (type == AssetType::Shader)
 			{
+				if (!AssetManager::Get().ExistsInRegistry(path.path()))
+				{
+					AssetManager::Get().AddToRegistry(path.path());
+				}
+
 				Ref<Shader> shader = AssetManager::GetAsset<Shader>(path.path());
 				Register(shader->GetName(), shader);
 			}

@@ -66,7 +66,6 @@ namespace Volt
 	{
 		PROPERTY(Name = Children) std::vector<Wire::EntityId> Children;
 		PROPERTY(Name = Parent) Wire::EntityId Parent = 0;
-		PROPERTY(Name = SortId, Visible = false) uint32_t sortId = 0;
 		CREATE_COMPONENT_GUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 
 	}), RelationshipComponent);
@@ -180,9 +179,6 @@ namespace Volt
 		uint32_t crossfadeFrom = 0;
 		uint32_t crossfadeTo = 0;
 
-		// Override
-		std::unordered_map<std::string, gem::mat4> boneOverrides;
-
 		// Test
 		Ref<AnimationStateMachine> characterStateMachine;
 
@@ -214,6 +210,13 @@ namespace Volt
 
 		CREATE_COMPONENT_GUID("{15F85B2A-F8B2-48E1-8841-3BA946FFD172}"_guid);
 	}), VideoPlayerComponent);
+
+	SERIALIZE_COMPONENT((struct SpriteComponent
+	{
+		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle materialHandle = Volt::Asset::Null();
+
+		CREATE_COMPONENT_GUID("{FDB47734-1B69-4558-B460-0975365DB400}"_guid);
+	}), SpriteComponent);
 
 	SERIALIZE_COMPONENT((struct AudioListenerComponent
 	{

@@ -16,6 +16,7 @@
 #include "Volt/Rendering/Shader/ShaderRegistry.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
+#include "Volt/Project/ProjectManager.h"
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
@@ -50,7 +51,14 @@ namespace Volt
 
 		if (!myInfo.isRuntime)
 		{
-			myWindow->SetOpacity(0.f);
+			ProjectManager::SetupWorkingDirectory();
+			ProjectManager::SetupProject(myInfo.projectPath);
+		}
+
+		if (!myInfo.isRuntime)
+		{
+			//myWindow->SetOpacity(0.f);
+			myShouldFancyOpen = false;
 		}
 
 		myAssetManager = CreateScope<AssetManager>();
@@ -73,11 +81,6 @@ namespace Volt
 		if (info.enableImGui)
 		{
 			myImGuiImplementation = ImGuiImplementation::Create();
-		}
-
-		if (!myInfo.isRuntime)
-		{
-			myShouldFancyOpen = true;
 		}
 	}
 
@@ -164,6 +167,7 @@ namespace Volt
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
+				Renderer::SyncAndWait();
 			}
 
 			myWindow->GetSwapchain().Bind();

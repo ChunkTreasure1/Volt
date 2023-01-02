@@ -235,7 +235,7 @@ namespace Volt
 		result = GraphicsContext::GetDevice()->CreateTexture2D(&desc, nullptr, &texture);
 		assert(SUCCEEDED(result));
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		context->CopyResource(texture, myTexture.Get());
 
 		const uint32_t textureSize = mySpecification.width * mySpecification.height * Utility::PerPixelSizeFromFormat(mySpecification.format);
@@ -282,7 +282,7 @@ namespace Volt
 
 	void Image2D::Unmap()
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		context->Unmap(myTexture.Get(), 0);
 	}
 

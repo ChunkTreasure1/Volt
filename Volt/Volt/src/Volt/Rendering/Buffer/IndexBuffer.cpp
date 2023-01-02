@@ -4,6 +4,10 @@
 #include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Utility/DirectXUtils.h"
 
+#include "Volt/Rendering/RenderCommand.h"
+
+#include <d3d11.h>
+
 namespace Volt
 {
 	IndexBuffer::IndexBuffer(const std::vector<uint32_t>& aIndices, uint32_t aCount)
@@ -23,10 +27,9 @@ namespace Volt
 		myBuffer.Reset();
 	}
 
-	void IndexBuffer::Bind()
+	void IndexBuffer::Bind() const
 	{
-		auto context = GraphicsContext::GetContext();
-		context->IASetIndexBuffer(myBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		RenderCommand::IndexBuffer_Bind(this);
 	}
 
 	Ref<IndexBuffer> IndexBuffer::Create(const std::vector<uint32_t>& aIndices, uint32_t aCount)

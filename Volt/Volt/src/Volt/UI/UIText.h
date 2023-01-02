@@ -48,7 +48,7 @@ public:
 			SetTransform(newTextTransform);
 		}
 
-		Volt::Renderer::SubmitString(myText, myFont, GetTransform(), myMaxWidth, myColor);
+		Volt::Renderer::SubmitText(myText, myFont, GetTransform(), myMaxWidth, myColor);
 	}
 
 	std::string& GetText() { return myText; }

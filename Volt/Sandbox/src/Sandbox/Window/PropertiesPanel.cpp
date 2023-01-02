@@ -9,7 +9,7 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scripting/ScriptRegistry.h>
 #include <Volt/Scripting/ScriptEngine.h>
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
@@ -229,16 +229,16 @@ void PropertiesPanel::UpdateMainContent()
 
 			bool removeComp = false;
 			bool open = UI::TreeNodeFramed(registryInfo.name, true, 2.f);
-			float buttonSize = 21.f + GImGui->Style.FramePadding.y;
+			float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 			float availRegion = ImGui::GetContentRegionAvail().x;
 
 			if (!open)
 			{
-				UI::SameLine(availRegion - buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+				UI::SameLine(availRegion - buttonSize * 0.5f);
 			}
 			else
 			{
-				UI::SameLine(availRegion + buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+				UI::SameLine(availRegion + buttonSize * 0.5f);
 			}
 			std::string id = "-###Remove" + registryInfo.name;
 
@@ -705,7 +705,7 @@ void PropertiesPanel::AddComponentPopup()
 
 		std::sort(componentNames.begin(), componentNames.end());
 
-		// Seach bar
+		// Search bar
 		{
 			if (EditorUtils::SearchBar(myComponentSearchQuery, myHasComponentSearchQuery))
 			{

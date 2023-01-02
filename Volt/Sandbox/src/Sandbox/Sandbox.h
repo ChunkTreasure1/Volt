@@ -25,8 +25,10 @@ namespace Volt
 	class Scene;
 	class Mesh;
 	class Framebuffer;
+	class Material;
 	class Shader;
 	class ConstantBuffer;
+	class Texture2D;
 }
 
 enum class SceneState
@@ -84,9 +86,8 @@ private:
 	void SaveSceneAs();
 
 	void InstallMayaTools();
-	void HandleChangedFiles();
 	void SetupRenderCallbacks();
-	void SetupEditorRenderPasses();
+	void CreateEditorRenderPasses();
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e);
@@ -98,6 +99,8 @@ private:
 
 	void SaveUserSettings();
 	void LoadUserSettings();
+
+	void CreateWatches();
 
 	/////ImGui/////
 	void UpdateDockSpace();
@@ -120,9 +123,14 @@ private:
 	Ref<EditorCameraController> myEditorCameraController;
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Shader> myGridShader;
-	Ref<FileWatcher> myFileWatcher;
+	Ref<Volt::Material> myGridMaterial;
 
+	///// File watcher /////
+	Ref<FileWatcher> myFileWatcher;
+	std::mutex myFileWatcherMutex;
+	std::vector<std::function<void()>> myFileChangeQueue;
+	////////////////////////
+	
 	Ref<Volt::Scene> myRuntimeScene;
 	Ref<Volt::Scene> myIntermediateScene;
 
@@ -138,11 +146,15 @@ private:
 	/////Gizmos/////
 	Ref<Volt::Shader> myGizmoShader;
 	Volt::RenderPass myGizmoPass;
+
+	Ref<Volt::Texture2D> myEntityGizmoTexture;
+	Ref<Volt::Texture2D> myLightGizmoTexture;
 	//////////////////
 
 	///// Forward Extra /////
 	Volt::RenderPass myColliderVisualizationPass;
 	Volt::RenderPass myForwardExtraPass;
+	Ref<Volt::Mesh> myDecalArrowMesh;
 	/////////////////////////
 
 	Ref<Game> myGame;
@@ -161,6 +173,8 @@ private:
 	bool myShouldRenderGizmos = true;
 	bool myTitlebarHovered = false;
 	bool myBuildStarted = false;
+	
+	bool myShouldResize = false;
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;

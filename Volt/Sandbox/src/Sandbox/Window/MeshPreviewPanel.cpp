@@ -3,7 +3,7 @@
 
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -19,11 +19,13 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
+	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = CreateRef<Volt::Scene>();
 
@@ -31,7 +33,7 @@ MeshPreviewPanel::MeshPreviewPanel()
 	{
 		auto entity = myScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh")->handle;
+		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh")->handle;
 		myPreviewEntity = entity;
 	}
 
@@ -51,15 +53,23 @@ MeshPreviewPanel::MeshPreviewPanel()
 
 		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
 	}
+	
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
+	}
 
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);
 	mySceneRenderer->Resize(1280, 720);
 
-	mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
-		});
+	//mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
+	//	{
+	//		Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+	//		Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
+	//	});
 }
 
 void MeshPreviewPanel::UpdateContent()
@@ -178,7 +188,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	ImGui::Begin("##toolbarMeshPreview", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	if (UI::ImageButton("##Save", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
 		if (myCurrentMesh)
 		{
@@ -188,7 +198,7 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##Load", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
 		const std::filesystem::path characterPath = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
 		if (!characterPath.empty() && FileSystem::Exists(characterPath))
@@ -213,7 +223,7 @@ void MeshPreviewPanel::UpdateMeshList()
 
 	for (uint32_t i = 0; const auto & subMesh : myCurrentMesh->GetSubMeshes())
 	{
-		std::string id = "Mesh#" + std::to_string(i);
+		std::string id = subMesh.name + "##subMesh" + std::to_string(i);
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 		if (mySelectedSubMesh == i)

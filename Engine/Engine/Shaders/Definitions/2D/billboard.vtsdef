@@ -1,0 +1,6 @@
+name: "Billboard"
+internal: true
+paths:
+  - "Engine/Shaders/HLSL/2D/Billboard_vs.hlsl"
+  - "Engine/Shaders/HLSL/2D/Billboard_gs.hlsl"
+  - "Engine/Shaders/HLSL/2D/Billboard_ps.hlsl"

@@ -62,7 +62,8 @@ project "Volt"
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
-		"%{IncludeDir.DirectXTex}"
+		"%{IncludeDir.DirectXTex}",
+		"%{IncludeDir.efsw}"
 	}
 
 	links
@@ -74,7 +75,7 @@ project "Volt"
 		"msdf-atlas-gen",
 		"YamlCPP",
 		"DirectXTex",
-		
+		"efsw-static-lib"
 	}
 
 	defines
@@ -148,9 +149,9 @@ project "Shaders"
 
 	files
 	{
-		"../../Build/Engine/Shaders/**.hlsl",
-		"../../Build/Engine/Shaders/**.hlslh",
-		"../../Build/Engine/Shaders/**.hlsli"
+		"../../Engine/Engine/Shaders/**.hlsl",
+		"../../Engine/Engine/Shaders/**.hlslh",
+		"../../Engine/Engine/Shaders/**.hlsli"
 	}
 
 	filter "system:windows"

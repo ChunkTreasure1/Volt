@@ -8,6 +8,7 @@
 
 #include "Volt/Components/Components.h"
 #include "Volt/Asset/Prefab.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Core/Profiling.h"
 #include "Volt/Utility/FileSystem.h"
@@ -51,14 +52,16 @@ namespace Volt
 		asset = CreateRef<Scene>();
 		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(asset);
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		const auto filePath = ProjectManager::GetDirectory() / path;
+
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream file(path);
+		std::ifstream file(filePath);
 		if (!file.is_open()) [[unlikely]]
 		{
 			VT_CORE_ERROR("Failed to open file {0}!", path.string().c_str());
@@ -66,7 +69,7 @@ namespace Volt
 			return false;
 		}
 
-		const std::filesystem::path& scenePath = path;
+		const std::filesystem::path& scenePath = filePath;
 		std::filesystem::path folderPath = scenePath.parent_path();
 		std::filesystem::path entitiesFolderPath = folderPath / "Entities";
 
@@ -147,23 +150,31 @@ namespace Volt
 					thread.join();
 				}
 
+				std::vector<Wire::EntityId> dirtyPrefabs{};
 				for (auto& registry : threadRegistries)
 				{
+					registry.ForEach<PrefabComponent>([&](Wire::EntityId id, PrefabComponent& prefabComp)
+						{
+							if (prefabComp.isDirty)
+							{
+								dirtyPrefabs.emplace_back(id);
+							}
+						});
+
 					for (const auto& entity : registry.GetAllEntities())
 					{
 						scene->myRegistry.AddEntity(entity);
 						Entity::Copy(registry, scene->myRegistry, entity, entity);
 					}
 				}
-			}
 
-			scene->myRegistry.ForEach<PrefabComponent>([&](Wire::EntityId id, PrefabComponent& prefabComp)
+				for (const auto& id : dirtyPrefabs)
 				{
-					if (prefabComp.isDirty)
-					{
-						Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
-					}
-				});
+					auto& prefabComp = scene->myRegistry.GetComponent<PrefabComponent>(id);
+					Prefab::OverridePrefabInRegistry(scene->myRegistry, id, prefabComp.prefabAsset);
+					prefabComp.isDirty = false;
+				}
+			}
 		}
 
 		return true;
@@ -174,7 +185,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 		const Ref<Scene> scene = std::reinterpret_pointer_cast<Scene>(asset);
 
-		std::filesystem::path folderPath = asset->path;
+		std::filesystem::path folderPath = ProjectManager::GetDirectory() / asset->path;
 		if (!std::filesystem::is_directory(folderPath))
 		{
 			folderPath = folderPath.parent_path();

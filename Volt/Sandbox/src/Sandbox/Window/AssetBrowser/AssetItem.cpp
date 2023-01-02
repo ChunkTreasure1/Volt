@@ -3,13 +3,13 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
 
-#include "Sandbox/Utility/AssetIconLibrary.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/Utility/EditorLibrary.h"
+#include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -17,11 +17,15 @@
 
 namespace AssetBrowser
 {
-	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& aMeshImportData)
-		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData)
+	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& aMeshImportData, AssetData& aMeshToImportData)
+		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData), meshToImportData(aMeshToImportData)
 	{
-		type = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
-		handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+		type = Volt::AssetManager::GetAssetTypeFromPath(path);
+		handle = Volt::AssetManager::GetAssetHandleFromPath(path);
+		if (handle == Volt::Asset::Null())
+		{
+			handle = Volt::AssetManager::Get().AddToRegistry(path);
+		}
 	}
 
 	bool AssetItem::Render()
@@ -173,6 +177,13 @@ namespace AssetBrowser
 					EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
 				}
 
+
+				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && hovered && !mySelectionManager->IsSelected(this))
+				{
+					mySelectionManager->DeselectAll();
+					mySelectionManager->Select(this);
+				}
+
 				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 				if (mouseDown && hovered)
 				{
@@ -216,12 +227,12 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Open Externally"))
 			{
-				FileSystem::OpenFileExternally(path);
+				FileSystem::OpenFileExternally(Volt::ProjectManager::GetDirectory() / path);
 			}
 
 			if (ImGui::MenuItem("Show In Explorer"))
 			{
-				FileSystem::ShowFileInExplorer(path);
+				FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
 			}
 
 			if (ImGui::MenuItem("Reload"))
@@ -250,6 +261,11 @@ namespace AssetBrowser
 				UI::OpenModal("Delete Selected Files?");
 			}
 
+			if (ImGui::MenuItem("Checkout"))
+			{
+				VersionControl::Edit(Volt::AssetManager::Get().GetFilesystemPath(handle));
+			}
+
 			UI::EndPopup();
 		}
 
@@ -259,9 +275,9 @@ namespace AssetBrowser
 	Ref<Volt::Image2D> AssetItem::GetIcon() const
 	{
 		Ref<Volt::Image2D> icon = (preview && preview->IsRendered()) ? preview->GetPreview() : nullptr;
-		if (!icon && AssetIconLibrary::Get(type))
+		if (!icon && EditorResources::GetAssetIcon(type))
 		{
-			icon = AssetIconLibrary::Get(type)->GetImage();
+			icon = EditorResources::GetAssetIcon(type)->GetImage();
 		}
 
 		if (type == Volt::AssetType::Texture)
@@ -278,7 +294,7 @@ namespace AssetBrowser
 
 		if (!icon)
 		{
-			icon = EditorIconLibrary::GetIcon(EditorIcon::GenericFile)->GetImage();
+			icon = EditorResources::GetEditorIcon(EditorIcon::GenericFile)->GetImage();
 		}
 
 		return icon;

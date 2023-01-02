@@ -53,25 +53,25 @@ public:
 		{
 			auto& colors = ImGui::GetStyle().Colors;
 			colors[m_Color] = m_OldColor;
-		}
+			}
 
-	private:
-		ImVec4 m_OldColor;
-		ImGuiCol_ m_Color;
-	};
+		private:
+			ImVec4 m_OldColor;
+			ImGuiCol_ m_Color;
+		};
 
-	class ScopedStyleFloat
-	{
-	public:
-		ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+		class ScopedStyleFloat
 		{
-			ImGui::PushStyleVar(var, value);
-		}
+		public:
+			ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+			{
+				ImGui::PushStyleVar(var, value);
+			}
 
-		~ScopedStyleFloat()
-		{
-			ImGui::PopStyleVar();
-		}
+			~ScopedStyleFloat()
+			{
+				ImGui::PopStyleVar();
+			}
 	};
 
 	class ScopedStyleFloat2
@@ -351,7 +351,7 @@ public:
 		// We remove 1 worth of rounding to Max.x to that text in long menus and small windows don't tend to display over the lower-right rounded area, which looks particularly glitchy.
 		ImRect bar_rect = barRect;
 		ImRect clip_rect(IM_ROUND(ImMax(window->Pos.x, bar_rect.Min.x + window->WindowBorderSize + window->Pos.x)), IM_ROUND(bar_rect.Min.y + window->WindowBorderSize + window->Pos.y),
-			IM_ROUND(ImMax(bar_rect.Min.x + window->Pos.x, bar_rect.Max.x - ImMax(window->WindowRounding, window->WindowBorderSize))), IM_ROUND(bar_rect.Max.y + window->Pos.y));
+			IM_ROUND(ImMax(bar_rect.Min.x + window->Pos.x, bar_rect.Max.x - ImMax(window->WindowRounding, window->WindowBorderSize) + window->Pos.x)), IM_ROUND(bar_rect.Max.y + window->Pos.y));
 		clip_rect.ClipWith(window->OuterRectClipped);
 		ImGui::PushClipRect(clip_rect.Min, clip_rect.Max, false);
 
@@ -1350,15 +1350,6 @@ public:
 			}
 		}
 
-		//if (auto ptr = UI::DragDropTarget("CONTENT_BROWSER_ITEM"))
-		//{
-		//	const wchar_t* inPath = (const wchar_t*)ptr;
-		//	std::filesystem::path newPath = std::filesystem::path("assets") / inPath;
-
-		//	path = newPath;
-		//	changed = true;
-		//}
-
 		return changed;
 	}
 
@@ -1401,15 +1392,6 @@ public:
 				}
 			}
 		}
-
-		//if (auto ptr = UI::DragDropTarget("CONTENT_BROWSER_ITEM"))
-		//{
-		//	const wchar_t* inPath = (const wchar_t*)ptr;
-		//	std::filesystem::path newPath = std::filesystem::path("assets") / inPath;
-
-		//	path = newPath;
-		//	changed = true;
-		//}
 
 		return changed;
 	}

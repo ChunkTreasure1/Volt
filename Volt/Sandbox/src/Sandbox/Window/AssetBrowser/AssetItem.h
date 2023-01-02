@@ -13,7 +13,7 @@ namespace AssetBrowser
 	class AssetItem : public Item
 	{
 	public:
-		AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& meshImportData);
+		AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& meshImportData, AssetData& meshToImportData);
 		~AssetItem() override = default;
 		bool Render() override;
 
@@ -22,6 +22,7 @@ namespace AssetBrowser
 
 		Ref<AssetPreview> preview;
 		MeshImportData& meshImportData;
+		AssetData& meshToImportData;
 		
 		bool isRenaming = false;
 		std::string currentRenamingName;

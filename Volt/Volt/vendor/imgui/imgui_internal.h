@@ -2778,6 +2778,10 @@ struct ImGuiTableSettings
 
 namespace ImGui
 {
+    ///// Volt /////
+    inline ImGuiTable*      GetCurrentTable()           { ImGuiContext& g = *GImGui; return g.CurrentTable; }
+    ////////////////
+
     // Windows
     // We should always have a CurrentWindow in the stack (there is an implicit "Debug" window)
     // If this ever crash because g.CurrentWindow is NULL it means that either

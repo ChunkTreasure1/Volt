@@ -68,7 +68,6 @@ namespace Wire
 		std::unordered_map<WireGUID, std::shared_ptr<ComponentPoolBase>> m_pools;
 
 		EntityId m_nextEntityId = 1; // ID zero is null
-		std::vector<EntityId> m_availiableIds;
 		std::vector<EntityId> m_usedIds;
 	};
 

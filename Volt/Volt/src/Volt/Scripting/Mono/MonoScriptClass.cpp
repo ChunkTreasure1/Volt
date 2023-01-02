@@ -35,7 +35,15 @@ namespace Volt
 
 	MonoObject* MonoScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
-		return mono_runtime_invoke(method, instance, params, nullptr);
+		MonoObject* exception = nullptr;
+		MonoObject* obj = mono_runtime_invoke(method, instance, params, &exception);
+
+		if (exception)
+		{
+			mono_print_unhandled_exception(exception);
+		}
+
+		return obj;
 	}
 
 	bool MonoScriptClass::IsSubclassOf(Ref<MonoScriptClass> parent)

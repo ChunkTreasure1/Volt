@@ -2,9 +2,9 @@
 #include "ViewportPanel.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/Sandbox.h"
 
@@ -39,7 +39,7 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	mySceneState(aSceneState), myAnimatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
 {
 	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	myWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar;
 	myMidEvent = false;
 }
 
@@ -48,6 +48,7 @@ void ViewportPanel::UpdateMainContent()
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.07f, 0.07f, 0.07f, 1.f });
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -195,7 +196,7 @@ void ViewportPanel::UpdateMainContent()
 			}
 		}
 
-		myEditorCameraController->SetIsControllable(myIsFocused && !isUsing);
+		myEditorCameraController->SetIsControllable(myIsHovered && !isUsing);
 	}
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && mySceneState != SceneState::Play && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{
@@ -227,7 +228,7 @@ void ViewportPanel::UpdateMainContent()
 	}
 
 	ImGui::PopStyleColor();
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(4);
 
 	UpdateModals();
 	CheckDragDrop();
@@ -247,7 +248,7 @@ void ViewportPanel::UpdateContent()
 	UI::ScopedColor hovered(ImGuiCol_ButtonHovered, { 0.3f, 0.305f, 0.31f, 0.5f });
 	UI::ScopedColor active(ImGuiCol_ButtonActive, { 0.5f, 0.505f, 0.51f, 0.5f });
 
-	ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar);
 
 	const uint32_t rightButtonCount = 12;
 	const float buttonSize = 22.f;
@@ -255,10 +256,10 @@ void ViewportPanel::UpdateContent()
 	auto& settings = UserSettingsManager::GetSettings();
 
 	float size = ImGui::GetWindowHeight() - 4.f;
-	Ref<Volt::Texture2D> playIcon = EditorIconLibrary::GetIcon(EditorIcon::Play);
+	Ref<Volt::Texture2D> playIcon = EditorResources::GetEditorIcon(EditorIcon::Play);
 	if (mySceneState == SceneState::Play)
 	{
-		playIcon = EditorIconLibrary::GetIcon(EditorIcon::Stop);
+		playIcon = EditorResources::GetEditorIcon(EditorIcon::Stop);
 	}
 
 	if (UI::ImageButton("##play", UI::GetTextureID(playIcon), { buttonSize, buttonSize }))
@@ -268,12 +269,12 @@ void ViewportPanel::UpdateContent()
 			Sandbox::Get().OnScenePlay();
 			Volt::ViewportResizeEvent resizeEvent{ (uint32_t)myPerspectiveBounds[0].x, (uint32_t)myPerspectiveBounds[0].y, (uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y };
 			Volt::Application::Get().OnEvent(resizeEvent);
-			
+
 			if (settings.sceneSettings.fullscreenOnPlay)
 			{
 				for (const auto& window : Sandbox::Get().GetEditorWindows())
 				{
-					if (window->GetTitle() == "Scene View" || 
+					if (window->GetTitle() == "Scene View" ||
 						window->GetTitle() == "Asset Browser##Main" ||
 						window->GetTitle() == "Properties")
 					{
@@ -291,7 +292,7 @@ void ViewportPanel::UpdateContent()
 				for (const auto& window : Sandbox::Get().GetEditorWindows())
 				{
 					if (window->GetTitle() == "Scene View" ||
-						window->GetTitle() == "Asset Browser" ||
+						window->GetTitle() == "Asset Browser##Main" ||
 						window->GetTitle() == "Properties")
 					{
 						const_cast<bool&>(window->IsOpen()) = true;
@@ -307,7 +308,7 @@ void ViewportPanel::UpdateContent()
 	Ref<Volt::Texture2D> physicsIcon = myAnimatedPhysicsIcon.GetCurrentFrame();
 	static Volt::Texture2D* physicsId = physicsIcon.get();
 
-	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { size, size }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
+	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { buttonSize, buttonSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 	{
 		if (mySceneState == SceneState::Edit)
 		{
@@ -326,11 +327,11 @@ void ViewportPanel::UpdateContent()
 	Ref<Volt::Texture2D> localWorldIcon;
 	if (settings.sceneSettings.worldSpace)
 	{
-		localWorldIcon = EditorIconLibrary::GetIcon(EditorIcon::WorldSpace);
+		localWorldIcon = EditorResources::GetEditorIcon(EditorIcon::WorldSpace);
 	}
 	else
 	{
-		localWorldIcon = EditorIconLibrary::GetIcon(EditorIcon::LocalSpace);
+		localWorldIcon = EditorResources::GetEditorIcon(EditorIcon::LocalSpace);
 	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
@@ -357,7 +358,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##snapToGrid", settings.sceneSettings.snapToGrid, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SnapGrid)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##snapToGrid", settings.sceneSettings.snapToGrid, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapGrid)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.snapToGrid = !settings.sceneSettings.snapToGrid;
 	}
@@ -380,7 +381,7 @@ void ViewportPanel::UpdateContent()
 	}
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##snapRotation", settings.sceneSettings.snapRotation, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SnapRotation)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##snapRotation", settings.sceneSettings.snapRotation, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapRotation)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.snapRotation = !settings.sceneSettings.snapRotation;
 	}
@@ -402,7 +403,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##snapScale", settings.sceneSettings.snapScale, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SnapScale)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##snapScale", settings.sceneSettings.snapScale, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapScale)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.snapScale = !settings.sceneSettings.snapScale;
 	}
@@ -424,7 +425,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButtonState("##showGizmos", settings.sceneSettings.showGizmos, UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::ShowGizmos)), { buttonSize, buttonSize }))
+	if (UI::ImageButtonState("##showGizmos", settings.sceneSettings.showGizmos, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::ShowGizmos)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.showGizmos = !settings.sceneSettings.showGizmos;
 		Sandbox::Get().SetShouldRenderGizmos(settings.sceneSettings.showGizmos);
@@ -869,17 +870,7 @@ void ViewportPanel::UpdateModals()
 			Sandbox::Get().SaveScene();
 		}
 
-		if (myEditorScene->handle == mySceneToOpen)
-		{
-			Volt::AssetManager::Get().ReloadAsset(myEditorScene->handle);
-		}
-
-		myEditorScene = Volt::AssetManager::GetAsset<Volt::Scene>(mySceneToOpen);
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myEditorScene);
-
-		Volt::OnSceneLoadedEvent loadEvent{ myEditorScene };
-		Volt::Application::Get().OnEvent(loadEvent);
-
+		Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
 		mySceneToOpen = Volt::Asset::Null();
 	}
 }
