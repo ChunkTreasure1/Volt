@@ -333,20 +333,15 @@ void VTCinemaPanel::UpdateSelectedCamera()
 	if (vtCamComp.followId != 0)
 	{
 		Volt::Entity target = Volt::Entity{ vtCamComp.followId, myCurrentScene.get() };
-		selectedEnt.SetPosition(target.GetWorldPosition() + vtCamComp.offset);
+		selectedEnt.SetPosition(target.GetPosition() + vtCamComp.offset);
 	}
 
 	if (vtCamComp.lookAtId != 0) 
 	{
-		Volt::Entity lookAtTarget = Volt::Entity{ vtCamComp.lookAtId, myCurrentScene.get() };
+		Volt::Entity lookAtEnt = Volt::Entity{ vtCamComp.lookAtId, myCurrentScene.get() };
+		gem::vec3 lookAtPos = lookAtEnt.GetPosition();
 
-		gem::vec3 lookAtPos = lookAtTarget.GetWorldPosition();
-		gem::mat test = gem::lookAtLH(selectedEnt.GetWorldPosition(), lookAtPos, { 0,1,0 });
-		gem::vec3 rot = 0;
-		gem::vec3 dump = 0;
-		gem::decompose(test, dump, rot, dump);
-
-		selectedEnt.SetRotation(rot * -1);
+		selectedEnt.SetLocalRotation(gem::quatLookAtLH(gem::normalize(lookAtPos - selectedEnt.GetPosition()), { 0,1,0 }));
 	}
 }
 

@@ -9,7 +9,7 @@
 VT_REGISTER_SCRIPT(VTCameraController);
 
 VTCameraController::VTCameraController(const Volt::Entity& aEntity)
-	:ScriptBase(aEntity)
+	:Script(aEntity)
 {
 }
 
@@ -58,14 +58,9 @@ void VTCameraController::FreeController(float aDeltaTime)
 	if (vtCamComp.lookAtId != 0)
 	{
 		Volt::Entity lookAtEnt = Volt::Entity{ vtCamComp.lookAtId, myEntity.GetScene() };
+		gem::vec3 lookAtPos = lookAtEnt.GetPosition();
 
-		gem::vec3 lookAtPos = lookAtEnt.GetWorldPosition();
-		gem::mat test = gem::lookAtLH(myEntity.GetPosition(), lookAtPos, { 0,1,0 });
-		gem::vec3 rot = 0;
-		gem::vec3 dump = 0;
-		gem::decompose(test, dump, rot, dump);
-
-		myEntity.SetRotation(rot * -1);
+		myEntity.SetLocalRotation(gem::quatLookAtLH(gem::normalize(lookAtPos - myEntity.GetPosition()), {0,1,0}));
 	}
 }
 
@@ -88,9 +83,26 @@ void VTCameraController::TPSController(float aDeltaTime)
 	if (target) 
 	{
 		const gem::vec3 focalPoint = target.GetPosition() + vtCamComp.offset;
-		myEntity.SetRotation(myEntity.GetRotation() + gem::radians(gem::vec3{myPitchDelta, myYawDelta, 0.f}));
+		myEntity.SetLocalRotation(gem::eulerAngles(myEntity.GetLocalRotation()) + gem::radians(gem::vec3{myPitchDelta, myYawDelta, 0.f}));
 		myEntity.SetPosition(focalPoint - myEntity.GetForward() * vtCamComp.focalDistance);
 	}
+
+	gem::vec3 rot = gem::eulerAngles(myEntity.GetLocalRotation());
+
+	//if (rot.x > 180 || rot.x < -180)
+	//{
+	//	myEntity.SetLocalRotation(gem::vec3( { rot.x * -1, rot.y, rot.z }));
+	//}
+
+	//if (rot.y > 180 || rot.y < -180)
+	//{
+	//	myEntity.SetLocalRotation(gem::vec3({ rot.x, rot.y * -1, rot.z }));
+	//}
+
+	//if (rot.z > 180 || rot.z < -180)
+	//{
+	//	myEntity.SetLocalRotation(gem::vec3({ rot.x, rot.y, rot.z * -1 }));
+	//}
 
 	myLastMousePos = mousePos;
 }

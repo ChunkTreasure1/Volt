@@ -4,10 +4,11 @@
 #include <Volt/Components/Components.h>
 #include <Volt/Components/VTCinemaComponents.h>
 
+
 VT_REGISTER_SCRIPT(Director)
 
 Director::Director(const Volt::Entity& aEntity)
-	:ScriptBase(aEntity)
+	:Script(aEntity)
 {
 	if (!myInstance)
 	{
@@ -64,14 +65,14 @@ void Director::InitTransitionCam()
 	if (!myIsBlending)
 	{
 		myTransitionCamera.SetPosition(myActiveCamera.GetPosition());
-		myTransitionCamera.SetRotation(myActiveCamera.GetRotation());
+		myTransitionCamera.SetLocalRotation(myActiveCamera.GetRotation());
 	}
 	
 	myTransitionCamera.GetComponent<Volt::CameraComponent>().priority = 0;
 	myTransitionCamera.GetComponent<Volt::VTCamComponent>().blendType = myActiveCamera.GetComponent<Volt::VTCamComponent>().blendType;
 
 	myTransitionCamStartPos = myTransitionCamera.GetPosition();
-	myTransitionCamStartRot = myTransitionCamera.GetRotation();
+	myTransitionCamStartRot = gem::eulerAngles(myTransitionCamera.GetRotation());
 	myTransitionCameraStartFoV = myTransitionCamera.GetComponent<Volt::CameraComponent>().fieldOfView;
 
 	myLerpTime = myActiveCamera.GetComponent<Volt::VTCamComponent>().blendTime;
@@ -142,7 +143,7 @@ void Director::BlendCameras(float aDeltaTime)
 
 
 	myTransitionCamera.SetPosition(gem::lerp(myTransitionCamStartPos, myActiveCamera.GetPosition(), t));
-	myTransitionCamera.SetRotation(gem::lerp(myTransitionCamStartRot, myActiveCamera.GetRotation(), t));
+	myTransitionCamera.SetLocalRotation(gem::lerp(myTransitionCamStartRot, gem::eulerAngles(myActiveCamera.GetLocalRotation()), t));
 
 	transitionBaseCamComp.fieldOfView = gem::lerp(myTransitionCameraStartFoV, activeBaseCamComp.fieldOfView, t);
 }

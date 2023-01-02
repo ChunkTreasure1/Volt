@@ -9,7 +9,7 @@
 VT_REGISTER_SCRIPT(TestController)
 
 TestController::TestController(const Volt::Entity& aEntity)
-	:	ScriptBase(aEntity)
+	:	Script(aEntity)
 {
 }
 

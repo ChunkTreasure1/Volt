@@ -1,13 +1,13 @@
 #pragma once
 #include "Volt/Scene/Entity.h"
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 
-class VTCameraController : public Volt::ScriptBase
+class VTCameraController : public Volt::Script
 {
 public:
 	VTCameraController(const Volt::Entity& aEntity);
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<VTCameraController>(aEntity); }
+	static Ref<Script> Create(Volt::Entity aEntity) { return CreateRef<VTCameraController>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{B55A143E-CE4B-47C3-A44E-1F3F8A111B10}"_guid; };
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 

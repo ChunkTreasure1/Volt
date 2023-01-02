@@ -219,6 +219,10 @@ Assets:
     Path: Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
     Dependencies:
       []
+  - Handle: 6165057886517728273
+    Path: Assets/Scenes/TPSControllerDemo/TPSControllerDemo.vtscene
+    Dependencies:
+      []
   - Handle: 6200476852893486279
     Path: Engine/Shaders/HLSL/Utility/CopyTextureToTarget_ps.hlsl
     Dependencies:
@@ -366,6 +370,10 @@ Assets:
       []
   - Handle: 11439961653246782837
     Path: Engine/Shaders/HLSL/PostProcessing/HBAO/HBAOBlur_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 11499285646755531572
+    Path: Assets/Scenes/VTCinemaTest/VTCinemaTest.vtscene
     Dependencies:
       []
   - Handle: 12000237893511619017

@@ -21,16 +21,10 @@
 #include "Sandbox/Window/PhysicsPanel.h"
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
-<<<<<<< HEAD
-#include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
-#include "Sandbox/Window/EditorLibrary.h"
 #include "Sandbox/Window/VTCinema.h"
-=======
 #include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
->>>>>>> main
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
