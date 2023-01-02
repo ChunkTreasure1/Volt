@@ -27,6 +27,7 @@ namespace Volt
 		const T GetField(const std::string& name);
 
 		inline const Ref<MonoScriptClass> GetClass() const { return myMonoClass; }
+		inline MonoObject* GetManagedObject() const { return myInstance; }
 
 	private:
 		bool GetFieldInternal(const std::string& name, void* outData);

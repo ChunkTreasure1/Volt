@@ -14,11 +14,37 @@ namespace Volt
         public static Vector3 Right => new Vector3(1f, 0f, 0f);
         public static Vector3 Forward => new Vector3(0f, 0f, 1f);
 
+        public Vector3 normalized
+        {
+            get
+            {
+                return this * (1f / Mathf.Sqrt(Dot(this, this)));
+            }
+
+            private set { }
+        }
+        
+        public float magnitude
+        {
+            get
+            {
+                return Mathf.Sqrt(Dot(this, this));
+            }
+
+            private set { }
+        }
         public Vector3(float scalar) : this()
         {
             x = scalar;
             y = scalar;
             z = scalar;
+        }
+
+        public Vector3(Vector3 v)
+        {
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public Vector3(float aX, float aY, float aZ) : this()
@@ -33,34 +59,48 @@ namespace Volt
             return base.ToString() + ": " + $"X: {x}, Y: {y}, Z: {z}";
         }
 
-        public Vector3 Normalized()
+        public static Vector3 Normalize(Vector3 v)
         {
-            return Vector3.Zero;
+            return v.normalized;
         }
 
-        public Vector3 Normalize()
+        public static Vector3 Cross(Vector3 lhs, Vector3 rhs)
         {
-            return this;
+            return new Vector3(
+                lhs.y * rhs.z - rhs.y * lhs.z,
+                lhs.z * rhs.x - rhs.z * lhs.x,
+                lhs.x * rhs.y - rhs.x * lhs.y);
         }
 
-        public Vector3 Cross(Vector3 other)
+        public static float Distance(Vector3 lhs, Vector3 rhs)
         {
-            return Vector3.Zero;
+            return (lhs - rhs).Length();
         }
 
         public float Length()
         {
-            return 0f;
+            return Mathf.Sqrt(Dot(this, this));
         }
 
-        public float Distance(Vector3 target)
+        public static float Dot(Vector3 lhs, Vector3 rhs)
         {
-            return 0f;
+            Vector3 result = new Vector3(lhs * rhs);
+            return result.x + result.y + result.z;
         }
 
-        public float Dot(Vector3 other)
+        public static Vector3 Lerp(Vector3 lhs, Vector3 rhs, float t)
         {
-            return 0f;
+            return (1f - t) * lhs + t * rhs;
+        }
+
+        public static Vector3 Max(Vector3 lhs, Vector3 rhs)
+        {
+            return lhs < rhs ? rhs : lhs;
+        }
+
+        public static Vector3 Min(Vector3 lhs, Vector3 rhs)
+        {
+            return lhs < rhs ? lhs : rhs;
         }
 
         public static Vector3 operator -(Vector3 v)
@@ -98,12 +138,6 @@ namespace Volt
             return new Vector3(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z);
         }
 
-        public static Vector3 operator *(Vector3 lhs, float rhs)
-            => new Vector3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
-
-        public static Vector3 operator *(float rhs, Vector3 lhs)
-            => new Vector3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
-
         public static Vector3 operator /(Vector3 lhs, float rhs)
         {
             if (rhs == 0f)
@@ -114,6 +148,12 @@ namespace Volt
             return new Vector3(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
         }
 
+        public static Vector3 operator *(Vector3 lhs, float rhs)
+            => new Vector3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
+
+        public static Vector3 operator *(float rhs, Vector3 lhs)
+            => new Vector3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
+
         public static bool operator ==(Vector3 lhs, Vector3 rhs)
         {
             return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
@@ -122,6 +162,16 @@ namespace Volt
         public static bool operator !=(Vector3 lhs, Vector3 rhs)
         {
             return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z;
+        }
+
+        public static bool operator< (Vector3 lhs, Vector3 rhs)
+        {
+            return lhs.x < rhs.x && lhs.y < rhs.y && lhs.z < rhs.z;
+        }
+
+        public static bool operator >(Vector3 lhs, Vector3 rhs)
+        {
+            return lhs.x > rhs.x && lhs.y > rhs.y && lhs.z > rhs.z;
         }
 
         public override bool Equals(object obj)

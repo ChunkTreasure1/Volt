@@ -8,6 +8,15 @@ namespace Volt
         #region Entity
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool Entity_HasComponent(uint entityId, string componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Entity_RemoveComponent(uint entityId, string componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Entity_AddComponent(uint entityId, string componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object GetScriptInstance(uint entityId);
         #endregion
 
         #region TransformComponent
@@ -18,10 +27,10 @@ namespace Volt
         internal extern static void TransformComponent_SetPosition(uint entityId, ref Vector3 position);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetRotation(uint entityId, out Vector3 rotation);
+        internal extern static void TransformComponent_GetRotation(uint entityId, out Quaternion rotation);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_SetRotation(uint entityId, ref Vector3 rotation);
+        internal extern static void TransformComponent_SetRotation(uint entityId, ref Quaternion rotation);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetScale(uint entityId, out Vector3 scale);
@@ -194,16 +203,52 @@ namespace Volt
         internal extern static void MeshColliderComponent_SetIsTrigger(uint entityId, ref bool isTrigger);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void MeshColliderComponent_GetOffset(uint entityId, out Vector3 offset);
-
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void MeshColliderComponent_SetOffset(uint entityId, ref Vector3 offset);
-
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static int MeshColliderComponent_GetSubMeshIndex(uint entityId);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void MeshColliderComponent_SetSubMeshIndex(uint entityId, ref int isTrigger);
+        internal extern static void MeshColliderComponent_SetSubMeshIndex(uint entityId, ref int subMeshIndex);
+        #endregion
+
+        #region PhysicsActor
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_SetKinematicTarget(uint entityId, ref Vector3 position, ref Quaternion rotation);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_SetLinearVelocity(uint entityId, ref Vector3 velocity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_SetAngularVelocity(uint entityId, ref Vector3 velocity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_SetMaxLinearVelocity(uint entityId, ref float velocity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_SetMaxAngularVelocity(uint entityId, ref float velocity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_GetKinematicTargetPosition(uint entityId, out Vector3 position);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_GetKinematicTargetRotation(uint entityId, out Quaternion rotation);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_AddForce(uint entityId, ref Vector3 force, ForceMode forceMode);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_AddTorque(uint entityId, ref Vector3 torque, ForceMode forceMode);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_WakeUp(uint entityId);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PhysicsActor_PutToSleep(uint entityId);
+        #endregion
+
+        #region Physics
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Physics_Raycast(ref Vector3 origin, ref Vector3 direction, out RaycastHit hit, float maxDistance);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Physics_RaycastLayerMask(ref Vector3 origin, ref Vector3 direction, out RaycastHit hit, float maxDistance, uint layerMask);
         #endregion
 
         #region Input
@@ -224,6 +269,11 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Input_SetMousePosition(float x, float y);
+        #endregion
+
+        #region Log
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Log_String(ref string text, LogLevel logLevel);
         #endregion
     }
 }

@@ -317,7 +317,7 @@ namespace Volt
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
 		VT_CORE_ASSERT(actor, "Actor is null!");
-		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
+ 		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
 	}
 
 	void PhysicsActor::AddTorque(const gem::vec3& torque, ForceMode aForceMode)
