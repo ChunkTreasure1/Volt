@@ -38,10 +38,10 @@ namespace Volt
 			uint32_t entityCount = 0;
 		};
 
-		struct TRS
+		struct TQS
 		{
 			gem::vec3 position = { 0.f, 0.f, 0.f };
-			gem::vec3 rotation = { 0.f, 0.f, 0.f };
+			gem::quat rotation = { 1.f, 0.f, 0.f, 0.f };
 			gem::vec3 scale = { 1.f, 1.f, 1.f };
 		};
 
@@ -74,7 +74,7 @@ namespace Volt
 		void UnparentEntity(Entity entity);
 		
 		gem::mat4 GetWorldSpaceTransform(Entity entity, bool accountForActor = false);
-		TRS GetWorldSpaceTRS(Entity entity);
+		TQS GetWorldSpaceTRS(Entity entity);
 
 		Entity InstantiateSplitMesh(const std::filesystem::path& path);
 

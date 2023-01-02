@@ -4,6 +4,7 @@
 #include "Volt/Platform/ExceptionHandling.h"
 
 #include <filesystem>
+#include <iostream>
 
 extern Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath);
 
@@ -24,16 +25,18 @@ namespace Volt
 
 	void CreateProxy(std::filesystem::path& dmpPath, const std::filesystem::path& path)
 	{
+#ifdef VT_DIST
 		__try
 		{
 			Create(path);
 		}
 		__except (ExceptionFilterFunction(GetExceptionInformation(), dmpPath))
 		{
-#ifndef VT_DEBUG
 			StartCrashHandler();
-#endif
 		}
+#else
+		Create(path);
+#endif
 	}
 
 	int Main(const std::filesystem::path& appPath)
@@ -57,7 +60,12 @@ int APIENTRY WinMain(HINSTANCE aHInstance, HINSTANCE aPrevHInstance, PSTR aCmdLi
 
 int main(int argc, char** argv)
 {
-	return Volt::Main(argv[0]);
+	if (argc > 1)
+	{
+		return Volt::Main(argv[1]);
+	}
+
+	return Volt::Main("");
 }
 
 #endif

@@ -3,7 +3,6 @@
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scripting/ScriptRegistry.h>
@@ -140,7 +139,7 @@ void PropertiesPanel::UpdateMainContent()
 					}
 				}
 
-					gem::vec3 rotDegrees = gem::degrees(transform.rotation);
+					gem::vec3 rotDegrees = gem::degrees(gem::eulerAngles(transform.rotation));
 					if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
 						{
 							for (auto& ent : entities)
@@ -150,11 +149,11 @@ void PropertiesPanel::UpdateMainContent()
 							}
 						}))
 					{
-						transform.rotation = gem::radians(rotDegrees);
+						transform.rotation = gem::quat{ gem::radians(rotDegrees) };
 
 						if (myMidEvent == false)
 						{
-							Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.rotation, transform.rotation);
+							Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
 							EditorCommandStack::PushUndo(command);
 							myMidEvent = true;
 						}
@@ -262,6 +261,7 @@ void PropertiesPanel::UpdateMainContent()
 							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(gem::vec2*)(&data[prop.offset])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(gem::vec3*)(&data[prop.offset])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset])); break;
 							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset])); break;
 
 							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(gem::vec3*)(&data[prop.offset])); break;
@@ -512,6 +512,15 @@ void PropertiesPanel::UpdateMainContent()
 									}
 								}); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec4& val)
+								{
+									for (auto& ent : entities)
+									{
+										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+										*(gem::vec4*)&entData[prop.offset] = val;
+									}
+								}); break;
+
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec4& val)
 								{
 									for (auto& ent : entities)
 									{
@@ -949,6 +958,18 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 						break;
 					}
 
+					case Wire::ComponentRegistry::PropertyType::Quaternion:
+					{
+						gem::vec4 value = scriptInstance->GetField<gem::vec4>(name);
+
+						if (UI::Property(name, value))
+						{
+							scriptInstance->SetField(name, &value);
+						}
+
+						break;
+					}
+
 					case Wire::ComponentRegistry::PropertyType::EntityId:
 					{
 						Wire::EntityId value = scriptInstance->GetField<Wire::EntityId>(name);
@@ -995,6 +1016,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(name, *(gem::vec2*)(&entField.data[0])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(name, *(gem::vec3*)(&entField.data[0])); break;
 							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(name, *(gem::vec4*)(&entField.data[0])); break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(name, *(gem::vec4*)(&entField.data[0])); break;
 							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(name, myCurrentScene, *(Wire::EntityId*)(&entField.data[0])); break;
 
 							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(name, *(gem::vec3*)(&entField.data[0])); break;
@@ -1138,6 +1160,18 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							}
 
 							case Wire::ComponentRegistry::PropertyType::Vector4:
+							{
+								gem::vec4 value = 0.f;
+
+								if (UI::Property(name, value))
+								{
+									entityFields[name].SetValue(value);
+								}
+
+								break;
+							}
+
+							case Wire::ComponentRegistry::PropertyType::Quaternion:
 							{
 								gem::vec4 value = 0.f;
 

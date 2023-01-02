@@ -146,9 +146,9 @@ project "Shaders"
 
 	files
 	{
-		"../../Build/Engine/Shaders/**.hlsl",
-		"../../Build/Engine/Shaders/**.hlslh",
-		"../../Build/Engine/Shaders/**.hlsli"
+		"../../Engine/Engine/Shaders/**.hlsl",
+		"../../Engine/Engine/Shaders/**.hlslh",
+		"../../Engine/Engine/Shaders/**.hlsli"
 	}
 
 	filter "system:windows"

@@ -22,7 +22,7 @@
 #include "Volt/Scripting/Script.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
-#include "Volt/Utility/Math.h"
+#include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Rendering/RendererStructs.h"
@@ -280,7 +280,7 @@ namespace Volt
 				{
 					cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 					cameraComp.camera->SetPosition(transComp.position);
-					cameraComp.camera->SetRotation(transComp.rotation);
+					cameraComp.camera->SetRotation(gem::eulerAngles(transComp.rotation));
 				}
 			});
 
@@ -430,7 +430,7 @@ namespace Volt
 		Entity newEntity = Entity(id, this);
 		auto& transform = newEntity.AddComponent<TransformComponent>();
 		transform.position = { 0.f, 0.f, 0.f };
-		transform.rotation = { 0.f, 0.f, 0.f };
+		transform.rotation = { 1.f, 0.f, 0.f, 0.f };
 		transform.scale = { 1.f, 1.f, 1.f };
 
 		auto& tagComp = newEntity.AddComponent<TagComponent>();
@@ -587,11 +587,14 @@ namespace Volt
 		return transform * transformComp.GetTransform();
 	}
 
-	Scene::TRS Scene::GetWorldSpaceTRS(Entity entity)
+	Scene::TQS Scene::GetWorldSpaceTRS(Entity entity)
 	{
-		TRS transform;
+		TQS transform;
 
-		gem::decompose(GetWorldSpaceTransform(entity, false), transform.position, transform.rotation, transform.scale);
+		gem::vec3 r;
+		gem::decompose(GetWorldSpaceTransform(entity, false), transform.position, r, transform.scale);
+
+		transform.rotation = gem::quat{ r };
 		return transform;
 	}
 
@@ -624,7 +627,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldForward(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 0.f, 0.f, 1.f });
@@ -633,7 +636,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldRight(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 1.f, 0.f, 0.f });
@@ -642,7 +645,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldUp(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 0.f, 1.f, 0.f });
@@ -937,7 +940,11 @@ namespace Volt
 		auto& transform = entity.GetComponent<TransformComponent>();
 
 		const gem::mat4 transformMatrix = GetWorldSpaceTransform(entity);
-		gem::decompose(transformMatrix, transform.position, transform.rotation, transform.scale);
+
+		gem::vec3 r;
+		gem::decompose(transformMatrix, transform.position, r, transform.scale);
+	
+		transform.rotation = gem::quat{ r };
 	}
 
 	void Scene::ConvertToLocalSpace(Entity entity)
@@ -953,7 +960,9 @@ namespace Volt
 		const gem::mat4 parentTransform = GetWorldSpaceTransform(parent);
 		const gem::mat4 localTransform = gem::inverse(parentTransform) * transform.GetTransform();
 
-		gem::decompose(localTransform, transform.position, transform.rotation, transform.scale);
+		gem::vec3 r;
+		gem::decompose(localTransform, transform.position, r, transform.scale);
+		transform.rotation = gem::quat{ r };
 	}
 
 	void Scene::SortScene()

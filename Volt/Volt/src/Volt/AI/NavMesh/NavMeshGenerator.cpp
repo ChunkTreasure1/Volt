@@ -38,7 +38,7 @@ namespace Volt
 			info.first = vertexList;
 			info.second = indexList;
 
-			auto up = aEntity.GetUp();
+			auto up = aEntity.GetLocalUp();
 			auto final = FilterNavMeshVertices(info, up, aAngle);
 
 			result.first.insert(result.first.end(), final.first.begin(), final.first.end());

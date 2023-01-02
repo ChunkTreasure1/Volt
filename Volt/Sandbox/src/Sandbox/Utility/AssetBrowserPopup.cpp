@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "AssetBrowserPopup.h"
 
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
@@ -29,7 +29,7 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 			ImGui::BeginChild("##searchBar", { 0.f, barHeight });
 			{
 				UI::ShiftCursor(5.f, 4.f);
-				ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Search)), { searchBarSize, searchBarSize });
+				ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Search)), { searchBarSize, searchBarSize });
 
 				ImGui::SameLine();
 

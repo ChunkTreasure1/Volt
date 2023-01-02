@@ -62,7 +62,7 @@ namespace Wire
 		m_nextEntityId = 1;
 	}
 
-	void Registry::Sort(const std::function<bool(const EntityId& lhs, const EntityId& rhs)>& sortFunc)
+	void Registry::Sort(std::function<bool(const uint32_t lhs, const uint32_t rhs)> sortFunc)
 	{
 		std::sort(m_usedIds.begin(), m_usedIds.end(), sortFunc);
 	}

@@ -16,6 +16,7 @@
 #include "Volt/Rendering/Shader/ShaderRegistry.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Audio/AudioManager.h"
@@ -46,6 +47,12 @@ namespace Volt
 
 		myWindow = Window::Create(windowProperties);
 		myWindow->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
+
+		if (!myInfo.isRuntime)
+		{
+			ProjectManager::SetupWorkingDirectory();
+			ProjectManager::SetupProject(myInfo.projectPath);
+		}
 
 		if (!myInfo.isRuntime)
 		{

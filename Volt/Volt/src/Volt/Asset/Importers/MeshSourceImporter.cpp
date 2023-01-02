@@ -5,20 +5,22 @@
 #include "Volt/Log/Log.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Project/ProjectManager.h"
 
 namespace Volt
 {
 	bool MeshSourceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Mesh>();
+		const auto filePath = ProjectManager::GetPath() / path;
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
-		auto mesh = MeshTypeImporter::ImportMesh(path);
+		auto mesh = MeshTypeImporter::ImportMesh(filePath);
 
 		if (!mesh) [[unlikely]]
 		{

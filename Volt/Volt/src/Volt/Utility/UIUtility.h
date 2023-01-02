@@ -1348,15 +1348,6 @@ public:
 			}
 		}
 
-		//if (auto ptr = UI::DragDropTarget("CONTENT_BROWSER_ITEM"))
-		//{
-		//	const wchar_t* inPath = (const wchar_t*)ptr;
-		//	std::filesystem::path newPath = std::filesystem::path("assets") / inPath;
-
-		//	path = newPath;
-		//	changed = true;
-		//}
-
 		return changed;
 	}
 
@@ -1399,15 +1390,6 @@ public:
 				}
 			}
 		}
-
-		//if (auto ptr = UI::DragDropTarget("CONTENT_BROWSER_ITEM"))
-		//{
-		//	const wchar_t* inPath = (const wchar_t*)ptr;
-		//	std::filesystem::path newPath = std::filesystem::path("assets") / inPath;
-
-		//	path = newPath;
-		//	changed = true;
-		//}
 
 		return changed;
 	}

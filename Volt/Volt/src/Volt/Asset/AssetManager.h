@@ -8,6 +8,7 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include <map>
 #include <filesystem>
@@ -25,8 +26,6 @@ namespace Volt
 		void Initialize();
 		void Shutdown();
 
-		void LoadAsset(const std::filesystem::path& path, Ref<Asset>& asset);
-		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
 		void Unload(AssetHandle assetHandle);
 		void SaveAsset(const Ref<Asset> asset);
 
@@ -43,6 +42,7 @@ namespace Volt
 		void RemoveFromRegistry(AssetHandle asset);
 		void RemoveFromRegistry(const std::filesystem::path& path);
 		void RemoveFolderFromRegistry(const std::filesystem::path& path);
+		const AssetHandle AddToRegistry(const std::filesystem::path& path);
 
 		void ReloadAsset(AssetHandle handle);
 		void ReloadAsset(const std::filesystem::path& path);
@@ -52,7 +52,10 @@ namespace Volt
 		bool ExistsInRegistry(AssetHandle handle) const;
 		bool ExistsInRegistry(const std::filesystem::path& path) const;
 
-		inline const std::map<std::filesystem::path, AssetHandle>& GetAssetRegistry() const { return myAssetRegistry; }
+		const std::filesystem::path GetFilesystemPath(AssetHandle handle);
+		const std::filesystem::path GetRelativePath(const std::filesystem::path& path);
+
+		inline const std::unordered_map<std::filesystem::path, AssetHandle>& GetAssetRegistry() const { return myAssetRegistry; }
 
 		Ref<Asset> GetAssetRaw(AssetHandle assetHandle);
 		Ref<Asset> QueueAssetRaw(AssetHandle assetHandle);
@@ -78,9 +81,6 @@ namespace Volt
 		template<typename T>
 		static Ref<T> QueueAsset(AssetHandle handle);
 
-		template<typename T>
-		static AssetHandle GetHandle(const std::filesystem::path& path);
-
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args&&... args);
 
@@ -99,6 +99,8 @@ namespace Volt
 
 		inline static AssetManager* s_instance = nullptr;
 
+		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
+		
 		void QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset);
 		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset);
 
@@ -108,7 +110,7 @@ namespace Volt
 		void LoadAssetRegistry();
 
 		std::unordered_map<AssetType, Scope<AssetImporter>> myAssetImporters;
-		std::map<std::filesystem::path, AssetHandle> myAssetRegistry;
+		std::unordered_map<std::filesystem::path, AssetHandle> myAssetRegistry;
 		std::unordered_map<AssetHandle, Ref<Asset>> myAssetCache;
 
 		std::thread myLoadThread;
@@ -140,47 +142,9 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline AssetHandle AssetManager::GetHandle(const std::filesystem::path& path)
-	{
-		if (!std::filesystem::exists(path))
-		{
-			VT_CORE_ERROR("Unable to load asset {0}! It does not exist!", path.string().c_str());
-			return Asset::Null();
-		}
-
-		auto it = Get().myAssetRegistry.find(path);
-		if (it != Get().myAssetRegistry.end())
-		{
-			return it->second;
-		}
-
-		Ref<T> asset = GetAsset<T>(path);
-		if (asset)
-		{
-			return asset->handle;
-		}
-
-		return Asset::Null();
-	}
-
-	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& path)
 	{
-		if (!std::filesystem::exists(path))
-		{
-			VT_CORE_ERROR("Unable to load asset {0}! It does not exist!", path.string().c_str());
-			return nullptr;
-		}
-
-		Ref<Asset> asset;
-		Get().LoadAsset(path, asset);
-
-		if (asset->GetType() != T::GetStaticType())
-		{
-			asset = nullptr;
-		}
-
-		return std::reinterpret_pointer_cast<T>(asset);
+		return GetAsset<T>(GetAssetHandleFromPath(path));
 	}
 
 	template<typename T>
@@ -196,11 +160,7 @@ namespace Volt
 		asset->SetFlag(AssetFlag::Queued, true);
 		Get().QueueAssetInternal(path, asset);
 
-		if (asset->GetType() != T::GetStaticType())
-		{
-			asset = nullptr;
-		}
-
+		VT_CORE_ASSERT(asset->GetType() == T::GetStaticType(), "Type mismatch!")
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -217,7 +177,7 @@ namespace Volt
 		Get().QueueAssetInternal(handle, asset);
 
 		VT_CORE_ASSERT(asset->GetType() == T::GetStaticType(), "Type mismatch!")
-			return std::reinterpret_pointer_cast<T>(asset);
+		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
 	template<typename T, typename ...Args>
@@ -225,7 +185,6 @@ namespace Volt
 	{
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
 		asset->path = targetDir / filename;
-		asset->handle = AssetHandle();
 
 		std::scoped_lock lock(Get().myLoadMutex);
 

@@ -4,6 +4,7 @@
 #include "Volt/Asset/Prefab.h"
 #include "Volt/Log/Log.h"
 #include "Volt/Components/Components.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/SerializationMacros.h"
@@ -38,16 +39,18 @@ namespace Volt
 	bool PrefabImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Prefab>();
+		const auto filePath = ProjectManager::GetPath() / path;
+
 		Wire::Registry registry;
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream file(path);
+		std::ifstream file(filePath);
 		if (!file.is_open()) [[unlikely]]
 		{
 			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
@@ -379,11 +382,13 @@ namespace Volt
 		prefab->myRegistry = registry;
 		prefab->myVersion = version;
 		prefab->path = path;
-
+		
 		if (prefab->handle != assetHandle && assetHandle != Asset::Null())
 		{
 			VT_CORE_ERROR("Asset handle mismatch in prefab {0}! Please correct the asset registry! Registry: {1}, Asset: {2}", path.string(), prefab->handle, assetHandle);
 		}
+
+		prefab->handle = assetHandle;
 
 		return true;
 	}
@@ -510,7 +515,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(asset->path);
+		std::ofstream fout(ProjectManager::GetPath() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}

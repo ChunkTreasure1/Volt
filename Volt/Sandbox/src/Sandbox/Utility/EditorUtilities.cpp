@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "EditorUtilities.h"
 
-#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
@@ -9,6 +9,7 @@
 
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
+#include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -132,7 +133,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 	ImGui::BeginChild("##searchBar", { ImGui::GetContentRegionAvail().x, barHeight });
 	{
 		UI::ShiftCursor(5.f, 4.f);
-		ImGui::Image(UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Search)), { searchBarSize, searchBarSize });
+		ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Search)), { searchBarSize, searchBarSize });
 
 		ImGui::SameLine();
 
@@ -359,7 +360,7 @@ bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCh
 		if (ImGui::Button("Create"))
 		{
 			created = true;
-			outCharacter = Volt::AssetManager::CreateAsset<Volt::AnimatedCharacter>(FileSystem::GetPathRelativeToBaseFolder(aCharacterData.destination), aCharacterData.name + ".vtchr");
+			outCharacter = Volt::AssetManager::CreateAsset<Volt::AnimatedCharacter>(Volt::ProjectManager::GetPathRelativeToProject(aCharacterData.destination), aCharacterData.name + ".vtchr");
 
 			if (aCharacterData.skeletonHandle != Volt::Asset::Null())
 			{
@@ -448,7 +449,7 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 	const std::filesystem::path thumbnailPath = GetThumbnailPathFromPath(path);
 
 	constexpr int32_t channels = 4;
-	stbi_write_png(thumbnailPath.string().c_str(), imageSpec.width, imageSpec.height, channels, buffer.As<void>(), imageSpec.width * Volt::Utility::PerPixelSizeFromFormat(imageSpec.format));
+	stbi_write_png((Volt::ProjectManager::GetPath() / thumbnailPath).string().c_str(), imageSpec.width, imageSpec.height, channels, buffer.As<void>(), imageSpec.width * Volt::Utility::PerPixelSizeFromFormat(imageSpec.format));
 	Ref<Volt::Texture2D> thumbnailAsset = Volt::AssetManager::CreateAsset<Volt::Texture2D>(thumbnailPath.parent_path(), thumbnailPath.filename().string(), image);
 
 	buffer.Release();
@@ -458,7 +459,7 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 
 bool EditorUtils::HasThumbnail(const std::filesystem::path& path)
 {
-	return FileSystem::Exists(GetThumbnailPathFromPath(path));
+	return FileSystem::Exists(Volt::ProjectManager::GetPath() / GetThumbnailPathFromPath(path));
 }
 
 std::filesystem::path EditorUtils::GetThumbnailPathFromPath(const std::filesystem::path& path)
