@@ -401,6 +401,11 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 #ifdef VT_THREADED_RENDERING
+		if (!aMaterial)
+		{
+			return;
+		}
+
 		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
 		currentCommandBuffer->Submit([mesh = aMesh, material = aMaterial, subMeshIndex = aSubMeshIndex, transform = aTransform, boneTransforms = aBoneTransforms]()
 			{

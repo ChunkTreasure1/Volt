@@ -53,7 +53,7 @@ namespace Volt
 
 	const std::filesystem::path ProjectManager::GetMonoAssemblyPath()
 	{
-		return GetPath() / "Binaries" / "Project.dll";
+		return GetDirectory() / "Binaries" / "Project.dll";
 	}
 
 	const std::filesystem::path& ProjectManager::GetDirectory()

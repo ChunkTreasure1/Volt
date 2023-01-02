@@ -452,7 +452,7 @@ void Sandbox::NewScene()
 			auto ent = myRuntimeScene->CreateEntity();
 			auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Cube";
-			meshComp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh")->handle;
+			meshComp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh")->handle;
 		}
 
 		// Light
@@ -484,13 +484,6 @@ void Sandbox::NewScene()
 			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Skylight";
 
 			skyLight.environmentHandle = Volt::AssetManager::GetAsset<Volt::Texture2D>("Assets/Textures/HDRIs/studio_small_08_4k.hdr")->handle;
-		}
-
-		// Sprite
-		{
-			auto ent = myRuntimeScene->CreateEntity();
-			ent.AddComponent<Volt::SpriteComponent>();
-			ent.SetPosition({ 500.f, 0.f, 0.f });
 		}
 
 		{
@@ -778,7 +771,7 @@ void Sandbox::SetupRenderCallbacks()
 				if (transformComp.visible && myShouldRenderGizmos)
 				{
 					gem::vec3 p, s, r;
-					Volt::Math::DecomposeTransform(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
+					gem::decompose(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
 
 					const float maxDist = 5000.f;
 					const float lerpStartDist = 4000.f;
@@ -892,11 +885,11 @@ void Sandbox::SetupRenderCallbacks()
 				auto ent = Volt::Entity{ id, myRuntimeScene.get() };
 				auto trs = myRuntimeScene->GetWorldSpaceTRS(ent);
 
-				gem::vec3 newRot = trs.rotation;
-				newRot.x += gem::radians(-90.f);
+				gem::quat newRot = trs.rotation;
+				newRot *= gem::quat{ gem::vec3{gem::radians(-90.f), 0.f, 0.f} };
 
 				constexpr float uniformScale = 0.25f * 0.25f;
-				gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(gem::quat(newRot)) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
+				gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(newRot) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
 
 				Volt::Renderer::DrawMesh(arrowMesh, material, transform);
 			});

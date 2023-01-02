@@ -1,1234 +1,629 @@
 Assets:
-  - Handle: 6445224243178957
-    Path: Assets/Meshes/MaterialBall/Textures/Matball_One_m.dds
+  - Handle: 24782950756383702
+    Path: Engine/Shaders/Definitions/Editor/colliderDebug.vtsdef
     Dependencies:
-      []
-  - Handle: 67543965471256622
-    Path: Engine/Shaders/HLSL/PostProcessing/FXAA_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 172663477939023050
-    Path: Assets/Meshes/Sponza/Textures/column_b_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 176787352877672274
-    Path: Engine/Shaders/HLSL/PostProcessing/BloomTest_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 244066359659705186
-    Path: Engine/Shaders/HLSL/Utility/Cull_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 247633833348157115
-    Path: Engine/Shaders/HLSL/2D/EntityGizmo_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 294176559203194925
-    Path: Engine/Shaders/Definitions/Environment/environmentIrradiance.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Environment/EnvironmentIrradiance_cs.hlsl
-  - Handle: 394711364723164796
-    Path: Assets/Textures/FullMetal/T_FullMetal_c.dds
-    Dependencies:
-      []
-  - Handle: 466582613271487222
+      - Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl
+      - Engine/Shaders/HLSL/Editor/ColliderDebug_ps.hlsl
+  - Handle: 142799555883859715
     Path: Assets/Textures/HDRIs/kloppenheim_02_4k.hdr.vtthumb.png
     Dependencies:
       []
-  - Handle: 571791690854267501
-    Path: Assets/Meshes/Sponza/Textures/Curtain_red_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 771677651610950824
-    Path: Assets/Meshes/Sponza/Textures/thorn_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1105874396600839809
-    Path: Engine/Shaders/HLSL/Editor/EditorPBR_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 1139217248962512267
-    Path: Assets/Textures/HDRIs/moonless_golf_4k.hdr
-    Dependencies:
-      []
-  - Handle: 1310440977764011490
-    Path: Engine/Shaders/HLSL/Default_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 1544133752279740547
-    Path: Assets/Meshes/Sponza/Textures/lion_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1544439465577822007
-    Path: Assets/Meshes/Sponza/Textures/floor_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1560517356194148391
-    Path: Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 1567238629680646220
-    Path: Assets/Meshes/Sponza/Textures/thorn_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1634771906445844838
-    Path: Assets/Meshes/Sponza/Textures/flowers_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1641372852886800623
-    Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 1737528423179009676
-    Path: Assets/Meshes/Sponza/Textures/ceiling_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 1778922858137102672
-    Path: Assets/Meshes/Sponza/Textures/floor_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1829314991880182292
-    Path: Assets/Meshes/Sponza/Textures/arch_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 1877689180626738857
-    Path: Assets/Meshes/Sponza/Textures/floor_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 1938927740035409467
-    Path: Engine/Shaders/Definitions/Environment/skybox.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Environment/Skybox_vs.hlsl
-      - Engine/Shaders/HLSL/Environment/Skybox_ps.hlsl
-  - Handle: 1953043790550099134
-    Path: Assets/Meshes/Sponza/Textures/thorn_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 2048979037842174905
-    Path: Engine/Shaders/HLSL/Editor/SelectedGeometry_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 2181315234144925548
-    Path: Engine/Shaders/HLSL/Environment/Skybox_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 2245070553323661171
-    Path: Engine/Shaders/HLSL/Utility/LightCull_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 2368479235167962621
-    Path: Assets/Meshes/Sponza/Textures/floor_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 2455840542388271970
-    Path: Engine/Shaders/HLSL/Deferred/Decal_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 2467612528785687064
-    Path: Assets/Meshes/Sponza/Textures/column_c_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 2712178233559471099
-    Path: Assets/Meshes/Sponza/Textures/background_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 2739894427588566888
-    Path: Assets/Meshes/Sponza/Textures/flagpole_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 2782818124840842434
-    Path: Assets/Meshes/Sponza/Textures/Curtain_green_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 2783599888191230873
-    Path: Assets/Meshes/Sponza/Textures/Curtain_red_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 2799765541251788040
-    Path: Engine/Shaders/Definitions/2D/line.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/2D/Line_vs.hlsl
-      - Engine/Shaders/HLSL/2D/Line_ps.hlsl
-  - Handle: 3041696664305365738
-    Path: Assets/Meshes/Sponza/Textures/fabric_green_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 3051929637497597808
-    Path: Assets/Meshes/Sponza/Textures/column_c_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 3087960809423031881
-    Path: Engine/Fonts/Inter/Inter-Regular.ttf
-    Dependencies:
-      []
-  - Handle: 3467022928170008594
-    Path: Engine/Shaders/HLSL/Forward/TilingTexture_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 3497138712833594373
-    Path: Assets/Meshes/Sponza/Textures/details_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 3529471646954883872
-    Path: Assets/Meshes/Sponza/Textures/column_a_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 3573205056246319493
-    Path: Engine/Shaders/HLSL/Editor/JumpFloodInit_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 3845880337038344515
-    Path: Engine/Shaders/Definitions/PostProcessing/HBAO/HBAOBlur.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/HBAO/HBAOBlur_ps.hlsl
-  - Handle: 3872693817463810651
-    Path: Assets/Meshes/Sponza/Textures/Curtain_blue_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 3907104677195473038
-    Path: Assets/Meshes/Sponza/Textures/ceiling_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 3922092504539552794
-    Path: Assets/Meshes/Sponza/Textures/lion_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 3924951807549109550
-    Path: Engine/Shaders/HLSL/Editor/JumpFloodPass_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 4119146390139145533
-    Path: Assets/Meshes/Sponza/Textures/fabric_blue_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 4197477966475168438
-    Path: Assets/Meshes/Sponza/Textures/vase_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 4242094421263719516
-    Path: Assets/Meshes/MaterialBall/Textures/Matball_One_c.dds
-    Dependencies:
-      []
-  - Handle: 4258919723923287749
-    Path: Assets/Meshes/Sponza/Textures/Curtain_green_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 4269901439388899333
-    Path: Assets/Meshes/Sponza/Textures/fabric_red_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 4350490207439423332
-    Path: Assets/Meshes/MaterialBall/Textures/Matball_One_n.dds
-    Dependencies:
-      []
-  - Handle: 4436700341265927590
-    Path: Assets/Meshes/Sponza/Textures/fabric_red_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 4586798072914564565
-    Path: Engine/Shaders/Definitions/Editor/jumpFloodPass.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Editor/JumpFloodPass_vs.hlsl
-      - Engine/Shaders/HLSL/Editor/JumpFloodPass_ps.hlsl
-  - Handle: 4592155455071230390
-    Path: Engine/Shaders/Definitions/Utility/brdfGeneration.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/BRDFGeneration_cs.hlsl
-  - Handle: 4619148529289320414
-    Path: Assets/Meshes/Sponza/Textures/chain_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 4770693411875580426
-    Path: Assets/Meshes/Sponza/Textures/chain_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 4831451701562086979
-    Path: Assets/Meshes/Sponza/Textures/fabric_blue_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 5036367380341881422
-    Path: Engine/Shaders/HLSL/PostProcessing/BloomUpsample_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 5102542400275929983
-    Path: Assets/Meshes/Sponza/Textures/lion_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 5106057285461331794
-    Path: Engine/Shaders/Definitions/PostProcessing/gammaCorrection.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/GammaCorrection_ps.hlsl
-  - Handle: 5169805975064399678
-    Path: Assets/Meshes/Sponza/Textures/arch_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 5302784886571682689
-    Path: Assets/Meshes/Sponza/Textures/fabric_green_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 5303105798236201083
-    Path: Editor/Materials/M_ColliderDebug.vtmat
-    Dependencies:
-      []
-  - Handle: 5407934234682634788
-    Path: Assets/Meshes/Sponza/Textures/column_a_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 5519387056157575911
-    Path: Assets/Meshes/Sponza/Textures/fabric_red_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 5570529823674132338
-    Path: Assets/Meshes/Sponza/Textures/details_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 5577860365387393351
-    Path: Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 5581346273609994560
-    Path: Assets/Meshes/Sponza/Textures/ceiling_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 5589069684812745423
-    Path: Engine/Shaders/Definitions/PostProcessing/bloowUpsample.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/PostProcessing/BloomUpsample_cs.hlsl
-  - Handle: 5603386882068070161
-    Path: ../Project/Assets/M_NewMaterial.vtmat
-    Dependencies:
-      []
-  - Handle: 5723029912338294200
-    Path: Engine/Shaders/Definitions/Deferred/deferred.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
-      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_ps.hlsl
-  - Handle: 5777079049576003707
-    Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 5814816449889991301
-    Path: Assets/Meshes/Sponza/Textures/vase_round_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 5872696659315426312
-    Path: Assets/Meshes/Sponza/Textures/column_a_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 5906520189540981512
-    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/Deinterleaving_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 5952086684956579606
-    Path: Engine/Shaders/HLSL/PostProcessing/BloomDownsample_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 6109265346986873301
-    Path: Assets/Meshes/Sponza/Textures/flagpole_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 6138859833347546915
-    Path: Engine/Fonts/Futura/futura-light.ttf
-    Dependencies:
-      []
-  - Handle: 6148400307781548453
-    Path: Engine/Shaders/HLSL/2D/Text_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 6160400062685938575
-    Path: Assets/Meshes/Test/SM_portal.fbx
-    Dependencies:
-      []
-  - Handle: 6176144874474580614
-    Path: Assets/Meshes/Sponza/Textures/vase_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 6268796194732582412
-    Path: Assets/Meshes/Sponza/Textures/fabric_blue_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 6299005197903220032
-    Path: Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 6357626945259540036
-    Path: Assets/Meshes/Sponza/Textures/lion_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 6408312276317456092
-    Path: Engine/Shaders/HLSL/Environment/EquirectangularToCubemap_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 6620074340162904796
-    Path: Engine/Shaders/Definitions/Editor/selectedGeometry.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl
-      - Engine/Shaders/HLSL/Editor/SelectedGeometry_ps.hlsl
-  - Handle: 6648940935486781193
-    Path: Assets/Meshes/Sponza/Textures/fabric_blue_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 6852549442866489123
-    Path: Assets/Meshes/Sponza/Textures/bricks_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 6888504788057903831
-    Path: Engine/Shaders/Definitions/Utility/copyTextureToTarget.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/Utility/CopyTextureToTarget_ps.hlsl
-  - Handle: 6962500757481570835
-    Path: Assets/Meshes/Sponza/Textures/bricks_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 7011765459187930245
-    Path: Engine/Shaders/Definitions/2D/grid.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/2D/Grid_vs.hlsl
-      - Engine/Shaders/HLSL/2D/Grid_ps.hlsl
-  - Handle: 7021649004746400016
+  - Handle: 394628125468114066
     Path: Engine/Shaders/Definitions/PostProcessing/FXAA.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
       - Engine/Shaders/HLSL/PostProcessing/FXAA_ps.hlsl
-  - Handle: 7282241392209737990
-    Path: Assets/Meshes/Sponza/Textures/vase_round_mat_m.dds.vtthumb.png
+  - Handle: 413987407173744871
+    Path: Engine/Shaders/Definitions/Environment/skybox.vtsdef
     Dependencies:
-      []
-  - Handle: 7306562273862396109
-    Path: Assets/Meshes/Sponza/Textures/column_a_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 7409066874596315699
-    Path: Assets/Meshes/Sponza/Textures/column_b_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 7410243474001366854
-    Path: Assets/Meshes/Sponza/Textures/lion_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 7414882634548781216
-    Path: Assets/Meshes/Sponza/Textures/Curtain_green_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 7466291186550719793
-    Path: Engine/Shaders/HLSL/Forward/TilingTexture_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 7473719087376702712
-    Path: Engine/Shaders/Definitions/Environment/environmentMipFilter.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
-  - Handle: 7504283916333001776
-    Path: Assets/Meshes/Sponza/Textures/vase_hanging_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 7602270079551233272
-    Path: Engine/Shaders/Definitions/Utility/lightCull.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/LightCull_cs.hlsl
-  - Handle: 7626081386058508065
-    Path: Assets/Meshes/Sponza/Textures/roof_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 7636099355444828232
-    Path: Engine/Shaders/HLSL/Shadows/PointLightShadow_gs.hlsl
-    Dependencies:
-      []
-  - Handle: 7664992440758813236
-    Path: Assets/Meshes/Sponza/Textures/flagpole_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 7736057635161983907
-    Path: Engine/Shaders/HLSL/VoxelGI/VoxelCommon.hlslh
-    Dependencies:
-      []
-  - Handle: 7775422028350477574
-    Path: Assets/Meshes/Sponza/Textures/roof_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 7847144804342397922
-    Path: Assets/Meshes/Primitives/Cube.vtmesh
-    Dependencies:
-      []
-  - Handle: 7880185475852051140
-    Path: Assets/Meshes/Sponza/Textures/column_b_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 7892293366742142424
-    Path: Assets/Textures/lutTest.dds
-    Dependencies:
-      []
-  - Handle: 8028841079034380741
-    Path: Assets/Meshes/Sponza/Textures/vase_round_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 8103516253053697527
-    Path: Engine/Shaders/HLSL/Default_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 8104350680459366432
-    Path: Assets/Meshes/Sponza/Textures/details_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 8117451352321280809
-    Path: Assets/Meshes/Sponza/Textures/flowers_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 8155396515399077437
-    Path: Assets/Meshes/MaterialBall/Textures/Matball_Two_n.dds
-    Dependencies:
-      []
-  - Handle: 8217620572508664600
-    Path: Assets/Meshes/Sponza/Textures/flagpole_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 8265495424440348884
-    Path: Assets/Meshes/Sponza/Textures/vase_hanging_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 8327537487619090051
-    Path: Assets/Textures/lutTest.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 8332696838368924016
-    Path: Assets/Meshes/Sponza/Textures/floor_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 8347767038532799339
-    Path: Engine/Shaders/Definitions/2D/text.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/2D/Text_vs.hlsl
-      - Engine/Shaders/HLSL/2D/Text_ps.hlsl
-  - Handle: 8374121540940625802
-    Path: Engine/Shaders/Definitions/PostProcessing/bloomDownsample.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/PostProcessing/BloomDownsample_cs.hlsl
-  - Handle: 8395796743543612507
-    Path: Assets/Textures/HDRIs/newport_loft.hdr
-    Dependencies:
-      []
-  - Handle: 8459270849013826252
-    Path: Engine/Fonts/OpenSans-Regular.ttf
-    Dependencies:
-      []
-  - Handle: 8578994157615271469
-    Path: Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 8583153025541421466
-    Path: Assets/Meshes/Sponza/Textures/Curtain_red_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 8598927726347300741
-    Path: Engine/Shaders/HLSL/2D/Text_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 8695470780231536814
-    Path: Assets/Meshes/Sponza/Textures/fabric_green_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 8729635243689551078
-    Path: Engine/Shaders/Definitions/Utility/hzb.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/HZB_cs.hlsl
-  - Handle: 8747153104688378255
-    Path: Assets/Meshes/Sponza/Textures/chain_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 8782824562787254561
-    Path: Engine/Shaders/HLSL/Deferred/GBufferGeneration_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 8783758416252321277
-    Path: Engine/Shaders/Definitions/default.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Default_vs.hlsl
-      - Engine/Shaders/HLSL/Default_ps.hlsl
-  - Handle: 8965085588235169017
-    Path: Assets/Meshes/Sponza/Textures/fabric_green_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 9032983036807251895
-    Path: Assets/Meshes/Sponza/Textures/lion_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 9200096695009697771
-    Path: Engine/Shaders/HLSL/Utility/FullscreenQuad_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 9246793382341451217
-    Path: Engine/Shaders/HLSL/PostProcessing/BloomComposite_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 9291083438436103278
-    Path: Assets/Meshes/Sponza/Textures/column_b_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 9359023716561299312
-    Path: Engine/Shaders/Definitions/PostProcessing/bloomComposite.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/PostProcessing/BloomComposite_ps.hlsl
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-  - Handle: 9362043696633194469
-    Path: Engine/Shaders/Definitions/Editor/editorPBR.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Editor/editorPBR_vs.hlsl
-      - Engine/Shaders/HLSL/Editor/editorPBR_ps.hlsl
-  - Handle: 9436771963225110361
-    Path: Assets/Meshes/Sponza/Textures/fabric_red_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 9439881263605364885
-    Path: Engine/Shaders/HLSL/PostProcessing/vignette_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 9443119619461289117
-    Path: Assets/Meshes/Primitives/Cone.vtmesh
-    Dependencies:
-      []
-  - Handle: 9471116049557253195
-    Path: Assets/Meshes/Sponza/Textures/vase_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 9486716067763883965
-    Path: Assets/Meshes/Sponza/Textures/chain_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 9498234495996901164
-    Path: Assets/Meshes/Sponza/Textures/arch_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 9616794043975768039
-    Path: Assets/Meshes/Sponza/Textures/vase_hanging_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 9688370490308985570
-    Path: Assets/Meshes/Sponza/Textures/vase_hanging_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 9783021349467119212
-    Path: Engine/Shaders/HLSL/2D/EntityGizmo_gs.hlsl
-    Dependencies:
-      []
-  - Handle: 9823123896047476132
-    Path: Assets/Meshes/Sponza/Textures/flowers_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 9857398772258391234
-    Path: Engine/Shaders/Definitions/PostProcessing/bloomTest.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/BloomTest_ps.hlsl
-  - Handle: 9958720808007830416
-    Path: Assets/Meshes/Sponza/Textures/background_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 10038194259438083599
-    Path: Assets/Meshes/Primitives/Sphere.vtmesh
-    Dependencies:
-      []
-  - Handle: 10150293608524105513
-    Path: Engine/Shaders/Definitions/Editor/jumpFloodInit.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Editor/JumpFloodInit_ps.hlsl
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-  - Handle: 10151373811767048725
-    Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr
-    Dependencies:
-      []
-  - Handle: 10234794876132246758
-    Path: Engine/Shaders/HLSL/Utility/PreDepth_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 10297918921748689686
-    Path: Assets/Textures/HDRIs/kloppenheim_02_4k.hdr
-    Dependencies:
-      []
-  - Handle: 10469142458840175718
-    Path: Assets/Meshes/Sponza/Textures/roof_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 10665287452383658983
-    Path: Assets/Textures/FullMetal/T_FullMetal_N.dds
-    Dependencies:
-      []
-  - Handle: 10716856421046737135
-    Path: Engine/Shaders/HLSL/Editor/EditorPBR_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 10735811975652615966
-    Path: Assets/Meshes/Test/SM_portal.vtmesh
-    Dependencies:
-      - Assets/Meshes/Test/SM_portal.fbx
-  - Handle: 10762696276273547992
-    Path: Assets/Meshes/Sponza/Textures/bricks_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 10785175906530884207
-    Path: Assets/Meshes/Primitives/Plane.vtmesh
-    Dependencies:
-      []
-  - Handle: 10794523485415659309
-    Path: Assets/Meshes/Sponza/Textures/Curtain_red_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 10885448075872239147
-    Path: Assets/Meshes/MaterialBall/Textures/Matball_Two_m.dds
-    Dependencies:
-      []
-  - Handle: 10928653624963409653
-    Path: Assets/Meshes/Sponza/Textures/Curtain_blue_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 11085820688508538520
-    Path: Assets/Textures/FullMetal/T_FullMetal_m.dds
-    Dependencies:
-      []
-  - Handle: 11088741937639003612
-    Path: Engine/Shaders/Definitions/Editor/jumpFloodComposite.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl
-      - Engine/Shaders/HLSL/Utility/FullscreenQuad_vs.hlsl
-  - Handle: 11140217951930837362
-    Path: Engine/Shaders/Definitions/PostProcessing/vignette.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/vignette_ps.hlsl
-  - Handle: 11340545045779788414
-    Path: Engine/Shaders/HLSL/Environment/Skybox_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 11549107510768024100
-    Path: Assets/Meshes/Sponza/Textures/column_c_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 11586996084933231771
-    Path: Assets/Meshes/Sponza/Textures/column_c_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 11597697422542518053
-    Path: Engine/Shaders/HLSL/2D/Grid_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 11624196357775104054
-    Path: Assets/Meshes/Sponza/Textures/details_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 11665338839338255209
-    Path: Assets/Meshes/Sponza/Textures/vase_round_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 11671413037573952553
-    Path: Assets/Meshes/Sponza/Textures/vase_round_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 11711049601459610570
-    Path: Assets/Meshes/Sponza/Textures/column_c_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 11748217936769555039
-    Path: Assets/Materials/M_FullMetal.vtmat
-    Dependencies:
-      []
-  - Handle: 11761756510881903500
-    Path: Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 11778314346843446735
-    Path: Assets/Meshes/Sponza/Textures/ceiling_mat_c.dds
+      - Engine/Shaders/HLSL/Environment/Skybox_vs.hlsl
+      - Engine/Shaders/HLSL/Environment/Skybox_ps.hlsl
+  - Handle: 556617469650233016
+    Path: Engine/Shaders/HLSL/PostProcessing/ColorGrading_ps.hlsl
     Dependencies:
       []
-  - Handle: 11815905390365201117
+  - Handle: 796610198874795477
     Path: Engine/Shaders/Definitions/Shadows/pointLightShadow.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/Shadows/PointLightShadow_vs.hlsl
       - Engine/Shaders/HLSL/Shadows/PointLightShadow_gs.hlsl
       - Engine/Shaders/HLSL/Shadows/PointLightShadow_ps.hlsl
-  - Handle: 11817025111092576131
-    Path: Assets/Meshes/Sponza/Textures/flowers_mat_c.dds.vtthumb.png
+  - Handle: 947450116729805577
+    Path: Engine/Shaders/Definitions/Utility/lightCull.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/LightCull_cs.hlsl
+  - Handle: 953066999227762086
+    Path: Assets/Meshes/Primitives/SM_Cylinder.fbx
     Dependencies:
       []
-  - Handle: 11831064312913815243
-    Path: Assets/Meshes/Sponza/Textures/ceiling_mat_c.dds.vtthumb.png
+  - Handle: 1005982315021718536
+    Path: Engine/Shaders/HLSL/PostProcessing/SSR_ps.hlsl
     Dependencies:
       []
-  - Handle: 11842485084870420079
-    Path: Assets/Prefabs/Cube.vtprefab
+  - Handle: 1015589383243938398
+    Path: Assets/Meshes/Primitives/SM_Plane.vtmesh
+    Dependencies:
+      - Assets/Meshes/Primitives/SM_Plane.fbx
+  - Handle: 1024840317789800361
+    Path: Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl
     Dependencies:
       []
-  - Handle: 11869401428580091690
-    Path: Assets/Meshes/Sponza/Textures/background_mat_c.dds
+  - Handle: 1093368479318915334
+    Path: Assets/Meshes/Primitives/SM_Sphere.vtmesh
     Dependencies:
-      []
-  - Handle: 11960573924838215478
-    Path: Assets/Meshes/Sponza/Textures/Curtain_blue_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 11977115838849055967
-    Path: Engine/Shaders/Definitions/Shadows/directionalShadow.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
-  - Handle: 12043843884214108624
-    Path: Assets/Meshes/MaterialBall/Textures/Matball_Two_c.dds
-    Dependencies:
-      []
-  - Handle: 12135309132262475229
-    Path: Engine/Shaders/HLSL/Editor/JumpFloodPass_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 12180002314343341792
-    Path: Assets/Meshes/Primitives/Cylinder.vtmesh
-    Dependencies:
-      []
-  - Handle: 12314307282252066935
-    Path: Assets/Meshes/Test/SM_portal.vtmat
-    Dependencies:
-      []
-  - Handle: 12316581135943204169
-    Path: Assets/Meshes/Sponza/Textures/Curtain_red_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 12360223518394654106
-    Path: Assets/Meshes/Sponza/Textures/flowers_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 12393027958699357117
-    Path: Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 12433493132652889406
-    Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_gs.hlsl
-    Dependencies:
-      []
-  - Handle: 12513989182771694107
-    Path: Assets/Meshes/Sponza/Textures/fabric_green_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 12608288753274130556
-    Path: Engine/Shaders/HLSL/PostProcessing/BloomDownsample_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 12619664011072139627
-    Path: Engine/Shaders/Definitions/PostProcessing/HBAO/Deinterleaving.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/HBAO/Deinterleaving_ps.hlsl
-  - Handle: 12670563968939292343
-    Path: Engine/Shaders/HLSL/Utility/BRDFGeneration_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 12729731749983233406
-    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/AOComposite_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 12780097758883821810
-    Path: Engine/Shaders/HLSL/2D/Line_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 12804986984563730009
-    Path: Assets/Meshes/Sponza/Textures/thorn_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 12881509367099482173
-    Path: Engine/Shaders/HLSL/shaderTemplate_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 12917965370070330550
-    Path: Engine/Shaders/Definitions/Editor/colliderDebug.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl
-      - Engine/Shaders/HLSL/Editor/ColliderDebug_ps.hlsl
-  - Handle: 13043801656574976664
-    Path: Assets/Meshes/Sponza/Textures/column_b_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 13119830129111809750
-    Path: Assets/Meshes/Sponza/Textures/thorn_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 13167140516767720677
-    Path: Assets/Meshes/MaterialBall/MaterialBall.fbx
-    Dependencies:
-      []
-  - Handle: 13191630811697837335
-    Path: Engine/Shaders/HLSL/2D/EntityGizmo_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 13217882502515353399
-    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/Reinterleaving_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13484424003139224087
-    Path: Engine/Shaders/HLSL/vignette_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13537055023693559659
-    Path: Assets/Meshes/Sponza/Textures/roof_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 13554338792509948408
-    Path: Engine/Shaders/HLSL/PostProcessing/GammaCorrection_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13613907997656839807
-    Path: Engine/Shaders/HLSL/PostProcessing/ColorGrading_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13632118150402575268
-    Path: Engine/Shaders/HLSL/Shadows/PointLightShadow_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13636477392952639030
-    Path: Engine/Shaders/HLSL/Utility/CopyTextureToTarget_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13669421585893902352
-    Path: Assets/Meshes/Sponza/Textures/arch_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 13750740026997011584
-    Path: Assets/Meshes/Sponza/Textures/flowers_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 13846973182131330995
+      - Assets/Meshes/Primitives/SM_Sphere.fbx
+  - Handle: 1169274979587516414
     Path: Engine/Shaders/Definitions/VoxelGI/voxelization.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/VoxelGI/Voxelization_vs.hlsl
       - Engine/Shaders/HLSL/VoxelGI/Voxelization_gs.hlsl
       - Engine/Shaders/HLSL/VoxelGI/Voxelization_ps.hlsl
-  - Handle: 13850774021526111688
-    Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 13856527317008750967
-    Path: Engine/Shaders/Definitions/Forward/forwardPBR.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
-      - Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl
-  - Handle: 13864631209921171936
-    Path: Engine/Shaders/Definitions/PostProcessing/HBAO/AOComposite.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/HBAO/AOComposite_ps.hlsl
-  - Handle: 13921946185576387739
-    Path: Engine/Shaders/Definitions/Environment/equirectangularToCubemap.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Environment/EquirectangularToCubemap_cs.hlsl
-  - Handle: 13941075434869623096
-    Path: Engine/Shaders/Definitions/Deferred/shading.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/Deferred/Shading_ps.hlsl
-  - Handle: 13943890492736805859
-    Path: Assets/Meshes/Sponza/Textures/vase_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 13946223787480486204
-    Path: Engine/Shaders/HLSL/Deferred/Shading_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13954955717032877903
-    Path: Engine/Shaders/HLSL/Editor/ColliderDebug_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 13970162441732242625
-    Path: Engine/Shaders/Definitions/PostProcessing/heightFog.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-      - Engine/Shaders/HLSL/PostProcessing/HeightFog_ps.hlsl
-  - Handle: 14005860057299632188
-    Path: Engine/Shaders/Definitions/2D/sprite.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/2D/Quad_vs.hlsl
-      - Engine/Shaders/HLSL/2D/Quad_ps.hlsl
-  - Handle: 14141728787520077288
-    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/HBAO_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 14158150276349062143
-    Path: Assets/Meshes/Primitives/Cube.vtmat
-    Dependencies:
-      []
-  - Handle: 14219332081312188636
-    Path: Assets/Textures/FullMetal/T_FullMetal_N.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 14238390937067819439
-    Path: Assets/Meshes/Sponza/Textures/Curtain_green_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 14319175487492141862
-    Path: Engine/Shaders/HLSL/Utility/HZB_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 14403352512679195181
-    Path: Engine/Shaders/Definitions/Utility/PreDepth.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
-      - Engine/Shaders/HLSL/Utility/PreDepth_ps.hlsl
-  - Handle: 14825646675150134394
-    Path: Assets/Meshes/Sponza/Textures/background_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 14903972027868143250
-    Path: Assets/Meshes/Sponza/Textures/ceiling_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 14946988326429105219
-    Path: Engine/Shaders/Definitions/2D/entityGizmo.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/2D/EntityGizmo_vs.hlsl
-      - Engine/Shaders/HLSL/2D/EntityGizmo_gs.hlsl
-      - Engine/Shaders/HLSL/2D/EntityGizmo_ps.hlsl
-  - Handle: 15020487437380313905
-    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/HBAOBlur_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 15200591128861062106
-    Path: Assets/Textures/HDRIs/newport_loft.hdr.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 15291600225786532769
-    Path: Assets/Textures/FullMetal/T_FullMetal_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 15308900291262344180
-    Path: Assets/Meshes/Sponza/Textures/bricks_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 15322623216480195253
-    Path: Assets/Meshes/Sponza/Textures/chain_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 15356599900561496749
-    Path: Assets/Textures/HDRIs/moonless_golf_4k.hdr.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 15533052476947999306
+  - Handle: 1230533546463574923
     Path: Engine/Shaders/Definitions/PostProcessing/HBAO/Reinterleaving.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
       - Engine/Shaders/HLSL/PostProcessing/HBAO/Reinterleaving_ps.hlsl
-  - Handle: 15561656072920210458
-    Path: Engine/Shaders/Definitions/PostProcessing/bloomUpsamplePS.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/PostProcessing/BloomUpsample_ps.hlsl
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-  - Handle: 15575974816450967559
-    Path: Assets/Meshes/Sponza/Textures/vase_round_mat_c.dds
+  - Handle: 1603847160318359650
+    Path: Engine/Shaders/HLSL/Editor/JumpFloodPass_ps.hlsl
     Dependencies:
       []
-  - Handle: 15669263258967804471
-    Path: Assets/Meshes/Sponza/Textures/details_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 15744529555974100288
-    Path: Assets/Meshes/Sponza/Textures/Curtain_blue_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 15749534727435436973
-    Path: Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 15775765568651848420
-    Path: Assets/Meshes/Sponza/Textures/fabric_blue_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 15810690034288846622
-    Path: Assets/Meshes/Sponza/Textures/Curtain_green_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 16234873319895432694
-    Path: Assets/Meshes/Sponza/Textures/vase_hanging_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 16291517712119074149
-    Path: Assets/Meshes/Sponza/Textures/fabric_red_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 16297608720330799606
-    Path: Assets/Meshes/Sponza/Textures/background_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 16385279764967243187
-    Path: Assets/Meshes/Sponza/Textures/bricks_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 16449109944657534476
-    Path: Engine/Shaders/HLSL/2D/Grid_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 16471061452163814208
-    Path: Engine/Shaders/Definitions/Deferred/decal.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/Deferred/Decal_vs.hlsl
-      - Engine/Shaders/HLSL/Deferred/Decal_ps.hlsl
-  - Handle: 16524624675750843294
-    Path: Assets/Textures/FullMetal/T_FullMetal_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 16582046613187141612
-    Path: Engine/Shaders/Definitions/PostProcessing/bloomDownsamplePS.vtsdef
-    Dependencies:
-      - Engine/Shaders/HLSL/PostProcessing/BloomDownsample_ps.hlsl
-      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-  - Handle: 16627964548963368275
+  - Handle: 1655776741150123991
     Path: Engine/Shaders/Definitions/PostProcessing/colorGrading.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
       - Engine/Shaders/HLSL/PostProcessing/ColorGrading_ps.hlsl
-  - Handle: 16699363119901208579
-    Path: Assets/Meshes/Primitives/Capsule.vtmesh
+  - Handle: 1758879268116714442
+    Path: Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
     Dependencies:
       []
-  - Handle: 16713837649396508248
-    Path: Assets/Meshes/Sponza/sponzaForTGE.fbx
+  - Handle: 1804852200761558773
+    Path: Assets/Meshes/Primitives/SM_Cylinder.vtmesh
+    Dependencies:
+      - Assets/Meshes/Primitives/SM_Cylinder.fbx
+  - Handle: 2118780310548548574
+    Path: Engine/Shaders/HLSL/Utility/PreDepth_ps.hlsl
     Dependencies:
       []
-  - Handle: 16717085932546227624
-    Path: Engine/Shaders/HLSL/2D/Quad_ps.hlsl
+  - Handle: 2145054442186142440
+    Path: Engine/Shaders/HLSL/Environment/EquirectangularToCubemap_cs.hlsl
     Dependencies:
       []
-  - Handle: 16740758765137939193
-    Path: Assets/Meshes/Sponza/Textures/fabric_green_mat_n.dds.vtthumb.png
+  - Handle: 2260019122165761997
+    Path: Engine/Shaders/Definitions/Utility/copyTextureToTarget.vtsdef
     Dependencies:
-      []
-  - Handle: 16746427795883124253
-    Path: Assets/Meshes/Sponza/Textures/column_b_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 16752404165350212792
-    Path: Assets/Meshes/Sponza/Textures/Curtain_blue_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 16779258491792651204
-    Path: Engine/Shaders/HLSL/PostProcessing/BloomUpsample_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 16834870494670130002
-    Path: Assets/Meshes/Sponza/Textures/flagpole_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 16865897526551972376
-    Path: Assets/Meshes/Sponza/Textures/column_a_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 16871357654183159538
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/Utility/CopyTextureToTarget_ps.hlsl
+  - Handle: 2279214430576655068
     Path: Engine/Shaders/HLSL/PostProcessing/HeightFog_ps.hlsl
     Dependencies:
       []
-  - Handle: 16964449228847845072
-    Path: Engine/Shaders/HLSL/Environment/EnvironmentIrradiance_cs.hlsl
+  - Handle: 2624184211487860205
+    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/AOComposite_ps.hlsl
     Dependencies:
       []
-  - Handle: 16992627183435873044
-    Path: Assets/Meshes/Sponza/Textures/flagpole_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 17123384506807359222
-    Path: Assets/Meshes/Sponza/Textures/chain_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17191088424232690320
-    Path: Assets/Meshes/Sponza/Textures/Curtain_green_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17255426548278701712
-    Path: Engine/Shaders/HLSL/PostProcessing/SSR_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 17275918229037273226
-    Path: Engine/Shaders/HLSL/2D/Quad_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 17310309524160816519
-    Path: Assets/Meshes/Sponza/Textures/details_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17312930712990155640
-    Path: Assets/Meshes/Sponza/Textures/vase_hanging_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17329415200775248923
-    Path: Assets/Meshes/Sponza/Textures/fabric_blue_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 17333615691420489961
-    Path: Assets/Meshes/Sponza/Textures/arch_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17373501954348291656
-    Path: Assets/Meshes/Sponza/Textures/roof_mat_m.dds
-    Dependencies:
-      []
-  - Handle: 17427747218806089785
-    Path: Assets/Meshes/Sponza/Textures/fabric_red_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 17463006661746160441
-    Path: Engine/Shaders/HLSL/2D/Line_ps.hlsl
-    Dependencies:
-      []
-  - Handle: 17483545959383491412
-    Path: Assets/Meshes/Sponza/Textures/thorn_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 17485688899455496998
-    Path: Assets/Meshes/Sponza/Textures/background_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 17491441594247981747
-    Path: Assets/Meshes/Sponza/Textures/arch_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17537775512977379827
-    Path: Assets/Meshes/Sponza/Textures/column_a_mat_n.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17543015347834408902
-    Path: Assets/Meshes/Sponza/Textures/Curtain_red_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 17578042952602106539
-    Path: Assets/Meshes/Sponza/Textures/bricks_mat_n.dds
-    Dependencies:
-      []
-  - Handle: 17595212495692645027
-    Path: Engine/Shaders/HLSL/Deferred/Decal_vs.hlsl
-    Dependencies:
-      []
-  - Handle: 17706923712227206937
-    Path: Assets/Meshes/Sponza/Textures/Curtain_blue_mat_m.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17824201267312118866
-    Path: Assets/Meshes/Sponza/Textures/roof_mat_c.dds
-    Dependencies:
-      []
-  - Handle: 17854351710133211934
-    Path: Assets/Meshes/Sponza/Textures/vase_mat_c.dds.vtthumb.png
-    Dependencies:
-      []
-  - Handle: 17950103752792551490
+  - Handle: 2732487423555707427
     Path: Engine/Shaders/HLSL/Shadows/PointLightShadow_vs.hlsl
     Dependencies:
       []
-  - Handle: 18005352319546797174
+  - Handle: 2832486085944408350
+    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/HBAO_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 2847367819224872557
+    Path: Engine/Shaders/Definitions/PostProcessing/HBAO/HBAOBlur.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/HBAO/HBAOBlur_ps.hlsl
+  - Handle: 2888486380810605227
+    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/Reinterleaving_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 2960717985734065353
+    Path: Assets/Textures/HDRIs/kloppenheim_02_4k.hdr
+    Dependencies:
+      []
+  - Handle: 2978673308900653522
+    Path: Assets/Meshes/Primitives/SM_Capsule.fbx
+    Dependencies:
+      []
+  - Handle: 3036476867130674869
+    Path: Engine/Shaders/HLSL/Forward/TilingTexture_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 3054799270740688790
+    Path: Engine/Shaders/HLSL/vignette_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 3578127130727290491
+    Path: Engine/Shaders/Definitions/PostProcessing/vignette.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/vignette_ps.hlsl
+  - Handle: 3595190625038001847
+    Path: Engine/Shaders/HLSL/PostProcessing/BloomTest_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 3726297749204153975
+    Path: Engine/Shaders/Definitions/Editor/selectedGeometry.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl
+      - Engine/Shaders/HLSL/Editor/SelectedGeometry_ps.hlsl
+  - Handle: 3736870422836790604
+    Path: Engine/Shaders/HLSL/Deferred/Decal_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 3898588262596990499
+    Path: Engine/Shaders/HLSL/Utility/BRDFGeneration_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 3975512894824988100
+    Path: Engine/Shaders/Definitions/2D/gizmo.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/2D/Billboard_vs.hlsl
+      - Engine/Shaders/HLSL/2D/Billboard_gs.hlsl
+      - Engine/Shaders/HLSL/2D/Gizmo_ps.hlsl
+  - Handle: 4263551179561413608
+    Path: Assets/Meshes/Primitives/SM_Cube.vtmat
+    Dependencies:
+      []
+  - Handle: 4624724625166086027
+    Path: Engine/Fonts/Futura/futura-light.ttf
+    Dependencies:
+      []
+  - Handle: 4883835665757566184
+    Path: Engine/Shaders/HLSL/2D/Gizmo_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 5205794836915169475
+    Path: Assets/Textures/FullMetal/T_FullMetal_c.dds
+    Dependencies:
+      []
+  - Handle: 5359958471346585988
+    Path: Engine/Shaders/HLSL/PostProcessing/vignette_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 5399646272564101382
+    Path: Engine/Shaders/HLSL/Shadows/PointLightShadow_gs.hlsl
+    Dependencies:
+      []
+  - Handle: 5413475528121054265
+    Path: Engine/Shaders/HLSL/2D/Billboard_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 5596427123353589158
+    Path: Assets/Meshes/Primitives/SM_Cube.vtmesh
+    Dependencies:
+      - Assets/Meshes/Primitives/SM_Cube.fbx
+  - Handle: 5600892969717140075
+    Path: Assets/Meshes/Primitives/SM_Plane.fbx
+    Dependencies:
+      []
+  - Handle: 5762378006223685277
+    Path: Engine/Shaders/Definitions/PostProcessing/HBAO/AOComposite.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/HBAO/AOComposite_ps.hlsl
+  - Handle: 5794173221060666864
+    Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 5832661698192179128
+    Path: Engine/Shaders/Definitions/Utility/hzb.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/HZB_cs.hlsl
+  - Handle: 5984303558255240964
+    Path: Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 6157043303502900232
+    Path: Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 6200476852893486279
+    Path: Engine/Shaders/HLSL/Utility/CopyTextureToTarget_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 6248306478812856580
+    Path: Engine/Shaders/Definitions/Editor/jumpFloodPass.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Editor/JumpFloodPass_vs.hlsl
+      - Engine/Shaders/HLSL/Editor/JumpFloodPass_ps.hlsl
+  - Handle: 6346278171050862061
+    Path: Engine/Shaders/HLSL/2D/Line_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 6582596192735322656
+    Path: Engine/Shaders/HLSL/PostProcessing/FXAA_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 6780220194636209954
+    Path: Engine/Shaders/Definitions/2D/text.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/2D/Text_vs.hlsl
+      - Engine/Shaders/HLSL/2D/Text_ps.hlsl
+  - Handle: 6875862125551721151
+    Path: Engine/Shaders/Definitions/Environment/equirectangularToCubemap.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Environment/EquirectangularToCubemap_cs.hlsl
+  - Handle: 7020034492547899218
+    Path: Engine/Shaders/Definitions/Deferred/decal.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Deferred/Decal_vs.hlsl
+      - Engine/Shaders/HLSL/Deferred/Decal_ps.hlsl
+  - Handle: 7247567670544186179
+    Path: Assets/Meshes/Primitives/SM_Cone.vtmesh
+    Dependencies:
+      - Assets/Meshes/Primitives/SM_Cone.fbx
+  - Handle: 7275948151571322014
+    Path: Engine/Shaders/HLSL/Utility/FullscreenQuad_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 7574809993870950458
+    Path: Engine/Shaders/HLSL/Deferred/Decal_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 7656297696170737938
+    Path: Assets/Textures/HDRIs/moonless_golf_4k.hdr.vtthumb.png
+    Dependencies:
+      []
+  - Handle: 7675319388714153187
+    Path: Engine/Shaders/HLSL/Editor/JumpFloodPass_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 7715826927711508852
+    Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr
+    Dependencies:
+      []
+  - Handle: 7937815120638417515
+    Path: Engine/Shaders/Definitions/Editor/jumpFloodComposite.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl
+      - Engine/Shaders/HLSL/Utility/FullscreenQuad_vs.hlsl
+  - Handle: 8089752193681995231
+    Path: Engine/Shaders/Definitions/default.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Default_vs.hlsl
+      - Engine/Shaders/HLSL/Default_ps.hlsl
+  - Handle: 8106533767211016192
+    Path: Engine/Shaders/Definitions/PostProcessing/bloomDownsample.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/PostProcessing/BloomDownsample_cs.hlsl
+  - Handle: 8363330184914761037
+    Path: Assets/Meshes/Primitives/SM_Capsule.vtmesh
+    Dependencies:
+      - Assets/Meshes/Primitives/SM_Capsule.fbx
+  - Handle: 8466792732316911756
+    Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 8507373993069205922
+    Path: Engine/Shaders/HLSL/PostProcessing/BloomDownsample_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 8704848881927972671
+    Path: Engine/Shaders/HLSL/2D/Grid_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 8762423983036705089
+    Path: Engine/Shaders/HLSL/Environment/EnvironmentIrradiance_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 8807847117942464902
+    Path: Engine/Shaders/HLSL/shaderTemplate_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 8980002516830475227
+    Path: Engine/Shaders/Definitions/Deferred/shading.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/Deferred/Shading_ps.hlsl
+  - Handle: 9242656465279076940
+    Path: Engine/Shaders/Definitions/PostProcessing/HBAO/Deinterleaving.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/HBAO/Deinterleaving_ps.hlsl
+  - Handle: 9553021265614912568
+    Path: Engine/Shaders/HLSL/Forward/TilingTexture_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 9734281716330892939
+    Path: Engine/Shaders/Definitions/Editor/jumpFloodInit.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Editor/JumpFloodInit_ps.hlsl
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+  - Handle: 10083233118252609360
+    Path: Engine/Shaders/Definitions/Shadows/directionalShadow.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
+  - Handle: 10186527749801252170
+    Path: Assets/Textures/HDRIs/newport_loft.hdr
+    Dependencies:
+      []
+  - Handle: 10342431559961945030
+    Path: Engine/Shaders/HLSL/PostProcessing/BloomDownsample_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 10828341379448145654
+    Path: Assets/Meshes/Primitives/SM_Cone.fbx
+    Dependencies:
+      []
+  - Handle: 10908217647013368308
+    Path: Engine/Shaders/Definitions/PostProcessing/bloomTest.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/BloomTest_ps.hlsl
+  - Handle: 11316964479749424349
+    Path: Engine/Shaders/HLSL/2D/Text_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 11343469473409583894
+    Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_gs.hlsl
+    Dependencies:
+      []
+  - Handle: 11439961653246782837
+    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/HBAOBlur_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 12000237893511619017
+    Path: Engine/Shaders/Definitions/2D/grid.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/2D/Grid_vs.hlsl
+      - Engine/Shaders/HLSL/2D/Grid_ps.hlsl
+  - Handle: 12180190166173522633
+    Path: Engine/Shaders/HLSL/2D/Line_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 12254737987430418955
+    Path: Engine/Shaders/Definitions/PostProcessing/heightFog.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/HeightFog_ps.hlsl
+  - Handle: 12355881770428898703
+    Path: Engine/Shaders/HLSL/Utility/HZB_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 12410234404138674182
+    Path: Engine/Shaders/HLSL/PostProcessing/BloomUpsample_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 12420147830020956810
+    Path: Engine/Shaders/HLSL/2D/Billboard_gs.hlsl
+    Dependencies:
+      []
+  - Handle: 12471004933201364735
+    Path: Engine/Shaders/HLSL/Default_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 12532892547702149154
+    Path: Engine/Shaders/HLSL/Editor/JumpFloodInit_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 12534998678112500629
+    Path: Engine/Shaders/HLSL/2D/Grid_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 12538085852633643899
+    Path: Engine/Shaders/HLSL/Default_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 12604931563965616517
+    Path: Assets/Textures/HDRIs/newport_loft.hdr.vtthumb.png
+    Dependencies:
+      []
+  - Handle: 12679959419280872055
+    Path: Engine/Shaders/HLSL/PostProcessing/BloomComposite_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 12697319184751109254
+    Path: Engine/Shaders/Definitions/2D/line.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/2D/Line_vs.hlsl
+      - Engine/Shaders/HLSL/2D/Line_ps.hlsl
+  - Handle: 12756415688679189430
+    Path: Engine/Shaders/HLSL/Utility/Cull_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 12859251766237526535
+    Path: Engine/Shaders/HLSL/Environment/Skybox_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 13239943980388162799
+    Path: Engine/Shaders/Definitions/Utility/PreDepth.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
+      - Engine/Shaders/HLSL/Utility/PreDepth_ps.hlsl
+  - Handle: 13342828614713673646
+    Path: Engine/Shaders/HLSL/Editor/ColliderDebug_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 13446015712737608408
+    Path: Engine/Shaders/HLSL/PostProcessing/HBAO/Deinterleaving_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 13487665368982797250
+    Path: Engine/Shaders/HLSL/VoxelGI/VoxelCommon.hlslh
+    Dependencies:
+      []
+  - Handle: 13546939846676267184
+    Path: Assets/Meshes/Primitives/SM_Sphere.fbx
+    Dependencies:
+      []
+  - Handle: 13639266625019398230
+    Path: Engine/Shaders/Definitions/Utility/brdfGeneration.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/BRDFGeneration_cs.hlsl
+  - Handle: 14011376766036605795
+    Path: Engine/Shaders/Definitions/2D/sprite.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/2D/Quad_vs.hlsl
+      - Engine/Shaders/HLSL/2D/Quad_ps.hlsl
+  - Handle: 14219825496463841672
+    Path: Engine/Shaders/Definitions/PostProcessing/bloomUpsamplePS.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/PostProcessing/BloomUpsample_ps.hlsl
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+  - Handle: 14228971974235818795
+    Path: Engine/Shaders/Definitions/PostProcessing/Debanding.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/Debanding_ps.hlsl
+  - Handle: 14259814491150099529
+    Path: Assets/Textures/HDRIs/moonless_golf_4k.hdr
+    Dependencies:
+      []
+  - Handle: 14306356965665373777
+    Path: Engine/Shaders/Definitions/PostProcessing/bloomComposite.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/PostProcessing/BloomComposite_ps.hlsl
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+  - Handle: 14356530603679263256
+    Path: Assets/Meshes/Primitives/SM_Capsule.vtmat
+    Dependencies:
+      []
+  - Handle: 14382949638373665626
+    Path: Engine/Shaders/HLSL/PostProcessing/GammaCorrection_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 14537993566155691861
+    Path: Engine/Shaders/HLSL/Editor/EditorPBR_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 14812485002979753461
+    Path: Engine/Fonts/OpenSans-Regular.ttf
+    Dependencies:
+      []
+  - Handle: 14865408396511712692
+    Path: Engine/Shaders/HLSL/2D/Text_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 14927452858197556027
+    Path: Engine/Shaders/HLSL/Environment/Skybox_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 15130459440069804305
+    Path: Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 15201305827454699152
+    Path: Engine/Shaders/HLSL/Shadows/PointLightShadow_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 15209944620007146697
+    Path: Assets/Textures/FullMetal/T_FullMetal_N.dds
+    Dependencies:
+      []
+  - Handle: 15284838491337262674
+    Path: Engine/Shaders/Definitions/Deferred/deferred.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
+      - Engine/Shaders/HLSL/Deferred/GBufferGeneration_ps.hlsl
+  - Handle: 15312465423702599166
+    Path: Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 15364880518087495059
+    Path: Engine/Shaders/Definitions/Forward/forwardPBR.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
+      - Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl
+  - Handle: 15404882488489887278
+    Path: Engine/Shaders/Definitions/Editor/editorPBR.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Editor/editorPBR_vs.hlsl
+      - Engine/Shaders/HLSL/Editor/editorPBR_ps.hlsl
+  - Handle: 15663351275180290849
+    Path: Engine/Shaders/HLSL/Editor/EditorPBR_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 15819180148893982334
+    Path: Engine/Shaders/Definitions/2D/billboard.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/2D/Billboard_vs.hlsl
+      - Engine/Shaders/HLSL/2D/Billboard_gs.hlsl
+      - Engine/Shaders/HLSL/2D/Billboard_ps.hlsl
+  - Handle: 15996163980142214337
+    Path: Engine/Shaders/Definitions/Environment/environmentIrradiance.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Environment/EnvironmentIrradiance_cs.hlsl
+  - Handle: 16057977681353886120
+    Path: Engine/Shaders/HLSL/Utility/LightCull_cs.hlsl
+    Dependencies:
+      []
+  - Handle: 16104789869413632601
+    Path: Engine/Shaders/HLSL/2D/Quad_vs.hlsl
+    Dependencies:
+      []
+  - Handle: 16201171017265077753
+    Path: Engine/Shaders/HLSL/Deferred/Shading_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 16277592441049783725
+    Path: Engine/Shaders/HLSL/Deferred/GBufferGeneration_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 16452686829211876351
+    Path: Engine/Shaders/HLSL/2D/Quad_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 16517893143051546493
+    Path: Assets/Materials/M_FullMetal.vtmat
+    Dependencies:
+      []
+  - Handle: 16583486288564047226
+    Path: Assets/Meshes/Primitives/SM_Cube.fbx
+    Dependencies:
+      []
+  - Handle: 16585190240572935005
+    Path: Engine/Shaders/Definitions/Environment/environmentMipFilter.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
+  - Handle: 16854479613600093660
+    Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr.vtthumb.png
+    Dependencies:
+      []
+  - Handle: 17325569870051356605
+    Path: Assets/Textures/FullMetal/T_FullMetal_m.dds
+    Dependencies:
+      []
+  - Handle: 17441024372194522740
+    Path: Engine/Shaders/HLSL/PostProcessing/Debanding_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 17558045759556005567
+    Path: Engine/Fonts/Inter/Inter-Regular.ttf
+    Dependencies:
+      []
+  - Handle: 17573918787591599691
+    Path: Engine/Shaders/HLSL/Editor/SelectedGeometry_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 17669367539188225611
     Path: Engine/Shaders/Definitions/PostProcessing/HBAO/HBAO.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/PostProcessing/HBAO/HBAO_cs.hlsl
-  - Handle: 18098176680768647696
-    Path: Assets/Meshes/Sponza/Textures/floor_mat_c.dds
+  - Handle: 17900583780887219865
+    Path: Engine/Shaders/HLSL/2D/Billboard_vs.hlsl
     Dependencies:
       []
-  - Handle: 18206109421132257981
-    Path: Assets/Meshes/Sponza/Textures/column_c_mat_n.dds
+  - Handle: 17973283520187095393
+    Path: Engine/Shaders/Definitions/PostProcessing/bloomDownsamplePS.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/PostProcessing/BloomDownsample_ps.hlsl
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+  - Handle: 18020002077871645097
+    Path: Engine/Shaders/Definitions/PostProcessing/bloowUpsample.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/PostProcessing/BloomUpsample_cs.hlsl
+  - Handle: 18075842239016593577
+    Path: Engine/Shaders/HLSL/PostProcessing/BloomUpsample_ps.hlsl
     Dependencies:
       []
-  - Handle: 18270819203726503083
-    Path: Assets/Meshes/Sponza/Textures/vase_mat_c.dds
+  - Handle: 18088762032045853670
+    Path: Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl
     Dependencies:
       []
+  - Handle: 18374782038626539435
+    Path: Engine/Shaders/Definitions/PostProcessing/gammaCorrection.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+      - Engine/Shaders/HLSL/PostProcessing/GammaCorrection_ps.hlsl

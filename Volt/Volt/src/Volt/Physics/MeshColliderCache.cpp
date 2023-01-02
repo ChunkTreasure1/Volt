@@ -32,7 +32,6 @@ namespace Volt
 	const bool MeshColliderCache::IsCached(const std::string& colliderName)
 	{
 		return myCache.contains(colliderName) || FileSystem::Exists(Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll"));
-		return myCache.contains(colliderName) || FileSystem::Exists(FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll"));
 	}
 
 	void MeshColliderCache::AddToCache(const std::string& colliderName, const MeshColliderCacheData& cacheData)

@@ -53,7 +53,7 @@ namespace Volt
 		* uint32_t: Index start offset
 		*/
 
-		BinarySerializer serializer{ Volt::ProjectManager::GetPath() / destination, CalculateMeshSize(mesh) };
+		BinarySerializer serializer{ Volt::ProjectManager::GetDirectory() / destination, CalculateMeshSize(mesh) };
 		
 		const uint32_t submeshCount = (uint32_t)mesh->mySubMeshes.size();
 		const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
@@ -130,6 +130,7 @@ namespace Volt
 			size += sizeof(uint32_t); // Index count
 			size += sizeof(uint32_t); // Vertex start offset
 			size += sizeof(uint32_t); // Index start offset
+			size += sizeof(gem::mat4); // Sub mesh transform
 		}
 
 		return size;
