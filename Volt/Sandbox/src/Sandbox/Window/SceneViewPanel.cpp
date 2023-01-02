@@ -1,8 +1,8 @@
 #include "sbpch.h"
 #include "SceneViewPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
 #include "Sandbox/Utility/SelectionManager.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include <Volt/Asset/Prefab.h>
@@ -471,7 +471,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::vector<Wire::E
 		{
 			auto& transformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(entity);
 
-			Ref<Volt::Texture2D> visibleIcon = transformComponent.visible ? EditorIconLibrary::GetIcon(EditorIcon::Visible) : EditorIconLibrary::GetIcon(EditorIcon::Hidden);
+			Ref<Volt::Texture2D> visibleIcon = transformComponent.visible ? EditorResources::GetEditorIcon(EditorIcon::Visible) : EditorResources::GetEditorIcon(EditorIcon::Hidden);
 			std::string visibleId = "##visible" + std::to_string(entity);
 			if (UI::ImageButton(visibleId, UI::GetTextureID(visibleIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 			{
@@ -485,7 +485,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::vector<Wire::E
 
 			ImGui::SameLine();
 
-			Ref<Volt::Texture2D> lockedIcon = transformComponent.locked ? EditorIconLibrary::GetIcon(EditorIcon::Locked) : EditorIconLibrary::GetIcon(EditorIcon::Unlocked);
+			Ref<Volt::Texture2D> lockedIcon = transformComponent.locked ? EditorResources::GetEditorIcon(EditorIcon::Locked) : EditorResources::GetEditorIcon(EditorIcon::Unlocked);
 			std::string lockedId = "##locked" + std::to_string(entity);
 			if (UI::ImageButton(lockedId, UI::GetTextureID(lockedIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 			{

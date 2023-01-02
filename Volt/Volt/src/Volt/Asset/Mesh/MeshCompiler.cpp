@@ -5,7 +5,6 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/MaterialRegistry.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Log/Log.h"
 
@@ -52,10 +51,9 @@ namespace Volt
 		* uint32_t: Index count
 		* uint32_t: Vertex start offset
 		* uint32_t: Index start offset
-		* mat4: transform
 		*/
 
-		BinarySerializer serializer{ destination, CalculateMeshSize(mesh) };
+		BinarySerializer serializer{ Volt::ProjectManager::GetPath() / destination, CalculateMeshSize(mesh) };
 		
 		const uint32_t submeshCount = (uint32_t)mesh->mySubMeshes.size();
 		const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
@@ -132,7 +130,6 @@ namespace Volt
 			size += sizeof(uint32_t); // Index count
 			size += sizeof(uint32_t); // Vertex start offset
 			size += sizeof(uint32_t); // Index start offset
-			size += sizeof(gem::mat4); // transform
 		}
 
 		return size;
@@ -142,7 +139,5 @@ namespace Volt
 	{
 		mesh->myMaterial->path = destination.parent_path().string() + "\\" + mesh->path.stem().string() + ".vtmat";
 		AssetManager::Get().SaveAsset(mesh->myMaterial);
-
-		MaterialRegistry::Register(mesh->myMaterial->GetName(), mesh->myMaterial->path);
 	}
 }

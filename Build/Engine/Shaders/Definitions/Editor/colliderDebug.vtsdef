@@ -1,5 +1,0 @@
-name: "ColliderDebug"
-internal: false
-paths:
-  - "Engine/Shaders/HLSL/Editor/SelectedGeometry_vs.hlsl"
-  - "Engine/Shaders/HLSL/Editor/ColliderDebug_ps.hlsl"

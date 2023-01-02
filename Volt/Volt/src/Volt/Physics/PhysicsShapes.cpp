@@ -52,7 +52,7 @@ namespace Volt
 	{
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
@@ -78,7 +78,7 @@ namespace Volt
 
 	void BoxColliderShape::SetHalfSize(const gem::vec3& halfSize)
 	{
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
@@ -128,7 +128,7 @@ namespace Volt
 
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
@@ -152,7 +152,7 @@ namespace Volt
 
 	void SphereColliderShape::SetRadius(float radius)
 	{
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
@@ -203,7 +203,7 @@ namespace Volt
 
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
@@ -229,7 +229,7 @@ namespace Volt
 
 	void CapsuleColliderShape::SetHeight(float height)
 	{
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
@@ -249,7 +249,7 @@ namespace Volt
 
 	void CapsuleColliderShape::SetRadius(float radius)
 	{
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
@@ -304,7 +304,7 @@ namespace Volt
 		Ref<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.material);
 		SetMaterial(material);
 
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{
@@ -409,7 +409,7 @@ namespace Volt
 		Ref<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.material);
 		SetMaterial(material);
 
-		Scene::TRS transform;
+		Scene::TQS transform;
 
 		if (entity.HasComponent<TransformComponent>())
 		{

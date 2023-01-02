@@ -6,6 +6,7 @@
 #include "Volt/Core/Buffer.h"
 
 #include "Volt/Scene/Scene.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Scripting/Mono/MonoScriptGlue.h"
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
@@ -87,7 +88,7 @@ namespace Volt
 
 		InitializeMono();
 		s_monoData->coreData = LoadAssembly("Scripts/Volt-ScriptCore.dll", "VoltScriptRuntime", true);
-		s_monoData->appData = LoadAssembly("../Volt/ProjectTemplate/Assets/Scripts/Binaries/ProjectTemplate.dll", "ProjectTemplateRuntime", false);
+		s_monoData->appData = LoadAssembly(Volt::ProjectManager::GetMonoAssemblyPath(), "ProjectTemplateRuntime", false);
 
 		MonoScriptGlue::RegisterFunctions();
 

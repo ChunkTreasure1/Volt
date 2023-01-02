@@ -2,7 +2,6 @@
 #include "Application.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Mesh/MaterialRegistry.h"
 
 #include "Volt/Animation/AnimationManager.h"
 
@@ -17,6 +16,7 @@
 #include "Volt/Rendering/Shader/ShaderRegistry.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Audio/AudioManager.h"
@@ -32,16 +32,6 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(!myInstance, "Application already exists!");
 		myInstance = this;
-
-		// Set working directory
-		if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
-		{
-			const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
-			if (!pathEnv.empty())
-			{
-				std::filesystem::current_path(pathEnv);
-			}
-		}
 
 		myInfo = info;
 		Log::Initialize();
@@ -60,6 +50,12 @@ namespace Volt
 
 		if (!myInfo.isRuntime)
 		{
+			ProjectManager::SetupWorkingDirectory();
+			ProjectManager::SetupProject(myInfo.projectPath);
+		}
+
+		if (!myInfo.isRuntime)
+		{
 			myWindow->SetOpacity(0.f);
 		}
 
@@ -68,7 +64,6 @@ namespace Volt
 		ConstantBufferRegistry::Initialize();
 		Renderer::InitializeBuffers();
 		ShaderRegistry::Initialize();
-		MaterialRegistry::Initialize();
 		Renderer::Initialize();
 
 #ifdef VT_ENABLE_MONO	
@@ -106,7 +101,6 @@ namespace Volt
 #endif
 
 		Renderer::Shutdown();
-		MaterialRegistry::Shutdown();
 		ShaderRegistry::Shutdown();
 		ConstantBufferRegistry::Shutdown();
 		Log::Shutdown();

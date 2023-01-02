@@ -76,7 +76,7 @@ namespace Volt
 	{
 		if (myActive)
 		{
-			myAgentPosition = aEntity.GetWorldPosition();
+			myAgentPosition = aEntity.GetPosition();
 			MoveToTarget(aTimestep, aEntity);
 		}
 	}
@@ -86,7 +86,7 @@ namespace Volt
 		if (!myTarget.has_value() || HasArrived()) { return; }
 
 		gem::vec3 targetPos = GetCurrentTarget().value();
-		auto worldPos = aEntity.GetWorldPosition();
+		auto worldPos = aEntity.GetPosition();
 
 		while (gem::distance(worldPos, targetPos) < 10.f && !myPath2.empty())
 		{
@@ -96,7 +96,7 @@ namespace Volt
 		}
 
 		auto moveDirection = gem::normalize(targetPos - worldPos);
-		aEntity.SetWorldPosition(worldPos + moveDirection * mySpeed * aTimestep);
+		aEntity.SetPosition(worldPos + moveDirection * mySpeed * aTimestep);
 	}
 
 	std::stack<gem::vec3> NavMeshAgent::FindPath(const gem::vec3& start, const gem::vec3& target)

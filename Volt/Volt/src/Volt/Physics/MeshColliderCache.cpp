@@ -3,9 +3,18 @@
 
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Core/BinarySerializer.h"
+#include "Volt/Project/ProjectManager.h"
 
 namespace Volt
 {
+	namespace Utility
+	{
+		inline static std::filesystem::path GetOrCreateCachePath()
+		{
+			return ProjectManager::GetCachePath() / "Colliders";
+		}
+	}
+
 	void MeshColliderCache::Initialize()
 	{}
 
@@ -22,6 +31,7 @@ namespace Volt
 
 	const bool MeshColliderCache::IsCached(const std::string& colliderName)
 	{
+		return myCache.contains(colliderName) || FileSystem::Exists(Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll"));
 		return myCache.contains(colliderName) || FileSystem::Exists(FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll"));
 	}
 
@@ -38,7 +48,7 @@ namespace Volt
 
 	void MeshColliderCache::LoadCached(const std::string& colliderName)
 	{
-		const std::filesystem::path cachedPath = FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll");
+		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
 		
 		if (!FileSystem::Exists(cachedPath))
 		{
@@ -90,12 +100,7 @@ namespace Volt
 
 	void MeshColliderCache::SaveToFile(const std::string& colliderName, const MeshColliderCacheData& cacheData)
 	{
-		if (!FileSystem::Exists(FileSystem::GetMeshColliderCache()))
-		{
-			std::filesystem::create_directories(FileSystem::GetMeshColliderCache());
-		}
-
-		const std::filesystem::path cachedPath = FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll");
+		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
 		BinarySerializer serializer{ cachedPath };
 
 		const size_t count = cacheData.colliderData.size();

@@ -157,7 +157,7 @@ namespace Volt
 				Line2d triL2 = { {verts[tri->indices[1]].position.x, verts[tri->indices[1]].position.z}, {verts[tri->indices[2]].position.x, verts[tri->indices[2]].position.z} };
 				Line2d triL3 = { {verts[tri->indices[2]].position.x, verts[tri->indices[2]].position.z}, {verts[tri->indices[0]].position.x, verts[tri->indices[0]].position.z} };
 
-				const auto pointV2 = gem::vec2((ent.GetWorldPosition() + bridgeComp.area).x, (ent.GetWorldPosition() + bridgeComp.area).z);
+				const auto pointV2 = gem::vec2((ent.GetPosition() + bridgeComp.area).x, (ent.GetPosition() + bridgeComp.area).z);
 				if (triL1.Inside(pointV2) && triL2.Inside(pointV2) && triL3.Inside(pointV2))
 				{
 					for (auto& x : myMap)

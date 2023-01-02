@@ -7,6 +7,7 @@
 
 #include "Volt/Input/Input.h"
 #include <Volt/Components/Components.h>
+#include <Volt/Components/PhysicsComponents.h>
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -31,7 +32,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outPosition = entity.GetWorldPosition();
+		*outPosition = entity.GetPosition();
 	}
 
 	inline static void TransformComponent_SetPosition(Wire::EntityId entityId, gem::vec3* translation)
@@ -39,23 +40,23 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.SetWorldPosition(*translation);
+		entity.SetPosition(*translation);
 	}
 
-	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::vec3* outRotation)
+	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::quat* outRotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outRotation = entity.GetWorldRotation();
+		*outRotation = entity.GetRotation();
 	}
 
-	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::vec3* rotation)
+	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::quat* rotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.SetRotation(*rotation);
+		entity.SetLocalRotation(*rotation);
 	}
 
 	inline static void TransformComponent_GetScale(Wire::EntityId entityId, gem::vec3* outScale)
@@ -63,7 +64,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outScale = entity.GetWorldScale();
+		*outScale = entity.GetScale();
 	}
 
 	inline static void TransformComponent_SetScale(Wire::EntityId entityId, gem::vec3* scale)
@@ -71,7 +72,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.SetScale(*scale);
+		entity.SetLocalScale(*scale);
 	}
 
 	inline static void TransformComponent_GetForward(Wire::EntityId entityId, gem::vec3* outForward)
@@ -79,7 +80,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outForward = entity.GetWorldForward();
+		*outForward = entity.GetForward();
 	}
 
 	inline static void TransformComponent_GetRight(Wire::EntityId entityId, gem::vec3* outRight)
@@ -87,7 +88,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outRight = entity.GetWorldRight();
+		*outRight = entity.GetRight();
 	}
 
 	inline static void TransformComponent_GetUp(Wire::EntityId entityId, gem::vec3* outUp)
@@ -95,7 +96,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		*outUp = entity.GetWorldUp();
+		*outUp = entity.GetUp();
 	}
 #pragma endregion TransformComponent
 
@@ -105,13 +106,19 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		entity.GetComponent<TagComponent>().tag = mono_string_to_utf8(tag);
+		char* cStr = mono_string_to_utf8(tag);
+		std::string str(cStr);
+		mono_free(cStr);
+
+		entity.GetComponent<TagComponent>().tag = str;
 	}
 
 	inline static void TagComponent_GetTag(Wire::EntityId entityId, MonoString* outString)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
+
+		outString = mono_string_new(MonoScriptEngine::GetAppDomain(), entity.GetComponent<TagComponent>().tag.c_str());
 	}
 #pragma endregion TagComponent
 
@@ -154,6 +161,233 @@ namespace Volt
 	}
 #pragma endregion RelationshipComponent
 
+#pragma region RigidbodyComponent
+	inline static BodyType RigidbodyComponent_GetBodyType(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().bodyType;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return BodyType::Static;
+	}
+
+	inline static void RigidbodyComponent_SetBodyType(Wire::EntityId entityId, BodyType* bodyType)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().bodyType = *bodyType;
+		}
+	}
+
+	inline static uint32_t RigidbodyComponent_GetLayerId(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().layerId;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return 0;
+	}
+
+	inline static void RigidbodyComponent_SetLayerId(Wire::EntityId entityId, uint32_t* layerId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().layerId = *layerId;
+		}
+	}
+
+	inline static float RigidbodyComponent_GetMass(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().mass;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return 0.f;
+	}
+
+	inline static void RigidbodyComponent_SetMass(Wire::EntityId entityId, float* mass)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().mass = *mass;
+		}
+	}
+
+	inline static void RigidbodyComponent_SetLinearDrag(Wire::EntityId entityId, float* linearDrag)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().linearDrag = *linearDrag;
+		}
+	}
+
+	inline static float RigidbodyComponent_GetLinearDrag(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().linearDrag;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return 0.f;
+	}
+
+	inline static void RigidbodyComponent_SetAngularDrag(Wire::EntityId entityId, float* angularDrag)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().angularDrag = *angularDrag;
+		}
+	}
+
+	inline static float RigidbodyComponent_GetAngularDrag(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().angularDrag;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return 0.f;
+	}
+
+	inline static uint32_t RigidbodyComponent_GetLockFlags(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().lockFlags;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return 0;
+	}
+
+	inline static void RigidbodyComponent_SetLockFlags(Wire::EntityId entityId, uint32_t* flags)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().lockFlags = *flags;
+		}
+	}
+
+	inline static bool RigidbodyComponent_GetDisableGravity(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().disableGravity;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return false;
+	}
+
+	inline static void RigidbodyComponent_SetDisableGravity(Wire::EntityId entityId, bool* state)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().disableGravity = *state;
+		}
+	}
+
+	inline static bool RigidbodyComponent_GetIsKinematic(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().isKinematic;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return false;
+	}
+
+	inline static void RigidbodyComponent_SetIsKinematic(Wire::EntityId entityId, bool* state)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().isKinematic = *state;
+		}
+	}
+
+	inline static CollisionDetectionType RigidbodyComponent_GetCollisionDetectionType(Wire::EntityId entityId)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			return entity.GetComponent<RigidbodyComponent>().collisionType;
+		}
+
+		VT_CORE_ERROR("Entity {0} does not have a RigidbodyComponent!", entityId);
+		return CollisionDetectionType::Discrete;
+	}
+
+	inline static void RigidbodyComponent_SetCollisionDetectionType(Wire::EntityId entityId, CollisionDetectionType* collisionDetectionType)
+	{
+		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
+
+		if (entity.HasComponent<RigidbodyComponent>())
+		{
+			entity.GetComponent<RigidbodyComponent>().collisionType = *collisionDetectionType;
+		}
+	}
+#pragma endregion
+ 
 #pragma region Input
 	inline static bool Input_KeyDown(int32_t keyCode)
 	{
@@ -220,6 +454,36 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(RelationshipComponent_SetParent);
 			VT_ADD_INTERNAL_CALL(RelationshipComponent_GetParent);
 			VT_ADD_INTERNAL_CALL(RelationshipComponent_GetChildren);
+		}
+
+		// Rigidbody Component
+		{
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetCollisionDetectionType);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetCollisionDetectionType);
+			
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetDisableGravity);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetDisableGravity);
+			
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetIsKinematic);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetIsKinematic);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetLockFlags);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetLockFlags);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetBodyType);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetBodyType);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetLayerId);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetLayerId);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetMass);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetMass);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetLinearDrag);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetLinearDrag);
+
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_GetAngularDrag);
+			VT_ADD_INTERNAL_CALL(RigidbodyComponent_SetAngularDrag);
 		}
 
 		// Input

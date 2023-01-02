@@ -20,7 +20,7 @@ colorama.init()
 
 Premake.CheckPremake()
 
-os.chdir('../../Build/Setup')
+os.chdir('../../Engine/Setup')
 subprocess.call("VoltSetup.exe")
 os.chdir('../../Volt/scripts')
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/AssetCommon.h"
+#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 
 class SelectiveAssetBrowserPanel : public EditorWindow
 {

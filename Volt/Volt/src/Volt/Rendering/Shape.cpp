@@ -10,7 +10,7 @@ namespace Volt
 {
 	Ref<Mesh> Shape::CreateUnitCube()
 	{
-		std::vector<Vertex> vertices =
+		std::vector<Vertex> vertecies =
 		{
 			{{  50,  50,  50 }},
 			{{  50,  50, -50 }},
@@ -24,7 +24,7 @@ namespace Volt
 
 		};
 
-		std::vector<uint32_t> indices =
+		std::vector<uint32_t> indecies =
 		{
 			//side right
 			0,2,1,
@@ -51,8 +51,8 @@ namespace Volt
 			6,7,4
 		};
 
-		Ref<Material> material = AssetManager::GetAsset<Material>("Assets/Meshes/Primitives/SM_Cube.vtmat");
-		Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, material);
+		Ref<Material> material = AssetManager::GetAsset<Material>("Assets/Meshes/Primitives/Cube.vtmat");
+		Ref<Mesh> mesh = CreateRef<Mesh>(vertecies, indecies, material);
 
 		return mesh;
 	}

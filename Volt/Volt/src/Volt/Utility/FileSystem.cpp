@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 
 #include "Volt/Core/Application.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include <commdlg.h>
 #include <shellapi.h>
@@ -55,7 +56,7 @@ std::filesystem::path FileSystem::OpenFolder()
 
 	globalIsOpenSaveFileOpen = false;
 
-	return GetPathRelativeToBaseFolder(resultPath);
+	return Volt::ProjectManager::GetPathRelativeToProject(resultPath);
 }
 
 std::filesystem::path FileSystem::SaveFile(const char* filter)
@@ -79,7 +80,7 @@ std::filesystem::path FileSystem::SaveFile(const char* filter)
 	if (GetSaveFileNameA(&ofn) == TRUE)
 	{
 		globalIsOpenSaveFileOpen = false;
-		return GetPathRelativeToBaseFolder(ofn.lpstrFile);
+		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
 	}
 
 	globalIsOpenSaveFileOpen = false;
@@ -95,6 +96,26 @@ std::filesystem::path FileSystem::GetDocumentsPath()
 	CoTaskMemFree(path);
 
 	return documentsPath;
+}
+
+void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
+{
+	const auto canonicalPath = std::filesystem::canonical(path);
+
+	if (!std::filesystem::exists(canonicalPath))
+	{
+		return;
+	}
+
+	std::wstring wstr = canonicalPath.wstring() + std::wstring(1, L'\0');
+
+	SHFILEOPSTRUCT fileOp;
+	fileOp.hwnd = NULL;
+	fileOp.wFunc = FO_DELETE;
+	fileOp.pFrom = wstr.c_str();
+	fileOp.pTo = NULL;
+	fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_SILENT;
+	int32_t result = SHFileOperation(&fileOp);
 }
 
 bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
@@ -144,7 +165,7 @@ std::filesystem::path FileSystem::OpenFile(const char* filter)
 	if (GetOpenFileNameA(&ofn) == TRUE)
 	{
 		globalIsOpenSaveFileOpen = false;
-		return GetPathRelativeToBaseFolder(ofn.lpstrFile);
+		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
 	}
 
 	globalIsOpenSaveFileOpen = false;
@@ -270,4 +291,19 @@ std::string FileSystem::GetCurrentUserName()
 
 	GetUserName(name, &size);
 	return std::filesystem::path(name).string();
+}
+
+void FileSystem::StartProcess(const std::filesystem::path& processPath)
+{
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+
+	si.cb = sizeof(STARTUPINFO);
+
+	CreateProcess(processPath.wstring().c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }

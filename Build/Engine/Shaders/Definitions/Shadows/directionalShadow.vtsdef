@@ -1,5 +1,0 @@
-name: "DirectionalShadow"
-paths:
-  - "Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl"
-inputTextures:
-  []
