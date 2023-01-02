@@ -33,9 +33,13 @@
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/YAMLSerializationHelpers.h>
+#include <Volt/Utility/SerializationMacros.h>
 
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
+
+#include <yaml-cpp/yaml.h>
 
 namespace Utility
 {
@@ -275,6 +279,7 @@ void AssetBrowserPanel::UpdateMainContent()
 		Reload();
 	}
 
+	CreateNewShaderModal();
 	DeleteFilesModal();
 }
 
@@ -769,23 +774,6 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 	UI::ShiftCursor(0.f, 170.f); // Extra space at the bottom
 }
 
-void AssetBrowserPanel::RenderFileInfo(const AssetData& data)
-{
-	if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
-	{
-		return;
-	}
-
-	ImGui::OpenPopup("fileInfo");
-
-	if (ImGui::BeginPopup("fileInfo"))
-	{
-		ImGui::TextUnformatted("test");
-
-		ImGui::EndPopup();
-	}
-}
-
 void AssetBrowserPanel::RenderWindowRightClickPopup()
 {
 
@@ -1158,7 +1146,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 	tempName = originalName;
 
-	while (FileSystem::Exists(myCurrentDirectory->path / (tempName + extension)))
+	while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + extension)))
 	{
 		tempName = originalName + " (" + std::to_string(i) + ")";
 		i++;
@@ -1189,6 +1177,8 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::Shader:
 		{
+			myNewShaderData = {};
+			UI::OpenModal("New Shader##assetBrowser");
 			break;
 		}
 
@@ -1225,5 +1215,110 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		(*assetIt)->isRenaming = true;
 
 		mySelectionManager->Select((*assetIt).get());
+	}
+}
+
+void AssetBrowserPanel::CreateNewShaderModal()
+{
+	if (UI::BeginModal("New Shader##assetBrowser"))
+	{
+		if (UI::BeginProperties("shaderProp"))
+		{
+			UI::Property("Name", myNewShaderData.name);
+			UI::Property("Pixel Shader", myNewShaderData.createPixelShader);
+			UI::Property("Vertex Shader", myNewShaderData.createVertexShader);
+
+			UI::EndProperties();
+		}
+
+		if (ImGui::Button("Create"))
+		{
+			const std::string newShaderName = "SH_NewShader";
+			const std::filesystem::path templatesPath = "Templates/Files/Shader";
+
+			std::string tempName = newShaderName;
+			uint32_t i = 0;
+
+			while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef")))
+			{
+				tempName = newShaderName + " (" + std::to_string(i) + ")";
+				i++;
+			}
+
+			const std::filesystem::path defaultPixelPath = "Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl";
+			const std::filesystem::path defaultVertexPath = "Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl";
+
+			const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+			const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
+			const std::filesystem::path definitionDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef");
+
+			if (myNewShaderData.createPixelShader)
+			{
+				FileSystem::Copy(templatesPath / "ps_template.hlsl", pixelDestinationPath);
+			}
+
+			if (myNewShaderData.createVertexShader)
+			{
+				FileSystem::Copy(templatesPath / "vs_template.hlsl", vertexDestinationPath);
+			}
+
+			// Create definition
+			{
+				using namespace Volt; // YAML Serialization helpers
+
+				YAML::Emitter out;
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(name, myNewShaderData.name, out);
+				VT_SERIALIZE_PROPERTY(internal, false, out);
+				
+				const std::filesystem::path pixelShader = myNewShaderData.createPixelShader ? myCurrentDirectory->path / (tempName + "_ps.hlsl") : defaultPixelPath;
+				const std::filesystem::path vertexShader = myNewShaderData.createVertexShader ? myCurrentDirectory->path / (tempName + "_vs.hlsl") : defaultVertexPath;
+
+				out << YAML::Key << "paths" << YAML::Value << std::vector<std::filesystem::path>{ pixelShader, vertexShader };
+				out << YAML::Key << "inputTextures" << YAML::BeginSeq;
+				{
+					// Albedo
+					{
+						out << YAML::BeginMap;
+						VT_SERIALIZE_PROPERTY(binding, 0, out);
+						VT_SERIALIZE_PROPERTY(name, "Albedo", out);
+						out << YAML::EndMap;
+					}
+
+					// Normal
+					{
+						out << YAML::BeginMap;
+						VT_SERIALIZE_PROPERTY(binding, 1, out);
+						VT_SERIALIZE_PROPERTY(name, "Normal", out);
+						out << YAML::EndMap;
+					}
+					
+					// Material
+					{
+						out << YAML::BeginMap;
+						VT_SERIALIZE_PROPERTY(binding, 2, out);
+						VT_SERIALIZE_PROPERTY(name, "Material", out);
+						out << YAML::EndMap;
+					}
+				}
+				out << YAML::EndSeq;
+				out << YAML::EndMap;
+
+				std::ofstream fout(definitionDestinationPath);
+				fout << out.c_str();
+				fout.close();
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
 	}
 }

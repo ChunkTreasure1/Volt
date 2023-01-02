@@ -232,6 +232,10 @@ Assets:
     Path: Engine/Shaders/HLSL/2D/Line_ps.hlsl
     Dependencies:
       []
+  - Handle: 6517569069968068485
+    Path: Assets/Test/SH_TestShader_ps.hlsl
+    Dependencies:
+      []
   - Handle: 6582596192735322656
     Path: Engine/Shaders/HLSL/PostProcessing/FXAA_ps.hlsl
     Dependencies:

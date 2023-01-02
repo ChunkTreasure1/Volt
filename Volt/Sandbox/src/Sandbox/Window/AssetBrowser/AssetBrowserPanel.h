@@ -43,7 +43,6 @@ private:
 	void RenderControlsBar(float height);
 	bool RenderDirectory(const Ref<AssetBrowser::DirectoryItem> dirData);
 	void RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets);
-	void RenderFileInfo(const AssetData& data);
 	void RenderWindowRightClickPopup();
 
 	void DeleteFilesModal();
@@ -63,7 +62,18 @@ private:
 	void RecursiceRenameFolderContents(DirectoryData* aDir, const std::filesystem::path& newDir);
 
 	void GenerateAssetPreviewsInCurrentDirectory();
+	
+	///// Asset Creation /////	
 	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
+	void CreateNewShaderModal();
+
+	struct NewShaderData
+	{
+		std::string name = "New Shader";
+		bool createPixelShader = true;
+		bool createVertexShader = false;
+	} myNewShaderData;
+	//////////////////////////
 
 	Ref<Volt::Scene>& myEditorScene;
 

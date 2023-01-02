@@ -87,6 +87,9 @@ namespace Volt
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args&&... args);
 
+		template<typename ImporterType, typename Type>
+		static const ImporterType& GetImporterForType();
+
 		template<typename T>
 		static const std::vector<Ref<T>> GetAllCachedAssetsOfType();
 
@@ -202,6 +205,17 @@ namespace Volt
 		Get().SaveAssetRegistry();
 
 		return asset;
+	}
+	template<typename ImporterType, typename Type>
+	inline const ImporterType& AssetManager::GetImporterForType()
+	{
+		const auto type = Type::GetStaticType();
+		if (!Get().myAssetImporters.contains(type))
+		{
+			VT_CORE_ASSERT(false, "Importer for type does not exist!");
+		}
+
+		return (ImporterType&)*Get().myAssetImporters.at(type);
 	}
 	template<typename T>
 	inline const std::vector<Ref<T>> AssetManager::GetAllCachedAssetsOfType()
