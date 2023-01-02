@@ -12,15 +12,20 @@ HUD::LayerDebug::LayerDebug(Ref<Volt::SceneRenderer>& aSceneRenderer, std::strin
 {
 	VT_ASSERT(!myInstance, "DebugLayer already exists");
 	instance = this;
+	Enable();
 
 	elements.insert({ "TestSprite", std::make_shared<UI::Sprite>("TestSprite")});
-	Enable();
+	elements.at("TestSprite")->SetPosition({ 0,0 });
 
 	elements.at("TestSprite")->ReciveChild(std::make_shared<UI::Sprite>("TestChild"));
 	Ref<UI::Element> child = elements.at("TestSprite")->GetChild("TestChild");
-	child->SetPosition({ 0,0 });
-	elements.at("TestSprite")->SetCanvas(canvas);
+	child->SetPosition({ -256,0 });
 
+	child->ReciveChild((std::make_shared<UI::Sprite>("TestGrandChild")));
+	Ref<UI::Element> grandChild = child->GetChild("TestGrandChild");
+	grandChild->SetPosition({ 0,256 });
+
+	elements.at("TestSprite")->SetCanvas(canvas);
 
 }
 
@@ -39,7 +44,12 @@ bool HUD::LayerDebug::OnKeyEvent(Volt::KeyPressedEvent& e)
 
 	if (e.GetKeyCode() == VT_KEY_F9)
 	{
-		elements.at("TestSprite")->SetPosition({ 1000.0f,0 });
+		elements.at("TestSprite")->SetPosition({ 500.0f,0 });
+	}
+
+	if (e.GetKeyCode() == VT_KEY_F10)
+	{
+		elements.at("TestSprite")->SetPosition({ -500.0f,0 });
 	}
 
 	return false;

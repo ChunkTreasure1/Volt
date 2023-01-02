@@ -26,7 +26,7 @@ namespace UI
 	class Element
 	{
 	public:
-		Element(const std::string aName) { name = aName; };
+		Element(const std::string aName) { name = aName;};
 		 virtual ~Element(){};
 
 		 const ElementType GetType() { return type; };
@@ -51,12 +51,18 @@ namespace UI
 
 		void UpdatePosition(UI::Element& aParentElement)
 		{
-			SetPosition(GetPosition() + aParentElement.GetPosition());
+			SetNormalizedPosition(aParentElement.GetPosition() + GetPosition());
 
 			for (auto child : children)
 			{
 				child.second->UpdatePosition(*this);
 			}
+		}
+
+		void SetNormalizedPosition(gem::vec2 aPosition)
+		{
+			data.transform[3][0] = aPosition.x;
+			data.transform[3][1] = aPosition.y;
 		}
 
 		gem::mat4 GetTransform() { return data.transform;}
@@ -83,7 +89,6 @@ namespace UI
 				child.second->UpdateScale(*this);
 			}
 		}
-
 
 		gem::vec2 GetPivot() { return data.pivot; }
 		void SetPivot(gem::vec2 aPivot) { data.pivot = aPivot; }
@@ -117,9 +122,7 @@ namespace UI
 
 		std::shared_ptr<UI::Canvas> canvas;
 
-
 		elementData data;
-
 	};
 }
 

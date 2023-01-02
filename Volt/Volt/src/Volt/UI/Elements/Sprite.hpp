@@ -39,6 +39,16 @@ namespace UI
 			gem::mat4 scaledTransform = spriteTransform * gem::scale(gem::mat4(1.0f), gem::vec3{ GetSize().x * GetScale().x, GetSize().y * GetScale().y, 1});
 
 			Volt::Renderer::SubmitSprite(GetTexture(), scaledTransform, 0, GetColor());
+
+			for (auto& child : children)
+			{
+				if (child.second->GetType() == UI::ElementType::SPRITE)
+				{
+					Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(child.second);
+					sprite->Render();
+				}
+			}
+
 		}
 
 		std::shared_ptr<Volt::Texture2D> GetTexture() { return data.texture; }

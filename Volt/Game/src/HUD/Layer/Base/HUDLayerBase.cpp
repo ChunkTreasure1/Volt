@@ -63,15 +63,6 @@ bool HUD::LayerBase::OnRender(Volt::AppRenderEvent& e)
 			Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(element.second);
 			sprite->Render();
 		}
-
-		for (auto& child : element.second->children) 
-		{
-			if (child.second->GetType() == UI::ElementType::SPRITE)
-			{
-				Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(child.second);
-				sprite->Render();
-			}
-		}
 	}
 
 	Volt::Renderer::DispatchSpritesWithShader(screenspaceShader);
