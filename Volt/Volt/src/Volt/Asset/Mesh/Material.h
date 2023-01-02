@@ -11,6 +11,8 @@ namespace Volt
 	public:
 		Material() = default;
 
+		Ref<SubMaterial> GetSubMaterialAt(const uint32_t index) const;
+
 		inline const std::unordered_map<uint32_t, Ref<SubMaterial>>& GetSubMaterials() const { return mySubMaterials; }
 		inline const uint32_t GetSubMaterialCount() const { return (uint32_t)mySubMaterials.size(); }
 
@@ -21,6 +23,8 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Material; }
 		AssetType GetType() override { return GetStaticType(); }
+
+		static Ref<Material> Create(Ref<Shader> shader, const uint32_t subMaterialCount = 1);
 
 	private:
 		friend class FbxImporter;

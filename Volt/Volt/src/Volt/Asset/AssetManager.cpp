@@ -60,7 +60,7 @@ namespace Volt
 
 		LoadAssetRegistry();
 		myLoadThread = std::thread(&AssetManager::Thread_LoadAsset, this);
-		SetThreadName((DWORD)myLoadThread.native_handle(), "Asset Manager Thread");
+		SetThreadName(myLoadThread.native_handle(), "Asset Manager Thread");
 	}
 
 	void AssetManager::Shutdown()
@@ -596,7 +596,7 @@ namespace Volt
 			myLoadQueue.emplace_back(LoadJob{ handle, path });
 
 #ifdef VT_DEBUG
-			VT_CORE_INFO("Queued asset {0}", path.string());
+			VT_CORE_TRACE("Queued asset {0}", path.string());
 #endif
 		}
 

@@ -1,6 +1,11 @@
 #include "vtpch.h"
 #include "StructuredBuffer.h"
 
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Utility/DirectXUtils.h"
+
+#include <d3d11.h>
+
 namespace Volt
 {
 	StructuredBuffer::StructuredBuffer(uint32_t elementSize, uint32_t count, ShaderStage usageStage, bool shaderWriteable)
@@ -27,7 +32,7 @@ namespace Volt
 
 	void StructuredBuffer::Bind(uint32_t slot) const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		if ((myUsageStages & ShaderStage::Vertex) != ShaderStage::None)
 		{
@@ -60,10 +65,24 @@ namespace Volt
 		}
 	}
 
+	void StructuredBuffer::BindUAV(uint32_t slot, ShaderStage stage) const
+	{
+		auto context = RenderCommand::GetCurrentContext();
+
+		if ((stage & ShaderStage::Pixel) != ShaderStage::None)
+		{
+			context->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, nullptr, slot, 1, myUAV.GetAddressOf(), nullptr);
+		}
+
+		if ((stage & ShaderStage::Compute) != ShaderStage::None)
+		{
+			context->CSSetUnorderedAccessViews(slot, 1, myUAV.GetAddressOf(), nullptr);
+		}
+	}
+
 	void StructuredBuffer::Unmap()
 	{
-		auto context = GraphicsContext::GetContext();
-		context->Unmap(myBuffer.Get(), 0);
+		RenderCommand::StructuredBuffer_Unmap(this);
 	}
 
 	void StructuredBuffer::AddStage(ShaderStage stage)
@@ -96,11 +115,20 @@ namespace Volt
 
 		if (resize)
 		{
-			auto context = GraphicsContext::GetContext();
+			auto context = RenderCommand::GetCurrentContext();
 
 			D3D11_BUFFER_DESC oldBufferDesc{};
 			myBuffer->GetDesc(&oldBufferDesc);
-			context->CopySubresourceRegion(tempBuffer.Get(), 0, 0, 0, 0, myBuffer.Get(), 0, nullptr);
+
+			D3D11_BOX box{};
+			box.left = 0;
+			box.right = std::min(oldBufferDesc.ByteWidth, myElementSize * myMaxCount);
+			box.top = 0;
+			box.bottom = 1;
+			box.front = 0;
+			box.back = 1;
+
+			context->CopySubresourceRegion(tempBuffer.Get(), 0, 0, 0, 0, myBuffer.Get(), 0, &box);
 		}
 
 		myBuffer = tempBuffer;

@@ -25,6 +25,7 @@ namespace Volt
 	class Scene;
 	class Mesh;
 	class Framebuffer;
+	class Material;
 	class Shader;
 	class ConstantBuffer;
 	class Texture2D;
@@ -86,7 +87,7 @@ private:
 
 	void InstallMayaTools();
 	void SetupRenderCallbacks();
-	void SetupEditorRenderPasses();
+	void CreateEditorRenderPasses();
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e);
@@ -122,7 +123,7 @@ private:
 	Ref<EditorCameraController> myEditorCameraController;
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Shader> myGridShader;
+	Ref<Volt::Material> myGridMaterial;
 
 	///// File watcher /////
 	Ref<FileWatcher> myFileWatcher;
@@ -172,6 +173,8 @@ private:
 	bool myShouldRenderGizmos = true;
 	bool myTitlebarHovered = false;
 	bool myBuildStarted = false;
+	
+	bool myShouldResize = false;
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;

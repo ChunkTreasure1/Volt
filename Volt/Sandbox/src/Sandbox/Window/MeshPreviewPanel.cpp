@@ -19,11 +19,13 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
+	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myScene = CreateRef<Volt::Scene>();
 
@@ -51,15 +53,23 @@ MeshPreviewPanel::MeshPreviewPanel()
 
 		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
 	}
+	
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
+	}
 
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);
 	mySceneRenderer->Resize(1280, 720);
 
-	mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
-		});
+	//mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
+	//	{
+	//		Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+	//		Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
+	//	});
 }
 
 void MeshPreviewPanel::UpdateContent()

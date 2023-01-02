@@ -277,7 +277,17 @@ float3 CalculatePointLight(in PointLight light, float3 dirToCamera, float3 baseR
 
 float3 CalculatePointLights(float3 dirToCamera, float3 baseReflectivity, float3 worldPosition)
 {
+	//const uint2 location = uint2(m_shaderParameters.position.xy);
+	//const uint2 tileId = location / 16u;
+	//const uint index = tileId.y * u_sceneData.tileCount.x + tileId.x;
+	//const uint offset = index * 1024;
+	
 	float3 lightAccumulation = 0.f;
+	//for (uint i = 0; i < 1024 && u_pointLightVisibility[offset + i].index != -1; i++)
+	//{
+	//	const uint lightIndex = u_pointLightVisibility[offset + i].index;
+	//	lightAccumulation += CalculatePointLight(u_pointLights[lightIndex], dirToCamera, baseReflectivity, worldPosition);
+	//}
 
 	for (uint i = 0; i < u_sceneData.pointLightCount; i++)
 	{

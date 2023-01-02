@@ -31,3 +31,5 @@ cbuffer SceneBuffer : register(b7)
 StructuredBuffer<ObjectData> u_instanceData : register(t100);
 StructuredBuffer<float4x4> u_instanceAnimationData : register(t101); // Max 128 bones per mesh
 StructuredBuffer<PointLight> u_pointLights : register(t102);
+
+RWStructuredBuffer<PointLightVisible> u_pointLightVisibility : register(u10);

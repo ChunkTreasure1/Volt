@@ -4,6 +4,8 @@
 #include "Volt/Rendering/Buffer/VertexBuffer.h"
 #include "Volt/Rendering/Buffer/IndexBuffer.h"
 
+#include <d3d11.h> // #TODO_Ivar: Remove
+
 namespace Volt
 {
 	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material>& aMaterial)

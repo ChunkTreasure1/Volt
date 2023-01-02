@@ -28,21 +28,21 @@
 #include "Volt/Rendering/SamplerState.h"
 #include "Volt/Rendering/ComputePipeline.h"
 #include "Volt/Rendering/Shape.h"
+#include "Volt/Rendering/CommandBuffer.h"
 
 #include "Volt/Utility/StringUtility.h"
+#include "Volt/Platform/ThreadUtility.h"
 
 #include <thread>
 #include <future>
 
 namespace Volt
 {
-	static std::mutex globalSubmitMutex;
-
 	void Renderer::Initialize()
 	{
+		RenderCommand::Initialize();
+
 		myRendererData = CreateScope<RendererData>();
-		CreateDepthStates();
-		CreateRasterizerStates();
 		CreateDefaultData();
 		CreateSpriteData();
 		CreateLineData();
@@ -50,8 +50,13 @@ namespace Volt
 		CreateTextData();
 		CreateInstancingData();
 		CreateDecalData();
-
+		CreateLightCullingData();
+		CreateCommandBuffers();
 		GenerateBRDFLut();
+
+		myRendererData->isRunning = true;
+		myRendererData->renderThread = std::thread(RT_Execute);
+		SetThreadName(myRendererData->renderThread.native_handle(), "Render Thread");
 	}
 
 	void Renderer::InitializeBuffers()
@@ -61,10 +66,14 @@ namespace Volt
 
 	void Renderer::Shutdown()
 	{
-		myDepthStates.clear();
-		myRasterizerStates.clear();
+		myRendererData->isRunning = false;
+		myRendererData->syncVariable.notify_all();
+		myRendererData->renderThread.join();
+
 		myDefaultData = nullptr;
 		myRendererData = nullptr;
+
+		RenderCommand::Shutdown();
 	}
 
 	void Renderer::Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, uint32_t aId, float aTimeSinceCreation, bool castShadows, bool castAO)
@@ -73,8 +82,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
@@ -98,8 +106,7 @@ namespace Volt
 
 		const auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
 
-		std::lock_guard<std::mutex> lock(globalSubmitMutex);
-		auto& cmd = myRendererData->renderCommands.emplace_back();
+		auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 		cmd.mesh = aMesh;
 		cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 		cmd.subMesh = subMesh;
@@ -116,8 +123,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMaterial;
 			cmd.subMesh = subMesh;
@@ -137,8 +143,7 @@ namespace Volt
 		{
 			auto it = aMaterial->GetSubMaterials().find(subMesh.materialIndex);
 
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = it != aMaterial->GetSubMaterials().end() ? it->second : aMaterial->GetSubMaterials().at(0);
 			cmd.subMesh = subMesh;
@@ -156,8 +161,7 @@ namespace Volt
 
 		for (const auto& subMesh : aMesh->GetSubMeshes())
 		{
-			std::lock_guard<std::mutex> lock(globalSubmitMutex);
-			auto& cmd = myRendererData->renderCommands.emplace_back();
+			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
 			cmd.mesh = aMesh;
 			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
 			cmd.subMesh = subMesh;
@@ -170,85 +174,41 @@ namespace Volt
 		}
 	}
 
-	void Renderer::SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, uint32_t id /* = 0 */)
+	void Renderer::SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, Ref<Material> material, uint32_t id /* = 0 */)
 	{
-		SubmitSprite(nullptr, aTransform, id, aColor);
+		SubmitSprite(nullptr, aTransform, material, aColor, id);
 	}
 
-	void Renderer::SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, uint32_t aId, const gem::vec4& aColor)
+	void Renderer::SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t aId)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
-
-		uint32_t texIndex = 0;
-		if (aTexture.GetTexture())
+		if (!aTexture.GetTexture())
 		{
-			for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
-			{
-				if (spriteData.textureSlots[slot] == aTexture.GetTexture())
-				{
-					texIndex = slot;
-					break;
-				}
-			}
-
-			if (texIndex == 0)
-			{
-				texIndex = spriteData.textureSlotIndex;
-				spriteData.textureSlots[texIndex] = aTexture.GetTexture();
-				spriteData.textureSlotIndex++;
-			}
+			return;
 		}
+
+		auto& cmd = GetCurrentCPUCommandCollection().spriteCommands.emplace_back();
+		cmd.transform = aTransform;
+		cmd.color = aColor;
+		cmd.id = aId;
+		cmd.texture = aTexture.GetTexture();
+		cmd.material = material ? material : myDefaultData->defaultSpriteMaterial;
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			spriteData.vertexBufferPtr->position = aTransform * spriteData.vertices[i];
-			spriteData.vertexBufferPtr->color = aColor;
-			spriteData.vertexBufferPtr->texCoords = aTexture.GetTexCoords()[i];
-			spriteData.vertexBufferPtr->textureIndex = texIndex;
-			spriteData.vertexBufferPtr->id = aId;
-			spriteData.vertexBufferPtr++;
+			cmd.uv[i] = aTexture.GetTexCoords()[i];
 		}
-
-		spriteData.indexCount += 6;
 	}
 
-	void Renderer::SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
+	void Renderer::SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t id)
 	{
 		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
-
-		uint32_t texIndex = 0;
-		if (aTexture)
-		{
-			for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
-			{
-				if (spriteData.textureSlots[slot] == aTexture)
-				{
-					texIndex = slot;
-					break;
-				}
-			}
-
-			if (texIndex == 0)
-			{
-				texIndex = spriteData.textureSlotIndex;
-				spriteData.textureSlots[texIndex] = aTexture;
-				spriteData.textureSlotIndex++;
-			}
-		}
-
-		for (uint32_t i = 0; i < 4; i++)
-		{
-			spriteData.vertexBufferPtr->position = aTransform * spriteData.vertices[i];
-			spriteData.vertexBufferPtr->color = aColor;
-			spriteData.vertexBufferPtr->texCoords = spriteData.texCoords[i];
-			spriteData.vertexBufferPtr->textureIndex = texIndex;
-			spriteData.vertexBufferPtr->id = id;
-			spriteData.vertexBufferPtr++;
-		}
-
-		spriteData.indexCount += 6;
+		auto& cmd = GetCurrentCPUCommandCollection().spriteCommands.emplace_back();
+		cmd.transform = aTransform;
+		cmd.color = aColor;
+		cmd.id = id;
+		cmd.texture = aTexture;
+		cmd.material = material ? material : myDefaultData->defaultSpriteMaterial;
 	}
 
 	void Renderer::SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId)
@@ -258,36 +218,19 @@ namespace Volt
 
 	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
 	{
+		SubmitBillboard(aTexture, myDefaultData->defaultBillboardShader, aPosition, aScale, aId, aColor);
+	}
+
+	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, Ref<Shader> shader, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
+	{
 		VT_PROFILE_FUNCTION();
-		auto& billboardData = myRendererData->billboardData;
-
-		uint32_t texIndex = 0;
-		if (aTexture)
-		{
-			for (uint32_t slot = 1; slot < billboardData.textureSlotIndex; slot++)
-			{
-				if (billboardData.textureSlots[slot] == aTexture)
-				{
-					texIndex = slot;
-					break;
-				}
-			}
-
-			if (texIndex == 0)
-			{
-				texIndex = billboardData.textureSlotIndex;
-				billboardData.textureSlots[texIndex] = aTexture;
-				billboardData.textureSlotIndex++;
-			}
-		}
-
-		billboardData.vertexBufferPtr->postition = { aPosition.x, aPosition.y, aPosition.z, 1.f };
-		billboardData.vertexBufferPtr->id = aId;
-		billboardData.vertexBufferPtr->color = aColor;
-		billboardData.vertexBufferPtr->textureIndex = texIndex;
-		billboardData.vertexBufferPtr->scale = aScale;
-		billboardData.vertexBufferPtr++;
-		billboardData.vertexCount++;
+		auto& cmd = GetCurrentCPUCommandCollection().billboardCommands.emplace_back();
+		cmd.position = aPosition;
+		cmd.shader = shader ? shader : myDefaultData->defaultBillboardShader;
+		cmd.scale = aScale;
+		cmd.texture = aTexture;
+		cmd.id = aId;
+		cmd.color = aColor;
 	}
 
 	void Renderer::SubmitLine(const gem::vec3& aStart, const gem::vec3& aEnd, const gem::vec4& aColor /* = */)
@@ -309,13 +252,13 @@ namespace Volt
 	void Renderer::SubmitLight(const PointLight& pointLight)
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->pointLights.push_back(pointLight);
+		GetCurrentCPUCommandCollection().pointLights.push_back(pointLight);
 	}
 
 	void Renderer::SubmitLight(const DirectionalLight& dirLight)
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->directionalLight = dirLight;
+		GetCurrentCPUCommandCollection().directionalLight = dirLight;
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
@@ -331,183 +274,22 @@ namespace Volt
 		return false;
 	}
 
-	void Renderer::SubmitString(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
+	void Renderer::SubmitText(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
 	{
-		if (aString.empty())
-		{
-			return;
-		}
-
-		auto& textData = myRendererData->textData;
-		int32_t textureIndex = -1;
-
-		std::u32string utf32string = Utils::To_UTF32(aString);
-
-		Ref<Texture2D> fontAtlas = aFont->GetAtlas();
-		VT_CORE_ASSERT(fontAtlas, "Font Atlas was nullptr!");
-
-		if (textData.textureSlotIndex >= 32)
-		{
-			return;
-		}
-
-		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
-		{
-			if (textData.textureSlots[i] == fontAtlas)
-			{
-				textureIndex = (int32_t)i;
-				break;
-			}
-		}
-
-		if (textureIndex == -1)
-		{
-			textureIndex = (int32_t)textData.textureSlotIndex;
-			textData.textureSlots[textureIndex] = fontAtlas;
-			textData.textureSlotIndex++;
-		}
-
-		auto& fontGeom = aFont->GetMSDFData()->fontGeometry;
-		const auto& metrics = fontGeom.getMetrics();
-
-		std::vector<int32_t> nextLines;
-		{
-			double x = 0.0;
-			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-			double y = -fsScale * metrics.ascenderY;
-
-			int32_t lastSpace = -1;
-
-			for (int32_t i = 0; i < utf32string.size(); i++)
-			{
-				char32_t character = utf32string[i];
-				if (character == '\n')
-				{
-					x = 0.0;
-					y -= fsScale * metrics.lineHeight;
-					continue;
-				}
-
-				auto glyph = fontGeom.getGlyph(character);
-				if (!glyph)
-				{
-					glyph = fontGeom.getGlyph('?');
-				}
-
-				if (!glyph)
-				{
-					continue;
-				}
-
-				if (character != ' ')
-				{
-					// Calculate geometry
-					double pl, pb, pr, pt;
-					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-					gem::vec2 quadMin((float)pl, (float)pb);
-					gem::vec2 quadMax((float)pl, (float)pb);
-
-					quadMin *= (float)fsScale;
-					quadMax *= (float)fsScale;
-					quadMin += gem::vec2((float)x, (float)y);
-					quadMax += gem::vec2((float)x, (float)y);
-
-					if (quadMax.x > aMaxWidth && lastSpace != -1)
-					{
-						i = lastSpace;
-						nextLines.emplace_back(lastSpace);
-						lastSpace = -1;
-						x = 0.0;
-						y -= fsScale * metrics.lineHeight;
-					}
-				}
-				else
-				{
-					lastSpace = i;
-				}
-
-				double advance = glyph->getAdvance();
-				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-				x += fsScale * advance;
-			}
-		}
-
-		{
-			double x = 0.0;
-			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-			double y = 0.0;
-			for (int32_t i = 0; i < utf32string.size(); i++)
-			{
-				char32_t character = utf32string[i];
-				if (character == '\n' || NextLine(i, nextLines))
-				{
-					x = 0.0;
-					y -= fsScale * metrics.lineHeight;
-					continue;
-				}
-
-				auto glyph = fontGeom.getGlyph(character);
-
-				if (!glyph)
-				{
-					glyph = fontGeom.getGlyph('?');
-				}
-
-				if (!glyph)
-				{
-					continue;
-				}
-
-				double l, b, r, t;
-				glyph->getQuadAtlasBounds(l, b, r, t);
-
-				double pl, pb, pr, pt;
-				glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-
-				pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
-				pl += x, pb += y, pr += x, pt += y;
-
-				double texelWidth = 1.0 / fontAtlas->GetWidth();
-				double texelHeight = 1.0 / fontAtlas->GetHeight();
-
-				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pl, (float)pb, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pr, (float)pb, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pr, (float)pt, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.vertexBufferPtr->position = aTransform * gem::vec4{ (float)pl, (float)pt, 0.f, 1.f };
-				textData.vertexBufferPtr->color = aColor;
-				textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
-				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-				textData.vertexBufferPtr++;
-
-				textData.indexCount += 6;
-
-				double advance = glyph->getAdvance();
-				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-				x += fsScale * advance;
-			}
-		}
+		VT_PROFILE_FUNCTION();
+		auto& cmd = GetCurrentCPUCommandCollection().textCommands.emplace_back();
+		cmd.text = aString;
+		cmd.font = aFont;
+		cmd.transform = aTransform;
+		cmd.maxWidth = aMaxWidth;
+		cmd.color = aColor;
 	}
 
 	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
 	{
-		auto& decal = myRendererData->decalData.renderCommands.emplace_back();
+		VT_PROFILE_FUNCTION();
+
+		auto& decal = GetCurrentCPUCommandCollection().decalCommands.emplace_back();
 		decal.material = aMaterial;
 		decal.transform = aTransform;
 		decal.id = id;
@@ -520,6 +302,14 @@ namespace Volt
 		myRendererData->resourceChangeQueue.emplace_back(func);
 	}
 
+	void Renderer::SubmitCustom(std::function<void()>&& func)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit(std::move(func));
+	}
+
 	void Renderer::SetAmbianceMultiplier(float multiplier)
 	{
 		myRendererData->settings.ambianceMultiplier = multiplier;
@@ -527,52 +317,53 @@ namespace Volt
 
 	void Renderer::DrawFullscreenTriangleWithShader(Ref<Shader> aShader)
 	{
-		auto context = GraphicsContext::GetContext();
+		VT_PROFILE_FUNCTION();
 
-		aShader->Bind();
-
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
-		context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-
-		SetDepthState(DepthState::None);
-
-		context->Draw(3, 0);
-		aShader->Unbind();
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]()
+			{
+				DrawFullscreenTriangleWithShaderInternal(shader);
+			});
+#else 
+		DrawFullscreenTriangleWithShaderInternal(aShader);
+#endif
 	}
 
 	void Renderer::DrawFullscreenTriangleWithMaterial(Ref<Material> aMaterial)
 	{
-		auto context = GraphicsContext::GetContext();
+		VT_PROFILE_FUNCTION();
 
-		aMaterial->GetSubMaterials().at(0)->Bind();
-
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
-		context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-
-		SetDepthState(DepthState::None);
-
-		context->Draw(3, 0);
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([material = aMaterial]()
+			{
+				DrawFullscreenTriangleWithMaterialInternal(material);
+			});
+#else 
+		DrawFullscreenTriangleWithMaterialInternal(aMaterial);
+#endif
 	}
 
 	void Renderer::DrawFullscreenQuadWithShader(Ref<Shader> aShader)
 	{
-		auto context = GraphicsContext::GetContext();
-		aShader->Bind();
+		VT_PROFILE_FUNCTION();
 
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		myRendererData->quadVertexBuffer->Bind();
-		myRendererData->quadIndexBuffer->Bind();
-
-		SetDepthState(DepthState::None);
-
-		context->DrawIndexed(6, 0, 0);
-		aShader->Unbind();
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]()
+			{
+				DrawFullscreenQuadWithShaderInternal(shader);
+			});
+#else 
+		DrawFullscreenQuadWithShaderInternal(aShader);
+#endif
 	}
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, const std::vector<gem::mat4>& aBoneTransforms, const gem::mat4& aTransform)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
 		{
 			subMesh;
@@ -583,6 +374,8 @@ namespace Volt
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, const gem::mat4& aTransform)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
 		{
 			subMesh;
@@ -593,6 +386,8 @@ namespace Volt
 
 	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, const gem::mat4& aTransform)
 	{
+		VT_PROFILE_FUNCTION();
+
 		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
 		{
 			subMesh;
@@ -601,221 +396,111 @@ namespace Volt
 		}
 	}
 
-	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
-	{
-		auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
-		uint32_t subMaterialIndex = subMesh.materialIndex;
-		if ((uint32_t)material->GetSubMaterials().size() >= subMeshIndex)
-		{
-			subMaterialIndex = (uint32_t)material->GetSubMaterials().size() - 1;
-		}
-
-		auto subMaterial = material->GetSubMaterials().at(subMaterialIndex);
-
-		if (auto it = std::find(myRendererData->currentPass.excludedShaderHashes.begin(), myRendererData->currentPass.excludedShaderHashes.end(), subMaterial->GetShaderHash()); it != myRendererData->currentPass.excludedShaderHashes.end())
-		{
-			return;
-		}
-
-		if (myRendererData->currentPass.exclusiveShaderHash != 0 && myRendererData->currentPass.exclusiveShaderHash != subMaterial->GetShaderHash())
-		{
-			return;
-		}
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Bind();
-		}
-
-		subMaterial->Bind(myRendererData->currentPass.overrideShader == nullptr);
-
-		myRendererData->statistics.materialBinds++;
-		myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).materialBinds++;
-
-		aMesh->GetVertexBuffer()->Bind();
-		aMesh->GetIndexBuffer()->Bind();
-		myRendererData->statistics.vertexIndexBufferBinds++;
-		myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).vertexIndexBufferBinds++;
-
-		// Update object buffer
-		{
-			ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-
-			mapped->transform = aTransform;
-			//mapped->id = cmds[i].id;
-			mapped->isAnimated = !aBoneTransforms.empty();
-
-			ConstantBufferRegistry::Get(1)->Unmap();
-		}
-
-		// Update animation buffer
-		if (!aBoneTransforms.empty())
-		{
-			AnimationData* mapped = ConstantBufferRegistry::Get(6)->Map<AnimationData>();
-			memcpy_s(mapped, sizeof(gem::mat4) * 128, aBoneTransforms.data(), sizeof(gem::mat4) * aBoneTransforms.size());
-			ConstantBufferRegistry::Get(6)->Unmap();
-		}
-
-		ConstantBufferRegistry::Get(1)->Bind(1);
-		ConstantBufferRegistry::Get(6)->Bind(6);
-
-		auto context = GraphicsContext::GetContext();
-
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		context->DrawIndexed((uint32_t)subMesh.indexCount, subMesh.indexStartOffset, subMesh.vertexStartOffset);
-		myRendererData->statistics.drawCalls++;
-		myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).drawCalls++;
-	}
-
-	void Renderer::Begin(const std::string& context)
+	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> aMaterial, uint32_t aSubMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
 	{
 		VT_PROFILE_FUNCTION();
 
-		BeginAnnotatedSection(context);
-		myRendererData->currentContext = context;
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([mesh = aMesh, material = aMaterial, subMeshIndex = aSubMeshIndex, transform = aTransform, boneTransforms = aBoneTransforms]()
+			{
+				DrawMeshInternal(mesh, material, subMeshIndex, transform, boneTransforms);
+			});
+#else
+		DrawMeshInternal(aMesh, aMaterial, aSubMeshIndex, aTransform, aBoneTransforms);
+#endif // VT_THREADED_RENDERING
+	}
 
+	void Renderer::Begin(Context context, const std::string& debugName)
+	{
+		VT_PROFILE_FUNCTION();
 		RunResourceChanges();
-		UpdatePerFrameBuffers();
 
-		SortRenderCommands();
-		UploadObjectData();
-
-		// Bind samplers
-		{
-			myRendererData->samplers.linearWrap->Bind(0);
-			myRendererData->samplers.linearPointWrap->Bind(1);
-
-			myRendererData->samplers.pointWrap->Bind(2);
-			myRendererData->samplers.pointLinearWrap->Bind(3);
-
-			myRendererData->samplers.linearClamp->Bind(4);
-			myRendererData->samplers.linearPointClamp->Bind(5);
-
-			myRendererData->samplers.pointClamp->Bind(6);
-			myRendererData->samplers.pointLinearClamp->Bind(7);
-
-			myRendererData->samplers.anisotropic->Bind(8);
-			myRendererData->samplers.shadow->Bind(9);
-		}
-
-		ConstantBufferRegistry::Get(1)->Bind(1);
-		ConstantBufferRegistry::Get(4)->Bind(4);
-		ConstantBufferRegistry::Get(6)->Bind(6);
-		ConstantBufferRegistry::Get(7)->Bind(7);
-
-		StructuredBufferRegistry::Get(102)->Bind(102);
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([debugName, context]()
+			{
+				BeginInternal(context, debugName);
+			});
+#else
+		BeginInternal(context, debugName);
+#endif
 	}
 
 	void Renderer::End()
 	{
 		VT_PROFILE_FUNCTION();
-		myRendererData->renderCommands.clear();
-		myRendererData->pointLights.clear();
-		myRendererData->directionalLight = DirectionalLight{};
 
-		EndAnnotatedSection();
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				EndInternal();
+			});
+#else
+		EndInternal();
+#endif
 	}
 
-	void Renderer::BeginPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear, bool isShadowPass, bool isAOPass, bool sortByCamera)
+	void Renderer::BeginPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
 	{
-		const std::string tag = "Begin " + aRenderPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
+		VT_PROFILE_FUNCTION();
 
-		BeginSection(aRenderPass.debugName);
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([cmdBuffer = currentCommandBuffer, renderPass = aRenderPass, camera = aCamera, shouldClear = aShouldClear, isShadowPass = aIsShadowPass, isAOPass = aIsAOPass]()
+			{
+				BeginPassInternal(renderPass, camera, shouldClear, isShadowPass, isAOPass);
+			});
 
-		myRendererData->currentPass = aRenderPass;
-		myRendererData->currentPassCamera = camera;
-
-		if (shouldClear && myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Clear();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Bind();
-		}
-
-		UpdatePerPassBuffers();
-		std::vector<RenderCommand> culledCommands = CullRenderCommands(myRendererData->renderCommands, camera);
-		CollectRenderCommands(culledCommands, isShadowPass, isAOPass);
-
-		if (sortByCamera)
-		{
-			SortRenderCommandsByCamera(culledCommands);
-		}
-
-		ConstantBufferRegistry::Get(0)->Bind(0);
-		ConstantBufferRegistry::Get(3)->Bind(3);
+#else
+		BeginPassInternal(aRenderPass, aCamera, aShouldClear, aIsShadowPass, aIsAOPass);
+#endif
 	}
 
 	void Renderer::EndPass()
 	{
-		const std::string tag = "End " + myRendererData->currentPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
+		VT_PROFILE_FUNCTION();
 
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Unbind();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Unbind();
-		}
-
-		EndSection(myRendererData->currentPass.debugName);
-
-		myRendererData->currentPass = {};
-		myRendererData->currentPassCamera = nullptr;
-		myRendererData->instancingData.passRenderCommands.clear();
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				EndPassInternal();
+			});
+#else
+		EndPassInternal();
+#endif
 	}
 
-	void Renderer::BeginFullscreenPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear)
+	void Renderer::BeginFullscreenPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool shouldClear)
 	{
-		const std::string tag = "Begin " + aRenderPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
+		VT_PROFILE_FUNCTION();
 
-		BeginSection(aRenderPass.debugName);
-
-		myRendererData->currentPass = aRenderPass;
-		myRendererData->currentPassCamera = camera;
-
-		if (shouldClear && myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Clear();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Bind();
-		}
-
-		UpdatePerPassBuffers();
-
-		ConstantBufferRegistry::Get(0)->Bind(0);
-		ConstantBufferRegistry::Get(3)->Bind(3);
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([aRenderPass, aCamera, shouldClear]()
+			{
+				BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
+			});
+#else
+		BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
+#endif
 	}
 
 	void Renderer::EndFullscreenPass()
 	{
-		const std::string tag = "End " + myRendererData->currentPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
+		VT_PROFILE_FUNCTION();
 
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Unbind();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Unbind();
-		}
-
-		EndSection(myRendererData->currentPass.debugName);
-
-		myRendererData->currentPass = {};
-		myRendererData->currentPassCamera = nullptr;
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				EndFullscreenPassInternal();
+			});
+#else
+		EndFullscreenPassInternal();
+#endif
 	}
 
 	void Renderer::SetFullResolution(const gem::vec2& renderSize)
@@ -825,216 +510,43 @@ namespace Volt
 
 	void Renderer::BeginSection(const std::string& name)
 	{
-		BeginAnnotatedSection(name);
-
-#ifdef VT_PROFILE_GPU
-		if (!myRendererData->profilingData.contains(myRendererData->currentContext))
-		{
-			CreateProfilingData();
-		}
-
-		auto& frameTimeQueries = GetContextProfilingData().sectionTimeQueries.at(GetContextProfilingData().currentFrame);
-		auto& framePipelineQueries = GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame);
-
-		// Time queries
-		{
-			auto it = frameTimeQueries.find(name);
-			if (it == frameTimeQueries.end())
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([name]()
 			{
-				// Create time query
-				ComPtr<ID3D11Query> query0;
-				ComPtr<ID3D11Query> query1;
-
-				D3D11_QUERY_DESC desc{};
-				desc.Query = D3D11_QUERY_TIMESTAMP;
-
-				auto device = GraphicsContext::GetDevice();
-				device->CreateQuery(&desc, query0.GetAddressOf());
-				device->CreateQuery(&desc, query1.GetAddressOf());
-
-				GetContextProfilingData().sectionTimeQueries.at(0).emplace(name, query0);
-				GetContextProfilingData().sectionTimeQueries.at(1).emplace(name, query1);
-
-				GetContextProfilingData().sectionNames.at(GetContextProfilingData().currentFrame).emplace_back(name);
-			}
-		}
-
-		// Pipeline queries
-		{
-			auto it = framePipelineQueries.find(name);
-			if (it == framePipelineQueries.end())
-			{
-				// Create time query
-				ComPtr<ID3D11Query> query0;
-				ComPtr<ID3D11Query> query1;
-
-				D3D11_QUERY_DESC desc{};
-				desc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
-
-				auto device = GraphicsContext::GetDevice();
-				device->CreateQuery(&desc, query0.GetAddressOf());
-				device->CreateQuery(&desc, query1.GetAddressOf());
-
-				GetContextProfilingData().sectionPipelineQueries.at(0).emplace(name, query0);
-				GetContextProfilingData().sectionPipelineQueries.at(1).emplace(name, query1);
-			}
-
-			auto context = GraphicsContext::GetContext();
-			context->Begin(GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
-		}
-		GetContextProfilingData().sectionNames.at(GetContextProfilingData().currentFrame).emplace_back(name);
+				RenderCommand::BeginAnnotation(name);
+			});
+#else
+		RenderCommand::BeginAnnotation(name);
 #endif
-		myRendererData->statistics.perSectionStatistics.emplace(name, SectionStatistics{});
 	}
 
 	void Renderer::EndSection(const std::string& name)
 	{
-		auto context = GraphicsContext::GetContext();
-
-#ifdef VT_PROFILE_GPU
-		context->End(GetContextProfilingData().sectionTimeQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
-		context->End(GetContextProfilingData().sectionPipelineQueries.at(GetContextProfilingData().currentFrame).at(name).Get());
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
+			{
+				RenderCommand::EndAnnotation();
+			});
+#else
+		RenderCommand::EndAnnotation(name);
 #endif
-		EndAnnotatedSection();
-	}
-
-	void Renderer::BeginAnnotatedSection(const std::string& name)
-	{
-		GraphicsContext::GetAnnotations()->BeginEvent(std::filesystem::path(name).wstring().c_str());
-	}
-
-	void Renderer::EndAnnotatedSection()
-	{
-		GraphicsContext::GetAnnotations()->EndEvent();
-	}
-
-	void Renderer::ResetStatistics()
-	{
-		myRendererData->statistics.Reset();
-	}
-
-	void Renderer::DispatchRenderCommands(bool shadowPass, bool aoPass)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (myRendererData->renderCommands.empty())
-		{
-			return;
-		}
-
-		auto context = GraphicsContext::GetContext();
-		auto& cmds = myRendererData->renderCommands;
-
-		for (size_t i = 0; i < myRendererData->renderCommands.size(); i++)
-		{
-			if ((shadowPass && !cmds[i].castShadows) || (aoPass && !cmds[i].castAO))
-			{
-				continue;
-			}
-
-			if (auto it = std::find(myRendererData->currentPass.excludedShaderHashes.begin(), myRendererData->currentPass.excludedShaderHashes.end(), cmds[i].material->GetShaderHash()); it != myRendererData->currentPass.excludedShaderHashes.end())
-			{
-				continue;
-			}
-
-			if (myRendererData->currentPass.exclusiveShaderHash != 0 && myRendererData->currentPass.exclusiveShaderHash != cmds[i].material->GetShaderHash())
-			{
-				continue;
-			}
-
-			if (i == 0 || (i > 0 && cmds[i].material != cmds[i - 1].material))
-			{
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->Bind();
-				}
-
-				cmds[i].material->Bind(myRendererData->currentPass.overrideShader == nullptr);
-
-				myRendererData->statistics.materialBinds++;
-				myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).materialBinds++;
-			}
-
-			if (i == 0 || (i > 0 && cmds[i].mesh != cmds[i - 1].mesh))
-			{
-				cmds[i].mesh->GetVertexBuffer()->Bind();
-				cmds[i].mesh->GetIndexBuffer()->Bind();
-				myRendererData->statistics.vertexIndexBufferBinds++;
-				myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).vertexIndexBufferBinds++;
-			}
-
-			// Update object buffer
-			{
-				ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-
-				mapped->transform = cmds[i].transform;
-				mapped->id = cmds[i].id;
-				mapped->isAnimated = !cmds[i].boneTransforms.empty();
-				mapped->timeSinceCreation = cmds[i].timeSinceCreation;
-
-				ConstantBufferRegistry::Get(1)->Unmap();
-			}
-
-			// Update animation buffer
-			if (!cmds[i].boneTransforms.empty())
-			{
-				AnimationData* mapped = ConstantBufferRegistry::Get(6)->Map<AnimationData>();
-				memcpy_s(mapped, sizeof(gem::mat4) * 128, cmds[i].boneTransforms.data(), sizeof(gem::mat4) * cmds[i].boneTransforms.size());
-				ConstantBufferRegistry::Get(6)->Unmap();
-			}
-
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			context->DrawIndexed((uint32_t)cmds[i].subMesh.indexCount, cmds[i].subMesh.indexStartOffset, cmds[i].subMesh.vertexStartOffset);
-			myRendererData->statistics.drawCalls++;
-			myRendererData->statistics.perSectionStatistics.at(myRendererData->currentPass.debugName).drawCalls++;
-		}
 	}
 
 	void Renderer::DispatchRenderCommandsInstanced()
 	{
 		VT_PROFILE_FUNCTION();
 
-		// TODO: Add statistics stuff
-
-		auto context = GraphicsContext::GetContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
-
-		for (const auto& cmd : myRendererData->instancingData.passRenderCommands)
-		{
-			// Update instanced vertex buffer
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
 			{
-				VT_PROFILE_SCOPE("Update instance vertex buffer");
-
-				const uint32_t size = sizeof(InstanceData) * (uint32_t)cmd.objectDataIds.size();
-
-				InstanceData* instanceData = myRendererData->instancingData.instancedVertexBuffer->Map<InstanceData>();
-
-				{
-					VT_PROFILE_SCOPE("Memcpy");
-					memcpy_s(instanceData, size, cmd.objectDataIds.data(), size);
-				}
-
-				{
-					VT_PROFILE_SCOPE("Unmap");
-					myRendererData->instancingData.instancedVertexBuffer->Unmap();
-				}
-			}
-
-			// Bind mesh data
-			{
-				cmd.mesh->GetVertexBuffer()->Bind(0);
-				cmd.mesh->GetIndexBuffer()->Bind();
-
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->Bind();
-				}
-
-				cmd.material->Bind(myRendererData->currentPass.overrideShader == nullptr);
-			}
-			context->DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
-		}
+				DispatchRenderCommandsInstancedInternal(); //#TODO_Ivar: Fix submit commands
+			});
+#else
+		DispatchRenderCommandsInstancedInternal();
+#endif
 	}
 
 	void Renderer::SetSceneData(const SceneData& aSceneData)
@@ -1042,20 +554,15 @@ namespace Volt
 		myRendererData->sceneData = aSceneData;
 	}
 
-	void Renderer::SetDepthState(DepthState aDepthState)
+	void Renderer::PushCollection()
 	{
-		auto context = GraphicsContext::GetContext();
-		context->OMSetDepthStencilState(myDepthStates[(uint32_t)aDepthState].Get(), 0);
-	}
-
-	void Renderer::SetRasterizerState(RasterizerState aRasterizerState)
-	{
-		auto context = GraphicsContext::GetContext();
-		context->RSSetState(myRasterizerStates[(uint32_t)aRasterizerState].Get());
+		myRendererData->currentCPUCommands->commandCollections.emplace();
 	}
 
 	SceneEnvironment Renderer::GenerateEnvironmentMap(AssetHandle aTextureHandle)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (myRendererData->environmentCache.find(aTextureHandle) != myRendererData->environmentCache.end())
 		{
 			return myRendererData->environmentCache.at(aTextureHandle);
@@ -1072,7 +579,7 @@ namespace Volt
 		constexpr uint32_t conversionThreadCount = 32;
 
 		auto device = GraphicsContext::GetDevice();
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 
 		Ref<Image2D> environmentUnfiltered;
 		Ref<Image2D> environmentFiltered;
@@ -1168,70 +675,6 @@ namespace Volt
 		return env;
 	}
 
-	void Renderer::CreateDepthStates()
-	{
-		auto device = GraphicsContext::GetDevice();
-
-		{
-			D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-			depthDesc.DepthEnable = true;
-			depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
-
-			device->CreateDepthStencilState(&depthDesc, myDepthStates.emplace_back().GetAddressOf());
-		}
-
-		{
-			D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-			depthDesc.DepthEnable = true;
-			depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-			depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
-
-			device->CreateDepthStencilState(&depthDesc, myDepthStates.emplace_back().GetAddressOf());
-		}
-
-		{
-			D3D11_DEPTH_STENCIL_DESC depthDesc = {};
-			depthDesc.DepthEnable = false;
-			depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-			depthDesc.DepthFunc = D3D11_COMPARISON_LESS;
-
-			device->CreateDepthStencilState(&depthDesc, myDepthStates.emplace_back().GetAddressOf());
-		}
-	}
-
-	void Renderer::CreateRasterizerStates()
-	{
-		// Back
-		{
-			D3D11_RASTERIZER_DESC rasterizerDesc = {};
-			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-			rasterizerDesc.CullMode = D3D11_CULL_BACK;
-			rasterizerDesc.FrontCounterClockwise = false;
-			GraphicsContext::GetDevice()->CreateRasterizerState(&rasterizerDesc, myRasterizerStates.emplace_back().GetAddressOf());
-		}
-
-		// Front
-		{
-			D3D11_RASTERIZER_DESC rasterizerDesc = {};
-			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-			rasterizerDesc.CullMode = D3D11_CULL_FRONT;
-			rasterizerDesc.FrontCounterClockwise = false;
-			GraphicsContext::GetDevice()->CreateRasterizerState(&rasterizerDesc, myRasterizerStates.emplace_back().GetAddressOf());
-		}
-
-		// None
-		{
-			D3D11_RASTERIZER_DESC rasterizerDesc = {};
-			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-			rasterizerDesc.CullMode = D3D11_CULL_NONE;
-			rasterizerDesc.FrontCounterClockwise = false;
-			GraphicsContext::GetDevice()->CreateRasterizerState(&rasterizerDesc, myRasterizerStates.emplace_back().GetAddressOf());
-		}
-
-		SetRasterizerState(RasterizerState::CullBack);
-	}
-
 	void Renderer::CreateDefaultBuffers()
 	{
 		// Constant buffers
@@ -1248,7 +691,7 @@ namespace Volt
 		{
 			StructuredBufferRegistry::Register(100, StructuredBuffer::Create(sizeof(ObjectData), RendererData::MAX_OBJECTS_PER_FRAME, ShaderStage::Vertex));
 			StructuredBufferRegistry::Register(101, StructuredBuffer::Create(sizeof(gem::mat4), RendererData::MAX_OBJECTS_PER_FRAME * RendererData::MAX_BONES_PER_MESH, ShaderStage::Vertex));
-			StructuredBufferRegistry::Register(102, StructuredBuffer::Create(sizeof(PointLight), RendererData::MAX_POINT_LIGHTS, ShaderStage::Pixel));
+			StructuredBufferRegistry::Register(102, StructuredBuffer::Create(sizeof(PointLight), RendererData::MAX_POINT_LIGHTS, ShaderStage::Compute | ShaderStage::Pixel));
 		}
 	}
 
@@ -1259,7 +702,7 @@ namespace Volt
 		// Vertex buffer
 		{
 			SpriteVertex* tempVertPtr = new SpriteVertex[SpriteData::MAX_VERTICES];
-			spriteData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * SpriteData::MAX_VERTICES, sizeof(SpriteVertex), D3D11_USAGE_DYNAMIC);
+			spriteData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * SpriteData::MAX_VERTICES, sizeof(SpriteVertex), BufferUsage::Dynamic);
 			delete[] tempVertPtr;
 		}
 
@@ -1304,7 +747,7 @@ namespace Volt
 	void Renderer::CreateBillboardData()
 	{
 		BillboardVertex* tempVertPtr = new BillboardVertex[BillboardData::MAX_BILLBOARDS];
-		myRendererData->billboardData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(BillboardVertex) * BillboardData::MAX_BILLBOARDS, sizeof(BillboardVertex), D3D11_USAGE_DYNAMIC);
+		myRendererData->billboardData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(BillboardVertex) * BillboardData::MAX_BILLBOARDS, sizeof(BillboardVertex), BufferUsage::Dynamic);
 		delete[] tempVertPtr;
 
 		myRendererData->billboardData.vertexBufferBase = new BillboardVertex[BillboardData::MAX_BILLBOARDS];
@@ -1317,7 +760,7 @@ namespace Volt
 		auto& lineData = myRendererData->lineData;
 
 		LineVertex* tempVertPtr = new LineVertex[LineData::MAX_VERTICES];
-		lineData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(LineVertex) * LineData::MAX_VERTICES, sizeof(LineVertex), D3D11_USAGE_DYNAMIC);
+		lineData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(LineVertex) * LineData::MAX_VERTICES, sizeof(LineVertex), BufferUsage::Dynamic);
 		delete[] tempVertPtr;
 
 		lineData.vertexBufferBase = new LineVertex[LineData::MAX_VERTICES];
@@ -1350,7 +793,7 @@ namespace Volt
 		// Vertex buffer
 		{
 			TextVertex* tempVertPtr = new TextVertex[TextData::MAX_VERTICES];
-			textData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(TextVertex) * TextData::MAX_VERTICES, sizeof(TextVertex), D3D11_USAGE_DYNAMIC);
+			textData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(TextVertex) * TextData::MAX_VERTICES, sizeof(TextVertex), BufferUsage::Dynamic);
 			delete[] tempVertPtr;
 		}
 
@@ -1380,43 +823,45 @@ namespace Volt
 		}
 	}
 
-	void Renderer::CreateProfilingData()
-	{
-		auto device = GraphicsContext::GetDevice();
-
-		// Disjoint
-		{
-			D3D11_QUERY_DESC desc{};
-			desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-			VT_DX_CHECK(device->CreateQuery(&desc, GetContextProfilingData().disjointQuery[0].GetAddressOf()));
-			VT_DX_CHECK(device->CreateQuery(&desc, GetContextProfilingData().disjointQuery[1].GetAddressOf()));
-		}
-
-		// Begin
-		{
-			D3D11_QUERY_DESC desc{};
-			desc.Query = D3D11_QUERY_TIMESTAMP;
-			VT_DX_CHECK(device->CreateQuery(&desc, GetContextProfilingData().beginFrameQuery[0].GetAddressOf()));
-			VT_DX_CHECK(device->CreateQuery(&desc, GetContextProfilingData().beginFrameQuery[1].GetAddressOf()));
-		}
-
-		// End
-		{
-			D3D11_QUERY_DESC desc{};
-			desc.Query = D3D11_QUERY_TIMESTAMP;
-			VT_DX_CHECK(device->CreateQuery(&desc, GetContextProfilingData().endFrameQuery[0].GetAddressOf()));
-			VT_DX_CHECK(device->CreateQuery(&desc, GetContextProfilingData().endFrameQuery[1].GetAddressOf()));
-		}
-	}
-
 	void Renderer::CreateInstancingData()
 	{
-		myRendererData->instancingData.instancedVertexBuffer = VertexBuffer::Create(RendererData::MAX_OBJECTS_PER_FRAME * sizeof(InstanceData),  sizeof(InstanceData));
+		myRendererData->instancingData.instancedVertexBuffer = VertexBuffer::Create(RendererData::MAX_OBJECTS_PER_FRAME * sizeof(InstanceData), sizeof(InstanceData));
 	}
 
 	void Renderer::CreateDecalData()
 	{
 		myRendererData->decalData.cubeMesh = Shape::CreateUnitCube();
+	}
+
+	void Renderer::CreateLightCullingData()
+	{
+		constexpr uint32_t width = 1280;
+		constexpr uint32_t height = 720;
+
+		auto& cullData = myRendererData->lightCullData;
+		auto& sceneData = myRendererData->sceneData;
+
+		sceneData.tileCount.x = (width + (width % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+		sceneData.tileCount.y = (height + (height % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+		const uint32_t tileCount = sceneData.tileCount.x * sceneData.tileCount.y;
+
+		cullData.lightCullingIndexBuffer = StructuredBuffer::Create(sizeof(VisibleLightIndex), RendererData::MAX_POINT_LIGHTS * tileCount, ShaderStage::Compute | ShaderStage::Pixel, true);
+		cullData.lightCullingPipeline = ComputePipeline::Create(ShaderRegistry::Get("LightCull"));
+	}
+
+	void Renderer::CreateCommandBuffers()
+	{
+		myRendererData->commandBuffers[0] = CommandBuffer::Create();
+		myRendererData->commandBuffers[1] = CommandBuffer::Create();
+
+		myRendererData->currentCPUBuffer = myRendererData->commandBuffers[0].get();
+		myRendererData->currentGPUBuffer = myRendererData->commandBuffers[1].get();
+
+		myRendererData->perThreadCommands[0] = CreateRef<PerThreadCommands>();
+		myRendererData->perThreadCommands[1] = CreateRef<PerThreadCommands>();
+
+		myRendererData->currentCPUCommands = myRendererData->perThreadCommands[0].get();
+		myRendererData->currentGPUCommands = myRendererData->perThreadCommands[1].get();
 	}
 
 	void Renderer::GenerateBRDFLut()
@@ -1441,8 +886,10 @@ namespace Volt
 	{
 		myDefaultData = CreateScope<DefaultData>();
 		myDefaultData->defaultShader = ShaderRegistry::Get("Default");
+		myDefaultData->defaultBillboardShader = ShaderRegistry::Get("Billboard");
 
 		myDefaultData->defaultMaterial = SubMaterial::Create("Null", 0, GetDefaultData().defaultShader);
+		myDefaultData->defaultSpriteMaterial = Material::Create(ShaderRegistry::Get("Quad"));
 
 		// White texture
 		{
@@ -1592,18 +1039,16 @@ namespace Volt
 		// Directional light
 		{
 			DirectionalLight* dirLight = ConstantBufferRegistry::Get(4)->Map<DirectionalLight>();
-
-			*dirLight = myRendererData->directionalLight;
-
+			*dirLight = GetCurrentGPUCommandCollection().directionalLight;
 			ConstantBufferRegistry::Get(4)->Unmap();
 		}
 
 		// Point lights
 		{
+			const auto& pointLights = GetCurrentGPUCommandCollection().pointLights;
+
 			PointLight* data = StructuredBufferRegistry::Get(102)->Map<PointLight>();
-
-			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, myRendererData->pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)myRendererData->pointLights.size()));
-
+			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)pointLights.size()));
 			StructuredBufferRegistry::Get(102)->Unmap();
 		}
 
@@ -1612,12 +1057,12 @@ namespace Volt
 			SceneData* data = ConstantBufferRegistry::Get(7)->Map<SceneData>();
 			data->deltaTime = myRendererData->sceneData.deltaTime;
 			data->timeSinceStart = myRendererData->sceneData.timeSinceStart;
-			data->pointLightCount = (uint32_t)myRendererData->pointLights.size();
+			data->pointLightCount = (uint32_t)GetCurrentGPUCommandCollection().pointLights.size();
 			ConstantBufferRegistry::Get(7)->Unmap();
 		}
 	}
 
-	void Renderer::UploadObjectData()
+	void Renderer::UploadObjectData(std::vector<SubmitCommand>& renderCommands)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1627,7 +1072,7 @@ namespace Volt
 			ObjectData* objData = StructuredBufferRegistry::Get(100)->Map<ObjectData>();
 			gem::mat4* animData = StructuredBufferRegistry::Get(101)->Map<gem::mat4>();
 
-			for (uint32_t i = 0; auto & cmd : myRendererData->renderCommands)
+			for (uint32_t i = 0; auto & cmd : renderCommands)
 			{
 				cmd.objectBufferId = i;
 
@@ -1643,9 +1088,6 @@ namespace Volt
 			StructuredBufferRegistry::Get(100)->Unmap();
 			StructuredBufferRegistry::Get(101)->Unmap();
 		}
-
-		StructuredBufferRegistry::Get(100)->Bind(100);
-		StructuredBufferRegistry::Get(101)->Bind(101);
 	}
 
 	void Renderer::RunResourceChanges()
@@ -1658,29 +1100,45 @@ namespace Volt
 		}
 	}
 
-	void Renderer::SortRenderCommands()
+	void Renderer::SortSubmitCommands(std::vector<SubmitCommand>& renderCommands)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& renderCommands = myRendererData->renderCommands;
-
-		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const RenderCommand& lhs, const RenderCommand& rhs)
+		std::sort(renderCommands.begin(), renderCommands.end(), [](const SubmitCommand& lhs, const SubmitCommand& rhs)
 			{
-				return lhs.subMesh < rhs.subMesh;
-			});
+				if (lhs.subMesh < rhs.subMesh)
+				{
+					return true;
+				}
+				else if (lhs.subMesh > rhs.subMesh)
+				{
+					return false;
+				}
 
-		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const RenderCommand& lhs, const RenderCommand& rhs)
-			{
-				return lhs.material < rhs.material;
-			});
+		if (lhs.material < rhs.material)
+		{
+			return true;
+		}
+		else if (lhs.material > rhs.material)
+		{
+			return false;
+		}
 
-		std::stable_sort(renderCommands.begin(), renderCommands.end(), [](const RenderCommand& lhs, const RenderCommand& rhs)
-			{
-				return lhs.transform[3][1] + lhs.mesh->GetBoundingBox().max.y < rhs.transform[3][1] + rhs.mesh->GetBoundingBox().max.y;
+		return false;
 			});
 	}
 
-	std::vector<RenderCommand> Renderer::CullRenderCommands(const std::vector<RenderCommand>& renderCommands, Ref<Camera> camera)
+	void Renderer::SortBillboardCommands(std::vector<BillboardSubmitCommand>& billboardCommads)
+	{
+		VT_PROFILE_FUNCTION();
+
+		std::sort(billboardCommads.begin(), billboardCommads.end(), [](const auto& lhs, const auto& rhs)
+			{
+				return lhs.shader < rhs.shader;
+			});
+	}
+
+	std::vector<SubmitCommand> Renderer::CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1689,7 +1147,7 @@ namespace Volt
 			return {};
 		}
 
-		std::vector<RenderCommand> result;
+		std::vector<SubmitCommand> result;
 		result.reserve(renderCommands.size());
 
 		for (const auto& cmd : renderCommands)
@@ -1703,84 +1161,706 @@ namespace Volt
 		}
 
 		return result;
-
-		/*std::vector<RenderCommand> result;
-		result.resize(renderCommands.size());
-
-		const uint32_t threadCount = std::min((uint32_t)renderCommands.size(), RendererData::MAX_CULL_THREAD_COUNT);
-
-		std::vector<uint32_t> threadStartOffsets;
-		std::vector<uint32_t> threadEndIndices;
-		threadStartOffsets.resize(threadCount);
-		threadEndIndices.resize(threadCount);
-
-		const uint32_t perThreadCommandCount = (uint32_t)renderCommands.size() / threadCount;
-
-		for (uint32_t i = 0; i < threadCount; i++)
-		{
-			threadStartOffsets[i] = i * perThreadCommandCount;
-			threadEndIndices[i] = threadStartOffsets[i] + perThreadCommandCount;
-			if (i == threadCount - 1)
-			{
-				threadEndIndices[i] = (uint32_t)renderCommands.size() - threadStartOffsets.back();
-			}
-		}
-
-		std::atomic_uint32_t currentIndex = 0;
-
-		auto cullFunction = [camera, &currentIndex](uint32_t startOffset, uint32_t endIndex, std::vector<RenderCommand>& result, const std::vector<RenderCommand>& src)
-		{
-			VT_PROFILE_THREAD("Worker");
-
-			for (uint32_t i = startOffset; i < endIndex; i++)
-			{
-				VT_PROFILE_SCOPE("Cull")
-
-					const auto cmd = src[i];
-				const auto& frustum = camera->GetFrustum();
-
-				if (cmd.mesh->GetBoundingSphere().IsInFrusum(frustum, cmd.transform))
-				{
-					uint32_t index = currentIndex++;
-					result[index] = cmd;
-				}
-			}
-		};
-
-		std::vector<std::future<void>> futures;
-		for (uint32_t i = 0; i < threadCount; i++)
-		{
-			futures.emplace_back(std::async(std::launch::async, cullFunction, threadStartOffsets[i], threadEndIndices[i], std::reference_wrapper(result), std::reference_wrapper(renderCommands)));
-		}
-
-		for (const auto& f : futures)
-		{
-			f.wait();
-		}
-
-		result.resize(currentIndex);*/
-		//return result;
 	}
 
-	void Renderer::SortRenderCommandsByCamera(std::vector<RenderCommand>& passCommands)
+	void Renderer::SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands)
 	{
-		std::sort(passCommands.begin(), passCommands.end(), [](const RenderCommand& lhs, const RenderCommand& rhs) 
+		VT_PROFILE_FUNCTION();
+
+		std::sort(commands.begin(), commands.end(), [](const SpriteSubmitCommand& lhs, const SpriteSubmitCommand& rhs)
 			{
-				return lhs.transform[3][1] < rhs.transform[3][1];
+				return lhs.material < rhs.material;
 			});
 	}
 
-	Renderer::ProfilingData& Renderer::GetContextProfilingData()
+	void Renderer::CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial)
 	{
-		return myRendererData->profilingData[myRendererData->currentContext];
+		VT_PROFILE_FUNCTION();
+		for (const auto& cmd : GetCurrentGPUCommandCollection().spriteCommands)
+		{
+			if (cmd.material != aMaterial) //#TODO_Ivar: Add early out
+			{
+				continue;
+			}
+
+			auto& spriteData = myRendererData->spriteData;
+
+			uint32_t texIndex = 0;
+			if (cmd.texture)
+			{
+				for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
+				{
+					if (spriteData.textureSlots[slot] == cmd.texture)
+					{
+						texIndex = slot;
+						break;
+					}
+				}
+
+				if (texIndex == 0)
+				{
+					texIndex = spriteData.textureSlotIndex++;
+					spriteData.textureSlots[texIndex] = cmd.texture;
+				}
+			}
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				spriteData.vertexBufferPtr->position = cmd.transform * spriteData.vertices[i];
+				spriteData.vertexBufferPtr->color = cmd.color;
+				spriteData.vertexBufferPtr->texCoords = cmd.uv[i];
+				spriteData.vertexBufferPtr->textureIndex = texIndex;
+				spriteData.vertexBufferPtr->id = cmd.id;
+				spriteData.vertexBufferPtr++;
+			}
+
+			spriteData.indexCount += 6;
+		}
 	}
 
-	void Renderer::CollectRenderCommands(const std::vector<RenderCommand>& passCommands, bool shadowPass, bool isAOPass)
+	void Renderer::CollectBillboardCommandsWithShader(Ref<Shader> aShader)
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (const auto& cmd : GetCurrentGPUCommandCollection().billboardCommands)
+		{
+			if (aShader != cmd.shader) // #TODO_Ivar: Early out
+			{
+				continue;
+			}
+
+			auto& billboardData = myRendererData->billboardData;
+
+			uint32_t texIndex = 0;
+			if (cmd.texture)
+			{
+				for (uint32_t slot = 1; slot < billboardData.textureSlotIndex; slot++)
+				{
+					if (billboardData.textureSlots[slot] == cmd.texture)
+					{
+						texIndex = slot;
+						break;
+					}
+				}
+
+				if (texIndex == 0)
+				{
+					texIndex = billboardData.textureSlotIndex;
+					billboardData.textureSlots[texIndex] = cmd.texture;
+					billboardData.textureSlotIndex++;
+				}
+			}
+
+			billboardData.vertexBufferPtr->postition = { cmd.position.x, cmd.position.y, cmd.position.z, 1.f };
+			billboardData.vertexBufferPtr->id = cmd.id;
+			billboardData.vertexBufferPtr->color = cmd.color;
+			billboardData.vertexBufferPtr->textureIndex = texIndex;
+			billboardData.vertexBufferPtr->scale = cmd.scale;
+			billboardData.vertexBufferPtr++;
+			billboardData.vertexCount++;
+		}
+	}
+
+	void Renderer::CollectTextCommands()
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (const auto& cmd : GetCurrentGPUCommandCollection().textCommands)
+		{
+			if (cmd.text.empty())
+			{
+				return;
+			}
+
+			auto& textData = myRendererData->textData;
+			int32_t textureIndex = -1;
+
+			std::u32string utf32string = Utils::To_UTF32(cmd.text);
+
+			Ref<Texture2D> fontAtlas = cmd.font->GetAtlas();
+			VT_CORE_ASSERT(fontAtlas, "Font Atlas was nullptr!");
+
+			if (textData.textureSlotIndex >= 32)
+			{
+				return;
+			}
+
+			for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
+			{
+				if (textData.textureSlots[i] == fontAtlas)
+				{
+					textureIndex = (int32_t)i;
+					break;
+				}
+			}
+
+			if (textureIndex == -1)
+			{
+				textureIndex = (int32_t)textData.textureSlotIndex;
+				textData.textureSlots[textureIndex] = fontAtlas;
+				textData.textureSlotIndex++;
+			}
+
+			auto& fontGeom = cmd.font->GetMSDFData()->fontGeometry;
+			const auto& metrics = fontGeom.getMetrics();
+
+			std::vector<int32_t> nextLines;
+			{
+				double x = 0.0;
+				double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+				double y = -fsScale * metrics.ascenderY;
+
+				int32_t lastSpace = -1;
+
+				for (int32_t i = 0; i < utf32string.size(); i++)
+				{
+					char32_t character = utf32string[i];
+					if (character == '\n')
+					{
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+						continue;
+					}
+
+					auto glyph = fontGeom.getGlyph(character);
+					if (!glyph)
+					{
+						glyph = fontGeom.getGlyph('?');
+					}
+
+					if (!glyph)
+					{
+						continue;
+					}
+
+					if (character != ' ')
+					{
+						// Calculate geometry
+						double pl, pb, pr, pt;
+						glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+						gem::vec2 quadMin((float)pl, (float)pb);
+						gem::vec2 quadMax((float)pl, (float)pb);
+
+						quadMin *= (float)fsScale;
+						quadMax *= (float)fsScale;
+						quadMin += gem::vec2((float)x, (float)y);
+						quadMax += gem::vec2((float)x, (float)y);
+
+						if (quadMax.x > cmd.maxWidth && lastSpace != -1)
+						{
+							i = lastSpace;
+							nextLines.emplace_back(lastSpace);
+							lastSpace = -1;
+							x = 0.0;
+							y -= fsScale * metrics.lineHeight;
+						}
+					}
+					else
+					{
+						lastSpace = i;
+					}
+
+					double advance = glyph->getAdvance();
+					fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+					x += fsScale * advance;
+				}
+			}
+
+			{
+				double x = 0.0;
+				double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+				double y = 0.0;
+				for (int32_t i = 0; i < utf32string.size(); i++)
+				{
+					char32_t character = utf32string[i];
+					if (character == '\n' || NextLine(i, nextLines))
+					{
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+						continue;
+					}
+
+					auto glyph = fontGeom.getGlyph(character);
+
+					if (!glyph)
+					{
+						glyph = fontGeom.getGlyph('?');
+					}
+
+					if (!glyph)
+					{
+						continue;
+					}
+
+					double l, b, r, t;
+					glyph->getQuadAtlasBounds(l, b, r, t);
+
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+					pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+					pl += x, pb += y, pr += x, pt += y;
+
+					double texelWidth = 1.0 / fontAtlas->GetWidth();
+					double texelHeight = 1.0 / fontAtlas->GetHeight();
+
+					l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pl, (float)pb, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pr, (float)pb, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pr, (float)pt, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pl, (float)pt, 0.f, 1.f };
+					textData.vertexBufferPtr->color = cmd.color;
+					textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
+					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+					textData.vertexBufferPtr++;
+
+					textData.indexCount += 6;
+
+					double advance = glyph->getAdvance();
+					fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+					x += fsScale * advance;
+				}
+			}
+		}
+	}
+
+	void Renderer::DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& spriteData = myRendererData->spriteData;
+		if (!aMaterial)
+		{
+			aMaterial = myDefaultData->defaultSpriteMaterial;
+		}
+
+		CollectSpriteCommandsWithMaterial(aMaterial);
+
+		if (spriteData.indexCount == 0)
+		{
+			return;
+		}
+
+		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
+		spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
+
+		aMaterial->GetSubMaterialAt(0)->Bind(true, false); //#TODO_Ivar: Will bind textures as well, is this something we want?
+
+		std::vector<Ref<Image2D>> imagesToBind{ spriteData.textureSlotIndex };
+		for (uint32_t i = 0; i < spriteData.textureSlotIndex; i++)
+		{
+			imagesToBind[i] = spriteData.textureSlots[i]->GetImage();
+		}
+
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
+		RenderCommand::SetTopology(Topology::TriangleList);
+
+		spriteData.vertexBuffer->Bind();
+		spriteData.indexBuffer->Bind();
+
+		RenderCommand::DrawIndexed(spriteData.indexCount, 0, 0);
+		RenderCommand::ClearTexturesAtStage(ShaderStage::Pixel, 0, spriteData.textureSlotIndex);
+
+		spriteData.indexCount = 0;
+		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
+		spriteData.textureSlotIndex = 1;
+	}
+
+	void Renderer::DispatchBillboardsWithShaderInternal(Ref<Shader> aShader)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& billboardData = myRendererData->billboardData;
+		if (!aShader)
+		{
+			aShader = myDefaultData->defaultBillboardShader;
+		}
+
+		CollectBillboardCommandsWithShader(aShader);
+
+		if (billboardData.vertexCount == 0)
+		{
+			return;
+		}
+
+		{
+			VT_PROFILE_SCOPE("Update Data");
+			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(billboardData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(billboardData.vertexBufferBase));
+			billboardData.vertexBuffer->SetData(billboardData.vertexBufferBase, dataSize);
+		}
+
+		std::vector<Ref<Image2D>> imagesToBind{ billboardData.textureSlotIndex };
+		for (uint32_t i = 0; i < billboardData.textureSlotIndex; i++)
+		{
+			imagesToBind[i] = billboardData.textureSlots[i]->GetImage();
+		}
+
+		aShader->Bind();
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
+		RenderCommand::SetTopology(Topology::PointList);
+
+		billboardData.vertexBuffer->Bind();
+
+		RenderCommand::Draw(billboardData.vertexCount, 0);
+
+		billboardData.vertexCount = 0;
+		billboardData.vertexBufferPtr = billboardData.vertexBufferBase;
+		billboardData.textureSlotIndex = 1;
+		aShader->Unbind();
+	}
+
+	void Renderer::DispatchRenderCommandsInstancedInternal()
+	{
+		VT_PROFILE_FUNCTION();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+
+		auto& gpuCommands = GetCurrentGPUCommandCollection();
+		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
+
+		for (const auto& cmd : gpuCommands.instancedCommands)
+		{
+			// Update instanced vertex buffer
+			{
+				VT_PROFILE_SCOPE("Update instance vertex buffer");
+
+				const uint32_t size = sizeof(InstanceData) * (uint32_t)cmd.objectDataIds.size();
+
+				InstanceData* instanceData = myRendererData->instancingData.instancedVertexBuffer->Map<InstanceData>();
+
+				{
+					VT_PROFILE_SCOPE("Memcpy");
+					memcpy_s(instanceData, size, cmd.objectDataIds.data(), size);
+				}
+
+				{
+					VT_PROFILE_SCOPE("Unmap");
+					myRendererData->instancingData.instancedVertexBuffer->Unmap();
+				}
+			}
+
+			// Bind mesh data
+			{
+				cmd.mesh->GetVertexBuffer()->Bind(0);
+				cmd.mesh->GetIndexBuffer()->Bind();
+
+				if (myRendererData->currentPass.overrideShader)
+				{
+					myRendererData->currentPass.overrideShader->Bind();
+				}
+
+				cmd.material->Bind(myRendererData->currentPass.overrideShader == nullptr);
+			}
+
+			RenderCommand::DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
+		}
+	}
+
+	void Renderer::DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
+		uint32_t subMaterialIndex = subMesh.materialIndex;
+		if ((uint32_t)material->GetSubMaterials().size() >= subMeshIndex)
+		{
+			subMaterialIndex = (uint32_t)material->GetSubMaterials().size() - 1;
+		}
+
+		auto subMaterial = material->GetSubMaterials().at(subMaterialIndex);
+
+		if (auto it = std::find(myRendererData->currentPass.excludedShaderHashes.begin(), myRendererData->currentPass.excludedShaderHashes.end(), subMaterial->GetShaderHash()); it != myRendererData->currentPass.excludedShaderHashes.end())
+		{
+			return;
+		}
+
+		if (myRendererData->currentPass.exclusiveShaderHash != 0 && myRendererData->currentPass.exclusiveShaderHash != subMaterial->GetShaderHash())
+		{
+			return;
+		}
+
+		if (myRendererData->currentPass.overrideShader)
+		{
+			myRendererData->currentPass.overrideShader->Bind();
+		}
+
+		subMaterial->Bind(myRendererData->currentPass.overrideShader == nullptr);
+		aMesh->GetVertexBuffer()->Bind();
+		aMesh->GetIndexBuffer()->Bind();
+
+		// Update object buffer
+		{
+			ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
+
+			mapped->transform = aTransform;
+			//mapped->id = cmds[i].id;
+			mapped->isAnimated = !aBoneTransforms.empty();
+
+			ConstantBufferRegistry::Get(1)->Unmap();
+		}
+
+		// Update animation buffer
+		if (!aBoneTransforms.empty())
+		{
+			AnimationData* mapped = ConstantBufferRegistry::Get(6)->Map<AnimationData>();
+			memcpy_s(mapped, sizeof(gem::mat4) * RendererData::MAX_BONES_PER_MESH, aBoneTransforms.data(), sizeof(gem::mat4) * aBoneTransforms.size());
+			ConstantBufferRegistry::Get(6)->Unmap();
+		}
+
+		ConstantBufferRegistry::Get(1)->Bind(1);
+		ConstantBufferRegistry::Get(6)->Bind(6);
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::DrawIndexed(subMesh.indexCount, subMesh.indexStartOffset, subMesh.vertexStartOffset);
+	}
+
+	void Renderer::RT_Execute()
+	{
+		VT_PROFILE_THREAD("Render Thread");
+		RenderCommand::SetContext(Context::Deferred);
+
+		while (myRendererData->isRunning)
+		{
+			std::unique_lock lk{ myRendererData->renderMutex };
+			{
+				VT_PROFILE_SCOPE("Wait for update");
+
+				myRendererData->syncVariable.wait(lk, []() { return myRendererData->primaryBufferUsed || !myRendererData->isRunning; });
+				RenderCommand::RestoreDefaultState();
+			}
+
+			// Execute commands
+			{
+				VT_PROFILE_SCOPE("Execute Commands");
+				myRendererData->currentGPUBuffer->Execute();
+				myRendererData->currentGPUBuffer->Clear();
+			}
+			
+			myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
+			myRendererData->syncVariable.notify_one();
+		}
+	}
+
+	void Renderer::DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader)
+	{
+		VT_PROFILE_FUNCTION();
+
+		shader->Bind();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::SetDepthState(DepthState::None);
+
+		RenderCommand::IndexBuffer_Bind(nullptr);
+		RenderCommand::VertexBuffer_Bind(nullptr);
+
+		RenderCommand::Draw(3, 0);
+		shader->Unbind();
+	}
+
+	void Renderer::DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial)
+	{
+		VT_PROFILE_FUNCTION();
+
+		aMaterial->GetSubMaterials().at(0)->Bind();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::SetDepthState(DepthState::None);
+
+		RenderCommand::IndexBuffer_Bind(nullptr);
+		RenderCommand::VertexBuffer_Bind(nullptr);
+
+		RenderCommand::Draw(3, 0);
+	}
+
+	void Renderer::DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader)
+	{
+		VT_PROFILE_FUNCTION();
+
+		aShader->Bind();
+
+		RenderCommand::SetTopology(Topology::TriangleList);
+		RenderCommand::SetDepthState(DepthState::None);
+
+		myRendererData->quadVertexBuffer->Bind();
+		myRendererData->quadIndexBuffer->Bind();
+
+		RenderCommand::DrawIndexed(6, 0, 0);
+		aShader->Unbind();
+	}
+
+	void Renderer::BeginInternal(Context context, const std::string& debugName)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const std::string profData = "Volt::Renderer::Begin: " + debugName;
+		VT_PROFILE_SCOPE(profData.c_str());
+
+		RenderCommand::SetContext(context);
+		RenderCommand::BeginAnnotation(debugName);
+
+		myRendererData->currentContext = debugName;
+
+		UpdatePerFrameBuffers();
+
+		SortSubmitCommands(GetCurrentGPUCommandCollection().submitCommands);
+		SortSpriteCommands(GetCurrentGPUCommandCollection().spriteCommands);
+		SortBillboardCommands(GetCurrentGPUCommandCollection().billboardCommands);
+
+		UploadObjectData(GetCurrentGPUCommandCollection().submitCommands);
+
+		// Bind samplers
+		{
+			myRendererData->samplers.linearWrap->Bind(0);
+			myRendererData->samplers.linearPointWrap->Bind(1);
+
+			myRendererData->samplers.pointWrap->Bind(2);
+			myRendererData->samplers.pointLinearWrap->Bind(3);
+
+			myRendererData->samplers.linearClamp->Bind(4);
+			myRendererData->samplers.linearPointClamp->Bind(5);
+
+			myRendererData->samplers.pointClamp->Bind(6);
+			myRendererData->samplers.pointLinearClamp->Bind(7);
+
+			myRendererData->samplers.anisotropic->Bind(8);
+			myRendererData->samplers.shadow->Bind(9);
+		}
+
+		ConstantBufferRegistry::Get(0)->Bind(0);
+		ConstantBufferRegistry::Get(1)->Bind(1);
+		ConstantBufferRegistry::Get(3)->Bind(3);
+		ConstantBufferRegistry::Get(4)->Bind(4);
+		ConstantBufferRegistry::Get(6)->Bind(6);
+		ConstantBufferRegistry::Get(7)->Bind(7);
+
+		StructuredBufferRegistry::Get(100)->Bind(100);
+		StructuredBufferRegistry::Get(101)->Bind(101);
+		StructuredBufferRegistry::Get(102)->Bind(102);
+	}
+
+	void Renderer::EndInternal()
+	{
+		RenderCommand::EndAnnotation();
+		myRendererData->currentGPUCommands->commandCollections.pop();
+	}
+
+	void Renderer::BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
+	{
+		const std::string tag = "Begin " + aRenderPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		RenderCommand::BeginAnnotation(aRenderPass.debugName);
+
+		myRendererData->currentPass = aRenderPass;
+		myRendererData->currentPassCamera = aCamera;
+
+		if (aShouldClear && myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Clear();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Bind();
+		}
+
+		RenderCommand::SetCullState(aRenderPass.cullState);
+		RenderCommand::SetDepthState(aRenderPass.depthState);
+
+		UpdatePerPassBuffers();
+		std::vector<SubmitCommand> culledCommands = CullRenderCommands(GetCurrentGPUCommandCollection().submitCommands, aCamera);
+		CollectSubmitCommands(culledCommands, GetCurrentGPUCommandCollection().instancedCommands, aIsShadowPass, aIsAOPass);
+	}
+
+	void Renderer::EndPassInternal()
+	{
+		const std::string tag = "End " + myRendererData->currentPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		if (myRendererData->currentPass.overrideShader)
+		{
+			myRendererData->currentPass.overrideShader->Unbind();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Unbind();
+		}
+
+		RenderCommand::EndAnnotation();
+
+		myRendererData->currentPass = {};
+		myRendererData->currentPassCamera = nullptr;
+		GetCurrentGPUCommandCollection().instancedCommands.clear();
+	}
+
+	void Renderer::BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear)
+	{
+		const std::string tag = "Begin " + renderPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		RenderCommand::BeginAnnotation(renderPass.debugName);
+
+		myRendererData->currentPass = renderPass;
+		myRendererData->currentPassCamera = camera;
+
+		if (shouldClear && myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Clear();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Bind();
+		}
+
+		RenderCommand::SetCullState(renderPass.cullState);
+		RenderCommand::SetDepthState(renderPass.depthState);
+
+		UpdatePerPassBuffers();
+	}
+
+	void Renderer::EndFullscreenPassInternal()
+	{
+		const std::string tag = "End " + myRendererData->currentPass.debugName;
+		VT_PROFILE_SCOPE(tag.c_str());
+
+		if (myRendererData->currentPass.overrideShader)
+		{
+			myRendererData->currentPass.overrideShader->Unbind();
+		}
+
+		if (myRendererData->currentPass.framebuffer)
+		{
+			myRendererData->currentPass.framebuffer->Unbind();
+		}
+
+		RenderCommand::EndAnnotation();
+		myRendererData->currentPass = {};
+		myRendererData->currentPassCamera = nullptr;
+	}
+
+	void Renderer::CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass, bool isAOPass)
 	{
 		VT_PROFILE_FUNCTION();
 
 		auto& allCmds = passCommands;
-		auto& instanceCmds = myRendererData->instancingData.passRenderCommands;
 		const auto& currentPass = myRendererData->currentPass;
 
 		for (size_t i = 0; i < allCmds.size(); ++i)
@@ -1806,9 +1886,9 @@ namespace Volt
 				continue;
 			}
 
-			if (i == 0 || instanceCmds.empty() || instanceCmds.back().subMesh != allCmds.at(i).subMesh || instanceCmds.back().material != allCmds.at(i).material)
+			if (i == 0 || instanceCommands.empty() || instanceCommands.back().subMesh != allCmds.at(i).subMesh || instanceCommands.back().material != allCmds.at(i).material)
 			{
-				auto& instancedCmd = instanceCmds.emplace_back();
+				auto& instancedCmd = instanceCommands.emplace_back();
 				instancedCmd.subMesh = allCmds.at(i).subMesh;
 				instancedCmd.boneTransforms = allCmds.at(i).boneTransforms;
 				instancedCmd.mesh = allCmds.at(i).mesh;
@@ -1818,108 +1898,54 @@ namespace Volt
 			}
 			else
 			{
-				instanceCmds.back().objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
-				instanceCmds.back().count++;
+				instanceCommands.back().objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
+				instanceCommands.back().count++;
 			}
 		}
-	}
-
-	void Renderer::DispatchSpritesWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
-
-		if (spriteData.indexCount == 0)
-		{
-			return;
-		}
-
-		{
-			VT_PROFILE_SCOPE("Update vertex buffer");
-			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
-			spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
-		}
-
-		std::vector<ID3D11ShaderResourceView*> textures;
-		for (uint32_t i = 0; i < spriteData.textureSlotIndex; i++)
-		{
-			if (!spriteData.textureSlots[i])
-			{
-				textures.emplace_back(GetDefaultData().whiteTexture->GetImage()->GetSRV().Get());
-			}
-			else
-			{
-				textures.emplace_back(spriteData.textureSlots[i]->GetImage()->GetSRV().Get());
-			}
-		}
-
-		auto context = GraphicsContext::GetContext();
-		aShader->Bind();
-		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		spriteData.vertexBuffer->Bind();
-		spriteData.indexBuffer->Bind();
-		context->DrawIndexed(spriteData.indexCount, 0, 0);
-
-		spriteData.indexCount = 0;
-		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-		spriteData.textureSlotIndex = 0;
-		aShader->Unbind();
 	}
 
 	void Renderer::DispatchBillboardsWithShader(Ref<Shader> aShader)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& billboardData = myRendererData->billboardData;
-		if (billboardData.vertexCount == 0)
-		{
-			return;
-		}
-
-		{
-			VT_PROFILE_SCOPE("Update Data");
-			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(billboardData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(billboardData.vertexBufferBase));
-			billboardData.vertexBuffer->SetData(billboardData.vertexBufferBase, dataSize);
-		}
-
-		std::vector<ID3D11ShaderResourceView*> textures;
-		for (uint32_t i = 0; i < billboardData.textureSlotIndex; i++)
-		{
-			if (!billboardData.textureSlots[i])
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([shader = aShader]()
 			{
-				textures.emplace_back(GetDefaultData().whiteTexture->GetImage()->GetSRV().Get());
-			}
-			else
-			{
-				textures.emplace_back(billboardData.textureSlots[i]->GetImage()->GetSRV().Get());
-			}
-		}
+				DispatchBillboardsWithShaderInternal(shader);
+			});
 
-		auto context = GraphicsContext::GetContext();
-		aShader->Bind();
-		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-		billboardData.vertexBuffer->Bind();
-		context->Draw(billboardData.vertexCount, 0);
-
-		billboardData.vertexCount = 0;
-		billboardData.vertexBufferPtr = billboardData.vertexBufferBase;
-		aShader->Unbind();
+#else
+		DispatchBillboardsWithShaderInternal(aShader);
+#endif
 	}
 
 	void Renderer::DispatchDecalsWithShader(Ref<Shader> aShader)
 	{
-		auto context = GraphicsContext::GetContext();
-		SetDepthState(DepthState::Read);
+		VT_PROFILE_FUNCTION();
+
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([aShader]()
+			{
+				DispatchDecalsWithShaderInternal(aShader);
+			});
+
+#else
+		DispatchDecalsWithShaderInternal(aShader);
+#endif
+	}
+
+	void Renderer::DispatchDecalsWithShaderInternal(Ref<Shader> aShader)
+	{
+		RenderCommand::SetDepthState(DepthState::Read);
+		RenderCommand::SetTopology(Topology::TriangleList);
 
 		aShader->Bind();
 		myRendererData->decalData.cubeMesh->GetVertexBuffer()->Bind();
 		myRendererData->decalData.cubeMesh->GetIndexBuffer()->Bind();
 
-		for (const auto& cmd : myRendererData->decalData.renderCommands)
+		for (const auto& cmd : GetCurrentGPUCommandCollection().decalCommands)
 		{
 			// Update object buffer
 			{
@@ -1933,39 +1959,61 @@ namespace Volt
 
 			cmd.material->GetSubMaterials().at(0)->Bind(false);
 
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			context->DrawIndexed((uint32_t)myRendererData->decalData.cubeMesh->GetIndexCount(), 0, 0);
-			myRendererData->statistics.drawCalls++;
+			RenderCommand::DrawIndexed((uint32_t)myRendererData->decalData.cubeMesh->GetIndexCount(), 0, 0);
 		}
-
-		myRendererData->decalData.renderCommands.clear();
 	}
 
-	void Renderer::DispatchSpritesWithMaterial(Ref<Material> aMaterial)
+	void Renderer::DispatchTextInternal()
 	{
 		VT_PROFILE_FUNCTION();
-		auto& spriteData = myRendererData->spriteData;
 
-		if (spriteData.indexCount == 0)
+		auto& textData = myRendererData->textData;
+
+		CollectTextCommands();
+
+		if (textData.indexCount == 0)
 		{
 			return;
 		}
 
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
-		spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
+		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
+		textData.vertexBuffer->SetData(textData.vertexBufferBase, dataSize);
 
-		aMaterial->GetSubMaterials().at(0)->Bind();
+		textData.shader->Bind();
 
-		auto context = GraphicsContext::GetContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		std::vector<Ref<Image2D>> imagesToBind{ textData.textureSlotIndex };
+		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
+		{
+			imagesToBind[i] = textData.textureSlots[i]->GetImage();
+		}
 
-		spriteData.vertexBuffer->Bind();
-		spriteData.indexBuffer->Bind();
-		context->DrawIndexed(spriteData.indexCount, 0, 0);
+		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
+		RenderCommand::SetTopology(Topology::TriangleList);
 
-		spriteData.indexCount = 0;
-		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-		spriteData.textureSlotIndex = 0;
+		textData.vertexBuffer->Bind();
+		textData.indexBuffer->Bind();
+
+		RenderCommand::DrawIndexed(textData.indexCount, 0, 0);
+
+		textData.indexCount = 0;
+		textData.vertexBufferPtr = textData.vertexBufferBase;
+		textData.textureSlotIndex = 0;
+
+		textData.shader->Unbind();
+	}
+
+	void Renderer::DispatchSpritesWithMaterial(Ref<Material> aMaterial)
+	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([aMaterial]()
+			{
+				DispatchSpritesWithMaterialInternal(aMaterial);
+			});
+
+#else
+		DispatchSpritesWithMaterialInternal(aMaterial);
+#endif
 	}
 
 	void Renderer::ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer)
@@ -1986,6 +2034,92 @@ namespace Volt
 		aComputePipeline->Clear();
 	}
 
+	void Renderer::ExecuteLightCulling(Ref<Image2D> depthMap)
+	{
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([depthMap]()
+			{
+				StructuredBufferRegistry::Get(102)->Bind(102);
+
+				const uint32_t width = myRendererData->currentPass.framebuffer->GetWidth();
+				const uint32_t height = myRendererData->currentPass.framebuffer->GetHeight();
+
+				const uint32_t xTiles = (width + (width % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+				const uint32_t yTiles = (height + (height % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
+
+				auto& cullData = myRendererData->lightCullData;
+				auto& sceneData = myRendererData->sceneData;
+
+				if (cullData.lastWidth != width ||
+					cullData.lastHeight != height)
+				{
+					cullData.lightCullingIndexBuffer->Resize(xTiles * yTiles * RendererData::MAX_POINT_LIGHTS);
+					cullData.lastWidth = width;
+					cullData.lastHeight = height;
+				}
+
+				sceneData.tileCount.x = xTiles;
+				sceneData.tileCount.y = yTiles;
+
+				cullData.lightCullingIndexBuffer->BindUAV(10, ShaderStage::Compute);
+
+				cullData.lightCullingPipeline->SetImage(depthMap, 0);
+				cullData.lightCullingPipeline->Execute(xTiles, yTiles, 1);
+				cullData.lightCullingPipeline->Clear();
+
+				myRendererData->currentPass.framebuffer->Bind();
+			});
+	}
+
+	void Renderer::SyncAndWait()
+	{
+		auto immediateContext = GraphicsContext::GetImmediateContext();
+		auto deferredContext = GraphicsContext::GetDeferredContext();
+
+		std::unique_lock lk{ myRendererData->renderMutex };
+		myRendererData->syncVariable.wait(lk, []() { return !myRendererData->primaryBufferUsed; });
+
+		ID3D11CommandList*& commandList = myRendererData->currentGPUBuffer->GetAndReleaseCommandList();
+		VT_DX_CHECK(deferredContext->FinishCommandList(false, &commandList));
+
+		if (commandList)
+		{
+			immediateContext->ExecuteCommandList(commandList, false);
+		}
+
+		myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
+		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
+		std::swap(myRendererData->currentCPUCommands, myRendererData->currentGPUCommands);
+		myRendererData->syncVariable.notify_one();
+	}
+
+	void Renderer::BindTexturesToStage(ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot)
+	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([stage, textures, startSlot]()
+			{
+				RenderCommand::BindTexturesToStage(stage, textures, startSlot);
+			});
+#else
+		RenderCommand::BindTexturesToStage(stage, textures, startSlot);
+#endif
+	}
+
+	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
+	{
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([stage, startSlot, count]()
+			{
+				RenderCommand::ClearTexturesAtStage(stage, startSlot, count);
+			});
+#else
+		RenderCommand::ClearTexturesAtStage(stage, startSlot, count);
+#endif
+
+	}
+
 	void Renderer::DispatchLines()
 	{
 		VT_PROFILE_FUNCTION();
@@ -2003,9 +2137,8 @@ namespace Volt
 		lineData.vertexBuffer->Bind();
 		lineData.indexBuffer->Bind();
 
-		auto context = GraphicsContext::GetContext();
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		context->DrawIndexed(lineData.indexCount, 0, 0);
+		RenderCommand::SetTopology(Topology::LineList);
+		RenderCommand::DrawIndexed(lineData.indexCount, 0, 0);
 
 		lineData.vertexBufferPtr = lineData.vertexBufferBase;
 		lineData.indexCount = 0;
@@ -2014,44 +2147,14 @@ namespace Volt
 
 	void Renderer::DispatchText()
 	{
-		VT_PROFILE_FUNCTION();
-
-		auto& textData = myRendererData->textData;
-
-		if (textData.indexCount == 0)
-		{
-			return;
-		}
-
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
-		textData.vertexBuffer->SetData(textData.vertexBufferBase, dataSize);
-
-		std::vector<ID3D11ShaderResourceView*> textures;
-		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
-		{
-			if (!textData.textureSlots[i])
+#ifdef VT_THREADED_RENDERING
+		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
+		currentCommandBuffer->Submit([]()
 			{
-				textures.emplace_back(GetDefaultData().whiteTexture->GetImage()->GetSRV().Get());
-			}
-			else
-			{
-				textures.emplace_back(textData.textureSlots[i]->GetImage()->GetSRV().Get());
-			}
-		}
-
-		auto context = GraphicsContext::GetContext();
-		textData.shader->Bind();
-		context->PSSetShaderResources(0, (uint32_t)textures.size(), textures.data());
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		textData.vertexBuffer->Bind();
-		textData.indexBuffer->Bind();
-		context->DrawIndexed(textData.indexCount, 0, 0);
-
-		textData.indexCount = 0;
-		textData.vertexBufferPtr = textData.vertexBufferBase;
-		textData.textureSlotIndex = 0;
-
-		textData.shader->Unbind();
+				DispatchTextInternal();
+			});
+#else
+		DispatchTextInternal();
+#endif
 	}
 }

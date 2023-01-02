@@ -2,11 +2,12 @@
 
 #include "Volt/Core/Base.h"
 
-#include <d3d11.h>
 #include <Windows.h>
 #include <wrl.h>
 
 struct GLFWwindow;
+struct ID3D11RenderTargetView;
+struct IDXGISwapChain;
 
 using namespace Microsoft::WRL;
 
@@ -40,8 +41,6 @@ namespace Volt
 			float refreshRate = 0.f;
 		};
 
-		void CalculateFrameGPUTimes();
-
 		uint32_t myWidth = 0;
 		uint32_t myHeight = 0;
 
@@ -54,7 +53,6 @@ namespace Volt
 		Ref<GraphicsContext> myGraphicsContext;
 
 		HWND myWindowHandle = 0;
-		D3D11_VIEWPORT myViewport{};
 		MonitorMode myMonitorMode{};
 
 		ComPtr<ID3D11RenderTargetView> myRenderTarget = nullptr;

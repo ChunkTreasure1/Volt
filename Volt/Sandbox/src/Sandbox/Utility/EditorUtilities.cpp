@@ -592,7 +592,7 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 	renderPass.framebuffer = Volt::Framebuffer::Create(spec);
 
 	Volt::Renderer::BeginFullscreenPass(renderPass, nullptr);
-	auto context = Volt::GraphicsContext::GetContext();
+	auto context = Volt::GraphicsContext::GetImmediateContext();
 	context->PSSetShaderResources(0, 1, srcTexture->GetImage()->GetSRV().GetAddressOf());
 
 	Volt::Renderer::DrawFullscreenTriangleWithShader(Volt::ShaderRegistry::Get("CopyTextureToTarget"));

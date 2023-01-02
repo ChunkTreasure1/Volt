@@ -2,6 +2,7 @@
 #include "ParticleEmitterEditor.h"
 
 #include "Sandbox/Camera/EditorCameraController.h"
+#include "Sandbox/Utility/EditorUtilities.h"
 
 #include "Volt/Particles/ParticleSystem.h"
 #include <Volt/Asset/ParticlePreset.h>
@@ -12,7 +13,7 @@
 #include <Volt/Rendering/Shader/ShaderRegistry.h>
 #include <Volt/Rendering/Shader/Shader.h>
 
-#include "Sandbox/Utility/EditorUtilities.h"
+#include <Volt/Components/PostProcessComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -32,6 +33,14 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		Volt::ParticleEmitterComponent& comp = entity.AddComponent<Volt::ParticleEmitterComponent>();
 		comp.currentPreset = Volt::Asset::Null();
 		myEmitterEntity = entity;
+	}
+
+	{
+		auto ent = myPreviewScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 
 	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(myPreviewScene);
@@ -66,8 +75,8 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		{
 			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
 
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
+			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+			Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
 
 			Volt::Renderer::EndPass();
 		});

@@ -23,6 +23,7 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
@@ -58,6 +59,14 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 		comp.intensity = 2.f;
 
 		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
+	}
+
+	{
+		auto ent = myPreviewScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 
 	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(myPreviewScene);

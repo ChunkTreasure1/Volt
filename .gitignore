@@ -27,6 +27,7 @@ Project/*.sln
 *.vcxproj.user
 *.csproj
 *.csproj.user
+*.cached
 
 Volt/scripts/data/__pycache__
 Volt/scripts/data/premake5.exe

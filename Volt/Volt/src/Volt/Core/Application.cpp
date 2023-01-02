@@ -80,11 +80,6 @@ namespace Volt
 		{
 			myImGuiImplementation = ImGuiImplementation::Create();
 		}
-
-		if (!myInfo.isRuntime)
-		{
-			myShouldFancyOpen = true;
-		}
 	}
 
 	Application::~Application()
@@ -168,6 +163,7 @@ namespace Volt
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
+				Renderer::SyncAndWait();
 			}
 
 			myWindow->GetSwapchain().Bind();

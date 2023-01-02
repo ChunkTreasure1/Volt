@@ -15,6 +15,8 @@
 
 #include "Volt/Log/Log.h"
 
+#include <d3d11.h>
+
 namespace Volt
 {
 	Shader::Shader(const std::string& aName, std::initializer_list<std::filesystem::path> aPaths, bool aForceCompile)
@@ -89,7 +91,7 @@ namespace Volt
 
 	void Shader::Bind() const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = RenderCommand::GetCurrentContext();
 
 		if (!myShaders.contains(ShaderStage::Compute))
 		{
@@ -104,7 +106,7 @@ namespace Volt
 
 	void Shader::Unbind() const
 	{
-		auto context = GraphicsContext::GetContext();
+		auto context = RenderCommand::GetCurrentContext();
 		for (const auto& [stage, shader] : myShaders)
 		{
 			myUnbindFunctions[stage](shader, context);
@@ -263,7 +265,7 @@ namespace Volt
 	void Shader::ReflectAllStages()
 	{
 #ifdef VT_SHADER_PRINT
-		VT_CORE_INFO("Shader - Reflecting {0}", myName.c_str());
+		VT_CORE_TRACE("Shader - Reflecting {0}", myName.c_str());
 #endif
 
 		for (const auto& [stage, blob] : myShaderBlobs)
@@ -275,7 +277,7 @@ namespace Volt
 	void Shader::ReflectStage(ShaderStage aStage, ComPtr<ID3D10Blob> aBlob)
 	{
 #ifdef VT_SHADER_PRINT
-		VT_CORE_INFO("	Reflecting stage {0}", Utility::StageToString(aStage).c_str());
+		VT_CORE_TRACE("	Reflecting stage {0}", Utility::StageToString(aStage).c_str());
 #endif
 
 		ID3D11ShaderReflection* reflector = nullptr;
@@ -444,8 +446,8 @@ namespace Volt
 		}
 
 #ifdef VT_SHADER_PRINT
-		VT_CORE_INFO("		Constant Buffers: {0}", myPerStageCBCount[aStage].count);
-		VT_CORE_INFO("		Textures: {0}", myPerStageTextureCount[aStage].count);
+		VT_CORE_TRACE("		Constant Buffers: {0}", myPerStageCBCount[aStage].count);
+		VT_CORE_TRACE("		Textures: {0}", myPerStageTextureCount[aStage].count);
 #endif
 
 		reflector->Release();
