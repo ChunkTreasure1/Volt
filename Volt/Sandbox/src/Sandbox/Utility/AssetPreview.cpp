@@ -44,7 +44,7 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 		comp.castShadows = false;
 		comp.intensity = 3.f;
 
-		entity.SetRotation({ 70.f, 0.f, 100.f });
+		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
 	}
 
 	{
@@ -72,7 +72,7 @@ void AssetPreview::Render()
 	myCamera->SetPosition(position);
 	mySceneRenderer->OnRenderEditor(myCamera);
 
-    if (wasLoaded)
+    if (!wasLoaded)
     {
         Volt::AssetManager::Get().Unload(myAssetHandle);
     }

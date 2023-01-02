@@ -28,6 +28,7 @@ namespace Volt
 	class Material;
 	class Shader;
 	class ConstantBuffer;
+	class Texture2D;
 }
 
 enum class SceneState
@@ -85,7 +86,6 @@ private:
 	void SaveSceneAs();
 
 	void InstallMayaTools();
-	void HandleChangedFiles();
 	void SetupRenderCallbacks();
 	void CreateEditorRenderPasses();
 
@@ -99,6 +99,8 @@ private:
 
 	void SaveUserSettings();
 	void LoadUserSettings();
+
+	void CreateWatches();
 
 	/////ImGui/////
 	void UpdateDockSpace();
@@ -122,8 +124,13 @@ private:
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
 	Ref<Volt::Material> myGridMaterial;
-	Ref<FileWatcher> myFileWatcher;
 
+	///// File watcher /////
+	Ref<FileWatcher> myFileWatcher;
+	std::mutex myFileWatcherMutex;
+	std::vector<std::function<void()>> myFileChangeQueue;
+	////////////////////////
+	
 	Ref<Volt::Scene> myRuntimeScene;
 	Ref<Volt::Scene> myIntermediateScene;
 
@@ -139,11 +146,15 @@ private:
 	/////Gizmos/////
 	Ref<Volt::Shader> myGizmoShader;
 	Volt::RenderPass myGizmoPass;
+
+	Ref<Volt::Texture2D> myEntityGizmoTexture;
+	Ref<Volt::Texture2D> myLightGizmoTexture;
 	//////////////////
 
 	///// Forward Extra /////
 	Volt::RenderPass myColliderVisualizationPass;
 	Volt::RenderPass myForwardExtraPass;
+	Ref<Volt::Mesh> myDecalArrowMesh;
 	/////////////////////////
 
 	Ref<Game> myGame;
@@ -167,8 +178,8 @@ private:
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;
+	uint32_t myAssetBrowserCount = 0;
 
 	inline static Sandbox* myInstance = nullptr;
 
-	bool initiated = false;
 };

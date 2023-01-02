@@ -35,35 +35,38 @@ namespace Volt
 		void RemoveScript(const std::string& scriptName);
 		void RemoveScript(WireGUID scriptGUID);
 
-		const gem::mat4 GetWorldTransform() const;
-		const gem::mat4 GetTransform() const;
+		const std::string GetTag();
+		void SetTag(const std::string& tag);
 
-		const gem::vec3 GetWorldForward() const;
-		const gem::vec3 GetWorldRight() const;
-		const gem::vec3 GetWorldUp() const;
+		const gem::mat4 GetTransform() const;
+		const gem::mat4 GetLocalTransform() const;
 
 		const gem::vec3 GetForward() const;
 		const gem::vec3 GetRight() const;
 		const gem::vec3 GetUp() const;
 
-		const gem::vec3 GetPosition() const;
-		const gem::vec3 GetRotation() const;
-		const gem::vec3 GetScale() const;
+		const gem::vec3 GetLocalForward() const;
+		const gem::vec3 GetLocalRight() const;
+		const gem::vec3 GetLocalUp() const;
 
-		const gem::vec3 GetWorldPosition() const;
-		const gem::vec3 GetWorldRotation() const;
-		const gem::vec3 GetWorldScale() const;
+		const gem::vec3 GetLocalPosition() const;
+		const gem::quat GetLocalRotation() const;
+		const gem::vec3 GetLocalScale() const;
+
+		const gem::vec3 GetPosition() const;
+		const gem::quat GetRotation() const;
+		const gem::vec3 GetScale() const;
 
 		const std::vector<Volt::Entity> GetChilden() const;
 		const Volt::Entity GetParent() const;
 
 		const Ref<PhysicsActor> GetPhysicsActor() const;
 
-		void SetWorldPosition(const gem::vec3& position, bool updatePhysics = true);
-
 		void SetPosition(const gem::vec3& position, bool updatePhysics = true);
-		void SetRotation(const gem::vec3& degreeRotation);
-		void SetScale(const gem::vec3& scale);
+
+		void SetLocalPosition(const gem::vec3& position, bool updatePhysics = true);
+		void SetLocalRotation(const gem::quat& rotation);
+		void SetLocalScale(const gem::vec3& scale);
 
 		template<typename T>
 		T& AddComponent(void* componentInitData = nullptr);
@@ -103,7 +106,7 @@ namespace Volt
 		// Duplicated an entire entity tree
 		static Wire::EntityId Duplicate(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity);
 
-		static Volt::Entity GetNullEntity() { return Volt::Entity(0, nullptr); }
+		static Volt::Entity Null() { return Volt::Entity(0, nullptr); }
 
 	private:
 		static Wire::EntityId DuplicateInternal(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aParent);
@@ -134,7 +137,7 @@ namespace Volt
 			return nullptr;
 		}
 
-		ScriptBase* script = ScriptEngine::GetScript(myId, guid).get();
+		Script* script = ScriptEngine::GetScript(myId, guid).get();
 		return reinterpret_cast<T*>(script);
 	}
 

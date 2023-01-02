@@ -60,11 +60,13 @@ void _glfwInputWindowFocus(_GLFWwindow* window, GLFWbool focused)
             }
         }
 
-        for (button = 0;  button <= GLFW_MOUSE_BUTTON_LAST;  button++)
-        {
-            if (window->mouseButtons[button] == GLFW_PRESS)
-                _glfwInputMouseClick(window, button, GLFW_RELEASE, 0);
-        }
+        //#TODO_Ivar: This is a hack
+
+        //for (button = 0;  button <= GLFW_MOUSE_BUTTON_LAST;  button++)
+        //{
+        //    if (window->mouseButtons[button] == GLFW_PRESS)
+        //        _glfwInputMouseClick(window, button, GLFW_RELEASE, 0);
+        //}
     }
 }
 

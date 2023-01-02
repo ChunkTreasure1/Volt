@@ -5,7 +5,7 @@
 #include "Volt/Animation/AnimationManager.h"
 #include "Volt/Core/Profiling.h"
 
-#include "Volt/Utility/Math.h"
+#include "Volt/Math/MatrixUtilities.h"
 
 namespace Volt
 {

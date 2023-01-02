@@ -25,7 +25,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct TransformComponent
 	{
 		PROPERTY(Name = Position) gem::vec3 position;
-		PROPERTY(Name = Rotation) gem::vec3 rotation;
+		PROPERTY(Name = Rotation) gem::quat rotation;
 		PROPERTY(Name = Scale) gem::vec3 scale;
 
 		PROPERTY(Visible = false) bool visible = true;
@@ -34,25 +34,22 @@ namespace Volt
 		inline const gem::mat4 GetTransform() const
 		{
 			return gem::translate(gem::mat4(1.f), position) *
-				gem::mat4_cast(gem::quat(rotation)) * gem::scale(gem::mat4(1.f), scale);
+				gem::mat4_cast(rotation) * gem::scale(gem::mat4(1.f), scale);
 		}
 
 		inline const gem::vec3 GetForward() const
 		{
-			const gem::quat orientation = gem::quat(rotation);
-			return gem::rotate(orientation, gem::vec3{ 0.f, 0.f, 1.f });
+			return gem::rotate(rotation, gem::vec3{ 0.f, 0.f, 1.f });
 		}
 
 		inline const gem::vec3 GetRight() const
 		{
-			const gem::quat orientation = gem::quat(rotation);
-			return gem::rotate(orientation, gem::vec3{ 1.f, 0.f, 0.f });
+			return gem::rotate(rotation, gem::vec3{ 1.f, 0.f, 0.f });
 		}
 
 		inline const gem::vec3 GetUp() const
 		{
-			const gem::quat orientation = gem::quat(rotation);
-			return gem::rotate(orientation, gem::vec3{ 0.f, 1.f, 0.f });
+			return gem::rotate(rotation, gem::vec3{ 0.f, 1.f, 0.f });
 		}
 
 		CREATE_COMPONENT_GUID("{E1B8016B-1CAA-4782-927E-C17C29B25893}"_guid);
@@ -62,7 +59,6 @@ namespace Volt
 	{
 		PROPERTY(Name = Children) std::vector<Wire::EntityId> Children;
 		PROPERTY(Name = Parent) Wire::EntityId Parent = 0;
-		PROPERTY(Name = SortId, Visible = false) uint32_t sortId = 0;
 		CREATE_COMPONENT_GUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 
 	}), RelationshipComponent);

@@ -6,8 +6,7 @@
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
-#include "Sandbox/Window/AssetBrowserPanel.h"
-#include "Sandbox/Window/CreatePanel.h"
+#include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Window/LogPanel.h"
 #include "Sandbox/Window/AnimationTreeEditor.h"
 #include "Sandbox/Window/MaterialEditorPanel.h"
@@ -23,8 +22,8 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
-#include "Sandbox/Window/EditorIconLibrary.h"
-#include "Sandbox/Window/EditorLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
+#include "Sandbox/Utility/EditorLibrary.h"
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
@@ -34,6 +33,8 @@
 #include <Volt/Core/Window.h>
 
 #include <Volt/Asset/AssetManager.h>
+#include <Volt/Asset/Importers/TextureImporter.h>
+#include <Volt/Asset/Importers/MeshTypeImporter.h>
 #include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Components/Components.h>
@@ -61,65 +62,22 @@
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/Math.h>
 
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 #include <Volt/AI/NavMesh2/NavMesh2.h>
-#include "Volt/Audio/AudioManager.h"
+#include <Volt/Platform/ExceptionHandling.h>
+#include <Volt/Audio/AudioManager.h>
+#include <Volt/Project/ProjectManager.h>
+#include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Game/Game.h>
 
 #include <imgui.h>
-#include <csignal>
-
-#include <dpp/dpp.h>
-#include <ShlObj.h>
-
-#include <gem/noise.h>
-
-std::string GetSIGEventFromInt(int signal)
-{
-	switch (signal)
-	{
-		case 8: return "Floating point exception"; break;
-		case 11: return "Memory access violation"; break;
-		case 22: return "Abort"; break;
-
-		default:
-			return "Unknown";
-	}
-}
-
-void SignalHandler(int signal)
-{
-	dpp::cluster bot("");
-	dpp::webhook wh("https://discord.com/api/webhooks/1044616206520438825/lA7ONWakE8XwFQbSFY-ip9aleuAiMaGF8WiinDq1-eBLOLSqqD0MdhSNe-7KNMovnApL");
-
-	const std::string user = FileSystem::GetCurrentUserName();
-
-	auto msg = dpp::message(std::format("{0} just crashed! <:ivar_point:1044955145139662878> It was a {1} error!", user, GetSIGEventFromInt(signal)));
-	bot.execute_webhook_sync(wh, msg);
-}
 
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
 	myInstance = this;
-
-	if (std::signal(SIGSEGV, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
-
-	if (std::signal(SIGFPE, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
-
-	if (std::signal(SIGABRT, SignalHandler) == SIG_ERR)
-	{
-		VT_CORE_ERROR("Unable to create signal handler!");
-	}
 }
 
 Sandbox::~Sandbox()
@@ -129,10 +87,13 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
-	float n = gem::perlin(gem::vec2{ 0.f, 0.f });
-
-	EditorIconLibrary::Initialize();
+	EditorResources::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
+
+	myEntityGizmoTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Icons/icon_entityGizmo.dds");
+	myLightGizmoTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Icons/icon_lightGizmo.dds");
+	myDecalArrowMesh = Volt::MeshTypeImporter::ImportMesh("Editor/Meshes/Arrow/3dpil.vtmesh");
+
 
 	Volt::Application::Get().GetWindow().Maximize();
 
@@ -151,7 +112,7 @@ void Sandbox::OnAttach()
 	myViewportPanel = std::reinterpret_pointer_cast<ViewportPanel>(myEditorWindows.back()); // #TODO: This is bad
 
 	myEditorWindows.emplace_back(CreateRef<SceneViewPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene));
+	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Main"));
 
 	myEditorWindows.emplace_back(CreateRef<CharacterEditorPanel>());
 	EditorLibrary::Register(Volt::AssetType::AnimatedCharacter, myEditorWindows.back());
@@ -177,19 +138,125 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
 	myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
 
-	myFileWatcher = CreateRef<FileWatcher>(std::chrono::milliseconds(2000));
-	myFileWatcher->WatchFolder("Engine/Shaders/HLSL/");
-	myFileWatcher->WatchFolder("Assets/");
+	myFileWatcher = CreateRef<FileWatcher>();
+	CreateWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
 
-	//SetupProjectInfo();
 	UserSettingsManager::LoadUserSettings(myEditorWindows);
 
 	if (!UserSettingsManager::GetSettings().sceneSettings.lastOpenScene.empty())
 	{
 		OpenScene(UserSettingsManager::GetSettings().sceneSettings.lastOpenScene);
 	}
+}
+
+void Sandbox::CreateWatches()
+{
+	myFileWatcher->AddWatch("Engine");
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsPath());
+
+	myFileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
+		{
+			std::scoped_lock lock(myFileWatcherMutex);
+			myFileChangeQueue.emplace_back([newPath, oldPath]()
+				{
+					if (newPath.string().contains(Volt::ProjectManager::GetMonoAssemblyPath().string()))
+					{
+						Volt::MonoScriptEngine::ReloadAssembly();
+						UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
+						return;
+					}
+
+					Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+					switch (assetType)
+					{
+						case Volt::AssetType::Mesh:
+						case Volt::AssetType::Video:
+						case Volt::AssetType::Prefab:
+						case Volt::AssetType::Material:
+						case Volt::AssetType::Texture:
+							Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::Get().GetRelativePath(newPath));
+							break;
+
+						case Volt::AssetType::ShaderSource:
+						{
+							const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(newPath);
+							for (const auto& asset : assets)
+							{
+								Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
+								shader->Reload(true);
+
+								UI::Notify(NotificationType::Success, "Reloaded shader!", std::format("Shader {0} has been reloaded!", shader->GetName()));
+							}
+							break;
+						}
+
+
+						case Volt::AssetType::MeshSource:
+						{
+							const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(newPath);
+							for (const auto& asset : assets)
+							{
+								if (EditorUtils::ReimportSourceMesh(asset))
+								{
+									UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reloaded!", Volt::AssetManager::GetPathFromAssetHandle(asset).string()));
+								}
+							}
+							break;
+						}
+
+						case Volt::AssetType::None:
+							break;
+						default:
+							break;
+					}
+				});
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Delete, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+		{
+			std::scoped_lock lock(myFileWatcherMutex);
+			myFileChangeQueue.emplace_back([newPath, oldPath]()
+				{
+					if (!newPath.has_extension())
+					{
+						Volt::AssetManager::Get().RemoveFolderFromRegistry(newPath);
+					}
+					else
+					{
+						Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+						if (assetType != Volt::AssetType::None)
+						{
+							if (Volt::AssetManager::Get().ExistsInRegistry(newPath))
+							{
+								Volt::AssetManager::Get().RemoveFromRegistry(newPath);
+							}
+						}
+					}
+				});
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Add, [](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+		{
+
+		});
+
+	myFileWatcher->AddCallback(efsw::Actions::Moved, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+		{
+			std::scoped_lock lock(myFileWatcherMutex);
+			myFileChangeQueue.emplace_back([newPath, oldPath]()
+				{
+					if (!newPath.has_extension())
+					{
+						Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
+					}
+					else
+					{
+						//Volt::AssetManager::Get().
+					}
+				});
+		});
 }
 
 void Sandbox::OnDetach()
@@ -216,7 +283,7 @@ void Sandbox::OnDetach()
 	myGame = nullptr;
 
 	VersionControl::Shutdown();
-	EditorIconLibrary::Shutdown();
+	EditorResources::Shutdown();
 }
 
 void Sandbox::OnEvent(Volt::Event& e)
@@ -371,6 +438,11 @@ void Sandbox::ExecuteUndo()
 void Sandbox::NewScene()
 {
 	SelectionManager::DeselectAll();
+	if (myRuntimeScene)
+	{
+		Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
+	}
+
 	myRuntimeScene = CreateRef<Volt::Scene>("New Scene");
 
 	// Setup new scene
@@ -391,7 +463,7 @@ void Sandbox::NewScene()
 			auto& trans = ent.GetComponent<Volt::TransformComponent>();
 			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Directional Light";
 
-			trans.rotation = { gem::pi() / 4.f, gem::pi() / 4.f, gem::pi() / 4.f };
+			trans.rotation = gem::quat{ gem::vec3{ gem::pi() / 4.f, gem::pi() / 4.f, gem::pi() / 4.f } };
 		}
 
 		// Point light
@@ -999,54 +1071,15 @@ void Sandbox::CreateEditorRenderPasses()
 	}
 }
 
-void Sandbox::HandleChangedFiles()
-{
-	if (myFileWatcher->AnyFileChanged())
-	{
-		const auto changedFile = myFileWatcher->QueryChangedFile();
-		Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(changedFile.filePath);
-		switch (changedFile.status)
-		{
-			case FileStatus::Modified:
-			{
-				switch (assetType)
-				{
-					case Volt::AssetType::ShaderSource:
-						Volt::ShaderRegistry::ReloadShadersWithShader(changedFile.filePath);
-						break;
-				}
-
-				break;
-			}
-
-			case FileStatus::Removed:
-			{
-				if (assetType != Volt::AssetType::None)
-				{
-					Volt::AssetManager::Get().RemoveFromRegistry(changedFile.filePath);
-				}
-				break;
-			}
-
-			case FileStatus::Added:
-			{
-				break;
-			}
-		}
-	}
-}
-
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	EditorCommandStack::GetInstance().Update(100);
 
-	Volt::Entity a(1, myRuntimeScene.get());
 	switch (mySceneState)
 	{
 		case SceneState::Edit:
 			myRuntimeScene->UpdateEditor(e.GetTimestep());
 			AUDIOMANAGER.StopAll();
-			initiated = false;
 			break;
 
 		case SceneState::Play:
@@ -1088,7 +1121,15 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		}
 	}
 
-	HandleChangedFiles();
+	{
+		std::scoped_lock lock{ myFileWatcherMutex };
+		for (const auto& f : myFileChangeQueue)
+		{
+			f();
+		}
+
+		myFileChangeQueue.clear();
+	}
 
 	return true;
 }
@@ -1304,7 +1345,30 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			if (SelectionManager::GetSelectedCount() > 0)
 			{
 				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
-				myEditorCameraController->Focus(ent.GetWorldPosition());
+				myEditorCameraController->Focus(ent.GetPosition());
+			}
+
+			break;
+		}
+
+		case VT_KEY_SPACE:
+		{
+			if (ctrlPressed)
+			{
+				for (const auto& window : myEditorWindows)
+				{
+					if (window->GetTitle() == "Asset Browser##Main")
+					{
+						if (!window->IsOpen())
+						{
+							window->Open();
+						}
+						else
+						{
+							window->Close();
+						}
+					}
+				}
 			}
 
 			break;

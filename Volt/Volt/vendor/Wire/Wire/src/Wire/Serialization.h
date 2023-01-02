@@ -154,6 +154,7 @@ namespace Wire
 				case PropertyType::Vector2: return sizeof(float) * 2;
 				case PropertyType::Vector3: return sizeof(float) * 3;
 				case PropertyType::Vector4: return sizeof(float) * 4;
+				case PropertyType::Quaternion: return sizeof(float) * 4;
 				case PropertyType::String: return sizeof(std::string);
 
 				case PropertyType::Int64: return sizeof(int64_t);

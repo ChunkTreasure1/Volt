@@ -3,21 +3,33 @@
 bin/
 bin-int/
 
-Build/User
-Build/Engine/Shaders/Cache
-Build/Scripts/Intermediates
+Engine/User
+Engine/Engine/Shaders/Cache
+Engine/Scripts/Intermediates
+Engine/Volt-ScriptCore/Scripts/Intermediates
 
-Volt/ProjectTemplate/Assets/Scripts/Intermediates/
-Volt/ProjectTemplate/Assets/Scripts/.vs/
-Volt/ProjectTemplate/Assets/Scripts/*.csproj
-Volt/ProjectTemplate/Assets/Scripts/*.sln
+Volt/ProjectTemplate/Intermediates/
+Volt/ProjectTemplate/Binaries
+Volt/ProjectTemplate/.vs/
+Volt/ProjectTemplate/*.csproj
+Volt/ProjectTemplate/*.sln
+
+Project/Intermediates/
+Project/Binaries
+Project/.vs/
+Project/*.csproj
+Project/*.sln
 
 *.sln
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 *.csproj
+*.csproj.user
 *.cached
 
 Volt/scripts/data/__pycache__
 Volt/scripts/data/premake5.exe
+
+Volt/Volt/vendor/efsw/lib
+Volt/Volt/vendor/efsw/obj

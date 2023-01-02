@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "CharacterEditorPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Camera/EditorCameraController.h"
 
 #include <Volt/Animation/AnimationManager.h>
@@ -89,10 +89,10 @@ CharacterEditorPanel::CharacterEditorPanel()
 		comp.castShadows = false;
 		comp.intensity = 3.f;
 
-		entity.SetRotation({ 70.f, 0.f, 100.f });
+		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
 	}
 
-	// Character entity
+	// Character entityw
 	{
 		myCharacterEntity = myScene->CreateEntity();
 		myCharacterEntity.AddComponent<Volt::AnimatedCharacterComponent>();
@@ -245,7 +245,7 @@ void CharacterEditorPanel::UpdateToolbar()
 
 	ImGui::Begin("##toolbarCharEditor", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	if (UI::ImageButton("##Save", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
 		if (myCurrentCharacter)
 		{
@@ -256,7 +256,7 @@ void CharacterEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##Load", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
 		const std::filesystem::path characterPath = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
 		if (!characterPath.empty() && FileSystem::Exists(characterPath))
@@ -363,7 +363,7 @@ void CharacterEditorPanel::UpdateAnimations()
 		// Adding
 		{
 			Volt::AssetHandle addHandle = Volt::Asset::Null();
-			if (UI::ImageButton("##Add", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Add)), { buttonSize, buttonSize }))
+			if (UI::ImageButton("##Add", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Add)), { buttonSize, buttonSize }))
 			{
 				ImGui::OpenPopup("animAddPopup");
 			}
@@ -381,7 +381,7 @@ void CharacterEditorPanel::UpdateAnimations()
 
 		// Play
 		{
-			Ref<Volt::Texture2D> icon = myIsPlayingAnim ? EditorIconLibrary::GetIcon(EditorIcon::Stop) : EditorIconLibrary::GetIcon(EditorIcon::Play);
+			Ref<Volt::Texture2D> icon = myIsPlayingAnim ? EditorResources::GetEditorIcon(EditorIcon::Stop) : EditorResources::GetEditorIcon(EditorIcon::Play);
 			if (UI::ImageButton("##Play", UI::GetTextureID(icon), { buttonSize, buttonSize }))
 			{
 				myIsPlayingAnim = !myIsPlayingAnim;

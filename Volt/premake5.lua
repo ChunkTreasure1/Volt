@@ -1,3 +1,5 @@
+local VoltRootDirectory = os.getenv("VOLT_PATH")
+
 workspace "Volt"
 	architecture "x64"
 	startproject "Sandbox"
@@ -29,12 +31,11 @@ include "Volt/vendor/imgui-node-editor"
 include "Volt/vendor/msdf-atlas-gen"
 include "Volt/vendor/yaml-cpp"
 include "Volt/vendor/DirectXTex"
-
-VoltRootDir = "../../"
+include "Volt/vendor/efsw"
 
 group "Core"
 include "Volt"
-include "Volt-ScriptCore"
+include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
 group "Game"
 include "Game"

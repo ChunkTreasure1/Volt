@@ -2,6 +2,7 @@
 #include "Shader.h"
 
 #include "Volt/Asset/Mesh/SubMaterial.h"
+#include "Volt/Asset/AssetManager.h"
 #include "Volt/Core/Graphics/GraphicsContext.h"
 
 #include "Volt/Rendering/Shader/ShaderCompiler.h"
@@ -19,7 +20,7 @@
 namespace Volt
 {
 	Shader::Shader(const std::string& aName, std::initializer_list<std::filesystem::path> aPaths, bool aForceCompile)
-		: myShaderPaths(aPaths), myName(aName)
+		: mySourcePaths(aPaths), myName(aName)
 	{
 		if (myBindFunctions.empty())
 		{
@@ -31,7 +32,7 @@ namespace Volt
 	}
 
 	Shader::Shader(const std::string& aName, std::vector<std::filesystem::path> aPaths, bool aForceCompile, bool aIsInternal)
-		: myShaderPaths(aPaths), myName(aName), myIsInternal(aIsInternal)
+		: mySourcePaths(aPaths), myName(aName), myIsInternal(aIsInternal)
 	{
 		if (myBindFunctions.empty())
 		{
@@ -137,11 +138,6 @@ namespace Volt
 		myMaterialReferences.erase(it);
 	}
 
-	bool Shader::ContainsShader(const std::filesystem::path& shaderPath)
-	{
-		return std::find(myShaderPaths.begin(), myShaderPaths.end(), shaderPath) != myShaderPaths.end();
-	}
-
 	Ref<Shader> Shader::Create(const std::string& aName, std::initializer_list<std::filesystem::path> aPaths, bool aForceCompile)
 	{
 		return CreateRef<Shader>(aName, aPaths, aForceCompile);
@@ -155,7 +151,7 @@ namespace Volt
 	void Shader::GenerateHash()
 	{
 		size_t hash = std::hash<std::string>()(myName);
-		for (const auto& shaderPath : myShaderPaths)
+		for (const auto& shaderPath : mySourcePaths)
 		{
 			size_t pathHash = std::filesystem::hash_value(shaderPath);
 			hash = Utility::HashCombine(hash, pathHash);
@@ -549,7 +545,7 @@ namespace Volt
 
 		if (!aForceCompile)
 		{
-			for (const auto& shaderPath : myShaderPaths)
+			for (const auto& shaderPath : mySourcePaths)
 			{
 				const auto stage = Utility::GetStageFromPath(shaderPath);
 				const auto extension = Utility::GetShaderStageCachedFileExtension(stage);
@@ -576,7 +572,7 @@ namespace Volt
 
 		if (failedToRead || aForceCompile || outBlobs.empty())
 		{
-			bool compiled = ShaderCompiler::TryCompile(myShaderPaths, outBlobs);
+			bool compiled = ShaderCompiler::TryCompile(mySourcePaths, outBlobs);
 			if (!compiled)
 			{
 				return false;

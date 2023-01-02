@@ -14,6 +14,8 @@ namespace Volt
 		Ref<SubMaterial> GetSubMaterialAt(const uint32_t index) const;
 
 		inline const std::unordered_map<uint32_t, Ref<SubMaterial>>& GetSubMaterials() const { return mySubMaterials; }
+		inline const uint32_t GetSubMaterialCount() const { return (uint32_t)mySubMaterials.size(); }
+
 		inline const std::string& GetName() const { return myName; }
 		inline void SetName(const std::string& aName) { myName = aName; }
 

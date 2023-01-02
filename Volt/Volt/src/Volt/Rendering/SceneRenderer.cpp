@@ -36,7 +36,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Particles/ParticleSystem.h"
 
-#include "Volt/Utility/Math.h"
+#include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/Noise.h"
 
 #include <GEM/gem.h>
@@ -179,7 +179,6 @@ namespace Volt
 					const gem::vec3 dir = gem::normalize(gem::mat3(transformComp.GetTransform()) * gem::vec3(1.f)) * -1.f;
 					light.direction = gem::vec4(dir.x, dir.y, dir.z, 1.f);
 					light.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
-					light.shadowBias = dirLightComp.shadowBias;
 
 					if (dirLightComp.castShadows)
 					{
