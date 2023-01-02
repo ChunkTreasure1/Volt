@@ -17,6 +17,7 @@
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
+#include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Audio/AudioManager.h"
@@ -85,6 +86,8 @@ namespace Volt
 
 	Application::~Application()
 	{
+		SceneManager::Shutdown();
+
 		myLayerStack.Clear();
 		myImGuiImplementation = nullptr;
 

@@ -3,6 +3,8 @@
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
+#include "Sandbox/Utility/EditorIconLibrary.h"
+#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Scripting/ScriptRegistry.h>
@@ -18,6 +20,7 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
+#include <GraphKey/Graph.h>
 #include <Wire/Serialization.h>
 
 #include <vector>
@@ -38,7 +41,6 @@ void PropertiesPanel::UpdateMainContent()
 	{
 		if (Volt::Input::IsMouseButtonReleased(VT_MOUSE_BUTTON_LEFT))
 		{
-
 			myMidEvent = false;
 		}
 	}
@@ -139,47 +141,72 @@ void PropertiesPanel::UpdateMainContent()
 					}
 				}
 
-					gem::vec3 rotDegrees = gem::degrees(gem::eulerAngles(transform.rotation));
-					if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
-						{
-							for (auto& ent : entities)
-							{
-								auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
-								entTransform.rotation = gem::radians(val);
-							}
-						}))
+				gem::vec3 rotDegrees = gem::degrees(gem::eulerAngles(transform.rotation));
+				if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
 					{
-						transform.rotation = gem::quat{ gem::radians(rotDegrees) };
-
-						if (myMidEvent == false)
+						for (auto& ent : entities)
 						{
-							Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
-							EditorCommandStack::PushUndo(command);
-							myMidEvent = true;
+							auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
+							entTransform.rotation = gem::radians(val);
 						}
+					}))
+				{
+					transform.rotation = gem::quat{ gem::radians(rotDegrees) };
+
+					if (myMidEvent == false)
+					{
+						Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
+						EditorCommandStack::PushUndo(command);
+						myMidEvent = true;
 					}
+				}
 
-						if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
-							{
-								for (auto& ent : entities)
-								{
-									auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
-									entTransform.scale = val;
-								}
-							}))
+				if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(gem::vec3&)>() : [&](gem::vec3& val)
+					{
+						for (auto& ent : entities)
 						{
-							if (myMidEvent == false)
-							{
-								Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
-								EditorCommandStack::PushUndo(command);
-								myMidEvent = true;
-							}
+							auto& entTransform = registry.GetComponent<Volt::TransformComponent>(ent);
+							entTransform.scale = val;
 						}
+					}))
+				{
+					if (myMidEvent == false)
+					{
+						Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
+						EditorCommandStack::PushUndo(command);
+						myMidEvent = true;
+					}
+				}
 			}
 
 			UI::EndProperties();
 		}
 		UI::PopId();
+	}
+
+	// Visual Scripting
+	{
+		auto& entity = SelectionManager::GetSelectedEntities().front();
+
+		if (registry.HasComponent<Volt::VisualScriptingComponent>(entity))
+		{
+			Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
+			if (!vsComp.graph)
+			{
+				if (ImGui::Button("Create"))
+				{
+					vsComp.graph = CreateRef<GraphKey::Graph>(entity);
+				}
+			}
+			else
+			{
+				if (ImGui::Button("Open"))
+				{
+					GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
+					GraphKeyPanel::Get().Open();
+				}
+			}
+		}
 	}
 
 	if (singleSelected)
@@ -195,7 +222,7 @@ void PropertiesPanel::UpdateMainContent()
 
 			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
 			if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
-				registryInfo.name == "EntityDataComponent")
+				registryInfo.name == "EntityDataComponent" || registryInfo.name == "VisualScriptingComponent")
 			{
 				continue;
 			}
@@ -230,8 +257,16 @@ void PropertiesPanel::UpdateMainContent()
 
 			if (open)
 			{
+				const std::vector<std::string> excludedComponents =
+				{
+					"ScriptComponent",
+					"MonoScriptComponent",
+				};
+
+				const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
+
 				UI::PushId();
-				if (registryInfo.name != "ScriptComponent" && registryInfo.name != "MonoScriptComponent" && UI::BeginProperties(registryInfo.name))
+				if (!isExcluded && UI::BeginProperties(registryInfo.name))
 				{
 					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
 					for (auto& prop : registryInfo.properties)
@@ -315,6 +350,7 @@ void PropertiesPanel::UpdateMainContent()
 				{
 					DrawMonoProperties(registry, registryInfo, entity);
 				}
+
 				UI::PopId();
 
 				UI::TreeNodePop();

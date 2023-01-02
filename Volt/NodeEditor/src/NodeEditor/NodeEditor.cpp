@@ -14,7 +14,6 @@ namespace NE
 		cfg.SettingsFile = "";
 
 		myEditorContext = ed::CreateEditor();
-		ed::SetCurrentEditor(myEditorContext);
 
 		SetStyle(settings.style);
 	}

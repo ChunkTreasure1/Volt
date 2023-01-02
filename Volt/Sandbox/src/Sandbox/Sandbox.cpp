@@ -22,6 +22,7 @@
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
+#include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
 
@@ -48,6 +49,7 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
+#include <Volt/Scene/SceneManager.h>
 
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
@@ -132,11 +134,12 @@ void Sandbox::OnAttach()
 	myEditorWindows.emplace_back(CreateRef<SplinePanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<EngineStatisticsPanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<NavigationPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AnimationTreeEditor>());
+	//myEditorWindows.emplace_back(CreateRef<AnimationTreeEditor>());
 	myEditorWindows.emplace_back(CreateRef<EditorSettingsPanel>(UserSettingsManager::GetSettings()));
 	myEditorWindows.emplace_back(CreateRef<PhysicsPanel>());
 	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
-	myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
+	//myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
+	myEditorWindows.emplace_back(CreateRef<GraphKeyPanel>(myRuntimeScene));
 
 	myFileWatcher = CreateRef<FileWatcher>();
 	CreateWatches();
@@ -344,12 +347,15 @@ void Sandbox::OnScenePlay()
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-
+	
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+	
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
 
 	myGame = CreateRef<Game>();
 	myGame->OnStart();
+
 	myRuntimeScene->OnRuntimeStart();
 
 	Volt::OnScenePlayEvent playEvent{};
@@ -371,6 +377,8 @@ void Sandbox::OnSceneStop()
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 	SetupRenderCallbacks();
 
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+	
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
 
@@ -388,6 +396,8 @@ void Sandbox::OnSimulationStart()
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
+
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
@@ -411,6 +421,8 @@ void Sandbox::OnSimulationStop()
 	myRuntimeScene = myIntermediateScene;
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 	SetupRenderCallbacks();
+
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
@@ -444,6 +456,7 @@ void Sandbox::NewScene()
 	}
 
 	myRuntimeScene = CreateRef<Volt::Scene>("New Scene");
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	// Setup new scene
 	{
@@ -522,6 +535,8 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		}
 
 		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
+		Volt::SceneManager::SetActiveScene(myRuntimeScene);
+
 		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
 		Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
@@ -569,6 +584,8 @@ void Sandbox::TransitionToNewScene()
 	Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 
 	myRuntimeScene = myStoredScene;
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
 	AUDIOMANAGER.ResetListener();

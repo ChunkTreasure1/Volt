@@ -33,6 +33,8 @@
 
 #include "Volt/Audio/AudioManager.h"
 
+#include <GraphKey/Graph.h>
+
 namespace Volt
 {
 	Scene::Scene(const std::string& name)
@@ -69,6 +71,14 @@ namespace Volt
 					{
 						scriptInstance->OnEvent(e);
 					}
+				}
+			});
+
+		myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, const VisualScriptingComponent& comp)
+			{
+				if (comp.graph)
+				{
+					comp.graph->OnEvent(e);
 				}
 			});
 	}
@@ -433,19 +443,13 @@ namespace Volt
 		transform.rotation = { 1.f, 0.f, 0.f, 0.f };
 		transform.scale = { 1.f, 1.f, 1.f };
 
-		auto& tagComp = newEntity.AddComponent<TagComponent>();
-
-		if (tag.empty())
-		{
-			tagComp.tag = "New Entity";
-		}
-		else
-		{
-			tagComp.tag = tag;
-		}
-
-		newEntity.AddComponent<RelationshipComponent>();
+		newEntity.AddComponent<TagComponent>(tag.empty() ? "New Entity" : tag);
 		newEntity.AddComponent<EntityDataComponent>();
+		newEntity.AddComponent<VisualScriptingComponent>();
+
+
+		auto& relComp = newEntity.AddComponent<RelationshipComponent>();
+		relComp.sortId = (uint32_t)myRegistry.GetAllEntities().size();
 
 		SortScene();
 		return newEntity;

@@ -71,7 +71,7 @@ void LogPanel::UpdateMainContent()
 
 	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
 	{
-		ImGui::SetScrollHere(1.f);
+		ImGui::SetScrollHereY(1.f);
 	}
 
 	ImGui::PopStyleVar();

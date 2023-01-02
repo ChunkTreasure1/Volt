@@ -68,8 +68,8 @@ namespace Volt
 		void SetLocalRotation(const gem::quat& rotation);
 		void SetLocalScale(const gem::vec3& scale);
 
-		template<typename T>
-		T& AddComponent(void* componentInitData = nullptr);
+		template<typename T, typename... Args>
+		T& AddComponent(Args&&... args);
 
 		template<typename T>
 		bool HasComponent();
@@ -141,10 +141,10 @@ namespace Volt
 		return reinterpret_cast<T*>(script);
 	}
 
-	template<typename T>
-	inline T& Entity::AddComponent(void* componentInitData)
+	template<typename T, typename... Args>
+	inline T& Entity::AddComponent(Args&&... args)
 	{
-		return myScene->myRegistry.AddComponent<T>(myId, componentInitData);
+		return myScene->myRegistry.AddComponent<T>(myId, std::forward<Args>(args)...);
 	}
 
 	template<typename T>

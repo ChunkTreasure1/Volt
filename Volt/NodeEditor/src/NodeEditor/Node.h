@@ -57,7 +57,7 @@ namespace NE
 	class Node
 	{
 	public:
-		Node(const std::string& aName, ImColor aColor = ImColor(1.f, 1.f, 1.f));
+		Node(const std::string& aName, ImTextureID aHeaderTextureId = nullptr, int32_t aTextureWidth = 0, int32_t aTextureHeight = 0, ImColor aColor = ImColor(1.f, 1.f, 1.f));
 
 		void Draw();
 
@@ -86,6 +86,10 @@ namespace NE
 		ImColor myColor;
 		ImVec2 mySize;
 
+		int32_t myTextureWidth;
+		int32_t myTextureHeight;
+		ImTextureID myTextureId = nullptr;
+		
 		Graph* myGraph = nullptr;
 	};
 

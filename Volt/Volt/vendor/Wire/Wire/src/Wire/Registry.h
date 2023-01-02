@@ -29,11 +29,10 @@ namespace Wire
 		bool HasComponent(WireGUID guid, EntityId id) const;
 		void RemoveComponent(WireGUID guid, EntityId id);
 		void* GetComponentPtr(WireGUID guid, EntityId id) const;
-
 		void* AddComponent(WireGUID guid, EntityId id);
 
-		template<typename T>
-		T& AddComponent(EntityId aEntity, void* componentInitData = nullptr);
+		template<typename T, typename... Args>
+		T& AddComponent(EntityId aEntity, Args&&... args);
 
 		template<typename T>
 		T& GetComponent(EntityId aEntity);
@@ -72,20 +71,25 @@ namespace Wire
 		std::vector<EntityId> m_usedIds;
 	};
 
-	template<typename T>
-	inline T& Registry::AddComponent(EntityId aEntity, void* componentInitData)
+	template<typename T, typename... Args>
+	inline T& Registry::AddComponent(EntityId aEntity, Args&&... args)
 	{
 		const WireGUID guid = T::comp_guid;
 
 		auto it = m_pools.find(guid);
 		if (it != m_pools.end())
 		{
-			return *(T*)it->second->AddComponent(aEntity, componentInitData);
+			auto pool = it->second;
+			std::shared_ptr<ComponentPool<T>> poolOfType = std::reinterpret_pointer_cast<ComponentPool<T>>(pool);
+
+			return poolOfType->AddComponent(aEntity, false, std::forward<Args>(args)...);
 		}
 		else
 		{
 			m_pools.emplace(guid, CreateRef<ComponentPool<T>>());
-			return *(T*)m_pools[guid]->AddComponent(aEntity, componentInitData);
+			std::shared_ptr<ComponentPool<T>> poolOfType = std::reinterpret_pointer_cast<ComponentPool<T>>(m_pools.at(guid));
+
+			return poolOfType->AddComponent(aEntity, false, std::forward<Args>(args)...);
 		}
 	}
 

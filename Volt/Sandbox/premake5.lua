@@ -27,7 +27,8 @@ project "Sandbox"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:Game",
-		"/WHOLEARCHIVE:PhysX"
+		"/WHOLEARCHIVE:PhysX",
+		"/WHOLEARCHIVE:GraphKey"
 	}
 
     defines
@@ -54,6 +55,7 @@ project "Sandbox"
 		"../Volt/src/",
 		"../Game/src/",
 		"../NodeEditor/src",
+		"../GraphKey/src/",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -84,6 +86,7 @@ project "Sandbox"
     {
         "Volt",
 		"NodeEditor",
+		"GraphKey",
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",

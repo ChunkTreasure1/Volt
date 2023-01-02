@@ -10,6 +10,10 @@
 #include <gem/gem.h>
 #include <string>
 
+namespace GraphKey
+{
+	class Graph;
+}
 
 namespace Volt
 {
@@ -17,6 +21,9 @@ namespace Volt
 
 	SERIALIZE_COMPONENT((struct TagComponent
 	{
+		TagComponent(const std::string& aTag) : tag(aTag) {}
+		TagComponent() = default;
+
 		PROPERTY(Name = Tag) std::string tag;
 
 		CREATE_COMPONENT_GUID("{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"_guid);
@@ -225,4 +232,11 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 	}), AnimationControllerComponent);
 
+	SERIALIZE_COMPONENT((struct VisualScriptingComponent
+	{
+		PROPERTY(Name = GraphState, Visible = false) std::string graphState;
+		Ref<GraphKey::Graph> graph;
+
+		CREATE_COMPONENT_GUID("{1BC207FE-D06C-41C2-83F4-E153F3A75770}"_guid);
+	}), VisualScriptingComponent);
 }

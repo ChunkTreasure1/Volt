@@ -18,7 +18,7 @@ project "Volt"
 	linkoptions 
 	{
 		"/ignore:4006",
-		"/ignore:4099"
+		"/ignore:4099",
 	}
 
 	files
@@ -40,6 +40,7 @@ project "Volt"
 	{
 		"src/",
 		"../Game/src",
+		"../GraphKey/src/",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
