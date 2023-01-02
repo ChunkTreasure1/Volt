@@ -124,7 +124,7 @@ namespace Volt
 		std::mutex myAssetRegistryMutex;
 
 		std::atomic_bool myIsLoadThreadRunning = false;
-		std::condition_variable myThreadConditionVariable;
+		std::condition_variable mySyncVariable;
 
 		std::vector<LoadJob> myLoadQueue;
 	};

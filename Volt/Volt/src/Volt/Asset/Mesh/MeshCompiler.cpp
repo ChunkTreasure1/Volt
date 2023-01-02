@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "MeshCompiler.h"
 
+#include "Volt/Core/BinarySerializer.h"
+
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/AssetManager.h"
@@ -21,6 +23,12 @@ namespace Volt
 		if (materialHandle == Asset::Null())
 		{
 			CreateMaterial(mesh, destination);
+		}
+
+		AssetHandle matHandle = materialHandle;
+		if (matHandle == Asset::Null())
+		{
+			matHandle = mesh->myMaterial->handle;
 		}
 
 		/*
@@ -45,74 +53,46 @@ namespace Volt
 		* uint32_t: Index start offset
 		*/
 
-		std::vector<uint8_t> bytes;
-		bytes.resize(CalculateMeshSize(mesh));
+		BinarySerializer serializer{ Volt::ProjectManager::GetPath() / destination, CalculateMeshSize(mesh) };
+		
+		const uint32_t submeshCount = (uint32_t)mesh->mySubMeshes.size();
+		const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
+		const uint32_t indexCount = (uint32_t)mesh->myIndices.size();
 
-		size_t offset = 0;
+		const gem::vec3 boundingCenter = mesh->myBoundingSphere.center;
+		const float boundingRadius = mesh->myBoundingSphere.radius;
 
-		// Main
+		serializer.Serialize<uint32_t>(submeshCount);
+		serializer.Serialize<AssetHandle>(matHandle);
+
+		serializer.Serialize<uint32_t>(vertexCount);
+		serializer.Serialize(mesh->myVertices.data(), sizeof(Vertex) * vertexCount);
+
+		serializer.Serialize<uint32_t>(indexCount);
+		serializer.Serialize(mesh->myIndices.data(), sizeof(uint32_t) * indexCount);
+
+		serializer.Serialize<gem::vec3>(boundingCenter);
+		serializer.Serialize<float>(boundingRadius);
+
+		serializer.Serialize<uint32_t>(submeshCount);
+
+		for (const auto& subMesh : mesh->mySubMeshes)
 		{
-			const uint32_t subMeshCount = (uint32_t)mesh->mySubMeshes.size();
-			memcpy_s(&bytes[offset], sizeof(uint32_t), &subMeshCount, sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-
-			AssetHandle matHandle = materialHandle;
-			if (matHandle == Asset::Null())
-			{
-				matHandle = mesh->myMaterial->handle;
-			}
-
-			memcpy_s(&bytes[offset], sizeof(AssetHandle), &matHandle, sizeof(AssetHandle));
-			offset += sizeof(AssetHandle);
-
-			const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
-			memcpy_s(&bytes[offset], sizeof(uint32_t), &vertexCount, sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-
-			memcpy_s(&bytes[offset], sizeof(Vertex) * vertexCount, mesh->myVertices.data(), sizeof(Vertex) * vertexCount);
-			offset += sizeof(Vertex) * vertexCount;
-
-			const uint32_t indexCount = (uint32_t)mesh->myIndices.size();
-			memcpy_s(&bytes[offset], sizeof(uint32_t), &indexCount, sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-
-			memcpy_s(&bytes[offset], sizeof(uint32_t) * indexCount, mesh->myIndices.data(), sizeof(uint32_t) * indexCount);
-			offset += sizeof(uint32_t) * indexCount;
-
-			const gem::vec3 boundingCenter = mesh->myBoundingSphere.center;
-			memcpy_s(&bytes[offset], sizeof(gem::vec3), &boundingCenter, sizeof(gem::vec3));
-			offset += sizeof(gem::vec3);
-
-			const float boundingRadius = mesh->myBoundingSphere.radius;
-			memcpy_s(&bytes[offset], sizeof(float), &boundingRadius, sizeof(float));
-			offset += sizeof(float);
+			serializer.Serialize<uint32_t>(subMesh.name.size());
+			serializer.Serialize<std::string>(subMesh.name);
 		}
 
-		// Sub meshes
+		for (const auto& subMesh : mesh->mySubMeshes)
 		{
-			for (const auto& subMesh : mesh->mySubMeshes)
-			{
-				memcpy_s(&bytes[offset], sizeof(uint32_t), &subMesh.materialIndex, sizeof(uint32_t));
-				offset += sizeof(uint32_t);
-
-				memcpy_s(&bytes[offset], sizeof(uint32_t), &subMesh.vertexCount, sizeof(uint32_t));
-				offset += sizeof(uint32_t);
-
-				memcpy_s(&bytes[offset], sizeof(uint32_t), &subMesh.indexCount, sizeof(uint32_t));
-				offset += sizeof(uint32_t);
-
-				memcpy_s(&bytes[offset], sizeof(uint32_t), &subMesh.vertexStartOffset, sizeof(uint32_t));
-				offset += sizeof(uint32_t);
-
-				memcpy_s(&bytes[offset], sizeof(uint32_t), &subMesh.indexStartOffset, sizeof(uint32_t));
-				offset += sizeof(uint32_t);
-			}
+			serializer.Serialize<uint32_t>(subMesh.materialIndex);
+			serializer.Serialize<uint32_t>(subMesh.vertexCount);
+			serializer.Serialize<uint32_t>(subMesh.indexCount);
+			serializer.Serialize<uint32_t>(subMesh.vertexStartOffset);
+			serializer.Serialize<uint32_t>(subMesh.indexStartOffset);
+			serializer.Serialize<gem::mat4>(subMesh.transform);
 		}
 
-		std::ofstream output(Volt::ProjectManager::GetDirectory() / destination, std::ios::binary);
-		output.write(reinterpret_cast<char*>(bytes.data()), bytes.size());
-		output.close();
-
+		serializer.WriteToFile();
 		return true;
 	}
 
@@ -131,6 +111,16 @@ namespace Volt
 		size += sizeof(gem::vec3); // Bounding sphere center
 		size += sizeof(float); // Bounding sphere radius
 
+		// Sub mesh names
+		size += sizeof(uint32_t); // Name count
+
+		for (const auto& subMesh : mesh->mySubMeshes)
+		{
+			size += sizeof(uint32_t); // Name size
+			size += subMesh.name.size();
+		}
+
+		// Sub meshes
 		for (const auto& subMesh : mesh->mySubMeshes)
 		{
 			subMesh;

@@ -2,6 +2,7 @@
 #include "MeshColliderCache.h"
 
 #include "Volt/Utility/FileSystem.h"
+#include "Volt/Core/BinarySerializer.h"
 #include "Volt/Project/ProjectManager.h"
 
 namespace Volt
@@ -30,12 +31,13 @@ namespace Volt
 
 	const bool MeshColliderCache::IsCached(const std::string& colliderName)
 	{
-		return myCache.find(colliderName) != myCache.end() || FileSystem::Exists(Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll"));
+		return myCache.contains(colliderName) || FileSystem::Exists(Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll"));
+		return myCache.contains(colliderName) || FileSystem::Exists(FileSystem::GetMeshColliderCache() / (colliderName + ".vtmeshcoll"));
 	}
 
 	void MeshColliderCache::AddToCache(const std::string& colliderName, const MeshColliderCacheData& cacheData)
 	{
-		if (myCache.find(colliderName) != myCache.end())
+		if (myCache.contains(colliderName))
 		{
 			VT_CORE_WARN("Trying to add collider with name {0}, but it already exists in the cache!", colliderName);
 			return;
@@ -76,6 +78,9 @@ namespace Volt
 		
 		for (size_t i = 0; i < count; i++)
 		{
+			const gem::mat4 transform = *(gem::mat4*)&totalData[offset];
+			offset += sizeof(transform);
+
 			const size_t collSize = *(size_t*)&totalData[offset];
 			offset += sizeof(offset);
 
@@ -85,6 +90,7 @@ namespace Volt
 			auto& cached = cachedData.colliderData.emplace_back();
 			cached.data.Allocate(collSize);
 			cached.data.Copy(&totalData[offset], collSize);
+			cached.transform = transform;
 
 			offset += collSize;
 		}
@@ -94,36 +100,22 @@ namespace Volt
 
 	void MeshColliderCache::SaveToFile(const std::string& colliderName, const MeshColliderCacheData& cacheData)
 	{
-		std::vector<uint8_t> outData;
-		outData.resize(sizeof(size_t));
-		size_t offset = 0;
+		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
+		BinarySerializer serializer{ cachedPath };
 
 		const size_t count = cacheData.colliderData.size();
-		memcpy_s(outData.data(), outData.size(), &count, sizeof(size_t));
-		offset += sizeof(size_t);
+		serializer.Serialize(count);
 
 		for (const auto& mesh : cacheData.colliderData)
 		{
 			const size_t size = mesh.data.GetSize();
-			outData.resize(outData.size() + sizeof(size_t) + size);
 
-			memcpy_s(&outData[offset], sizeof(size_t), &size, sizeof(size_t));
-			offset += sizeof(size_t);
-
-			memcpy_s(&outData[offset], size, mesh.data.As<uint8_t>(), size);
-			offset += size;
+			serializer.Serialize(mesh.transform);
+			serializer.Serialize(size);
+			serializer.Serialize(mesh.data.As<uint8_t>(), size);
 		}
-
-		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
-		std::ofstream output{ cachedPath, std::ios::binary | std::ios::out };
-		if (!output.is_open())
-		{
-			VT_CORE_WARN("Unable to save file {0}", cachedPath.string());
-			return;
-		}
-
-		output.write((char*)outData.data(), outData.size());
-		output.close();
+		
+		serializer.WriteToFile();
 
 		myCache.emplace(colliderName, cacheData);
 	}
