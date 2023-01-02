@@ -299,7 +299,7 @@ void Sandbox::OnEvent(Volt::Event& e)
 	dispatcher.Dispatch<Volt::WindowTitlebarHittestEvent>([&](Volt::WindowTitlebarHittestEvent& e)
 		{
 			e.SetHit(myTitlebarHovered);
-	return true;
+			return true;
 		});
 
 	myEditorCameraController->OnEvent(e);
@@ -470,10 +470,10 @@ void Sandbox::NewScene()
 		{
 			auto ent = myRuntimeScene->CreateEntity();
 			ent.AddComponent<Volt::PointLightComponent>();
-		
+
 			auto& trans = ent.GetComponent<Volt::TransformComponent>();
 			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Point Light";
-		
+
 			trans.position.x = 100.f;
 		}
 
@@ -642,7 +642,6 @@ void Sandbox::InstallMayaTools()
 		FileSystem::Copy("../Tools/MayaExporter/yaml", scriptsPath / "yaml");
 	}
 
-	FileSystem::SetEnvVariable("VOLT_PATH", std::filesystem::current_path().string());
 	UI::Notify(NotificationType::Success, "Successfully installed Maya tools!", "The Maya tools were successfully installed!");
 }
 
@@ -655,252 +654,249 @@ void Sandbox::SetupRenderCallbacks()
 				return;
 			}
 
-	// Selected geometry pass
-	{
-		Volt::Renderer::BeginPass(mySelectedGeometryPass, camera);
-
-		auto& registry = scene->GetRegistry();
-
-		for (const auto& ent : SelectionManager::GetSelectedEntities())
-		{
-			auto& transComp = registry.GetComponent<Volt::TransformComponent>(ent);
-			if (transComp.visible && registry.HasComponent<Volt::MeshComponent>(ent))
+			// Selected geometry pass
 			{
-				auto& meshComp = registry.GetComponent<Volt::MeshComponent>(ent);
-				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle);
-				if (mesh && mesh->IsValid())
+				Volt::Renderer::BeginPass(mySelectedGeometryPass, camera);
+
+				auto& registry = scene->GetRegistry();
+
+				for (const auto& ent : SelectionManager::GetSelectedEntities())
 				{
-					if (meshComp.subMeshIndex != -1)
+					auto& transComp = registry.GetComponent<Volt::TransformComponent>(ent);
+					if (transComp.visible && registry.HasComponent<Volt::MeshComponent>(ent))
 					{
-						Volt::Renderer::DrawMesh(mesh, mesh->GetMaterial(), (uint32_t)meshComp.subMeshIndex, scene->GetWorldSpaceTransform(Volt::Entity{ ent, scene.get() }));
+						auto& meshComp = registry.GetComponent<Volt::MeshComponent>(ent);
+						auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle);
+						if (mesh && mesh->IsValid())
+						{
+							if (meshComp.subMeshIndex != -1)
+							{
+								Volt::Renderer::DrawMesh(mesh, mesh->GetMaterial(), (uint32_t)meshComp.subMeshIndex, scene->GetWorldSpaceTransform(Volt::Entity{ ent, scene.get() }));
+							}
+							else
+							{
+								Volt::Renderer::DrawMesh(mesh, scene->GetWorldSpaceTransform(Volt::Entity{ ent, scene.get() }));
+							}
+						}
+					}
+				}
+
+				Volt::Renderer::EndPass();
+			}
+
+			// Jump Flood Init
+			{
+				Volt::Renderer::BeginPass(myJumpFloodInitPass, camera);
+				Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { mySelectedGeometryPass.framebuffer->GetColorAttachment(0) }, 0);
+
+				Volt::Renderer::DrawFullscreenTriangleWithShader(myJumpFloodInitPass.overrideShader);
+				Volt::Renderer::EndPass();
+			}
+
+			// Jump Flood Pass
+			{
+				const int32_t steps = 2;
+				int32_t step = (int32_t)std::round(std::pow(steps - 1, 2));
+				int32_t index = 0;
+
+				struct FloodPassData
+				{
+					gem::vec2 texelSize;
+					int32_t step;
+					int32_t padding;
+				} floodPassData;
+
+				auto framebuffer = myJumpFloodPass[0].framebuffer;
+				floodPassData.texelSize = { 1.f / (float)framebuffer->GetWidth(), 1.f / (float)framebuffer->GetHeight() };
+				floodPassData.step = step;
+
+				while (step != 0)
+				{
+					Volt::Renderer::BeginPass(myJumpFloodPass[index], camera);
+					Volt::Renderer::SubmitCustom([data = floodPassData, buffer = myJumpFloodBuffer]()
+						{
+							buffer->SetData(&data, sizeof(FloodPassData));
+							buffer->Bind(13);
+						});
+
+
+					if (index == 0)
+					{
+						Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodInitPass.framebuffer->GetColorAttachment(0) }, 0);
 					}
 					else
 					{
-						Volt::Renderer::DrawMesh(mesh, scene->GetWorldSpaceTransform(Volt::Entity{ ent, scene.get() }));
+						Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodPass[0].framebuffer->GetColorAttachment(0) }, 0);
 					}
+
+					Volt::Renderer::DrawFullscreenQuadWithShader(myJumpFloodPass[index].overrideShader);
+					Volt::Renderer::ClearTexturesAtStage(Volt::ShaderStage::Pixel, 0, 2);
+					Volt::Renderer::EndPass();
+
+					index = (index + 1) % 2;
+					step /= 2;
+
+					floodPassData.step = step;
 				}
 			}
-		}
 
-		Volt::Renderer::EndPass();
-	}
-
-	// Jump Flood Init
-	{
-		Volt::Renderer::BeginPass(myJumpFloodInitPass, camera);
-		Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { mySelectedGeometryPass.framebuffer->GetColorAttachment(0) }, 0);
-
-		Volt::Renderer::DrawFullscreenTriangleWithShader(myJumpFloodInitPass.overrideShader);
-		Volt::Renderer::EndPass();
-	}
-
-	// Jump Flood Pass
-	{
-		const int32_t steps = 2;
-		int32_t step = (int32_t)std::round(std::pow(steps - 1, 2));
-		int32_t index = 0;
-
-		struct FloodPassData
-		{
-			gem::vec2 texelSize;
-			int32_t step;
-			int32_t padding;
-		} floodPassData;
-
-		auto framebuffer = myJumpFloodPass[0].framebuffer;
-		floodPassData.texelSize = { 1.f / (float)framebuffer->GetWidth(), 1.f / (float)framebuffer->GetHeight() };
-		floodPassData.step = step;
-
-		while (step != 0)
-		{
-			Volt::Renderer::BeginPass(myJumpFloodPass[index], camera);
-			Volt::Renderer::SubmitCustom([data = floodPassData, buffer = myJumpFloodBuffer]()
-				{
-					buffer->SetData(&data, sizeof(FloodPassData));
-					buffer->Bind(13);
-				});
-
-
-			if (index == 0)
+			// Jump Flood Composite
 			{
-				Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodInitPass.framebuffer->GetColorAttachment(0) }, 0);
-			}
-			else
-			{
+				Volt::Renderer::BeginPass(myJumpFloodCompositePass, camera);
+				Volt::Renderer::SubmitCustom([buffer = myJumpFloodBuffer]()
+					{
+						const gem::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
+						buffer->SetData(&color, sizeof(gem::vec4));
+						buffer->Bind(13);
+					});
+
+
 				Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodPass[0].framebuffer->GetColorAttachment(0) }, 0);
+				Volt::Renderer::DrawFullscreenQuadWithShader(myJumpFloodCompositePass.overrideShader);
+				Volt::Renderer::ClearTexturesAtStage(Volt::ShaderStage::Pixel, 0, 1);
+				Volt::Renderer::EndPass();
 			}
 
-			Volt::Renderer::DrawFullscreenQuadWithShader(myJumpFloodPass[index].overrideShader);
-			Volt::Renderer::ClearTexturesAtStage(Volt::ShaderStage::Pixel, 0, 2);
-			Volt::Renderer::EndPass();
-
-			index = (index + 1) % 2;
-			step /= 2;
-
-			floodPassData.step = step;
-		}
-	}
-
-	// Jump Flood Composite
-	{
-		Volt::Renderer::BeginPass(myJumpFloodCompositePass, camera);
-		Volt::Renderer::SubmitCustom([buffer = myJumpFloodBuffer]() 
+			// Gizmo pass
 			{
-				const gem::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
-				buffer->SetData(&color, sizeof(gem::vec4));
-				buffer->Bind(13);
-			});
+				Volt::Renderer::BeginPass(myGizmoPass, camera, false);
 
+				auto& registry = scene->GetRegistry();
 
-		Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodPass[0].framebuffer->GetColorAttachment(0) }, 0);
-		Volt::Renderer::DrawFullscreenQuadWithShader(myJumpFloodCompositePass.overrideShader);
-		Volt::Renderer::ClearTexturesAtStage(Volt::ShaderStage::Pixel, 0, 1);
-		Volt::Renderer::EndPass();
-	}
-
-	// Gizmo pass
-	{
-		Volt::Renderer::BeginPass(myGizmoPass, camera, false);
-
-		auto& registry = scene->GetRegistry();
-		Ref<Volt::Texture2D> gizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_entityGizmo.dds");
-		Ref<Volt::Texture2D> lightGizmoTexture = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/icon_lightGizmo.dds");
-
-		registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
-			{
-				if (transformComp.visible && myShouldRenderGizmos)
-				{
-					gem::vec3 p, s, r;
-					gem::decompose(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
-
-					const float maxDist = 5000.f;
-					const float lerpStartDist = 4000.f;
-					const float maxScale = 1.f;
-					const float distance = gem::distance(camera->GetPosition(), p);
-
-					float alpha = 1.f;
-
-					if (distance >= lerpStartDist)
+				registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
 					{
-						alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
-					}
+						if (transformComp.visible && myShouldRenderGizmos)
+						{
+							gem::vec3 p, s, r;
+							gem::decompose(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
 
-					if (distance < maxDist)
+							const float maxDist = 5000.f;
+							const float lerpStartDist = 4000.f;
+							const float maxScale = 1.f;
+							const float distance = gem::distance(camera->GetPosition(), p);
+
+							float alpha = 1.f;
+
+							if (distance >= lerpStartDist)
+							{
+								alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
+							}
+
+							if (distance < maxDist)
+							{
+								float scale = gem::min(distance / maxDist, maxScale);
+
+								Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? myLightGizmoTexture : myEntityGizmoTexture;
+								Volt::Renderer::SubmitBillboard(gizmo, p, gem::vec3{ scale }, id, gem::vec4{ 1.f, 1.f, 1.f, alpha });
+							}
+						}
+					});
+
+				Volt::Renderer::DispatchBillboardsWithShader(myGizmoShader);
+				Volt::Renderer::EndPass();
+			}
+
+			auto& registry = scene->GetRegistry();
+
+			///// Collider Visualization /////
+			{
+				Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
+
+				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
+				registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
 					{
-						float scale = gem::min(distance / maxDist, maxScale);
+						if (!SelectionManager::IsSelected(id))
+						{
+							return;
+						}
 
-						Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? lightGizmoTexture : gizmoTexture;
-						Volt::Renderer::SubmitBillboard(gizmo, p, gem::vec3{ scale }, id, gem::vec4{ 1.f, 1.f, 1.f, alpha });
-					}
-				}
-			});
+						auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
 
-		Volt::Renderer::DispatchBillboardsWithShader(myGizmoShader);
-		Volt::Renderer::EndPass();
-	}
+						const gem::vec3 cubeHalfSize = 50.f;
+						const gem::vec3 colliderScale = collider.halfSize / cubeHalfSize;
+						const gem::vec3 resultScale = colliderScale * trs.scale;
+						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
 
-	auto& registry = scene->GetRegistry();
+						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh");
 
-	///// Collider Visualization /////
-	{
-		Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
+						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
+					});
 
-		auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
-		registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
+				registry.ForEach<Volt::SphereColliderComponent>([&](Wire::EntityId id, const Volt::SphereColliderComponent& collider)
+					{
+						if (!SelectionManager::IsSelected(id))
+						{
+							return;
+						}
+
+						auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
+
+						const gem::vec3 sphereRadius = 50.f;
+						const float maxScale = gem::max(trs.scale.x, gem::max(trs.scale.y, trs.scale.z));
+						const gem::vec3 resultScale = maxScale * collider.radius / sphereRadius;
+						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
+
+						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Sphere.vtmesh");
+
+						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
+					});
+
+				registry.ForEach<Volt::CapsuleColliderComponent>([&](Wire::EntityId id, const Volt::CapsuleColliderComponent& collider)
+					{
+						if (!SelectionManager::IsSelected(id))
+						{
+							return;
+						}
+
+						auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
+
+						const float capsuleRadius = 50.f;
+						const float capsuleHeight = 50.f;
+
+						const float radiusScale = gem::max(trs.scale.x, trs.scale.y);
+						const float heightScale = trs.scale.y;
+
+						const gem::vec3 resultScale = { radiusScale * collider.radius / capsuleRadius, heightScale * collider.height / capsuleHeight, radiusScale * collider.radius / capsuleRadius };
+						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
+
+						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Capsule.vtmesh");
+
+						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
+					});
+
+				Volt::Renderer::EndPass();
+			}
+			//////////////////////////////////
 			{
-				if (!SelectionManager::IsSelected(id))
-				{
-					return;
-				}
+				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
 
-				auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
+				Volt::Renderer::BeginPass(myForwardExtraPass, camera);
+				registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
+					{
+						if (!SelectionManager::IsSelected(id))
+						{
+							return;
+						}
 
-				const gem::vec3 cubeHalfSize = 50.f;
-				const gem::vec3 colliderScale = collider.halfSize / cubeHalfSize;
-				const gem::vec3 resultScale = colliderScale * trs.scale;
-				const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
+						auto ent = Volt::Entity{ id, myRuntimeScene.get() };
+						auto trs = myRuntimeScene->GetWorldSpaceTRS(ent);
 
-				auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Cube.vtmesh");
+						gem::quat newRot = trs.rotation;
+						newRot *= gem::quat{ gem::vec3{gem::radians(-90.f), 0.f, 0.f} };
 
-				Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
-			});
+						constexpr float uniformScale = 0.25f * 0.25f;
+						gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(newRot) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
 
-		registry.ForEach<Volt::SphereColliderComponent>([&](Wire::EntityId id, const Volt::SphereColliderComponent& collider)
-			{
-				if (!SelectionManager::IsSelected(id))
-				{
-					return;
-				}
+						Volt::Renderer::DrawMesh(myDecalArrowMesh, material, transform);
+					});
 
-				auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
+				//Volt::Renderer::DispatchLines();
 
-				const gem::vec3 sphereRadius = 50.f;
-				const float maxScale = gem::max(trs.scale.x, gem::max(trs.scale.y, trs.scale.z));
-				const gem::vec3 resultScale = maxScale * collider.radius / sphereRadius;
-				const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
+				Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+				Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
 
-				auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Sphere.vtmesh");
-
-				Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
-			});
-
-		registry.ForEach<Volt::CapsuleColliderComponent>([&](Wire::EntityId id, const Volt::CapsuleColliderComponent& collider)
-			{
-				if (!SelectionManager::IsSelected(id))
-				{
-					return;
-				}
-
-				auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
-
-				const float capsuleRadius = 50.f;
-				const float capsuleHeight = 50.f;
-
-				const float radiusScale = gem::max(trs.scale.x, trs.scale.y);
-				const float heightScale = trs.scale.y;
-
-				const gem::vec3 resultScale = { radiusScale * collider.radius / capsuleRadius, heightScale * collider.height / capsuleHeight, radiusScale * collider.radius / capsuleRadius };
-				const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
-
-				auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Capsule.vtmesh");
-
-				Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
-			});
-
-		Volt::Renderer::EndPass();
-	}
-	//////////////////////////////////
-	{
-		auto material = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
-		auto arrowMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Editor/3dpil.vtmesh");
-
-		Volt::Renderer::BeginPass(myForwardExtraPass, camera);
-		registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
-			{
-				if (!SelectionManager::IsSelected(id))
-				{
-					return;
-				}
-
-				auto ent = Volt::Entity{ id, myRuntimeScene.get() };
-				auto trs = myRuntimeScene->GetWorldSpaceTRS(ent);
-
-				gem::quat newRot = trs.rotation;
-				newRot *= gem::quat{ gem::vec3{gem::radians(-90.f), 0.f, 0.f} };
-
-				constexpr float uniformScale = 0.25f * 0.25f;
-				gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(newRot) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
-
-				Volt::Renderer::DrawMesh(arrowMesh, material, transform);
-			});
-
-		//Volt::Renderer::DispatchLines();
-
-		Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
-		Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
-
-		Volt::Renderer::EndPass();
-	}
+				Volt::Renderer::EndPass();
+			}
 		});
 }
 
@@ -1380,7 +1376,7 @@ bool Sandbox::OnViewportResizeEvent(Volt::ViewportResizeEvent& e)
 	myViewportSize = { e.GetWidth(), e.GetHeight() };
 	myViewportPosition = { e.GetX(), e.GetY() };
 	myShouldResize = true;
-	
+
 	return false;
 }
 
