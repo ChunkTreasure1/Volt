@@ -69,7 +69,8 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 
 void P4Implementation::AddImpl(const std::filesystem::path& file)
 {
-	char* argv[] = { const_cast<char*>(file.string().c_str())};
+	std::string stringPath = file.string();
+	char* argv[] = { stringPath.data() };
 	
 	m_client.SetArgv(1, argv);
 	m_client.Run("add", &m_defaultUser);
@@ -77,6 +78,15 @@ void P4Implementation::AddImpl(const std::filesystem::path& file)
 
 void P4Implementation::DeleteImpl(const std::filesystem::path& file)
 {
+}
+
+void P4Implementation::EditImpl(const std::filesystem::path& file)
+{
+	std::string stringPath = file.string();
+	char* argv[] = { stringPath.data() };
+
+	m_client.SetArgv(1, argv);
+	m_client.Run("edit", &m_defaultUser);
 }
 
 void P4Implementation::SubmitImpl(const std::string& message)

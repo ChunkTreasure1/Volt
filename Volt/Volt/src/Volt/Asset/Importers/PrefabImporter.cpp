@@ -39,7 +39,7 @@ namespace Volt
 	bool PrefabImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Prefab>();
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		Wire::Registry registry;
 
@@ -515,7 +515,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetPath() / asset->path);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}

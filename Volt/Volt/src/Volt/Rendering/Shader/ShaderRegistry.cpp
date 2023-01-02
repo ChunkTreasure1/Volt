@@ -45,16 +45,10 @@ namespace Volt
 
 		std::string lowName = Utils::ToLower(name);
 		myRegistry[lowName] = shader;
-	}
 
-	void ShaderRegistry::ReloadShadersWithShader(const std::filesystem::path& shaderPath)
-	{
-		for (const auto& [name, shader] : myRegistry)
+		for (const auto& p : shader->GetSources())
 		{
-			if (shader->ContainsShader(shaderPath))
-			{
-				shader->Reload(true);
-			}
+			AssetManager::Get().AddDependency(shader->handle, p);
 		}
 	}
 

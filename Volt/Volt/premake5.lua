@@ -61,7 +61,8 @@ project "Volt"
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
-		"%{IncludeDir.DirectXTex}"
+		"%{IncludeDir.DirectXTex}",
+		"%{IncludeDir.efsw}"
 	}
 
 	links
@@ -72,7 +73,8 @@ project "Volt"
 		"Optick",
 		"msdf-atlas-gen",
 		"YamlCPP",
-		"DirectXTex"
+		"DirectXTex",
+		"efsw-static-lib"
 	}
 
 	defines

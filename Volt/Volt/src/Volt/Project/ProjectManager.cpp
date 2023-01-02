@@ -56,7 +56,7 @@ namespace Volt
 		return GetAssetsPath() / "Scripts" / "Binaries" / "Project.dll";
 	}
 
-	const std::filesystem::path& ProjectManager::GetPath()
+	const std::filesystem::path& ProjectManager::GetDirectory()
 	{
 		return myCurrentProjectDirectory;
 	}

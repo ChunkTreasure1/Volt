@@ -29,3 +29,6 @@ Project/*.sln
 
 Volt/scripts/data/__pycache__
 Volt/scripts/data/premake5.exe
+
+Volt/Volt/vendor/efsw/lib
+Volt/Volt/vendor/efsw/obj

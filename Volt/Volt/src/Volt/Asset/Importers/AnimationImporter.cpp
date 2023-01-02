@@ -11,7 +11,7 @@ namespace Volt
 		asset = CreateRef<Animation>();
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -87,7 +87,7 @@ namespace Volt
 			offset += header.perFrameTransformCount * sizeof(gem::mat4);
 		}
 
-		std::ofstream fout(ProjectManager::GetPath() / asset->path, std::ios::binary | std::ios::out);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path, std::ios::binary | std::ios::out);
 		fout.write((char*)outData.data(), outData.size());
 		fout.close();
 	}

@@ -16,7 +16,6 @@ namespace Volt
 
 		static Ref<Shader> Get(const std::string& name);
 		static void Register(const std::string& name, Ref<Shader> shader);
-		static void ReloadShadersWithShader(const std::filesystem::path& shaderPath);
 
 		static const std::map<std::string, Ref<Shader>>& GetAllShaders();
 

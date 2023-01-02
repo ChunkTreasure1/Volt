@@ -25,6 +25,8 @@ public:
 
 	static void Add(const std::filesystem::path& file);
 	static void Delete(const std::filesystem::path& file);
+	static void Edit(const std::filesystem::path& file);
+
 	static void Submit(const std::string& message);
 	static void Sync(const std::string& stream = "");
 	
@@ -46,6 +48,8 @@ protected:
 
 	virtual void AddImpl(const std::filesystem::path& file) = 0;
 	virtual void DeleteImpl(const std::filesystem::path& file) = 0;
+	virtual void EditImpl(const std::filesystem::path& file) = 0;
+
 	virtual void SubmitImpl(const std::string& message) = 0;
 	virtual void SyncImpl(const std::string& depo = "") = 0;
 

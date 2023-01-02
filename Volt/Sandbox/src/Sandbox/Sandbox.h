@@ -85,7 +85,6 @@ private:
 	void SaveSceneAs();
 
 	void InstallMayaTools();
-	void HandleChangedFiles();
 	void SetupRenderCallbacks();
 	void SetupEditorRenderPasses();
 
@@ -99,6 +98,8 @@ private:
 
 	void SaveUserSettings();
 	void LoadUserSettings();
+
+	void CreateWatches();
 
 	/////ImGui/////
 	void UpdateDockSpace();
@@ -122,8 +123,13 @@ private:
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
 	Ref<Volt::Shader> myGridShader;
-	Ref<FileWatcher> myFileWatcher;
 
+	///// File watcher /////
+	Ref<FileWatcher> myFileWatcher;
+	std::mutex myFileWatcherMutex;
+	std::vector<std::function<void()>> myFileChangeQueue;
+	////////////////////////
+	
 	Ref<Volt::Scene> myRuntimeScene;
 	Ref<Volt::Scene> myIntermediateScene;
 

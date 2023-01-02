@@ -17,7 +17,7 @@ namespace Volt
 		asset = CreateRef<Skeleton>();
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(asset);
 
-		const auto filePath = ProjectManager::GetPath() / path;
+		const auto filePath = ProjectManager::GetDirectory() / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -117,7 +117,7 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetPath() / asset->path);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}

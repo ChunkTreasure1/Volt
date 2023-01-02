@@ -12,8 +12,6 @@
 
 std::filesystem::path FileSystem::OpenFolder()
 {
-	globalIsOpenSaveFileOpen = true;
-
 	HRESULT result;
 	IFileOpenDialog* openFolderDialog;
 
@@ -54,15 +52,11 @@ std::filesystem::path FileSystem::OpenFolder()
 		openFolderDialog->Release();
 	}
 
-	globalIsOpenSaveFileOpen = false;
-
 	return Volt::ProjectManager::GetPathRelativeToProject(resultPath);
 }
 
 std::filesystem::path FileSystem::SaveFile(const char* filter)
 {
-	globalIsOpenSaveFileOpen = true;
-
 	OPENFILENAMEA ofn;
 	CHAR szFile[260] = { 0 };
 
@@ -79,11 +73,9 @@ std::filesystem::path FileSystem::SaveFile(const char* filter)
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	if (GetSaveFileNameA(&ofn) == TRUE)
 	{
-		globalIsOpenSaveFileOpen = false;
 		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
 	}
 
-	globalIsOpenSaveFileOpen = false;
 	return std::string();
 }
 
@@ -146,8 +138,6 @@ bool FileSystem::OpenFileExternally(const std::filesystem::path& aPath)
 
 std::filesystem::path FileSystem::OpenFile(const char* filter)
 {
-	globalIsOpenSaveFileOpen = true;
-
 	OPENFILENAMEA ofn;
 	CHAR szFile[260] = { 0 };
 
@@ -164,11 +154,8 @@ std::filesystem::path FileSystem::OpenFile(const char* filter)
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	if (GetOpenFileNameA(&ofn) == TRUE)
 	{
-		globalIsOpenSaveFileOpen = false;
 		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
 	}
-
-	globalIsOpenSaveFileOpen = false;
 	return "";
 }
 
