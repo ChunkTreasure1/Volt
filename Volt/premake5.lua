@@ -36,13 +36,13 @@ include "Volt/vendor/efsw"
 group "Core"
 include "Volt"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
+include "GraphKey"
 
 group "Game"
 include "Game"
 
 group "Tools"
 include "Sandbox"
-include "NodeEditor"
 
 group ""
 include "Launcher"

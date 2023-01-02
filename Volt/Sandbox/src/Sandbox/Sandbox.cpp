@@ -21,7 +21,6 @@
 #include "Sandbox/Window/PhysicsPanel.h"
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
-#include "Sandbox/Window/TestNodeEditor/TestNodeEditor.h"
 #include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"

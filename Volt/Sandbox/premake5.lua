@@ -54,7 +54,6 @@ project "Sandbox"
 		"src/",
 		"../Volt/src/",
 		"../Game/src/",
-		"../NodeEditor/src",
 		"../GraphKey/src/",
 
         "%{IncludeDir.GLFW}",
@@ -85,7 +84,6 @@ project "Sandbox"
     links
     {
         "Volt",
-		"NodeEditor",
 		"GraphKey",
 
 		"ImGuizmo",

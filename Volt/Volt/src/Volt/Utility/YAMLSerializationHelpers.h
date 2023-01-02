@@ -340,105 +340,108 @@ namespace YAML
 	};
 }
 
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2& v)
+namespace Volt
 {
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3& v)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4& v)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2ui& v)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3ui& v)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4ui& v)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::quat& v)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::mat4& mat)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq
-		<< mat[0][0] << mat[0][1] << mat[0][2] << mat[0][3]
-		<< mat[1][0] << mat[1][1] << mat[1][2] << mat[1][3]
-		<< mat[2][0] << mat[2][1] << mat[2][2] << mat[2][3]
-		<< mat[3][0] << mat[3][1] << mat[3][2] << mat[3][3]
-		<< YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::AssetHandle& handle)
-{
-	out << static_cast<uint64_t>(handle);
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ElementType& handle)
-{
-	out << static_cast<uint32_t>(handle);
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const Wire::ComponentRegistry::PropertyType& handle)
-{
-	out << static_cast<uint32_t>(handle);
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const WireGUID& handle)
-{
-	out << YAML::Flow;
-	out << YAML::BeginSeq << handle.hiPart << handle.loPart << YAML::EndSeq;
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::filesystem::path& path)
-{
-	out << path.string();
-	return out;
-}
-
-inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::vector<std::filesystem::path>& paths)
-{
-	out << YAML::BeginSeq;
-	for (const auto& p : paths)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2& v)
 	{
-		out << p;
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
 	}
-	out << YAML::EndSeq;
-	return out;
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2ui& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3ui& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4ui& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::quat& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::mat4& mat)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq
+			<< mat[0][0] << mat[0][1] << mat[0][2] << mat[0][3]
+			<< mat[1][0] << mat[1][1] << mat[1][2] << mat[1][3]
+			<< mat[2][0] << mat[2][1] << mat[2][2] << mat[2][3]
+			<< mat[3][0] << mat[3][1] << mat[3][2] << mat[3][3]
+			<< YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::AssetHandle& handle)
+	{
+		out << static_cast<uint64_t>(handle);
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ElementType& handle)
+	{
+		out << static_cast<uint32_t>(handle);
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Wire::ComponentRegistry::PropertyType& handle)
+	{
+		out << static_cast<uint32_t>(handle);
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const WireGUID& handle)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << handle.hiPart << handle.loPart << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::filesystem::path& path)
+	{
+		out << path.string();
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::vector<std::filesystem::path>& paths)
+	{
+		out << YAML::BeginSeq;
+		for (const auto& p : paths)
+		{
+			out << p;
+		}
+		out << YAML::EndSeq;
+		return out;
+	}
 }

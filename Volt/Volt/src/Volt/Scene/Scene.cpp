@@ -446,10 +446,7 @@ namespace Volt
 		newEntity.AddComponent<TagComponent>(tag.empty() ? "New Entity" : tag);
 		newEntity.AddComponent<EntityDataComponent>();
 		newEntity.AddComponent<VisualScriptingComponent>();
-
-
-		auto& relComp = newEntity.AddComponent<RelationshipComponent>();
-		relComp.sortId = (uint32_t)myRegistry.GetAllEntities().size();
+		newEntity.AddComponent<RelationshipComponent>();
 
 		SortScene();
 		return newEntity;

@@ -6166,7 +6166,7 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
 
         // Docking: Unhide tab bar (small triangle in the corner), drag from small triangle to quickly undock
         ImGuiDockNode* node = window->DockNode;
-        if (window->DockIsActive && node->IsHiddenTabBar() && !node->IsNoTabBar())
+        if (window->DockIsActive && node->IsHiddenTabBar() && !node->IsNoTabBar() && (window->Flags & ImGuiWindowFlags_NoTabBar) == 0)
         {
             float unhide_sz_draw = ImFloor(g.FontSize * 0.70f);
             float unhide_sz_hit = ImFloor(g.FontSize * 0.55f);
@@ -6182,6 +6182,11 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
             ImU32 col = GetColorU32(((held && hovered) || (node->IsFocused && !hovered)) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
             window->DrawList->AddTriangleFilled(p, p + ImVec2(unhide_sz_draw, 0.0f), p + ImVec2(0.0f, unhide_sz_draw), col);
         }
+
+        //if (flags & ImGuiWindowFlags_NoTabBar)
+        //{
+        //    node->WantHiddenTabBarToggle = true;
+        //}
 
         // Scrollbars
         if (window->ScrollbarX)
@@ -6434,6 +6439,11 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
             {
                 IM_ASSERT(window->DockNode != NULL);
                 g.NextWindowData.Flags &= ~ImGuiNextWindowDataFlags_HasSizeConstraint; // Docking currently override constraints
+
+                if (flags & ImGuiWindowFlags_NoTabBar)
+                {
+                    window->DockNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
+                }
             }
 
             // Amend the Appearing flag

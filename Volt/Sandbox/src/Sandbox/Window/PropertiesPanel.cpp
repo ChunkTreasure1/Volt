@@ -3,7 +3,6 @@
 
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
-#include "Sandbox/Utility/EditorIconLibrary.h"
 #include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 
 #include <Volt/Utility/UIUtility.h>

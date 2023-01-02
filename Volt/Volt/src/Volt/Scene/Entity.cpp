@@ -159,7 +159,7 @@ namespace Volt
 
 		for (auto& id : GetComponent<Volt::RelationshipComponent>().Children)
 		{
-			children.push_back(Volt::Entity{ id, myScene });
+			children.emplace_back(id, myScene);
 		}
 
 		return children;
