@@ -2,7 +2,7 @@
 
 #include "Volt/Physics/PhysicsEnums.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 namespace Volt
 {

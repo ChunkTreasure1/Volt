@@ -20,5 +20,5 @@
 #include <d3dcompiler.h>
 #include <wrl.h>
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <Volt/Log/Log.h>

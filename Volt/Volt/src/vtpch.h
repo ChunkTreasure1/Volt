@@ -16,7 +16,11 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <GEM/gem.h>
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <wrl.h>
+
+#include <gem/gem.h>
 #include <imgui.h>
 
 #include <yaml-cpp/yaml.h>

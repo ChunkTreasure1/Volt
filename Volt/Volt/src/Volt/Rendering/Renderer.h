@@ -12,7 +12,7 @@
 #include "Volt/Rendering/RendererInfo.h"
 #include "Volt/Rendering/RenderCommand.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 #include <mutex>
 #include <queue>

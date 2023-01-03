@@ -10,20 +10,12 @@
 #include <gem/gem.h>
 #include <string>
 
-namespace GraphKey
-{
-	class Graph;
-}
-
 namespace Volt
 {
 	class AnimationStateMachine;
 
 	SERIALIZE_COMPONENT((struct TagComponent
 	{
-		TagComponent(const std::string& aTag) : tag(aTag) {}
-		TagComponent() = default;
-
 		PROPERTY(Name = Tag) std::string tag;
 
 		CREATE_COMPONENT_GUID("{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"_guid);
@@ -32,7 +24,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct TransformComponent
 	{
 		PROPERTY(Name = Position) gem::vec3 position;
-		PROPERTY(Name = Rotation) gem::quat rotation;
+		PROPERTY(Name = Rotation) gem::vec3 rotation;
 		PROPERTY(Name = Scale) gem::vec3 scale;
 
 		PROPERTY(Visible = false) bool visible = true;
@@ -41,22 +33,25 @@ namespace Volt
 		inline const gem::mat4 GetTransform() const
 		{
 			return gem::translate(gem::mat4(1.f), position) *
-				gem::mat4_cast(rotation) * gem::scale(gem::mat4(1.f), scale);
+				gem::mat4_cast(gem::quat(rotation)) * gem::scale(gem::mat4(1.f), scale);
 		}
 
 		inline const gem::vec3 GetForward() const
 		{
-			return gem::rotate(rotation, gem::vec3{ 0.f, 0.f, 1.f });
+			const gem::quat orientation = gem::quat(rotation);
+			return gem::rotate(orientation, gem::vec3{ 0.f, 0.f, 1.f });
 		}
 
 		inline const gem::vec3 GetRight() const
 		{
-			return gem::rotate(rotation, gem::vec3{ 1.f, 0.f, 0.f });
+			const gem::quat orientation = gem::quat(rotation);
+			return gem::rotate(orientation, gem::vec3{ 1.f, 0.f, 0.f });
 		}
 
 		inline const gem::vec3 GetUp() const
 		{
-			return gem::rotate(rotation, gem::vec3{ 0.f, 1.f, 0.f });
+			const gem::quat orientation = gem::quat(rotation);
+			return gem::rotate(orientation, gem::vec3{ 0.f, 1.f, 0.f });
 		}
 
 		CREATE_COMPONENT_GUID("{E1B8016B-1CAA-4782-927E-C17C29B25893}"_guid);
@@ -66,6 +61,7 @@ namespace Volt
 	{
 		PROPERTY(Name = Children) std::vector<Wire::EntityId> Children;
 		PROPERTY(Name = Parent) Wire::EntityId Parent = 0;
+		PROPERTY(Name = SortId, Visible = false) uint32_t sortId = 0;
 		CREATE_COMPONENT_GUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 
 	}), RelationshipComponent);
@@ -179,6 +175,9 @@ namespace Volt
 		uint32_t crossfadeFrom = 0;
 		uint32_t crossfadeTo = 0;
 
+		// Override
+		std::unordered_map<std::string, gem::mat4> boneOverrides;
+
 		// Test
 		Ref<AnimationStateMachine> characterStateMachine;
 
@@ -210,13 +209,6 @@ namespace Volt
 
 		CREATE_COMPONENT_GUID("{15F85B2A-F8B2-48E1-8841-3BA946FFD172}"_guid);
 	}), VideoPlayerComponent);
-
-	SERIALIZE_COMPONENT((struct SpriteComponent
-	{
-		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle materialHandle = Volt::Asset::Null();
-
-		CREATE_COMPONENT_GUID("{FDB47734-1B69-4558-B460-0975365DB400}"_guid);
-	}), SpriteComponent);
 
 	SERIALIZE_COMPONENT((struct AudioListenerComponent
 	{
@@ -270,11 +262,4 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 	}), AnimationControllerComponent);
 
-	SERIALIZE_COMPONENT((struct VisualScriptingComponent
-	{
-		PROPERTY(Name = GraphState, Visible = false) std::string graphState;
-		Ref<GraphKey::Graph> graph;
-
-		CREATE_COMPONENT_GUID("{1BC207FE-D06C-41C2-83F4-E153F3A75770}"_guid);
-	}), VisualScriptingComponent);
 }

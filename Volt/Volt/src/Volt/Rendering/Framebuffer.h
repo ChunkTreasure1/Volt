@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/Texture/Image2D.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <vector>
 #include <map>
 

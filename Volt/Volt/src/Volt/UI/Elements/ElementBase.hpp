@@ -41,11 +41,11 @@ namespace UI
 			data.transform[3][1] = normalizedPosition.y;
 		}
 
-		gem::mat4 GetWorldPosition()
+		gem::mat4 GetPosition()
 		{
 			if (parent)
 			{
-				gem::mat4 parentTransform = parent->GetWorldPosition();
+				gem::mat4 parentTransform = parent->GetPosition();
 
 				return data.transform * parentTransform;
 			}

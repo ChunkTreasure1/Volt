@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/Camera/Frustum.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 
 namespace Volt
 {

@@ -1,36 +1,53 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-#include "Volt/AI/NavMesh/NavMeshAgent.h"
+#include "Volt/AI/SteeringBehavior.h"
+#include "Volt/AI/Pathfinder/pfNavMesh.h"
 
 #include <Wire/Serialization.h>
-#include <GEM/gem.h>
+#include <gem/gem.h>
+
+#include <optional>
 
 namespace Volt
 {
-	SERIALIZE_COMPONENT((struct NavMeshComponent
-	{
-		PROPERTY(Name = NavMesh) AssetHandle handle = Asset::Null();
+	// Make sure to set steering force in scripts using functions from SteeringBehavior class or agents won't move.
+	// Example Usage:
+	// force = SteeringBehavior::Seek(agent, target);
+	// force += SteeringBehavior::Flee(agent, target);
+	// agent.steeringForce = force;
 
-		CREATE_COMPONENT_GUID("{AA2F2165-219B-406F-8F0E-BB4E47F767DB}"_guid);
-	}), NavMeshComponent);
-
-	SERIALIZE_COMPONENT((struct NavMeshModifierComponent
+	SERIALIZE_COMPONENT((struct AgentComponent
 	{
-		PROPERTY(Name = Active) bool active = true;
-		CREATE_COMPONENT_GUID("{4C7EB050-3DDA-43D5-A417-1B82DF260EC7}"_guid);
-	}), NavMeshModifierComponent);
+		PROPERTY(Name = Max Velocity) float maxVelocity = 500.f;
+		PROPERTY(Name = Max Force) float maxForce = 500.f;
+		PROPERTY(Name = Kinematic) bool kinematic = true;
 
-	SERIALIZE_COMPONENT((struct NavMeshBlockComponent
-	{
-		PROPERTY(Name = BlockTriangleArea) gem::vec3 area;
-		PROPERTY(Name = Active) bool active = true;
-		CREATE_COMPONENT_GUID("{695E6F7D-053F-4F0D-B350-8174E3828FC4}"_guid);
-	}), NavMeshBlockComponent);
+		gem::vec3 steeringForce = gem::vec3(0.f);
+		gem::vec3 target = gem::vec3(0.f);
 
-	SERIALIZE_COMPONENT((struct NavMeshAgentComponent
-	{
-		NavMeshAgent agent;
+		inline void StartNavigation() { myActive = true; };
+		inline void StopNavigation() { myActive = false; };
+		inline std::optional<gem::vec3> GetCurrentMilestone() const { if (myPath.empty()) { return std::optional<gem::vec3>(); } else { return myPath.back(); } }
+		inline void SetTarget(gem::vec3 target)
+		{ 
+			auto nv = NavigationSystem::Get().GetNavMesh()->GetNavMeshData();
+			myPath.clear();
+			for (const auto& pfV : nv.findPath(VTtoPF(target), VTtoPF(target)))
+			{
+				myPath.emplace_back(PFtoVT(pfV));
+			}
+		};
+
+	private:
+		friend class NavigationSystem;
+		friend class SteeringBehavior;
+
+		std::vector<gem::vec3> myPath;
+		gem::vec3 myVelocity = gem::vec3(0.f);
+		bool myActive = true;
+
+	public:
 		CREATE_COMPONENT_GUID("{F29BA549-DD7D-407E-8024-6E281C4ED2AC}"_guid);
-	}), NavMeshAgentComponent);
+	}), AgentComponent);
 }
