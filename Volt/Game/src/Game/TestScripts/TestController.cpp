@@ -9,7 +9,7 @@
 VT_REGISTER_SCRIPT(TestController)
 
 TestController::TestController(const Volt::Entity& aEntity)
-	:	Script(aEntity)
+	: Script(aEntity)
 {
 }
 
@@ -29,12 +29,15 @@ void TestController::DoCameraSequence()
 
 void TestController::OnAwake()
 {
-	Volt::Entity aimCam = Volt::Entity{ myEntity.GetComponent<Volt::TestControllerComponent>().AimCamera, myEntity.GetScene() };
-
-	if (aimCam)
+	if (myEntity.GetComponent<Volt::TestControllerComponent>().AimCamera)
 	{
-		myLookCamera = aimCam;
+		Volt::Entity aimCam = Volt::Entity{ myEntity.GetComponent<Volt::TestControllerComponent>().AimCamera, myEntity.GetScene() };
+		if (aimCam)
+		{
+			myLookCamera = aimCam;
+		}
 	}
+
 
 	myCamIndex = 0;
 	myMoveSpeed = 700.f;
@@ -47,7 +50,7 @@ void TestController::OnUpdate(float aDeltaTime)
 		DoCameraSequence();
 	}
 
-	if (Volt::Input::IsKeyDown(VT_KEY_W)) 
+	if (Volt::Input::IsKeyDown(VT_KEY_W))
 	{
 		gem::vec3 walkDir = { myLookCamera.GetForward().x, 0, myLookCamera.GetForward().z };
 		myEntity.SetPosition(myEntity.GetPosition() + gem::normalize(walkDir) * myMoveSpeed * aDeltaTime);
@@ -86,13 +89,13 @@ void TestController::OnUpdate(float aDeltaTime)
 		myCameraSequenceOn = true;
 	}
 
-	if (Volt::Input::IsMouseButtonPressed(1))
-	{
-		Director::Get().SetActiveCamera(0);
-	}
-	else
-	{
-		Director::Get().SetActiveCamera(1);
-	}
+	//if (Volt::Input::IsMouseButtonPressed(1))
+	//{
+	//	Director::Get().SetActiveCamera(0);
+	//}
+	//else
+	//{
+	//	Director::Get().SetActiveCamera(1);
+	//}
 
 }

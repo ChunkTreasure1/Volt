@@ -5,6 +5,8 @@
 #include <Volt/Components/VTCinemaComponents.h>
 #include <Volt/Input/Input.h>
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Physics/Physics.h>
+#include <Volt/Physics/PhysicsScene.h>
 
 VT_REGISTER_SCRIPT(VTCameraController);
 
@@ -19,6 +21,9 @@ void VTCameraController::OnAwake()
 
 	if (vtCamComp.cameraType == Volt::eCameraType::ThirdPerson) 
 	{
+		myMaxFocalDist = vtCamComp.focalDistance;
+		myCurrentFocalDist = myMaxFocalDist;
+		myCurrentLerpTime = myLerpTime;
 		Volt::Application::Get().GetWindow().ShowCursor(false);
 		UI::SetInputEnabled(false);
 	}
@@ -71,38 +76,52 @@ void VTCameraController::TPSController(float aDeltaTime)
 	const gem::vec2 mousePos = { Volt::Input::GetMouseX(), Volt::Input::GetMouseY() };
 	const gem::vec2 deltaPos = (mousePos - myLastMousePos);
 
-	myYawDelta = 0.f;
-	myPitchDelta = 0.f;
-
 	const float yawSign = myEntity.GetUp().y < 0.f ? -1.f : 1.f;
-	myYawDelta += yawSign * deltaPos.x * vtCamComp.mouseSensitivity;
-	myPitchDelta += deltaPos.y * vtCamComp.mouseSensitivity;
+	myYawDelta = yawSign * deltaPos.x * vtCamComp.mouseSensitivity;
+	myPitchDelta = deltaPos.y * vtCamComp.mouseSensitivity;
+
+	myRotation += gem::radians(gem::vec3{ myPitchDelta, myYawDelta, 0.f });
 
 	Volt::Entity target = Volt::Entity{ vtCamComp.followId, myEntity.GetScene() };
 
 	if (target) 
 	{
+		myEntity.SetLocalRotation(gem::quat(myRotation));
+
 		const gem::vec3 focalPoint = target.GetPosition() + vtCamComp.offset;
-		myEntity.SetLocalRotation(gem::eulerAngles(myEntity.GetLocalRotation()) + gem::radians(gem::vec3{myPitchDelta, myYawDelta, 0.f}));
-		myEntity.SetPosition(focalPoint - myEntity.GetForward() * vtCamComp.focalDistance);
+		const gem::vec3 dir = myEntity.GetPosition() - focalPoint;
+		gem::vec3 position = { 0 };
+
+		if (vtCamComp.isColliding) 
+		{
+			Volt::RaycastHit hit;
+			if (Volt::Physics::GetScene()->Raycast(focalPoint, gem::normalize(dir), vtCamComp.focalDistance, &hit)) 
+			{
+				myCurrentLerpTime = 0.f;
+				myCurrentFocalDist = gem::length(gem::normalize(dir) * hit.distance) - vtCamComp.collisionRadius;
+				myLastHitFocalDist = myCurrentFocalDist;
+			}
+			else 
+			{
+				myCurrentLerpTime += aDeltaTime;
+				if (myCurrentLerpTime >= myLerpTime)
+				{
+					myCurrentLerpTime = myLerpTime;
+				}
+
+				float t = myCurrentLerpTime / myLerpTime;
+
+				t = gem::sin(t * gem::pi() * 0.5f); //Ease Out
+				myCurrentFocalDist = gem::lerp(myLastHitFocalDist, myMaxFocalDist, t);
+			}
+		}
+
+		position = focalPoint - myEntity.GetForward() * myCurrentFocalDist;
+
+		position.y = gem::clamp(position.y, focalPoint.y - (vtCamComp.focalDistance + 50), focalPoint.y + (vtCamComp.focalDistance - 50));
+
+		myEntity.SetPosition(position);
 	}
-
-	gem::vec3 rot = gem::eulerAngles(myEntity.GetLocalRotation());
-
-	//if (rot.x > 180 || rot.x < -180)
-	//{
-	//	myEntity.SetLocalRotation(gem::vec3( { rot.x * -1, rot.y, rot.z }));
-	//}
-
-	//if (rot.y > 180 || rot.y < -180)
-	//{
-	//	myEntity.SetLocalRotation(gem::vec3({ rot.x, rot.y * -1, rot.z }));
-	//}
-
-	//if (rot.z > 180 || rot.z < -180)
-	//{
-	//	myEntity.SetLocalRotation(gem::vec3({ rot.x, rot.y, rot.z * -1 }));
-	//}
 
 	myLastMousePos = mousePos;
 }

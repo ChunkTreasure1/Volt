@@ -48,6 +48,10 @@ Assets:
     Path: Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl
     Dependencies:
       []
+  - Handle: 1060919537065858200
+    Path: ../Project/../Project/../Project/Assets/Scenes/VTCINEMA/New Scene.vtscene
+    Dependencies:
+      []
   - Handle: 1093368479318915334
     Path: Assets/Meshes/Primitives/SM_Sphere.vtmesh
     Dependencies:
@@ -282,11 +286,19 @@ Assets:
     Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr
     Dependencies:
       []
+  - Handle: 7921001386939494683
+    Path: Assets/Scenes/VTCinema/VtCinemaDemo.vtscene
+    Dependencies:
+      []
   - Handle: 7937815120638417515
     Path: Engine/Shaders/Definitions/Editor/jumpFloodComposite.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/Editor/JumpFloodComposite_ps.hlsl
       - Engine/Shaders/HLSL/Utility/FullscreenQuad_vs.hlsl
+  - Handle: 8078574959305478448
+    Path: ../Project/../Project/../Project/../Project/../Project/../Project/../Project/Assets/Scenes/VTCINEMA/VTCinemaTesting.vtscene
+    Dependencies:
+      []
   - Handle: 8089752193681995231
     Path: Engine/Shaders/Definitions/default.vtsdef
     Dependencies:
@@ -325,6 +337,10 @@ Assets:
     Dependencies:
       - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
       - Engine/Shaders/HLSL/Deferred/Shading_ps.hlsl
+  - Handle: 9131920566600671629
+    Path: Assets/Scenes/VTCINEMA/VTCInemaTesting.vtscene
+    Dependencies:
+      []
   - Handle: 9242656465279076940
     Path: Engine/Shaders/Definitions/PostProcessing/HBAO/Deinterleaving.vtsdef
     Dependencies:
@@ -351,6 +367,10 @@ Assets:
     Path: Engine/Shaders/HLSL/PostProcessing/BloomDownsample_cs.hlsl
     Dependencies:
       []
+  - Handle: 10664388611143530367
+    Path: Assets/Scenes/VTCinemaTesting.vtscene
+    Dependencies:
+      []
   - Handle: 10828341379448145654
     Path: Assets/Meshes/Primitives/SM_Cone.fbx
     Dependencies:
@@ -360,6 +380,10 @@ Assets:
     Dependencies:
       - Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
       - Engine/Shaders/HLSL/PostProcessing/BloomTest_ps.hlsl
+  - Handle: 10936389594438402655
+    Path: ../Project/../Project/../Project/../Project/Assets/Scenes/VTCinemaTesting.vtscene
+    Dependencies:
+      []
   - Handle: 11316964479749424349
     Path: Engine/Shaders/HLSL/2D/Text_vs.hlsl
     Dependencies:
@@ -400,6 +424,10 @@ Assets:
       []
   - Handle: 12420147830020956810
     Path: Engine/Shaders/HLSL/2D/Billboard_gs.hlsl
+    Dependencies:
+      []
+  - Handle: 12424401167818391850
+    Path: ../Project/../Project/../Project/Assets/Scenes/VTCinema/VtCinemaDemo.vtscene
     Dependencies:
       []
   - Handle: 12471004933201364735
@@ -573,6 +601,10 @@ Assets:
     Path: Engine/Shaders/HLSL/Deferred/GBufferGeneration_ps.hlsl
     Dependencies:
       []
+  - Handle: 16399462690831786880
+    Path: Assets/Scenes/VTCINEMA/VTCinemaTesting.vtscene
+    Dependencies:
+      []
   - Handle: 16452686829211876351
     Path: Engine/Shaders/HLSL/2D/Quad_ps.hlsl
     Dependencies:
@@ -591,6 +623,10 @@ Assets:
       - Engine/Shaders/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
   - Handle: 16854479613600093660
     Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr.vtthumb.png
+    Dependencies:
+      []
+  - Handle: 17189723093983406856
+    Path: Assets/Scenes/VTCINEMA/New Scene.vtscene
     Dependencies:
       []
   - Handle: 17325569870051356605

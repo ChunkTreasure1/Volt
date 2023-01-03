@@ -20,5 +20,13 @@ private:
 
 	float myYawDelta = { 0 };
 	float myPitchDelta = { 0 };
+	float myMaxFocalDist = 0.f;
+	float myCurrentFocalDist = 0.f;
+	float myLastHitFocalDist = 0.f;
+	float myLerpTime = 0.5f;
+	float myCurrentLerpTime = 0.f;
+
+	gem::vec3 myRotation = { 0 };
+
 	gem::vec2 myLastMousePos = { 0 };
 };

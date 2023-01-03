@@ -54,6 +54,8 @@ namespace Volt
 		PROPERTY(Name = Focal Distance, Visible = false) float focalDistance = 1000.f;
 		PROPERTY(Name = Mouse Sensitivity, Visible = false) float mouseSensitivity = 0.15f;
 
+		PROPERTY(Name = Collision, Visible = false) bool isColliding = false;
+		PROPERTY(Name = Collision Sphere Radius, Visible = false) float collisionRadius = 100.f;
 		PROPERTY(Name = Is Default, Visible = false) bool isDefault = false;
 
 		CREATE_COMPONENT_GUID("{2C5E4323-6F22-4AFD-BE83-9DC419B8C45F}"_guid)

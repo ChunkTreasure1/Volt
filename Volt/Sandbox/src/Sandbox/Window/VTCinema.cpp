@@ -124,6 +124,12 @@ void VTCinemaPanel::UpdateCameraProperties()
 
 			if (vtCamComp.cameraType == Volt::eCameraType::ThirdPerson)
 			{
+				UI::Property("Collision", vtCamComp.isColliding);
+				if (vtCamComp.isColliding)
+				{
+					UI::Property("Collision Radius", vtCamComp.collisionRadius);
+				}
+
 				UI::Property("Focal Distance", vtCamComp.focalDistance);
 			}
 		}
@@ -178,7 +184,7 @@ void VTCinemaPanel::UpdateSetDetails()
 
 			char buf[32];
 
-			std::string camName = tagComp.tag + " [" + std::to_string(n)+ "]";
+			std::string camName = tagComp.tag + " [" + std::to_string(n) + "]";
 
 			if (myVTCams[n].GetComponent<Volt::VTCamComponent>().isDefault)
 				camName += " (default)";
