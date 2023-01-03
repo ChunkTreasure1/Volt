@@ -101,10 +101,8 @@ namespace Volt
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath)
 	{
+		const std::string pathString = Utils::ReplaceCharacter(Get().GetRelativePath(dependencyPath).string(), '\\', '/');
 		std::vector<AssetHandle> result{};
-
-		std::string pathString = Get().GetRelativePath(dependencyPath).string();
-		std::replace(pathString.begin(), pathString.end(), '\\', '/');
 
 		for (const auto& [handle, dependencies] : Get().myAssetDependencies)
 		{
@@ -424,13 +422,30 @@ namespace Volt
 		}
 
 		const auto newHandle = AssetHandle{};
-		myAssetRegistry.emplace(path, newHandle);
+		const std::string correctedPath = Utils::ReplaceCharacter(path.string(), '\\', '/');
+
+		myAssetRegistry.emplace(correctedPath, newHandle);
 		return newHandle;
 	}
 
 	bool AssetManager::IsLoaded(AssetHandle handle) const
 	{
 		return myAssetCache.contains(handle);
+	}
+
+	bool AssetManager::IsEngineAsset(const std::filesystem::path& path)
+	{
+		const auto pathSplit = Utils::SplitStringsByCharacter(path.string(), '/');
+		if (!pathSplit.empty())
+		{
+			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
+			if (lowerFirstPart.contains("engine"))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	Ref<Asset> AssetManager::GetAssetRaw(AssetHandle assetHandle)
@@ -676,9 +691,7 @@ namespace Volt
 		std::map<AssetHandle, std::string> sortedRegistry;
 		for (auto& [path, handle] : myAssetRegistry)
 		{
-			std::string pathToSerialize = path.string();
-			std::replace(pathToSerialize.begin(), pathToSerialize.end(), '\\', '/');
-			sortedRegistry[handle] = pathToSerialize;
+			sortedRegistry[handle] = Utils::ReplaceCharacter(path.string(), '\\', '/');;
 		}
 
 		YAML::Emitter out;
@@ -694,9 +707,7 @@ namespace Volt
 			std::vector<std::string> dependenciesToSerialize;
 			for (const auto& d : GetDependencies(handle))
 			{
-				std::string depToSerialize = d.string();
-				std::replace(depToSerialize.begin(), depToSerialize.end(), '\\', '/');
-				dependenciesToSerialize.push_back(depToSerialize);
+				dependenciesToSerialize.push_back(Utils::ReplaceCharacter(d.string(), '\\', '/'));
 			}
 
 			out << YAML::Key << "Dependencies" << YAML::Value << dependenciesToSerialize;

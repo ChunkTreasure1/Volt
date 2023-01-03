@@ -1332,14 +1332,16 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetId());
+				SelectionManager::GetFirstSelectedRow() = -1;
+				SelectionManager::GetLastSelectedRow() = -1;
 			}
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(entitiesToRemove, ObjectStateAction::Delete);
 			EditorCommandStack::GetInstance().PushUndo(command);
 
-			for (int i = 0; i < entitiesToRemove.size(); i++)
+			for (const auto& i : entitiesToRemove)
 			{
-				myRuntimeScene->RemoveEntity(entitiesToRemove[i]);
+				myRuntimeScene->RemoveEntity(i);
 			}
 
 			break;
@@ -1347,10 +1349,19 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 		case VT_KEY_F:
 		{
-			if (SelectionManager::GetSelectedCount() > 0)
+			if (SelectionManager::IsAnySelected())
 			{
-				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
-				myEditorCameraController->Focus(ent.GetPosition());
+				gem::vec3 avgPos = 0.f;
+
+				for (const auto& id : SelectionManager::GetSelectedEntities())
+				{
+					Volt::Entity ent{ id, myRuntimeScene.get() };
+					avgPos += ent.GetPosition();
+				}
+
+				avgPos /= (float)SelectionManager::GetSelectedCount();
+
+				myEditorCameraController->Focus(avgPos);
 			}
 
 			break;

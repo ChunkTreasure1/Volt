@@ -232,10 +232,6 @@ Assets:
     Path: Engine/Shaders/HLSL/2D/Line_ps.hlsl
     Dependencies:
       []
-  - Handle: 6517569069968068485
-    Path: Assets/Test/SH_TestShader_ps.hlsl
-    Dependencies:
-      []
   - Handle: 6582596192735322656
     Path: Engine/Shaders/HLSL/PostProcessing/FXAA_ps.hlsl
     Dependencies:
@@ -310,10 +306,6 @@ Assets:
       []
   - Handle: 8762423983036705089
     Path: Engine/Shaders/HLSL/Environment/EnvironmentIrradiance_cs.hlsl
-    Dependencies:
-      []
-  - Handle: 8807847117942464902
-    Path: Engine/Shaders/HLSL/shaderTemplate_ps.hlsl
     Dependencies:
       []
   - Handle: 8980002516830475227
@@ -480,10 +472,6 @@ Assets:
     Dependencies:
       - Engine/Shaders/HLSL/PostProcessing/BloomComposite_ps.hlsl
       - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
-  - Handle: 14356530603679263256
-    Path: Assets/Meshes/Primitives/SM_Capsule.vtmat
-    Dependencies:
-      []
   - Handle: 14382949638373665626
     Path: Engine/Shaders/HLSL/PostProcessing/GammaCorrection_ps.hlsl
     Dependencies:

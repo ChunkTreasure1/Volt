@@ -52,6 +52,7 @@ namespace Volt
 
 		bool IsSourceFile(AssetHandle handle) const;
 		bool IsLoaded(AssetHandle handle) const;
+		static bool IsEngineAsset(const std::filesystem::path& path);
 		bool ExistsInRegistry(AssetHandle handle) const;
 		bool ExistsInRegistry(const std::filesystem::path& path) const;
 

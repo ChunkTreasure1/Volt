@@ -1,6 +1,8 @@
 #include "sbpch.h"
 #include "SelectionManager.h"
 
+#include <Volt/Scene/Entity.h>
+
 bool SelectionManager::Select(Wire::EntityId entity)
 {
 	if (std::find(myEntities.begin(), myEntities.end(), entity) != myEntities.end())
@@ -39,4 +41,21 @@ bool SelectionManager::IsAnySelected()
 bool SelectionManager::IsSelected(Wire::EntityId entity)
 {
 	return std::find(myEntities.begin(), myEntities.end(), entity) != myEntities.end();
+}
+
+bool SelectionManager::IsAnyParentSelected(Wire::EntityId id, Ref<Volt::Scene> scene)
+{
+	Volt::Entity entity{ id, scene.get() };
+
+	if (entity.GetParent())
+	{
+		if (IsSelected(entity.GetParent().GetId()))
+		{
+			return true;
+		}
+
+		return IsAnyParentSelected(entity.GetParent().GetId(), scene);
+	}
+
+	return false;
 }

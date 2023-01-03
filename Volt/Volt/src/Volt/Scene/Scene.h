@@ -82,6 +82,8 @@ namespace Volt
 		gem::vec3 GetWorldRight(Entity entity);
 		gem::vec3 GetWorldUp(Entity entity);
 
+		const bool IsAnyParentSelected(Entity entity);
+
 		template<typename T>
 		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;
 

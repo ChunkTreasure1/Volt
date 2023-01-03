@@ -469,7 +469,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!myIsHovered || Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT))
+	if (!myIsHovered || Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -705,6 +705,11 @@ void ViewportPanel::DuplicateSelection()
 	std::vector<Wire::EntityId> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
+		if (SelectionManager::IsAnyParentSelected(ent, myEditorScene))
+		{
+			continue;
+		}
+
 		duplicated.emplace_back(Volt::Entity::Duplicate(myEditorScene->GetRegistry(), ent));
 	}
 
@@ -826,6 +831,11 @@ void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& deltaTransform)
 {
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
+		if (SelectionManager::IsAnyParentSelected(ent, myEditorScene))
+		{
+			continue;
+		}
+
 		auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(ent);
 		auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
 
