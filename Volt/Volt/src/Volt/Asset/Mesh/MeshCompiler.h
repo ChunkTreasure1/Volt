@@ -9,9 +9,9 @@ namespace Volt
 	{
 	public:
 		static bool TryCompile(Ref<Mesh> mesh, const std::filesystem::path& destination, AssetHandle materialHandle = Asset::Null());
+		static size_t CalculateMeshSize(Ref<Mesh> mesh);
 
 	private:
-		static size_t CalculateMeshSize(Ref<Mesh> mesh);
 		static void CreateMaterial(Ref<Mesh> mesh, const std::filesystem::path& destination);
 	};
 }

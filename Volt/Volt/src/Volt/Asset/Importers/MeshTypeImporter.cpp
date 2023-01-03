@@ -48,6 +48,10 @@ namespace Volt
 		{
 			return MeshFormat::VTMESH;
 		}
+		else if (ext == ".vtnavmesh")
+		{
+			return MeshFormat::VTMESH;
+		}
 
 		return MeshFormat::Other;
 	}

@@ -39,7 +39,7 @@
 #include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/Noise.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <imgui.h>
 
 #include <ranges>

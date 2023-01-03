@@ -3,7 +3,7 @@
 #include "Volt/Rendering/Shader/Shader.h"
 #include "Volt/Log/Log.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <filesystem>
 
 #include <d3dcompiler.h>

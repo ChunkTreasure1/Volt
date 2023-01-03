@@ -1,6 +1,6 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
-#include "GEM/gem.h"
+#include "gem/gem.h"
 
 namespace Volt
 {

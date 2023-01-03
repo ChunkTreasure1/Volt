@@ -4,7 +4,7 @@
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Physics/PhysicsEnums.h"
 
-#include <GEM/gem.h>
+#include <gem/gem.h>
 #include <PhysX/PxPhysicsAPI.h>
 	
 namespace Volt
