@@ -219,6 +219,7 @@ void MeshPreviewPanel::UpdateMeshList()
 	if (!myCurrentMesh)
 	{
 		ImGui::End();
+		return;
 	}
 
 	for (uint32_t i = 0; const auto & subMesh : myCurrentMesh->GetSubMeshes())

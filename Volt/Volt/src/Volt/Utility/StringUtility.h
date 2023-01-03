@@ -28,6 +28,31 @@ namespace Utils
 		return newStr;
 	}
 
+	inline const std::vector<std::string> SplitStringsByCharacter(const std::string& src, const char character)
+	{
+		std::istringstream iss(src);
+
+		std::vector<std::string> result;
+		std::string token;
+
+		while (std::getline(iss, token, character))
+		{
+			if (!token.empty())
+			{
+				result.emplace_back(token);
+			}
+		}
+
+		return result;
+	}
+
+	inline const std::string ReplaceCharacter(const std::string& src, const char oldCharacter, const char newCharacter)
+	{
+		std::string temp = src;
+		std::replace(temp.begin(), temp.end(), oldCharacter, newCharacter);
+		
+		return temp;
+	}
 
 #pragma warning(disable : 4996)
 

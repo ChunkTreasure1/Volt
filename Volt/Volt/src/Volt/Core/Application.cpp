@@ -58,7 +58,6 @@ namespace Volt
 		if (!myInfo.isRuntime)
 		{
 			//myWindow->SetOpacity(0.f);
-			myShouldFancyOpen = false;
 		}
 
 		myAssetManager = CreateScope<AssetManager>();

@@ -2,6 +2,11 @@
 
 #include <Wire/Entity.h>
 
+namespace Volt
+{
+	class Scene;
+}
+
 class SelectionManager
 {
 public:
@@ -11,6 +16,8 @@ public:
 	static void DeselectAll();
 	static bool IsAnySelected();
 	static bool IsSelected(Wire::EntityId entity);
+
+	static bool IsAnyParentSelected(Wire::EntityId entity, Ref<Volt::Scene> scene);
 
 	inline static int32_t& GetFirstSelectedRow() { return myFirstSelectedRow; }
 	inline static int32_t& GetLastSelectedRow() { return myLastSelectedRow; }

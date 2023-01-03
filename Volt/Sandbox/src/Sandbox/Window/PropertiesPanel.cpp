@@ -388,13 +388,13 @@ void PropertiesPanel::UpdateMainContent()
 
 			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
 			if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
-				registryInfo.name == "EntityDataComponent"/* || registryInfo.name == "NavMeshComponent"*/)
+				registryInfo.name == "EntityDataComponent" || registryInfo.name == "VisualScriptingComponent"/* || registryInfo.name == "NavMeshComponent"*/)
 			{
 				continue;
 			}
 
 			bool removeComp = false;
-			bool open = UI::TreeNodeFramed(registryInfo.name.c_str(), true, 2.f);
+			bool open = UI::TreeNodeFramed(registryInfo.name, true, 2.f);
 			float buttonSize = 21.f + GImGui->Style.FramePadding.y;
 			float availRegion = ImGui::GetContentRegionAvail().x;
 

@@ -52,21 +52,21 @@ namespace Volt
 
 		bool IsSourceFile(AssetHandle handle) const;
 		bool IsLoaded(AssetHandle handle) const;
+		static bool IsEngineAsset(const std::filesystem::path& path);
 		bool ExistsInRegistry(AssetHandle handle) const;
 		bool ExistsInRegistry(const std::filesystem::path& path) const;
-
-		const std::filesystem::path GetFilesystemPath(AssetHandle handle);
-		const std::filesystem::path GetRelativePath(const std::filesystem::path& path);
 
 		inline const std::unordered_map<std::filesystem::path, AssetHandle>& GetAssetRegistry() const { return myAssetRegistry; }
 
 		Ref<Asset> GetAssetRaw(AssetHandle assetHandle);
 		Ref<Asset> QueueAssetRaw(AssetHandle assetHandle);
 
+		static const std::filesystem::path GetFilesystemPath(AssetHandle handle);
+		static const std::filesystem::path GetRelativePath(const std::filesystem::path& path);
+		static const std::filesystem::path GetPathFromAssetHandle(AssetHandle handle);
 		static AssetType GetAssetTypeFromHandle(const AssetHandle& handle);
 		static AssetType GetAssetTypeFromPath(const std::filesystem::path& path);
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
-		static std::filesystem::path GetPathFromAssetHandle(AssetHandle handle);
 		static AssetHandle GetAssetHandleFromPath(const std::filesystem::path& path);
 		static std::string GetExtensionFromAssetType(AssetType type);
 

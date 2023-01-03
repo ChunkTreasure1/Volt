@@ -751,7 +751,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Cube.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Cube.vtmesh");
 					ent.SetTag("New Cube");
 
 					SelectionManager::DeselectAll();
@@ -762,7 +762,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Capsule.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Capsule.vtmesh");
 					ent.SetTag("New Capsule");
 
 					SelectionManager::DeselectAll();
@@ -773,7 +773,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Cone.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Cone.vtmesh");
 					ent.SetTag("New Cone");
 
 					SelectionManager::DeselectAll();
@@ -784,7 +784,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Cylinder.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Cylinder.vtmesh");
 					ent.SetTag("New Cylinder");
 
 					SelectionManager::DeselectAll();
@@ -795,7 +795,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Sphere.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Sphere.vtmesh");
 					ent.SetTag("New Sphere");
 
 					SelectionManager::DeselectAll();
@@ -806,7 +806,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/Plane.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Plane.vtmesh");
 					ent.SetTag("New Plane");
 
 					SelectionManager::DeselectAll();
@@ -849,6 +849,16 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				}
 
 				ImGui::EndMenu();
+			}
+
+			if (ImGui::MenuItem("Camera"))
+			{
+				auto ent = myScene->CreateEntity();
+				ent.AddComponent<Volt::CameraComponent>();
+				ent.SetTag("New Camera");
+
+				SelectionManager::DeselectAll();
+				SelectionManager::Select(ent.GetId());
 			}
 
 			ImGui::EndMenu();

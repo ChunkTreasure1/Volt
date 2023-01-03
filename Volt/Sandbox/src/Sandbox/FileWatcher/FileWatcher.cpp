@@ -3,6 +3,8 @@
 
 #include "Sandbox/FileWatcher/FileListener.h"
 
+#include <Volt/Utility/StringUtility.h>
+
 FileWatcher::FileWatcher()
 {
 	VT_CORE_ASSERT(!myInstance, "Instance already exists!");
@@ -30,8 +32,7 @@ FileWatcher::~FileWatcher()
 
 void FileWatcher::AddWatch(const std::filesystem::path& path, bool recursive) 
 {
-	std::string watchPath = path.string();
-	std::replace(watchPath.begin(), watchPath.end(), '\\', '/');
+	std::string watchPath = Utils::ReplaceCharacter(path.string(), '\\', '/');
 
 	efsw::WatchID watchId = myFileWatcher->addWatch(watchPath, myFileListener.get(), recursive);
 	myWatchIds.emplace_back(watchId);

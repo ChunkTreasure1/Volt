@@ -72,7 +72,7 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myIsOpen = true;
 
-	SetMinWindowSize({ 700.f, 300.f});
+	SetMinWindowSize({ 700.f, 300.f });
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
 
@@ -110,7 +110,6 @@ void AssetBrowserPanel::UpdateMainContent()
 		return;
 	}
 
-	UI::PushId();
 	const float controlsBarHeight = 30.f;
 
 	// Controls bar
@@ -141,48 +140,48 @@ void AssetBrowserPanel::UpdateMainContent()
 			UI::ScopedColor newColor(ImGuiCol_ChildBg, { color.x, color.y, color.z, color.w });
 			UI::ScopedStyleFloat rounding(ImGuiStyleVar_ChildRounding, 2.f);
 
-			ImGui::BeginChild("##outline");
-
-			UI::ShiftCursor(5.f, 5.f);
-			const auto flags = ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
-
-			bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), "Assets", flags);
-
-			if (ImGui::IsItemClicked())
+			if (ImGui::BeginChild("##outline"))
 			{
-				mySelectionManager->DeselectAll();
-				myNextDirectory = myAssetsDirectory;
-			}
+				UI::ShiftCursor(5.f, 5.f);
+				const auto flags = ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 
-			if (open)
-			{
-				UI::ScopedStyleFloat2 spacing(ImGuiStyleVar_ItemSpacing, { 0.f, 0.f });
+				bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), "Assets", flags);
 
-				for (const auto& subDir : myAssetsDirectory->subDirectories)
+				if (ImGui::IsItemClicked())
 				{
-					reload |= RenderDirectory(subDir);
-					if (reload)
-					{
-						break;
-					}
+					mySelectionManager->DeselectAll();
+					myNextDirectory = myAssetsDirectory;
 				}
-				UI::TreeNodePop();
-			}
 
-			ImGui::EndChild();
+				if (open)
+				{
+					UI::ScopedStyleFloat2 spacing(ImGuiStyleVar_ItemSpacing, { 0.f, 0.f });
+
+					for (const auto& subDir : myAssetsDirectory->subDirectories)
+					{
+						reload |= RenderDirectory(subDir);
+						if (reload)
+						{
+							break;
+						}
+					}
+					UI::TreeNodePop();
+				}
+
+				ImGui::EndChild();
+			}
 		}
 
 		if (reload)
 		{
 			Reload();
 			ImGui::EndTable();
-			UI::PopId();
 			return;
 		}
 
 		ImGui::TableNextColumn();
 
-		ImGui::BeginChild("##view", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetWindowHeight() - controlsBarHeight));
+		if (ImGui::BeginChild("##view", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetWindowHeight() - controlsBarHeight)))
 		{
 			const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			const auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -230,12 +229,11 @@ void AssetBrowserPanel::UpdateMainContent()
 					CreatePrefabAndSetupEntities(entity);
 				}
 			}
+			ImGui::EndChild();
 		}
-		ImGui::EndChild();
+
 		ImGui::EndTable();
 	}
-
-	UI::PopId();
 
 	if (!myDragDroppedMeshes.empty() && !myIsImporting)
 	{
@@ -672,7 +670,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 		myNextDirectory = dirData.get();
 	}
 
-	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM", "ASSET_BROWSER_FOLDER"}))
+	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM", "ASSET_BROWSER_FOLDER" }))
 	{
 		for (const auto& item : mySelectionManager->GetSelectedItems())
 		{
@@ -1270,7 +1268,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				out << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(name, myNewShaderData.name, out);
 				VT_SERIALIZE_PROPERTY(internal, false, out);
-				
+
 				const std::filesystem::path pixelShader = myNewShaderData.createPixelShader ? myCurrentDirectory->path / (tempName + "_ps.hlsl") : defaultPixelPath;
 				const std::filesystem::path vertexShader = myNewShaderData.createVertexShader ? myCurrentDirectory->path / (tempName + "_vs.hlsl") : defaultVertexPath;
 
@@ -1292,7 +1290,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 						VT_SERIALIZE_PROPERTY(name, "Normal", out);
 						out << YAML::EndMap;
 					}
-					
+
 					// Material
 					{
 						out << YAML::BeginMap;

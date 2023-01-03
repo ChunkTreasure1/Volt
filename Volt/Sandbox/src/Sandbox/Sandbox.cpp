@@ -21,7 +21,6 @@
 #include "Sandbox/Window/PhysicsPanel.h"
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
-#include "Sandbox/Window/VTCinema.h"
 #include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
@@ -130,7 +129,6 @@ void Sandbox::OnAttach()
 
 	myEditorWindows.emplace_back(CreateRef<AssetRegistryPanel>());
 
-	myEditorWindows.emplace_back(CreateRef<VTCinemaPanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<LogPanel>());
 	myEditorWindows.emplace_back(CreateRef<SplinePanel>(myRuntimeScene));
 	myEditorWindows.emplace_back(CreateRef<EngineStatisticsPanel>(myRuntimeScene));
@@ -517,12 +515,12 @@ void Sandbox::NewScene()
 void Sandbox::OpenScene()
 {
 	const std::filesystem::path loadPath = FileSystem::OpenFile("Scene (*.vtscene)\0*.vtscene\0");
-	OpenScene(loadPath);
+	OpenScene(Volt::AssetManager::GetRelativePath(loadPath));
 }
 
 void Sandbox::OpenScene(const std::filesystem::path& path)
 {
-	if (!path.empty() && FileSystem::Exists(path))
+	if (!path.empty() && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / path))
 	{
 		SelectionManager::DeselectAll();
 
@@ -530,7 +528,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		{
 			Volt::AssetManager::Get().ReloadAsset(myRuntimeScene->handle);
 		}
-		else if (myRuntimeScene)
+		else if (myRuntimeScene && !myRuntimeScene->path.empty())
 		{
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}
@@ -1334,14 +1332,16 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetId());
+				SelectionManager::GetFirstSelectedRow() = -1;
+				SelectionManager::GetLastSelectedRow() = -1;
 			}
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(entitiesToRemove, ObjectStateAction::Delete);
 			EditorCommandStack::GetInstance().PushUndo(command);
 
-			for (int i = 0; i < entitiesToRemove.size(); i++)
+			for (const auto& i : entitiesToRemove)
 			{
-				myRuntimeScene->RemoveEntity(entitiesToRemove[i]);
+				myRuntimeScene->RemoveEntity(i);
 			}
 
 			break;
@@ -1349,10 +1349,19 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 		case VT_KEY_F:
 		{
-			if (SelectionManager::GetSelectedCount() > 0)
+			if (SelectionManager::IsAnySelected())
 			{
-				Volt::Entity ent = { SelectionManager::GetSelectedEntities().at(0), myRuntimeScene.get() };
-				myEditorCameraController->Focus(ent.GetPosition());
+				gem::vec3 avgPos = 0.f;
+
+				for (const auto& id : SelectionManager::GetSelectedEntities())
+				{
+					Volt::Entity ent{ id, myRuntimeScene.get() };
+					avgPos += ent.GetPosition();
+				}
+
+				avgPos /= (float)SelectionManager::GetSelectedCount();
+
+				myEditorCameraController->Focus(avgPos);
 			}
 
 			break;
