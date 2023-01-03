@@ -515,12 +515,12 @@ void Sandbox::NewScene()
 void Sandbox::OpenScene()
 {
 	const std::filesystem::path loadPath = FileSystem::OpenFile("Scene (*.vtscene)\0*.vtscene\0");
-	OpenScene(loadPath);
+	OpenScene(Volt::AssetManager::GetRelativePath(loadPath));
 }
 
 void Sandbox::OpenScene(const std::filesystem::path& path)
 {
-	if (!path.empty() && FileSystem::Exists(path))
+	if (!path.empty() && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / path))
 	{
 		SelectionManager::DeselectAll();
 
@@ -528,7 +528,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		{
 			Volt::AssetManager::Get().ReloadAsset(myRuntimeScene->handle);
 		}
-		else if (myRuntimeScene)
+		else if (myRuntimeScene && !myRuntimeScene->path.empty())
 		{
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}

@@ -851,6 +851,16 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::MenuItem("Camera"))
+			{
+				auto ent = myScene->CreateEntity();
+				ent.AddComponent<Volt::CameraComponent>();
+				ent.SetTag("New Camera");
+
+				SelectionManager::DeselectAll();
+				SelectionManager::Select(ent.GetId());
+			}
+
 			ImGui::EndMenu();
 		}
 

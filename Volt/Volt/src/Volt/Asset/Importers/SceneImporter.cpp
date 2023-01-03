@@ -244,8 +244,6 @@ namespace Volt
 			}
 
 		}
-
-		asset->path = scenePath;
 	}
 
 	void SceneImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const

@@ -502,7 +502,7 @@ namespace Volt
 		return Get().myAssetRegistry.at(path);
 	}
 
-	std::filesystem::path AssetManager::GetPathFromAssetHandle(AssetHandle handle)
+	const std::filesystem::path AssetManager::GetPathFromAssetHandle(AssetHandle handle)
 	{
 		for (const auto& [path, asset] : Get().myAssetRegistry)
 		{
