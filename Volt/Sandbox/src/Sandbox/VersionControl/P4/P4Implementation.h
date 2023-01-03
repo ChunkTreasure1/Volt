@@ -28,6 +28,8 @@ protected:
 
 	void AddImpl(const std::filesystem::path& file) override;
 	void DeleteImpl(const std::filesystem::path& file) override;
+	void EditImpl(const std::filesystem::path& file) override;
+
 	void SubmitImpl(const std::string& message) override;
 	void SyncImpl(const std::string& depo = "") override;
 

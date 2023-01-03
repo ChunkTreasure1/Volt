@@ -16,7 +16,7 @@ namespace Volt
 		return false;
 	}
 
-	Ref<ScriptBase> ScriptRegistry::Create(const WireGUID& guid, Entity ownerEntity)
+	Ref<Script> ScriptRegistry::Create(const WireGUID& guid, Entity ownerEntity)
 	{
 		if (const auto& it = s_registry.find(guid); it != s_registry.end())
 		{
@@ -26,7 +26,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	Ref<ScriptBase> ScriptRegistry::Create(const std::string& name, Entity ownerEntity)
+	Ref<Script> ScriptRegistry::Create(const std::string& name, Entity ownerEntity)
 	{
 		for (const auto& [guid, info] : s_registry)
 		{

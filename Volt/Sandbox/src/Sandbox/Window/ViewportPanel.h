@@ -1,8 +1,7 @@
 #pragma once
-#pragma once
 
 #include "Sandbox/Window/EditorWindow.h"
-#include "Sandbox/Window/AssetCommon.h"
+#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/AnimatedIcon.h"
 
@@ -50,6 +49,15 @@ private:
 
 	void CheckDragDrop();
 	void UpdateCreatedEntityPosition();
+
+	void DuplicateSelection();
+	void HandleSingleSelect();
+	void HandleMultiSelect();
+	void HandleSingleGizmoInteraction(const gem::mat4& avgTransform);
+	void HandleMultiGizmoInteraction(const gem::mat4& deltaTransform);
+
+	void UpdateModals();
+	void HandleNonMeshDragDrop();
 
 	void Resize(const gem::vec2& viewportSize);
 

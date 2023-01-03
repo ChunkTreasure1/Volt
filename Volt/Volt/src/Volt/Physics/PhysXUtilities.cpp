@@ -12,15 +12,15 @@ namespace Volt
 			gem::vec3 trans, rot, scale;
 			gem::decompose(transform, trans, rot, scale);
 
-			physx::PxQuat r = ToPhysXQuat(gem::quat(rot));
+			physx::PxQuat r = ToPhysXQuat(gem::quat{ rot });
 			physx::PxVec3 p = ToPhysXVector(trans);
 
 			return physx::PxTransform(p, r);
 		}
 
-		physx::PxTransform ToPhysXTransform(const gem::vec3& position, const gem::vec3& rotation)
+		physx::PxTransform ToPhysXTransform(const gem::vec3& position, const gem::quat& rotation)
 		{
-			return physx::PxTransform(ToPhysXVector(position), ToPhysXQuat(gem::quat(rotation)));
+			return physx::PxTransform(ToPhysXVector(position), ToPhysXQuat(rotation));
 		}
 
 		physx::PxMat44 ToPhysXMatrix(const gem::mat4& mat)

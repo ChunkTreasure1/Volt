@@ -41,38 +41,11 @@ namespace Volt
 			return (state != GLFW_PRESS && myLastKeyState == true);
 		}
 
-		inline static bool IsKeyDown(int keyCode) 
-		{ 
-			auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-			auto state = glfwGetKey(window, keyCode);
-			myKeyStates[keyCode] = (state == GLFW_PRESS || state == GLFW_REPEAT);
+		static bool IsKeyDown(int keyCode);
+		static bool IsKeyUp(int keyCode);
+		static bool IsMouseButtonPressed(int button);
+		static bool IsMouseButtonReleased(int button);
 
-			return state == GLFW_PRESS || state == GLFW_REPEAT;
-		}
-		
-		inline static bool IsKeyUp(int keyCode) 
-		{ 
-			auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-			auto state = glfwGetKey(window, keyCode);
-
-			return state == GLFW_RELEASE;
-		}
-
-		inline static bool IsMouseButtonPressed(int button)
-		{
-			auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-			auto state = glfwGetMouseButton(window, button);
-
-			return state == GLFW_PRESS;
-		}
-
-		inline static bool IsMouseButtonReleased(int button)
-		{
-			auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-			auto state = glfwGetMouseButton(window, button);
-
-			return state == GLFW_RELEASE;
-		}
 
 		inline static void SetMousePosition(float x, float y)
 		{

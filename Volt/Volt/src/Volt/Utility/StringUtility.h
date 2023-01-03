@@ -28,7 +28,45 @@ namespace Utils
 		return newStr;
 	}
 
+	inline const std::vector<std::string> SplitStringsByCharacter(const std::string& src, const char character)
+	{
+		std::istringstream iss(src);
+
+		std::vector<std::string> result;
+		std::string token;
+
+		while (std::getline(iss, token, character))
+		{
+			if (!token.empty())
+			{
+				result.emplace_back(token);
+			}
+		}
+
+		return result;
+	}
+
+	inline const std::string ReplaceCharacter(const std::string& src, const char oldCharacter, const char newCharacter)
+	{
+		std::string temp = src;
+		std::replace(temp.begin(), temp.end(), oldCharacter, newCharacter);
+		
+		return temp;
+	}
+
 #pragma warning(disable : 4996)
+
+	inline std::string ToString(std::wstring_view str)
+	{
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		return converter.to_bytes(str.data());
+	}
+
+	inline std::wstring ToWString(std::string_view str)
+	{
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter; //#TODO_Ivar: Might be taking a long time (over 0.1ms)
+		return converter.from_bytes(str.data());
+	}
 
 	// From https://stackoverflow.com/questions/31302506/stdu32string-conversion-to-from-stdstring-and-stdu16string
 	inline std::u32string To_UTF32(const std::string& s)

@@ -84,12 +84,11 @@ namespace Volt
 		void AddReference(SubMaterial* material);
 		void RemoveReference(SubMaterial* material);
 
-		bool ContainsShader(const std::filesystem::path& shaderPath);
-
 		inline const ShaderResources& GetResources() const { return myResources; }
 		inline const std::string& GetName() const { return myName; }
 		inline const size_t GetHash() const { return myHash; }
 		inline const bool IsInternal() const { return myIsInternal; }
+		inline const std::vector<std::filesystem::path>& GetSources() const { return mySourcePaths; }
 
 		static AssetType GetStaticType() { return AssetType::Shader; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -124,7 +123,7 @@ namespace Volt
 		std::unordered_map<ShaderStage, ComPtr<ID3D10Blob>> myShaderBlobs;
 
 		ComPtr<ID3D11InputLayout> myInputLayout;
-		std::vector<std::filesystem::path> myShaderPaths;
+		std::vector<std::filesystem::path> mySourcePaths;
 		
 		size_t myHash = 0;
 		std::string myName;

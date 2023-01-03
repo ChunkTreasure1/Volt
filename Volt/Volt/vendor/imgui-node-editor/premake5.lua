@@ -20,7 +20,9 @@ project "ImGuiNodeEditor"
 		"imgui_node_editor.h",
 		"imgui_node_editor_api.cpp",
 		"imgui_node_edtior_internal.h",
-		"imgui_node_edtior_internal.inl"
+		"imgui_node_edtior_internal.inl",
+		"builders.cpp",
+		"builders.h"
 	}
 
 	includedirs

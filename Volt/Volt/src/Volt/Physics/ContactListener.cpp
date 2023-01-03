@@ -3,7 +3,7 @@
 
 #include "Volt/Physics/PhysicsActor.h"
 #include "Volt/Physics/PhysicsLayer.h"
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 #include "Volt/Components/Components.h"
 
 namespace Volt
@@ -56,7 +56,7 @@ namespace Volt
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
 						{
-							Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(entityA.GetId(), script);
+							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityA.GetId(), script);
 							if (scriptInstance)
 							{
 								scriptInstance->OnCollisionEnter(entityB);
@@ -72,7 +72,7 @@ namespace Volt
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
 						{
-							Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(entityB.GetId(), script);
+							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityB.GetId(), script);
 							if (scriptInstance)
 							{
 								scriptInstance->OnCollisionEnter(entityA);
@@ -98,7 +98,7 @@ namespace Volt
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
 						{
-							Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(entityA.GetId(), script);
+							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityA.GetId(), script);
 							if (scriptInstance)
 							{
 								scriptInstance->OnCollisionExit(entityB);
@@ -114,7 +114,7 @@ namespace Volt
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
 						{
-							Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(entityB.GetId(), script);
+							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityB.GetId(), script);
 							if (scriptInstance)
 							{
 								scriptInstance->OnCollisionExit(entityA);
@@ -164,7 +164,7 @@ namespace Volt
 					{
 						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
 							{
-								Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(triggerEntity.GetId(), script);
+								Ref<Script> scriptInstance = ScriptEngine::GetScript(triggerEntity.GetId(), script);
 								if (scriptInstance)
 								{
 									scriptInstance->OnTriggerEnter(otherEntity, false);
@@ -181,7 +181,7 @@ namespace Volt
 					{
 						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
 							{
-								Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(otherEntity.GetId(), script);
+								Ref<Script> scriptInstance = ScriptEngine::GetScript(otherEntity.GetId(), script);
 								if (scriptInstance)
 								{
 									scriptInstance->OnTriggerEnter(triggerEntity, false);
@@ -207,7 +207,7 @@ namespace Volt
 					{
 						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]
 							{
-								Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(triggerEntity.GetId(), script);
+								Ref<Script> scriptInstance = ScriptEngine::GetScript(triggerEntity.GetId(), script);
 								if (scriptInstance)
 								{
 									scriptInstance->OnTriggerExit(otherEntity, false);
@@ -224,7 +224,7 @@ namespace Volt
 					{
 						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]
 							{
-								Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(otherEntity.GetId(), script);
+								Ref<Script> scriptInstance = ScriptEngine::GetScript(otherEntity.GetId(), script);
 								if (scriptInstance)
 								{
 									scriptInstance->OnTriggerExit(triggerEntity, false);

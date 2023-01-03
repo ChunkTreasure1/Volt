@@ -1,13 +1,11 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Rendering/Shader/ShaderCommon.h"
-#include "Volt/Utility/DirectXUtils.h"
+
+#include "Volt/Rendering/RenderCommand.h"
 
 #include <wrl.h>
-#include <d3d11.h>
-#include <cstdint>
 
 struct ID3D11Buffer;
 
@@ -29,7 +27,6 @@ namespace Volt
 
 		template<typename T>
 		T* Map();
-
 		void Unmap();
 
 		static Ref<ConstantBuffer> Create(const void* aData, uint32_t aSize, ShaderStage aUsageStage);
@@ -44,10 +41,6 @@ namespace Volt
 	template<typename T>
 	inline T* ConstantBuffer::Map()
 	{
-		auto context = GraphicsContext::GetContext();
-		
-		D3D11_MAPPED_SUBRESOURCE subresource{};
-		VT_DX_CHECK(context->Map(myBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subresource));
-		return reinterpret_cast<T*>(subresource.pData);
+		return reinterpret_cast<T*>(RenderCommand::ConstantBuffer_Map(this));
 	}
 }

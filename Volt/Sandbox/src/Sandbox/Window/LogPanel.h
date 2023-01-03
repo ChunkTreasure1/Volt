@@ -14,4 +14,5 @@ public:
 private:
 	uint32_t myMaxMessages = 1000;
 	std::vector<LogCallbackData> myLogMessages;
+	std::vector<LogCallbackData> myCurrentLogMessages;
 };

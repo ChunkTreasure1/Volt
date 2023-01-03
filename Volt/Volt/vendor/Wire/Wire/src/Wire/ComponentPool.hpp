@@ -47,6 +47,9 @@ namespace Wire
 		void SetOnCreateFunction(std::function<void(EntityId, void*)>& func) override;
 		void SetOnRemoveFunction(std::function<void(EntityId, void*)>& func) override;
 
+		template<typename... Args>
+		T& AddComponent(EntityId id, bool test, Args&&... args);
+
 		void* GetAllComponents(EntityId id) override;
 		const std::vector<Wire::EntityId>& GetComponentView() const override;
 
@@ -68,6 +71,45 @@ namespace Wire
 	template<typename T>
 	inline ComponentPool<T>::~ComponentPool()
 	{}
+
+	template<typename T>
+	template<typename ...Args>
+	inline T& ComponentPool<T>::AddComponent(EntityId id, bool test, Args&& ...args)
+	{
+		assert(!HasComponent(id));
+
+		size_t slot = m_pool.size();
+
+		if (!m_freeSlots.empty())
+		{
+			slot = m_freeSlots.back();
+			m_freeSlots.pop_back();
+		}
+
+		m_toEntityMap[id] = slot;
+		m_entitiesWithComponent.emplace_back(id);
+
+		if (slot == m_pool.size())
+		{
+			T& comp = m_pool.emplace_back(std::forward<Args>(args)...);
+
+			if (m_onCreate)
+			{
+				m_onCreate(id, &comp);
+			}
+			return comp;
+		}
+
+		T& comp = m_pool.at(slot);
+		comp = T(std::forward<Args>(args)...);
+
+		if (m_onCreate)
+		{
+			m_onCreate(id, &comp);
+		}
+
+		return comp;
+	}
 
 	template<typename T>
 	inline void* ComponentPool<T>::AddComponent(EntityId id, void* componentInitData)

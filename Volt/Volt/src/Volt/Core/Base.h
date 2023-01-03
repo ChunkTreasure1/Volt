@@ -6,7 +6,7 @@
 #define BIT(X) (1 << (X))
 
 #define VT_PLATFROM_WINDOWS 1
-//#define VT_ENABLE_MONO 1
+#define VT_ENABLE_MONO 1
 
 #ifdef VT_DEBUG
 #define VT_DEBUGBREAK() __debugbreak()
