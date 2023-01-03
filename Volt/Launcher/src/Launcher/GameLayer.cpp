@@ -9,7 +9,6 @@
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 
 #include <Volt/Core/Application.h>
-#include <Volt/Audio/AudioManager.h>
 
 void GameLayer::OnAttach()
 {
@@ -53,7 +52,6 @@ bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		myScene->Update(e.GetTimestep());
 		myNavigationsSystem->OnRuntimeUpdate(e.GetTimestep());
-		AUDIOMANAGER.Update(e.GetTimestep());
 	}
 
 	if (myShouldLoadNewScene)
@@ -137,7 +135,6 @@ void GameLayer::TransitionToNewScene()
 	myNavigationsSystem->OnSceneLoad();
 
 	Volt::Scene::PreloadSceneAssets(myScene->path);
-	AUDIOMANAGER.ResetListener();
 	myIsLoadingScene = true;
 	myShouldLoadNewScene = false;
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{a7dd0b47-7388-4c4d-b8f3-a388931b426e}">
+		<property name="assetPath">
+			<value>TestTone.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>6</value>
+		</property>
+		<property name="length">
+			<value>6.0108616780045354</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{6a1fe399-15af-4e19-a1b5-a0b54079b141}</destination>
+		</relationship>
+	</object>
+</objects>

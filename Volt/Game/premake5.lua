@@ -42,6 +42,7 @@ project "Game"
 	{
 		"src/",
 		"../Volt/src/",
+		"../Amp/src/",
 
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",

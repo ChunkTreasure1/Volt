@@ -223,6 +223,44 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{3272F31A-F0C7-463E-A790-80A5B42D64BB}"_guid);
 	}), AudioListenerComponent);
 
+	SERIALIZE_ENUM((enum class EventTriggerCondition : uint32_t
+	{
+		None = 0,
+		Start,
+		Destroy,
+		TiggerEnter,
+		TriggerExit,
+		CollisionEnter,
+		CollisionExit
+
+	}), EventTriggerCondition);
+
+	SERIALIZE_COMPONENT((struct AudioEventEmitterComponent
+	{
+		PROPERTY(Name = PlayEvent, SpecialType = Enum) EventTriggerCondition playTriggerCondition = EventTriggerCondition::None;
+		PROPERTY(Name = StopEvent, SpecialType = Enum) EventTriggerCondition stopTriggerCondition = EventTriggerCondition::None;
+		PROPERTY(Name = Event) std::string eventPath = "";
+		PROPERTY(Name = Trigger Once) bool isTriggerOnce = false;
+
+		CREATE_COMPONENT_GUID("{9CF85ECF-4105-47D7-AB14-14259B77DDE2}"_guid);
+	}), AudioEventEmitterComponent);
+
+	SERIALIZE_COMPONENT((struct AudioParameterTriggerComponent
+	{
+		PROPERTY(Name = Entity ID) UINT entityID = 0;
+		PROPERTY(Name = Trigger, SpecialType = Enum) EventTriggerCondition triggerCondition = EventTriggerCondition::None;
+		PROPERTY(Name = Parameter Path) std::string eventPath = "";
+		PROPERTY(Name = Value) float parameterValue;
+		PROPERTY(Name = Trigger Once) bool isTriggerOnce = false;
+
+		CREATE_COMPONENT_GUID("{63ECE9EF-2DC6-405F-ABAD-3B364DF08BE0}"_guid);
+	}), AudioParameterTriggerComponent);
+
+	SERIALIZE_COMPONENT((struct AudioSourceComponent
+	{
+		CREATE_COMPONENT_GUID("{251C7333-E3A0-4189-994A-10EA95C6FC34}"_guid);
+	}), AudioSourceComponent);
+
 	SERIALIZE_COMPONENT((struct AnimationControllerComponent
 	{
 		//PROPERTY(Name = AnimationTree) AssetHandle handle = Asset::Null();

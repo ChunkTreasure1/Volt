@@ -20,9 +20,11 @@
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
-#include "Volt/Audio/AudioManager.h"
 
 #include "Volt/Utility/FileSystem.h"
+
+#include <Amp/AudioManager/AudioManager.h>
+
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
@@ -75,7 +77,14 @@ namespace Volt
 		Physics::Initialize();
 		Physics::LoadLayers();
 
-		AUDIOMANAGER.Init("Assets/Audio/Banks", "Master.bank", "Master.strings.bank");
+		//Init AudioEngine
+		{
+			Amp::InitInsturct instruct;
+			instruct.aFileDirectory = "Assets/Audio/Banks/";
+			instruct.aMasterbank = "Master/Master.bank";
+			instruct.aMasterStringsBank = "Master/Master.strings.bank";
+			Amp::AudioManager::Init(instruct);
+		}
 
 		if (info.enableImGui)
 		{
@@ -102,6 +111,8 @@ namespace Volt
 		ShaderRegistry::Shutdown();
 		ConstantBufferRegistry::Shutdown();
 		Log::Shutdown();
+		Amp::AudioManager::Shutdown();
+
 
 		myAssetManager = nullptr;
 		myWindow = nullptr;
@@ -151,14 +162,13 @@ namespace Volt
 					myShouldFancyOpen = false;
 				}
 			}
-
-			AUDIOMANAGER.UpdateAudioEngine();
 			
 			{
 				VT_PROFILE_SCOPE("Application::Update");
 
 				AppUpdateEvent updateEvent(myCurrentFrameTime);
 				OnEvent(updateEvent);
+				Amp::AudioManager::Update(myCurrentFrameTime);
 			}
 
 			{

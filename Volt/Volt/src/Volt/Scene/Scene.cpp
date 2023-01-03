@@ -31,7 +31,9 @@
 #include <Wire/Serialization.h>
 #include "../Sandbox/src/Sandbox/EditorCommandStack.h"
 
-#include "Volt/Audio/AudioManager.h"
+//#include "Volt/Audio/AudioManager.h"
+
+#include <GraphKey/Graph.h>
 
 #include <GraphKey/Graph.h>
 
@@ -107,12 +109,6 @@ namespace Volt
 		myRegistry.ForEach<EntityDataComponent>([](Wire::EntityId, EntityDataComponent& dataComp)
 			{
 				dataComp.timeSinceCreation = 0.f;
-			});
-
-		myRegistry.ForEach<AudioListenerComponent>([this](Wire::EntityId id, const AudioListenerComponent&)
-			{
-				Volt::Entity entity(id, this);
-				AUDIOMANAGER.InitListener(0, entity);
 			});
 
 		myRegistry.ForEach<ScriptComponent>([this](Wire::EntityId id, const ScriptComponent& scriptComp)

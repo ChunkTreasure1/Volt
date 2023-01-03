@@ -9,7 +9,11 @@
 
 #include <string>
 
-class AudioEngine;
+namespace Amp 
+{
+	class AudioManager;
+}
+
 
 namespace Volt
 {
