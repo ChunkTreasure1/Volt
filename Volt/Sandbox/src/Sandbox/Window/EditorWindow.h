@@ -38,6 +38,8 @@ public:
 	inline EditorCommandStack& GetCommandStack() { return myCommandStack; }
 
 protected:
+	void ForceWindowDocked(ImGuiWindow* childWindow);
+
 	std::string myTitle;
 	EditorCommandStack myCommandStack{};
 
@@ -50,4 +52,8 @@ protected:
 	bool myIsFocused = false;
 	bool myIsHovered = false;
 	bool myHasDockSpace = false;
+
+private:
+	std::unordered_map<ImGuiID, ImGuiID> myDockIds;
+	ImGuiID myMainDockId = 0;
 };

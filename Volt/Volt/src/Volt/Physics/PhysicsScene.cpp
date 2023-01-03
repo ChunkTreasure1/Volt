@@ -6,7 +6,7 @@
 #include "Volt/Physics/PhysicsShapes.h"
 #include "Volt/Physics/PhysicsLayer.h"
 
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 #include "Volt/Components/Components.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Log/Log.h"
@@ -58,7 +58,7 @@ namespace Volt
 					{
 						for (const auto& script : scriptComp.scripts)
 						{
-							Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(id, script);
+							Ref<Script> scriptInstance = ScriptEngine::GetScript(id, script);
 							if (scriptInstance)
 							{
 								scriptInstance->OnFixedUpdate(mySubStepSize);

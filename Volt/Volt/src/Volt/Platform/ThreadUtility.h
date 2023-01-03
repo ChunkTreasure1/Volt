@@ -12,12 +12,15 @@ typedef struct tagTHREADNAME_INFO
 	DWORD dwFlags; // Reserved for future use, must be zero.  
 } THREADNAME_INFO;
 #pragma pack(pop)  
-void SetThreadName(DWORD dwThreadID, const char* threadName)
+
+#pragma warning(push)  
+#pragma warning(disable : 4311 4302)
+inline void SetThreadName(std::thread::native_handle_type dwThreadID, const char* threadName)
 {
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = threadName;
-	info.dwThreadID = dwThreadID;
+	info.dwThreadID = GetThreadId(static_cast<HANDLE>(dwThreadID));
 	info.dwFlags = 0;
 #pragma warning(push)  
 #pragma warning(disable: 6320 6322)  
@@ -30,3 +33,4 @@ void SetThreadName(DWORD dwThreadID, const char* threadName)
 	}
 #pragma warning(pop)  
 }
+#pragma warning(pop)  

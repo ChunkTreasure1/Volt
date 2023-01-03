@@ -226,40 +226,16 @@ namespace gem
 		T const a(angle);
 		T const s = gem::sin(a * static_cast<T>(0.5));
 
-		return qua<T>(gem::cos(a * static_cast<T>(0.f)), v * s);
+		return qua<T>(gem::cos(a * static_cast<T>(0.5f)), v * s);
 	}
 
 	template<typename T>
 	qua<T> fromTo(vec<3, T> const& from, vec<3, T> const& to)
 	{
-		vec<3, T> f = normalize(from);
-		vec<3, T> t = normalize(to);
+		T const cosTheta = dot(from, to);
+		vec<3, T> const& rotationAxis = cross(from, to);
 
-		if (f == t)
-		{
-			return qua<T>{ static_cast<T>(1), static_cast<T>(0), static_cast<T>(0), static_cast<T>(0) };
-		}
-		else if (f == t * -1.f)
-		{
-			vec<3, T> ortho = vec<3, T>(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0));
-			if (fabsf(f.y) < fabsf(f.x))
-			{
-				ortho = vec<3, T>(static_cast<T>(0), static_cast<T>(1), static_cast<T>(0));
-			}
-			if (fabsf(f.z) < fabsf(f.y) && fabsf(f.z) && fabsf(f.x))
-			{
-				ortho = vec<3, T>(static_cast<T>(0), static_cast<T>(0), static_cast<T>(1));
-			}
-
-			vec<3, T> axis = normalize(cross(f, ortho));
-
-			return qua<T>{ static_cast<T>(0), axis.x, axis.y, axis.z};
-		}
-
-		vec<3, T> half = normalize(f + t);
-		vec<3, T> axis = cross(f, half);
-
-		return qua<T>{ axis.x, axis.y, axis.z, dot(f, half) };
+		return qua<T>(cosTheta, rotationAxis);
 	}
 
 	/// Compute the rotation between two vectors.

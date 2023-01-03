@@ -3,10 +3,12 @@
 #include "Volt/Core/Base.h"
 
 #include <wrl.h>
-#include <d3d11.h>
-#include <d3d11_1.h>
 
 struct GLFWwindow;
+
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3DUserDefinedAnnotation;
 
 using namespace Microsoft::WRL;
 
@@ -24,16 +26,20 @@ namespace Volt
 		void Shutdown();
 
 		inline static GraphicsContext& Get() { return *myInstance; }
-		inline static ComPtr<ID3D11Device> GetDevice() { return myInstance->myDevice; }
-		inline static ComPtr<ID3D11DeviceContext> GetContext() { return myInstance->myContext; }
-		inline static ComPtr<ID3DUserDefinedAnnotation> GetAnnotations() { return myInstance->myAnnotations; }
+		static ComPtr<ID3D11Device> GetDevice();
+		static ComPtr<ID3D11DeviceContext> GetImmediateContext();
+		static ComPtr<ID3D11DeviceContext> GetDeferredContext();
+		static ComPtr<ID3DUserDefinedAnnotation> GetImmediateAnnotations();
+		static ComPtr<ID3DUserDefinedAnnotation> GetDeferredAnnotations();
 
 		static Ref<GraphicsContext> Create(GLFWwindow* aWindow);
 
 	private:
 		ComPtr<ID3D11Device> myDevice = nullptr;
-		ComPtr<ID3D11DeviceContext> myContext = nullptr;
-		ComPtr<ID3DUserDefinedAnnotation> myAnnotations = nullptr;
+		ComPtr<ID3D11DeviceContext> myImmediateContext = nullptr;
+		ComPtr<ID3D11DeviceContext> myDeferredContext = nullptr;
+		ComPtr<ID3DUserDefinedAnnotation> myImmediateAnnotations = nullptr;
+		ComPtr<ID3DUserDefinedAnnotation> myDeferredAnnotations = nullptr;
 
 		GLFWwindow* myWindow;
 

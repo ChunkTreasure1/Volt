@@ -18,7 +18,7 @@ project "Volt"
 	linkoptions 
 	{
 		"/ignore:4006",
-		"/ignore:4099"
+		"/ignore:4099",
 	}
 
 	files
@@ -40,6 +40,7 @@ project "Volt"
 	{
 		"src/",
 		"../Game/src",
+		"../GraphKey/src/",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -61,7 +62,8 @@ project "Volt"
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
-		"%{IncludeDir.DirectXTex}"
+		"%{IncludeDir.DirectXTex}",
+		"%{IncludeDir.efsw}"
 	}
 
 	links
@@ -72,7 +74,8 @@ project "Volt"
 		"Optick",
 		"msdf-atlas-gen",
 		"YamlCPP",
-		"DirectXTex"
+		"DirectXTex",
+		"efsw-static-lib"
 	}
 
 	defines
@@ -146,9 +149,9 @@ project "Shaders"
 
 	files
 	{
-		"../../Build/Engine/Shaders/**.hlsl",
-		"../../Build/Engine/Shaders/**.hlslh",
-		"../../Build/Engine/Shaders/**.hlsli"
+		"../../Engine/Engine/Shaders/**.hlsl",
+		"../../Engine/Engine/Shaders/**.hlslh",
+		"../../Engine/Engine/Shaders/**.hlsli"
 	}
 
 	filter "system:windows"

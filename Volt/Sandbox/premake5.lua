@@ -6,7 +6,7 @@ project "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++latest"
-	debugdir "../../Build"
+	debugdir "../../Engine"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -27,7 +27,8 @@ project "Sandbox"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:Game",
-		"/WHOLEARCHIVE:PhysX"
+		"/WHOLEARCHIVE:PhysX",
+		"/WHOLEARCHIVE:GraphKey"
 	}
 
     defines
@@ -53,7 +54,7 @@ project "Sandbox"
 		"src/",
 		"../Volt/src/",
 		"../Game/src/",
-		"../NodeEditor/src",
+		"../GraphKey/src/",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -70,12 +71,12 @@ project "Sandbox"
 		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.efsw}",
 
 		"%{IncludeDir.imgui_node_editor}",
 
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.P4}",
-		"%{IncludeDir.dpp}",
 
 		"%{IncludeDir.ffmpeg}"
 	}
@@ -83,7 +84,7 @@ project "Sandbox"
     links
     {
         "Volt",
-		"NodeEditor",
+		"GraphKey",
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",
@@ -115,8 +116,6 @@ project "Sandbox"
 		"%{Library.P4_rpc}",
 		"%{Library.P4_supp}",
 
-		"%{Library.dpp}",
-
 		"%{Library.OpenSSL_Crypto}",
 		"%{Library.OpenSSL_SSL}",
 
@@ -137,6 +136,11 @@ project "Sandbox"
 	{
 		["GameOnlyDebug"] = "Dist",
 		["SandboxOnlyDebug"] = "Debug"
+	}
+
+	debugargs 
+	{
+		"../Project/Project.vtproj"
 	}
 
 	filter "system:windows"
@@ -163,5 +167,5 @@ project "Sandbox"
 
 			postbuildcommands
 			{
-				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/Sandbox.exe" "../../Build/"'
+				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/Sandbox.exe" "../../Engine/"'
 			}

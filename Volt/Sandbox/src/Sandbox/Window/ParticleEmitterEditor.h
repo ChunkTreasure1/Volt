@@ -15,6 +15,7 @@ namespace Volt
 {
 	class Shader;
 	class ParticlePreset;
+	class Material;
 }
 
 class EditorCameraController;
@@ -62,6 +63,7 @@ private:
 
 	Ref<Volt::Scene> myPreviewScene;
 	Ref<Volt::SceneRenderer> myPreviewRenderer;
+	Ref<Volt::Material> myGridMaterial;
 
 	Ref<EditorCameraController> myCameraController;
 

@@ -5,7 +5,23 @@
 
 namespace ImGui
 {
-	static bool TreeNodeBehaviorWidth(ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, float width)
+	inline static bool ImageButtonAnimated(ImTextureID user_texture_id, ImTextureID texId, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	{
+		ImGuiContext& g = *GImGui;
+		ImGuiWindow* window = g.CurrentWindow;
+		if (window->SkipItems)
+			return false;
+
+		// Default to using texture ID as ID. User can still push string/integer prefixes.
+		PushID((void*)(intptr_t)user_texture_id);
+		const ImGuiID id = window->GetID("#image");
+		PopID();
+
+		const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : g.Style.FramePadding;
+		return ImageButtonEx(id, texId, size, uv0, uv1, padding, bg_col, tint_col);
+	}
+
+	inline static bool TreeNodeBehaviorWidth(ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, float width)
 	{
 		ImGuiWindow* window = GetCurrentWindow();
 		if (window->SkipItems)
@@ -67,8 +83,8 @@ namespace ImGui
 		}
 
 		bool item_add = ItemAdd(interact_bb, id);
-		window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_HasDisplayRect;
-		window->DC.LastItemDisplayRect = frame_bb;
+		g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_HasDisplayRect;
+		g.LastItemData.DisplayRect = frame_bb;
 
 		if (span_all_columns)
 		{
@@ -144,12 +160,12 @@ namespace ImGui
 					toggled = true;
 			}
 
-			if (g.NavId == id && g.NavMoveRequest && g.NavMoveDir == ImGuiDir_Left && is_open)
+			if (g.NavId == id && g.NavMoveDir == ImGuiDir_Left && is_open)
 			{
 				toggled = true;
 				NavMoveRequestCancel();
 			}
-			if (g.NavId == id && g.NavMoveRequest && g.NavMoveDir == ImGuiDir_Right && !is_open) // If there's something upcoming on the line we may want to give it the priority?
+			if (g.NavId == id && g.NavMoveDir == ImGuiDir_Right && !is_open) // If there's something upcoming on the line we may want to give it the priority?
 			{
 				toggled = true;
 				NavMoveRequestCancel();
@@ -159,7 +175,7 @@ namespace ImGui
 			{
 				is_open = !is_open;
 				window->DC.StateStorage->SetInt(id, is_open);
-				window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledOpen;
+				g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledOpen;
 			}
 		}
 		if (flags & ImGuiTreeNodeFlags_AllowItemOverlap)
@@ -167,7 +183,7 @@ namespace ImGui
 
 		// In this branch, TreeNodeBehavior() cannot toggle the selection so this will never trigger.
 		if (selected != was_selected) //-V547
-			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
+			g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
 		const ImU32 text_col = GetColorU32(ImGuiCol_Text);

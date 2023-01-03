@@ -1,7 +1,7 @@
 #include "sbpch.h"
 #include "CharacterEditorPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Camera/EditorCameraController.h"
 
 #include <Volt/Animation/AnimationManager.h>
@@ -11,6 +11,7 @@
 #include <Volt/Rendering/Shader/ShaderRegistry.h>
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+#include <Volt/Asset/Mesh/Material.h>
 
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Animation/Animation.h>
@@ -23,6 +24,8 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 CharacterEditorPanel::CharacterEditorPanel()
@@ -31,19 +34,10 @@ CharacterEditorPanel::CharacterEditorPanel()
 	myWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 
 	myScene = CreateRef<Volt::Scene>();
 	mySceneRenderer = CreateScope<Volt::SceneRenderer>(myScene);
-
-	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
-
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f });
-			Volt::Renderer::DispatchSpritesWithShader(Volt::ShaderRegistry::Get("Grid"));
-
-			Volt::Renderer::EndPass();
-		});
 
 	// Forward Extra
 	{
@@ -71,6 +65,16 @@ CharacterEditorPanel::CharacterEditorPanel()
 		myForwardExtraPass.debugName = "Forward Extra";
 	}
 
+	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
+		{
+			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
+
+			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
+			Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
+
+			Volt::Renderer::EndPass();
+		});
+
 	// Skylight
 	{
 		auto entity = myScene->CreateEntity();
@@ -85,13 +89,21 @@ CharacterEditorPanel::CharacterEditorPanel()
 		comp.castShadows = false;
 		comp.intensity = 3.f;
 
-		entity.SetRotation({ 70.f, 0.f, 100.f });
+		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
 	}
 
-	// Character entity
+	// Character entityw
 	{
 		myCharacterEntity = myScene->CreateEntity();
 		myCharacterEntity.AddComponent<Volt::AnimatedCharacterComponent>();
+	}
+
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 }
 
@@ -233,7 +245,7 @@ void CharacterEditorPanel::UpdateToolbar()
 
 	ImGui::Begin("##toolbarCharEditor", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	if (UI::ImageButton("##Save", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
 		if (myCurrentCharacter)
 		{
@@ -244,7 +256,7 @@ void CharacterEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##Load", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
 		const std::filesystem::path characterPath = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
 		if (!characterPath.empty() && FileSystem::Exists(characterPath))
@@ -351,7 +363,7 @@ void CharacterEditorPanel::UpdateAnimations()
 		// Adding
 		{
 			Volt::AssetHandle addHandle = Volt::Asset::Null();
-			if (UI::ImageButton("##Add", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Add)), { buttonSize, buttonSize }))
+			if (UI::ImageButton("##Add", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Add)), { buttonSize, buttonSize }))
 			{
 				ImGui::OpenPopup("animAddPopup");
 			}
@@ -369,7 +381,7 @@ void CharacterEditorPanel::UpdateAnimations()
 
 		// Play
 		{
-			Ref<Volt::Texture2D> icon = myIsPlayingAnim ? EditorIconLibrary::GetIcon(EditorIcon::Stop) : EditorIconLibrary::GetIcon(EditorIcon::Play);
+			Ref<Volt::Texture2D> icon = myIsPlayingAnim ? EditorResources::GetEditorIcon(EditorIcon::Stop) : EditorResources::GetEditorIcon(EditorIcon::Play);
 			if (UI::ImageButton("##Play", UI::GetTextureID(icon), { buttonSize, buttonSize }))
 			{
 				myIsPlayingAnim = !myIsPlayingAnim;

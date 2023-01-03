@@ -9,7 +9,9 @@ namespace Volt
 	public:
 		UUID();
 		UUID(uint64_t uuid);
+		
 		UUID(const UUID&) = default;
+		~UUID() = default;
 
 		operator uint64_t() const { return myUUID; }
 	private:

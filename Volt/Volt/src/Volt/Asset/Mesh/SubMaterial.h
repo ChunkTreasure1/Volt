@@ -18,7 +18,8 @@ namespace Volt
 		SubMaterial(const std::string& aName, uint32_t aIndex, Ref<Shader> aShader);
 		~SubMaterial();
 
-		void Bind(bool aBindShader = true);
+		void Bind(bool aBindShader = true, bool aBindTextures = true);
+
 		void SetTexture(uint32_t binding, Ref<Texture2D> texture);
 		void Invalidate();
 		void UpdateBuffer(bool deferr = false);

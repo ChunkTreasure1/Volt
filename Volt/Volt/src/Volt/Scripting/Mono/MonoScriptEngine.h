@@ -55,7 +55,8 @@ namespace Volt
 		static MonoScriptFieldMap& GetScriptFieldMap(Wire::EntityId entityId);
 
 	private:
-		static AssemblyData LoadAssembly(const std::filesystem::path& assemblyPath, const std::string& name, bool createDomain);
+		static bool LoadAssembly(const std::filesystem::path& assemblyPath);
+		static bool LoadAppAssembly(const std::filesystem::path& assemblyPath);
 		static void LoadAndCreateMonoClasses(MonoAssembly* assembly);
 
 		static void InitializeMono();

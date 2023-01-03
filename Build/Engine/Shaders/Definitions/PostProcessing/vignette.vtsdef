@@ -1,4 +1,0 @@
-name: "Vignette"
-paths:
-  - "Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl"
-  - "Engine/Shaders/HLSL/PostProcessing/vignette_ps.hlsl"

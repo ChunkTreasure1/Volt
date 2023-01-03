@@ -35,7 +35,7 @@ namespace Volt
 
 		const bool IsOnOrForwardPlane(const FrustumPlane& plane);
 		const bool IsInFrusum(const Frustum& frustum, const gem::mat4& transform) const override;
-		const gem::vec3& GetCenter() const override { return 0.f; }
+		const gem::vec3& GetCenter() const override { return max; }
 		const float GetRadius() const override { return 0.f; }
 
 		gem::vec3 max = 0.f;

@@ -1,6 +1,7 @@
 #include "vtpch.h"
 #include "AnimationImporter.h"
 
+#include "Volt/Project/ProjectManager.h"
 #include "Volt/Asset/Animation/Animation.h"
 
 namespace Volt
@@ -10,14 +11,16 @@ namespace Volt
 		asset = CreateRef<Animation>();
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
-		if (!std::filesystem::exists(path)) [[unlikely]]
+		const auto filePath = ProjectManager::GetDirectory() / path;
+
+		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
-		std::ifstream input(path, std::ios::binary | std::ios::in);
+		std::ifstream input(filePath, std::ios::binary | std::ios::in);
 		if (!input.is_open())
 		{
 			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
@@ -84,7 +87,7 @@ namespace Volt
 			offset += header.perFrameTransformCount * sizeof(gem::mat4);
 		}
 
-		std::ofstream fout(asset->path, std::ios::binary | std::ios::out);
+		std::ofstream fout(ProjectManager::GetDirectory() / asset->path, std::ios::binary | std::ios::out);
 		fout.write((char*)outData.data(), outData.size());
 		fout.close();
 	}

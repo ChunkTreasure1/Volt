@@ -1,13 +1,12 @@
 #include "sbpch.h"
 #include "MaterialEditorPanel.h"
 
-#include "Sandbox/Window/EditorIconLibrary.h"
+#include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 
-#include <Volt/Asset/Mesh/MaterialRegistry.h>
 #include <Volt/Asset/Mesh/SubMaterial.h>
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/Mesh.h>
@@ -24,6 +23,7 @@
 #include <Volt/Scene/Entity.h>
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/PostProcessComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
@@ -40,7 +40,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto entity = myPreviewScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/Sphere.vtmesh")->handle;
+		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
 		myPreviewEntity = entity;
 	}
 
@@ -58,7 +58,15 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 		comp.castShadows = false;
 		comp.intensity = 2.f;
 
-		entity.SetRotation({ 70.f, 0.f, 100.f });
+		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
+	}
+
+	{
+		auto ent = myPreviewScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 
 	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(myPreviewScene);
@@ -108,7 +116,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::Begin("##toolbarMatEditor", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-	if (UI::ImageButton("##Save", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
 		if (mySelectedMaterial)
 		{
@@ -127,7 +135,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##Reload", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::Reload)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##Reload", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Reload)), { myButtonSize, myButtonSize }))
 	{
 		if (mySelectedMaterial)
 		{
@@ -137,7 +145,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##GetMaterial", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::GetMaterial)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##GetMaterial", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::GetMaterial)), { myButtonSize, myButtonSize }))
 	{
 		if (SelectionManager::GetSelectedCount() > 0)
 		{
@@ -169,7 +177,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 	ImGui::SameLine();
 
-	if (UI::ImageButton("##SetMaterial", UI::GetTextureID(EditorIconLibrary::GetIcon(EditorIcon::SetMaterial)), { myButtonSize, myButtonSize }))
+	if (UI::ImageButton("##SetMaterial", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SetMaterial)), { myButtonSize, myButtonSize }))
 	{
 		if (SelectionManager::GetSelectedCount() > 0)
 		{
@@ -334,6 +342,8 @@ void MaterialEditorPanel::UpdatePreview()
 
 void MaterialEditorPanel::UpdateSubMaterials()
 {
+	using namespace AssetBrowser;
+
 	ImGui::Begin("Sub materials");
 	{
 		if (mySelectedMaterial)
@@ -357,9 +367,10 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			const auto& subMaterials = mySelectedMaterial->GetSubMaterials();
 			for (auto& [index, material] : subMaterials)
 			{
-				ImGui::PushID((uint32_t)material->GetName().c_str());
+				ImGui::PushID(material->GetName().c_str());
 
-				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize();
+				constexpr float thumbnailSize = 85.f;
+				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemMinPos();
 
@@ -393,7 +404,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 
 						ImGui::BeginChild("image", { thumbnailSize, thumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 						{
-							ImGui::Image(UI::GetTextureID(Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/Icons/AssetIcons/icon_material.dds")), { thumbnailSize, thumbnailSize });
+							ImGui::Image(UI::GetTextureID(EditorResources::GetAssetIcon(Volt::AssetType::Material)), { thumbnailSize, thumbnailSize });
 						}
 						ImGui::EndChild();
 						ImGui::PopStyleVar();
@@ -430,7 +441,7 @@ void MaterialEditorPanel::UpdateMaterials()
 {
 	ImGui::Begin("Materials", nullptr, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 	{
-		const auto& materials = Volt::MaterialRegistry::GetMaterials();
+		const auto& materials = Volt::AssetManager::GetAllAssetsOfType<Volt::Material>();
 
 		if (EditorUtils::SearchBar(mySearchQuery, myHasSearchQuery))
 		{
@@ -438,9 +449,9 @@ void MaterialEditorPanel::UpdateMaterials()
 
 		ImGui::BeginChild("Scrollable");
 		{
-			for (auto& [name, material] : materials)
+			for (auto& material : materials)
 			{
-				if (myHasSearchQuery && !Utils::ToLower(name).contains(Utils::ToLower(mySearchQuery)))
+				if (myHasSearchQuery && !Utils::ToLower(material.stem().string()).contains(Utils::ToLower(mySearchQuery)))
 				{
 					continue;
 				}
@@ -451,7 +462,7 @@ void MaterialEditorPanel::UpdateMaterials()
 					selected = material == mySelectedMaterial->path;
 				}
 
-				if (ImGui::Selectable(name.c_str(), &selected))
+				if (ImGui::Selectable(material.stem().string().c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
