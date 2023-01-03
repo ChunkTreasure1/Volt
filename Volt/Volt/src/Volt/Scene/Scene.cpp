@@ -35,6 +35,8 @@
 
 #include <GraphKey/Graph.h>
 
+#include <GraphKey/Graph.h>
+
 namespace Volt
 {
 	Scene::Scene(const std::string& name)
@@ -745,6 +747,11 @@ namespace Volt
 			otherRegistry.AddEntity(ent);
 			Entity::Copy(myRegistry, otherRegistry, ent, ent);
 		}
+
+		otherRegistry.ForEach<VisualScriptingComponent>([]() 
+			{
+				
+			});
 	}
 
 	void Scene::SetupComponentCreationFunctions()

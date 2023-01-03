@@ -20,11 +20,8 @@ IncludeDir["stb_image"] = "%{wks.location}/Volt/vendor/stb_image/"
 IncludeDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/include/"
 IncludeDir["mono"] = "%{wks.location}/Volt/vendor/mono/include/"
 IncludeDir["DirectXTex"] = "%{wks.location}/Volt/vendor/DirectXTex/src"
-<<<<<<< HEAD
 IncludeDir["fmod"] = "%{wks.location}/Amp/vendor/fmod/include"
-=======
 IncludeDir["efsw"] = "%{wks.location}/Volt/vendor/efsw/include"
->>>>>>> main
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
 

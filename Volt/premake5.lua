@@ -34,14 +34,10 @@ include "Volt/vendor/DirectXTex"
 include "Volt/vendor/efsw"
 
 group "Core"
-include "Volt"
-<<<<<<< HEAD
-include "Volt-ScriptCore"
 include "Amp"
-=======
+
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 include "GraphKey"
->>>>>>> main
 
 group "Game"
 include "Game"

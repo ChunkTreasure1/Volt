@@ -85,12 +85,9 @@ project "Sandbox"
     links
     {
         "Volt",
-<<<<<<< HEAD
-		"NodeEditor",
-		"Amp",
-=======
 		"GraphKey",
->>>>>>> main
+		"Amp",
+
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",

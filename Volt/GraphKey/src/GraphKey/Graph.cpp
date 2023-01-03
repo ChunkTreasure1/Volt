@@ -38,13 +38,13 @@ namespace GraphKey
 	void Graph::CreateLink(const Volt::UUID inputId, const Volt::UUID outputId)
 	{
 		Ref<Link> newLink = CreateRef<Link>();
-		newLink->input = inputId;
-		newLink->output = outputId;
+		newLink->input = outputId;
+		newLink->output = inputId;
 
 		mySpecification.links.emplace_back(newLink);
 
-		Attribute* input = GetAttributeByID(inputId);
-		Attribute* output = GetAttributeByID(outputId);
+		Attribute* input = GetAttributeByID(outputId);
+		Attribute* output = GetAttributeByID(inputId);
 
 		input->links.emplace_back(newLink->id);
 		output->links.emplace_back(newLink->id);

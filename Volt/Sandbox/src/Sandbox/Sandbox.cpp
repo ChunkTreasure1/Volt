@@ -66,14 +66,10 @@
 
 #include <Volt/AI/NavMesh/NavigationsSystem.h>
 #include <Volt/AI/NavMesh2/NavMesh2.h>
-<<<<<<< HEAD
-#include <Amp/AudioManager/AudioManager.h>
-=======
 #include <Volt/Platform/ExceptionHandling.h>
 #include <Volt/Audio/AudioManager.h>
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
->>>>>>> main
 
 #include <Game/Game.h>
 
@@ -372,9 +368,6 @@ void Sandbox::OnSceneStop()
 
 	Volt::OnSceneStopEvent stopEvent{};
 	Volt::Application::Get().OnEvent(stopEvent);
-	myRuntimeScene->OnEvent(stopEvent);
-	//Amp::AudioManager::StopAll(1);
-	Amp::AudioManager::ReleaseAll();
 
 	myRuntimeScene->OnRuntimeEnd();
 	myGame->OnStop();
@@ -593,6 +586,8 @@ void Sandbox::TransitionToNewScene()
 	Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
 	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
+
+	AUDIOMANAGER.ResetListener();
 
 	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
 	Volt::Application::Get().OnEvent(loadEvent);
@@ -1089,18 +1084,13 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		case SceneState::Edit:
 			myRuntimeScene->UpdateEditor(e.GetTimestep());
-<<<<<<< HEAD
-			initiated = false;
-			//#TODO(Andreas): AMP : Stop all sounds
-=======
 			AUDIOMANAGER.StopAll();
->>>>>>> main
 			break;
 
 		case SceneState::Play:
 			myRuntimeScene->Update(e.GetTimestep());
+			AUDIOMANAGER.Update(e.GetTimestep());
 
-			//#TODO(Andreas): AMP : Update Amp
 			// AI
 			myNavigationsSystem->OnRuntimeUpdate(e.GetTimestep());
 			break;

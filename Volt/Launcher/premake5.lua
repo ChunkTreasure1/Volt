@@ -80,11 +80,8 @@ project "Launcher"
     links
     {
         "Volt",
-<<<<<<< HEAD
-		"Amp",
-=======
 		"GraphKey",
->>>>>>> main
+		"Amp",
 
 		"Game",
 
