@@ -6,7 +6,7 @@ project "Launcher"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++latest"
-	debugdir "../../Build"
+	debugdir "../../Engine"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -24,7 +24,8 @@ project "Launcher"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:Game",
-		"/WHOLEARCHIVE:PhysX"
+		"/WHOLEARCHIVE:PhysX",
+		"/WHOLEARCHIVE:GraphKey"
 	}
 
     defines
@@ -51,6 +52,7 @@ project "Launcher"
 		"../Volt/src/",
 		"../Amp/src/",
 		"../Game/src/",
+		"../GraphKey/src/",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -67,6 +69,7 @@ project "Launcher"
 		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.efsw}",
 
 		"%{IncludeDir.imgui_node_editor}",
 
@@ -77,7 +80,11 @@ project "Launcher"
     links
     {
         "Volt",
+<<<<<<< HEAD
 		"Amp",
+=======
+		"GraphKey",
+>>>>>>> main
 
 		"Game",
 
@@ -140,5 +147,5 @@ project "Launcher"
 
 			postbuildcommands
 			{
-				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/Launcher.exe" "../../Build/"'
+				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/Launcher.exe" "../../Engine/"'
 			}

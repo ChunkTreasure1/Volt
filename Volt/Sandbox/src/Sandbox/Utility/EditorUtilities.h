@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sandbox/Window/AssetCommon.h"
+#include "Sandbox/Window/AssetBrowser/AssetCommon.h"
 #include "Sandbox/Utility/AssetBrowserPopup.h"
 
 #include <Volt/Asset/Asset.h>
@@ -49,6 +49,7 @@ public:
 
 	static bool SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery);
 
+	static bool ReimportSourceMesh(Volt::AssetHandle assetHandle);
 	static ImportState MeshImportModal(const std::string& aId, MeshImportData& aImportData, const std::filesystem::path& aMeshToImport);
 	static bool NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCharacter>& outCharacter, NewCharacterData& aCharacterData);
 

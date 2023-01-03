@@ -53,25 +53,25 @@ public:
 		{
 			auto& colors = ImGui::GetStyle().Colors;
 			colors[m_Color] = m_OldColor;
-		}
+			}
 
-	private:
-		ImVec4 m_OldColor;
-		ImGuiCol_ m_Color;
-	};
+		private:
+			ImVec4 m_OldColor;
+			ImGuiCol_ m_Color;
+		};
 
-	class ScopedStyleFloat
-	{
-	public:
-		ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+		class ScopedStyleFloat
 		{
-			ImGui::PushStyleVar(var, value);
-		}
+		public:
+			ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+			{
+				ImGui::PushStyleVar(var, value);
+			}
 
-		~ScopedStyleFloat()
-		{
-			ImGui::PopStyleVar();
-		}
+			~ScopedStyleFloat()
+			{
+				ImGui::PopStyleVar();
+			}
 	};
 
 	class ScopedStyleFloat2
@@ -201,7 +201,7 @@ public:
 		return ImGui::ImageButtonEx(imId, textureId, size, uv0, uv1, padding, bg_col, tint_col);
 	}
 
-	static bool ImageButtonState(const std::string& id, bool state, ImTextureID textureId, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1))
+	inline static bool ImageButtonState(const std::string& id, bool state, ImTextureID textureId, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1))
 	{
 		if (state)
 		{
@@ -213,7 +213,7 @@ public:
 		}
 	}
 
-	static bool TreeNodeImage(Ref<Volt::Texture2D> texture, const std::string& text, ImGuiTreeNodeFlags flags)
+	inline static bool TreeNodeImage(Ref<Volt::Texture2D> texture, const std::string& text, ImGuiTreeNodeFlags flags)
 	{
 		ScopedStyleFloat2 frame{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
 		ScopedStyleFloat2 spacing{ ImGuiStyleVar_ItemSpacing, { 0.f, 0.f } };
@@ -351,7 +351,7 @@ public:
 		// We remove 1 worth of rounding to Max.x to that text in long menus and small windows don't tend to display over the lower-right rounded area, which looks particularly glitchy.
 		ImRect bar_rect = barRect;
 		ImRect clip_rect(IM_ROUND(ImMax(window->Pos.x, bar_rect.Min.x + window->WindowBorderSize + window->Pos.x)), IM_ROUND(bar_rect.Min.y + window->WindowBorderSize + window->Pos.y),
-			IM_ROUND(ImMax(bar_rect.Min.x + window->Pos.x, bar_rect.Max.x - ImMax(window->WindowRounding, window->WindowBorderSize))), IM_ROUND(bar_rect.Max.y + window->Pos.y));
+			IM_ROUND(ImMax(bar_rect.Min.x + window->Pos.x, bar_rect.Max.x - ImMax(window->WindowRounding, window->WindowBorderSize) + window->Pos.x)), IM_ROUND(bar_rect.Max.y + window->Pos.y));
 		clip_rect.ClipWith(window->OuterRectClipped);
 		ImGui::PushClipRect(clip_rect.Min, clip_rect.Max, false);
 
@@ -374,24 +374,26 @@ public:
 		// Nav: When a move request within one of our child menu failed, capture the request to navigate among our siblings.
 		if (ImGui::NavMoveRequestButNoResultYet() && (g.NavMoveDir == ImGuiDir_Left || g.NavMoveDir == ImGuiDir_Right) && (g.NavWindow->Flags & ImGuiWindowFlags_ChildMenu))
 		{
+			// Try to find out if the request is for one of our child menu
 			ImGuiWindow* nav_earliest_child = g.NavWindow;
 			while (nav_earliest_child->ParentWindow && (nav_earliest_child->ParentWindow->Flags & ImGuiWindowFlags_ChildMenu))
 				nav_earliest_child = nav_earliest_child->ParentWindow;
-			if (nav_earliest_child->ParentWindow == window && nav_earliest_child->DC.ParentLayoutType == ImGuiLayoutType_Horizontal && g.NavMoveRequestForward == ImGuiNavForward_None)
+			if (nav_earliest_child->ParentWindow == window && nav_earliest_child->DC.ParentLayoutType == ImGuiLayoutType_Horizontal && (g.NavMoveFlags & ImGuiNavMoveFlags_Forwarded) == 0)
 			{
 				// To do so we claim focus back, restore NavId and then process the movement request for yet another frame.
-				// This involve a one-frame delay which isn't very problematic in this situation. We could remove it by scoring in advance for multiple window (probably not worth the hassle/cost)
+				// This involve a one-frame delay which isn't very problematic in this situation. We could remove it by scoring in advance for multiple window (probably not worth bothering)
 				const ImGuiNavLayer layer = ImGuiNavLayer_Menu;
-				IM_ASSERT(window->DC.NavLayerActiveMaskNext & (1 << layer)); // Sanity check
+				IM_ASSERT(window->DC.NavLayersActiveMaskNext & (1 << layer)); // Sanity check
 				ImGui::FocusWindow(window);
-				ImGui::SetNavIDWithRectRel(window->NavLastIds[layer], layer, 0, window->NavRectRel[layer]);
-				g.NavLayer = layer;
+				ImGui::SetNavID(window->NavLastIds[layer], layer, 0, window->NavRectRel[layer]);
 				g.NavDisableHighlight = true; // Hide highlight for the current frame so we don't see the intermediary selection.
-				g.NavMoveRequestForward = ImGuiNavForward_ForwardQueued;
-				ImGui::NavMoveRequestCancel();
+				g.NavDisableMouseHover = g.NavMousePosDirty = true;
+				ImGui::NavMoveRequestForward(g.NavMoveDir, g.NavMoveClipDir, g.NavMoveFlags, g.NavMoveScrollFlags); // Repeat
 			}
 		}
 
+		IM_MSVC_WARNING_SUPPRESS(6011); // Static Analysis false positive "warning C6011: Dereferencing NULL pointer 'window'"
+		// IM_ASSERT(window->Flags & ImGuiWindowFlags_MenuBar); // NOTE(Yan): Needs to be commented out because Jay
 		IM_ASSERT(window->DC.MenuBarAppending);
 		ImGui::PopClipRect();
 		ImGui::PopID();
@@ -1348,15 +1350,6 @@ public:
 			}
 		}
 
-		//if (auto ptr = UI::DragDropTarget("CONTENT_BROWSER_ITEM"))
-		//{
-		//	const wchar_t* inPath = (const wchar_t*)ptr;
-		//	std::filesystem::path newPath = std::filesystem::path("assets") / inPath;
-
-		//	path = newPath;
-		//	changed = true;
-		//}
-
 		return changed;
 	}
 
@@ -1399,15 +1392,6 @@ public:
 				}
 			}
 		}
-
-		//if (auto ptr = UI::DragDropTarget("CONTENT_BROWSER_ITEM"))
-		//{
-		//	const wchar_t* inPath = (const wchar_t*)ptr;
-		//	std::filesystem::path newPath = std::filesystem::path("assets") / inPath;
-
-		//	path = newPath;
-		//	changed = true;
-		//}
 
 		return changed;
 	}

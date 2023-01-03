@@ -53,6 +53,12 @@ void VersionControl::Delete(const std::filesystem::path& file)
 	s_implementation->DeleteImpl(file);
 }
 
+void VersionControl::Edit(const std::filesystem::path& file)
+{
+	VT_ASSERT(s_implementation, "No implementation loaded!");
+	s_implementation->AddImpl(file);
+}
+
 void VersionControl::Submit(const std::string& message)
 {
 	VT_ASSERT(s_implementation, "No implementation loaded!");

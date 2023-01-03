@@ -59,19 +59,31 @@ void LogPanel::UpdateMainContent()
 	}
 	ImGui::PopItemWidth();
 
+	myCurrentLogMessages.clear();
+	for (const auto& msg : myLogMessages)
+	{
+		if (msg.level >= logLevel)
+		{
+			myCurrentLogMessages.emplace_back(msg);
+		}
+	}
+
 	UI::ScopedColor childColor(ImGuiCol_ChildBg, { 0.18f, 0.18f, 0.18f, 1.f });
 	ImGui::BeginChild("log", ImGui::GetContentRegionAvail());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 0.f));
 
-	for (const auto& msg : myLogMessages)
+	for (const auto& msg : myCurrentLogMessages)
 	{
 		ImVec4 color = Utility::GetColorFromLevel(msg.level);
-		ImGui::TextColored(color, msg.message.c_str());
+
+		ImGui::PushStyleColor(ImGuiCol_Text, Utility::GetColorFromLevel(msg.level));
+		ImGui::TextWrapped(msg.message.c_str());
+		ImGui::PopStyleColor();
 	}
 
 	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
 	{
-		ImGui::SetScrollHere(1.f);
+		ImGui::SetScrollHereY(1.f);
 	}
 
 	ImGui::PopStyleVar();

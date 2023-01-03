@@ -6,6 +6,7 @@
 #include "Volt/Core/Buffer.h"
 
 #include "Volt/Scene/Scene.h"
+#include "Volt/Project/ProjectManager.h"
 
 #include "Volt/Scripting/Mono/MonoScriptGlue.h"
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
@@ -15,6 +16,10 @@
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
+#include <mono/metadata/object.h>
+#include <mono/metadata/tabledefs.h>
+#include <mono/metadata/mono-debug.h>
+#include <mono/metadata/threads.h>
 
 namespace Volt
 {
@@ -35,13 +40,15 @@ namespace Volt
 		std::unordered_map<std::string, Ref<MonoScriptClass>> entityClasses;
 		std::unordered_map<Wire::EntityId, Ref<MonoScriptInstance>> entityInstances;
 		std::unordered_map<Wire::EntityId, MonoScriptFieldMap> entityScriptFields;
+
+		bool enableDebugging = true;
 	};
 
 	static Scope<ScriptEngineData> s_monoData;
 
 	namespace Utility
 	{
-		inline static MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath)
+		inline static MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
 		{
 			uint32_t fileSize = 0;
 			Buffer buffer = Buffer::ReadFromFile(assemblyPath);
@@ -56,8 +63,23 @@ namespace Volt
 				return nullptr;
 			}
 
+			if (loadPDB)
+			{
+				std::filesystem::path pdbPath = assemblyPath;
+				pdbPath.replace_extension(".pdb");
+
+				if (std::filesystem::exists(pdbPath))
+				{
+					Buffer pdbBuffer = Buffer::ReadFromFile(pdbPath);
+					mono_debug_open_image_from_memory(image, pdbBuffer.As<const mono_byte>(), (int32_t)pdbBuffer.GetSize());
+					VT_CORE_INFO("Loaded PDB {}", pdbPath.string());
+					pdbBuffer.Release();
+				}
+			}
+
 			MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.string().c_str(), &status, 0);
 			buffer.Release();
+			mono_image_close(image);
 
 			return assembly;
 		}
@@ -86,8 +108,20 @@ namespace Volt
 		s_monoData = CreateScope<ScriptEngineData>();
 
 		InitializeMono();
-		s_monoData->coreData = LoadAssembly("Scripts/Volt-ScriptCore.dll", "VoltScriptRuntime", true);
-		s_monoData->appData = LoadAssembly("../Volt/ProjectTemplate/Assets/Scripts/Binaries/ProjectTemplate.dll", "ProjectTemplateRuntime", false);
+		bool status = LoadAssembly("Scripts/Volt-ScriptCore.dll");
+		if (!status)
+		{
+			VT_CORE_ERROR("[MonoScriptEngine] Failed to load Volt-ScriptCore.dll");
+			return;
+		}
+
+		const auto appPath = Volt::ProjectManager::GetMonoAssemblyPath();
+		status = LoadAppAssembly(appPath);
+		if (!status)
+		{
+			VT_CORE_ERROR("[MonoScriptEngine] Failed to load app assembly");
+			return;
+		}
 
 		MonoScriptGlue::RegisterFunctions();
 
@@ -95,6 +129,36 @@ namespace Volt
 		s_monoData->entityScriptClass->GetMethod(".ctor", 1);
 
 		LoadAndCreateMonoClasses(s_monoData->appData.assembly);
+	}
+
+	bool MonoScriptEngine::LoadAssembly(const std::filesystem::path& assemblyPath)
+	{
+		std::string assemblyName = "VoltScriptRuntime";
+		s_monoData->coreData.domain = mono_domain_create_appdomain(assemblyName.data(), nullptr);
+		mono_domain_set(s_monoData->coreData.domain, true);
+
+		s_monoData->coreAssemblyPath = assemblyPath;
+		s_monoData->coreData.assembly = Utility::LoadCSharpAssembly(assemblyPath, s_monoData->enableDebugging);
+		if (!s_monoData->coreData.assembly)
+		{
+			return false;
+		}
+
+		s_monoData->coreData.assemblyImage = mono_assembly_get_image(s_monoData->coreData.assembly);
+		return true;
+	}
+
+	bool MonoScriptEngine::LoadAppAssembly(const std::filesystem::path& assemblyPath)
+	{
+		s_monoData->appAssemblyPath = assemblyPath;
+		s_monoData->appData.assembly = Utility::LoadCSharpAssembly(assemblyPath, s_monoData->enableDebugging);
+		if (!s_monoData->appData.assembly)
+		{
+			return false;
+		}
+
+		s_monoData->appData.assemblyImage = mono_assembly_get_image(s_monoData->appData.assembly);
+		return true;
 	}
 
 	void MonoScriptEngine::LoadAndCreateMonoClasses(MonoAssembly* assembly)
@@ -158,15 +222,15 @@ namespace Volt
 	{
 		mono_domain_set(mono_get_root_domain(), false);
 		mono_domain_unload(s_monoData->coreData.domain);
-	
-		s_monoData->coreData = LoadAssembly(s_monoData->coreAssemblyPath, "VoltScriptRuntime", true);
-		s_monoData->appData = LoadAssembly(s_monoData->appAssemblyPath, "ProjectTemplateRuntime", false);
+
+		LoadAssembly(s_monoData->coreAssemblyPath);
+		LoadAppAssembly(s_monoData->appAssemblyPath);
 
 		s_monoData->entityScriptClass = CreateRef<MonoScriptClass>(s_monoData->coreData.assemblyImage, "Volt", "Entity");
 		s_monoData->entityScriptClass->GetMethod(".ctor", 1);
 
 		LoadAndCreateMonoClasses(s_monoData->appData.assembly);
-	
+
 		VT_CORE_INFO("[MonoScriptEngine] C# Assembly has been reloaded!");
 	}
 
@@ -240,37 +304,32 @@ namespace Volt
 		return s_monoData->entityScriptFields[entityId];
 	}
 
-	MonoScriptEngine::AssemblyData MonoScriptEngine::LoadAssembly(const std::filesystem::path& assemblyPath, const std::string& name, bool createDomain)
-	{
-		AssemblyData data{};
-
-		if (createDomain)
-		{
-			std::string tempName = name;
-			data.domain = mono_domain_create_appdomain(tempName.data(), nullptr);
-			mono_domain_set(data.domain, true);
-	
-			s_monoData->coreAssemblyPath = assemblyPath;
-		}
-		else
-		{
-			s_monoData->appAssemblyPath = assemblyPath;
-		}
-
-		data.assembly = Utility::LoadCSharpAssembly(assemblyPath);
-		data.assemblyImage = mono_assembly_get_image(data.assembly);
-
-		return data;
-	}
-
 	void MonoScriptEngine::InitializeMono()
 	{
 		mono_set_assemblies_path("Scripts/mono/lib");
+
+		if (s_monoData->enableDebugging)
+		{
+			const char* argv[2] =
+			{
+				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
+				"--soft-breakpoints"
+			};
+
+			mono_jit_parse_options(2, (char**)argv);
+			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+		}
 
 		MonoDomain* rootDomain = mono_jit_init("VoltJITRuntime");
 		VT_CORE_ASSERT(rootDomain, "Root domain not initialized!");
 
 		s_monoData->rootDomain = rootDomain;
+
+		if (s_monoData->enableDebugging)
+		{
+			mono_debug_domain_create(s_monoData->rootDomain);
+		}
+		mono_thread_set_main(mono_thread_current());
 	}
 
 	void MonoScriptEngine::ShutdownMono()

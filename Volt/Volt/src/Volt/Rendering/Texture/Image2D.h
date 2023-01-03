@@ -96,7 +96,7 @@ namespace Volt
 		result = GraphicsContext::GetDevice()->CreateTexture2D(&desc, nullptr, &texture);
 		assert(SUCCEEDED(result));
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		context->CopyResource(texture, myTexture.Get());
 
 		D3D11_MAPPED_SUBRESOURCE subresource = {};
@@ -146,7 +146,7 @@ namespace Volt
 		result = GraphicsContext::GetDevice()->CreateTexture2D(&desc, nullptr, &texture);
 		assert(SUCCEEDED(result));
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		context->CopyResource(texture, myTexture.Get());
 
 		D3D11_MAPPED_SUBRESOURCE subresource = {};
@@ -170,7 +170,7 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(mySpecification.writeable, "Image has to be created with writeable flag!");
 
-		auto context = GraphicsContext::GetContext();
+		auto context = GraphicsContext::GetImmediateContext();
 		D3D11_MAPPED_SUBRESOURCE subdata{};
 
 		VT_DX_CHECK(context->Map(myTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subdata));

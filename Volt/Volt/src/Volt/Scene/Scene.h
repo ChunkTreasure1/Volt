@@ -38,10 +38,10 @@ namespace Volt
 			uint32_t entityCount = 0;
 		};
 
-		struct TRS
+		struct TQS
 		{
 			gem::vec3 position = { 0.f, 0.f, 0.f };
-			gem::vec3 rotation = { 0.f, 0.f, 0.f };
+			gem::quat rotation = { 1.f, 0.f, 0.f, 0.f };
 			gem::vec3 scale = { 1.f, 1.f, 1.f };
 		};
 
@@ -66,7 +66,7 @@ namespace Volt
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
-		Entity CreateEntity();
+		Entity CreateEntity(const std::string& tag = "");
 		void RemoveEntity(Entity entity);
 		void RemoveEntity(Entity entity, float aTimeToDestroy);
 
@@ -74,13 +74,15 @@ namespace Volt
 		void UnparentEntity(Entity entity);
 		
 		gem::mat4 GetWorldSpaceTransform(Entity entity, bool accountForActor = false);
-		TRS GetWorldSpaceTRS(Entity entity);
+		TQS GetWorldSpaceTRS(Entity entity);
 
 		Entity InstantiateSplitMesh(const std::filesystem::path& path);
 
 		gem::vec3 GetWorldForward(Entity entity);
 		gem::vec3 GetWorldRight(Entity entity);
 		gem::vec3 GetWorldUp(Entity entity);
+
+		const bool IsAnyParentSelected(Entity entity);
 
 		template<typename T>
 		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;
@@ -105,6 +107,8 @@ namespace Volt
 		void IsRecursiveChildOf(Entity mainParent, Entity currentEntity, bool& outChild);
 		void ConvertToWorldSpace(Entity entity);
 		void ConvertToLocalSpace(Entity entity);
+
+		void SortScene();
 
 		SceneEnvironment myEnvironment;
 		Statistics myStatistics;

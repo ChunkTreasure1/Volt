@@ -15,6 +15,7 @@ namespace Volt
 
 		inline void Release();
 		inline void Allocate(size_t aSize);
+		inline void Resize(size_t aSize);
 		inline void Copy(const void* aSrcData, size_t aSize, size_t aOffset = 0);
 
 		inline const bool IsValid() const;
@@ -54,6 +55,17 @@ namespace Volt
 		Release();
 		myData = new uint8_t[aSize];
 		mySize = aSize;
+	}
+
+	inline void Buffer::Resize(size_t aSize)
+	{
+		if (mySize < aSize)
+		{
+			uint8_t* newBuffer = new uint8_t[aSize];
+			memcpy_s(newBuffer, aSize, myData, mySize);
+
+			delete[] myData;
+		}
 	}
 
 	inline void Buffer::Copy(const void* aSrcData, size_t aSize, size_t aOffset)

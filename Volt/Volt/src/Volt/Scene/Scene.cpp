@@ -19,10 +19,10 @@
 #include "Volt/Particles/ParticleSystem.h"
 
 #include "Volt/Scripting/ScriptEngine.h"
-#include "Volt/Scripting/ScriptBase.h"
+#include "Volt/Scripting/Script.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
-#include "Volt/Utility/Math.h"
+#include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Rendering/RendererStructs.h"
@@ -32,6 +32,8 @@
 #include "../Sandbox/src/Sandbox/EditorCommandStack.h"
 
 //#include "Volt/Audio/AudioManager.h"
+
+#include <GraphKey/Graph.h>
 
 namespace Volt
 {
@@ -63,12 +65,20 @@ namespace Volt
 			{
 				for (const auto& scriptId : scriptComp.scripts)
 				{
-					Ref<ScriptBase> scriptInstance = ScriptEngine::GetScript(id, scriptId);
+					Ref<Script> scriptInstance = ScriptEngine::GetScript(id, scriptId);
 
 					if (scriptInstance)
 					{
 						scriptInstance->OnEvent(e);
 					}
+				}
+			});
+
+		myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, const VisualScriptingComponent& comp)
+			{
+				if (comp.graph)
+				{
+					comp.graph->OnEvent(e);
 				}
 			});
 	}
@@ -103,7 +113,7 @@ namespace Volt
 			{
 				for (const auto& scriptId : scriptComp.scripts)
 				{
-					Ref<ScriptBase> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
+					Ref<Script> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
 					if (!scriptInstance)
 					{
 						VT_CORE_WARN("Unable to create script with name {0} on entity {1}!", ScriptRegistry::GetNameFromGUID(scriptId), id);
@@ -242,7 +252,7 @@ namespace Volt
 					}
 					else
 					{
-						Ref<ScriptBase> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
+						Ref<Script> scriptInstance = ScriptRegistry::Create(ScriptRegistry::GetNameFromGUID(scriptId), Entity{ id, this });
 						if (!scriptInstance)
 						{
 							VT_CORE_WARN("Unable to create script with name {0} on entity {1}!", ScriptRegistry::GetNameFromGUID(scriptId), id);
@@ -263,7 +273,7 @@ namespace Volt
 				}
 			});
 
-		myRegistry.ForEach<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent&) 
+		myRegistry.ForEach<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent&)
 			{
 				MonoScriptEngine::OnUpdateEntityInstance(id, aDeltaTime);
 			});
@@ -274,7 +284,7 @@ namespace Volt
 				{
 					cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 					cameraComp.camera->SetPosition(transComp.position);
-					cameraComp.camera->SetRotation(transComp.rotation);
+					cameraComp.camera->SetRotation(gem::eulerAngles(transComp.rotation));
 				}
 			});
 
@@ -417,27 +427,22 @@ namespace Volt
 		}
 	}
 
-	Entity Scene::CreateEntity()
+	Entity Scene::CreateEntity(const std::string& tag)
 	{
 		Wire::EntityId id = myRegistry.CreateEntity();
 
 		Entity newEntity = Entity(id, this);
 		auto& transform = newEntity.AddComponent<TransformComponent>();
 		transform.position = { 0.f, 0.f, 0.f };
-		transform.rotation = { 0.f, 0.f, 0.f };
+		transform.rotation = { 1.f, 0.f, 0.f, 0.f };
 		transform.scale = { 1.f, 1.f, 1.f };
 
-		auto& tag = newEntity.AddComponent<TagComponent>();
-		tag.tag = "New Entity";
-
-		auto& relComp = newEntity.AddComponent<RelationshipComponent>();
-		relComp.sortId = (uint32_t)myRegistry.GetAllEntities().size();
-
+		newEntity.AddComponent<TagComponent>(tag.empty() ? "New Entity" : tag);
 		newEntity.AddComponent<EntityDataComponent>();
+		newEntity.AddComponent<VisualScriptingComponent>();
+		newEntity.AddComponent<RelationshipComponent>();
 
-		std::vector<Volt::Entity> entities;
-		entities.push_back(newEntity);
-
+		SortScene();
 		return newEntity;
 	}
 
@@ -485,6 +490,7 @@ namespace Volt
 		}
 
 		myRegistry.RemoveEntity(entity.GetId());
+		SortScene();
 	}
 
 	void Scene::RemoveEntity(Entity entity, float aTimeToDestroy)
@@ -576,11 +582,14 @@ namespace Volt
 		return transform * transformComp.GetTransform();
 	}
 
-	Scene::TRS Scene::GetWorldSpaceTRS(Entity entity)
+	Scene::TQS Scene::GetWorldSpaceTRS(Entity entity)
 	{
-		TRS transform;
+		TQS transform;
 
-		gem::decompose(GetWorldSpaceTransform(entity, false), transform.position, transform.rotation, transform.scale);
+		gem::vec3 r;
+		gem::decompose(GetWorldSpaceTransform(entity, false), transform.position, r, transform.scale);
+
+		transform.rotation = gem::quat{ r };
 		return transform;
 	}
 
@@ -613,7 +622,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldForward(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 0.f, 0.f, 1.f });
@@ -622,7 +631,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldRight(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 1.f, 0.f, 0.f });
@@ -631,7 +640,7 @@ namespace Volt
 	gem::vec3 Scene::GetWorldUp(Entity entity)
 	{
 		gem::vec3 p, r, s;
-		Math::DecomposeTransform(GetWorldSpaceTransform(entity), p, r, s);
+		gem::decompose(GetWorldSpaceTransform(entity), p, r, s);
 
 		const gem::quat orientation = gem::quat(r);
 		return gem::rotate(orientation, gem::vec3{ 0.f, 1.f, 0.f });
@@ -926,7 +935,11 @@ namespace Volt
 		auto& transform = entity.GetComponent<TransformComponent>();
 
 		const gem::mat4 transformMatrix = GetWorldSpaceTransform(entity);
-		gem::decompose(transformMatrix, transform.position, transform.rotation, transform.scale);
+
+		gem::vec3 r;
+		gem::decompose(transformMatrix, transform.position, r, transform.scale);
+	
+		transform.rotation = gem::quat{ r };
 	}
 
 	void Scene::ConvertToLocalSpace(Entity entity)
@@ -942,6 +955,16 @@ namespace Volt
 		const gem::mat4 parentTransform = GetWorldSpaceTransform(parent);
 		const gem::mat4 localTransform = gem::inverse(parentTransform) * transform.GetTransform();
 
-		gem::decompose(localTransform, transform.position, transform.rotation, transform.scale);
+		gem::vec3 r;
+		gem::decompose(localTransform, transform.position, r, transform.scale);
+		transform.rotation = gem::quat{ r };
+	}
+
+	void Scene::SortScene()
+	{
+		myRegistry.Sort([](const auto& lhs, const auto& rhs)
+			{
+				return lhs < rhs;
+			});
 	}
 }

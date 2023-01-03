@@ -433,5 +433,15 @@ namespace Volt
 		out << path.string();
 		return out;
 	}
-}
 
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const std::vector<std::filesystem::path>& paths)
+	{
+		out << YAML::BeginSeq;
+		for (const auto& p : paths)
+		{
+			out << p;
+		}
+		out << YAML::EndSeq;
+		return out;
+	}
+}

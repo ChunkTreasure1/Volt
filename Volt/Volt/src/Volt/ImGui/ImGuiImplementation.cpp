@@ -15,6 +15,8 @@
 #include <imgui_notify.h>
 #include <tahoma.h>
 
+#include <d3d11.h>
+
 namespace Volt
 {
 	std::filesystem::path GetOrCreateIniPath()
@@ -165,7 +167,7 @@ namespace Volt
 		myWindowPtr = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
 
 		ImGui_ImplGlfw_InitForVulkan(myWindowPtr, true);
-		ImGui_ImplDX11_Init(GraphicsContext::GetDevice().Get(), GraphicsContext::GetContext().Get());
+		ImGui_ImplDX11_Init(GraphicsContext::GetDevice().Get(), GraphicsContext::GetImmediateContext().Get());
 	}
 
 	ImGuiImplementation::~ImGuiImplementation()
@@ -195,7 +197,8 @@ namespace Volt
 		ImGui::PopStyleVar(1); // Don't forget to Pop()
 		ImGui::PopStyleColor(1);
 
-		GraphicsContext::GetAnnotations()->BeginEvent(L"Render ImGui");
+		RenderCommand::SetContext(Context::Immidiate);
+		RenderCommand::BeginAnnotation("Render ImGui");
 
 		//Rendering
 		ImGui::Render();
@@ -209,8 +212,8 @@ namespace Volt
 			Application& app = Application::Get();
 			app.GetWindow().GetSwapchain().Bind();
 		}
-
-		GraphicsContext::GetAnnotations()->EndEvent();
+		
+		RenderCommand::EndAnnotation();
 	}
 
 	Scope<ImGuiImplementation> ImGuiImplementation::Create()

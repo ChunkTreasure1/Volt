@@ -375,7 +375,7 @@ namespace Volt
 			vertices.reserve(triangleCount * 3);
 			indices.reserve(triangleCount);
 
-			for (uint32_t p = 0; p < triangleCount; p++)
+			for (int32_t p = 0; p < triangleCount; p++)
 			{
 				if (hasMaterials)
 				{
@@ -614,7 +614,7 @@ namespace Volt
 				submesh.vertexStartOffset = (uint32_t)preVertexCount;
 				submesh.materialIndex = matIndex;
 				submesh.transform = localTransform;
-				submesh.name = fbxMesh->GetName();
+				submesh.name = fbxMesh->GetNode()->GetName();
 				submesh.GenerateHash();
 			}
 		}

@@ -17,7 +17,8 @@ namespace Volt
 		IndexBuffer(uint32_t* aIndices, uint32_t aCount);
 		~IndexBuffer();
 
-		void Bind();
+		inline ComPtr<ID3D11Buffer> GetHandle() const { return myBuffer; }
+		void Bind() const;
 
 		static Ref<IndexBuffer> Create(const std::vector<uint32_t>& aIndices, uint32_t aCount);
 		static Ref<IndexBuffer> Create(uint32_t* aIndices, uint32_t aCount);

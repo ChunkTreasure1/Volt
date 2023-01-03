@@ -13,6 +13,8 @@
 #include <Volt/Rendering/Camera/Camera.h>
 #include <Volt/Rendering/Framebuffer.h>
 
+#include <Volt/Components/PostProcessComponents.h>
+
 #include <Volt/Asset/AssetManager.h>
 
 AssetPreview::AssetPreview(const std::filesystem::path& path)
@@ -42,7 +44,15 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 		comp.castShadows = false;
 		comp.intensity = 3.f;
 
-		entity.SetRotation({ 70.f, 0.f, 100.f });
+		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
+	}
+
+	{
+		auto ent = myScene->CreateEntity();
+		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
+		ent.AddComponent<Volt::BloomComponent>();
+		ent.AddComponent<Volt::FXAAComponent>();
+		ent.AddComponent<Volt::HBAOComponent>();
 	}
 }
 
@@ -62,7 +72,7 @@ void AssetPreview::Render()
 	myCamera->SetPosition(position);
 	mySceneRenderer->OnRenderEditor(myCamera);
 
-    if (wasLoaded)
+    if (!wasLoaded)
     {
         Volt::AssetManager::Get().Unload(myAssetHandle);
     }

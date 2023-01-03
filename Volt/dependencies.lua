@@ -20,10 +20,13 @@ IncludeDir["stb_image"] = "%{wks.location}/Volt/vendor/stb_image/"
 IncludeDir["ffmpeg"] = "%{wks.location}/Volt/vendor/ffmpeg/include/"
 IncludeDir["mono"] = "%{wks.location}/Volt/vendor/mono/include/"
 IncludeDir["DirectXTex"] = "%{wks.location}/Volt/vendor/DirectXTex/src"
+<<<<<<< HEAD
 IncludeDir["fmod"] = "%{wks.location}/Amp/vendor/fmod/include"
+=======
+IncludeDir["efsw"] = "%{wks.location}/Volt/vendor/efsw/include"
+>>>>>>> main
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
-IncludeDir["dpp"] = "%{wks.location}/Sandbox/vendor/dpp/include/"
 
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
@@ -34,7 +37,6 @@ LibraryDir["mono"] = "%{wks.location}/Volt/vendor/mono/lib/%{cfg.buildcfg}"
 
 LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
 LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
-LibraryDir["dpp"] = "%{wks.location}/Sandbox/vendor/dpp/lib/%{cfg.buildcfg}"
 
 Library = {}
 Library["fbxsdk"] = "%{LibraryDir.fbxsdk}/libfbxsdk-md.lib"
@@ -57,8 +59,6 @@ Library["P4_supp"] = "%{LibraryDir.P4}/libsupp.lib"
 
 Library["OpenSSL_Crypto"] = "%{LibraryDir.OpenSSL}/libcrypto.lib"
 Library["OpenSSL_SSL"] = "%{LibraryDir.OpenSSL}/libssl.lib"
-
-Library["dpp"] = "%{LibraryDir.dpp}/dpp.lib"
 
 Library["PhysX"] = "%{LibraryDir.PhysX}/PhysX.lib"
 

@@ -51,8 +51,8 @@ namespace Volt
 			6,7,4
 		};
 
-		Ref<Material> material = AssetManager::GetAsset<Material>("Assets/Meshes/Primitives/Cube.vtmat");
-		Ref<Mesh> mesh = CreateRef<Mesh>(vertecies, indecies, material);
+		Ref<Material> material = AssetManager::GetAsset<Material>("Assets/Meshes/Primitives/SM_Cube.vtmat");
+		Ref<Mesh> mesh = CreateRef<Mesh>(vertecies, indecies, material); 
 
 		return mesh;
 	}
