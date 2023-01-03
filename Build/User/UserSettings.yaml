@@ -29,7 +29,7 @@ Settings:
     gridSnapValue: 0
     rotationSnapValue: 0
     scaleSnapValue: 0
-    lastOpenScene: Assets\Scenes\NavMeshTest\NavMeshTest.vtscene
+    lastOpenScene: ""
   VersionControlSettings:
     server: localhost:1666
     user: ""

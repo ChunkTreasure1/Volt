@@ -1,6 +1,7 @@
 #include "sbpch.h"
 
 #include "Sandbox/Sandbox.h"
+#include "HUD/Layer/LayerDebug.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/EntryPoint.h>
@@ -15,6 +16,8 @@ public:
 	{
 		Sandbox* sandbox = new Sandbox();
 		PushLayer(sandbox);
+		PushLayer(new HUD::LayerDebug(sandbox->GetSceneRenderer(), "DebugLayer"));
+
 	}
 };
 
