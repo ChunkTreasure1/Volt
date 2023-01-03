@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:Volt/Amp/premake5.lua
 project "Amp"
-========
-project "GraphKey"
->>>>>>>> main:Volt/GraphKey/premake5.lua
 	location "."
 	kind "StaticLib"
 	language "C++"
@@ -11,13 +7,8 @@ project "GraphKey"
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
 
-<<<<<<<< HEAD:Volt/Amp/premake5.lua
 	pchheader "amppch.h"
 	pchsource "src/amppch.cpp"
-========
-	pchheader "gkpch.h"
-	pchsource "src/gkpch.cpp"
->>>>>>>> main:Volt/GraphKey/premake5.lua
 
 	disablewarnings
 	{
@@ -40,7 +31,6 @@ project "GraphKey"
 	includedirs
 	{
 		"src/",
-<<<<<<<< HEAD:Volt/Amp/premake5.lua
 		"../Volt/src",
 
 		"%{IncludeDir.yaml}",
@@ -48,15 +38,6 @@ project "GraphKey"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-========
-		"../Volt/src/",
-
-		"%{IncludeDir.yaml}",
-		"%{IncludeDir.Optick}",
-		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.Wire}",
-
->>>>>>>> main:Volt/GraphKey/premake5.lua
 		"%{IncludeDir.GEM}"
 	}
 

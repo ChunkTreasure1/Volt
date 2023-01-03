@@ -1,5 +1,5 @@
 #pragma once
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 #include <Audio/AudioSource.h>
 
 namespace Amp
@@ -12,7 +12,7 @@ namespace Amp
 	};
 }
 
-class AudioEventEmitterScript : public Volt::ScriptBase
+class AudioEventEmitterScript : public Volt::Script
 {
 public:
 	AudioEventEmitterScript(Volt::Entity entity);
@@ -37,7 +37,6 @@ public:
 
 	Amp::EventInstance& GetEventInstance();
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<AudioEventEmitterScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{2CE06BC9-2BFE-46AD-84CF-B272458735C7}"_guid; }
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 

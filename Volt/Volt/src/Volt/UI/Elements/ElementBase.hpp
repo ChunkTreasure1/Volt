@@ -1,9 +1,10 @@
 #pragma once
-#include <Volt/Utility/Math.h>
 #include <Volt/UI/Utility/UIMath.h>
 #include <Volt/UI/Utility/Canvas.h>
 #include <memory>
 #include <unordered_map>
+
+#include <GEM/gem.h>
 
 namespace UI 
 {
@@ -41,11 +42,11 @@ namespace UI
 			data.transform[3][1] = normalizedPosition.y;
 		}
 
-		gem::mat4 GetPosition()
+		gem::mat4 GetTransform()
 		{
 			if (parent)
 			{
-				gem::mat4 parentTransform = parent->GetPosition();
+				gem::mat4 parentTransform = parent->GetTransform();
 
 				return data.transform * parentTransform;
 			}
@@ -53,7 +54,6 @@ namespace UI
 			return data.transform;
 		}
 
-		gem::mat4 GetTransform() { return data.transform;}
 		gem::mat4 GetScaledTransform() { return data.transform * gem::scale(gem::mat4(1.0f), gem::vec3{ data.size.x * data.scale.x, data.size.y * data.scale.y, 1 }); }
 		void SetTransform(gem::mat4 aTransform) { data.transform = aTransform; }
 

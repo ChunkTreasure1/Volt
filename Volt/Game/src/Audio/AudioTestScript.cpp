@@ -9,7 +9,7 @@
 #include <Volt/Scripting/ScriptRegistry.h>
 
 VT_REGISTER_SCRIPT(AudioTestScript);
-AudioTestScript::AudioTestScript(Volt::Entity entity) : Volt::ScriptBase(entity) {}
+AudioTestScript::AudioTestScript(Volt::Entity entity) : Volt::Script(entity) {}
 
 void AudioTestScript::OnEvent(Volt::Event& e)
 {
@@ -74,21 +74,21 @@ void AudioTestScript::OnUpdate(float aDeltaTime)
 	position.z += moveSpeed * forwardVelocity * aDeltaTime;
 	myEntity.SetPosition(position);
 
-	gem::vec3 rotation = myEntity.GetRotation();
-	rotation.y += rotationSpeed * rotationVeloctiy * aDeltaTime;
+	//gem::vec3 rotation = myEntity.GetLocalRotation();
+	//rotation.y += rotationSpeed * rotationVeloctiy * aDeltaTime;
 
-	myEntity.SetRotation(rotation);
+	//myEntity.SetRotation(rotation);
 
-	gem::vec3 curRotation = myEntity.GetRotation();
-	if (curRotation.y > 3.1415f)
-	{
-		curRotation.y = -3.1415f;
-	}
-	else if (curRotation.y < -3.1415f)
-	{
-		curRotation.y = 3.1415f;
-	}
-	myEntity.SetRotation(curRotation);
+	//gem::vec3 curRotation = myEntity.GetRotation();
+	//if (curRotation.y > 3.1415f)
+	//{
+	//	curRotation.y = -3.1415f;
+	//}
+	//else if (curRotation.y < -3.1415f)
+	//{
+	//	curRotation.y = 3.1415f;
+	//}
+	//myEntity.SetRotation(curRotation);
 
 	forwardVelocity = 0;
 	strafeVeloctiy = 0;

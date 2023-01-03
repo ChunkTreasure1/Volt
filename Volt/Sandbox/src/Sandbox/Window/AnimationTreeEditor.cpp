@@ -35,7 +35,6 @@ void AnimationTreeEditor::UpdateMainContent()
 	ShowAnimationPanel();
 	ShowPropertiesPanel();
 	ShowParameterPanel();
-
 	ImGui::SameLine();
 	{
 		static ImVec2 WindowSize = { 1024,1024 };
@@ -147,11 +146,11 @@ void AnimationTreeEditor::UpdateMainContent()
 
 					newLinkPin = startPin ? startPin : endPin;
 
-					//if (startPin->mode == PinMode::Input)
-					//{
-					//	std::swap(startPin, endPin);
-					//	std::swap(startPinId, endPinId);
-					//}
+					if (startPin->mode == PinMode::Input)
+					{
+						std::swap(startPin, endPin);
+						std::swap(startPinId, endPinId);
+					}
 
 					if (startPin && endPin)
 					{
@@ -286,6 +285,7 @@ void AnimationTreeEditor::UpdateMainContent()
 	mySelectedLinks.resize(linkCount);
 
 	ed::SetCurrentEditor(nullptr);
+	//ImGui::ShowDemoWindow();
 
 }
 
@@ -571,6 +571,8 @@ void AnimationTreeEditor::BuildNode(AnimNode* node)
 
 void AnimationTreeEditor::Save()
 {
+	//TODO: re-jig the IDs??
+
 	myDefaultConfig.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
 	{
 		auto node = FindNode(nodeId);
@@ -684,14 +686,14 @@ void AnimationTreeEditor::Save()
 		int linkNumber = 0;
 		for (auto& aLink : s_Links)
 		{
-			treeOut << YAML::Key << "Link" << YAML::Value;
+			treeOut << YAML::Key << linkNumber << YAML::Value;
 			{
 				treeOut << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(LinkID, aLink.id, treeOut);
-				int LinksStartNodeID = FindStartNodeFromPin(aLink.startPinID)->id;
-				VT_SERIALIZE_PROPERTY(LinksStartNodeID, LinksStartNodeID, treeOut);
+				int LinksStartNodeID = FindStartNodeFromPin(aLink.startPin)->id;
+				VT_SERIALIZE_PROPERTY(LinksStartNodeID, aLink.id, treeOut);
 				int LinksEndNodeID = FindEndNodeFromPin(aLink.endPin)->id;
-				VT_SERIALIZE_PROPERTY(LinksEndNodeID, LinksEndNodeID, treeOut);
+				VT_SERIALIZE_PROPERTY(LinksEndNodeID, aLink.id, treeOut);
 				VT_SERIALIZE_PROPERTY(HasExitTime, aLink.hasExitTime, treeOut);
 				VT_SERIALIZE_PROPERTY(blendTime, aLink.blendTime, treeOut);
 				

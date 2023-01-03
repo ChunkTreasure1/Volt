@@ -9,7 +9,7 @@
 namespace Volt
 {
 	class SceneRenderer;
-	class NavigationsSystem;
+	class NavigationSystem;
 	class Scene;
 }
 

@@ -1,8 +1,8 @@
 #pragma once
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 #include <Volt/Events/KeyEvent.h>
 
-class AudioTestScript : public Volt::ScriptBase
+class AudioTestScript : public Volt::Script
 {
 public:
 	AudioTestScript(Volt::Entity entity);
@@ -18,7 +18,6 @@ public:
 
 	void OnUpdate(float aDeltaTime) override;
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<AudioTestScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{586FF6D8-6733-4AE6-BCC5-7A8B3BA35774}"_guid; }
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 

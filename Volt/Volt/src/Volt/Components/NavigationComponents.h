@@ -3,6 +3,7 @@
 #include "Volt/Asset/Asset.h"
 #include "Volt/AI/SteeringBehavior.h"
 #include "Volt/AI/Pathfinder/pfNavMesh.h"
+#include "Volt/AI/NavigationSystem.h"
 
 #include <Wire/Serialization.h>
 #include <gem/gem.h>

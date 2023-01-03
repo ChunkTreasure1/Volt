@@ -1,8 +1,8 @@
 #pragma once
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 #include <Amp/AudioManager/AudioManager.h>
 
-class AudioListenerScript : public Volt::ScriptBase
+class AudioListenerScript : public Volt::Script
 {
 public:
 	AudioListenerScript(Volt::Entity entity);
@@ -17,7 +17,6 @@ public:
 
 	void OnUpdate(float aDeltaTime) override;
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<AudioListenerScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{E72EFF9E-A386-4B29-94CF-083F55D5C908}"_guid; }
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 

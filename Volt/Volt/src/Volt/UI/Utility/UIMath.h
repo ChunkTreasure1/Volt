@@ -1,5 +1,4 @@
 #pragma once
-#include <Volt/Utility/Math.h>
 #include <Volt/UI/Utility/Canvas.h>
 
 namespace UIMath 

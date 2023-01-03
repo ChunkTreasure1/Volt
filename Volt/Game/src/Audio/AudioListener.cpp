@@ -4,7 +4,7 @@
 #include <Amp/AudioManager/AudioManager.h>
 
 VT_REGISTER_SCRIPT(AudioListenerScript);
-AudioListenerScript::AudioListenerScript(Volt::Entity entity) : Volt::ScriptBase(entity) {}
+AudioListenerScript::AudioListenerScript(Volt::Entity entity) : Volt::Script(entity) {}
 
 void AudioListenerScript::OnUpdate(float aDeltaTime)
 {

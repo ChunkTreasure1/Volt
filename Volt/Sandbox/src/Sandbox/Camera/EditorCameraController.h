@@ -4,7 +4,7 @@
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Events/MouseEvent.h>
 
-#include <gem/gem.h>
+#include <GEM/gem.h>
 
 namespace Volt
 {

@@ -748,10 +748,10 @@ namespace Volt
 			Entity::Copy(myRegistry, otherRegistry, ent, ent);
 		}
 
-		otherRegistry.ForEach<VisualScriptingComponent>([]() 
-			{
-				
-			});
+		//otherRegistry.ForEach<VisualScriptingComponent>([]() 
+		//	{
+		//		
+		//	});
 	}
 
 	void Scene::SetupComponentCreationFunctions()

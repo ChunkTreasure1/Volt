@@ -1,8 +1,8 @@
 #pragma once
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 #include <Audio/AudioEventEmitter.h>
 
-class AudioParameterTriggerScript : public Volt::ScriptBase
+class AudioParameterTriggerScript : public Volt::Script
 {
 public:
 	AudioParameterTriggerScript(Volt::Entity entity);
@@ -24,7 +24,6 @@ public:
 
 	void TriggerParameterChange();
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<AudioParameterTriggerScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{3D71811B-7D2E-4CE4-A216-5C0E0D587C41}"_guid; }
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 

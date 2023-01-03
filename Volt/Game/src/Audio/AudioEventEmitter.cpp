@@ -4,7 +4,7 @@
 #include <Volt/Components/Components.h>
 
 VT_REGISTER_SCRIPT(AudioEventEmitterScript);
-AudioEventEmitterScript::AudioEventEmitterScript(Volt::Entity entity) : Volt::ScriptBase(entity) {}
+AudioEventEmitterScript::AudioEventEmitterScript(Volt::Entity entity) : Volt::Script(entity) {}
 
 void AudioEventEmitterScript::OnStart()
 {

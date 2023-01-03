@@ -124,22 +124,6 @@ static AnimNode* FindStartNodeFromPin(ed::PinId id)
 	return nullptr;
 }
 
-static AnimNode* FindStartNodeFromPin(int id)
-{
-	if (id < 0)
-		return nullptr;
-
-	for (auto& node : s_Nodes)
-	{
-		for (auto& pin : node.inputs)
-			if (pin.id == id)
-				return &node;
-	}
-
-	return nullptr;
-}
-
-
 static AnimNode* FindEndNodeFromPin(ed::PinId id)
 {
 	if (!id)

@@ -1,10 +1,11 @@
+
 #include "gepch.h"
 #include "AudioParameterTrigger.h"
 #include <Volt/Scripting/ScriptRegistry.h>
 #include <Volt/Components/Components.h>
 
 VT_REGISTER_SCRIPT(AudioParameterTriggerScript);
-AudioParameterTriggerScript::AudioParameterTriggerScript(Volt::Entity entity) : Volt::ScriptBase(entity) {}
+AudioParameterTriggerScript::AudioParameterTriggerScript(Volt::Entity entity) : Volt::Script(entity) {}
 
 void AudioParameterTriggerScript::OnStart()
 {

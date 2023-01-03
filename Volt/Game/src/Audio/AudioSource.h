@@ -1,11 +1,11 @@
 #pragma once
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 #include <Amp/AudioManager/AudioManager.h>
 
 #include <Volt/Events/KeyEvent.h>
 #include <Volt/Events/ApplicationEvent.h>
 
-class AudioSourceScript : public Volt::ScriptBase
+class AudioSourceScript : public Volt::Script
 {
 public:
 	AudioSourceScript(Volt::Entity entity);
@@ -32,7 +32,6 @@ public:
 	bool Pause(int aID);
 	bool Unpause(int aID);
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<AudioSourceScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{7D885974-D8F6-4A9B-BA1E-008FBEBAAE72}"_guid; }
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 

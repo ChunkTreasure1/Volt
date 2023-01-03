@@ -5,7 +5,7 @@
 
 #include <unordered_map>
 
-#define VT_REGISTER_SCRIPT(x) static bool x ## _entry = Volt::ScriptRegistry::Register(x::GetStaticGUID(), Volt::ScriptMetadata{ #x, [](){ return CreateRef<x>(); });
+#define VT_REGISTER_SCRIPT(x) static bool x ## _entry = Volt::ScriptRegistry::Register(x::GetStaticGUID(), Volt::ScriptMetadata{ #x, [](Volt::Entity entity) -> Ref<Volt::Script> { return CreateRef<x>(entity); }});
 
 namespace Volt
 {

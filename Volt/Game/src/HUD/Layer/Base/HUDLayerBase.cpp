@@ -51,25 +51,25 @@ void HUD::LayerBase::OnEvent(Volt::Event& e)
 
 bool HUD::LayerBase::OnRender(Volt::AppRenderEvent& e)
 {
-	Volt::Renderer::Begin(layerName);
-	Volt::Renderer::BeginPass(renderPass, camera, false);
+	//Volt::Renderer::Begin(layerName);
+	//Volt::Renderer::BeginPass(renderPass, camera, false);
 
-	Volt::Renderer::SetDepthState(Volt::DepthState::None);
+	//Volt::Renderer::SetDepthState(Volt::DepthState::None);
 
-	for (auto& element : elements) 
-	{
-		if (element.second->GetType() == UI::ElementType::SPRITE)
-		{
-			Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(element.second);
-			sprite->Render();
-		}
-	}
+	//for (auto& element : elements) 
+	//{
+	//	if (element.second->GetType() == UI::ElementType::SPRITE)
+	//	{
+	//		Ref<UI::Sprite> sprite = std::dynamic_pointer_cast<UI::Sprite>(element.second);
+	//		sprite->Render();
+	//	}
+	//}
 
-	Volt::Renderer::DispatchSpritesWithShader(screenspaceShader);
-	Volt::Renderer::DispatchText();
+	//Volt::Renderer::DispatchSpritesWithShader(screenspaceShader);
+	//Volt::Renderer::DispatchText();
 
-	Volt::Renderer::EndPass();
-	Volt::Renderer::End();
+	//Volt::Renderer::EndPass();
+	//Volt::Renderer::End();
 
 	return false;
 }

@@ -27,7 +27,7 @@ namespace UI
 
 		void Render()
 		{
-			gem::mat4 spriteTransform = GetPosition();
+			gem::mat4 spriteTransform = GetTransform();
 			gem::vec2 worldScale = GetWorldScale();
 
 			//check if is in Sandbox or relese!

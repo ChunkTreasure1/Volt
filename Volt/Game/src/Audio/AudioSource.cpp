@@ -6,7 +6,7 @@
 #include <Volt/Scripting/ScriptRegistry.h>
 
 VT_REGISTER_SCRIPT(AudioSourceScript);
-AudioSourceScript::AudioSourceScript(Volt::Entity entity) : Volt::ScriptBase(entity){}
+AudioSourceScript::AudioSourceScript(Volt::Entity entity) : Volt::Script(entity){}
 
 void AudioSourceScript::OnEvent(Volt::Event& e)
 {
