@@ -39,6 +39,7 @@ project "Volt"
 	includedirs
 	{
 		"src/",
+		"../Amp/src",
 		"../Game/src",
 		"../GraphKey/src/",
 

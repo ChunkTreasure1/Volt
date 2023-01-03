@@ -53,6 +53,7 @@ project "Sandbox"
 	{
 		"src/",
 		"../Volt/src/",
+		"../Amp/src/",
 		"../Game/src/",
 		"../GraphKey/src/",
 
@@ -85,6 +86,8 @@ project "Sandbox"
     {
         "Volt",
 		"GraphKey",
+		"Amp",
+
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",

@@ -50,6 +50,7 @@ project "Launcher"
 	{
 		"src/",
 		"../Volt/src/",
+		"../Amp/src/",
 		"../Game/src/",
 		"../GraphKey/src/",
 
@@ -80,6 +81,7 @@ project "Launcher"
     {
         "Volt",
 		"GraphKey",
+		"Amp",
 
 		"Game",
 

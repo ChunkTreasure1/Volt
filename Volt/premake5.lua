@@ -34,7 +34,8 @@ include "Volt/vendor/DirectXTex"
 include "Volt/vendor/efsw"
 
 group "Core"
-include "Volt"
+include "Amp"
+
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 include "GraphKey"
 
