@@ -2,6 +2,7 @@
 
 #include "Volt/Asset/Asset.h"
 #include "Volt/AI/SteeringBehavior.h"
+#include "Volt/AI/Pathfinder/pfNavMesh.h"
 
 #include <Wire/Serialization.h>
 #include <gem/gem.h>
@@ -28,6 +29,15 @@ namespace Volt
 		inline void StartNavigation() { myActive = true; };
 		inline void StopNavigation() { myActive = false; };
 		inline std::optional<gem::vec3> GetCurrentMilestone() const { if (myPath.empty()) { return std::optional<gem::vec3>(); } else { return myPath.back(); } }
+		inline void SetTarget(gem::vec3 target)
+		{ 
+			auto nv = NavigationSystem::Get().GetNavMesh()->GetNavMeshData();
+			myPath.clear();
+			for (const auto& pfV : nv.findPath(VTtoPF(target), VTtoPF(target)))
+			{
+				myPath.emplace_back(PFtoVT(pfV));
+			}
+		};
 
 	private:
 		friend class NavigationSystem;
