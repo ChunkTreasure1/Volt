@@ -14,7 +14,7 @@
 #include <Volt/Events/MouseEvent.h>
 
 SeperationScript::SeperationScript(Volt::Entity entity)
-	: Volt::ScriptBase(entity)
+	: Volt::Script(entity)
 {
 
 }

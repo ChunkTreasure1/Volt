@@ -14,7 +14,7 @@
 #include <Volt/Events/MouseEvent.h>
 
 ControllerScript::ControllerScript(Volt::Entity entity)
-	: Volt::ScriptBase(entity)
+	: Volt::Script(entity)
 {
 
 }
@@ -115,7 +115,7 @@ bool ControllerScript::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		if (myEntity.HasComponent<Volt::AgentComponent>())
 		{
 			myEntity.GetComponent<Volt::AgentComponent>().target = myTarget;
-			myDirection = myTarget - myEntity.GetWorldPosition();
+			myDirection = myTarget - myEntity.GetPosition();
 
 			std::stringstream ss;
 			ss << "TARGET: " << myTarget.x << ", " << myTarget.y << ", " << myTarget.z;

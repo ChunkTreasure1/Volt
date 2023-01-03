@@ -14,7 +14,7 @@
 #include <Volt/Events/MouseEvent.h>
 
 WanderScript::WanderScript(Volt::Entity entity)
-	: Volt::ScriptBase(entity)
+	: Volt::Script(entity)
 {
 
 }
@@ -44,7 +44,7 @@ void WanderScript::OnUpdate(float aDeltaTime)
 		updateDirectionTimer = 10.f;
 	}
 
-	auto pos = myEntity.GetWorldPosition();
+	auto pos = myEntity.GetPosition();
 	if (pos.x > 1000.f)
 	{
 		myDirection.x = -1.f;

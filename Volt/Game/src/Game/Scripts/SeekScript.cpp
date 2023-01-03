@@ -14,7 +14,7 @@
 #include <Volt/Events/MouseEvent.h>
 
 SeekScript::SeekScript(Volt::Entity entity)
-	: Volt::ScriptBase(entity)
+	: Volt::Script(entity)
 {
 
 }
@@ -34,7 +34,7 @@ void SeekScript::OnUpdate(float aDeltaTime)
 	myEntity.GetScene()->GetRegistry().ForEach<WandererComponent>([&](Wire::EntityId id, WandererComponent& comp)
 		{
 			Volt::Entity e(id, myEntity.GetScene());
-			myTarget = e.GetWorldPosition();
+			myTarget = e.GetPosition();
 		});
 
 	if (myEntity.HasComponent<Volt::AgentComponent>())

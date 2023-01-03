@@ -14,7 +14,7 @@ namespace Volt
 
 		const auto& agentComp = agent.GetComponent<AgentComponent>();
 
-		desiredVelocity = target - agent.GetWorldPosition();
+		desiredVelocity = target - agent.GetPosition();
 		desiredVelocity = gem::normalize(desiredVelocity);
 		desiredVelocity *= agentComp.maxVelocity;
 		steeringForce = desiredVelocity - agentComp.myVelocity;
@@ -32,7 +32,7 @@ namespace Volt
 
 		const auto& agentComp = agent.GetComponent<AgentComponent>();
 
-		desiredVelocity = agent.GetWorldPosition() - target;
+		desiredVelocity = agent.GetPosition() - target;
 		desiredVelocity = gem::normalize(desiredVelocity);
 		desiredVelocity *= agentComp.maxVelocity;
 		steeringForce = desiredVelocity - agentComp.myVelocity;
@@ -71,7 +71,7 @@ namespace Volt
 			auto angle = Random::Float(0.f, 360.f);
 
 			gem::vec3 wanderTarget;
-			auto center = agent.GetWorldPosition() + gem::normalize(direction) * wanderOffset;
+			auto center = agent.GetPosition() + gem::normalize(direction) * wanderOffset;
 			wanderTarget.x = center.x + wanderRadius * gem::sin(angle);
 			wanderTarget.z = center.z + wanderRadius * gem::cos(angle);
 
@@ -98,7 +98,7 @@ namespace Volt
 		{
 			if (entry.first == agent.GetId()) { continue; }
 			const auto& entryPos = entry.second;
-			if (auto distance = gem::distance(entryPos, agent.GetWorldPosition()); distance < radius)
+			if (auto distance = gem::distance(entryPos, agent.GetPosition()); distance < radius)
 			{
 				auto strength = agent.GetComponent<AgentComponent>().maxForce * (radius - distance) / radius;
 				steeringForce = gem::normalize(Flee(agent, entryPos)) * strength;

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Volt/Scripting/ScriptBase.h>
+#include <Volt/Scripting/Script.h>
 #include <Volt/Events/KeyEvent.h>
 
-class ControllerScript : public Volt::ScriptBase
+class ControllerScript : public Volt::Script
 {
 public:
 	ControllerScript(Volt::Entity entity);
@@ -13,7 +13,7 @@ public:
 	void OnEvent(Volt::Event& e) override;
 	void OnUpdate(float aDeltaTime) override;
 
-	static Ref<ScriptBase> Create(Volt::Entity aEntity) { return CreateRef<ControllerScript>(aEntity); }
+	static Ref<Script> Create(Volt::Entity aEntity) { return CreateRef<ControllerScript>(aEntity); }
 	static WireGUID GetStaticGUID() { return "{760B9F1E-89AE-4711-8CFF-299BD35DB64C}"_guid; };
 	WireGUID GetGUID() override { return GetStaticGUID(); }
 
