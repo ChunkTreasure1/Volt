@@ -434,6 +434,9 @@ namespace Volt
 		}
 	}
 
+	void Entity::Copy(Ref<Scene> aSrcScene, Ref<Scene> aTargetScene, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool shouldReset)
+	{}
+
 	Wire::EntityId Entity::Duplicate(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity)
 	{
 		Wire::EntityId parent = Wire::NullID;
