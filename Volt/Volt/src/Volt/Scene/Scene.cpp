@@ -29,13 +29,9 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include <Wire/Serialization.h>
-#include "../Sandbox/src/Sandbox/EditorCommandStack.h"
-
-//#include "Volt/Audio/AudioManager.h"
 
 #include <GraphKey/Graph.h>
-
-#include <GraphKey/Graph.h>
+#include <GraphKey/Node.h>
 
 namespace Volt
 {
@@ -748,10 +744,39 @@ namespace Volt
 			Entity::Copy(myRegistry, otherRegistry, ent, ent);
 		}
 
-		//otherRegistry.ForEach<VisualScriptingComponent>([]() 
-		//	{
-		//		
-		//	});
+		otherRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, VisualScriptingComponent& comp) 
+			{
+				if (!comp.graph)
+				{
+					return;
+				}
+
+				auto& spec = comp.graph->GetSpecification();
+				
+				// Set entities to correct scene
+				{
+					for (const auto& n : spec.nodes)
+					{
+						for (auto& a : n->inputs)
+						{
+							if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
+							{
+								Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
+								a.data = Volt::Entity{ ent.GetId(), otherScene.get() };
+							}
+						}
+
+						for (auto& a : n->outputs)
+						{
+							if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
+							{
+								Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
+								a.data = Volt::Entity{ ent.GetId(), otherScene.get() };
+							}
+						}
+					}
+				}
+			});
 	}
 
 	void Scene::SetupComponentCreationFunctions()
