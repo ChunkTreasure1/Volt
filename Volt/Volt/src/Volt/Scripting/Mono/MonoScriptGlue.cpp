@@ -7,17 +7,12 @@
 #include "Volt/Scripting/Mono/MonoScriptInstance.h"
 
 #include "Volt/Input/Input.h"
-<<<<<<< HEAD
-#include <Volt/Components/Components.h>
-#include <Volt/Components/PhysicsComponents.h>
-=======
 #include "Volt/Components/Components.h"
 #include "Volt/Components/PhysicsComponents.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Physics/PhysicsActor.h"
->>>>>>> main
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
