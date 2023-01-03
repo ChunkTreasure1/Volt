@@ -12,7 +12,6 @@ namespace UI
 		gem::vec4 color = gem::vec4{ 1.0f,1.0f,1.0f,1.0f };
 	};
 
-
 	class Sprite : public Element
 	{
 	public:
@@ -28,7 +27,8 @@ namespace UI
 
 		void Render()
 		{
-			gem::mat4 spriteTransform = GetTransform();
+			gem::mat4 spriteTransform = GetWorldPosition();
+			gem::vec2 worldScale = GetWorldScale();
 
 			//check if is in Sandbox or relese!
 			gem::vec2 VP_position = UIMath::GetViewportPosition({ spriteTransform[3][0],spriteTransform[3][1] }, *canvas);
@@ -36,7 +36,7 @@ namespace UI
 			spriteTransform[3][0] = VP_position.x;
 			spriteTransform[3][1] = VP_position.y;
 
-			gem::mat4 scaledTransform = spriteTransform * gem::scale(gem::mat4(1.0f), gem::vec3{ GetSize().x * GetScale().x, GetSize().y * GetScale().y, 1});
+			gem::mat4 scaledTransform = spriteTransform * gem::scale(gem::mat4(1.0f), gem::vec3{ GetSize().x * worldScale.x * canvas->globalScaleX, GetSize().y * worldScale.y * canvas->globalScaleY, 1});
 
 			Volt::Renderer::SubmitSprite(GetTexture(), scaledTransform, 0, GetColor());
 
@@ -48,7 +48,6 @@ namespace UI
 					sprite->Render();
 				}
 			}
-
 		}
 
 		std::shared_ptr<Volt::Texture2D> GetTexture() { return data.texture; }

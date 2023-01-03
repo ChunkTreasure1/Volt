@@ -48,7 +48,7 @@ namespace HUD
 		//bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
 		virtual bool OnKeyEvent(Volt::KeyPressedEvent& e);
 		//virtual bool OnMouseEvent(Volt::MouseButtonPressedEvent& e);
-		//virtual bool OnViewportResize(Volt::ViewportResizeEvent& e);
+		virtual bool OnViewportResize(Volt::ViewportResizeEvent& e);
 
 
 

@@ -15,15 +15,17 @@ HUD::LayerDebug::LayerDebug(Ref<Volt::SceneRenderer>& aSceneRenderer, std::strin
 	Enable();
 
 	elements.insert({ "TestSprite", std::make_shared<UI::Sprite>("TestSprite")});
-	elements.at("TestSprite")->SetPosition({ 0,0 });
+	elements.at("TestSprite")->SetPosition({ 512,0 });
 
 	elements.at("TestSprite")->ReciveChild(std::make_shared<UI::Sprite>("TestChild"));
 	Ref<UI::Element> child = elements.at("TestSprite")->GetChild("TestChild");
 	child->SetPosition({ -256,0 });
+	child->SetScale({ 0.5f, 0.5f });
 
 	child->ReciveChild((std::make_shared<UI::Sprite>("TestGrandChild")));
 	Ref<UI::Element> grandChild = child->GetChild("TestGrandChild");
 	grandChild->SetPosition({ 0,256 });
+	grandChild->SetScale({1.5f, 1.5f});
 
 	elements.at("TestSprite")->SetCanvas(canvas);
 

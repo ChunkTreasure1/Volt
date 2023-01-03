@@ -41,7 +41,7 @@ void HUD::LayerBase::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(HUD::LayerBase::OnKeyEvent));
-	//dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(UIBaseLayer::OnViewportResize));
+	dispatcher.Dispatch<Volt::ViewportResizeEvent>(VT_BIND_EVENT_FN(HUD::LayerBase::OnViewportResize));
 
 	if (!isEnabled) { return; }
 
@@ -81,5 +81,19 @@ bool HUD::LayerBase::OnUpdate(Volt::AppUpdateEvent& e)
 
 bool HUD::LayerBase::OnKeyEvent(Volt::KeyPressedEvent& e)
 {
+	return false;
+}
+
+bool HUD::LayerBase::OnViewportResize(Volt::ViewportResizeEvent& e)
+{
+	float newHight = (float)e.GetHeight();
+	float newWidth = (float)e.GetWidth();
+
+	float viewportX = (float)e.GetX();
+	float viewportY = (float)e.GetY();
+
+	*canvas = UI::Canvas(newWidth, newHight, viewportX, viewportY);
+	camera = CreateRef<Volt::Camera>(canvas->left, canvas->right, canvas->bottom, canvas->top, 0.001f, 10000.f);
+
 	return false;
 }

@@ -13,6 +13,8 @@ namespace UI
 		float bottom = 0.0f;
 		float top = 0.0f;
 
+		float globalScaleX = 1.0f;
+		float globalScaleY = 1.0f;
 
 		Canvas(float aWidth, float aHeight, float viewportX = 0, float viewportY = 0)
 		{
@@ -23,6 +25,9 @@ namespace UI
 			right = (aWidth / 2.f);
 			bottom = (-aHeight / 2.f);
 			top = (aHeight / 2.f);
+
+			globalScaleX = aWidth / 1920.f;
+			globalScaleY = aHeight / 1080.f;
 
 		}
 

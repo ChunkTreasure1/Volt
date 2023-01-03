@@ -37,32 +37,20 @@ namespace UI
 			//Covert position to normalized value
 			gem::vec2 normalizedPosition = UIMath::GetNormalizedPosition(aPosition);
 
-			//Convert normalized position to Viewport position
-			//gem::vec2 VP_position = UIMath::GetViewportPosition(normalizedPosition, *myCanvas);
-
 			data.transform[3][0] = normalizedPosition.x;
 			data.transform[3][1] = normalizedPosition.y;
-
-			for (auto child : children)
-			{
-				child.second->UpdatePosition(*this);
-			}
 		}
 
-		void UpdatePosition(UI::Element& aParentElement)
+		gem::mat4 GetWorldPosition()
 		{
-			SetNormalizedPosition(aParentElement.GetPosition() + GetPosition());
-
-			for (auto child : children)
+			if (parent)
 			{
-				child.second->UpdatePosition(*this);
-			}
-		}
+				gem::mat4 parentTransform = parent->GetWorldPosition();
 
-		void SetNormalizedPosition(gem::vec2 aPosition)
-		{
-			data.transform[3][0] = aPosition.x;
-			data.transform[3][1] = aPosition.y;
+				return data.transform * parentTransform;
+			}
+
+			return data.transform;
 		}
 
 		gem::mat4 GetTransform() { return data.transform;}
@@ -73,21 +61,16 @@ namespace UI
 		void SetSize(gem::vec2 aSize) { data.size = aSize; }
 
 		gem::vec2 GetScale() { return data.scale; }
-		void SetScale(gem::vec2 aScale)
+		void SetScale(gem::vec2 aScale) { data.scale = aScale; }
+
+		gem::vec2 GetWorldScale()
 		{
-			data.scale = aScale;
-			for (auto child : children)
+			if (parent)
 			{
-				child.second->UpdateScale(*this);
+				gem::vec2 parentScale = parent->GetWorldScale();
+				return data.scale * parentScale;
 			}
-		}
-		void UpdateScale(UI::Element& aParentElement)
-		{
-			SetScale(GetScale() + aParentElement.GetScale());
-			for (auto child : children)
-			{
-				child.second->UpdateScale(*this);
-			}
+			return data.scale;
 		}
 
 		gem::vec2 GetPivot() { return data.pivot; }
@@ -103,7 +86,12 @@ namespace UI
 				child.second->SetChildCanvas(aCanvas);
 			}
 		}
-		void ReciveChild(Ref<UI::Element> aUIElement) { children.insert({ aUIElement->name, aUIElement }); }
+		void ReciveChild(Ref<UI::Element> aUIElement)
+		{
+			children.insert({ aUIElement->name, aUIElement });
+			aUIElement->parent = this; 
+		}
+
 		Ref<UI::Element> GetChild(const std::string& aChildName)
 		{
 			auto child = children.find(aChildName);
@@ -112,6 +100,8 @@ namespace UI
 				return child->second;
 			}
 		}
+
+
 
 		std::unordered_map<std::string, Ref<UI::Element>> children;
 
@@ -123,6 +113,8 @@ namespace UI
 		std::shared_ptr<UI::Canvas> canvas;
 
 		elementData data;
+
+		UI::Element* parent = nullptr;
 	};
 }
 
