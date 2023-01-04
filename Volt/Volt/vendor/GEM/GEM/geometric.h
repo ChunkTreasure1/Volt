@@ -38,12 +38,11 @@ namespace gem
 		return result.x + result.y + result.z + result.w;
 	};
 
-	template<typename T = float>
-	T dot(const qua<T>& x, const qua<T>& y)
+	template <typename T>
+	T dot(const qua<T>& q1, const qua<T>& q2)
 	{
-		qua<T> result(x * y);
-		return result.x + result.y + result.z + result.w;
-	};
+		return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
+	}
 
 	template<size_t L, typename T = float>
 	T length(const vec<L, T>& x)
@@ -54,13 +53,19 @@ namespace gem
 	template<typename T>
 	inline T length(qua<T> const& q)
 	{
-		return sqrt(dot(q, q));
+		return std::sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
 	}
 
 	template<typename T = float>
 	T lerp(T a, T b, float c)
 	{
 		return (static_cast<T>(1) - c) * a + c * b;
+	}
+
+	template<typename T = float>
+	qua<T> qlerp(const qua<T>& x, const qua<T>& y, T a)
+	{
+		return x * (1.f - a) + y * a;
 	}
 
 	template<typename T = float>
@@ -121,6 +126,7 @@ namespace gem
 		qua<T> z = y;
 
 		T cosTheta = dot(x, y);
+		cosTheta = clamp(cosTheta, -1.f, 1.f);
 
 		if (cosTheta < static_cast<T>(0))
 		{

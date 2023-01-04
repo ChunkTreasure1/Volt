@@ -298,7 +298,6 @@ namespace Volt
 				FbxTime time;
 				time.SetFrame(t, timeMode);
 
-				animation->myFrames[localFrameCounter].localTransforms.resize(skeleton->myJoints.size());
 				animation->myFrames[localFrameCounter].localTRS.resize(skeleton->myJoints.size());
 
 				for (uint32_t j = 0; j < (uint32_t)skeleton->myJoints.size(); j++)
@@ -309,9 +308,6 @@ namespace Volt
 					animation->myFrames[localFrameCounter].localTRS[j].position = Utility::FbxVec4ToVec3(localTransform.GetT());
 					animation->myFrames[localFrameCounter].localTRS[j].scale = Utility::FbxVec4ToVec3(localTransform.GetS());
 					animation->myFrames[localFrameCounter].localTRS[j].rotation = Utility::FbxQuatToQuat(localTransform.GetQ());
-
-					const gem::mat4 localMat = Utility::FbxMToMatrix(localTransform);
-					animation->myFrames[localFrameCounter].localTransforms[j] = localMat;
 				}
 
 				localFrameCounter++;

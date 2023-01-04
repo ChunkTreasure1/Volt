@@ -1154,7 +1154,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 	{
 		case Volt::AssetType::Material:
 		{
-			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(myCurrentDirectory->path, tempName + extension);
+			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
 			material->SetName(std::filesystem::path(tempName).stem().string());
 			material->CreateSubMaterial(Volt::ShaderRegistry::Get("Deferred"));
 			Volt::AssetManager::Get().SaveAsset(material);
@@ -1165,7 +1165,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::AnimatedCharacter:
 		{
-			myNewCharacterData.destination = myCurrentDirectory->path;
+			myNewCharacterData.destination = Volt::AssetManager::GetRelativePath(myCurrentDirectory->path);
 			myNewCharacterData.name = tempName;
 
 			UI::OpenModal("New Character##assetBrowser");
@@ -1192,7 +1192,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::ParticlePreset:
 		{
-			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(myCurrentDirectory->path, tempName + extension);
+			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
 			Volt::AssetManager::Get().SaveAsset(particlePreset);
 
 			newAssetHandle = particlePreset->handle;

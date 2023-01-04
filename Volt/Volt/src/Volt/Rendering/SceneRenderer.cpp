@@ -11,7 +11,6 @@
 #include "Volt/Asset/Text/Font.h"
 
 #include "Volt/Animation/AnimationManager.h"
-#include "Volt/Animation/AnimationStateMachine.h"
 #include "Volt/Asset/Animation/Skeleton.h"
 
 #include "Volt/Rendering/Renderer.h"
@@ -221,16 +220,16 @@ namespace Volt
 					sceneEnvironment.intensity = skylightComp.intensity;
 				}
 
-		Renderer::SetAmbianceMultiplier(skylightComp.intensity);
+				Renderer::SetAmbianceMultiplier(skylightComp.intensity);
 			});
 
 		registry.ForEach<TextRendererComponent>([&](Wire::EntityId id, const TextRendererComponent& textComp)
 			{
 				Ref<Font> fontAsset = AssetManager::GetAsset<Font>(textComp.fontHandle);
-		if (fontAsset && fontAsset->IsValid())
-		{
-			Renderer::SubmitText(textComp.text, fontAsset, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), textComp.maxWidth);
-		}
+				if (fontAsset && fontAsset->IsValid())
+				{
+					Renderer::SubmitText(textComp.text, fontAsset, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), textComp.maxWidth);
+				}
 			});
 
 		registry.ForEach<VideoPlayerComponent>([&](Wire::EntityId id, const VideoPlayerComponent& videoPlayer)
@@ -248,19 +247,19 @@ namespace Volt
 		registry.ForEach<SpriteComponent>([&](Wire::EntityId id, const SpriteComponent& comp)
 			{
 				Ref<Texture2D> texture = nullptr;
-		Ref<Material> material = nullptr;
-		if (comp.materialHandle != Asset::Null())
-		{
-			material = AssetManager::GetAsset<Material>(comp.materialHandle);
-			if (material && material->IsValid())
-			{
-				if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
+				Ref<Material> material = nullptr;
+				if (comp.materialHandle != Asset::Null())
 				{
-					texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
+					material = AssetManager::GetAsset<Material>(comp.materialHandle);
+					if (material && material->IsValid())
+					{
+						if (material->GetSubMaterialAt(0)->GetTextures().contains(0))
+						{
+							texture = material->GetSubMaterialAt(0)->GetTextures().at(0);
+						}
+					}
 				}
-			}
-		}
-		Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
+				Renderer::SubmitSprite(texture, myScene->GetWorldSpaceTransform(Entity{ id, myScene.get() }), material, id);
 			});
 
 		registry.ForEach<DecalComponent, TransformComponent>([&](Wire::EntityId id, const DecalComponent& decalComponent, const TransformComponent& transComp)
@@ -280,9 +279,9 @@ namespace Volt
 		registry.ForEach<HBAOComponent>([&](Wire::EntityId id, const HBAOComponent& comp)
 			{
 				myHBAOSettings.radius = comp.radius;
-		myHBAOSettings.intensity = comp.intensity;
-		myHBAOSettings.bias = comp.bias;
-		myHBAOSettings.enabled = true;
+				myHBAOSettings.intensity = comp.intensity;
+				myHBAOSettings.bias = comp.bias;
+				myHBAOSettings.enabled = true;
 			});
 
 		registry.ForEach<BloomComponent>([&](Wire::EntityId id, const BloomComponent& comp)
@@ -367,11 +366,11 @@ namespace Volt
 				{
 					SkyboxData data = skyboxData;
 
-			data.intensity = env.intensity;
-			data.textureLod = env.lod;
+					data.intensity = env.intensity;
+					data.textureLod = env.lod;
 
-			buffer->SetData(&data, sizeof(SkyboxData));
-			buffer->Bind(13);
+					buffer->SetData(&data, sizeof(SkyboxData));
+					buffer->Bind(13);
 				});
 
 			Renderer::DrawMesh(mySkyboxMesh, { 1.f });
@@ -388,7 +387,7 @@ namespace Volt
 			Renderer::SubmitCustom([&]()
 				{
 					myDecalPass.framebuffer->Clear();
-			myDecalPass.framebuffer->Bind();
+					myDecalPass.framebuffer->Bind();
 				});
 
 			Renderer::DispatchDecalsWithShader(myDecalPass.overrideShader);
@@ -1023,7 +1022,7 @@ namespace Volt
 				Renderer::SubmitCustom([p = pass]()
 					{
 						p.framebuffer->Clear();
-				p.framebuffer->Bind();
+						p.framebuffer->Bind();
 					});
 
 				Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("BloomDownsamplePS"));
@@ -1042,14 +1041,14 @@ namespace Volt
 			Renderer::SubmitCustom([&]()
 				{
 					struct BloomUpsampleData
-			{
-				float filterRadius;
-				gem::vec3 padding;
-			} data{};
+					{
+						float filterRadius;
+						gem::vec3 padding;
+					} data{};
 
-			data.filterRadius = 0.005f;
-			myBloomUpsampleBuffer->SetData(&data, sizeof(BloomUpsampleData));
-			myBloomUpsampleBuffer->Bind(13);
+					data.filterRadius = 0.005f;
+					myBloomUpsampleBuffer->SetData(&data, sizeof(BloomUpsampleData));
+					myBloomUpsampleBuffer->Bind(13);
 				});
 
 
@@ -1078,7 +1077,7 @@ namespace Volt
 			Renderer::SubmitCustom([&]()
 				{
 					myBloomCompositePass.framebuffer->Clear();
-			myBloomCompositePass.framebuffer->Bind();
+					myBloomCompositePass.framebuffer->Bind();
 				});
 
 			Renderer::DrawFullscreenTriangleWithShader(ShaderRegistry::Get("BloomComposite"));
@@ -1360,15 +1359,7 @@ namespace Volt
 
 					std::vector<gem::mat4> animSamples;
 
-					if (animCharComp.characterStateMachine && animCharComp.characterStateMachine->GetStateCount() > 0)
-					{
-						animSamples = animCharComp.characterStateMachine->Sample();
-					}
-					else
-					{
-						animSamples = character->SampleAnimation(animCharComp.currentAnimation, animCharComp.currentStartTime, animCharComp.isLooping);
-					}
-
+					animSamples = character->SampleAnimation(animCharComp.currentAnimation, animCharComp.currentStartTime, animCharComp.isLooping);
 					Renderer::Submit(character->GetSkin(), transform, animSamples, id, dataComp.timeSinceCreation, animCharComp.castShadows);
 				}
 			}

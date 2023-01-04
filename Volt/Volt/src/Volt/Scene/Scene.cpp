@@ -11,7 +11,6 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Components/Components.h"
 #include "Volt/Animation/AnimationManager.h"
-#include "Volt/Animation/AnimationStateMachine.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
@@ -319,11 +318,6 @@ namespace Volt
 						}
 					}
 
-				}
-
-				if (animCharComp.characterStateMachine)
-				{
-					animCharComp.characterStateMachine->Update();
 				}
 			});
 

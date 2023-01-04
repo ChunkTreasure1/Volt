@@ -173,22 +173,19 @@ namespace gem
 	template<typename T>
 	vec<3, T> operator*(vec<3, T> const& v, qua<T> const& q)
 	{
-		// tbc
-		return vec<3, T>();
+		return gem::inverse(q) * v;
 	}
 
 	template<typename T>
 	vec<4, T> operator*(qua<T> const& q, vec<4, T> const& v) 
 	{
-		// tbc
-		return vec<4, T>();
+		return vec<4, T>(q * vec<3, T>(v), v.w);
 	}
 
 	template<typename T>
 	vec<4, T> operator*(vec<4, T> const& v, qua<T> const& q)
 	{
-		// tbc
-		return vec<4, T>();
+		return gem::inverse(q) * v;
 	}
 
 	template<typename T>

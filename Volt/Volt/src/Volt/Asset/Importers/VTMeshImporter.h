@@ -10,7 +10,7 @@ namespace Volt
 		VTMeshImporter() = default;
 
 	protected:
-		Ref<Mesh> ImportMeshImpl(const std::filesystem::path& path);
+		Ref<Mesh> ImportMeshImpl(const std::filesystem::path& path) override;
 		Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path&) override { return nullptr; }
 		Ref<Animation> ImportAnimationImpl(const std::filesystem::path&) override { return nullptr; }
 

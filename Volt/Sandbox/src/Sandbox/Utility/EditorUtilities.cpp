@@ -434,7 +434,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			if (aImportData.importSkeleton)
 			{
-				Ref<Volt::Skeleton> skeleton = Volt::MeshTypeImporter::ImportSkeleton(aMeshToImport);
+				Ref<Volt::Skeleton> skeleton = Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / aMeshToImport);
 				if (!skeleton)
 				{
 					UI::Notify(NotificationType::Error, "Failed to import skeleton!", std::format("Failed to import skeleton from {}!", aMeshToImport.string()));
@@ -450,7 +450,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			if (aImportData.importAnimation)
 			{
-				Ref<Volt::Animation> animation = Volt::MeshTypeImporter::ImportAnimation(aMeshToImport);
+				Ref<Volt::Animation> animation = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport);
 				if (!animation)
 				{
 					UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
@@ -516,7 +516,7 @@ bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCh
 		if (ImGui::Button("Create"))
 		{
 			created = true;
-			outCharacter = Volt::AssetManager::CreateAsset<Volt::AnimatedCharacter>(Volt::ProjectManager::GetPathRelativeToProject(aCharacterData.destination), aCharacterData.name + ".vtchr");
+			outCharacter = Volt::AssetManager::CreateAsset<Volt::AnimatedCharacter>(aCharacterData.destination, aCharacterData.name + ".vtchr");
 
 			if (aCharacterData.skeletonHandle != Volt::Asset::Null())
 			{

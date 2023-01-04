@@ -22,6 +22,11 @@ Assets:
     Path: Engine/Shaders/HLSL/PostProcessing/ColorGrading_ps.hlsl
     Dependencies:
       []
+  - Handle: 593736749338155905
+    Path: Engine/Shaders/Definitions/Editor/navmeshDebug.vtsdef
+    Dependencies:
+      - Engine/Shaders/HLSL/Editor/NavMeshDebug_vs.hlsl
+      - Engine/Shaders/HLSL/Editor/NavMeshDebug_ps.hlsl
   - Handle: 796610198874795477
     Path: Engine/Shaders/Definitions/Shadows/pointLightShadow.vtsdef
     Dependencies:
@@ -38,6 +43,10 @@ Assets:
       []
   - Handle: 1005982315021718536
     Path: Engine/Shaders/HLSL/PostProcessing/SSR_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 1011779589650696143
+    Path: Assets/Animations/Test/CHR_Test.vtchr
     Dependencies:
       []
   - Handle: 1015589383243938398
@@ -134,6 +143,10 @@ Assets:
     Path: Engine/Shaders/HLSL/vignette_ps.hlsl
     Dependencies:
       []
+  - Handle: 3187794499598594399
+    Path: Assets/Scenes/VTCINEMA/VTCinemaTesting.vtscene
+    Dependencies:
+      []
   - Handle: 3578127130727290491
     Path: Engine/Shaders/Definitions/PostProcessing/vignette.vtsdef
     Dependencies:
@@ -170,8 +183,16 @@ Assets:
     Path: Engine/Fonts/Futura/futura-light.ttf
     Dependencies:
       []
+  - Handle: 4696826357287655504
+    Path: Assets/UI/Default/spriteTest.dds
+    Dependencies:
+      []
   - Handle: 4883835665757566184
     Path: Engine/Shaders/HLSL/2D/Gizmo_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 5109840273634191185
+    Path: Assets/Animations/Test/player_run_anim.fbx
     Dependencies:
       []
   - Handle: 5205794836915169475
@@ -188,6 +209,10 @@ Assets:
       []
   - Handle: 5413475528121054265
     Path: Engine/Shaders/HLSL/2D/Billboard_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 5456218118924534202
+    Path: Engine/Shaders/HLSL/Editor/NavMeshDebug_ps.hlsl
     Dependencies:
       []
   - Handle: 5596427123353589158
@@ -292,6 +317,10 @@ Assets:
     Path: Assets/Meshes/Primitives/SM_Capsule.vtmesh
     Dependencies:
       - Assets/Meshes/Primitives/SM_Capsule.fbx
+  - Handle: 8369727478961033072
+    Path: Assets/Animations/Test/player_sk.vtmesh
+    Dependencies:
+      - Assets/Animations/Test/player_sk.fbx
   - Handle: 8466792732316911756
     Path: Engine/Shaders/HLSL/VoxelGI/Voxelization_vs.hlsl
     Dependencies:
@@ -300,6 +329,10 @@ Assets:
     Path: Engine/Shaders/HLSL/PostProcessing/BloomDownsample_ps.hlsl
     Dependencies:
       []
+  - Handle: 8580085198860211525
+    Path: Assets/Animations/Test/player_idle_anim.vtanim
+    Dependencies:
+      - Assets/Animations/Test/player_idle_anim.fbx
   - Handle: 8704848881927972671
     Path: Engine/Shaders/HLSL/2D/Grid_ps.hlsl
     Dependencies:
@@ -327,10 +360,18 @@ Assets:
     Dependencies:
       - Engine/Shaders/HLSL/Editor/JumpFloodInit_ps.hlsl
       - Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl
+  - Handle: 10040493261186194830
+    Path: Assets/Animations/Test/player_idle_anim.fbx
+    Dependencies:
+      []
   - Handle: 10083233118252609360
     Path: Engine/Shaders/Definitions/Shadows/directionalShadow.vtsdef
     Dependencies:
       - Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl
+  - Handle: 10109657677507119993
+    Path: Assets/Animations/Test/player_sk.fbx
+    Dependencies:
+      []
   - Handle: 10186527749801252170
     Path: Assets/Textures/HDRIs/newport_loft.hdr
     Dependencies:
@@ -436,6 +477,10 @@ Assets:
     Path: Engine/Shaders/HLSL/PostProcessing/HBAO/Deinterleaving_ps.hlsl
     Dependencies:
       []
+  - Handle: 13449054490077836145
+    Path: Test.vtchr
+    Dependencies:
+      []
   - Handle: 13487665368982797250
     Path: Engine/Shaders/HLSL/VoxelGI/VoxelCommon.hlslh
     Dependencies:
@@ -513,6 +558,10 @@ Assets:
     Path: Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl
     Dependencies:
       []
+  - Handle: 15357369059900866503
+    Path: Assets/Animations/Test/player_run_anim.vtanim
+    Dependencies:
+      - Assets/Animations/Test/player_run_anim.fbx
   - Handle: 15364880518087495059
     Path: Engine/Shaders/Definitions/Forward/forwardPBR.vtsdef
     Dependencies:
@@ -523,6 +572,10 @@ Assets:
     Dependencies:
       - Engine/Shaders/HLSL/Editor/editorPBR_vs.hlsl
       - Engine/Shaders/HLSL/Editor/editorPBR_ps.hlsl
+  - Handle: 15580486059708032032
+    Path: Engine/Shaders/HLSL/Editor/NavMeshDebug_vs.hlsl
+    Dependencies:
+      []
   - Handle: 15663351275180290849
     Path: Engine/Shaders/HLSL/Editor/EditorPBR_vs.hlsl
     Dependencies:
@@ -573,12 +626,20 @@ Assets:
     Path: Assets/Textures/HDRIs/studio_small_08_4k.hdr.vtthumb.png
     Dependencies:
       []
+  - Handle: 17290638339829839231
+    Path: Assets/Animations/Test/player_sk.vtsk
+    Dependencies:
+      []
   - Handle: 17325569870051356605
     Path: Assets/Textures/FullMetal/T_FullMetal_m.dds
     Dependencies:
       []
   - Handle: 17441024372194522740
     Path: Engine/Shaders/HLSL/PostProcessing/Debanding_ps.hlsl
+    Dependencies:
+      []
+  - Handle: 17528029736235786752
+    Path: Assets/Animations/Test/player_sk.vtmat
     Dependencies:
       []
   - Handle: 17558045759556005567

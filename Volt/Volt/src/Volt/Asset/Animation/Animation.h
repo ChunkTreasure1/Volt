@@ -12,18 +12,18 @@ namespace Volt
 	public:
 		struct TRS
 		{
-			gem::vec3 position;
-			gem::quat rotation;
-			gem::vec3 scale;
- 		};
+			gem::vec3 position = { 0.f };
+			gem::quat rotation = { 1.f, 0.f, 0.f, 0.f };
+			gem::vec3 scale = { 1.f };
+		};
 
 		struct Frame
 		{
-			std::vector<gem::mat4> localTransforms;
 			std::vector<TRS> localTRS;
 		};
 
 		const std::vector<gem::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
+		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping) const;
 		const std::vector<gem::mat4> SampleCrossfaded(float lerpT, float aNormalizedTime, float aOtherNormalizedTime, Ref<Skeleton> aSkeleton, Ref<Animation> otherAnimation);
 
 		inline const float GetDuration() const { return myDuration; }

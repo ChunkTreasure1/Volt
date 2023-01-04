@@ -50,10 +50,10 @@ namespace Volt
 		for (uint32_t i = 0; i < header.frameCount; i++)
 		{
 			auto& currFrame = frames[i];
-			currFrame.localTransforms.resize(header.perFrameTransformCount);
+			currFrame.localTRS.resize(header.perFrameTransformCount);
 
-			memcpy_s(currFrame.localTransforms.data(), header.perFrameTransformCount * sizeof(gem::mat4), &totalData[offset], header.perFrameTransformCount * sizeof(gem::mat4));
-			offset += header.perFrameTransformCount * sizeof(gem::mat4);
+			memcpy_s(currFrame.localTRS.data(), header.perFrameTransformCount * sizeof(Animation::TRS), &totalData[offset], header.perFrameTransformCount * sizeof(Animation::TRS));
+			offset += header.perFrameTransformCount * sizeof(Animation::TRS);
 		}
 
 		animation->myFrames = frames;
@@ -69,12 +69,12 @@ namespace Volt
 		std::vector<uint8_t> outData;
 		
 		AnimationHeader header{};
-		header.perFrameTransformCount = (uint32_t)animation->myFrames.front().localTransforms.size();
+		header.perFrameTransformCount = (uint32_t)animation->myFrames.front().localTRS.size();
 		header.frameCount = (uint32_t)animation->myFrames.size();
 		header.duration = animation->myDuration;
 		header.framesPerSecond = animation->myFramesPerSecond;
 
-		outData.resize(sizeof(AnimationHeader) + header.frameCount * header.perFrameTransformCount * sizeof(gem::mat4));
+		outData.resize(sizeof(AnimationHeader) + header.frameCount * header.perFrameTransformCount * sizeof(Animation::TRS));
 
 		size_t offset = 0;
 		memcpy_s(&outData[0], sizeof(AnimationHeader), &header, sizeof(AnimationHeader));
@@ -83,8 +83,8 @@ namespace Volt
 		// Copy matrices per frame
 		for (const auto& frame : animation->myFrames)
 		{
-			memcpy_s(&outData[offset], header.perFrameTransformCount * sizeof(gem::mat4), frame.localTransforms.data(), header.perFrameTransformCount * sizeof(gem::mat4));
-			offset += header.perFrameTransformCount * sizeof(gem::mat4);
+			memcpy_s(&outData[offset], header.perFrameTransformCount * sizeof(Animation::TRS), frame.localTRS.data(), header.perFrameTransformCount * sizeof(Animation::TRS));
+			offset += header.perFrameTransformCount * sizeof(Animation::TRS);
 		}
 
 		std::ofstream fout(ProjectManager::GetDirectory() / asset->path, std::ios::binary | std::ios::out);

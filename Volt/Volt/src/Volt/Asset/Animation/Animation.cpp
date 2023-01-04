@@ -13,30 +13,13 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		float localTime = 0.f;
-
-		if (!looping)
-		{
-			localTime = std::clamp(AnimationManager::globalClock - aStartTime, 0.f, myDuration);
-		}
-		else
-		{
-			localTime = fmodf(AnimationManager::globalClock - aStartTime, myDuration);
-		}
-
-		std::vector<gem::mat4> result;
-		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
-
+		const float localTime = AnimationManager::globalClock - aStartTime;
 		const float normalizedTime = localTime / myDuration;
 
-		const size_t frameCount = myFrames.size();
-		size_t currentFrameIndex = (size_t)std::floorf((float)frameCount * normalizedTime);
-		size_t nextFrameIndex = currentFrameIndex + 1;
+		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t currentFrameIndex = frameCount - std::abs((int32_t)(std::floor(normalizedTime * (float)frameCount)) % (2 * frameCount) - frameCount);
 
-		if (currentFrameIndex >= frameCount)
-		{
-			currentFrameIndex = frameCount - 1;
-		}
+		int32_t nextFrameIndex = currentFrameIndex + 1;
 
 		if (nextFrameIndex >= frameCount)
 		{
@@ -50,9 +33,15 @@ namespace Volt
 			}
 		}
 
+		std::vector<gem::mat4> result;
+		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
+
 		const float animDelta = 1.f / (float)myFramesPerSecond;
 		const float frameTime = localTime / animDelta;
 		const float deltaTime = frameTime - (float)currentFrameIndex;
+
+		VT_CORE_TRACE("Frame index {0}", currentFrameIndex);
+
 
 		const Frame& currentFrame = myFrames.at(currentFrameIndex);
 		const Frame& nextFrame = myFrames.at(nextFrameIndex);
@@ -71,26 +60,84 @@ namespace Volt
 				parentTransform = result[joint.parentIndex];
 			}
 
-			const gem::mat4 currentLocalTransform = currentFrame.localTransforms[i];
-			const gem::mat4 nextLocalTransform = nextFrame.localTransforms[i];
-
-			const gem::mat4 currentGlobalTransform = parentTransform * gem::transpose(currentLocalTransform);
-			const gem::mat4 nextGlobalTransform = parentTransform * gem::transpose(nextLocalTransform);
+			const auto& currentLocalTransform = currentFrame.localTRS[i];
+			const auto& nextLocalTransform = nextFrame.localTRS[i];
 
 			gem::mat4 resultTransform;
 
 			// Blend
 			{
-				resultTransform = Math::Lerp(currentGlobalTransform, nextGlobalTransform, deltaTime);
+				const gem::vec3 position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, 0.5f);
+				const gem::quat rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), 0.5f);
+				const gem::vec3 scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, 0.5f);
+
+				resultTransform = gem::translate(gem::mat4{ 1.f }, position) * gem::mat4_cast(rotation) * gem::scale(gem::mat4{ 1.f }, scale);
 			}
 
-			gem::mat4 resultT = resultTransform;
+			gem::mat4 resultT = parentTransform * resultTransform;
 			result[i] = resultT;
 		}
 
 		for (size_t i = 0; i < result.size(); i++)
 		{
 			result[i] = result[i] * invBindPoses[i];
+		}
+
+		return result;
+	}
+
+	const std::vector<Animation::TRS> Animation::SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		const float localTime = AnimationManager::globalClock - aStartTime;
+		const float normalizedTime = localTime / myDuration;
+
+		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t currentFrameIndex = frameCount - std::abs((int32_t)(std::floor(normalizedTime * (float)frameCount)) % (2 * frameCount) - frameCount);
+
+		int32_t nextFrameIndex = currentFrameIndex + 1;
+
+		if (nextFrameIndex >= frameCount)
+		{
+			if (looping)
+			{
+				nextFrameIndex = 0;
+			}
+			else
+			{
+				nextFrameIndex = currentFrameIndex;
+			}
+		}
+
+		std::vector<TRS> result;
+		result.resize(aSkeleton->GetJointCount(), TRS{});
+
+		const float animDelta = 1.f / (float)myFramesPerSecond;
+		const float frameTime = localTime / animDelta;
+		const float deltaTime = frameTime - (float)currentFrameIndex;
+
+		const Frame& currentFrame = myFrames.at(currentFrameIndex);
+		const Frame& nextFrame = myFrames.at(nextFrameIndex);
+
+		const auto& joints = aSkeleton->GetJoints();
+		const auto& invBindPoses = aSkeleton->GetInverseBindPoses();
+
+		for (size_t i = 0; i < joints.size(); i++)
+		{
+			const auto& joint = joints[i];
+
+			const auto& currentLocalTransform = currentFrame.localTRS[i];
+			const auto& nextLocalTransform = nextFrame.localTRS[i];
+
+			// Blend and set
+			const gem::vec3 position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, 0.5f);
+			const gem::quat rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), 0.5f);
+			const gem::vec3 scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, 0.5f);
+		
+			result[i].position = position;
+			result[i].rotation = rotation;
+			result[i].scale = scale;
 		}
 
 		return result;
@@ -168,13 +215,15 @@ namespace Volt
 
 	const gem::mat4 Animation::BlendFrames(const Frame& currentFrame, const Frame& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor)
 	{
-		const gem::mat4 currentLocalTransform = currentFrame.localTransforms.at(jointIndex);
-		const gem::mat4 nextLocalTransform = nextFrame.localTransforms.at(jointIndex);
+		//const gem::mat4 currentLocalTransform = currentFrame.localTransforms.at(jointIndex);
+		//const gem::mat4 nextLocalTransform = nextFrame.localTransforms.at(jointIndex);
 
-		const gem::mat4 currentGlobalTransform = parentTransform * gem::transpose(currentLocalTransform);
-		const gem::mat4 nextGlobalTransform = parentTransform * gem::transpose(nextLocalTransform);
+		//const gem::mat4 currentGlobalTransform = parentTransform * gem::transpose(currentLocalTransform);
+		//const gem::mat4 nextGlobalTransform = parentTransform * gem::transpose(nextLocalTransform);
 
-		return Math::Lerp(currentGlobalTransform, nextGlobalTransform, blendFactor);
+		//return Math::Lerp(currentGlobalTransform, nextGlobalTransform, blendFactor);
+
+		return gem::mat4{ 1.f };
 	}
 }
 

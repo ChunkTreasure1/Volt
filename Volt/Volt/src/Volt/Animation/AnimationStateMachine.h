@@ -1,42 +1,73 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
-
-#include <gem/gem.h>
+#include "Volt/Asset/Animation/Animation.h"
 #include <any>
 
 namespace Volt
 {
-	class AnimationState;
-	class AnimatedCharacter;
+	class Animation;
+
+	enum class AnimationEvalType
+	{
+		Float,
+		Bool
+	};
+
+	enum class AnimationEvalMode
+	{
+		Equal,
+		NotEqual,
+		Less,
+		Greater
+	};
+
+	struct AnimationTransitionEvaluation
+	{
+		AnimationEvalType type;
+		AnimationEvalMode mode;
+		std::string parameterName;
+		std::any value;
+	};
+
+	struct AnimationTransition
+	{
+		UUID id;
+		UUID fromState;
+		UUID toState;
+
+		std::vector<AnimationTransitionEvaluation> evaluations;
+	};
+
+	struct AnimationState
+	{
+		std::vector<UUID> transitions;
+		Ref<Animation> animation;
+		UUID id{};
+
+		bool isLooping;
+	};
+
 	class AnimationStateMachine
 	{
 	public:
-		AnimationStateMachine(Ref<AnimatedCharacter> character);
-		void SetStartSate(uint32_t index);
-		void SetCurrentState(uint32_t index);
+		void Update(float deltaTime);
+		const std::vector<Animation::TRS> Sample(float startTime, Ref<Skeleton> skeleton) const;
 
-		Ref<AnimationState> AddState(const std::string& name, uint32_t animationIndex);
-		
-		void Update();
-		const std::vector<gem::mat4> Sample();
+		void SetStartState(const UUID stateId);
 
-		inline const Ref<AnimatedCharacter> GetCharacter() const { return myCharacter; }
-		inline std::unordered_map<std::string, std::any>& GetBlackboard() { return myBlackboard; }
-		inline const size_t GetStateCount() const { return myStates.size(); }
+		AnimationState* GetStateFromId(const UUID stateId) const;
+		AnimationTransition* GetTransitionFromId(const UUID transitionId) const;
+		const int32_t GetStateIndexFromId(const UUID stateId) const;
 
 	private:
-		AnimationState* myCurrentState = nullptr;
+		const bool ShouldTransition(const UUID transitionId) const;
+		const bool EvaluateTransition(const AnimationTransitionEvaluation& evalParam) const;
+
+		int32_t myStartState = -1;
+		int32_t myCurrentState = -1;
 		std::vector<Ref<AnimationState>> myStates;
+		std::vector<Ref<AnimationTransition>> myTransitions;
+
 		std::unordered_map<std::string, std::any> myBlackboard;
-
-		bool myIsCrossfading = false;
-		float myCrossfadeFromStartTime = 0.f;
-		float myCrossfadeToStartTime = 0.f;
-		float myCrossfadeTime = 0.f;
-		float myCrossfadeSpeed = 1.f;
-		uint32_t myCrossfadeFrom = 0;
-
-		Ref<AnimatedCharacter> myCharacter;
 	};
 }
