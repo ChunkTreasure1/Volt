@@ -1,0 +1,7 @@
+name: "ID"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Utility/ID_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Utility/ID_ps.hlsl"
+inputTextures:
+  []

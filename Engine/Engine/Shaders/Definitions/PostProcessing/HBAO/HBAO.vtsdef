@@ -1,4 +1,0 @@
-name: "HBAO"
-internal: true
-paths:
-  - "Engine/Shaders/HLSL/PostProcessing/HBAO/HBAO_cs.hlsl"

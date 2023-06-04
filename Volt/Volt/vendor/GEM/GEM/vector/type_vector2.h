@@ -4,25 +4,40 @@
 
 namespace gem
 {
-	typedef vec<2, float> vec2;
-	typedef vec<2, uint32_t> vec2ui;
+	using vec2 = vec<2, float>;
+	using vec2i = vec<2, int32_t>;
+	using vec2ui = vec<2, uint32_t>;
 
 	template<typename T>
 	struct vec<2, T>
 	{
 	public:
-		vec<2, T>() {};
-		vec<2, T>(T val) : x(val), y(val) {};
-		vec<2, T>(T x, T y) : x(x), y(y) {};
-		vec<2, T>(const vec<2, T>& rhs) : x(rhs.x), y(rhs.y) {};
-		vec<2, T>(const vec<3, T>& rhs) : x(rhs.x), y(rhs.y) {};
-		vec<2, T>(const vec<4, T>& rhs) : x(rhs.x), y(rhs.y) {};
+		constexpr vec<2, T>() {};
+		constexpr vec<2, T>(T val) : x(val), y(val) {};
+		constexpr vec<2, T>(T x, T y) : x(x), y(y) {};
+		constexpr vec<2, T>(const vec<2, T>& rhs) : x(rhs.x), y(rhs.y) {};
+		constexpr vec<2, T>(const vec<3, T>& rhs) : x(rhs.x), y(rhs.y) {};
+		constexpr vec<2, T>(const vec<4, T>& rhs) : x(rhs.x), y(rhs.y) {};
+
+		template<typename U>
+		constexpr vec<2, T>(const vec<2, U>& rhs) : x(T(rhs.x)), y(T(rhs.y)) {};
 
 		vec<2, T> operator+(const vec<2, T>& rhs) const { return vec<2, T>(x + rhs.x, y + rhs.y); };
 		vec<2, T> operator-(const vec<2, T>& rhs) const { return vec<2, T>(x - rhs.x, y - rhs.y); };
 		vec<2, T> operator*(const vec<2, T>& rhs) const { return vec<2, T>(x * rhs.x, y * rhs.y); };
 		vec<2, T> operator/(const vec<2, T>& rhs) const { return vec<2, T>(x / rhs.x, y / rhs.y); };
 		bool operator==(const vec<2, T>& rhs) const { return (x == rhs.x && y == rhs.y); };
+		bool operator<(const vec<2, T>& rhs) const { return (x < rhs.x&& y < rhs.y); };
+		bool operator>(const vec<2, T>& rhs) const { return (x > rhs.x && y > rhs.y); };
+		bool operator<=(const gem::vec<2, T>& rhs)
+		{
+			return (x <= rhs.x && y <= rhs.y);
+		}
+
+		bool operator>=(const gem::vec<2, T>& rhs)
+		{
+			return (x >= rhs.x && y >= rhs.y);
+		}
 
 		void operator+=(const vec<2, T>& rhs)
 		{
@@ -53,6 +68,6 @@ namespace gem
 			return *(&x + index);
 		};
 
-		T x, y = 0;
+		T x = static_cast<T>(0), y = static_cast<T>(0);
 	};
 }

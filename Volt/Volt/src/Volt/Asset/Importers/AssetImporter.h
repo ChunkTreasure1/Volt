@@ -12,7 +12,7 @@ namespace Volt
 
 		virtual bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const = 0;
 		virtual void Save(const Ref<Asset>& asset) const = 0;
-	
+
 		virtual void SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const = 0;
 		virtual bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const = 0;
 	};
@@ -41,10 +41,34 @@ namespace Volt
 		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
 	};
 
+	class RenderPipelineImporter : public AssetImporter
+	{
+	public:
+		~RenderPipelineImporter() override = default;
+
+		bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const override;
+		void Save(const Ref<Asset>& asset) const override;
+
+		void SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const override;
+		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
+	};
+
 	class MaterialImporter : public AssetImporter
 	{
 	public:
 		~MaterialImporter() override = default;
+
+		bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const override;
+		void Save(const Ref<Asset>& asset) const override;
+
+		void SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const override;
+		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
+	};
+
+	class BlendSpaceImporter : public AssetImporter
+	{
+	public:
+		~BlendSpaceImporter() override = default;
 
 		bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const override;
 		void Save(const Ref<Asset>& asset) const override;
@@ -81,6 +105,30 @@ namespace Volt
 	{
 	public:
 		~VideoImporter() override = default;
+
+		bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const override;
+		void Save(const Ref<Asset>& asset) const override;
+
+		void SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const override;
+		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
+	};
+
+	class PostProcessingStackImporter : public AssetImporter
+	{
+	public:
+		~PostProcessingStackImporter() override = default;
+
+		bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const override;
+		void Save(const Ref<Asset>& asset) const override;
+
+		void SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const override;
+		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
+	};
+
+	class PostProcessingMaterialImporter : public AssetImporter
+	{
+	public:
+		~PostProcessingMaterialImporter() override = default;
 
 		bool Load(const std::filesystem::path& path, Ref<Asset>& asset) const override;
 		void Save(const Ref<Asset>& asset) const override;

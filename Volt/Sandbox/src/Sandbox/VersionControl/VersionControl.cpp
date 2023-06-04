@@ -12,7 +12,7 @@ void VersionControl::Initialize(VersionControlSystem system)
 		case VersionControlSystem::Perforce:
 			s_implementation = CreateScope<P4Implementation>();
 			break;
-	
+
 		default:
 			VT_CORE_ERROR("Invalid version control selected!");
 			return;
@@ -56,7 +56,7 @@ void VersionControl::Delete(const std::filesystem::path& file)
 void VersionControl::Edit(const std::filesystem::path& file)
 {
 	VT_ASSERT(s_implementation, "No implementation loaded!");
-	s_implementation->AddImpl(file);
+	s_implementation->EditImpl(file);
 }
 
 void VersionControl::Submit(const std::string& message)

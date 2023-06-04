@@ -1,0 +1,4 @@
+Handle: 10114258561505856143
+Path: Engine/Shaders/Source/HLSL/Compute/GenerateMotionVectors_cs.hlsl
+Dependencies:
+  []

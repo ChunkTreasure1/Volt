@@ -1,0 +1,4 @@
+name: "TAA"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/AA/TAA_cs.hlsl"

@@ -1,0 +1,4 @@
+Handle: 13507429343992159068
+Path: Engine/Shaders/Source/HLSL/PostProcessing/Bloom/BloomUpsample_cs.hlsl
+Dependencies:
+  []

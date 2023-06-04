@@ -4,7 +4,7 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/Particles/Particle.h"
-#include "Volt/Animation/AnimationTreeController.h"
+#include "Volt/BehaviorTree/BehaviorTree.hpp"
 
 #include <Wire/Serialization.h>
 #include <gem/gem.h>
@@ -17,7 +17,7 @@ namespace GraphKey
 
 namespace Volt
 {
-	class AnimationStateMachine;
+	class AnimationController;
 
 	SERIALIZE_COMPONENT((struct TagComponent
 	{
@@ -73,7 +73,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct PrefabComponent
 	{
 		PROPERTY(Name = PrefabAsset, Visible = false) AssetHandle prefabAsset = Asset::Null();
-		PROPERTY(Name = prefabEntity, Visible = false) Wire::EntityId prefabEntity = Wire::NullID;
+		PROPERTY(Name = PrefabEntity, Visible = false) Wire::EntityId prefabEntity = Wire::NullID;
 		PROPERTY(Name = Version, Visible = false) uint32_t version = 0;
 
 		bool isDirty = false;
@@ -86,12 +86,12 @@ namespace Volt
 		PROPERTY(Name = Preset, SpecialType = Asset, AssetType = ParticlePreset) AssetHandle preset;
 		AssetHandle currentPreset;
 
-		bool pressedPlay = false;
+		float burstTimer = 0;
+
 		bool isLooping = false;
-		float emittionTimer = 0;
+		float internalTimer = 0;
+		float emissionTimer = 0;
 		int maxSpawnAmount = 0;
-		int numberOfAliveParticles = 0;
-		std::vector<Particle> particles;
 
 		CREATE_COMPONENT_GUID("{E31271AB-47C7-4D6A-91E8-4B1A62B20D66}"_guid);
 	}), ParticleEmitterComponent);
@@ -100,11 +100,7 @@ namespace Volt
 	{
 		PROPERTY(Name = Mesh, SpecialType = Asset, AssetType = Mesh) AssetHandle handle = Asset::Null();
 		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle overrideMaterial = Asset::Null();
-		PROPERTY(Name = Walkable) bool walkable = false;
-		PROPERTY(Name = Cast Shadows) bool castShadows = true;
-		PROPERTY(Name = Cast AO) bool castAO = true;
 
-		int32_t subMeshIndex = -1;
 		int32_t subMaterialIndex = -1;
 
 		CREATE_COMPONENT_GUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid)
@@ -117,29 +113,18 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{09FA1C73-D508-4ADA-A101-A63703E91345}"_guid)
 	}), DecalComponent);
 
-	SERIALIZE_COMPONENT((struct ScriptedEventComponent
+	struct MonoScriptEntry
 	{
-		PROPERTY(Name = Spawn Radius) float spawnRadius = 500.f;
-		PROPERTY(Name = Meele1) int w1MeeleAmount = 1;
-		PROPERTY(Name = Ranged1) int w1RangedAmount = 1;
-		PROPERTY(Name = Meele2) int w2MeeleAmount = 1;
-		PROPERTY(Name = Ranged2) int w2RangedAmount = 1;
-		PROPERTY(Name = Meele3) int w3MeeleAmount = 1;
-		PROPERTY(Name = Ranged3) int w3RangedAmount = 1;
+		MonoScriptEntry(std::string& aName, UUID& aId) : name(aName), id(aId) {}
 
-		CREATE_COMPONENT_GUID("{CD8FEFA9-4AE8-457D-B8D5-A2A2AB52F387}"_guid)
-	}), ScriptedEventComponent);
-
-	SERIALIZE_COMPONENT((struct ScriptComponent
-	{
-		PROPERTY(Name = Scripts) std::vector<WireGUID> scripts;
-
-		CREATE_COMPONENT_GUID("{4FB7727F-BDBE-47E6-9C14-40ECBC5C7927}"_guid);
-	}), ScriptComponent);
+		std::string& name;
+		UUID& id;
+	};
 
 	SERIALIZE_COMPONENT((struct MonoScriptComponent
 	{
-		PROPERTY(Name = Script) std::string script;
+		PROPERTY(Visible = false) std::vector<std::string> scriptNames;
+		PROPERTY(Visible = false) std::vector<AssetHandle> scriptIds;
 
 		CREATE_COMPONENT_GUID("{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid);
 	}), MonoScriptComponent);
@@ -151,11 +136,14 @@ namespace Volt
 			camera = CreateRef<Camera>(fieldOfView, 16.f / 9.f, nearPlane, farPlane);
 		}
 
+		PROPERTY(Name = Aperture) float aperture = 16.f;
+		PROPERTY(Name = Shutter Speed) float shutterSpeed = 1.f / 100.f;
+		PROPERTY(Name = ISO) float iso = 100.f;
+
 		PROPERTY(Name = Field of View) float fieldOfView = 60.f;
 		PROPERTY(Name = Near plane) float nearPlane = 1.f;
 		PROPERTY(Name = Far plane) float farPlane = 100000.f;
 		PROPERTY(Name = Priority) uint32_t priority = 0;
-		PROPERTY(Name = SmoothTime) float smoothTime = 0.040f; //Good Value :)
 
 		Ref<Camera> camera;
 
@@ -167,27 +155,24 @@ namespace Volt
 		PROPERTY(Name = Character, SpecialType = Asset, AssetType = AnimatedCharacter) AssetHandle animatedCharacter = Asset::Null();
 		PROPERTY(Name = Cast Shadows) bool castShadows = true;
 
+		int32_t selectedFrame = -1;
 		uint32_t currentAnimation = 0;
 		float currentStartTime = 0.f;
+
+		std::unordered_map<UUID, std::vector<Entity>> attachedEntities;
+
 		bool isLooping = true;
-
-		// Crossfading
-		float crossfadeStartTime = 0.f;
-		bool isCrossFading = false;
-		bool shouldCrossfade = false;
-
-		uint32_t crossfadeFrom = 0;
-		uint32_t crossfadeTo = 0;
-
-		// Test
-		Ref<AnimationStateMachine> characterStateMachine;
+		bool isPlaying = false;
 
 		CREATE_COMPONENT_GUID("{37333031-9816-4DDE-BFEA-5E83E32754D1}"_guid);
 	}), AnimatedCharacterComponent);
 
 	SERIALIZE_COMPONENT((struct EntityDataComponent
 	{
+		PROPERTY(Visible = false) uint32_t layerId = 0;
+
 		float timeSinceCreation = 0.f;
+		float randomValue = 0.f;
 		bool isHighlighted = false;
 
 		CREATE_COMPONENT_GUID("{A6789316-2D82-46FC-8138-B7BCBB9EA5B8}"_guid);
@@ -198,6 +183,7 @@ namespace Volt
 		PROPERTY(Name = Text) std::string text = "Text";
 		PROPERTY(Name = Font, SpecialType = Asset, AssetType = Font) AssetHandle fontHandle;
 		PROPERTY(Name = Max Width) float maxWidth = 100.f;
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec4 color{ 1.f };
 
 		CREATE_COMPONENT_GUID("{8AAA0646-40D2-47E6-B83F-72EA26BD8C01}"_guid);
 	}), TextRendererComponent);
@@ -218,54 +204,13 @@ namespace Volt
 		CREATE_COMPONENT_GUID("{FDB47734-1B69-4558-B460-0975365DB400}"_guid);
 	}), SpriteComponent);
 
-	SERIALIZE_COMPONENT((struct AudioListenerComponent
-	{
-		CREATE_COMPONENT_GUID("{3272F31A-F0C7-463E-A790-80A5B42D64BB}"_guid);
-	}), AudioListenerComponent);
-
-	SERIALIZE_ENUM((enum class EventTriggerCondition : uint32_t
-	{
-		None = 0,
-		Start,
-		Destroy,
-		TiggerEnter,
-		TriggerExit,
-		CollisionEnter,
-		CollisionExit
-
-	}), EventTriggerCondition);
-
-	SERIALIZE_COMPONENT((struct AudioEventEmitterComponent
-	{
-		PROPERTY(Name = PlayEvent, SpecialType = Enum) EventTriggerCondition playTriggerCondition = EventTriggerCondition::None;
-		PROPERTY(Name = StopEvent, SpecialType = Enum) EventTriggerCondition stopTriggerCondition = EventTriggerCondition::None;
-		PROPERTY(Name = Event) std::string eventPath = "";
-		PROPERTY(Name = Trigger Once) bool isTriggerOnce = false;
-
-		CREATE_COMPONENT_GUID("{9CF85ECF-4105-47D7-AB14-14259B77DDE2}"_guid);
-	}), AudioEventEmitterComponent);
-
-	SERIALIZE_COMPONENT((struct AudioParameterTriggerComponent
-	{
-		PROPERTY(Name = Entity ID) uint32_t entityID = 0;
-		PROPERTY(Name = Trigger, SpecialType = Enum) EventTriggerCondition triggerCondition = EventTriggerCondition::None;
-		PROPERTY(Name = Parameter Path) std::string eventPath = "";
-		PROPERTY(Name = Value) float parameterValue;
-		PROPERTY(Name = Trigger Once) bool isTriggerOnce = false;
-
-		CREATE_COMPONENT_GUID("{63ECE9EF-2DC6-405F-ABAD-3B364DF08BE0}"_guid);
-	}), AudioParameterTriggerComponent);
-
-	SERIALIZE_COMPONENT((struct AudioSourceComponent
-	{
-		CREATE_COMPONENT_GUID("{251C7333-E3A0-4189-994A-10EA95C6FC34}"_guid);
-	}), AudioSourceComponent);
-
 	SERIALIZE_COMPONENT((struct AnimationControllerComponent
 	{
-		//PROPERTY(Name = AnimationTree) AssetHandle handle = Asset::Null();
-		PROPERTY(Name = AnimationTreeFile) std::string animationTreeFile;
-		Ref<AnimationTreeController> AnimTreeControl;
+		PROPERTY(Name = Animation Graph, SpecialType = Asset, AssetType = AnimationGraph) AssetHandle animationGraph = Volt::Asset::Null();
+		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle overrideMaterial = Volt::Asset::Null();
+		PROPERTY(Name = Apply Root Motion) bool applyRootMotion = false;
+
+		Ref<AnimationController> controller;
 
 		CREATE_COMPONENT_GUID("{36D3CFA2-538E-4036-BB28-2B672F294478}"_guid);
 	}), AnimationControllerComponent);
@@ -277,4 +222,26 @@ namespace Volt
 
 		CREATE_COMPONENT_GUID("{1BC207FE-D06C-41C2-83F4-E153F3A75770}"_guid);
 	}), VisualScriptingComponent);
+
+	SERIALIZE_COMPONENT((struct BehaviorTreeComponent
+	{
+		PROPERTY(Name = Tree Handle, SpecialType = Asset, AssetType = BehaviorTree::Tree) AssetHandle treeHandle = Volt::Asset::Null();
+		Ref<BehaviorTree::Tree> tree;
+
+		CREATE_COMPONENT_GUID("{D1B1C21E-FA8C-49E9-80CB-B36233FB0575}"_guid);
+	}), BehaviorTreeComponent);
+
+	SERIALIZE_COMPONENT((struct VertexPaintedComponent
+	{
+		PROPERTY(Visible = false, Serializable =  false) AssetHandle meshHandle;
+		PROPERTY(Visible = false, Serializable = false) std::vector<gem::vec4> vertecies;
+		CREATE_COMPONENT_GUID("{480B6514-05CB-4532-A366-B5DFD419E310}"_guid);
+	}), VertexPaintedComponent);
+
+	SERIALIZE_COMPONENT((struct PostProcessingStackComponent
+	{
+		PROPERTY(Name = Post Processing Stack, SpecialType = Asset, AssetType = PostProcessingStack) AssetHandle postProcessingStack = Volt::Asset::Null();
+
+		CREATE_COMPONENT_GUID("{09340235-CDA0-496E-BEB5-A2F38BCE0033}"_guid);
+	}), PostProcessingStackComponent);
 }

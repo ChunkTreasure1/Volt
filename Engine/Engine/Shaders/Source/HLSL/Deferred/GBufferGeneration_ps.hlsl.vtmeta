@@ -1,0 +1,4 @@
+Handle: 12781696215708042702
+Path: Engine/Shaders/Source/HLSL/Deferred/GBufferGeneration_ps.hlsl
+Dependencies:
+  []

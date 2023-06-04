@@ -4,33 +4,91 @@
 #include "Volt/Log/Log.h"
 
 #include "Volt/Rendering/Shader/Shader.h"
+#include "Volt/Rendering/RenderPipeline/RenderPipeline.h"
 
 #include <string>
 
 namespace Volt
 {
+	class RenderPipeline;
 	class Texture2D;
-	class ConstantBuffer;
+	class Image2D;
+	class CommandBuffer;
+
+	enum class MaterialFlag : uint32_t
+	{
+		All = 0,
+		None = BIT(0),
+		Opaque = BIT(2),
+		Transparent = BIT(3),
+
+		CastShadows = BIT(4),
+		CastAO = BIT(5),
+
+		SSS = BIT(6),
+		Deferred = BIT(7),
+		Decal = BIT(8)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(MaterialFlag);
+
+	struct MaterialData
+	{
+		gem::vec4 color = 1.f;
+		gem::vec3 emissiveColor = 1.f;
+		float emissiveStrength = 0.f;
+
+		float roughness = 0.5f;
+		float metalness = 0.f;
+		float normalStrength = 0.f;
+	};
+
 	class SubMaterial
 	{
 	public:
-		SubMaterial() = default;
-		SubMaterial(const std::string& aName, uint32_t aIndex, Ref<Shader> aShader);
+		SubMaterial();
+		SubMaterial(const SubMaterial& subMaterial);
+		SubMaterial(const std::string& aName, uint32_t aIndex, Ref<Shader> shader);
+		SubMaterial(const std::string& aName, uint32_t aIndex, const RenderPipelineSpecification& specification);
 		~SubMaterial();
 
-		void Bind(bool aBindShader = true, bool aBindTextures = true);
+		void Bind(Ref<CommandBuffer> commandBuffer);
+		void PushMaterialData(Ref<CommandBuffer> commandBuffer) const;
 
-		void SetTexture(uint32_t binding, Ref<Texture2D> texture);
+		void SetShader(Ref<Shader> shader);
+		void SetTexture(const std::string& name, Ref<Texture2D> texture);
+
 		void Invalidate();
-		void UpdateBuffer(bool deferr = false);
-		void SetShader(Ref<Shader> aShader);
+		void InvalidatePipeline();
 
-		inline const size_t GetShaderHash() const { return myShader->GetHash(); }
-		inline const Ref<Shader> GetShader() const { return myShader; }
+		void RecompilePermutation();
+
+		inline const Ref<RenderPipeline> GetPipeline() const { return myPipeline; }
+		inline void SetName(const std::string& name) { myName = name; }
+
+		inline void SetFlags(MaterialFlag flags) { myMaterialFlags = flags; GenerateHash(); }
+		inline bool HasFlag(MaterialFlag flag) { return (myMaterialFlags & flag) != MaterialFlag::All; }
+		void SetFlag(MaterialFlag flag, bool state);
+
+		inline void SetTopology(const Topology topology) { myTopology = topology; InvalidatePipeline(myPipeline->GetSpecification().shader); }
+		inline void SetCullMode(const CullMode cullMode) { myCullMode = cullMode; InvalidatePipeline(myPipeline->GetSpecification().shader); }
+		inline void SetFillMode(const FillMode fillMode) { myTriangleFillMode = fillMode; InvalidatePipeline(myPipeline->GetSpecification().shader); }
+		inline void SetDepthMode(const DepthMode depthMode) { myDepthMode = depthMode; InvalidatePipeline(myPipeline->GetSpecification().shader); }
+
+		inline const Topology GetTopology() const { return myTopology; }
+		inline const CullMode GetCullMode() const { return myCullMode; }
+		inline const FillMode GetFillMode() const { return myTriangleFillMode; }
+		inline const DepthMode GetDepthMode() const { return myDepthMode; }
 
 		inline const std::string& GetName() const { return myName; }
-		inline const Shader::ShaderResources& GetResources() const { return myShaderResources; }
-		inline const std::map<uint32_t, Ref<Texture2D>>& GetTextures() const { return myTextures; }
+		inline const std::map<std::string, Ref<Texture2D>>& GetTextures() const { return myTextures; }
+
+		inline const MaterialFlag GetFlags() const { return myMaterialFlags; }
+		inline const MaterialData& GetMaterialData() const { return myMaterialData; }
+
+		inline MaterialData& GetMaterialData() { return myMaterialData; }
+		inline ShaderDataBuffer& GetMaterialSpecializationData() { return myMaterialSpecializationData; }
+		inline std::map<ShaderStage, ShaderDataBuffer>& GetPipelineGenerationDatas() { return myPipelineGenerationData; }
 
 		bool operator==(const SubMaterial& rhs);
 		bool operator!=(const SubMaterial& rhs);
@@ -38,73 +96,68 @@ namespace Volt
 		friend bool operator>(const SubMaterial& lhs, const SubMaterial& rhs);
 		friend bool operator<(const SubMaterial& lhs, const SubMaterial& rhs);
 
-		template<typename T>
-		bool SetParameter(const std::string& paramName, const T& value);
-
-		template<typename T>
-		const T GetParameter(const std::string& paramName);
-
-		static Ref<SubMaterial> Create(const std::string& aName, uint32_t aIndex, Ref<Shader> aShader);
+		static Ref<SubMaterial> Create(const std::string& aName, uint32_t aIndex, Ref<Shader> aPipeline);
+		static Ref<SubMaterial> Create(const std::string& aName, uint32_t aIndex, const RenderPipelineSpecification& specification);
 		static Ref<SubMaterial> Create();
+
+		void Set(uint32_t binding, Ref<Image2D> image);
+
+		template<typename T>
+		void SetValue(const std::string& valueName, const T& value);
+
+		template<typename T>
+		const T GetValue(const std::string& valueName);
 
 	private:
 		friend class MaterialImporter;
 
-		void SetupMaterialFromShader();
+		void SetupMaterialFromPipeline();
+		void InvalidateDescriptorSets();
+		void UpdateDescriptorSetsForRendering(Ref<CommandBuffer> commandBuffer);
+		void GenerateHash();
+		void Release();
 
-		std::map<uint32_t, Ref<Texture2D>> myTextures;
+		void InvalidatePipeline(Ref<Shader> shader);
+		void InvalidatePipeline(const RenderPipelineSpecification& specification);
 
-		Ref<Shader> myShader;
-		Ref<ConstantBuffer> myMaterialBuffer;
+		const std::vector<FramebufferAttachment> GetAttachmentsFromMaterialFlags() const;
+
+		Ref<RenderPipeline> myPipeline;
+
+		std::map<std::string, Ref<Texture2D>> myTextures;
+
+		std::map<uint32_t, Ref<Image2D>> myMaterialImages;
+		std::vector<VkWriteDescriptorSet> myMaterialWriteDescriptors;
+		std::vector<VkDescriptorSet> myMaterialDescriptorSets;
+		std::vector<VkDescriptorPool> myMaterialDescriptorPools;
+		std::vector<bool> myDirtyDescriptorSets;
+
+		MaterialFlag myMaterialFlags = MaterialFlag::Deferred | MaterialFlag::CastAO | MaterialFlag::CastShadows;
+		
+		// Render pipeline info
+		Topology myTopology = Topology::TriangleList;
+		CullMode myCullMode = CullMode::Back;
+		FillMode myTriangleFillMode = FillMode::Solid;
+		DepthMode myDepthMode = DepthMode::ReadWrite;
+
+		MaterialData myMaterialData;
+		ShaderDataBuffer myMaterialSpecializationData;
+		std::map<ShaderStage, ShaderDataBuffer> myPipelineGenerationData;
 
 		std::string myName;
-		Shader::ShaderResources myShaderResources;
 		uint32_t myIndex = 0;
-
 		size_t myHash = 0;
-		bool myMaterialBufferDirty = false;
 	};
 
 	template<typename T>
-	inline bool SubMaterial::SetParameter(const std::string& paramName, const T& value)
+	inline void SubMaterial::SetValue(const std::string& valueName, const T& value)
 	{
-		if (!myShaderResources.materialBuffer.exists)
-		{
-			VT_CORE_WARN("Trying to set a parameter in material {0} with shader {1}. But it does not have a material buffer!", myName, myShader->GetName());
-			return false;
-		}
-
-		if (myShaderResources.materialBuffer.parameters.find(paramName) == myShaderResources.materialBuffer.parameters.end())
-		{
-			VT_CORE_WARN("Trying to set parameter {0} in material {1} with shader {2}. However a parameter with that name does not exist!", paramName, myName, myShader->GetName());
-			return false;
-		}
-
-		// #TODO(Ivar): Add way to make sure the type is correct
-		const auto& param = myShaderResources.materialBuffer.parameters.at(paramName);
-
-		(*(T*)&myShaderResources.materialBuffer.data[param.offset]) = value;
-		myMaterialBufferDirty = true;
-		return true;
+		myMaterialSpecializationData.SetValue(valueName, value);
 	}
 
 	template<typename T>
-	inline const T SubMaterial::GetParameter(const std::string& paramName)
+	inline const T SubMaterial::GetValue(const std::string& valueName)
 	{
-		if (!myShaderResources.materialBuffer.exists)
-		{
-			VT_CORE_WARN("Trying to get a parameter in material {0} with shader {1}. But it does not have a material buffer!", myName, myShader->GetName());
-			return T{};
-		}
-
-		if (myShaderResources.materialBuffer.parameters.find(paramName) == myShaderResources.materialBuffer.parameters.end())
-		{
-			VT_CORE_WARN("Trying to get parameter {0} in material {1} with shader {2}. However a parameter with that name does not exist!", paramName, myName, myShader->GetName());
-			return T{};
-		}
-
-		// #TODO(Ivar): Add way to make sure the type is correct
-		const auto& param = myShaderResources.materialBuffer.parameters.at(paramName);
-		return *(T*)&myShaderResources.materialBuffer.data[param.offset];
+		return myMaterialSpecializationData.GetValue<T>(valueName);
 	}
 }

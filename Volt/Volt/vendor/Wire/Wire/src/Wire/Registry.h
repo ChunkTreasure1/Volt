@@ -5,6 +5,8 @@
 #include "ComponentPool.hpp"
 
 #include <memory>
+#include <tuple>
+#include <execution>
 
 namespace Wire
 {
@@ -51,6 +53,7 @@ namespace Wire
 
 		template<typename ... T>
 		const std::vector<EntityId> GetComponentView() const;
+		const std::vector<EntityId> GetComponentView(WireGUID) const;
 
 		template<typename T>
 		const std::vector<EntityId>& GetSingleComponentView() const;
@@ -63,6 +66,12 @@ namespace Wire
 
 		template<typename ... T, typename F>
 		void ForEach(F&& func);
+
+		template<typename ... T, typename F>
+		void ForEachPar(F&& func);
+
+		template<typename ... T, typename F>
+		void ForEachSafe(F&& func);
 
 	private:
 		std::unordered_map<WireGUID, std::shared_ptr<ComponentPoolBase>> m_pools;
@@ -158,12 +167,27 @@ namespace Wire
 		return entities;
 	}
 
+	inline const std::vector<EntityId> Registry::GetComponentView(WireGUID guid) const
+	{
+		std::vector<EntityId> entities;
+
+		for (const auto& ent : m_usedIds)
+		{
+			if (HasComponent(guid, ent))
+			{
+				entities.emplace_back(ent);
+			}
+		}
+
+		return entities;
+	}
+
 	template<typename T>
 	inline const std::vector<EntityId>& Registry::GetSingleComponentView() const
 	{
 		const WireGUID guid = T::comp_guid;
 		
-		if (m_pools.find(guid) == m_pools.end())
+		if (!m_pools.contains(guid))
 		{
 			static std::vector<EntityId> emptyVector;
 			return emptyVector;
@@ -177,8 +201,7 @@ namespace Wire
 	{
 		const WireGUID guid = T::comp_guid;
 
-		auto it = m_pools.find(guid);
-		if (it == m_pools.end())
+		if (!m_pools.contains(guid))
 		{
 			m_pools.emplace(guid, CreateRef<ComponentPool<T>>());
 		}
@@ -191,8 +214,7 @@ namespace Wire
 	{
 		const WireGUID guid = T::comp_guid;
 
-		auto it = m_pools.find(guid);
-		if (it == m_pools.end())
+		if (!m_pools.contains(guid))
 		{
 			m_pools.emplace(guid, CreateRef<ComponentPool<T>>());
 		}
@@ -203,12 +225,47 @@ namespace Wire
 	template<typename ...T, typename F>
 	inline void Registry::ForEach(F&& func)
 	{
-		const std::vector<EntityId> currentEntities = m_usedIds;
-		const int64_t size = (int64_t)currentEntities.size();
+		using FirstType = std::tuple_element<0, std::tuple<T...> >::type;
+
+		const auto& view = GetSingleComponentView<FirstType>();
+		for (const auto& ent : view)
+		{
+			if (HasComponents<T...>(ent))
+			{
+				func(ent, GetComponent<T>(ent)...);
+			}
+		}
+	}
+
+	template<typename ...T, typename F>
+	inline void Registry::ForEachPar(F&& func)
+	{
+		using FirstType = std::tuple_element<0, std::tuple<T...> >::type;
+
+		const auto& view = GetSingleComponentView<FirstType>();
+		std::for_each(std::execution::par, view.begin(), view.end(), [&](Wire::EntityId id) 
+			{
+				for (const auto& ent : view)
+				{
+					if (HasComponents<T...>(ent))
+					{
+						func(ent, GetComponent<T>(ent)...);
+					}
+				}
+			});
+	}
+
+	template<typename ...T, typename F>
+	inline void Registry::ForEachSafe(F&& func)
+	{
+		using FirstType = std::tuple_element<0, std::tuple<T...> >::type;
+
+		const auto view = GetSingleComponentView<FirstType>();
+		const int64_t size = (int64_t)view.size();
 
 		for (int64_t i = size - 1; i >= 0; --i)
 		{
-			const auto& id = currentEntities.at(i);
+			const auto& id = view.at(i);
 
 			if (HasComponents<T...>(id))
 			{

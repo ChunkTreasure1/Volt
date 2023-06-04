@@ -17,7 +17,6 @@ public:
 	State Update();
 
 private:
-	void Search(const std::string& query);
 	State RenderView(const std::vector<std::filesystem::path>& items);
 
 	std::string myId;
@@ -26,7 +25,5 @@ private:
 	std::function<void(Volt::AssetHandle& value)> myCallback;
 
 	std::string mySearchQuery;
-	bool myHasSearchQuery = false;
-
-	std::vector<std::filesystem::path> mySearchResults;
+	bool myActivateSearch = false;
 };

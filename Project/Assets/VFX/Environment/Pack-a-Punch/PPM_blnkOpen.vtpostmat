@@ -1,0 +1,2 @@
+PostProcessingMaterial:
+  shader: FX_blinkOpen

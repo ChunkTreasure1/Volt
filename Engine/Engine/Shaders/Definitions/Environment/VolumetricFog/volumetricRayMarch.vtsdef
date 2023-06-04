@@ -1,0 +1,4 @@
+name: "VolumetricFog_RayMarch"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Environment/VolumetricFog/VolumetricFog_RayMarch_cs.hlsl"

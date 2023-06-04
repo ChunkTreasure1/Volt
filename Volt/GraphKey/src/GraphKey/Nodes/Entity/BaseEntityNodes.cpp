@@ -26,9 +26,11 @@ namespace GraphKey
 	void CreateEntityNode::CreateEntity()
 	{
 		auto activeScene = Volt::SceneManager::GetActiveScene();
-		if (activeScene)
+		auto scenePtr = activeScene.lock();
+
+		if (scenePtr)
 		{
-			auto entity = activeScene->CreateEntity();
+			auto entity = scenePtr->CreateEntity();
 			entity.SetPosition(GetInput<gem::vec3>(2));
 			entity.SetLocalRotation(GetInput<gem::quat>(3));
 			entity.SetLocalScale(GetInput<gem::vec3>(4));
@@ -38,12 +40,104 @@ namespace GraphKey
 
 		ActivateOutput(0);
 	}
-	
+
 	EntityNode::EntityNode()
 	{
 		outputs =
 		{
-			AttributeConfig<Volt::Entity>("Entity", AttributeDirection::Output)
+			AttributeConfig<Volt::Entity>("Entity", AttributeDirection::Output, false, GK_BIND_FUNCTION(EntityNode::GetEntity))
 		};
+	}
+
+	void EntityNode::GetEntity()
+	{
+		SetOutputData(0, std::any_cast<Volt::Entity>(outputs[0].data));
+	}
+
+	void EntityNode::Initialize()
+	{
+		if (!std::any_cast<Volt::Entity>(outputs[0].data))
+		{
+			outputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get()};
+		}
+	}
+
+	DestroyEntityNode::DestroyEntityNode()
+	{
+		inputs =
+		{
+			AttributeConfig("", AttributeDirection::Input, GK_BIND_FUNCTION(DestroyEntityNode::DestroyEntity)),
+			AttributeConfig<Volt::Entity>("Entity", AttributeDirection::Input),
+		};
+
+		outputs =
+		{
+			AttributeConfig("", AttributeDirection::Output),
+		};
+	}
+
+	void DestroyEntityNode::DestroyEntity()
+	{
+		auto activeScene = Volt::SceneManager::GetActiveScene();
+		auto entity = GetInput<Volt::Entity>(1);
+
+		auto scenePtr = activeScene.lock();
+
+		if (scenePtr && entity)
+		{
+			scenePtr->RemoveEntity(entity);
+		}
+
+		ActivateOutput(0);
+	}
+
+	GetChildCountNode::GetChildCountNode()
+	{
+		inputs =
+		{
+			AttributeConfig<Volt::Entity>("Entity", AttributeDirection::Input),
+		};
+
+		outputs =
+		{
+			AttributeConfig<int32_t>("Count", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetChildCountNode::GetChildCount)),
+		};
+	}
+
+	void GetChildCountNode::Initialize()
+	{
+		if (!std::any_cast<Volt::Entity>(inputs[0].data))
+		{
+			inputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+		}
+	}
+
+	void GetChildCountNode::GetChildCount()
+	{
+		auto entity = GetInput<Volt::Entity>(0);
+		if (!entity)
+		{
+			return;
+		}
+
+		SetOutputData(0, (int32_t)entity.GetChilden().size());
+	}
+
+	SelfNode::SelfNode()
+	{
+		outputs =
+		{
+			AttributeConfig<Volt::Entity>("Self", AttributeDirection::Output, true, GK_BIND_FUNCTION(SelfNode::GetEntity))
+		};
+	}
+
+	void SelfNode::Initialize()
+	{
+		outputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+	}
+
+	void SelfNode::GetEntity()
+	{
+		SetOutputData(0, std::any_cast<Volt::Entity>(outputs[0].data));
 	}
 }

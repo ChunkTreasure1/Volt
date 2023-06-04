@@ -18,7 +18,7 @@ namespace Volt
 	{
 		const std::filesystem::path GetAndCreateCacheFolder()
 		{
-			const std::filesystem::path cachePath = ProjectManager::GetAssetsPath() / "Cache" / "Fonts";
+			const std::filesystem::path cachePath = ProjectManager::GetAssetsDirectory() / "Cache" / "Fonts";
 			if (!std::filesystem::exists(cachePath))
 			{
 				std::filesystem::create_directories(cachePath);
@@ -133,7 +133,8 @@ namespace Volt
 		public:
 			FontHolder()
 				: myFreeTypeHandle(msdfgen::initializeFreetype())
-			{}
+			{
+			}
 
 			~FontHolder()
 			{
@@ -293,11 +294,11 @@ namespace Volt
 			if (config.expensiveColoring)
 			{
 				msdf_atlas::Workload([&glyphs = myMSDFData->glyphs, &config](int i, int threadNo) -> bool
-					{
-						uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
-						glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
-						return true;
-					}, (int)myMSDFData->glyphs.size()).finish(THREADS);
+				{
+					uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
+					glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
+					return true;
+				}, (int)myMSDFData->glyphs.size()).finish(THREADS);
 			}
 			else
 			{
@@ -369,24 +370,124 @@ namespace Volt
 		delete myMSDFData;
 	}
 
-	float Font::GetWidthOfString(const std::string& string, float scale)
+	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
 	{
-		float totalAdvance = 0.f;
-		auto& fontGeom = GetMSDFData()->fontGeometry;
+		for (int32_t line : aLines)
+		{
+			if (line == aIndex)
+			{
+				return true;
+			}
+		}
 
+		return false;
+	}
+
+	float Font::GetStringWidth(const std::string& string, const gem::vec2& scale, float maxWidth)
+	{
 		std::u32string utf32string = Utils::To_UTF32(string);
-		
+
+		auto& fontGeom = GetMSDFData()->fontGeometry;
+		const auto& metrics = fontGeom.getMetrics();
+
+		std::vector<int32_t> nextLines;
+
+		// Find new lines
+		{
+			double x = 0.0;
+			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			double y = -fsScale * metrics.ascenderY;
+
+			int32_t lastSpace = -1;
+
+			for (int32_t i = 0; i < utf32string.size(); i++)
+			{
+				char32_t character = utf32string[i];
+				if (character == '\n')
+				{
+					x = 0.0;
+					y -= fsScale * metrics.lineHeight;
+					continue;
+				}
+
+				auto glyph = fontGeom.getGlyph(character);
+				if (!glyph)
+				{
+					glyph = fontGeom.getGlyph('?');
+				}
+
+				if (!glyph)
+				{
+					continue;
+				}
+
+				if (character != ' ')
+				{
+					// Calculate geometry
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+					gem::vec2 quadMin((float)pl, (float)pb);
+					gem::vec2 quadMax((float)pl, (float)pb);
+
+					quadMin *= (float)fsScale;
+					quadMax *= (float)fsScale;
+					quadMin += gem::vec2((float)x, (float)y);
+					quadMax += gem::vec2((float)x, (float)y);
+
+					if (quadMax.x > maxWidth && lastSpace != -1)
+					{
+						i = lastSpace;
+						nextLines.emplace_back(lastSpace);
+						lastSpace = -1;
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+					}
+				}
+				else
+				{
+					lastSpace = i;
+				}
+
+				double advance = glyph->getAdvance();
+				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+				x += fsScale * advance;
+			}
+		}
+
+		double x = 0.0;
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+		double y = 0.0;
+
 		for (int32_t i = 0; i < utf32string.size(); i++)
 		{
 			char32_t character = utf32string[i];
+			if (character == '\n' || NextLine(i, nextLines))
+			{
+				x = 0.0;
+				y -= fsScale * metrics.lineHeight;
+				continue;
+			}
+
 			auto glyph = fontGeom.getGlyph(character);
+
+			if (!glyph)
+			{
+				glyph = fontGeom.getGlyph('?');
+			}
+
+			if (!glyph)
+			{
+				continue;
+			}
+
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
 
 			double advance = glyph->getAdvance();
 			fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-
-			totalAdvance += (float)advance;
+			x += fsScale * advance * scale.x;
 		}
 
-		return totalAdvance * scale;
+		return (float)x;
 	}
 }

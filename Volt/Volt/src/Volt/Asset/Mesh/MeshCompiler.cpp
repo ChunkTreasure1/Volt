@@ -45,16 +45,23 @@ namespace Volt
 		* glm::vec3: Bounding sphere center
 		* float: Bounding sphere radius
 		*
+		* uint32_t: nameCount
+		*
+		* Per name:
+		* uint32_t: nameSize
+		* uint8_t: stringBytes
+		*
 		* Per sub mesh:
 		* uint32_t: Material index
 		* uint32_t: Vertex count
 		* uint32_t: Index count
 		* uint32_t: Vertex start offset
 		* uint32_t: Index start offset
+		* gem::mat4: transform
 		*/
 
 		BinarySerializer serializer{ Volt::ProjectManager::GetDirectory() / destination, CalculateMeshSize(mesh) };
-		
+
 		const uint32_t submeshCount = (uint32_t)mesh->mySubMeshes.size();
 		const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
 		const uint32_t indexCount = (uint32_t)mesh->myIndices.size();
@@ -78,7 +85,7 @@ namespace Volt
 
 		for (const auto& subMesh : mesh->mySubMeshes)
 		{
-			serializer.Serialize<uint32_t>(subMesh.name.size());
+			serializer.Serialize<uint32_t>((uint32_t)subMesh.name.size());
 			serializer.Serialize<std::string>(subMesh.name);
 		}
 
@@ -138,7 +145,7 @@ namespace Volt
 
 	void MeshCompiler::CreateMaterial(Ref<Mesh> mesh, const std::filesystem::path& destination)
 	{
-		mesh->myMaterial->path = destination.parent_path().string() + "\\" + mesh->path.stem().string() + ".vtmat";
+		mesh->myMaterial->path = destination.parent_path().string() + "\\" + destination.stem().string() + ".vtmat";
 		AssetManager::Get().SaveAsset(mesh->myMaterial);
 	}
 }

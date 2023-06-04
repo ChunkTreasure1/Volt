@@ -107,8 +107,8 @@ namespace Volt
 			subMesh.indexStartOffset = *(uint32_t*)&totalData[offset];
 			offset += sizeof(uint32_t);
 
-			//subMesh.transform = *(gem::mat4*)&totalData[offset];
-			//offset += sizeof(gem::mat4);
+			subMesh.transform = *(gem::mat4*)&totalData[offset];
+			offset += sizeof(gem::mat4);
 
 			if (i < (uint32_t)names.size())
 			{
@@ -122,14 +122,6 @@ namespace Volt
 		{
 			mesh->myMaterial = CreateRef<Material>();
 			mesh->myMaterial->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, Renderer::GetDefaultData().defaultShader));
-		}
-
-		for (auto& submesh : mesh->mySubMeshes)
-		{
-			if (submesh.materialIndex >= mesh->myMaterial->GetSubMaterials().size())
-			{
-				submesh.materialIndex = 0;
-			}
 		}
 
 		mesh->path = path;
@@ -155,7 +147,7 @@ namespace Volt
 			uint32_t indexCount = 0;
 			uint32_t vertexStartOffset = 0;
 			uint32_t indexStartOffset = 0;
-			//gem::mat4 transform = { 1.f };
+			gem::mat4 transform = { 1.f };
 		};
 
 		size_t dynamicSize = sizeof(SubMesh) * subMeshCount;

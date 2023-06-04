@@ -2,6 +2,10 @@
 
 #include "Volt/Asset/Asset.h"
 #include "Volt/Rendering/Buffer/BufferLayout.h"
+#include "Volt/Rendering/Shader/Shader.h"
+#include "Volt/Asset/TimelinePreset.h"
+
+#include "Volt/Asset/Animation/AnimatedCharacter.h"
 
 #include <gem/gem.h>
 #include <Wire/WireGUID.h>
@@ -167,6 +171,84 @@ namespace YAML
 	};
 
 	template<>
+	struct convert<gem::vec2i>
+	{
+		static Node encode(const gem::vec2i& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			return node;
+		}
+
+		static bool decode(const Node& node, gem::vec2i& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 2)
+			{
+				return false;
+			}
+
+			rhs.x = node[0].as<int32_t>();
+			rhs.y = node[1].as<int32_t>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<gem::vec3i>
+	{
+		static Node encode(const gem::vec3i& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, gem::vec3i& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 3)
+			{
+				return false;
+			}
+
+			rhs.x = node[0].as<int32_t>();
+			rhs.y = node[1].as<int32_t>();
+			rhs.z = node[2].as<int32_t>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<gem::vec4i>
+	{
+		static Node encode(const gem::vec4i& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			node.push_back(rhs.w);
+			return node;
+		}
+
+		static bool decode(const Node& node, gem::vec4i& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+			{
+				return false;
+			}
+
+			rhs.x = node[0].as<int32_t>();
+			rhs.y = node[1].as<int32_t>();
+			rhs.z = node[2].as<int32_t>();
+			rhs.w = node[3].as<int32_t>();
+			return true;
+		}
+	};
+
+	template<>
 	struct convert<gem::quat>
 	{
 		static Node encode(const gem::quat& rhs)
@@ -306,6 +388,74 @@ namespace YAML
 	};
 
 	template<>
+	struct convert<Volt::ShaderUniformType>
+	{
+		static Node encode(const Volt::ShaderUniformType& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, Volt::ShaderUniformType& v)
+		{
+			v = (Volt::ShaderUniformType)node.as<uint32_t>();
+			return true;
+		};
+	};
+
+	template<>
+	struct convert<Volt::ShaderStage>
+	{
+		static Node encode(const Volt::ShaderStage& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, Volt::ShaderStage& v)
+		{
+			v = (Volt::ShaderStage)node.as<uint32_t>();
+			return true;
+		};
+	};
+
+	template<>
+	struct convert<Volt::TrackType>
+	{
+		static Node encode(const Volt::TrackType& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, Volt::TrackType& v)
+		{
+			v = (Volt::TrackType)node.as<uint32_t>();
+			return true;
+		};
+	};
+
+	template<>
+	struct convert<Volt::KeyframeType>
+	{
+		static Node encode(const Volt::KeyframeType& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, Volt::KeyframeType& v)
+		{
+			v = (Volt::KeyframeType)node.as<uint32_t>();
+			return true;
+		};
+	};
+
+	template<>
 	struct convert<std::filesystem::path>
 	{
 		static Node encode(const std::filesystem::path& rhs)
@@ -384,6 +534,27 @@ namespace Volt
 		return out;
 	}
 
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2i& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3i& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4i& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+		return out;
+	}
+
 	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::quat& v)
 	{
 		out << YAML::Flow;
@@ -409,9 +580,33 @@ namespace Volt
 		return out;
 	}
 
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::TrackType& handle)
+	{
+		out << static_cast<uint32_t>(handle);
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::KeyframeType& handle)
+	{
+		out << static_cast<uint32_t>(handle);
+		return out;
+	}
+
 	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ElementType& handle)
 	{
 		out << static_cast<uint32_t>(handle);
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ShaderUniformType& type)
+	{
+		out << static_cast<uint32_t>(type);
+		return out;
+	}
+
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::ShaderStage& type)
+	{
+		out << static_cast<uint32_t>(type);
 		return out;
 	}
 

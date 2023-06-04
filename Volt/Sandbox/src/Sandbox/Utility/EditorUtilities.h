@@ -9,10 +9,16 @@
 #include <filesystem>
 #include <format>
 
+namespace Volt
+{
+	class AnimationGraphAsset;
+}
+
 struct MeshImportData
 {
 	std::filesystem::path destination;
 	Volt::AssetHandle externalMaterial;
+	Volt::AssetHandle targetSkeleton;
 	bool createMaterials = true;
 	bool importMesh = true;
 	bool importSkeleton = false;
@@ -24,6 +30,14 @@ struct NewCharacterData
 	std::string name = "None";
 	Volt::AssetHandle skeletonHandle = Volt::Asset::Null();
 	Volt::AssetHandle skinHandle = Volt::Asset::Null();
+	std::filesystem::path destination = "Assets/Animations/";
+};
+
+struct NewAnimationGraphData
+{
+	std::string name = "None";
+	Volt::AssetHandle characterHandle = Volt::Asset::Null();
+
 	std::filesystem::path destination = "Assets/Animations/";
 };
 
@@ -47,11 +61,18 @@ public:
 	static bool Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None, std::function<void(Volt::AssetHandle& value)> callback = nullptr);
 	static bool AssetBrowserPopupField(const std::string& id, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None);
 
-	static bool SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery);
+	static bool SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery, bool setAsActive = false);
 
-	static bool ReimportSourceMesh(Volt::AssetHandle assetHandle);
+	static bool ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Skeleton> targetSkeleton = nullptr);
+
 	static ImportState MeshImportModal(const std::string& aId, MeshImportData& aImportData, const std::filesystem::path& aMeshToImport);
+	static ImportState MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const std::vector<std::filesystem::path>& meshesToImport);
+
+	static void MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, std::vector<Ref<Volt::Mesh>> aMeshesToExport);
+	static void ImportTexture(const std::filesystem::path& sourcePath);
+
 	static bool NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCharacter>& outCharacter, NewCharacterData& aCharacterData);
+	static bool NewAnimationGraphModal(const std::string& aId, Ref<Volt::AnimationGraphAsset>* outGraph, NewAnimationGraphData& graphData);
 
 	static SaveReturnState SaveFilePopup(const std::string& aId);
 

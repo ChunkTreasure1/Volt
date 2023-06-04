@@ -5,8 +5,11 @@
 struct VersionControlSettings
 {
 	std::string server = "localhost:1666";
-	std::string user = "";
-	std::string password = "";
+	std::string user;
+	std::string password;
+
+	std::string workspace;
+	std::string stream;
 };
 
 enum class VersionControlSystem
@@ -29,7 +32,7 @@ public:
 
 	static void Submit(const std::string& message);
 	static void Sync(const std::string& stream = "");
-	
+
 	static void SwitchStream(const std::string& newStream);
 	static void RefreshStreams();
 

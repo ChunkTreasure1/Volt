@@ -1,0 +1,22 @@
+Contract:
+  prefab: 15404924028108601777
+  Calls:
+    "\x06": Project.Interactable_PhoneBooth.Activate
+  Rules:
+    990788969:
+      BoxColliderComponent:
+        owner: true
+        other: true
+        host: true
+      Project.Interactable_PhoneBooth:
+        owner: true
+        other: true
+        host: true
+      RigidbodyComponent:
+        owner: true
+        other: true
+        host: true
+      MeshComponent:
+        owner: true
+        other: true
+        host: true

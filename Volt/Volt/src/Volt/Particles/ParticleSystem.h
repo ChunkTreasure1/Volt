@@ -1,26 +1,49 @@
 #pragma once
-#include "../Components/Components.h"
+
+#include <GEM/gem.h>
+#include <Volt/Asset/Asset.h>
+
+namespace Wire
+{
+	class Registry;
+	typedef uint32_t EntityId;
+}
 
 namespace Volt
 {
-class Scene;
+	struct ParticleEmitterComponent;
+	struct TransformComponent;
+	struct Particle;
+	class Scene;
+	class ParticlePreset;
 
-	class ParticleSystem {
+	struct ParticleSystemInternalStorage
+	{
+		int numberOfAliveParticles = 0;
+		std::vector<Particle> particles;
+		AssetHandle preset;
+	};
+
+	class ParticleSystem
+	{
 	public:
-		ParticleSystem(Scene*);
-		void Update(const float& deltaTime);
-		void RenderParticles();
+		ParticleSystem() = default;
+		void Update(Wire::Registry& registry, Scene* scene, float deltaTime);
+		//void RenderParticles(Wire::Registry& registry);
+
+		const auto& GetParticleStorage() const { return m_particleStorage; }
+
 	private:
-		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, gem::vec3 aEntityPos, const float& deltaTime, float aExtraLifeTime);
+		void UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime);
+		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, gem::vec3 aEntityPos, const float& deltaTime);
+
 		bool ParticleKillCheck(Particle& particle, const float& deltaTime);
-		void ParticlePositionUpdate(Particle& particle, const float& deltaTime);
+		void ParticlePositionUpdate(Particle& particle, Wire::EntityId id, Scene* scene, const float& deltaTime);
 		void ParticleSizeUpdate(Particle& particle, const float& deltaTime);
 		void ParticleVelocityUpdate(Particle& particle, const float& deltaTime);
 		void ParticleColorUpdate(Particle& particle, const float& deltaTime);
+		void ParticleTimeUpdate(Particle& particle, float deltaTime);
 
-		void UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime);
-		Scene* myScene;
-
-		float myTimeBtwSends =0.f;
+		std::unordered_map<Wire::EntityId, ParticleSystemInternalStorage> m_particleStorage;
 	};
 }

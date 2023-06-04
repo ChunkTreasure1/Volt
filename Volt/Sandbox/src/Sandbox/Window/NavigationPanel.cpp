@@ -1,66 +1,218 @@
 #include "sbpch.h"
 #include "NavigationPanel.h"
-#include "Volt/Asset/AssetManager.h"
-#include "Volt/Components/Components.h"
+#include "NavigationEditor/Tools/NavMeshDebugDrawer.h"
+
+#include <Volt/Asset/AssetManager.h>
+#include <Volt/Utility/MeshExporterUtilities.h>
+
+#include <Volt/Components/PhysicsComponents.h>
+#include <Volt/Components/NavigationComponents.h>
+
+#include <Volt/Rendering/DebugRenderer.h>
+#include <Volt/Physics/MeshColliderCache.h>
+
+#include <Sandbox/Utility/EditorUtilities.h>
+#include <Sandbox/UserSettingsManager.h>
+
+#include <Volt/Discord/DiscordSDK.h>
 
 void NavigationPanel::UpdateMainContent()
 {
-	ImGui::Text("NavMesh creates obj file.");
-	ImGui::Text("The obj file needs to be manually corrected to work.");
-	if (ImGui::Button("Create NavMesh.obj"))
+	if (ImGui::BeginTabBar("tabs"))
 	{
-		std::vector<Volt::Entity> walkableMeshes;
+		if (ImGui::BeginTabItem("Agent"))
+		{
+			AgentSettingsTab();
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Build"))
+		{
+			BuildSettingsTab();
+			ImGui::EndTabItem();
+		}
+	}
+}
 
-		myCurrentScene->GetRegistry().ForEach<Volt::MeshComponent>([&](Wire::EntityId id, Volt::MeshComponent& meshComp)
+void NavigationPanel::Bake()
+{
+	if (auto newMesh = CompileWorldMeshes())
+	{
+		myBuilder.SetInputGeom(newMesh);
+		CompileNavLinks();
+
+		if (myBuildSettings.useTileCache)
+		{
+			myNavigationSystem.SetVTNavMesh(myBuilder.BuildTiledNavMesh());
+		}
+		else
+		{
+			myNavigationSystem.SetVTNavMesh(myBuilder.BuildSingleNavMesh());
+		}
+
+		if (!myNavigationSystem.GetVTNavMesh())
+		{
+			return;
+		}
+
+		if (myNavigationSystem.GetVTNavMesh()->GetNavMesh() && !myBuildSettings.useTileCache)
+		{
+			auto outputPath = myScene->path;
+			outputPath.replace_extension(".vtnavmesh");
+
+			if (!outputPath.stem().empty())
 			{
-				if (meshComp.walkable)
-				{
-					walkableMeshes.emplace_back(Volt::Entity(id, myCurrentScene.get()));
-				}
-			});
-
-		//auto navmesh = Volt::NMConverter::CombineMeshes(walkableMeshes, 0.1f);
-		//if (!navmesh) { return; }
-
-		//// Compile to obj for debugging
-		//{
-		//	auto scenePath = myCurrentScene->path;
-		//	scenePath.remove_filename();
-
-		//	std::ofstream file;
-		//	file.open(scenePath.string() + "NavMesh.obj");
-
-		//	for (const auto& v : navmesh->GetVertices())
-		//	{
-		//		file << "v " << v.position.x << " " << v.position.y << " " << v.position.z << "\n";
-		//	}
-		//	for (const auto& v : navmesh->GetVertices())
-		//	{
-		//		file << "vt " << v.texCoords[0].x << " " << v.texCoords[0].y << "\n";
-		//	}
-		//	for (const auto& v : navmesh->GetVertices())
-		//	{
-		//		file << "vn " << v.normal.x << " " << v.normal.y << " " << v.normal.z << "\n";
-		//	}
-		//	auto indices = navmesh->GetIndices();
-		//	for (uint32_t i = 0; i < navmesh->GetIndexCount(); i += 3)
-		//	{
-		//		auto i1 = indices[i] + 1;
-		//		auto i2 = indices[i + 1] + 1;
-		//		auto i3 = indices[i + 2] + 1;
-
-		//		file << "f "
-		//			<< i1 << "/" << i1 << "/" << i1 << " "
-		//			<< i2 << "/" << i2 << "/" << i2 << " "
-		//			<< i3 << "/" << i3 << "/" << i3 << "\n";
-		//	}
-		//	file.close();
-		//}
+				myNavigationSystem.GetVTNavMesh()->path = outputPath;
+				Volt::AssetManager::Get().SaveAsset(myNavigationSystem.GetVTNavMesh());
+			}
+		}
 	}
+}
 
-	if (ImGui::Button("Crash Me"))
+void NavigationPanel::AgentSettingsTab()
+{
+	ImGui::DragInt("Max Agent", &myBuildSettings.maxAgents, 1.f, 0, 100);
+	ImGui::DragFloat("Agent Height", &myBuildSettings.agentHeight, 1.f, 10.f, 500.f);
+	ImGui::DragFloat("Agent Radius", &myBuildSettings.agentRadius, 1.f, 0.f, 500.f);
+	ImGui::DragFloat("Agent Max Climb", &myBuildSettings.agentMaxClimb, 1.f, 0.1f, 500.f);
+	ImGui::DragFloat("Agent Max Slope", &myBuildSettings.agentMaxSlope, 1.f, 0.f, 90.f);
+	if (ImGui::Button("Reset to Default"))
 	{
-		Ref<float> x;
-		*x = 0.f;
+		SetDefaultAgentSettings();
 	}
+}
+
+void NavigationPanel::BuildSettingsTab()
+{
+	ImGui::DragFloat("Cell Size", &myBuildSettings.cellSize, 1.f, 1.f, 100.f);
+	ImGui::DragFloat("Cell Height", &myBuildSettings.cellHeight, 1.f, 1.f, 10.f);
+	ImGui::DragFloat("Region Min Size", &myBuildSettings.regionMinSize, 1.f, 0.f, 150.f);
+	ImGui::DragFloat("Region Merge Size", &myBuildSettings.regionMergeSize, 1.f, 0.f, 150.f);
+	ImGui::DragFloat("Edge Max Len", &myBuildSettings.edgeMaxLen, 1.f, 0.f, 50.f);
+	ImGui::DragFloat("Edge Max Error", &myBuildSettings.edgeMaxError, 0.1f, 0.1f, 3.f);
+	ImGui::DragFloat("Verts Per Poly", &myBuildSettings.vertsPerPoly, 1.f, 3.f, 6.f);
+	ImGui::DragFloat("Detail Sample Dist", &myBuildSettings.detailSampleDist, 1.f, 0.f, 16.f);
+	ImGui::DragFloat("Detail Sample Max Error", &myBuildSettings.detailSampleMaxError, 1.f, 0.f, 16.f);
+	ImGui::DragFloat("Tile Size", &myBuildSettings.tileSize, 1.f, 0.f, 100.f);
+	ImGui::Combo("Partition Type", &myBuildSettings.partitionType, "Watershed\0Monotone\0Layers");
+	ImGui::Checkbox("Use TileCache", &myBuildSettings.useTileCache);
+	ImGui::Checkbox("Auto-Baking", &myBuildSettings.useAutoBaking);
+	if (ImGui::Button("Reset to Default"))
+	{
+		SetDefaultBuildSettings();
+	}
+}
+
+Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
+{
+	std::vector<Ref<Volt::Mesh>> srcMeshes;
+	std::vector<gem::mat4> srcTransforms;
+
+	auto entitiesWithNavMesh = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent>();
+
+	if (!entitiesWithNavMesh.empty())
+	{
+		auto entitiesWithBoxCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::BoxColliderComponent>();
+		auto entitiesWithCapsuleCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::CapsuleColliderComponent>();
+		auto entitiesWithSphereCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::SphereColliderComponent>();
+		auto entitiesWithMeshCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::MeshColliderComponent>();
+
+		for (auto ent : entitiesWithBoxCollider)
+		{
+			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
+			auto& collider = myScene->GetRegistry().GetComponent<Volt::BoxColliderComponent>(ent);
+
+			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
+			srcTransforms.emplace_back(transform * gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), collider.halfSize * 2.f * 0.01f));
+		}
+
+		for (auto ent : entitiesWithCapsuleCollider)
+		{
+			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
+			auto& collider = myScene->GetRegistry().GetComponent<Volt::CapsuleColliderComponent>(ent);
+
+			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
+			srcTransforms.emplace_back(transform * gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f }));
+		}
+
+		for (auto ent : entitiesWithSphereCollider)
+		{
+			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
+			auto& collider = myScene->GetRegistry().GetComponent<Volt::SphereColliderComponent>(ent);
+
+			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+			srcTransforms.emplace_back(transform * gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f }));
+		}
+
+		for (auto ent : entitiesWithMeshCollider)
+		{
+			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
+
+			Ref<Volt::Mesh> mesh;
+			auto& collider = myScene->GetRegistry().GetComponent<Volt::MeshColliderComponent>(ent);
+			mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(collider.colliderMesh);
+
+			if (!mesh)
+			{
+				continue;
+			}
+
+			srcMeshes.emplace_back(mesh);
+			srcTransforms.emplace_back(transform);
+
+		}
+
+		if (!srcMeshes.empty())
+		{
+			return Volt::MeshExporterUtilities::CombineMeshes(srcMeshes, srcTransforms, nullptr);
+		}
+	}
+
+	return nullptr;
+}
+
+void NavigationPanel::CompileNavLinks()
+{
+	myBuilder.ClearNavLinkConnections();
+	auto entitiesWithNavLink = myScene->GetRegistry().GetComponentView<Volt::NavLinkComponent>();
+
+	for (auto ent : entitiesWithNavLink)
+	{
+		Volt::AI::NavLinkConnection link;
+		auto& transformComp = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
+		auto& linkComp = myScene->GetRegistry().GetComponent<Volt::NavLinkComponent>(ent);
+
+		link.start = transformComp.position + linkComp.start;
+		link.end = transformComp.position + linkComp.end;
+		link.bidirectional = linkComp.bidirectional;
+		link.active = linkComp.active;
+
+		myBuilder.AddNavLinkConnection(link);
+	}
+}
+
+void NavigationPanel::SetDefaultAgentSettings()
+{
+	auto& buildSettings = UserSettingsManager::GetSettings().navmeshBuildSettings;
+
+	buildSettings.maxAgents = 100;
+	buildSettings.agentHeight = 200.f;
+	buildSettings.agentRadius = 60.f;
+	buildSettings.agentMaxClimb = 90.f;
+	buildSettings.agentMaxSlope = 45.f;
+}
+
+void NavigationPanel::SetDefaultBuildSettings()
+{
+	auto& buildSettings = UserSettingsManager::GetSettings().navmeshBuildSettings;
+
+	buildSettings.cellSize = 30.f;
+	buildSettings.cellHeight = 1.f;
+	buildSettings.regionMinSize = 8.f;
+	buildSettings.regionMergeSize = 20.f;
+	buildSettings.edgeMaxLen = 12.f;
+	buildSettings.edgeMaxError = 1.3f;
+	buildSettings.vertsPerPoly = 6.f;
+	buildSettings.detailSampleDist = 6.f;
+	buildSettings.detailSampleMaxError = 1.f;
+	buildSettings.partitionType = PartitionType::PARTITION_WATERSHED;
 }

@@ -137,4 +137,48 @@ namespace gem
 		return perspectiveRH(fovy, aspect, zNear, zFar);
 #endif
 	}
+
+	// PERSPECTIVE
+	template<typename T>
+	mat<4, 4, T> perspectiveReverseRH(T fovy, T aspect, T zNear, T zFar)
+	{
+		assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+		T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+		mat<4, 4, T> result(static_cast<T>(0));
+		result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+		result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+		result[2][2] = zNear / (zFar - zNear);
+		result[2][3] = -static_cast<T>(1);
+		result[3][2] = (zFar * zNear) / (zFar - zNear);
+		
+		return result;
+	}
+
+	template<typename T>
+	mat<4, 4, T> perspectiveReverseLH(T fovy, T aspect, T zNear, T zFar)
+	{
+		assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+		T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+		mat<4, 4, T> result(static_cast<T>(0));
+		result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+		result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+		result[2][2] = -zNear / (zFar - zNear);
+		result[2][3] = static_cast<T>(1);
+		result[3][2] = (zFar * zNear) / (zFar - zNear);
+		return result;
+	}
+
+	template<typename T>
+	mat<4, 4, T> perspectiveReverse(T fovy, T aspect, T zNear, T zFar)
+	{
+#ifdef GEM_LEFT_HANDED
+		return perspectiveReverseLH(fovy, aspect, zNear, zFar);
+#else
+		return perspectiveReverseRH(fovy, aspect, zNear, zFar);
+#endif
+	}
 }

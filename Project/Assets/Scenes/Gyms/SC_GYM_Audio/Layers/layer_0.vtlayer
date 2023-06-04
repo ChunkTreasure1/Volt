@@ -1,0 +1,5254 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 3541830
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PerkSlot1
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 33699079
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1681022981
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 5156787545886331934
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 5156787545886331934
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 0, 0, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [32, 32]
+    - Entity:
+        id: 32749859
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Parent_Text
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3111605889
+                  - value: 3806495291
+                  - value: 1504747712
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3358113449
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2776562307
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+    - Entity:
+        id: 33699079
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_PERK
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-840, -300, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3541830
+                  - value: 2780554508
+                  - value: 335953145
+                  - value: 2665109131
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 565609634
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDPerkHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 254545472085228969
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDPerkHandler
+              id: 254545472085228969
+              properties:
+                - type: 16
+                  name: MaxHealth
+                  enumName: ""
+                  data: 17215661549348085506
+                - type: 16
+                  name: FireRate
+                  enumName: ""
+                  data: 8811542162487219094
+                - type: 16
+                  name: Reload
+                  enumName: ""
+                  data: 1638920618879147502
+                - type: 16
+                  name: Revive
+                  enumName: ""
+                  data: 3795991060517925985
+                - type: 16
+                  name: Stamina
+                  enumName: ""
+                  data: 2157810572695790593
+    - Entity:
+        id: 71974130
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Skylight
+          - guid: [5130770350572262273, 9533246575187293344]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Environment Map
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: LOD
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Turbidity
+                data: 2
+              - type: 7
+                vectorType: 13
+                name: Azimuth
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Inclination
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Show
+                data: true
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+    - Entity:
+        id: 293481361
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_RoundText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [40, 165, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 459378309
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3816073043
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 8985625977648083896
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 8985625977648083896
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: You Survived X Rounds
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 335953145
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PerkSlot3
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [160, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 33699079
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2896156654
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 1521673883322055172
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 1521673883322055172
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 0, 0, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [32, 32]
+    - Entity:
+        id: 339445206
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: CHLeft
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-16, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2728995421
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 321993009
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13198751342137183348
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 13198751342137183348
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [8, 2]
+    - Entity:
+        id: 431099809
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_Headshots
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [400, -32, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4036566334
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3468428853
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 3075156683686030978
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 3075156683686030978
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: 99999
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 459378309
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: GAMEOVER
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3582823598
+                  - value: 293481361
+                  - value: 3358113449
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4061452950
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1272074015
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.UIGameOver
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 15311099594000185218
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.UIGameOver
+              id: 15311099594000185218
+              properties:
+                - type: 22
+                  name: HeadShotTextEnt
+                  enumName: ""
+                  data: 0
+                - type: 22
+                  name: RoundTextEnt
+                  enumName: ""
+                  data: 0
+                - type: 22
+                  name: ScoreTextEnt
+                  enumName: ""
+                  data: 0
+                - type: 22
+                  name: KillsTextEnt
+                  enumName: ""
+                  data: 0
+    - Entity:
+        id: 655883207
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: InteractText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4269992634
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1642254701
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 17560846255922717394
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 17560846255922717394
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [24, 24]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: HOLD F TO INTERACT
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 687401024
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 256, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2502054461
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3354310623
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 18275135776065303450
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 18275135776065303450
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 17201113756182496823
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [24, 24]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: Leave
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [0, 0, 0, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 855941670
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: GameManager
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 50, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 237399827794827163
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3930826287
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 2
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.GameManager
+                  - value: Project.PointManager
+                  - value: Project.PerkManager
+                  - value: Project.WaveController
+                  - value: Project.WeaponManager
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13225891782879509707
+                  - value: 13862805984624657617
+                  - value: 7778072081496638548
+                  - value: 1884933570297247822
+                  - value: 3706293023651590409
+          - guid: [5573043887290156750, 757506377100558474]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PlayerPrefab
+                data: 58925922960652004
+              - type: 16
+                vectorType: 13
+                name: EnemyPrefab
+                data: 8112676415534668006
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.GameManager
+              id: 13225891782879509707
+              properties:
+                - type: 22
+                  name: Player
+                  enumName: ""
+                  data: 0
+                - type: 0
+                  name: InstaKill
+                  enumName: ""
+                  data: false
+                - type: 13
+                  name: NukeEvent
+                  enumName: ""
+                - type: 0
+                  name: Nuke
+                  enumName: ""
+                  data: false
+                - type: 13
+                  name: InstaKillEvent
+                  enumName: ""
+                - type: 2
+                  name: PlayerCount
+                  enumName: ""
+                  data: 1
+                - type: 0
+                  name: DoublePoints
+                  enumName: ""
+                  data: false
+                - type: 0
+                  name: Carpenter
+                  enumName: ""
+                  data: false
+                - type: 0
+                  name: MaxAmmo
+                  enumName: ""
+                  data: false
+                - type: 13
+                  name: DoublePointEvent
+                  enumName: ""
+                - type: 13
+                  name: MaxAmmoEvent
+                  enumName: ""
+                - type: 13
+                  name: CarpenterEvent
+                  enumName: ""
+                - type: 13
+                  name: EnemyDeathEvent
+                  enumName: ""
+                - type: 13
+                  name: NewRoundEvent
+                  enumName: ""
+                - type: 13
+                  name: StartGameEvent
+                  enumName: ""
+          - ScriptEntry:
+              name: Project.PointManager
+              id: 13862805984624657617
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.PerkManager
+              id: 7778072081496638548
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.WaveController
+              id: 1884933570297247822
+              properties:
+                - type: 7
+                  name: LastRoundEnemyHealth
+                  enumName: ""
+                  data: 150
+          - ScriptEntry:
+              name: Project.WeaponManager
+              id: 3706293023651590409
+              properties:
+                []
+    - Entity:
+        id: 954559986
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_WEAPON
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [560, -420, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 4242493628
+                  - value: 1173679672
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1366794085
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDWeaponHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 9432085614044889423
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDWeaponHandler
+              id: 9432085614044889423
+              properties:
+                []
+    - Entity:
+        id: 1009242603
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_ROUNDS
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-840, -480, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3733797695
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4171919784
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDRoundsHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 5171408777712046458
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDRoundsHandler
+              id: 5171408777712046458
+              properties:
+                []
+    - Entity:
+        id: 1173679672
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: WeaponText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 954559986
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3291818729
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 10848349937726550063
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 10848349937726550063
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [24, 24]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: WEAPON TEXT
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 1246672248
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 954559986
+                  - value: 33699079
+                  - value: 3859644322
+                  - value: 1009242603
+                  - value: 4269992634
+                  - value: 3269058200
+                  - value: 2558038330
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4061452950
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3061965621
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 7285673305445761272
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDHandler
+              id: 7285673305445761272
+              properties:
+                []
+    - Entity:
+        id: 1323775802
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PAUSE
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 4092019959
+                  - value: 2311881326
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4061452950
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 380746223
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.PauseHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 9127622470702266743
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.PauseHandler
+              id: 9127622470702266743
+              properties:
+                []
+    - Entity:
+        id: 1415022469
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Half Size
+                data: [50, 50, 50]
+              - type: 10
+                vectorType: 13
+                name: Offset
+                data: [0, 0, 0]
+              - type: 0
+                vectorType: 13
+                name: Is Trigger
+                data: false
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 0
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              - type: 24
+                vectorType: 13
+                name: Type
+                data: 0
+              - type: 2
+                vectorType: 13
+                name: Layer ID
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Mass
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Linear Drag
+                data: 0.00999999978
+              - type: 2
+                vectorType: 13
+                name: Lock Flags
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Angular Drag
+                data: 0.0500000007
+              - type: 24
+                vectorType: 13
+                name: Collision Type
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Disable Graivity
+                data: true
+              - type: 0
+                vectorType: 13
+                name: Is Kinematic
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Floor
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [100, 1, 100]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 1484336012090354082
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 16350916109619289267
+    - Entity:
+        id: 1504747712
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_HeadshotText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [400, 32, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 32749859
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1395949808
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 2105325429620752630
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 2105325429620752630
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: Headshots
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 1739218176
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Button_Resume
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 256, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3336933568
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4092019959
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2051597846
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Button
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 1096779018345828337
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Button
+              id: 1096779018345828337
+              properties:
+                - type: 16
+                  name: PressedTexture
+                  enumName: ""
+                  data: 0
+                - type: 9
+                  name: ButtonBounds
+                  enumName: ""
+                  data: [100, 50]
+                - type: 16
+                  name: DisabledTexture
+                  enumName: ""
+                  data: 0
+                - type: 16
+                  name: MainTexture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: NormalColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 18
+                  name: HightlghtedColor
+                  enumName: ""
+                  data: [0.899999976, 0.899999976, 0.899999976, 1]
+                - type: 18
+                  name: DisabledColor
+                  enumName: ""
+                  data: [0.5, 0.5, 0.5, 1]
+                - type: 18
+                  name: PressedColor
+                  enumName: ""
+                  data: [0.300000012, 0.300000012, 0.300000012, 1]
+                - type: 10
+                  name: ButtonOffset
+                  enumName: ""
+                  data: [0, 0, 10]
+                - type: 16
+                  name: HighlightedTexture
+                  enumName: ""
+                  data: 0
+                - type: 0
+                  name: Disabled
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 1953535966
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Directional Light
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.866025448, 0, 0, 0.49999997]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [4956947959302657279, 6431008363526150588]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 17
+                vectorType: 13
+                name: Color
+                data: [1, 1, 1]
+              - type: 7
+                vectorType: 13
+                name: Light Size
+                data: 1
+              - type: 0
+                vectorType: 13
+                name: Soft Shadows
+                data: true
+              - type: 0
+                vectorType: 13
+                name: Cast Shadows
+                data: true
+    - Entity:
+        id: 2213254050
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: CHRight
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [16, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2728995421
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2768132219
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 12153749289780178817
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 12153749289780178817
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [8, 2]
+    - Entity:
+        id: 2311881326
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PAUSE_OPTIONS
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1323775802
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2041722874
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+    - Entity:
+        id: 2502054461
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Button_Leave
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, -256, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 687401024
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4092019959
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 324984031
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Button
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 17938108340704038469
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Button
+              id: 17938108340704038469
+              properties:
+                - type: 16
+                  name: PressedTexture
+                  enumName: ""
+                  data: 0
+                - type: 9
+                  name: ButtonBounds
+                  enumName: ""
+                  data: [100, 50]
+                - type: 16
+                  name: DisabledTexture
+                  enumName: ""
+                  data: 0
+                - type: 16
+                  name: MainTexture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: NormalColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 18
+                  name: HightlghtedColor
+                  enumName: ""
+                  data: [0.899999976, 0.899999976, 0.899999976, 1]
+                - type: 18
+                  name: DisabledColor
+                  enumName: ""
+                  data: [0.5, 0.5, 0.5, 1]
+                - type: 18
+                  name: PressedColor
+                  enumName: ""
+                  data: [0.300000012, 0.300000012, 0.300000012, 1]
+                - type: 10
+                  name: ButtonOffset
+                  enumName: ""
+                  data: [0, 0, 10]
+                - type: 16
+                  name: HighlightedTexture
+                  enumName: ""
+                  data: 0
+                - type: 0
+                  name: Disabled
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 2558038330
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_POWERUPS
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-120, -420, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 4142731072
+                  - value: 2972692524
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1601010320
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDPowerupsHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 4558487992216124455
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDPowerupsHandler
+              id: 4558487992216124455
+              properties:
+                []
+    - Entity:
+        id: 2628935008
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Camera
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, -500]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5524573352483143404, 11007889460122951339]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Aperture
+                data: 16
+              - type: 7
+                vectorType: 13
+                name: Shutter Speed
+                data: 0.00999999978
+              - type: 7
+                vectorType: 13
+                name: ISO
+                data: 100
+              - type: 7
+                vectorType: 13
+                name: Field of View
+                data: 60
+              - type: 7
+                vectorType: 13
+                name: Near plane
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Far plane
+                data: 100000
+              - type: 2
+                vectorType: 13
+                name: Priority
+                data: 0
+    - Entity:
+        id: 2634275672
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PointsText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3859644322
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4058655221
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 16549738689680131262
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 16549738689680131262
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: 9999999
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 2665109131
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PerkSlot4
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [240, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 33699079
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1982343104
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13770952824931639421
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 13770952824931639421
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 0, 0, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [32, 32]
+    - Entity:
+        id: 2723120402
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: CHTop
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 16, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2728995421
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 526601724
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 8281282598809306594
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 8281282598809306594
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [2, 8]
+    - Entity:
+        id: 2728995421
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: CrosshairParent
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 2723120402
+                  - value: 2906787562
+                  - value: 339445206
+                  - value: 2213254050
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3269058200
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 253968782
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+    - Entity:
+        id: 2780554508
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PerkSlot2
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [80, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 33699079
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2988703743
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 3698092919141245137
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 3698092919141245137
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 0, 0, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [32, 32]
+    - Entity:
+        id: 2805647400
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_Kills
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, -32, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4036566334
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 301715255
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 18239731920588140080
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 18239731920588140080
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: 99999
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 2906787562
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: CHBot
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, -16, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2728995421
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4015625621
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 2924540400901082958
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 2924540400901082958
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [2, 8]
+    - Entity:
+        id: 2972692524
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: SLOT2
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [80, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2558038330
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1538176838
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 16910208755773173329
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 16910208755773173329
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 11482021250527732723
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [32, 32]
+    - Entity:
+        id: 3111605889
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_PointsText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-400, 32, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 32749859
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2632581873
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13248593071382970197
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 13248593071382970197
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: Points
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 3269058200
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_CROSSHAIR
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 2728995421
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 966960789
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDCrosshairHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 17511209768153179732
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDCrosshairHandler
+              id: 17511209768153179732
+              properties:
+                []
+    - Entity:
+        id: 3336623591
+        components:
+          - guid: [5348793154896568212, 18314826308662138799]
+            properties:
+              []
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Half Size
+                data: [50, 50, 50]
+              - type: 10
+                vectorType: 13
+                name: Offset
+                data: [0, 0, 0]
+              - type: 0
+                vectorType: 13
+                name: Is Trigger
+                data: true
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 0
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              - type: 24
+                vectorType: 13
+                name: Type
+                data: 0
+              - type: 2
+                vectorType: 13
+                name: Layer ID
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Mass
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Linear Drag
+                data: 0.00999999978
+              - type: 2
+                vectorType: 13
+                name: Lock Flags
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Angular Drag
+                data: 0.0500000007
+              - type: 24
+                vectorType: 13
+                name: Collision Type
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Disable Graivity
+                data: true
+              - type: 0
+                vectorType: 13
+                name: Is Kinematic
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: SM_Blockout_Cube
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [549.634888, 50, 950.268066]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.AudioEmitter
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 2415633881526097310
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 15690491523344033750
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 0
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.AudioEmitter
+              id: 2415633881526097310
+              properties:
+                - type: 24
+                  name: myStartTrigger
+                  enumName: Project.InstanceTrigger
+                  data: 2
+                - type: 24
+                  name: myStopTrigger
+                  enumName: Project.InstanceTrigger
+                  data: 3
+                - type: 24
+                  name: myEvent
+                  enumName: Volt.WWiseEvents
+                  data: 0
+                - type: 0
+                  name: myTriggerOnce
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 3336933568
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1739218176
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2532500598
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 9326510152227878835
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 9326510152227878835
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 17201113756182496823
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [24, 24]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: Resume
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [0, 0, 0, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 3358113449
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Parent_Score
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 32749859
+                  - value: 4036566334
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 459378309
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3411442410
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+    - Entity:
+        id: 3359086218
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_Score
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-400, -32, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4036566334
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2881724096
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13488182622135434208
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 13488182622135434208
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: 999999
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 3582823598
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_GameOver
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 256, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 459378309
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1229626955
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 7369563287354233318
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 7369563287354233318
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [42, 42]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: GAME OVER
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 3733797695
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: RoundsText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1009242603
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 696102365
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 451582057777266599
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 451582057777266599
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [64, 64]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: 0
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 3806495291
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Text_KillsText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 32, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 32749859
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4123854790
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 2590652770351569819
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 2590652770351569819
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [32, 32]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: Kills
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: true
+    - Entity:
+        id: 3859644322
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_POINTS
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [612, -256, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 2634275672
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3897384901
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDPointsHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 4938110069581136943
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDPointsHandler
+              id: 4938110069581136943
+              properties:
+                []
+    - Entity:
+        id: 3867978858
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Button_Options
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4092019959
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 83637376
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Button
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 14396976566626247394
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Button
+              id: 14396976566626247394
+              properties:
+                - type: 16
+                  name: PressedTexture
+                  enumName: ""
+                  data: 0
+                - type: 9
+                  name: ButtonBounds
+                  enumName: ""
+                  data: [100, 50]
+                - type: 16
+                  name: DisabledTexture
+                  enumName: ""
+                  data: 0
+                - type: 16
+                  name: MainTexture
+                  enumName: ""
+                  data: 0
+                - type: 18
+                  name: NormalColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 18
+                  name: HightlghtedColor
+                  enumName: ""
+                  data: [0.899999976, 0.899999976, 0.899999976, 1]
+                - type: 18
+                  name: DisabledColor
+                  enumName: ""
+                  data: [0.5, 0.5, 0.5, 1]
+                - type: 18
+                  name: PressedColor
+                  enumName: ""
+                  data: [0.300000012, 0.300000012, 0.300000012, 1]
+                - type: 10
+                  name: ButtonOffset
+                  enumName: ""
+                  data: [0, 0, 10]
+                - type: 16
+                  name: HighlightedTexture
+                  enumName: ""
+                  data: 0
+                - type: 0
+                  name: Disabled
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 4036566334
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Parent_Points
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3359086218
+                  - value: 2805647400
+                  - value: 431099809
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3358113449
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2382312073
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+    - Entity:
+        id: 4061452950
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PF_UI
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 1246672248
+                  - value: 1323775802
+                  - value: 459378309
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1868760028
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.UIManager
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 15191901942140425654
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.UIManager
+              id: 15191901942140425654
+              properties:
+                - type: 13
+                  name: ChangeUIStateEvent
+                  enumName: ""
+                - type: 13
+                  name: CrosshairStateChangeEvent
+                  enumName: ""
+                - type: 13
+                  name: WeaponInteractionEvent
+                  enumName: ""
+                - type: 13
+                  name: PointsInteractionEvent
+                  enumName: ""
+                - type: 13
+                  name: PerkInteractionEvent
+                  enumName: ""
+                - type: 13
+                  name: RoundsInteractionEvent
+                  enumName: ""
+                - type: 13
+                  name: PlayerInteractionEvent
+                  enumName: ""
+                - type: 13
+                  name: PowerUpInteractionEvent
+                  enumName: ""
+                - type: 13
+                  name: EndGameEvent
+                  enumName: ""
+    - Entity:
+        id: 4092019959
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PAUSE_MAIN
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: false
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3867978858
+                  - value: 2502054461
+                  - value: 1739218176
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1323775802
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1841910368
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.PauseMainHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 14273107833246757564
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.PauseMainHandler
+              id: 14273107833246757564
+              properties:
+                []
+    - Entity:
+        id: 4142731072
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: SLOT1
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2558038330
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 197517498
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Sprite
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 15084950349763222360
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Sprite
+              id: 15084950349763222360
+              properties:
+                - type: 16
+                  name: Texture
+                  enumName: ""
+                  data: 8407345013700297272
+                - type: 18
+                  name: Color
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 10
+                  name: OffSet
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 9
+                  name: PixelSize
+                  enumName: ""
+                  data: [32, 32]
+    - Entity:
+        id: 4242493628
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: AmmoText
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [128, -64, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 954559986
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1023575627
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Volt.Text
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 14036178359060234510
+        MonoScripts:
+          - ScriptEntry:
+              name: Volt.Text
+              id: 14036178359060234510
+              properties:
+                - type: 16
+                  name: Font
+                  enumName: ""
+                  data: 14898692459285550433
+                - type: 9
+                  name: TextSize
+                  enumName: ""
+                  data: [24, 24]
+                - type: 12
+                  name: TextString
+                  enumName: ""
+                  data: 99 / 999
+                - type: 10
+                  name: TextOffset
+                  enumName: ""
+                  data: [0, 0, 15]
+                - type: 18
+                  name: TextColor
+                  enumName: ""
+                  data: [1, 1, 1, 1]
+                - type: 7
+                  name: MaxWidth
+                  enumName: ""
+                  data: 100
+                - type: 0
+                  name: IsCentered
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 4269992634
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: HUD_INTERACT
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, -128, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 655883207
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1246672248
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 17185353580894363140
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 512108666
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 127
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.HUDInteractHandler
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 3835582906253442273
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.HUDInteractHandler
+              id: 3835582906253442273
+              properties:
+                []

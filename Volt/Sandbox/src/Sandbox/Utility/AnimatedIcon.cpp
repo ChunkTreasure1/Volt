@@ -27,13 +27,13 @@ AnimatedIcon::AnimatedIcon(const std::filesystem::path& firstFrame, uint32_t fra
 	myCurrentTexture = myTextures[0];
 }
 
-void AnimatedIcon::OnEvent(Volt::Event & e)
+void AnimatedIcon::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(AnimatedIcon::Animate));
 }
 
-bool AnimatedIcon::Animate(Volt::AppUpdateEvent & e)
+bool AnimatedIcon::Animate(Volt::AppUpdateEvent& e)
 {
 	if (!myIsPlaying)
 	{

@@ -5,6 +5,6 @@ namespace Volt
 {
 	void SceneManager::Shutdown()
 	{
-		myActiveScene = nullptr;
+		myActiveScene.reset();
 	}
 }

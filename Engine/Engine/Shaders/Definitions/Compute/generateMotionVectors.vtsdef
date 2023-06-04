@@ -1,0 +1,4 @@
+name: "GenerateMotionVectors"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Compute/GenerateMotionVectors_cs.hlsl"

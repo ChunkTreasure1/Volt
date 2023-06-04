@@ -7,10 +7,13 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
+#include "Sandbox/Utility/Theme.h"
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 #include "Sandbox/Window/AssetBrowser/DirectoryItem.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
+#include "Sandbox/Window/AssetBrowser/PreviewRenderer.h"
+#include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Prefab.h>
@@ -22,49 +25,34 @@
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/SubMaterial.h>
 #include <Volt/Asset/ParticlePreset.h>
+#include <Volt/Asset/Rendering/PostProcessingMaterial.h>
+#include <Volt/Asset/Rendering/PostProcessingStack.h>
+
+#include <Volt/Animation/BlendSpace.h>
+
+#include <Volt/ImGui/ImGuiImplementation.h>
 
 #include <Volt/Components/Components.h>
 #include <Volt/Scene/Scene.h>
 #include <Volt/Project/ProjectManager.h>
 
 #include <Volt/Rendering/Shader/Shader.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
+#include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 #include <Volt/Utility/SerializationMacros.h>
+#include <Volt/Utility/PremadeCommands.h>
+
+#include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
 
 #include <yaml-cpp/yaml.h>
-
-namespace Utility
-{
-	static ImVec4 GetColorFromType(Volt::AssetType type)
-	{
-		switch (type)
-		{
-			case Volt::AssetType::Mesh: return { 0.73f, 0.9f, 0.26f, 1.f };
-			case Volt::AssetType::MeshSource: return { 0.43f, 0.9f, 0.26f, 1.f };
-			case Volt::AssetType::Animation: return { 0.65f, 0.18f, 0.69f, 1.f };
-			case Volt::AssetType::Skeleton: return { 1.f, 0.49f, 0.8f, 1.f };
-			case Volt::AssetType::Texture: return { 0.9f, 0.26f, 0.27f, 1.f };
-			case Volt::AssetType::Material: return { 0.26f, 0.35f, 0.9f, 1.f };
-			case Volt::AssetType::Shader: return { 0.26f, 0.6f, 0.9f, 1.f };
-			case Volt::AssetType::ShaderSource: return { 0.26f, 0.72f, 0.9f, 1.f };
-			case Volt::AssetType::Scene: return { 0.9f, 0.54f, 0.26f, 1.f };
-			case Volt::AssetType::AnimatedCharacter: return { 0.9f, 0.25f, 0.49f, 1.f };
-			case Volt::AssetType::Prefab: return { 0.25f, 0.93f, 0.92f, 1.f };
-			case Volt::AssetType::ParticlePreset: return { 1.f, 0.62f, 0.f, 1.f };
-			default: return { 0.f, 0.f, 0.f, 0.f };
-		}
-
-		return { 0.f, 0.f, 0.f, 0.f };
-	}
-}
 
 AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id)
 	: EditorWindow("Asset Browser" + id), myEditorScene(aScene)
@@ -76,14 +64,17 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 
 	mySelectionManager = CreateRef<AssetBrowser::SelectionManager>();
 
-	myDirectories[Volt::ProjectManager::GetAssetsPath()] = ProcessDirectory(Volt::ProjectManager::GetAssetsPath(), nullptr);
+	if (!UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
+	{
+		myPreviewRenderer = CreateRef<PreviewRenderer>();
+	}
+
+	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
 	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
 
-	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsPath()].get();
+	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 
 	myCurrentDirectory = myAssetsDirectory;
-	GenerateAssetPreviewsInCurrentDirectory();
 
 	myDirectoryButtons.emplace_back(myCurrentDirectory);
 }
@@ -95,19 +86,12 @@ void AssetBrowserPanel::UpdateMainContent()
 	if (myNextDirectory)
 	{
 		mySelectionManager->DeselectAll();
+		ClearAssetPreviewsInCurrentDirectory();
 		myCurrentDirectory = myNextDirectory;
 		myNextDirectory = nullptr;
 
 		myDirectoryButtons.clear();
 		myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentDirectory);
-		GenerateAssetPreviewsInCurrentDirectory();
-	}
-
-	auto windowSize = ImGui::GetWindowSize();
-
-	if (windowSize.y < 50.f)
-	{
-		return;
 	}
 
 	const float controlsBarHeight = 30.f;
@@ -142,9 +126,16 @@ void AssetBrowserPanel::UpdateMainContent()
 
 			if (ImGui::BeginChild("##outline"))
 			{
-				UI::ShiftCursor(5.f, 5.f);
-				const auto flags = ImGuiTreeNodeFlags_Selected | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+				UI::ScopedColor color{ ImGuiCol_Header, { 0.f } };
+				UI::ScopedColor colorActive{ ImGuiCol_HeaderActive, { 0.f } };
+				UI::ScopedColor colorHovered{ ImGuiCol_HeaderHovered, { 0.f } };
 
+				UI::ShiftCursor(5.f, 5.f);
+
+				const bool selected = myCurrentDirectory == myAssetsDirectory;
+				const auto flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | (selected ? ImGuiTreeNodeFlags_Selected : 0);
+
+				UI::RenderHighlightedBackground(EditorTheme::ItemChildActive, 17.f);
 				bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), "Assets", flags);
 
 				if (ImGui::IsItemClicked())
@@ -203,16 +194,22 @@ void AssetBrowserPanel::UpdateMainContent()
 					columnCount = 1;
 				}
 
-				ImGui::Columns(columnCount, nullptr, false);
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.f, 0.f, 0.f, 0.f });
 
-				if (!myHasSearchQuery)
+				if (ImGui::BeginTable("##viewTable", columnCount))
 				{
-					RenderView(myCurrentDirectory->subDirectories, myCurrentDirectory->assets);
-				}
-				else
-				{
-					RenderView(mySearchDirectories, mySearchAssets);
+					ImGui::TableNextColumn();
+
+					if (!myHasSearchQuery)
+					{
+						RenderView(myCurrentDirectory->subDirectories, myCurrentDirectory->assets);
+					}
+					else
+					{
+						RenderView(mySearchDirectories, mySearchAssets);
+					}
+
+					ImGui::EndTable();
 				}
 
 				RenderWindowRightClickPopup();
@@ -227,6 +224,7 @@ void AssetBrowserPanel::UpdateMainContent()
 				if (entity != Wire::NullID)
 				{
 					CreatePrefabAndSetupEntities(entity);
+					Reload();
 				}
 			}
 			ImGui::EndChild();
@@ -237,20 +235,44 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	if (!myDragDroppedMeshes.empty() && !myIsImporting)
 	{
-		const auto path = Volt::AssetManager::Get().GetRelativePath(myDragDroppedMeshes.back());
-		myDragDroppedMeshes.pop_back();
+		if (myDragDroppedMeshes.size() > 1)
+		{
+			myMeshImportData.destination = Volt::AssetManager::GetRelativePath(myCurrentDirectory->path);
+			UI::OpenModal("Import Batch##assetBrowser");
+		}
+		else
+		{
+			const auto path = myDragDroppedMeshes.back();
+			myDragDroppedMeshes.pop_back();
 
-		AssetData assetData;
-		assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
-		assetData.path = path;
-		assetData.type = Volt::AssetType::MeshSource;
+			AssetData assetData;
+			assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
+			assetData.path = path;
+			assetData.type = Volt::AssetType::MeshSource;
 
-		myMeshImportData = {};
-		myMeshToImport = assetData;
-		myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtmesh";
+			myMeshImportData = {};
+			myMeshToImport = assetData;
+			myMeshImportData.destination = myMeshToImport.path.parent_path().string() + "\\" + myMeshToImport.path.stem().string() + ".vtmesh";
 
-		UI::OpenModal("Import Mesh##assetBrowser");
+			UI::OpenModal("Import Mesh##assetBrowser");
+		}
+
 		myIsImporting = true;
+	}
+
+	if (!myDragDroppedTextures.empty())
+	{
+		for (const auto& path : myDragDroppedTextures)
+		{
+			if (path.extension().string() == ".dds")
+			{
+				continue;
+			}
+
+			EditorUtils::ImportTexture(path);
+		}
+
+		myDragDroppedTextures.clear();
 	}
 
 	if (myShouldDeleteSelected)
@@ -270,14 +292,32 @@ void AssetBrowserPanel::UpdateMainContent()
 		myIsImporting = false;
 	}
 
+	importState = EditorUtils::MeshBatchImportModal("Import Batch##assetBrowser", myMeshImportData, myDragDroppedMeshes);
+	if (importState == ImportState::Imported)
+	{
+		Reload();
+		myDragDroppedMeshes.clear();
+		myIsImporting = false;
+	}
+	else if (importState == ImportState::Discard)
+	{
+		myDragDroppedMeshes.clear();
+		myIsImporting = false;
+	}
+
 	if (EditorUtils::NewCharacterModal("New Character##assetBrowser", myNewAnimatedCharacter, myNewCharacterData))
 	{
 		myNewAnimatedCharacter = nullptr;
+		Reload();
+	}
 
+	if (EditorUtils::NewAnimationGraphModal("New Animation Graph##assetBrowser", nullptr, myNewAnimationGraphData))
+	{
 		Reload();
 	}
 
 	CreateNewShaderModal();
+	CreateNewMonoScriptModal();
 	DeleteFilesModal();
 }
 
@@ -297,8 +337,6 @@ bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 	x += wX;
 	y += wY;
 
-	VT_CORE_INFO("X: {0}, Y: {1}", x, y);
-
 	if (x > myViewBounds[0].x && y > myViewBounds[0].y && x < myViewBounds[1].x && y < myViewBounds[1].y)
 	{
 		for (const auto& path : e.GetPaths())
@@ -308,20 +346,30 @@ bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 				const std::string originalName = path.stem().string();
 				std::string tempName = originalName;
 
-				uint32_t i = 0;
-				while (FileSystem::Exists(myCurrentDirectory->path / (tempName + path.extension().string())))
+				uint32_t i = 1;
+				const auto relativePath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path;
+
+				while (FileSystem::Exists(relativePath / (tempName + path.extension().string())))
 				{
 					tempName = originalName + " (" + std::to_string(i) + ")";
 					i++;
 				}
 
-				const std::filesystem::path targetPath = myCurrentDirectory->path / (tempName + path.extension().string());
-				FileSystem::Copy(path, targetPath);
+				const std::filesystem::path targetPath = relativePath / (tempName + path.extension().string());
 
 				const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromPath(targetPath);
 				if (type == Volt::AssetType::MeshSource)
 				{
-					myDragDroppedMeshes.emplace_back(targetPath);
+					myDragDroppedMeshes.emplace_back(Volt::AssetManager::Get().GetRelativePath(targetPath));
+					FileSystem::Copy(path, targetPath);
+				}
+				//else if (type == Volt::AssetType::Texture)
+				//{
+				//	myDragDroppedTextures.emplace_back(path);
+				//}
+				else
+				{
+					FileSystem::Copy(path, targetPath);
 				}
 			}
 		}
@@ -367,25 +415,31 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 
 bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	constexpr uint32_t maxPreviewsPerFrame = 1;
-
-	if (!myPreviewsToUpdate.empty())
+	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
 	{
-		for (uint32_t i = 0; i < maxPreviewsPerFrame; i++)
-		{
-			Ref<AssetPreview> preview = myPreviewsToUpdate.back();
-			preview->Render();
-
-			myPreviewsToUpdate.pop_back();
-		}
+		return false;
 	}
 
+	for (const auto& asset : myCurrentDirectory->assets)
+	{
+		switch (asset->type)
+		{
+			case Volt::AssetType::Material:
+			case Volt::AssetType::Mesh:
+				if (!asset->previewImage)
+				{
+					myPreviewRenderer->RenderPreview(asset);
+					return false;
+				}
+				break;
+		}
+	}
 	return false;
 }
 
 Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
 {
-	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), path, myThumbnailSize);
+	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(path), myThumbnailSize);
 	dirData->parentDirectory = parent;
 
 	for (const auto& entry : std::filesystem::directory_iterator(path))
@@ -437,7 +491,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 {
 	UI::ScopedColor childColor{ ImGuiCol_ChildBg, { 0.2f, 0.2f, 0.2f, 1.f } };
 
-	ImGui::BeginChild("##controlsBar", { 0.f, height });
+	if (ImGui::BeginChild("##controlsBar", { 0.f, std::min(height, ImGui::GetContentRegionAvail().y) }))
 	{
 		const float buttonSizeOffset = 10.f;
 		int32_t offsetToRemove = 0;
@@ -452,7 +506,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			UI::ShiftCursor(0.f, -0.5f);
 			ImGui::PushItemWidth(200.f);
 
-			if (UI::InputText("", mySearchQuery))
+			if (UI::InputTextWithHint("", mySearchQuery, "Search..."))
 			{
 				if (!mySearchQuery.empty())
 				{
@@ -483,12 +537,15 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 					myHasSearchQuery = false;
 					mySearchQuery.clear();
 
-					if (myCurrentDirectory->path != Volt::ProjectManager::GetAssetsPath() && myCurrentDirectory->path != FileSystem::GetEnginePath())
+					if (myCurrentDirectory->path != Volt::ProjectManager::GetAssetsDirectory())
 					{
-						myNextDirectory = myCurrentDirectory->parentDirectory;
+						if (myCurrentDirectory->parentDirectory != nullptr)
+						{
+							myNextDirectory = myCurrentDirectory->parentDirectory;
 
-						offsetToRemove = (uint32_t)(myDirectoryButtons.size() - 1);
-						shouldRemove = true;
+							offsetToRemove = (uint32_t)(myDirectoryButtons.size() - 1);
+							shouldRemove = true;
+						}
 					}
 				}
 			}
@@ -496,6 +553,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			for (size_t i = 0; i < myDirectoryButtons.size(); i++)
 			{
 				ImGui::SameLine();
+
 				std::string dirName = myDirectoryButtons[i]->path.stem().string();
 
 				const float buttonWidth = ImGui::CalcTextSize(dirName.c_str()).x + 5.f;
@@ -557,34 +615,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 
 			ImGui::SameLine();
 
-			// Asset type
-			{
-				UI::ScopedColor frameBg{ ImGuiCol_FrameBgHovered, { 1.000f, 1.000f, 1.000f, 0.2f } };
-
-				const char* items = "Game\0Engine";
-
-				auto currentValue = (int32_t)myShowEngineAssets;
-
-				UI::ShiftCursor(ImGui::GetContentRegionAvail().x - 2.f * height - 160.f - buttonSizeOffset, 0.f);
-
-				ImGui::PushItemWidth(150.f);
-				if (ImGui::Combo("##assetType", &currentValue, items))
-				{
-					myShowEngineAssets = (bool)currentValue;
-					if (currentValue == 0)
-					{
-						myCurrentDirectory = myAssetsDirectory;
-					}
-					else
-					{
-						myCurrentDirectory = myEngineDirectory;
-					}
-
-				}
-				ImGui::PopItemWidth();
-			}
-
-			ImGui::SameLine();
+			UI::ShiftCursor(ImGui::GetContentRegionAvail().x - 2.f * height - buttonSizeOffset, 0.f);
 
 			// Filter button
 			{
@@ -658,12 +689,61 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 {
 	bool reload = false;
 
-	const std::string id = dirData->path.stem().string() + "##" + dirData->path.string();
-	const bool selected = mySelectionManager->IsSelected(dirData.get());
+	auto isAnyDecendantActive = [&](Ref<AssetBrowser::DirectoryItem> dirData, auto isAnyDecendantActive, bool first)
+	{
+		if (myCurrentDirectory == dirData.get() && !first)
+		{
+			return true;
+		}
 
+		for (const auto& subDir : dirData->subDirectories)
+		{
+			if (isAnyDecendantActive(subDir, isAnyDecendantActive, false))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	const bool isDecendantActive = isAnyDecendantActive(dirData, isAnyDecendantActive, true);
+	const bool selected = mySelectionManager->IsSelected(dirData.get()) || myCurrentDirectory == dirData.get() || isDecendantActive;
 	const auto flags = (selected ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None) | ImGuiTreeNodeFlags_OpenOnArrow;
 
-	const bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), id, flags);
+	bool hovered = false;
+	constexpr float itemHeight = 17.f;
+
+	// Check if item is hovered
+	{
+		auto currentWindow = ImGui::GetCurrentWindow();
+		const auto windowPos = ImGui::GetWindowPos();
+		const auto availRegion = ImGui::GetContentRegionMax();
+		const auto cursorPos = ImGui::GetCursorPos();
+
+		const ImVec2 min = ImGui::GetWindowPos() + ImVec2{ 0.f, cursorPos.y };
+		const ImVec2 max = ImGui::GetWindowPos() + ImVec2{ availRegion.x, itemHeight + cursorPos.y };
+		hovered = ImGui::IsMouseHoveringRect(min, max);
+	}
+
+	// Draw background
+	if (hovered)
+	{
+		UI::RenderHighlightedBackground(EditorTheme::ItemHovered, itemHeight);
+	}
+	else if (isDecendantActive)
+	{
+		UI::RenderHighlightedBackground(EditorTheme::ItemChildActive, itemHeight);
+	}
+	else if (selected)
+	{
+		UI::RenderHighlightedBackground(EditorTheme::ItemSelected, itemHeight);
+	}
+
+
+	const std::string id = dirData->path.stem().string() + "##" + dirData->path.string();
+	const bool open = UI::TreeNodeImage(EditorResources::GetEditorIcon(EditorIcon::Directory), id, flags, isDecendantActive);
+
 	if (ImGui::IsItemClicked() && !selected)
 	{
 		mySelectionManager->Select(dirData.get());
@@ -678,21 +758,21 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 			{
 				const std::filesystem::path newPath = dirData->path / item->path.stem();
 				Volt::AssetManager::Get().MoveFolder(item->path, newPath);
-				FileSystem::MoveFolder(item->path, newPath);
+				FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, Volt::ProjectManager::GetDirectory() / newPath);
 			}
 		}
 
 		for (const auto& item : mySelectionManager->GetSelectedItems())
 		{
-			if (!item->isDirectory && item != dirData.get() && std::filesystem::exists(item->path))
+			if (!item->isDirectory && item != dirData.get() && std::filesystem::exists(Volt::ProjectManager::GetDirectory() / item->path))
 			{
 				// Check for thumbnail PNG
 				if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
 				{
-					const std::filesystem::path thumbnailPath = item->path.parent_path() / (item->path.filename().string() + ".vtthumb.png");
+					const std::filesystem::path thumbnailPath = Volt::ProjectManager::GetDirectory() / item->path.parent_path() / (item->path.filename().string() + ".vtthumb.png");
 					if (FileSystem::Exists(thumbnailPath))
 					{
-						FileSystem::Move(thumbnailPath, dirData->path);
+						FileSystem::Move(thumbnailPath, Volt::ProjectManager::GetDirectory() / dirData->path);
 					}
 				}
 
@@ -726,9 +806,17 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 {
 	bool reload = false;
 
+	bool skipEntitiesDir = false;
+	for (const auto& asset : assets) { if (asset->type == Volt::AssetType::Scene) { skipEntitiesDir = true; break; } }
+
 	for (const auto& dir : directories)
 	{
-		if (dir->Render())
+		if (skipEntitiesDir && (dir->path.filename() == "Entities" || dir->path.filename() == "Layers")) { continue; }
+
+		const bool changed = dir->Render();
+		ImGui::TableNextColumn();
+
+		if (changed)
 		{
 			reload = true;
 			break;
@@ -739,8 +827,6 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 			myNextDirectory = dir.get();
 			dir->isNext = false;
 		}
-
-		ImGui::NextColumn();
 	}
 
 	if (reload)
@@ -751,12 +837,43 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 
 	for (const auto& asset : assets)
 	{
-		if (asset->Render())
+		const bool changed = asset->Render();
+		ImGui::TableNextColumn();
+
+		if (changed)
 		{
 			reload = true;
 			break;
 		}
-		ImGui::NextColumn();
+
+		MeshImportData data;
+		auto meshes = AssetBrowser::AssetBrowserUtilities::GetMeshesExport();
+		EditorUtils::MeshExportModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(asset->handle)), myCurrentDirectory->path, data, meshes);
+	
+		if (UI::BeginModal(std::format("Reimport Animation##assetBrowser{0}", std::to_string(asset->handle))))
+		{
+			if (UI::BeginProperties())
+			{
+				EditorUtils::Property("Target Skeleton", myAnimationReimportTargetSkeleton, Volt::AssetType::Skeleton);
+
+				UI::EndProperties();
+			}
+
+			if (ImGui::Button("Reimport"))
+			{
+				EditorUtils::ReimportSourceMesh(asset->handle, Volt::AssetManager::GetAsset<Volt::Skeleton>(myAnimationReimportTargetSkeleton));
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+
+			UI::EndModal();
+		}
 	}
 
 	if (reload)
@@ -769,7 +886,7 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 		mySelectionManager->DeselectAll();
 	}
 
-	UI::ShiftCursor(0.f, 170.f); // Extra space at the bottom
+	UI::ShiftCursor(0.f, 200.f); // Extra space at the bottom
 }
 
 void AssetBrowserPanel::RenderWindowRightClickPopup()
@@ -782,25 +899,93 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 		if (ImGui::BeginMenu("New"))
 		{
-			if (ImGui::MenuItem("New Folder"))
+			UI::SmallSeparatorHeader("Materials", 5.f);
+
+			if (ImGui::MenuItem("Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
+			}
+
+			if (ImGui::MenuItem("Material Graph"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::MaterialGraph);
+			}
+
+			if (ImGui::MenuItem("Shader"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
+			}
+
+			if (ImGui::MenuItem("Post Processing Stack"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::PostProcessingStack);
+			}
+
+			if (ImGui::MenuItem("Post Processing Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::PostProcessingMaterial);
+			}
+
+			if (ImGui::MenuItem("Physics Material"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
+			}
+
+			UI::SmallSeparatorHeader("Animation", 5.f);
+
+			if (ImGui::MenuItem("Animated Character"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
+			}
+
+			if (ImGui::MenuItem("Animation Graph"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
+			}
+
+			if (ImGui::MenuItem("Blend Space"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
+			}
+
+			UI::SmallSeparatorHeader("Other", 5.f);
+
+			if (ImGui::MenuItem("Scene"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::Scene);
+			}
+
+			if (ImGui::MenuItem("Particle Preset"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::ParticlePreset);
+			}
+
+			if (ImGui::MenuItem("C# Script"))
+			{
+				CreateNewAssetInCurrentDirectory(Volt::AssetType::MonoScript);
+			}
+
+			UI::SmallSeparatorHeader("File system", 5.f);
+
+			if (ImGui::MenuItem("Folder"))
 			{
 				const std::string originalName = "New Folder";
 				std::string tempName = originalName;
 
 				uint32_t i = 0;
-				while (FileSystem::Exists(myCurrentDirectory->path / tempName))
+				while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / tempName))
 				{
 					tempName = originalName + " (" + std::to_string(i) + ")";
 					i++;
 				}
 
-				FileSystem::CreateFolder(myCurrentDirectory->path / tempName);
+				FileSystem::CreateDirectory(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / tempName);
 				Reload();
 
 				auto dirIt = std::find_if(myCurrentDirectory->subDirectories.begin(), myCurrentDirectory->subDirectories.end(), [tempName](const Ref<AssetBrowser::DirectoryItem> data)
-					{
-						return data->path.stem().string() == tempName;
-					});
+				{
+					return data->path.stem().string() == tempName;
+				});
 
 				if (dirIt != myCurrentDirectory->subDirectories.end())
 				{
@@ -811,37 +996,6 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 				}
 			}
 
-			ImGui::Separator();
-
-			if (ImGui::MenuItem("New Material"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
-			}
-
-			if (ImGui::MenuItem("New Animated Character"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
-			}
-
-			if (ImGui::MenuItem("New Shader"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
-			}
-
-			if (ImGui::MenuItem("New Physics Material"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
-			}
-
-			if (ImGui::MenuItem("New Scene"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::Scene);
-			}
-
-			if (ImGui::MenuItem("New Particle Preset"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::ParticlePreset);
-			}
 
 			ImGui::EndMenu();
 		}
@@ -875,9 +1029,8 @@ void AssetBrowserPanel::DeleteFilesModal()
 			{
 				if (item->isDirectory)
 				{
-					Volt::AssetManager::Get().RemoveFolderFromRegistry(item->path);
-
-					FileSystem::MoveToRecycleBin(item->path);
+					Volt::AssetManager::Get().RemoveFolderFromRegistry(Volt::AssetManager::GetRelativePath(item->path));
+					FileSystem::MoveToRecycleBin(Volt::ProjectManager::GetDirectory() / item->path);
 				}
 			}
 
@@ -885,7 +1038,18 @@ void AssetBrowserPanel::DeleteFilesModal()
 			{
 				if (!item->isDirectory && Volt::AssetManager::Get().ExistsInRegistry(item->path))
 				{
-					Volt::AssetManager::Get().RemoveAsset(item->path);
+					const auto assetType = Volt::AssetManager::GetAssetTypeFromPath(item->path);
+					switch (assetType)
+					{
+						case Volt::AssetType::Shader:
+						{
+							auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
+							Volt::ShaderRegistry::Unregister(shader->GetName());
+							break;
+						}
+					}
+
+					Volt::AssetManager::Get().RemoveAsset(Volt::AssetManager::GetRelativePath(item->path));
 				}
 			}
 
@@ -908,17 +1072,17 @@ void AssetBrowserPanel::DeleteFilesModal()
 
 void AssetBrowserPanel::Reload()
 {
-	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : Volt::ProjectManager::GetAssetsPath();
+	const std::filesystem::path currentPath = myCurrentDirectory ? myCurrentDirectory->path : Volt::ProjectManager::GetAssetsDirectory();
 
 	myCurrentDirectory = nullptr;
 	myNextDirectory = nullptr;
 	mySelectionManager->DeselectAll();
 
-	myDirectories[Volt::ProjectManager::GetAssetsPath()] = ProcessDirectory(Volt::ProjectManager::GetAssetsPath(), nullptr);
-	myDirectories[FileSystem::GetEnginePath()] = ProcessDirectory(FileSystem::GetEnginePath(), nullptr);
+	ClearAssetPreviewsInCurrentDirectory();
 
-	myEngineDirectory = myDirectories[FileSystem::GetEnginePath()].get();
-	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsPath()].get();
+	myDirectories[Volt::ProjectManager::GetAssetsDirectory()] = ProcessDirectory(Volt::ProjectManager::GetAssetsDirectory(), nullptr);
+
+	myAssetsDirectory = myDirectories[Volt::ProjectManager::GetAssetsDirectory()].get();
 
 	//Find directory
 	myCurrentDirectory = FindDirectoryWithPath(currentPath);
@@ -930,8 +1094,6 @@ void AssetBrowserPanel::Reload()
 	//Setup new file path buttons
 	myDirectoryButtons.clear();
 	myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentDirectory);
-
-	GenerateAssetPreviewsInCurrentDirectory();
 }
 
 void AssetBrowserPanel::Search(const std::string& query)
@@ -978,9 +1140,9 @@ void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<Asset
 	{
 		std::string dirStem = dir->path.stem().string();
 		std::transform(dirStem.begin(), dirStem.end(), dirStem.begin(), [](unsigned char c)
-			{
-				return std::tolower(c);
-			});
+		{
+			return std::tolower(c);
+		});
 
 		if (dirStem.find(query) != std::string::npos)
 		{
@@ -991,9 +1153,9 @@ void AssetBrowserPanel::FindFoldersAndFilesWithQuery(const std::vector<Ref<Asset
 		{
 			std::string assetFilename = asset->path.filename().string();
 			std::transform(assetFilename.begin(), assetFilename.end(), assetFilename.begin(), [](unsigned char c)
-				{
-					return std::tolower(c);
-				});
+			{
+				return std::tolower(c);
+			});
 
 			if (assetFilename.find(query) != std::string::npos)
 			{
@@ -1039,12 +1201,18 @@ AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(
 
 void AssetBrowserPanel::CreatePrefabAndSetupEntities(Wire::EntityId entity)
 {
+	if (myEditorScene->GetRegistry().HasComponent<Volt::PrefabComponent>(entity))
+	{
+		UI::Notify(NotificationType::Error, "Unable to create prefab!", "Cannot create prefab of existing prefab!");
+		return;
+	}
+
 	const auto& tagComp = myEditorScene->GetRegistry().GetComponent<Volt::TagComponent>(entity);
 
 	std::string name = tagComp.tag + ".vtprefab";
 	name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 
-	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(myCurrentDirectory->path, name, myEditorScene->GetRegistry(), entity);
+	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, myEditorScene.get(), entity);
 	Volt::AssetManager::Get().SaveAsset(prefab);
 
 	SetupEntityAsPrefab(entity, prefab->handle);
@@ -1073,7 +1241,7 @@ void AssetBrowserPanel::RecursiveRemoveFolderContents(DirectoryData* aDir)
 {
 	for (const auto& asset : aDir->assets)
 	{
-		if (FileSystem::Exists(asset.path))
+		if (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / asset.path))
 		{
 			Volt::AssetManager::Get().RemoveAsset(asset.handle);
 		}
@@ -1083,10 +1251,10 @@ void AssetBrowserPanel::RecursiveRemoveFolderContents(DirectoryData* aDir)
 
 	for (const auto& dir : aDir->subDirectories)
 	{
-		if (FileSystem::Exists(dir->path))
+		if (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / dir->path))
 		{
 			RecursiveRemoveFolderContents(dir.get());
-			FileSystem::Remove(dir->path);
+			FileSystem::Remove(Volt::ProjectManager::GetDirectory() / dir->path);
 		}
 	}
 
@@ -1109,18 +1277,18 @@ void AssetBrowserPanel::RecursiceRenameFolderContents(DirectoryData* aDir, const
 	}
 }
 
-void AssetBrowserPanel::GenerateAssetPreviewsInCurrentDirectory()
+void AssetBrowserPanel::ClearAssetPreviewsInCurrentDirectory()
 {
-	for (const auto& asset : myCurrentDirectory->assets)
-	{
-		switch (asset->type)
-		{
-			case Volt::AssetType::Mesh:
-				asset->preview = CreateRef<AssetPreview>(asset->path);
-				myPreviewsToUpdate.emplace_back(asset->preview);
-				break;
-		}
-	}
+	//for (const auto& asset : myCurrentDirectory->assets)
+	//{
+	//	switch (asset->type)
+	//	{
+	//		case Volt::AssetType::Mesh:
+	//			asset->preview = CreateRef<AssetPreview>(asset->path);
+	//			myPreviewsToUpdate.emplace_back(asset->preview);
+	//			break;
+	//	}
+	//}
 }
 
 void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
@@ -1140,11 +1308,16 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::PhysicsMaterial: originalName = "PM_NewPhysicsMaterial"; break;
 		case Volt::AssetType::Scene: originalName = "SC_NewScene"; break;
 		case Volt::AssetType::ParticlePreset: originalName = "PP_NewParticlePreset"; break;
+		case Volt::AssetType::AnimationGraph: originalName = "AG_NewAnimationGraph"; break;
+		case Volt::AssetType::BlendSpace: originalName = "BS_NewBlendSpace"; break;
+		case Volt::AssetType::MonoScript: originalName = "idk.cs"; break;
+		case Volt::AssetType::PostProcessingStack: originalName = "PPS_NewPostStack"; break;
+		case Volt::AssetType::PostProcessingMaterial: originalName = "PPM_NewPostMaterial"; break;
 	}
 
 	tempName = originalName;
 
-	while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + extension)))
+	while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / (tempName + extension)))
 	{
 		tempName = originalName + " (" + std::to_string(i) + ")";
 		i++;
@@ -1156,7 +1329,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		{
 			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
 			material->SetName(std::filesystem::path(tempName).stem().string());
-			material->CreateSubMaterial(Volt::ShaderRegistry::Get("Deferred"));
+			material->CreateSubMaterial(Volt::ShaderRegistry::GetShader("Illum"));
 			Volt::AssetManager::Get().SaveAsset(material);
 
 			newAssetHandle = material->handle;
@@ -1170,6 +1343,15 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 			UI::OpenModal("New Character##assetBrowser");
 
+			break;
+		}
+
+		case Volt::AssetType::AnimationGraph:
+		{
+			myNewAnimationGraphData.destination = Volt::AssetManager::GetRelativePath(myCurrentDirectory->path);
+			myNewAnimationGraphData.name = tempName;
+
+			UI::OpenModal("New Animation Graph##assetBrowser");
 			break;
 		}
 
@@ -1187,6 +1369,20 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::Scene:
 		{
+			FileSystem::CreateDirectory(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / tempName);
+
+			Ref<Volt::Scene> scene = Volt::Scene::CreateDefaultScene("New Scene");
+			scene->path = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
+			Volt::AssetManager::Get().SaveAsset(scene);
+			break;
+		}
+
+		case Volt::AssetType::BlendSpace:
+		{
+			Ref<Volt::BlendSpace> blendSpace = Volt::AssetManager::CreateAsset<Volt::BlendSpace>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
+			Volt::AssetManager::Get().SaveAsset(blendSpace);
+
+			newAssetHandle = blendSpace->handle;
 			break;
 		}
 
@@ -1198,14 +1394,39 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			newAssetHandle = particlePreset->handle;
 			break;
 		}
+
+		case Volt::AssetType::MonoScript:
+		{
+			UI::OpenModal("New MonoScript##assetBrowser");
+			break;
+		}
+
+		case Volt::AssetType::PostProcessingStack:
+		{
+			Ref<Volt::PostProcessingStack> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingStack>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
+			Volt::AssetManager::Get().SaveAsset(postStack);
+
+			newAssetHandle = postStack->handle;
+
+			break;
+		}
+
+		case Volt::AssetType::PostProcessingMaterial:
+		{
+			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
+			Volt::AssetManager::Get().SaveAsset(postStack);
+
+			newAssetHandle = postStack->handle;
+			break;
+		}
 	}
 
 	Reload();
 
 	auto assetIt = std::find_if(myCurrentDirectory->assets.begin(), myCurrentDirectory->assets.end(), [&tempName](const auto& lhs)
-		{
-			return lhs->path.stem().string() == tempName;
-		});
+	{
+		return lhs->path.stem().string() == tempName;
+	});
 
 	if (assetIt != myCurrentDirectory->assets.end())
 	{
@@ -1220,44 +1441,181 @@ void AssetBrowserPanel::CreateNewShaderModal()
 {
 	if (UI::BeginModal("New Shader##assetBrowser"))
 	{
+		const std::vector<std::string> shaderTypeOptions = { "PBR", "PBR Transparent", "Particle", "Post Processing", "Decal" };
+
+		constexpr int32_t PBR_SHADER = 0;
+		constexpr int32_t PBR_TRANSPARENT_SHADER = 1;
+		constexpr int32_t PARTICLE_SHADER = 2;
+		constexpr int32_t POST_PROCESSING_SHADER = 3;
+		constexpr int32_t DECAL_SHADER = 4;
+
 		if (UI::BeginProperties("shaderProp"))
 		{
 			UI::Property("Name", myNewShaderData.name);
-			UI::Property("Pixel Shader", myNewShaderData.createPixelShader);
-			UI::Property("Vertex Shader", myNewShaderData.createVertexShader);
+
+			UI::ComboProperty("Shader Type", myNewShaderData.shaderType, shaderTypeOptions);
+
+			switch (myNewShaderData.shaderType)
+			{
+				case PBR_TRANSPARENT_SHADER:
+				case DECAL_SHADER:
+				case PBR_SHADER:
+				{
+					UI::Property("Pixel Shader", myNewShaderData.createPixelShader);
+					UI::Property("Vertex Shader", myNewShaderData.createVertexShader);
+
+					break;
+				}
+
+				case PARTICLE_SHADER:
+				{
+					UI::Property("Pixel Shader", myNewShaderData.createPixelShader);
+					UI::Property("Geometry Shader", myNewShaderData.createGeometryShader);
+					UI::Property("Vertex Shader", myNewShaderData.createVertexShader);
+
+					break;
+				}
+			}
 
 			UI::EndProperties();
 		}
 
 		if (ImGui::Button("Create"))
 		{
-			const std::string newShaderName = "SH_NewShader";
 			const std::filesystem::path templatesPath = "Templates/Files/Shader";
 
-			std::string tempName = newShaderName;
+			std::string tempName = myNewShaderData.name;
 			uint32_t i = 0;
 
 			while (FileSystem::Exists(Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef")))
 			{
-				tempName = newShaderName + " (" + std::to_string(i) + ")";
+				tempName = myNewShaderData.name + " (" + std::to_string(i) + ")";
 				i++;
 			}
 
-			const std::filesystem::path defaultPixelPath = "Engine/Shaders/HLSL/Forward/ForwardPBR_ps.hlsl";
-			const std::filesystem::path defaultVertexPath = "Engine/Shaders/HLSL/Forward/ForwardPBR_vs.hlsl";
-
-			const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
-			const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
 			const std::filesystem::path definitionDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + ".vtsdef");
+			std::vector<std::filesystem::path> shaderPaths;
 
-			if (myNewShaderData.createPixelShader)
+			switch (myNewShaderData.shaderType)
 			{
-				FileSystem::Copy(templatesPath / "ps_template.hlsl", pixelDestinationPath);
-			}
+				case PBR_TRANSPARENT_SHADER:
+				case PBR_SHADER:
+				{
+					const std::filesystem::path defaultPixelPath = myNewShaderData.shaderType == PBR_SHADER ? "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl" : "Engine/Shaders/Source/HLSL/Forward/ForwardPBRTransparent_ps.hlsl";
+					const std::filesystem::path defaultVertexPath = "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl";
+					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
 
-			if (myNewShaderData.createVertexShader)
-			{
-				FileSystem::Copy(templatesPath / "vs_template.hlsl", vertexDestinationPath);
+					if (myNewShaderData.createPixelShader)
+					{
+						const std::string templateName = myNewShaderData.shaderType == PBR_SHADER ? "ps_template.hlsl" : "ps_transparent_template.hlsl";
+
+						FileSystem::Copy(templatesPath / templateName, pixelDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(pixelDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultPixelPath);
+					}
+
+					if (myNewShaderData.createVertexShader)
+					{
+						FileSystem::Copy(templatesPath / "vs_template.hlsl", vertexDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(vertexDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultVertexPath);
+					}
+
+					break;
+				}
+
+				case DECAL_SHADER:
+				{
+					const std::filesystem::path defaultPixelPath = "Engine/Shaders/Source/HLSL/Deferred/Decal_ps.hlsl";
+					const std::filesystem::path defaultVertexPath = "Engine/Shaders/Source/HLSL/Deferred/Decal_vs.hlsl";
+					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
+
+					if (myNewShaderData.createPixelShader)
+					{
+						const std::string templateName = "Decal/decalTemplate_ps.hlsl";
+
+						FileSystem::Copy(templatesPath / templateName, pixelDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(pixelDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultPixelPath);
+					}
+
+					if (myNewShaderData.createVertexShader)
+					{
+						FileSystem::Copy(templatesPath / "Decal/decalTemplate_vs.hlsl", vertexDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(vertexDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultVertexPath);
+					}
+
+					break;
+				}
+
+				case PARTICLE_SHADER:
+				{
+					const std::filesystem::path defaultPixelPath = "Engine/Shaders/Source/HLSL/2D/Particle_ps.hlsl";
+					const std::filesystem::path defaultGeometryPath = "Engine/Shaders/Source/HLSL/2D/Particle_gs.hlsl";
+					const std::filesystem::path defaultVertexPath = "Engine/Shaders/Source/HLSL/2D/Particle_vs.hlsl";
+
+					const std::filesystem::path pixelDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_ps.hlsl");
+					const std::filesystem::path geometryDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_gs.hlsl");
+					const std::filesystem::path vertexDestinationPath = Volt::ProjectManager::GetDirectory() / myCurrentDirectory->path / (tempName + "_vs.hlsl");
+
+					if (myNewShaderData.createPixelShader)
+					{
+						FileSystem::Copy(templatesPath / "Particle/particleTemplate_ps.hlsl", pixelDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(pixelDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultPixelPath);
+					}
+
+					if (myNewShaderData.createGeometryShader)
+					{
+						FileSystem::Copy(templatesPath / "Particle/particleTemplate_gs.hlsl", geometryDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(geometryDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultGeometryPath);
+					}
+
+					if (myNewShaderData.createVertexShader)
+					{
+						FileSystem::Copy(templatesPath / "Particle/particleTemplate_vs.hlsl", vertexDestinationPath);
+						shaderPaths.emplace_back(Volt::AssetManager::GetRelativePath(vertexDestinationPath));
+					}
+					else
+					{
+						shaderPaths.emplace_back(defaultVertexPath);
+					}
+
+					break;
+				}
+
+				case POST_PROCESSING_SHADER:
+				{
+					const std::filesystem::path path = myCurrentDirectory->path / (tempName + "_cs.hlsl");
+					const std::filesystem::path computeDestinationPath = Volt::ProjectManager::GetDirectory() / path;
+
+					FileSystem::Copy(templatesPath / "PostProcessing/templatePostProcessing_cs.hlsl", computeDestinationPath);
+					shaderPaths.emplace_back(path);
+
+					break;
+				}
 			}
 
 			// Create definition
@@ -1269,44 +1627,54 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				VT_SERIALIZE_PROPERTY(name, myNewShaderData.name, out);
 				VT_SERIALIZE_PROPERTY(internal, false, out);
 
-				const std::filesystem::path pixelShader = myNewShaderData.createPixelShader ? myCurrentDirectory->path / (tempName + "_ps.hlsl") : defaultPixelPath;
-				const std::filesystem::path vertexShader = myNewShaderData.createVertexShader ? myCurrentDirectory->path / (tempName + "_vs.hlsl") : defaultVertexPath;
-
-				out << YAML::Key << "paths" << YAML::Value << std::vector<std::filesystem::path>{ pixelShader, vertexShader };
+				out << YAML::Key << "paths" << YAML::Value << shaderPaths;
 				out << YAML::Key << "inputTextures" << YAML::BeginSeq;
-				{
-					// Albedo
-					{
-						out << YAML::BeginMap;
-						VT_SERIALIZE_PROPERTY(binding, 0, out);
-						VT_SERIALIZE_PROPERTY(name, "Albedo", out);
-						out << YAML::EndMap;
-					}
-
-					// Normal
-					{
-						out << YAML::BeginMap;
-						VT_SERIALIZE_PROPERTY(binding, 1, out);
-						VT_SERIALIZE_PROPERTY(name, "Normal", out);
-						out << YAML::EndMap;
-					}
-
-					// Material
-					{
-						out << YAML::BeginMap;
-						VT_SERIALIZE_PROPERTY(binding, 2, out);
-						VT_SERIALIZE_PROPERTY(name, "Material", out);
-						out << YAML::EndMap;
-					}
-				}
 				out << YAML::EndSeq;
 				out << YAML::EndMap;
 
 				std::ofstream fout(definitionDestinationPath);
 				fout << out.c_str();
 				fout.close();
+
+				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + ".vtsdef", tempName, shaderPaths, false);
+				Volt::ShaderRegistry::Register(tempName, newShader);
 			}
 
+			ImGui::CloseCurrentPopup();
+			Reload();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void AssetBrowserPanel::CreateNewMonoScriptModal()
+{
+	if (UI::BeginModal("New MonoScript##assetBrowser"))
+	{
+		static std::string name;
+		static bool regeneratePrj = true;
+
+		if (UI::BeginProperties("scriptProp"))
+		{
+			UI::Property("Name", name);
+			UI::Property("Regenerate Project", regeneratePrj);
+
+			UI::EndProperties();
+		}
+
+		if (ImGui::Button("Create"))
+		{
+			Volt::MonoScriptUtils::CreateNewCSFile(name, myCurrentDirectory->path, regeneratePrj);
+
+			name = "";
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -1314,6 +1682,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 
 		if (ImGui::Button("Cancel"))
 		{
+			name = "";
 			ImGui::CloseCurrentPopup();
 		}
 

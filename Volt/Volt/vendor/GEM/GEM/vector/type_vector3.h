@@ -4,18 +4,19 @@
 
 namespace gem
 {
-	typedef vec<3, float> vec3;
-	typedef vec<3, uint32_t> vec3ui;
+	using vec3 = vec<3, float>;
+	using vec3i = vec<3, int32_t>;
+	using vec3ui = vec<3, uint32_t>;
 
 	template<typename T>
 	struct vec<3, T>
 	{
 	public:
-		vec<3, T>() {};
-		vec<3, T>(T val) : x(val), y(val), z(val) {};
-		vec<3, T>(T x, T y, T z) : x(x), y(y), z(z) {};
-		vec<3, T>(const vec<3, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {};
-		vec<3, T>(const vec<4, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {};
+		constexpr vec<3, T>() {};
+		constexpr vec<3, T>(T val) : x(val), y(val), z(val) {};
+		constexpr vec<3, T>(T x, T y, T z) : x(x), y(y), z(z) {};
+		constexpr vec<3, T>(const vec<3, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {};
+		constexpr vec<3, T>(const vec<4, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) {};
 
 		vec<3, T> operator+(const vec<3, T>& rhs) const { return vec<3, T>(x + rhs.x, y + rhs.y, z + rhs.z); };
 		vec<3, T> operator-(const vec<3, T>& rhs) const { return vec<3, T>(x - rhs.x, y - rhs.y, z - rhs.z); };
@@ -26,6 +27,16 @@ namespace gem
 		bool operator>(const vec<3, T>& rhs) const { return (x > rhs.x && y > rhs.y && z > rhs.z); };
 		bool operator==(const vec<3, T>& rhs) const { return (x == rhs.x && y == rhs.y && z == rhs.z); };
 		bool operator!=(const vec<3, T>& rhs) const { return !(*this == rhs); };
+
+		bool operator<=(const gem::vec<3, T>& rhs)
+		{
+			return (x <= rhs.x && y <= rhs.y && z <= rhs.z);
+		}
+
+		bool operator>=(const gem::vec<3, T>& rhs)
+		{
+			return (x >= rhs.x && y >= rhs.y && z >= rhs.z);
+		}
 
 		void operator+=(const vec<3, T>& rhs)
 		{

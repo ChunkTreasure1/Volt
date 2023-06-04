@@ -23,7 +23,6 @@ project "Launcher"
 		"/ignore:4098",
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
-		"/WHOLEARCHIVE:Game",
 		"/WHOLEARCHIVE:PhysX",
 		"/WHOLEARCHIVE:GraphKey"
 	}
@@ -53,6 +52,8 @@ project "Launcher"
 		"../Amp/src/",
 		"../Game/src/",
 		"../GraphKey/src/",
+		"../Nexus/src",
+		"../Navigation/src/",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -62,7 +63,6 @@ project "Launcher"
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.fbxsdk}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.cr}",
 		"%{IncludeDir.msdf_atlas_gen}",
@@ -70,11 +70,24 @@ project "Launcher"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.efsw}",
-
-		"%{IncludeDir.imgui_node_editor}",
+		"%{IncludeDir.tinyddsloader}",
+		"%{IncludeDir.meshoptimizer}",
+		"%{IncludeDir.half}",
+		"%{IncludeDir.steam}",
+		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.GEM}",
-		"%{IncludeDir.ffmpeg}"
+		"%{IncludeDir.ffmpeg}",
+
+		"%{IncludeDir.detour}",
+		"%{IncludeDir.detourcrowd}",
+		"%{IncludeDir.rcdtdebugutils}",
+		"%{IncludeDir.detourtilecache}",
+		"%{IncludeDir.recast}",
+		"%{IncludeDir.fastlz}",
+
+		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.vma}"
 	}
 
     links
@@ -82,26 +95,27 @@ project "Launcher"
         "Volt",
 		"GraphKey",
 		"Amp",
+		"meshoptimizer",
+		"DiscordSDK",
 
-		"Game",
+		"ImGuiNodeEditor",
 
-		"d3d11.lib",
-		"d3dcompiler.lib",
-		"dxguid.lib",
 		"Bcrypt.lib",
 
 		"Ws2_32.lib",
 		"Winmm.lib",
 		"Version.lib",
 
-		"%{Library.fbxsdk}",
-		"%{Library.libxml2}",
-		"%{Library.zlib}",
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",
 		"%{Library.fsbank}",
 
 		"%{Library.PhysX}",
+
+		"%{Library.AkMemoryMgr}",
+		"%{Library.AkSoundEngine}",
+		"%{Library.AkStreamMgr}",
+		"%{Library.AkMusicEngine}",
 
 		"%{Library.avcodec}",
 		"%{Library.avdevice}",
@@ -111,13 +125,23 @@ project "Launcher"
 		"%{Library.swresample}",
 		"%{Library.swscale}",
 
-		"%{Library.mono}"
+		"%{Library.mono}",
+		"%{Library.steam}",
+		"%{Library.discord}",
+		
+		"%{Library.Vulkan}",
+		"%{Library.dxc}"
     }
 
 	configmap
 	{
 		["GameOnlyDebug"] = "Dist",
 		["SandboxOnlyDebug"] = "Dist"
+	}
+
+	debugargs 
+	{
+		"../Project/Project.vtproj"
 	}
 
 	filter "system:windows"
@@ -129,18 +153,45 @@ project "Launcher"
 			symbols "on"
 			optimize "off"
 
+			links
+			{
+				"%{Library.ShaderC_Debug}",
+				"%{Library.ShaderC_Utils_Debug}",
+				"%{Library.SPIRV_Cross_Debug}",
+				"%{Library.SPIRV_Cross_GLSL_Debug}",
+				"%{Library.SPIRV_Tools_Debug}",
+
+				"%{Library.VulkanUtils}"
+			}
+
 		filter "configurations:Release"
 			defines { "VT_RELEASE", "NDEBUG" }
 			runtime "Release"
 			optimize "on"
 			symbols "on"
 
+			links
+			{
+				"%{Library.ShaderC_Release}",
+				"%{Library.ShaderC_Utils_Release}",
+				"%{Library.SPIRV_Cross_Release}",
+				"%{Library.SPIRV_Cross_GLSL_Release}",
+			}
+
 		filter "configurations:Dist"
 			defines { "VT_DIST", "NDEBUG" }
 			runtime "Release"
 			optimize "on"
-			symbols "off"
+			symbols "on"
 			kind "WindowedApp"
+
+            links
+			{
+				"%{Library.ShaderC_Release}",
+				"%{Library.ShaderC_Utils_Release}",
+				"%{Library.SPIRV_Cross_Release}",
+				"%{Library.SPIRV_Cross_GLSL_Release}",
+			}
 
 			postbuildcommands
 			{

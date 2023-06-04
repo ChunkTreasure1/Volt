@@ -1,0 +1,237 @@
+Prefab:
+  version: 10
+  entities:
+    - id: 3930826287
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: GameManager
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 0
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 11419437704680336441
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3930826287
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 9
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [1034.32019, 145.478699, 14269.4805]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5428802467633469958, 3006162545260469436]
+          properties:
+            - type: 21
+              vectorType: 12
+              name: ScriptNames
+              data:
+                - value: Project.GameManager
+                - value: Project.PointManager
+                - value: Project.PerkManager
+                - value: Project.WaveController
+                - value: Project.WeaponManager
+                - value: Project.VFXManager
+            - type: 21
+              vectorType: 16
+              name: ScriptIds
+              data:
+                - value: 6798416504472945196
+                - value: 3540241731382738422
+                - value: 7649430873361001601
+                - value: 13766627513798229766
+                - value: 16066984587463013705
+                - value: 18223461796066444219
+        - guid: [5133199599840388224, 4829602707195010738]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Condition
+              data: 1
+            - type: 4
+              vectorType: 13
+              name: ID
+              data: 30555
+            - type: 4
+              vectorType: 13
+              name: cID
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Update Transform
+              data: true
+        - guid: [5573043887290156750, 757506377100558474]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PlayerPrefab
+              data: 58925922960652004
+            - type: 16
+              vectorType: 13
+              name: EnemyPrefab
+              data: 8112676415534668006
+      MonoScripts:
+        - ScriptEntry:
+            name: Project.GameManager
+            id: 6798416504472945196
+            properties:
+              - type: 13
+                name: Players
+                enumName: ""
+              - type: 13
+                name: MaxAmmoEvent
+                enumName: ""
+              - type: 1
+                name: PlayerCount
+                enumName: ""
+                data: 1
+              - type: 7
+                name: LastRoundEnemyHealth
+                enumName: ""
+                data: 150
+              - type: 0
+                name: DoublePoints
+                enumName: ""
+                data: false
+              - type: 2
+                name: myCurrentRound
+                enumName: ""
+                data: 0
+              - type: 13
+                name: NukeEvent
+                enumName: ""
+              - type: 0
+                name: InstaKill
+                enumName: ""
+                data: false
+              - type: 0
+                name: Nuke
+                enumName: ""
+                data: false
+              - type: 0
+                name: MaxAmmo
+                enumName: ""
+                data: false
+              - type: 0
+                name: Carpenter
+                enumName: ""
+                data: false
+              - type: 13
+                name: ResetPhoneBoothEvent
+                enumName: ""
+              - type: 13
+                name: PhoneBoothEvent
+                enumName: ""
+              - type: 13
+                name: InstaKillEvent
+                enumName: ""
+              - type: 13
+                name: DoublePointEvent
+                enumName: ""
+              - type: 13
+                name: CarpenterEvent
+                enumName: ""
+              - type: 13
+                name: EnemyDeathEvent
+                enumName: ""
+              - type: 13
+                name: NewRoundEvent
+                enumName: ""
+              - type: 13
+                name: StartGameEvent
+                enumName: ""
+              - type: 13
+                name: EndGameEvent
+                enumName: ""
+        - ScriptEntry:
+            name: Project.PointManager
+            id: 3540241731382738422
+            properties:
+              []
+        - ScriptEntry:
+            name: Project.PerkManager
+            id: 7649430873361001601
+            properties:
+              []
+        - ScriptEntry:
+            name: Project.WaveController
+            id: 13766627513798229766
+            properties:
+              []
+        - ScriptEntry:
+            name: Project.WeaponManager
+            id: 16066984587463013705
+            properties:
+              []
+        - ScriptEntry:
+            name: Project.VFXManager
+            id: 18223461796066444219
+            properties:
+              - type: 16
+                name: BodyImpact
+                enumName: ""
+                data: 10405711982411823474
+              - type: 16
+                name: WallImpact
+                enumName: ""
+                data: 6069351249644429389
+              - type: 16
+                name: DamageIndicator
+                enumName: ""
+                data: 0
+              - type: 16
+                name: BlinkEffect
+                enumName: ""
+                data: 14285113125462575292
+              - type: 16
+                name: TakeDamageEffect
+                enumName: ""
+                data: 6129708270807656513

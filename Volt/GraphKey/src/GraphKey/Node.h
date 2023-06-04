@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graph.h"
+#include "GraphKey/Link.h"
 
 #include <Volt/Core/UUID.h>
 #include <Volt/Core/Base.h>
@@ -12,6 +13,8 @@
 #include <vector>
 #include <string>
 #include <functional>
+
+#include <yaml-cpp/yaml.h>
 
 #define GK_BIND_FUNCTION(fn) std::bind(&fn, this)
 
@@ -31,14 +34,6 @@ namespace GraphKey
 
 	struct InputAttribute;
 	struct OutputAttribute;
-
-	struct Link
-	{
-		Volt::UUID input = 0;
-		Volt::UUID output = 0;
-
-		Volt::UUID id{};
-	};
 
 	struct Attribute
 	{
@@ -64,21 +59,34 @@ namespace GraphKey
 	{
 		Node() = default;
 		virtual ~Node() = default;
-		Node(const Ref<Node> node);
+		Node(const Node& node) = delete;
 
-		virtual void OnEvent(Volt::Event& e) {  }
-		
+		virtual void OnEvent(Volt::Event& e) {}
+		virtual void Initialize() {}
+		virtual void OnCopy() {}
+
+		virtual void Serialize(YAML::Emitter& out) {}
+		virtual void Deserialize(const YAML::Node& node) {}
+		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Wire::EntityId entity = 0);
+
 		virtual const std::string GetName() = 0;
 		virtual const gem::vec4 GetColor() = 0;
 
 		inline const std::string& GetRegistryName() const { return myRegistryName; }
+		const uint32_t GetAttributeIndexFromID(const Volt::UUID id) const;
 
 		template<typename T>
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden = false, const std::function<void()>& function = nullptr, bool linkable = true);
+
+		template<typename T>
+		Attribute AttributeConfigDefault(const std::string& name, AttributeDirection direction, const T& defaultValue, bool hidden = false, const std::function<void()>& function = nullptr, bool linkable = true);
+
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
 
 		template<typename T>
 		const T& GetInput(uint32_t index);
+
+		const bool InputHasData(uint32_t index);
 
 		template<typename T>
 		void ActivateOutput(uint32_t index, const T& data);
@@ -88,17 +96,22 @@ namespace GraphKey
 		void SetOutputData(uint32_t index, const T& data);
 
 		Volt::UUID id{};
-		Wire::EntityId entity = Wire::NullID;
+		Wire::EntityId entity = 0;
 
 		std::vector<Attribute> inputs;
 		std::vector<Attribute> outputs;
+
+		std::string editorState;
+		bool isHeaderless = false;
+
+	protected:
+		Graph* myGraph = nullptr;
 
 	private:
 		friend class Graph;
 		friend class Registry;
 
 		std::string myRegistryName;
-		Graph* myGraph = nullptr;
 	};
 
 	template<typename T>
@@ -116,6 +129,21 @@ namespace GraphKey
 		return attr;
 	}
 
+	template<typename T>
+	inline Attribute Node::AttributeConfigDefault(const std::string& name, AttributeDirection direction, const T& defaultValue, bool hidden, const std::function<void()>& function, bool linkable)
+	{
+		Attribute attr{};
+		attr.name = name;
+		attr.direction = direction;
+		attr.inputHidden = hidden;
+		attr.linkable = linkable;
+		attr.function = function;
+		attr.data = defaultValue;
+		attr.type = AttributeType::Type;
+
+		return attr;
+	}
+
 
 	template<typename T>
 	inline const T& Node::GetInput(uint32_t index)
@@ -125,8 +153,6 @@ namespace GraphKey
 		// If the requested input does not have a value, try to get it from the connected node
 		if (!inputs[index].links.empty())
 		{
-			inputs[index].data.reset();
-			
 			for (const auto& linkId : inputs[index].links)
 			{
 				const auto link = myGraph->GetLinkByID(linkId);
@@ -138,11 +164,21 @@ namespace GraphKey
 				const auto attr = myGraph->GetAttributeByID(link->output);
 				if (attr)
 				{
-					attr->function();
+					if (attr->function)
+					{
+						inputs[index].data.reset();
+						attr->function();
+					}
 				}
 			}
 		}
-		VT_CORE_ASSERT(inputs[index].data.has_value(), "Input data is empty!");
+
+		if (inputs[index].data.type() != typeid(T))
+		{
+			static T invalidTypeValue{};
+			return invalidTypeValue;
+		}
+
 		return std::any_cast<const T&>(inputs[index].data);
 	}
 
@@ -175,6 +211,9 @@ namespace GraphKey
 	inline void Node::SetOutputData(uint32_t index, const T& data)
 	{
 		VT_CORE_ASSERT(index < outputs.size(), "Index out of bounds!");
+
+		outputs[index].data = data;
+
 		for (const auto& linkId : outputs[index].links)
 		{
 			const auto link = myGraph->GetLinkByID(linkId);
@@ -183,13 +222,14 @@ namespace GraphKey
 				continue;
 			}
 
-			const auto attr = myGraph->GetAttributeByID(link->input);
-			if (!attr)
+			const auto inAttr = myGraph->GetAttributeByID(link->input);
+
+			if (!inAttr)
 			{
 				continue;
 			}
 
-			attr->data = data;
+			inAttr->data = data;
 		}
 	}
 }

@@ -32,32 +32,6 @@ namespace Volt
 		float m_mouseY;
 	};
 
-	class MouseMovedViewportEvent : public Event
-	{
-	public:
-		MouseMovedViewportEvent(float x, float y)
-			: m_mouseX(x), m_mouseY(y)
-		{}
-
-		//Getting
-		inline float GetX() const { return m_mouseX; }
-		inline float GetY() const { return m_mouseY; }
-
-		std::string ToString() const override
-		{
-			std::stringstream ss;
-			ss << "MouseMovedViewportEvent: " << m_mouseX << ", " << m_mouseY;
-			return ss.str();
-		}
-
-		EVENT_CLASS_TYPE(MouseMovedViewport);
-		EVENT_CLASS_CATEGORY(EventCategoryInput | EventCategoryMouse);
-
-	private:
-		float m_mouseX;
-		float m_mouseY;
-	};
-
 	class MouseScrolledEvent : public Event
 	{
 	public:
@@ -109,7 +83,6 @@ namespace Volt
 
 		EVENT_CLASS_TYPE(MouseButtonPressed);
 
-		bool overViewport = false;
 	};
 
 	class MouseButtonReleasedEvent : public MouseButtonEvent

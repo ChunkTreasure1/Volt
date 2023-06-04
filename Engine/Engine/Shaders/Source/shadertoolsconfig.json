@@ -1,0 +1,10 @@
+{
+    "hlsl.preprocessorDefinitions": {
+    },
+    "hlsl.additionalIncludeDirectories": [
+      "Includes",
+      "HLSL/Includes"
+    ],
+    "hlsl.virtualDirectoryMappings": {
+    }
+  }

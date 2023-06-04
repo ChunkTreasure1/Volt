@@ -40,6 +40,14 @@ enum class SaveReasonFlags: uint32_t
     User       = 0x00000010
 };
 
+enum class ArrowLocation
+{
+	None,
+	Start,
+	End,
+	StartEnd
+};
+
 inline SaveReasonFlags operator |(SaveReasonFlags lhs, SaveReasonFlags rhs) { return static_cast<SaveReasonFlags>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs)); }
 inline SaveReasonFlags operator &(SaveReasonFlags lhs, SaveReasonFlags rhs) { return static_cast<SaveReasonFlags>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs)); }
 
@@ -246,7 +254,7 @@ void PushStyleVar(StyleVar varIndex, const ImVec2& value);
 void PushStyleVar(StyleVar varIndex, const ImVec4& value);
 void PopStyleVar(int count = 1);
 
-void Begin(const char* id, const ImVec2& size = ImVec2(0, 0));
+bool Begin(const char* id, const ImVec2& size = ImVec2(0, 0));
 void End();
 
 void BeginNode(NodeId id);
@@ -271,6 +279,7 @@ void EndGroupHint();
 ImDrawList* GetNodeBackgroundDrawList(NodeId nodeId);
 
 bool Link(LinkId id, PinId startPinId, PinId endPinId, const ImVec4& color = ImVec4(1, 1, 1, 1), float thickness = 1.0f);
+bool Link(LinkId id, PinId startPinId, PinId endPinId, const ImVec2& offset, ArrowLocation arrowLocation, const ImVec4& color = ImVec4(1, 1, 1, 1), float thickness = 1.0f);
 
 void Flow(LinkId linkId);
 

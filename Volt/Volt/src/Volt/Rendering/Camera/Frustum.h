@@ -13,7 +13,7 @@ namespace Volt
 			normal = gem::normalize(normal);
 		}
 
-		const float GetSignedDistanceToPlane(const gem::vec3& position) const 
+		const float GetSignedDistanceToPlane(const gem::vec3& position) const
 		{
 			return gem::dot(position - point, normal);
 		}

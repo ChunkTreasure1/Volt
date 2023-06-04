@@ -24,7 +24,7 @@ namespace Volt
 			physx::PxPvd* debugger;
 			physx::PxPvdTransport* transport;
 		};
-	
+
 		inline static Scope<PhysXData> myDebuggerData;
 	};
 }

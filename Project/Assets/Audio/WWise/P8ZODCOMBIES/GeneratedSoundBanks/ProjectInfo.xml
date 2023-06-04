@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectInfo>
+	<Project Name="P8ZODCOMBIES" GUID="{718D198A-F565-4B8D-92E2-E3988C2754B4}" Generator="2022.1.3.8179"/>
+	<CacheRoot>../.cache</CacheRoot>
+	<Platforms>
+		<Platform Name="Windows" GUID="{BBDABB8B-0882-485F-B214-55181177DD2D}" BasePlatform="Windows" BasePlatformGUID="{6E0CB257-C6C8-4C5C-8366-2740DFC441EB}" Path="../../../Banks"/>
+	</Platforms>
+	<Languages>
+		<Language Name="English(US)" Id="684519430" GUID="{B43A0E29-0CAE-4060-A575-4FAA4B07DA6F}" Default="true" UseAsStandIn="true"/>
+	</Languages>
+	<FileHash>{75DE6D79-4327-E64B-49C1-803A26CD74A3}</FileHash>
+</ProjectInfo>

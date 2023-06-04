@@ -33,7 +33,17 @@ project "Volt"
 		"vendor/stb_image/**.cpp",
 		"vendor/stb_image/**.h",
 
-		"vendor/cr/**.h"
+		"vendor/vma/vma/VulkanMemoryAllocator.h",
+		"vendor/vma/vma/VulkanMemoryAllocator.cpp",
+
+		"%{IncludeDir.shaderc_glslc}/**.cc",
+		"%{IncludeDir.shaderc_glslc}/**.h",
+
+		"%{IncludeDir.shaderc_utils}/**.cc",
+		"%{IncludeDir.shaderc_utils}/**.h",
+
+		"%{IncludeDir.tinyddsloader}/**.h",
+		"%{IncludeDir.TinyGLTF}/**.h",
 	}
 
 	includedirs
@@ -42,7 +52,9 @@ project "Volt"
 		"../Amp/src",
 		"../Game/src",
 		"../GraphKey/src/",
-
+		"../Navigation/src/",
+		"../Nexus/src/",
+		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
@@ -50,21 +62,41 @@ project "Volt"
 		"%{IncludeDir.Wire}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.TinyGLTF}",
+		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
-		"%{IncludeDir.fbxsdk}",
+		"%{IncludeDir.TGAFbx}",
 		"%{IncludeDir.DirectXTK}",
 		"%{IncludeDir.fmod}",
+		"%{IncludeDir.wwise}",
 		"%{IncludeDir.cr}",
 		"%{IncludeDir.msdf_atlas_gen}",
 		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.meshoptimizer}",
+		"%{IncludeDir.half}",
+		"%{IncludeDir.steam}",
+		"%{IncludeDir.discord}",
+		"%{IncludeDir.NFDExtended}",
 
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.DirectXTex}",
-		"%{IncludeDir.efsw}"
+		"%{IncludeDir.efsw}",
+		"%{IncludeDir.asio}",
+
+		"%{IncludeDir.recast}",
+		"%{IncludeDir.rcdtdebugutils}",
+
+		"%{IncludeDir.detour}",
+		"%{IncludeDir.detourcrowd}",
+		"%{IncludeDir.detourtilecache}",
+
+		"%{IncludeDir.vma}",
+		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.shaderc_glslc}",
+		"%{IncludeDir.shaderc_utils}"
 	}
 
 	links
@@ -73,10 +105,14 @@ project "Volt"
 		"ImGui",
 		"Wire",
 		"Optick",
+		"Navigation",
 		"msdf-atlas-gen",
 		"YamlCPP",
 		"DirectXTex",
-		"efsw-static-lib"
+		"efsw-static-lib",
+		"Nexus",
+		"NFD-Extended",
+		"TGAFBX"
 	}
 
 	defines
@@ -84,13 +120,9 @@ project "Volt"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"PX_PHYSX_STATIC_LIB"
-	}
-
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
+		"PX_PHYSX_STATIC_LIB",
+		"OPTICK_ENABLE_GPU_VULKAN",
+		"_WINSOCKAPI_"
 	}
 
 	filter "files:vendor/**.cpp"
@@ -128,22 +160,25 @@ project "Volt"
 				"VT_ENABLE_PROFILING",
 				"NDEBUG"
 			}
+
+			buildoptions { "/Ot", "/Ob2" }
 			runtime "Release"
 			optimize "on"
 			symbols "on"
 
 		filter "configurations:Dist"
 			defines { "VT_DIST", "NDEBUG" }
+			buildoptions { "/Ot", "/Ob2" }
 			runtime "Release"
 			optimize "on"
-			symbols "off"
+			symbols "on"
 
 project "Shaders"
 	location "."
 	language "C++"
 	kind "None"
 	
-	cppdialect "C++latest"
+	cppdialect "C++20"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -152,7 +187,16 @@ project "Shaders"
 	{
 		"../../Engine/Engine/Shaders/**.hlsl",
 		"../../Engine/Engine/Shaders/**.hlslh",
-		"../../Engine/Engine/Shaders/**.hlsli"
+		"../../Engine/Engine/Shaders/**.hlsli",
+
+		"../../Engine/Engine/Shaders/**.glsl",
+		"../../Engine/Engine/Shaders/**.glslh",
+		"../../Engine/Engine/Shaders/**.glsli",
+
+		"../../Engine/Engine/Shaders/**.h",
+
+		"../../Project/Assets/**.hlsl",
+		"../../Project/Assets/**.hlsli"
 	}
 
 	filter "system:windows"
@@ -171,4 +215,4 @@ project "Shaders"
 	filter "configurations:Dist"
 		runtime "Release"
 		optimize "on"
-		symbols "off"
+		symbols "on"

@@ -1,0 +1,6 @@
+name: FX_blinkOpen
+internal: false
+paths:
+  - Assets\VFX\Environment\Pack-a-Punch\FX_blinkOpen_cs.hlsl
+inputTextures:
+  []

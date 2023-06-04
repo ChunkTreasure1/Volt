@@ -1,0 +1,4 @@
+name: "SSRComposite"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/SSR/SSRComposite_cs.hlsl"

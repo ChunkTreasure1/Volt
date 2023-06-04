@@ -1,0 +1,6 @@
+name: "SpotlightShadow"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Shadows/SpotlightShadow_vs.hlsl"
+inputTextures:
+  []

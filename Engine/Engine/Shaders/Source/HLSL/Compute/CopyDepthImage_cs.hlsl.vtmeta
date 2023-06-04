@@ -1,0 +1,4 @@
+Handle: 11826320032109228423
+Path: Engine/Shaders/Source/HLSL/Compute/CopyDepthImage_cs.hlsl
+Dependencies:
+  []

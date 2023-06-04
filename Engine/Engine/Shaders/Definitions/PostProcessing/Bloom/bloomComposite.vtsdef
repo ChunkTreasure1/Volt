@@ -1,0 +1,4 @@
+name: "BloomComposite"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/Bloom/BloomComposite_cs.hlsl"

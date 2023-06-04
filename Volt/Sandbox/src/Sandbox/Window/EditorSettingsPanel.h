@@ -14,13 +14,19 @@ public:
 private:
 	enum class SettingsMenu
 	{
-		VersionControl
+		VersionControl,
+		ExternalTools,
+		StyleSettings,
+		EditorSettings
 	};
 
 	void DrawOutline();
 	void DrawView();
 
 	void DrawVersionControl();
+	void DrawExternalTools();
+	void DrawStyleSettings();
+	void DrawEditorSettings();
 
 	EditorSettings& m_editorSettings;
 	SettingsMenu m_currentMenu = SettingsMenu::VersionControl;

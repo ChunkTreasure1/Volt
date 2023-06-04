@@ -40,7 +40,14 @@ namespace Volt
 		Dynamic
 	}), BodyType);
 
-	enum class CookingResult
+	SERIALIZE_ENUM((enum class ClimbingMode : uint32_t
+	{
+		Normal = 0,
+		Constrained
+
+	}), ClimbingMode)
+
+		enum class CookingResult
 	{
 		Success = 0,
 		ZeroAreaTestFailed,

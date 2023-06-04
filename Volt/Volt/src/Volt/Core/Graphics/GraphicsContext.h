@@ -2,47 +2,54 @@
 
 #include "Volt/Core/Base.h"
 
-#include <wrl.h>
-
-struct GLFWwindow;
-
-struct ID3D11Device;
-struct ID3D11DeviceContext;
-struct ID3DUserDefinedAnnotation;
-
-using namespace Microsoft::WRL;
+#include <vulkan/vulkan.h>
 
 namespace Volt
 {
-	class Swapchain;
+	class PhysicalGraphicsDevice;
+	class GraphicsDevice;
+	class Image2D;
 
 	class GraphicsContext
 	{
 	public:
-		GraphicsContext(GLFWwindow* aWindow);
+		GraphicsContext();
 		~GraphicsContext();
 
 		void Initialize();
 		void Shutdown();
 
-		inline static GraphicsContext& Get() { return *myInstance; }
-		static ComPtr<ID3D11Device> GetDevice();
-		static ComPtr<ID3D11DeviceContext> GetImmediateContext();
-		static ComPtr<ID3D11DeviceContext> GetDeferredContext();
-		static ComPtr<ID3DUserDefinedAnnotation> GetImmediateAnnotations();
-		static ComPtr<ID3DUserDefinedAnnotation> GetDeferredAnnotations();
+		inline const VkInstance GetInstance() const { return myVulkanInstance; }
 
-		static Ref<GraphicsContext> Create(GLFWwindow* aWindow);
+		static void SetImageName(VkImage image, const std::string& name);
+
+		static GraphicsContext& Get();
+		static Ref<GraphicsDevice> GetDevice();
+		static Ref<PhysicalGraphicsDevice> GetPhysicalDevice();
+		static Ref<GraphicsContext> Create();
 
 	private:
-		ComPtr<ID3D11Device> myDevice = nullptr;
-		ComPtr<ID3D11DeviceContext> myImmediateContext = nullptr;
-		ComPtr<ID3D11DeviceContext> myDeferredContext = nullptr;
-		ComPtr<ID3DUserDefinedAnnotation> myImmediateAnnotations = nullptr;
-		ComPtr<ID3DUserDefinedAnnotation> myDeferredAnnotations = nullptr;
+		struct VulkanFunctions
+		{
+			PFN_vkSetDebugUtilsObjectNameEXT setDebugUtilsObjectName;
 
-		GLFWwindow* myWindow;
+		} myVulkanFunctions;
 
-		inline static GraphicsContext* myInstance = nullptr;
+		void CreateVulkanInstance();
+		void SetupDebugCallback();
+
+		bool CheckValidationLayerSupport();
+		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& outCreateInfo);
+		std::vector<const char*> GetRequiredExtensions();
+
+		const std::vector<const char*> myValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+
+		Ref<PhysicalGraphicsDevice> myPhysicalDevice;
+		Ref<GraphicsDevice> myDevice;
+
+		VkInstance myVulkanInstance;
+		VkDebugUtilsMessengerEXT myDebugMessenger;
+
+		inline static GraphicsContext* s_instance = nullptr;
 	};
 }

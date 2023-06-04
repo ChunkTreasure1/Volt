@@ -12,7 +12,7 @@ namespace AssetBrowser
 		~DirectoryItem() override = default;
 
 		bool Render() override;
-	
+
 		DirectoryItem* parentDirectory = nullptr;
 
 		std::vector<Ref<AssetItem>> assets;
@@ -24,7 +24,7 @@ namespace AssetBrowser
 
 	private:
 		bool RenderRightClickPopup();
-		void Rename(const std::string& newName);
+		bool Rename(const std::string& newName);
 		void RecursivlyRenameAssets(DirectoryItem* directory, const std::filesystem::path& targetDirectory);
 
 		float& myThumbnailSize;

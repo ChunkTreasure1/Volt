@@ -9,11 +9,7 @@
 #include <Volt/Core/Layer/Layer.h>
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Events/KeyEvent.h>
-#include <Volt/Utility/DLLHandler.h>
-
-#include <Volt/Rendering/RenderPass.h>
-
-#include <Game/Game.h>
+#include <Volt/Events/MouseEvent.h>
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -21,13 +17,11 @@
 namespace Volt
 {
 	class SceneRenderer;
-	class NavigationSystem;
 	class Scene;
 	class Mesh;
 	class Framebuffer;
 	class Material;
-	class Shader;
-	class ConstantBuffer;
+	class Camera;
 	class Texture2D;
 }
 
@@ -41,6 +35,10 @@ enum class SceneState
 
 struct ImGuiWindow;
 class ViewportPanel;
+class GameViewPanel;
+class NavigationPanel;
+class AssetBrowserPanel;
+
 class EditorWindow;
 class EditorCameraController;
 
@@ -61,19 +59,21 @@ public:
 	void OnSimulationStart();
 	void OnSimulationStop();
 
-	inline void SetShouldRenderGizmos(bool shouldRender) { myShouldRenderGizmos = shouldRender; }
+	void SetEditorHasMouseControl();
+	void SetPlayHasMouseControl();
 
 	inline static Sandbox& Get() { return *myInstance; }
 
 	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
-	
+
 	void NewScene();
 	void OpenScene();
 	void OpenScene(const std::filesystem::path& path);
 	void SaveScene();
 	void TransitionToNewScene();
 
-	const std::vector<Ref<EditorWindow>>& GetEditorWindows() { return myEditorWindows; };
+	bool CheckForUpdateNavMesh(Volt::Entity entity);
+	void BakeNavMesh();
 
 private:
 	struct SaveSceneAsData
@@ -82,12 +82,9 @@ private:
 		std::filesystem::path destinationPath = "Assets/Scenes/";
 	} mySaveSceneData;
 
-	void ExecuteUndo();
 	void SaveSceneAs();
 
 	void InstallMayaTools();
-	void SetupRenderCallbacks();
-	void CreateEditorRenderPasses();
 
 	bool OnUpdateEvent(Volt::AppUpdateEvent& e);
 	bool OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e);
@@ -97,15 +94,14 @@ private:
 	bool OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e);
 	bool LoadScene(Volt::OnSceneTransitionEvent& e);
 
-	void SaveUserSettings();
-	void LoadUserSettings();
-
 	void CreateWatches();
+
+	void SetupNewSceneData();
 
 	/////ImGui/////
 	void UpdateDockSpace();
 	void SaveSceneAsModal();
-	
+
 	void BuildGameModal();
 	void RenderProgressBar(float progress);
 
@@ -115,54 +111,43 @@ private:
 
 	float DrawTitlebar();
 	void DrawMenuBar();
+	
+	void RenderGameView();
 	///////////////
+
+	///// Debug Rendering /////
+	void RenderSelection(Ref<Volt::Camera> camera);
+	void RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera);
+	///////////////////////////
 
 	BuildInfo myBuildInfo;
 
-	std::vector<Ref<EditorWindow>> myEditorWindows;
 	Ref<EditorCameraController> myEditorCameraController;
 
+	//Ref<Volt::SceneRenderer> mySceneRenderer;
+	//Ref<Volt::SceneRenderer> myGameSceneRenderer;
+	//Ref<Volt::Material> myGridMaterial;
+
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Material> myGridMaterial;
+	Ref<Volt::SceneRenderer> myGameSceneRenderer;
 
 	///// File watcher /////
 	Ref<FileWatcher> myFileWatcher;
 	std::mutex myFileWatcherMutex;
 	std::vector<std::function<void()>> myFileChangeQueue;
 	////////////////////////
-	
+
 	Ref<Volt::Scene> myRuntimeScene;
 	Ref<Volt::Scene> myIntermediateScene;
 
-	/////Outline/////
-	Volt::RenderPass mySelectedGeometryPass;
-	Volt::RenderPass myJumpFloodInitPass;
-	Volt::RenderPass myJumpFloodCompositePass;
-
-	Volt::RenderPass myJumpFloodPass[2];
-	Ref<Volt::ConstantBuffer> myJumpFloodBuffer;
-	/////////////////
-
-	/////Gizmos/////
-	Ref<Volt::Shader> myGizmoShader;
-	Volt::RenderPass myGizmoPass;
-
-	Ref<Volt::Texture2D> myEntityGizmoTexture;
-	Ref<Volt::Texture2D> myLightGizmoTexture;
-	//////////////////
-
-	///// Forward Extra /////
-	Volt::RenderPass myColliderVisualizationPass;
-	Volt::RenderPass myForwardExtraPass;
-	Ref<Volt::Mesh> myDecalArrowMesh;
-	/////////////////////////
-
-	Ref<Game> myGame;
-
 	SceneState mySceneState = SceneState::Edit;
 
-	Ref<Volt::NavigationSystem> myNavigationSystem;
 	Ref<ViewportPanel> myViewportPanel;
+	Ref<GameViewPanel> myGameViewPanel;
+
+	Ref<NavigationPanel> myNavigationPanel;
+
+	Ref<AssetBrowserPanel> myAssetBrowserPanel;
 
 	gem::vec2ui myViewportSize = { 1280, 720 };
 	gem::vec2ui myViewportPosition = { 0, 0 };
@@ -170,16 +155,16 @@ private:
 	bool myShouldOpenSaveSceneAs = false;
 	bool myOpenShouldSaveScenePopup = false;
 	bool myShouldResetLayout = false;
-	bool myShouldRenderGizmos = true;
 	bool myTitlebarHovered = false;
 	bool myBuildStarted = false;
-	
-	bool myShouldResize = false;
+	bool myPlayHasMouseControl = false;
+
+	bool myShouldMovePlayer = false;
+	gem::vec3 myMovePlayerToPosition = 0.f;
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;
 	uint32_t myAssetBrowserCount = 0;
 
 	inline static Sandbox* myInstance = nullptr;
-
 };

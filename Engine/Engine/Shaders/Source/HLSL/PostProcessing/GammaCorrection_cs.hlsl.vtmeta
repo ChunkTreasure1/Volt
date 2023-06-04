@@ -1,0 +1,4 @@
+Handle: 290650752250108180
+Path: Engine/Shaders/Source/HLSL/PostProcessing/GammaCorrection_cs.hlsl
+Dependencies:
+  []

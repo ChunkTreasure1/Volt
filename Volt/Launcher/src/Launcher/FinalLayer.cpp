@@ -1,12 +1,6 @@
 #include "FinalLayer.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Core/Graphics/Swapchain.h>
-
-#include <Volt/Rendering/Renderer.h>
-#include <Volt/Rendering/SceneRenderer.h>
-#include <Volt/Rendering/Framebuffer.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
 
 #include <Volt/Events/KeyEvent.h>
 #include <Volt/Input/KeyCodes.h>
@@ -17,7 +11,7 @@ FinalLayer::FinalLayer(Ref<Volt::SceneRenderer>& aSceneRenderer)
 
 void FinalLayer::OnAttach()
 {
-	myCopyToScreenShader = Volt::ShaderRegistry::Get("CopyTextureToTarget");
+	//myCopyToScreenShader = Volt::ShaderRegistry::Get("CopyTextureToTarget");
 }
 
 void FinalLayer::OnDetach()
@@ -30,56 +24,63 @@ void FinalLayer::OnEvent(Volt::Event& e)
 
 	dispatcher.Dispatch<Volt::KeyPressedEvent>([&](Volt::KeyPressedEvent& e)
 		{
-			if (e.GetKeyCode() == VT_KEY_F6)
-			{
-				const auto& allBuffers = mySceneRenderer->GetAllFramebuffers();
+			//if (e.GetKeyCode() == VT_KEY_F6)
+			//{
+			//	const auto& allBuffers = mySceneRenderer->GetAllFramebuffers();
 
-				uint32_t currentPassTargetCount = 0;
-				for (const auto& att : allBuffers.at(myPassIndex).second->GetSpecification().attachments)
-				{
-					if (!Volt::Utility::IsDepthFormat(att.format))
-					{
-						currentPassTargetCount++;
-					}
-				}
+			//	uint32_t currentPassTargetCount = 0;
+			//	for (const auto& att : allBuffers.at(myPassIndex).second->GetSpecification().attachments)
+			//	{
+			//		if (!Volt::Utility::IsDepthFormat(att.format))
+			//		{
+			//			currentPassTargetCount++;
+			//		}
+			//	}
 
-				if (myDebugTargets)
-				{
-					myTargetIndex++;
-				}
+			//	if (myDebugTargets)
+			//	{
+			//		myTargetIndex++;
+			//	}
 
-				myDebugTargets = true;
-				if (myTargetIndex == currentPassTargetCount - 1)
-				{
-					myTargetIndex = 0;
-					myPassIndex = 0;
-					myDebugTargets = false;
-				}
+			//	myDebugTargets = true;
+			//	if (myTargetIndex == currentPassTargetCount - 1)
+			//	{
+			//		myTargetIndex = 0;
+			//		myPassIndex = 0;
+			//		myDebugTargets = false;
+			//	}
 
-			}
+			//}
 			return false;
 		});
 }
 
 bool FinalLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	Volt::Application::Get().GetWindow().GetSwapchain().Bind();
+	//Volt::Application::Get().GetWindow().GetSwapchain().Bind();
 
-	auto context = Volt::GraphicsContext::GetImmediateContext();
+	//Volt::RenderCommand::SetContext(Volt::Context::Immidiate);
+	//
+	////myCopyToScreenShader->Bind();
 
-	if (!myDebugTargets)
-	{
-		context->PSSetShaderResources(0, 1, mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0)->GetSRV().GetAddressOf());
-	}
-	else
-	{
-		context->PSSetShaderResources(0, 1, mySceneRenderer->GetAllFramebuffers().at(myPassIndex).second->GetColorAttachment(myTargetIndex)->GetSRV().GetAddressOf());
-	}
+	//if (!myDebugTargets)
+	//{
+	//	Volt::RenderCommand::BindSRVsToStage({ mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0) }, Volt::ShaderStage::Pixel, 0);
+	//}
+	//else
+	//{
+	//	Volt::RenderCommand::BindSRVsToStage({ mySceneRenderer->GetAllFramebuffers().at(myPassIndex).second->GetColorAttachment(myTargetIndex) }, Volt::ShaderStage::Pixel, 0);
+	//}
 
-	Volt::Renderer::DrawFullscreenTriangleWithShader(myCopyToScreenShader);
+	//Volt::RenderCommand::SetTopology(Volt::Topology::TriangleList);
+	//Volt::RenderCommand::IndexBuffer_Bind(nullptr);
+	//Volt::RenderCommand::VertexBuffer_Bind(nullptr);
 
-	ID3D11ShaderResourceView* srv = nullptr;
-	context->PSSetShaderResources(0, 1, &srv);
+	//Volt::RenderCommand::Draw(3, 0);
+	//
+	////myCopyToScreenShader->Unbind();
+
+	//Volt::RenderCommand::ClearSRVsAtStages(1, Volt::ShaderStage::Pixel, 0);
 
 	return false;
 }

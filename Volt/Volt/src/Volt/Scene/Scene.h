@@ -1,6 +1,13 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
 
+#include "Volt/Animation/AnimationSystem.h"
+#include "Volt/Particles/ParticleSystem.h"
+#include "Volt/Audio/AudioSystem.h"
+#include "Volt/Vision/TimelinePlayer.h"
+
+#include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
+
 #include <Wire/Wire.h>
 #include <gem/gem.h>
 
@@ -10,16 +17,15 @@
 namespace Volt
 {
 	class ParticleSystem;
+	class Vision;
+	class AudioSystem;
 	class Entity;
-	class TextureCube;
 
 	class Animation;
 	class Skeleton;
 	class AnimatedCharacter;
 	class Event;
 	class Image2D;
-
-	class PhysicsSystem;
 
 	struct SceneEnvironment
 	{
@@ -28,6 +34,15 @@ namespace Volt
 
 		float lod = 0.f;
 		float intensity = 1.f;
+	};
+
+	struct SceneLayer
+	{
+		uint32_t id = 0;
+		std::string name;
+
+		bool visible = true;
+		bool locked = false;
 	};
 
 	class Scene : public Asset
@@ -52,6 +67,9 @@ namespace Volt
 		inline const std::string& GetName() const { return myName; }
 		inline const Statistics& GetStatistics() const { return myStatistics; }
 		inline const bool IsPlaying() const { return myIsPlaying; }
+		inline const float GetDeltaTime() const { return myCurrentDeltaTime; }
+
+		void SetTimeScale(const float aTimeScale);
 
 		void OnRuntimeStart();
 		void OnRuntimeEnd();
@@ -60,9 +78,26 @@ namespace Volt
 		void OnSimulationEnd();
 
 		void Update(float aDeltaTime);
+		void FixedUpdate(float aDeltaTime);
 		void UpdateEditor(float aDeltaTime);
 		void UpdateSimulation(float aDeltaTime);
 		void OnEvent(Event& e);
+
+		void SortScene();
+
+		void AddLayer(const std::string& layerName);
+		void RemoveLayer(const std::string& layerName);
+		void RemoveLayer(uint32_t layerId);
+		void MoveToLayer(Entity entity, uint32_t targetLayer);
+		void SetActiveLayer(uint32_t layerId);
+		bool LayerExists(uint32_t layerId);
+
+		inline const uint32_t GetActiveLayer() const { return mySceneLayers.at(myActiveLayerIndex).id; }
+		inline const std::vector<SceneLayer>& GetLayers() const { return mySceneLayers; }
+		inline std::vector<SceneLayer>& GetLayersMutable() { return mySceneLayers; }
+
+		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return myMonoFieldCache; }
+		inline MonoScriptFieldCache& GetScriptFieldCache() { return myMonoFieldCache; }
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
@@ -72,34 +107,42 @@ namespace Volt
 
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
-		
-		gem::mat4 GetWorldSpaceTransform(Entity entity, bool accountForActor = false);
+
+		gem::mat4 GetWorldSpaceTransform(Entity entity);
 		TQS GetWorldSpaceTRS(Entity entity);
 
-		Entity InstantiateSplitMesh(const std::filesystem::path& path);
+		Vision& GetVision() { return *myVisionSystem; }
+		TimelinePlayer& GetTimelinePlayer() { return myTimelinePlayer; };
+
+		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
 		gem::vec3 GetWorldForward(Entity entity);
 		gem::vec3 GetWorldRight(Entity entity);
 		gem::vec3 GetWorldUp(Entity entity);
 
-		const bool IsAnyParentSelected(Entity entity);
-
 		template<typename T>
 		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;
+
+		const Entity GetEntityWithName(std::string name);
+
+		inline ParticleSystem& GetParticleSystem() { return myParticleSystem; }
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
 		static void PreloadSceneAssets(const std::filesystem::path& scenePath);
+		static Ref<Scene> CreateDefaultScene(const std::string& name, bool createDefaultMesh = true);
 
 		static AssetType GetStaticType() { return AssetType::Scene; }
 		AssetType GetType() override { return GetStaticType(); }
 
 		void CopyTo(Ref<Scene> otherScene);
+		void Clear();
 
-		Ref<ParticleSystem> myParticleSystem;
 	private:
 		friend class Entity;
 		friend class SceneImporter;
+
+		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
 		void SetupComponentCreationFunctions();
 		void SetupComponentDeletionFunctions();
@@ -108,15 +151,14 @@ namespace Volt
 		void ConvertToWorldSpace(Entity entity);
 		void ConvertToLocalSpace(Entity entity);
 
-		void SortScene();
+		void AddLayer(const std::string& layerName, uint32_t layerId);
 
 		SceneEnvironment myEnvironment;
 		Statistics myStatistics;
 
-		Ref<PhysicsSystem> myPhysicsSystem;
-
 		bool myIsPlaying = false;
 		float myTimeSinceStart = 0.f;
+		float myCurrentDeltaTime = 0.f;
 
 		std::string myName = "New Scene";
 		Wire::Registry myRegistry;
@@ -124,10 +166,21 @@ namespace Volt
 		std::map<Wire::EntityId, bool> myEntityTimesToDestroyRemoved;
 		std::map<Wire::EntityId, float> myEntityTimesToDestroy;
 
+		std::vector<SceneLayer> mySceneLayers;
+
 		uint32_t myWidth = 1;
 		uint32_t myHeight = 1;
 
-		uint32_t myLastSortId = 0;
+		uint32_t myLastLayerId = 1;
+		uint32_t myActiveLayerIndex = 0;
+		TimelinePlayer myTimelinePlayer;
+
+		ParticleSystem myParticleSystem;
+		AudioSystem myAudioSystem;
+		AnimationSystem myAnimationSystem;
+		MonoScriptFieldCache myMonoFieldCache;
+
+		Ref<Vision> myVisionSystem; // Needs to be of ptr type because of include loop
 	};
 
 	template<typename T>

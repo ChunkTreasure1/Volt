@@ -1,0 +1,8 @@
+name: Sparks
+internal: false
+paths:
+  - Assets\VFX\Environment\Sparks\FX_Sparks_ps.hlsl
+  - Engine\Shaders\Source\HLSL\Forward\ForwardPBR_vs.hlsl
+inputTextures:
+  - shaderName: exampleTexture
+    editorName: exampleTexture

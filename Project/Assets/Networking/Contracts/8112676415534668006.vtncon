@@ -1,0 +1,37 @@
+Contract:
+  prefab: 8112676415534668006
+  Calls:
+    "\x01": Project.EnemyBase.TakeDamage
+    "\x02": Project.EnemyBase.Die
+    "\x05": Project.EnemyAnimationHandler.SetAnimation
+  Rules:
+    1728658947:
+      CharacterControllerComponent:
+        owner: true
+        other: true
+        host: true
+      CapsuleColliderComponent:
+        owner: true
+        other: true
+        host: true
+      Project.EnemyAnimationHandler:
+        owner: true
+        other: true
+        host: true
+      NavAgentComponent:
+        owner: false
+        other: false
+        host: true
+      Project.EnemyBase:
+        owner: true
+        other: true
+        host: true
+      Project.EnemyController:
+        owner: false
+        other: false
+        host: true
+    887091098:
+      AnimationControllerComponent:
+        owner: true
+        other: true
+        host: true

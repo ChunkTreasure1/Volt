@@ -1,0 +1,8 @@
+PostProcessingMaterial:
+  shader: FX_takeDamage
+  specializationData:
+    size: 4
+    members:
+      - name: lerpVal
+        type: 10
+        data: 0

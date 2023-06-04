@@ -1,0 +1,4 @@
+Handle: 3741718037363243869
+Path: Engine/Shaders/Source/HLSL/Compute/DepthReduction_cs.hlsl
+Dependencies:
+  []

@@ -15,7 +15,7 @@ namespace Volt
 			uint32_t width = 0;
 			uint32_t height = 0;
 		};
-		
+
 		static const TextureData GetRawDataFromDDS(const std::filesystem::path& path);
 
 	private:

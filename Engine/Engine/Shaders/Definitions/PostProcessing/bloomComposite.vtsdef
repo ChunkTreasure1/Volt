@@ -1,5 +1,0 @@
-name: "BloomComposite"
-internal: true
-paths:
-  - "Engine/Shaders/HLSL/PostProcessing/BloomComposite_ps.hlsl"
-  - "Engine/Shaders/HLSL/Utility/FullscreenTriangle_vs.hlsl"

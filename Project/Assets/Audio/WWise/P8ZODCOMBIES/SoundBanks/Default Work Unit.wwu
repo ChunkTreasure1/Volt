@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{3E1DFCC0-4731-443C-9B56-D61DDDB01432}" SchemaVersion="110">
+	<SoundBanks>
+		<WorkUnit Name="Default Work Unit" ID="{3E1DFCC0-4731-443C-9B56-D61DDDB01432}" PersistMode="Standalone">
+			<ChildrenList>
+				<SoundBank Name="Master" ID="{269B97E0-13E8-4158-87AC-81168551B50F}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Play_Automatic_Shoot" ID="{6ADB772A-92D5-4110-87EC-A255C8736A6D}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Barricade_Repair" ID="{10ADAD54-F28F-41B9-ABD9-9C1625A0C324}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Melee" ID="{0A5639F1-9958-41F8-9F93-492412942D09}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Enemy_Attack" ID="{0A333B40-4C4D-42BF-B32A-6DA571F374CF}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_UpgradeWeapon" ID="{280B024C-8529-42E7-B627-8CB4AB932B3C}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_TakeDamage" ID="{21BD1D6D-BDEB-4488-8503-34CA84209971}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Nuke" ID="{41D34B1D-663D-4492-AB45-B97F7FE44EE4}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Stop_Barricade_Repair" ID="{E83AF638-DAFA-44BD-BABD-B6CBBE71B9D9}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BoltAction_Reload" ID="{5F181063-35F7-45B5-B1F1-327CEFD354EB}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Music_3D" ID="{83ADB808-573A-45C7-918D-A5BA545B0682}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Shotgun_Reload" ID="{BBDC7DA5-EBE1-4625-9BF4-F5073E95426E}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_UI_Click" ID="{11362E1F-BBE9-4651-8FCC-DF0AE93197B6}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Land" ID="{1B825685-7E35-46B3-A1A1-2DA9C30F8430}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_NewRound" ID="{8416FF37-055E-46D7-96AD-9887E5601D0C}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Shotgun_Pumpback" ID="{587C7708-66BC-46F3-8538-15F6850D6B59}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Barricade_Break" ID="{B465EFA4-459B-4759-8809-387E120B8DE0}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Automatic_Reload" ID="{760DA28F-6EBE-47A0-B1D6-6A9F355478C9}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_InstaKill" ID="{811D5CDB-86AC-47C1-AC83-517A8C8AF34A}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Jump" ID="{A091E537-B296-47DC-9AED-18021EF725B0}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="PhoneRing_Far" ID="{8F870393-BE66-4849-845B-89D3C90F8785}" WorkUnitID="{24192588-1DA3-42D6-8EEB-B553E35573DB}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Footstep" ID="{E07A5DE0-5FB6-4851-87F5-6070437424AB}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_UI_Hover" ID="{C57F41CD-8D73-48C1-AE69-E21F212C1BC6}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Enemy_Growl" ID="{DECE0E49-F729-4937-B307-9F543DF62AE6}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Enemy_Footsteps" ID="{5D1E5CF5-411E-49A1-B0B3-8231174EE9FB}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_MainMenu_Music" ID="{1A63E3E4-46C8-49B6-B597-6A221BA2D4F6}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_ChangeWeapon_From" ID="{962DBA87-8D1B-4A0E-A1D0-E200283BD628}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Phone" ID="{1AED560C-5A89-4A9A-A6AE-97AE4253ED7A}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_SpendMoney" ID="{5F1EA44C-E1B2-4B15-8DF6-BA9A52B29B01}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BoltAction_Bolt" ID="{C231E91F-C4D0-4CA2-A54E-432AF1B4FF13}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Music" ID="{30400DF7-2176-4CF2-A164-74B27B2C3EB3}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Pistol_Shoot" ID="{2AED9F47-08AE-4D19-919C-10E444443D88}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Carpenter" ID="{3CFD436B-E754-4D1E-AA6D-90794E7C9565}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Shotgun_Shot" ID="{163A13B8-EB32-4D45-855C-848DCCCB7CFB}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_ChangeWeapon_To" ID="{2344FC28-5F84-4DA1-9052-AAEB6D6A0D77}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="FPSPlayer" ID="{D8D55129-6D07-4DCB-B10A-B968371DACBB}" WorkUnitID="{24192588-1DA3-42D6-8EEB-B553E35573DB}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Enemy_TakeDamage" ID="{FCA403A6-4647-4DDD-B4EA-9CDD9CB16DE9}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Pistol_Reload" ID="{F1E0F66F-973A-4DF7-B144-B4A5A8803750}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_DoublePoints" ID="{6A5688F3-F581-4E61-8023-C16DC8828751}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Death" ID="{851A40C5-FAA6-4EBE-83D5-2FBDF7D31034}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Enemy_Death" ID="{0A1120C4-983C-4EE3-AEFE-3D072193E7AE}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Switch" ID="{87E0E204-B51F-4F28-AC5F-E6F976D3C886}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_MaxAmmo" ID="{F37A63DD-39BB-4F82-9110-F66B2B47901B}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_BoltAction_Shoot" ID="{A3186554-3C9A-4F8D-A68A-7F8B7DB93A9E}" WorkUnitID="{0FCE241D-10A7-4B64-9F86-8BCC3D941036}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+			</ChildrenList>
+		</WorkUnit>
+	</SoundBanks>
+</WwiseDocument>

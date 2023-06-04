@@ -5,6 +5,7 @@
 #include "Volt/Physics/PhysXUtilities.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Physics/MeshColliderCache.h"
@@ -47,6 +48,7 @@ namespace Volt
 
 					return result;
 				}
+				i++;
 			}
 
 			// Cache the cooked mesh
@@ -72,7 +74,7 @@ namespace Volt
 		else
 		{
 			Ref<Mesh> srcMesh = AssetManager::GetAsset<Mesh>(colliderComp.colliderMesh);
-			std::vector<MeshColliderData> colliderData;  
+			std::vector<MeshColliderData> colliderData;
 
 			// Cook the mesh
 			for (uint32_t i = 0; const auto & subMesh : srcMesh->GetSubMeshes())
@@ -88,6 +90,8 @@ namespace Volt
 
 					return result;
 				}
+
+				i++;
 			}
 
 			// Cache the cooked mesh
@@ -132,7 +136,7 @@ namespace Volt
 		convexDesc.indices.data = &indices[submesh.indexStartOffset / 3];
 		convexDesc.indices.stride = sizeof(uint32_t) * 3;
 
-		if (vertices.size() >= convexDesc.vertexLimit)
+		if (submesh.vertexCount >= convexDesc.vertexLimit)
 		{
 			VT_CORE_WARN("Attempting to cook mesh with more than {0} vertices! Switching to quantized cooking!", convexDesc.vertexLimit);
 			convexDesc.flags |= physx::PxConvexFlag::eQUANTIZE_INPUT | physx::PxConvexFlag::eSHIFT_VERTICES;
@@ -192,5 +196,133 @@ namespace Volt
 		cookingResult = CookingResult::Success;
 
 		return cookingResult;
+	}
+
+	void CookingFactory::GenerateDebugMesh(const MeshColliderComponent& colliderComp, const std::vector<MeshColliderData>& meshData)
+	{
+		if (!colliderComp.isConvex)
+		{
+			std::vector<Vertex> vertices;
+			std::vector<uint32_t> indices;
+			std::vector<SubMesh> subMeshes;
+
+			for (const Volt::MeshColliderData & data : meshData)
+			{
+				physx::PxDefaultMemoryInputData input(data.data.As<physx::PxU8>(), static_cast<physx::PxU32>(data.data.GetSize()));
+				physx::PxTriangleMesh* trimesh = PhysXInternal::GetPhysXSDK().createTriangleMesh(input);
+
+				if (!trimesh)
+				{
+					continue;
+				}
+
+				const uint32_t nbVerts = trimesh->getNbVertices();
+				const physx::PxVec3* triangleVertices = trimesh->getVertices();
+				const uint32_t nbTriangles = trimesh->getNbTriangles();
+				const physx::PxU16* tris = (const physx::PxU16*)trimesh->getTriangles();
+
+				vertices.reserve(vertices.size() + nbVerts);
+				indices.reserve(indices.size() + nbTriangles * 3);
+
+				SubMesh& submesh = subMeshes.emplace_back();
+				submesh.vertexStartOffset = static_cast<uint32_t>(vertices.size());
+				submesh.vertexCount = nbVerts;
+				submesh.indexStartOffset = static_cast<uint32_t>(indices.size());
+				submesh.indexCount = nbTriangles * 3;
+				submesh.materialIndex = 0;
+				submesh.transform = data.transform;
+
+				for (uint32_t v = 0; v < nbVerts; v++)
+				{
+					Vertex& v1 = vertices.emplace_back();
+					v1.position = PhysXUtilities::FromPhysXVector(triangleVertices[v]);
+				}
+
+				for (uint32_t tri = 0; tri < nbTriangles; tri++)
+				{
+					indices.emplace_back(tris[3 * tri + 0]);
+					indices.emplace_back(tris[3 * tri + 2]);
+					indices.emplace_back(tris[3 * tri + 1]);
+				}
+
+				trimesh->release();
+			}
+
+			if (vertices.size() > 0)
+			{
+				Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
+				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, material, subMeshes);
+				MeshColliderCache::AddTriangleDebugMesh(colliderComp.colliderMesh, mesh);
+			}
+		}
+		else
+		{
+			std::vector<Vertex> vertices;
+			std::vector<uint32_t> indices;
+			std::vector<SubMesh> subMeshes;
+
+			for (const Volt::MeshColliderData& data : meshData)
+			{
+				physx::PxDefaultMemoryInputData input(data.data.As<physx::PxU8>(), static_cast<physx::PxU32>(data.data.GetSize()));
+				physx::PxConvexMesh* convexMesh = PhysXInternal::GetPhysXSDK().createConvexMesh(input);
+
+				if (!convexMesh)
+				{
+					continue;
+				}
+
+				// Based On: https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/ThirdParty/PhysX3/NvCloth/samples/SampleBase/renderer/ConvexRenderMesh.cpp
+				const uint32_t nbPolygons = convexMesh->getNbPolygons();
+				const physx::PxVec3* convexVertices = convexMesh->getVertices();
+				const physx::PxU8* convexIndices = convexMesh->getIndexBuffer();
+
+				uint32_t nbVertices = 0;
+				uint32_t nbFaces = 0;
+				uint32_t vertCounter = 0;
+				uint32_t indexCounter = 0;
+
+				SubMesh& submesh = subMeshes.emplace_back();
+				submesh.vertexStartOffset = static_cast<uint32_t>(vertices.size());
+				submesh.indexStartOffset = static_cast<uint32_t>(indices.size());
+
+				for (uint32_t i = 0; i < nbPolygons; i++)
+				{
+					physx::PxHullPolygon polygon;
+					convexMesh->getPolygonData(i, polygon);
+					nbVertices += polygon.mNbVerts;
+					nbFaces += (polygon.mNbVerts - 2) * 3;
+
+					uint32_t vI0 = vertCounter;
+					for (uint32_t vI = 0; vI < polygon.mNbVerts; vI++)
+					{
+						Vertex& v = vertices.emplace_back();
+						v.position = PhysXUtilities::FromPhysXVector(convexVertices[convexIndices[polygon.mIndexBase + vI]]);
+						vertCounter++;
+					}
+
+					for (uint32_t vI = 1; vI < uint32_t(polygon.mNbVerts) - 1; vI++)
+					{
+						indices.emplace_back(vI0);
+						indices.emplace_back(vI0 + vI);
+						indices.emplace_back(vI0 + vI + 1);
+						indexCounter++;
+					}
+				}
+
+				submesh.vertexCount = vertCounter;
+				submesh.indexCount = indexCounter * 3;
+				submesh.materialIndex = 0;
+				submesh.transform = data.transform;
+
+				convexMesh->release();
+			}
+
+			if (vertices.size() > 0)
+			{
+				Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
+				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, material, subMeshes);
+				MeshColliderCache::AddConvexDebugMesh(colliderComp.colliderMesh, mesh);
+			}
+		}
 	}
 }

@@ -1,0 +1,7 @@
+name: FX_PP_ScreenDamage
+internal: false
+paths:
+  - Assets\VFX\CharacterEffects\DamageScreen\FX_PP_ScreenDamage_cs.hlsl
+inputTextures:
+  - shaderName: blood
+    editorName: bloodtexture

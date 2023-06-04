@@ -1,0 +1,8 @@
+name: FX_bloodSplatter
+internal: false
+paths:
+  - Assets\VFX\Enemies\BloodSplash(body)\FX_bloodSplatter_ps.hlsl
+  - Assets\VFX\Enemies\BloodSplash(body)\FX_bloodSplatter_vs.hlsl
+  - Assets\VFX\Enemies\BloodSplash(body)\FX_bloodSplatter_gs.hlsl
+inputTextures:
+  []

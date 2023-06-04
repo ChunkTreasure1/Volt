@@ -1,0 +1,4 @@
+Handle: 15404051793129725207
+Path: Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl
+Dependencies:
+  []

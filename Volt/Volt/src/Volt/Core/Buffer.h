@@ -15,6 +15,7 @@ namespace Volt
 
 		inline void Release();
 		inline void Allocate(size_t aSize);
+		inline void Clear();
 		inline void Resize(size_t aSize);
 		inline void Copy(const void* aSrcData, size_t aSize, size_t aOffset = 0);
 
@@ -52,9 +53,21 @@ namespace Volt
 
 	inline void Buffer::Allocate(size_t aSize)
 	{
+		if (aSize == 0)
+		{
+			return;
+		}
+
 		Release();
 		myData = new uint8_t[aSize];
+		memset(myData, 0, aSize);
+
 		mySize = aSize;
+	}
+
+	inline void Buffer::Clear()
+	{
+		memset(myData, 0, mySize);
 	}
 
 	inline void Buffer::Resize(size_t aSize)
@@ -62,14 +75,25 @@ namespace Volt
 		if (mySize < aSize)
 		{
 			uint8_t* newBuffer = new uint8_t[aSize];
-			memcpy_s(newBuffer, aSize, myData, mySize);
 
-			delete[] myData;
+			if (myData)
+			{
+				memcpy_s(newBuffer, aSize, myData, mySize);
+				delete[] myData;
+			}
+
+			mySize = aSize;
+			myData = newBuffer;
 		}
 	}
 
 	inline void Buffer::Copy(const void* aSrcData, size_t aSize, size_t aOffset)
 	{
+		if (aSize == 0)
+		{
+			return;
+		}
+
 		VT_CORE_ASSERT(aOffset + aSize <= mySize, "Cannot copy into buffer of lesser size!");
 		memcpy_s(myData + aOffset, mySize, aSrcData, aSize);
 	}
@@ -120,7 +144,7 @@ namespace Volt
 
 		Buffer buffer{ srcSize };
 		buffer.Copy(totalData.data(), totalData.size());
-	
+
 		return buffer;
 	}
 

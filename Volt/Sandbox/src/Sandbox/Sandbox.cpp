@@ -5,45 +5,54 @@
 
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
+#include "Sandbox/Window/GameViewPanel.h"
 #include "Sandbox/Window/SceneViewPanel.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Window/LogPanel.h"
-#include "Sandbox/Window/AnimationTreeEditor.h"
 #include "Sandbox/Window/MaterialEditorPanel.h"
 #include "Sandbox/Window/SplinePanel.h"
+#include "Sandbox/Window/VisonPanel.h"
 #include "Sandbox/Window/EngineStatisticsPanel.h"
-#include "Sandbox/Window/NavigationPanel.h"
 #include "Sandbox/Window/ParticleEmitterEditor.h"
 #include "Sandbox/Window/CharacterEditorPanel.h"
 #include "Sandbox/Window/AssetRegistryPanel.h"
 #include "Sandbox/Window/ThemesPanel.h"
+#include "Sandbox/Window/Taiga/TaigaPanel.h"
 #include "Sandbox/Window/EditorSettingsPanel.h"
 #include "Sandbox/Window/PhysicsPanel.h"
 #include "Sandbox/Window/RendererSettingsPanel.h"
 #include "Sandbox/Window/MeshPreviewPanel.h"
 #include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
+#include "Sandbox/Window/PrefabEditorPanel.h"
+#include "Sandbox/Window/AnimationGraph/AnimationGraphPanel.h"
+#include "Sandbox/Window/Sequencer.h"
+#include "Sandbox/Window/BlendSpaceEditorPanel.h"
+#include "Sandbox/Window/CurveGraphPanel.h"
+#include "Sandbox/Window/MaterialGraphPanel.h"
+#include "Sandbox/Window/Timeline.h"
+#include "Sandbox/Window/ShaderEditorPanel.h"
+#include "Sandbox/Window/PostProcessingStackPanel.h"
+#include "Sandbox/Window/PostProcessingMaterialPanel.h"
+#include "Sandbox/Window/NavigationPanel.h"
+
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
-
 #include "Sandbox/Utility/SelectionManager.h"
-#include "Sandbox/Utility/GlobalEditorStates.h"
+#include "Sandbox/Utility/NodeEditorHelpers.h"
+
 #include "Sandbox/UserSettingsManager.h"
+
+#include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
+#include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/Core/Window.h>
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Importers/TextureImporter.h>
-#include <Volt/Asset/Importers/MeshTypeImporter.h>
-#include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
-#include <Volt/Components/PhysicsComponents.h>
-#include <Volt/Components/PostProcessComponents.h>
 
-#include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/SubMaterial.h>
 
 #include <Volt/Scene/Entity.h>
@@ -51,27 +60,30 @@
 #include <Volt/Scene/SceneManager.h>
 
 #include <Volt/Input/KeyCodes.h>
-#include <Volt/Input/MouseButtonCodes.h>
 #include <Volt/Input/Input.h>
 
-#include <Volt/Rendering/Framebuffer.h>
 #include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/Rendering/Texture/Image2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
-#include <Volt/Rendering/Buffer/ConstantBuffer.h>
-#include <Volt/Rendering/Texture/Texture2D.h>
+#include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
 
-#include <Volt/AI/NavigationSystem.h>
-#include <Volt/Platform/ExceptionHandling.h>
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Game/Game.h>
+#include <Volt/Core/Graphics/GraphicsDevice.h>
+#include <Volt/Core/Graphics/GraphicsContext.h>
+
+#include <Volt/Discord/DiscordSDK.h>
+
+#include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
 #include <imgui.h>
+
+#include "Sandbox/Window/Net/NetPanel.h"
+#include "Sandbox/Window/Net/NetContractPanel.h"
 
 Sandbox::Sandbox()
 {
@@ -86,204 +98,390 @@ Sandbox::~Sandbox()
 
 void Sandbox::OnAttach()
 {
+	SelectionManager::Init();
+
 	EditorResources::Initialize();
 	VersionControl::Initialize(VersionControlSystem::Perforce);
-
-	myEntityGizmoTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Icons/icon_entityGizmo.dds");
-	myLightGizmoTexture = Volt::TextureImporter::ImportTexture("Editor/Textures/Icons/icon_lightGizmo.dds");
-	myDecalArrowMesh = Volt::MeshTypeImporter::ImportMesh("Editor/Meshes/Arrow/3dpil.vtmesh");
-
+	NodeEditorHelpers::Initialize();
+	IONodeGraphEditorHelpers::Initialize();
 
 	Volt::Application::Get().GetWindow().Maximize();
 
 	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
-	myGizmoShader = Volt::ShaderRegistry::Get("Gizmo");
-	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
-
 	NewScene();
 
-	myNavigationSystem = CreateRef<Volt::NavigationSystem>(myRuntimeScene);
+	// WIP Panels.
+#ifndef VT_DIST 
 
-	myEditorWindows.emplace_back(CreateRef<PropertiesPanel>(myRuntimeScene));
+	// Shelved Panels (So panel tab doesn't get cluttered up).
+#ifdef VT_DEBUG
+	EditorLibrary::RegisterWithType<PrefabEditorPanel>("", Volt::AssetType::Prefab);
+	EditorLibrary::Register<SplinePanel>("", myRuntimeScene);
+	EditorLibrary::Register<Sequencer>("", myRuntimeScene);
+	EditorLibrary::Register<TaigaPanel>("Advanced");
+	EditorLibrary::Register<ThemesPanel>("Advanced");
+	EditorLibrary::Register<CurveGraphPanel>("Advanced");
+#endif
 
-	myEditorWindows.emplace_back(CreateRef<ViewportPanel>(mySceneRenderer, myRuntimeScene, myEditorCameraController.get(), mySceneState));
-	myViewportPanel = std::reinterpret_pointer_cast<ViewportPanel>(myEditorWindows.back()); // #TODO: This is bad
+#endif
 
-	myEditorWindows.emplace_back(CreateRef<SceneViewPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Main"));
+	myNavigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", myRuntimeScene);
+	EditorLibrary::Register<PropertiesPanel>("Level Editor", myRuntimeScene, mySceneRenderer, "");
+	myViewportPanel = EditorLibrary::Register<ViewportPanel>("Level Editor", mySceneRenderer, myRuntimeScene, myEditorCameraController.get(), mySceneState);
+	EditorLibrary::Register<LogPanel>("Advanced");
+	EditorLibrary::Register<SceneViewPanel>("Level Editor", myRuntimeScene, "");
+	EditorLibrary::Register<AssetRegistryPanel>("Advanced");
+	EditorLibrary::Register<VisionPanel>("", myRuntimeScene, myEditorCameraController.get());
+	EditorLibrary::Register<EngineStatisticsPanel>("Advanced", myRuntimeScene, mySceneRenderer, myGameSceneRenderer);
+	EditorLibrary::Register<EditorSettingsPanel>("Advanced", UserSettingsManager::GetSettings());
+	EditorLibrary::Register<PhysicsPanel>("Physics");
+	EditorLibrary::Register<RendererSettingsPanel>("Advanced", mySceneRenderer);
+	EditorLibrary::Register<GraphKeyPanel>("", myRuntimeScene);
+	EditorLibrary::Register<VertexPainterPanel>("", myRuntimeScene, myEditorCameraController);
 
-	myEditorWindows.emplace_back(CreateRef<CharacterEditorPanel>());
-	EditorLibrary::Register(Volt::AssetType::AnimatedCharacter, myEditorWindows.back());
+	EditorLibrary::Register<NetPanel>("Advanced");
+	EditorLibrary::Register<NetContractPanel>("Advanced");
 
-	myEditorWindows.emplace_back(CreateRef<MaterialEditorPanel>(myRuntimeScene));
-	EditorLibrary::Register(Volt::AssetType::Material, myEditorWindows.back());
+	myGameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", myGameSceneRenderer, myRuntimeScene, mySceneState);
+	myAssetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", myRuntimeScene, "##Main");
 
-	myEditorWindows.emplace_back(CreateRef<ParticleEmitterEditor>());
-	EditorLibrary::Register(Volt::AssetType::ParticlePreset, myEditorWindows.back());
+	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
+	EditorLibrary::RegisterWithType<MaterialEditorPanel>("", Volt::AssetType::Material, myRuntimeScene);
+	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
+	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, myRuntimeScene);
+	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);
+	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
+	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);
+	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", Volt::AssetType::Shader);
+	EditorLibrary::RegisterWithType<PostProcessingStackPanel>("Shader", Volt::AssetType::PostProcessingStack);
+	EditorLibrary::RegisterWithType<PostProcessingMaterialPanel>("Shader", Volt::AssetType::PostProcessingMaterial);
 
-	myEditorWindows.emplace_back(CreateRef<MeshPreviewPanel>());
-	EditorLibrary::Register(Volt::AssetType::Mesh, myEditorWindows.back());
-
-	myEditorWindows.emplace_back(CreateRef<AssetRegistryPanel>());
-
-	myEditorWindows.emplace_back(CreateRef<LogPanel>());
-	myEditorWindows.emplace_back(CreateRef<SplinePanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<EngineStatisticsPanel>(myRuntimeScene));
-	myEditorWindows.emplace_back(CreateRef<NavigationPanel>(myRuntimeScene));
-	//myEditorWindows.emplace_back(CreateRef<AnimationTreeEditor>());
-	myEditorWindows.emplace_back(CreateRef<EditorSettingsPanel>(UserSettingsManager::GetSettings()));
-	myEditorWindows.emplace_back(CreateRef<PhysicsPanel>());
-	myEditorWindows.emplace_back(CreateRef<RendererSettingsPanel>(mySceneRenderer));
-	//myEditorWindows.emplace_back(CreateRef<TestNodeEditor>());
-	myEditorWindows.emplace_back(CreateRef<GraphKeyPanel>(myRuntimeScene));
+	EditorLibrary::Sort();
 
 	myFileWatcher = CreateRef<FileWatcher>();
 	CreateWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
 
-	UserSettingsManager::LoadUserSettings(myEditorWindows);
+	UserSettingsManager::LoadUserSettings();
+	const auto& userSettings = UserSettingsManager::GetSettings();
 
-	if (!UserSettingsManager::GetSettings().sceneSettings.lastOpenScene.empty())
+	if (!userSettings.versionControlSettings.password.empty() && !userSettings.versionControlSettings.user.empty() && !userSettings.versionControlSettings.server.empty())
 	{
-		OpenScene(UserSettingsManager::GetSettings().sceneSettings.lastOpenScene);
+		VersionControl::Connect(userSettings.versionControlSettings.server, userSettings.versionControlSettings.user, userSettings.versionControlSettings.password);
+		if (VersionControl::IsConnected())
+		{
+			VersionControl::RefreshStreams();
+			VersionControl::RefreshWorkspaces();
+
+			if (!userSettings.versionControlSettings.workspace.empty())
+			{
+				VersionControl::SwitchWorkspace(userSettings.versionControlSettings.workspace);
+			}
+
+			if (!userSettings.versionControlSettings.stream.empty())
+			{
+				VersionControl::SwitchStream(userSettings.versionControlSettings.stream);
+			}
+		}
 	}
+
+	if (!userSettings.sceneSettings.lastOpenScene.empty())
+	{
+		OpenScene(userSettings.sceneSettings.lastOpenScene);
+	}
+
+	Volt::DiscordSDK::Init(1108502963447681106, false);
+
+	auto& act = Volt::DiscordSDK::GetRichPresence();
+
+	act.SetApplicationId(1108502963447681106);
+	act.GetAssets().SetLargeImage("icon_volt");
+	act.GetAssets().SetLargeText("Volt");
+	act.SetType(discord::ActivityType::Playing);
+
+	Volt::DiscordSDK::UpdateRichPresence();
 }
 
 void Sandbox::CreateWatches()
 {
-	myFileWatcher->AddWatch("Engine");
-	myFileWatcher->AddWatch(Volt::ProjectManager::GetAssetsPath());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
+	myFileWatcher->AddWatch(Volt::ProjectManager::GetProjectDirectory());
 
 	myFileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
+	{
+		std::scoped_lock lock(myFileWatcherMutex);
+		myFileChangeQueue.emplace_back([newPath, oldPath, this]()
 		{
-			std::scoped_lock lock(myFileWatcherMutex);
-			myFileChangeQueue.emplace_back([newPath, oldPath]()
+			auto assemblyPath = Volt::ProjectManager::GetMonoAssemblyPath();
+			if ((newPath.parent_path().filename() / newPath.filename()).string().contains((assemblyPath.parent_path().filename() / assemblyPath.filename()).string()))
+			{
+				if (mySceneState == SceneState::Play)
 				{
-					if (newPath.string().contains(Volt::ProjectManager::GetMonoAssemblyPath().string()))
-					{
-						Volt::MonoScriptEngine::ReloadAssembly();
-						UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
-						return;
-					}
+					Sandbox::Get().OnSceneStop();
+				}
+				Volt::MonoScriptEngine::ReloadAssembly();
+				UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
+				return;
+			}
 
-					Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
-					switch (assetType)
-					{
-						case Volt::AssetType::Mesh:
-						case Volt::AssetType::Video:
-						case Volt::AssetType::Prefab:
-						case Volt::AssetType::Material:
-						case Volt::AssetType::Texture:
-							Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::Get().GetRelativePath(newPath));
-							break;
+			Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
+			switch (assetType)
+			{
+				case Volt::AssetType::Mesh:
+				case Volt::AssetType::Video:
+				case Volt::AssetType::Prefab:
+				case Volt::AssetType::Material:
+				case Volt::AssetType::Texture:
+					Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::Get().GetRelativePath(newPath));
+					break;
 
-						case Volt::AssetType::ShaderSource:
+				case Volt::AssetType::ShaderSource:
+				{
+					Volt::GraphicsContext::GetDevice()->WaitForIdle();
+
+					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
+					for (const auto& asset : assets)
+					{
+						Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
+						if (!shader || !shader->IsValid())
 						{
-							const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(newPath);
-							for (const auto& asset : assets)
-							{
-								Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
-								shader->Reload(true);
-
-								UI::Notify(NotificationType::Success, "Reloaded shader!", std::format("Shader {0} has been reloaded!", shader->GetName()));
-							}
-							break;
+							continue;
 						}
 
-
-						case Volt::AssetType::MeshSource:
+						if (shader->Reload(true))
 						{
-							const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(newPath);
-							for (const auto& asset : assets)
-							{
-								if (EditorUtils::ReimportSourceMesh(asset))
-								{
-									UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reloaded!", Volt::AssetManager::GetPathFromAssetHandle(asset).string()));
-								}
-							}
-							break;
-						}
+							UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shader->GetName()));
 
-						case Volt::AssetType::None:
-							break;
-						default:
-							break;
+							Volt::Renderer::ReloadShader(shader);
+						}
+						else
+						{
+							UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shader->GetName()));
+						}
 					}
-				});
+					break;
+				}
+
+
+				case Volt::AssetType::MeshSource:
+				{
+					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
+					for (const auto& asset : assets)
+					{
+						if (EditorUtils::ReimportSourceMesh(asset))
+						{
+							UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetPathFromAssetHandle(asset).string()));
+						}
+					}
+					break;
+				}
+
+				case Volt::AssetType::None:
+					break;
+				default:
+					break;
+			}
 		});
+
+		if (newPath.string().contains("Entities"))
+		{
+			return;
+		}
+
+		//myFileChangeQueue.emplace_back([&]()
+		//{
+		//	myAssetBrowserPanel->Reload();
+		//});
+	});
 
 	myFileWatcher->AddCallback(efsw::Actions::Delete, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+	{
+		std::scoped_lock lock(myFileWatcherMutex);
+		myFileChangeQueue.emplace_back([newPath, oldPath]()
 		{
-			std::scoped_lock lock(myFileWatcherMutex);
-			myFileChangeQueue.emplace_back([newPath, oldPath]()
+			if (!newPath.has_extension())
+			{
+				Volt::AssetManager::Get().RemoveFolderFromRegistry(Volt::AssetManager::Get().GetRelativePath(newPath));
+			}
+			else
+			{
+				Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(Volt::AssetManager::Get().GetRelativePath(newPath));
+				if (assetType != Volt::AssetType::None)
 				{
-					if (!newPath.has_extension())
+					if (Volt::AssetManager::Get().ExistsInRegistry(Volt::AssetManager::Get().GetRelativePath(newPath)))
 					{
-						Volt::AssetManager::Get().RemoveFolderFromRegistry(newPath);
+						Volt::AssetManager::Get().RemoveFromRegistry(Volt::AssetManager::Get().GetRelativePath(newPath));
 					}
-					else
-					{
-						Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
-						if (assetType != Volt::AssetType::None)
-						{
-							if (Volt::AssetManager::Get().ExistsInRegistry(newPath))
-							{
-								Volt::AssetManager::Get().RemoveFromRegistry(newPath);
-							}
-						}
-					}
-				});
+				}
+			}
 		});
 
-	myFileWatcher->AddCallback(efsw::Actions::Add, [](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+		if (newPath.string().contains("Entities"))
 		{
+			return;
+		}
 
-		});
+		//myFileChangeQueue.emplace_back([&]()
+		//{
+		//	myAssetBrowserPanel->Reload();
+		//});
+	});
+
+	myFileWatcher->AddCallback(efsw::Actions::Add, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+	{
+		if (newPath.string().contains("Entities"))
+		{
+			return;
+		}
+
+		//myFileChangeQueue.emplace_back([&]()
+		//{
+		//	myAssetBrowserPanel->Reload();
+		//});
+	});
 
 	myFileWatcher->AddCallback(efsw::Actions::Moved, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
+	{
+		std::scoped_lock lock(myFileWatcherMutex);
+		myFileChangeQueue.emplace_back([newPath, oldPath]()
 		{
-			std::scoped_lock lock(myFileWatcherMutex);
-			myFileChangeQueue.emplace_back([newPath, oldPath]()
-				{
-					if (!newPath.has_extension())
-					{
-						Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
-					}
-					else
-					{
-						//Volt::AssetManager::Get().
-					}
-				});
+			if (!newPath.has_extension())
+			{
+				Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
+			}
+			else
+			{
+				//Volt::AssetManager::Get().
+			}
 		});
+
+		if (newPath.string().contains("Entities"))
+		{
+			return;
+		}
+
+		//myFileChangeQueue.emplace_back([&]()
+		//{
+		//	myAssetBrowserPanel->Reload();
+		//});
+	});
+}
+
+void Sandbox::SetEditorHasMouseControl()
+{
+	Volt::Input::ShowCursor(true);
+	UI::SetInputEnabled(true);
+	Volt::Input::DisableInput(true);
+
+	myPlayHasMouseControl = false;
+}
+
+void Sandbox::SetPlayHasMouseControl()
+{
+	Volt::Input::ShowCursor(false);
+	UI::SetInputEnabled(false);
+	Volt::Input::DisableInput(false);
+
+	myPlayHasMouseControl = true;
+}
+
+void Sandbox::SetupNewSceneData()
+{
+	EditorCommandStack::Clear();
+
+	// Scene Renderers
+	{
+		Volt::SceneRendererSpecification spec{};
+		Volt::SceneRendererSpecification gameSpec{};
+
+		spec.debugName = "Editor Viewport";
+		spec.scene = myRuntimeScene;
+
+		gameSpec.debugName = "Game Viewport";
+		gameSpec.scene = myRuntimeScene;
+
+		Volt::SceneRendererSettings settings{};
+		Volt::SceneRendererSettings gameSettings{};
+
+		if (mySceneRenderer)
+		{
+			spec.initialResolution = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
+			settings = mySceneRenderer->GetSettings();
+		}
+
+		if (myGameSceneRenderer)
+		{
+			gameSpec.initialResolution = { myGameSceneRenderer->GetFinalImage()->GetWidth(), myGameSceneRenderer->GetFinalImage()->GetHeight() };
+			gameSettings = myGameSceneRenderer->GetSettings();
+		}
+
+		{
+			settings.enableIDRendering = true;
+			settings.enableOutline = true;
+			settings.enableDebugRenderer = true;
+			settings.enableGrid = true;
+			settings.enableUI = false;
+			settings.enableVolumetricFog = true;
+
+			if (Volt::GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+			{
+				settings.enableRayTracing = true;
+			}
+
+			gameSettings.enableIDRendering = false;
+			gameSettings.enableOutline = false;
+			gameSettings.enableDebugRenderer = false;
+			gameSettings.enableGrid = false;
+			gameSettings.enableUI = true;
+			gameSettings.enablePostProcessing = true;
+			gameSettings.enableVolumetricFog = true;
+		}
+
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+		myGameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec, gameSettings);
+	}
+
+	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
+	Volt::Application::Get().OnEvent(loadEvent);
 }
 
 void Sandbox::OnDetach()
 {
+	Volt::Log::ClearCallbacks();
+
+	if (mySceneState == SceneState::Play)
+	{
+		OnSceneStop();
+	}
+
 	if (myRuntimeScene && !myRuntimeScene->path.empty())
 	{
 		UserSettingsManager::GetSettings().sceneSettings.lastOpenScene = myRuntimeScene->path;
 	}
 
-	UserSettingsManager::SaveUserSettings(myEditorWindows);
-
-	myEditorWindows.clear();
+	UserSettingsManager::SaveUserSettings();
 	EditorLibrary::Clear();
+	EditorResources::Shutdown();
+
+	NavMeshDebugDrawer::Shutdown();
 
 	myFileWatcher = nullptr;
 	myEditorCameraController = nullptr;
 	mySceneRenderer = nullptr;
-	myGizmoShader = nullptr;
-	myGridMaterial = nullptr;
-	myNavigationSystem = nullptr;
+	myGameSceneRenderer = nullptr;
+
+	myGameViewPanel = nullptr;
 
 	myRuntimeScene = nullptr;
 	myIntermediateScene = nullptr;
-	myGame = nullptr;
 
+	myInstance = nullptr;
+
+	NodeEditorHelpers::Shutdown();
 	VersionControl::Shutdown();
-	EditorResources::Shutdown();
 }
 
 void Sandbox::OnEvent(Volt::Event& e)
@@ -297,27 +495,40 @@ void Sandbox::OnEvent(Volt::Event& e)
 	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(Sandbox::OnSceneLoadedEvent));
 	dispatcher.Dispatch<Volt::OnSceneTransitionEvent>(VT_BIND_EVENT_FN(Sandbox::LoadScene));
 	dispatcher.Dispatch<Volt::WindowTitlebarHittestEvent>([&](Volt::WindowTitlebarHittestEvent& e)
-		{
-			e.SetHit(myTitlebarHovered);
-			return true;
-		});
-
-	myEditorCameraController->OnEvent(e);
-
-	for (auto& window : myEditorWindows)
 	{
-		if (window->IsOpen())
+		e.SetHit(myTitlebarHovered);
+		return true;
+	});
+
+	if (!myPlayHasMouseControl)
+	{
+		myEditorCameraController->OnEvent(e);
+	}
+
+	{
+		VT_PROFILE_SCOPE("Update Windows");
+		for (auto& window : EditorLibrary::GetPanels())
 		{
-			window->OnEvent(e);
+			VT_PROFILE_SCOPE(std::format("Update Window: {0}", window.editorWindow->GetTitle()).c_str());
+
+			if (window.editorWindow->IsOpen())
+			{
+				window.editorWindow->OnEvent(e);
+			}
 		}
 	}
 
-	if (e.GetEventType() == Volt::MouseButtonPressed && myRuntimeScene->IsPlaying())
+	if (!myPlayHasMouseControl)
 	{
-		if (myViewportPanel->IsHovered())
+		if ((e.GetCategoryFlags() & Volt::EventCategoryAnyInput) != 0)
 		{
-			((Volt::MouseButtonPressedEvent&)e).overViewport = true;
+			return;
 		}
+	}
+
+	if (e.handled)
+	{
+		return;
 	}
 
 	switch (mySceneState)
@@ -343,44 +554,68 @@ void Sandbox::OnScenePlay()
 
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-	
-	Volt::SceneManager::SetActiveScene(myRuntimeScene);
-	
-	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
 
-	myGame = CreateRef<Game>();
-	myGame->OnStart();
+	SetupNewSceneData();
+	SetPlayHasMouseControl();
+	Volt::Input::DisableInput(false);
+	myGameViewPanel->Focus();
 
 	myRuntimeScene->OnRuntimeStart();
 
 	Volt::OnScenePlayEvent playEvent{};
 	Volt::Application::Get().OnEvent(playEvent);
+
+	Volt::ViewportResizeEvent e2 = { myViewportPosition.x,myViewportPosition.y, myViewportSize.x, myViewportSize.y };
+	Volt::Application::Get().OnEvent(e2);
+
+	if (myShouldMovePlayer)
+	{
+		myShouldMovePlayer = false;
+
+		myRuntimeScene->GetRegistry().ForEach<Volt::MonoScriptComponent>([&](Wire::EntityId id, const Volt::MonoScriptComponent& scriptComp)
+		{
+			for (const auto& name : scriptComp.scriptNames)
+			{
+				if (name == "Project.GameManager")
+				{
+					Volt::Entity entity{ id, myRuntimeScene.get() };
+					entity.SetPosition(myMovePlayerToPosition);
+
+					break;
+				}
+			}
+		});
+	}
+
+	//if (!Volt::Application::Get().GetNetHandler().IsRunning())
+		//Volt::Application::Get().GetNetHandler().StartSinglePlayer();
 }
 
 void Sandbox::OnSceneStop()
 {
-	mySceneState = SceneState::Edit;
+	if (Volt::Application::Get().GetNetHandler().IsRunning())
+		Volt::Application::Get().GetNetHandler().Stop();
 	SelectionManager::DeselectAll();
 
 	Volt::OnSceneStopEvent stopEvent{};
 	Volt::Application::Get().OnEvent(stopEvent);
 
+	Volt::ViewportResizeEvent e2 = { myViewportPosition.x,myViewportPosition.y, myViewportSize.x, myViewportSize.y };
+	Volt::Application::Get().OnEvent(e2);
+
 	myRuntimeScene->OnRuntimeEnd();
-	myGame->OnStop();
+
+	SetEditorHasMouseControl();
+	myViewportPanel->Focus();
 
 	myRuntimeScene = myIntermediateScene;
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-	SetupRenderCallbacks();
+	mySceneState = SceneState::Edit;
 
-	Volt::SceneManager::SetActiveScene(myRuntimeScene);
-	
-	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	SetupNewSceneData();
 
 	myIntermediateScene = nullptr;
-	myGame = nullptr;
+
+	//Amp::MusicManager::RemoveEvent();
 }
 
 void Sandbox::OnSimulationStart()
@@ -392,12 +627,8 @@ void Sandbox::OnSimulationStart()
 
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
 
-	Volt::SceneManager::SetActiveScene(myRuntimeScene);
-
-	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	SetupNewSceneData();
 
 	myRuntimeScene->OnSimulationStart();
 
@@ -407,41 +638,16 @@ void Sandbox::OnSimulationStart()
 
 void Sandbox::OnSimulationStop()
 {
-	mySceneState = SceneState::Edit;
 	SelectionManager::DeselectAll();
 
 	Volt::OnSceneStopEvent stopEvent{};
 	Volt::Application::Get().OnEvent(stopEvent);
 
 	myRuntimeScene->OnSimulationEnd();
-
 	myRuntimeScene = myIntermediateScene;
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-	SetupRenderCallbacks();
+	mySceneState = SceneState::Edit;
 
-	Volt::SceneManager::SetActiveScene(myRuntimeScene);
-
-	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
-}
-
-void Sandbox::ExecuteUndo()
-{
-	EditorCommandStack* cmdStack = nullptr;
-
-	for (const auto& window : myEditorWindows)
-	{
-		if (window->IsFocused())
-		{
-			cmdStack = &window->GetCommandStack();
-			break;
-		}
-	}
-
-	if (cmdStack)
-	{
-		cmdStack->Undo();
-	}
+	SetupNewSceneData();
 }
 
 void Sandbox::NewScene()
@@ -452,67 +658,13 @@ void Sandbox::NewScene()
 		Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 	}
 
-	myRuntimeScene = CreateRef<Volt::Scene>("New Scene");
-	Volt::SceneManager::SetActiveScene(myRuntimeScene);
-
-	// Setup new scene
-	{
-		// Cube
-		{
-			auto ent = myRuntimeScene->CreateEntity();
-			auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Cube";
-			meshComp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh")->handle;
-		}
-
-		// Light
-		{
-			auto ent = myRuntimeScene->CreateEntity();
-			ent.AddComponent<Volt::DirectionalLightComponent>();
-
-			auto& trans = ent.GetComponent<Volt::TransformComponent>();
-			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Directional Light";
-
-			trans.rotation = gem::quat{ gem::vec3{ gem::pi() / 4.f, gem::pi() / 4.f, gem::pi() / 4.f } };
-		}
-
-		// Point light
-		{
-			auto ent = myRuntimeScene->CreateEntity();
-			ent.AddComponent<Volt::PointLightComponent>();
-
-			auto& trans = ent.GetComponent<Volt::TransformComponent>();
-			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Point Light";
-
-			trans.position.x = 100.f;
-		}
-
-		// Skylight
-		{
-			auto ent = myRuntimeScene->CreateEntity();
-			auto& skyLight = ent.AddComponent<Volt::SkylightComponent>();
-			auto& tagComp = ent.GetComponent<Volt::TagComponent>().tag = "Skylight";
-
-			skyLight.environmentHandle = Volt::AssetManager::GetAsset<Volt::Texture2D>("Assets/Textures/HDRIs/studio_small_08_4k.hdr")->handle;
-		}
-
-		{
-			auto ent = myRuntimeScene->CreateEntity();
-			ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
-			ent.AddComponent<Volt::BloomComponent>();
-			ent.AddComponent<Volt::FXAAComponent>();
-			ent.AddComponent<Volt::HBAOComponent>();
-		}
-	}
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-
-	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	myRuntimeScene = Volt::Scene::CreateDefaultScene("New Scene", true);
+	SetupNewSceneData();
 }
 
 void Sandbox::OpenScene()
 {
-	const std::filesystem::path loadPath = FileSystem::OpenFile("Scene (*.vtscene)\0*.vtscene\0");
+	const std::filesystem::path loadPath = FileSystem::OpenFileDialogue({ { "Scene(*.vtscene)", "vtscene" } });
 	OpenScene(Volt::AssetManager::GetRelativePath(loadPath));
 }
 
@@ -532,12 +684,8 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		}
 
 		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
-		Volt::SceneManager::SetActiveScene(myRuntimeScene);
 
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-
-		Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-		Volt::Application::Get().OnEvent(loadEvent);
+		SetupNewSceneData();
 	}
 }
 
@@ -547,6 +695,24 @@ bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)
 	myShouldLoadNewScene = true;
 
 	return true;
+}
+
+bool Sandbox::CheckForUpdateNavMesh(Volt::Entity entity)
+{
+	for (auto child : entity.GetChilden())
+	{
+		if (CheckForUpdateNavMesh(child))
+		{
+			return true;
+		}
+	}
+
+	return (entity.HasComponent<Volt::NavMeshComponent>() || entity.HasComponent<Volt::NavLinkComponent>()) && UserSettingsManager::GetSettings().navmeshBuildSettings.useAutoBaking;
+}
+
+void Sandbox::BakeNavMesh()
+{
+	myNavigationPanel->Bake();
 }
 
 void Sandbox::SaveScene()
@@ -580,25 +746,22 @@ void Sandbox::TransitionToNewScene()
 
 	Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 
-	myRuntimeScene = myStoredScene;
-	Volt::SceneManager::SetActiveScene(myRuntimeScene);
+	myRuntimeScene = CreateRef<Volt::Scene>();
+	myStoredScene->CopyTo(myRuntimeScene);
 
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myRuntimeScene, "Main");
-
-	Volt::OnSceneLoadedEvent loadEvent{ myRuntimeScene };
-	Volt::Application::Get().OnEvent(loadEvent);
+	SetupNewSceneData();
 
 	myRuntimeScene->OnRuntimeStart();
 
-	Volt::ViewportResizeEvent windowResizeEvent{ myViewportPosition.x,myViewportPosition.y ,myViewportSize.x, myViewportSize.y };
+	Volt::ViewportResizeEvent windowResizeEvent{ myViewportPosition.x, myViewportPosition.y, myViewportSize.x, myViewportSize.y };
 	Volt::Application::Get().OnEvent(windowResizeEvent);
 
 	Volt::OnScenePlayEvent playEvent{};
 	Volt::Application::Get().OnEvent(playEvent);
 
 	myShouldLoadNewScene = false;
+	myStoredScene = nullptr;
 }
-
 
 void Sandbox::SaveSceneAs()
 {
@@ -657,424 +820,12 @@ void Sandbox::InstallMayaTools()
 	UI::Notify(NotificationType::Success, "Successfully installed Maya tools!", "The Maya tools were successfully installed!");
 }
 
-void Sandbox::SetupRenderCallbacks()
-{
-	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			if (mySceneState == SceneState::Play)
-			{
-				return;
-			}
-
-			// Selected geometry pass
-			{
-				Volt::Renderer::BeginPass(mySelectedGeometryPass, camera);
-
-				auto& registry = scene->GetRegistry();
-
-				for (const auto& ent : SelectionManager::GetSelectedEntities())
-				{
-					auto& transComp = registry.GetComponent<Volt::TransformComponent>(ent);
-					if (transComp.visible && registry.HasComponent<Volt::MeshComponent>(ent))
-					{
-						auto& meshComp = registry.GetComponent<Volt::MeshComponent>(ent);
-						auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle);
-						if (mesh && mesh->IsValid())
-						{
-							if (meshComp.subMeshIndex != -1)
-							{
-								Volt::Renderer::DrawMesh(mesh, mesh->GetMaterial(), (uint32_t)meshComp.subMeshIndex, scene->GetWorldSpaceTransform(Volt::Entity{ ent, scene.get() }));
-							}
-							else
-							{
-								Volt::Renderer::DrawMesh(mesh, scene->GetWorldSpaceTransform(Volt::Entity{ ent, scene.get() }));
-							}
-						}
-					}
-				}
-
-				Volt::Renderer::EndPass();
-			}
-
-			// Jump Flood Init
-			{
-				Volt::Renderer::BeginPass(myJumpFloodInitPass, camera);
-				Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { mySelectedGeometryPass.framebuffer->GetColorAttachment(0) }, 0);
-
-				Volt::Renderer::DrawFullscreenTriangleWithShader(myJumpFloodInitPass.overrideShader);
-				Volt::Renderer::EndPass();
-			}
-
-			// Jump Flood Pass
-			{
-				const int32_t steps = 2;
-				int32_t step = (int32_t)std::round(std::pow(steps - 1, 2));
-				int32_t index = 0;
-
-				struct FloodPassData
-				{
-					gem::vec2 texelSize;
-					int32_t step;
-					int32_t padding;
-				} floodPassData;
-
-				auto framebuffer = myJumpFloodPass[0].framebuffer;
-				floodPassData.texelSize = { 1.f / (float)framebuffer->GetWidth(), 1.f / (float)framebuffer->GetHeight() };
-				floodPassData.step = step;
-
-				while (step != 0)
-				{
-					Volt::Renderer::BeginPass(myJumpFloodPass[index], camera);
-					Volt::Renderer::SubmitCustom([data = floodPassData, buffer = myJumpFloodBuffer]()
-						{
-							buffer->SetData(&data, sizeof(FloodPassData));
-							buffer->Bind(13);
-						});
-
-
-					if (index == 0)
-					{
-						Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodInitPass.framebuffer->GetColorAttachment(0) }, 0);
-					}
-					else
-					{
-						Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodPass[0].framebuffer->GetColorAttachment(0) }, 0);
-					}
-
-					Volt::Renderer::DrawFullscreenQuadWithShader(myJumpFloodPass[index].overrideShader);
-					Volt::Renderer::ClearTexturesAtStage(Volt::ShaderStage::Pixel, 0, 2);
-					Volt::Renderer::EndPass();
-
-					index = (index + 1) % 2;
-					step /= 2;
-
-					floodPassData.step = step;
-				}
-			}
-
-			// Jump Flood Composite
-			{
-				Volt::Renderer::BeginPass(myJumpFloodCompositePass, camera);
-				Volt::Renderer::SubmitCustom([buffer = myJumpFloodBuffer]()
-					{
-						const gem::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
-						buffer->SetData(&color, sizeof(gem::vec4));
-						buffer->Bind(13);
-					});
-
-
-				Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { myJumpFloodPass[0].framebuffer->GetColorAttachment(0) }, 0);
-				Volt::Renderer::DrawFullscreenQuadWithShader(myJumpFloodCompositePass.overrideShader);
-				Volt::Renderer::ClearTexturesAtStage(Volt::ShaderStage::Pixel, 0, 1);
-				Volt::Renderer::EndPass();
-			}
-
-			// Gizmo pass
-			{
-				Volt::Renderer::BeginPass(myGizmoPass, camera, false);
-
-				auto& registry = scene->GetRegistry();
-
-				registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
-					{
-						if (transformComp.visible && myShouldRenderGizmos)
-						{
-							gem::vec3 p, s, r;
-							gem::decompose(myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ id, myRuntimeScene.get() }), p, r, s);
-
-							const float maxDist = 5000.f;
-							const float lerpStartDist = 4000.f;
-							const float maxScale = 1.f;
-							const float distance = gem::distance(camera->GetPosition(), p);
-
-							float alpha = 1.f;
-
-							if (distance >= lerpStartDist)
-							{
-								alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
-							}
-
-							if (distance < maxDist)
-							{
-								float scale = gem::min(distance / maxDist, maxScale);
-
-								Ref<Volt::Texture2D> gizmo = registry.HasComponent<Volt::PointLightComponent>(id) ? myLightGizmoTexture : myEntityGizmoTexture;
-								Volt::Renderer::SubmitBillboard(gizmo, p, gem::vec3{ scale }, id, gem::vec4{ 1.f, 1.f, 1.f, alpha });
-							}
-						}
-					});
-
-				Volt::Renderer::DispatchBillboardsWithShader(myGizmoShader);
-				Volt::Renderer::EndPass();
-			}
-
-			auto& registry = scene->GetRegistry();
-
-			///// Collider Visualization /////
-			{
-				Volt::Renderer::BeginPass(myColliderVisualizationPass, camera, false);
-
-				auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
-				registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
-					{
-						if (!SelectionManager::IsSelected(id))
-						{
-							return;
-						}
-
-						auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
-
-						const gem::vec3 cubeHalfSize = 50.f;
-						const gem::vec3 colliderScale = collider.halfSize / cubeHalfSize;
-						const gem::vec3 resultScale = colliderScale * trs.scale;
-						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
-
-						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh");
-
-						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
-					});
-
-				registry.ForEach<Volt::SphereColliderComponent>([&](Wire::EntityId id, const Volt::SphereColliderComponent& collider)
-					{
-						if (!SelectionManager::IsSelected(id))
-						{
-							return;
-						}
-
-						auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
-
-						const gem::vec3 sphereRadius = 50.f;
-						const float maxScale = gem::max(trs.scale.x, gem::max(trs.scale.y, trs.scale.z));
-						const gem::vec3 resultScale = maxScale * collider.radius / sphereRadius;
-						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
-
-						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Sphere.vtmesh");
-
-						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
-					});
-
-				registry.ForEach<Volt::CapsuleColliderComponent>([&](Wire::EntityId id, const Volt::CapsuleColliderComponent& collider)
-					{
-						if (!SelectionManager::IsSelected(id))
-						{
-							return;
-						}
-
-						auto trs = myRuntimeScene->GetWorldSpaceTRS(Volt::Entity{ id, myRuntimeScene.get() });
-
-						const float capsuleRadius = 50.f;
-						const float capsuleHeight = 50.f;
-
-						const float radiusScale = gem::max(trs.scale.x, trs.scale.y);
-						const float heightScale = trs.scale.y;
-
-						const gem::vec3 resultScale = { radiusScale * collider.radius / capsuleRadius, heightScale * collider.height / capsuleHeight, radiusScale * collider.radius / capsuleRadius };
-						const gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position + collider.offset) * gem::mat4_cast(gem::quat(trs.rotation)) * gem::scale(gem::mat4(1.f), resultScale);
-
-						auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Capsule.vtmesh");
-
-						Volt::Renderer::DrawMesh(cubeMesh, collisionMaterial, transform);
-					});
-
-				Volt::Renderer::EndPass();
-			}
-			//////////////////////////////////
-			{
-				auto material = Volt::AssetManager::GetAsset<Volt::Material>("Assets/Materials/M_ColliderDebug.vtmat");
-
-				Volt::Renderer::BeginPass(myForwardExtraPass, camera);
-				registry.ForEach<Volt::DecalComponent>([&](Wire::EntityId id, const Volt::DecalComponent& decalComp)
-					{
-						if (!SelectionManager::IsSelected(id))
-						{
-							return;
-						}
-
-						auto ent = Volt::Entity{ id, myRuntimeScene.get() };
-						auto trs = myRuntimeScene->GetWorldSpaceTRS(ent);
-
-						gem::quat newRot = trs.rotation;
-						newRot *= gem::quat{ gem::vec3{gem::radians(-90.f), 0.f, 0.f} };
-
-						constexpr float uniformScale = 0.25f * 0.25f;
-						gem::mat4 transform = gem::translate(gem::mat4(1.f), trs.position) * gem::mat4_cast(newRot) * gem::scale(gem::mat4(1.f), { uniformScale, uniformScale, uniformScale });
-
-						Volt::Renderer::DrawMesh(myDecalArrowMesh, material, transform);
-					});
-
-				//Volt::Renderer::DispatchLines();
-
-				Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
-				Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
-
-				Volt::Renderer::EndPass();
-			}
-		});
-}
-
-void Sandbox::CreateEditorRenderPasses()
-{
-	// Selected Geometry
-	{
-		Volt::FramebufferSpecification spec{};
-		spec.attachments =
-		{
-			{ Volt::ImageFormat::RGBA32F, gem::vec4{ 0.f, 0.f, 0.f, 0.f } },
-			Volt::ImageFormat::DEPTH32F
-		};
-
-		spec.width = myViewportSize.x;
-		spec.height = myViewportSize.y;
-
-		mySelectedGeometryPass.framebuffer = Volt::Framebuffer::Create(spec);
-		mySelectedGeometryPass.overrideShader = Volt::ShaderRegistry::Get("SelectedGeometry");
-		mySelectedGeometryPass.debugName = "Selected Geometry";
-	}
-
-	// Jump Flood
-	{
-		// Init
-		{
-			Volt::FramebufferSpecification spec{};
-			spec.attachments =
-			{
-				{Volt::ImageFormat::RGBA32F, gem::vec4{ 1.f, 1.f, 1.f, 0.f }}
-			};
-
-			spec.width = myViewportSize.x;
-			spec.height = myViewportSize.y;
-
-			myJumpFloodInitPass.framebuffer = Volt::Framebuffer::Create(spec);
-			myJumpFloodInitPass.overrideShader = Volt::ShaderRegistry::Get("JumpFloodInit");
-			myJumpFloodInitPass.debugName = "Jump Flood Init";
-		}
-
-		// Pass
-		{
-			myJumpFloodBuffer = Volt::ConstantBuffer::Create(nullptr, sizeof(gem::vec2) + sizeof(int32_t) * 2, Volt::ShaderStage::Vertex | Volt::ShaderStage::Pixel);
-
-			for (uint32_t i = 0; i < 2; i++)
-			{
-				Volt::FramebufferSpecification spec{};
-				spec.attachments =
-				{
-					Volt::ImageFormat::RGBA32F
-				};
-
-				spec.width = myViewportSize.x;
-				spec.height = myViewportSize.y;
-
-				myJumpFloodPass[i].framebuffer = Volt::Framebuffer::Create(spec);
-				myJumpFloodPass[i].overrideShader = Volt::ShaderRegistry::Get("JumpFloodPass");
-				myJumpFloodPass[i].debugName = "Jump Flood Pass" + std::to_string(i);
-			}
-		}
-
-		// Composite
-		{
-			Volt::FramebufferSpecification spec{};
-			spec.attachments =
-			{
-				{ Volt::ImageFormat::RGBA },
-			};
-
-			spec.existingImages =
-			{
-				{ 0, mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0) },
-			};
-
-			spec.existingDepth = mySceneRenderer->GetFinalObjectFramebuffer()->GetDepthAttachment();
-
-			spec.width = myViewportSize.x;
-			spec.height = myViewportSize.y;
-
-			myJumpFloodCompositePass.framebuffer = Volt::Framebuffer::Create(spec);
-			myJumpFloodCompositePass.overrideShader = Volt::ShaderRegistry::Get("JumpFloodComposite");
-			myJumpFloodCompositePass.debugName = "Jump Flood Composite";
-			myJumpFloodCompositePass.depthState = Volt::DepthState::None;
-		}
-	}
-
-	// Gizmo
-	{
-		Volt::FramebufferSpecification spec{};
-		spec.attachments =
-		{
-			{ Volt::ImageFormat::RGBA },
-			{ Volt::ImageFormat::R32UI }
-		};
-
-		auto finalFramebuffer = mySceneRenderer->GetFinalFramebuffer();
-		auto selectionFramebuffer = mySceneRenderer->GetSelectionFramebuffer();
-
-		spec.width = 1280;
-		spec.width = 720;
-
-		spec.existingImages =
-		{
-			{ 0, finalFramebuffer->GetColorAttachment(0) },
-			{ 1, selectionFramebuffer->GetColorAttachment(3) }
-		};
-
-		myGizmoPass.framebuffer = Volt::Framebuffer::Create(spec);
-		myGizmoPass.debugName = "Gizmos";
-	}
-
-	// Collider visualization
-	{
-		Volt::FramebufferSpecification spec{};
-
-		spec.attachments =
-		{
-			{ Volt::ImageFormat::RGBA32F }, // Color
-			{ Volt::ImageFormat::DEPTH32F }
-		};
-
-		spec.width = 1280;
-		spec.height = 720;
-
-		spec.existingImages =
-		{
-			{ 0, mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0) },
-		};
-
-		spec.existingDepth = mySceneRenderer->GetFinalObjectFramebuffer()->GetDepthAttachment();
-
-		myColliderVisualizationPass.framebuffer = Volt::Framebuffer::Create(spec);
-		myColliderVisualizationPass.debugName = "Collider Visualization";
-		myColliderVisualizationPass.exclusiveShaderHash = Volt::ShaderRegistry::Get("ColliderDebug")->GetHash();
-	}
-
-	// Forward Extra
-	{
-		Volt::FramebufferSpecification spec{};
-
-		spec.attachments =
-		{
-			{ Volt::ImageFormat::RGBA32F }, // Color
-			{ Volt::ImageFormat::R32UI }, // ID
-			{ Volt::ImageFormat::DEPTH32F }
-		};
-
-		spec.width = 1280;
-		spec.height = 720;
-
-		spec.existingImages =
-		{
-			{ 0, mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0) },
-			{ 1, mySceneRenderer->GetSelectionFramebuffer()->GetColorAttachment(2) },
-		};
-
-		spec.existingDepth = mySceneRenderer->GetFinalObjectFramebuffer()->GetDepthAttachment();
-
-		myForwardExtraPass.framebuffer = Volt::Framebuffer::Create(spec);
-		myForwardExtraPass.debugName = "Forward Extra";
-	}
-}
-
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	EditorCommandStack::GetInstance().Update(100);
+
+	auto mousePos = Volt::Input::GetMousePosition();
+	Volt::Input::SetViewportMousePosition(myGameViewPanel->GetViewportLocalPosition({ mousePos.first, mousePos.second }));
 
 	switch (mySceneState)
 	{
@@ -1084,9 +835,6 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 		case SceneState::Play:
 			myRuntimeScene->Update(e.GetTimestep());
-
-			// AI
-			myNavigationSystem->OnRuntimeUpdate(e.GetTimestep());
 			break;
 
 		case SceneState::Pause:
@@ -1097,13 +845,7 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 			break;
 	}
 
-	for (const auto& ent : SelectionManager::GetSelectedEntities()) // #TODO(Ivar): maybe move into selection manager update?
-	{
-		if (!myRuntimeScene->GetRegistry().Exists(ent))
-		{
-			SelectionManager::Deselect(ent);
-		}
-	}
+	SelectionManager::Update(myRuntimeScene);
 
 	if (myShouldResetLayout)
 	{
@@ -1120,15 +862,15 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		}
 	}
 
-	{
-		std::scoped_lock lock{ myFileWatcherMutex };
-		for (const auto& f : myFileChangeQueue)
-		{
-			f();
-		}
+	VT_PROFILE_SCOPE("File watcher");
 
-		myFileChangeQueue.clear();
+	std::scoped_lock lock{ myFileWatcherMutex };
+	for (const auto& f : myFileChangeQueue)
+	{
+		f();
 	}
+
+	myFileChangeQueue.clear();
 
 	return true;
 }
@@ -1168,14 +910,14 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	SaveSceneAsModal();
 	BuildGameModal();
 
-	for (auto& window : myEditorWindows)
+	for (auto& window : EditorLibrary::GetPanels())
 	{
-		if (window->Begin())
+		if (window.editorWindow->Begin())
 		{
-			window->UpdateMainContent();
-			window->End();
+			window.editorWindow->UpdateMainContent();
+			window.editorWindow->End();
 
-			window->UpdateContent();
+			window.editorWindow->UpdateContent();
 		}
 	}
 
@@ -1188,48 +930,64 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	return false;
 }
 
-bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
+void Sandbox::RenderGameView()
 {
-	if (myShouldResize)
+	if (!myGameViewPanel->IsOpen() || !myGameSceneRenderer)
 	{
-		myShouldResize = false;
-
-		Volt::Renderer::SubmitCustom([&]()
-			{
-				const uint32_t width = myViewportSize.x;
-				const uint32_t height = myViewportSize.y;
-
-				myGizmoPass.framebuffer->Resize(width, height);
-
-				mySelectedGeometryPass.framebuffer->Resize(width, height);
-				myJumpFloodInitPass.framebuffer->Resize(width, height);
-
-				for (const auto& pass : myJumpFloodPass)
-				{
-					pass.framebuffer->Resize(width, height);
-				}
-
-				myJumpFloodCompositePass.framebuffer->Resize(width, height);
-
-				myForwardExtraPass.framebuffer->Resize(width, height);
-				myColliderVisualizationPass.framebuffer->Resize(width, height);
-			});
+		return;
 	}
 
 	switch (mySceneState)
 	{
 		case SceneState::Edit:
-			mySceneRenderer->OnRenderEditor(myEditorCameraController->GetCamera());
-			break;
-
 		case SceneState::Play:
-			mySceneRenderer->OnRenderRuntime();
-			break;
-
 		case SceneState::Pause:
-			mySceneRenderer->OnRenderRuntime();
-			break;
+		case SceneState::Simulating:
+		{
+			Volt::Entity cameraEntity{};
+			int32_t highestPrio = -1;
 
+			myRuntimeScene->GetRegistry().ForEach<Volt::CameraComponent>([&](Wire::EntityId id, const Volt::CameraComponent& camComp)
+			{
+				if ((int32_t)camComp.priority > highestPrio)
+				{
+					highestPrio = (int32_t)camComp.priority;
+					cameraEntity = { id, myRuntimeScene.get() };
+				}
+			});
+
+			if (!cameraEntity)
+			{
+				break;
+			}
+
+			const auto& camComp = cameraEntity.GetComponent<Volt::CameraComponent>();
+			const auto finalImage = myGameSceneRenderer->GetFinalImage();
+
+			Ref<Volt::Camera> camera = CreateRef<Volt::Camera>(camComp.fieldOfView, (float)finalImage->GetWidth() / (float)finalImage->GetHeight(), camComp.nearPlane, camComp.farPlane);
+			camera->SetPosition(cameraEntity.GetPosition());
+			camera->SetRotation(gem::eulerAngles(cameraEntity.GetRotation()));
+
+			myGameSceneRenderer->OnRenderEditor(camera);
+			break;
+		}
+	}
+}
+
+bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
+{
+	VT_PROFILE_FUNCTION();
+
+	mySceneRenderer->ClearOutlineCommands();
+
+	RenderSelection(myEditorCameraController->GetCamera());
+	RenderGizmos(myRuntimeScene, myEditorCameraController->GetCamera());
+
+	switch (mySceneState)
+	{
+		case SceneState::Edit:
+		case SceneState::Play:
+		case SceneState::Pause:
 		case SceneState::Simulating:
 			mySceneRenderer->OnRenderEditor(myEditorCameraController->GetCamera());
 			break;
@@ -1239,6 +997,8 @@ bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 	{
 		TransitionToNewScene();
 	}
+
+	RenderGameView();
 
 	return false;
 }
@@ -1313,32 +1073,6 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			break;
 		}
 
-		case VT_KEY_DELETE:
-		{
-			std::vector<Volt::Entity> entitiesToRemove;
-
-			auto selection = SelectionManager::GetSelectedEntities();
-			for (const auto& selectedEntity : selection)
-			{
-				Volt::Entity tempEnt = Volt::Entity(selectedEntity, myRuntimeScene.get());
-				entitiesToRemove.push_back(tempEnt);
-
-				SelectionManager::Deselect(tempEnt.GetId());
-				SelectionManager::GetFirstSelectedRow() = -1;
-				SelectionManager::GetLastSelectedRow() = -1;
-			}
-
-			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(entitiesToRemove, ObjectStateAction::Delete);
-			EditorCommandStack::GetInstance().PushUndo(command);
-
-			for (const auto& i : entitiesToRemove)
-			{
-				myRuntimeScene->RemoveEntity(i);
-			}
-
-			break;
-		}
-
 		case VT_KEY_F:
 		{
 			if (SelectionManager::IsAnySelected())
@@ -1363,20 +1097,42 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		{
 			if (ctrlPressed)
 			{
-				for (const auto& window : myEditorWindows)
+				for (const auto& window : EditorLibrary::GetPanels())
 				{
-					if (window->GetTitle() == "Asset Browser##Main")
+					if (window.editorWindow->GetTitle() == "Asset Browser##Main")
 					{
-						if (!window->IsOpen())
+						if (!window.editorWindow->IsOpen())
 						{
-							window->Open();
+							window.editorWindow->Open();
 						}
 						else
 						{
-							window->Close();
+							window.editorWindow->Close();
 						}
 					}
 				}
+			}
+
+			break;
+		}
+
+		case VT_KEY_ESCAPE:
+		{
+			if (mySceneState == SceneState::Play)
+			{
+				SetEditorHasMouseControl();
+			}
+
+			break;
+		}
+
+		case VT_KEY_G:
+		{
+			if (ctrlPressed && mySceneState != SceneState::Play)
+			{
+				myShouldMovePlayer = true;
+				myMovePlayerToPosition = myEditorCameraController->GetCamera()->GetPosition();
+				OnScenePlay();
 			}
 
 			break;
@@ -1394,27 +1150,52 @@ bool Sandbox::OnViewportResizeEvent(Volt::ViewportResizeEvent& e)
 	myRuntimeScene->SetRenderSize(e.GetWidth(), e.GetHeight());
 	myViewportSize = { e.GetWidth(), e.GetHeight() };
 	myViewportPosition = { e.GetX(), e.GetY() };
-	myShouldResize = true;
 
 	return false;
 }
 
+VT_OPTIMIZE_OFF
+
 bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 {
-	CreateEditorRenderPasses();
-	SetupRenderCallbacks();
-
 	mySceneRenderer->Resize(myViewportSize.x, myViewportSize.y);
+
+	if (myGameSceneRenderer)
+	{
+		myGameSceneRenderer->Resize(myViewportSize.x, myViewportSize.y);
+	}
+
 	e.GetScene()->SetRenderSize(myViewportSize.x, myViewportSize.y);
 
-	Volt::ViewportResizeEvent e2 = { 0, 0, myViewportSize.x, myViewportSize.y };
-	OnViewportResizeEvent(e2);
+	Volt::ViewportResizeEvent e2 = { myViewportPosition.x,myViewportPosition.y, myViewportSize.x, myViewportSize.y };
+	Volt::Application::Get().OnEvent(e2);
 
-	// AI
-	if (myNavigationSystem)
+	// Mono Scripts
+	static bool notRuntimeScene = true;
+	if (mySceneState == SceneState::Edit && notRuntimeScene)
 	{
-		myNavigationSystem->OnSceneLoad(false);
+		Volt::MonoScriptEngine::OnSceneLoaded();
 	}
+	else if (!notRuntimeScene)
+	{
+		notRuntimeScene = true;
+	}
+	else
+	{
+		notRuntimeScene = false;
+	}
+
+	auto& act = Volt::DiscordSDK::GetRichPresence();
+
+	auto scene = e.GetScene();
+
+	act.SetDetails("Working on:");
+	act.SetState(scene->GetName().c_str());
+	act.GetParty().GetSize().SetCurrentSize(myRuntimeScene->GetActiveLayer() + 1);
+	act.GetParty().GetSize().SetMaxSize(myRuntimeScene->GetLayers().size());
+	act.GetTimestamps().SetStart(std::time(nullptr));
+
+	Volt::DiscordSDK::UpdateRichPresence();
 
 	return false;
 }

@@ -1,171 +1,448 @@
 #include "vtpch.h"
 #include "Swapchain.h"
 
-#include "Volt/Log/Log.h"
 #include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Utility/DirectXUtils.h"
-#include "Volt/Rendering/Renderer.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
+
 #include "Volt/Core/Profiling.h"
 
-#include <d3d11.h>
+#include "Volt/Core/Graphics/VulkanAllocator.h"
 
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-#include <chrono>
 
 namespace Volt
 {
-	Swapchain::Swapchain(GLFWwindow* aWindow, Ref<GraphicsContext> aGraphicsContext)
-		: myGraphicsContext(aGraphicsContext), myHeight(1), myWidth(1)
+	Swapchain::Swapchain(GLFWwindow* window)
 	{
-		myWindowHandle = glfwGetWin32Window(aWindow);
-	}
+		VT_VK_CHECK(glfwCreateWindowSurface(GraphicsContext::Get().GetInstance(), window, nullptr, &mySurface));
 
+		auto physDevice = GraphicsContext::GetPhysicalDevice();
+
+		const auto& queueIndices = physDevice->GetQueueFamilies();
+
+		VkBool32 supportsPresentation;
+		vkGetPhysicalDeviceSurfaceSupportKHR(GraphicsContext::GetPhysicalDevice()->GetHandle(), queueIndices.graphicsFamilyQueueIndex, mySurface, &supportsPresentation);
+		VT_CORE_ASSERT(supportsPresentation == VK_TRUE, "No queue with presentation support found!");
+
+		auto device = GraphicsContext::GetDevice();
+		myDevice = device->GetHandle();
+		myInstance = GraphicsContext::Get().GetInstance();
+
+		Invalidate(myWidth, myHeight, true);
+	}
+	
 	Swapchain::~Swapchain()
 	{
 		Release();
-		mySwapchain = nullptr;
-		myGraphicsContext = nullptr;
+
+		myInstance = nullptr;
+		myDevice = nullptr;
 	}
 
 	void Swapchain::Release()
 	{
-		myRenderTarget = nullptr;
-	}
-
-	void Swapchain::Invalidate(uint32_t width, uint32_t height, bool aFullscreen)
-	{
-		VT_CORE_ASSERT(myGraphicsContext, "Graphics Context is null!");
-		auto device = GraphicsContext::GetDevice();
-
-		myWidth = width;
-		myHeight = height;
-
 		if (!mySwapchain)
-		{
-			DXGI_SWAP_CHAIN_DESC swapChainDesc{};
-			swapChainDesc.BufferDesc.Width = width;
-			swapChainDesc.BufferDesc.Height = height;
-			swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-			swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-			swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-			swapChainDesc.SampleDesc.Count = 1;
-			swapChainDesc.SampleDesc.Quality = 0;
-			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDesc.BufferCount = 2;
-			swapChainDesc.OutputWindow = myWindowHandle;
-			swapChainDesc.Windowed = !aFullscreen;
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-			swapChainDesc.Flags = 0;
-
-			IDXGIDevice* dxDevice = nullptr;
-			IDXGIAdapter* adapter = nullptr;
-			IDXGIFactory* factory = nullptr;
-			VT_DX_CHECK(device->QueryInterface(IID_PPV_ARGS(&dxDevice)));
-			VT_DX_CHECK(dxDevice->GetParent(IID_PPV_ARGS(&adapter)));
-			VT_DX_CHECK(adapter->GetParent(IID_PPV_ARGS(&factory)));
-
-			IDXGIOutput* adapterOutput;
-			VT_DX_CHECK(adapter->EnumOutputs(0, &adapterOutput));
-
-			uint32_t numModes = 0;
-			adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, nullptr);
-
-			DXGI_MODE_DESC* outDesc = new DXGI_MODE_DESC[numModes];
-			adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, outDesc);
-
-			DXGI_MODE_DESC targetDesc{};
-
-			for (uint32_t i = 0; i < numModes; i++)
-			{
-				if (outDesc[i].Width == width && outDesc[i].Height == height)
-				{
-					swapChainDesc.BufferDesc.RefreshRate = outDesc[i].RefreshRate;
-				}
-			}
-
-			targetDesc = outDesc[numModes - 1];
-
-			delete[] outDesc;
-
-			VT_DX_CHECK(factory->CreateSwapChain(dxDevice, &swapChainDesc, mySwapchain.GetAddressOf()));
-
-			myMonitorMode.height = targetDesc.Height;
-			myMonitorMode.width = targetDesc.Width;
-			myMonitorMode.refreshRate = (float)targetDesc.RefreshRate.Denominator / (float)targetDesc.RefreshRate.Numerator;
-
-			device->Release();
-			adapter->Release();
-			factory->Release();
-		}
-
-		Release();
-
-		if (width == 0 || height == 0)
 		{
 			return;
 		}
 
-		VT_DX_CHECK(mySwapchain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+		vkDeviceWaitIdle(myDevice);
 
-		if (myIsFullscreen != aFullscreen)
+		for (auto& perFrameData : myFrameInFlightData)
 		{
-			VT_DX_CHECK(mySwapchain->SetFullscreenState(aFullscreen, nullptr));
-			myIsFullscreen = aFullscreen;
+			vkDestroyCommandPool(myDevice, perFrameData.commandPool, nullptr);
+
+			vkDestroySemaphore(myDevice, perFrameData.presentSemaphore, nullptr);
+			vkDestroySemaphore(myDevice, perFrameData.renderSemaphore, nullptr);
+
+			vkDestroyFence(myDevice, perFrameData.fence, nullptr);
 		}
 
-		ID3D11Texture2D* backBuffer;
-		VT_DX_CHECK(mySwapchain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
-		VT_DX_CHECK(device->CreateRenderTargetView(backBuffer, nullptr, &myRenderTarget));
+		myFrameInFlightData.clear();
 
-		backBuffer->Release();
+		for (auto& perImageData : myImageData)
+		{
+			vkDestroyImageView(myDevice, perImageData.imageView, nullptr);
+			vkDestroyFramebuffer(myDevice, perImageData.framebuffer, nullptr);
+		}
 
-		Bind();
+		myImageData.clear();
+
+		vkDestroyRenderPass(myDevice, myRenderPass, nullptr);
+		vkDestroySwapchainKHR(myDevice, mySwapchain, nullptr);
+		vkDestroySurfaceKHR(myInstance, mySurface, nullptr);
 	}
 
 	void Swapchain::BeginFrame()
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		VT_PROFILE_FUNCTION();
+		auto device = GraphicsContext::GetDevice()->GetHandle();
 
-		const float color[4] = { 0.f, 0.f, 0.f, 1.f };
-		context->ClearRenderTargetView(myRenderTarget.Get(), color);
+		auto& frameData = myFrameInFlightData.at(myCurrentFrame);
+
+		VT_VK_CHECK(vkWaitForFences(device, 1, &frameData.fence, VK_TRUE, 1000000000));
+
+		VkResult swapchainStatus = vkAcquireNextImageKHR(device, mySwapchain, 1000000000, frameData.presentSemaphore, nullptr, &myCurrentImage);
+		if (swapchainStatus == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			Resize(myWidth, myHeight, myVSyncEnabled);
+		}
+		else if (swapchainStatus != VK_SUCCESS && swapchainStatus != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("Failed to acquire swapchain image!");
+		}
+
+		VT_VK_CHECK(vkResetFences(device, 1, &frameData.fence));
+		VT_VK_CHECK(vkResetCommandPool(device, frameData.commandPool, 0));
+		VulkanAllocator::SetFrameIndex(myCurrentFrame);
 	}
 
-	void Swapchain::Present(bool aUseVSync)
+	void Swapchain::Present()
 	{
 		VT_PROFILE_FUNCTION();
-		VT_DX_CHECK(mySwapchain->Present(aUseVSync ? 1 : 0, 0));
 
-		Bind();
+		auto& frameData = myFrameInFlightData.at(myCurrentFrame);
+
+		// Queue Submit
+		{
+			VT_PROFILE_SCOPE("Swapchain::QueueSubmit");
+
+			VkSubmitInfo submitInfo{};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &frameData.commandBuffer;
+
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = &frameData.renderSemaphore;
+
+			submitInfo.waitSemaphoreCount = 1;
+			submitInfo.pWaitSemaphores = &frameData.presentSemaphore;
+
+			const VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			submitInfo.pWaitDstStageMask = &waitStage;
+
+			VT_VK_CHECK(vkQueueSubmit(GraphicsContext::GetDevice()->GetGraphicsQueue(), 1, &submitInfo, frameData.fence));
+		}
+
+		// Present to screen
+		{
+			VT_PROFILE_SCOPE("Swapchain::Present");
+
+			VkPresentInfoKHR presentInfo{};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = &mySwapchain;
+
+			presentInfo.pWaitSemaphores = &frameData.renderSemaphore;
+			presentInfo.waitSemaphoreCount = 1;
+			presentInfo.pImageIndices = &myCurrentImage;
+
+			OPTICK_GPU_FLIP(&mySwapchain);
+			VkResult presentResult = vkQueuePresentKHR(GraphicsContext::GetDevice()->GetGraphicsQueue(), &presentInfo);
+			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
+			{
+				Resize(myWidth, myHeight, myVSyncEnabled);
+			}
+			else if (presentResult != VK_SUCCESS)
+			{
+				throw std::runtime_error("Failed to present swapchain image!");
+			}
+		}
+
+		myCurrentFrame = (myCurrentFrame + 1) % myMaxFramesInFlight;
 	}
 
-	void Swapchain::Bind() const
+	void Swapchain::Resize(uint32_t width, uint32_t height, bool useVSync)
 	{
-		auto context = GraphicsContext::GetImmediateContext();
+		if (!mySwapchain)
+		{
+			return;
+		}
 
-		D3D11_VIEWPORT viewport{};
-		viewport.Width = (float)myWidth;
-		viewport.Height = (float)myHeight;
-		viewport.MaxDepth = 1.f;
-		viewport.MinDepth = 0.f;
-		viewport.TopLeftY = 0.f;
-		viewport.TopLeftX = 0.f;
+		myWidth = width;
+		myWidth = height;
+		myVSyncEnabled = useVSync;
 
-		context->OMSetRenderTargets(1, myRenderTarget.GetAddressOf(), nullptr);
-		context->RSSetViewports(1, &viewport);
+		QuerySwapchainCapabilities();
+
+		GraphicsContext::GetDevice()->WaitForIdle();
+
+		CreateSwapchain(width, height, useVSync);
+		CreateImageViews();
+		CreateFramebuffers();
 	}
 
-	void Swapchain::Resize(uint32_t width, uint32_t height, bool aFullscreen)
+	Ref<Swapchain> Swapchain::Create(GLFWwindow* window)
 	{
-		Invalidate(width, height, aFullscreen);
+		return CreateRef<Swapchain>(window);
 	}
 
-	Ref<Swapchain> Swapchain::Create(GLFWwindow* aWindow, Ref<GraphicsContext> aGraphicsContext)
+	void Swapchain::Invalidate(uint32_t width, uint32_t height, bool useVSync)
 	{
-		return CreateScope<Swapchain>(aWindow, aGraphicsContext);
+		myWidth = width;
+		myWidth = height;
+
+		QuerySwapchainCapabilities();
+
+		CreateSwapchain(width, height, useVSync);
+		CreateImageViews();
+		CreateRenderPass();
+		CreateFramebuffers();
+		CreateSyncObjects();
+		CreateCommandPools();
+		CreateCommandBuffers();
+	}
+
+	void Swapchain::QuerySwapchainCapabilities()
+	{
+		auto physDevice = GraphicsContext::GetPhysicalDevice();
+		
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice->GetHandle(), mySurface, &myCapabilities.capabilities);
+
+		uint32_t formatCount = 0;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice->GetHandle(), mySurface, &formatCount, nullptr);
+
+		if (formatCount > 0)
+		{
+			myCapabilities.formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice->GetHandle(), mySurface, &formatCount, myCapabilities.formats.data());
+		}
+
+		uint32_t presentModeCount = 0;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice->GetHandle(), mySurface, &presentModeCount, nullptr);
+		
+		if (presentModeCount > 0)
+		{
+			myCapabilities.presentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(physDevice->GetHandle(), mySurface, &presentModeCount, myCapabilities.presentModes.data());
+		}
+	}
+
+	VkSurfaceFormatKHR Swapchain::ChooseSwapchainFormat()
+	{
+		for (const auto& format : myCapabilities.formats)
+		{
+			if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			{
+				return format;
+			}
+		}
+
+		return myCapabilities.formats.front();
+	}
+
+	VkPresentModeKHR Swapchain::ChooseSwapchainPresentMode()
+	{
+		for (const auto& presentMode : myCapabilities.presentModes)
+		{
+			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+			{
+				return presentMode;
+			}
+		}
+
+		return VK_PRESENT_MODE_FIFO_KHR;
+
+	}
+
+	void Swapchain::CreateSwapchain(uint32_t width, uint32_t height, bool useVSync)
+	{
+		const VkSurfaceFormatKHR surfaceFormat = ChooseSwapchainFormat();
+		const VkPresentModeKHR presentMode = ChooseSwapchainPresentMode();
+
+		myImageCount = myCapabilities.capabilities.minImageCount + 1;
+		if (myCapabilities.capabilities.maxImageCount > 0 && myImageCount > myCapabilities.capabilities.maxImageCount)
+		{
+			myImageCount = myCapabilities.capabilities.maxImageCount;
+		}
+
+		// Make sure the requested with are 
+		myWidth = std::clamp(width, myCapabilities.capabilities.minImageExtent.width, myCapabilities.capabilities.maxImageExtent.width);
+		myHeight = std::clamp(height, myCapabilities.capabilities.minImageExtent.height, myCapabilities.capabilities.maxImageExtent.height);
+
+		VkSwapchainKHR oldSwapchain = mySwapchain;
+
+		VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
+		swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		swapchainCreateInfo.surface = mySurface;
+		swapchainCreateInfo.minImageCount = myImageCount;
+		swapchainCreateInfo.imageFormat = surfaceFormat.format;
+		swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
+		swapchainCreateInfo.imageExtent.width = myWidth;
+		swapchainCreateInfo.imageExtent.height = myHeight;
+		swapchainCreateInfo.imageArrayLayers = 1;
+		swapchainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+		swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		swapchainCreateInfo.presentMode = presentMode;
+		swapchainCreateInfo.clipped = VK_TRUE;
+		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		swapchainCreateInfo.oldSwapchain = oldSwapchain;
+
+		auto device = GraphicsContext::GetDevice();
+		VT_VK_CHECK(vkCreateSwapchainKHR(device->GetHandle(), &swapchainCreateInfo, nullptr, &mySwapchain));
+
+		if (oldSwapchain != VK_NULL_HANDLE)
+		{
+			vkDestroySwapchainKHR(myDevice, oldSwapchain, nullptr);
+
+			for (auto& imageData : myImageData)
+			{
+				vkDestroyImageView(myDevice, imageData.imageView, nullptr);
+				vkDestroyFramebuffer(myDevice, imageData.framebuffer, nullptr);
+			}
+		}
+
+		VT_VK_CHECK(vkGetSwapchainImagesKHR(device->GetHandle(), mySwapchain, &myImageCount, nullptr));
+		
+		std::vector<VkImage> images{};
+		myImageData.clear();
+		myImageData.resize(myImageCount);
+		images.resize(myImageCount);
+
+		VT_VK_CHECK(vkGetSwapchainImagesKHR(device->GetHandle(), mySwapchain, &myImageCount, images.data()));
+
+		for (size_t i = 0; i < myImageCount; i++)
+		{
+			myImageData.at(i).image = images.at(i);
+		}
+
+		mySwapchainFormat = surfaceFormat.format;
+	}
+
+	void Swapchain::CreateImageViews()
+	{
+		VkImageViewCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = mySwapchainFormat;
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.layerCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.levelCount = 1;
+
+		for (auto& imageData : myImageData)
+		{
+			createInfo.image = imageData.image;
+			VT_VK_CHECK(vkCreateImageView(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &imageData.imageView));
+		}
+	}
+
+	void Swapchain::CreateRenderPass()
+	{
+		VkAttachmentDescription colorAttachment{};
+		colorAttachment.format = mySwapchainFormat;
+		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference attachmentRef{};
+		attachmentRef.attachment = 0;
+		attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription subpassDesc{};
+		subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpassDesc.colorAttachmentCount = 1;
+		subpassDesc.pColorAttachments = &attachmentRef;
+		subpassDesc.pDepthStencilAttachment = nullptr;
+
+		VkSubpassDependency subpassDepend{};
+		subpassDepend.srcSubpass = VK_SUBPASS_EXTERNAL;
+		subpassDepend.dstSubpass = 0;
+		subpassDepend.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		subpassDepend.srcAccessMask = 0;
+		subpassDepend.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		subpassDepend.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		VkRenderPassCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		createInfo.attachmentCount = 1;
+		createInfo.pAttachments = &colorAttachment;
+		createInfo.subpassCount = 1;
+		createInfo.pSubpasses = &subpassDesc;
+		createInfo.dependencyCount = 1;
+		createInfo.pDependencies = &subpassDepend;
+
+		VT_VK_CHECK(vkCreateRenderPass(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &myRenderPass));
+	}
+
+	void Swapchain::CreateFramebuffers()
+	{
+		VkFramebufferCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		createInfo.renderPass = myRenderPass;
+		createInfo.attachmentCount = 1;
+		createInfo.width = myWidth;
+		createInfo.height = myHeight;
+		createInfo.layers = 1;
+
+		for (auto& imageData : myImageData)
+		{
+			createInfo.pAttachments = &imageData.imageView;
+			VT_VK_CHECK(vkCreateFramebuffer(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &imageData.framebuffer));
+		}
+	}
+
+	void Swapchain::CreateSyncObjects()
+	{
+		VkFenceCreateInfo fenceInfo{};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		auto device = GraphicsContext::GetDevice()->GetHandle();
+
+		myFrameInFlightData.resize(myMaxFramesInFlight);
+
+		for (auto& frameData : myFrameInFlightData)
+		{
+			VT_VK_CHECK(vkCreateFence(device, &fenceInfo, nullptr, &frameData.fence));
+		}
+
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		for (auto& frameData : myFrameInFlightData)
+		{
+			VT_VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frameData.presentSemaphore));
+			VT_VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frameData.renderSemaphore));
+		}
+	}
+
+	void Swapchain::CreateCommandPools()
+	{
+		const auto queueIndices = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies();
+
+		VkCommandPoolCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		createInfo.queueFamilyIndex = queueIndices.graphicsFamilyQueueIndex;
+		createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+
+		for (auto& frameData : myFrameInFlightData)
+		{
+			VT_VK_CHECK(vkCreateCommandPool(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &frameData.commandPool));
+		}
+	}
+
+	void Swapchain::CreateCommandBuffers()
+	{
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandBufferCount = 1;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		for (auto& frameData : myFrameInFlightData)
+		{
+			allocInfo.commandPool = frameData.commandPool;
+			VT_VK_CHECK(vkAllocateCommandBuffers(GraphicsContext::GetDevice()->GetHandle(), &allocInfo, &frameData.commandBuffer));
+		}
 	}
 }

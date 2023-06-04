@@ -1,0 +1,10 @@
+{
+    "hlsl.preprocessorDefinitions": {
+    },
+    "hlsl.additionalIncludeDirectories": [
+      "..\\Engine\\Engine\\Shaders\\Source\\HLSL\\Includes",
+      "..\\Engine\\Engine\\Shaders\\Source\\Includes"
+    ],
+    "hlsl.virtualDirectoryMappings": {
+    }
+}

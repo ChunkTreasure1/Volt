@@ -1,0 +1,8 @@
+name: FX_leafCards
+internal: false
+paths:
+  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl
+  - Assets\VFX\Environment\leafCards\FX_leafCards_vs.hlsl
+inputTextures:
+  - shaderName: Texture_01
+    editorName: Texture_01

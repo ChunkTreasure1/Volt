@@ -3,14 +3,15 @@
 
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Camera/EditorCameraController.h"
+#include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Animation/AnimationManager.h>
 
-#include <Volt/Rendering/Renderer.h>
-#include <Volt/Rendering/Framebuffer.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
+#include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
+#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
+
 #include <Volt/Asset/Mesh/Material.h>
 
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
@@ -24,7 +25,6 @@
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
-#include <Volt/Components/PostProcessComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -32,79 +32,12 @@ CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
 	myWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
-	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 
-	myScene = CreateRef<Volt::Scene>();
-	mySceneRenderer = CreateScope<Volt::SceneRenderer>(myScene);
+	myScene = Volt::Scene::CreateDefaultScene("Character Editor", false);
 
-	// Forward Extra
-	{
-		Volt::FramebufferSpecification spec{};
-
-		spec.attachments =
-		{
-			{ Volt::ImageFormat::RGBA32F }, // Color
-			{ Volt::ImageFormat::R32UI }, // ID
-			{ Volt::ImageFormat::DEPTH32F }
-		};
-
-		spec.width = 1280;
-		spec.height = 720;
-
-		spec.existingImages =
-		{
-			{ 0, mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0) },
-			{ 1, mySceneRenderer->GetSelectionFramebuffer()->GetColorAttachment(2) },
-		};
-
-		spec.existingDepth = mySceneRenderer->GetFinalObjectFramebuffer()->GetDepthAttachment();
-
-		myForwardExtraPass.framebuffer = Volt::Framebuffer::Create(spec);
-		myForwardExtraPass.debugName = "Forward Extra";
-	}
-
-	mySceneRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
-
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
-			Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
-
-			Volt::Renderer::EndPass();
-		});
-
-	// Skylight
-	{
-		auto entity = myScene->CreateEntity();
-		Volt::SkylightComponent& comp = entity.AddComponent<Volt::SkylightComponent>();
-		comp.environmentHandle = Volt::AssetManager::GetAsset<Volt::Texture2D>("Assets/Textures/HDRIs/studio_small_08_4k.hdr")->handle;
-	}
-
-	// Directional light
-	{
-		auto entity = myScene->CreateEntity();
-		Volt::DirectionalLightComponent& comp = entity.AddComponent<Volt::DirectionalLightComponent>();
-		comp.castShadows = false;
-		comp.intensity = 3.f;
-
-		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
-	}
-
-	// Character entityw
-	{
-		myCharacterEntity = myScene->CreateEntity();
-		myCharacterEntity.AddComponent<Volt::AnimatedCharacterComponent>();
-	}
-
-	{
-		auto ent = myScene->CreateEntity();
-		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
-		ent.AddComponent<Volt::BloomComponent>();
-		ent.AddComponent<Volt::FXAAComponent>();
-		ent.AddComponent<Volt::HBAOComponent>();
-	}
+	myCharacterEntity = myScene->CreateEntity("Character");
+	myCharacterEntity.AddComponent<Volt::AnimatedCharacterComponent>();
 }
 
 void CharacterEditorPanel::UpdateMainContent()
@@ -121,10 +54,10 @@ void CharacterEditorPanel::UpdateMainContent()
 
 			if (ImGui::MenuItem("Open"))
 			{
-				const std::filesystem::path path = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
+				const std::filesystem::path path = FileSystem::OpenFileDialogue({ { "Animated Character (*.vtchr)", "vtchr" }});
 				if (!path.empty() && FileSystem::Exists(path))
 				{
-					myCurrentCharacter = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(path);
+					myCurrentCharacter = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(Volt::AssetManager::GetRelativePath(path));
 					if (myCurrentCharacter)
 					{
 						mySkinHandle = myCurrentCharacter->GetSkin()->handle;
@@ -169,12 +102,18 @@ void CharacterEditorPanel::UpdateContent()
 	UpdateViewport();
 	UpdateToolbar();
 	UpdateSkeletonView();
+	UpdateAnimationTimelinePanel();
+	UpdateJointAttachmentViewPanel();
 
 	EditorUtils::NewCharacterModal("New Character##NewCharacterEditor", myCurrentCharacter, myNewCharacterData);
+	AddAnimationEventModal();
+	AddJointAttachmentPopup();
 }
 
 void CharacterEditorPanel::OnEvent(Volt::Event& e)
 {
+	if (!IsOpen()) { return; }
+
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnRenderEvent));
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(CharacterEditorPanel::OnUpdateEvent));
@@ -190,6 +129,13 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 	}
 
 	myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().animatedCharacter = asset->handle;
+	myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities.clear();
+
+	for (const auto& attachmentEntity : myJointAttachmentEntities)
+	{
+		myScene->RemoveEntity(attachmentEntity);
+	}
+	myJointAttachmentEntities.clear();
 
 	myCurrentCharacter = std::reinterpret_pointer_cast<Volt::AnimatedCharacter>(asset);
 	if (myCurrentCharacter && myCurrentCharacter->IsValid())
@@ -202,12 +148,41 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 		{
 			mySkeletonHandle = myCurrentCharacter->GetSkeleton()->handle;
 		}
+
+		for (const auto& attachment : myCurrentCharacter->GetJointAttachments())
+		{
+			auto newEntity = myScene->CreateEntity();
+			newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+			newEntity.SetScale(0.2f);
+
+			myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[attachment.id].emplace_back(newEntity);
+		}
 	}
 	else
 	{
 		mySkinHandle = Volt::Asset::Null();
 		mySkeletonHandle = Volt::Asset::Null();
 	}
+}
+
+void CharacterEditorPanel::OnOpen()
+{
+	// Scene Renderer
+	{
+		Volt::SceneRendererSpecification spec{};
+		spec.scene = myScene;
+		spec.debugName = "Character Editor";
+
+		Volt::SceneRendererSettings settings{};
+		settings.enableGrid = true;
+
+		mySceneRenderer = CreateScope<Volt::SceneRenderer>(spec, settings);
+	}
+}
+
+void CharacterEditorPanel::OnClose()
+{
+	mySceneRenderer = nullptr;
 }
 
 bool CharacterEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
@@ -218,15 +193,30 @@ bool CharacterEditorPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 
 bool CharacterEditorPanel::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
-	if (myIsPlayingAnim && myCurrentCharacter && myCurrentCharacter->IsValid())
+	if (myCurrentCharacter && myCurrentCharacter->IsValid())
 	{
-		Volt::AnimationManager::Update(e.GetTimestep());
-
-		auto& comp = myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>();
-
-		if (comp.isLooping && comp.currentStartTime + myCurrentCharacter->GetAnimationDuration(comp.currentAnimation) <= Volt::AnimationManager::globalClock)
+		if (myIsPlayingAnim)
 		{
-			comp.currentStartTime = Volt::AnimationManager::globalClock;
+			Volt::AnimationManager::Update(e.GetTimestep());
+
+			auto& comp = myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>();
+
+			if (comp.isLooping && comp.currentStartTime + myCurrentCharacter->GetAnimationDuration(comp.currentAnimation) <= Volt::AnimationManager::globalClock)
+			{
+				comp.currentStartTime = Volt::AnimationManager::globalClock;
+			}
+		}
+		else if (mySelectedKeyframe != -1 && !myIsPlayingAnim)
+		{
+			auto& comp = myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>();
+
+			Ref<Volt::Animation> currentAnimation = myCurrentCharacter->GetAnimations().at((uint32_t)mySelectedAnimation);
+
+			float selectedStepTime = (myCurrentCharacter->GetAnimationDuration(comp.currentAnimation) / currentAnimation->GetFrameCount()) * mySelectedKeyframe;
+
+			comp.currentAnimation = mySelectedAnimation;
+			comp.currentStartTime = selectedStepTime;
+			comp.isPlaying = true;
 		}
 	}
 
@@ -243,7 +233,9 @@ void CharacterEditorPanel::UpdateToolbar()
 	UI::ScopedColor hovered(ImGuiCol_ButtonHovered, { 0.3f, 0.305f, 0.31f, 0.5f });
 	UI::ScopedColor active(ImGuiCol_ButtonActive, { 0.5f, 0.505f, 0.51f, 0.5f });
 
+	ImGui::SetNextWindowClass(GetWindowClass());
 	ImGui::Begin("##toolbarCharEditor", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	ForceWindowDocked(ImGui::GetCurrentWindow());
 
 	if (UI::ImageButton("##Save", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Save)), { myButtonSize, myButtonSize }))
 	{
@@ -258,7 +250,7 @@ void CharacterEditorPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path characterPath = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
+		const std::filesystem::path characterPath = FileSystem::OpenFileDialogue({ { "Animated Character (*.vtchr)", "vtchr" } });
 		if (!characterPath.empty() && FileSystem::Exists(characterPath))
 		{
 			myCurrentCharacter = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(characterPath);
@@ -286,6 +278,9 @@ void CharacterEditorPanel::UpdateViewport()
 	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
+	ImGui::SetNextWindowDockID(myMainDockId, ImGuiCond_Always);
+	ImGui::SetNextWindowClass(GetWindowClass());
+
 	ImGui::Begin("Viewport##charEdit");
 
 	myCameraController->SetIsControllable(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows));
@@ -302,17 +297,30 @@ void CharacterEditorPanel::UpdateViewport()
 	{
 		myViewportSize = { viewportSize.x, viewportSize.y };
 		mySceneRenderer->Resize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
+		myScene->SetRenderSize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
 		myCameraController->UpdateProjection((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
 	}
 
-	ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0)), viewportSize);
+	ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), viewportSize);
 	ImGui::End();
 	ImGui::PopStyleVar(3);
 }
 
 void CharacterEditorPanel::UpdateProperties()
 {
+	ImGui::SetNextWindowClass(GetWindowClass());
 	ImGui::Begin("Properties##charEdit");
+	ForceWindowDocked(ImGui::GetCurrentWindow());
+
+	UI::Header("Character Properties");
+	ImGui::Separator();
+
+	if (!myCharacterEntity.HasComponent<Volt::AnimatedCharacterComponent>())
+	{
+		ImGui::End();
+		return;
+	}
+
 	if (UI::BeginProperties("CharProperties"))
 	{
 		auto& charComp = myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>();
@@ -330,7 +338,7 @@ void CharacterEditorPanel::UpdateProperties()
 
 		if (EditorUtils::Property("Skeleton", mySkeletonHandle, Volt::AssetType::Skeleton))
 		{
-			Ref<Volt::Skeleton> skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(mySkinHandle);
+			Ref<Volt::Skeleton> skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(mySkeletonHandle);
 			if (skeleton && skeleton->IsValid())
 			{
 				myCurrentCharacter->SetSkeleton(skeleton);
@@ -347,13 +355,18 @@ void CharacterEditorPanel::UpdateAnimations()
 {
 	const float buttonSize = 22.f;
 
+	ImGui::SetNextWindowClass(GetWindowClass());
 	ImGui::Begin("Animations##charEdit");
+	ForceWindowDocked(ImGui::GetCurrentWindow());
 
 	if (!myCurrentCharacter)
 	{
 		ImGui::End();
 		return;
 	}
+
+	UI::Header("Animations");
+	ImGui::Separator();
 
 	ImGui::BeginChild("AnimBar", { ImGui::GetContentRegionAvail().x, myButtonSize + 5.f }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	{
@@ -406,15 +419,12 @@ void CharacterEditorPanel::UpdateAnimations()
 	{
 		if (ImGui::BeginTable("AnimTable", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable))
 		{
-			ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthStretch, 0.3f);
 			ImGui::TableSetupColumn("Animation", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableHeadersRow();
 
 			for (const auto& [index, anim] : myCurrentCharacter->GetAnimations())
 			{
-				ImGui::TableNextColumn();
-				ImGui::Text("%d", index);
-
 				ImGui::TableNextColumn();
 
 				std::string animName;
@@ -431,40 +441,16 @@ void CharacterEditorPanel::UpdateAnimations()
 
 				ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
 				UI::InputText("", animName, ImGuiInputTextFlags_ReadOnly);
-				if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+				if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 				{
 					ImGui::OpenPopup(popupName.c_str());
 				}
-				ImGui::PopItemWidth();
-
-				std::string rightClickId = "animRightClick" + std::to_string(index);
-				if (ImGui::BeginPopupContextItem(rightClickId.c_str(), ImGuiPopupFlags_MouseButtonRight))
+				else if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 				{
-					if (ImGui::MenuItem("Play") && anim && anim->IsValid())
-					{
-						if (!myIsPlayingAnim)
-						{
-							myScene->OnRuntimeStart();
-						}
-
-						myIsPlayingAnim = true;
-
-						auto& charComp = myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>();
-
-						charComp.currentAnimation = index;
-						charComp.currentStartTime = Volt::AnimationManager::globalClock;
-					}
-
-					if (ImGui::MenuItem("Remove"))
-					{
-						myCurrentCharacter->RemoveAnimation(index);
-						ImGui::CloseCurrentPopup();
-						ImGui::EndPopup();
-						break;
-					}
-
-					ImGui::EndPopup();
+					mySelectedAnimation = (int32_t)index;
+					mySelectedKeyframe = -1;
 				}
+				ImGui::PopItemWidth();
 
 				Volt::AssetHandle animHandle = Volt::Asset::Null();
 				if (EditorUtils::AssetBrowserPopupField(popupName, animHandle, Volt::AssetType::Animation))
@@ -472,6 +458,58 @@ void CharacterEditorPanel::UpdateAnimations()
 					if (animHandle != Volt::Asset::Null())
 					{
 						myCurrentCharacter->SetAnimation(index, Volt::AssetManager::GetAsset<Volt::Animation>(animHandle));
+					}
+				}
+
+				ImGui::TableNextColumn();
+
+				// Play
+				{
+					auto& charComp = myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>();
+
+					Ref<Volt::Texture2D> icon = (myIsPlayingAnim && charComp.currentAnimation == index) ? EditorResources::GetEditorIcon(EditorIcon::Stop) : EditorResources::GetEditorIcon(EditorIcon::Play);
+					const std::string playId = "##Play" + std::to_string(index);
+
+					if (UI::ImageButton(playId, UI::GetTextureID(icon), { 20.f, 20.f }))
+					{
+						if (myIsPlayingAnim && index != charComp.currentAnimation)
+						{
+							charComp.currentAnimation = index;
+							charComp.currentStartTime = Volt::AnimationManager::globalClock;
+						}
+						else
+						{
+							myIsPlayingAnim = !myIsPlayingAnim;
+							if (myIsPlayingAnim)
+							{
+								myScene->OnRuntimeStart();
+
+								charComp.currentAnimation = index;
+								charComp.currentStartTime = Volt::AnimationManager::globalClock;
+								charComp.isPlaying = true;
+							}
+							else
+							{
+								charComp.isPlaying = false;
+
+								myScene->OnRuntimeEnd();
+							}
+						}
+					}
+				}
+
+				ImGui::SameLine();
+
+				// Remove
+				{
+					auto id = UI::GetId();
+
+					std::string strId = "-##" + std::to_string(id);
+
+					if (ImGui::Button(strId.c_str(), { 20.f, 20.f }))
+					{
+						myCurrentCharacter->RemoveAnimation(index);
+						break;
 					}
 				}
 			}
@@ -486,7 +524,12 @@ void CharacterEditorPanel::UpdateAnimations()
 
 void CharacterEditorPanel::UpdateSkeletonView()
 {
+	ImGui::SetNextWindowClass(GetWindowClass());
 	ImGui::Begin("Skeleton##charEdit");
+	ForceWindowDocked(ImGui::GetCurrentWindow());
+
+	UI::Header("Skeleton");
+	ImGui::Separator();
 
 	if (!myCurrentCharacter)
 	{
@@ -494,33 +537,383 @@ void CharacterEditorPanel::UpdateSkeletonView()
 		return;
 	}
 
-	//TempSkeleton skeleton{};
-	//for (const auto& joint : myCurrentCharacter->GetSkeleton()->GetJoints())
-	//{
-	//	TempJoint tempJoint{};
-	//	tempJoint.name = joint.name;
+	if (!myCurrentCharacter->GetSkin() || !myCurrentCharacter->GetSkeleton())
+	{
+		ImGui::End();
+		return;
+	}
 
-	//	if (joint.parentIndex != -1)
-	//	{
-	//		TempJoint* parent = nullptr;
-	//		RecursiveGetParent(myCurrentCharacter->GetSkeleton()->GetNameFromJointIndex(joint.parentIndex), skeleton.joints.front(), parent);
-	//		parent->childJoints.emplace_back(tempJoint);
-	//	}
-	//	else
-	//	{
-	//		skeleton.joints.emplace_back(tempJoint);
-	//	}
-	//}
+	TempSkeleton skeleton{};
+	for (const auto& joint : myCurrentCharacter->GetSkeleton()->GetJoints())
+	{
+		TempJoint tempJoint{};
+		tempJoint.name = joint.name;
 
-	//for (auto& joint : skeleton.joints)
-	//{
-	//	RecursiveRenderJoint(joint);
-	//}
+		if (joint.parentIndex != -1)
+		{
+			TempJoint* parent = nullptr;
+			RecursiveGetParent(myCurrentCharacter->GetSkeleton()->GetNameFromJointIndex(joint.parentIndex), skeleton.joints.front(), parent);
+			if (parent)
+			{
+				parent->childJoints.emplace_back(tempJoint);
+			}
+		}
+		else
+		{
+			skeleton.joints.emplace_back(tempJoint);
+		}
+	}
+
+	RecursiveRenderJoint(skeleton.joints.at(0));
 
 	ImGui::End();
 }
 
-void CharacterEditorPanel::RecursiveGetParent(const std::string& name, TempJoint& joint, TempJoint* outJoint)
+void CharacterEditorPanel::UpdateAnimationTimelinePanel()
+{
+	ImGui::SetNextWindowClass(GetWindowClass());
+	ImGui::Begin("Animation Timeline##charEdit", nullptr, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
+	ForceWindowDocked(ImGui::GetCurrentWindow());
+
+	if (!myCurrentCharacter)
+	{
+		ImGui::End();
+		return;
+	}
+
+	if (myCurrentCharacter->GetAnimationCount() == 0 || mySelectedAnimation == -1 || !myCurrentCharacter->GetAnimations().contains((uint32_t)mySelectedAnimation))
+	{
+		ImGui::End();
+		return;
+	}
+
+	Ref<Volt::Animation> currentAnimation = myCurrentCharacter->GetAnimations().at((uint32_t)mySelectedAnimation);
+
+	if (!currentAnimation)
+	{
+		ImGui::End();
+		return;
+	}
+
+	const auto duration = currentAnimation->GetDuration();
+	const uint32_t stepCount = (uint32_t)currentAnimation->GetFrameCount();
+
+	if (ImGui::BeginTable("timelineTable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
+	{
+		ImGui::TableNextColumn();
+		if (ImGui::BeginChild("eventsChild", { ImGui::GetColumnWidth(), ImGui::GetContentRegionAvail().y }, true))
+		{
+			UI::Header("Created Events");
+			ImGui::Separator();
+			if (myCurrentCharacter->HasAnimationEvents((uint32_t)mySelectedAnimation))
+			{
+				const auto& events = myCurrentCharacter->GetAnimationEvents((uint32_t)mySelectedAnimation);
+				for (int index = 0; index < events.size(); index++)
+				{
+					const auto id = UI::GetId();
+					bool selected = false;
+
+					ImGui::Selectable(std::format("{0}: ", events[index].name).c_str(), &selected, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(100, 25));
+					ImGui::SameLine();
+					ImGui::DragInt(std::format("-##rem{0}", id).c_str(), (int*)&events[index].frame);
+
+					std::string popupName = "eventPopup" + std::to_string(index);
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+					{
+						ImGui::OpenPopup(popupName.c_str());
+					}
+
+					std::string rightClickId = "eventRightClick" + std::to_string(index);
+					if (ImGui::BeginPopupContextItem(rightClickId.c_str(), ImGuiPopupFlags_MouseButtonRight))
+					{
+						if (ImGui::MenuItem("Remove"))
+						{
+							myCurrentCharacter->RemoveAnimationEvent(events[index].name, events[index].frame, (uint32_t)mySelectedAnimation);
+							ImGui::CloseCurrentPopup();
+							ImGui::EndPopup();
+							break;
+						}
+						ImGui::EndPopup();
+					}
+
+				}
+			}
+
+			ImGui::EndChild();
+		}
+
+		ImGui::TableNextColumn();
+		if (ImGui::BeginChild("keyframeChild", ImGui::GetContentRegionAvail()))
+		{
+			if (ImGui::BeginChild("timeChild", { ImGui::GetContentRegionAvail().x, 35.f }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+			{
+				ImGui::TextUnformatted("0.00");
+				ImGui::SameLine();
+
+				auto drawList = ImGui::GetWindowDrawList();
+				ImVec2 windowPos = ImGui::GetWindowPos();
+				ImVec2 windowSize = ImGui::GetWindowSize();
+				ImGuiIO& io = ImGui::GetIO();
+
+				drawList->AddRectFilled(windowPos, windowPos + windowSize, IM_COL32(50, 50, 50, 255));
+
+				UI::ScopedColor color{ ImGuiCol_Button, { 1.f, 1.f, 1.f, 1.f } };
+				{
+					constexpr float padding = 3.f;
+					UI::ScopedStyleFloat2 itemPadding{ ImGuiStyleVar_ItemSpacing, { 3.f, 0.f } };
+
+					const float stepSize = windowSize.x / stepCount;
+					for (uint32_t i = 0; i < stepCount; i++)
+					{
+						//ImGui::Button(("K##" + std::to_string(i)).c_str(), { stepSize, 20.f });
+						ImVec2 keyMinPos = ImVec2(windowPos.x + (stepSize * i) + padding, windowPos.y);
+						ImVec2 keyMaxPos = ImVec2(windowPos.x + (stepSize * (i + 1)) - padding, windowPos.y + windowSize.y);
+
+						if (mySelectedKeyframe == i)
+						{
+							drawList->AddRectFilled(keyMinPos, keyMaxPos, IM_COL32(100, 100, 100, 255));
+						}
+						else
+						{
+							drawList->AddRectFilled(keyMinPos, keyMaxPos, IM_COL32(255, 255, 255, 255));
+						}
+
+						ImGui::ItemAdd(ImRect(keyMinPos, keyMaxPos), i);
+
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+						{
+							mySelectedKeyframe = i;
+						}
+
+						if (ImGui::IsItemHovered())
+						{
+							drawList->AddText(io.MousePos + ImVec2(0, -20), IM_COL32(255, 100, 100, 255), std::to_string(i).c_str());
+						}
+
+						if (ImGui::BeginPopupContextItem(("item##" + std::to_string(i)).c_str(), ImGuiPopupFlags_MouseButtonRight))
+						{
+							if (ImGui::MenuItem("Add Event"))
+							{
+								UI::OpenModal("Add Animation Event");
+								myAddAnimEventData = {};
+								myAddAnimEventData.frame = i;
+							}
+
+							ImGui::EndPopup();
+						}
+
+						ImGui::SameLine();
+					}
+
+					VT_CORE_TRACE("x: {0}, y: {1}", windowPos.x, windowPos.y);
+				}
+
+				ImGui::Text("%.2f", duration);
+
+				ImGui::EndChild();
+			}
+
+			ImGui::EndChild();
+		}
+
+		ImGui::EndTable();
+	}
+
+	ImGui::End();
+}
+
+void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
+{
+	ImGui::SetNextWindowClass(GetWindowClass());
+	ImGui::Begin("Joint Attachments##charEdit");
+	ForceWindowDocked(ImGui::GetCurrentWindow());
+
+	UI::Header("Joint Attachments");
+	ImGui::Separator();
+
+	if (!myCurrentCharacter)
+	{
+		ImGui::End();
+		return;
+	}
+
+	if (!myCurrentCharacter->GetSkin() || !myCurrentCharacter->GetSkeleton())
+	{
+		ImGui::End();
+		return;
+	}
+
+	if (ImGui::Button("Add"))
+	{
+		UI::OpenPopup("addJointAttachment");
+		myJointSearchQuery = "";
+		myActivateJointSearch = true;
+	}
+
+	auto& jointAttachments = const_cast<std::vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
+
+	const auto totalWidth = ImGui::GetContentRegionAvail().x;
+
+	if (ImGui::BeginTable("AttachmentTable", 3, ImGuiTableFlags_BordersInnerH, ImGui::GetContentRegionAvail()))
+	{
+		ImGui::TableSetupColumn("Attachment Name");
+		ImGui::TableSetupColumn("Joint");
+
+		ImGui::TableHeadersRow();
+
+		int32_t indexToRemove = -1;
+		for (int32_t index = 0; auto& attachment : jointAttachments)
+		{
+			ImGui::TableNextColumn();
+
+			auto jointName = myCurrentCharacter->GetSkeleton()->GetNameFromJointIndex(attachment.jointIndex);
+
+			ImGui::PushItemWidth(totalWidth - 11.f);
+			const std::string jntId = "##" + std::to_string(UI::GetId());
+
+			ImGui::InputTextString(jntId.c_str(), &jointName, ImGuiInputTextFlags_ReadOnly);
+			ImGui::PopItemWidth();
+
+			ImGui::TableNextColumn();
+
+			ImGui::PushItemWidth(totalWidth - 11.f);
+			
+			const std::string attId = "##" + std::to_string(UI::GetId());
+			ImGui::InputTextString(attId.c_str(), &attachment.name);
+
+			std::string popupName = "offsetRightclick" + std::to_string(index);
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+			{
+				ImGui::OpenPopup(popupName.c_str());
+			}
+
+			std::string rightClickId = "offsetRightclick" + std::to_string(index);
+			if (ImGui::BeginPopupContextItem(rightClickId.c_str(), ImGuiPopupFlags_MouseButtonRight))
+			{
+				UI::BeginProperties("OFFSET");
+				ImGui::Text("OFFSET");
+
+				UI::Property("Pos", attachment.positionOffset);
+
+				UI::EndProperties();
+				ImGui::EndPopup();
+			}
+
+			ImGui::PopItemWidth();
+		
+			ImGui::TableNextColumn();
+			if (ImGui::Button((std::string("-##") + std::to_string(index)).c_str(), { 22.f, 22.f }))
+			{
+				indexToRemove = index;
+			}
+
+			index++;
+		}
+
+		if (indexToRemove > -1)
+		{
+			jointAttachments.erase(jointAttachments.begin() + indexToRemove);
+		}
+
+		ImGui::EndTable();
+	}
+
+	ImGui::End();
+}
+
+void CharacterEditorPanel::AddAnimationEventModal()
+{
+	if (UI::BeginModal("Add Animation Event", ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		UI::PushId();
+		if (UI::BeginProperties("animEvent"))
+		{
+			UI::Property("Name", myAddAnimEventData.name);
+			UI::EndProperties();
+		}
+		UI::PopId();
+
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Add"))
+		{
+			myCurrentCharacter->AddAnimationEvent(myAddAnimEventData.name, myAddAnimEventData.frame, (uint32_t)mySelectedAnimation);
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void CharacterEditorPanel::AddJointAttachmentPopup()
+{
+	ImGui::SetNextWindowSize({ 250.f, 500.f });
+
+	if (UI::BeginPopup("addJointAttachment", ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	{
+		std::vector<std::string> jointNames;
+		for (const auto& joint : myCurrentCharacter->GetSkeleton()->GetJoints())
+		{
+			jointNames.emplace_back(joint.name);
+		}
+
+		// Search bar
+		{
+			bool t;
+			EditorUtils::SearchBar(myJointSearchQuery, t, myActivateJointSearch);
+			if (myActivateJointSearch)
+			{
+				myActivateJointSearch = false;
+			}
+		}
+
+		if (!myJointSearchQuery.empty())
+		{
+			jointNames = UI::GetEntriesMatchingQuery(myJointSearchQuery, jointNames);
+		}
+
+		// List child
+		{
+			auto& jointAttachments = const_cast<std::vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
+
+			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
+
+			for (const auto& name : jointNames)
+			{
+				const std::string id = name + "##" + std::to_string(UI::GetId());
+
+				UI::ShiftCursor(4.f, 0.f);
+				UI::RenderMatchingTextBackground(myJointSearchQuery, name, EditorTheme::MatchingTextBackground);
+				if (ImGui::MenuItem(id.c_str()))
+				{
+					auto& newAttachment = jointAttachments.emplace_back();
+					newAttachment.name = "New Attachment";
+					newAttachment.jointIndex = myCurrentCharacter->GetSkeleton()->GetJointIndexFromName(name);
+
+					auto newEntity = myScene->CreateEntity();
+					newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+					newEntity.SetScale(0.2f);
+
+					myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[newAttachment.id].emplace_back(newEntity);
+
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			ImGui::EndChild();
+		}
+
+		UI::EndPopup();
+	}
+}
+
+void CharacterEditorPanel::RecursiveGetParent(const std::string& name, TempJoint& joint, TempJoint*& outJoint)
 {
 	if (joint.name == name)
 	{

@@ -9,6 +9,7 @@ namespace Volt
 
 	class PhysicsActor;
 	class PhysicsScene;
+	class PhysicsControllerActor;
 	class Physics
 	{
 	public:
@@ -28,6 +29,7 @@ namespace Volt
 
 		static void CreateActors(Scene* scene);
 		static Ref<PhysicsActor> CreateActor(Entity entity);
+		static Ref<PhysicsControllerActor> CreateControllerActor(Entity entity);
 
 		static const PhysicsSettings& GetSettings() { return mySettings; }
 

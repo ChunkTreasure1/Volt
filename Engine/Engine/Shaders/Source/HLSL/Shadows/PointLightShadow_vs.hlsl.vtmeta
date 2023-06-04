@@ -1,0 +1,4 @@
+Handle: 7645562204291502238
+Path: Engine/Shaders/Source/HLSL/Shadows/PointLightShadow_vs.hlsl
+Dependencies:
+  []

@@ -1,6 +1,7 @@
 name: "DirectionalShadow"
 internal: true
 paths:
-  - "Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Shadows/DirectionalShadow_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Shadows/DirectionalShadow_gs.hlsl"
 inputTextures:
   []

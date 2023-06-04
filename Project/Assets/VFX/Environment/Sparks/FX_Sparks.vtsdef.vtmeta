@@ -1,0 +1,5 @@
+Handle: 408854107300351950
+Path: Assets/VFX/Environment/Sparks/FX_Sparks.vtsdef
+Dependencies:
+  - Assets/VFX/Environment/Sparks/Sparks_ps.hlsl
+  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl

@@ -16,7 +16,7 @@ namespace Volt
 }
 
 class MaterialEditorPanel : public EditorWindow
-{ 
+{
 public:
 	MaterialEditorPanel(Ref<Volt::Scene>& aScene);
 
@@ -26,7 +26,10 @@ public:
 	void OpenAsset(Ref<Volt::Asset> asset) override;
 	void OnEvent(Volt::Event& e) override;
 
-private:	
+	void OnOpen() override;
+	void OnClose() override;
+
+private:
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
 	void UpdateToolbar();
 	void UpdateProperties();

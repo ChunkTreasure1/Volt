@@ -1,0 +1,4 @@
+name: "VolumetricFog_InjectLight"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Environment/VolumetricFog/VolumetricFog_InjectLight_cs.hlsl"

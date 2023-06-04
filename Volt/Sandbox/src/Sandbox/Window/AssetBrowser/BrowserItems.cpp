@@ -5,5 +5,6 @@ namespace AssetBrowser
 {
 	Item::Item(SelectionManager* selectionManager, const std::filesystem::path& aPath)
 		: mySelectionManager(selectionManager), path(aPath)
-	{}
+	{
+	}
 }

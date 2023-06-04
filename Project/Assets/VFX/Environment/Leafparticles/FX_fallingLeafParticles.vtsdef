@@ -1,0 +1,11 @@
+name: FX_fallingLeafParticles
+internal: false
+paths:
+  - Assets\VFX\Environment\Leafparticles\FX_fallingLeafParticles_ps.hlsl
+  - Assets\VFX\Environment\Leafparticles\FX_fallingLeafParticles_gs.hlsl
+  - Engine/Shaders/Source/HLSL/2D/Particle_vs.hlsl
+inputTextures:
+  - shaderName: Texture_01
+    editorName: Texture_01
+  - shaderName: Texture_02
+    editorName: Texture_02

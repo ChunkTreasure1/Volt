@@ -1,6 +1,7 @@
 #include "sbpch.h"
 #include "AssetItem.h"
 
+#include "Sandbox/Sandbox.h"
 #include "Sandbox/Window/AssetBrowser/AssetBrowserSelectionManager.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -11,9 +12,12 @@
 #include "Sandbox/Utility/EditorLibrary.h"
 #include "Sandbox/VersionControl/VersionControl.h"
 
+#include "Sandbox/UserSettingsManager.h"
+
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Input/KeyCodes.h>
+#include <Volt/Utility/PremadeCommands.h>
 
 namespace AssetBrowser
 {
@@ -22,7 +26,7 @@ namespace AssetBrowser
 	{
 		type = Volt::AssetManager::GetAssetTypeFromPath(path);
 		handle = Volt::AssetManager::GetAssetHandleFromPath(path);
-		if (handle == Volt::Asset::Null())
+		if (handle == Volt::Asset::Null() && !Volt::AssetManager::Get().HasAssetMetaFile(path))
 		{
 			handle = Volt::AssetManager::Get().AddToRegistry(path);
 		}
@@ -38,7 +42,6 @@ namespace AssetBrowser
 		const bool selected = mySelectionManager->IsSelected(this);
 
 		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(myThumbnailSize);
-		const ImVec2 minChildPos = AssetBrowserUtilities::GetBrowserItemMinPos();
 		const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 		const ImVec4 assetTypeColor = GetBackgroundColorFromType(type);
 
@@ -52,27 +55,15 @@ namespace AssetBrowser
 			UI::ScopedStyleFloat rounding{ ImGuiStyleVar_ChildRounding, 2.f };
 			ImGui::BeginChild("item", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			{
-				UI::ShiftCursor(itemPadding / 2.f, 10.f);
+				UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
 
 				constexpr float colorModifier = 0.6f;
 				UI::ScopedColor innerChild{ ImGuiCol_ChildBg, { assetTypeColor.x * colorModifier, assetTypeColor.y * colorModifier, assetTypeColor.z * colorModifier, assetTypeColor.w } };
-				ImGui::BeginChild("Image", { myThumbnailSize, myThumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+				ImGui::BeginChild("Image", { myThumbnailSize, myThumbnailSize + 4.f }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 				{
-					// Right bar
-					{
-						const ImVec2 barMin = minChildPos;
-						const ImVec2 barMax = barMin + ImVec2{ 10.f, myThumbnailSize + itemPadding };
-
-						ImVec4 color = assetTypeColor;
-						color.w = 1.f;
-
-						ImGui::GetWindowDrawList()->AddRectFilled(barMin, barMax, ImColor(assetTypeColor));
-					}
-
 					// Icon
 					{
-						UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
-						ImGui::Image(UI::GetTextureID(icon), { myThumbnailSize - itemPadding, myThumbnailSize - itemPadding });
+						ImGui::Image(UI::GetTextureID(icon), { myThumbnailSize, myThumbnailSize });
 
 						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 						{
@@ -99,6 +90,19 @@ namespace AssetBrowser
 
 							ImGui::EndDragDropSource();
 						}
+					}
+
+					const ImVec2 maxChildPos = AssetBrowserUtilities::GetBrowserItemPos();
+
+					// Bottom bar
+					{
+						const ImVec2 barMin = maxChildPos;
+						const ImVec2 barMax = barMin + ImVec2{ 10.f, 4.f };
+
+						ImVec4 color = assetTypeColor;
+						color.w = 1.f;
+
+						ImGui::GetWindowDrawList()->AddRectFilled(barMin, barMax, ImColor(assetTypeColor));
 					}
 				}
 
@@ -172,9 +176,63 @@ namespace AssetBrowser
 					ImGui::TextWrapped("%s", path.stem().string().c_str());
 				}
 
+				static Volt::AssetHandle sceneToOpen = Volt::Asset::Null();
+
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && hovered)
 				{
-					EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
+					if (!EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle)))
+					{
+						switch (type)
+						{
+							case Volt::AssetType::Animation:
+								break;
+							case Volt::AssetType::Skeleton:
+								break;
+							case Volt::AssetType::Texture:
+								break;
+							case Volt::AssetType::Shader:
+								break;
+							case Volt::AssetType::ShaderSource:
+								break;
+							case Volt::AssetType::Scene:
+							{
+								UI::OpenModal("Do you want to save scene?##OpenSceneAssetBrowser");
+								sceneToOpen = handle;
+								break;
+							}
+							case Volt::AssetType::Font:
+								break;
+							case Volt::AssetType::PhysicsMaterial:
+								break;
+							case Volt::AssetType::Video:
+								break;
+							case Volt::AssetType::NavMesh:
+								break;
+							case Volt::AssetType::GraphKey:
+								break;
+							case Volt::AssetType::MonoScript:
+							{
+								if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, Volt::AssetManager::GetPathFromAssetHandle(handle)))
+								{
+									UI::Notify(NotificationType::Error, "Open file failed!", "External script editor is not valid!");
+								}
+								break;
+							}
+							default:
+								break;
+						}
+					}
+				}
+
+				if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenSceneAssetBrowser"); returnState != SaveReturnState::None)
+				{
+					if (returnState == SaveReturnState::Save)
+					{
+						Sandbox::Get().SaveScene();
+					}
+
+					Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(sceneToOpen));
+					sceneToOpen = Volt::Asset::Null();
 				}
 
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && hovered && !mySelectionManager->IsSelected(this))
@@ -256,7 +314,6 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Delete"))
 			{
-				removed = true;
 				UI::OpenModal("Delete Selected Files?");
 			}
 
@@ -273,7 +330,7 @@ namespace AssetBrowser
 
 	Ref<Volt::Image2D> AssetItem::GetIcon() const
 	{
-		Ref<Volt::Image2D> icon = (preview && preview->IsRendered()) ? preview->GetPreview() : nullptr;
+		Ref<Volt::Image2D> icon = previewImage ? previewImage : nullptr;
 		if (!icon && EditorResources::GetAssetIcon(type))
 		{
 			icon = EditorResources::GetAssetIcon(type)->GetImage();
@@ -283,11 +340,15 @@ namespace AssetBrowser
 		{
 			if (EditorUtils::HasThumbnail(path))
 			{
-				icon = Volt::AssetManager::GetAsset<Volt::Texture2D>(EditorUtils::GetThumbnailPathFromPath(path))->GetImage();
+				auto image = Volt::AssetManager::GetAsset<Volt::Texture2D>(EditorUtils::GetThumbnailPathFromPath(path));
+				if (image && image->IsValid())
+				{
+					icon = image->GetImage();
+				}
 			}
 			else
 			{
-				icon = EditorUtils::GenerateThumbnail(path)->GetImage();
+				//icon = EditorUtils::GenerateThumbnail(path)->GetImage();
 			}
 		}
 
@@ -305,6 +366,7 @@ namespace AssetBrowser
 		{
 			case Volt::AssetType::Mesh: return { 0.73f, 0.9f, 0.26f, 1.f };
 			case Volt::AssetType::MeshSource: return { 0.43f, 0.9f, 0.26f, 1.f };
+			case Volt::AssetType::NavMesh: return { 0.f, 0.80f, 0.98f, 1.f };
 			case Volt::AssetType::Animation: return { 0.65f, 0.18f, 0.69f, 1.f };
 			case Volt::AssetType::Skeleton: return { 1.f, 0.49f, 0.8f, 1.f };
 			case Volt::AssetType::Texture: return { 0.9f, 0.26f, 0.27f, 1.f };
@@ -315,6 +377,9 @@ namespace AssetBrowser
 			case Volt::AssetType::AnimatedCharacter: return { 0.9f, 0.25f, 0.49f, 1.f };
 			case Volt::AssetType::Prefab: return { 0.25f, 0.93f, 0.92f, 1.f };
 			case Volt::AssetType::ParticlePreset: return { 1.f, 0.62f, 0.f, 1.f };
+			case Volt::AssetType::MonoScript: return { 0.f, 0.6f, 0.f, 1.f };
+			case Volt::AssetType::BehaviorGraph: return { 0.75f, 0.04f, 0.83f, 1.f };
+			case Volt::AssetType::AnimationGraph: return { 0.82f, 0.72f, 0.2f, 1.f };
 			default: return { 0.f, 0.f, 0.f, 1.f };
 		}
 

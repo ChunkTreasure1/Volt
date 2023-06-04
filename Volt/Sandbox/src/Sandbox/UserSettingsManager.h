@@ -2,9 +2,26 @@
 
 #include "Sandbox/VersionControl/VersionControl.h"
 
+#include <NavigationEditor/Builder/BuildInterfaces.h>
+
 struct WindowSettings
 {
 	std::unordered_map<std::string, bool> windowsOpen;
+};
+
+enum class NavMeshViewMode : uint32_t
+{
+	None = 0,
+	All,
+	Only,
+};
+
+enum class ColliderViewMode : uint32_t
+{
+	None = 0,
+	Selected,
+	All,
+	AllHideMesh
 };
 
 struct SceneSettings
@@ -16,12 +33,33 @@ struct SceneSettings
 	bool showGizmos = false;
 	bool use16by9 = false;
 	bool fullscreenOnPlay = false;
+	bool gridEnabled = false;
 
 	float gridSnapValue = 0.f;
 	float rotationSnapValue = 0.f;
 	float scaleSnapValue = 0.f;
 
+	bool showLightSpheres = true;
+	bool showEntityGizmos = true;
+	bool showBoundingSpheres = false;
+	ColliderViewMode colliderViewMode = ColliderViewMode::None;
+	bool showEnvironmentProbes = false;
+	NavMeshViewMode navMeshViewMode = NavMeshViewMode::None;
+
+	bool lowMemoryUsage = false;
+
 	std::filesystem::path lastOpenScene;
+};
+
+struct ExternalToolsSettings
+{
+	std::unordered_map<std::string, std::filesystem::path> scriptEditorPaths;
+	std::filesystem::path customExternalScriptEditor;
+};
+
+struct NetworkSettings
+{
+	bool enableNetworking = false;
 };
 
 struct EditorSettings
@@ -29,14 +67,17 @@ struct EditorSettings
 	WindowSettings windowSettings;
 	SceneSettings sceneSettings;
 	VersionControlSettings versionControlSettings;
+	ExternalToolsSettings externalToolsSettings;
+	RecastBuildSettings navmeshBuildSettings;
+	NetworkSettings networkSettings;
 };
 
 class EditorWindow;
 class UserSettingsManager
 {
 public:
-	static void LoadUserSettings(const std::vector<Ref<EditorWindow>>& windows);
-	static void SaveUserSettings(const std::vector<Ref<EditorWindow>>& windows);
+	static void LoadUserSettings();
+	static void SaveUserSettings();
 
 	inline static EditorSettings& GetSettings() { return s_editorSettings; }
 

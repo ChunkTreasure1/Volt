@@ -1,580 +1,678 @@
 #include "vtpch.h"
 #include "Renderer.h"
 
+#include "Volt/Core/Application.h"
+#include "Volt/Core/Window.h"
+#include "Volt/Core/Graphics/Swapchain.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
+
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Mesh/SubMaterial.h"
-#include "Volt/Asset/Text/Font.h"
-#include "Volt/Asset/Text/MSDFData.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Core/Profiling.h"
+#include "Volt/Asset/Rendering/PostProcessingMaterial.h"
 
-#include "Volt/Rendering/RendererStructs.h"
+#include "Volt/Rendering/ComputePipeline.h"
+#include "Volt/Rendering/CommandBuffer.h"
+#include "Volt/Rendering/VulkanRenderPass.h"
+#include "Volt/Rendering/VulkanFramebuffer.h"
+#include "Volt/Rendering/RenderPipeline/RenderPipeline.h"
+#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
+#include "Volt/Rendering/Vertex.h"
 
 #include "Volt/Rendering/Shader/Shader.h"
-#include "Volt/Rendering/Shader/ShaderRegistry.h"
 
-#include "Volt/Rendering/Buffer/ConstantBuffer.h"
-#include "Volt/Rendering/Buffer/StructuredBuffer.h"
+#include "Volt/Rendering/Buffer/UniformBufferSet.h"
+#include "Volt/Rendering/Buffer/ShaderStorageBuffer.h"
+#include "Volt/Rendering/Buffer/ShaderStorageBufferSet.h"
+
 #include "Volt/Rendering/Buffer/IndexBuffer.h"
 #include "Volt/Rendering/Buffer/VertexBuffer.h"
-#include "Volt/Rendering/Buffer/ConstantBufferRegistry.h"
-#include "Volt/Rendering/Buffer/StructuredBufferRegistry.h"
 
-#include "Volt/Rendering/Framebuffer.h"
-#include "Volt/Rendering/Camera/Camera.h"
+#include "Volt/Rendering/Texture/TextureTable.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
-#include "Volt/Rendering/SamplerState.h"
-#include "Volt/Rendering/ComputePipeline.h"
-#include "Volt/Rendering/Shape.h"
-#include "Volt/Rendering/CommandBuffer.h"
+#include "Volt/Rendering/Texture/Image2D.h"
+#include "Volt/Rendering/Texture/Image3D.h"
 
-#include "Volt/Utility/StringUtility.h"
-#include "Volt/Platform/ThreadUtility.h"
+#include "Volt/Rendering/MaterialTable.h"
+#include "Volt/Rendering/SamplerStateSet.h"
 
-#include <thread>
-#include <future>
+#include "Volt/Rendering/GlobalDescriptorSetManager.h"
+
+#include "Volt/Utility/FunctionQueue.h"
+#include "Volt/Utility/ImageUtility.h"
 
 namespace Volt
 {
-	void Renderer::Initialize()
+	struct ShaderDependencies
 	{
-		RenderCommand::Initialize();
+		std::vector<RenderPipeline*> renderPipelines;
+		std::vector<ComputePipeline*> computePipelines;
+		std::vector<SubMaterial*> materials;
+		std::vector<PostProcessingMaterial*> postProcessingMaterials;
+	};
 
-		myRendererData = CreateScope<RendererData>();
-		CreateDefaultData();
-		CreateSpriteData();
-		CreateLineData();
-		CreateBillboardData();
-		CreateTextData();
-		CreateInstancingData();
-		CreateDecalData();
-		CreateLightCullingData();
-		CreateCommandBuffers();
-		GenerateBRDFLut();
+	struct RendererData
+	{
+		Renderer::BindlessData bindlessData{};
+		VulkanFunctions vulkanFunctions;
 
-		myRendererData->isRunning = true;
-		myRendererData->renderThread = std::thread(RT_Execute);
-		SetThreadName(myRendererData->renderThread.native_handle(), "Render Thread");
+		std::vector<VkDescriptorPool> perFrameDescriptorPools;
+		std::vector<VkDescriptorPool> perFramePersistentDescriptorPools;
+
+		uint32_t framesInFlightCount = 0;
+	};
+
+	struct ThreadRenderData
+	{
+		Ref<RenderPipeline> currentOverridePipeline;
+		Ref<VulkanRenderPass> currentRenderPass;
+
+		MaterialFlag currentMaterialFlags = MaterialFlag::All;
+	};
+
+	static std::vector<FunctionQueue> myResourceChangeQueues;
+	inline static Scope<RendererData> s_rendererData;
+	inline static Scope<Renderer::DefaultData> s_defaultData;
+
+	inline static std::mutex s_shaderDependenciesMutex;
+	inline static std::mutex s_threadDataMutex;
+	inline static std::mutex s_resourceQueueMutex;
+	inline static std::mutex s_materialMutex;
+	inline static std::mutex s_textureMutex;
+
+	inline static std::unordered_map<size_t, ShaderDependencies> s_shaderDependencies;
+	inline static std::unordered_map<std::thread::id, ThreadRenderData> s_renderData;
+
+	inline static ThreadRenderData& GetThreadData()
+	{
+		std::scoped_lock lock{ s_threadDataMutex };
+
+		const auto threadId = std::this_thread::get_id();
+		return s_renderData[threadId];
 	}
 
-	void Renderer::InitializeBuffers()
+	void Renderer::Initialize()
 	{
-		CreateDefaultBuffers();
+		const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
+		s_rendererData = CreateScope<RendererData>();
+		s_rendererData->framesInFlightCount = framesInFlight;
+
+		myResourceChangeQueues.resize(framesInFlight);
+
+		GlobalDescriptorSetManager::Initialize();
+
+#ifdef VT_ENABLE_GPU_MARKERS
+		LoadVulkanFunctions();
+#endif
+
+		if (GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+		{
+			LoadRayTracingFunctions();
+		}
+
+		CreateBindlessData();
+		CreateDescriptorPools();
+		CreateGlobalDescriptorSets();
+
+		UpdateSamplerStateDescriptors();
+		UpdateMaterialDescriptors();
+
+		CreateDefaultData();
+	}
+
+	void Renderer::LateInitialize()
+	{
+		GenerateBRDFLut();
 	}
 
 	void Renderer::Shutdown()
 	{
-		myRendererData->isRunning = false;
-		myRendererData->syncVariable.notify_all();
-		myRendererData->renderThread.join();
+		auto device = GraphicsContext::GetDevice();
+		device->WaitForIdle();
 
-		myDefaultData = nullptr;
-		myRendererData = nullptr;
+		DestroyDescriptorPools();
 
-		RenderCommand::Shutdown();
+		GlobalDescriptorSetManager::Shutdown();
+
+		s_defaultData = nullptr;
+		s_rendererData = nullptr;
+		s_shaderDependencies.clear();
 	}
 
-	void Renderer::Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, uint32_t aId, float aTimeSinceCreation, bool castShadows, bool castAO)
+	void Renderer::FlushResourceQueues()
 	{
-		VT_PROFILE_FUNCTION();
-
-		for (const auto& subMesh : aMesh->GetSubMeshes())
+		for (auto& resourceQueue : myResourceChangeQueues)
 		{
-			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
-			cmd.mesh = aMesh;
-			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
-			cmd.subMesh = subMesh;
-			cmd.transform = aTransform;
-			cmd.id = aId;
-			cmd.timeSinceCreation = aTimeSinceCreation;
-			cmd.castShadows = castShadows;
-			cmd.castAO = castAO;
+			resourceQueue.Flush();
 		}
 	}
 
-	void Renderer::Submit(Ref<Mesh> aMesh, uint32_t subMeshIndex, const gem::mat4& aTransform, uint32_t aId, float aTimeSinceCreation, bool castShadows, bool castAO)
+	void Renderer::Flush()
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (subMeshIndex >= (uint32_t)aMesh->GetSubMeshes().size())
+		auto device = GraphicsContext::GetDevice();
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
 		{
-			VT_CORE_WARN("Trying to submit submesh with invalid index!");
-			return;
+			std::scoped_lock lock{ s_resourceQueueMutex };
+			myResourceChangeQueues.at(currentFrame).Flush();
 		}
 
-		const auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
-
-		auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
-		cmd.mesh = aMesh;
-		cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
-		cmd.subMesh = subMesh;
-		cmd.transform = aTransform;
-		cmd.id = aId;
-		cmd.timeSinceCreation = aTimeSinceCreation;
-		cmd.castShadows = castShadows;
-		cmd.castAO = castAO;
-	}
-
-	void Renderer::Submit(Ref<Mesh> aMesh, Ref<SubMaterial> aMaterial, const gem::mat4& aTransform, uint32_t aId /* = 0 */, float aTimeSinceCreation, bool castShadows, bool castAO)
-	{
-		VT_PROFILE_FUNCTION();
-
-		for (const auto& subMesh : aMesh->GetSubMeshes())
+		// Clear descriptor pool
 		{
-			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
-			cmd.mesh = aMesh;
-			cmd.material = aMaterial;
-			cmd.subMesh = subMesh;
-			cmd.transform = aTransform;
-			cmd.id = aId;
-			cmd.timeSinceCreation = aTimeSinceCreation;
-			cmd.castShadows = castShadows;
-			cmd.castAO = castAO;
+			vkResetDescriptorPool(device->GetHandle(), s_rendererData->perFrameDescriptorPools.at(currentFrame), 0);
 		}
 	}
 
-	void Renderer::Submit(Ref<Mesh> aMesh, Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t aId /* = 0 */, float aTimeSinceCreation, bool castShadows, bool castAO)
+	void Renderer::UpdateDescriptors()
 	{
 		VT_PROFILE_FUNCTION();
 
-		for (const auto& subMesh : aMesh->GetSubMeshes())
-		{
-			auto it = aMaterial->GetSubMaterials().find(subMesh.materialIndex);
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
-			cmd.mesh = aMesh;
-			cmd.material = it != aMaterial->GetSubMaterials().end() ? it->second : aMaterial->GetSubMaterials().at(0);
-			cmd.subMesh = subMesh;
-			cmd.transform = aTransform;
-			cmd.id = aId;
-			cmd.timeSinceCreation = aTimeSinceCreation;
-			cmd.castShadows = castShadows;
-			cmd.castAO = castAO;
+		auto& bindlessData = GetBindlessData();
+		
+		{
+			std::scoped_lock lock{ s_materialMutex };
+			bindlessData.materialTable->UpdateMaterialData(currentFrame);
+		}
+
+		{
+			std::scoped_lock lock{ s_textureMutex };
+		bindlessData.textureTable->UpdateDescriptors(bindlessData.globalDescriptorSets.at(Sets::TEXTURES), currentFrame);
 		}
 	}
 
-	void Renderer::Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms, uint32_t aId, float aTimeSinceCreation, bool castShadows, bool castAO)
+	void Renderer::Begin(Ref<CommandBuffer> commandBuffer)
 	{
 		VT_PROFILE_FUNCTION();
 
-		for (const auto& subMesh : aMesh->GetSubMeshes())
-		{
-			auto& cmd = GetCurrentCPUCommandCollection().submitCommands.emplace_back();
-			cmd.mesh = aMesh;
-			cmd.material = aMesh->GetMaterial()->GetSubMaterials().at(subMesh.materialIndex);
-			cmd.subMesh = subMesh;
-			cmd.transform = aTransform;
-			cmd.boneTransforms = aBoneTransforms;
-			cmd.id = aId;
-			cmd.timeSinceCreation = aTimeSinceCreation;
-			cmd.castShadows = castShadows;
-			cmd.castAO = castAO;
-		}
-	}
+		auto& bindlessData = GetBindlessData();
 
-	void Renderer::SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, Ref<Material> material, uint32_t id /* = 0 */)
-	{
-		SubmitSprite(nullptr, aTransform, material, aColor, id);
-	}
-
-	void Renderer::SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t aId)
-	{
-		VT_PROFILE_FUNCTION();
-		if (!aTexture.GetTexture())
-		{
-			return;
-		}
-
-		auto& cmd = GetCurrentCPUCommandCollection().spriteCommands.emplace_back();
-		cmd.transform = aTransform;
-		cmd.color = aColor;
-		cmd.id = aId;
-		cmd.texture = aTexture.GetTexture();
-		cmd.material = material ? material : myDefaultData->defaultSpriteMaterial;
-
-		for (uint32_t i = 0; i < 4; i++)
-		{
-			cmd.uv[i] = aTexture.GetTexCoords()[i];
-		}
-	}
-
-	void Renderer::SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, Ref<Material> material, const gem::vec4& aColor, uint32_t id)
-	{
-		VT_PROFILE_FUNCTION();
-		auto& cmd = GetCurrentCPUCommandCollection().spriteCommands.emplace_back();
-		cmd.transform = aTransform;
-		cmd.color = aColor;
-		cmd.id = id;
-		cmd.texture = aTexture;
-		cmd.material = material ? material : myDefaultData->defaultSpriteMaterial;
-	}
-
-	void Renderer::SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId)
-	{
-		SubmitBillboard(nullptr, aPosition, aScale, aId, aColor);
-	}
-
-	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
-	{
-		SubmitBillboard(aTexture, myDefaultData->defaultBillboardShader, aPosition, aScale, aId, aColor);
-	}
-
-	void Renderer::SubmitBillboard(Ref<Texture2D> aTexture, Ref<Shader> shader, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId, const gem::vec4& aColor)
-	{
-		VT_PROFILE_FUNCTION();
-		auto& cmd = GetCurrentCPUCommandCollection().billboardCommands.emplace_back();
-		cmd.position = aPosition;
-		cmd.shader = shader ? shader : myDefaultData->defaultBillboardShader;
-		cmd.scale = aScale;
-		cmd.texture = aTexture;
-		cmd.id = aId;
-		cmd.color = aColor;
-	}
-
-	void Renderer::SubmitLine(const gem::vec3& aStart, const gem::vec3& aEnd, const gem::vec4& aColor /* = */)
-	{
-		VT_PROFILE_FUNCTION();
-		auto& lineData = myRendererData->lineData;
-
-		lineData.vertexBufferPtr->position = { aStart.x, aStart.y, aStart.z, 1.f };
-		lineData.vertexBufferPtr->color = aColor;
-		lineData.vertexBufferPtr++;
-
-		lineData.vertexBufferPtr->position = { aEnd.x, aEnd.y, aEnd.z, 1.f };
-		lineData.vertexBufferPtr->color = aColor;
-		lineData.vertexBufferPtr++;
-
-		lineData.indexCount += 2;
-	}
-
-	void Renderer::SubmitLight(const PointLight& pointLight)
-	{
-		VT_PROFILE_FUNCTION();
-		GetCurrentCPUCommandCollection().pointLights.push_back(pointLight);
-	}
-
-	void Renderer::SubmitLight(const DirectionalLight& dirLight)
-	{
-		VT_PROFILE_FUNCTION();
-		GetCurrentCPUCommandCollection().directionalLight = dirLight;
-	}
-
-	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
-	{
-		for (int32_t line : aLines)
-		{
-			if (line == aIndex)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	void Renderer::SubmitText(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor)
-	{
-		VT_PROFILE_FUNCTION();
-		auto& cmd = GetCurrentCPUCommandCollection().textCommands.emplace_back();
-		cmd.text = aString;
-		cmd.font = aFont;
-		cmd.transform = aTransform;
-		cmd.maxWidth = aMaxWidth;
-		cmd.color = aColor;
-	}
-
-	void Renderer::SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id, const gem::vec4& aColor)
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto& decal = GetCurrentCPUCommandCollection().decalCommands.emplace_back();
-		decal.material = aMaterial;
-		decal.transform = aTransform;
-		decal.id = id;
-		decal.color = aColor;
-	}
-
-	void Renderer::SubmitResourceChange(const std::function<void()>&& func)
-	{
-		std::scoped_lock lock(myRendererData->resourceMutex);
-		myRendererData->resourceChangeQueue.emplace_back(func);
-	}
-
-	void Renderer::SubmitCustom(std::function<void()>&& func)
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit(std::move(func));
-	}
-
-	void Renderer::SetAmbianceMultiplier(float multiplier)
-	{
-		myRendererData->settings.ambianceMultiplier = multiplier;
-	}
-
-	void Renderer::DrawFullscreenTriangleWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([shader = aShader]()
-			{
-				DrawFullscreenTriangleWithShaderInternal(shader);
-			});
-#else 
-		DrawFullscreenTriangleWithShaderInternal(aShader);
-#endif
-	}
-
-	void Renderer::DrawFullscreenTriangleWithMaterial(Ref<Material> aMaterial)
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([material = aMaterial]()
-			{
-				DrawFullscreenTriangleWithMaterialInternal(material);
-			});
-#else 
-		DrawFullscreenTriangleWithMaterialInternal(aMaterial);
-#endif
-	}
-
-	void Renderer::DrawFullscreenQuadWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([shader = aShader]()
-			{
-				DrawFullscreenQuadWithShaderInternal(shader);
-			});
-#else 
-		DrawFullscreenQuadWithShaderInternal(aShader);
-#endif
-	}
-
-	void Renderer::DrawMesh(Ref<Mesh> aMesh, const std::vector<gem::mat4>& aBoneTransforms, const gem::mat4& aTransform)
-	{
-		VT_PROFILE_FUNCTION();
-
-		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
-		{
-			subMesh;
-			DrawMesh(aMesh, aMesh->GetMaterial(), i, aTransform, aBoneTransforms);
-			i++;
-		}
-	}
-
-	void Renderer::DrawMesh(Ref<Mesh> aMesh, const gem::mat4& aTransform)
-	{
-		VT_PROFILE_FUNCTION();
-
-		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
-		{
-			subMesh;
-			DrawMesh(aMesh, aMesh->GetMaterial(), i, aTransform);
-			i++;
-		}
-	}
-
-	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, const gem::mat4& aTransform)
-	{
-		VT_PROFILE_FUNCTION();
-
-		for (uint32_t i = 0; const auto & subMesh : aMesh->GetSubMeshes())
-		{
-			subMesh;
-			DrawMesh(aMesh, material, i, aTransform);
-			i++;
-		}
-	}
-
-	void Renderer::DrawMesh(Ref<Mesh> aMesh, Ref<Material> aMaterial, uint32_t aSubMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		if (!aMaterial)
-		{
-			return;
-		}
-
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([mesh = aMesh, material = aMaterial, subMeshIndex = aSubMeshIndex, transform = aTransform, boneTransforms = aBoneTransforms]()
-			{
-				DrawMeshInternal(mesh, material, subMeshIndex, transform, boneTransforms);
-			});
-#else
-		DrawMeshInternal(aMesh, aMaterial, aSubMeshIndex, aTransform, aBoneTransforms);
-#endif // VT_THREADED_RENDERING
-	}
-
-	void Renderer::Begin(Context context, const std::string& debugName)
-	{
-		VT_PROFILE_FUNCTION();
-		RunResourceChanges();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([debugName, context]()
-			{
-				BeginInternal(context, debugName);
-			});
-#else
-		BeginInternal(context, debugName);
-#endif
+		//bindlessData.combinedVertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//bindlessData.combinedIndexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
 	}
 
 	void Renderer::End()
 	{
 		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([]()
-			{
-				EndInternal();
-			});
-#else
-		EndInternal();
-#endif
 	}
 
-	void Renderer::BeginPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
+	void Renderer::BeginPass(Ref<CommandBuffer> commandBuffer, Ref<VulkanRenderPass> renderPass)
 	{
 		VT_PROFILE_FUNCTION();
 
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([cmdBuffer = currentCommandBuffer, renderPass = aRenderPass, camera = aCamera, shouldClear = aShouldClear, isShadowPass = aIsShadowPass, isAOPass = aIsAOPass]()
-			{
-				BeginPassInternal(renderPass, camera, shouldClear, isShadowPass, isAOPass);
-			});
+		BeginSection(commandBuffer, renderPass->debugName, renderPass->debugColor);
 
-#else
-		BeginPassInternal(aRenderPass, aCamera, aShouldClear, aIsShadowPass, aIsAOPass);
-#endif
-	}
+		auto& threadData = GetThreadData();
 
-	void Renderer::EndPass()
-	{
-		VT_PROFILE_FUNCTION();
+		threadData.currentRenderPass = renderPass;
+		threadData.currentOverridePipeline = renderPass->overridePipeline;
+		renderPass->framebuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
 
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([]()
-			{
-				EndPassInternal();
-			});
-#else
-		EndPassInternal();
-#endif
-	}
+		// Begin rendering
+		const auto& attachmentInfos = renderPass->framebuffer->GetColorAttachmentInfos();
 
-	void Renderer::BeginFullscreenPass(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool shouldClear)
-	{
-		VT_PROFILE_FUNCTION();
+		VkRenderingInfo renderingInfo{};
+		renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+		renderingInfo.renderArea = { 0, 0, renderPass->framebuffer->GetWidth(), renderPass->framebuffer->GetHeight() };
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = (uint32_t)attachmentInfos.size();
+		renderingInfo.pColorAttachments = attachmentInfos.data();
+		renderingInfo.pStencilAttachment = nullptr;
 
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([aRenderPass, aCamera, shouldClear]()
-			{
-				BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
-			});
-#else
-		BeginFullscreenPassInternal(aRenderPass, aCamera, shouldClear);
-#endif
-	}
-
-	void Renderer::EndFullscreenPass()
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([]()
-			{
-				EndFullscreenPassInternal();
-			});
-#else
-		EndFullscreenPassInternal();
-#endif
-	}
-
-	void Renderer::SetFullResolution(const gem::vec2& renderSize)
-	{
-		myRendererData->fullRenderSize = renderSize;
-	}
-
-	void Renderer::BeginSection(const std::string& name)
-	{
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([name]()
-			{
-				RenderCommand::BeginAnnotation(name);
-			});
-#else
-		RenderCommand::BeginAnnotation(name);
-#endif
-	}
-
-	void Renderer::EndSection(const std::string& name)
-	{
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([]()
-			{
-				RenderCommand::EndAnnotation();
-			});
-#else
-		RenderCommand::EndAnnotation(name);
-#endif
-	}
-
-	void Renderer::DispatchRenderCommandsInstanced()
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([]()
-			{
-				DispatchRenderCommandsInstancedInternal(); //#TODO_Ivar: Fix submit commands
-			});
-#else
-		DispatchRenderCommandsInstancedInternal();
-#endif
-	}
-
-	void Renderer::SetSceneData(const SceneData& aSceneData)
-	{
-		myRendererData->sceneData = aSceneData;
-	}
-
-	void Renderer::PushCollection()
-	{
-		myRendererData->currentCPUCommands->commandCollections.emplace();
-	}
-
-	SceneEnvironment Renderer::GenerateEnvironmentMap(AssetHandle aTextureHandle)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (myRendererData->environmentCache.find(aTextureHandle) != myRendererData->environmentCache.end())
+		if (renderPass->framebuffer->GetDepthAttachment())
 		{
-			return myRendererData->environmentCache.at(aTextureHandle);
+			renderingInfo.pDepthAttachment = &renderPass->framebuffer->GetDepthAttachmentInfo();
+		}
+		else
+		{
+			renderingInfo.pDepthAttachment = nullptr;
 		}
 
-		Ref<Texture2D> equirectangularTexture = AssetManager::GetAsset<Texture2D>(aTextureHandle);
-		if (!equirectangularTexture || !equirectangularTexture->IsValid())
+		vkCmdBeginRendering(commandBuffer->GetCurrentCommandBuffer(), &renderingInfo);
+	}
+
+	void Renderer::EndPass(Ref<CommandBuffer> commandBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		vkCmdEndRendering(commandBuffer->GetCurrentCommandBuffer());
+
+		auto& threadData = GetThreadData();
+
+		threadData.currentRenderPass->framebuffer->Unbind(commandBuffer->GetCurrentCommandBuffer());
+		threadData.currentRenderPass = nullptr;
+		threadData.currentOverridePipeline = nullptr;
+
+		EndSection(commandBuffer);
+	}
+
+	void Renderer::BeginFrameGraphPass(Ref<CommandBuffer> commandBuffer, const FrameGraphRenderPassInfo& renderPassInfo, const FrameGraphRenderingInfo& renderingInfo)
+	{
+		VT_PROFILE_FUNCTION();
+
+		BeginSection(commandBuffer, renderPassInfo.name, renderPassInfo.color);
+
+		auto& threadData = GetThreadData();
+		threadData.currentOverridePipeline = renderPassInfo.overridePipeline;
+		threadData.currentMaterialFlags = renderPassInfo.materialFlags;
+
+		VkExtent2D extent{};
+		extent.width = renderingInfo.width;
+		extent.height = renderingInfo.height;
+
+		VkViewport viewport{};
+		viewport.x = 0.f;
+		viewport.y = 0.f;
+
+		viewport.width = (float)extent.width;
+		viewport.height = (float)extent.height;
+		viewport.minDepth = 0.f;
+		viewport.maxDepth = 1.f;
+
+		VkRect2D scissor = { { 0, 0 }, extent };
+		vkCmdSetViewport(commandBuffer->GetCurrentCommandBuffer(), 0, 1, &viewport);
+		vkCmdSetScissor(commandBuffer->GetCurrentCommandBuffer(), 0, 1, &scissor);
+
+		VkRenderingInfo vkRenderingInfo{};
+		vkRenderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+		vkRenderingInfo.renderArea = { 0, 0, renderingInfo.width, renderingInfo.height };
+		vkRenderingInfo.layerCount = renderingInfo.layers;
+		vkRenderingInfo.colorAttachmentCount = (uint32_t)renderingInfo.colorAttachmentInfo.size();
+		vkRenderingInfo.pColorAttachments = renderingInfo.colorAttachmentInfo.data();
+		vkRenderingInfo.pStencilAttachment = nullptr;
+
+		if (renderingInfo.hasDepth)
+		{
+			vkRenderingInfo.pDepthAttachment = &renderingInfo.depthAttachmentInfo;
+		}
+		else
+		{
+			vkRenderingInfo.pDepthAttachment = nullptr;
+		}
+
+		vkCmdBeginRendering(commandBuffer->GetCurrentCommandBuffer(), &vkRenderingInfo);
+	}
+
+	void Renderer::EndFrameGraphPass(Ref<CommandBuffer> commandBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		vkCmdEndRendering(commandBuffer->GetCurrentCommandBuffer());
+
+		auto& threadData = GetThreadData();
+		threadData.currentOverridePipeline = nullptr;
+
+		EndSection(commandBuffer);
+	}
+
+	void Renderer::BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const gem::vec4& sectionColor)
+	{
+#ifdef VT_ENABLE_GPU_MARKERS
+		VkDebugUtilsLabelEXT markerInfo{};
+		markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+		markerInfo.pLabelName = sectionName.data();
+		markerInfo.color[0] = sectionColor.x;
+		markerInfo.color[1] = sectionColor.y;
+		markerInfo.color[2] = sectionColor.z;
+		markerInfo.color[3] = sectionColor.w;
+
+		s_rendererData->vulkanFunctions.cmdBeginDebugUtilsLabel(commandBuffer->GetCurrentCommandBuffer(), &markerInfo);
+#endif
+	}
+
+	void Renderer::EndSection(Ref<CommandBuffer> commandBuffer)
+	{
+#ifdef VT_ENABLE_GPU_MARKERS
+		s_rendererData->vulkanFunctions.cmdEndDebugUtilsLabel(commandBuffer->GetCurrentCommandBuffer());
+#endif
+	}
+
+	void Renderer::SubmitResourceChange(std::function<void()>&& function)
+	{
+		std::scoped_lock lock{ s_resourceQueueMutex };
+
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		myResourceChangeQueues.at(currentFrame).Push(std::move(function));
+	}
+
+	void Renderer::DrawIndirectBatch(Ref<CommandBuffer> commandBuffer, Ref<ShaderStorageBuffer> indirectCommandBuffer, VkDeviceSize commandOffset, Ref<ShaderStorageBuffer> countBuffer, VkDeviceSize countOffset, const IndirectBatch& batch)
+	{
+		vkCmdDrawIndexedIndirectCount(commandBuffer->GetCurrentCommandBuffer(), indirectCommandBuffer->GetHandle(), commandOffset, countBuffer->GetHandle(), countOffset, batch.count, sizeof(IndirectGPUCommand));
+	}
+
+	void Renderer::DrawIndirectBatches(Ref<CommandBuffer> commandBuffer, const IndirectPass& indirectPass, const GlobalDescriptorMap& globalDescriptorSet, const std::vector<IndirectBatch>& batches, const PushConstantDrawData& pushConstantData)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
+
+		auto& threadData = GetThreadData();
+
+		const bool pipelineOverridden = threadData.currentOverridePipeline != nullptr;
+		const auto overridePipeline = threadData.currentOverridePipeline;
+
+		if (pipelineOverridden)
+		{
+			overridePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+			if (pushConstantData.IsValid())
+			{
+				overridePipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData.data, pushConstantData.size);
+			}
+
+			SetupPipelineForRendering(commandBuffer, overridePipeline, globalDescriptorSet, indirectPass.drawBuffersSet);
+		}
+
+		Ref<SubMaterial> lastMaterial = nullptr;
+		Ref<Mesh> lastMesh = nullptr;
+
+		for (size_t i = 0; i < batches.size(); i++)
+		{
+			const bool hasMaterialFlag = ((batches[i].material->GetFlags() & threadData.currentMaterialFlags) != MaterialFlag::All) || threadData.currentMaterialFlags == MaterialFlag::All;
+			if (!hasMaterialFlag)
+			{
+				continue;
+			}
+
+			if (pipelineOverridden)
+			{
+				const bool isPermutationOfOverridePipeline = batches[i].material->GetPipeline()->IsPermutationOf(overridePipeline);
+
+				if (batches[i].material->GetPipeline()->GetHash() == overridePipeline->GetHash())
+				{
+					if (i != 0 && lastMaterial->GetPipeline() != batches[i].material->GetPipeline())
+					{
+						overridePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+						lastMaterial = batches[i].material;
+					}
+
+					batches[i].material->PushMaterialData(commandBuffer);
+				}
+				else if (isPermutationOfOverridePipeline)
+				{
+					batches[i].material->Bind(commandBuffer);
+					batches[i].material->PushMaterialData(commandBuffer);
+					SetupPipelineForRendering(commandBuffer, batches[i].material->GetPipeline(), globalDescriptorSet, indirectPass.drawBuffersSet);
+				}
+			}
+			else
+			{
+				if (!lastMaterial || batches[i].material != lastMaterial)
+				{
+					batches[i].material->Bind(commandBuffer);
+					batches[i].material->PushMaterialData(commandBuffer);
+					SetupPipelineForRendering(commandBuffer, batches[i].material->GetPipeline(), globalDescriptorSet, indirectPass.drawBuffersSet);
+
+					lastMaterial = batches[i].material;
+				}
+			}
+
+			if (!lastMesh || batches[i].mesh != lastMesh)
+			{
+				batches[i].mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+				batches[i].mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+				lastMesh = batches[i].mesh;
+			}
+
+			const VkDeviceSize drawOffset = batches.at(i).first * sizeof(IndirectGPUCommand);
+			const VkDeviceSize countOffset = i * sizeof(uint32_t);
+			const uint32_t drawStride = sizeof(IndirectGPUCommand);
+
+			const Ref<ShaderStorageBuffer> currentIndirectBuffer = indirectPass.drawArgsStorageBuffer->Get(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex);
+			const Ref<ShaderStorageBuffer> currentCountBuffer = indirectPass.drawCountIDStorageBuffer->Get(Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, currentIndex);
+
+			DrawIndirectBatch(commandBuffer, currentIndirectBuffer, drawOffset, currentCountBuffer, countOffset, batches.at(i));
+		}
+	}
+
+	void Renderer::DrawMesh(Ref<CommandBuffer> commandBuffer, Ref<Mesh> mesh, const GlobalDescriptorMap& globalDescriptorSet, const PushConstantDrawData& pushConstantData)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& threadData = GetThreadData();
+
+		const bool pipelineOverridden = threadData.currentOverridePipeline != nullptr;
+		const auto& overridePipeline = threadData.currentOverridePipeline;
+
+		if (pipelineOverridden)
+		{
+			overridePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+			if (pushConstantData.IsValid())
+			{
+				overridePipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData.data, pushConstantData.size);
+			}
+
+			SetupPipelineForRendering(commandBuffer, overridePipeline, globalDescriptorSet);
+		}
+
+		mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+		for (const auto& subMesh : mesh->GetSubMeshes())
+		{
+			if (!pipelineOverridden)
+			{
+				auto material = mesh->GetMaterial()->TryGetSubMaterialAt(subMesh.materialIndex);
+				material->Bind(commandBuffer);
+				material->PushMaterialData(commandBuffer);
+				SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
+			}
+
+			vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset + mesh->GetIndexStartOffset(), subMesh.vertexStartOffset + mesh->GetVertexStartOffset(), 0);
+		}
+	}
+
+	void Renderer::DrawMesh(Ref<CommandBuffer> commandBuffer, Ref<Mesh> mesh, Ref<Material> overrideMaterial, const GlobalDescriptorMap& globalDescriptorSet, const PushConstantDrawData& pushConstantData)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& threadData = GetThreadData();
+
+		const bool pipelineOverridden = threadData.currentOverridePipeline != nullptr;
+		const auto& overridePipeline = threadData.currentOverridePipeline;
+
+		if (pipelineOverridden)
+		{
+			overridePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+			if (pushConstantData.IsValid())
+			{
+				overridePipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData.data, pushConstantData.size);
+			}
+
+			SetupPipelineForRendering(commandBuffer, overridePipeline, globalDescriptorSet);
+		}
+
+		mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+		for (const auto& subMesh : mesh->GetSubMeshes())
+		{
+			if (!pipelineOverridden)
+			{
+				auto material = overrideMaterial->TryGetSubMaterialAt(subMesh.materialIndex);
+				material->Bind(commandBuffer);
+				material->PushMaterialData(commandBuffer);
+				SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
+			}
+
+			vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset + mesh->GetIndexStartOffset(), subMesh.vertexStartOffset + mesh->GetVertexStartOffset(), 0);
+		}
+	}
+
+	void Renderer::DrawMesh(Ref<CommandBuffer> commandBuffer, Ref<Mesh> mesh, uint32_t subMeshIndex, const GlobalDescriptorMap& globalDescriptorSet, const PushConstantDrawData& pushConstantData)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& threadData = GetThreadData();
+
+		const bool pipelineOverridden = threadData.currentOverridePipeline != nullptr;
+		const auto& overridePipeline = threadData.currentOverridePipeline;
+
+		if (pipelineOverridden)
+		{
+			overridePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+			if (pushConstantData.IsValid())
+			{
+				overridePipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData.data, pushConstantData.size);
+			}
+
+			SetupPipelineForRendering(commandBuffer, overridePipeline, globalDescriptorSet);
+		}
+
+		const auto& subMesh = mesh->GetSubMeshes().at(subMeshIndex);
+
+		if (!pipelineOverridden)
+		{
+			auto material = mesh->GetMaterial()->TryGetSubMaterialAt(subMesh.materialIndex);
+			material->Bind(commandBuffer);
+			material->PushMaterialData(commandBuffer);
+			SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
+		}
+
+		mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+		vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset + mesh->GetIndexStartOffset(), subMesh.vertexStartOffset + mesh->GetVertexStartOffset(), 0);
+	}
+
+	void Renderer::DrawParticleBatches(Ref<CommandBuffer> commandBuffer, Ref<ShaderStorageBufferSet> storageBufferSet, const GlobalDescriptorMap& globalDescriptorSet, const std::vector<ParticleBatch>& batches)
+	{
+		VT_PROFILE_FUNCTION();
+
+		struct PushConstant
+		{
+			uint32_t particleOffset = 0;
+		} constants;
+
+		for (const auto& batch : batches)
+		{
+			const auto& material = batch.material->GetSubMaterialAt(0);
+			constants.particleOffset = batch.startOffset;
+
+			material->Bind(commandBuffer);
+			SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
+			material->GetPipeline()->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &constants, sizeof(PushConstant));
+
+			vkCmdDraw(commandBuffer->GetCurrentCommandBuffer(), 1, (uint32_t)batch.particles.size(), 0, 0);
+		}
+	}
+
+	void Renderer::DrawFullscreenTriangleWithMaterial(Ref<CommandBuffer> commandBuffer, Ref<Material> material, const GlobalDescriptorMap& globalDescriptorSet)
+	{
+		VT_PROFILE_FUNCTION();
+
+		material->GetSubMaterialAt(0)->Bind(commandBuffer);
+		material->GetSubMaterialAt(0)->PushMaterialData(commandBuffer);
+		SetupPipelineForRendering(commandBuffer, material->GetSubMaterialAt(0)->GetPipeline(), globalDescriptorSet);
+
+		vkCmdDraw(commandBuffer->GetCurrentCommandBuffer(), 3, 1, 0, 0);
+	}
+
+	void Renderer::DrawFullscreenQuadWithMaterial(Ref<CommandBuffer> commandBuffer, Ref<Material> material, const GlobalDescriptorMap& globalDescriptorSet)
+	{
+		VT_PROFILE_FUNCTION();
+
+		material->GetSubMaterialAt(0)->Bind(commandBuffer);
+		material->GetSubMaterialAt(0)->PushMaterialData(commandBuffer);
+		SetupPipelineForRendering(commandBuffer, material->GetSubMaterialAt(0)->GetPipeline(), globalDescriptorSet);
+
+		vkCmdDraw(commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0);
+	}
+
+	void Renderer::DrawVertexBuffer(Ref<CommandBuffer> commandBuffer, uint32_t count, Ref<VertexBuffer> vertexBuffer, Ref<RenderPipeline> pipeline, const GlobalDescriptorMap& globalDescriptorSet)
+	{
+		vkCmdSetLineWidth(commandBuffer->GetCurrentCommandBuffer(), 2.f);
+
+		pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+		SetupPipelineForRendering(commandBuffer, pipeline, globalDescriptorSet);
+
+		vertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+		vkCmdDraw(commandBuffer->GetCurrentCommandBuffer(), count, 1, 0, 0);
+	}
+
+	void Renderer::DrawIndexedVertexBuffer(Ref<CommandBuffer> commandBuffer, uint32_t indexCount, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<RenderPipeline> pipeline, const void* pushConstantData, uint32_t pushConstantSize)
+	{
+		pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+		if (pushConstantData && pushConstantSize > 0)
+		{
+			pipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData, pushConstantSize);
+		}
+
+		SetupPipelineForRendering(commandBuffer, pipeline);
+
+		vertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+		indexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+
+		vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), indexCount, 1, 0, 0, 0);
+	}
+
+	void Renderer::DispatchComputePipeline(Ref<CommandBuffer> commandBuffer, Ref<ComputePipeline> pipeline, uint32_t groupX, uint32_t groupY, uint32_t groupZ)
+	{
+		VT_PROFILE_FUNCTION();
+
+		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
+
+		if (pipeline->HasDescriptorSet(Sets::SAMPLERS))
+		{
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
+			pipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
+		}
+
+		if (pipeline->HasDescriptorSet(Sets::TEXTURES))
+		{
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
+			pipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
+		}
+
+		if (pipeline->HasDescriptorSet(Sets::MAINBUFFERS))
+		{
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(currentIndex);
+			pipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
+		}
+
+		pipeline->Clear(currentIndex);
+		pipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), groupX, groupY, groupZ, currentIndex);
+		pipeline->InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), currentIndex);
+	}
+
+	void Renderer::ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const gem::vec4& clearValue)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!Utility::IsDepthFormat(image->GetFormat()))
+		{
+			VkClearColorValue clearColor{};
+			clearColor.float32[0] = clearValue.x;
+			clearColor.float32[1] = clearValue.y;
+			clearColor.float32[2] = clearValue.z;
+			clearColor.float32[3] = clearValue.w;
+
+			VkImageSubresourceRange range{ VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS };
+			vkCmdClearColorImage(commandBuffer->GetCurrentCommandBuffer(), image->GetHandle(), image->GetLayout(), &clearColor, 1, &range);
+		}
+		else
+		{
+			VkClearDepthStencilValue clearColor{};
+			clearColor.depth = 1.f;
+			clearColor.stencil = 0;
+
+			VkImageSubresourceRange range{ VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS };
+			vkCmdClearDepthStencilImage(commandBuffer->GetCurrentCommandBuffer(), image->GetHandle(), image->GetLayout(), &clearColor, 1, &range);
+		}
+	}
+
+	SceneEnvironment Renderer::GenerateEnvironmentMap(AssetHandle textureHandle)
+	{
+		Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+		if (!texture || !texture->IsValid())
 		{
 			return {};
 		}
@@ -584,7 +682,6 @@ namespace Volt
 		constexpr uint32_t conversionThreadCount = 32;
 
 		auto device = GraphicsContext::GetDevice();
-		auto context = GraphicsContext::GetImmediateContext();
 
 		Ref<Image2D> environmentUnfiltered;
 		Ref<Image2D> environmentFiltered;
@@ -601,22 +698,33 @@ namespace Volt
 			imageSpec.isCubeMap = true;
 
 			environmentUnfiltered = Image2D::Create(imageSpec);
-			Ref<ComputePipeline> conversionPipeline = ComputePipeline::Create(ShaderRegistry::Get("EquirectangularToCubemap"));
 
-			conversionPipeline->SetTexture(equirectangularTexture, 0);
-			conversionPipeline->SetTarget(environmentUnfiltered, 0);
-			conversionPipeline->Execute(cubeMapSize / conversionThreadCount, cubeMapSize / conversionThreadCount, 6);
-			conversionPipeline->Clear();
+			Ref<ComputePipeline> conversionPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EquirectangularToCubemap"), 1, true);
+
+			VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+			environmentUnfiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
+
+			conversionPipeline->Bind(cmdBuffer);
+			conversionPipeline->SetImage(environmentUnfiltered, Sets::OTHER, 0, ImageAccess::Write);
+			conversionPipeline->SetImage(texture->GetImage(), Sets::OTHER, 1, ImageAccess::Read);
+			conversionPipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
+
+			ExecutionBarrierInfo barrierInfo{};
+			barrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			barrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			barrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+
+			conversionPipeline->InsertExecutionBarrier(barrierInfo);
+
+			conversionPipeline->Dispatch(cmdBuffer, cubeMapSize / conversionThreadCount, cubeMapSize / conversionThreadCount, 6);
+			conversionPipeline->InsertBarriers(cmdBuffer);
+
+			device->FlushCommandBuffer(cmdBuffer);
 		}
 
 		// Filtered
 		{
-			struct IrradianceRougness
-			{
-				float roughness;
-				float padding[3];
-			} irradianceRoughness{};
-
 			ImageSpecification imageSpec{};
 			imageSpec.format = ImageFormat::RGBA32F;
 			imageSpec.width = cubeMapSize;
@@ -627,246 +735,436 @@ namespace Volt
 			imageSpec.mips = Utility::CalculateMipCount(cubeMapSize, cubeMapSize);
 
 			environmentFiltered = Image2D::Create(imageSpec);
-			environmentFiltered->CreateMipUAVs();
 
-			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::Get("EnvironmentMipFilter"));
-			Ref<ConstantBuffer> constantBuffer = ConstantBuffer::Create(&irradianceRoughness, sizeof(irradianceRoughness), ShaderStage::Compute);
-			constantBuffer->Bind(0);
+			for (uint32_t i = 0; i < imageSpec.mips; i++)
+			{
+				environmentFiltered->CreateMipView(i);
+			}
 
+			{
+				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+				environmentFiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
+				device->FlushCommandBuffer(cmdBuffer);
+			}
 
-			const float deltaRoughness = 1.f / gem::max((float)environmentFiltered->GetMipCount() - 1.f, 1.f);
-			for (uint32_t i = 0, size = cubeMapSize; i < environmentFiltered->GetMipCount(); i++, size /= 2)
+			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentMipFilter"), 1, true);
+
+			const float deltaRoughness = 1.f / gem::max((float)imageSpec.mips - 1.f, 1.f);
+			for (uint32_t i = 0, size = cubeMapSize; i < imageSpec.mips; i++, size /= 2)
 			{
 				const uint32_t numGroups = gem::max(1u, size / 32);
-				const float roughness = gem::max(i * deltaRoughness, 0.05f);
 
-				irradianceRoughness.roughness = roughness;
-				constantBuffer->SetData(&irradianceRoughness, sizeof(IrradianceRougness));
+				float roughness = i * deltaRoughness;
+				roughness = gem::max(roughness, 0.05f);
 
-				filterPipeline->SetImage(environmentUnfiltered, 0);
-				auto mipUAV = environmentFiltered->GetUAV(i);
-				context->CSSetUnorderedAccessViews(0, 1, mipUAV.GetAddressOf(), nullptr);
-				filterPipeline->Execute(numGroups, numGroups, 6);
-				filterPipeline->Clear();
+				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+
+				filterPipeline->Bind(cmdBuffer);
+				filterPipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
+
+				filterPipeline->SetImage(environmentFiltered, Sets::OTHER, 0, i, ImageAccess::Write);
+				filterPipeline->SetImage(environmentUnfiltered, Sets::OTHER, 1, ImageAccess::Write);
+
+				filterPipeline->PushConstants(cmdBuffer, &roughness, sizeof(float));
+
+				ImageBarrierInfo barrierInfo{};
+				barrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+				barrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+				barrierInfo.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				barrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+				barrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+
+				barrierInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				barrierInfo.subresourceRange.baseArrayLayer = 0;
+				barrierInfo.subresourceRange.baseMipLevel = i;
+				barrierInfo.subresourceRange.layerCount = imageSpec.layers;
+				barrierInfo.subresourceRange.levelCount = 1;
+
+				filterPipeline->InsertImageBarrier(Sets::OTHER, 0, barrierInfo);
+				filterPipeline->Dispatch(cmdBuffer, numGroups, numGroups, 6);
+				filterPipeline->InsertBarriers(cmdBuffer);
+
+				device->FlushCommandBuffer(cmdBuffer);
 			}
 
-			ID3D11UnorderedAccessView* nullUAV = nullptr;
-			context->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
-		}
-
-		// Irradiance
-		{
-			ImageSpecification imageSpec{};
-			imageSpec.format = ImageFormat::RGBA32F;
-			imageSpec.width = irradianceMapSize;
-			imageSpec.height = irradianceMapSize;
-			imageSpec.usage = ImageUsage::Storage;
-			imageSpec.layers = 6;
-			imageSpec.isCubeMap = true;
-			imageSpec.mips = 1;
-
-			irradianceMap = Image2D::Create(imageSpec);
-			Ref<ComputePipeline> irradiancePipeline = ComputePipeline::Create(ShaderRegistry::Get("EnvironmentIrradiance"));
-
-			irradiancePipeline->SetImage(environmentFiltered, 0);
-			irradiancePipeline->SetTarget(irradianceMap, 0);
-			irradiancePipeline->Execute(irradianceMapSize / conversionThreadCount, irradianceMapSize / conversionThreadCount, 6);
-			irradiancePipeline->Clear();
-		}
-
-		SceneEnvironment env{ irradianceMap, environmentFiltered };
-		myRendererData->environmentCache.emplace(aTextureHandle, env);
-
-		return env;
-	}
-
-	void Renderer::CreateDefaultBuffers()
-	{
-		// Constant buffers
-		{
-			ConstantBufferRegistry::Register(0, ConstantBuffer::Create(nullptr, sizeof(CameraData), ShaderStage::Vertex));
-			ConstantBufferRegistry::Register(1, ConstantBuffer::Create(nullptr, sizeof(ObjectData), ShaderStage::Vertex));
-			ConstantBufferRegistry::Register(3, ConstantBuffer::Create(nullptr, sizeof(PassData), ShaderStage::Vertex));
-			ConstantBufferRegistry::Register(4, ConstantBuffer::Create(nullptr, sizeof(DirectionalLight), ShaderStage::Pixel));
-			ConstantBufferRegistry::Register(6, ConstantBuffer::Create(nullptr, sizeof(AnimationData), ShaderStage::Pixel));
-			ConstantBufferRegistry::Register(7, ConstantBuffer::Create(nullptr, sizeof(SceneData), ShaderStage::Pixel));
-		}
-
-		// Instance data
-		{
-			StructuredBufferRegistry::Register(100, StructuredBuffer::Create(sizeof(ObjectData), RendererData::MAX_OBJECTS_PER_FRAME, ShaderStage::Vertex));
-			StructuredBufferRegistry::Register(101, StructuredBuffer::Create(sizeof(gem::mat4), RendererData::MAX_OBJECTS_PER_FRAME * RendererData::MAX_BONES_PER_MESH, ShaderStage::Vertex));
-			StructuredBufferRegistry::Register(102, StructuredBuffer::Create(sizeof(PointLight), RendererData::MAX_POINT_LIGHTS, ShaderStage::Compute | ShaderStage::Pixel));
-		}
-	}
-
-	void Renderer::CreateSpriteData()
-	{
-		auto& spriteData = myRendererData->spriteData;
-
-		// Vertex buffer
-		{
-			SpriteVertex* tempVertPtr = new SpriteVertex[SpriteData::MAX_VERTICES];
-			spriteData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * SpriteData::MAX_VERTICES, sizeof(SpriteVertex), BufferUsage::Dynamic);
-			delete[] tempVertPtr;
-		}
-
-		spriteData.vertexBufferBase = new SpriteVertex[SpriteData::MAX_INDICES];
-		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-
-		// Index buffer
-		{
-			uint32_t* indices = new uint32_t[SpriteData::MAX_INDICES];
-			uint32_t offset = 0;
-
-			for (uint32_t indice = 0; indice < SpriteData::MAX_INDICES; indice += 6)
+			// Irradiance
 			{
-				indices[indice + 0] = offset + 0;
-				indices[indice + 1] = offset + 3;
-				indices[indice + 2] = offset + 2;
+				ImageSpecification imageSpec{};
+				imageSpec.format = ImageFormat::RGBA32F;
+				imageSpec.width = irradianceMapSize;
+				imageSpec.height = irradianceMapSize;
+				imageSpec.usage = ImageUsage::Storage;
+				imageSpec.layers = 6;
+				imageSpec.isCubeMap = true;
+				imageSpec.mips = Utility::CalculateMipCount(irradianceMapSize, irradianceMapSize);
 
-				indices[indice + 3] = offset + 2;
-				indices[indice + 4] = offset + 1;
-				indices[indice + 5] = offset + 0;
+				irradianceMap = Image2D::Create(imageSpec);
 
-				offset += 4;
+				Ref<ComputePipeline> irradiancePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentIrradiance"), 1, true);
+				constexpr uint32_t irradianceComputeSamples = 512;
+
+				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+				environmentFiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+				irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
+
+				irradiancePipeline->Bind(cmdBuffer);
+				irradiancePipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
+
+				irradiancePipeline->SetImage(irradianceMap, Sets::OTHER, 0, ImageAccess::Write);
+				irradiancePipeline->SetImage(environmentFiltered, Sets::OTHER, 1, ImageAccess::Read);
+				irradiancePipeline->Dispatch(cmdBuffer, irradianceMapSize / conversionThreadCount, irradianceMapSize / conversionThreadCount, 6);
+
+				irradianceMap->GenerateMips(false, cmdBuffer);
+				irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+				device->FlushCommandBuffer(cmdBuffer);
 			}
-
-			spriteData.indexBuffer = IndexBuffer::Create(indices, SpriteData::MAX_INDICES);
-			delete[] indices;
 		}
 
-		spriteData.vertices[0] = { -0.5f, -0.5f, 0.f, 1.f };
-		spriteData.vertices[1] = { 0.5f, -0.5f, 0.f, 1.f };
-		spriteData.vertices[2] = { 0.5f,  0.5f, 0.f, 1.f };
-		spriteData.vertices[3] = { -0.5f,  0.5f, 0.f, 1.f };
-
-		spriteData.texCoords[0] = { 0.f, 1.f };
-		spriteData.texCoords[1] = { 1.f, 1.f };
-		spriteData.texCoords[2] = { 1.f, 0.f };
-		spriteData.texCoords[3] = { 0.f, 0.f };
-
-		spriteData.textureSlots[0] = myDefaultData->whiteTexture;
+		return { irradianceMap, environmentFiltered };
 	}
 
-	void Renderer::CreateBillboardData()
+	const uint32_t Renderer::AddTexture(Ref<Image2D> image)
 	{
-		BillboardVertex* tempVertPtr = new BillboardVertex[BillboardData::MAX_BILLBOARDS];
-		myRendererData->billboardData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(BillboardVertex) * BillboardData::MAX_BILLBOARDS, sizeof(BillboardVertex), BufferUsage::Dynamic);
-		delete[] tempVertPtr;
-
-		myRendererData->billboardData.vertexBufferBase = new BillboardVertex[BillboardData::MAX_BILLBOARDS];
-		myRendererData->billboardData.vertexBufferPtr = myRendererData->billboardData.vertexBufferBase;
-		myRendererData->billboardData.textureSlots[0] = myDefaultData->whiteTexture;
+		std::scoped_lock lock{ s_textureMutex };
+		return s_rendererData->bindlessData.textureTable->AddTexture(image);
 	}
 
-	void Renderer::CreateLineData()
+	void Renderer::RemoveTexture(Ref<Image2D> image)
 	{
-		auto& lineData = myRendererData->lineData;
+		std::scoped_lock lock{ s_textureMutex };
+		s_rendererData->bindlessData.textureTable->RemoveTexture(image);
+	}
 
-		LineVertex* tempVertPtr = new LineVertex[LineData::MAX_VERTICES];
-		lineData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(LineVertex) * LineData::MAX_VERTICES, sizeof(LineVertex), BufferUsage::Dynamic);
-		delete[] tempVertPtr;
-
-		lineData.vertexBufferBase = new LineVertex[LineData::MAX_VERTICES];
-		lineData.vertexBufferPtr = lineData.vertexBufferBase;
-		lineData.shader = ShaderRegistry::Get("Line");
-
-		// Indices
+	void Renderer::ReloadShader(Ref<Shader> shader)
+	{
+		if (!s_shaderDependencies.contains(shader->GetHash()))
 		{
-			uint32_t* indices = new uint32_t[LineData::MAX_INDICES];
-			uint32_t offset = 0;
-
-			for (uint32_t indice = 0; indice < LineData::MAX_INDICES; indice += 2)
-			{
-				indices[indice + 0] = offset + 0;
-				indices[indice + 1] = offset + 1;
-
-				offset += 2;
-			}
-
-			lineData.indexBuffer = IndexBuffer::Create(indices, LineData::MAX_INDICES);
-			delete[] indices;
+			return;
 		}
-	}
 
-	void Renderer::CreateTextData()
-	{
-		auto& textData = myRendererData->textData;
-		textData.shader = ShaderRegistry::Get("Text");
+		auto& dependencies = s_shaderDependencies.at(shader->GetHash());
 
-		// Vertex buffer
+		for (const auto& renderPipeline : dependencies.renderPipelines)
 		{
-			TextVertex* tempVertPtr = new TextVertex[TextData::MAX_VERTICES];
-			textData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(TextVertex) * TextData::MAX_VERTICES, sizeof(TextVertex), BufferUsage::Dynamic);
-			delete[] tempVertPtr;
+			renderPipeline->Invalidate();
 		}
 
-		textData.vertexBufferBase = new TextVertex[TextData::MAX_INDICES];
-		textData.vertexBufferPtr = textData.vertexBufferBase;
-
-		// Index buffer
+		for (const auto& computePipeline : dependencies.computePipelines)
 		{
-			uint32_t* indices = new uint32_t[TextData::MAX_INDICES];
-			uint32_t offset = 0;
+			computePipeline->Invalidate();
+		}
 
-			for (uint32_t indice = 0; indice < TextData::MAX_INDICES; indice += 6)
-			{
-				indices[indice + 0] = offset + 0;
-				indices[indice + 1] = offset + 3;
-				indices[indice + 2] = offset + 2;
+		for (const auto& material : dependencies.materials)
+		{
+			material->Invalidate();
+		}
 
-				indices[indice + 3] = offset + 2;
-				indices[indice + 4] = offset + 1;
-				indices[indice + 5] = offset + 0;
-
-				offset += 4;
-			}
-
-			textData.indexBuffer = IndexBuffer::Create(indices, SpriteData::MAX_INDICES);
-			delete[] indices;
+		for (const auto& postMat : dependencies.postProcessingMaterials)
+		{
+			postMat->Invalidate();
 		}
 	}
 
-	void Renderer::CreateInstancingData()
+	void Renderer::AddShaderDependency(Ref<Shader> shader, RenderPipeline* renderPipeline)
 	{
-		myRendererData->instancingData.instancedVertexBuffer = VertexBuffer::Create(RendererData::MAX_OBJECTS_PER_FRAME * sizeof(InstanceData), sizeof(InstanceData));
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+		s_shaderDependencies[shader->GetHash()].renderPipelines.emplace_back(renderPipeline);
 	}
 
-	void Renderer::CreateDecalData()
+	void Renderer::AddShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline)
 	{
-		myRendererData->decalData.cubeMesh = Shape::CreateUnitCube();
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+		s_shaderDependencies[shader->GetHash()].computePipelines.emplace_back(computePipeline);
 	}
 
-	void Renderer::CreateLightCullingData()
+	void Renderer::AddShaderDependency(Ref<Shader> shader, SubMaterial* subMaterial)
 	{
-		constexpr uint32_t width = 1280;
-		constexpr uint32_t height = 720;
-
-		auto& cullData = myRendererData->lightCullData;
-		auto& sceneData = myRendererData->sceneData;
-
-		sceneData.tileCount.x = (width + (width % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
-		sceneData.tileCount.y = (height + (height % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
-		const uint32_t tileCount = sceneData.tileCount.x * sceneData.tileCount.y;
-
-		cullData.lightCullingIndexBuffer = StructuredBuffer::Create(sizeof(VisibleLightIndex), RendererData::MAX_POINT_LIGHTS * tileCount, ShaderStage::Compute | ShaderStage::Pixel, true);
-		cullData.lightCullingPipeline = ComputePipeline::Create(ShaderRegistry::Get("LightCull"));
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+		s_shaderDependencies[shader->GetHash()].materials.emplace_back(subMaterial);
 	}
 
-	void Renderer::CreateCommandBuffers()
+	void Renderer::AddShaderDependency(Ref<Shader> shader, PostProcessingMaterial* postMat)
 	{
-		myRendererData->commandBuffers[0] = CommandBuffer::Create();
-		myRendererData->commandBuffers[1] = CommandBuffer::Create();
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+		s_shaderDependencies[shader->GetHash()].postProcessingMaterials.emplace_back(postMat);
+	}
 
-		myRendererData->currentCPUBuffer = myRendererData->commandBuffers[0].get();
-		myRendererData->currentGPUBuffer = myRendererData->commandBuffers[1].get();
+	void Renderer::RemoveShaderDependency(Ref<Shader> shader, RenderPipeline* renderPipeline)
+	{
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
 
-		myRendererData->perThreadCommands[0] = CreateRef<PerThreadCommands>();
-		myRendererData->perThreadCommands[1] = CreateRef<PerThreadCommands>();
+		if (!s_shaderDependencies.contains(shader->GetHash()))
+		{
+			VT_CORE_WARN("[Renderer] Trying to remove render pipeline dependency from shader with hash {0}, but the shader is not valid!", shader->GetHash());
+			return;
+		}
 
-		myRendererData->currentCPUCommands = myRendererData->perThreadCommands[0].get();
-		myRendererData->currentGPUCommands = myRendererData->perThreadCommands[1].get();
+		auto& renderPipelines = s_shaderDependencies.at(shader->GetHash()).renderPipelines;
+		if (auto it = std::find(renderPipelines.begin(), renderPipelines.end(), renderPipeline); it != renderPipelines.end())
+		{
+			renderPipelines.erase(it);
+		}
+	}
+
+	void Renderer::RemoveShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline)
+	{
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+
+		if (!s_shaderDependencies.contains(shader->GetHash()))
+		{
+			VT_CORE_WARN("[Renderer] Trying to remove compute pipeline dependency from shader with hash {0}, but the shader is not valid!", shader->GetHash());
+			return;
+		}
+
+		auto& computePipelines = s_shaderDependencies.at(shader->GetHash()).computePipelines;
+		if (auto it = std::find(computePipelines.begin(), computePipelines.end(), computePipeline); it != computePipelines.end())
+		{
+			computePipelines.erase(it);
+		}
+	}
+
+	void Renderer::RemoveShaderDependency(Ref<Shader> shader, SubMaterial* material)
+	{
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+
+		if (!s_shaderDependencies.contains(shader->GetHash()))
+		{
+			VT_CORE_WARN("[Renderer] Trying to remove material dependency from shader with hash {0}, but the shader is not valid!", shader->GetHash());
+			return;
+		}
+
+		auto& materials = s_shaderDependencies.at(shader->GetHash()).materials;
+		if (auto it = std::find(materials.begin(), materials.end(), material); it != materials.end())
+		{
+			materials.erase(it);
+		}
+	}
+
+	void Renderer::RemoveShaderDependency(Ref<Shader> shader, PostProcessingMaterial* postMat)
+	{
+		std::scoped_lock lock{ s_shaderDependenciesMutex };
+
+		if (!s_shaderDependencies.contains(shader->GetHash()))
+		{
+			VT_CORE_WARN("[Renderer] Trying to remove material dependency from shader with hash {0}, but the shader is not valid!", shader->GetHash());
+			return;
+		}
+
+		auto& materials = s_shaderDependencies.at(shader->GetHash()).postProcessingMaterials;
+		if (auto it = std::find(materials.begin(), materials.end(), postMat); it != materials.end())
+		{
+			materials.erase(it);
+		}
+	}
+
+	const uint32_t Renderer::AddMaterial(SubMaterial* material)
+	{
+		std::scoped_lock lock{ s_materialMutex };
+		return s_rendererData->bindlessData.materialTable->AddMaterial(material);
+	}
+
+	void Renderer::RemoveMaterial(SubMaterial* material)
+	{
+		std::scoped_lock lock{ s_materialMutex };
+
+		if (s_rendererData)
+		{
+			s_rendererData->bindlessData.materialTable->RemoveMaterial(material);
+		}
+	}
+
+	void Renderer::UpdateMaterial(SubMaterial* material)
+	{
+		std::scoped_lock lock{ s_materialMutex };
+		s_rendererData->bindlessData.materialTable->UpdateMaterial(material);
+	}
+
+	Renderer::BindlessData& Renderer::GetBindlessData()
+	{
+		return s_rendererData->bindlessData;
+	}
+
+	Renderer::DefaultData& Renderer::GetDefaultData()
+	{
+		return *s_defaultData;
+	}
+
+	const VulkanFunctions& Renderer::GetVulkanFunctions()
+	{
+		return s_rendererData->vulkanFunctions;
+	}
+
+	const uint32_t Renderer::GetFramesInFlightCount()
+	{
+		return s_rendererData->framesInFlightCount;
+	}
+
+	VkDescriptorPool Renderer::GetCurrentDescriptorPool()
+	{
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		return s_rendererData->perFrameDescriptorPools.at(currentFrame);
+	}
+
+	VkDescriptorPool Renderer::GetDescriptorPool(uint32_t index)
+	{
+		return s_rendererData->perFrameDescriptorPools.at(index);
+	}
+
+	VkDescriptorSet Renderer::AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
+	{
+		VT_PROFILE_FUNCTION();
+		auto device = GraphicsContext::GetDevice();
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
+		allocInfo.descriptorPool = s_rendererData->perFrameDescriptorPools.at(currentFrame);
+
+		VkDescriptorSet descriptorSet{};
+		VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &descriptorSet));
+
+		return descriptorSet;
+	}
+
+	VkDescriptorSet Renderer::AllocatePersistentDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
+	{
+		VT_PROFILE_FUNCTION();
+		auto device = GraphicsContext::GetDevice();
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
+		allocInfo.descriptorPool = s_rendererData->perFramePersistentDescriptorPools.at(currentFrame);
+
+		VkDescriptorSet descriptorSet{};
+		VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &descriptorSet));
+
+		return descriptorSet;
+	}
+
+	void Renderer::CreateBindlessData()
+	{
+		auto& data = GetBindlessData();
+		//data.combinedVertexBuffer = CombinedVertexBuffer::Create(sizeof(Vertex), BindlessData::START_VERTEX_COUNT);
+		//data.combinedIndexBuffer = CombinedIndexBuffer::Create(BindlessData::START_INDEX_COUNT);
+		data.textureTable = TextureTable::Create();
+		data.materialTable = MaterialTable::Create();
+		data.samplerStateSet = SamplerStateSet::Create(GetFramesInFlightCount());
+
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_LINEAR, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::None);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_LINEAR_POINT, TextureFilter::Linear, TextureFilter::Nearest, TextureFilter::Nearest, TextureWrap::Repeat, CompareOperator::None);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_LINEAR_CLAMP, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Clamp, CompareOperator::None);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_LINEAR_POINT_CLAMP, TextureFilter::Linear, TextureFilter::Nearest, TextureFilter::Nearest, TextureWrap::Clamp, CompareOperator::None);
+
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_POINT, TextureFilter::Nearest, TextureFilter::Nearest, TextureFilter::Nearest, TextureWrap::Repeat, CompareOperator::None);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_POINT_LINEAR, TextureFilter::Nearest, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::None);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_POINT_CLAMP, TextureFilter::Nearest, TextureFilter::Nearest, TextureFilter::Nearest, TextureWrap::Clamp, CompareOperator::None);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_POINT_LINEAR_CLAMP, TextureFilter::Nearest, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Clamp, CompareOperator::None);
+
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_ANISO, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::None, AnisotopyLevel::X16);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_SHADOW, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::LessEqual);
+		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_REDUCE, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::None, AnisotopyLevel::None, true);
+	}
+
+	void Renderer::CreateDescriptorPools()
+	{
+		constexpr VkDescriptorPoolSize poolSizes[] =
+		{
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, 10000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+		};
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.flags = 0;
+		poolInfo.maxSets = 10000;
+		poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
+		poolInfo.pPoolSizes = poolSizes;
+
+		const uint32_t framesInFlightCount = GetFramesInFlightCount();
+		for (uint32_t i = 0; i < framesInFlightCount; i++)
+		{
+			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFrameDescriptorPools.emplace_back()));
+		}
+
+		for (uint32_t i = 0; i < framesInFlightCount; i++)
+		{
+			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFramePersistentDescriptorPools.emplace_back()));
+		}
+	}
+
+	void Renderer::CreateGlobalDescriptorSets()
+	{
+		auto& bindlessData = GetBindlessData();
+		bindlessData.globalDescriptorSets = GlobalDescriptorSetManager::CreateFullCopy();
+	}
+
+	void Renderer::CreateDefaultData()
+	{
+		s_defaultData = CreateScope<DefaultData>();
+		s_defaultData->defaultShader = Shader::Create("Default", { "Engine/Shaders/Source/HLSL/Default_vs.hlsl", "Engine/Shaders/Source/HLSL/Default_ps.hlsl" });
+		s_defaultData->defaultPostProcessingShader = Shader::Create("DefaultPostProcessing", { "Engine/Shaders/Source/HLSL/DefaultPostProcessing_cs.hlsl" });
+
+		// Create default render pipeline
+		{
+			RenderPipelineSpecification pipelineSpec{};
+			pipelineSpec.shader = s_defaultData->defaultShader;
+
+			pipelineSpec.vertexLayout = Vertex::GetVertexLayout();
+			s_defaultData->defaultRenderPipeline = RenderPipeline::Create(pipelineSpec);
+
+			ShaderRegistry::Register("Default", s_defaultData->defaultShader);
+		}
+
+		s_defaultData->defaultMaterial = SubMaterial::Create("Default", 0, s_defaultData->defaultShader);
+
+		// White texture
+		{
+			constexpr uint32_t whiteTextureData = 0xffffffff;
+			s_defaultData->whiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
+			s_defaultData->whiteTexture->handle = Asset::Null();
+		}
+
+		// White uint texture
+		{
+			constexpr uint32_t whiteTextureData = 0xffffffff;
+			s_defaultData->whiteUINTTexture = Texture2D::Create(ImageFormat::R32UI, 1, 1, &whiteTextureData);
+			s_defaultData->whiteUINTTexture->handle = Asset::Null();
+		}
+
+		// Empty normal
+		{
+			const gem::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
+			s_defaultData->emptyNormal = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &normalData);
+			s_defaultData->emptyNormal->handle = Asset::Null();
+		}
+
+		// Empty Material
+		{
+			const gem::vec4 materialData = { 0.f, 1.f, 1.f, 0.f };
+			s_defaultData->emptyMaterial = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &materialData);
+			s_defaultData->emptyMaterial->handle = Asset::Null();
+		}
+
+		// Black 3D
+		{
+			ImageSpecification spec{};
+			spec.format = ImageFormat::RGBA32F;
+			spec.width = 1;
+			spec.height = 1;
+			spec.depth = 1;
+			spec.usage = ImageUsage::Texture;
+			spec.debugName = "Black 3D Image";
+
+			const gem::vec4 blackColor = { 0.f };
+			s_defaultData->black3DImage = Image3D::Create(spec, &blackColor);
+		}
 	}
 
 	void Renderer::GenerateBRDFLut()
@@ -879,1287 +1177,166 @@ namespace Volt
 		spec.width = BRDFSize;
 		spec.height = BRDFSize;
 
-		myDefaultData->brdfLut = Image2D::Create(spec);
+		s_defaultData->brdfLut = Image2D::Create(spec);
 
-		Ref<ComputePipeline> brdfPipeline = ComputePipeline::Create(ShaderRegistry::Get("BRDFGeneration"));
-		brdfPipeline->SetTarget(myDefaultData->brdfLut, 0);
+		Ref<ComputePipeline> brdfPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("BRDFGeneration"));
+		brdfPipeline->SetImage(s_defaultData->brdfLut, 0, 0, ImageAccess::Write);
 		brdfPipeline->Execute(BRDFSize / 32, BRDFSize / 32, 1);
-		brdfPipeline->Clear();
 	}
 
-	void Renderer::CreateDefaultData()
+	void Renderer::LoadVulkanFunctions()
 	{
-		myDefaultData = CreateScope<DefaultData>();
-		myDefaultData->defaultShader = ShaderRegistry::Get("Default");
-		myDefaultData->defaultBillboardShader = ShaderRegistry::Get("Billboard");
+		auto instance = GraphicsContext::Get().GetInstance();
 
-		myDefaultData->defaultMaterial = SubMaterial::Create("Null", 0, GetDefaultData().defaultShader);
-		myDefaultData->defaultSpriteMaterial = Material::Create(ShaderRegistry::Get("Quad"));
-
-		// White texture
-		{
-			constexpr uint32_t whiteTextureData = 0xffffffff;
-			myDefaultData->whiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
-			myDefaultData->whiteTexture->handle = Asset::Null();
-		}
-
-		// Empty normal
-		{
-			const gem::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
-			myDefaultData->emptyNormal = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &normalData);
-			myDefaultData->emptyNormal->handle = Asset::Null();
-		}
-
-		// Black cube
-		{
-			constexpr uint32_t blackCubeTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
-
-			ImageSpecification imageSpec{};
-			imageSpec.format = ImageFormat::RGBA;
-			imageSpec.width = 1;
-			imageSpec.height = 1;
-			imageSpec.usage = ImageUsage::Texture;
-			imageSpec.layers = 6;
-			imageSpec.isCubeMap = true;
-
-			myDefaultData->blackCubeImage = Image2D::Create(imageSpec, blackCubeTextureData);
-		}
-
-		// Samplers
-		{
-			myRendererData->samplers.linearWrap = SamplerState::Create(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-			myRendererData->samplers.linearPointWrap = SamplerState::Create(D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-
-			myRendererData->samplers.pointWrap = SamplerState::Create(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP);
-			myRendererData->samplers.pointLinearWrap = SamplerState::Create(D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-
-			myRendererData->samplers.linearClamp = SamplerState::Create(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-			myRendererData->samplers.linearPointClamp = SamplerState::Create(D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
-
-			myRendererData->samplers.pointClamp = SamplerState::Create(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP);
-			myRendererData->samplers.pointLinearClamp = SamplerState::Create(D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-
-			myRendererData->samplers.anisotropic = SamplerState::Create(D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP);
-			myRendererData->samplers.shadow = SamplerState::Create(D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_COMPARISON_LESS);
-		}
-
-		// Bind samplers
-		{
-			myRendererData->samplers.linearWrap->Bind(0);
-			myRendererData->samplers.linearPointWrap->Bind(1);
-
-			myRendererData->samplers.pointWrap->Bind(2);
-			myRendererData->samplers.pointLinearWrap->Bind(3);
-
-			myRendererData->samplers.linearClamp->Bind(4);
-			myRendererData->samplers.linearPointClamp->Bind(5);
-
-			myRendererData->samplers.pointClamp->Bind(6);
-			myRendererData->samplers.pointLinearClamp->Bind(7);
-
-			myRendererData->samplers.anisotropic->Bind(8);
-			myRendererData->samplers.shadow->Bind(9);
-		}
-
-		// Fullscreen quad
-		{
-			float x = -1.f, y = -1.f;
-			float width = 2.f, height = 2.f;
-
-			struct QuadVertex
-			{
-				gem::vec3 position;
-				gem::vec2 texCoord;
-			};
-
-			QuadVertex* data = new QuadVertex[4];
-
-			data[0].position = { x, y, 0.f };
-			data[0].texCoord = { 0.f, 1.f };
-
-			data[1].position = { x, y + height, 0.f };
-			data[1].texCoord = { 0.f, 0.f };
-
-			data[2].position = { x + width, y, 0.f };
-			data[2].texCoord = { 1.f, 1.f };
-
-			data[3].position = { x + width, y + height, 0.f };
-			data[3].texCoord = { 1.f, 0.f };
-
-			myRendererData->quadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex), sizeof(QuadVertex));
-			uint32_t indices[6] = { 0, 1, 2, 2, 1, 3 };
-			myRendererData->quadIndexBuffer = IndexBuffer::Create(indices, 6);
-
-			delete[] data;
-		}
+		s_rendererData->vulkanFunctions.cmdBeginDebugUtilsLabel = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdBeginDebugUtilsLabelEXT");
+		s_rendererData->vulkanFunctions.cmdEndDebugUtilsLabel = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdEndDebugUtilsLabelEXT");
 	}
 
-	void Renderer::UpdatePerPassBuffers()
+	void Renderer::LoadRayTracingFunctions()
+	{
+		auto device = GraphicsContext::GetDevice()->GetHandle();
+
+		s_rendererData->vulkanFunctions.vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkCmdBuildAccelerationStructuresKHR"));
+		s_rendererData->vulkanFunctions.vkBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkBuildAccelerationStructuresKHR"));
+		s_rendererData->vulkanFunctions.vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(vkGetDeviceProcAddr(device, "vkCreateAccelerationStructureKHR"));
+		s_rendererData->vulkanFunctions.vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(vkGetDeviceProcAddr(device, "vkDestroyAccelerationStructureKHR"));
+		s_rendererData->vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device, "vkGetAccelerationStructureBuildSizesKHR"));
+		s_rendererData->vulkanFunctions.vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device, "vkGetAccelerationStructureDeviceAddressKHR"));
+		s_rendererData->vulkanFunctions.vkCmdTraceRaysKHR = reinterpret_cast<PFN_vkCmdTraceRaysKHR>(vkGetDeviceProcAddr(device, "vkCmdTraceRaysKHR"));
+		s_rendererData->vulkanFunctions.vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device, "vkGetRayTracingShaderGroupHandlesKHR"));
+		s_rendererData->vulkanFunctions.vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device, "vkCreateRayTracingPipelinesKHR"));
+	}
+
+	void Renderer::DestroyDescriptorPools()
+	{
+		auto device = GraphicsContext::GetDevice();
+		device->WaitForIdle();
+
+		for (const auto& pool : s_rendererData->perFrameDescriptorPools)
+		{
+			vkDestroyDescriptorPool(device->GetHandle(), pool, nullptr);
+		}
+
+		for (const auto& pool : s_rendererData->perFramePersistentDescriptorPools)
+		{
+			vkDestroyDescriptorPool(device->GetHandle(), pool, nullptr);
+		}
+
+		s_rendererData->perFrameDescriptorPools.clear();
+	}
+
+	void Renderer::UpdateMaterialDescriptors()
 	{
 		VT_PROFILE_FUNCTION();
 
-		// Update camera buffer
-		if (myRendererData->currentPassCamera)
+		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
 		{
-			CameraData* cameraData = ConstantBufferRegistry::Get(0)->Map<CameraData>();
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(i);
 
-			cameraData->proj = myRendererData->currentPassCamera->GetProjection();
-			cameraData->view = myRendererData->currentPassCamera->GetView();
-			cameraData->viewProj = cameraData->proj * cameraData->view;
+			const auto buffer = s_rendererData->bindlessData.materialTable->GetStorageBuffer(i);
 
-			cameraData->inverseProj = gem::inverse(cameraData->proj);
-			cameraData->inverseView = gem::inverse(cameraData->view);
-			cameraData->inverseViewProj = gem::inverse(cameraData->viewProj);
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = buffer->GetHandle();
+			bufferInfo.offset = 0;
+			bufferInfo.range = buffer->GetSize();
 
-			cameraData->ambianceMultiplier = myRendererData->settings.ambianceMultiplier;
-			cameraData->exposure = myRendererData->settings.exposure;
+			VkWriteDescriptorSet writeDescriptor{};
+			writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptor.dstSet = descriptorSet;
+			writeDescriptor.dstArrayElement = 0;
+			writeDescriptor.descriptorCount = 1;
+			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			writeDescriptor.pBufferInfo = &bufferInfo;
 
-			const auto pos = myRendererData->currentPassCamera->GetPosition();
-			cameraData->position = gem::vec4(pos.x, pos.y, pos.z, 0.f);
-			cameraData->nearPlane = myRendererData->currentPassCamera->GetNearPlane();
-			cameraData->farPlane = myRendererData->currentPassCamera->GetFarPlane();
-
-			ConstantBufferRegistry::Get(0)->Unmap();
-		}
-
-		// Pass data
-		{
-			if (myRendererData->currentPass.framebuffer)
-			{
-				Volt::PassData* passData = ConstantBufferRegistry::Get(3)->Map<Volt::PassData>();
-
-				passData->targetSize = { myRendererData->currentPass.framebuffer->GetWidth(), myRendererData->currentPass.framebuffer->GetHeight() };
-				passData->inverseTargetSize = { 1.f / (float)myRendererData->currentPass.framebuffer->GetWidth(), 1.f / (float)myRendererData->currentPass.framebuffer->GetHeight() };
-				passData->inverseFullSize = { 1.f / myRendererData->fullRenderSize.x, 1.f / myRendererData->fullRenderSize.y };
-
-				ConstantBufferRegistry::Get(3)->Unmap();
-			}
+			auto device = GraphicsContext::GetDevice();
+			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 		}
 	}
 
-	void Renderer::UpdatePerFrameBuffers()
+	void Renderer::UpdateSamplerStateDescriptors()
 	{
 		VT_PROFILE_FUNCTION();
 
-		// Directional light
+		auto device = GraphicsContext::GetDevice();
+
+		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
 		{
-			DirectionalLight* dirLight = ConstantBufferRegistry::Get(4)->Map<DirectionalLight>();
-			*dirLight = GetCurrentGPUCommandCollection().directionalLight;
-			ConstantBufferRegistry::Get(4)->Unmap();
-		}
-
-		// Point lights
-		{
-			const auto& pointLights = GetCurrentGPUCommandCollection().pointLights;
-
-			PointLight* data = StructuredBufferRegistry::Get(102)->Map<PointLight>();
-			memcpy_s(data, sizeof(PointLight) * RendererData::MAX_POINT_LIGHTS, pointLights.data(), sizeof(PointLight) * gem::min(RendererData::MAX_POINT_LIGHTS, (uint32_t)pointLights.size()));
-			StructuredBufferRegistry::Get(102)->Unmap();
-		}
-
-		// Scene data
-		{
-			SceneData* data = ConstantBufferRegistry::Get(7)->Map<SceneData>();
-			data->deltaTime = myRendererData->sceneData.deltaTime;
-			data->timeSinceStart = myRendererData->sceneData.timeSinceStart;
-			data->pointLightCount = (uint32_t)GetCurrentGPUCommandCollection().pointLights.size();
-			ConstantBufferRegistry::Get(7)->Unmap();
-		}
-	}
-
-	void Renderer::UploadObjectData(std::vector<SubmitCommand>& renderCommands)
-	{
-		VT_PROFILE_FUNCTION();
-
-		{
-			VT_PROFILE_SCOPE("Collecting");
-
-			ObjectData* objData = StructuredBufferRegistry::Get(100)->Map<ObjectData>();
-			gem::mat4* animData = StructuredBufferRegistry::Get(101)->Map<gem::mat4>();
-
-			for (uint32_t i = 0; auto & cmd : renderCommands)
-			{
-				cmd.objectBufferId = i;
-
-				objData[i].id = cmd.id;
-				objData[i].isAnimated = !cmd.boneTransforms.empty();
-				objData[i].timeSinceCreation = cmd.timeSinceCreation;
-				objData[i].transform = cmd.transform;
-
-				memcpy_s(&animData[i * RendererData::MAX_BONES_PER_MESH], sizeof(gem::mat4) * RendererData::MAX_BONES_PER_MESH, cmd.boneTransforms.data(), sizeof(gem::mat4) * cmd.boneTransforms.size());
-				++i;
-			}
-
-			StructuredBufferRegistry::Get(100)->Unmap();
-			StructuredBufferRegistry::Get(101)->Unmap();
-		}
-	}
-
-	void Renderer::RunResourceChanges()
-	{
-		std::scoped_lock lock(myRendererData->resourceMutex);
-
-		for (const auto& f : myRendererData->resourceChangeQueue)
-		{
-			f();
-		}
-	}
-
-	void Renderer::SortSubmitCommands(std::vector<SubmitCommand>& renderCommands)
-	{
-		VT_PROFILE_FUNCTION();
-
-		std::sort(renderCommands.begin(), renderCommands.end(), [](const SubmitCommand& lhs, const SubmitCommand& rhs)
-			{
-				if (lhs.subMesh < rhs.subMesh)
-				{
-					return true;
-				}
-				else if (lhs.subMesh > rhs.subMesh)
-				{
-					return false;
-				}
-
-		if (lhs.material < rhs.material)
-		{
-			return true;
-		}
-		else if (lhs.material > rhs.material)
-		{
-			return false;
-		}
-
-		return false;
-			});
-	}
-
-	void Renderer::SortBillboardCommands(std::vector<BillboardSubmitCommand>& billboardCommads)
-	{
-		VT_PROFILE_FUNCTION();
-
-		std::sort(billboardCommads.begin(), billboardCommads.end(), [](const auto& lhs, const auto& rhs)
-			{
-				return lhs.shader < rhs.shader;
-			});
-	}
-
-	std::vector<SubmitCommand> Renderer::CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (renderCommands.empty())
-		{
-			return {};
-		}
-
-		std::vector<SubmitCommand> result;
-		result.reserve(renderCommands.size());
-
-		for (const auto& cmd : renderCommands)
-		{
-			const auto& frustum = camera->GetFrustum();
-
-			if (cmd.mesh->GetBoundingSphere().IsInFrusum(frustum, cmd.transform))
-			{
-				result.emplace_back(cmd);
-			}
-		}
-
-		return result;
-	}
-
-	void Renderer::SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands)
-	{
-		VT_PROFILE_FUNCTION();
-
-		std::sort(commands.begin(), commands.end(), [](const SpriteSubmitCommand& lhs, const SpriteSubmitCommand& rhs)
-			{
-				return lhs.material < rhs.material;
-			});
-	}
-
-	void Renderer::CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial)
-	{
-		VT_PROFILE_FUNCTION();
-		for (const auto& cmd : GetCurrentGPUCommandCollection().spriteCommands)
-		{
-			if (cmd.material != aMaterial) //#TODO_Ivar: Add early out
-			{
-				continue;
-			}
-
-			auto& spriteData = myRendererData->spriteData;
-
-			uint32_t texIndex = 0;
-			if (cmd.texture)
-			{
-				for (uint32_t slot = 1; slot < spriteData.textureSlotIndex; slot++)
-				{
-					if (spriteData.textureSlots[slot] == cmd.texture)
-					{
-						texIndex = slot;
-						break;
-					}
-				}
-
-				if (texIndex == 0)
-				{
-					texIndex = spriteData.textureSlotIndex++;
-					spriteData.textureSlots[texIndex] = cmd.texture;
-				}
-			}
-
-			for (uint32_t i = 0; i < 4; i++)
-			{
-				spriteData.vertexBufferPtr->position = cmd.transform * spriteData.vertices[i];
-				spriteData.vertexBufferPtr->color = cmd.color;
-				spriteData.vertexBufferPtr->texCoords = cmd.uv[i];
-				spriteData.vertexBufferPtr->textureIndex = texIndex;
-				spriteData.vertexBufferPtr->id = cmd.id;
-				spriteData.vertexBufferPtr++;
-			}
-
-			spriteData.indexCount += 6;
-		}
-	}
-
-	void Renderer::CollectBillboardCommandsWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-
-		for (const auto& cmd : GetCurrentGPUCommandCollection().billboardCommands)
-		{
-			if (aShader != cmd.shader) // #TODO_Ivar: Early out
-			{
-				continue;
-			}
-
-			auto& billboardData = myRendererData->billboardData;
-
-			uint32_t texIndex = 0;
-			if (cmd.texture)
-			{
-				for (uint32_t slot = 1; slot < billboardData.textureSlotIndex; slot++)
-				{
-					if (billboardData.textureSlots[slot] == cmd.texture)
-					{
-						texIndex = slot;
-						break;
-					}
-				}
-
-				if (texIndex == 0)
-				{
-					texIndex = billboardData.textureSlotIndex;
-					billboardData.textureSlots[texIndex] = cmd.texture;
-					billboardData.textureSlotIndex++;
-				}
-			}
-
-			billboardData.vertexBufferPtr->postition = { cmd.position.x, cmd.position.y, cmd.position.z, 1.f };
-			billboardData.vertexBufferPtr->id = cmd.id;
-			billboardData.vertexBufferPtr->color = cmd.color;
-			billboardData.vertexBufferPtr->textureIndex = texIndex;
-			billboardData.vertexBufferPtr->scale = cmd.scale;
-			billboardData.vertexBufferPtr++;
-			billboardData.vertexCount++;
-		}
-	}
-
-	void Renderer::CollectTextCommands()
-	{
-		VT_PROFILE_FUNCTION();
-
-		for (const auto& cmd : GetCurrentGPUCommandCollection().textCommands)
-		{
-			if (cmd.text.empty())
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(i);
+			const auto writeDescriptors = s_rendererData->bindlessData.samplerStateSet->GetWriteDescriptors(descriptorSet, i);
+			if (writeDescriptors.empty())
 			{
 				return;
 			}
 
-			auto& textData = myRendererData->textData;
-			int32_t textureIndex = -1;
-
-			std::u32string utf32string = Utils::To_UTF32(cmd.text);
-
-			Ref<Texture2D> fontAtlas = cmd.font->GetAtlas();
-			VT_CORE_ASSERT(fontAtlas, "Font Atlas was nullptr!");
-
-			if (textData.textureSlotIndex >= 32)
-			{
-				return;
-			}
-
-			for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
-			{
-				if (textData.textureSlots[i] == fontAtlas)
-				{
-					textureIndex = (int32_t)i;
-					break;
-				}
-			}
-
-			if (textureIndex == -1)
-			{
-				textureIndex = (int32_t)textData.textureSlotIndex;
-				textData.textureSlots[textureIndex] = fontAtlas;
-				textData.textureSlotIndex++;
-			}
-
-			auto& fontGeom = cmd.font->GetMSDFData()->fontGeometry;
-			const auto& metrics = fontGeom.getMetrics();
-
-			std::vector<int32_t> nextLines;
-			{
-				double x = 0.0;
-				double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-				double y = -fsScale * metrics.ascenderY;
-
-				int32_t lastSpace = -1;
-
-				for (int32_t i = 0; i < utf32string.size(); i++)
-				{
-					char32_t character = utf32string[i];
-					if (character == '\n')
-					{
-						x = 0.0;
-						y -= fsScale * metrics.lineHeight;
-						continue;
-					}
-
-					auto glyph = fontGeom.getGlyph(character);
-					if (!glyph)
-					{
-						glyph = fontGeom.getGlyph('?');
-					}
-
-					if (!glyph)
-					{
-						continue;
-					}
-
-					if (character != ' ')
-					{
-						// Calculate geometry
-						double pl, pb, pr, pt;
-						glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-						gem::vec2 quadMin((float)pl, (float)pb);
-						gem::vec2 quadMax((float)pl, (float)pb);
-
-						quadMin *= (float)fsScale;
-						quadMax *= (float)fsScale;
-						quadMin += gem::vec2((float)x, (float)y);
-						quadMax += gem::vec2((float)x, (float)y);
-
-						if (quadMax.x > cmd.maxWidth && lastSpace != -1)
-						{
-							i = lastSpace;
-							nextLines.emplace_back(lastSpace);
-							lastSpace = -1;
-							x = 0.0;
-							y -= fsScale * metrics.lineHeight;
-						}
-					}
-					else
-					{
-						lastSpace = i;
-					}
-
-					double advance = glyph->getAdvance();
-					fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-					x += fsScale * advance;
-				}
-			}
-
-			{
-				double x = 0.0;
-				double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-				double y = 0.0;
-				for (int32_t i = 0; i < utf32string.size(); i++)
-				{
-					char32_t character = utf32string[i];
-					if (character == '\n' || NextLine(i, nextLines))
-					{
-						x = 0.0;
-						y -= fsScale * metrics.lineHeight;
-						continue;
-					}
-
-					auto glyph = fontGeom.getGlyph(character);
-
-					if (!glyph)
-					{
-						glyph = fontGeom.getGlyph('?');
-					}
-
-					if (!glyph)
-					{
-						continue;
-					}
-
-					double l, b, r, t;
-					glyph->getQuadAtlasBounds(l, b, r, t);
-
-					double pl, pb, pr, pt;
-					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-
-					pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
-					pl += x, pb += y, pr += x, pt += y;
-
-					double texelWidth = 1.0 / fontAtlas->GetWidth();
-					double texelHeight = 1.0 / fontAtlas->GetHeight();
-
-					l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
-
-					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pl, (float)pb, 0.f, 1.f };
-					textData.vertexBufferPtr->color = cmd.color;
-					textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
-					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-					textData.vertexBufferPtr++;
-
-					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pr, (float)pb, 0.f, 1.f };
-					textData.vertexBufferPtr->color = cmd.color;
-					textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
-					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-					textData.vertexBufferPtr++;
-
-					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pr, (float)pt, 0.f, 1.f };
-					textData.vertexBufferPtr->color = cmd.color;
-					textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
-					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-					textData.vertexBufferPtr++;
-
-					textData.vertexBufferPtr->position = cmd.transform * gem::vec4{ (float)pl, (float)pt, 0.f, 1.f };
-					textData.vertexBufferPtr->color = cmd.color;
-					textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
-					textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
-					textData.vertexBufferPtr++;
-
-					textData.indexCount += 6;
-
-					double advance = glyph->getAdvance();
-					fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-					x += fsScale * advance;
-				}
-			}
+			vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 		}
 	}
 
-	void Renderer::DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial)
+	void Renderer::SetupPipelineForRendering(Ref<CommandBuffer> commandBuffer, Ref<RenderPipeline> renderPipeline, const GlobalDescriptorMap& globalDescriptorSets, Ref<GlobalDescriptorSet> drawBufferSet)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& spriteData = myRendererData->spriteData;
-		if (!aMaterial)
+		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
+
+		if (renderPipeline->HasDescriptorSet(Sets::RENDERER_BUFFERS))
 		{
-			aMaterial = myDefaultData->defaultSpriteMaterial;
+			auto descriptorSet = globalDescriptorSets.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::RENDERER_BUFFERS);
 		}
 
-		CollectSpriteCommandsWithMaterial(aMaterial);
-
-		if (spriteData.indexCount == 0)
+		if (renderPipeline->HasDescriptorSet(Sets::SAMPLERS))
 		{
-			return;
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
 		}
 
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(spriteData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(spriteData.vertexBufferBase));
-		spriteData.vertexBuffer->SetData(spriteData.vertexBufferBase, dataSize);
-
-		aMaterial->GetSubMaterialAt(0)->Bind(true, false); //#TODO_Ivar: Will bind textures as well, is this something we want?
-
-		std::vector<Ref<Image2D>> imagesToBind{ spriteData.textureSlotIndex };
-		for (uint32_t i = 0; i < spriteData.textureSlotIndex; i++)
+		if (renderPipeline->HasDescriptorSet(Sets::TEXTURES))
 		{
-			imagesToBind[i] = spriteData.textureSlots[i]->GetImage();
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
 		}
 
-		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
-		RenderCommand::SetTopology(Topology::TriangleList);
+		if (renderPipeline->HasDescriptorSet(Sets::MAINBUFFERS))
+		{
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
+		}
 
-		spriteData.vertexBuffer->Bind();
-		spriteData.indexBuffer->Bind();
+		if (renderPipeline->HasDescriptorSet(Sets::PBR_RESOURCES))
+		{
+			auto descriptorSet = globalDescriptorSets.at(Sets::PBR_RESOURCES)->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::PBR_RESOURCES);
+		}
 
-		RenderCommand::DrawIndexed(spriteData.indexCount, 0, 0);
-		RenderCommand::ClearTexturesAtStage(ShaderStage::Pixel, 0, spriteData.textureSlotIndex);
-
-		spriteData.indexCount = 0;
-		spriteData.vertexBufferPtr = spriteData.vertexBufferBase;
-		spriteData.textureSlotIndex = 1;
+		if (drawBufferSet && renderPipeline->HasDescriptorSet(Sets::DRAW_BUFFERS))
+		{
+			auto descriptorSet = drawBufferSet->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::DRAW_BUFFERS);
+		}
 	}
 
-	void Renderer::DispatchBillboardsWithShaderInternal(Ref<Shader> aShader)
+	void Renderer::SetupPipelineForRendering(Ref<CommandBuffer> commandBuffer, Ref<RenderPipeline> renderPipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto& billboardData = myRendererData->billboardData;
-		if (!aShader)
+		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
+
+		if (renderPipeline->HasDescriptorSet(Sets::SAMPLERS))
 		{
-			aShader = myDefaultData->defaultBillboardShader;
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
 		}
 
-		CollectBillboardCommandsWithShader(aShader);
-
-		if (billboardData.vertexCount == 0)
+		if (renderPipeline->HasDescriptorSet(Sets::TEXTURES))
 		{
-			return;
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
 		}
 
+		if (renderPipeline->HasDescriptorSet(Sets::MAINBUFFERS))
 		{
-			VT_PROFILE_SCOPE("Update Data");
-			uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(billboardData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(billboardData.vertexBufferBase));
-			billboardData.vertexBuffer->SetData(billboardData.vertexBufferBase, dataSize);
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(currentIndex);
+			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
 		}
-
-		std::vector<Ref<Image2D>> imagesToBind{ billboardData.textureSlotIndex };
-		for (uint32_t i = 0; i < billboardData.textureSlotIndex; i++)
-		{
-			imagesToBind[i] = billboardData.textureSlots[i]->GetImage();
-		}
-
-		aShader->Bind();
-		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
-		RenderCommand::SetTopology(Topology::PointList);
-
-		billboardData.vertexBuffer->Bind();
-
-		RenderCommand::Draw(billboardData.vertexCount, 0);
-
-		billboardData.vertexCount = 0;
-		billboardData.vertexBufferPtr = billboardData.vertexBufferBase;
-		billboardData.textureSlotIndex = 1;
-		aShader->Unbind();
-	}
-
-	void Renderer::DispatchRenderCommandsInstancedInternal()
-	{
-		VT_PROFILE_FUNCTION();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-
-		auto& gpuCommands = GetCurrentGPUCommandCollection();
-		myRendererData->instancingData.instancedVertexBuffer->Bind(1);
-
-		for (const auto& cmd : gpuCommands.instancedCommands)
-		{
-			// Update instanced vertex buffer
-			{
-				VT_PROFILE_SCOPE("Update instance vertex buffer");
-
-				const uint32_t size = sizeof(InstanceData) * (uint32_t)cmd.objectDataIds.size();
-
-				InstanceData* instanceData = myRendererData->instancingData.instancedVertexBuffer->Map<InstanceData>();
-
-				{
-					VT_PROFILE_SCOPE("Memcpy");
-					memcpy_s(instanceData, size, cmd.objectDataIds.data(), size);
-				}
-
-				{
-					VT_PROFILE_SCOPE("Unmap");
-					myRendererData->instancingData.instancedVertexBuffer->Unmap();
-				}
-			}
-
-			// Bind mesh data
-			{
-				cmd.mesh->GetVertexBuffer()->Bind(0);
-				cmd.mesh->GetIndexBuffer()->Bind();
-
-				if (myRendererData->currentPass.overrideShader)
-				{
-					myRendererData->currentPass.overrideShader->Bind();
-				}
-
-				cmd.material->Bind(myRendererData->currentPass.overrideShader == nullptr);
-			}
-
-			RenderCommand::DrawIndexedInstanced(cmd.subMesh.indexCount, cmd.count, cmd.subMesh.indexStartOffset, cmd.subMesh.vertexStartOffset, 0);
-		}
-	}
-
-	void Renderer::DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms)
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto& subMesh = aMesh->GetSubMeshes().at(subMeshIndex);
-		uint32_t subMaterialIndex = subMesh.materialIndex;
-		if ((uint32_t)material->GetSubMaterials().size() >= subMeshIndex)
-		{
-			subMaterialIndex = (uint32_t)material->GetSubMaterials().size() - 1;
-		}
-
-		auto subMaterial = material->GetSubMaterials().at(subMaterialIndex);
-
-		if (auto it = std::find(myRendererData->currentPass.excludedShaderHashes.begin(), myRendererData->currentPass.excludedShaderHashes.end(), subMaterial->GetShaderHash()); it != myRendererData->currentPass.excludedShaderHashes.end())
-		{
-			return;
-		}
-
-		if (myRendererData->currentPass.exclusiveShaderHash != 0 && myRendererData->currentPass.exclusiveShaderHash != subMaterial->GetShaderHash())
-		{
-			return;
-		}
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Bind();
-		}
-
-		subMaterial->Bind(myRendererData->currentPass.overrideShader == nullptr);
-		aMesh->GetVertexBuffer()->Bind();
-		aMesh->GetIndexBuffer()->Bind();
-
-		// Update object buffer
-		{
-			ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-
-			mapped->transform = aTransform;
-			//mapped->id = cmds[i].id;
-			mapped->isAnimated = !aBoneTransforms.empty();
-
-			ConstantBufferRegistry::Get(1)->Unmap();
-		}
-
-		// Update animation buffer
-		if (!aBoneTransforms.empty())
-		{
-			AnimationData* mapped = ConstantBufferRegistry::Get(6)->Map<AnimationData>();
-			memcpy_s(mapped, sizeof(gem::mat4) * RendererData::MAX_BONES_PER_MESH, aBoneTransforms.data(), sizeof(gem::mat4) * aBoneTransforms.size());
-			ConstantBufferRegistry::Get(6)->Unmap();
-		}
-
-		ConstantBufferRegistry::Get(1)->Bind(1);
-		ConstantBufferRegistry::Get(6)->Bind(6);
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::DrawIndexed(subMesh.indexCount, subMesh.indexStartOffset, subMesh.vertexStartOffset);
-	}
-
-	void Renderer::RT_Execute()
-	{
-		VT_PROFILE_THREAD("Render Thread");
-		RenderCommand::SetContext(Context::Deferred);
-
-		while (myRendererData->isRunning)
-		{
-			std::unique_lock lk{ myRendererData->renderMutex };
-			{
-				VT_PROFILE_SCOPE("Wait for update");
-
-				myRendererData->syncVariable.wait(lk, []() { return myRendererData->primaryBufferUsed || !myRendererData->isRunning; });
-				RenderCommand::RestoreDefaultState();
-			}
-
-			// Execute commands
-			{
-				VT_PROFILE_SCOPE("Execute Commands");
-				myRendererData->currentGPUBuffer->Execute();
-				myRendererData->currentGPUBuffer->Clear();
-			}
-			
-			myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
-			myRendererData->syncVariable.notify_one();
-		}
-	}
-
-	void Renderer::DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader)
-	{
-		VT_PROFILE_FUNCTION();
-
-		shader->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::SetDepthState(DepthState::None);
-
-		RenderCommand::IndexBuffer_Bind(nullptr);
-		RenderCommand::VertexBuffer_Bind(nullptr);
-
-		RenderCommand::Draw(3, 0);
-		shader->Unbind();
-	}
-
-	void Renderer::DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial)
-	{
-		VT_PROFILE_FUNCTION();
-
-		aMaterial->GetSubMaterials().at(0)->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::SetDepthState(DepthState::None);
-
-		RenderCommand::IndexBuffer_Bind(nullptr);
-		RenderCommand::VertexBuffer_Bind(nullptr);
-
-		RenderCommand::Draw(3, 0);
-	}
-
-	void Renderer::DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-
-		aShader->Bind();
-
-		RenderCommand::SetTopology(Topology::TriangleList);
-		RenderCommand::SetDepthState(DepthState::None);
-
-		myRendererData->quadVertexBuffer->Bind();
-		myRendererData->quadIndexBuffer->Bind();
-
-		RenderCommand::DrawIndexed(6, 0, 0);
-		aShader->Unbind();
-	}
-
-	void Renderer::BeginInternal(Context context, const std::string& debugName)
-	{
-		VT_PROFILE_FUNCTION();
-
-		const std::string profData = "Volt::Renderer::Begin: " + debugName;
-		VT_PROFILE_SCOPE(profData.c_str());
-
-		RenderCommand::SetContext(context);
-		RenderCommand::BeginAnnotation(debugName);
-
-		myRendererData->currentContext = debugName;
-
-		UpdatePerFrameBuffers();
-
-		SortSubmitCommands(GetCurrentGPUCommandCollection().submitCommands);
-		SortSpriteCommands(GetCurrentGPUCommandCollection().spriteCommands);
-		SortBillboardCommands(GetCurrentGPUCommandCollection().billboardCommands);
-
-		UploadObjectData(GetCurrentGPUCommandCollection().submitCommands);
-
-		// Bind samplers
-		{
-			myRendererData->samplers.linearWrap->Bind(0);
-			myRendererData->samplers.linearPointWrap->Bind(1);
-
-			myRendererData->samplers.pointWrap->Bind(2);
-			myRendererData->samplers.pointLinearWrap->Bind(3);
-
-			myRendererData->samplers.linearClamp->Bind(4);
-			myRendererData->samplers.linearPointClamp->Bind(5);
-
-			myRendererData->samplers.pointClamp->Bind(6);
-			myRendererData->samplers.pointLinearClamp->Bind(7);
-
-			myRendererData->samplers.anisotropic->Bind(8);
-			myRendererData->samplers.shadow->Bind(9);
-		}
-
-		ConstantBufferRegistry::Get(0)->Bind(0);
-		ConstantBufferRegistry::Get(1)->Bind(1);
-		ConstantBufferRegistry::Get(3)->Bind(3);
-		ConstantBufferRegistry::Get(4)->Bind(4);
-		ConstantBufferRegistry::Get(6)->Bind(6);
-		ConstantBufferRegistry::Get(7)->Bind(7);
-
-		StructuredBufferRegistry::Get(100)->Bind(100);
-		StructuredBufferRegistry::Get(101)->Bind(101);
-		StructuredBufferRegistry::Get(102)->Bind(102);
-	}
-
-	void Renderer::EndInternal()
-	{
-		RenderCommand::EndAnnotation();
-		myRendererData->currentGPUCommands->commandCollections.pop();
-	}
-
-	void Renderer::BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass)
-	{
-		const std::string tag = "Begin " + aRenderPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		RenderCommand::BeginAnnotation(aRenderPass.debugName);
-
-		myRendererData->currentPass = aRenderPass;
-		myRendererData->currentPassCamera = aCamera;
-
-		if (aShouldClear && myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Clear();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Bind();
-		}
-
-		RenderCommand::SetCullState(aRenderPass.cullState);
-		RenderCommand::SetDepthState(aRenderPass.depthState);
-
-		UpdatePerPassBuffers();
-		std::vector<SubmitCommand> culledCommands = CullRenderCommands(GetCurrentGPUCommandCollection().submitCommands, aCamera);
-		CollectSubmitCommands(culledCommands, GetCurrentGPUCommandCollection().instancedCommands, aIsShadowPass, aIsAOPass);
-	}
-
-	void Renderer::EndPassInternal()
-	{
-		const std::string tag = "End " + myRendererData->currentPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Unbind();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Unbind();
-		}
-
-		RenderCommand::EndAnnotation();
-
-		myRendererData->currentPass = {};
-		myRendererData->currentPassCamera = nullptr;
-		GetCurrentGPUCommandCollection().instancedCommands.clear();
-	}
-
-	void Renderer::BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear)
-	{
-		const std::string tag = "Begin " + renderPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		RenderCommand::BeginAnnotation(renderPass.debugName);
-
-		myRendererData->currentPass = renderPass;
-		myRendererData->currentPassCamera = camera;
-
-		if (shouldClear && myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Clear();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Bind();
-		}
-
-		RenderCommand::SetCullState(renderPass.cullState);
-		RenderCommand::SetDepthState(renderPass.depthState);
-
-		UpdatePerPassBuffers();
-	}
-
-	void Renderer::EndFullscreenPassInternal()
-	{
-		const std::string tag = "End " + myRendererData->currentPass.debugName;
-		VT_PROFILE_SCOPE(tag.c_str());
-
-		if (myRendererData->currentPass.overrideShader)
-		{
-			myRendererData->currentPass.overrideShader->Unbind();
-		}
-
-		if (myRendererData->currentPass.framebuffer)
-		{
-			myRendererData->currentPass.framebuffer->Unbind();
-		}
-
-		RenderCommand::EndAnnotation();
-		myRendererData->currentPass = {};
-		myRendererData->currentPassCamera = nullptr;
-	}
-
-	void Renderer::CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass, bool isAOPass)
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto& allCmds = passCommands;
-		const auto& currentPass = myRendererData->currentPass;
-
-		for (size_t i = 0; i < allCmds.size(); ++i)
-		{
-			Ref<SubMaterial> currentMaterial = allCmds[i].material;
-			if (!currentMaterial)
-			{
-				currentMaterial = GetDefaultData().defaultMaterial;
-			}
-
-			if ((shadowPass && !allCmds[i].castShadows) || (isAOPass && !allCmds[i].castAO))
-			{
-				continue;
-			}
-
-			if (auto it = std::find(currentPass.excludedShaderHashes.begin(), currentPass.excludedShaderHashes.end(), currentMaterial->GetShaderHash()); it != currentPass.excludedShaderHashes.end())
-			{
-				continue;
-			}
-
-			if (currentPass.exclusiveShaderHash != 0 && currentPass.exclusiveShaderHash != currentMaterial->GetShaderHash())
-			{
-				continue;
-			}
-
-			if (i == 0 || instanceCommands.empty() || instanceCommands.back().subMesh != allCmds.at(i).subMesh || instanceCommands.back().material != allCmds.at(i).material)
-			{
-				auto& instancedCmd = instanceCommands.emplace_back();
-				instancedCmd.subMesh = allCmds.at(i).subMesh;
-				instancedCmd.boneTransforms = allCmds.at(i).boneTransforms;
-				instancedCmd.mesh = allCmds.at(i).mesh;
-				instancedCmd.material = currentMaterial;
-				instancedCmd.objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
-				instancedCmd.count = 1;
-			}
-			else
-			{
-				instanceCommands.back().objectDataIds.emplace_back(allCmds.at(i).objectBufferId);
-				instanceCommands.back().count++;
-			}
-		}
-	}
-
-	void Renderer::DispatchBillboardsWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([shader = aShader]()
-			{
-				DispatchBillboardsWithShaderInternal(shader);
-			});
-
-#else
-		DispatchBillboardsWithShaderInternal(aShader);
-#endif
-	}
-
-	void Renderer::DispatchDecalsWithShader(Ref<Shader> aShader)
-	{
-		VT_PROFILE_FUNCTION();
-
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([aShader]()
-			{
-				DispatchDecalsWithShaderInternal(aShader);
-			});
-
-#else
-		DispatchDecalsWithShaderInternal(aShader);
-#endif
-	}
-
-	void Renderer::DispatchDecalsWithShaderInternal(Ref<Shader> aShader)
-	{
-		RenderCommand::SetDepthState(DepthState::Read);
-		RenderCommand::SetTopology(Topology::TriangleList);
-
-		aShader->Bind();
-		myRendererData->decalData.cubeMesh->GetVertexBuffer()->Bind();
-		myRendererData->decalData.cubeMesh->GetIndexBuffer()->Bind();
-
-		for (const auto& cmd : GetCurrentGPUCommandCollection().decalCommands)
-		{
-			// Update object buffer
-			{
-				ObjectData* mapped = ConstantBufferRegistry::Get(1)->Map<ObjectData>();
-
-				mapped->transform = cmd.transform;
-				mapped->id = cmd.id;
-
-				ConstantBufferRegistry::Get(1)->Unmap();
-			}
-
-			cmd.material->GetSubMaterials().at(0)->Bind(false);
-
-			RenderCommand::DrawIndexed((uint32_t)myRendererData->decalData.cubeMesh->GetIndexCount(), 0, 0);
-		}
-	}
-
-	void Renderer::DispatchTextInternal()
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto& textData = myRendererData->textData;
-
-		CollectTextCommands();
-
-		if (textData.indexCount == 0)
-		{
-			return;
-		}
-
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
-		textData.vertexBuffer->SetData(textData.vertexBufferBase, dataSize);
-
-		textData.shader->Bind();
-
-		std::vector<Ref<Image2D>> imagesToBind{ textData.textureSlotIndex };
-		for (uint32_t i = 0; i < textData.textureSlotIndex; i++)
-		{
-			imagesToBind[i] = textData.textureSlots[i]->GetImage();
-		}
-
-		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, imagesToBind, 0);
-		RenderCommand::SetTopology(Topology::TriangleList);
-
-		textData.vertexBuffer->Bind();
-		textData.indexBuffer->Bind();
-
-		RenderCommand::DrawIndexed(textData.indexCount, 0, 0);
-
-		textData.indexCount = 0;
-		textData.vertexBufferPtr = textData.vertexBufferBase;
-		textData.textureSlotIndex = 0;
-
-		textData.shader->Unbind();
-	}
-
-	void Renderer::DispatchSpritesWithMaterial(Ref<Material> aMaterial)
-	{
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([aMaterial]()
-			{
-				DispatchSpritesWithMaterialInternal(aMaterial);
-			});
-
-#else
-		DispatchSpritesWithMaterialInternal(aMaterial);
-#endif
-	}
-
-	void Renderer::ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer)
-	{
-		VT_PROFILE_FUNCTION();
-
-		aFramebuffer->Clear();
-
-		const uint32_t width = aFramebuffer->GetWidth();
-		const uint32_t height = aFramebuffer->GetHeight();
-
-		const uint32_t threadCountXY = 32;
-
-		const uint32_t groupX = width / threadCountXY + 1;
-		const uint32_t groupY = height / threadCountXY + 1;
-
-		aComputePipeline->Execute(groupX, groupY, 1);
-		aComputePipeline->Clear();
-	}
-
-	void Renderer::ExecuteLightCulling(Ref<Image2D> depthMap)
-	{
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([depthMap]()
-			{
-				StructuredBufferRegistry::Get(102)->Bind(102);
-
-				const uint32_t width = myRendererData->currentPass.framebuffer->GetWidth();
-				const uint32_t height = myRendererData->currentPass.framebuffer->GetHeight();
-
-				const uint32_t xTiles = (width + (width % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
-				const uint32_t yTiles = (height + (height % Volt::LightCullingData::TILE_SIZE)) / Volt::LightCullingData::TILE_SIZE;
-
-				auto& cullData = myRendererData->lightCullData;
-				auto& sceneData = myRendererData->sceneData;
-
-				if (cullData.lastWidth != width ||
-					cullData.lastHeight != height)
-				{
-					cullData.lightCullingIndexBuffer->Resize(xTiles * yTiles * RendererData::MAX_POINT_LIGHTS);
-					cullData.lastWidth = width;
-					cullData.lastHeight = height;
-				}
-
-				sceneData.tileCount.x = xTiles;
-				sceneData.tileCount.y = yTiles;
-
-				cullData.lightCullingIndexBuffer->BindUAV(10, ShaderStage::Compute);
-
-				cullData.lightCullingPipeline->SetImage(depthMap, 0);
-				cullData.lightCullingPipeline->Execute(xTiles, yTiles, 1);
-				cullData.lightCullingPipeline->Clear();
-
-				myRendererData->currentPass.framebuffer->Bind();
-			});
-	}
-
-	void Renderer::SyncAndWait()
-	{
-		auto immediateContext = GraphicsContext::GetImmediateContext();
-		auto deferredContext = GraphicsContext::GetDeferredContext();
-
-		std::unique_lock lk{ myRendererData->renderMutex };
-		myRendererData->syncVariable.wait(lk, []() { return !myRendererData->primaryBufferUsed; });
-
-		ID3D11CommandList*& commandList = myRendererData->currentGPUBuffer->GetAndReleaseCommandList();
-		VT_DX_CHECK(deferredContext->FinishCommandList(false, &commandList));
-
-		if (commandList)
-		{
-			immediateContext->ExecuteCommandList(commandList, false);
-		}
-
-		myRendererData->primaryBufferUsed = !myRendererData->primaryBufferUsed;
-		std::swap(myRendererData->currentCPUBuffer, myRendererData->currentGPUBuffer);
-		std::swap(myRendererData->currentCPUCommands, myRendererData->currentGPUCommands);
-		myRendererData->syncVariable.notify_one();
-	}
-
-	void Renderer::BindTexturesToStage(ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot)
-	{
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([stage, textures, startSlot]()
-			{
-				RenderCommand::BindTexturesToStage(stage, textures, startSlot);
-			});
-#else
-		RenderCommand::BindTexturesToStage(stage, textures, startSlot);
-#endif
-	}
-
-	void Renderer::ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count)
-	{
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([stage, startSlot, count]()
-			{
-				RenderCommand::ClearTexturesAtStage(stage, startSlot, count);
-			});
-#else
-		RenderCommand::ClearTexturesAtStage(stage, startSlot, count);
-#endif
-
-	}
-
-	void Renderer::DispatchLines()
-	{
-		VT_PROFILE_FUNCTION();
-
-		auto& lineData = myRendererData->lineData;
-		if (lineData.indexCount == 0)
-		{
-			return;
-		}
-
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(lineData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(lineData.vertexBufferBase));
-		lineData.vertexBuffer->SetData(lineData.vertexBufferBase, dataSize);
-
-		lineData.shader->Bind();
-		lineData.vertexBuffer->Bind();
-		lineData.indexBuffer->Bind();
-
-		RenderCommand::SetTopology(Topology::LineList);
-		RenderCommand::DrawIndexed(lineData.indexCount, 0, 0);
-
-		lineData.vertexBufferPtr = lineData.vertexBufferBase;
-		lineData.indexCount = 0;
-		lineData.shader->Unbind();
-	}
-
-	void Renderer::DispatchText()
-	{
-#ifdef VT_THREADED_RENDERING
-		auto currentCommandBuffer = myRendererData->currentCPUBuffer;
-		currentCommandBuffer->Submit([]()
-			{
-				DispatchTextInternal();
-			});
-#else
-		DispatchTextInternal();
-#endif
 	}
 }

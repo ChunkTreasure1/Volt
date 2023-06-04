@@ -1,0 +1,5 @@
+name: "JumpFloodInit"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Utility/FullscreenTriangle_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Outline/JumpFloodInit_ps.hlsl"

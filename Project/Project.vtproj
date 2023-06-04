@@ -1,6 +1,7 @@
 Project:
     Name: Project
-    AssetRegistry: Assets/AssetRegistry.vtreg
     AssetsPath: Assets
-    EnginePath: Engine
-    ShadersPath: Engine/Shaders
+    AudioBanksPath: Audio/Banks # Starts in the defined assets path
+    IconPath: ""
+    CursorPath: ""
+    StartScene: "Assets/Scenes/Levels/SC_LVL_LOGOS/SC_LVL_LOGOS.vtscene"

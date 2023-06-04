@@ -2,6 +2,7 @@
 #include "PhysicsShapes.h"
 
 #include "Volt/Asset/AssetManager.h"
+#include "Volt/Core/Application.h"
 
 #include "Volt/Components/Components.h"
 #include "Volt/Scene/Entity.h"
@@ -20,7 +21,8 @@ namespace Volt
 {
 	ColliderShape::ColliderShape(ColliderType type, Entity entity)
 		: myColliderType(type), myEntity(entity)
-	{}
+	{
+	}
 
 	void ColliderShape::Release()
 	{
@@ -32,7 +34,7 @@ namespace Volt
 		Ref<PhysicsMaterial> mat = material;
 		if (!mat)
 		{
-			mat = CreateRef<PhysicsMaterial>(); // This will create issues later
+			mat = CreateRef<PhysicsMaterial>(); //#TODO_Ivar: This will create issues later
 			mat->staticFriction = 0.6f;
 			mat->dynamicFriction = 0.6f;
 			mat->bounciness = 0.3f;
@@ -60,7 +62,6 @@ namespace Volt
 		}
 
 		component.added = true;
-		component.UpdateLast();
 
 		const gem::vec3 colliderSize = gem::abs(transform.scale * component.halfSize);
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
@@ -68,13 +69,15 @@ namespace Volt
 		myShape->setSimulationFilterData(actor.GetFilterData());
 		myShape->setQueryFilterData(actor.GetFilterData());
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.isTrigger);
+		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset * transform.scale, gem::vec3{ 0.f }));
 		myShape->userData = this;
 	}
 
 	BoxColliderShape::~BoxColliderShape()
-	{}
+	{
+	}
 
 	void BoxColliderShape::SetHalfSize(const gem::vec3& halfSize)
 	{
@@ -95,6 +98,7 @@ namespace Volt
 	void BoxColliderShape::SetTrigger(bool isTrigger) const
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
+		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
 
 		myEntity.GetComponent<BoxColliderComponent>().isTrigger = isTrigger;
@@ -124,7 +128,6 @@ namespace Volt
 		: ColliderShape(ColliderType::Sphere, entity)
 	{
 		component.added = true;
-		component.UpdateLast();
 
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
@@ -142,13 +145,15 @@ namespace Volt
 		myShape->setSimulationFilterData(actor.GetFilterData());
 		myShape->setQueryFilterData(actor.GetFilterData());
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.isTrigger);
+		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
 		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, gem::vec3{ 0.f }));
 		myShape->userData = this;
 	}
 
 	SphereColliderShape::~SphereColliderShape()
-	{}
+	{
+	}
 
 	void SphereColliderShape::SetRadius(float radius)
 	{
@@ -176,6 +181,7 @@ namespace Volt
 	void SphereColliderShape::SetTrigger(bool isTrigger) const
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
+		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
 
 		myEntity.GetComponent<SphereColliderComponent>().isTrigger = isTrigger;
@@ -199,7 +205,6 @@ namespace Volt
 		: ColliderShape(ColliderType::Capsule, entity)
 	{
 		component.added = true;
-		component.UpdateLast();
 
 		SetMaterial(nullptr); // #TODO: Implement actual materials
 
@@ -214,18 +219,21 @@ namespace Volt
 		const float heightScale = transform.scale.y;
 
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.radius * radiusScale, (component.height / 2.f) * heightScale);
+
 		myShape = physx::PxRigidActorExt::createExclusiveShape(actor.GetActor(), geometry, *myMaterial);
 		myShape->setSimulationFilterData(actor.GetFilterData());
 		myShape->setQueryFilterData(actor.GetFilterData());
 		myShape->setQueryFilterData(actor.GetFilterData());
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.isTrigger);
+		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, gem::vec3{ 0.f, gem::pi() / 2.f, 0.f }));
 		myShape->userData = this;
 	}
 
 	CapsuleColliderShape::~CapsuleColliderShape()
-	{}
+	{
+	}
 
 	void CapsuleColliderShape::SetHeight(float height)
 	{
@@ -269,13 +277,14 @@ namespace Volt
 
 	void CapsuleColliderShape::SetOffset(const gem::vec3& offset)
 	{
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, gem::quat{ gem::vec3{ 0.f } }));
 		myEntity.GetComponent<CapsuleColliderComponent>().offset = offset;
 	}
 
 	void CapsuleColliderShape::SetTrigger(bool isTrigger) const
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
+		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
 
 		myEntity.GetComponent<CapsuleColliderComponent>().isTrigger = isTrigger;
@@ -299,7 +308,6 @@ namespace Volt
 		: ColliderShape(ColliderType::ConvexMesh, entity)
 	{
 		component.added = true;
-		component.UpdateLast();
 
 		Ref<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.material);
 		SetMaterial(material);
@@ -334,6 +342,11 @@ namespace Volt
 			result = CookingFactory::CookMesh(component, false, meshColliderData);
 		}
 
+		if (!Application::Get().IsRuntime())
+		{
+			CookingFactory::GenerateDebugMesh(component, meshColliderData);
+		}
+
 		if (result == CookingResult::Success)
 		{
 			for (const auto& colliderData : meshColliderData)
@@ -343,7 +356,7 @@ namespace Volt
 
 				if (convexMesh)
 				{
-					physx::PxConvexMeshGeometry convexGeometry = physx::PxConvexMeshGeometry(convexMesh, physx::PxMeshScale(PhysXUtilities::ToPhysXVector(transform.scale)));
+					physx::PxConvexMeshGeometry convexGeometry = physx::PxConvexMeshGeometry(convexMesh, physx::PxMeshScale(PhysXUtilities::ToPhysXVector(entity.GetScale())));
 					convexGeometry.meshFlags = physx::PxConvexMeshGeometryFlag::eTIGHT_BOUNDS;
 
 					physx::PxShape* shape = PhysXInternal::GetPhysXSDK().createShape(convexGeometry, *myMaterial, true);
@@ -372,13 +385,16 @@ namespace Volt
 	}
 
 	ConvexMeshShape::~ConvexMeshShape()
-	{}
+	{
+	}
 
 	void ConvexMeshShape::SetOffset(const gem::vec3&)
-	{}
+	{
+	}
 
 	void ConvexMeshShape::SetTrigger(bool) const
-	{}
+	{
+	}
 
 	void ConvexMeshShape::SetFilterData(const physx::PxFilterData& filterData)
 	{
@@ -404,7 +420,6 @@ namespace Volt
 		: ColliderShape(ColliderType::TriangleMesh, entity)
 	{
 		component.added = true;
-		component.UpdateLast();
 
 		Ref<PhysicsMaterial> material = AssetManager::GetAsset<PhysicsMaterial>(component.material);
 		SetMaterial(material);
@@ -447,6 +462,11 @@ namespace Volt
 			}
 		}
 
+		if (!Application::Get().IsRuntime())
+		{
+			CookingFactory::GenerateDebugMesh(component, meshColliderData);
+		}
+
 		if (result == CookingResult::Success)
 		{
 			for (const auto& colliderData : meshColliderData)
@@ -456,7 +476,7 @@ namespace Volt
 
 				if (triangleMesh)
 				{
-					physx::PxTriangleMeshGeometry triangleGeometry = physx::PxTriangleMeshGeometry(triangleMesh, physx::PxMeshScale(PhysXUtilities::ToPhysXVector(transform.scale)));
+					physx::PxTriangleMeshGeometry triangleGeometry = physx::PxTriangleMeshGeometry(triangleMesh, physx::PxMeshScale(PhysXUtilities::ToPhysXVector(entity.GetScale())));
 
 					physx::PxShape* shape = PhysXInternal::GetPhysXSDK().createShape(triangleGeometry, *myMaterial, true);
 					shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true); // add collision complexity stuff
@@ -484,13 +504,16 @@ namespace Volt
 	}
 
 	TriangleMeshShape::~TriangleMeshShape()
-	{}
+	{
+	}
 
 	void TriangleMeshShape::SetOffset(const gem::vec3&)
-	{}
+	{
+	}
 
 	void TriangleMeshShape::SetTrigger(bool) const
-	{}
+	{
+	}
 
 	void TriangleMeshShape::SetFilterData(const physx::PxFilterData& filterData)
 	{

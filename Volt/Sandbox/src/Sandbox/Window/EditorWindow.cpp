@@ -1,12 +1,21 @@
 #include "sbpch.h"
 #include "EditorWindow.h"
 
-EditorWindow::EditorWindow(const std::string& title, bool dockSpace)
-	: myTitle(title), myHasDockSpace(dockSpace)
-{}
+EditorWindow::EditorWindow(const std::string& title, bool dockSpace, std::string id)
+	: myTitle(title + id), myHasDockSpace(dockSpace), myId(id)
+{
+}
 
 bool EditorWindow::Begin()
 {
+	if (!myIsOpen && myPreviousFrameOpen)
+	{
+		OnClose();
+		myPreviousFrameOpen = false;
+
+		return false;
+	}
+
 	if (!myIsOpen)
 	{
 		return false;
@@ -24,6 +33,7 @@ bool EditorWindow::Begin()
 		minSize = true;
 	}
 
+	myPreviousFrameOpen = myIsOpen;
 	ImGui::Begin(myTitle.c_str(), &myIsOpen, myWindowFlags);
 
 	if (minSize)
@@ -39,12 +49,16 @@ bool EditorWindow::Begin()
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID(myTitle.c_str());
-			myMainDockId = ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+			myMainDockId = ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
+
+			myWindowClass.ClassId = dockspace_id;
+			myWindowClass.DockingAllowUnclassed = false;
 		}
 	}
 
 	myIsFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 	myIsHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+	myIsDocked = ImGui::IsWindowDocked();
 
 	return true;
 }
@@ -57,16 +71,32 @@ void EditorWindow::End()
 void EditorWindow::Open()
 {
 	myIsOpen = true;
+	OnOpen();
 }
 
 void EditorWindow::Close()
 {
 	myIsOpen = false;
+	OnClose();
 }
 
 void EditorWindow::SetMinWindowSize(ImVec2 minSize)
 {
 	myMinSize = minSize;
+}
+
+void EditorWindow::Focus()
+{
+	auto window = ImGui::FindWindowByName(myTitle.c_str());
+	if (window)
+	{
+		ImGui::FocusWindow(window);
+	}
+}
+
+bool EditorWindow::IsDocked() const
+{
+	return myIsDocked;
 }
 
 void EditorWindow::ForceWindowDocked(ImGuiWindow* childWindow)
@@ -80,7 +110,7 @@ void EditorWindow::ForceWindowDocked(ImGuiWindow* childWindow)
 	{
 		myDockIds[childWindow->ID] = childWindow->DockNode->ParentNode->ID;
 	}
-		
+
 	if (!childWindow->DockIsActive && !ImGui::IsAnyMouseDown() && !childWindow->DockNode && !childWindow->DockNodeIsVisible)
 	{
 		if (!myDockIds[childWindow->ID])

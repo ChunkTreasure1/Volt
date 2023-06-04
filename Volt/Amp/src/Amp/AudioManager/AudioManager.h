@@ -14,7 +14,7 @@ namespace Amp
 		COLLISIONEXIT
 	};
 
-	class AudioManager 
+	class AudioManager
 	{
 	public:
 		//Engine Handling
@@ -25,18 +25,19 @@ namespace Amp
 		//Listener Handling
 		static bool InitListener(int ID);
 		static void Update(float aDeltaTime);
-		static void UpdateListener(ListenerData aListenerData);
+		static void UpdateListener(ListenerData& aListenerData);
 
 		//Event Handling
 		static EventInstance& CreateEventInstance(std::string aPath);
 		static bool PlayEvent(EventInstance& aEvent);
 		static bool RemoveEvent(EventInstance& aEvent);
 		static bool StopEvent(EventInstance& aEvent, FMOD_STUDIO_STOP_MODE aMode);
-		static void StopAll(const int aStopMode);
+		static void StopAllEvents(const int aStopMode);
 		static bool PauseEvent(EventInstance& aEvent);
 		static bool UnpauseEvent(EventInstance& aEvent);
 
 		static FMOD::Studio::EventDescription* FindEvent(const std::string&);
+		static std::vector<std::string> GetAllEventNames();
 
 		static bool PlayOneShot(const std::string& aPath);
 		static bool PlayOneShot(const std::string& aPath, EventData& aEventData);
@@ -48,6 +49,9 @@ namespace Amp
 		//Mixer Handling
 		static bool SetMasterVolume(float aVolPerct);
 		static bool SetMixerVolume(std::string aMixerPath, float aVolPerct);
+
+	private:
+		static bool EventNameSorter(std::string a, std::string b) { return a < b; }
 
 	private:
 		inline static AudioEngine myAudioEngine = AudioEngine();

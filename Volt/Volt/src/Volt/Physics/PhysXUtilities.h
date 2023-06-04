@@ -15,6 +15,7 @@ namespace Volt
 
 		const physx::PxVec3& ToPhysXVector(const gem::vec3& vec);
 		const physx::PxVec4& ToPhysXVector(const gem::vec4& vec);
+		const physx::PxExtendedVec3 ToPhysXVectorExtended(const gem::vec3& vec);
 
 		physx::PxQuat ToPhysXQuat(const gem::quat& quat);
 		physx::PxFilterData CreateFilterDataFromLayer(uint32_t layerId, CollisionDetectionType collisionDetection);
@@ -22,6 +23,7 @@ namespace Volt
 		gem::mat4 FromPhysXTransform(const physx::PxTransform& transform);
 		gem::mat4 FromPhysXMatrix(const physx::PxMat44& matrix);
 		gem::vec3 FromPhysXVector(const physx::PxVec3& vector);
+		gem::vec3 FromPhysXVector(const physx::PxExtendedVec3& vector);
 		gem::vec4 FromPhysXVector(const physx::PxVec4& vector);
 		gem::quat FromPhysXQuat(const physx::PxQuat& quat);
 

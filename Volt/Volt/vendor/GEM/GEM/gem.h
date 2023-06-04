@@ -4,6 +4,7 @@
 #include "exponential.h"
 #include "geometric.h"
 #include "trigonometric.h"
+#include "intersect.h"
 #include "type_ptr.h"
 #include "epsilon.h"
 

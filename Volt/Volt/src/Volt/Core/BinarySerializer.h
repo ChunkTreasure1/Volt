@@ -12,7 +12,7 @@ namespace Volt
 
 		template<typename T>
 		void Serialize(const T& value);
-		
+
 		void Serialize(const void* data, const size_t size);
 
 		void WriteToFile();

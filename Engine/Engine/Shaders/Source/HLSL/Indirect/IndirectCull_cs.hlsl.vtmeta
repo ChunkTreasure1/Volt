@@ -1,0 +1,4 @@
+Handle: 12324957684931316812
+Path: Engine/Shaders/Source/HLSL/Indirect/IndirectCull_cs.hlsl
+Dependencies:
+  []

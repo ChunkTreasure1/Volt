@@ -8,42 +8,52 @@
 
 namespace Volt
 {
+	class Material;
 	class VertexBuffer;
 	class IndexBuffer;
-	class Material;
 
 	class Mesh : public Asset
 	{
 	public:
 		Mesh() = default;
-		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material>& aMaterial);
-		~Mesh() override = default;
+		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial);
+		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial, const std::vector<SubMesh>& subMeshes);
+		~Mesh() override;
 
 		void Construct();
+		const std::vector<EncodedVertex> GetEncodedVertices() const;
 
 		inline const std::vector<SubMesh>& GetSubMeshes() const { return mySubMeshes; }
+		inline std::vector<SubMesh>& GetSubMeshesMutable() { return mySubMeshes; }
 		inline const Ref<Material>& GetMaterial() const { return myMaterial; }
 		inline void SetMaterial(Ref<Material> material) { myMaterial = material; }
 
 		inline const size_t GetVertexCount() const { return myVertices.size(); }
 		inline const size_t GetIndexCount() const { return myIndices.size(); }
 
-		inline const Ref<VertexBuffer>& GetVertexBuffer() const { return myVertexBuffer; }
-		inline const Ref<IndexBuffer>& GetIndexBuffer() const { return myIndexBuffer; }
+		inline const std::vector<Vertex>& GetVertices() { return myVertices; }
+		inline const std::vector<uint32_t>& GetIndices() { return myIndices; }
+
+		inline const BoundingSphere& GetBoundingSphere() const { return myBoundingSphere; }
+		inline const BoundingBox& GetBoundingBox() const { return myBoundingBox; }
+
+		inline const uint32_t GetVertexStartOffset() const { return myVertexStartOffset; }
+		inline const uint32_t GetIndexStartOffset() const { return myIndexStartOffset; }
+
+		inline const std::map<uint32_t, BoundingSphere> GetSubMeshBoundingSpheres() const { return mySubMeshBoundingSpheres; }
+
+		inline Ref<VertexBuffer> GetVertexBuffer() const { return myVertexBuffer; }
+		inline Ref<IndexBuffer> GetIndexBuffer() const { return myIndexBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
 
-		const std::vector<Vertex>& GetVertices() { return myVertices; }
-		const std::vector<uint32_t>& GetIndices() { return myIndices; }
-
-		const BoundingSphere& GetBoundingSphere() const { return myBoundingSphere; }
-		const BoundingBox& GetBoundingBox() const { return myBoundingBox; }
-
 	private:
 		friend class FbxImporter;
 		friend class MeshCompiler;
+		friend class MeshExporterUtilities;
 		friend class VTMeshImporter;
+		friend class GLTFImporter;
 
 		std::vector<SubMesh> mySubMeshes;
 
@@ -56,5 +66,11 @@ namespace Volt
 
 		BoundingSphere myBoundingSphere;
 		BoundingBox myBoundingBox;
+
+		uint32_t myIndexStartOffset = 0;
+		uint32_t myVertexStartOffset = 0;
+
+		gem::vec3 myAverageScale{ 1.f };
+		std::map<uint32_t, BoundingSphere> mySubMeshBoundingSpheres;
 	};
 }

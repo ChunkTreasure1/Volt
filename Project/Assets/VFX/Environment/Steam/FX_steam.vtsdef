@@ -1,0 +1,8 @@
+name: FX_steam
+internal: false
+paths:
+  - Assets\VFX\Environment\Steam\FX_steam_ps.hlsl
+  - Assets\VFX\Environment\Steam\FX_steam_gs.hlsl
+  - Engine/Shaders/Source/HLSL/2D/Particle_vs.hlsl
+inputTextures:
+  []

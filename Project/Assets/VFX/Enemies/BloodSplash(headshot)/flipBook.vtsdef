@@ -1,0 +1,8 @@
+name: flipBook
+internal: false
+paths:
+  - Assets\VFX\Enemies\BloodSplash(headshot)\flipBook_ps.hlsl
+  - Assets\VFX\Enemies\billboardTest\billboard_test_vs.hlsl
+inputTextures:
+  - shaderName: flipBook_Texture
+    editorName: flipBook_texture

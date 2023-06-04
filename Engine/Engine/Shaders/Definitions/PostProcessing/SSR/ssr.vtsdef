@@ -1,0 +1,4 @@
+name: "SSR"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/SSR/SSR_cs.hlsl"

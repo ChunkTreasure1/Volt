@@ -1,7 +1,7 @@
 name: "PreDepth"
 internal: true
 paths:
-  - "Engine/Shaders/HLSL/Deferred/GBufferGeneration_vs.hlsl"
-  - "Engine/Shaders/HLSL/Utility/PreDepth_ps.hlsl"
+  - "Engine/Shaders/Source/HLSL/Utility/PreDepth_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Utility/PreDepth_ps.hlsl"
 inputTextures:
   []

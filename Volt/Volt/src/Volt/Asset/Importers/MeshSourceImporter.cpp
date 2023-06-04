@@ -5,14 +5,14 @@
 #include "Volt/Log/Log.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Project/ProjectManager.h"
+#include "Volt/Asset/AssetManager.h"
 
 namespace Volt
 {
 	bool MeshSourceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Mesh>();
-		const auto filePath = ProjectManager::GetDirectory() / path;
+		const auto filePath = AssetManager::GetContextPath(path) / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -38,7 +38,8 @@ namespace Volt
 
 	}
 	void MeshSourceImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{}
+	{
+	}
 	bool MeshSourceImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
 	{
 		return false;

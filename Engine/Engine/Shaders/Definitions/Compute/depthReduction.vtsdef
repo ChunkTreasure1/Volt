@@ -1,0 +1,4 @@
+name: "DepthReduction"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Compute/DepthReduction_cs.hlsl"

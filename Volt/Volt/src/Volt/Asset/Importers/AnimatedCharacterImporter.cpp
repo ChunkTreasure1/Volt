@@ -19,7 +19,7 @@ namespace Volt
 		asset = CreateRef<AnimatedCharacter>();
 		Ref<AnimatedCharacter> character = std::reinterpret_pointer_cast<AnimatedCharacter>(asset);
 
-		const auto filePath = ProjectManager::GetDirectory() / path;
+		const auto filePath = AssetManager::GetContextPath(path) / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -81,10 +81,31 @@ namespace Volt
 				AssetHandle animHandle;
 				VT_DESERIALIZE_PROPERTY(animation, animHandle, animNode, AssetHandle(0));
 
+				for (const auto& event : animNode["animationEvents"])
+				{
+					auto& newEvent = character->myAnimationEvents[index].emplace_back();
+					VT_DESERIALIZE_PROPERTY(Name, newEvent.name, event, std::string(""));
+					VT_DESERIALIZE_PROPERTY(Frame, newEvent.frame, event, 0);
+				}
+
 				if (index != (uint32_t)-1 && animHandle != Asset::Null())
 				{
 					character->myAnimations[index] = AssetManager::GetAsset<Animation>(animHandle);
 				}
+			}
+		}
+
+		YAML::Node jointAttachmentNode = characterNode["jointAttachments"];
+		if (jointAttachmentNode)
+		{
+			for (const auto& attachmentNode : jointAttachmentNode)
+			{
+				auto& newAttachment = character->myJointAttachments.emplace_back();
+				VT_DESERIALIZE_PROPERTY(name, newAttachment.name, attachmentNode, std::string("Empty"));
+				VT_DESERIALIZE_PROPERTY(jointIndex, newAttachment.jointIndex, attachmentNode, -1);
+				VT_DESERIALIZE_PROPERTY(id, newAttachment.id, attachmentNode, UUID(0));
+				VT_DESERIALIZE_PROPERTY(positionOffset, newAttachment.positionOffset, attachmentNode, gem::vec3{ 0.f });
+				VT_DESERIALIZE_PROPERTY(rotationOffset, newAttachment.rotationOffset, attachmentNode, gem::quat(1.f, 0.f, 0.f, 0.f));
 			}
 		}
 
@@ -109,6 +130,32 @@ namespace Volt
 				out << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(index, index, out);
 				VT_SERIALIZE_PROPERTY(animation, (anim ? anim->handle : Asset::Null()), out);
+
+				if (character->myAnimationEvents.contains(index))
+				{
+					out << YAML::Key << "animationEvents" << YAML::BeginSeq;
+					for (const auto& event : character->myAnimationEvents.at(index))
+					{
+						out << YAML::BeginMap;
+						VT_SERIALIZE_PROPERTY(Name, event.name, out);
+						VT_SERIALIZE_PROPERTY(Frame, event.frame, out);
+						out << YAML::EndMap;
+					}
+					out << YAML::EndSeq;
+				}
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
+			out << YAML::Key << "jointAttachments" << YAML::BeginSeq;
+			for (const auto& jntAttachment : character->myJointAttachments)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(name, jntAttachment.name, out);
+				VT_SERIALIZE_PROPERTY(jointIndex, jntAttachment.jointIndex, out);
+				VT_SERIALIZE_PROPERTY(id, jntAttachment.id, out);
+				VT_SERIALIZE_PROPERTY(positionOffset, jntAttachment.positionOffset, out);
+				VT_SERIALIZE_PROPERTY(rotationOffset, jntAttachment.rotationOffset, out);
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
@@ -117,12 +164,13 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
+		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}
 	void AnimatedCharacterImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{}
+	{
+	}
 	bool AnimatedCharacterImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
 	{
 		return false;

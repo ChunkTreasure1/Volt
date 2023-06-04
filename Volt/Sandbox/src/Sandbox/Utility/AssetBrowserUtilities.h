@@ -5,6 +5,11 @@
 #include <imgui.h>
 #include <functional>
 
+namespace Volt
+{
+	class Mesh;
+}
+
 namespace AssetBrowser
 {
 	class AssetItem;
@@ -14,7 +19,7 @@ namespace AssetBrowser
 		static const float GetBrowserItemPadding();
 
 		static const ImVec2 GetBrowserItemSize(const float thumbnailSize);
-		static const ImVec2 GetBrowserItemMinPos();
+		static const ImVec2 GetBrowserItemPos();
 
 		static const ImVec4 GetBrowserItemHoveredColor();
 		static const ImVec4 GetBrowserItemClickedColor();
@@ -23,10 +28,15 @@ namespace AssetBrowser
 
 		static const ImVec4 GetBackgroundColor(bool isHovered, bool isSeleted);
 
+		static std::vector<Ref<Volt::Mesh>> GetMeshesExport() { return meshesToExport; };
+		static void ResetMeshExport() { meshesToExport.clear(); };
 		static bool RenderAssetTypePopup(AssetItem* item);
 
 	private:
 		AssetBrowserUtilities() = delete;
+		static void SetMeshExport(AssetItem* item);
+
+		inline static std::vector<Ref<Volt::Mesh>> meshesToExport;
 
 		static const std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>>& GetPopupRenderFunctions();
 	};

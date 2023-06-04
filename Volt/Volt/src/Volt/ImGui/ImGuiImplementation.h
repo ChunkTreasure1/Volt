@@ -17,14 +17,13 @@ namespace Volt
 		void Begin();
 		void End();
 
-		inline static ImFont* GetHeaderFont() { return myHeaderFont; }
-
 		static Scope<ImGuiImplementation> Create();
 
 	private:
+		void InitializeVulkanData();
+		void ReleaseVulkanData();
+
 		ImFont* myFont = nullptr;
 		GLFWwindow* myWindowPtr = nullptr;
-
-		inline static ImFont* myHeaderFont = nullptr;
 	};
 }

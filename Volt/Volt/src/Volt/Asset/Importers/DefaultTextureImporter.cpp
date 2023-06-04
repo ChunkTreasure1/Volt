@@ -1,10 +1,6 @@
 #include "vtpch.h"
 #include "DefaultTextureImporter.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Utility/DirectXUtils.h"
-
-#include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include <stb/stb_image.h>

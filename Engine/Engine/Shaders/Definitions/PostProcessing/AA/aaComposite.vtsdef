@@ -1,0 +1,4 @@
+name: "AAComposite"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/AA/AAComposite_cs.hlsl"

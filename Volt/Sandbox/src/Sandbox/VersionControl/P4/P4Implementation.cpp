@@ -37,22 +37,26 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 {
 	Error e;
 
-	if (!m_isConnected)
-	{
-		m_client.Final(&e);
-		if (e.Test()) 
-		{ 
-			StrBuf msg; 
-			e.Fmt(&msg); 
-			VT_CORE_ERROR("VCS: {0}", msg.Text());
-			return false;
-		}
-	}
-
 	m_client.SetPort(server.c_str());
 	m_client.SetUser(user.c_str());
 	m_client.SetPassword(password.c_str());
 	m_client.SetProtocol("tag", "");
+
+	if (!m_isConnected)
+	{
+		m_client.Final(&e);
+		if (e.Test())
+		{
+			StrBuf msg;
+			e.Fmt(&msg);
+			VT_CORE_ERROR("VCS: {0}", msg.Text());
+			return false;
+		}
+	}
+	else
+	{
+		DisconnectImpl();
+	}
 
 	m_client.Init(&e);
 	if (e.Test())
@@ -62,7 +66,7 @@ bool P4Implementation::ConnectImpl(const std::string& server, const std::string&
 		VT_CORE_ERROR("VCS: {0}", msg.Text());
 		return false;
 	}
-	
+
 	m_isConnected = true;
 	return true;
 }
@@ -71,7 +75,7 @@ void P4Implementation::AddImpl(const std::filesystem::path& file)
 {
 	std::string stringPath = file.string();
 	char* argv[] = { stringPath.data() };
-	
+
 	m_client.SetArgv(1, argv);
 	m_client.Run("add", &m_defaultUser);
 }

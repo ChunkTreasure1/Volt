@@ -1,0 +1,4 @@
+name: "PreethamSky"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Environment/PreethamSky_cs.hlsl"

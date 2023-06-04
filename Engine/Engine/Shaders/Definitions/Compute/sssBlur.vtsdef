@@ -1,0 +1,4 @@
+name: "SSSBlur"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Compute/SSSBlur_cs.hlsl"

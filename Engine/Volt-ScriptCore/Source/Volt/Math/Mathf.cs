@@ -1,65 +1,143 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Remoting.Messaging;
 
 namespace Volt
 {
     public static class Mathf
     {
-        public static float Sqrt(float f)
+
+        public const float Epsilon = 0.00001f;
+        public const float PI = (float)Math.PI;
+        public const float TwoPI = (float)(Math.PI * 2.0);
+
+        public const float Deg2Rad = PI / 180.0f;
+        public const float Rad2Deg = 180.0f / PI;
+
+        public static float Degrees(float value)
         {
-            return (float)Math.Sqrt(f);
+            return value * Rad2Deg;
         }
 
-        public static float Radians(float degrees)
+        public static float Radians(float value)
         {
-            return (degrees * 0.01745329251994329576923690768489f);
+            return value * Deg2Rad;
         }
 
-        public static float Degrees(float radians)
+        public static Vector2 Degrees(Vector2 value)
         {
-            return (radians * 57.295779513082320876798154814105f);
+            return value * Rad2Deg;
         }
 
-        public static Vector3 Radians(Vector3 degrees)
+        public static Vector2 Radians(Vector2 value)
         {
-            return new Vector3(Radians(degrees.x), Radians(degrees.y), Radians(degrees.z));
+            return value * Deg2Rad;
         }
 
-        public static Vector3 Degrees(Vector3 radians)
+        public static Vector3 Degrees(Vector3 value)
         {
-            return new Vector3(Degrees(radians.x), Degrees(radians.y), Degrees(radians.z));
+            return value * Rad2Deg;
         }
 
-        public static float Acos(float f)
+        public static Vector3 Radians(Vector3 value)
         {
-            return (float)Math.Acos(f);
+            return value * Deg2Rad;
         }
 
-        public static float Cos(float v)
+        public static Vector4 Degrees(Vector4 value)
         {
-            return (float)Math.Cos((double)v);
+            return value * Rad2Deg;
         }
 
-        public static float Sin(float v)
+        public static Vector4 Radians(Vector4 value)
         {
-            return (float)Math.Sin((double)v);
+            return value * Deg2Rad;
         }
 
-        public static Vector3 Cos(Vector3 v)
+        public static float Sin(float value) => (float)Math.Sin(value);
+        public static float Cos(float value) => (float)Math.Cos(value);
+        public static float Acos(float value) => (float)Math.Acos(value);
+
+        public static float Clamp(float value, float min, float max)
         {
-            return new Vector3(Cos(v.x), Cos(v.y), Cos(v.z));
-        }
-        public static Vector3 Sin(Vector3 v)
-        {
-            return new Vector3(Sin(v.x), Sin(v.y), Sin(v.z));
+            if (value < min)
+                return min;
+            return value > max ? max : value;
         }
 
-        public static float Clamp(float v, float min, float max)
+        public static float Asin(float x) => (float)Math.Asin(x);
+        public static float Atan(float x) => (float)Math.Atan(x);
+        public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);
+
+        public static float Min(float v0, float v1) => v0 < v1 ? v0 : v1;
+        public static float Max(float v0, float v1) => v0 > v1 ? v0 : v1;
+
+        public static float Sqrt(float value) => (float)Math.Sqrt(value);
+        public static float InverseSqrt(float value) => 1f / (float)Math.Sqrt(value);
+
+        public static float Abs(float value) => Math.Abs(value);
+        public static int Abs(int value) => Math.Abs(value);
+
+
+        public static Vector3 Abs(Vector3 value)
         {
-            return (float)Math.Min(Math.Max(v, min), max);
+            return new Vector3(Math.Abs(value.x), Math.Abs(value.y), Math.Abs(value.z));
+        }
+
+        public static float Lerp(float p1, float p2, float t) => Interpolate.Linear(p1, p2, t);
+        public static float BounceOut(float p1, float p2, float t, float duration) => Interpolate.BounceOut(t, p1, p2, duration);
+        public static float BounceIn(float p1, float p2, float t, float duration) 
+        {
+            return p2 - BounceOut(p1, p2, duration - t, duration);
+        }
+
+        public static float BounceLerp(float a, float b, float t)
+        {
+            const float nl = 7.5625f;
+            const float dl = 2.75f;
+
+            if (t < 1.0f / dl)
+            {
+                return Lerp(a, b, nl * t * t);
+            }
+
+            if (t < 2.0f / dl)
+            {
+                t -= 1.5f / dl;
+                return Lerp(a, b, nl * t * t + 0.75f);
+            }
+
+            if (t < 2.5f / dl)
+            {
+                t -= 2.25f / dl;
+                return Lerp(a, b, nl * t * t + 0.9375f);
+            }
+
+            t -= 2.625f / dl;
+            return Lerp(a, b, nl * t * t + 0.984375f);
+        }
+
+        public static Vector3 Lerp(Vector3 p1, Vector3 p2, float t) => Interpolate.Linear(p1, p2, t);
+
+        public static float Floor(float value) => (float)Math.Floor(value);
+        public static float Ceiling(float value) => (float)Math.Ceiling(value);
+
+        // not the same as a%b
+        public static float Modulo(float a, float b) => a - b * (float)Math.Floor(a / b);
+        public static float Distance(float p1, float p2) => Abs(p1 - p2);
+
+        public static float Remap(float value, float fromMin, float fromMax, float toMin, float toMax)
+        {
+            float fromAbs = value - fromMin;
+            float fromMaxAbs = fromMax - fromMin;
+
+            float normal = fromAbs / fromMaxAbs;
+
+            float toMaxAbs = toMax - toMin;
+            float toAbs = toMaxAbs * normal;
+
+            float to = toAbs + toMin;
+
+            return to;
         }
     }
 }

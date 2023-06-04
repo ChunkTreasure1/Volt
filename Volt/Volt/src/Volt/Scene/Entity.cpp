@@ -4,23 +4,29 @@
 
 #include "Volt/Components/Components.h"
 #include "Volt/Components/PhysicsComponents.h"
-#include "Volt/Scripting/Script.h"
 
 #include "Volt/Physics/Physics.h"
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Core/Profiling.h"
 
+#include "Volt/Scripting/Mono/MonoScriptEngine.h"
+#include "Volt/Scripting/Mono/MonoScriptInstance.h"
+#include "Volt/Scripting/Mono/MonoScriptClass.h"
+
 #include <GraphKey/Graph.h>
+#include "Volt/Net/SceneInteraction/NetActorComponent.h"
 
 namespace Volt
 {
 	Entity::Entity()
 		: myId(Wire::NullID)
-	{}
+	{
+	}
 
 	Entity::Entity(Wire::EntityId id, Scene* scene)
 		: myId(id), myScene(scene)
-	{}
+	{
+	}
 
 	Entity::Entity(const Entity& entity)
 	{
@@ -28,60 +34,7 @@ namespace Volt
 	}
 
 	Entity::~Entity()
-	{}
-
-	bool Entity::HasScript(const std::string& scriptName)
 	{
-		return ScriptEngine::IsScriptRegistered(ScriptRegistry::GetGUIDFromName(scriptName), myId);
-	}
-
-	void Entity::AddScript(const std::string& scriptName)
-	{
-		if (ScriptEngine::IsScriptRegistered(ScriptRegistry::GetGUIDFromName(scriptName), myId))
-		{
-			VT_CORE_WARN("Script {0} already registered to entity {1}! Skipping!", scriptName, myId);
-			return;
-		}
-
-		if (!HasComponent<ScriptComponent>())
-		{
-			AddComponent<ScriptComponent>();
-		}
-
-		auto& scriptComp = GetComponent<ScriptComponent>();
-
-		Ref<Script> scriptInstance = ScriptRegistry::Create(scriptName, Entity{ myId, myScene });
-		scriptComp.scripts.emplace_back(scriptInstance->GetGUID());
-		ScriptEngine::RegisterToEntity(scriptInstance, myId);
-
-		scriptInstance->OnAwake();
-	}
-
-	void Entity::RemoveScript(const std::string& scriptName)
-	{
-		RemoveScript(ScriptRegistry::GetGUIDFromName(scriptName));
-	}
-
-	void Entity::RemoveScript(WireGUID scriptGUID)
-	{
-		if (!ScriptEngine::IsScriptRegistered(scriptGUID, myId))
-		{
-			VT_CORE_WARN("Script {0} has not been registered to entity {1}! Skipping!", ScriptRegistry::GetNameFromGUID(scriptGUID), myId);
-			return;
-		}
-
-		if (!HasComponent<ScriptComponent>())
-		{
-			return;
-		}
-
-		auto& scriptComp = GetComponent<ScriptComponent>();
-		auto it = std::find(scriptComp.scripts.begin(), scriptComp.scripts.end(), scriptGUID);
-		scriptComp.scripts.erase(it);
-
-		Ref<Script> scriptInstance = ScriptEngine::GetScript(myId, scriptGUID);
-		scriptInstance->OnDetach();
-		ScriptEngine::UnregisterFromEntity(scriptGUID, myId);
 	}
 
 	const std::string Entity::GetTag()
@@ -104,9 +57,9 @@ namespace Volt
 
 	const gem::vec3 Entity::GetLocalPosition() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.position;
 		}
 
@@ -115,9 +68,9 @@ namespace Volt
 
 	const gem::quat Entity::GetLocalRotation() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.rotation;
 		}
 
@@ -126,9 +79,9 @@ namespace Volt
 
 	const gem::vec3 Entity::GetLocalScale() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.scale;
 		}
 
@@ -153,9 +106,87 @@ namespace Volt
 		return trs.scale;
 	}
 
+	const bool Entity::IsVisible() const
+	{
+		if (!HasComponent<TransformComponent>())
+		{
+			return false;
+		}
+
+		return GetComponent<TransformComponent>().visible;
+	}
+
+	void Entity::SetVisible(bool state)
+	{
+		if (!HasComponent<TransformComponent>())
+		{
+			return;
+		}
+
+		bool lastVisibleState = GetComponent<TransformComponent>().visible;
+		GetComponent<TransformComponent>().visible = state;
+
+		for (auto child : GetChilden())
+		{
+			child.SetVisible(state);
+		}
+
+		if (lastVisibleState == state)
+		{
+			return;
+		}
+
+		if (MonoScriptEngine::IsRunning() && HasComponent<MonoScriptComponent>())
+		{
+			const auto& monoComp = GetComponent<MonoScriptComponent>();
+			for (const auto& scriptId : monoComp.scriptIds)
+			{
+				if (state)
+				{
+					MonoScriptEngine::OnEnableInstance(scriptId);
+				}
+				else
+				{
+					MonoScriptEngine::OnDisableInstance(scriptId);
+				}
+			}
+		}
+	}
+
+	void Entity::SetLocked(bool state)
+	{
+		if (!HasComponent<TransformComponent>())
+		{
+			return;
+		}
+
+		bool lastLockedState = GetComponent<TransformComponent>().locked;
+		GetComponent<TransformComponent>().locked = state;
+
+		for (auto child : GetChilden())
+		{
+			child.SetLocked(state);
+		}
+	}
+
+	const uint32_t Entity::GetLayerId() const
+	{
+		if (!HasComponent<EntityDataComponent>())
+		{
+			return 0;
+		}
+
+		return GetComponent<EntityDataComponent>().layerId;
+	}
+
 	const std::vector<Volt::Entity> Entity::GetChilden() const
 	{
 		std::vector<Volt::Entity> children;
+
+		if (!HasComponent<Volt::RelationshipComponent>())
+		{
+			return children;
+		}
 
 		for (auto& id : GetComponent<Volt::RelationshipComponent>().Children)
 		{
@@ -165,9 +196,68 @@ namespace Volt
 		return children;
 	}
 
-	const Volt::Entity Entity::GetParent() const
+	const Volt::Entity Entity::GetParent()
 	{
+		if (!HasComponent<RelationshipComponent>())
+		{
+			AddComponent<RelationshipComponent>();
+		}
+
 		return Volt::Entity{ GetComponent<RelationshipComponent>().Parent, myScene };
+	}
+
+	void Entity::ResetParent()
+	{
+		if (!HasComponent<RelationshipComponent>())
+		{
+			return;
+		}
+
+		auto parent = GetParent();
+		parent.RemoveChild(*this);
+		GetComponent<RelationshipComponent>().Parent = Wire::NullID;
+	}
+
+	void Entity::ResetChildren()
+	{
+		auto& children = GetComponent<RelationshipComponent>().Children;
+
+		for (const auto& child : children)
+		{
+			Entity childEnt{ child, myScene };
+			if (childEnt.GetParent().GetId() == myId)
+			{
+				childEnt.GetComponent<RelationshipComponent>().Parent = Wire::NullID;
+			}
+		}
+
+		children.clear();
+	}
+
+	void Entity::RemoveChild(Volt::Entity entity)
+	{
+		if (!HasComponent<RelationshipComponent>())
+		{
+			return;
+		}
+
+		auto& relComp = GetComponent<RelationshipComponent>();
+		for (uint32_t index = 0; const auto & id : relComp.Children)
+		{
+			if (id == entity.GetId())
+			{
+				auto childEnt = Volt::Entity{ id, myScene };
+				if (childEnt.HasComponent<RelationshipComponent>())
+				{
+					// Do this by hand to not get recursive calls
+					childEnt.GetComponent<RelationshipComponent>().Parent = Wire::NullID;
+				}
+
+				relComp.Children.erase(relComp.Children.begin() + index);
+				break;
+			}
+			index++;
+		}
 	}
 
 	const Ref<PhysicsActor> Entity::GetPhysicsActor() const
@@ -175,63 +265,109 @@ namespace Volt
 		return Physics::GetScene()->GetActor(*this);
 	}
 
+	void Entity::UpdatePhysicsTranslation(bool updateThis)
+	{
+		if (updateThis && myScene->IsPlaying() && (HasComponent<RigidbodyComponent>() || HasComponent<CharacterControllerComponent>()))
+		{
+			auto actor = Physics::GetScene()->GetActor(*this);
+			if (actor)
+			{
+				const gem::vec3 tempPosition = GetPosition();
+				actor->SetPosition(tempPosition, true, false);
+			}
+			else
+			{
+				auto cc = Physics::GetScene()->GetControllerActor(*this);
+				cc->SetFootPosition(GetPosition());
+			}
+		}
+	}
+
+	void Entity::UpdatePhysicsRotation(bool updateThis)
+	{
+		if (updateThis && myScene->IsPlaying() && HasComponent<RigidbodyComponent>())
+		{
+			auto actor = Physics::GetScene()->GetActor(*this);
+			if (actor)
+			{
+				const gem::quat tempRotation = GetRotation();
+				actor->SetRotation(tempRotation, true, false);
+			}
+		}
+	}
+
 	void Entity::SetPosition(const gem::vec3& position, bool updatePhysics)
 	{
-		VT_PROFILE_FUNCTION();
-
 		Volt::Entity parent = GetParent();
-		gem::mat4 parentTransform = 1.f;
+		Scene::TQS parentTransform{};
 
 		if (parent)
 		{
-			parentTransform = myScene->GetWorldSpaceTransform(parent);
+			parentTransform = myScene->GetWorldSpaceTRS(parent);
 		}
 
-		const gem::mat4 newWorldTransform = gem::translate(gem::mat4{ 1.f }, position);
-		const gem::mat4 transform = gem::inverse(parentTransform) * newWorldTransform;
+		// Calculate new local position
+		const gem::vec3 translatedPoint = position - parentTransform.position;
+		const gem::vec3 invertedScale = 1.f / parentTransform.scale;
+		const gem::vec3 rotatedPoint = gem::conjugate(parentTransform.rotation) * translatedPoint;
 
-		gem::vec3 t, r, s;
-		gem::decompose(transform, t, r, s);
+		const gem::vec3 localPoint = rotatedPoint * invertedScale;
+		SetLocalPosition(localPoint, updatePhysics);
+	}
 
-		SetLocalPosition(t, updatePhysics);
+	void Entity::SetRotation(const gem::quat& rotation, bool updatePhysics)
+	{
+		Volt::Entity parent = GetParent();
+		Scene::TQS parentTransform{};
+
+		if (parent)
+		{
+			parentTransform = myScene->GetWorldSpaceTRS(parent);
+		}
+
+		const gem::quat localRotation = gem::conjugate(parentTransform.rotation) * rotation;
+		SetLocalRotation(localRotation, updatePhysics);
+	}
+
+	void Entity::SetScale(const gem::vec3& scale)
+	{
+		Volt::Entity parent = GetParent();
+		Scene::TQS parentTransform{};
+
+		if (parent)
+		{
+			parentTransform = myScene->GetWorldSpaceTRS(parent);
+		}
+
+		const gem::vec3 inverseScale = 1.f / parentTransform.scale;
+		const gem::vec3 localScale = scale * inverseScale;
+
+		SetLocalScale(localScale);
 	}
 
 	void Entity::SetLocalPosition(const gem::vec3& position, bool updatePhysics)
 	{
-		myScene->GetRegistry().GetComponent<TransformComponent>(myId).position = position;
-		if (myScene->GetRegistry().HasComponent<RigidbodyComponent>(myId) && Physics::GetScene() && updatePhysics)
-		{
-			auto actor = Physics::GetScene()->GetActor(*this);
-			if (actor)
-			{
-				actor->SetPosition(GetPosition());
-			}
-		}
+		GetComponent<TransformComponent>().position = position;
+		UpdatePhysicsTranslation(updatePhysics);
 	}
 
-	void Entity::SetLocalRotation(const gem::quat& rotation)
+	void Entity::SetLocalRotation(const gem::quat& rotation, bool updatePhysics)
 	{
-		myScene->GetRegistry().GetComponent<TransformComponent>(myId).rotation = rotation;
-		if (myScene->GetRegistry().HasComponent<RigidbodyComponent>(myId))
-		{
-			auto actor = Physics::GetScene()->GetActor(*this);
-			if (actor)
-			{
-				actor->SetRotation(GetRotation());
-			}
-		}
+		auto& transComp = GetComponent<TransformComponent>();
+		transComp.rotation = rotation;
+		UpdatePhysicsRotation(updatePhysics);
 	}
 
 	void Entity::SetLocalScale(const gem::vec3& scale)
 	{
-		myScene->GetRegistry().GetComponent<TransformComponent>(myId).scale = scale;
+		GetComponent<TransformComponent>().scale = scale;
 	}
 
 	const gem::mat4 Entity::GetLocalTransform() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.GetTransform();
 		}
 
@@ -245,9 +381,9 @@ namespace Volt
 
 	const gem::vec3 Entity::GetLocalForward() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.GetForward();
 		}
 
@@ -256,9 +392,9 @@ namespace Volt
 
 	const gem::vec3 Entity::GetLocalRight() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.GetRight();
 		}
 
@@ -267,9 +403,9 @@ namespace Volt
 
 	const gem::vec3 Entity::GetLocalUp() const
 	{
-		if (myScene->GetRegistry().HasComponent<TransformComponent>(myId))
+		if (HasComponent<TransformComponent>())
 		{
-			const auto& comp = myScene->GetRegistry().GetComponent<TransformComponent>(myId);
+			const auto& comp = GetComponent<TransformComponent>();
 			return comp.GetUp();
 		}
 
@@ -298,7 +434,7 @@ namespace Volt
 		return *this;
 	}
 
-	void Entity::Copy(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool aShouldReset)
+	void Entity::Copy(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool aShouldReset)
 	{
 		// Remove all existing components (except excluded)
 		if (aShouldReset)
@@ -333,25 +469,104 @@ namespace Volt
 
 				VisualScriptingComponent* srcComp = (VisualScriptingComponent*)pool->GetComponent(aSrcEntity);
 				VisualScriptingComponent* otherComponent = (VisualScriptingComponent*)aTargetRegistry.GetComponentPtr(guid, aTargetEntity);
-			
+
 				if (srcComp->graph)
 				{
 					otherComponent->graph = CreateRef<GraphKey::Graph>();
 					GraphKey::Graph::Copy(srcComp->graph, otherComponent->graph);
 				}
+
+				continue;
 			}
 
-			if (guid == ScriptComponent::comp_guid && pool->HasComponent(aSrcEntity))
+			if (guid == MonoScriptComponent::comp_guid && pool->HasComponent(aSrcEntity))
 			{
 				if (!aTargetRegistry.HasComponent(guid, aTargetEntity))
 				{
 					aTargetRegistry.AddComponent(guid, aTargetEntity);
 				}
 
-				ScriptComponent* otherComponent = (ScriptComponent*)aTargetRegistry.GetComponentPtr(guid, aTargetEntity);
-				ScriptComponent* scriptComp = (ScriptComponent*)pool->GetComponent(aSrcEntity);
+				MonoScriptComponent* otherComponent = (MonoScriptComponent*)aTargetRegistry.GetComponentPtr(guid, aTargetEntity);
+				MonoScriptComponent* scriptComp = (MonoScriptComponent*)pool->GetComponent(aSrcEntity);
 
-				otherComponent->scripts = scriptComp->scripts;
+				otherComponent->scriptNames = scriptComp->scriptNames;
+
+				for (uint32_t i = 0; i < scriptComp->scriptIds.size(); i++)
+				{
+					otherComponent->scriptIds.emplace_back(UUID());
+
+					if (Volt::MonoScriptEngine::EntityClassExists(scriptComp->scriptNames[i]))
+					{
+						const auto& classFields = Volt::MonoScriptEngine::GetScriptClass(scriptComp->scriptNames[i])->GetFields();
+
+						if (!scrScriptFieldCache.GetCache().contains(scriptComp->scriptIds[i]))
+						{
+							continue;
+						}
+						
+						auto& fromEntityFields = scrScriptFieldCache.GetCache().at(scriptComp->scriptIds[i]);
+						auto& toEntityFields = targetScriptFieldCache.GetCache()[otherComponent->scriptIds[i]];
+
+						for (const auto& [name, field] : classFields)
+						{
+							if (fromEntityFields.contains(name))
+							{
+								auto& entField = fromEntityFields.at(name);
+
+								toEntityFields[name] = CreateRef<MonoScriptFieldInstance>();
+								toEntityFields.at(name)->field.enumName = fromEntityFields.at(name)->field.enumName;
+
+								switch (field.type)
+								{
+									case MonoFieldType::Bool: toEntityFields[name]->SetValue(*entField->data.As<bool>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::String: toEntityFields[name]->SetValue(*entField->data.As<const char>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Int: toEntityFields[name]->SetValue(*entField->data.As<int32_t>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::UInt: toEntityFields[name]->SetValue(*entField->data.As<uint32_t>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Short: toEntityFields[name]->SetValue(*entField->data.As<int16_t>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::UShort: toEntityFields[name]->SetValue(*entField->data.As<uint16_t>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Char: toEntityFields[name]->SetValue(*entField->data.As<int8_t>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::UChar: toEntityFields[name]->SetValue(*entField->data.As<uint8_t>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Float: toEntityFields[name]->SetValue(*entField->data.As<float>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Double: toEntityFields[name]->SetValue(*entField->data.As<double>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Vector2: toEntityFields[name]->SetValue(*entField->data.As<gem::vec2>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Vector3: toEntityFields[name]->SetValue(*entField->data.As<gem::vec3>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Vector4: toEntityFields[name]->SetValue(*entField->data.As<gem::vec4>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Quaternion: toEntityFields[name]->SetValue(*entField->data.As<gem::quat>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Entity: toEntityFields[name]->SetValue(*entField->data.As<Wire::EntityId>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Animation:
+									case MonoFieldType::Prefab:
+									case MonoFieldType::Scene:
+									case MonoFieldType::Mesh:
+									case MonoFieldType::Font:
+									case MonoFieldType::Material:
+									case MonoFieldType::Texture:
+									case MonoFieldType::PostProcessingMaterial:
+									case MonoFieldType::Asset: toEntityFields[name]->SetValue(*entField->data.As<Volt::AssetHandle>(), entField->data.GetSize(), field.type); break;
+
+									case MonoFieldType::Color: toEntityFields[name]->SetValue(*entField->data.As<gem::vec4>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Enum: toEntityFields[name]->SetValue(*entField->data.As<uint32_t>(), entField->data.GetSize(), field.type); break;
+								}
+							}
+						}
+					}
+				}
+
+				continue;
+			}
+
+			// Handle collider components
+			if (guid == RigidbodyComponent::comp_guid ||
+				guid == BoxColliderComponent::comp_guid ||
+				guid == SphereColliderComponent::comp_guid ||
+				guid == CapsuleColliderComponent::comp_guid)
+			{
+				CopyPhysicsComponents(guid, aSrcRegistry, aTargetRegistry, aSrcEntity, aTargetEntity);
 				continue;
 			}
 
@@ -368,65 +583,62 @@ namespace Volt
 				const auto& compInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
 				for (const auto& prop : compInfo.properties)
 				{
-					if (prop.serializable)
+					switch (prop.type)
 					{
-						switch (prop.type)
+						case Wire::ComponentRegistry::PropertyType::Bool: (*(bool*)&otherComponent[prop.offset]) = (*(bool*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Int: (*(int32_t*)&otherComponent[prop.offset]) = (*(int32_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::UInt: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Short: (*(int16_t*)&otherComponent[prop.offset]) = (*(int16_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::UShort: (*(uint16_t*)&otherComponent[prop.offset]) = (*(uint16_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Char: (*(int8_t*)&otherComponent[prop.offset]) = (*(int8_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::UChar: (*(uint8_t*)&otherComponent[prop.offset]) = (*(uint8_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Float: (*(float*)&otherComponent[prop.offset]) = (*(float*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Double: (*(double*)&otherComponent[prop.offset]) = (*(double*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector2: (*(gem::vec2*)&otherComponent[prop.offset]) = (*(gem::vec2*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Quaternion: (*(gem::quat*)&otherComponent[prop.offset]) = (*(gem::quat*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::String: (*(std::string*)&otherComponent[prop.offset]) = (*(std::string*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Int64: (*(int64_t*)&otherComponent[prop.offset]) = (*(int64_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::UInt64: (*(uint64_t*)&otherComponent[prop.offset]) = (*(uint64_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(AssetHandle*)&otherComponent[prop.offset]) = (*(AssetHandle*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Color3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Color4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Folder: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Path: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::EntityId: (*(Wire::EntityId*)&otherComponent[prop.offset]) = (*(Wire::EntityId*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::GUID: (*(WireGUID*)&otherComponent[prop.offset]) = (*(WireGUID*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Enum: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector:
 						{
-							case Wire::ComponentRegistry::PropertyType::Bool: (*(bool*)&otherComponent[prop.offset]) = (*(bool*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Int: (*(int32_t*)&otherComponent[prop.offset]) = (*(int32_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::UInt: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Short: (*(int16_t*)&otherComponent[prop.offset]) = (*(int16_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::UShort: (*(uint16_t*)&otherComponent[prop.offset]) = (*(uint16_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Char: (*(int8_t*)&otherComponent[prop.offset]) = (*(int8_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::UChar: (*(uint8_t*)&otherComponent[prop.offset]) = (*(uint8_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Float: (*(float*)&otherComponent[prop.offset]) = (*(float*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Double: (*(double*)&otherComponent[prop.offset]) = (*(double*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Vector2: (*(gem::vec2*)&otherComponent[prop.offset]) = (*(gem::vec2*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Vector3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Vector4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Quaternion: (*(gem::quat*)&otherComponent[prop.offset]) = (*(gem::quat*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::String: (*(std::string*)&otherComponent[prop.offset]) = (*(std::string*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Int64: (*(int64_t*)&otherComponent[prop.offset]) = (*(int64_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::UInt64: (*(uint64_t*)&otherComponent[prop.offset]) = (*(uint64_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(AssetHandle*)&otherComponent[prop.offset]) = (*(AssetHandle*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Color3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Color4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Folder: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Path: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::EntityId: (*(Wire::EntityId*)&otherComponent[prop.offset]) = (*(Wire::EntityId*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::GUID: (*(WireGUID*)&otherComponent[prop.offset]) = (*(WireGUID*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Enum: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;
-							case Wire::ComponentRegistry::PropertyType::Vector:
+							switch (prop.vectorType)
 							{
-								switch (prop.vectorType)
-								{
-									case Wire::ComponentRegistry::PropertyType::Bool: (*(std::vector<bool>*) & otherComponent[prop.offset]) = (*(std::vector<bool>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Int: (*(std::vector<int32_t>*) & otherComponent[prop.offset]) = (*(std::vector<int32_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::UInt: (*(std::vector<uint32_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint32_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Short: (*(std::vector<int16_t>*) & otherComponent[prop.offset]) = (*(std::vector<int16_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::UShort: (*(std::vector<uint16_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint16_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Char: (*(std::vector<int8_t>*) & otherComponent[prop.offset]) = (*(std::vector<int8_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::UChar: (*(std::vector<uint8_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint8_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Float: (*(std::vector<float>*) & otherComponent[prop.offset]) = (*(std::vector<float>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Double: (*(std::vector<double>*) & otherComponent[prop.offset]) = (*(std::vector<double>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Vector2: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Vector3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Vector4: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Quaternion: (*(std::vector<gem::quat>*) & otherComponent[prop.offset]) = (*(std::vector<gem::quat>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::String: (*(std::vector<std::string>*) & otherComponent[prop.offset]) = (*(std::vector<std::string>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Int64: (*(std::vector<int64_t>*) & otherComponent[prop.offset]) = (*(std::vector<int64_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::UInt64: (*(std::vector<uint64_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint64_t>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(std::vector<AssetHandle>*) & otherComponent[prop.offset]) = (*(std::vector<AssetHandle>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Color4: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Color3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Folder: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::EntityId: (*(std::vector<Wire::EntityId>*) & otherComponent[prop.offset]) = (*(std::vector<Wire::EntityId>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::GUID: (*(std::vector<WireGUID>*) & otherComponent[prop.offset]) = (*(std::vector<WireGUID>*) & thisComponent[prop.offset]); break;
-									case Wire::ComponentRegistry::PropertyType::Enum: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;
-								}
-
-								break;
+								case Wire::ComponentRegistry::PropertyType::Bool: (*(std::vector<bool>*) & otherComponent[prop.offset]) = (*(std::vector<bool>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Int: (*(std::vector<int32_t>*) & otherComponent[prop.offset]) = (*(std::vector<int32_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::UInt: (*(std::vector<uint32_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint32_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Short: (*(std::vector<int16_t>*) & otherComponent[prop.offset]) = (*(std::vector<int16_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::UShort: (*(std::vector<uint16_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint16_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Char: (*(std::vector<int8_t>*) & otherComponent[prop.offset]) = (*(std::vector<int8_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::UChar: (*(std::vector<uint8_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint8_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Float: (*(std::vector<float>*) & otherComponent[prop.offset]) = (*(std::vector<float>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Double: (*(std::vector<double>*) & otherComponent[prop.offset]) = (*(std::vector<double>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Vector2: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Vector3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Vector4: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Quaternion: (*(std::vector<gem::quat>*) & otherComponent[prop.offset]) = (*(std::vector<gem::quat>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::String: (*(std::vector<std::string>*) & otherComponent[prop.offset]) = (*(std::vector<std::string>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Int64: (*(std::vector<int64_t>*) & otherComponent[prop.offset]) = (*(std::vector<int64_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::UInt64: (*(std::vector<uint64_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint64_t>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(std::vector<AssetHandle>*) & otherComponent[prop.offset]) = (*(std::vector<AssetHandle>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Color4: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Color3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Folder: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::EntityId: (*(std::vector<Wire::EntityId>*) & otherComponent[prop.offset]) = (*(std::vector<Wire::EntityId>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::GUID: (*(std::vector<WireGUID>*) & otherComponent[prop.offset]) = (*(std::vector<WireGUID>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Enum: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;
 							}
+
+							break;
 						}
 					}
 				}
@@ -434,7 +646,7 @@ namespace Volt
 		}
 	}
 
-	Wire::EntityId Entity::Duplicate(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity)
+	Wire::EntityId Entity::Duplicate(Wire::Registry& aRegistry, MonoScriptFieldCache& scriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool shouldReset)
 	{
 		Wire::EntityId parent = Wire::NullID;
 
@@ -444,7 +656,7 @@ namespace Volt
 			parent = relComp.Parent;
 		}
 
-		Wire::EntityId newEnt = DuplicateInternal(aRegistry, aSrcEntity, parent);
+		Wire::EntityId newEnt = DuplicateInternal(aRegistry, scriptFieldCache, aSrcEntity, parent, aTargetEntity);
 
 		if (parent != Wire::NullID)
 		{
@@ -455,12 +667,145 @@ namespace Volt
 		return newEnt;
 	}
 
-	Wire::EntityId Entity::DuplicateInternal(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aParent)
+	Wire::EntityId Entity::Duplicate(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool shouldReset)
 	{
-		Wire::EntityId newEnt = aRegistry.CreateEntity();
+		Wire::EntityId newEnt = DuplicateInternal(aSrcRegistry, aTargetRegistry, scrScriptFieldCache, targetScriptFieldCache, aSrcEntity, Wire::NullID, aTargetEntity);
+		return newEnt;
+	}
+
+	void Entity::CopyPhysicsComponents(const WireGUID& guid, Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity)
+	{
+		if (guid == RigidbodyComponent::comp_guid)
+		{
+			if (!aSrcRegistry.HasComponent<RigidbodyComponent>(aSrcEntity))
+			{
+				return;
+			}
+
+			const auto& srcComp = aSrcRegistry.GetComponent<RigidbodyComponent>(aSrcEntity);
+
+			if (!aTargetRegistry.HasComponent<RigidbodyComponent>(aTargetEntity))
+			{
+				aTargetRegistry.AddComponent<RigidbodyComponent>(aTargetEntity, srcComp.bodyType, srcComp.layerId, srcComp.mass, srcComp.linearDrag, srcComp.lockFlags, srcComp.angularDrag, srcComp.disableGravity, srcComp.isKinematic, srcComp.collisionType);
+			}
+			else
+			{
+				auto& targetComp = aTargetRegistry.GetComponent<RigidbodyComponent>(aTargetEntity);
+				targetComp.bodyType = srcComp.bodyType;
+				targetComp.layerId = srcComp.layerId;
+				targetComp.mass = srcComp.mass;
+				targetComp.linearDrag = srcComp.linearDrag;
+				targetComp.lockFlags = srcComp.lockFlags;
+				targetComp.angularDrag = srcComp.angularDrag;
+				targetComp.disableGravity = srcComp.disableGravity;
+				targetComp.isKinematic = srcComp.isKinematic;
+			}
+		}
+		else if (guid == BoxColliderComponent::comp_guid)
+		{
+			if (!aSrcRegistry.HasComponent<BoxColliderComponent>(aSrcEntity))
+			{
+				return;
+			}
+
+			const auto& srcComp = aSrcRegistry.GetComponent<BoxColliderComponent>(aSrcEntity);
+
+			if (!aTargetRegistry.HasComponent<BoxColliderComponent>(aTargetEntity))
+			{
+				aTargetRegistry.AddComponent<BoxColliderComponent>(aTargetEntity, srcComp.halfSize, srcComp.offset, srcComp.isTrigger, srcComp.material);
+			}
+			else
+			{
+				auto& targetComp = aTargetRegistry.GetComponent<BoxColliderComponent>(aTargetEntity);
+				targetComp.halfSize = srcComp.halfSize;
+				targetComp.offset = srcComp.offset;
+				targetComp.isTrigger = srcComp.isTrigger;
+				targetComp.material = srcComp.material;
+			}
+		}
+		else if (guid == SphereColliderComponent::comp_guid)
+		{
+			if (!aSrcRegistry.HasComponent<SphereColliderComponent>(aSrcEntity))
+			{
+				return;
+			}
+
+			const auto& srcComp = aSrcRegistry.GetComponent<SphereColliderComponent>(aSrcEntity);
+			if (!aTargetRegistry.HasComponent<SphereColliderComponent>(aTargetEntity))
+			{
+				aTargetRegistry.AddComponent<SphereColliderComponent>(aTargetEntity, srcComp.radius, srcComp.offset, srcComp.isTrigger, srcComp.material);
+			}
+			else
+			{
+				auto& targetComp = aTargetRegistry.GetComponent<SphereColliderComponent>(aTargetEntity);
+				targetComp.radius = srcComp.radius;
+				targetComp.offset = srcComp.offset;
+				targetComp.isTrigger = srcComp.isTrigger;
+				targetComp.material = srcComp.material;
+			}
+		}
+		else if (guid == CapsuleColliderComponent::comp_guid)
+		{
+			if (!aSrcRegistry.HasComponent<CapsuleColliderComponent>(aSrcEntity))
+			{
+				return;
+			}
+
+			const auto& srcComp = aSrcRegistry.GetComponent<CapsuleColliderComponent>(aSrcEntity);
+			if (!aTargetRegistry.HasComponent<CapsuleColliderComponent>(aTargetEntity))
+			{
+				aTargetRegistry.AddComponent<CapsuleColliderComponent>(aTargetEntity, srcComp.radius, srcComp.height, srcComp.offset, srcComp.isTrigger, srcComp.material);
+			}
+			else
+			{
+				auto& targetComp = aTargetRegistry.GetComponent<CapsuleColliderComponent>(aTargetEntity);
+				targetComp.radius = srcComp.radius;
+				targetComp.height = srcComp.height;
+				targetComp.offset = srcComp.offset;
+				targetComp.isTrigger = srcComp.isTrigger;
+				targetComp.material = srcComp.material;
+			}
+		}
+		else if (guid == MeshColliderComponent::comp_guid)
+		{
+			if (!aSrcRegistry.HasComponent<MeshColliderComponent>(aSrcEntity))
+			{
+				return;
+			}
+
+			const auto& srcComp = aSrcRegistry.GetComponent<MeshColliderComponent>(aSrcEntity);
+			if (!aTargetRegistry.HasComponent<MeshColliderComponent>(aTargetEntity))
+			{
+				aTargetRegistry.AddComponent<MeshColliderComponent>(aTargetEntity, srcComp.colliderMesh, srcComp.isConvex, srcComp.isTrigger, srcComp.material, srcComp.subMeshIndex);
+			}
+			else
+			{
+				auto& targetComp = aTargetRegistry.GetComponent<MeshColliderComponent>(aTargetEntity);
+				targetComp.colliderMesh = srcComp.colliderMesh;
+				targetComp.isConvex = srcComp.isConvex;
+				targetComp.isTrigger = srcComp.isTrigger;
+				targetComp.material = srcComp.material;
+				targetComp.subMeshIndex = srcComp.subMeshIndex;
+			}
+		}
+	}
+
+	Wire::EntityId Entity::DuplicateInternal(Wire::Registry& aRegistry, MonoScriptFieldCache& scriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aParent, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool shouldReset)
+	{
+		Wire::EntityId newEnt = (aTargetEntity != Wire::NullID) ? aRegistry.AddEntity(aTargetEntity) : aRegistry.CreateEntity();
 		aRegistry.AddComponent<RelationshipComponent>(newEnt);
 
-		Copy(aRegistry, aRegistry, aSrcEntity, newEnt, { Wire::ComponentRegistry::GetRegistryDataFromName("RelationshipComponent").guid });
+		if (aExcludedComponents.empty())
+		{
+			aExcludedComponents.emplace_back(RelationshipComponent::comp_guid);
+		}
+
+		Copy(aRegistry, aRegistry, scriptFieldCache, scriptFieldCache, aSrcEntity, newEnt, aExcludedComponents, shouldReset);
+
+		if (aRegistry.HasComponent<NetActorComponent>(newEnt))
+		{
+			aRegistry.GetComponent<NetActorComponent>(newEnt).repId = Nexus::RandRepID();
+		}
 
 		if (aRegistry.HasComponent<RelationshipComponent>(aSrcEntity))
 		{
@@ -469,10 +814,40 @@ namespace Volt
 
 			for (const auto& child : relComp.Children)
 			{
-				newChildren.emplace_back(DuplicateInternal(aRegistry, child, newEnt));
+				newChildren.emplace_back(DuplicateInternal(aRegistry, scriptFieldCache, child, newEnt, Wire::NullID, aExcludedComponents, shouldReset));
 			}
 
 			auto& newRelComp = aRegistry.GetComponent<RelationshipComponent>(newEnt);
+			newRelComp.Children = newChildren;
+			newRelComp.Parent = aParent;
+		}
+
+		return newEnt;
+	}
+
+	Wire::EntityId Entity::DuplicateInternal(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aParent, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents, bool shouldReset)
+	{
+		Wire::EntityId newEnt = (aTargetEntity != Wire::NullID) ? aTargetRegistry.AddEntity(aTargetEntity) : aTargetRegistry.CreateEntity();
+		aTargetRegistry.AddComponent<RelationshipComponent>(newEnt);
+
+		if (aExcludedComponents.empty())
+		{
+			aExcludedComponents.emplace_back(RelationshipComponent::comp_guid);
+		}
+
+		Copy(aSrcRegistry, aTargetRegistry, scrScriptFieldCache, targetScriptFieldCache, aSrcEntity, newEnt, aExcludedComponents, shouldReset);
+
+		if (aSrcRegistry.HasComponent<RelationshipComponent>(aSrcEntity))
+		{
+			auto& relComp = aSrcRegistry.GetComponent<RelationshipComponent>(aSrcEntity);
+			std::vector<Wire::EntityId> newChildren;
+
+			for (const auto& child : relComp.Children)
+			{
+				newChildren.emplace_back(DuplicateInternal(aSrcRegistry, aTargetRegistry, scrScriptFieldCache, targetScriptFieldCache, child, newEnt, Wire::NullID, aExcludedComponents, shouldReset));
+			}
+
+			auto& newRelComp = aTargetRegistry.GetComponent<RelationshipComponent>(newEnt);
 			newRelComp.Children = newChildren;
 			newRelComp.Parent = aParent;
 		}

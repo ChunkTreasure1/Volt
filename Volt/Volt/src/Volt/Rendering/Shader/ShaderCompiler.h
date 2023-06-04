@@ -1,22 +1,50 @@
 #pragma once
 
-#include "Volt/Rendering/Shader/ShaderCommon.h"
+#include "Volt/Rendering/Shader/Shader.h"
 
-#include <wrl.h>
+#include <vulkan/vulkan.h>
 
-struct ID3D11DeviceChild;
-struct ID3D10Blob;
+struct IDxcCompiler3;
+struct IDxcUtils;
 
-using namespace Microsoft::WRL;
+namespace shaderc
+{
+	class Compiler;
+	class CompileOptions;
+}
 
 namespace Volt
 {
 	class ShaderCompiler
 	{
 	public:
-		static bool TryCompile(const std::vector<std::filesystem::path>& aPaths, std::unordered_map<ShaderStage, ComPtr<ID3D10Blob>>& outCode);
+		struct ShaderStageData
+		{
+			Shader::Language language;
+			std::filesystem::path filepath;
+			std::string source;
+		};
+
+		using ShaderSourceMap = std::unordered_map<VkShaderStageFlagBits, ShaderStageData>;
+		using ShaderDataMap = std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>;
+
+		static bool TryCompile(ShaderDataMap& outShaderData, const std::vector<std::filesystem::path>& shaderFiles);
 
 	private:
-		ShaderCompiler() = delete;
+		struct DXCInstances
+		{
+			inline static IDxcCompiler3* compiler = nullptr;
+			inline static IDxcUtils* utils = nullptr;
+		};
+		
+		static void LoadShaderFromFiles(ShaderSourceMap& shaderSources, const std::vector<std::filesystem::path>& shaderFiles);
+		static const std::vector<Shader::Language> GetLanguages(const std::vector<std::filesystem::path>& paths);
+
+		static bool CompileAll(const ShaderSourceMap& shaderSources, const std::vector<std::filesystem::path>& shaderFiles, ShaderDataMap& outShaderData);
+		static bool CompileGLSL(const VkShaderStageFlagBits stage, const std::string& source, const std::filesystem::path filepath, std::vector<uint32_t>& outShaderData);
+		static bool CompileHLSL(const VkShaderStageFlagBits stage, const std::string& source, const std::filesystem::path filepath, std::vector<uint32_t>& outShaderData);
+
+		static bool PreprocessGLSL(const VkShaderStageFlagBits stage, const std::filesystem::path& filepath, std::string& outSource, shaderc::Compiler& compiler, const shaderc::CompileOptions& compileOptions);
+		static bool PreprocessHLSL(const VkShaderStageFlagBits stage, const std::filesystem::path& filepath, std::string& outSource);
 	};
 }

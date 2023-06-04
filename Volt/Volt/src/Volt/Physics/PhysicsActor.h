@@ -2,7 +2,10 @@
 
 #include "Volt/Scene/Entity.h"
 #include "Volt/Components/PhysicsComponents.h"
+
 #include "Volt/Physics/PhysicsEnums.h"
+#include "Volt/Physics/PhysicsActorBase.h"
+
 
 #include <PhysX/PxPhysics.h>
 #include <PhysX/PxFiltering.h>
@@ -10,7 +13,7 @@
 namespace Volt
 {
 	class ColliderShape;
-	class PhysicsActor
+	class PhysicsActor : public PhysicsActorBase
 	{
 	public:
 		PhysicsActor(Entity entity);
@@ -18,13 +21,13 @@ namespace Volt
 
 		void SetLinearDrag(float drag) const;
 		void SetAngularDrag(float drag) const;
-		
+
 		void SetGravityDisabled(bool disabled) const;
 		void SetMass(float mass);
-		
+
 		void SetKinematic(bool isKinematic);
-		void SetSimulationData(uint32_t layerId);
-		
+		void SetSimulationData(uint32_t layerId) override;
+
 		void SetKinematicTarget(const gem::vec3& position, const gem::quat& rotation);
 		void SetLinearVelocity(const gem::vec3& velocity);
 		void SetAngularVelocity(const gem::vec3& velocity);
@@ -42,20 +45,18 @@ namespace Volt
 		const gem::vec3 GetKinematicTargetPosition() const;
 		const gem::quat GetKinematicTargetRotation() const;
 
-		void SetPosition(const gem::vec3& position, bool autoWake = true);
-		void SetRotation(const gem::quat& rotation, bool autoWake = true);
+		void SetPosition(const gem::vec3& position, bool autoWake = true, bool synchronize = true);
+		void SetRotation(const gem::quat& rotation, bool autoWake = true, bool synchronize = true);
 
 		Ref<ColliderShape> GetColliderOfType(ColliderType aType) const;
 
 		void AddForce(const gem::vec3& aForce, ForceMode aForceMode);
 		void AddTorque(const gem::vec3& torque, ForceMode aForceMode);
-		
+
 		void WakeUp();
 		void PutToSleep();
 
-		inline const Entity GetEntity() const { return myEntity; }
 		inline physx::PxRigidActor& GetActor() const { return *myRigidActor; }
-		inline const physx::PxFilterData& GetFilterData() const { return myFilterData; }
 		inline const RigidbodyComponent& GetRigidbodyData() const { return myRigidBodyData; }
 
 		inline const bool IsDynamic() const { return myRigidBodyData.bodyType == BodyType::Dynamic; }
@@ -75,20 +76,20 @@ namespace Volt
 		void SetLockFlag(ActorLockFlag flag, bool value, bool forceAwake = false);
 		void SetLockFlags(uint32_t lockFlags);
 
+	protected:
+		void SynchronizeTransform() override;
+
 	private:
 		friend class PhysicsScene;
-		
-		void SynchronizeTransform();
+
 		void CreateRigidActor();
 
 		bool myToBeRemoved = false;
 
-		Entity myEntity;
 		RigidbodyComponent myRigidBodyData;
 
 		uint32_t myLockFlags = 0;
 		physx::PxRigidActor* myRigidActor;
-		physx::PxFilterData myFilterData;
 
 		std::vector<Ref<ColliderShape>> myColliders;
 	};

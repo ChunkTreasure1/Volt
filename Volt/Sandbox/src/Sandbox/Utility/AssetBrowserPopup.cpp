@@ -2,6 +2,8 @@
 #include "AssetBrowserPopup.h"
 
 #include "Sandbox/Utility/EditorResources.h"
+#include "Sandbox/Utility/EditorUtilities.h"
+#include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
@@ -10,7 +12,8 @@
 
 AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
 	: myId(id), myWantedType(wantedType), myHandle(handle), myCallback(callback)
-{}
+{
+}
 
 AssetBrowserPopup::State AssetBrowserPopup::Update()
 {
@@ -19,64 +22,35 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 	ImGui::SetNextWindowSize({ 250.f, 500.f });
 	if (ImGui::BeginPopup(myId.c_str(), ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
+		// Search bar
 		{
-			UI::ScopedColor childColor{ ImGuiCol_ChildBg, { 0.2f, 0.2f, 0.2f, 1.f } };
-			UI::ScopedStyleFloat rounding(ImGuiStyleVar_ChildRounding, 2.f);
-
-			constexpr float barHeight = 32.f;
-			constexpr float searchBarSize = 22.f;
-
-			ImGui::BeginChild("##searchBar", { 0.f, barHeight });
+			bool t;
+			EditorUtils::SearchBar(mySearchQuery, t, myActivateSearch);
+			if (myActivateSearch)
 			{
-				UI::ShiftCursor(5.f, 4.f);
-				ImGui::Image(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Search)), { searchBarSize, searchBarSize });
-
-				ImGui::SameLine();
-
-				ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().WindowPadding.x);
-
-				UI::PushId();
-
-				if (UI::InputText("", mySearchQuery))
-				{
-					if (!mySearchQuery.empty())
-					{
-						myHasSearchQuery = true;
-						Search(mySearchQuery);
-					}
-					else
-					{
-						myHasSearchQuery = false;
-					}
-				}
-				UI::PopId();
-
-				ImGui::PopItemWidth();
+				myActivateSearch = false;
 			}
-			ImGui::EndChild();
 		}
 
-		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail()))
+		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
-			if (myHasSearchQuery)
+			std::vector<std::filesystem::path> items;
+			for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
 			{
-				state = RenderView(mySearchResults);
-			}
-			else
-			{
-				std::vector<std::filesystem::path> items;
-				for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
+				if (!FileSystem::Exists(Volt::AssetManager::GetContextPath(path) / path))
 				{
-					const Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
-					if (myWantedType == Volt::AssetType::None || assetType == myWantedType)
-					{
-						items.emplace_back(path);
-					}
+					continue;
 				}
 
-				state = RenderView(items);
+				const Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
+				if (myWantedType == Volt::AssetType::None || assetType == myWantedType)
+				{
+					items.emplace_back(path);
+				}
 			}
 
+			state = RenderView(items);
 			ImGui::EndChild();
 		}
 		ImGui::EndPopup();
@@ -85,34 +59,36 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 	return state;
 }
 
-void AssetBrowserPopup::Search(const std::string& query)
-{
-	mySearchResults.clear();
-
-	for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
-	{
-		const Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
-		if (myWantedType == Volt::AssetType::None || assetType == myWantedType)
-		{
-			const std::string lowerName = Utils::ToLower(path.stem().string());
-
-			if (lowerName.find(Utils::ToLower(query)) != std::string::npos)
-			{
-				mySearchResults.emplace_back(path);
-			}
-		}
-	}
-}
-
 AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<std::filesystem::path>& items)
 {
 	State state = State::Open;
+	std::vector<std::string> names;
+	std::unordered_map<std::string, Volt::AssetHandle> nameToAssetHandleMap;
 
-	for (const auto& item : items)
+	for (const auto& p : items)
 	{
-		const Volt::AssetHandle assetHandle = Volt::AssetManager::Get().GetAssetHandleFromPath(item);
+		auto ext = p.extension().string();
 
-		std::string assetId = item.stem().string() + "###" + std::to_string(assetHandle);
+		auto assetType = Volt::AssetManager::GetAssetTypeFromPath(p);
+		if (myWantedType == Volt::AssetType::None || assetType == myWantedType &&
+			!ext.contains(".png"))
+		{
+			names.emplace_back(p.stem().string());
+			nameToAssetHandleMap.emplace(names.back(), Volt::AssetManager::GetAssetHandleFromPath(p));
+		}
+	}
+
+	if (!mySearchQuery.empty())
+	{
+		names = UI::GetEntriesMatchingQuery(mySearchQuery, names);
+	}
+
+	for (const auto& name : names)
+	{
+		const Volt::AssetHandle assetHandle = nameToAssetHandleMap.at(name);
+		std::string assetId = name + "###" + std::to_string(assetHandle);
+
+		UI::RenderMatchingTextBackground(mySearchQuery, name, EditorTheme::MatchingTextBackground);
 		if (ImGui::Selectable(assetId.c_str()))
 		{
 			myHandle = assetHandle;

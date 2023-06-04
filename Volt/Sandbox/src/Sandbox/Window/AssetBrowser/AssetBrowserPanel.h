@@ -24,6 +24,8 @@ namespace AssetBrowser
 	class SelectionManager;
 }
 
+class AssetPreview;
+class PreviewRenderer;
 class AssetBrowserPanel : public EditorWindow
 {
 public:
@@ -31,6 +33,8 @@ public:
 
 	void UpdateMainContent() override;
 	void OnEvent(Volt::Event& e) override;
+
+	void Reload();
 
 private:
 	bool OnDragDropEvent(Volt::WindowDragDropEvent& e);
@@ -47,8 +51,6 @@ private:
 
 	void DeleteFilesModal();
 
-	void Reload();
-
 	void Search(const std::string& query);
 	void FindFoldersAndFilesWithQuery(const std::vector<Ref<AssetBrowser::DirectoryItem>>& dirList, std::vector<Ref<AssetBrowser::DirectoryItem>>& directories, std::vector<Ref<AssetBrowser::AssetItem>>& assets, const std::string& query);
 
@@ -61,33 +63,34 @@ private:
 	void RecursiveRemoveFolderContents(DirectoryData* aDir);
 	void RecursiceRenameFolderContents(DirectoryData* aDir, const std::filesystem::path& newDir);
 
-	void GenerateAssetPreviewsInCurrentDirectory();
-	
+	void ClearAssetPreviewsInCurrentDirectory();
+
 	///// Asset Creation /////	
 	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
 	void CreateNewShaderModal();
+	void CreateNewMonoScriptModal();
 
 	struct NewShaderData
 	{
 		std::string name = "New Shader";
 		bool createPixelShader = true;
+		bool createGeometryShader = false;
 		bool createVertexShader = false;
+
+		int32_t shaderType = 0;
+
 	} myNewShaderData;
 	//////////////////////////
 
 	Ref<Volt::Scene>& myEditorScene;
+	Ref<PreviewRenderer> myPreviewRenderer;
 
-	std::unordered_map<Volt::AssetHandle, Ref<AssetPreview>> myAssetPreviews;
-
-	std::vector<Ref<AssetPreview>> myPreviewsToUpdate;
 	std::vector<AssetBrowser::DirectoryItem*> myDirectoryButtons;
 
-	AssetBrowser::DirectoryItem* myEngineDirectory = nullptr;
 	AssetBrowser::DirectoryItem* myAssetsDirectory = nullptr;
 
 	float myThumbnailPadding = 16.f;
 	float myThumbnailSize = 85.f;
-	bool myShowEngineAssets = false;
 	bool myHasSearchQuery = false;
 	bool myShouldDeleteSelected = false;
 
@@ -101,13 +104,20 @@ private:
 	AssetData myMeshToImport;
 	MeshImportData myMeshImportData;
 	Volt::AssetType myAssetMask = Volt::AssetType::None;
+	
 	std::vector<std::filesystem::path> myDragDroppedMeshes;
+	std::vector<std::filesystem::path> myDragDroppedTextures;
+
 	bool myIsImporting = false;
+
+	Volt::AssetHandle myAnimationReimportTargetSkeleton;
 
 	///// Animated Character creation /////
 	NewCharacterData myNewCharacterData{};
 	Ref<Volt::AnimatedCharacter> myNewAnimatedCharacter;
 
+	///// Animation Graph creation /////
+	NewAnimationGraphData myNewAnimationGraphData{};
 
 	Ref<AssetBrowser::DirectoryItem> ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
 	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myDirectories;

@@ -29,7 +29,7 @@ private:
 	GameBuilder() = delete;
 
 	inline static std::chrono::high_resolution_clock::time_point myBuildStartTime;
-	
+
 	inline static std::atomic_bool myIsBuilding = false;
 	inline static std::atomic_uint32_t myCurrentFileNumber = 0;
 

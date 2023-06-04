@@ -11,7 +11,7 @@
 
 enum class PropertyEventType
 {
-	Position, 
+	Position,
 	Rotation,
 	Scale
 };
@@ -23,28 +23,34 @@ struct PropertyEvent
 	std::variant<gem::vec3> myValue;
 };
 
+namespace Volt
+{
+	class SceneRenderer;
+}
+
 class PropertiesPanel : public EditorWindow
 {
 public:
-	PropertiesPanel(Ref<Volt::Scene>& currentScene);
+	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, const std::string& id);
 	void UpdateMainContent() override;
 
 private:
 	void AddComponentPopup();
-	void AddScriptPopup();
+	void AddMonoScriptPopup();
+	void AcceptMonoDragDrop();
 
-	void DrawMonoProperties(Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo, Wire::EntityId entity);
+	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const Wire::EntityId& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo);
+	void DrawMonoProperties(Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo, Volt::MonoScriptEntry& scriptEntry);
+	void DrawGraphKeyProperties(const Wire::EntityId id, Volt::VisualScriptingComponent& comp);
 
 	Ref<Volt::Scene>& myCurrentScene;
+	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;
 
 	std::string myComponentSearchQuery;
 	std::string myScriptSearchQuery;
 
-	bool myHasComponentSearchQuery = false;
-	bool myHasScriptSearchQuery = false;
-
-	std::vector<std::string> mySearchedComponentNames;
-	std::vector<std::string> mySearchedScriptNames;
+	bool myActivateComponentSearch = false;
+	bool myActivateScriptSearch = false;
 
 	bool myMidEvent = false;
 	std::shared_ptr<PropertyEvent> myLastValue;

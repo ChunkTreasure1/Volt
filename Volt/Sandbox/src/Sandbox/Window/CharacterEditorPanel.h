@@ -3,7 +3,6 @@
 #include "Sandbox/Window/EditorWindow.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Rendering/RenderPass.h>
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Asset/Asset.h>
 
@@ -11,7 +10,6 @@
 
 namespace Volt
 {
-	class Framebuffer;
 	class Shader;
 	class AnimatedCharacter;
 	class ComputePipeline;
@@ -32,7 +30,16 @@ public:
 	void OnEvent(Volt::Event& e) override;
 	void OpenAsset(Ref<Volt::Asset> asset) override;
 
+	void OnOpen() override;
+	void OnClose() override;
+
 private:
+	struct AddAnimEventData
+	{
+		uint32_t frame;
+		std::string name;
+	};
+
 	struct TempJoint
 	{
 		std::string name;
@@ -52,16 +59,20 @@ private:
 	void UpdateProperties();
 	void UpdateAnimations();
 	void UpdateSkeletonView();
+	void UpdateAnimationTimelinePanel();
+	void UpdateJointAttachmentViewPanel();
 
-	void RecursiveGetParent(const std::string& name, TempJoint& joint, TempJoint* outJoint);
+	void AddAnimationEventModal();
+	void AddJointAttachmentPopup();
 
+	void RecursiveGetParent(const std::string& name, TempJoint& joint, TempJoint*& outJoint);
 	void RecursiveRenderJoint(TempJoint& joint);
 
 	Ref<Volt::Scene> myScene;
 	Scope<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Material> myGridMaterial;
 
-	Volt::RenderPass myForwardExtraPass;
+	int32_t mySelectedAnimation = -1;
+	int32_t mySelectedKeyframe = -1;
 
 	Ref<Volt::AnimatedCharacter> myCurrentCharacter;
 	Ref<EditorCameraController> myCameraController;
@@ -74,9 +85,15 @@ private:
 	const float myButtonSize = 22.f;
 
 	bool myIsPlayingAnim = false;
+	
+	bool myActivateJointSearch = false;
+	std::string myJointSearchQuery;
+
+	std::vector<Volt::Entity> myJointAttachmentEntities;
 
 	Volt::AssetHandle mySkinHandle = Volt::Asset::Null();
 	Volt::AssetHandle mySkeletonHandle = Volt::Asset::Null();;
 
+	AddAnimEventData myAddAnimEventData{};
 	NewCharacterData myNewCharacterData{};
 };

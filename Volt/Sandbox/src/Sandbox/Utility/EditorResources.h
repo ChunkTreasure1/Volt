@@ -5,6 +5,7 @@
 namespace Volt
 {
 	class Texture2D;
+	class Mesh;
 }
 
 enum class EditorIcon
@@ -37,6 +38,8 @@ enum class EditorIcon
 	SnapGrid,
 	ShowGizmos,
 
+	FullscreenOnPlay,
+
 	GetMaterial,
 	SetMaterial,
 
@@ -45,7 +48,24 @@ enum class EditorIcon
 	Maximize,
 	Windowize,
 
-	Volt
+	Paint,
+	Select,
+	Fill,
+	Swap,
+	Remove,
+
+	Volt,
+};
+
+enum class EditorMesh
+{
+	Cube = 0,
+	Capsule,
+	Cone,
+	Cylinder,
+	Plane,
+	Sphere,
+	Arrow
 };
 
 class EditorResources
@@ -56,12 +76,15 @@ public:
 
 	static Ref<Volt::Texture2D> GetAssetIcon(Volt::AssetType type);
 	static Ref<Volt::Texture2D> GetEditorIcon(EditorIcon icon);
+	static Ref<Volt::Mesh> GetEditorMesh(EditorMesh mesh);
 
 private:
 	static Ref<Volt::Texture2D> TryLoadIcon(const std::filesystem::path& path);
+	static Ref<Volt::Mesh> TryLoadMesh(const std::filesystem::path& path);
 
 	inline static std::unordered_map<Volt::AssetType, Ref<Volt::Texture2D>> myAssetIcons;
 	inline static std::unordered_map<EditorIcon, Ref<Volt::Texture2D>> myEditorIcons;
+	inline static std::unordered_map<EditorMesh, Ref<Volt::Mesh>> myEditorMeshes;
 
 	EditorResources() = delete;
 };

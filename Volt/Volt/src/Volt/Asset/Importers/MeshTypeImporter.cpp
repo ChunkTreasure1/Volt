@@ -3,6 +3,8 @@
 
 #include "FbxImporter.h"
 #include "VTMeshImporter.h"
+#include "ObjImporter.h"
+#include "GLTFImporter.h"
 
 namespace Volt
 {
@@ -10,6 +12,8 @@ namespace Volt
 	{
 		myImporters[MeshFormat::Fbx] = CreateScope<FbxImporter>();
 		myImporters[MeshFormat::VTMESH] = CreateScope<VTMeshImporter>();
+		myImporters[MeshFormat::OBJ] = CreateScope<ObjImporter>();
+		myImporters[MeshFormat::GLTF] = CreateScope<GLTFImporter>();
 	}
 
 	void MeshTypeImporter::Shutdown()
@@ -27,9 +31,24 @@ namespace Volt
 		return myImporters[FormatFromExtension(path)]->ImportSkeletonImpl(path);
 	}
 
-	Ref<Animation> MeshTypeImporter::ImportAnimation(const std::filesystem::path& path)
+	Ref<Animation> MeshTypeImporter::ImportAnimation(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton)
 	{
-		return myImporters[FormatFromExtension(path)]->ImportAnimationImpl(path);
+		return myImporters[FormatFromExtension(path)]->ImportAnimationImpl(path, targetSkeleton);
+	}
+
+	void MeshTypeImporter::ExportMesh(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path)
+	{
+		myImporters[FormatFromExtension(path)]->ExportMeshImpl(assets, path);
+	}
+
+	void MeshTypeImporter::ExportSkeleton(std::vector<Ref<Skeleton>> assets, const std::filesystem::path& path)
+	{
+		myImporters[FormatFromExtension(path)]->ExportSkeletonImpl(assets, path);
+	}
+
+	void MeshTypeImporter::ExportAnimation(std::vector<Ref<Animation>> assets, const std::filesystem::path& path)
+	{
+		myImporters[FormatFromExtension(path)]->ExportAnimationImpl(assets, path);
 	}
 
 	MeshTypeImporter::MeshFormat MeshTypeImporter::FormatFromExtension(const std::filesystem::path& path)
@@ -43,7 +62,11 @@ namespace Volt
 		else if (ext == ".gltf" || ext == ".glb")
 		{
 			return MeshFormat::GLTF;
-		} 
+		}
+		else if (ext == ".obj" || ext == ".OBJ")
+		{
+			return MeshFormat::OBJ;
+		}
 		else if (ext == ".vtmesh")
 		{
 			return MeshFormat::VTMESH;

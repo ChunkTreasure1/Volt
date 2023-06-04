@@ -11,12 +11,18 @@ namespace Volt
 	{
 		inline static std::filesystem::path GetOrCreateCachePath()
 		{
-			return ProjectManager::GetCachePath() / "Colliders";
+			auto path = ProjectManager::GetCachePath() / "Colliders";
+			if (!FileSystem::Exists(path))
+			{
+				FileSystem::CreateDirectory(path);
+			}
+			return path;
 		}
 	}
 
 	void MeshColliderCache::Initialize()
-	{}
+	{
+	}
 
 	void MeshColliderCache::Shutdown()
 	{
@@ -48,7 +54,7 @@ namespace Volt
 	void MeshColliderCache::LoadCached(const std::string& colliderName)
 	{
 		const std::filesystem::path cachedPath = Utility::GetOrCreateCachePath() / (colliderName + ".vtmeshcoll");
-		
+
 		if (!FileSystem::Exists(cachedPath))
 		{
 			VT_CORE_WARN("Unable to load cached mesh {0}!", cachedPath.string());
@@ -74,7 +80,7 @@ namespace Volt
 		size_t offset = 0;
 		const size_t count = *(size_t*)&totalData[offset];
 		offset += sizeof(size_t);
-		
+
 		for (size_t i = 0; i < count; i++)
 		{
 			const gem::mat4 transform = *(gem::mat4*)&totalData[offset];
@@ -85,7 +91,7 @@ namespace Volt
 
 			std::vector<uint8_t> collData;
 			collData.resize(collSize);
-		
+
 			auto& cached = cachedData.colliderData.emplace_back();
 			cached.data.Allocate(collSize);
 			cached.data.Copy(&totalData[offset], collSize);
@@ -113,12 +119,42 @@ namespace Volt
 			serializer.Serialize(size);
 			serializer.Serialize(mesh.data.As<uint8_t>(), size);
 		}
-		
+
 		serializer.WriteToFile();
 
 		myCache.emplace(colliderName, cacheData);
 	}
-	
+
+	void MeshColliderCache::AddTriangleDebugMesh(AssetHandle meshHandle, Ref<Mesh> mesh)
+	{
+		myTriangleDebugMeshes[meshHandle] = mesh;
+	}
+
+	void MeshColliderCache::AddConvexDebugMesh(AssetHandle meshHandle, Ref<Mesh> mesh)
+	{
+		myConvexDebugMeshes[meshHandle] = mesh;
+	}
+
+	Ref<Mesh> MeshColliderCache::GetTriangleDebugMesh(AssetHandle meshHandle)
+	{
+		if (!myTriangleDebugMeshes.contains(meshHandle))
+		{
+			return nullptr;
+		}
+
+		return myTriangleDebugMeshes.at(meshHandle);
+	}
+
+	Ref<Mesh> MeshColliderCache::GetConvexDebugMesh(AssetHandle meshHandle)
+	{
+		if (!myConvexDebugMeshes.contains(meshHandle))
+		{
+			return nullptr;
+		}
+
+		return myConvexDebugMeshes.at(meshHandle);
+	}
+
 	MeshColliderCacheData MeshColliderCache::Get(const std::string& colliderName)
 	{
 		if (IsCached(colliderName))

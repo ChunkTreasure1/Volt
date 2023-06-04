@@ -8,25 +8,26 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/Renderer.h>
-#include <Volt/Rendering/Framebuffer.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
-#include <Volt/Rendering/Shader/Shader.h>
-
-#include <Volt/Components/PostProcessComponents.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Utility/UIUtility.h>
 
 #include <random>
-
+#include <Volt/Components/LightComponents.h>
 
 ParticleEmitterEditor::ParticleEmitterEditor()
-	: EditorWindow("ParticleSystem Preset Editor")
+	: EditorWindow("Particle Editor")
 {
+	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
+	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
+	myReferenceModel.AddComponent<Volt::MeshComponent>();
 
-	myPreviewScene = CreateRef<Volt::Scene>();
-
+	myLightEntity = Volt::Entity(myPreviewScene->GetAllEntitiesWith<Volt::DirectionalLightComponent>()[0], myPreviewScene.get());
+	auto& tempComp = myLightEntity.GetComponent<Volt::DirectionalLightComponent>();
+	tempComp.castShadows = false;
+	tempComp.softShadows = false;
 	//Particle Emitter
 	{
 		auto entity = myPreviewScene->CreateEntity();
@@ -35,51 +36,17 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		myEmitterEntity = entity;
 	}
 
+	// Scene Renderer
 	{
-		auto ent = myPreviewScene->CreateEntity();
-		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
-		ent.AddComponent<Volt::BloomComponent>();
-		ent.AddComponent<Volt::FXAAComponent>();
-		ent.AddComponent<Volt::HBAOComponent>();
+		Volt::SceneRendererSpecification spec{};
+		spec.debugName = "Particle System Editor";
+		spec.scene = myPreviewScene;
+
+		Volt::SceneRendererSettings settings{};
+		settings.enableGrid = true;
+
+		myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
 	}
-
-	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(myPreviewScene);
-
-	// Forward Extra
-	{
-		Volt::FramebufferSpecification spec{};
-
-		spec.attachments =
-		{
-			{ Volt::ImageFormat::RGBA32F }, // Color
-			{ Volt::ImageFormat::R32UI }, // ID
-			{ Volt::ImageFormat::DEPTH32F }
-		};
-
-		spec.width = 1280;
-		spec.height = 720;
-
-		spec.existingImages =
-		{
-			{ 0, myPreviewRenderer->GetFinalFramebuffer()->GetColorAttachment(0) },
-			{ 1, myPreviewRenderer->GetSelectionFramebuffer()->GetColorAttachment(2) },
-		};
-
-		spec.existingDepth = myPreviewRenderer->GetFinalObjectFramebuffer()->GetDepthAttachment();
-
-		myForwardExtraPass.framebuffer = Volt::Framebuffer::Create(spec);
-		myForwardExtraPass.debugName = "Forward Extra";
-	}
-
-	myPreviewRenderer->AddExternalPassCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-		{
-			Volt::Renderer::BeginPass(myForwardExtraPass, camera);
-
-			Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
-			Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
-
-			Volt::Renderer::EndPass();
-		});
 }
 
 void ParticleEmitterEditor::UpdateMainContent()
@@ -103,6 +70,21 @@ void ParticleEmitterEditor::UpdateMainContent()
 
 void ParticleEmitterEditor::OpenAsset(Ref<Volt::Asset> asset)
 {
+	int i = 0;
+	for (auto& a : Volt::AssetManager::Get().GetAssetRegistry())
+	{
+		if (Volt::AssetManager::Get().GetAssetTypeFromHandle(a.second) == Volt::AssetType::ParticlePreset)
+		{
+			i++;
+			if (asset->handle == a.second)
+			{
+				currentPresetSelected = i;
+				Volt::AssetManager::Get().ReloadAsset(a.second);
+				break;
+			}
+		}
+	}
+
 	OpenParticleSystem(asset->path);
 }
 
@@ -110,8 +92,16 @@ void ParticleEmitterEditor::OpenAsset(Ref<Volt::Asset> asset)
 bool ParticleEmitterEditor::SavePreset(const std::filesystem::path& indata)
 {
 	if (indata == "None" || !myCurrentPreset)
+	{
+		UI::Notify(NotificationType::Error, "ParticlePreset save Failed", "Invalid preset");
 		return false;
-
+	}
+	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / myCurrentPreset->path))
+	{
+		UI::Notify(NotificationType::Error, "ParticlePreset save Failed", "Make sure file is writable");
+		return false;
+	}
+	UI::Notify(NotificationType::Success, "ParticlePreset Saved ", "");
 	Volt::AssetManager::Get().SaveAsset(myCurrentPreset);
 	return true;
 }
@@ -121,14 +111,12 @@ void ParticleEmitterEditor::OnEvent(Volt::Event& e)
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnRenderEvent));
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(ParticleEmitterEditor::OnUpdateEvent));
-
 	myCameraController->OnEvent(e);
 }
 
 bool ParticleEmitterEditor::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	myPreviewRenderer->OnRenderEditor(myCameraController->GetCamera());
-
 	return false;
 }
 
@@ -138,11 +126,8 @@ bool ParticleEmitterEditor::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		return false;
 	}
-
-	myPreviewScene->myParticleSystem->Update(e.GetTimestep());
-
+	myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene.get(), e.GetTimestep());
 	UpdateEmitter(e.GetTimestep());
-
 	return false;
 }
 
@@ -171,189 +156,36 @@ void ParticleEmitterEditor::UpdateViewport()
 		myCameraController->UpdateProjection((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
 	}
 
-	ImGui::Image(UI::GetTextureID(myPreviewRenderer->GetFinalFramebuffer()->GetColorAttachment(0)), viewportSize);
+	ImGui::Image(UI::GetTextureID(myPreviewRenderer->GetFinalImage()), viewportSize);
 	ImGui::EndChild();
 	ImGui::PopStyleVar(3);
 }
 
 void ParticleEmitterEditor::UpdateProperties()
 {
-	ImGui::BeginChild("properties");
-
-	myPresets.clear();
-	myPresets.emplace_back("None");
-	for (auto& a : Volt::AssetManager::Get().GetAssetRegistry())
+	if (DrawEditorPanel())
 	{
-		if (Volt::AssetManager::Get().GetAssetTypeFromHandle(a.second) == Volt::AssetType::ParticlePreset)
-		{
-			myPresets.emplace_back(a.first.string());
-		}
+		DrawPropertiesPanel();
 	}
-
-	static int currentPresetSelected = 0;
-	if (UI::Combo("Emitter Preset", currentPresetSelected, myPresets, 500))
-	{
-		if (currentPresetSelected > 0)
-		{
-			OpenParticleSystem(myPresets[currentPresetSelected]);
-		}
-	}
-
-	if (!myCurrentPreset)
-	{
-		ImGui::EndChild();
-		return;
-	}
-
-	UI::PushId();
-
-	//TABS
-	static int tabs = 0;
-	{
-		if (ImGui::Button("Properties"))
-		{
-			tabs = 0;
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Editor Settings"))
-		{
-			tabs = 1;
-		}
-	}
-
-	if (tabs == 0)
-	{
-		ImGui::LabelText("", "Rendering");
-		if (UI::BeginProperties("Render"))
-		{
-			EditorUtils::Property("Texture", myCurrentPreset->texture, Volt::AssetType::Texture);
-			UI::Property("Shader", myCurrentPreset->shader);
-
-			UI::EndProperties();
-		}
-		ImGui::Separator();
-
-		ImGui::LabelText("", "Common Settings");
-		if (UI::BeginProperties("Common"))
-		{
-			UI::Property("Looping", myCurrentPreset->isLooping);
-			if (!myCurrentPreset->isLooping)
-			{
-				UI::Property("Duration", myCurrentPreset->emittionTime);
-			}
-
-			UI::Property("MinLifeTime", myCurrentPreset->minLifeTime);
-			UI::Property("MaxLifeTime", myCurrentPreset->maxLifeTime);
-
-			UI::EndProperties();
-		}
-
-		ImGui::LabelText("", "Emission");
-		static int currentShapeSelected = 0;
-		if (UI::Combo("Shape", currentShapeSelected, myShapes, 500))
-		{
-			myCurrentPreset->shape = currentShapeSelected;
-		}
-
-		if (UI::BeginProperties("Emitter"))
-		{
-			if (currentShapeSelected == 0)
-			{
-				UI::Property("SpawnOnEdge", myCurrentPreset->sphereSpawnOnEdge);
-				UI::Property("Radius", myCurrentPreset->sphereRadius);
-			}
-			if (currentShapeSelected == 1)
-			{
-				UI::Property("SpawnOnEdge", myCurrentPreset->coneSpawnOnEdge);
-				UI::Property("InnerRadius", myCurrentPreset->coneInnerRadius);
-				UI::Property("OuterRadius", myCurrentPreset->coneOuterRadius);
-			}
-			myCurrentPreset->shape = currentShapeSelected;
-			UI::Property("SpawnRate", myCurrentPreset->intensity, false, 0.f, 0.f, nullptr, "Amount of particles spawned each second");
-
-			UI::EndProperties();
-		}
-
-		ImGui::LabelText("", "Velocity");
-		if (UI::BeginProperties("Velocity"))
-		{
-			UI::Property("StartVelocity", myCurrentPreset->startVelocity);
-			UI::Property("EndVelocity", myCurrentPreset->endVelocity);
-			UI::Property("Gravity", myCurrentPreset->gravity);
-
-			UI::EndProperties();
-		}
-
-		ImGui::LabelText("", "Size");
-		if (UI::BeginProperties("size"))
-		{
-			UI::Property("StartSize", myCurrentPreset->startSize);
-			UI::Property("EndSize", myCurrentPreset->endSize);
-
-			UI::EndProperties();
-		}
-
-		ImGui::LabelText("", "Color");
-		if (UI::BeginProperties("color"))
-		{
-			UI::PropertyColor("StartColor", myCurrentPreset->startColor);
-			UI::PropertyColor("EndColor", myCurrentPreset->endColor);
-
-			UI::EndProperties();
-		}
-
-		if (ImGui::Button("Play"))
-		{
-			PlayParticles();
-		}
-		if (ImGui::Button("Reset"))
-		{
-			OpenParticleSystem(myPresets[currentPresetSelected]);
-		}
-		if (ImGui::Button("Save Data"))
-		{
-			SavePreset(myPresets[currentPresetSelected]);
-		}
-	}
-
-	if (tabs == 1)
-	{
-		ImGui::LabelText("", "Emitter Movement");
-		if (UI::BeginProperties("Velocity"))
-		{
-			UI::Property("Move Emitter", myIsMoving);
-			if (myIsMoving)
-			{
-				UI::Property("Move Length", myMoveLength);
-				UI::Property("Move Speed", myMoveSpeed);
-			}
-
-			UI::EndProperties();
-		}
-	}
-
-	UI::PopId();
-
-	ImGui::EndChild();
 }
 
 void ParticleEmitterEditor::OpenParticleSystem(const std::filesystem::path& aPath)
 {
 	myCurrentPreset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(aPath);
+	if (!myCurrentPreset)
+		return;
+	
 	auto& emitterComp = myEmitterEntity.GetComponent<Volt::ParticleEmitterComponent>();
-
 	emitterComp.preset = myCurrentPreset->handle;
-	emitterComp.emittionTimer = myCurrentPreset->emittionTime;
+	emitterComp.emissionTimer = myCurrentPreset->emittionTime;
+	emitterComp.burstTimer = 0;
 	emitterComp.isLooping = myCurrentPreset->isLooping;
-	emitterComp.numberOfAliveParticles = 0;
-	myParticleSystemData = {};
 
+	/*emitterComp.numberOfAliveParticles = 0;
 	for (auto& p : emitterComp.particles)
 	{
 		p.dead = true;
-	}
+	}*/
 }
 
 void ParticleEmitterEditor::PlayParticles()
@@ -361,15 +193,317 @@ void ParticleEmitterEditor::PlayParticles()
 	auto& emitterComp = myEmitterEntity.GetComponent<Volt::ParticleEmitterComponent>();
 
 	emitterComp.preset = myCurrentPreset->handle;
-	emitterComp.emittionTimer = myCurrentPreset->emittionTime;
+	emitterComp.burstTimer = 0;
+	emitterComp.emissionTimer = myCurrentPreset->emittionTime;
 	emitterComp.isLooping = myCurrentPreset->isLooping;
-	emitterComp.numberOfAliveParticles = 0;
-	emitterComp.pressedPlay = true;
-	myParticleSystemData = {};
 
-	for (auto& p : emitterComp.particles)
+	//emitterComp.numberOfAliveParticles = 0;
+	//emitterComp.pressedPlay = true;
+	/*for (auto& p : emitterComp.particles)
 	{
 		p.dead = true;
+	}*/
+}
+
+bool ParticleEmitterEditor::DrawEditorPanel()
+{
+	ImGui::BeginChild("editor", { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f }, true);
+	UI::Header("Editor");
+	ImGui::Separator();
+	{
+		myPresets.clear();
+		myPresets.emplace_back("None");
+		for (auto& a : Volt::AssetManager::Get().GetAssetRegistry())
+		{
+			if (Volt::AssetManager::Get().GetAssetTypeFromHandle(a.second) == Volt::AssetType::ParticlePreset)
+			{
+				myPresets.emplace_back(a.first.string());
+			}
+		}
+
+		if (UI::Combo("Emitter Preset", currentPresetSelected, myPresets, ImGui::GetContentRegionAvail().x - 103))
+		{
+			if (currentPresetSelected >= 0)
+			{
+				OpenParticleSystem(myPresets[currentPresetSelected]);
+			}
+		}
+
+		if (ImGui::Button("Play"))
+		{
+			if (currentPresetSelected != 0)
+				PlayParticles();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset"))
+		{
+			if (currentPresetSelected != 0)
+				OpenParticleSystem(myPresets[currentPresetSelected]);
+		}
+		ImGui::SameLine();
+		ImGui::Dummy({ ((ImGui::GetContentRegionAvail().x - 84) > 0) ? (ImGui::GetContentRegionAvail().x - 84) : 0, 0 });
+		ImGui::SameLine();
+		if (ImGui::Button("Save Data") != 0)
+		{
+			SavePreset(myPresets[currentPresetSelected]);
+		}
+
+		ImGui::BeginChild("editor settings", ImGui::GetContentRegionAvail(), false);
+
+
+		if (ImGui::CollapsingHeader("Scene"))
+		{
+			// Reference model begin 
+			ImGui::Checkbox("##referenceModelVisablity", &myReferenceModel.GetComponent<Volt::TransformComponent>().visible);
+			ImGui::SameLine();
+			if (ImGui::TreeNode("Reference Model"))
+			{
+				ImGui::Separator();
+				if (UI::BeginProperties("emitterScene"))
+				{
+					static gem::vec3 modelPos{ 0 };
+					static gem::vec3 modelRot{ 0 };
+					static gem::vec3 modelScale{ 1 };
+
+					UI::PropertyAxisColor("Position", modelPos);
+					UI::PropertyAxisColor("Rotation", modelRot);
+					UI::PropertyAxisColor("Scale", modelScale);
+					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, Volt::AssetType::Mesh);
+					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().overrideMaterial, Volt::AssetType::Material);
+
+					myReferenceModel.SetPosition(modelPos);
+					myReferenceModel.SetRotation(modelRot);
+					myReferenceModel.SetScale(modelScale);
+					UI::EndProperties();
+				}
+				ImGui::TreePop();
+			}
+			// Reference model end
+
+			if (UI::BeginProperties("emitterSceneSkybox"))
+			{
+				static gem::vec3 lightRot{ 0 };
+				static gem::vec3 lightColor{ 0 };
+				UI::PropertyAxisColor("Light Rotation", lightRot);
+				myLightEntity.SetRotation(lightRot);
+
+				static float cameraSpeed = 100;
+				cameraSpeed = myCameraController->GetTranslationSpeed();
+				UI::Property("Camera speed", cameraSpeed);
+				myCameraController->SetTranslationSpeed(cameraSpeed);
+
+				EditorUtils::Property("Skybox", Volt::Entity(myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>()[0], myPreviewScene.get()).GetComponent<Volt::SkylightComponent>().environmentHandle, Volt::AssetType::Texture);
+				UI::EndProperties();
+			}
+		}
+
+		ImGui::Checkbox("##movingCheckb", &myIsMoving);
+		ImGui::SameLine();
+		if (ImGui::CollapsingHeader("Emitter Movement##emitterEditorSettingsMovementTab"))
+		{
+			if (UI::BeginProperties("Velocity"))
+			{
+				UI::Property("Length", myMoveLength);
+				UI::Property("Speed", myMoveSpeed);
+			}
+			UI::EndProperties();
+		}
+		ImGui::EndChild();
+	} ImGui::EndChild();
+	if (currentPresetSelected != 0)
+		return true;
+	return false;
+}
+
+void ParticleEmitterEditor::DrawPropertiesPanel()
+{
+	ImGui::BeginChild("##properties", ImGui::GetContentRegionAvail(), true);
+	{
+		UI::Header("Properties");
+		ImGui::Separator();
+		ImGui::BeginChild("##propScroll");
+		{
+			if (ImGui::CollapsingHeader("Rendering##emitterRenderMode"))
+			{
+				static int selectedRenderMode = (int)myCurrentPreset->type;
+				std::vector<std::string> emitterModes = { "Mesh","Particle" };
+
+				if (UI::Combo("Emitter Type", selectedRenderMode, emitterModes))
+				{
+					myCurrentPreset->type = (Volt::ParticlePreset::eType)selectedRenderMode;
+				}
+
+				if (UI::BeginProperties("Render"))
+				{
+					switch (myCurrentPreset->type)
+					{
+						case Volt::ParticlePreset::eType::PARTICLE:
+							EditorUtils::Property("Texture", myCurrentPreset->texture, Volt::AssetType::Texture);
+							EditorUtils::Property("Material", myCurrentPreset->material, Volt::AssetType::Material);
+							break;
+						case Volt::ParticlePreset::eType::MESH:
+							EditorUtils::Property("Mesh", myCurrentPreset->mesh, Volt::AssetType::Mesh);
+							EditorUtils::Property("Material", myCurrentPreset->material, Volt::AssetType::Material);
+							break;
+						default:
+							break;
+					}
+					UI::EndProperties();
+				}
+			}
+			if (ImGui::CollapsingHeader("Emission"))
+			{
+				ImGui::LabelText("##emitterLabelLifeTime", "Life Time");
+				ImGui::Separator();
+				if (UI::BeginProperties("Life"))
+				{
+					UI::Property("Looping", myCurrentPreset->isLooping);
+					if (!myCurrentPreset->isLooping)
+					{
+						ImGui::SameLine();
+						//ImGui::TextUnformatted("Duration");
+						//ImGui::SameLine();
+						ImGui::PushItemWidth(ImGui::GetColumnWidth());
+						ImGui::DragFloat("##duration", &myCurrentPreset->emittionTime, 0.1f);
+						ImGui::PopItemWidth();
+					}
+
+					static gem::vec2 lifespan{ myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
+					lifespan = { myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
+
+					UI::Property("Particle Lifespan", lifespan, 0.f, 0.f, nullptr, "x = min life time, y = max life time");
+					myCurrentPreset->minLifeTime = lifespan.x;
+					myCurrentPreset->maxLifeTime = (lifespan.x > lifespan.y) ? lifespan.x : lifespan.y;
+					//UI::Property("MaxLifeTime", );
+
+					UI::EndProperties();
+				}
+
+				ImGui::LabelText("##emitterSettingSpawningLabel", "Spawning");
+				ImGui::Separator();
+				if (UI::BeginProperties("Emitter"))
+				{
+					UI::Property("Intensity", myCurrentPreset->intensity, false, 0.f, 0.f, nullptr, "Amount of particles spawned each second");
+					UI::EndProperties();
+				}
+				ImGui::Checkbox("##burstCheckbox", &myCurrentPreset->isBurst);
+				ImGui::SameLine();
+				if (ImGui::TreeNode("Burst Emission##emitterSettingBurstTreeNode"))
+				{
+					if (UI::BeginProperties())
+					{
+						UI::PropertyDragFloat("Burst length", myCurrentPreset->burstLength, 0.1f);
+						UI::PropertyDragFloat("Burst interval", myCurrentPreset->burstInterval, 0.1f);
+						UI::EndProperties();
+						ImGui::Separator();
+					}
+					ImGui::TreePop();
+				}
+				static int currentShapeSelected = 0;
+				if (UI::Combo("Shape", currentShapeSelected, myShapes, 500))
+				{
+					myCurrentPreset->shape = currentShapeSelected;
+				}
+
+				if (UI::BeginProperties("Emitter"))
+				{
+					if (currentShapeSelected == 0)
+					{
+						UI::Property("SpawnOnEdge", myCurrentPreset->sphereSpawnOnEdge);
+						UI::Property("Radius", myCurrentPreset->sphereRadius);
+					}
+					if (currentShapeSelected == 1)
+					{
+						UI::Property("SpawnOnEdge", myCurrentPreset->coneSpawnOnEdge);
+						UI::Property("InnerRadius", myCurrentPreset->coneInnerRadius);
+						UI::Property("OuterRadius", myCurrentPreset->coneOuterRadius);
+					}
+					myCurrentPreset->shape = currentShapeSelected;
+					UI::EndProperties();
+				}
+			}
+			if (ImGui::CollapsingHeader("Update"))
+			{
+				ImGui::LabelText("", "Movement");
+				ImGui::Separator();
+				if (UI::BeginProperties("Velocity"))
+				{
+					UI::Property("StartVelocity", myCurrentPreset->startVelocity);
+					UI::Property("EndVelocity", myCurrentPreset->endVelocity);
+					UI::Property("Gravity", myCurrentPreset->gravity);
+
+					UI::EndProperties();
+				}
+
+				DrawElementSize();
+				DrawElementColor();
+			}
+		} ImGui::EndChild();
+	}ImGui::EndChild();
+}
+
+void ParticleEmitterEditor::DrawElementColor()
+{
+	if (myCurrentPreset->type != Volt::ParticlePreset::eType::PARTICLE)
+		return;
+
+	if (ImGui::Button("-##colorRemove"))
+	{
+		if (myCurrentPreset->colors.size() > 1)
+		{
+			myCurrentPreset->colors.erase(myCurrentPreset->colors.begin() + myCurrentPreset->colors.size() - 1);
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+##colorAdd"))
+	{
+		myCurrentPreset->colors.push_back({ 0,0,0,0 });
+	}
+	ImGui::SameLine();
+	if (ImGui::TreeNode("Colors##PPColorTreeNode"))
+	{
+		ImGui::Separator();
+		ImGui::BeginChild("##color settings", { ImGui::GetContentRegionAvail().x, 100.0f }, false);
+		if (UI::BeginProperties("color"))
+		{
+			for (int i = 0; i < myCurrentPreset->colors.size(); i++)
+			{
+				UI::PropertyColor(std::to_string(i + 1) + ": ", myCurrentPreset->colors[i]);
+			}
+			UI::EndProperties();
+		}ImGui::EndChild();
+		ImGui::TreePop();
+	}
+}
+
+void ParticleEmitterEditor::DrawElementSize()
+{
+	if (ImGui::Button("-##sizeRemove"))
+	{
+		if (myCurrentPreset->sizes.size() > 1)
+		{
+			myCurrentPreset->sizes.erase(myCurrentPreset->sizes.begin() + myCurrentPreset->sizes.size() - 1);
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("+##sizeAdd"))
+	{
+		myCurrentPreset->sizes.push_back({ 0,0,0 });
+	}
+	ImGui::SameLine();
+	if (ImGui::TreeNode("Size##SizeTreeNode"))
+	{
+		ImGui::Separator();
+		ImGui::BeginChild("##size settings", { ImGui::GetContentRegionAvail().x, 100.0f }, false);
+		if (UI::BeginProperties("size"))
+		{
+			for (int i = 0; i < myCurrentPreset->sizes.size(); i++)
+			{
+				UI::Property(std::to_string(i + 1) + ": ", myCurrentPreset->sizes[i]);
+			}
+			UI::EndProperties();
+		}ImGui::EndChild();
+		ImGui::TreePop();
 	}
 }
 
@@ -379,7 +513,7 @@ void ParticleEmitterEditor::UpdateEmitter(float aDeltaTime)
 	{
 		gem::vec3 entPos = myEmitterEntity.GetLocalPosition();
 
-		if (entPos.x > myMoveLength || entPos.x < - myMoveLength)
+		if (entPos.x > myMoveLength || entPos.x < -myMoveLength)
 		{
 			myMoveSpeed *= -1;
 		}

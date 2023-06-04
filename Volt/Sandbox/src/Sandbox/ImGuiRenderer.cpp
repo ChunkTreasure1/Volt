@@ -5,17 +5,33 @@
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
+#include "Sandbox/Utility/EditorLibrary.h"
+#include "Sandbox/UserSettingsManager.h"
+
+#include <Volt/Core/Application.h>
+#include <Volt/Core/Graphics/GraphicsContext.h>
+#include <Volt/Core/Graphics/GraphicsDevice.h>
+
+#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
-#include <Volt/Core/Application.h>
-#include <Volt/Asset/AssetManager.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
-#include <Volt/Rendering/Shader/Shader.h>
 
+#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
+#include <Volt/Rendering/Shader/Shader.h>
+#include <Volt/Rendering/Renderer.h>
+
+#include <Volt/Utility/PremadeCommands.h>
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
 
+#include <Volt/Project/ProjectManager.h>
+#include <Amp/WwiseAudioManager/WwiseAudioManager.h>
+
+#include <Volt/Scripting/EnumGenerator.h>
+
+#include <GLFW/glfw3.h>
 #include <imgui.h>
+
 
 void Sandbox::UpdateDockSpace()
 {
@@ -215,7 +231,7 @@ bool Sandbox::UpdateWindowManualResize(ImGuiWindow* window, ImVec2& newSize, ImV
 			// we are growing the size on the other axis to compensate for expected scrollbar. FIXME: Might turn bigger than ViewportSize-WindowPadding.
 			ImVec2 size_auto_fit_after_constraint = CalcWindowSizeAfterConstraint(window, size_auto_fit);
 			bool will_have_scrollbar_x = (size_auto_fit_after_constraint.x - size_pad.x - 0.0f < size_contents.x && !(window->Flags & ImGuiWindowFlags_NoScrollbar) && (window->Flags & ImGuiWindowFlags_HorizontalScrollbar)) || (window->Flags & ImGuiWindowFlags_AlwaysHorizontalScrollbar);
-			bool will_have_scrollbar_y = (size_auto_fit_after_constraint.y - size_pad.y - decoration_up_height < size_contents.y && !(window->Flags& ImGuiWindowFlags_NoScrollbar)) || (window->Flags & ImGuiWindowFlags_AlwaysVerticalScrollbar);
+			bool will_have_scrollbar_y = (size_auto_fit_after_constraint.y - size_pad.y - decoration_up_height < size_contents.y && !(window->Flags & ImGuiWindowFlags_NoScrollbar)) || (window->Flags & ImGuiWindowFlags_AlwaysVerticalScrollbar);
 			if (will_have_scrollbar_x)
 				size_auto_fit.y += style.ScrollbarSize;
 			if (will_have_scrollbar_y)
@@ -562,7 +578,6 @@ void Sandbox::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Undo", "Ctrl + Z"))
 			{
-				ExecuteUndo();
 			}
 
 			if (ImGui::MenuItem("Redo", "Ctrl + Y"))
@@ -586,17 +601,58 @@ void Sandbox::DrawMenuBar()
 
 			if (ImGui::BeginMenu("Asset Browser"))
 			{
-				if (ImGui::MenuItem("Open new Asset Browser"))
-				{
-					myEditorWindows.emplace_back(CreateRef<AssetBrowserPanel>(myRuntimeScene, "##Secondary" + std::to_string(myAssetBrowserCount++)));
-				}
+				//if (ImGui::MenuItem("Open new Asset Browser"))
+				//{
+				//	EditorLibrary::Register<AssetBrowserPanel>(myRuntimeScene, "##Secondary" + std::to_string(myAssetBrowserCount++));
+				//}
 
 				ImGui::EndMenu();
 			}
 
-			for (const auto& window : myEditorWindows)
+			std::map<std::string, std::vector<Ref<EditorWindow>>> categorizedEditors;
+			std::vector<Ref<EditorWindow>> uncategorizedEditors;
+
+			for (const auto& window : EditorLibrary::GetPanels())
 			{
-				ImGui::MenuItem(window->GetTitle().c_str(), "", &const_cast<bool&>(window->IsOpen()));
+				if (window.category.empty())
+				{
+					uncategorizedEditors.emplace_back(window.editorWindow);
+				}
+				else
+				{
+					categorizedEditors[window.category].emplace_back(window.editorWindow);
+				}
+			}
+
+			for (const auto& [category, editors] : categorizedEditors)
+			{
+				if (ImGui::BeginMenu(category.c_str()))
+				{
+					for (const auto& editor : editors)
+					{
+						if (ImGui::MenuItem(editor->GetTitle().c_str(), "", &const_cast<bool&>(editor->IsOpen())))
+						{
+							if (editor->IsOpen())
+							{
+								editor->OnOpen();
+							}
+						}
+					}
+					ImGui::EndMenu();
+				}
+			}
+
+			ImGui::Separator();
+
+			for (const auto& editor : uncategorizedEditors)
+			{
+				if (ImGui::MenuItem(editor->GetTitle().c_str(), "", &const_cast<bool&>(editor->IsOpen())))
+				{
+					if (editor->IsOpen())
+					{
+						editor->OnOpen();
+					}
+				}
 			}
 
 			ImGui::EndMenu();
@@ -609,10 +665,16 @@ void Sandbox::DrawMenuBar()
 				myShouldResetLayout = true;
 			}
 
+			if (ImGui::MenuItem("Bake NavMesh"))
+			{
+				Sandbox::Get().BakeNavMesh();
+			}
+
 			if (ImGui::MenuItem("Crash"))
 			{
 				int* ptr = nullptr;
 				*ptr = 0;
+				//oj oj
 			}
 
 			ImGui::EndMenu();
@@ -622,15 +684,65 @@ void Sandbox::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Recompile all shaders"))
 			{
-				for (const auto& [name, shader] : Volt::ShaderRegistry::GetAllShaders())
+				Volt::GraphicsContext::GetDevice()->WaitForIdle();
+
+				for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
 				{
 					shader->Reload(true);
+					Volt::Renderer::ReloadShader(shader);
 				}
+			}
+
+			if (ImGui::MenuItem("Compile C#"))
+			{
+				// Not threadsafe, fix later
+				//std::thread thread{ []()
+				{
+					if (Volt::PremadeCommands::RunBuildCSProjectCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor))
+					{
+						UI::Notify(NotificationType::Success, "Build succeeded!", "Successfully compiled Project.sln in DIST config!");
+					}
+					else
+					{
+						UI::Notify(NotificationType::Error, "Build failed!", "Could not find visual studio build tools!");
+					}
+				}
+				//};
+				//thread.detach();
 			}
 
 			if (ImGui::MenuItem("Reload C#"))
 			{
 				Volt::MonoScriptEngine::ReloadAssembly();
+			}
+
+			if (ImGui::MenuItem("Open C# Solution"))
+			{
+				Volt::PremadeCommands::RunOpenProjectSolutionCommand();
+			}
+
+			if (ImGui::MenuItem("Reload WWise Enums"))
+			{
+				//TODO:ANDREAS Hard coded, change later
+				std::filesystem::path defaultPath = Volt::ProjectManager::GetAudioBanksDirectory();
+				std::vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
+
+				Volt::EnumGenerator generator{ "WWiseEvents"};
+				for (auto& event : eventNames)
+				{
+					if (event.empty()) continue;
+
+					std::string name = event;
+
+					generator.AddEnumValue(name);
+				}
+				generator.WriteToFile("WWiseEvents.cs");
+			}
+
+			if (ImGui::MenuItem("Clear Collider Cache"))
+			{
+				const auto path = Volt::ProjectManager::GetCachePath() / "Colliders";
+				FileSystem::Remove(path);
 			}
 
 			ImGui::EndMenu();
@@ -651,7 +763,7 @@ void Sandbox::SaveSceneAsModal()
 		if (UI::BeginProperties("saveSceneAs"))
 		{
 			UI::Property("Name", mySaveSceneData.name);
-			UI::Property("Destination", mySaveSceneData.destinationPath);
+			UI::PropertyDirectory("Destination", mySaveSceneData.destinationPath);
 
 			UI::EndProperties();
 		}
@@ -700,6 +812,8 @@ void Sandbox::SaveSceneAsModal()
 void Sandbox::BuildGameModal()
 {
 	UI::ScopedStyleFloat buttonRounding{ ImGuiStyleVar_FrameRounding, 2.f };
+	static bool compileCS = true;
+	bool abort = false;
 
 	if (UI::BeginModal("Build", ImGuiWindowFlags_AlwaysAutoResize))
 	{
@@ -724,11 +838,31 @@ void Sandbox::BuildGameModal()
 			myBuildInfo.sceneHandles.emplace_back();
 		}
 
+		UI::PushId();
+		ImGui::Checkbox("Compile C# ##buildmodal", &compileCS);
+		UI::PopId();
+
 		ImGui::PushItemWidth(80.f);
 		if (ImGui::Button("Build"))
 		{
-			GameBuilder::BuildGame(myBuildInfo);
-			myBuildStarted = true;
+			if (compileCS)
+			{
+				if (Volt::PremadeCommands::RunBuildCSProjectCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor))
+				{
+					UI::Notify(NotificationType::Success, "Compilation succeeded!", "Successfully compiled Project solution in DIST config!");
+				}
+				else
+				{
+					UI::Notify(NotificationType::Error, "Compilation failed!", "Build has been aborted!");
+					abort = true;
+				}
+			}
+
+			if (!abort)
+			{
+				GameBuilder::BuildGame(myBuildInfo);
+				myBuildStarted = true;
+			}
 			ImGui::CloseCurrentPopup();
 		}
 

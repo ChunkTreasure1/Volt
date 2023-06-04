@@ -8,7 +8,7 @@
 
 namespace Volt
 {
-	typedef UUID AssetHandle;
+	using AssetHandle = UUID;
 
 	enum class AssetFlag : uint16_t
 	{
@@ -36,8 +36,18 @@ namespace Volt
 		Font = BIT(12),
 		PhysicsMaterial = BIT(13),
 		Video = BIT(14),
-		RenderPipeline = BIT(15),
-		NavMesh = BIT(16)
+		BlendSpace = BIT(15),
+		NavMesh = BIT(16),
+		AnimationGraph = BIT(17),
+		GraphKey = BIT(18),
+		MonoScript = BIT(19),
+		BehaviorGraph = BIT(20),
+		MaterialGraph = BIT(21),
+		RenderPipeline = BIT(22),
+		Timeline = BIT(23),
+		NetContract = BIT(24),
+		PostProcessingMaterial = BIT(25),
+		PostProcessingStack = BIT(26)
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)
@@ -66,6 +76,7 @@ namespace Volt
 		{ ".vtsk", AssetType::Skeleton },
 		{ ".vtanim", AssetType::Animation },
 		{ ".vtchr", AssetType::AnimatedCharacter },
+		{ ".vtanimgraph", AssetType::AnimationGraph },
 
 		{ ".png", AssetType::Texture },
 		{ ".jpg", AssetType::Texture },
@@ -78,8 +89,12 @@ namespace Volt
 		{ ".vtsdef", AssetType::Shader },
 		{ ".hlsl", AssetType::ShaderSource },
 		{ ".hlslh", AssetType::ShaderSource },
+		{ ".hlsli", AssetType::ShaderSource },
 
+		{ ".vtmgraph", AssetType::MaterialGraph },
 		{ ".vtmat", AssetType::Material },
+		{ ".vtpostmat", AssetType::PostProcessingMaterial },
+		{ ".vtpoststack", AssetType::PostProcessingStack },
 		{ ".vtphysmat", AssetType::PhysicsMaterial },
 
 		{ ".vtscene", AssetType::Scene },
@@ -88,7 +103,14 @@ namespace Volt
 		{ ".ttf", AssetType::Font },
 
 		{ ".mp4", AssetType::Video },
-		{ ".vtpipeline", AssetType::RenderPipeline }
+		{ ".vtrp", AssetType::RenderPipeline },
+		{ ".vtgk", AssetType::GraphKey },
+
+		{ ".cs", AssetType::MonoScript },
+		{ ".vtbt", AssetType::BehaviorGraph},
+		{ ".vtblend", AssetType::BlendSpace },
+
+		{ ".vtncon", AssetType::NetContract },
 	};
 
 	inline static std::unordered_map<std::string, AssetType> s_assetNamesMap =
@@ -100,13 +122,17 @@ namespace Volt
 		{ "Skeleton", AssetType::Skeleton },
 		{ "Animation", AssetType::Animation },
 		{ "Animated Character", AssetType::AnimatedCharacter },
+		{ "Animation Graph", AssetType::AnimationGraph },
 
 		{ "Texture", AssetType::Texture },
 
 		{ "Shader", AssetType::Shader },
 		{ "Shader Source", AssetType::ShaderSource },
 
+		{ "Material Graph", AssetType::MaterialGraph },
 		{ "Material", AssetType::Material },
+		{ "Post Processing Material", AssetType::PostProcessingMaterial },
+		{ "Post Processing Stack", AssetType::PostProcessingStack },
 		{ "Physics Material", AssetType::PhysicsMaterial },
 
 		{ "Scene", AssetType::Scene },
@@ -114,7 +140,12 @@ namespace Volt
 		{ "Particle Preset", AssetType::ParticlePreset },
 		{ "Font", AssetType::Font },
 		{ "Video", AssetType::Video },
-		{ "Render Pipeline", AssetType::RenderPipeline }
+
+		{ "Mono Script", AssetType::MonoScript },
+		{ "Behavior Graph", AssetType::BehaviorGraph},
+		{ "Blend Space", AssetType::BlendSpace },
+
+		{ "Net Contract", AssetType::NetContract }
 	};
 
 	class Asset

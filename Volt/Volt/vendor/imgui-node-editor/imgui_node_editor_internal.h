@@ -443,6 +443,9 @@ struct Link final: Object
     float  m_Thickness;
     ImVec2 m_Start;
     ImVec2 m_End;
+	ImVec2 m_Offset;
+
+	ArrowLocation m_ArrowLocation = ArrowLocation::End;
 
     Link(EditorContext* editor, LinkId id)
         : Object(editor)
@@ -1251,11 +1254,11 @@ struct EditorContext
 
     Style& GetStyle() { return m_Style; }
 
-    void Begin(const char* id, const ImVec2& size = ImVec2(0, 0));
+    bool Begin(const char* id, const ImVec2& size = ImVec2(0, 0));
     void End();
 
     bool DoLink(LinkId id, PinId startPinId, PinId endPinId, ImU32 color, float thickness);
-
+    bool DoLink(LinkId id, PinId startPinId, PinId endPinId, const ImVec2& offset, ArrowLocation arrowLocation, ImU32 color, float thickness);
 
     NodeBuilder& GetNodeBuilder() { return m_NodeBuilder; }
     HintBuilder& GetHintBuilder() { return m_HintBuilder; }

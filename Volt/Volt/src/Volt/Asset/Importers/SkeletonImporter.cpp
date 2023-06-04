@@ -2,6 +2,8 @@
 #include "SkeletonImporter.h"
 
 #include "Volt/Asset/Animation/Skeleton.h"
+#include "Volt/Asset/AssetManager.h"
+
 #include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Project/ProjectManager.h"
@@ -17,7 +19,7 @@ namespace Volt
 		asset = CreateRef<Skeleton>();
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(asset);
 
-		const auto filePath = ProjectManager::GetDirectory() / path;
+		const auto filePath = AssetManager::GetContextPath(path) / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -60,7 +62,7 @@ namespace Volt
 		}
 
 		VT_DESERIALIZE_PROPERTY(name, skeleton->myName, skeletonNode, std::string("Null"));
-		
+
 		YAML::Node jointsNode = skeletonNode["joints"];
 		if (jointsNode)
 		{
@@ -77,7 +79,19 @@ namespace Volt
 		{
 			for (const auto& invBindPoseNode : invBindPosesNode)
 			{
-				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPoses.emplace_back(), invBindPoseNode, gem::mat4(1.f));
+				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, gem::mat4(1.f));
+			}
+		}
+
+		YAML::Node restPoseNode = skeletonNode["restPose"];
+		if (restPoseNode)
+		{
+			for (const auto& transform : restPoseNode)
+			{
+				auto& trs = skeleton->myRestPose.emplace_back();
+				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, gem::vec3{ 0.f });
+				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, gem::quat{});
+				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, gem::vec3{ 1.f });
 			}
 		}
 
@@ -106,10 +120,21 @@ namespace Volt
 			out << YAML::EndSeq;
 
 			out << YAML::Key << "inverseBindPoses" << YAML::BeginSeq;
-			for (const auto& invBindPose : skeleton->myInverseBindPoses)
+			for (const auto& invBindPose : skeleton->myInverseBindPose)
 			{
 				out << YAML::BeginMap;
 				VT_SERIALIZE_PROPERTY(invBindPose, invBindPose, out);
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
+			out << YAML::Key << "restPose" << YAML::BeginSeq;
+			for (const auto& restPose : skeleton->myRestPose)
+			{
+				out << YAML::BeginMap;
+				VT_SERIALIZE_PROPERTY(position, restPose.position, out);
+				VT_SERIALIZE_PROPERTY(rotation, restPose.rotation, out);
+				VT_SERIALIZE_PROPERTY(scale, restPose.scale, out);
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
@@ -117,12 +142,13 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(ProjectManager::GetDirectory() / asset->path);
+		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
 		fout << out.c_str();
 		fout.close();
 	}
 	void SkeletonImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{}
+	{
+	}
 	bool SkeletonImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
 	{
 		return false;

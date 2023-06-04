@@ -17,7 +17,9 @@ namespace Volt
 		const float normalizedTime = localTime / myDuration;
 
 		const int32_t frameCount = (int32_t)myFrames.size();
-		const int32_t currentFrameIndex = frameCount - std::abs((int32_t)(std::floor(normalizedTime * (float)frameCount)) % (2 * frameCount) - frameCount);
+		int32_t currentFrameIndex = frameCount - std::abs((int32_t)(std::floor(normalizedTime * (float)frameCount)) % (2 * frameCount) - frameCount);
+
+		currentFrameIndex = std::clamp(currentFrameIndex, 0, frameCount - 1);
 
 		int32_t nextFrameIndex = currentFrameIndex + 1;
 
@@ -36,18 +38,20 @@ namespace Volt
 		std::vector<gem::mat4> result;
 		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
 
+		if (result.empty())
+		{
+			return {};
+		}
+
 		const float animDelta = 1.f / (float)myFramesPerSecond;
 		const float frameTime = localTime / animDelta;
 		const float deltaTime = frameTime - (float)currentFrameIndex;
 
-		VT_CORE_TRACE("Frame index {0}", currentFrameIndex);
-
-
-		const Frame& currentFrame = myFrames.at(currentFrameIndex);
-		const Frame& nextFrame = myFrames.at(nextFrameIndex);
+		const Pose& currentFrame = myFrames.at(currentFrameIndex);
+		const Pose& nextFrame = myFrames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
-		const auto& invBindPoses = aSkeleton->GetInverseBindPoses();
+		const auto& invBindPoses = aSkeleton->GetInverseBindPose();
 
 		for (size_t i = 0; i < joints.size(); i++)
 		{
@@ -67,11 +71,11 @@ namespace Volt
 
 			// Blend
 			{
-				const gem::vec3 position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, 0.5f);
-				const gem::quat rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), 0.5f);
-				const gem::vec3 scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, 0.5f);
+				const gem::vec3 position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, deltaTime);
+				const gem::quat rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), deltaTime);
+				const gem::vec3 scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, deltaTime);
 
-				resultTransform = gem::translate(gem::mat4{ 1.f }, position) * gem::mat4_cast(rotation) * gem::scale(gem::mat4{ 1.f }, scale);
+				resultTransform = gem::translate(gem::mat4{ 1.f }, position)* gem::mat4_cast(rotation)* gem::scale(gem::mat4{ 1.f }, scale);
 			}
 
 			gem::mat4 resultT = parentTransform * resultTransform;
@@ -86,15 +90,76 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<Animation::TRS> Animation::SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping) const
+	const std::vector<gem::mat4> Animation::Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton)
 	{
 		VT_PROFILE_FUNCTION();
 
+		std::vector<gem::mat4> result;
+		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
+
+		if (result.empty())
+		{
+			return {};
+		}
+
+		const Pose& currentFrame = myFrames.at(frameIndex);
+
+		const auto& joints = aSkeleton->GetJoints();
+		const auto& invBindPoses = aSkeleton->GetInverseBindPose();
+
+		for (size_t i = 0; i < joints.size(); i++)
+		{
+			const auto& joint = joints[i];
+
+			gem::mat4 parentTransform = { 1.f };
+
+			if (joint.parentIndex >= 0)
+			{
+				parentTransform = result[joint.parentIndex];
+			}
+
+			const auto& currentLocalTransform = currentFrame.localTRS[i];
+
+			gem::mat4 resultTransform;
+
+			const gem::vec3 position = currentLocalTransform.position;
+			const gem::quat rotation = gem::normalize(currentLocalTransform.rotation);
+			const gem::vec3 scale = currentLocalTransform.scale;
+
+			resultTransform = gem::translate(gem::mat4{ 1.f }, position)* gem::mat4_cast(rotation)* gem::scale(gem::mat4{ 1.f }, scale);
+
+			gem::mat4 resultT = parentTransform * resultTransform;
+			result[i] = resultT;
+		}
+
+		for (size_t i = 0; i < result.size(); i++)
+		{
+			result[i] = result[i] * invBindPoses[i];
+		}
+
+		return result;
+	}
+
+	const std::vector<Animation::TRS> Animation::SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		const float finalDuration = myDuration / speed;
+
 		const float localTime = AnimationManager::globalClock - aStartTime;
-		const float normalizedTime = localTime / myDuration;
+		const float normalizedTime = localTime / finalDuration;
 
 		const int32_t frameCount = (int32_t)myFrames.size();
-		const int32_t currentFrameIndex = frameCount - std::abs((int32_t)(std::floor(normalizedTime * (float)frameCount)) % (2 * frameCount) - frameCount);
+		int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
+
+		if (normalizedTime > 1.f && !looping)
+		{
+			currentFrameIndex = frameCount - 1;
+		}
+
+		currentFrameIndex = std::clamp(currentFrameIndex, 0, frameCount - 1);
+
+		const float blendValue = (fmodf(normalizedTime, 1.f) * ((float)frameCount)) - (float)currentFrameIndex;		
 
 		int32_t nextFrameIndex = currentFrameIndex + 1;
 
@@ -113,81 +178,86 @@ namespace Volt
 		std::vector<TRS> result;
 		result.resize(aSkeleton->GetJointCount(), TRS{});
 
-		const float animDelta = 1.f / (float)myFramesPerSecond;
-		const float frameTime = localTime / animDelta;
-		const float deltaTime = frameTime - (float)currentFrameIndex;
-
-		const Frame& currentFrame = myFrames.at(currentFrameIndex);
-		const Frame& nextFrame = myFrames.at(nextFrameIndex);
+		const Pose& currentFrame = myFrames.at(currentFrameIndex);
+		const Pose& nextFrame = myFrames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
-		const auto& invBindPoses = aSkeleton->GetInverseBindPoses();
+
+		if (currentFrame.localTRS.size() < joints.size())
+		{
+			return result;
+		}
 
 		for (size_t i = 0; i < joints.size(); i++)
 		{
-			const auto& joint = joints[i];
-
 			const auto& currentLocalTransform = currentFrame.localTRS[i];
 			const auto& nextLocalTransform = nextFrame.localTRS[i];
 
-			// Blend and set
-			const gem::vec3 position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, 0.5f);
-			const gem::quat rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), 0.5f);
-			const gem::vec3 scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, 0.5f);
-		
-			result[i].position = position;
-			result[i].rotation = rotation;
-			result[i].scale = scale;
+			// Blend
+			result[i].position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, blendValue);
+			result[i].rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), blendValue);
+			result[i].scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, blendValue);
 		}
 
 		return result;
 	}
 
-	const std::vector<gem::mat4> Animation::SampleCrossfaded(float lerpT, float aNormalizedTime, float aOtherNormalizedTime, Ref<Skeleton> aSkeleton, Ref<Animation> otherAnimation)
+	const bool Animation::IsAtEnd(float startTime, float speed)
 	{
-		const FrameAnimData thisFrameData = GetFrameDataFromAnimation(*this, aNormalizedTime);
-		const FrameAnimData otherFrameData = GetFrameDataFromAnimation(*otherAnimation, aOtherNormalizedTime);
+		const float localTime = AnimationManager::globalClock - startTime;
+		const float normalizedTime = localTime / (myDuration / speed);
 
-		const Frame& thisCurrentFrame = myFrames.at(thisFrameData.currentFrameIndex);
-		const Frame& thisNextFrame = myFrames.at(thisFrameData.nextFrameIndex);
+		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
+		const float blendValue = (fmodf(normalizedTime, 1.f) * ((float)frameCount)) - (float)currentFrameIndex;
 
-		const Frame& otherCurrentFrame = otherAnimation->myFrames.at(otherFrameData.currentFrameIndex);
-		const Frame& otherNextFrame = otherAnimation->myFrames.at(otherFrameData.nextFrameIndex);
+		int32_t nextFrameIndex = currentFrameIndex + 1;
 
-		const auto& joints = aSkeleton->GetJoints();
-		const auto& invBindPoses = aSkeleton->GetInverseBindPoses();
-
-		std::vector<gem::mat4> result;
-		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
-
-		for (size_t i = 0; i < joints.size(); i++)
+		if (nextFrameIndex >= frameCount)
 		{
-			const auto& joint = joints[i];
-			gem::mat4 parentTransform = { 1.f };
-
-			if (joint.parentIndex >= 0)
-			{
-				parentTransform = result.at(joint.parentIndex);
-			}
-
-			const gem::mat4 thisBlendResult = BlendFrames(thisCurrentFrame, thisNextFrame, parentTransform, i, thisFrameData.deltaTime);
-			const gem::mat4 otherBlendResult = BlendFrames(otherCurrentFrame, otherNextFrame, parentTransform, i, otherFrameData.deltaTime);
-
-			const gem::mat4 resultTransform = Math::Lerp(thisBlendResult, otherBlendResult, lerpT);
-			result[i] = resultTransform;
+			return true;
 		}
 
-		for (size_t i = 0; i < result.size(); i++)
-		{
-			result[i] = result[i] * invBindPoses[i];
-		}
-
-		return result;
+		return false;
 	}
 
-	const Animation::FrameAnimData Animation::GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime)
+	const bool Animation::HasPassedTime(float startTime, float speed, float time)
 	{
-		FrameAnimData animData{};
+		const float localTime = AnimationManager::globalClock - startTime;
+		const float normalizedTime = localTime / (myDuration / speed);
+
+		const float normalizedWantedTime = time / (myDuration / speed);
+
+		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
+
+		const int32_t wantedFrame = (int32_t)(std::floor(normalizedWantedTime * (float)frameCount)) % frameCount;
+
+		int32_t nextFrameIndex = currentFrameIndex + 1;
+
+		if (nextFrameIndex >= wantedFrame)
+		{
+			return true;
+		}
+
+		return false;
+
+		return false;
+	}
+
+	const uint32_t Animation::GetFrameFromStartTime(float startTime, float speed)
+	{
+		const float localTime = AnimationManager::globalClock - startTime;
+		const float normalizedTime = localTime / (myDuration / speed);
+
+		const int32_t frameCount = (int32_t)myFrames.size();
+		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
+		return currentFrameIndex;
+	}
+
+	const Animation::PoseData Animation::GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime)
+	{
+		PoseData animData{};
 
 		const size_t frameCount = animation.myFrames.size();
 
@@ -213,7 +283,7 @@ namespace Volt
 		return animData;
 	}
 
-	const gem::mat4 Animation::BlendFrames(const Frame& currentFrame, const Frame& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor)
+	const gem::mat4 Animation::BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor)
 	{
 		//const gem::mat4 currentLocalTransform = currentFrame.localTransforms.at(jointIndex);
 		//const gem::mat4 nextLocalTransform = nextFrame.localTransforms.at(jointIndex);

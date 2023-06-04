@@ -3,19 +3,16 @@
 
 #include <Volt/Core/Base.h>
 #include <Volt/Scene/Scene.h>
-#include <Volt/Rendering/RenderPass.h>
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Particles/Particle.h>
-
-#include "Volt/Rendering/SceneRenderer.h"
 
 #include <vector>
 
 namespace Volt
 {
-	class Shader;
 	class ParticlePreset;
 	class Material;
+	class SceneRenderer;
 }
 
 class EditorCameraController;
@@ -46,19 +43,24 @@ private:
 
 	void OpenParticleSystem(const std::filesystem::path& aPath);
 	void PlayParticles();
+		
+	bool DrawEditorPanel();
+	void DrawPropertiesPanel();
 
-	ParticleSystemData myParticleSystemData;
+	void DrawElementColor();
+	void DrawElementSize();
+
+
+	//ParticleSystemData myParticleSystemData;
 
 	Volt::Entity myEmitterEntity;
 
-	Volt::RenderPass myForwardExtraPass;
-
 	std::vector<std::string> myPresets;
-	std::vector<std::string> myShapes{"Sphere", "Cone"};
+	std::vector<std::string> myShapes{ "Sphere", "Cone" };
 
 	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
 	gem::vec2 myViewportSize = { 1280.f, 720.f };
-	
+
 	Ref<Volt::ParticlePreset> myCurrentPreset;
 
 	Ref<Volt::Scene> myPreviewScene;
@@ -69,6 +71,10 @@ private:
 
 	//Editor Settings
 	bool myIsMoving = false;
-	float myMoveLength = 0.f;
-	float myMoveSpeed = 0.f;
+	float myMoveLength = 500.f;
+	float myMoveSpeed = 250.f;
+	int currentPresetSelected = 0;
+
+	Volt::Entity myReferenceModel;
+	Volt::Entity myLightEntity;
 };

@@ -1,0 +1,8 @@
+name: "PointLightShadowParaboloid"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_gs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_ps.hlsl"
+inputTextures:
+  []

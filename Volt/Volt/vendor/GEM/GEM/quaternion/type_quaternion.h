@@ -11,10 +11,10 @@ namespace gem
 	struct qua
 	{
 	public:
-		qua() {};
-		qua(qua<T> const& q) : x(q.x), y(q.y), z(q.z), w(q.w) {};
-		qua(T w, T x, T y, T z) : x(x), y(y), z(z), w(w) {};
-		qua(T s, vec<3, T> const& v) : x(v.x), y(v.y), z(v.z), w(s) {};
+		constexpr qua() : x(0.f), y(0.f), z(0.f), w(1.f) {};
+		constexpr qua(qua<T> const& q) : x(q.x), y(q.y), z(q.z), w(q.w) {};
+		constexpr qua(T w, T x, T y, T z) : x(x), y(y), z(z), w(w) {};
+		constexpr qua(T s, vec<3, T> const& v) : x(v.x), y(v.y), z(v.z), w(s) {};
 
 		qua(vec<3, T> const& u, vec<3, T> const& v)
 		{
@@ -72,6 +72,17 @@ namespace gem
 			return *this;
 		}
 
+		template<typename T>
+		qua<T>& operator-=(qua<T> const& p)
+		{
+			this->x -= p.x;
+			this->y -= p.y;
+			this->z -= p.z;
+			this->w -= p.w;
+
+			return *this;
+		}
+
 		int length() { return 4; }
 
 		T& operator[](size_t i)
@@ -121,22 +132,17 @@ namespace gem
 	template<typename T>
 	qua<T> operator+(qua<T> const& q)
 	{
-		qua<T> result;
-		result.x = (q.x > 0) ? q.x : -q.x;
-		result.y = (q.y > 0) ? q.y : -q.y;
-		result.z = (q.z > 0) ? q.z : -q.z;
-		result.w = (q.w > 0) ? q.w : -q.w;
-		return result;
+		return q;
 	}
 
 	template<typename T>
 	qua<T> operator-(qua<T> const& q)
 	{
 		qua<T> result;
-		result.x = (q.x > 0) ? -q.x : q.x;
-		result.y = (q.y > 0) ? -q.y : q.y;
-		result.z = (q.z > 0) ? -q.z : q.z;
-		result.w = (q.w > 0) ? -q.w : q.w;
+		result.x = -q.x;
+		result.y = -q.y;
+		result.z = -q.z;
+		result.w = -q.w;
 		return result;
 	}
 
@@ -173,19 +179,19 @@ namespace gem
 	template<typename T>
 	vec<3, T> operator*(vec<3, T> const& v, qua<T> const& q)
 	{
-		return gem::inverse(q) * v;
+		return inverse(q) * v;
 	}
 
 	template<typename T>
 	vec<4, T> operator*(qua<T> const& q, vec<4, T> const& v) 
 	{
-		return vec<4, T>(q * vec<3, T>(v), v.w);
+		return vec<4, T>(1 * vec<3, T>(v), v.w);
 	}
 
 	template<typename T>
 	vec<4, T> operator*(vec<4, T> const& v, qua<T> const& q)
 	{
-		return gem::inverse(q) * v;
+		return inverse(q) * v;
 	}
 
 	template<typename T>

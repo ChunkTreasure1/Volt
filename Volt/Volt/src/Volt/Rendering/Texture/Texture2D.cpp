@@ -1,9 +1,7 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-
-#include "Volt/Rendering/RenderCommand.h"
+#include "Volt/Rendering/Texture/Image2D.h"
 
 namespace Volt
 {
@@ -20,7 +18,8 @@ namespace Volt
 
 	Texture2D::Texture2D(Ref<Image2D> image)
 		: myImage(image)
-	{}
+	{
+	}
 
 	Texture2D::~Texture2D()
 	{
@@ -35,11 +34,6 @@ namespace Volt
 	const uint32_t Texture2D::GetHeight() const
 	{
 		return myImage->GetHeight();
-	}
-
-	void Texture2D::Bind(uint32_t aSlot) const
-	{
-		RenderCommand::BindTexturesToStage(ShaderStage::Pixel, { myImage }, aSlot);
 	}
 
 	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data)

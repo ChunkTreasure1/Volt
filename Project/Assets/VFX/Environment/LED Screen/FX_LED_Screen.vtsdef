@@ -1,0 +1,10 @@
+name: FX_LED_Screen
+internal: false
+paths:
+  - Assets\VFX\Environment\LED Screen\FX_LED_Screen_ps.hlsl
+  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl
+inputTextures:
+  - shaderName: text
+    editorName: Text
+  - shaderName: mask
+    editorName: TextMask

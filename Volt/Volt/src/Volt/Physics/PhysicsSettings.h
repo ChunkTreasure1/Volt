@@ -21,9 +21,7 @@ namespace Volt
 		uint32_t solverIterations = 8;
 		uint32_t solverVelocityIterations = 2;
 
-#ifndef VT_DIST
 		bool debugOnPlay = true;
 		DebugType debugType = DebugType::LiveDebug;
-#endif
 	};
 }

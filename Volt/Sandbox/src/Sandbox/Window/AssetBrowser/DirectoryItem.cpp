@@ -6,6 +6,7 @@
 
 #include "Sandbox/Utility/AssetBrowserUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
+#include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Input/KeyCodes.h>
@@ -27,7 +28,6 @@ namespace AssetBrowser
 		const bool selected = mySelectionManager->IsSelected(this);
 
 		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(myThumbnailSize);
-		const ImVec2 minChildPos = AssetBrowserUtilities::GetBrowserItemMinPos();
 		const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 
 		UI::ScopedColor outerChild{ ImGuiCol_ChildBg, { 0.f } };
@@ -40,19 +40,10 @@ namespace AssetBrowser
 			UI::ScopedStyleFloat rounding{ ImGuiStyleVar_ChildRounding, 2.f };
 			ImGui::BeginChild("item", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 			{
-				UI::ShiftCursor(itemPadding / 2.f, 10.f);
+				UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
 				UI::ScopedColor innerChild{ ImGuiCol_ChildBg, { 0.2f, 0.2f, 0.2f, 1.f } };
 				ImGui::BeginChild("Image", { myThumbnailSize, myThumbnailSize }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 				{
-					// Right bar
-					{
-						const ImVec4 typeColor = { 0.1f, 0.1f, 0.1f, 1.f };
-						const ImVec2 barMin = minChildPos;
-						const ImVec2 barMax = barMin + ImVec2{ 10.f, myThumbnailSize + itemPadding };
-
-						ImGui::GetWindowDrawList()->AddRectFilled(barMin, barMax, ImColor(typeColor));
-					}
-
 					// Icon
 					{
 						UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
@@ -63,9 +54,9 @@ namespace AssetBrowser
 							//Data being copied
 							ImGui::SetDragDropPayload("ASSET_BROWSER_FOLDER", path.wstring().c_str(), path.wstring().size() * sizeof(wchar_t), ImGuiCond_Once);
 							ImGui::TextUnformatted("Move:");
-							
+
 							constexpr uint32_t maxShownPaths = 3;
-							for (uint32_t i = 0; const auto& selected : mySelectionManager->GetSelectedItems())
+							for (uint32_t i = 0; const auto & selected : mySelectionManager->GetSelectedItems())
 							{
 								if (i == maxShownPaths)
 								{
@@ -79,6 +70,20 @@ namespace AssetBrowser
 							ImGui::EndDragDropSource();
 						}
 
+						const ImVec2 maxChildPos = AssetBrowserUtilities::GetBrowserItemPos();
+
+						// Bottom bar
+						{
+							const ImVec4 typeColor = { 0.07f, 0.07f, 0.07f, 1.f };
+							const ImVec2 barMin = maxChildPos;
+							const ImVec2 barMax = barMin + ImVec2{ 10.f, 4.f };
+
+							ImVec4 color = ImColor(typeColor);
+							color.w = 1.f;
+
+							ImGui::GetWindowDrawList()->AddRectFilled(barMin, barMax, ImColor(typeColor));
+						}
+
 						if (void* ptr = UI::DragDropTarget("ASSET_BROWSER_ITEM"))
 						{
 							for (const auto& item : mySelectionManager->GetSelectedItems())
@@ -87,13 +92,13 @@ namespace AssetBrowser
 								{
 									const std::filesystem::path newPath = path / item->path.stem();
 									Volt::AssetManager::Get().MoveFolder(item->path, newPath);
-									FileSystem::MoveFolder(item->path, newPath);
+									FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, newPath);
 								}
 							}
 
 							for (const auto& item : mySelectionManager->GetSelectedItems())
 							{
-								if (!item->isDirectory && item != this && std::filesystem::exists(item->path))
+								if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
 								{
 									Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), path);
 								}
@@ -112,13 +117,13 @@ namespace AssetBrowser
 								{
 									const std::filesystem::path newPath = path / item->path.stem();
 									Volt::AssetManager::Get().MoveFolder(item->path, newPath);
-									FileSystem::MoveFolder(item->path, newPath);
+									FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, newPath);
 								}
 							}
 
 							for (const auto& item : mySelectionManager->GetSelectedItems())
 							{
-								if (!item->isDirectory && item != this && std::filesystem::exists(item->path))
+								if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
 								{
 									// Check for thumbnail PNG
 									if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
@@ -126,14 +131,14 @@ namespace AssetBrowser
 										const std::filesystem::path thumbnailPath = item->path.parent_path() / (item->path.stem().string() + ".vtthumb.png");
 										if (FileSystem::Exists(thumbnailPath))
 										{
-											FileSystem::Move(thumbnailPath, path);
+											FileSystem::Move(Volt::ProjectManager::GetDirectory() / thumbnailPath, path);
 										}
 									}
 
 									Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), path);
 								}
 							}
-							 
+
 							reload = true;
 							ImGui::EndChild();
 							goto renderEnd;
@@ -158,12 +163,13 @@ namespace AssetBrowser
 					UI::ScopedColor background{ ImGuiCol_FrameBg, { 0.1f, 0.1f, 0.1f, 0.1f } };
 					if (ImGui::InputTextString(renameId.c_str(), &currentRenamingName, ImGuiInputTextFlags_EnterReturnsTrue))
 					{
-						Rename(currentRenamingName);
-					
-						isRenaming = false;
-						reload = true;
-						ImGui::PopItemWidth();
-						goto renderEnd;
+						if (Rename(currentRenamingName))
+						{
+							isRenaming = false;
+							reload = true;
+							ImGui::PopItemWidth();
+							goto renderEnd;
+						}
 					}
 
 					if (isRenaming != myLastRenaming)
@@ -175,25 +181,27 @@ namespace AssetBrowser
 
 					if (!ImGui::IsItemFocused())
 					{
-						Rename(currentRenamingName);
+						if (Rename(currentRenamingName))
+						{
+							isRenaming = false;
+							reload = true;
 
-						isRenaming = false;
-						reload = true;
+							ImGui::PopItemWidth();
 
-						ImGui::PopItemWidth();
-
-						goto renderEnd;
+							goto renderEnd;
+						}
 					}
 
 					if (!ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
-						Rename(currentRenamingName);
+						if (Rename(currentRenamingName))
+						{
+							isRenaming = false;
+							reload = true;
 
-						isRenaming = false;
-						reload = true;
-
-						ImGui::PopItemWidth();
-						goto renderEnd;
+							ImGui::PopItemWidth();
+							goto renderEnd;
+						}
 					}
 
 					myLastRenaming = true;
@@ -257,7 +265,7 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Show in Explorer"))
 			{
-				FileSystem::ShowDirectoryInExplorer(path);
+				FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
 			}
 
 			if (ImGui::MenuItem("Rename"))
@@ -271,18 +279,26 @@ namespace AssetBrowser
 				UI::OpenModal("Delete Selected Files?");
 			}
 
+			if (ImGui::MenuItem("Checkout"))
+			{
+				VersionControl::Edit(path);
+			}
+
 			UI::EndPopup();
 		}
 
 		return removed;
 	}
 
-	void DirectoryItem::Rename(const std::string& newName)
+	bool DirectoryItem::Rename(const std::string& newName)
 	{
+		if (newName.empty()) { return false; }
+
 		const std::filesystem::path newDir = path.parent_path() / currentRenamingName;
 		RecursivlyRenameAssets(this, newDir);
 
-		FileSystem::Rename(path, currentRenamingName);
+		FileSystem::Rename(Volt::ProjectManager::GetDirectory() / path, currentRenamingName);
+		return true;
 	}
 
 	void DirectoryItem::RecursivlyRenameAssets(DirectoryItem* directory, const std::filesystem::path& targetDirectory)

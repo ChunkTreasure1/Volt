@@ -1,0 +1,5 @@
+name: "IllumSSS"
+paths:
+  - "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Forward/ForwardPBRSSS_ps.hlsl"
+inputTextures:

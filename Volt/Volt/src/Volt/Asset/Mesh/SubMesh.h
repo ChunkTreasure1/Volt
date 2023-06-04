@@ -13,8 +13,8 @@ namespace Volt
 
 		void GenerateHash();
 
-		bool operator==(const SubMesh& rhs);
-		bool operator!=(const SubMesh& rhs);
+		const bool operator==(const SubMesh& rhs) const;
+		const bool operator!=(const SubMesh& rhs) const;
 
 		friend bool operator>(const SubMesh& lhs, const SubMesh& rhs);
 		friend bool operator<(const SubMesh& lhs, const SubMesh& rhs);
@@ -25,7 +25,7 @@ namespace Volt
 		uint32_t vertexStartOffset = 0;
 		uint32_t indexStartOffset = 0;
 
-		gem::mat4 transform;
+		gem::mat4 transform = { 1.f };
 		std::string name;
 
 	private:

@@ -1,0 +1,4 @@
+name: "GTAODepthPrefilter"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/GTAO/GTAO_DepthPrefilter_cs.hlsl"

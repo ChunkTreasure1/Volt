@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Volt
+﻿namespace Volt
 {
-    public enum KeyCode : int 
+    public enum KeyCode : int
     {
+        Unknown = -1,
+
         Space = 32,
         Apostrophe = 39,
         Comma = 44,
@@ -65,7 +61,7 @@ namespace Volt
 
         Escape = 256,
         Enter = 257,
-        Tab= 258,
+        Tab = 258,
         Backspace = 259,
         Insert = 260,
         Delete = 261,
@@ -76,7 +72,7 @@ namespace Volt
         Page_Up = 266,
         Page_Down = 267,
         Home = 268,
-        End= 269,
+        End = 269,
 
         Caps_Lock = 280,
         Scroll_Lock = 281,
@@ -143,6 +139,8 @@ namespace Volt
 
     public enum MouseButton : int
     {
+        Unknown = -1,
+
         Mouse_1 = 0,
         Mouse_2 = 1,
         Mouse_3 = 2,
@@ -158,36 +156,93 @@ namespace Volt
         Middle = Mouse_3
     }
 
+    public static class InputMapper
+    {
+        public static KeyCode GetKey(string key)
+        {
+            return (KeyCode)InternalCalls.InputMapper_GetKey(key);
+        }
+
+        public static void SetKey(string key, KeyCode keyCode)
+        {
+            InternalCalls.InputMapper_SetKey(key, (int)keyCode);
+        }
+
+        public static void ResetKey(string key)
+        {
+            InternalCalls.InputMapper_ResetKey(key);
+        }
+    }
+
     public static class Input
     {
+        public static bool IsKeyPressed(KeyCode keyCode)
+        {
+            if (keyCode == KeyCode.Unknown) { return false; }
+            return InternalCalls.Input_KeyPressed(keyCode);
+        }
+
+        public static uint[] GetAllKeyPressed()
+        {
+            return InternalCalls.Input_GetAllKeyPressed();
+        }
+
+        public static bool IsKeyReleased(KeyCode keyCode)
+        {
+            if (keyCode == KeyCode.Unknown) { return false; }
+            return InternalCalls.Input_KeyReleased(keyCode);
+        }
+
+        public static bool IsMousePressed(MouseButton button)
+        {
+            if (button == MouseButton.Unknown) { return false; }
+            return InternalCalls.Input_MousePressed(button);
+        }
+
+        public static bool IsMouseReleased(MouseButton button)
+        {
+            if (button == MouseButton.Unknown) { return false; }
+            return InternalCalls.Input_MouseReleased(button);
+        }
+
         public static bool IsKeyDown(KeyCode keyCode)
         {
+            if (keyCode == KeyCode.Unknown) { return false; }
             return InternalCalls.Input_KeyDown(keyCode);
         }
 
         public static bool IsKeyUp(KeyCode keyCode)
         {
+            if (keyCode == KeyCode.Unknown) { return false; }
             return InternalCalls.Input_KeyUp(keyCode);
         }
 
         public static bool IsMouseDown(MouseButton button)
         {
+            if (button == MouseButton.Unknown) { return false; }
             return InternalCalls.Input_MouseDown(button);
         }
 
         public static bool IsMouseUp(MouseButton button)
         {
+            if (button == MouseButton.Unknown) { return false; }
             return InternalCalls.Input_MouseUp(button);
         }
 
-        public static bool GetMousePosition()
+        public static Vector2 GetMousePosition()
         {
-            return InternalCalls.Input_GetMousePosition();
+            InternalCalls.Input_GetMousePosition(out Vector2 position);
+            return position;
         }
 
         public static void SetMousePosition(float x, float y)
         {
             InternalCalls.Input_SetMousePosition(x, y);
+        }
+
+        public static void ShowCursor(bool state)
+        {
+            InternalCalls.Input_ShowCursor(state);
         }
     }
 }

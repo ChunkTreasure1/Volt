@@ -1,54 +1,45 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-#include "Volt/AI/SteeringBehavior.h"
-#include "Volt/AI/Pathfinder/pfNavMesh.h"
-#include "Volt/AI/NavigationSystem.h"
 
 #include <Wire/Serialization.h>
 #include <gem/gem.h>
 
-#include <optional>
-
 namespace Volt
 {
-	// Make sure to set steering force in scripts using functions from SteeringBehavior class or agents won't move.
-	// Example Usage:
-	// force = SteeringBehavior::Seek(agent, target);
-	// force += SteeringBehavior::Flee(agent, target);
-	// agent.steeringForce = force;
-
-	SERIALIZE_COMPONENT((struct AgentComponent
+	SERIALIZE_COMPONENT((struct NavMeshComponent
 	{
-		PROPERTY(Name = Max Velocity) float maxVelocity = 500.f;
-		PROPERTY(Name = Max Force) float maxForce = 500.f;
-		PROPERTY(Name = Kinematic) bool kinematic = true;
+		CREATE_COMPONENT_GUID("{6643C885-4A12-4527-8AA7-7894A730BAC5}"_guid);
+	}), NavMeshComponent);
 
-		gem::vec3 steeringForce = gem::vec3(0.f);
-		gem::vec3 target = gem::vec3(0.f);
+	SERIALIZE_COMPONENT((struct NavLinkComponent
+	{
+		PROPERTY(Name = Start, Visible = true) gem::vec3 start = { 0.f };
+		PROPERTY(Name = End, Visible = true) gem::vec3 end = { 0.f };
+		PROPERTY(Name = Bidirectional, Visible = true) bool bidirectional = true;
+		PROPERTY(Name = Active, Visible = true) bool active = true;
 
-		inline void StartNavigation() { myActive = true; };
-		inline void StopNavigation() { myActive = false; };
-		inline std::optional<gem::vec3> GetCurrentMilestone() const { if (myPath.empty()) { return std::optional<gem::vec3>(); } else { return myPath.back(); } }
-		inline void SetTarget(gem::vec3 target)
-		{ 
-			auto nv = NavigationSystem::Get().GetNavMesh()->GetNavMeshData();
-			myPath.clear();
-			for (const auto& pfV : nv.findPath(VTtoPF(target), VTtoPF(target)))
-			{
-				myPath.emplace_back(PFtoVT(pfV));
-			}
-		};
+		CREATE_COMPONENT_GUID("{7104A8A0-3657-4840-B172-89F5E79E64A6}"_guid);
+	}), NavLinkComponent);
 
-	private:
-		friend class NavigationSystem;
-		friend class SteeringBehavior;
+	SERIALIZE_ENUM((enum class ObstacleAvoidanceQuality : uint32_t
+	{
+		None = 0,
+		Low,
+		Medium,
+		High
+	}), ObstacleAvoidanceQuality);
 
-		std::vector<gem::vec3> myPath;
-		gem::vec3 myVelocity = gem::vec3(0.f);
-		bool myActive = true;
+	SERIALIZE_COMPONENT((struct NavAgentComponent
+	{
+		PROPERTY(Name = Radius, Visible = true) float radius = 60.f;
+		PROPERTY(Name = Height, Visible = true) float height = 200.f;
+		PROPERTY(Name = MaxSpeed, Visible = true) float maxSpeed = 300.f;
+		PROPERTY(Name = Acceleration, Visible = true) float acceleration = 1000.f;
+		PROPERTY(Name = Separation Weight, Visible = true) float separationWeight = 0.f;
+		PROPERTY(Name = Obstacle Avoidance Quality, Visible = true, SpecialType = Enum) ObstacleAvoidanceQuality obstacleAvoidanceQuality = ObstacleAvoidanceQuality::None;
+		PROPERTY(Name = Active, Visible = true) bool active = true;
 
-	public:
-		CREATE_COMPONENT_GUID("{F29BA549-DD7D-407E-8024-6E281C4ED2AC}"_guid);
-	}), AgentComponent);
+		CREATE_COMPONENT_GUID("{2B4469CE-9B15-4FA9-ABA6-77BA83465357}"_guid);
+	}), NavAgentComponent);
 }

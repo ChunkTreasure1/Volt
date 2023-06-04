@@ -1,261 +1,441 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
-#include "Volt/Core/Base.h"
-#include "Volt/Rendering/RenderPass.h"
-#include "Volt/Scene/Scene.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
 
-#include "Volt/Components/Components.h"
+#include "Volt/Core/Threading/ThreadPool.h"
 
-#include <functional>
-#include <thread>
-#include <mutex>
+#include "Volt/Rendering/SceneRendererSettings.h"
+
+#include "Volt/Rendering/RendererCommon.h"
+#include "Volt/Rendering/RendererStructs.h"
+
+#include "Volt/Rendering/GlobalDescriptorSet.h"
+#include "Volt/Rendering/RenderPipeline/RenderPipeline.h"
+#include "Volt/Rendering/FrameGraph/TransientResourceSystem.h"
+#include "Volt/Rendering/FrameGraph/CommandBufferCache.h"
 
 namespace Volt
 {
-	class Camera;
-	class Scene;
-	class Framebuffer;
 	class Mesh;
+	class Scene;
+	class Material;
+	class Camera;
+	class Image3D;
+	class RenderPipeline;
+	class UniformBufferSet;
+	class VulkanFramebuffer;
+	class CommandBuffer;
 	class ComputePipeline;
-	class Shader;
-	class ConstantBuffer;
-	class StructuredBuffer;
+	class ShaderStorageBufferSet;
+	class RayTracedSceneRenderer;
+
+	class GlobalDescriptorSet;
+	class VertexBufferSet;
+
+	class PostProcessingStack;
+
+	struct VulkanRenderPass;
+	struct LineVertex;
+	struct BillboardVertex;
+
+	struct SceneRendererSpecification
+	{
+		std::string debugName;
+		gem::vec2ui initialResolution = { 1280, 720 };
+		Weak<Scene> scene;
+
+		bool enablePostProcess = true;
+		bool renderToSwapchain = false;
+	};
+
+	struct SceneRendererStatistics
+	{
+		uint64_t triangleCount = 0;
+		RenderPipelineStatistics pipelineStatistics;
+
+		inline void Reset()
+		{ 
+			pipelineStatistics = {};
+			triangleCount = 0;
+		}
+	};
 
 	class SceneRenderer
 	{
 	public:
-		SceneRenderer(Ref<Scene> aScene, const std::string& context = "None", bool isLowRes = false);
+		inline static constexpr uint32_t BLOOM_MIP_COUNT = 5;
+		inline static constexpr uint32_t MAX_SPOT_LIGHT_SHADOWS = 8;
+		inline static constexpr uint32_t MAX_POINT_LIGHT_SHADOWS = 8;
 
-		void OnRenderEditor(Ref<Camera> aCamera);
+		inline static constexpr uint32_t VOLUMETRIC_FOG_WIDTH = 160;
+		inline static constexpr uint32_t VOLUMETRIC_FOG_HEIGHT = 90;
+		inline static constexpr uint32_t VOLUMETRIC_FOG_DEPTH = 92;
+
+		struct Timestamp
+		{
+			std::string label;
+			float time;
+		};
+
+		struct PerThreadData
+		{
+			std::vector<SubmitCommand> submitCommands;
+			std::vector<IndirectBatch> indirectBatches;
+			std::vector<ParticleBatch> particleBatches;
+
+			std::vector<SubmitCommand> outlineCommands;
+			std::vector<LineCommand> lineCommands;
+			std::vector<BillboardCommand> billboardCommands;
+			std::vector<DecalCommand> decalCommands;
+
+			Ref<PostProcessingStack> postProcessingStack;
+
+			DirectionalLight directionalLight{};
+			std::vector<PointLight> pointLights{};
+			std::vector<SpotLight> spotLights{};
+			std::vector<SphereLight> sphereLights{};
+			std::vector<RectangleLight> rectangleLights{};
+
+			uint32_t particleCount = 0;
+			uint32_t animationBoneCount = 0;
+			uint32_t vertexColorCount = 0;
+			uint32_t spotLightShadowCount = 0;
+			uint32_t pointLightShadowCount = 0;
+
+			inline void Clear()
+			{
+				submitCommands.clear();
+				lineCommands.clear();
+				billboardCommands.clear();
+
+				indirectBatches.clear();
+				particleBatches.clear();
+
+				pointLights.clear();
+				spotLights.clear();
+				sphereLights.clear();
+				rectangleLights.clear();
+				decalCommands.clear();
+
+				directionalLight = {};
+
+				particleCount = 0;
+				animationBoneCount = 0;
+				spotLightShadowCount = 0;
+				pointLightShadowCount = 0;
+				vertexColorCount = 0;
+			}
+		};
+
+		SceneRenderer(const SceneRendererSpecification& specification, const SceneRendererSettings& initialSettings = {});
+		~SceneRenderer();
+
+		void OnRenderEditor(Ref<Camera> camera);
 		void OnRenderRuntime();
 
 		void Resize(uint32_t width, uint32_t height);
-		void AddExternalPassCallback(std::function<void(Ref<Scene>, Ref<Camera>)>&& callback);
-		void UpdateVignetteSettings();
 
-		Ref<Framebuffer> GetFinalFramebuffer();
-		Ref<Framebuffer> GetFinalObjectFramebuffer();
-		Ref<Framebuffer> GetSelectionFramebuffer();
+		void SubmitOutlineMesh(Ref<Mesh> mesh, const gem::mat4& transform);
+		void SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const gem::mat4& transform);
+		void ClearOutlineCommands();
 
-		inline auto& GetHBAOSettings() { return myHBAOSettings; }
-		inline auto& GetBloomSettings() { return myBloomSettings; }
-		inline auto& GetFXAASettings() { return myFXAASettings; }
-		inline auto& GetVignetteSettings() { return myVignetteSettings; }
-		inline auto& GetGammaSettingss() { return myGammaSettings;  }
+		void SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id);
+		void SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, const std::vector<gem::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id);
 
-		inline const auto& GetAllFramebuffers() const { return myFramebuffers; }
+		Ref<Image2D> GetFinalImage();
+		Ref<Image2D> GetIDImage();
+
+		inline SceneRendererSettings& GetSettings() { return mySettings; }
+
+		void ApplySettings();
+
+		void UpdateRayTracingScene(); // #TODO_Ivar: Remove!
+
+		const std::vector<Timestamp> GetTimestamps();
+		const SceneRendererStatistics& GetStatistics() const;
+
+		void SetHideStaticMeshes(bool active) { myShouldHideMeshes = active; };
 
 	private:
-		struct HBAOData
+		enum class DrawCullMode : uint32_t
 		{
-			int uvOffsetIndex;
-			float negInvR2;
-			float multiplier;
-			float powExponent;
-
-			gem::vec4 float2Offsets[16];
-			gem::vec4 jitters[16];
-			gem::vec4 perspectiveInfo;
-
-			gem::vec2 inverseQuarterSize;
-			float radiusToScreen;
-			float NdotVBias;
-
-			gem::vec2 invResDirection;
-			float sharpness;
-			float padding;
+			None = 0,
+			Frustum,
+			AABB
 		};
 
-		struct HBAOSettings
+		struct EnvironmentSettings
 		{
-			bool enabled = true;
-			float radius = 1.f;
-			float intensity = 1.5f;
-			float bias = 0.35f;
-		};
+			Ref<Image2D> irradianceMap;
+			Ref<Image2D> radianceMap;
 
-		struct BloomSettings
-		{
-			bool enabled = true;
-		};
+			float turbidity = 0.f;
+			float azimuth = 0.f;
+			float inclination = 0.f;
 
-		struct FXAASettings
-		{
-			bool enabled = true;
-		};
-
-		struct VignetteSettings
-		{
-			bool enabled = true;
-
-			float width = 1.5f;
-			float sharpness = 0.8f;
-			gem::vec3 color = { 0, 0, 0 };
-		};
-
-		struct ColorGradeSettings
-		{
-			bool enabled = false;
-		};
-
-		struct GammaSettings
-		{
-			bool enabled = true;
-		};
-
-		struct VoxelSceneData
-		{
-			gem::vec3 center = { 0.f, 0.f, 0.f };
-			float voxelSize = 100.f;
-
-			uint32_t resolution = 128;
-			uint32_t padding[3];
-		};
-
-		struct ColorGradeData
-		{
-			float unsharpenMask = 0.f;
-			float contrastPivot = 0.435f;
-			float contrast = 1.f;
-			float saturation = 1.f;
-
-			float hue = 0.f;
-			float temperature = 0.f;
-			float gain = 0.f;
-			float lift = 0.f;
-
-			float offset = 0.f;
-			float gamma = 0.f;
-
-			gem::vec2 padding;
-		};
-
-		struct HeightFogData
-		{
-			gem::vec3 fogColor = { 1.f, 1.f, 1.f };
-			float strength = 1.f;
-
-			float fogMaxY = 200.f;
-			float fogMinY = 0.f;
-			gem::vec2 padding;
-		};
-
-		struct VoxelType
-		{
-			uint32_t colorMask;
-			uint32_t normalMask;
-
-			uint32_t padding[2];
-		};
-
-		struct SkyboxData
-		{
-			float textureLod = 0.f;
 			float intensity = 1.f;
-
-			gem::vec2 padding;
 		};
 
-		void OnRender(Ref<Camera> aCamera);
+		struct TimestampInfo
+		{
+			std::string label;
+			uint32_t id;
+		};
 
-		void CreatePasses(bool isLowRes);
+		struct IndirectPassParams
+		{
+			MaterialFlag materialFlags = MaterialFlag::All;
+			DrawCullMode cullMode = DrawCullMode::Frustum;
 
-		void ShadingPass(const SceneEnvironment& sceneEnv);
+			gem::vec3 aabbMin = 0.f;
+			gem::vec3 aabbMax = 0.f;
+		};
 
-		void PostProcessPasses(Ref<Camera> aCamera);
-		void ResetPostProcess();
+		struct LineData
+		{
+			inline static constexpr uint32_t MAX_LINES = 200000;
+			inline static constexpr uint32_t MAX_VERTICES = MAX_LINES * 2;
+			inline static constexpr uint32_t MAX_INDICES = MAX_LINES * 2;
 
-		void BloomPass(Ref<Image2D> sourceImage);
-		void HBAOPass(Ref<Camera> aCamera);
-		void VoxelPass(Ref<Camera> aCamera);
+			Ref<VertexBufferSet> vertexBuffer;
+			Ref<RenderPipeline> renderPipeline;
 
-		void CollectStaticMeshCommands();
-		void CollectAnimatedMeshCommands();
+			LineVertex* vertexBufferBase = nullptr;
+			LineVertex* vertexBufferPtr = nullptr;
+			uint32_t vertexCount = 0;
+		};
 
-		const uint32_t myMaxCollectionThreads = 4;
+		struct BillboardData
+		{
+			inline static constexpr uint32_t MAX_BILLBOARDS = 500000;
 
+			Ref<VertexBufferSet> vertexBuffer;
+			Ref<RenderPipeline> renderPipeline;
+
+			BillboardVertex* vertexBufferBase = nullptr;
+			BillboardVertex* vertexBufferPtr = nullptr;
+			uint32_t vertexCount = 0;
+		};
+
+		void BeginTimestamp(const std::string& label);
+		void EndTimestamp();
+
+		void OnRender(Ref<Camera> camera);
+
+		void CreateResources();
+		void CreateBuffers();
+		void CreateGlobalDescriptorSets();
+		void UpdateGlobalDescriptorSets();
+
+		void CreateLineData();
+		void CreateBillboardData();
+
+		void UpdateBuffers(Ref<Camera> camera);
+		void FetchCommands(Ref<Camera> camera);
+		void FetchMeshCommands();
+		void FetchAnimatedMeshCommands();
+		void FetchParticles(Ref<Camera> camera);
+
+		void ResizeBuffersIfNeeded();
+
+		void SortSubmitCommands();
+		void PrepareForIndirectDraw();
+		void PrepareLineBuffer();
+		void PrepareBillboardBuffer();
+
+		void UploadIndirectDrawCommands();
+		void UploadObjectData();
+		void UploadPerFrameData();
+
+		void SortAndUploadParticleData(Ref<Camera> camera);
+
+		void UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Ref<UniformBufferSet> uniformBufferSet);
+		void UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Ref<ShaderStorageBufferSet> storageBufferSet);
+		void UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image);
+		void UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image3D> image);
+		void UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image, VkImageLayout targetLayout);
+		void UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, std::vector<Weak<Image2D>> images, VkImageLayout targetLayout);
+
+		void ExecuteFrame();
+		void EvaluateTimestamps();
+
+		const IndirectPass& GetOrCreateIndirectPass(Ref<CommandBuffer> commandBuffer, const IndirectPassParams& params = {});
+
+		inline PerThreadData& GetCPUData() { return myPerThreadDatas[myCurrentCPUData]; }
+		inline PerThreadData& GetGPUData() { return myPerThreadDatas[myCurrentGPUData]; }
+
+		///// Render Passes /////
+		void AddDirectionalShadowPass(FrameGraph& frameGraph);
+		void AddSpotlightShadowPasses(FrameGraph& frameGraph);
+		void AddPointLightShadowPasses(FrameGraph& frameGraph);
+
+		void UpdatePBRDescriptors(FrameGraph& frameGraph);
+
+		void AddIDPass(FrameGraph& frameGraph);
+		void AddPreDepthPass(FrameGraph& frameGraph);
+
+		void AddPreethamSkyPass(FrameGraph& frameGraph);
+		void AddSkyboxPass(FrameGraph& frameGraph);
+
+		void AddGBufferPass(FrameGraph& frameGraph);
+		void AddDecalPass(FrameGraph& frameGraph);
+		void AddDeferredShadingPass(FrameGraph& frameGraph);
+
+		void AddForwardOpaquePass(FrameGraph& frameGraph);
+
+		void AddForwardSSSPass(FrameGraph& frameGraph);
+		void AddSSSBlurPass(FrameGraph& frameGraph);
+		void AddSSSCompositePass(FrameGraph& frameGraph);
+
+		void AddForwardTransparentPass(FrameGraph& frameGraph);
+		void AddTransparentCompositePass(FrameGraph& frameGraph);
+
+		void AddParticlesPass(FrameGraph& frameGraph);
+		void AddBillboardPass(FrameGraph& frameGraph);
+
+		void AddLuminosityPass(FrameGraph& frameGraph);
+
+		void AddPostProcessingStackPasses(FrameGraph& frameGraph);
+
+		void AddACESPass(FrameGraph& frameGraph);
+		void AddGammaCorrectionPass(FrameGraph& frameGraph);
+		void AddLightCullPass(FrameGraph& frameGraph);
+
+		void AddGridPass(FrameGraph& frameGraph);
+
+		void AddCopyHistoryPass(FrameGraph& frameGraph);
+
+		void RenderUI();
+
+		void ClearCountBuffer(const IndirectPass& pass, Ref<CommandBuffer> commandBuffer);
+		void CullRenderCommands(const IndirectPass& pass, const IndirectPassParams& params, Ref<CommandBuffer> commandBuffer);
+
+		inline static constexpr uint32_t MAX_OBJECT_COUNT = 20000;
+		inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
+		inline static constexpr uint32_t MAX_SPOT_LIGHTS = 1024;
+		inline static constexpr uint32_t MAX_SPHERE_LIGHTS = 1024;
+		inline static constexpr uint32_t MAX_RECTANGLE_LIGHTS = 1024;
+		inline static constexpr uint32_t MAX_ANIMATION_BONES = 8192;
+		inline static constexpr uint32_t MAX_PARTICLES = 1'000'000;
+
+		SceneRendererSpecification mySpecification{};
+		SceneRendererSettings mySettings{};
+		SceneRendererStatistics myStatistics{};
+
+		bool myShouldHideMeshes = false;
 		bool myShouldResize = false;
-		gem::vec2ui myResizeSize = { 1, 1 };
-		std::string myContext;
-		
-		std::vector<std::pair<Volt::AssetHandle, Wire::EntityId>> myHighlightedMeshes;
-		std::vector<std::tuple<Volt::AssetHandle, Wire::EntityId, AnimatedCharacterComponent>> myHighlightedAnimatedMeshes;
+		gem::vec2ui	myRenderSize = { 1 };
+		gem::vec2ui	myScaledSize = { 1 };
+		gem::vec2ui myOriginalSize = { 1 };
+
+		Weak<Scene> myScene;
+
+		Ref<UniformBufferSet> myUniformBufferSet;
+		Ref<ShaderStorageBufferSet> myShaderStorageBufferSet;
+
+		Ref<CommandBuffer> myCommandBuffer;
+
+		Scope<RayTracedSceneRenderer> myRayTracedSceneRenderer;
+
+		std::unordered_map<uint32_t, Ref<GlobalDescriptorSet>> myGlobalDescriptorSets;
+		std::vector<std::vector<TimestampInfo>> myTimestamps;
+
+		///// Mesh Passes /////
+		std::vector<IndirectPass> myIndirectPasses;
+		std::atomic_uint32_t myCurrentIndirectPass = 0;
 
 		///// Settings /////
-		HBAOSettings myHBAOSettings;
-		BloomSettings myBloomSettings;
-		FXAASettings myFXAASettings;
-		VignetteSettings myVignetteSettings;
-		ColorGradeSettings myColorGradeSettings;
-		ColorGradeData myColorGradeData;
-		GammaSettings myGammaSettings;
-		////////////////////
+		EnvironmentSettings myEnvironmentSettings;
+		GTAOSettings myGTAOSettings;
+		VolumetricFogSettings myVolumetricFogSettings;
 
-		Ref<Scene> myScene;
-		Ref<Shader> myBillboardShader;
+		///// Frame Graph /////
+		Ref<Image2D> myOutputImage;
+		Ref<Image2D> myIDImage;
+		Ref<Image2D> myHistoryDepth;
+		Ref<Image2D> myHistoryColor;
 
-		RenderPass myForwardPass;
-		RenderPass myDeferredPass;
-		RenderPass myDecalPass;
-		RenderPass myShadingPass;
-		RenderPass myDirectionalShadowPass;
-		RenderPass myFXAAPass;
-		RenderPass myGammaCorrectionPass;
-		RenderPass myDebandingPass;
-		RenderPass myPreDepthPass;
+		Ref<Image3D> myVolumetricFogInjectImage;
+		Ref<Image3D> myVolumetricFogRayMarchImage;
 
-		///// Skybox /////
-		RenderPass mySkyboxPass;
-		Ref<Mesh> mySkyboxMesh;
-		Ref<ConstantBuffer> mySkyboxBuffer;
-		SkyboxData mySkyboxData;
-		//////////////////
+		TransientResourceSystem myTransientResourceSystem;
 
-		///// Bloom /////
-		const uint32_t myBloomMipCount = 6;
-		std::vector<RenderPass> myBloomDownsamplePasses;
-		std::vector<RenderPass> myBloomUpsamplePasses;
-		RenderPass myBloomCompositePass;
+		Ref<RenderPipeline> myGBufferPipeline;
+		Ref<RenderPipeline> myPreDepthPipeline;
+		Ref<RenderPipeline> myIDPipeline;
+		Ref<RenderPipeline> myDirectionalShadowPipeline;
+		Ref<RenderPipeline> mySpotLightShadowPipeline;
+		Ref<RenderPipeline> myPointLightShadowPipeline;
+		Ref<RenderPipeline> myOutlineGeometryPipeline;
+
+		Ref<ComputePipeline> myDepthReductionPipeline;
+
+		Ref<ComputePipeline> myLightCullPipeline;
+		Ref<ComputePipeline> myDeferredShadingPipeline;
+
+		Ref<ComputePipeline> myPreethamPipeline;
+		Ref<ComputePipeline> myACESPipeline;
+		Ref<ComputePipeline> myGammaCorrectionPipeline;
+
+		Ref<ComputePipeline> myLuminosityPipeline;
+
 		Ref<ComputePipeline> myBloomDownsamplePipeline;
 		Ref<ComputePipeline> myBloomUpsamplePipeline;
-		Ref<ConstantBuffer> myBloomUpsampleBuffer;
-		/////////////////
+		Ref<ComputePipeline> myBloomCompositePipeline;
 
-		///// HABO /////
-		RenderPass myDeinterleavingPass[2];
-		RenderPass myReinterleavingPass;
-		RenderPass myHBAOBlurPass[2];
-		RenderPass myAOCompositePass;
-		HBAOData myHBAOData;
-		Ref<ConstantBuffer> myHBAOBuffer;
+		Ref<ComputePipeline> myGTAOPrefilterPipeline;
+		Ref<ComputePipeline> myGTAOMainPassPipeline;
+		std::vector<Ref<ComputePipeline>> myGTAODenoisePipelines;
 
-		Ref<ComputePipeline> myHBAOPipeline;
-		RenderPass myHBAOPass;
-		////////////////
+		Ref<ComputePipeline> myOutlineCompositePipeline;
 
-		///// Point light shadow /////
-		RenderPass myPointLightPass;
+		Ref<ComputePipeline> myGenerateMotionVectorsPipeline;
+		Ref<ComputePipeline> myTAAPipeline;
+		Ref<ComputePipeline> myFXAAPipeline;
+		Ref<ComputePipeline> myAACompositePipeline;
 
-		Ref<ConstantBuffer> myPointLightBuffer;
-		//////////////////////////////
-		std::vector<std::function<void(Ref<Scene>, Ref<Camera>)>> myExternalPassRenderCallbacks;
+		Ref<ComputePipeline> myVolumetricFogInjectPipeline;
+		Ref<ComputePipeline> myVolumetricFogRayMarchPipeline;
 
-		std::unordered_map<uint32_t, std::pair<std::string, Ref<Framebuffer>>> myFramebuffers;
+		Ref<ComputePipeline> mySSSBlurPipeline[2];
+		Ref<ComputePipeline> mySSSCompositePipeline;
 
-		RenderPass myVoxelPass;
-		VoxelSceneData myVoxelData;
-		Ref<ConstantBuffer> myVoxelBuffer;
-		Ref<StructuredBuffer> myVoxelResultBuffer;
+		Ref<ComputePipeline> mySSRPipeline;
+		Ref<ComputePipeline> mySSRCompositePipeline;
 
-		///// Collection /////
-		std::vector<std::thread> myCollectionThreads;
-		std::vector<bool> myIsThreadsIdle;
+		Ref<Material> myGridMaterial;
+		Ref<Material> myDefaultParticleMaterial;
+		Ref<Material> myTransparentCompositeMaterial;
+		Ref<Material> myDecalMaterial;
 
-		std::vector<std::function<void()>> myCollectionJobs;
-		std::mutex myCollectionMutex;
+		Ref<Material> myOutlineJumpFloodInitMaterial;
+		Ref<Material> myOutlineJumpFloodPassMaterial;
 
-		std::atomic_bool myIsRunning = true;
-		//////////////////////
+		///// Draw calls /////
+		PerThreadData myPerThreadDatas[2];
+		uint32_t myCurrentGPUData = 0;
+		uint32_t myCurrentCPUData = 0;
+
+		////// Resources //////
+		Ref<Mesh> mySkyboxMesh;
+		Ref<Mesh> myDecalMesh;
+		Ref<Camera> myCurrentCamera;
+		LineData myLineData;
+		BillboardData myBillboardData;
+
+		////// Timestamps //////
+		std::mutex myTimestampsMutex;
+		std::vector<Timestamp> myTimestampsResult;
+		RenderPipelineStatistics myRenderPipelineStatistics;
+
+		uint64_t myFrameIndex = 0;
+		gem::mat4 myPreviousViewProjection = 1.f;
+		gem::vec2 myPreviousJitter = 0.f;
+		gem::vec2 myLastJitter = 0.f;
+
+		////// Threading //////
+		ThreadPool myRenderThreadPool;
+		CommandBufferCache myCommandBufferCache;
+		std::mutex myRenderingMutex;
 	};
 }

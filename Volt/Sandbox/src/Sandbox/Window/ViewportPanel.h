@@ -26,7 +26,6 @@ struct GizmoEvent
 
 namespace Volt
 {
-	class Framebuffer;
 	class SceneRenderer;
 	class Scene;
 }
@@ -41,8 +40,11 @@ public:
 	void UpdateContent() override;
 	void OnEvent(Volt::Event& e) override;
 
+	gem::vec2 GetSize() { return myViewportSize; }
+	gem::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
+	gem::vec2 GetViewportLocalPosition(const gem::vec2& mousePos);
+
 private:
-	bool OnMouseMoved(Volt::MouseMovedEvent& e);
 	bool OnMousePressed(Volt::MouseButtonPressedEvent& e);
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 	bool OnMouseReleased(Volt::MouseButtonReleasedEvent& e);
@@ -61,7 +63,6 @@ private:
 
 	void Resize(const gem::vec2& viewportSize);
 
-	gem::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
 	gem::mat4 CalculateAverageTransform();
 
 	Ref<Volt::SceneRenderer>& mySceneRenderer;
@@ -85,7 +86,7 @@ private:
 
 	bool myCreatedAssetOnDrag = false;
 	bool myIsInViewport = false;
-	
+
 	bool myShowRenderTargets = false;
 
 	bool myIsDragging = false;

@@ -4,20 +4,41 @@
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
+#include "Sandbox/Utility/Theme.h"
+
+#include "Sandbox/Sandbox.h"
+#include "Sandbox/VersionControl/VersionControl.h"
 
 #include <Volt/Asset/Prefab.h>
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Asset/ParticlePreset.h>
+#include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Vision/VisionComponents.h>
 
-SceneViewPanel::SceneViewPanel(Ref<Volt::Scene>& scene)
-	: EditorWindow("Scene View"), myScene(scene)
+#include <Volt/Scripting/Mono/MonoScriptEngine.h>
+#include <Volt/ImGui/FontAwesome.h>
+#include <Volt/Net/SceneInteraction/NetActorComponent.h>
+
+namespace Utility
+{
+	inline static void SetRowColor(const gem::vec4& color)
+	{
+		for (int32_t i = 0; i < ImGui::TableGetColumnCount(); i++)
+		{
+			ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImColor{ color.x, color.y, color.z, color.w }, i);
+		}
+	}
+}
+
+SceneViewPanel::SceneViewPanel(Ref<Volt::Scene>& scene, const std::string& id)
+	: EditorWindow("Scene View", false, id), myScene(scene)
 {
 	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myIsOpen = true;
@@ -26,6 +47,11 @@ SceneViewPanel::SceneViewPanel(Ref<Volt::Scene>& scene)
 void SceneViewPanel::UpdateMainContent()
 {
 	VT_PROFILE_FUNCTION();
+
+	//if (myTitle.contains("#"))
+	//{
+	//	SelectionManager::SetSelectionKey(myId);
+	//}
 
 	EditorUtils::SearchBar(mySearchQuery, myHasSearchQuery);
 
@@ -70,27 +96,282 @@ void SceneViewPanel::UpdateMainContent()
 				ImGui::PopStyleColor(3);
 			}
 
-			const ImVec4 selectedColor = myIsFocused ? ImVec4{ 0.f, 0.44f, 1.f, 1.f } : ImVec4{ 0.3f, 0.54f, 0.8f, 1.f };
-			ImGui::PushStyleColor(ImGuiCol_Header, selectedColor);
+			if (myRebuildDrawList)
+			{
+				RebuildEntityDrawList();
+			}
+
+			std::unordered_map<uint32_t, std::vector<Wire::EntityId>> layerEntityLists;
+			for (const auto& entId : myEntityDrawList)
+			{
+				if (!myScene->GetRegistry().HasComponent<Volt::EntityDataComponent>(entId))
+				{
+					continue;
+				}
+				const auto& dataComp = myScene->GetRegistry().GetComponent<Volt::EntityDataComponent>(entId);
+				layerEntityLists[dataComp.layerId].emplace_back(entId);
+			}
 
 			// Draw Entities
 			{
-				VT_PROFILE_SCOPE("Draw Entities")
-					for (const auto& entity : myScene->GetRegistry().GetAllEntities())
+				VT_PROFILE_SCOPE("Draw Entities");
+				uint32_t layerToRemove = 0;
+
+				for (auto& layer : myScene->GetLayersMutable())
+				{
+					ImGui::TableNextRow(0, 17.f);
+					ImGui::TableNextColumn();
+
+					Utility::SetRowColor(EditorTheme::SceneLayerBackground);
+
+					ImGuiTreeNodeFlags treeFlags = 0;
+					treeFlags |= ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+
+					static bool wasRenaming = false;
+					bool isOpen = false;
+
 					{
-						if (myScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(entity))
+						ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 0.f, 0.f, 0.f, 0.f });
+						ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4{ 0.f, 0.f, 0.f, 0.f });
+						ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4{ 0.f, 0.f, 0.f, 0.f });
+
+						UI::ScopedColorPrediacate highlightText{ layer.id == myScene->GetActiveLayer(), ImGuiCol_Text, EditorTheme::HighlightedText };
+						const std::string treeNodeId = (myIsRenamingLayer && myRenamingLayer == layer.id) ? "##renamingLayer" : VT_ICON_FA_LAYER_GROUP + std::string(" ") + layer.name;
+						isOpen = ImGui::TreeNodeEx(treeNodeId.c_str(), treeFlags);
+
+						ImGui::PopStyleColor(3);
+					}
+
+					if (myIsRenamingLayer && myRenamingLayer == layer.id)
+					{
+						ImGui::SameLine();
+
+						ImGui::PushItemWidth(ImGui::GetColumnWidth());
+						const std::string renameId = "###renameId";
+						if (ImGui::InputTextString(renameId.c_str(), &layer.name, ImGuiInputTextFlags_EnterReturnsTrue))
 						{
-							if (myScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entity).Parent == Wire::NullID)
+							myIsRenamingLayer = false;
+						}
+						ImGui::PopItemWidth();
+
+						if (myIsRenamingLayer != wasRenaming)
+						{
+							const ImGuiID widgetId = ImGui::GetCurrentWindow()->GetID(renameId.c_str());
+							ImGui::SetFocusID(widgetId, ImGui::GetCurrentWindow());
+							ImGui::SetKeyboardFocusHere(-1);
+						}
+
+						if (!ImGui::IsItemFocused())
+						{
+							myIsRenamingLayer = false;
+						}
+
+						if (!ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+						{
+							myIsRenamingLayer = false;
+						}
+
+						wasRenaming = true;
+					}
+					else
+					{
+						wasRenaming = false;
+					}
+
+					const std::string layerMenuId = "rightClickLayer" + std::to_string(layer.id);
+					if (ImGui::BeginPopupContextItem(layerMenuId.c_str(), ImGuiPopupFlags_MouseButtonRight))
+					{
+						const std::string setAsActiveId = "Set As Active##" + std::to_string(layer.id);
+						if (ImGui::MenuItem(setAsActiveId.c_str()))
+						{
+							myScene->SetActiveLayer(layer.id);
+						}
+
+						const std::string renameId = VT_ICON_FA_PEN " Rename##" + std::to_string(layer.id);
+						if (ImGui::MenuItem(renameId.c_str()))
+						{
+							myIsRenamingLayer = true;
+							myRenamingLayer = layer.id;
+						}
+
+						const std::string removeId = VT_ICON_FA_MINUS " Remove##" + std::to_string(layer.id);
+						if (layer.id != 0 && ImGui::MenuItem(removeId.c_str()))
+						{
+							layerToRemove = layer.id;
+						}
+
+						const std::string checkoutId = "Checkout##" + std::to_string(layer.id);
+						if (ImGui::MenuItem(checkoutId.c_str()))
+						{
+							if (!myScene->path.empty())
 							{
-								DrawEntity(entity, mySearchQuery);
+								std::filesystem::path layerPath = myScene->path.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
+								const auto path = Volt::ProjectManager::GetDirectory() / layerPath;
+
+								if (FileSystem::Exists(path))
+								{
+									VersionControl::Edit(path);
+								}
+							}
+
+						}
+
+						const std::string reloadPrefabsId = "Reload Prefabs in Layer##" + std::to_string(layer.id);
+						if (ImGui::MenuItem(reloadPrefabsId.c_str()))
+						{
+							auto& registry = myScene->GetRegistry();
+
+							for (auto id : registry.GetComponentView<Volt::PrefabComponent>())
+							{
+								if (!registry.HasComponent<Volt::EntityDataComponent>(id))
+								{
+									continue;
+								}
+
+								if (registry.GetComponent<Volt::EntityDataComponent>(id).layerId != layer.id)
+								{
+									continue;
+								}
+
+								if (registry.HasComponent<Volt::PrefabComponent>(id))
+								{
+									auto& prefabComp = registry.GetComponent<Volt::PrefabComponent>(id);
+									auto parent = registry.GetComponent<Volt::RelationshipComponent>(id).Parent;
+
+									bool isRoot = true;
+									bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+
+									if (parent != Wire::NullID)
+									{
+										isRoot = (registry.HasComponent<Volt::PrefabComponent>(parent)) ? registry.GetComponent<Volt::PrefabComponent>(parent).prefabAsset != prefabComp.prefabAsset : true;
+									}
+
+									if (isRoot && hasValidLink)
+									{
+										auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(prefabComp.prefabAsset);
+										if (prefab)
+										{
+											ReloadPrefabImpl(id, prefab);
+										}
+									}
+								}
+							}
+						}
+
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("scene_entity_hierarchy");
+
+						// If there is a payload, assume it's all the selected entities
+						if (payload)
+						{
+							const size_t count = payload->DataSize / sizeof(Wire::EntityId);
+							std::vector<Ref<ParentChildData>> undoData;
+
+							for (size_t i = 0; i < count; i++)
+							{
+								Wire::EntityId id = *(((Wire::EntityId*)payload->Data) + i);
+								//Volt::Entity parent(entity, myScene.get());
+								Volt::Entity entity(id, myScene.get());
+
+								//Ref<ParentChildData> data = CreateRef<ParentChildData>();
+								//data->myParent = parent;
+								//data->myChild = child;
+								//undoData.push_back(data);
+
+								myScene->MoveToLayer(entity, layer.id);
+							}
+
+							//Ref<ParentingCommand> command = CreateRef<ParentingCommand>(undoData, ParentingAction::Parent);
+							//EditorCommandStack::PushUndo(command);
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+
+					ImGui::TableNextColumn();
+
+					// Modifiers
+					{
+						const float imageSize = 21.f;
+						UI::ShiftCursor(0.f, 2.f);
+
+						Ref<Volt::Texture2D> visibleIcon = layer.visible ? EditorResources::GetEditorIcon(EditorIcon::Visible) : EditorResources::GetEditorIcon(EditorIcon::Hidden);
+						std::string visibleId = "##visible" + std::to_string(layer.id);
+						if (UI::ImageButton(visibleId, UI::GetTextureID(visibleIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
+						{
+							const auto newVal = !layer.visible;
+							layer.visible = newVal;
+
+							for (const auto& entityId : myScene->GetRegistry().GetAllEntities())
+							{
+								Volt::Entity entity{ entityId, myScene.get() };
+								if (entity.GetParent())
+								{
+									continue;
+								}
+
+								if (entity.GetLayerId() != layer.id)
+								{
+									continue;
+								}
+
+								entity.SetVisible(newVal);
+							}
+						}
+
+						ImGui::SameLine();
+
+						Ref<Volt::Texture2D> lockedIcon = layer.locked ? EditorResources::GetEditorIcon(EditorIcon::Locked) : EditorResources::GetEditorIcon(EditorIcon::Unlocked);
+						std::string lockedId = "##locked" + std::to_string(layer.id);
+						if (UI::ImageButton(lockedId, UI::GetTextureID(lockedIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
+						{
+							const auto newVal = !layer.locked;
+							layer.locked = newVal;
+
+							for (const auto& entityId : myScene->GetRegistry().GetAllEntities())
+							{
+								Volt::Entity entity{ entityId, myScene.get() };
+								if (entity.GetParent())
+								{
+									continue;
+								}
+
+								if (entity.GetLayerId() != layer.id)
+								{
+									continue;
+								}
+
+								entity.SetLocked(newVal);
 							}
 						}
 					}
+
+					ImGui::TableNextColumn();
+
+					if (isOpen)
+					{
+						for (const auto& id : layerEntityLists[layer.id])
+						{
+							Volt::Entity entity{ id, myScene.get() };
+							DrawEntity(id, mySearchQuery);
+						}
+
+						ImGui::TreePop();
+					}
+				}
+
+				if (layerToRemove != 0)
+				{
+					myScene->RemoveLayer(layerToRemove);
+				}
 			}
-
-			ImGui::PopStyleColor();
-
 			ImGui::EndTable();
+
+			myRebuildDrawList = true;
 
 			const ImRect windowRect = ImGui::GetCurrentWindow()->Rect();
 
@@ -105,7 +386,6 @@ void SceneViewPanel::UpdateMainContent()
 					UI::OpenPopup("MainRightClickMenu");
 				}
 			}
-
 
 			if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
 			{
@@ -190,7 +470,11 @@ void SceneViewPanel::UpdateMainContent()
 					break;
 				}
 
-				prefab->Instantiate(myScene->GetRegistry());
+				Wire::EntityId id = prefab->Instantiate(myScene.get());
+				Volt::Entity prefabEntity(id, myScene.get());
+
+				Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
+				EditorCommandStack::GetInstance().PushUndo(command);
 
 				break;
 			}
@@ -198,6 +482,86 @@ void SceneViewPanel::UpdateMainContent()
 	}
 
 	DrawMainRightClickPopup();
+	ReloadAllPrefabModal();
+
+	//SelectionManager::ResetSelectionKey();
+}
+
+void SceneViewPanel::OnEvent(Volt::Event& e)
+{
+	Volt::EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(SceneViewPanel::OnKeyPressedEvent));
+}
+
+void SceneViewPanel::HighlightEntity(Wire::EntityId id)
+{
+	myScrollToEntiy = id;
+}
+
+void RecursiveUnpackPrefab(Wire::Registry& registry, Wire::EntityId id)
+{
+	if (registry.HasComponent<Volt::PrefabComponent>(id))
+	{
+		registry.RemoveComponent<Volt::PrefabComponent>(id);
+	}
+	for (const auto& child : registry.GetComponent<Volt::RelationshipComponent>(id).Children)
+	{
+		if (registry.HasComponent<Volt::PrefabComponent>(child))
+		{
+			registry.RemoveComponent<Volt::PrefabComponent>(child);
+		}
+		RecursiveUnpackPrefab(registry, child);
+	}
+};
+
+bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
+{
+	if (!myIsHovered || ImGui::IsAnyItemActive())
+	{
+		return false;
+	}
+
+	switch (e.GetKeyCode())
+	{
+		case VT_KEY_BACKSPACE:
+		case VT_KEY_DELETE:
+		{
+			std::vector<Volt::Entity> entitiesToRemove;
+
+			auto selection = SelectionManager::GetSelectedEntities();
+			for (const auto& selectedEntity : selection)
+			{
+				Volt::Entity tempEnt = Volt::Entity(selectedEntity, myScene.get());
+				entitiesToRemove.push_back(tempEnt);
+
+				SelectionManager::Deselect(tempEnt.GetId());
+				SelectionManager::GetFirstSelectedRow() = -1;
+				SelectionManager::GetLastSelectedRow() = -1;
+			}
+
+			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(entitiesToRemove, ObjectStateAction::Delete);
+			EditorCommandStack::GetInstance().PushUndo(command);
+
+			bool shouldUpdateNavMesh = false;
+			for (const auto& i : entitiesToRemove)
+			{
+				if (!shouldUpdateNavMesh && Sandbox::Get().CheckForUpdateNavMesh(i))
+				{
+					shouldUpdateNavMesh = true;
+				}
+				myScene->RemoveEntity(i);
+			}
+
+			if (shouldUpdateNavMesh)
+			{
+				Sandbox::Get().BakeNavMesh();
+			}
+
+			break;
+		}
+	}
+
+	return false;
 }
 
 void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter)
@@ -224,21 +588,29 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	}
 
 	constexpr uint32_t maxSearchDepth = 10;
-	const bool hasMatchingChild = SearchRecursivly(entity, filter, 10);
-	const bool matchesQuery = MatchesQuery(entityName, filter) && !filter.empty();
+	const bool hasMatchingParent = SearchRecursivelyParent(entity, filter, 10);
+	const bool hasMatchingChild = SearchRecursively(entity, filter, 10);
+	const bool matchesQuery = MatchesQuery(entityName, filter);
+	const bool hasId = std::to_string(entity) == filter;
+	const bool isVisionCamera = registry.HasComponent<Volt::VisionCameraComponent>(entity);
 
-	if (!MatchesQuery(entityName, filter) && !hasMatchingChild)
+	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent)
 	{
 		return;
 	}
 
+	if (isVisionCamera)
+	{
+		entityName = VT_ICON_FA_CAMERA + std::string(" ") + entityName;
+	}
+
 	const float edgeOffset = 4.f;
-	const float rowHeight = 21.f;
+	const float rowHeight = 17.f;
 
 	auto* window = ImGui::GetCurrentWindow();
 	window->DC.CurrLineSize.y = rowHeight;
 
-	ImGui::TableNextRow(0, 21.f);
+	ImGui::TableNextRow(0, rowHeight);
 	ImGui::TableNextColumn();
 	window->DC.CurrLineTextBaseOffset = 3.f;
 
@@ -247,23 +619,38 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 	const bool isSelected = SelectionManager::IsSelected(entity);
 
+	const std::string entityId = entityName + "###" + std::to_string(entity);
+
 	ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
 	bool isRowClicked = false;
-	if (ImGui::IsMouseHoveringRect(rowAreaMin, rowAreaMax, false) && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+	bool isRowHovered = ImGui::IsMouseHoveringRect(rowAreaMin, rowAreaMax, true);
+
+	if (isRowHovered)
 	{
-		isRowClicked = true;
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+		{
+			isRowClicked = true;
+		}
 	}
 
 	const bool wasRowRightClicked = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
 	ImGui::PopClipRect();
 
-	std::string entityId = entityName + "###" + std::to_string(entity);
 	bool open = false;
 	bool isPrefab = myScene->GetRegistry().HasComponent<Volt::PrefabComponent>(entity);
 
 	if (isPrefab)
 	{
-		ImGui::PushStyleColor(ImGuiCol_Text, { 56.f / 255.f, 156.f / 255.f, 1.f, 1.f });
+		auto& prefabComp = myScene->GetRegistry().GetComponent<Volt::PrefabComponent>(entity);
+		bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+		if (hasValidLink)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, { 56.f / 255.f, 156.f / 255.f, 1.f, 1.f });
+		}
+		else
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, { 255.f / 255.f, 255.f / 255.f, 0.f, 1.f });
+		}
 	}
 
 	ImGuiTreeNodeFlags treeFlags = isSelected ? ImGuiTreeNodeFlags_Selected : 0;
@@ -298,26 +685,60 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	};
 
 	const bool descendantSelected = isAnyDescendantSelected(entity, isAnyDescendantSelected);
+	const gem::vec4 selectedColor = myIsFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
 
-	if (!isSelected && descendantSelected)
+	if (isRowHovered)
+	{
+		if (isSelected)
+		{
+			Utility::SetRowColor(selectedColor);
+		}
+		else
+		{
+			Utility::SetRowColor(EditorTheme::ItemHovered);
+		}
+	}
+	else if (!isSelected && descendantSelected)
 	{
 		ImGui::SetNextItemOpen(true);
-		ImGui::PushStyleColor(ImGuiCol_Header, { 0.17f, 0.196f, 0.227f, 1.f });
-
-		treeFlags |= ImGuiTreeNodeFlags_Selected;
+		Utility::SetRowColor(EditorTheme::ItemChildActive);
+	}
+	else if (isSelected)
+	{
+		Utility::SetRowColor(selectedColor);
+	}
+	else if (hasMatchingChild)
+	{
+		Utility::SetRowColor(EditorTheme::ItemChildActive);
 	}
 
-	if (hasMatchingChild)
+	gem::vec2 offset = { 25.f, 6.f };
+	if (parentId == Wire::NullID)
 	{
-		ImGui::PushStyleColor(ImGuiCol_Header, { 0.17f, 0.196f, 0.227f, 1.f });
-		treeFlags |= ImGuiTreeNodeFlags_Selected;
+		offset.x -= 20.f;
 	}
 
 	if (matchesQuery)
 	{
-		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 0.3f, 0.54f, 0.8f, 1.f });
-		treeFlags |= ImGuiTreeNodeFlags_Selected;
+		UI::RenderMatchingTextBackground(filter, entityName, EditorTheme::MatchingTextBackground, offset);
 	}
+
+	if (hasId)
+	{
+		UI::RenderMatchingTextBackground(entityName, entityName, EditorTheme::MatchingTextBackground, offset);
+	}
+
+	if (myScrollToEntiy != 0 && myScrollToEntiy == entity)
+	{
+		myScrollToEntiy = 0;
+		ImGui::SetScrollHereY();
+	}
+
+	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{ 0.f, 0.f, 0.f, 0.f });
+	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4{ 0.f, 0.f, 0.f, 0.f });
+	ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4{ 0.f, 0.f, 0.f, 0.f });
+
+	UI::PushFont(FontType::Regular_16);
 
 	if (!children.empty())
 	{
@@ -334,22 +755,11 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		ImGui::TreeNodeEx(entityId.c_str(), treeFlags);
 	}
 
+	UI::PopFont();
+
+	ImGui::PopStyleColor(3);
+
 	ImGui::SetItemAllowOverlap();
-
-	if (matchesQuery)
-	{
-		ImGui::PopStyleColor();
-	}
-
-	if (hasMatchingChild)
-	{
-		ImGui::PopStyleColor();
-	}
-
-	if (!isSelected && descendantSelected)
-	{
-		ImGui::PopStyleColor();
-	}
 
 	const int32_t rowIndex = ImGui::TableGetRowIndex();
 
@@ -481,7 +891,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		{
 			const auto& prefabComp = myScene->GetRegistry().GetComponent<Volt::PrefabComponent>(entity);
 
-			if (Volt::Prefab::IsParentInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset))
+			if (Volt::Prefab::IsRootInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset))
 			{
 				const std::string menuId = "Override Prefab Asset##" + std::to_string(entity);
 
@@ -494,7 +904,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 					}
 					else
 					{
-						Volt::Prefab::OverridePrefabAsset(myScene->GetRegistry(), entity, prefabComp.prefabAsset);
+						Volt::Prefab::OverridePrefabAsset(myScene.get(), entity, prefabComp.prefabAsset); // #SAMUEL_TODO: Find out why prefabComp.prefabAsset changes after this function
 
 						auto prefabAsset = Volt::AssetManager::GetAsset<Volt::Prefab>(prefabComp.prefabAsset);
 						if (prefabAsset && prefabAsset->IsValid())
@@ -524,10 +934,46 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		{
 			const auto& prefabComp = myScene->GetRegistry().GetComponent<Volt::PrefabComponent>(entity);
 
-			const std::string menuId = "Reset Prefab##" + std::to_string(entity);
-			if (ImGui::MenuItem(menuId.c_str()))
+			const std::string resetId = "Reload Prefab##" + std::to_string(entity);
+			if (ImGui::MenuItem(resetId.c_str()))
 			{
-				Volt::Prefab::OverridePrefabInRegistry(myScene->GetRegistry(), entity, prefabComp.prefabAsset);
+				auto parent = registry.GetComponent<Volt::RelationshipComponent>(entity).Parent;
+				bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+
+				bool isRoot = true;
+				if (parent != Wire::NullID)
+				{
+					isRoot = (registry.HasComponent<Volt::PrefabComponent>(parent)) ? registry.GetComponent<Volt::PrefabComponent>(parent).prefabAsset != prefabComp.prefabAsset : true;
+				}
+
+				if (!hasValidLink && isRoot)
+				{
+					auto listOfPrefabsPaths = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
+
+					for (const auto& p : listOfPrefabsPaths)
+					{
+						auto ext = p.filename().extension();
+						if (p.filename() == std::format("{0}{1}", registry.GetComponent<Volt::TagComponent>(entity).tag, ext.string()))
+						{
+							auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(p);
+							if (prefab)
+							{
+								ReloadPrefabImpl(entity, prefab);
+								break;
+							}
+						}
+					}
+				}
+				else
+				{
+					ReloadPrefabImpl(entity, Volt::AssetManager::GetAsset<Volt::Prefab>(prefabComp.prefabAsset));
+				}
+			}
+
+			const std::string unpackId = "Unpack Prefab##" + std::to_string(entity);
+			if (ImGui::MenuItem(unpackId.c_str()))
+			{
+				RecursiveUnpackPrefab(myScene->GetRegistry(), entity);
 			}
 		}
 
@@ -535,6 +981,12 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		if (ImGui::MenuItem(deleteId.c_str()))
 		{
 			entityDeleted = true;
+		}
+
+		const std::string copyId = "Copy ID##" + std::to_string(entity);
+		if (ImGui::MenuItem(copyId.c_str()))
+		{
+			Volt::Application::Get().GetWindow().SetClipboard(std::format("{0}", entity).c_str());
 		}
 
 		ImGui::EndPopup();
@@ -582,20 +1034,34 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 			std::string visibleId = "##visible" + std::to_string(entity);
 			if (UI::ImageButton(visibleId, UI::GetTextureID(visibleIcon), { imageSize, imageSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
 			{
+				auto recursiveSetVisible = [scene = myScene](Wire::EntityId entityId, bool visible, auto recursiveSetVisible) -> bool
+				{
+					Volt::Entity entity{ entityId, scene.get() };
+					if (entity.HasComponent<Volt::TransformComponent>())
+					{
+						entity.GetComponent<Volt::TransformComponent>().visible = visible;
+					}
+
+					for (const auto& e : entity.GetChilden())
+					{
+						recursiveSetVisible(e.GetId(), visible, recursiveSetVisible);
+					}
+
+					return false;
+				};
+
 				const auto newVal = !transformComponent.visible;
 				if (!SelectionManager::IsSelected(entity))
 				{
-					transformComponent.visible = newVal;
+					recursiveSetVisible(entity, newVal, recursiveSetVisible);
 				}
 				else
 				{
 					for (const auto& e : SelectionManager::GetSelectedEntities())
 					{
-						auto& eTransformComponent = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(e);
-						eTransformComponent.visible = newVal;
+						recursiveSetVisible(e, newVal, recursiveSetVisible);
 					}
 				}
-
 			}
 
 			ImGui::SameLine();
@@ -637,39 +1103,27 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 void SceneViewPanel::CreatePrefabAndSetupEntities(Wire::EntityId entity)
 {
+	if (myScene->GetRegistry().HasComponent<Volt::PrefabComponent>(entity))
+	{
+		UI::Notify(NotificationType::Error, "Unable to create prefab!", "Cannot create prefab of existing prefab!");
+		return;
+	}
+
 	const auto& tagComp = myScene->GetRegistry().GetComponent<Volt::TagComponent>(entity);
 
-	Ref<Volt::Prefab> prefab = CreateRef<Volt::Prefab>(myScene->GetRegistry(), entity);
+	Ref<Volt::Prefab> prefab = CreateRef<Volt::Prefab>(myScene.get(), entity);
 
 	std::string path = "Assets/Prefabs/" + tagComp.tag + ".vtprefab";
 	path.erase(std::remove_if(path.begin(), path.end(), ::isspace), path.end());
 
 	prefab->path = path;
 	Volt::AssetManager::Get().SaveAsset(prefab);
-
-	SetupEntityAsPrefab(entity, prefab->handle);
 }
 
-void SceneViewPanel::SetupEntityAsPrefab(Wire::EntityId entity, Volt::AssetHandle prefabId)
+bool SceneViewPanel::SearchRecursively(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth)
 {
-	if (!myScene->GetRegistry().HasComponent<Volt::PrefabComponent>(entity))
-	{
-		myScene->GetRegistry().AddComponent<Volt::PrefabComponent>(entity);
-	}
+	VT_PROFILE_FUNCTION();
 
-	auto& prefabComp = myScene->GetRegistry().GetComponent<Volt::PrefabComponent>(entity);
-	prefabComp.prefabAsset = prefabId;
-	prefabComp.prefabEntity = entity;
-
-	auto& relComp = myScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entity);
-	for (const auto& child : relComp.Children)
-	{
-		SetupEntityAsPrefab(child, prefabId);
-	}
-}
-
-bool SceneViewPanel::SearchRecursivly(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth)
-{
 	if (filter.empty())
 	{
 		return false;
@@ -682,13 +1136,47 @@ bool SceneViewPanel::SearchRecursivly(Wire::EntityId id, const std::string& filt
 		if (child.HasComponent<Volt::TagComponent>())
 		{
 			std::string t = child.GetComponent<Volt::TagComponent>().tag;
-			if (MatchesQuery(t, filter))
+			if (MatchesQuery(t, filter) || (std::to_string(child.GetId())) == filter || HasComponent(child.GetId(), filter) || HasScript(child.GetId(), filter))
 			{
 				return true;
 			}
 		}
 
-		const bool found = SearchRecursivly(child.GetId(), filter, maxSearchDepth, currentDepth + 1);
+		const bool found = SearchRecursively(child.GetId(), filter, maxSearchDepth, currentDepth + 1);
+		if (found)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SceneViewPanel::SearchRecursivelyParent(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth /*= 0*/)
+{
+	VT_PROFILE_FUNCTION();
+
+	if (filter.empty())
+	{
+		return false;
+	}
+
+	Volt::Entity ent{ id, myScene.get() };
+
+	if (ent.HasComponent<Volt::RelationshipComponent>())
+	{
+		auto parent = ent.GetParent();
+
+		if (parent.HasComponent<Volt::TagComponent>())
+		{
+			std::string t = parent.GetComponent<Volt::TagComponent>().tag;
+			if (MatchesQuery(t, filter) || (std::to_string(parent.GetId())) == filter || HasComponent(parent.GetId(), filter))
+			{
+				return true;
+			}
+		}
+
+		const bool found = SearchRecursively(parent.GetId(), filter, maxSearchDepth, currentDepth + 1);
 		if (found)
 		{
 			return true;
@@ -700,6 +1188,8 @@ bool SceneViewPanel::SearchRecursivly(Wire::EntityId id, const std::string& filt
 
 bool SceneViewPanel::MatchesQuery(const std::string& text, const std::string& filter)
 {
+	VT_PROFILE_FUNCTION();
+
 	if (filter.empty())
 	{
 		return true;
@@ -729,11 +1219,68 @@ bool SceneViewPanel::MatchesQuery(const std::string& text, const std::string& fi
 	return false;
 }
 
+bool SceneViewPanel::HasComponent(Wire::EntityId id, const std::string& filter)
+{
+	if (filter.empty())
+	{
+		return false;
+	}
+
+	if (!(filter.at(0) == ';'))
+	{
+		return false;
+	}
+
+	const std::string compSearchString = filter.substr(1);
+
+	for (const auto& [name, info] : Wire::ComponentRegistry::ComponentGUIDs())
+	{
+		if (Utils::ToLower(name).contains(Utils::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SceneViewPanel::HasScript(Wire::EntityId id, const std::string& filter)
+{
+	if (filter.empty())
+	{
+		return false;
+	}
+
+	if (!(filter.at(0) == ';'))
+	{
+		return false;
+	}
+
+	const std::string scriptSearchString = filter.substr(1);
+	if (myScene->GetRegistry().HasComponent<Volt::MonoScriptComponent>(id))
+	{
+		for (const auto& name : myScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(id).scriptNames)
+		{
+			if (Utils::ToLower(name).contains(Utils::ToLower(scriptSearchString)))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void SceneViewPanel::DrawMainRightClickPopup()
 {
 	if (UI::BeginPopup("MainRightClickMenu", ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
-		if (ImGui::MenuItem("Create Empty Entity"))
+		if (ImGui::MenuItem(VT_ICON_FA_PLUS " Create New Layer"))
+		{
+			myScene->AddLayer("New Layer");
+		}
+
+		if (ImGui::MenuItem(VT_ICON_FA_PLUS " Create Empty Entity"))
 		{
 			auto ent = myScene->CreateEntity();
 
@@ -743,70 +1290,70 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			SelectionManager::Select(ent.GetId());
 		}
 
-		if (ImGui::BeginMenu("New"))
+		if (ImGui::BeginMenu(VT_ICON_FA_PLUS " New"))
 		{
-			if (ImGui::BeginMenu("Primitives"))
+			if (ImGui::BeginMenu(VT_ICON_FA_CUBES " Primitives"))
 			{
-				if (ImGui::MenuItem("Cube"))
+				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Cube"))
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Cube.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 					ent.SetTag("New Cube");
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Capsule"))
+				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Capsule"))
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Capsule.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
 					ent.SetTag("New Capsule");
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Cone"))
+				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Cone"))
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Cone.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cone.vtmesh");
 					ent.SetTag("New Cone");
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Cylinder"))
+				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Cylinder"))
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Cylinder.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
 					ent.SetTag("New Cylinder");
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Sphere"))
+				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Sphere"))
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Sphere.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 					ent.SetTag("New Sphere");
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Plane"))
+				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Plane"))
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Assets/Meshes/Primitives/SM_Plane.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Plane.vtmesh");
 					ent.SetTag("New Plane");
 
 					SelectionManager::DeselectAll();
@@ -816,9 +1363,24 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Lights"))
+			if (ImGui::BeginMenu(VT_ICON_FA_IMAGE " Environment"))
 			{
-				if (ImGui::MenuItem("Point Light"))
+				if (ImGui::MenuItem("Decal"))
+				{
+					auto ent = myScene->CreateEntity();
+					auto& meshComp = ent.AddComponent<Volt::DecalComponent>();
+					ent.SetTag("New Decal");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu(VT_ICON_FA_LIGHTBULB " Lights"))
+			{
+				if (ImGui::MenuItem(VT_ICON_FA_LIGHTBULB " Point Light"))
 				{
 					auto ent = myScene->CreateEntity();
 					ent.AddComponent<Volt::PointLightComponent>();
@@ -828,7 +1390,17 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Directional Light"))
+				if (ImGui::MenuItem(VT_ICON_FA_LIGHTBULB " Spot Light"))
+				{
+					auto ent = myScene->CreateEntity();
+					ent.AddComponent<Volt::SpotLightComponent>();
+					ent.SetTag("New Spot Light");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem(VT_ICON_FA_SUN " Directional Light"))
 				{
 					auto ent = myScene->CreateEntity();
 					ent.AddComponent<Volt::DirectionalLightComponent>();
@@ -838,7 +1410,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					SelectionManager::Select(ent.GetId());
 				}
 
-				if (ImGui::MenuItem("Skylight"))
+				if (ImGui::MenuItem(VT_ICON_FA_LIGHTBULB " Skylight"))
 				{
 					auto ent = myScene->CreateEntity();
 					ent.AddComponent<Volt::SkylightComponent>();
@@ -848,10 +1420,30 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					SelectionManager::Select(ent.GetId());
 				}
 
+				if (ImGui::MenuItem(VT_ICON_FA_LIGHTBULB " Sphere Light"))
+				{
+					auto ent = myScene->CreateEntity();
+					ent.AddComponent<Volt::SphereLightComponent>();
+					ent.SetTag("New Sphere Light");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
+				if (ImGui::MenuItem(VT_ICON_FA_LIGHTBULB " Rectangle Light"))
+				{
+					auto ent = myScene->CreateEntity();
+					ent.AddComponent<Volt::RectangleLightComponent>();
+					ent.SetTag("New Rectangle Light");
+
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(ent.GetId());
+				}
+
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::MenuItem("Camera"))
+			if (ImGui::MenuItem(VT_ICON_FA_CAMERA " Camera"))
 			{
 				auto ent = myScene->CreateEntity();
 				ent.AddComponent<Volt::CameraComponent>();
@@ -864,6 +1456,225 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::MenuItem(VT_ICON_FA_CIRCLE_DOT " Reload all prefabs"))
+		{
+			UI::OpenModal("Confirm Reload##sceneviewpanel");
+		}
+
+		if (ImGui::MenuItem(VT_ICON_FA_CIRCLE_DOT " Correct missing prefabs"))
+		{
+			CorrectMissingPrefabs();
+		}
+
+		const std::string rorriId = "Rorri Racerbil";
+		if (ImGui::MenuItem(rorriId.c_str()))
+		{
+			auto& registry = myScene->GetRegistry();
+			registry.ForEach<Volt::EntityDataComponent>([&](Wire::EntityId id, const Volt::EntityDataComponent& dataComp)
+			{
+				Volt::Entity entity{ id, myScene.get() };
+				if (entity.GetParent())
+				{
+					if (entity.GetParent().GetLayerId() != entity.GetLayerId())
+					{
+						entity.ResetParent();
+					}
+				}
+
+				std::vector<Volt::Entity> entitiesToRemove;
+				for (auto child : entity.GetChilden())
+				{
+					if (child.GetLayerId() != entity.GetLayerId())
+					{
+						entitiesToRemove.emplace_back(child);
+					}
+
+					if (child.GetParent() != entity)
+					{
+						entitiesToRemove.emplace_back(child);
+					}
+				}
+
+				for (auto toRemove : entitiesToRemove)
+				{
+					toRemove.ResetParent();
+				}
+			});
+
+			UI::Notify(NotificationType::Error, "Din mamma", "Din pappa");
+		}
+
+		if (ImGui::MenuItem("Net go brrr"))
+		{
+			auto& registry = myScene->GetRegistry();
+			registry.ForEach<Volt::NetActorComponent>([&](Wire::EntityId id, Volt::NetActorComponent& dataComp)
+			{
+				dataComp.repId = Nexus::RandRepID();
+			});
+			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");
+		}
 		ImGui::EndPopup();
 	}
+}
+
+VT_OPTIMIZE_OFF
+void SceneViewPanel::CorrectMissingPrefabs()
+{
+	auto& registry = myScene->GetRegistry();
+
+	auto listOfPrefabsPaths = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
+
+	for (auto id : registry.GetComponentView<Volt::PrefabComponent>())
+	{
+		if (registry.HasComponent<Volt::PrefabComponent>(id))
+		{
+			auto& prefabComp = registry.GetComponent<Volt::PrefabComponent>(id);
+			auto parent = registry.GetComponent<Volt::RelationshipComponent>(id).Parent;
+
+			bool isRoot = true;
+			bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+
+			if (parent != Wire::NullID)
+			{
+				isRoot = (registry.HasComponent<Volt::PrefabComponent>(parent)) ? registry.GetComponent<Volt::PrefabComponent>(parent).prefabAsset != prefabComp.prefabAsset : true;
+			}
+
+			if (isRoot && !hasValidLink)
+			{
+				for (const auto& p : listOfPrefabsPaths)
+				{
+					auto prefabName = p.stem();
+					if (prefabName == registry.GetComponent<Volt::TagComponent>(id).tag)
+					{
+						auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(p);
+						if ((prefab && prefabComp.prefabEntity == prefab->GetRootId()) || prefabComp.prefabEntity == Wire::NullID)
+						{
+							ReloadPrefabImpl(id, prefab);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void SceneViewPanel::ReloadAllPrefabModal()
+{
+	if (UI::BeginModal("Confirm Reload##sceneviewpanel", ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	{
+		if (ImGui::Button("Confirm"))
+		{
+			auto& registry = myScene->GetRegistry();
+
+			for (auto id : registry.GetComponentView<Volt::PrefabComponent>())
+			{
+				if (registry.HasComponent<Volt::PrefabComponent>(id))
+				{
+					auto& prefabComp = registry.GetComponent<Volt::PrefabComponent>(id);
+					auto parent = registry.GetComponent<Volt::RelationshipComponent>(id).Parent;
+
+					bool isRoot = true;
+					bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+
+					if (parent != Wire::NullID)
+					{
+						isRoot = (registry.HasComponent<Volt::PrefabComponent>(parent)) ? registry.GetComponent<Volt::PrefabComponent>(parent).prefabAsset != prefabComp.prefabAsset : true;
+					}
+
+					if (isRoot && hasValidLink)
+					{
+						auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(prefabComp.prefabAsset);
+						if (prefab)
+						{
+							ReloadPrefabImpl(id, prefab);
+						}
+					}
+				}
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void SceneViewPanel::ReloadPrefabImpl(Wire::EntityId id, Ref<Volt::Prefab> asset)
+{
+	if (!id || !asset) { return; }
+	Volt::Prefab::UpdateEntity(myScene.get(), id, asset->handle);
+}
+
+void SceneViewPanel::RebuildEntityDrawList()
+{
+	myEntityDrawList.clear();
+	myEntityToImGuiID.clear();
+	myRebuildDrawList = true;
+
+	myScene->GetRegistry().ForEach<Volt::EntityDataComponent>([&](Wire::EntityId id, const Volt::EntityDataComponent& dataComp)
+	{
+		Volt::Entity entity{ id, myScene.get() };
+		if (entity.GetParent())
+		{
+			return;
+		}
+
+		RebuildEntityDrawListRecursive(id, mySearchQuery);
+	});
+}
+
+void SceneViewPanel::RebuildEntityDrawListRecursive(Wire::EntityId entityId, const std::string& filter)
+{
+	Volt::Entity entity{ entityId, myScene.get() };
+
+	const bool hasMatchingChild = SearchRecursively(entityId, filter, 10);
+	const bool matchesQuery = MatchesQuery(entity.GetTag(), filter);
+	const bool hasComponent = HasComponent(entityId, filter);
+	const bool hasScript = HasScript(entityId, filter);
+	const bool hasId = std::to_string(entityId) == filter;
+
+	if (!matchesQuery && !hasId && !hasScript && !hasComponent && !hasMatchingChild)
+	{
+		return;
+	}
+
+	myEntityDrawList.emplace_back(entityId);
+
+	if (entity.GetChilden().empty())
+	{
+		return;
+	}
+
+	const bool isVisionCamera = myScene->GetRegistry().HasComponent<Volt::VisionCameraComponent>(entityId);
+	std::string entityName = entity.GetTag();
+
+	if (isVisionCamera)
+	{
+		entityName = VT_ICON_FA_CAMERA + std::string(" ") + entityName;
+	}
+
+	const std::string entityStrId = entityName + "###" + std::to_string(entityId);
+
+	auto imGuiID = ImGui::GetID(entityStrId.c_str());
+	myEntityToImGuiID[entityId] = imGuiID;
+
+	bool isOpen = ImGui::TreeNodeBehaviorIsOpen(imGuiID);
+
+	if (!isOpen)
+	{
+		return;
+	}
+
+	//for (const auto& child : entity.GetChilden())
+	//{
+	//	RebuildEntityDrawListRecursive(child.GetId(), filter);
+	//}
 }

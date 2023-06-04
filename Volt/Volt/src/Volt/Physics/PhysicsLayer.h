@@ -38,7 +38,7 @@ namespace Volt
 
 	private:
 		PhysicsLayerManager() = delete;
-	
+
 		static uint32_t GetNextLayerId();
 
 		inline static std::vector<PhysicsLayer> myLayers;

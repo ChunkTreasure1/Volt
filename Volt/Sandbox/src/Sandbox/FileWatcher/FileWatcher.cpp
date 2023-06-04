@@ -30,7 +30,7 @@ FileWatcher::~FileWatcher()
 	myInstance = nullptr;
 }
 
-void FileWatcher::AddWatch(const std::filesystem::path& path, bool recursive) 
+void FileWatcher::AddWatch(const std::filesystem::path& path, bool recursive)
 {
 	std::string watchPath = Utils::ReplaceCharacter(path.string(), '\\', '/');
 

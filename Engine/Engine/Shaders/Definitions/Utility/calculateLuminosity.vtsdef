@@ -1,0 +1,6 @@
+name: "CalculateLuminosity"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Utility/CalculateLuminosity_cs.hlsl"
+inputTextures:
+  []

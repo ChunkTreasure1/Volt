@@ -1,11 +1,14 @@
 #include "sbpch.h"
 #include "EditorUtilities.h"
 
+#include "Sandbox/Utility/AssetBrowserUtilities.h"
 #include "Sandbox/Utility/EditorResources.h"
+#include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
+#include <Volt/Asset/Animation/AnimationGraphAsset.h>
 
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/SubMaterial.h>
@@ -17,12 +20,14 @@
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Rendering/Renderer.h>
-#include <Volt/Rendering/Framebuffer.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
+
+#include <Volt/Asset/Importers/MeshTypeImporter.h>
+#include <Volt/Utility/ImageUtility.h>
 
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
+
+#include <DirectXTex/DirectXTex.h>
 
 bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType /* = Volt::AssetType::None */, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
 {
@@ -46,7 +51,7 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 
 		if (wantedType != Volt::AssetType::None)
 		{
-			if (wantedType != rawAsset->GetType())
+			if ((wantedType & rawAsset->GetType()) == Volt::AssetType::None)
 			{
 				assetHandle = Volt::Asset::Null();
 			}
@@ -61,11 +66,16 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 	if (auto ptr = UI::DragDropTarget("ASSET_BROWSER_ITEM"))
 	{
 		Volt::AssetHandle newHandle = *(Volt::AssetHandle*)ptr;
-		assetHandle = newHandle;
-		changed = true;
-		if (callback)
+		auto droppedAssetType = Volt::AssetManager::GetAssetTypeFromHandle(newHandle);
+
+		if ((droppedAssetType & wantedType) != Volt::AssetType::None)
 		{
-			callback(assetHandle);
+			assetHandle = newHandle;
+			changed = true;
+			if (callback)
+			{
+				callback(assetHandle);
+			}
 		}
 	}
 
@@ -123,9 +133,9 @@ bool EditorUtils::AssetBrowserPopupField(const std::string& id, Volt::AssetHandl
 	return changed;
 }
 
-bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery)
+bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery, bool setAsActive)
 {
-	UI::ScopedColor childColor{ ImGuiCol_ChildBg, { 0.2f, 0.2f, 0.2f, 1.f } };
+	UI::ScopedColor childColor{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
 	UI::ScopedStyleFloat rounding(ImGuiStyleVar_ChildRounding, 2.f);
 
 	constexpr float barHeight = 32.f;
@@ -142,7 +152,13 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 		ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().WindowPadding.x);
 
 		UI::PushId();
-		if (UI::InputText("", outSearchQuery))
+
+		if (setAsActive)
+		{
+			ImGui::SetKeyboardFocusHere();
+		}
+
+		if (UI::InputTextWithHint("", outSearchQuery, "Search..."))
 		{
 			if (!outSearchQuery.empty())
 			{
@@ -163,7 +179,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 	return returnVal;
 }
 
-bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle)
+bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Skeleton> targetSkeleton)
 {
 	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(assetHandle);
 
@@ -184,6 +200,20 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle)
 			sourcePath = d;
 			break;
 		}
+	}
+
+	if (sourcePath.empty())
+	{
+		auto meshPath = Volt::AssetManager::GetPathFromAssetHandle(assetHandle);
+		meshPath.replace_extension(".fbx");
+
+		if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / meshPath))
+		{
+			UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The source mesh {0} does not exist!", sourcePath.string()));
+			return false;
+		}
+
+		sourcePath = meshPath;
 	}
 
 	if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / sourcePath))
@@ -209,7 +239,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle)
 	{
 		case Volt::AssetType::Animation:
 		{
-			Ref<Volt::Animation> newAnim = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / sourcePath);
+			Ref<Volt::Animation> newAnim = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / sourcePath, targetSkeleton);
 			if (!newAnim)
 			{
 				UI::Notify(NotificationType::Error, "Unable to re import animation!", std::format("Failed to import animation from {0}!", sourcePath.string()));
@@ -258,48 +288,67 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle)
 				break;
 			}
 
-			Ref<Volt::Material> material = originalMesh->GetMaterial();
-			Volt::AssetHandle materialHandle = Volt::Asset::Null();
+			Ref<Volt::Material> originalMaterial = originalMesh->GetMaterial();
+			Volt::AssetHandle materialHandle = originalMaterial->handle;
 			bool shouldCreateNewMaterial = false;
 
-			if (!material || !material->IsValid())
+			if (!originalMaterial || !originalMaterial->IsValid())
 			{
-				material = nullptr;
+				originalMaterial = nullptr;
 				shouldCreateNewMaterial = true;
 				VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", originalMesh->path);
 			}
 			else
 			{
-				if (newMesh->GetMaterial()->GetSubMaterialCount() != material->GetSubMaterialCount())
+				// We try to check if the material was created with the mesh. This it to make sure that we don't override a shared material
+				if (originalMaterial->path.stem() == originalMesh->path.stem())
 				{
-					materialHandle = Volt::Asset::Null();
-					shouldCreateNewMaterial = true;
+					if (newMesh->GetMaterial()->GetSubMaterialCount() != originalMaterial->GetSubMaterialCount())
+					{
+						materialHandle = Volt::Asset::Null();
+						shouldCreateNewMaterial = true;
 
+					}
 				}
 				else
 				{
-					materialHandle = material->handle;
+					for (auto& subMesh : newMesh->GetSubMeshesMutable())
+					{
+						const auto newMat = newMesh->GetMaterial()->GetSubMaterialAt(subMesh.materialIndex);
+						const auto& newMatName = newMat->GetName();
+
+						for (const auto& oldMat : originalMaterial->GetSubMaterials())
+						{
+							const auto& oldMatName = oldMat.second->GetName();
+
+							if (newMatName == oldMatName)
+							{
+								subMesh.materialIndex = oldMat.first;
+								break;
+							}
+						}
+					}
 				}
 			}
 
 			if (Volt::MeshCompiler::TryCompile(newMesh, originalAsset->path, materialHandle))
 			{
 				Volt::AssetManager::Get().ReloadAsset(originalAsset->handle);
-				
-				if (shouldCreateNewMaterial && material)
+
+				if (shouldCreateNewMaterial && originalMaterial)
 				{
 					Ref<Volt::Mesh> reimportedMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(originalAsset->path);
-					const uint32_t subMaterialCount = gem::min(reimportedMesh->GetMaterial()->GetSubMaterialCount(), material->GetSubMaterialCount());
-					
+					const uint32_t subMaterialCount = gem::min(reimportedMesh->GetMaterial()->GetSubMaterialCount(), originalMaterial->GetSubMaterialCount());
+
 					for (uint32_t i = 0; i < subMaterialCount; i++)
 					{
-						for (const auto& [binding, tex] : material->GetSubMaterials().at(i)->GetTextures())
+						for (const auto& [binding, tex] : originalMaterial->GetSubMaterials().at(i)->GetTextures())
 						{
 							reimportedMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
 						}
 					}
 
-					Volt::AssetManager::Get().SaveAsset(reimportedMesh->GetMaterial());	
+					Volt::AssetManager::Get().SaveAsset(reimportedMesh->GetMaterial());
 					Volt::AssetManager::Get().ReloadAsset(reimportedMesh->GetMaterial()->path);
 				}
 
@@ -398,6 +447,11 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 			UI::Property("Import Skeleton", aImportData.importSkeleton);
 			UI::Property("Import Animation", aImportData.importAnimation);
 
+			if (!aImportData.importSkeleton && aImportData.importAnimation)
+			{
+				EditorUtils::Property("Target Skeleton", aImportData.targetSkeleton, Volt::AssetType::Skeleton);
+			}
+
 			UI::EndProperties();
 		}
 		UI::PopId();
@@ -412,6 +466,28 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(aMeshToImport);
 				if (importMesh && importMesh->IsValid())
 				{
+					if (!aImportData.createMaterials)
+					{
+						const auto importedMaterial = importMesh->GetMaterial();
+						const auto materialToUse = Volt::AssetManager::GetAsset<Volt::Material>(aImportData.externalMaterial);
+						if (materialToUse && materialToUse->IsValid())
+						{
+							for (auto& subMesh : importMesh->GetSubMeshesMutable())
+							{
+								auto currentSubMeshMat = importedMaterial->GetSubMaterialAt(subMesh.materialIndex);
+
+								for (const auto& [index, subMat] : materialToUse->GetSubMaterials())
+								{
+									if (currentSubMeshMat->GetName() == subMat->GetName())
+									{
+										subMesh.materialIndex = index;
+										break;
+									}
+								}
+							}
+						}
+					}
+
 					succeded = Volt::MeshCompiler::TryCompile(importMesh, aImportData.destination, material);
 					if (!succeded)
 					{
@@ -450,17 +526,25 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			if (aImportData.importAnimation)
 			{
-				Ref<Volt::Animation> animation = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport);
-				if (!animation)
+				Ref<Volt::Skeleton> targetSkeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(aImportData.targetSkeleton);
+				if (!targetSkeleton || !targetSkeleton->IsValid())
 				{
-					UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
+					UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Skeleton with handle {0} is invalid!", static_cast<uint64_t>(aImportData.targetSkeleton)));
 				}
 				else
 				{
-					animation->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
-					Volt::AssetManager::Get().SaveAsset(animation);
-					Volt::AssetManager::Get().AddDependency(animation->handle, aMeshToImport);
-					succeded = true;
+					Ref<Volt::Animation> animation = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport, targetSkeleton);
+					if (!animation)
+					{
+						UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
+					}
+					else
+					{
+						animation->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
+						Volt::AssetManager::Get().SaveAsset(animation);
+						Volt::AssetManager::Get().AddDependency(animation->handle, aMeshToImport);
+						succeded = true;
+					}
 				}
 			}
 
@@ -484,6 +568,223 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 		UI::EndModal();
 	}
 	return imported;
+}
+
+ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImportData& aImportData, const std::vector<std::filesystem::path>& meshesToImport)
+{
+	ImportState imported = ImportState::None;
+
+	UI::ScopedStyleFloat rounding{ ImGuiStyleVar_FrameRounding, 2.f };
+
+	if (UI::BeginModal(aId, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::TextUnformatted("Settings");
+
+		UI::PushId();
+		if (UI::BeginProperties("Properties"))
+		{
+			UI::Property("Destination Directory", aImportData.destination);
+
+			UI::EndProperties();
+		}
+		UI::PopId();
+
+		ImGui::Separator();
+		ImGui::TextUnformatted("Mesh");
+
+		UI::PushId();
+		if (UI::BeginProperties("Settings"))
+		{
+			UI::Property("Create Materials", aImportData.createMaterials);
+
+			if (!aImportData.createMaterials)
+			{
+				EditorUtils::Property("Material", aImportData.externalMaterial, Volt::AssetType::Material);
+			}
+
+			UI::EndProperties();
+		}
+		UI::PopId();
+
+		if (ImGui::Button("Import"))
+		{
+			for (const auto& src : meshesToImport)
+			{
+				const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
+				const std::filesystem::path destinationPath = aImportData.destination / (src.stem().string() + ".vtmesh");
+
+				bool succeded = false;
+
+				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(src);
+				if (importMesh && importMesh->IsValid())
+				{
+					if (!aImportData.createMaterials)
+					{
+						const auto importedMaterial = importMesh->GetMaterial();
+						const auto materialToUse = Volt::AssetManager::GetAsset<Volt::Material>(aImportData.externalMaterial);
+						if (materialToUse && materialToUse->IsValid())
+						{
+							for (auto& subMesh : importMesh->GetSubMeshesMutable())
+							{
+								auto currentSubMeshMat = importedMaterial->GetSubMaterialAt(subMesh.materialIndex);
+
+								for (const auto& [index, subMat] : materialToUse->GetSubMaterials())
+								{
+									if (currentSubMeshMat->GetName() == subMat->GetName())
+									{
+										subMesh.materialIndex = index;
+										break;
+									}
+								}
+							}
+						}
+					}
+
+					succeded = Volt::MeshCompiler::TryCompile(importMesh, destinationPath, material);
+					if (!succeded)
+					{
+						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", destinationPath.string()));
+					}
+
+					auto handle = Volt::AssetManager::Get().AddToRegistry(destinationPath);
+					Volt::AssetManager::Get().AddDependency(handle, src);
+				}
+				else
+				{
+					UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", destinationPath.string()));
+				}
+
+				if (importMesh)
+				{
+					Volt::AssetManager::Get().Unload(importMesh->handle);
+				}
+
+				if (succeded)
+				{
+					UI::Notify(NotificationType::Success, "Mesh compilation succeded!", std::format("Successfully compiled mesh to {}!", destinationPath.string()));
+					imported = ImportState::Imported;
+				}
+			}
+
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
+			imported = ImportState::Discard;
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+	return imported;
+}
+
+void EditorUtils::MeshExportModal(const std::string& aId, std::filesystem::path aDirectoryPath, MeshImportData& aExportData, std::vector<Ref<Volt::Mesh>> aMeshesToExport)
+{
+	if (aMeshesToExport.empty()) { return; }
+
+	static std::string path;
+
+	UI::ScopedStyleFloat rounding{ ImGuiStyleVar_FrameRounding, 2.f };
+
+	if (UI::BeginModal(aId, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		UI::InputText("Path", path);
+
+		if (ImGui::Button("Export"))
+		{
+			Volt::MeshTypeImporter::ExportMesh(aMeshesToExport, aDirectoryPath / path);
+			path = "";
+			AssetBrowser::AssetBrowserUtilities::ResetMeshExport();
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::Button("Cancel"))
+		{
+			path = "";
+			AssetBrowser::AssetBrowserUtilities::ResetMeshExport();
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void EditorUtils::ImportTexture(const std::filesystem::path& sourcePath)
+{
+	//DirectX::TexMetadata metadata{};
+	//DirectX::ScratchImage scratchImage{};
+
+	//if (sourcePath.extension().string() == ".tga")
+	//{
+	//	DirectX::LoadFromTGAFile(sourcePath.c_str(), &metadata, scratchImage);
+	//	metadata.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//}
+	//else if (sourcePath.extension().string() == ".hdr")
+	//{
+	//	DirectX::LoadFromHDRFile(sourcePath.c_str(), &metadata, scratchImage);
+	//	metadata.format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	//}
+	//else
+	//{
+	//	DirectX::LoadFromWICFile(sourcePath.c_str(), DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
+	//	metadata.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//}
+
+	//const uint32_t mipCount = Volt::Utility::CalculateMipCount((uint32_t)metadata.width, (uint32_t)metadata.height);
+
+	//DirectX::Image image{};
+	//image.width = metadata.width;
+	//image.height = metadata.height;
+	//image.format = metadata.format;
+	//image.pixels = scratchImage.GetImage(0, 0, 0)->pixels;
+
+	//DirectX::ScratchImage mippedImage{};
+	//DirectX::GenerateMipMaps(image, DirectX::TEX_FILTER_CUBIC, (size_t)mipCount, mippedImage);
+
+	//std::vector<DirectX::Image> dxImages{};
+
+	//uint32_t mipWidth = metadata.width;
+	//uint32_t mipHeight = metadata.height;
+
+	//uint32_t offset = 0;
+	//for (uint32_t mip = 0; mip < mipCount; mip++)
+	//{
+	//	const uint32_t mipSize = mipWidth * mipHeight * Volt::Utility::PerPixelSizeFromFormat(Volt::Utility::DXToVoltFormat(metadata.format));
+
+	//	DirectX::Image dxImage{};
+	//	dxImage.width = mipWidth;
+	//	dxImage.height = mipHeight;
+	//	dxImage.format = metadata.format;
+	//	dxImage.rowPitch = mipWidth * Volt::Utility::PerPixelSizeFromFormat(Volt::Utility::DXToVoltFormat(metadata.format));
+	//	dxImage.slicePitch = mipSize;
+	//	dxImage.pixels = mippedImage.GetImage(mip, 0, 0)->pixels;
+
+	//	offset += mipSize;
+
+	//	mipWidth = std::max(1u, mipWidth / 2);
+	//	mipHeight = std::max(1u, mipHeight / 2);
+
+	//	dxImages.emplace_back(dxImage);
+	//}
+
+	//metadata.mipLevels = (uint32_t)mipCount;
+
+	//DXGI_FORMAT compressFormat = DXGI_FORMAT_BC7_UNORM;
+
+	//if (sourcePath.filename().string().contains("_c."))
+	//{
+	//	compressFormat = DXGI_FORMAT_BC7_UNORM_SRGB;
+	//}
+
+	//const auto destPath = sourcePath.parent_path() / (sourcePath.stem().string() + ".dds");
+
+	//DirectX::ScratchImage compressedImage{};
+	//DirectX::Compress(Volt::GraphicsContext::GetDevice().Get(), dxImages.data(), dxImages.size(), metadata, compressFormat, DirectX::TEX_COMPRESS_DEFAULT, DirectX::TEX_THRESHOLD_DEFAULT, compressedImage);
+	//DirectX::SaveToDDSFile(compressedImage.GetImages(), compressedImage.GetImageCount(), compressedImage.GetMetadata(), DirectX::DDS_FLAGS_NONE, destPath.c_str());
 }
 
 bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCharacter>& outCharacter, NewCharacterData& aCharacterData)
@@ -538,6 +839,60 @@ bool EditorUtils::NewCharacterModal(const std::string& aId, Ref<Volt::AnimatedCh
 	return created;
 }
 
+bool EditorUtils::NewAnimationGraphModal(const std::string& aId, Ref<Volt::AnimationGraphAsset>* outGraph, NewAnimationGraphData& graphData)
+{
+	bool created = false;
+
+	UI::ScopedStyleFloat rounding{ ImGuiStyleVar_FrameRounding, 2.f };
+	if (UI::BeginModal(aId, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	{
+		UI::ShiftCursor(300.f, 0.f);
+		UI::ShiftCursor(-300.f, 0.f);
+
+		if (UI::BeginProperties("NewGraph"))
+		{
+			UI::Property("Name", graphData.name);
+			EditorUtils::Property("Character", graphData.characterHandle, Volt::AssetType::AnimatedCharacter);
+			UI::PropertyDirectory("Destination", graphData.destination);
+
+			UI::EndProperties();
+		}
+
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Create"))
+		{
+			if (graphData.characterHandle == Volt::Asset::Null())
+			{
+				UI::Notify(NotificationType::Error, "Unable to create animation graph!", "Character must not be null!");
+
+				UI::EndModal();
+				return false;
+			}
+
+			created = true;
+			auto newGraph = Volt::AssetManager::CreateAsset<Volt::AnimationGraphAsset>(graphData.destination, graphData.name + ".vtanimgraph", graphData.characterHandle);
+
+			if (outGraph)
+			{
+				*outGraph = newGraph;
+			}
+
+			Volt::AssetManager::Get().SaveAsset(newGraph);
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+
+	return created;
+}
+
 SaveReturnState EditorUtils::SaveFilePopup(const std::string& aId)
 {
 	SaveReturnState returnState = SaveReturnState::None;
@@ -580,37 +935,44 @@ Ref<Volt::Texture2D> EditorUtils::GenerateThumbnail(const std::filesystem::path&
 		return nullptr;
 	}
 
-	Volt::RenderPass renderPass;
-	Volt::FramebufferSpecification spec{};
-	spec.width = 512;
-	spec.height = 512;
-	spec.attachments =
-	{
-		{ Volt::ImageFormat::RGBA }
-	};
+	//Volt::RenderPass renderPass;
+	//Volt::FramebufferSpecification spec{};
+	//spec.width = 128;
+	//spec.height = 128;
+	//spec.attachments =
+	//{
+	//	{ Volt::ImageFormat::RGBA }
+	//};
 
-	renderPass.framebuffer = Volt::Framebuffer::Create(spec);
+	//renderPass.framebuffer = Volt::Framebuffer::Create(spec);
 
-	Volt::Renderer::BeginFullscreenPass(renderPass, nullptr);
-	auto context = Volt::GraphicsContext::GetImmediateContext();
-	context->PSSetShaderResources(0, 1, srcTexture->GetImage()->GetSRV().GetAddressOf());
+	//Volt::Renderer::BeginFullscreenPass(renderPass, nullptr);
 
-	Volt::Renderer::DrawFullscreenTriangleWithShader(Volt::ShaderRegistry::Get("CopyTextureToTarget"));
-	Volt::Renderer::EndFullscreenPass();
+	//// #TODO_Ivar: Reimplement
 
-	const Ref<Volt::Image2D> image = renderPass.framebuffer->GetColorAttachment(0);
-	const auto& imageSpec = image->GetSpecification();
+	////Volt::Renderer::BindTexturesToStage(Volt::ShaderStage::Pixel, { srcTexture->GetImage() }, 0);
+	//Volt::Renderer::DrawFullscreenTriangleWithShader(Volt::ShaderRegistry::Get("CopyTextureToTarget"));
+	//Volt::Renderer::EndFullscreenPass();
 
-	Volt::Buffer buffer = renderPass.framebuffer->GetColorAttachment(0)->GetDataBuffer();
-	const std::filesystem::path thumbnailPath = GetThumbnailPathFromPath(path);
+	//const std::filesystem::path thumbnailPath = GetThumbnailPathFromPath(path);
+	//Ref<Volt::Texture2D> thumbnailAsset = Volt::AssetManager::CreateAsset<Volt::Texture2D>(thumbnailPath.parent_path(), thumbnailPath.filename().string());
 
-	constexpr int32_t channels = 4;
-	stbi_write_png((Volt::ProjectManager::GetDirectory() / thumbnailPath).string().c_str(), imageSpec.width, imageSpec.height, channels, buffer.As<void>(), imageSpec.width * Volt::Utility::PerPixelSizeFromFormat(imageSpec.format));
-	Ref<Volt::Texture2D> thumbnailAsset = Volt::AssetManager::CreateAsset<Volt::Texture2D>(thumbnailPath.parent_path(), thumbnailPath.filename().string(), image);
+	//Volt::Renderer::SubmitPostExcecution([=]()
+	//	{
+	//		const Ref<Volt::Image2D> image = renderPass.framebuffer->GetColorAttachment(0);
+	//		const auto& imageSpec = image->GetSpecification();
 
-	buffer.Release();
+	//		Volt::Buffer buffer = renderPass.framebuffer->GetColorAttachment(0)->GetDataBuffer();
 
-	return thumbnailAsset;
+	//		constexpr int32_t channels = 4;
+	//		stbi_write_png((Volt::ProjectManager::GetDirectory() / thumbnailPath).string().c_str(), imageSpec.width, imageSpec.height, channels, buffer.As<void>(), imageSpec.width * Volt::Utility::PerPixelSizeFromFormat(imageSpec.format));
+
+	//		//thumbnailAsset->SetImage(image);
+	//		buffer.Release();
+	//	});
+
+
+	return nullptr;
 }
 
 bool EditorUtils::HasThumbnail(const std::filesystem::path& path)

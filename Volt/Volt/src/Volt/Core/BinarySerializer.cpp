@@ -16,7 +16,7 @@ namespace Volt
 	{
 		myDataBuffer.Release();
 	}
-	
+
 	void BinarySerializer::Serialize(const void* data, const size_t size)
 	{
 		if (myMaxSize > 0)

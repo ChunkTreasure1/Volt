@@ -20,11 +20,11 @@ public:
 	void UpdateProjection(uint32_t width, uint32_t height);
 	void OnEvent(Volt::Event& e);
 
-	gem::vec3 GetScreenToRayDir();
-	void SetViewportSize(gem::vec2 aSize) { m_ViewPortSize = aSize; };
-
 	void SetIsControllable(bool hovered);
 	void ForceLooseControl();
+
+	void SetTranslationSpeed(float speed) { m_translationSpeed = speed; }
+	float GetTranslationSpeed() { return m_translationSpeed; }
 
 	inline const bool HasControl() const { return m_isControllable; }
 	void Focus(const gem::vec3& focusPoint);
@@ -53,8 +53,6 @@ private:
 
 	Ref<Volt::Camera> m_camera;
 
-	gem::vec2 m_ViewPortMousePos;
-	gem::vec2 m_ViewPortSize;
 	gem::vec2 m_lastMousePosition = { 0.f, 0.f };
 	gem::vec3 m_position = { 0.f, 0.f, 0.f };
 	gem::vec3 m_rotation = { 0.f, 0.f, 0.f };
@@ -76,9 +74,11 @@ private:
 
 	float m_maxTranslationSpeed = 100000.f;
 	float m_sensitivity = 0.12f;
-	
+
 	bool m_isControllable = false;
 	bool m_isViewportHovered = false;
+
+	inline static bool s_mouseEnabled = true;
 
 	Mode m_cameraMode = Mode::Fly;
 };

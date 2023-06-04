@@ -6,6 +6,13 @@
 #include <cstdint>
 #include <string>
 
+#define EVENT_CLASS_TYPE(type) static Volt::EventType GetStaticType() { return Volt::EventType::##type; }\
+								virtual Volt::EventType GetEventType() const override { return GetStaticType(); }\
+								virtual const char* GetName() const override { return #type; }
+
+#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+
+
 namespace Volt
 {
 	enum EventType
@@ -15,7 +22,12 @@ namespace Volt
 		AppUpdate, AppRender, AppLog, AppImGuiUpdate,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled, MouseMovedViewport,
-		OnScenePlay, OnSceneStop, OnSceneLoaded, OnSceneTransition, OnRespawn, OnGameStateChanged, OnPlayGame
+
+		// Game
+		OnScenePlay, OnSceneStop, OnSceneLoaded, OnSceneTransition, OnRespawn, OnGameStateChanged, OnPlayGame,
+
+		// GraphKey
+		OnCollisionEnter, OnCollisionExit, OnTriggerEnter, OnTriggerExit
 	};
 
 	enum EventCategory
@@ -26,20 +38,17 @@ namespace Volt
 		EventCategoryKeyboard = BIT(2),
 		EventCategoryMouse = BIT(3),
 		EventCategoryMouseButton = BIT(4),
-		EventCategoryGame = BIT(5)
-	};
-	
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
-								virtual EventType GetEventType() const override { return GetStaticType(); }\
-								virtual const char* GetName() const override { return #type; }
+		EventCategoryGame = BIT(5),
+		EventCategoryGraphKey = BIT(6),
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+		EventCategoryAnyInput = EventCategoryInput | EventCategoryMouse | EventCategoryMouseButton
+	};
 
 	class Event
 	{
 	public:
 		bool handled = false;
-		
+
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
 		virtual int32_t GetCategoryFlags() const = 0;
@@ -53,7 +62,8 @@ namespace Volt
 	public:
 		EventDispatcher(Event& event)
 			: m_event(event)
-		{ }
+		{
+		}
 
 		template<typename T, typename F>
 		bool Dispatch(const F& func)
@@ -63,7 +73,7 @@ namespace Volt
 				m_event.handled = func(static_cast<T&>(m_event));
 				return true;
 			}
-			
+
 			return false;
 		}
 

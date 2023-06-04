@@ -21,7 +21,8 @@ project "ImGui"
 		"imgui_demo.cpp",
 		"imgui_tables.cpp",
 		"imgui_stdlib.cpp",
-		"imgui_stdlib.h"
+		"imgui_stdlib.h",
+		"imgui_bezier.h"
 	}
 
 	configmap

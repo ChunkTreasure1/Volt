@@ -1,0 +1,4 @@
+Handle: 12494240199536800760
+Path: Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_ps.hlsl
+Dependencies:
+  []

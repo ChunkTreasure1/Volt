@@ -1,0 +1,2022 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 273670016
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: postProcess
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5291392699439776309, 3675164396417627582]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Post Processing Stack
+                data: 6049792592670339732
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+    - Entity:
+        id: 377302574
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 454989193
+                  - value: 3304371907
+                  - value: 706936785
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1962589229
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2825276286
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+    - Entity:
+        id: 454989193
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 2128778620
+                  - value: 4149678190
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 377302574
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3190666731
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+    - Entity:
+        id: 474216747
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              []
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 10405711982411823474
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 926410292
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5578350012285481387, 7353729900983609489]
+            properties:
+              []
+    - Entity:
+        id: 475978704
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 474216747
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 10405711982411823474
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 475978704
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+    - Entity:
+        id: 559937927
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 10586423296
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 706936785
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1188078852
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 16125748647552523162
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ColliderAttachment
+              id: 16125748647552523162
+              properties:
+                - type: 24
+                  name: BodyPart
+                  enumName: Project.eBodyPart
+                  data: 1
+    - Entity:
+        id: 574243574
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5272442441707063634, 16349525528562408586]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 1896475
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3304371907
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4174997644
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 10086202654550152437
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ColliderAttachment
+              id: 10086202654550152437
+              properties:
+                - type: 24
+                  name: BodyPart
+                  enumName: Project.eBodyPart
+                  data: 1
+    - Entity:
+        id: 598618386
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2645394525
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 16905925855073657261
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 760420061
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+    - Entity:
+        id: 602183408
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3350892506
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4065161138
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+    - Entity:
+        id: 706936785
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3538366925
+                  - value: 559937927
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 377302574
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3693956253
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+    - Entity:
+        id: 805947407
+        components:
+          - guid: [5348793154896568212, 18314826308662138799]
+            properties:
+              []
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1962589229
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1587878994
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 8776670823058362741
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.AudioEnemyHandler
+              id: 8776670823058362741
+              properties:
+                []
+    - Entity:
+        id: 983989334
+        components:
+          - guid: [5348793154896568212, 18314826308662138799]
+            properties:
+              []
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4168299799
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 752584944896390483
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2448997553
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 1
+    - Entity:
+        id: 1036326890
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: doubleSidedPlane
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [-3.47712074e-07, 3.47710994e-07, 0.707107961, 0.707105637]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1.28480446, 0.999958515, 0.999998271]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 4065161138
+                  - value: 3631366126
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 4064621712771743870
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 15262529327639633402
+    - Entity:
+        id: 1100496651
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [4746128852693715016, 14027306821959481728]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4168299799
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 752584944896390483
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1820329793
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 1
+    - Entity:
+        id: 1409429040
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 8
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2128778620
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1652368731
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 462136514986997733
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ColliderAttachment
+              id: 462136514986997733
+              properties:
+                - type: 24
+                  name: BodyPart
+                  enumName: Project.eBodyPart
+                  data: 3
+    - Entity:
+        id: 1464703271
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: New Plane
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-961.074097, 0, -636.277588]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [3.69000006, 3.69000006, 3.69000006]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 10928158351518164966
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 6031634662202032283
+    - Entity:
+        id: 1693818877
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4168299799
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 752584944896390483
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3724909652
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 1
+          - guid: [5626495556028174687, 17921645141462244270]
+            properties:
+              []
+    - Entity:
+        id: 1962589229
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [4801038614670344234, 17500621051426503811]
+            properties:
+              []
+          - guid: [5740289715282930126, 6292450635949778603]
+            properties:
+              []
+          - guid: [5272442441707063634, 16349525528562408586]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Radius
+                data: 50
+              - type: 10
+                vectorType: 13
+                name: Offset
+                data: [0, 100, 0]
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 7844610
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 4229055337
+                  - value: 377302574
+                  - value: 805947407
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1728658947
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13941653264532911884
+                  - value: 2701343541356220014
+                  - value: 18305470932526582266
+          - guid: [5133199599840388224, 4829602707195010738]
+            properties:
+              []
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.EnemyBase
+              id: 13941653264532911884
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.EnemyController
+              id: 2701343541356220014
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.EnemyAnimationHandler
+              id: 18305470932526582266
+              properties:
+                []
+    - Entity:
+        id: 2128778620
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 1409429040
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 454989193
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1534697454
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+    - Entity:
+        id: 2359500930
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: bloodSplatter
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-3230.07129, 76.3238831, -2088.17432]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 9164539199082165321
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 6104314185914729591
+    - Entity:
+        id: 2554491757
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3350892506
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4065161138
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+    - Entity:
+        id: 2557234422
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: New Skylight
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5130770350572262273, 9533246575187293344]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Environment Map
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: LOD
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Turbidity
+                data: 2
+              - type: 7
+                vectorType: 13
+                name: Azimuth
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Inclination
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Show
+                data: true
+    - Entity:
+        id: 2645394525
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 598618386
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 16905925855073657261
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1680494161
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+    - Entity:
+        id: 2645693810
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PP_PaP_orb
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [35.8127289, 185.290955, 38.2056198]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1.00003469, 1, 1.00003469]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4168299799
+          - guid: [5578350012285481387, 7353729900983609489]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Preset
+                data: 7956333031014295756
+    - Entity:
+        id: 2928889868
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: New Plane
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-346.108276, 25.9366608, 40.0020294]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [9.71699905, 9.71699905, 9.71699905]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 10928158351518164966
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 2775936649325523191
+    - Entity:
+        id: 3222544879
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: New Camera
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-56.0976257, 165.349869, -520.566467]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [1.88760985e-09, 2.01227923e-16, -3.79839805e-25, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [0.999998152, 0.999979556, 0.99998045]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5524573352483143404, 11007889460122951339]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Aperture
+                data: 16
+              - type: 7
+                vectorType: 13
+                name: Shutter Speed
+                data: 0.00999999978
+              - type: 7
+                vectorType: 13
+                name: ISO
+                data: 100
+              - type: 7
+                vectorType: 13
+                name: Field of View
+                data: 60
+              - type: 7
+                vectorType: 13
+                name: Near plane
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Far plane
+                data: 100000
+              - type: 2
+                vectorType: 13
+                name: Priority
+                data: 0
+    - Entity:
+        id: 3283180947
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3350892506
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4149513274
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+    - Entity:
+        id: 3304371907
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 574243574
+                  - value: 4102029102
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 377302574
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4282216877
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+    - Entity:
+        id: 3350892506
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-775.823669, 0, -286.542511]
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3283180947
+                  - value: 602183408
+                  - value: 2554491757
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2431556360
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+    - Entity:
+        id: 3538366925
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5272442441707063634, 16349525528562408586]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 12859843
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 706936785
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 1334847633
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 3536899331363263820
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ColliderAttachment
+              id: 3536899331363263820
+              properties:
+                - type: 24
+                  name: BodyPart
+                  enumName: Project.eBodyPart
+                  data: 0
+    - Entity:
+        id: 3630931616
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [4746128852693715016, 14027306821959481728]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4168299799
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 752584944896390483
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2075708020
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 1
+    - Entity:
+        id: 3631366126
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PP_muzzleFlash
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-18.7250824, 7.87598765e-05, -2.36602591e-05]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [2.84685014e-12, 2.86169634e-12, -0.707106769, 0.707106829]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1.00001538, 0.778314888, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1036326890
+          - guid: [5578350012285481387, 7353729900983609489]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Preset
+                data: 13584177386196235245
+    - Entity:
+        id: 3704163340
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 0
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 4149678190
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 303918807
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 10869640077594686280
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ColliderAttachment
+              id: 10869640077594686280
+              properties:
+                - type: 24
+                  name: BodyPart
+                  enumName: Project.eBodyPart
+                  data: 3
+    - Entity:
+        id: 4065161138
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: doubleSidedPlane
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.707106531, -3.52762122e-08, 2.46022616e-08, 0.707107008]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [0.999999762, 0.999990344, 0.999964535]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1036326890
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 4064621712771743870
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 15262529327639633402
+    - Entity:
+        id: 4102029102
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 8
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 3304371907
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3978449695
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 14481970674242570189
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ColliderAttachment
+              id: 14481970674242570189
+              properties:
+                - type: 24
+                  name: BodyPart
+                  enumName: Project.eBodyPart
+                  data: 2
+    - Entity:
+        id: 4149678190
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 3704163340
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 454989193
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 389042548
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+    - Entity:
+        id: 4168299799
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              []
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-287.180695, 0, 7.75608132e-05]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, -0.679656148, 0, 0.73353076]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [0.999994576, 1, 0.999994576]
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 1693818877
+                  - value: 1100496651
+                  - value: 3630931616
+                  - value: 983989334
+                  - value: 2645693810
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 752584944896390483
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2899007589
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 1
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13182860439068610817
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.Interactable_PaP
+              id: 13182860439068610817
+              properties:
+                - type: 7
+                  name: TimeToHold
+                  enumName: ""
+                  data: 0.200000003
+                - type: 2
+                  name: cost
+                  enumName: ""
+                  data: 0
+                - type: 0
+                  name: isInRange
+                  enumName: ""
+                  data: false
+    - Entity:
+        id: 4229055337
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [4626977537440075682, 8666096866538760379]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 1962589229
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 8112676415534668006
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 887091098
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 26
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 8348983706355429923
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.EnemyAnimationEvents
+              id: 8348983706355429923
+              properties:
+                []

@@ -29,7 +29,8 @@ EditorCameraController::EditorCameraController(float fov, float nearPlane, float
 }
 
 EditorCameraController::~EditorCameraController()
-{}
+{
+}
 
 void EditorCameraController::SetIsControllable(bool hovered)
 {
@@ -66,25 +67,17 @@ void EditorCameraController::OnEvent(Volt::Event& e)
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(EditorCameraController::OnUpdateEvent));
 	dispatcher.Dispatch<Volt::MouseScrolledEvent>(VT_BIND_EVENT_FN(EditorCameraController::OnMouseScrolled));
 	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(EditorCameraController::OnMousePressedEvent));
-	dispatcher.Dispatch<Volt::MouseMovedViewportEvent>([&](Volt::MouseMovedViewportEvent& e)
-		{
-			m_ViewPortMousePos = { e.GetX(), e.GetY() };
-
-			return false;
-		});
-
-	dispatcher.Dispatch<Volt::ViewportResizeEvent>([&](Volt::ViewportResizeEvent& e)
-		{
-			m_ViewPortSize = { (float)e.GetWidth(), (float)e.GetHeight() };
-			return false;
-		});
 }
+
 bool EditorCameraController::OnMousePressedEvent(Volt::MouseButtonPressedEvent& e)
 {
-	if (m_isViewportHovered)
+	if (!Volt::Application::Get().IsRuntime())
 	{
-		const auto [x, y] = Volt::Input::GetMousePosition();
-		m_lastMousePosition = { x, y };
+		if (m_isViewportHovered)
+		{
+			const auto [x, y] = Volt::Input::GetMousePosition();
+			m_lastMousePosition = { x, y };
+		}
 	}
 
 	return false;
@@ -97,13 +90,15 @@ bool EditorCameraController::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent
 
 void EditorCameraController::DisableMouse()
 {
-	Volt::Application::Get().GetWindow().ShowCursor(false);
+	s_mouseEnabled = false;
+	Volt::Input::ShowCursor(false);
 	UI::SetInputEnabled(false);
 }
 
 void EditorCameraController::EnableMouse()
 {
-	Volt::Application::Get().GetWindow().ShowCursor(true);
+	s_mouseEnabled = true;
+	Volt::Input::ShowCursor(true);
 	UI::SetInputEnabled(true);
 }
 
@@ -119,7 +114,7 @@ void EditorCameraController::ArcZoom(float deltaPos)
 	float distance = m_focalDistance * 0.2f;
 	distance = gem::max(distance, 0.0f);
 	float speed = distance * distance;
-	speed = gem::min(speed, 10.f ); // max speed = 50
+	speed = gem::min(speed, 10.f); // max speed = 50
 
 	m_focalDistance -= deltaPos * speed;
 	m_position = m_focalPoint - m_camera->GetForward() * m_focalDistance;
@@ -137,13 +132,10 @@ const gem::vec3 EditorCameraController::CalculatePosition() const
 	return m_focalPoint - m_camera->GetForward() * m_focalDistance + m_positionDelta;
 }
 
-gem::vec3 EditorCameraController::GetScreenToRayDir()
-{
-	return m_camera->ScreenToWorldCoords(m_ViewPortMousePos, m_ViewPortSize);
-}
-
 bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
+	if (!s_mouseEnabled && !m_isControllable) { return false; }
+
 	const gem::vec2 mousePos = { Volt::Input::GetMouseX(), Volt::Input::GetMouseY() };
 	const gem::vec2 deltaPos = (mousePos - m_lastMousePosition);
 
@@ -156,7 +148,7 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 		m_isControllable = true;
 	}
 
-	if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && m_isControllable)
+	if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && m_isControllable)
 	{
 		m_isControllable = true;
 		m_cameraMode = Mode::Fly;
@@ -203,25 +195,25 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		m_cameraMode = Mode::ArcBall;
 
-		if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_LEFT))
+		if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
 		{
-			DisableMouse();
+			//DisableMouse();
 			ArcBall(deltaPos);
 		}
-		else if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_MIDDLE))
+		else if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_MIDDLE))
 		{
-			DisableMouse();
+			//DisableMouse();
 			m_focalPoint += -1.f * m_camera->GetRight() * deltaPos.x;
 			m_focalPoint += m_camera->GetUp() * deltaPos.y;
 		}
-		else if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT))
+		else if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT))
 		{
-			DisableMouse();
+			//DisableMouse();
 			ArcZoom(deltaPos.x + deltaPos.y);
 		}
 		else
 		{
-			EnableMouse();
+			//EnableMouse();
 		}
 	}
 	else
@@ -254,7 +246,7 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 bool EditorCameraController::OnMouseScrolled(Volt::MouseScrolledEvent& e)
 {
-	if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT))
+	if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT))
 	{
 		m_translationSpeed += e.GetYOffset() * m_scrollTranslationSpeed;
 		m_translationSpeed = std::min(m_translationSpeed, m_maxTranslationSpeed);

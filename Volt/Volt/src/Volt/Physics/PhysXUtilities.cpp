@@ -9,10 +9,11 @@ namespace Volt
 	{
 		physx::PxTransform ToPhysXTransform(const gem::mat4& transform)
 		{
-			gem::vec3 trans, rot, scale;
+			gem::vec3 trans, scale;
+			gem::quat rot;
 			gem::decompose(transform, trans, rot, scale);
 
-			physx::PxQuat r = ToPhysXQuat(gem::quat{ rot });
+			physx::PxQuat r = ToPhysXQuat(rot);
 			physx::PxVec3 p = ToPhysXVector(trans);
 
 			return physx::PxTransform(p, r);
@@ -36,6 +37,11 @@ namespace Volt
 		const physx::PxVec4& ToPhysXVector(const gem::vec4& vec)
 		{
 			return *(physx::PxVec4*)&vec;
+		}
+
+		const physx::PxExtendedVec3 ToPhysXVectorExtended(const gem::vec3& vec)
+		{
+			return physx::PxExtendedVec3{ (double)vec.x, (double)vec.y, (double)vec.z };
 		}
 
 		physx::PxQuat ToPhysXQuat(const gem::quat& quat)
@@ -72,6 +78,11 @@ namespace Volt
 			return *(gem::vec3*)&vector;
 		}
 
+		gem::vec3 FromPhysXVector(const physx::PxExtendedVec3& vector)
+		{
+			return { (float)vector.x, (float)vector.y, (float)vector.z };
+		}
+
 		gem::vec4 FromPhysXVector(const physx::PxVec4& vector)
 		{
 			return *(gem::vec4*)&vector;
@@ -86,7 +97,6 @@ namespace Volt
 		{
 			switch (cookingResult)
 			{
-				case physx::PxConvexMeshCookingResult::eSUCCESS: return CookingResult::Success;
 				case physx::PxConvexMeshCookingResult::eZERO_AREA_TEST_FAILED: return CookingResult::ZeroAreaTestFailed;
 				case physx::PxConvexMeshCookingResult::ePOLYGONS_LIMIT_REACHED: return CookingResult::PolygonLimitReached;
 				case physx::PxConvexMeshCookingResult::eFAILURE: return CookingResult::Failure;
@@ -99,7 +109,6 @@ namespace Volt
 		{
 			switch (cookingResult)
 			{
-				case physx::PxTriangleMeshCookingResult::eSUCCESS: return CookingResult::Success;
 				case physx::PxTriangleMeshCookingResult::eLARGE_TRIANGLE: return CookingResult::LargeTriangle;
 				case physx::PxTriangleMeshCookingResult::eFAILURE: return CookingResult::Failure;
 			}

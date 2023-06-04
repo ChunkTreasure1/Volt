@@ -1,5 +1,8 @@
 local VoltRootDirectory = os.getenv("VOLT_PATH")
 
+include "./scripts/premakeCustomization/solution_items.lua"
+include "Dependencies.lua"
+
 workspace "Volt"
 	architecture "x64"
 	startproject "Sandbox"
@@ -8,18 +11,20 @@ workspace "Volt"
 	{
 		"Debug",
 		"Release",
-		"Dist",
-		"GameOnlyDebug"
+		"Dist"
 	}
 	
 	flags
 	{
 		"MultiProcessorCompile"
 	}
+
+	solution_items
+	{
+		".editorconfig"
+	}
 	
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-
-include "Dependencies.lua"
 
 group "Dependencies"
 include "Volt/vendor/glfw"
@@ -32,15 +37,19 @@ include "Volt/vendor/msdf-atlas-gen"
 include "Volt/vendor/yaml-cpp"
 include "Volt/vendor/DirectXTex"
 include "Volt/vendor/efsw"
+include "Volt/vendor/meshoptimizer"
+include "Volt/vendor/DiscordSDK"
+include "Volt/vendor/gem"
+include "Volt/vendor/nfd-extended"
+include "Volt/vendor/TGAFbx"
 
 group "Core"
 include "Amp"
-include "GraphKey"
 include "Volt"
+include "GraphKey"
+include "Navigation"
+include "Nexus"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
-
-group "Game"
-include "Game"
 
 group "Tools"
 include "Sandbox"

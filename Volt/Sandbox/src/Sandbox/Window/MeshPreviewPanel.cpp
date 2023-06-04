@@ -7,69 +7,32 @@
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
+#include <Volt/Asset/Mesh/SubMaterial.h>
 
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Scene/Scene.h>
-#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Rendering/Renderer.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
-#include <Volt/Rendering/Framebuffer.h>
+#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
+#include <Volt/Rendering/SceneRenderer.h>
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
-#include <Volt/Components/PostProcessComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
-	myGridMaterial = Volt::Material::Create(Volt::ShaderRegistry::Get("Grid"));
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
-	myScene = CreateRef<Volt::Scene>();
+	myScene = Volt::Scene::CreateDefaultScene("Mesh Preview", false);
 
-	// Material sphere
+	// Preview entity
 	{
 		auto entity = myScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Assets/Meshes/Primitives/SM_Cube.vtmesh")->handle;
+		comp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 		myPreviewEntity = entity;
 	}
-
-	// Skylight
-	{
-		auto entity = myScene->CreateEntity();
-		Volt::SkylightComponent& comp = entity.AddComponent<Volt::SkylightComponent>();
-		comp.environmentHandle = Volt::AssetManager::GetAsset<Volt::Texture2D>("Assets/Textures/HDRIs/studio_small_08_4k.hdr")->handle;
-	}
-
-	// Directional light
-	{
-		auto entity = myScene->CreateEntity();
-		Volt::DirectionalLightComponent& comp = entity.AddComponent<Volt::DirectionalLightComponent>();
-		comp.castShadows = false;
-		comp.intensity = 2.f;
-
-		entity.SetLocalRotation(gem::quat(gem::radians(gem::vec3{ 70.f, 0.f, 100.f })));
-	}
-	
-	{
-		auto ent = myScene->CreateEntity();
-		ent.GetComponent<Volt::TagComponent>().tag = "Post Processing";
-		ent.AddComponent<Volt::BloomComponent>();
-		ent.AddComponent<Volt::FXAAComponent>();
-		ent.AddComponent<Volt::HBAOComponent>();
-	}
-
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(myScene);
-	mySceneRenderer->Resize(1280, 720);
-
-	//mySceneRenderer->AddForwardCallback([this](Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
-	//	{
-	//		Volt::Renderer::SubmitSprite(gem::mat4{ 1.f }, { 1.f, 1.f, 1.f, 1.f }, myGridMaterial);
-	//		Volt::Renderer::DispatchSpritesWithMaterial(myGridMaterial);
-	//	});
 }
 
 void MeshPreviewPanel::UpdateContent()
@@ -86,20 +49,50 @@ void MeshPreviewPanel::OpenAsset(Ref<Volt::Asset> asset)
 	{
 		myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = asset->handle;
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
-		mySelectedSubMesh = 0;
+		mySelectedSubMesh = -1;
 	}
 }
 
 void MeshPreviewPanel::OnEvent(Volt::Event& e)
 {
+	if (!IsOpen()) { return; }
+
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppRenderEvent>(VT_BIND_EVENT_FN(MeshPreviewPanel::OnRenderEvent));
 
 	myCameraController->OnEvent(e);
 }
 
+void MeshPreviewPanel::OnOpen()
+{
+	// Scene Renderer
+	{
+		Volt::SceneRendererSpecification spec{};
+		spec.debugName = "Mesh Preview";
+		spec.scene = myScene;
+
+		Volt::SceneRendererSettings settings{};
+		settings.enableGrid = true;
+		settings.enableOutline = true;
+
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+	}
+}
+
+void MeshPreviewPanel::OnClose()
+{
+	mySceneRenderer = nullptr;
+}
+
 bool MeshPreviewPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 {
+	mySceneRenderer->ClearOutlineCommands();
+
+	if (mySelectedSubMesh != -1)
+	{
+		mySceneRenderer->SubmitOutlineMesh(myCurrentMesh, (uint32_t)mySelectedSubMesh, { 1.f });
+	}
+
 	mySceneRenderer->OnRenderEditor(myCameraController->GetCamera());
 	return false;
 }
@@ -122,14 +115,14 @@ void MeshPreviewPanel::UpdateViewport()
 	myPerspectiveBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-	if (myViewportSize != (*(gem::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0 && !Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_LEFT))
+	if (myViewportSize != (*(gem::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0 && !Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
 	{
 		myViewportSize = { viewportSize.x, viewportSize.y };
 		mySceneRenderer->Resize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
 		myCameraController->UpdateProjection((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
 	}
 
-	ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0)), viewportSize);
+	ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), viewportSize);
 	ImGui::End();
 	ImGui::PopStyleVar(3);
 }
@@ -161,14 +154,30 @@ void MeshPreviewPanel::UpdateProperties()
 
 	if (myCurrentMesh)
 	{
-
 		if (ImGui::BeginChild("subMeshProperties", { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y / 2.f }))
 		{
-			ImGui::TextUnformatted("Sub Mesh Properties");
+			UI::Header("Sub Mesh");
 
-			if (ImGui::Button("Flip V"))
+			if (mySelectedSubMesh != -1)
 			{
-				FlipV();
+				std::vector<std::string> subMaterialNames;
+				for (const auto& [index, subMat] : myCurrentMesh->GetMaterial()->GetSubMaterials())
+				{
+					subMaterialNames.emplace_back(subMat->GetName());
+				}
+
+				UI::PushId();
+				if (UI::BeginProperties("subMeshProperties"))
+				{
+					auto currentMaterial = (int32_t)myCurrentMesh->GetSubMeshesMutable().at((uint32_t)mySelectedSubMesh).materialIndex;
+					if (UI::ComboProperty("Sub Material", currentMaterial, subMaterialNames))
+					{
+						myCurrentMesh->GetSubMeshesMutable().at((uint32_t)mySelectedSubMesh).materialIndex = (uint32_t)currentMaterial;
+					}
+
+					UI::EndProperties();
+				}
+				UI::PopId();
 			}
 
 			ImGui::EndChild();
@@ -200,12 +209,12 @@ void MeshPreviewPanel::UpdateToolbar()
 
 	if (UI::ImageButton("##Load", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Open)), { myButtonSize, myButtonSize }))
 	{
-		const std::filesystem::path characterPath = FileSystem::OpenFile("Animated Character (*.vtchr)\0*.vtchr\0");
-		if (!characterPath.empty() && FileSystem::Exists(characterPath))
+		const std::filesystem::path meshPath = FileSystem::OpenFileDialogue({ { "Mesh (*.vtmesh)", "vtmesh" } });
+		if (!meshPath.empty() && FileSystem::Exists(meshPath))
 		{
-			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(characterPath);
+			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshPath);
 			myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = myCurrentMesh->handle;
-			mySelectedSubMesh = 0;
+			mySelectedSubMesh = -1;
 		}
 	}
 	ImGui::PopStyleVar(2);
@@ -222,7 +231,7 @@ void MeshPreviewPanel::UpdateMeshList()
 		return;
 	}
 
-	for (uint32_t i = 0; const auto & subMesh : myCurrentMesh->GetSubMeshes())
+	for (int32_t i = 0; const auto & subMesh : myCurrentMesh->GetSubMeshes())
 	{
 		std::string id = subMesh.name + "##subMesh" + std::to_string(i);
 
@@ -265,20 +274,4 @@ void MeshPreviewPanel::SaveCurrentMesh()
 	{
 		UI::Notify(NotificationType::Success, "Saved Mesh!", std::format("Mesh {0} was saved successfully", myCurrentMesh->path.string()));
 	}
-}
-
-void MeshPreviewPanel::FlipV()
-{
-	auto& vertices = const_cast<std::vector<Volt::Vertex>&>(myCurrentMesh->GetVertices());
-	const auto& subMesh = myCurrentMesh->GetSubMeshes().at(mySelectedSubMesh);
-
-	for (uint32_t i = subMesh.vertexStartOffset; i < subMesh.vertexCount; i++)
-	{
-		vertices[i].texCoords[0].y = 1.f - vertices[i].texCoords[0].y;
-		vertices[i].texCoords[1].y = 1.f - vertices[i].texCoords[1].y;
-		vertices[i].texCoords[2].y = 1.f - vertices[i].texCoords[2].y;
-		vertices[i].texCoords[3].y = 1.f - vertices[i].texCoords[3].y;
-	}
-
-	myCurrentMesh->Construct();
 }

@@ -12,7 +12,7 @@ namespace Volt
 
 		void SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const override;
 		bool LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const override;
-	
+
 	private:
 		struct AnimationHeader
 		{

@@ -1,0 +1,1857 @@
+Prefab:
+  version: 1
+  entities:
+    - id: 3708854734
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 14106063711947572526
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: PF_High_Rise_Bottom
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [22400, 400, 12800]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 4
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                - value: 4151099698
+                - value: 562974073
+                - value: 681981636
+                - value: 199829841
+                - value: 3881724450
+                - value: 1580193678
+                - value: 1925909087
+                - value: 550042399
+                - value: 2305509632
+                - value: 2367961851
+                - value: 498631774
+                - value: 2107604889
+                - value: 3065756576
+                - value: 973120987
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 0
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3708854734
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+    - id: 4151099698
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-703.087891, 200, 1200]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 4151099698
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [100, 200, 600]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 15903336188150528
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 562974073
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-853.087891, 200, 1639.27832]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 562974073
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [100, 200, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 19400676530399529
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 681981636
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-872.392578, 350, 1752.35059]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.456517965, 0, 0.889714181]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 681981636
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 17173272118630425
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 199829841
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-770.451172, 350, 1941.75]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.638830304, 0, 0.769347668]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999995708, 0.99999994, 0.999995708]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 199829841
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 45256761966592
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 3881724450
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-658.75, 350, 2180.14844]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.445811361, 0, 0.895126939]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999997735, 0.99999994, 0.999997735]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3881724450
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 18886861024192163
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 1580193678
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-454.828125, 350, 2339.89941]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.209054932, 0, 0.977903903]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999998808, 0.99999994, 0.999998808]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1580193678
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 15903336188150528
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 1925909087
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-190.681641, 350, 2397.70801]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999998808, 0.99999994, 0.999998808]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1925909087
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 19393529704818985
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 550042399
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-869.134766, 350, 647.854492]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.453990519, 0, 0.891006529]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 550042399
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 17854144694127104
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 2305509632
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-853.087891, 200, 754.536133]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2305509632
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [100, 200, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 72057594025000960
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 2367961851
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-755.880859, 350, 405.583008]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.814298213, 0, 0.580446601]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1.00000143, 0.999999881, 1.00000143]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2367961851
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 18881913188313256
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 498631774
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-618.888672, 350, 176.578125]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.913185596, 0, -0.407543868]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999998212, 0.999999881, 0.999998212]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 498631774
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 16044073676663648
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 2107604889
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-401.076172, 350, 39.3955078]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.989591539, 0, -0.14390479]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999992132, 0.999999881, 0.999992132]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2107604889
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 19396242681364479
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 3065756576
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-132.771484, 350, 4.48046875]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [-4.37113883e-08, 1, -4.37113883e-08, 1.91068547e-15]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999997079, 0.999999881, 0.999997079]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3065756576
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [140, 400, 10]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 17854144694127104
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 973120987
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collider
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-996.005859, 601.128662, 1200]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3708854734
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 6843324032183177067
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 973120987
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [100, 200, 400]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 72057594025000960
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []

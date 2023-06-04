@@ -1,6 +1,7 @@
 #include "vtpch.h"
 #include "SubMesh.h"
 
+#include "Volt/Core/UUID.h"
 #include "Volt/Rendering/Shader/ShaderUtility.h"
 
 namespace Volt
@@ -27,12 +28,12 @@ namespace Volt
 		m_hash = Utility::HashCombine(m_hash, std::hash<uint64_t>()(UUID()));
 	}
 
-	bool SubMesh::operator==(const SubMesh& rhs)
+	const bool SubMesh::operator==(const SubMesh& rhs) const
 	{
 		return m_hash == rhs.m_hash;
 	}
 
-	bool SubMesh::operator!=(const SubMesh& rhs)
+	const bool SubMesh::operator!=(const SubMesh& rhs) const
 	{
 		return m_hash != rhs.m_hash;
 	}

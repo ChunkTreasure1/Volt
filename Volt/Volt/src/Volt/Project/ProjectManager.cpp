@@ -2,6 +2,10 @@
 #include "ProjectManager.h"
 
 #include "Volt/Utility/FileSystem.h"
+#include "Volt/Core/Application.h"
+
+#include "Volt/Utility/YAMLSerializationHelpers.h"
+#include "Volt/Utility/SerializationMacros.h"
 
 namespace Volt
 {
@@ -10,45 +14,120 @@ namespace Volt
 		if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
 		{
 			const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
-			if (!pathEnv.empty())
-			{
-				std::filesystem::current_path(pathEnv);
-			}
+			std::filesystem::current_path(pathEnv);
 		}
 	}
-	
+
 	void ProjectManager::SetupProject(const std::filesystem::path projectPath)
 	{
-		if (projectPath.empty())
+		myCurrentProject = CreateScope<Project>();
+
+		if (!projectPath.empty())
 		{
-			const auto workingDir = std::filesystem::current_path();
-			myCurrentProjectDirectory = workingDir;
+			myCurrentProject->projectDirectory = projectPath.parent_path();
+			myCurrentProject->projectFilePath = projectPath;
+
 		}
 		else
 		{
-			myCurrentProjectDirectory = projectPath.parent_path();
-			myCurrentProjectFile = projectPath;
+			myCurrentProject->projectDirectory = "./";
+		
+			for (const auto& dir : std::filesystem::directory_iterator("./"))
+			{
+				if (dir.path().extension() == ".vtproj")
+				{
+					myCurrentProject->projectFilePath = dir.path();
+					break;
+				}
+			}
+
+			if (myCurrentProject->projectFilePath.empty())
+			{
+				throw std::runtime_error("Project File not found!");
+			}
+		}
+
+		LoadProjectInfo();
+
+		if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
+		{
+			myCurrentEngineDirectory = FileSystem::GetEnvVariable("VOLT_PATH");
 		}
 	}
 
-	const std::filesystem::path ProjectManager::GetAssetsPath()
+	void ProjectManager::LoadProjectInfo()
 	{
-		return myCurrentProjectDirectory / "Assets";
+		std::ifstream file(myCurrentProject->projectFilePath);
+		if (!file.is_open())
+		{
+			VT_CORE_ERROR("Failed to open file: {0}!", myCurrentProject->projectFilePath.string().c_str());
+			return;
+		}
+
+		std::stringstream sstream;
+		sstream << file.rdbuf();
+		file.close();
+
+		YAML::Node root;
+
+		try
+		{
+			root = YAML::Load(sstream.str());
+		}
+		catch (std::exception& e)
+		{
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", myCurrentProject->projectFilePath, e.what());
+			return;
+		}
+
+		YAML::Node rootProjectNode = root["Project"];
+
+		VT_DESERIALIZE_PROPERTY(Name, myCurrentProject->name, rootProjectNode, std::string("None"));
+		VT_DESERIALIZE_PROPERTY(AssetsPath, myCurrentProject->assetsDirectory, rootProjectNode, std::filesystem::path("Assets"));
+		VT_DESERIALIZE_PROPERTY(AudioBanksPath, myCurrentProject->audioBanksDirectory, rootProjectNode, std::filesystem::path("Audio/Banks"));
+		VT_DESERIALIZE_PROPERTY(IconPath, myCurrentProject->iconPath, rootProjectNode, std::filesystem::path(""));
+		VT_DESERIALIZE_PROPERTY(CursorPath, myCurrentProject->cursorPath, rootProjectNode, std::filesystem::path(""));
+		VT_DESERIALIZE_PROPERTY(StartScene, myCurrentProject->startScenePath, rootProjectNode, std::filesystem::path(""));
 	}
 
-	const std::filesystem::path ProjectManager::GetAssetRegistryPath()
+	const std::filesystem::path ProjectManager::GetEngineScriptsDirectory()
 	{
-		return GetAssetsPath() / "AssetRegistry.vtreg";
+		return GetAssetsDirectory() / "Scripts/Internal";
+	}
+
+	const std::filesystem::path ProjectManager::GetAssetsDirectory()
+	{
+		return myCurrentProject->projectDirectory / myCurrentProject->assetsDirectory;
+	}
+
+	const std::filesystem::path ProjectManager::GetAudioBanksDirectory()
+	{
+		return myCurrentProject->projectDirectory / myCurrentProject->assetsDirectory / myCurrentProject->audioBanksDirectory;
+	}
+
+	const std::filesystem::path ProjectManager::GetProjectDirectory()
+	{
+		return myCurrentProject->projectDirectory;
+	}
+
+	const std::filesystem::path ProjectManager::GetEngineDirectory()
+	{
+		return myCurrentEngineDirectory;
+	}
+
+	const std::filesystem::path ProjectManager::GetPathRelativeToEngine(const std::filesystem::path& path)
+	{
+		return std::filesystem::relative(path, myCurrentEngineDirectory);
 	}
 
 	const std::filesystem::path ProjectManager::GetCachePath()
 	{
-		return myCurrentProjectDirectory / "Assets" / "Cache";
+		return myCurrentProject->projectDirectory / myCurrentProject->assetsDirectory / "Cache";
 	}
 
 	const std::filesystem::path ProjectManager::GetPathRelativeToProject(const std::filesystem::path& path)
 	{
-		return std::filesystem::relative(path, myCurrentProjectDirectory);
+		return std::filesystem::relative(path, myCurrentProject->projectDirectory);
 	}
 
 	const std::filesystem::path ProjectManager::GetMonoAssemblyPath()
@@ -58,6 +137,11 @@ namespace Volt
 
 	const std::filesystem::path& ProjectManager::GetDirectory()
 	{
-		return myCurrentProjectDirectory;
+		return myCurrentProject->projectDirectory;
+	}
+
+	const Project& ProjectManager::GetProject()
+	{
+		return *myCurrentProject;
 	}
 }

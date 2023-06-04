@@ -7,44 +7,50 @@ namespace Volt
 	class ParticlePreset : public Asset
 	{
 	public:
-		Volt::AssetHandle texture;
-		std::string shader = "EntityGizmo";
-		
-		float distance = 0.f;
+		enum class eType : int
+		{
+			MESH = 0,
+			PARTICLE
+		} type = eType::PARTICLE;
+
+		Volt::AssetHandle mesh = 0;
+		Volt::AssetHandle material = 0;
+		Volt::AssetHandle texture = 0;
+
+		float distance = 1.f;
 		float emittionTime = 1.f;
 
 		uint32_t shape;
 
-		float sphereRadius;
+		float sphereRadius = 2;
 		bool sphereSpawnOnEdge = false;
 
 		float coneInnerRadius;
 		float coneOuterRadius;
 		bool coneSpawnOnEdge = false;
 
-		gem::vec3 startSize = 1.f;
-		gem::vec3 endSize = 1.f;
-		
+		std::vector<gem::vec3> sizes;
+		std::vector<gem::vec4> colors;
+
 		float startVelocity = 0.f;
 		float endVelocity = 0.f;
-		
-		float intensity = 0.f;
+
+		float intensity = 1.f;
 		float minLifeTime = 1.f;
 		float maxLifeTime = 1.f;
 
-		float spread = 0.f;
-		
-		gem::vec3 direction = {1};
-		gem::vec3 gravity = {0};
+		gem::vec3 direction = { 1 };
+		gem::vec3 gravity = { 0 };
 
-		gem::vec4 startColor = {1};
-		gem::vec4 endColor = {1};
-		
 		bool isLooping = true;
+
+		bool isBurst = false;
+		float burstInterval = 0;
+		float burstLength = 0;
 
 		int poolSize = 0;
 
 		static AssetType GetStaticType() { return AssetType::ParticlePreset; }
-		virtual AssetType GetType() override { return GetStaticType(); }
+		AssetType GetType() override { return GetStaticType(); }
 	};
 }

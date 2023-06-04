@@ -2,10 +2,11 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include "Volt/Rendering/Texture/Image2D.h"
+#include "Volt/Rendering/Texture/ImageCommon.h"
 
 namespace Volt
 {
+	class Image2D;
 	class Texture2D : public Asset
 	{
 	public:
@@ -17,10 +18,8 @@ namespace Volt
 		const uint32_t GetWidth() const;
 		const uint32_t GetHeight() const;
 
-		void Bind(uint32_t aSlot) const;
-		void RT_Bind(uint32_t aSlot) const;
-
 		inline const Ref<Image2D> GetImage() const { return myImage; }
+		inline void SetImage(Ref<Image2D> image) { myImage = image; }
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		AssetType GetType() override { return GetStaticType(); }

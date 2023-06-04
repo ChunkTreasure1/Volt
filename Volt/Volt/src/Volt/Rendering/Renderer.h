@@ -1,441 +1,193 @@
 #pragma once
 
-#include "Volt/Asset/Mesh/SubMesh.h"
-#include "Volt/Core/Base.h"
+#include "Volt/Core/Buffer.h"
+
+#include "Volt/Rendering/GlobalDescriptorSet.h"
+#include "Volt/Rendering/RendererStructs.h"
+
+#include "Volt/Rendering/FrameGraph/FrameGraph.h"
+
 #include "Volt/Scene/Scene.h"
 
-#include "Volt/Rendering/Texture/SubTexture2D.h"
-#include "Volt/Rendering/Shader/ShaderCommon.h"
-
-#include "Volt/Rendering/RendererStructs.h"
-#include "Volt/Rendering/RenderPass.h"
-#include "Volt/Rendering/RendererInfo.h"
-#include "Volt/Rendering/RenderCommand.h"
-
-#include <gem/gem.h>
-
-#include <mutex>
-#include <queue>
-
-#define VT_THREADED_RENDERING 1
-
-struct ID3D11ShaderResourceView;
+#include <vulkan/vulkan.h>
 
 namespace Volt
 {
-	class SamplerState;
-	class ConstantBuffer;
-	class StructuredBuffer;
-	class Mesh;
+	class CombinedVertexBuffer;
+	class CombinedIndexBuffer;
+	class TextureTable;
+	class MaterialTable;
 
-	class Shader;
-	class Material;
-	class SubMaterial;
+	class RenderPipeline;
 	class ComputePipeline;
-	
+	class Mesh;
+	class Material;
+	class PostProcessingMaterial;
+
+	class ComputePipeline;
+	class CommandBuffer;
+	class Shader;
+	class Image2D;
+	class Image3D;
 	class Texture2D;
-	class Framebuffer;
-	class Camera;
+
+	class UniformBufferSet;
+	class ShaderStorageBuffer;
+	class ShaderStorageBufferSet;
+	class GlobalDescriptorSet;
+	class SamplerStateSet;
 	class VertexBuffer;
 	class IndexBuffer;
-	class CommandBuffer;
-	class Font;
 
-	struct SpriteVertex;
-	struct BillboardVertex;
-	struct LineVertex;
-	struct TextVertex;
+	struct VulkanRenderPass;
+
+	using GlobalDescriptorMap = std::unordered_map<uint32_t, Ref<GlobalDescriptorSet>>;
+
+	struct VulkanFunctions
+	{
+		PFN_vkCmdBeginDebugUtilsLabelEXT cmdBeginDebugUtilsLabel;
+		PFN_vkCmdEndDebugUtilsLabelEXT cmdEndDebugUtilsLabel;
+
+		PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR;
+		PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR;
+		PFN_vkGetAccelerationStructureBuildSizesKHR vkGetAccelerationStructureBuildSizesKHR;
+		PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR;
+		PFN_vkBuildAccelerationStructuresKHR vkBuildAccelerationStructuresKHR;
+		PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR;
+		PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
+		PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR;
+		PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR;
+	};
 
 	class Renderer
 	{
 	public:
-		struct DefaultData
+		inline static constexpr uint32_t MAX_MATERIALS = 10000;
+
+		struct BindlessData
 		{
-			Ref<Shader> defaultShader;
-			Ref<Shader> defaultBillboardShader;
+			inline static constexpr uint32_t START_TRIANGLE_COUNT = 32768;
+			inline static constexpr uint32_t START_VERTEX_COUNT = START_TRIANGLE_COUNT * 3;
+			inline static constexpr uint32_t START_INDEX_COUNT = START_TRIANGLE_COUNT * 3;
 
-			Ref<SubMaterial> defaultMaterial;
-			Ref<Material> defaultSpriteMaterial;
+			Ref<CombinedVertexBuffer> combinedVertexBuffer;
+			Ref<CombinedIndexBuffer> combinedIndexBuffer;
 
-			Ref<Texture2D> whiteTexture;
-			Ref<Texture2D> emptyNormal;
+			Ref<TextureTable> textureTable;
+			Ref<MaterialTable> materialTable;
+			Ref<SamplerStateSet> samplerStateSet;
 
-			Ref<Image2D> brdfLut;
-			Ref<Image2D> blackCubeImage;
+			GlobalDescriptorMap globalDescriptorSets;
 		};
 
-		struct Settings
+		struct DefaultData
 		{
-			float exposure = 1.f;
-			float ambianceMultiplier = 0.5f;
-			float bloomWeight = 0.04f;
+			Ref<SubMaterial> defaultMaterial;
+			Ref<RenderPipeline> defaultRenderPipeline;
+			Ref<Shader> defaultShader;
+			Ref<Shader> defaultPostProcessingShader;
+
+			Ref<Image2D> brdfLut;
+
+			Ref<Texture2D> whiteTexture;
+			Ref<Texture2D> whiteUINTTexture;
+			Ref<Texture2D> emptyNormal;
+			Ref<Texture2D> emptyMaterial;
+		
+			Ref<Image3D> black3DImage;
 		};
 
 		static void Initialize();
-		static void InitializeBuffers();
+		static void LateInitialize();
 		static void Shutdown();
+		static void FlushResourceQueues();
+		static void Flush();
+		static void UpdateDescriptors();
 
-		static void Begin(Context context, const std::string& debugName = "");
+		static void Begin(Ref<CommandBuffer> commandBuffer);
 		static void End();
 
-		static void BeginPass(const RenderPass& aRenderPass, Ref<Camera> camera, bool shouldClear = true, bool isShadowPass = false, bool isAOPass = false);
-		static void EndPass();
+		static void BeginPass(Ref<CommandBuffer> commandBuffer, Ref<VulkanRenderPass> renderPass);
+		static void EndPass(Ref<CommandBuffer> commandBuffer);
 
-		static void BeginFullscreenPass(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear = true);
-		static void EndFullscreenPass();
+		static void BeginFrameGraphPass(Ref<CommandBuffer> commandBuffer, const FrameGraphRenderPassInfo& renderPassInfo, const FrameGraphRenderingInfo& renderingInfo);
+		static void EndFrameGraphPass(Ref<CommandBuffer> commandBuffer);
 
-		static void SetFullResolution(const gem::vec2& renderSize);
+		static void BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const gem::vec4& sectionColor);
+		static void EndSection(Ref<CommandBuffer> commandBuffer);
 
-		static void BeginSection(const std::string& name);
-		static void EndSection(const std::string& name);
+		static void SubmitResourceChange(std::function<void()>&& function);
 
-		static void Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
-		static void Submit(Ref<Mesh> aMesh, uint32_t subMeshIndex, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
-		static void Submit(Ref<Mesh> aMesh, Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
-		static void Submit(Ref<Mesh> aMesh, Ref<SubMaterial> aMaterial, const gem::mat4& aTransform, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
-		static void Submit(Ref<Mesh> aMesh, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms, uint32_t aId = 0, float aTimeSinceCreation = 0.f, bool castShadows = true, bool castAO = true);
+		static void DrawIndirectBatch(Ref<CommandBuffer> commandBuffer, Ref<ShaderStorageBuffer> indirectCommandBuffer, VkDeviceSize commandOffset, Ref<ShaderStorageBuffer> countBuffer, VkDeviceSize countOffset, const IndirectBatch& batch);
+		static void DrawIndirectBatches(Ref<CommandBuffer> commandBuffer, const IndirectPass& indirectPass, const GlobalDescriptorMap& globalDescriptorSet, const std::vector<IndirectBatch>& batches, const PushConstantDrawData& pushConstantData = {});
 
-		static void SubmitSprite(const SubTexture2D& aTexture, const gem::mat4& aTransform, Ref<Material> material = nullptr, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f }, uint32_t aId = 0);
-		static void SubmitSprite(Ref<Texture2D> aTexture, const gem::mat4& aTransform, Ref<Material> material = nullptr, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f }, uint32_t id = 0);
-		static void SubmitSprite(const gem::mat4& aTransform, const gem::vec4& aColor, Ref<Material> material = nullptr, uint32_t id = 0);
+		static void DrawMesh(Ref<CommandBuffer> commandBuffer, Ref<Mesh> mesh, const GlobalDescriptorMap& globalDescriptorSet, const PushConstantDrawData& pushConstantData = {});
+		static void DrawMesh(Ref<CommandBuffer> commandBuffer, Ref<Mesh> mesh, Ref<Material> material, const GlobalDescriptorMap& globalDescriptorSet, const PushConstantDrawData& pushConstantData = {});
+		static void DrawMesh(Ref<CommandBuffer> commandBuffer, Ref<Mesh> mesh, uint32_t subMeshIndex, const GlobalDescriptorMap& globalDescriptorSet, const PushConstantDrawData& pushConstantData = {});
 
-		static void SubmitBillboard(Ref<Texture2D> aTexture, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-		static void SubmitBillboard(Ref<Texture2D> aTexture, Ref<Shader> shader, const gem::vec3& aPosition, const gem::vec3& aScale, uint32_t aId = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-		static void SubmitBillboard(const gem::vec3& aPosition, const gem::vec3& aScale, const gem::vec4& aColor, uint32_t aId = 0);
+		static void DrawParticleBatches(Ref<CommandBuffer> commandBuffer, Ref<ShaderStorageBufferSet> storageBufferSet, const GlobalDescriptorMap& globalDescriptorSet, const std::vector<ParticleBatch>& batches);
 
-		static void SubmitLine(const gem::vec3& aStart, const gem::vec3& aEnd, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-		static void SubmitLight(const PointLight& pointLight);
-		static void SubmitLight(const DirectionalLight& dirLight);
+		static void DrawFullscreenTriangleWithMaterial(Ref<CommandBuffer> commandBuffer, Ref<Material> material, const GlobalDescriptorMap& globalDescriptorSet);
+		static void DrawFullscreenQuadWithMaterial(Ref<CommandBuffer> commandBuffer, Ref<Material> material, const GlobalDescriptorMap& globalDescriptorSet);
 
-		static void SubmitText(const std::string& aString, const Ref<Font> aFont, const gem::mat4& aTransform, float aMaxWidth, const gem::vec4& aColor = { 1.f });
-		static void SubmitDecal(Ref<Material> aMaterial, const gem::mat4& aTransform, uint32_t id = 0, const gem::vec4& aColor = { 1.f, 1.f, 1.f, 1.f });
-		static void SubmitResourceChange(const std::function<void()>&& func);
+		static void DrawVertexBuffer(Ref<CommandBuffer> commandBuffer, uint32_t count, Ref<VertexBuffer> vertexBuffer, Ref<RenderPipeline> pipeline, const GlobalDescriptorMap& globalDescriptorSet);
+		static void DrawIndexedVertexBuffer(Ref<CommandBuffer> commandBuffer, uint32_t indexCount, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<RenderPipeline> pipeline, const void* pushConstantData = nullptr, uint32_t pushConstantSize = 0);
 
-		static void SubmitCustom(std::function<void()>&& func);
+		static void DispatchComputePipeline(Ref<CommandBuffer> commandBuffer, Ref<ComputePipeline> pipeline, uint32_t groupX, uint32_t groupY, uint32_t groupZ);
+		static void ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const gem::vec4& clearValue);
 
-		static void SetAmbianceMultiplier(float multiplier); // #TODO: we should probably not do it like this
+		static SceneEnvironment GenerateEnvironmentMap(AssetHandle textureHandle);
 
-		static void DrawFullscreenTriangleWithShader(Ref<Shader> aShader);
-		static void DrawFullscreenTriangleWithMaterial(Ref<Material> aMaterial);
-		static void DrawFullscreenQuadWithShader(Ref<Shader> aShader);
-		static void DrawMesh(Ref<Mesh> aMesh, const gem::mat4& aTransform);
-		static void DrawMesh(Ref<Mesh> aMesh, const std::vector<gem::mat4>& aBoneTransforms, const gem::mat4& aTransform);
-		static void DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, const gem::mat4& aTransform);
-		static void DrawMesh(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
+		static const uint32_t AddTexture(Ref<Image2D> image);
+		static void RemoveTexture(Ref<Image2D> image);
 
-		static void DispatchRenderCommandsInstanced();
+		static void ReloadShader(Ref<Shader> shader);
 
-		static void DispatchLines();
-		static void DispatchText();
-		static void DispatchBillboardsWithShader(Ref<Shader> aShader = nullptr);
-		static void DispatchDecalsWithShader(Ref<Shader> aShader);
-		static void DispatchSpritesWithMaterial(Ref<Material> aMaterial = nullptr);
+		static void AddShaderDependency(Ref<Shader> shader, RenderPipeline* renderPipeline);
+		static void AddShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline);
+		static void AddShaderDependency(Ref<Shader> shader, SubMaterial* subMaterial);
+		static void AddShaderDependency(Ref<Shader> shader, PostProcessingMaterial* subMaterial);
 
-		static void ExecuteFullscreenPass(Ref<ComputePipeline> aComputePipeline, Ref<Framebuffer> aFramebuffer);
-		static void ExecuteLightCulling(Ref<Image2D> depthMap);
+		static void RemoveShaderDependency(Ref<Shader> shader, RenderPipeline* renderPipeline);
+		static void RemoveShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline);
+		static void RemoveShaderDependency(Ref<Shader> shader, SubMaterial* material);
+		static void RemoveShaderDependency(Ref<Shader> shader, PostProcessingMaterial* material);
 
-		static void SyncAndWait();
+		static const uint32_t AddMaterial(SubMaterial* material);
+		static void RemoveMaterial(SubMaterial* material);
+		static void UpdateMaterial(SubMaterial* material);
 
-		static void BindTexturesToStage(ShaderStage stage, const std::vector<Ref<Image2D>>& textures, const uint32_t startSlot);
-		static void ClearTexturesAtStage(ShaderStage stage, const uint32_t startSlot, const uint32_t count);
+		static BindlessData& GetBindlessData();
+		static DefaultData& GetDefaultData();
+		static const VulkanFunctions& GetVulkanFunctions();
 
-		static void SetSceneData(const SceneData& aSceneData);
-		static void PushCollection();
+		static const uint32_t GetFramesInFlightCount();
 
-		static SceneEnvironment GenerateEnvironmentMap(AssetHandle aTextureHandle);
+		static VkDescriptorPool GetCurrentDescriptorPool();
+		static VkDescriptorPool GetDescriptorPool(uint32_t index);
 
-		inline static const DefaultData& GetDefaultData() { return *myDefaultData; }
-		inline static Settings& GetSettings() { return myRendererData->settings; }
+		static VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
+		static VkDescriptorSet AllocatePersistentDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
 
 	private:
-		Renderer() = delete;
-
-		struct PerThreadCommands;
-		struct SpriteSubmitCommand;
-		struct BillboardSubmitCommand;
-		struct CommandCollection;
-
-		static void CreateDefaultBuffers();
+		static void CreateBindlessData();
+		static void CreateDescriptorPools();
+		static void CreateGlobalDescriptorSets();
 		static void CreateDefaultData();
-		static void CreateSpriteData();
-		static void CreateBillboardData();
-		static void CreateLineData();
-		static void CreateTextData();
-		static void CreateInstancingData();
-		static void CreateDecalData();
-		static void CreateLightCullingData();
-		static void CreateCommandBuffers();
 
 		static void GenerateBRDFLut();
-		static void RunResourceChanges();
 
-		static void UpdatePerPassBuffers();
-		static void UpdatePerFrameBuffers();
-		static void UploadObjectData(std::vector<SubmitCommand>& submitCommands);
+		static void LoadVulkanFunctions();
+		static void LoadRayTracingFunctions();
 
-		static void SortSubmitCommands(std::vector<SubmitCommand>& submitCommands);
-		static void SortBillboardCommands(std::vector<BillboardSubmitCommand>& billboardCommads);
-		static void SortSpriteCommands(std::vector<SpriteSubmitCommand>& commands);
+		static void DestroyDescriptorPools();
 
-		static void CollectSubmitCommands(const std::vector<SubmitCommand>& passCommands, std::vector<InstancedSubmitCommand>& instanceCommands, bool shadowPass = false, bool aoPass = false);
-		static void CollectSpriteCommandsWithMaterial(Ref<Material> aMaterial);
-		static void CollectBillboardCommandsWithShader(Ref<Shader> aShader);
-		static void CollectTextCommands();
+		static void UpdateMaterialDescriptors();
+		static void UpdateSamplerStateDescriptors();
 
-		static std::vector<SubmitCommand> CullRenderCommands(const std::vector<SubmitCommand>& renderCommands, Ref<Camera> camera);
+		static void SetupPipelineForRendering(Ref<CommandBuffer> commandBuffer, Ref<RenderPipeline> renderPipeline, const GlobalDescriptorMap& globalDescriptorSets, Ref<GlobalDescriptorSet> drawBufferSet = nullptr);
+		static void SetupPipelineForRendering(Ref<CommandBuffer> commandBuffer, Ref<RenderPipeline> renderPipeline);
 
-		///// Threading //////
-		static void RT_Execute();
-		//////////////////////
-
-		static void DrawMeshInternal(Ref<Mesh> aMesh, Ref<Material> material, uint32_t subMeshIndex, const gem::mat4& aTransform, const std::vector<gem::mat4>& aBoneTransforms = {});
-		static void DrawFullscreenTriangleWithShaderInternal(Ref<Shader> shader);
-		static void DrawFullscreenTriangleWithMaterialInternal(Ref<Material> aMaterial);
-		static void DrawFullscreenQuadWithShaderInternal(Ref<Shader> aShader);
-
-		static void BeginInternal(Context context, const std::string& debugName);
-		static void EndInternal();
-
-		static void BeginPassInternal(const RenderPass& aRenderPass, Ref<Camera> aCamera, bool aShouldClear, bool aIsShadowPass, bool aIsAOPass);
-		static void EndPassInternal();
-
-		static void BeginFullscreenPassInternal(const RenderPass& renderPass, Ref<Camera> camera, bool shouldClear /* = true */);
-		static void EndFullscreenPassInternal();
-
-		static void DispatchSpritesWithMaterialInternal(Ref<Material> aMaterial);
-		static void DispatchBillboardsWithShaderInternal(Ref<Shader> aShader);
-		static void DispatchRenderCommandsInstancedInternal();
-		static void DispatchDecalsWithShaderInternal(Ref<Shader> aShader);
-		static void DispatchTextInternal();
-
-		inline static CommandCollection& GetCurrentCPUCommandCollection() { return myRendererData->currentCPUCommands->commandCollections.back(); }
-		inline static CommandCollection& GetCurrentGPUCommandCollection() { return myRendererData->currentGPUCommands->commandCollections.front(); }
-
-		struct Samplers
-		{
-			Ref<SamplerState> linearWrap;
-			Ref<SamplerState> linearPointWrap;
-
-			Ref<SamplerState> pointWrap;
-			Ref<SamplerState> pointLinearWrap;
-
-			Ref<SamplerState> linearClamp;
-			Ref<SamplerState> linearPointClamp;
-
-			Ref<SamplerState> pointClamp;
-			Ref<SamplerState> pointLinearClamp;
-
-			Ref<SamplerState> anisotropic;
-			Ref<SamplerState> shadow;
-		};
-
-		struct DecalRenderCommand
-		{
-			gem::mat4 transform;
-			gem::vec4 color;
-			Ref<Material> material;
-			uint32_t id;
-		};
-
-		struct SpriteSubmitCommand
-		{
-			gem::mat4 transform = { 1.f };
-			gem::vec4 color = { 1.f };
-			gem::vec2 uv[4] = { { 0.f, 1.f }, { 1.f, 1.f }, { 1.f, 0.f }, { 0.f, 0.f } };
-			Ref<Material> material;
-			Ref<Texture2D> texture;
-			uint32_t id = 0;
-		};
-
-		struct BillboardSubmitCommand
-		{
-			gem::vec4 color;
-			gem::vec3 position;
-			gem::vec3 scale;
-			
-			Ref<Texture2D> texture;
-			Ref<Shader> shader;
-			uint32_t id;
-		};
-
-		struct TextSubmitCommand
-		{
-			gem::mat4 transform;
-			std::string text;
-			gem::vec4 color;
-			Ref<Font> font;
-			float maxWidth;
-		};
-		
-		struct SpriteData
-		{
-			inline static constexpr uint32_t MAX_QUADS = 5000;
-			inline static constexpr uint32_t MAX_VERTICES = MAX_QUADS * 4;
-			inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
-
-			Ref<VertexBuffer> vertexBuffer;
-			Ref<IndexBuffer> indexBuffer;
-			Ref<Texture2D> textureSlots[32];
-
-			gem::vec4 vertices[4];
-			gem::vec2 texCoords[4];
-			uint32_t indexCount = 0;
-			uint32_t textureSlotIndex = 1;
-
-			SpriteVertex* vertexBufferBase = nullptr;
-			SpriteVertex* vertexBufferPtr = nullptr;
-		};
-
-		struct LineData
-		{
-			inline static constexpr uint32_t MAX_LINES = 200000;
-			inline static constexpr uint32_t MAX_VERTICES = MAX_LINES * 2;
-			inline static constexpr uint32_t MAX_INDICES = MAX_LINES * 2;
-
-			Ref<VertexBuffer> vertexBuffer;
-			Ref<IndexBuffer> indexBuffer;
-			Ref<Shader> shader;
-
-			LineVertex* vertexBufferBase = nullptr;
-			LineVertex* vertexBufferPtr = nullptr;
-
-			uint32_t indexCount = 0;
-		};
-
-		struct BillboardData
-		{
-			inline static constexpr uint32_t MAX_BILLBOARDS = 50000;
-
-			Ref<VertexBuffer> vertexBuffer;
-			Ref<Texture2D> textureSlots[32];
-
-			uint32_t textureSlotIndex = 1;
-			uint32_t vertexCount = 0;
-
-			BillboardVertex* vertexBufferBase = nullptr;
-			BillboardVertex* vertexBufferPtr = nullptr;
-		};
-
-		struct TextData
-		{
-			inline static constexpr uint32_t MAX_QUADS = 10000;
-			inline static constexpr uint32_t MAX_VERTICES = MAX_QUADS * 4;
-			inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
-
-			Ref<VertexBuffer> vertexBuffer;
-			Ref<IndexBuffer> indexBuffer;
-			Ref<Texture2D> textureSlots[32];
-			Ref<Shader> shader;
-
-			gem::vec4 vertices[4];
-			uint32_t indexCount = 0;
-			uint32_t textureSlotIndex = 0;
-
-			TextVertex* vertexBufferBase = nullptr;
-			TextVertex* vertexBufferPtr = nullptr;
-		};
-
-		struct LightCullingData
-		{
-			Ref<ComputePipeline> lightCullingPipeline;
-			Ref<StructuredBuffer> lightCullingIndexBuffer;
-
-			uint32_t lastWidth = 1280;
-			uint32_t lastHeight = 720;
-		};
-
-		struct InstancingData
-		{
-			Ref<VertexBuffer> instancedVertexBuffer;
-		};
-
-		struct DecalData
-		{
-			Ref<Mesh> cubeMesh;
-		};
-
-		struct CommandCollection
-		{
-			std::vector<SubmitCommand> submitCommands;
-			std::vector<InstancedSubmitCommand> instancedCommands;
-			std::vector<SpriteSubmitCommand> spriteCommands;
-			std::vector<DecalRenderCommand> decalCommands;
-			std::vector<BillboardSubmitCommand> billboardCommands;
-			std::vector<TextSubmitCommand> textCommands;
-
-			std::vector<PointLight> pointLights;
-			DirectionalLight directionalLight{};
-
-			inline void Clear()
-			{
-				submitCommands.clear();
-				instancedCommands.clear();
-				spriteCommands.clear();
-				billboardCommands.clear();
-				textCommands.clear();
-
-				pointLights.clear();
-				directionalLight = {};
-			}
-		};
-
-		struct PerThreadCommands
-		{
-			std::queue<CommandCollection> commandCollections;
-		};
-
-		struct RendererData
-		{
-			inline static constexpr uint32_t MAX_OBJECTS_PER_FRAME = 20000;
-			inline static constexpr uint32_t MAX_BONES_PER_MESH = 128;
-			inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
-
-			std::mutex resourceMutex;
-			std::vector<std::function<void()>> resourceChangeQueue;
-
-			Settings settings{};
-			InstancingData instancingData{};
-
-			std::string currentContext;
-
-			Samplers samplers{};
-			RenderPass currentPass{};
-			Ref<Camera> currentPassCamera;
-			SceneData sceneData;
-
-			SpriteData spriteData{};
-			BillboardData billboardData{};
-			LineData lineData{};
-			TextData textData{};
-			LightCullingData lightCullData{};
-			DecalData decalData{};
-
-			// Fullscreen quad
-			Ref<VertexBuffer> quadVertexBuffer;
-			Ref<IndexBuffer> quadIndexBuffer;
-
-			std::unordered_map<AssetHandle, SceneEnvironment> environmentCache;
-			gem::vec2 fullRenderSize = { 1.f, 1.f };
-
-			///// Threading /////
-			CommandBuffer* currentCPUBuffer = nullptr;
-			CommandBuffer* currentGPUBuffer = nullptr;
-			Ref<CommandBuffer> commandBuffers[2];
-
-			PerThreadCommands* currentCPUCommands = nullptr;
-			PerThreadCommands* currentGPUCommands = nullptr;
-			Ref<PerThreadCommands> perThreadCommands[2];
-
-			std::atomic_bool isRunning = false;
-			bool primaryBufferUsed = false;
-
-			std::mutex renderMutex;
-			std::condition_variable syncVariable;
-			std::thread renderThread;
-			/////////////////////
-		};
-
-		inline static Scope<DefaultData> myDefaultData;
-		inline static Scope<RendererData> myRendererData;
+		Renderer() = delete;
 	};
 }

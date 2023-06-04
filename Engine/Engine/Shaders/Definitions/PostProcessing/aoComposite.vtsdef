@@ -1,0 +1,5 @@
+name: "AOComposite"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/AOComposite_ps.hlsl"
+  - "Engine/Shaders/Source/HLSL/Utility/FullscreenTriangle_vs.hlsl"

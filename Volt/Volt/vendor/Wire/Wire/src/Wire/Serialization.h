@@ -110,12 +110,14 @@ namespace Wire
 				{ "Skeleton", Volt::AssetType::Skeleton },
 				{ "Animation", Volt::AssetType::Animation },
 				{ "AnimatedCharacter", Volt::AssetType::AnimatedCharacter },
+				{ "AnimationGraph", Volt::AssetType::AnimationGraph },
 
 				{ "Texture", Volt::AssetType::Texture },
 
 				{ "Shader", Volt::AssetType::Shader },
 				{ "ShaderSource", Volt::AssetType::ShaderSource },
 
+				{ "MaterialGraph", Volt::AssetType::MaterialGraph },
 				{ "Material", Volt::AssetType::Material },
 				{ "PhysicsMaterial", Volt::AssetType::PhysicsMaterial },
 
@@ -124,7 +126,11 @@ namespace Wire
 				{ "ParticlePreset", Volt::AssetType::ParticlePreset },
 				{ "Font", Volt::AssetType::Font },
 				{ "Video", Volt::AssetType::Video },
-				{ "RenderPipeline", Volt::AssetType::RenderPipeline }
+				{ "GraphKey", Volt::AssetType::GraphKey },
+				{ "BehaviorGraph", Volt::AssetType::BehaviorGraph },
+				{ "BlendSpace", Volt::AssetType::BlendSpace },
+				{ "PostProcessingMaterial", Volt::AssetType::PostProcessingMaterial },
+				{ "PostProcessingStack", Volt::AssetType::PostProcessingStack },
 			};
 
 			for (const auto& [name, type] : assetsNameMap)
@@ -186,7 +192,7 @@ namespace Wire
 			PropertyType type;
 			PropertyType vectorType = PropertyType::Unknown;
 			uint32_t offset = 0;
-		
+
 			// Used to hold special types, such as AssetType
 			std::any specialType;
 		};
@@ -222,7 +228,7 @@ namespace Wire
 			std::string enumName;
 			std::string name;
 		};
-		
+
 		ComponentRegistry() = delete;
 
 		friend class Serializer;

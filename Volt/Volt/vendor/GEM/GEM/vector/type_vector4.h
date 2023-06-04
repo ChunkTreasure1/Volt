@@ -4,19 +4,20 @@
 
 namespace gem
 {
-	typedef vec<4, float> vec4;
-	typedef vec<4, uint32_t> vec4ui;
+	using vec4 = vec<4, float>;
+	using vec4ui = vec<4, uint32_t>;
+	using vec4i = vec<4, int32_t>;
 
 	template<typename T>
 	struct vec<4, T>
 	{
 	public:
-		vec<4, T>() {};
-		vec<4, T>(T val) : x(val), y(val), z(val), w(val) {};
-		vec<4, T>(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {};
-		vec<4, T>(const vec<4, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) {};
-		vec<4, T>(const vec<3, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(0) {};
-		vec<4, T>(const vec<3, T>& rhs, T w) : x(rhs.x), y(rhs.y), z(rhs.z), w(w) {};
+		constexpr vec<4, T>() {};
+		constexpr vec<4, T>(T val) : x(val), y(val), z(val), w(val) {};
+		constexpr vec<4, T>(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {};
+		constexpr vec<4, T>(const vec<4, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w) {};
+		constexpr vec<4, T>(const vec<3, T>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(0) {};
+		constexpr vec<4, T>(const vec<3, T>& rhs, T w) : x(rhs.x), y(rhs.y), z(rhs.z), w(w) {};
 
 		vec<4, T> operator+(const vec<4, T>& rhs) const { return vec<4, T>(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); };
 		vec<4, T> operator-(const vec<4, T>& rhs) const { return vec<4, T>(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); };
@@ -40,6 +41,18 @@ namespace gem
 		{
 			*this = *this / rhs;
 		};
+
+		bool operator<(const vec<4, T>& rhs) const { return (x < rhs.x && y < rhs.y && z < rhs.z && w < rhs.w); };
+		bool operator>(const vec<4, T>& rhs) const { return (x > rhs.x&& y > rhs.y&& z > rhs.z&& w > rhs.w); };
+		bool operator<=(const gem::vec<4, T>& rhs)
+		{
+			return (x <= rhs.x && y <= rhs.y && z <= rhs.z && w <= rhs.w);
+		}
+
+		bool operator>=(const gem::vec<4, T>& rhs)
+		{
+			return (x >= rhs.x && y >= rhs.y && z >= rhs.z && w >= rhs.w);
+		}
 
 		T& operator[](uint32_t index)
 		{

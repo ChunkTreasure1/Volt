@@ -1,0 +1,6 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2932040671	Play_Music			\Default Work Unit\Play_Music	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	841075806	A Flock Of Seagulls - I Ran	C:\Users\andreas.isaksson\Documents\P8_Andreas_TGA\Project\Project\Assets\Audio\WWise\P8ZODCOMBIES\.cache\Windows\SFX\A Flock Of Seagulls - I Ran_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\A Flock Of Seagulls - I Ran		45596660
+

@@ -1,0 +1,4 @@
+Handle: 13341749574582503568
+Path: Engine/Shaders/Definitions/Environment/equirectangularToCubemap.vtsdef
+Dependencies:
+  []

@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "Physics.h"
 
+#include "Volt/Core/Application.h"
+
 #include "Volt/Physics/PhysXInternal.h"
 #include "Volt/Physics/PhysXDebugger.h"
 #include "Volt/Physics/PhysicsScene.h"
@@ -50,7 +52,7 @@ namespace Volt
 
 		YAML::Node root = YAML::Load(sstream.str());
 		YAML::Node settingsNode = root["PhysicsSettings"];
-	
+
 		VT_DESERIALIZE_PROPERTY(gravity, mySettings.gravity, settingsNode, gem::vec3(0.f, -981.f, 0.f));
 		VT_DESERIALIZE_PROPERTY(worldBoundsMin, mySettings.worldBoundsMin, settingsNode, gem::vec3(-100000.f));
 		VT_DESERIALIZE_PROPERTY(worldBoundsMax, mySettings.worldBoundsMax, settingsNode, gem::vec3(100000.f));
@@ -116,7 +118,7 @@ namespace Volt
 		for (const auto& node : layersNode)
 		{
 			PhysicsLayer layer{};
-		
+
 			VT_DESERIALIZE_PROPERTY(layerId, layer.layerId, node, 0);
 			VT_DESERIALIZE_PROPERTY(bitValue, layer.bitValue, node, 0);
 			VT_DESERIALIZE_PROPERTY(collidesWith, layer.collidesWith, node, 0);
@@ -157,22 +159,24 @@ namespace Volt
 	{
 		myScene = CreateRef<PhysicsScene>(mySettings, scene);
 
-#ifndef VT_DIST
-		if (mySettings.debugOnPlay && !PhysXDebugger::IsDebugging())
+		if (!Application::Get().IsRuntime())
 		{
-			PhysXDebugger::StartDebugging("PhysXDebugInfo", mySettings.debugType == DebugType::LiveDebug);
+			if (mySettings.debugOnPlay && !PhysXDebugger::IsDebugging())
+			{
+				PhysXDebugger::StartDebugging("PhysXDebugInfo", mySettings.debugType == DebugType::LiveDebug);
+			}
 		}
-#endif
 	}
 
 	void Physics::DestroyScene()
 	{
-#ifndef VT_DIST
-		if (mySettings.debugOnPlay)
+		if (!Application::Get().IsRuntime())
 		{
-			PhysXDebugger::StopDebugging();
+			if (mySettings.debugOnPlay)
+			{
+				PhysXDebugger::StopDebugging();
+			}
 		}
-#endif
 
 		myScene->Destroy();
 		myScene = nullptr;
@@ -180,13 +184,15 @@ namespace Volt
 
 	void Physics::CreateActors(Scene* scene)
 	{
-		for (const auto& ent : scene->GetRegistry().GetAllEntities())
+		scene->GetRegistry().ForEach<RigidbodyComponent>([&](Wire::EntityId id, const RigidbodyComponent& comp)
 		{
-			if (scene->GetRegistry().HasComponent<RigidbodyComponent>(ent))
-			{
-				CreateActor(Entity{ ent, scene });
-			}
-		}
+			CreateActor(Entity{ id, scene });
+		});
+
+		scene->GetRegistry().ForEach<CharacterControllerComponent>([&](Wire::EntityId id, const CharacterControllerComponent& comp)
+		{
+			CreateControllerActor(Entity{ id, scene });
+		});
 	}
 
 	Ref<PhysicsActor> Physics::CreateActor(Entity entity)
@@ -198,6 +204,18 @@ namespace Volt
 		}
 
 		Ref<PhysicsActor> actor = myScene->CreateActor(entity);
+		return actor;
+	}
+
+	Ref<PhysicsControllerActor> Physics::CreateControllerActor(Entity entity)
+	{
+		auto existingActor = myScene->GetControllerActor(entity);
+		if (existingActor)
+		{
+			return existingActor;
+		}
+
+		Ref<PhysicsControllerActor> actor = myScene->CreateControllerActor(entity);
 		return actor;
 	}
 }

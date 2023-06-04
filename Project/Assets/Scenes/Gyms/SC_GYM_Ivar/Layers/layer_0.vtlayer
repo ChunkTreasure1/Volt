@@ -1,0 +1,902 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 28371655
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Directional Light
+          - guid: [4956947959302657279, 6431008363526150588]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 17
+                vectorType: 13
+                name: Color
+                data: [1, 1, 1]
+              - type: 7
+                vectorType: 13
+                name: Light Size
+                data: 1
+              - type: 0
+                vectorType: 13
+                name: Soft Shadows
+                data: true
+              - type: 0
+                vectorType: 13
+                name: Cast Shadows
+                data: true
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.866025448, 0, 0, 0.49999997]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+    - Entity:
+        id: 450760258
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: GameManager
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-1099.30823, 92.7188034, -50.1849174]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 11419437704680336441
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 3930826287
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 3
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.GameManager
+                  - value: Project.PointManager
+                  - value: Project.PerkManager
+                  - value: Project.WaveController
+                  - value: Project.WeaponManager
+                  - value: Project.VFXManager
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 12790645214925690963
+                  - value: 4280161016029309886
+                  - value: 9128290692757622044
+                  - value: 2101881378654084544
+                  - value: 1567632031036590912
+                  - value: 17839306754077855264
+          - guid: [5573043887290156750, 757506377100558474]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PlayerPrefab
+                data: 58925922960652004
+              - type: 16
+                vectorType: 13
+                name: EnemyPrefab
+                data: 8112676415534668006
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.GameManager
+              id: 12790645214925690963
+              properties:
+                - type: 22
+                  name: Player
+                  enumName: ""
+                  data: 0
+                - type: 0
+                  name: InstaKill
+                  enumName: ""
+                  data: false
+                - type: 13
+                  name: NukeEvent
+                  enumName: ""
+                - type: 0
+                  name: Nuke
+                  enumName: ""
+                  data: false
+                - type: 22
+                  name: PlayerUsingTeleporter
+                  enumName: ""
+                  data: 0
+                - type: 13
+                  name: ResetPhoneBoothEvent
+                  enumName: ""
+                - type: 0
+                  name: DoublePoints
+                  enumName: ""
+                  data: false
+                - type: 0
+                  name: Carpenter
+                  enumName: ""
+                  data: false
+                - type: 2
+                  name: PlayerCount
+                  enumName: ""
+                  data: 1
+                - type: 0
+                  name: MaxAmmo
+                  enumName: ""
+                  data: false
+                - type: 13
+                  name: PhoneBoothEvent
+                  enumName: ""
+                - type: 13
+                  name: InstaKillEvent
+                  enumName: ""
+                - type: 13
+                  name: DoublePointEvent
+                  enumName: ""
+                - type: 13
+                  name: MaxAmmoEvent
+                  enumName: ""
+                - type: 13
+                  name: CarpenterEvent
+                  enumName: ""
+                - type: 13
+                  name: EnemyDeathEvent
+                  enumName: ""
+                - type: 13
+                  name: NewRoundEvent
+                  enumName: ""
+                - type: 13
+                  name: StartGameEvent
+                  enumName: ""
+                - type: 13
+                  name: EndGameEvent
+                  enumName: ""
+          - ScriptEntry:
+              name: Project.PointManager
+              id: 4280161016029309886
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.PerkManager
+              id: 9128290692757622044
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.WaveController
+              id: 2101881378654084544
+              properties:
+                - type: 7
+                  name: LastRoundEnemyHealth
+                  enumName: ""
+                  data: 150
+          - ScriptEntry:
+              name: Project.WeaponManager
+              id: 1567632031036590912
+              properties:
+                []
+          - ScriptEntry:
+              name: Project.VFXManager
+              id: 17839306754077855264
+              properties:
+                - type: 16
+                  name: BodyImpact
+                  enumName: ""
+                  data: 10405711982411823474
+                - type: 16
+                  name: WallImpact
+                  enumName: ""
+                  data: 6069351249644429389
+    - Entity:
+        id: 617583069
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Camera
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, -500]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5524573352483143404, 11007889460122951339]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Aperture
+                data: 16
+              - type: 7
+                vectorType: 13
+                name: Shutter Speed
+                data: 0.00999999978
+              - type: 7
+                vectorType: 13
+                name: ISO
+                data: 100
+              - type: 7
+                vectorType: 13
+                name: Field of View
+                data: 60
+              - type: 7
+                vectorType: 13
+                name: Near plane
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Far plane
+                data: 100000
+              - type: 2
+                vectorType: 13
+                name: Priority
+                data: 0
+    - Entity:
+        id: 1355366476
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Skylight
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [80.2812424, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5130770350572262273, 9533246575187293344]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Environment Map
+                data: 12987874549714446500
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 0.620000005
+              - type: 7
+                vectorType: 13
+                name: LOD
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Turbidity
+                data: 2
+              - type: 7
+                vectorType: 13
+                name: Azimuth
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Inclination
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Show
+                data: true
+    - Entity:
+        id: 2426290261
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: PlayerPos
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-67.4182129, -95.5424805, 208.568954]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.70710665, 0, 0, 0.707106888]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1.00001824, 1.00001824]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2617874990
+    - Entity:
+        id: 2551665331
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Half Size
+                data: [50, 50, 50]
+              - type: 10
+                vectorType: 13
+                name: Offset
+                data: [0, 50, 0]
+              - type: 0
+                vectorType: 13
+                name: Is Trigger
+                data: true
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 10913121316
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              - type: 24
+                vectorType: 13
+                name: Type
+                data: 0
+              - type: 2
+                vectorType: 13
+                name: Layer ID
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Mass
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Linear Drag
+                data: 0.00999999978
+              - type: 2
+                vectorType: 13
+                name: Lock Flags
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Angular Drag
+                data: 0.0500000007
+              - type: 24
+                vectorType: 13
+                name: Collision Type
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Disable Graivity
+                data: false
+              - type: 0
+                vectorType: 13
+                name: Is Kinematic
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: EntryTrigger
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-163.097961, -101.995605, -1.43978882]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.70710665, 0, 0, 0.707106888]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1.0000149, 1.0000149]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 2617874990
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.ExcavatorEntranceTrigger
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 13729573525317245218
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ExcavatorEntranceTrigger
+              id: 13729573525317245218
+              properties:
+                - type: 16
+                  name: TextFont
+                  enumName: ""
+                  data: 6228676811939167833
+    - Entity:
+        id: 2617874990
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Half Size
+                data: [148, 133, 146]
+              - type: 10
+                vectorType: 13
+                name: Offset
+                data: [0, 79, 132]
+              - type: 0
+                vectorType: 13
+                name: Is Trigger
+                data: false
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 10913121316
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              - type: 24
+                vectorType: 13
+                name: Type
+                data: 1
+              - type: 2
+                vectorType: 13
+                name: Layer ID
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Mass
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Linear Drag
+                data: 0.00999999978
+              - type: 2
+                vectorType: 13
+                name: Lock Flags
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Angular Drag
+                data: 0.0500000007
+              - type: 24
+                vectorType: 13
+                name: Collision Type
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Disable Graivity
+                data: false
+              - type: 0
+                vectorType: 13
+                name: Is Kinematic
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: H10Improved
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [-580.345825, 80.9101715, -378.11615]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [-0.70710665, 0, 0, 0.707106888]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 0.999981821, 0.999981821]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 2551665331
+                  - value: 2426290261
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.ExcavatorController
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 7399677384585476542
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 15947257115808942263
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 0
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.ExcavatorController
+              id: 7399677384585476542
+              properties:
+                - type: 22
+                  name: PlayerPositionTarget
+                  enumName: ""
+                  data: 2426290261
+    - Entity:
+        id: 3413369253
+        components:
+          - guid: [5594831065701184629, 5808174883320445581]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Half Size
+                data: [50, 50, 50]
+              - type: 10
+                vectorType: 13
+                name: Offset
+                data: [0, 0, 0]
+              - type: 0
+                vectorType: 13
+                name: Is Trigger
+                data: false
+              - type: 16
+                vectorType: 13
+                name: Physics Material
+                data: 10913121316
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5241627842114713378, 11179844935521484427]
+            properties:
+              - type: 24
+                vectorType: 13
+                name: Type
+                data: 0
+              - type: 2
+                vectorType: 13
+                name: Layer ID
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Mass
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Linear Drag
+                data: 0.00999999978
+              - type: 2
+                vectorType: 13
+                name: Lock Flags
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Angular Drag
+                data: 0.0500000007
+              - type: 24
+                vectorType: 13
+                name: Collision Type
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Disable Graivity
+                data: false
+              - type: 0
+                vectorType: 13
+                name: Is Kinematic
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Cube
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [39.0708771, 1, 47.7096214]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 1484336012090354082
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 6917057027395138869

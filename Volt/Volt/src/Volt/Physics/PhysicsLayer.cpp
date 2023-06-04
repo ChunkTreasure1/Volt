@@ -59,9 +59,9 @@ namespace Volt
 		}
 
 		auto it = std::find_if(myLayers.begin(), myLayers.end(), [layerId](const PhysicsLayer& physLayer)
-			{
-				return physLayer.layerId == layerId;
-			});
+		{
+			return physLayer.layerId == layerId;
+		});
 
 		if (it != myLayers.end())
 		{

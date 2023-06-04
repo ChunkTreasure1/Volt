@@ -1,0 +1,14 @@
+name: FX_bulletHole
+internal: false
+paths:
+  - Assets\VFX\CharacterEffects\bulletHoles\FX_bulletHole_ps.hlsl
+  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl
+inputTextures:
+  - shaderName: Texture_01
+    editorName: Texture_01
+  - shaderName: Texture_02
+    editorName: Texture_02
+  - shaderName: Texture_03
+    editorName: Texture_03
+  - shaderName: Texture_04
+    editorName: Texture_04

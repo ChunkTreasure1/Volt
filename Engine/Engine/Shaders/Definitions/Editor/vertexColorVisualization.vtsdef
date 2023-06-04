@@ -1,0 +1,5 @@
+name: "VertexColorVisualization"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Editor/VertexColorVisualization_ps.hlsl"

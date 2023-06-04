@@ -2,29 +2,43 @@
 #include "Application.h"
 
 #include "Volt/Asset/AssetManager.h"
+#include "Volt/Asset/Prefab.h"
 
-#include "Volt/Animation/AnimationManager.h"
+#include "Volt/Input/Input.h"
 
 #include "Volt/Core/Window.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Core/Graphics/Swapchain.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/ImGui/ImGuiImplementation.h"
+#include "Volt/Steam/SteamImplementation.h"
 
+#include "Volt/Rendering/UIRenderer.h"
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/Buffer/ConstantBufferRegistry.h"
-#include "Volt/Rendering/Shader/ShaderRegistry.h"
+#include "Volt/Rendering/DebugRenderer.h"
+#include "Volt/Rendering/Buffer/UniformBufferSet.h"
+#include "Volt/Rendering/Buffer/UniformBuffer.h"
+
+#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
+
+#include "Volt/Core/ScopedTimer.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
-
 #include "Volt/Utility/FileSystem.h"
+#include "Volt/Discord/DiscordSDK.h"
+
+#include "Volt/Utility/Noise.h"
 
 #include <Amp/AudioManager/AudioManager.h>
-
+#include <Amp/WwiseAudioManager/WwiseAudioManager.h>
+#include <Amp/WWiseEngine/WWiseEngine.h>
+#include <Navigation/Core/NavigationSystem.h>
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
@@ -32,12 +46,21 @@
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)
+		: myFrameTimer(100)
 	{
 		VT_CORE_ASSERT(!myInstance, "Application already exists!");
 		myInstance = this;
 
 		myInfo = info;
 		Log::Initialize();
+		Noise::Initialize();
+
+		if (!myInfo.isRuntime)
+		{
+			ProjectManager::SetupWorkingDirectory();
+		}
+
+		ProjectManager::SetupProject(myInfo.projectPath);
 
 		WindowProperties windowProperties{};
 		windowProperties.width = info.width;
@@ -48,30 +71,30 @@ namespace Volt
 		windowProperties.iconPath = info.iconPath;
 		windowProperties.cursorPath = info.cursorPath;
 
+		if (myInfo.isRuntime)
+		{
+			windowProperties.title = ProjectManager::GetProject().name;
+			windowProperties.cursorPath = ProjectManager::GetProject().cursorPath;
+			windowProperties.iconPath = ProjectManager::GetProject().iconPath;
+		}
+
 		myWindow = Window::Create(windowProperties);
 		myWindow->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 
-		if (!myInfo.isRuntime)
-		{
-			ProjectManager::SetupWorkingDirectory();
-			ProjectManager::SetupProject(myInfo.projectPath);
-		}
+		FileSystem::Initialize();
 
-		if (!myInfo.isRuntime)
-		{
-			//myWindow->SetOpacity(0.f);
-		}
-
+		myThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		myAssetManager = CreateScope<AssetManager>();
 
-		ConstantBufferRegistry::Initialize();
-		Renderer::InitializeBuffers();
-		ShaderRegistry::Initialize();
 		Renderer::Initialize();
+		ShaderRegistry::Initialize();
+		Renderer::LateInitialize();
 
-#ifdef VT_ENABLE_MONO	
+		UIRenderer::Initialize();
+		DebugRenderer::Initialize();
+
 		MonoScriptEngine::Initialize();
-#endif
+		Prefab::PreloadAllPrefabs();
 
 		Physics::LoadSettings();
 		Physics::Initialize();
@@ -79,44 +102,104 @@ namespace Volt
 
 		//Init AudioEngine
 		{
-			Amp::InitInsturct instruct;
-			instruct.aFileDirectory = "Assets/Audio/Banks/";
-			instruct.aMasterbank = "Master/Master.bank";
-			instruct.aMasterStringsBank = "Master/Master.strings.bank";
-			Amp::AudioManager::Init(instruct);
+			std::filesystem::path defaultPath = ProjectManager::GetAudioBanksDirectory();
+			Amp::WWiseEngine::Get().InitWWise(defaultPath.c_str());
+			if (FileSystem::Exists(defaultPath))
+			{
+				for (auto bankFile : std::filesystem::directory_iterator(ProjectManager::GetAudioBanksDirectory()))
+				{
+					if (bankFile.path().extension() == L".bnk")
+					{
+						Amp::WWiseEngine::Get().LoadBank(bankFile.path().filename().string().c_str());
+					}
+				}
+			}
+
+
+			////Load Audio Settings
+			//std::filesystem::path path = info.projectPath.parent_path() / "Assets/Settings/GameSettings.yaml";
+			//std::ifstream file(path);
+			//std::stringstream sstream;
+			//sstream << file.rdbuf();
+
+			//YAML::Node root = YAML::Load(sstream.str());
+
+			//if (root["MasterVolume"])
+			//{
+			//	float masterVol = root["MasterVolume"].as<float>();
+			//	Amp::AudioManager::SetMasterVolume(masterVol);
+			//}
+			//if (root["SFXVolume"])
+			//{
+			//	float sfxVol = root["SFXVolume"].as<float>();
+			//	Amp::AudioManager::SetMixerVolume("bus:/SFX", sfxVol);
+			//}
+			//if (root["MusicVolume"])
+			//{
+			//	float musicVol = root["MusicVolume"].as<float>();
+			//	Amp::AudioManager::SetMixerVolume("bus:/Music", musicVol);
+			//}
+
+			//file.close();
+
 		}
 
 		if (info.enableImGui)
 		{
 			myImGuiImplementation = ImGuiImplementation::Create();
 		}
+
+		if (info.netEnabled)
+		{
+			myNetHandler = CreateScope<Volt::NetHandler>();
+		}
+
+		myNavigationSystem = CreateScope<Volt::AI::NavigationSystem>();
+
+		// Extras
+
+		if (info.enableSteam)
+		{
+			mySteamImplementation = SteamImplementation::Create();
+		}
 	}
 
 	Application::~Application()
 	{
+		GraphicsContext::GetDevice()->WaitForIdle();
+
+		myNavigationSystem = nullptr;
+		myLayerStack.Clear();
+		myImGuiImplementation = nullptr;
 		SceneManager::Shutdown();
 
 		myLayerStack.Clear();
-		myImGuiImplementation = nullptr;
 
 		Physics::SaveLayers();
 		Physics::Shutdown();
 		Physics::SaveSettings();
 
-#ifdef VT_ENABLE_MONO	
 		MonoScriptEngine::Shutdown();
-#endif
 
-		Renderer::Shutdown();
+		DebugRenderer::Shutdown();
+		UIRenderer::Shutdown();
+
 		ShaderRegistry::Shutdown();
-		ConstantBufferRegistry::Shutdown();
-		Log::Shutdown();
-		Amp::AudioManager::Shutdown();
+		Renderer::Shutdown();
 
+		//Amp::AudioManager::Shutdown();
+		Amp::WWiseEngine::Get().TermWwise();
 
 		myAssetManager = nullptr;
+		myThreadPool.Shutdown();
+
+		Renderer::FlushResourceQueues();
+
+		FileSystem::Shutdown();
+
 		myWindow = nullptr;
 		myInstance = nullptr;
+		Log::Shutdown();
 	}
 
 	void Application::Run()
@@ -128,62 +211,37 @@ namespace Volt
 		while (myIsRunning)
 		{
 			VT_PROFILE_FRAME("Frame");
+
+			myHasSentMouseMovedEvent = false;
+
 			myWindow->BeginFrame();
 
 			float time = (float)glfwGetTime();
-			myCurrentFrameTime = time - myLastFrameTime;
-			myLastFrameTime = time;
+			myCurrentDeltaTime = time - myLastTotalTime;
+			myLastTotalTime = time;
 
-			if (myShouldFancyClose)
-			{
-				myFancyCloseTimer -= myCurrentFrameTime;
-				if (myFancyCloseTimer >= 0.f)
-				{
-					myWindow->SetOpacity(gem::lerp(0.f, 1.f, myFancyCloseTimer / myFancyCloseTime));
-				}
-
-				if (myFancyCloseTimer <= 0.f)
-				{
-					myIsRunning = false;
-				}
-			}
-
-			if (myShouldFancyOpen && myCurrentFrameTime < 0.1f)
-			{
-				myFancyOpenTimer -= myCurrentFrameTime;
-				if (myFancyOpenTimer >= 0.f)
-				{
-					myWindow->SetOpacity(gem::lerp(1.f, 0.f, myFancyOpenTimer / myFancyOpenTime));
-				}
-
-				if (myFancyOpenTimer <= 0.f)
-				{
-					myWindow->SetOpacity(1.f);
-					myShouldFancyOpen = false;
-				}
-			}
-			
 			{
 				VT_PROFILE_SCOPE("Application::Update");
 
-				AppUpdateEvent updateEvent(myCurrentFrameTime);
+				AppUpdateEvent updateEvent(myCurrentDeltaTime * myTimeScale);
 				OnEvent(updateEvent);
-				Amp::AudioManager::Update(myCurrentFrameTime);
+				Amp::WWiseEngine::Get().Update();
 			}
 
 			{
 				VT_PROFILE_SCOPE("Application::Render");
 
+				Renderer::Flush();
+				Renderer::UpdateDescriptors();
+
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
-				Renderer::SyncAndWait();
 			}
 
-			myWindow->GetSwapchain().Bind();
 
 			if (myInfo.enableImGui)
 			{
-				VT_PROFILE_SCOPE("Application::ImGui")
+				VT_PROFILE_SCOPE("Application::ImGui");
 
 				myImGuiImplementation->Begin();
 
@@ -193,15 +251,49 @@ namespace Volt
 				myImGuiImplementation->End();
 			}
 
+			if (myInfo.netEnabled)
+			{
+				VT_PROFILE_SCOPE("Application::Net");
+				myNetHandler->Update(myCurrentDeltaTime);
+			}
+
+			{
+				VT_PROFILE_SCOPE("Discord SDK");
+				DiscordSDK::Update();
+			}
+
 			myWindow->Present();
+
+			myFrameTimer.Accumulate();
 		}
 	}
 
 	void Application::OnEvent(Event& event)
 	{
+		VT_PROFILE_SCOPE((std::string("Application::OnEvent: ") + std::string(event.GetName())).c_str());
+
+		if (event.GetEventType() == MouseMoved)
+		{
+			if (myHasSentMouseMovedEvent)
+			{
+				return;
+			}
+			else
+			{
+				myHasSentMouseMovedEvent = true;
+			}
+		}
+
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>(VT_BIND_EVENT_FN(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(VT_BIND_EVENT_FN(Application::OnWindowResizeEvent));
+		dispatcher.Dispatch<ViewportResizeEvent>(VT_BIND_EVENT_FN(Application::OnViewportResizeEvent));
+		myNetHandler->OnEvent(event);
+
+		if (myNavigationSystem)
+		{
+			myNavigationSystem->OnEvent(event);
+		}
 
 		for (auto layer : myLayerStack)
 		{
@@ -211,6 +303,7 @@ namespace Volt
 				break;
 			}
 		}
+		Input::OnEvent(event);
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -225,15 +318,7 @@ namespace Volt
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent&)
 	{
-		if (!myInfo.isRuntime)
-		{
-			myShouldFancyClose = true;
-		}
-		else
-		{
-			myIsRunning = false;
-		}
-
+		myIsRunning = false;
 		return false;
 	}
 
@@ -242,11 +327,19 @@ namespace Volt
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			myIsMinimized = true;
-			return false;
+		}
+		else
+		{
+			myIsMinimized = false;
 		}
 
-		myIsMinimized = false;
 		myWindow->Resize(e.GetWidth(), e.GetHeight());
+		return false;
+	}
+
+	bool Application::OnViewportResizeEvent(ViewportResizeEvent& e)
+	{
+		myWindow->SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 }

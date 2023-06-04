@@ -12,7 +12,7 @@ namespace Volt
 	protected:
 		Ref<Mesh> ImportMeshImpl(const std::filesystem::path& path) override;
 		Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path&) override { return nullptr; }
-		Ref<Animation> ImportAnimationImpl(const std::filesystem::path&) override { return nullptr; }
+		Ref<Animation> ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton> targetSkeleton) override { return nullptr; }
 
 	private:
 		bool IsValid(uint32_t subMeshCount, uint32_t vertexCount, uint32_t indexCount, size_t totalSize) const;

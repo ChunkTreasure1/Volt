@@ -1,0 +1,1883 @@
+Prefab:
+  version: 0
+  entities:
+    - id: 3142654017
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: PF_BeerBoxes_Big
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-4299.91064, 100, -11570]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 1, 0, -0.000172644854]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 0.999999881, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3142654017
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                - value: 1749296976
+                - value: 539271156
+                - value: 2295082553
+                - value: 3193749333
+                - value: 2802137138
+                - value: 2320928561
+                - value: 4255429049
+                - value: 3087185115
+                - value: 1559196007
+                - value: 1454585307
+                - value: 736237977
+                - value: 1437352415
+                - value: 2974871885
+                - value: 3099151833
+                - value: 981862305
+                - value: 2788039557
+                - value: 1242205250
+                - value: 1469156211
+                - value: 655866882
+                - value: 1822758609
+                - value: 802252993
+                - value: 2769624908
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 0
+    - id: 1749296976
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [78.2104492, 2.87754059, 65.9785156]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0.588814437, 0.58898145, 0.391494662, 0.391318977]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1.00011778, 0.999976277, 0.999993622]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1749296976
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 539271156
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [50, 0, 20]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 539271156
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 2295082553
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [39.2939453, 0, 28.7998047]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2295082553
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 3193749333
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-1.31835938, 0, 32.7509766]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.0201441888, 0, 0.999797046]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999994338, 1, 0.999994338]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3193749333
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 2802137138
+      components:
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [20, 120, 65]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 0
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 8
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collision
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-5.10107422, 120.000015, 69.1708984]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2802137138
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []
+    - id: 2320928561
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-1.31835938, 32.8046417, 32.7509766]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.999797106, 0, 0.020144105]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999989092, 0.999999881, 0.999989092]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2320928561
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 4255429049
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-1.31835938, 65.5874023, 32.7509766]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.0201441925, 0, 0.999797165]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999988854, 1, 0.999988854]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 4255429049
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 3087185115
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-1.31835938, 97.8489075, 32.7509766]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.999792099, 0, 0.0203883611]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999988735, 0.999999881, 0.999988735]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3087185115
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 1559196007
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-8.88476562, 0, 103.469727]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -0.22017993, 0, 0.975459278]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999989271, 1, 0.999989271]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1559196007
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 1454585307
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-8.88476562, 32.5509644, 103.469727]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.975512922, 0, 0.219941795]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999989152, 0.999999881, 0.999989152]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1454585307
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 736237977
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-8.88476562, 65.4751587, 103.469727]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.975513101, 0, 0.219941735]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999987006, 0.999999881, 0.999987006]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 736237977
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 1437352415
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-8.88476562, 97.552597, 103.469727]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [-3.30270602e-08, 0.975512981, -3.30270602e-08, 0.219941929]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999980509, 0.999999881, 0.999980509]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1437352415
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 2974871885
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-1.31835938, 130.661942, 32.7509766]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.12383081, 0, 0.992303312]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999964476, 0.999999762, 0.999964476]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2974871885
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 3099151833
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [47.4326172, 0, 64.7402344]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.99997288, 0, -0.00737144984]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999987423, 0.99999994, 0.999987423]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 3099151833
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 981862305
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [47.4326172, 32.9323883, 64.7402344]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.99997282, 0, -0.00737147499]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999981821, 0.99999994, 0.999981821]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 981862305
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 2788039557
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 15376428883286896775
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Box
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [47.4326172, 65.8184814, 64.7402344]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0.992750645, 0, 0.120192729]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.99997443, 0.99999994, 0.99997443]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2788039557
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 1242205250
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-0.706054688, 0, -11.2001953]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1242205250
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 1469156211
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [23.9765625, 0, -4.1328125]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1469156211
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 655866882
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [8.21240234, 2.93733215, -22.8896484]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [-0.388138205, 0.591053009, -0.590927422, -0.388342828]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999995053, 0.999984801, 1.00001049]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 655866882
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 1822758609
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [35.4790039, 2.85459137, 109.075195]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0.700178027, 0.700512111, 0.0975751281, 0.0975321159]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1.0000391, 0.999916017, 0.999946952]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1822758609
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 802252993
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 894800778850769996
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: SM_Beer_Bottle
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [23.9765625, 0, 125.868164]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 802252993
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+    - id: 2769624908
+      components:
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [20, 120, 30]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 0
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 8
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Collision
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [44.9033203, 120.000565, 61.3457031]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 2
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 14537016823119138472
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2769624908
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 3142654017
+        - guid: [4983032955594328197, 14247753867448592266]
+          properties:
+            []

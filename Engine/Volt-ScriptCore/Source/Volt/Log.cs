@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Volt
+﻿namespace Volt
 {
     public enum LogLevel : uint
     {
@@ -17,29 +11,57 @@ namespace Volt
 
     public static class Log
     {
-        public static void Trace(string text)
+#if DIST
+        public static void Trace(string text, string category = "") { }
+        public static void Info(string text, string category = "") { }
+        public static void Warning(string text, string category = "") { }
+        public static void Error(string text, string category = "") { }
+        public static void Critical(string text, string category = "") { }
+#else
+        public static void Trace(string text, string category = "")
         {
-            InternalCalls.Log_String(ref text, LogLevel.Trace);
+            if (category.Length > 0)
+            {
+                text = "$[" + category + "]" + text;
+            }
+            InternalCalls.Log_String(text, LogLevel.Trace);
         }
 
-        public static void Info(string text)
+        public static void Info(string text, string category = "")
         {
-            InternalCalls.Log_String(ref text, LogLevel.Info);
+            if (category.Length > 0)
+            {
+                text = "$[" + category + "]" + text;
+            }
+            InternalCalls.Log_String(text, LogLevel.Info);
         }
 
-        public static void Warning(string text)
+        public static void Warning(string text, string category = "")
         {
-            InternalCalls.Log_String(ref text, LogLevel.Warning);
+            if (category.Length > 0)
+            {
+                text = "$[" + category + "]" + text;
+            }
+            InternalCalls.Log_String(text, LogLevel.Warning);
         }
 
-        public static void Error(string text)
+        public static void Error(string text, string category = "")
         {
-            InternalCalls.Log_String(ref text, LogLevel.Error);
+            if (category.Length > 0)
+            {
+                text = "$[" + category + "]" + text;
+            }
+            InternalCalls.Log_String(text, LogLevel.Error);
         }
 
-        public static void Critical(string text)
+        public static void Critical(string text, string category = "")
         {
-            InternalCalls.Log_String(ref text, LogLevel.Critical);
+            if (category.Length > 0)
+            {
+                text = "$[" + category + "]" + text;
+            }
+            InternalCalls.Log_String(text, LogLevel.Critical);
         }
+#endif
     }
 }

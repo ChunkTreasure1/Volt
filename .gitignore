@@ -8,6 +8,7 @@ Engine/Engine/Shaders/Cache
 Engine/Scripts/Intermediates
 Engine/Volt-ScriptCore/Scripts/Intermediates
 Engine/MonoDebugger.log
+Engine/Log
 
 Volt/ProjectTemplate/Intermediates/
 Volt/ProjectTemplate/Binaries
@@ -20,6 +21,8 @@ Project/Binaries
 Project/.vs/
 Project/*.csproj
 Project/*.sln
+Project/Log
+Project/Cache
 
 *.sln
 *.vcxproj

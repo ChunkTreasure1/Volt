@@ -2,6 +2,8 @@
 
 #include "AssetImporter.h"
 
+#include <Navigation/NavMesh/VTNavMesh.h>
+
 namespace Volt
 {
 	class VTNavMeshImporter : public AssetImporter

@@ -1,0 +1,7 @@
+name: FX_bulletHoles
+internal: false
+paths:
+  - Assets\VFX\CharacterEffects\bulletHoles\FX_bulletHoles_ps.hlsl
+  - Engine/Shaders/Source/HLSL/Deferred/Decal_vs.hlsl
+inputTextures:
+  []

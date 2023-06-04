@@ -108,9 +108,9 @@ void ax::NodeEditor::PopStyleVar(int count)
     s_Editor->GetStyle().PopVar(count);
 }
 
-void ax::NodeEditor::Begin(const char* id, const ImVec2& size)
+bool ax::NodeEditor::Begin(const char* id, const ImVec2& size)
 {
-    s_Editor->Begin(id, size);
+    return s_Editor->Begin(id, size);
 }
 
 void ax::NodeEditor::End()
@@ -209,6 +209,11 @@ ImDrawList* ax::NodeEditor::GetNodeBackgroundDrawList(NodeId nodeId)
 bool ax::NodeEditor::Link(LinkId id, PinId startPinId, PinId endPinId, const ImVec4& color/* = ImVec4(1, 1, 1, 1)*/, float thickness/* = 1.0f*/)
 {
     return s_Editor->DoLink(id, startPinId, endPinId, ImColor(color), thickness);
+}
+
+bool ax::NodeEditor::Link(LinkId id, PinId startPinId, PinId endPinId, const ImVec2& offset, ArrowLocation arrowLocation, const ImVec4& color, float thickness)
+{
+	return s_Editor->DoLink(id, startPinId, endPinId, offset, arrowLocation, ImColor(color), thickness);
 }
 
 void ax::NodeEditor::Flow(LinkId linkId)

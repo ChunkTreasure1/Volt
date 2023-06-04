@@ -1,0 +1,7 @@
+name: circMaskr
+internal: false
+paths:
+  - Assets\VFX\Particles\circMaskr_ps.hlsl
+  - Engine\Shaders\Source\HLSL\Forward\ForwardPBR_vs.hlsl
+inputTextures:
+  []

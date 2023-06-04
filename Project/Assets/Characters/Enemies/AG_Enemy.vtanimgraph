@@ -1,0 +1,1330 @@
+AnimationGraph:
+  state: "{\"nodes\":{\"node:14373885496723630050\":{\"location\":{\"x\":600,\"y\":262}},\"node:8415835513785775603\":{\"location\":{\"x\":390,\"y\":262}}},\"selection\":[\"node:8415835513785775603\"],\"view\":{\"scroll\":{\"x\":56,\"y\":21},\"zoom\":1}}"
+  character: 16554954675975289134
+  Graph:
+    Nodes:
+      - id: 14373885496723630050
+        type: OutputPoseNode
+        state: "{\"location\":{\"x\":600,\"y\":262}}"
+        nodeSpecific:
+          {}
+        inputs:
+          - name: Result
+            id: 690951680287207465
+        outputs:
+          []
+      - id: 8415835513785775603
+        type: StateMachineNode
+        state: "{\"location\":{\"x\":390,\"y\":262}}"
+        nodeSpecific:
+          StateMachine:
+            name: Locomotion
+            editorState: "{\"nodes\":{\"node:14425645085210053320\":{\"location\":{\"x\":131,\"y\":174}},\"node:522870333191151810\":{\"location\":{\"x\":291,\"y\":62}},\"node:5462801741151502814\":{\"location\":{\"x\":3,\"y\":362}},\"node:5514538361961447446\":{\"location\":{\"x\":3,\"y\":-6}},\"node:9338460618688224375\":{\"location\":{\"x\":-348,\"y\":58}},\"node:9470790560895767034\":{\"location\":{\"x\":-108,\"y\":174}},\"node:9799136171263424978\":{\"location\":{\"x\":-348,\"y\":-66}}},\"selection\":[\"link:14401109583398243938\"],\"view\":{\"scroll\":{\"x\":-380,\"y\":-183},\"zoom\":1}}"
+            characterHandle: 16554954675975289134
+            States:
+              - name: Entry
+                isEntry: true
+                isAny: false
+                editorState: "{\"location\":{\"x\":291,\"y\":62}}"
+                id: 522870333191151810
+                pinId: 10033080160919041823
+                pinId2: 14045073220235159764
+                Transitions:
+                  - 5101639853220260994
+              - name: Any
+                isEntry: false
+                isAny: true
+                editorState: "{\"location\":{\"x\":-348,\"y\":-66}}"
+                id: 9799136171263424978
+                pinId: 6888668272827114306
+                pinId2: 12539614000062424677
+                Transitions:
+                  - 6021979018433044746
+              - name: Walk
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":131,\"y\":174}}"
+                id: 14425645085210053320
+                pinId: 3670485799784930515
+                pinId2: 8809042763776835723
+                Transitions:
+                  - 5101639853220260994
+                  - 3830676496217807015
+                  - 8125248279521770274
+                  - 17792710781816959680
+                  - 8796590200796348738
+                  - 3751079406253050426
+                characterHandle: 16554954675975289134
+                Graph:
+                  Nodes:
+                    - id: 2024271780906668773
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":840,\"y\":150}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 5854442473113674612
+                      outputs:
+                        []
+                    - id: 16427810970869132632
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":418,\"y\":146}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 5418070563566170826
+                          data: 15701630721672491628
+                        - name: Loop
+                          id: 18160692690193539976
+                          data: true
+                        - name: Speed
+                          id: 6941844146142639844
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 8666700163474121224
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 17319799889347793161
+                  Links:
+                    - id: 3475293016382230963
+                      output: 17319799889347793161
+                      input: 5854442473113674612
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - name: Run
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":-108,\"y\":174}}"
+                id: 9470790560895767034
+                pinId: 13318437225169644915
+                pinId2: 8619270706742209616
+                Transitions:
+                  - 3830676496217807015
+                  - 11419790615102646749
+                  - 16310231210618708467
+                  - 12752756094234377363
+                  - 14401109583398243938
+                characterHandle: 16554954675975289134
+                Graph:
+                  Nodes:
+                    - id: 13491049932734673192
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 3900576667177249791
+                      outputs:
+                        []
+                    - id: 10994522595309881640
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-398,\"y\":2}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 13505343686901948652
+                          data: 3126538684802135033
+                        - name: Loop
+                          id: 12171643000501606940
+                          data: true
+                        - name: Speed
+                          id: 14868551998988290833
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 7915491271941722163
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 15420238805671059935
+                  Links:
+                    - id: 10015134510375784573
+                      output: 15420238805671059935
+                      input: 3900576667177249791
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                  Events:
+                    []
+              - name: BitePlanks
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":3,\"y\":362}}"
+                id: 5462801741151502814
+                pinId: 12083890037290664855
+                pinId2: 6539138942816205238
+                Transitions:
+                  - 12346737726275443850
+                  - 12346737726275443850
+                  - 11419790615102646749
+                  - 16310231210618708467
+                  - 8125248279521770274
+                  - 17792710781816959680
+                characterHandle: 16554954675975289134
+                Graph:
+                  Nodes:
+                    - id: 8588098899013489277
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 14099294494608278806
+                      outputs:
+                        []
+                    - id: 12782721894609276272
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-450,\"y\":-18}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 16599449081529068828
+                          data: 9220744283863750636
+                        - name: Loop
+                          id: 912934760520319867
+                          data: true
+                        - name: Speed
+                          id: 5796855501873431134
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 4081904778665571667
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 15782327962837622080
+                  Links:
+                    - id: 11722640757054284027
+                      output: 15782327962837622080
+                      input: 14099294494608278806
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - name: Attack
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":3,\"y\":-6}}"
+                id: 5514538361961447446
+                pinId: 8498945023886823225
+                pinId2: 15927087321242138382
+                Transitions:
+                  - 12752756094234377363
+                  - 8796590200796348738
+                  - 3751079406253050426
+                  - 14401109583398243938
+                characterHandle: 16554954675975289134
+                Graph:
+                  Nodes:
+                    - id: 8970878359513272584
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 3093269123490921915
+                      outputs:
+                        []
+                    - id: 13738365830963057712
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-472,\"y\":14}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 12234527311800397966
+                          data: 3735024224257779966
+                        - name: Loop
+                          id: 11692972231115834651
+                          data: false
+                        - name: Speed
+                          id: 8480180365866479292
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 7114769977082962341
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 16431153276066482290
+                  Links:
+                    - id: 9122467013504434245
+                      output: 16431153276066482290
+                      input: 3093269123490921915
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+              - name: Death
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":-348,\"y\":58}}"
+                id: 9338460618688224375
+                pinId: 1272475148431101592
+                pinId2: 5342382400430492445
+                Transitions:
+                  - 6021979018433044746
+                characterHandle: 16554954675975289134
+                Graph:
+                  Nodes:
+                    - id: 1825600631838118801
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 13323335244769918227
+                      outputs:
+                        []
+                    - id: 13703709195343051605
+                      type: AnimationSwitchNode
+                      state: "{\"location\":{\"x\":-296,\"y\":2}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 17761226993252587394
+                        - name: 0
+                          id: 10576907191069891247
+                        - name: 1
+                          id: 13677043093721682679
+                        - name: 2
+                          id: 8570709919815060282
+                        - name: 3
+                          id: 11555202517701301565
+                        - name: 4
+                          id: 3051741126244647879
+                        - name: 5
+                          id: 10468730943256529272
+                        - name: 6
+                          id: 2443337073640677176
+                        - name: 7
+                          id: 10627994889360629951
+                        - name: 8
+                          id: 7234554404165494118
+                        - name: 9
+                          id: 16741728746164779920
+                        - name: 10
+                          id: 16723417343981123574
+                      outputs:
+                        - name: Output
+                          id: 10139316331375054811
+                    - id: 4850671566428494535
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-862,\"y\":-98}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 16391631332404342168
+                          data: 11650850813182849734
+                        - name: Loop
+                          id: 7713675293151978682
+                          data: false
+                        - name: Speed
+                          id: 16048166595270909634
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 5138527003326353372
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 13680399691688573974
+                    - id: 3640822452692017167
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-846,\"y\":90}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 676491977269671959
+                          data: 1243831373471715449
+                        - name: Loop
+                          id: 12467944990735161945
+                          data: false
+                        - name: Speed
+                          id: 16170486648756507818
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 12280693217133774266
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 3425272621766407037
+                    - id: 4594372862162426904
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-840,\"y\":282}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 14565940125355887909
+                          data: 16443424598018242121
+                        - name: Loop
+                          id: 15354801715603243848
+                          data: false
+                        - name: Speed
+                          id: 12516277886774084549
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 7608302713507971424
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 5249326801091743409
+                    - id: 13345970375446171301
+                      type: GetParameterInt
+                      state: "{\"location\":{\"x\":-671,\"y\":-186}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 5997572932710473229
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 10517244588481184694
+                          data: 0
+                  Links:
+                    - id: 5217757186440946391
+                      output: 13680399691688573974
+                      input: 10576907191069891247
+                    - id: 6558104567879430561
+                      output: 3425272621766407037
+                      input: 13677043093721682679
+                    - id: 14787725995879421715
+                      output: 5249326801091743409
+                      input: 8570709919815060282
+                    - id: 3456786458651501243
+                      output: 10139316331375054811
+                      input: 13323335244769918227
+                    - id: 4480139365993925874
+                      output: 10517244588481184694
+                      input: 17761226993252587394
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+            Transitions:
+              - id: 5101639853220260994
+                fromState: 522870333191151810
+                toState: 14425645085210053320
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.100000001
+                Graph:
+                  Nodes:
+                    - id: 16824688623113405255
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 17269633790166806600
+                          data: false
+                      outputs:
+                        []
+                  Links:
+                    []
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - id: 3830676496217807015
+                fromState: 14425645085210053320
+                toState: 9470790560895767034
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.100000001
+                Graph:
+                  Nodes:
+                    - id: 11847597000705332727
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 2696202239968538888
+                      outputs:
+                        []
+                    - id: 10698578682261490159
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-269,\"y\":61}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 17550558281279259691
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 16535601724584659190
+                          data: false
+                  Links:
+                    - id: 14977435718064012098
+                      output: 16535601724584659190
+                      input: 2696202239968538888
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - id: 12346737726275443850
+                fromState: 5462801741151502814
+                toState: 5462801741151502814
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 13225523782724665224
+                      type: TransitionOutputNode
+                      state: ""
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 9356382863601109866
+                          data: false
+                      outputs:
+                        []
+                  Links:
+                    []
+                  Parameters:
+                    []
+                  Events:
+                    []
+              - id: 11419790615102646749
+                fromState: 9470790560895767034
+                toState: 5462801741151502814
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.5
+                Graph:
+                  Nodes:
+                    - id: 2756072695665899998
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 427222334217477119
+                      outputs:
+                        []
+                    - id: 10839751428976854375
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-321,\"y\":98}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 1787957079991796538
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 4851390016602267980
+                          data: false
+                  Links:
+                    - id: 15101121162259424558
+                      output: 4851390016602267980
+                      input: 427222334217477119
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - id: 16310231210618708467
+                fromState: 5462801741151502814
+                toState: 9470790560895767034
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.5
+                Graph:
+                  Nodes:
+                    - id: 14247339500884701715
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 13220207914879017996
+                      outputs:
+                        []
+                    - id: 605359297450626294
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-450,\"y\":-42}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 17550558281279259691
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 12558797460567193964
+                          data: false
+                    - id: 2387527959578013537
+                      type: AndNode
+                      state: "{\"location\":{\"x\":-248,\"y\":30}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 3735253868950737189
+                        - name: B
+                          id: 763699150235915130
+                      outputs:
+                        - name: Result
+                          id: 18421670162496929298
+                          data: false
+                    - id: 9712028124924992769
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-604,\"y\":102}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 1787957079991796538
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 7059208187263136269
+                          data: false
+                    - id: 13876932197479655608
+                      type: NotNode
+                      state: "{\"location\":{\"x\":-424,\"y\":156}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 6944644899525899490
+                      outputs:
+                        - name: Result
+                          id: 10852740087451533723
+                          data: false
+                  Links:
+                    - id: 16183397982168493943
+                      output: 12558797460567193964
+                      input: 3735253868950737189
+                    - id: 18342426954199454901
+                      output: 7059208187263136269
+                      input: 6944644899525899490
+                    - id: 10840327302463817626
+                      output: 10852740087451533723
+                      input: 763699150235915130
+                    - id: 2600262775073012971
+                      output: 18421670162496929298
+                      input: 13220207914879017996
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+              - id: 8125248279521770274
+                fromState: 14425645085210053320
+                toState: 5462801741151502814
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.5
+                Graph:
+                  Nodes:
+                    - id: 2404186600606072832
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 3237567265812770009
+                      outputs:
+                        []
+                    - id: 12410534981846745261
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-277,\"y\":18}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 1787957079991796538
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 12061984460388082357
+                          data: false
+                  Links:
+                    - id: 16626396961733939704
+                      output: 12061984460388082357
+                      input: 3237567265812770009
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - id: 17792710781816959680
+                fromState: 5462801741151502814
+                toState: 14425645085210053320
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.5
+                Graph:
+                  Nodes:
+                    - id: 1460152190654243838
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":120,\"y\":198}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 7214235173420702760
+                      outputs:
+                        []
+                    - id: 17353767860218275728
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-370,\"y\":22}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 17550558281279259691
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 11390968254812681571
+                          data: false
+                    - id: 2018702314527885264
+                      type: NotNode
+                      state: "{\"location\":{\"x\":-252,\"y\":20}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 9064570797814597
+                      outputs:
+                        - name: Result
+                          id: 5327889416722369666
+                          data: false
+                    - id: 11184823973883315480
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-556,\"y\":214}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 1787957079991796538
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 6069804237790398518
+                          data: false
+                    - id: 12587728592032999363
+                      type: AndNode
+                      state: "{\"location\":{\"x\":-129,\"y\":221}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 5998077824765168670
+                        - name: B
+                          id: 3768244325162707591
+                      outputs:
+                        - name: Result
+                          id: 1400663018507686282
+                          data: false
+                    - id: 7127429367944286127
+                      type: NotNode
+                      state: "{\"location\":{\"x\":-392,\"y\":236}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 5991067589906705400
+                      outputs:
+                        - name: Result
+                          id: 7444486593747131479
+                          data: false
+                  Links:
+                    - id: 304582617088094688
+                      output: 11390968254812681571
+                      input: 9064570797814597
+                    - id: 10110006427110945394
+                      output: 5327889416722369666
+                      input: 5998077824765168670
+                    - id: 10416355068628654738
+                      output: 1400663018507686282
+                      input: 7214235173420702760
+                    - id: 4123873132027141994
+                      output: 6069804237790398518
+                      input: 5991067589906705400
+                    - id: 18219913048511579812
+                      output: 7444486593747131479
+                      input: 3768244325162707591
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                  Events:
+                    []
+              - id: 12752756094234377363
+                fromState: 9470790560895767034
+                toState: 5514538361961447446
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.300000012
+                Graph:
+                  Nodes:
+                    - id: 12074077388541648334
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":200,\"y\":6}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 10592347629740493205
+                      outputs:
+                        []
+                    - id: 10767705899051019473
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-67,\"y\":22}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 6049513452693391745
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 9441674427663817138
+                          data: false
+                  Links:
+                    - id: 12561836514224760439
+                      output: 9441674427663817138
+                      input: 10592347629740493205
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+              - id: 8796590200796348738
+                fromState: 14425645085210053320
+                toState: 5514538361961447446
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.300000012
+                Graph:
+                  Nodes:
+                    - id: 1903883640301985676
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 10462734832968361905
+                      outputs:
+                        []
+                    - id: 6851236774249461488
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-179,\"y\":54}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 6049513452693391745
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 13526253800423917175
+                          data: false
+                  Links:
+                    - id: 11025244249347902692
+                      output: 13526253800423917175
+                      input: 10462734832968361905
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+              - id: 3751079406253050426
+                fromState: 5514538361961447446
+                toState: 14425645085210053320
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.5
+                Graph:
+                  Nodes:
+                    - id: 4168688103575064738
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 11369584487276910382
+                      outputs:
+                        []
+                    - id: 11939159838767646700
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-644,\"y\":-77}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 17550558281279259691
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 1036545455276727991
+                          data: false
+                    - id: 13147802549649369458
+                      type: NotNode
+                      state: "{\"location\":{\"x\":-521,\"y\":-52}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 4275730926592420648
+                      outputs:
+                        - name: Result
+                          id: 7743172301377811875
+                          data: false
+                    - id: 10528732766486690173
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-650,\"y\":11}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 6049513452693391745
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 8207685296214754275
+                          data: false
+                    - id: 15310981903472167566
+                      type: NotNode
+                      state: "{\"location\":{\"x\":-511,\"y\":49}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 18240682514069396297
+                      outputs:
+                        - name: Result
+                          id: 5945584679532782201
+                          data: false
+                    - id: 1244170095883242763
+                      type: AndNode
+                      state: "{\"location\":{\"x\":-264,\"y\":48}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 17844203934459252739
+                        - name: B
+                          id: 12357697071697197816
+                      outputs:
+                        - name: Result
+                          id: 6967283827350804629
+                          data: false
+                  Links:
+                    - id: 8795618151590416087
+                      output: 1036545455276727991
+                      input: 4275730926592420648
+                    - id: 2891259196355141235
+                      output: 8207685296214754275
+                      input: 18240682514069396297
+                    - id: 7960273311137436970
+                      output: 5945584679532782201
+                      input: 12357697071697197816
+                    - id: 13857045269004331118
+                      output: 7743172301377811875
+                      input: 17844203934459252739
+                    - id: 2866036872201953317
+                      output: 6967283827350804629
+                      input: 11369584487276910382
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+              - id: 14401109583398243938
+                fromState: 5514538361961447446
+                toState: 9470790560895767034
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.5
+                Graph:
+                  Nodes:
+                    - id: 14858770129725334464
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 233512074809029877
+                      outputs:
+                        []
+                    - id: 8906548213021935768
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-322,\"y\":22}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 17550558281279259691
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 7571497875587890065
+                          data: false
+                    - id: 9714724408765098897
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-581,\"y\":61}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 6049513452693391745
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 2348860923428749590
+                          data: false
+                    - id: 13572398915569781325
+                      type: NotNode
+                      state: "{\"location\":{\"x\":-426,\"y\":147}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 11479871220970018074
+                      outputs:
+                        - name: Result
+                          id: 6207558777082394219
+                          data: false
+                    - id: 143676712543699361
+                      type: AndNode
+                      state: "{\"location\":{\"x\":-193,\"y\":96}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 16543455734051243629
+                        - name: B
+                          id: 4442062911681899274
+                      outputs:
+                        - name: Result
+                          id: 14858302147092059947
+                          data: false
+                  Links:
+                    - id: 9480490925686165481
+                      output: 2348860923428749590
+                      input: 11479871220970018074
+                    - id: 12331168319817507329
+                      output: 6207558777082394219
+                      input: 4442062911681899274
+                    - id: 3815838766902439530
+                      output: 7571497875587890065
+                      input: 16543455734051243629
+                    - id: 10181858220617234078
+                      output: 14858302147092059947
+                      input: 233512074809029877
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+              - id: 6021979018433044746
+                fromState: 9799136171263424978
+                toState: 9338460618688224375
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0.200000003
+                Graph:
+                  Nodes:
+                    - id: 10780951757641465115
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 17787174129919224752
+                      outputs:
+                        []
+                    - id: 11638645445193774733
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-238,\"y\":10}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 105652121771757682
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 13052790072843834239
+                          data: false
+                  Links:
+                    - id: 17325808565225200764
+                      output: 13052790072843834239
+                      input: 17787174129919224752
+                  Parameters:
+                    - name: Run
+                      type: Boolean
+                      id: 17550558281279259691
+                      data: false
+                    - name: Attack
+                      type: Boolean
+                      id: 6049513452693391745
+                      data: false
+                    - name: BitePlanks
+                      type: Boolean
+                      id: 1787957079991796538
+                      data: false
+                    - name: Die
+                      type: Boolean
+                      id: 105652121771757682
+                      data: false
+                    - name: DeathType
+                      type: Int
+                      id: 5997572932710473229
+                      data: 0
+                  Events:
+                    []
+        inputs:
+          []
+        outputs:
+          - name: Output
+            id: 12715822344865536087
+    Links:
+      - id: 4370983620694428251
+        output: 12715822344865536087
+        input: 690951680287207465
+    Parameters:
+      - name: Run
+        type: Boolean
+        id: 17550558281279259691
+        data: false
+      - name: Attack
+        type: Boolean
+        id: 6049513452693391745
+        data: false
+      - name: BitePlanks
+        type: Boolean
+        id: 1787957079991796538
+        data: false
+      - name: Die
+        type: Boolean
+        id: 105652121771757682
+        data: false
+      - name: DeathType
+        type: Int
+        id: 5997572932710473229
+        data: 0
+    Events:
+      []

@@ -4,14 +4,13 @@
 #include <Wire/Entity.h>
 #include <Wire/WireGUID.h>
 
-#include "Volt/Scripting/ScriptEngine.h"
-#include "Volt/Scripting/ScriptRegistry.h"
-
 #include <unordered_map>
 
 namespace Volt
 {
 	class PhysicsActor;
+	class MonoScriptFieldCache;
+
 	class Entity
 	{
 	public:
@@ -26,14 +25,6 @@ namespace Volt
 
 		template<typename T>
 		T& GetComponent() const;
-
-		template<typename T>
-		T* GetScript();
-
-		bool HasScript(const std::string& scriptName);
-		void AddScript(const std::string& scriptName);
-		void RemoveScript(const std::string& scriptName);
-		void RemoveScript(WireGUID scriptGUID);
 
 		const std::string GetTag();
 		void SetTag(const std::string& tag);
@@ -57,22 +48,38 @@ namespace Volt
 		const gem::quat GetRotation() const;
 		const gem::vec3 GetScale() const;
 
+		const bool IsVisible() const;
+		void SetVisible(bool state);
+		void SetLocked(bool state);
+
+		const uint32_t GetLayerId() const;
+
 		const std::vector<Volt::Entity> GetChilden() const;
-		const Volt::Entity GetParent() const;
+		const Volt::Entity GetParent();
+		
+		void ResetParent();
+		void ResetChildren();
+
+		void RemoveChild(Volt::Entity entity);
 
 		const Ref<PhysicsActor> GetPhysicsActor() const;
 
+		void UpdatePhysicsTranslation(bool updateThis);
+		void UpdatePhysicsRotation(bool updateThis);
+
 		void SetPosition(const gem::vec3& position, bool updatePhysics = true);
+		void SetRotation(const gem::quat& rotation, bool updatePhysics = true);
+		void SetScale(const gem::vec3& scale);
 
 		void SetLocalPosition(const gem::vec3& position, bool updatePhysics = true);
-		void SetLocalRotation(const gem::quat& rotation);
+		void SetLocalRotation(const gem::quat& rotation, bool updatePhysics = true);
 		void SetLocalScale(const gem::vec3& scale);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args);
 
 		template<typename T>
-		bool HasComponent();
+		bool HasComponent() const;
 
 		template<typename T>
 		void RemoveComponent();
@@ -101,19 +108,21 @@ namespace Volt
 		inline explicit operator bool() const { return !IsNull(); }
 
 		// Copies from one entity to another
-		static void Copy(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
+		static void Copy(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
 
 		// Duplicated an entire entity tree
-		static Wire::EntityId Duplicate(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity);
+		static Wire::EntityId Duplicate(Wire::Registry& aRegistry, MonoScriptFieldCache& scriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
+		static Wire::EntityId Duplicate(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
 
-		static Volt::Entity Null() { return Volt::Entity(0, nullptr); }
+		static Volt::Entity Null() { return { 0, nullptr }; }
 
 	private:
-		static Wire::EntityId DuplicateInternal(Wire::Registry& aRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aParent);
+		static void CopyPhysicsComponents(const WireGUID& guid, Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity);
+		static Wire::EntityId DuplicateInternal(Wire::Registry& aRegistry, MonoScriptFieldCache& scriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aParent, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
+		static Wire::EntityId DuplicateInternal(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aParent, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
 
 		Scene* myScene = nullptr;
 		Wire::EntityId myId = Wire::NullID;
- 
 	};
 
 	template<typename T>
@@ -128,19 +137,6 @@ namespace Volt
 		return myScene->myRegistry.GetComponent<T>(myId);
 	}
 
-	template<typename T>
-	inline T* Entity::GetScript()
-	{
-		const auto guid = T::GetStaticGUID();
-		if (!ScriptEngine::IsScriptRegistered(guid, myId))
-		{
-			return nullptr;
-		}
-
-		Script* script = ScriptEngine::GetScript(myId, guid).get();
-		return reinterpret_cast<T*>(script);
-	}
-
 	template<typename T, typename... Args>
 	inline T& Entity::AddComponent(Args&&... args)
 	{
@@ -148,7 +144,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline bool Entity::HasComponent()
+	inline bool Entity::HasComponent() const
 	{
 		return myScene->myRegistry.HasComponent<T>(myId);
 	}

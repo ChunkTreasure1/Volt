@@ -9,9 +9,9 @@ project "GEM"
 
 	files
 	{
-		"src/**.h",
-		"src/**.cpp",
-		"src/**.hpp",
+		"gem/**.h",
+		"gem/**.cpp",
+		"gem/**.hpp",
 	}
 
 	includedirs

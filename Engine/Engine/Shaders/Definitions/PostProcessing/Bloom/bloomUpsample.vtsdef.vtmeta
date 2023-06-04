@@ -1,0 +1,4 @@
+Handle: 12759323569720343972
+Path: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomUpsample.vtsdef
+Dependencies:
+  []

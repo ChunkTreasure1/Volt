@@ -1,37 +1,39 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
-
-#include <Windows.h>
-#include <wrl.h>
+#include <vulkan/vulkan.h>
 
 struct GLFWwindow;
-struct ID3D11RenderTargetView;
-struct IDXGISwapChain;
-
-using namespace Microsoft::WRL;
 
 namespace Volt
 {
-	class GraphicsContext;
 	class Swapchain
 	{
 	public:
-		Swapchain(GLFWwindow* aWindow, Ref<GraphicsContext> aGraphicsContext);
+		Swapchain(GLFWwindow* window);
 		~Swapchain();
 
 		void Release();
-		void Invalidate(uint32_t width, uint32_t height, bool aFullscreen);
 
 		void BeginFrame();
-		void Present(bool aUseVSync);
-		void Bind() const;
+		void Present();
 
-		void Resize(uint32_t width, uint32_t height, bool aFullscreen);
-		
-		const auto& GetMonitorMode() const { return myMonitorMode; }
-		
-		static Ref<Swapchain> Create(GLFWwindow* aWindow, Ref<GraphicsContext> aGraphicsContext);
+		void Resize(uint32_t width, uint32_t height, bool useVSync);
+
+		inline const uint32_t GetCurrentFrame() const { return myCurrentFrame; }
+		inline const uint32_t GetMaxFramesInFlight() const { return myMaxFramesInFlight; }
+		inline const uint32_t GetWidth() const { return myWidth; }
+		inline const uint32_t GetHeight() const { return myHeight; }
+
+		inline VkRenderPass GetRenderPass() const { return myRenderPass; }
+		inline VkFramebuffer GetCurrentFramebuffer() const { return myImageData[myCurrentImage].framebuffer; }
+		inline VkImage GetCurrentImage() const { return myImageData[myCurrentImage].image; }
+		inline VkCommandBuffer GetCurrentCommandBuffer() const { return myFrameInFlightData[myCurrentFrame].commandBuffer; }
+		inline VkCommandBuffer GetCommandBuffer(uint32_t index) const { return myFrameInFlightData[index].commandBuffer; }
+		inline VkCommandPool GetCommandPool(uint32_t index) const { return myFrameInFlightData[index].commandPool; }
+
+		inline const auto& GetMonitorMode() const { return myMonitorMode; }
+
+		static Ref<Swapchain> Create(GLFWwindow* window);
 
 	private:
 		struct MonitorMode
@@ -41,21 +43,67 @@ namespace Volt
 			float refreshRate = 0.f;
 		};
 
-		uint32_t myWidth = 0;
-		uint32_t myHeight = 0;
+		void Invalidate(uint32_t width, uint32_t height, bool useVSync);
 
-		bool myIsFullscreen = false;
-		bool myFirstFrame = true;
+		void QuerySwapchainCapabilities();
+		VkSurfaceFormatKHR ChooseSwapchainFormat();
+		VkPresentModeKHR ChooseSwapchainPresentMode();
 
-		float myAverageGPUTimingStart = 0.f;
-		uint32_t myAverageGPUTimingFrames = 0;
+		void CreateSwapchain(uint32_t width, uint32_t height, bool useVSync);
+		void CreateImageViews();
+		void CreateRenderPass();
+		void CreateFramebuffers();
+		void CreateSyncObjects();
+		void CreateCommandPools();
+		void CreateCommandBuffers();
 
-		Ref<GraphicsContext> myGraphicsContext;
+		const uint32_t myMaxFramesInFlight = 3;
 
-		HWND myWindowHandle = 0;
-		MonitorMode myMonitorMode{};
+		uint32_t myCurrentImage = 0;
+		uint32_t myCurrentFrame = 0;
 
-		ComPtr<ID3D11RenderTargetView> myRenderTarget = nullptr;
-		ComPtr<IDXGISwapChain> mySwapchain = nullptr;
+		uint32_t myWidth = 1280;
+		uint32_t myHeight = 720;
+		bool myVSyncEnabled = false;
+
+		uint32_t myImageCount = 0;
+
+		struct PerFrameInFlightData
+		{
+			VkFence fence;
+			VkSemaphore renderSemaphore;
+			VkSemaphore presentSemaphore;
+
+			VkCommandPool commandPool;
+			VkCommandBuffer commandBuffer;
+		};
+
+		struct PerImageData
+		{
+			VkImage image;
+			VkImageView imageView;
+			VkFramebuffer framebuffer;
+		};
+
+		struct SwapchainCapabilities
+		{
+			VkSurfaceCapabilitiesKHR capabilities;
+			std::vector<VkSurfaceFormatKHR> formats;
+			std::vector<VkPresentModeKHR> presentModes;
+		};
+
+		std::vector<PerFrameInFlightData> myFrameInFlightData;
+		std::vector<PerImageData> myImageData;
+
+		VkFormat mySwapchainFormat = VK_FORMAT_UNDEFINED;
+		VkRenderPass myRenderPass = nullptr;
+		VkSwapchainKHR mySwapchain = nullptr;
+		VkSurfaceKHR mySurface = nullptr;
+
+		VkDevice myDevice = nullptr;
+		VkInstance myInstance = nullptr;
+
+		MonitorMode myMonitorMode;
+		SwapchainCapabilities myCapabilities;
 	};
 }

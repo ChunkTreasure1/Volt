@@ -4,13 +4,11 @@
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Events/GameEvent.h>
 
-#include <Game/Game.h>
-
 namespace Volt
 {
-	class SceneRenderer;
-	class NavigationSystem;
 	class Scene;
+	class SceneRenderer;
+	struct SceneRendererSettings;
 }
 
 class GameLayer : public Volt::Layer
@@ -37,11 +35,10 @@ private:
 	bool OnGameStateChanged(Volt::OnGameStateChangedEvent& e);
 
 	void TransitionToNewScene();
+	Volt::SceneRendererSettings LoadGraphicSettings();
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::NavigationSystem> myNavigationSystem;
 	Ref<Volt::Scene> myScene;
-	Ref<Game> myGame;
 
 	Ref<Volt::Scene> myStoredScene;
 	bool isPaused = false;

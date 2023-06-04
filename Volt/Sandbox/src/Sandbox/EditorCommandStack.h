@@ -5,14 +5,19 @@
 #include "EditorCommand.h"
 #include "Volt/Scene/Entity.h"
 
+#include "Volt/Components/Components.h"
+
+#include <tuple>
+
 class EditorCommandStack
 {
 public:
-    static EditorCommandStack& GetInstance();
+	static EditorCommandStack& GetInstance();
 	static void PushUndo(Ref<EditorCommand> cmd, bool redoAction = false);
 	static void PushRedo(Ref<EditorCommand> cmd);
 	static void Undo();
 	static void Redo();
+	static void Clear();
 	void Update(const int aMaxStackSize);
 
 private:
@@ -26,47 +31,47 @@ struct ValueCommand : EditorCommand
 	ValueCommand(T* aValueAdress, T aPreviousValue) : myValueAdress(aValueAdress), myPreviousValue(aPreviousValue) {}
 	void Execute() override {}
 
-	void Undo() override 
-	{ 
+	void Undo() override
+	{
 		Ref<ValueCommand<T>> command = CreateRef<ValueCommand<T>>(myValueAdress, *myValueAdress);
 		EditorCommandStack::GetInstance().PushRedo(command);
-		*myValueAdress = myPreviousValue; 
+		*myValueAdress = myPreviousValue;
 	}
 
-	void Redo() override 
-	{ 
+	void Redo() override
+	{
 		Ref<ValueCommand<T>> command = CreateRef<ValueCommand<T>>(myValueAdress, *myValueAdress);
 		EditorCommandStack::GetInstance().PushUndo(command, true);
-		*myValueAdress = myPreviousValue; 
+		*myValueAdress = myPreviousValue;
 	}
 
-	private:
+private:
 	T* myValueAdress;
 	const T myPreviousValue;
 };
 
-template<typename T>
 struct GizmoCommand : EditorCommand
 {
 	struct GizmoData
 	{
-		T* positionAdress;
-		T* rotationAdress;
-		T* scaleAdress;
+		gem::vec3* positionAdress;
+		gem::quat* rotationAdress;
+		gem::vec3* scaleAdress;
 
-		T previousPositionValue;
-		T previousRotationValue;
-		T previousScaleValue;
+		gem::vec3 previousPositionValue;
+		gem::quat previousRotationValue;
+		gem::vec3 previousScaleValue;
 	};
 
-	GizmoCommand(GizmoData aGizmoData) 
-		: myPositionAdress(aGizmoData.positionAdress), 
-		  myRotationAdress(aGizmoData.rotationAdress),
-		  myScaleAdress(aGizmoData.scaleAdress),
-		  myPreviousPositionValue(aGizmoData.previousPositionValue),
-		  myPreviousRotationValue(aGizmoData.previousRotationValue),
-		  myPreviousScaleValue(aGizmoData.previousScaleValue)
-	{}
+	GizmoCommand(GizmoData aGizmoData)
+		: myPositionAdress(aGizmoData.positionAdress),
+		myRotationAdress(aGizmoData.rotationAdress),
+		myScaleAdress(aGizmoData.scaleAdress),
+		myPreviousPositionValue(aGizmoData.previousPositionValue),
+		myPreviousRotationValue(aGizmoData.previousRotationValue),
+		myPreviousScaleValue(aGizmoData.previousScaleValue)
+	{
+	}
 	void Execute() override {}
 
 	void Undo() override
@@ -76,10 +81,11 @@ struct GizmoCommand : EditorCommand
 		data.rotationAdress = myRotationAdress;
 		data.scaleAdress = myScaleAdress;
 		data.previousPositionValue = *myPositionAdress;
+
 		data.previousRotationValue = *myRotationAdress;
 		data.previousScaleValue = *myScaleAdress;
 
-		Ref<GizmoCommand<T>> command = CreateRef<GizmoCommand<T>>(data);
+		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::GetInstance().PushRedo(command);
 
 		*myPositionAdress = myPreviousPositionValue;
@@ -97,7 +103,7 @@ struct GizmoCommand : EditorCommand
 		data.previousRotationValue = *myRotationAdress;
 		data.previousScaleValue = *myScaleAdress;
 
-		Ref<GizmoCommand<T>> command = CreateRef<GizmoCommand<T>>(data);
+		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::GetInstance().PushUndo(command, true);
 
 		*myPositionAdress = myPreviousPositionValue;
@@ -105,13 +111,73 @@ struct GizmoCommand : EditorCommand
 		*myScaleAdress = myPreviousScaleValue;
 	}
 
-	private:
-	T* myPositionAdress;
-	T* myRotationAdress;
-	T* myScaleAdress;
-	const T myPreviousPositionValue;
-	const T myPreviousRotationValue;
-	const T myPreviousScaleValue;
+private:
+	gem::vec3* myPositionAdress;
+	gem::quat* myRotationAdress;
+	gem::vec3* myScaleAdress;
+	const gem::vec3 myPreviousPositionValue;
+	const gem::quat myPreviousRotationValue;
+	const gem::vec3 myPreviousScaleValue;
+};
+
+struct MultiGizmoCommand : EditorCommand
+{
+	MultiGizmoCommand(Weak<Volt::Scene> scene, const std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>>& entities)
+		: myPreviousTransforms(entities), myScene(scene)
+	{
+	}
+
+	void Execute() override {}
+
+	void Undo() override
+	{
+		if (myScene.expired())
+		{
+			return;
+		}
+
+		auto scenePtr = myScene.lock();
+		std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> currentTransforms;
+
+		for (const auto& [id, oldComp] : myPreviousTransforms)
+		{
+			Volt::Entity entity{ id, scenePtr.get() };
+			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
+
+			currentTransforms.emplace_back(id, transformComponent);
+			entity.GetComponent<Volt::TransformComponent>() = oldComp;
+		}
+
+		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
+		EditorCommandStack::GetInstance().PushRedo(command);
+	}
+
+	void Redo() override
+	{
+		if (myScene.expired())
+		{
+			return;
+		}
+
+		auto scenePtr = myScene.lock();
+		std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> currentTransforms;
+
+		for (const auto& [id, oldComp] : myPreviousTransforms)
+		{
+			Volt::Entity entity{ id, scenePtr.get() };
+			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
+
+			currentTransforms.emplace_back(id, transformComponent);
+			entity.GetComponent<Volt::TransformComponent>() = oldComp;
+		}
+
+		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
+		EditorCommandStack::GetInstance().PushUndo(command);
+	}
+
+private:
+	std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> myPreviousTransforms;
+	Weak<Volt::Scene> myScene;
 };
 
 enum class ObjectStateAction
@@ -139,9 +205,8 @@ struct ObjectStateCommand : EditorCommand
 		myEntities = list;
 	}
 
-	void Execute() override 
-	{
-	}
+	void Execute() override
+	{}
 
 	void Undo() override
 	{
@@ -164,7 +229,7 @@ struct ObjectStateCommand : EditorCommand
 			for (int i = 0; i < myEntities.size(); i++)
 			{
 				myEntities[i].GetScene()->GetRegistry().AddEntity(myEntities[i].GetId());
-				myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetId(), myEntities[i].GetId());
+				myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
 			}
 		}
 	}
@@ -190,17 +255,17 @@ struct ObjectStateCommand : EditorCommand
 			for (int i = 0; i < myEntities.size(); i++)
 			{
 				myEntities[i].GetScene()->GetRegistry().AddEntity(myEntities[i].GetId());
-				myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetId(), myEntities[i].GetId());
+				myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
 			}
 		}
 	}
 
-	private:
+private:
 	void CopyDataToRegistry()
 	{
 		for (int i = 0; i < myEntities.size(); i++)
 		{
-			Volt::Entity::Copy(myEntities[i].GetScene()->GetRegistry(), myRegistry, myEntities[i].GetId(), myEntities[i].GetId());
+			Volt::Entity::Copy(myEntities[i].GetScene()->GetRegistry(), myRegistry, myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
 		}
 	}
 
@@ -225,12 +290,10 @@ struct ParentingCommand : EditorCommand
 {
 	ParentingCommand(std::vector<Ref<ParentChildData>> aData, ParentingAction anAction) :
 		myData(aData), myAction(anAction)
-	{
-	}
+	{}
 
 	void Execute() override
-	{
-	}
+	{}
 
 	void Undo() override
 	{
@@ -280,7 +343,7 @@ struct ParentingCommand : EditorCommand
 		}
 	}
 
-	private:
+private:
 	std::vector<Ref<ParentChildData>> myData;
 	ParentingAction myAction;
 };

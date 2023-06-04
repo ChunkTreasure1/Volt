@@ -13,13 +13,11 @@ namespace Amp
 {
 	struct InitInsturct
 	{
-		std::string aFileDirectory;
-		std::string aMasterbank;
-		std::string aMasterStringsBank;
+		std::filesystem::path aFileDirectory;
+		std::filesystem::path aMasterbank;
+		std::filesystem::path aMasterStringsBank;
 		FMOD_STUDIO_LOAD_BANK_FLAGS aLoadBankFlags;
 	};
-
-
 
 	struct EventInstance
 	{
@@ -27,7 +25,7 @@ namespace Amp
 		std::string EventName = "";
 		FMOD::Studio::EventDescription* EventDesc = nullptr;
 		FMOD::Studio::EventInstance* instance = nullptr;
-		FMOD_VECTOR position{0,0,0};
+		FMOD_VECTOR position{ 0,0,0 };
 		FMOD_VECTOR prevPosition{ 0,0,0 };
 		FMOD_VECTOR velocity{ 0,0,0 };
 		FMOD_VECTOR forward{ 0,0,0 };
@@ -50,7 +48,7 @@ namespace Amp
 	{
 		float aDeltaTime = 0;
 		bool is3D = false;
-		FMOD_VECTOR position{0,0,0};
+		FMOD_VECTOR position{ 0,0,0 };
 		FMOD_VECTOR forward{ 0,0,0 };
 		FMOD_VECTOR up{ 0,0,0 };
 		bool changeParameter = false;
@@ -61,7 +59,7 @@ namespace Amp
 	struct Listener
 	{
 		int listenerID = -1;
-		FMOD_VECTOR position{0,0,0};
+		FMOD_VECTOR position{ 0,0,0 };
 		FMOD_VECTOR prevPosition{ 0,0,0 };
 		FMOD_VECTOR velocity{ 0,0,0 };
 		FMOD_VECTOR forward{ 0,0,0 };
@@ -91,9 +89,11 @@ namespace Amp
 		typedef std::unordered_map<std::string, FMOD::Studio::Bank*> BankMap;
 		typedef std::unordered_map<int, Listener> ListenerMap;
 
+
 		EventMap events;
 		BankMap banks;
 		ListenerMap listeners;
+
 
 		//TODO: Make to map
 		Listener mainListener;
@@ -112,6 +112,7 @@ namespace Amp
 
 		bool LoadEvent(const std::string& aEventPath);
 		FMOD::Studio::EventDescription* FindEvent(const std::string& aEventPath);
+		std::vector<std::string> GetAllEventNames();
 
 		EventInstance& CreateEventInstance(const std::string& aEventPath);
 		bool RemoveEvent(EventInstance& aEventHandle);
@@ -134,9 +135,12 @@ namespace Amp
 		bool SetEvent3Dattributes(FMOD::Studio::EventInstance* aEventInstance, EventData& aEventData);
 
 		bool InitListener(ListenerData aListenerData);
-		bool UpdateListener(ListenerData aListenerData);
+		bool UpdateListener(ListenerData& aListenerData);
 
 		bool SetMixerVolume(const std::string& aBusName, float aVolume);
+
+
+
 
 	private:
 		std::string rootDirectory;
@@ -147,6 +151,38 @@ namespace Amp
 		bool ErrorCheck(FMOD_RESULT result);
 
 	};
+
+
+#pragma region DEPRICATED
+	//bool CreateGeometry(GeometryData aNewGeometry);
+	//void ReleaseGeometry();
+	/*typedef std::unordered_map<int, GeometryInstance> GeometryMap;
+	GeometryMap geometry;
+	int geometryID = -1;*/
+
+	/*struct GeometryData
+	{
+		FMOD_VECTOR position;
+		FMOD_VECTOR scale;
+		FMOD_VECTOR forward;
+		FMOD_VECTOR up;
+		std::vector<FMOD_VECTOR> verticies;
+
+		int maxPolygons;
+		int maxVertices;
+	};
+
+	struct GeometryInstance
+	{
+		int ID = -1;
+		FMOD::Geometry* geometryObj;
+		GeometryData data;
+	};*/
+
+
+#pragma endregion
+
+
 }
 
 

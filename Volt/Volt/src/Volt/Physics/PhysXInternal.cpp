@@ -6,7 +6,7 @@
 #include "Volt/Physics/PhysXDebugger.h"
 #include "Volt/Physics/CookingFactory.h"
 
-namespace Volt 
+namespace Volt
 {
 	void PhysXInternal::Initialize()
 	{
@@ -34,7 +34,7 @@ namespace Volt
 		bool extensionsLoaded = PxInitExtensions(*myPhysXData->physxSDK, PhysXDebugger::GetDebugger());
 		VT_CORE_ASSERT(extensionsLoaded, "Failed to initialize PhysX extensions");
 
-		myPhysXData->physxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(1);
+		myPhysXData->physxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(4);
 
 #ifdef VT_DEBUG
 		PxSetAssertHandler(myPhysXData->assertHandler);

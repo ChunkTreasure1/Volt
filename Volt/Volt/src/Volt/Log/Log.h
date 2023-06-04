@@ -6,6 +6,7 @@
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 
 namespace Volt
 {
@@ -26,6 +27,7 @@ namespace Volt
 
 		static void SetLogLevel(spdlog::level::level_enum level);
 		static void AddCallback(std::function<void(const LogCallbackData&)> callback);
+		static void ClearCallbacks();
 
 		inline static Ref<spdlog::logger> GetClientLogger() { return myClientLogger; }
 		inline static Ref<spdlog::logger> GetCoreLogger() { return myCoreLogger; }
@@ -35,9 +37,10 @@ namespace Volt
 		inline static Ref<spdlog::logger> myCoreLogger;
 
 		inline static Ref<CallbackSink<std::mutex>> myCallbackSink;
+		inline static Ref<spdlog::sinks::rotating_file_sink_mt> myRotatingFileLogger;
 	};
 
-//Client logging macros
+	//Client logging macros
 #define VT_TRACE(...)			::Volt::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define VT_INFO(...)			::Volt::Log::GetClientLogger()->info(__VA_ARGS__)
 #define VT_WARN(...)			::Volt::Log::GetClientLogger()->warn(__VA_ARGS__)

@@ -1,0 +1,4 @@
+Handle: 14653887366241638600
+Path: Engine/Shaders/Source/HLSL/Shadows/DirectionalShadow_vs.hlsl
+Dependencies:
+  []

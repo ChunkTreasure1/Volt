@@ -10,18 +10,7 @@ namespace GraphKey
 	class ToStringNode : public Node
 	{
 	public:
-		inline ToStringNode()
-		{
-			inputs =
-			{
-				AttributeConfig<T>("", GraphKey::AttributeDirection::Input)
-			};
-
-			outputs =
-			{
-				AttributeConfig<std::string>("Output", GraphKey::AttributeDirection::Output, true, GK_BIND_FUNCTION(ToStringNode::ToString))
-			};
-		}
+		ToStringNode();
 
 		inline const std::string GetName() override { return "To String"; }
 		inline const gem::vec4 GetColor() override { return { 1.f, 0.f, 0.f, 1.f }; }
@@ -33,4 +22,18 @@ namespace GraphKey
 			SetOutputData(0, std::to_string(val));
 		}
 	};
+
+	template<typename T>
+	inline ToStringNode<T>::ToStringNode()
+	{
+		inputs =
+		{
+			AttributeConfig<T>("", GraphKey::AttributeDirection::Input)
+		};
+
+		outputs =
+		{
+			AttributeConfig<std::string>("Output", GraphKey::AttributeDirection::Output, true, GK_BIND_FUNCTION(ToStringNode::ToString))
+		};
+	}
 }

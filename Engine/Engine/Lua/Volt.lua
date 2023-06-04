@@ -25,11 +25,16 @@ function linkAppReferences()
 		monoLibsPath = monoLibsPath:gsub("/", "\\")
 	end
 
-	libdirs { monoLibsPath }
+	libdirs { monoLibsPath, monoLibsPath .. "/Facades" }
 	links { "Volt-ScriptCore" }
 
 	for k, v in ipairs(getAssemblyFiles(monoLibsPath, is_windows)) do
 		print("Adding reference to: " .. v)
 		links { v }
 	end
+
+	for k, v in ipairs(getAssemblyFiles(monoLibsPath .. "/Facades", is_windows)) do
+        print("Adding reference to: " .. v)
+        links { v }
+    end
 end

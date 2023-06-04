@@ -5,7 +5,7 @@
 
 EditorCommandStack& EditorCommandStack::GetInstance()
 {
-	static EditorCommandStack instance; 
+	static EditorCommandStack instance;
 
 	return instance;
 }
@@ -48,6 +48,12 @@ void EditorCommandStack::Redo()
 
 	myRedoStack[myRedoStack.size() - 1]->Redo();
 	myRedoStack.erase(myRedoStack.begin() + myRedoStack.size() - 1);
+}
+
+void EditorCommandStack::Clear()
+{
+	myUndoStack.clear();
+	myRedoStack.clear();
 }
 
 void EditorCommandStack::Update(const int aMaxStackSize)

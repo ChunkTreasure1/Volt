@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Rendering/RendererCommon.h"
+
 #include <cstdint>
 
 namespace Volt
@@ -19,6 +21,8 @@ namespace Volt
 		RG16F,
 		RG32F,
 
+		RG32UI,
+
 		SRGB,
 
 		BC1,
@@ -37,13 +41,12 @@ namespace Volt
 		BC7,
 		BC7SRGB,
 
-		R32Typeless,
-		R16Typeless,
+		BC6H_SF16,
 
 		DEPTH32F,
 		DEPTH16U,
 		DEPTH24STENCIL8
-	};
+	}; 
 
 	enum class AnisotopyLevel : uint32_t
 	{
@@ -52,6 +55,18 @@ namespace Volt
 		X4 = 4,
 		X8 = 8,
 		X16 = 16
+	};
+
+	enum class CompareOperator : uint32_t
+	{
+		None = 0,
+		Never,
+		Less,
+		Equal,
+		LessEqual,
+		Greater,
+		GreaterEqual,
+		Always
 	};
 
 	enum class ImageUsage : uint32_t
@@ -83,7 +98,9 @@ namespace Volt
 		None,
 		Alpha,
 		Add,
-		ZeroSrcColor
+		ZeroSrcColor,
+		OneMinusSrcColor,
+		OneMinusSrcAlpha,
 	};
 
 	enum class ImageDimension : uint32_t
@@ -94,26 +111,32 @@ namespace Volt
 		DimCube
 	};
 
+	enum class ClearMode : uint32_t
+	{
+		Clear = 0,
+		Load,
+		DontCare
+	};
+
 	struct ImageSpecification
 	{
 		uint32_t width = 1;
 		uint32_t height = 1;
-		uint32_t mips = 1;
+		uint32_t depth = 0;
 		uint32_t layers = 1;
-		uint32_t mipSlice = 0;
+		uint32_t mips = 1;
 
 		ImageFormat format = ImageFormat::RGBA;
-		ImageFormat typelessTargetFormat = ImageFormat::R32F;
-		ImageFormat typelessViewFormat = ImageFormat::DEPTH32F;
 		ImageUsage usage = ImageUsage::Texture;
 		TextureWrap wrap = TextureWrap::Repeat;
 		TextureFilter filter = TextureFilter::Linear;
 
+		MemoryUsage memoryUsage = MemoryUsage::GPUOnly;
+
 		AnisotopyLevel anisoLevel = AnisotopyLevel::None;
 		std::string debugName;
 
-		bool readable = false;
-		bool writeable = false;
 		bool isCubeMap = false;
+		bool generateMips = true;
 	};
 }

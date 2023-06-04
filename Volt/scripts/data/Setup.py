@@ -15,9 +15,12 @@ import colorama
 
 from colorama import Fore
 from SetupPremake import Premake
+from SetupVulkan import Vulkan
 
 colorama.init()
 
+Vulkan.CheckVulkan()
+print("")
 Premake.CheckPremake()
 
 os.chdir('../../Engine/Setup')

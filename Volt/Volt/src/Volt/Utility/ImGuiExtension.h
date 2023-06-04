@@ -216,12 +216,12 @@ namespace ImGui
 				LogRenderedText(&text_pos, log_prefix, log_prefix + 3);
 				RenderTextClipped(text_pos, frame_bb.Max, label, label_end, &label_size);
 				LogRenderedText(&text_pos, log_suffix, log_suffix + 2);
-	}
+			}
 			else
 			{
 				RenderTextClipped(text_pos, frame_bb.Max, label, label_end, &label_size);
 			}
-}
+		}
 		else
 		{
 			// Unframed typed for tree nodes

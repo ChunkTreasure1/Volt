@@ -33,7 +33,7 @@ namespace Volt
 
 	protected:
 		ColliderShape(ColliderType type, Entity entity);
-	
+
 		ColliderType myColliderType = ColliderType::Box;
 		Entity myEntity;
 
@@ -55,7 +55,7 @@ namespace Volt
 
 		inline const gem::vec3& GetOffset() const override { return myEntity.GetComponent<BoxColliderComponent>().offset; }
 		void SetOffset(const gem::vec3& offset) override;
-	
+
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
 
@@ -105,7 +105,7 @@ namespace Volt
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
-	
+
 	private:
 		physx::PxShape* myShape;
 	};
@@ -116,7 +116,7 @@ namespace Volt
 		ConvexMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
 		~ConvexMeshShape() override;
 
-		const gem::vec3& GetOffset() const override { return gem::vec3{ 0.f, 0.f, 0.f }; }
+		const gem::vec3& GetOffset() const override { return myOffset; }
 		void SetOffset(const gem::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<MeshColliderComponent>().isTrigger; }
@@ -124,9 +124,10 @@ namespace Volt
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
-	
+
 	private:
 		std::vector<physx::PxShape*> myShapes;
+		gem::vec3 myOffset = 0.f;
 	};
 
 	class TriangleMeshShape : public ColliderShape
@@ -135,7 +136,7 @@ namespace Volt
 		TriangleMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
 		~TriangleMeshShape() override;
 
-		const gem::vec3& GetOffset() const override { return gem::vec3{ 0.f, 0.f, 0.f }; }
+		const gem::vec3& GetOffset() const override { return myOffset; }
 		void SetOffset(const gem::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<MeshColliderComponent>().isTrigger; }
@@ -146,5 +147,6 @@ namespace Volt
 
 	private:
 		std::vector<physx::PxShape*> myShapes;
+		gem::vec3 myOffset = 0.f;
 	};
 }

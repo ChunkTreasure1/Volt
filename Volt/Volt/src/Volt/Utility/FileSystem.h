@@ -2,12 +2,23 @@
 
 #include <filesystem>
 
+struct FileFilter
+{
+	std::string name;
+	std::string extensions;
+};
+
 class FileSystem
 {
 public:
 	static std::filesystem::path GetEnginePath()
 	{
 		return "Engine";
+	}
+
+	static std::filesystem::path GetScriptsPath()
+	{
+		return "Scripts";
 	}
 
 	static std::filesystem::path GetShadersPath()
@@ -114,7 +125,7 @@ public:
 		return true;
 	}
 
-	static bool CreateFolder(const std::filesystem::path& folder)
+	static bool CreateDirectory(const std::filesystem::path& folder)
 	{
 		if (Exists(folder))
 		{
@@ -142,11 +153,14 @@ public:
 		return true;
 	}
 
+	static void Initialize();
+	static void Shutdown();
+
 	static bool OpenFileExternally(const std::filesystem::path& aPath);
 
-	static std::filesystem::path OpenFile(const char* filter);
-	static std::filesystem::path OpenFolder();
-	static std::filesystem::path SaveFile(const char* filter);
+	static std::filesystem::path PickFolderDialogue();
+	static std::filesystem::path OpenFileDialogue(const std::vector<FileFilter>& filters);
+	static std::filesystem::path SaveFileDialogue(const std::vector<FileFilter>& filters);
 	static std::filesystem::path GetDocumentsPath();
 
 	static bool HasEnvironmentVariable(const std::string& key);
@@ -158,8 +172,8 @@ public:
 
 	static void StartProcess(const std::filesystem::path& processName);
 
-	static void RunCommand(const std::string& aCommand)
+	static bool RunCommand(const std::string& aCommand)
 	{
-		system(aCommand.c_str());
+		return system(aCommand.c_str());
 	}
 };

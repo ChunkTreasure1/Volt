@@ -1,0 +1,97 @@
+Prefab:
+  version: 0
+  handle: 16957922694862390833
+  entities:
+    - id: 330956738
+      components:
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 0
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 16957922694862390833
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 330956738
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Underpass_Ambient
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [5797.46631, -71.0549927, 14424.168]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 6
+        - guid: [4746128852693715016, 14027306821959481728]
+          properties:
+            - type: 7
+              vectorType: 13
+              name: Intensity
+              data: 0.479999989
+            - type: 7
+              vectorType: 13
+              name: Radius
+              data: 515
+            - type: 7
+              vectorType: 13
+              name: Falloff
+              data: 1
+            - type: 17
+              vectorType: 13
+              name: Color
+              data: [1, 0.841104507, 0.497890294]
+            - type: 0
+              vectorType: 13
+              name: Cast Shadows
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Ambient Only
+              data: false

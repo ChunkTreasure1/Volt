@@ -6,10 +6,14 @@
 #include "Volt/Physics/PhysicsShapes.h"
 #include "Volt/Physics/PhysicsLayer.h"
 
-#include "Volt/Scripting/Script.h"
 #include "Volt/Components/Components.h"
-#include "Volt/Core/Profiling.h"
 #include "Volt/Log/Log.h"
+#include "Volt/Core/Profiling.h"
+#include "Volt/Core/Application.h"
+
+
+#include "Volt/Scripting/Mono/MonoScriptEngine.h"
+#include "Volt/Scripting/Mono//MonoScriptInstance.h"
 
 #include <PhysX/PxActor.h>
 
@@ -35,40 +39,26 @@ namespace Volt
 		myPhysXScene = PhysXInternal::GetPhysXSDK().createScene(sceneDesc);
 		VT_CORE_ASSERT(myPhysXScene, "PhysX scene not valid!");
 
+		myControllerManager = PxCreateControllerManager(*myPhysXScene);
+		myControllerManager->setTessellation(true, 100.f);
+
 #ifndef VT_DIST
-		myPhysXScene->getScenePvdClient()->setScenePvdFlags(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS | physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES | physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS);
-#endif 
+		if (!Application::Get().IsRuntime())
+		{
+			myPhysXScene->getScenePvdClient()->setScenePvdFlags(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS | physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES | physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS);
+		}
+#endif
 
 		CreateRegions();
 	}
 
 	PhysicsScene::~PhysicsScene()
-	{}
+	{
+	}
 
 	void PhysicsScene::Simulate(float timeStep)
 	{
 		VT_PROFILE_FUNCTION();
-
-		if (myEntityScene->IsPlaying())
-		{
-			myUpdateAccumulator += timeStep;
-			if (myUpdateAccumulator >= mySubStepSize)
-			{
-				myEntityScene->GetRegistry().ForEach<ScriptComponent>([this](Wire::EntityId id, ScriptComponent& scriptComp)
-					{
-						for (const auto& script : scriptComp.scripts)
-						{
-							Ref<Script> scriptInstance = ScriptEngine::GetScript(id, script);
-							if (scriptInstance)
-							{
-								scriptInstance->OnFixedUpdate(mySubStepSize);
-							}
-						}
-					});
-
-				myUpdateAccumulator = 0.f;
-			}
-		}
 
 		bool advanced = Advance(timeStep);
 		if (advanced)
@@ -79,9 +69,54 @@ namespace Volt
 			for (uint32_t i = 0; i < activeActorCount; i++)
 			{
 				PhysicsActor* actor = (PhysicsActor*)activeActors[i]->userData;
-				actor->SynchronizeTransform();
+				if (actor)
+				{
+					actor->SynchronizeTransform();
+				}
 			}
 
+			myEntityScene->FixedUpdate(timeStep);
+		}
+
+		if (myEntityScene->IsPlaying())
+		{
+			if (advanced)
+			{
+				VT_PROFILE_SCOPE("InvokeOnFixedUpdate");
+
+				myEntityScene->GetRegistry().ForEach<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
+				{
+					if (!transComp.visible)
+					{
+						return;
+					}
+
+					for (const auto& script : scriptComp.scriptIds)
+					{
+						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+						if (scriptInstance)
+						{
+							scriptInstance->InvokeOnFixedUpdate(timeStep);
+						}
+					}
+				});
+			}
+		}
+
+		{
+			VT_PROFILE_SCOPE("Update actors");
+			for (const auto& actor : myControllerActors)
+			{
+				actor->Update(timeStep);
+			}
+		}
+
+		{
+			VT_PROFILE_SCOPE("Synchronize Transform");
+			for (const auto& actor : myControllerActors)
+			{
+				actor->SynchronizeTransform();
+			}
 		}
 
 		for (const auto& f : myFunctionQueue)
@@ -90,9 +125,7 @@ namespace Volt
 		}
 
 		myFunctionQueue.clear();
-
 		myContactListener.RunEvents();
-
 	}
 
 	Ref<PhysicsActor> PhysicsScene::GetActor(Entity entity)
@@ -121,6 +154,32 @@ namespace Volt
 		return nullptr;
 	}
 
+	Ref<PhysicsControllerActor> PhysicsScene::GetControllerActor(Entity entity)
+	{
+		for (const auto& actor : myControllerActors)
+		{
+			if (actor->GetEntity().GetId() == entity.GetId())
+			{
+				return actor;
+			}
+		}
+
+		return nullptr;
+	}
+
+	const Ref<PhysicsControllerActor> PhysicsScene::GetControllerActor(Entity entity) const
+	{
+		for (const auto& actor : myControllerActors)
+		{
+			if (actor->GetEntity().GetId() == entity.GetId())
+			{
+				return actor;
+			}
+		}
+
+		return nullptr;
+	}
+
 	Ref<PhysicsActor> PhysicsScene::CreateActor(Entity entity)
 	{
 		Ref<PhysicsActor> actor = CreateRef<PhysicsActor>(entity);
@@ -130,6 +189,7 @@ namespace Volt
 		{
 			auto addedActor = GetActor(addedEntity);
 			myPhysXScene->addActor(*addedActor->myRigidActor);
+			addedActor->SetPosition(addedEntity.GetPosition());
 		};
 
 		if (myInSimulation)
@@ -171,9 +231,9 @@ namespace Volt
 		}
 
 		auto it = std::find_if(myPhysicsActors.begin(), myPhysicsActors.end(), [actor](const Ref<PhysicsActor>& a)
-			{
-				return actor->GetEntity().GetId() == a->GetEntity().GetId();
-			});
+		{
+			return actor->GetEntity().GetId() == a->GetEntity().GetId();
+		});
 
 		if (it != myPhysicsActors.end())
 		{
@@ -181,14 +241,54 @@ namespace Volt
 		}
 	}
 
+	Ref<PhysicsControllerActor> PhysicsScene::CreateControllerActor(Entity entity)
+	{
+		Ref<PhysicsControllerActor> actor = CreateRef<PhysicsControllerActor>(entity);
+		myControllerActors.emplace_back(actor);
+
+		auto func = [&, addedEntity = entity]()
+		{
+			auto controllerActor = GetControllerActor(addedEntity);
+			controllerActor->Create(myControllerManager);
+			controllerActor->SetPosition(entity.GetPosition());
+		};
+
+		if (myInSimulation)
+		{
+			myFunctionQueue.emplace_back(func);
+		}
+		else
+		{
+			func();
+		}
+
+		return actor;
+	}
+
+	void PhysicsScene::RemoveControllerActor(Ref<PhysicsControllerActor> controllerActor)
+	{
+		auto it = std::find_if(myControllerActors.begin(), myControllerActors.end(), [&, controllerActor](const auto& lhs)
+		{
+			return lhs->GetEntity().GetId() == controllerActor->GetEntity().GetId();
+		});
+
+		if (it == myControllerActors.end())
+		{
+			return;
+		}
+
+		myControllerActors.erase(it);
+	}
+
 	bool PhysicsScene::Raycast(const gem::vec3& origin, const gem::vec3& direction, float maxDistance, RaycastHit* outHit)
 	{
 		physx::PxRaycastBuffer hitInfo{};
+
 		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), maxDistance, hitInfo);
 
 		if (result)
 		{
-			PhysicsActor* actor = (PhysicsActor*)hitInfo.block.actor->userData;
+			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
 			outHit->hitEntity = actor->GetEntity().GetId();
 			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
 			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
@@ -200,10 +300,8 @@ namespace Volt
 
 	bool PhysicsScene::Raycast(const gem::vec3& origin, const gem::vec3& direction, float maxDistance, RaycastHit* outHit, uint32_t layerMask)
 	{
-		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
-
 		physx::PxFilterData data{};
-		data.word0 = layer.bitValue;
+		data.word0 = layerMask;
 
 		physx::PxQueryFilterData qFilterData;
 		qFilterData.flags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC;
@@ -214,7 +312,7 @@ namespace Volt
 
 		if (result)
 		{
-			PhysicsActor* actor = (PhysicsActor*)hitInfo.block.actor->userData;
+			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
 			outHit->hitEntity = actor->GetEntity().GetId();
 			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
 			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
@@ -224,19 +322,157 @@ namespace Volt
 		return result;
 	}
 
-	bool PhysicsScene::OverlapBox(const gem::vec3& origin, const gem::vec3& halfSize, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count)
+	bool PhysicsScene::Linecast(const gem::vec3& origin, const gem::vec3& destination, RaycastHit* outHit)
 	{
-		return OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count);
+		physx::PxRaycastBuffer hitInfo{};
+
+		gem::vec3 direction = destination - origin;
+		float distance = gem::distance(destination, origin);
+
+		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), distance, hitInfo);
+
+		if (result)
+		{
+			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
+			outHit->hitEntity = actor->GetEntity().GetId();
+			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
+			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
+			outHit->distance = hitInfo.block.distance;
+		}
+
+		return result;
 	}
 
-	bool PhysicsScene::OverlapCapsule(const gem::vec3& origin, float radius, float halfHeight, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count)
+	bool PhysicsScene::Linecast(const gem::vec3& origin, const gem::vec3& destination, RaycastHit* outHit, uint32_t layerMask)
 	{
-		return OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count);
+		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
+
+		physx::PxFilterData data{};
+		data.word0 = layer.bitValue;
+
+		physx::PxQueryFilterData qFilterData;
+		qFilterData.flags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC;
+		qFilterData.data = data;
+
+		physx::PxRaycastBuffer hitInfo{};
+		gem::vec3 direction = destination - origin;
+		float distance = gem::distance(destination, origin);
+		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), distance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
+
+		if (result)
+		{
+			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
+			outHit->hitEntity = actor->GetEntity().GetId();
+			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
+			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
+			outHit->distance = hitInfo.block.distance;
+		}
+
+		return result;
 	}
 
-	bool PhysicsScene::OverlapSphere(const gem::vec3& origin, float radius, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count)
+	bool PhysicsScene::OverlapBox(const gem::vec3& origin, const gem::vec3& halfSize, std::vector<Entity>& hitList, uint32_t layerMask)
 	{
-		return OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count);
+		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
+
+		physx::PxFilterData data{};
+		data.word0 = layer.bitValue;
+
+		physx::PxQueryFilterData qFilterData;
+		qFilterData.flags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC;
+		qFilterData.data = data;
+
+		std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS> buffer;
+		std::vector<Entity> tempEnts;
+		uint32_t count;
+
+		bool hit = OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count, qFilterData);
+		if (!buffer.empty())
+		{
+			for (auto& hit : buffer)
+			{
+				if (hit.actor != nullptr)
+				{
+					auto actor = (PhysicsActorBase*)hit.actor->userData;
+					if (actor)
+					{
+						tempEnts.push_back(actor->GetEntity());
+					}
+				}
+			}
+		}
+
+		hitList = tempEnts;
+
+		return hit;
+	}
+
+	bool PhysicsScene::OverlapCapsule(const gem::vec3& origin, float radius, float halfHeight, std::vector<Entity>& hitList, uint32_t layerMask)
+	{
+		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
+
+		physx::PxFilterData data{};
+		data.word0 = layer.bitValue;
+
+		physx::PxQueryFilterData qFilterData;
+		qFilterData.flags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC;
+		qFilterData.data = data;
+
+		std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS> buffer;
+		std::vector<Entity> tempEnts;
+		uint32_t count;
+
+		bool hit = OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count, qFilterData);
+		if (!buffer.empty())
+		{
+			for (auto& hit : buffer)
+			{
+				if (hit.actor != nullptr)
+				{
+					auto actor = (PhysicsActorBase*)hit.actor->userData;
+					if (actor)
+					{
+						tempEnts.push_back(actor->GetEntity());
+					}
+				}
+			}
+		}
+
+		hitList = tempEnts;
+		return hit;
+	}
+
+	bool PhysicsScene::OverlapSphere(const gem::vec3& origin, float radius, std::vector<Entity>& hitList, uint32_t layerMask)
+	{
+		physx::PxFilterData data{};
+		data.word0 = layerMask;
+
+		physx::PxQueryFilterData qFilterData;
+		qFilterData.flags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC;
+		qFilterData.data = data;
+
+		std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS> buffer;
+		std::vector<Entity> tempEnts;
+		uint32_t count;
+
+		bool hit = OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count, qFilterData);
+		if (!buffer.empty())
+		{
+			for (auto& hit : buffer)
+			{
+				if (hit.actor != nullptr)
+				{
+					auto actor = (PhysicsActorBase*)hit.actor->userData;
+					if (actor)
+					{
+						tempEnts.push_back(actor->GetEntity());
+					}
+				}
+			}
+		}
+
+		hitList = tempEnts;
+		return hit;
 	}
 
 	void PhysicsScene::CreateRegions()
@@ -262,6 +498,8 @@ namespace Volt
 
 	bool PhysicsScene::Advance(float timeStep)
 	{
+		VT_PROFILE_FUNCTION();
+
 		SubstepStrategy(timeStep);
 
 		for (uint32_t i = 0; i < myNumSubSteps; i++)
@@ -316,12 +554,12 @@ namespace Volt
 		myPhysXScene = nullptr;
 	}
 
-	bool PhysicsScene::OverlapGeometry(const gem::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count)
+	bool PhysicsScene::OverlapGeometry(const gem::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData)
 	{
 		physx::PxOverlapBuffer buf(buffer.data(), MAX_OVERLAP_COLLIDERS);
 		physx::PxTransform pose = PhysXUtilities::ToPhysXTransform(gem::translate(gem::mat4(1.0f), origin));
 
-		bool result = myPhysXScene->overlap(geometry, pose, buf);
+		bool result = myPhysXScene->overlap(geometry, pose, buf, filterData);
 		if (result)
 		{
 			memcpy(buffer.data(), buf.touches, buf.nbTouches * sizeof(physx::PxOverlapHit));

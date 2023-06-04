@@ -50,6 +50,21 @@ namespace Volt
 		}
 	}
 
+	void LayerStack::PopLast()
+	{
+		Layer* lastLayer = m_layers.back();
+		PopLayer(lastLayer);
+	}
+
+	Layer* LayerStack::GetLastLayer()
+	{
+		if (m_layers.empty())
+		{
+			return nullptr;
+		}
+		return m_layers.back();
+	}
+
 	void LayerStack::Clear()
 	{
 		for (Layer* layer : m_layers)
@@ -58,6 +73,7 @@ namespace Volt
 			delete layer;
 		}
 
+		m_lastInsertIndex = 0;
 		m_layers.clear();
 	}
 }

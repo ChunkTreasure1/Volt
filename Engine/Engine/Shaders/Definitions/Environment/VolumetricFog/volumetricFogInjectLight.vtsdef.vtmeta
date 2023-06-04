@@ -1,0 +1,4 @@
+Handle: 16605772497305515850
+Path: Engine/Shaders/Definitions/Environment/VolumetricFog/volumetricFogInjectLight.vtsdef
+Dependencies:
+  []

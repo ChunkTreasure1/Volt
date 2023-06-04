@@ -38,11 +38,12 @@ namespace gem
 		return result.x + result.y + result.z + result.w;
 	};
 
-	template <typename T>
-	T dot(const qua<T>& q1, const qua<T>& q2)
+	template<typename T = float>
+	T dot(const qua<T>& a, const qua<T>& b)
 	{
-		return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
-	}
+		vec<4, T> tmp(a.w * b.w, a.x * b.x, a.y * b.y, a.z * b.z);
+		return (tmp.x + tmp.y) + (tmp.z + tmp.w);
+	};
 
 	template<size_t L, typename T = float>
 	T length(const vec<L, T>& x)
@@ -53,19 +54,13 @@ namespace gem
 	template<typename T>
 	inline T length(qua<T> const& q)
 	{
-		return std::sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+		return sqrt(dot(q, q));
 	}
 
 	template<typename T = float>
 	T lerp(T a, T b, float c)
 	{
 		return (static_cast<T>(1) - c) * a + c * b;
-	}
-
-	template<typename T = float>
-	qua<T> qlerp(const qua<T>& x, const qua<T>& y, T a)
-	{
-		return x * (1.f - a) + y * a;
 	}
 
 	template<typename T = float>
@@ -120,31 +115,47 @@ namespace gem
 		return val;
 	}
 
-	template<typename T = float>
+	template <typename T>
 	qua<T> slerp(const qua<T>& x, const qua<T>& y, T a)
 	{
 		qua<T> z = y;
+		qua<T> w = x;
 
-		T cosTheta = dot(x, y);
-		cosTheta = clamp(cosTheta, -1.f, 1.f);
+		// dot product - the cosine of the angle between the two quaternions
+		T cosTheta = dot(w, z);
 
-		if (cosTheta < static_cast<T>(0))
+		w = normalize(w);
+		z = normalize(z);
+
+		// make sure the interpolation factor is in the range [0, 1]
+		a = std::clamp(a, static_cast<T>(0), static_cast<T>(1));
+
+		// negate one of the quaternions if they are negated to each other
+		if (cosTheta < 0)
 		{
-			z = -y;
+			z = -z;
 			cosTheta = -cosTheta;
 		}
 
-		if (cosTheta > static_cast<T>(1) - epsilon<T>())
+		// use lerp if the quaternions are collinear
+		if (std::abs(cosTheta) > 1 - 1e-3)
 		{
-			return qua<T>(
-				lerp(x.w, z.w, a),
-				lerp(x.x, z.x, a),
-				lerp(x.y, z.y, a),
-				lerp(x.z, z.z, a));
+			return gem::normalize(qua<T>(
+				lerp(w.w, z.w, a),
+				lerp(w.x, z.x, a),
+				lerp(w.y, z.y, a),
+				lerp(w.z, z.z, a)));
 		}
 
-		T angle = acos(cosTheta);
-		return (sin((static_cast<T>(1) - a) * angle) * x + sin(a * angle) * z) / sin(angle);
+		// calculate the angle between the two quaternions
+		T angle = std::acos(cosTheta);
+
+		// calculate the interpolation factors
+		T s1 = std::sin((1 - a) * angle);
+		T s2 = std::sin(a * angle);
+
+		// interpolate and return the result
+		return (s1 * w + s2 * z) / std::sin(angle);
 	}
 
 	template<size_t L, typename T>

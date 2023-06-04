@@ -1,55 +1,83 @@
 #pragma once
 
-#include "Volt/Rendering/RendererInfo.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Rendering/RenderPipeline/RenderPipeline.h"
 
-#include <vector>
-#include <functional>
-
-struct ID3D11CommandList;
+#include <vulkan/vulkan.h>
 
 namespace Volt
 {
+	enum class CommandBufferLevel : uint32_t
+	{
+		Primary = 0,
+		Secondary
+	};
+
 	class CommandBuffer
 	{
 	public:
-		typedef void(*CommandFn)(void*);
-
-		CommandBuffer();
+		CommandBuffer(uint32_t count, bool swapchainTarget);
+		CommandBuffer(uint32_t count, QueueType queueType);
+		CommandBuffer(uint32_t count, Ref<CommandBuffer> primaryCommandBuffer);
 		~CommandBuffer();
 
-		void Clear();
-		void Execute();
+		void Begin();
+		void End();
+		void Submit();
 
-		template<typename T>
-		void Submit(T&& func);
+		VkCommandBuffer GetCurrentCommandBuffer();
+		const uint32_t GetCurrentIndex();
+		const uint32_t GetLastIndex();
 
-		inline static Ref<CommandBuffer> Create() { return CreateRef<CommandBuffer>(); }
+		const uint32_t BeginTimestamp();
+		void EndTimestamp(uint32_t timestampId);
 
-		ID3D11CommandList*& GetAndReleaseCommandList();
+		const float GetExecutionTime(uint32_t frameIndex, uint32_t queryId) const;
+		const RenderPipelineStatistics& GetPipelineStatistics(uint32_t frameIndex) const;
+
+		static Ref<CommandBuffer> Create(uint32_t count, bool swapchainTarget = false);
+		static Ref<CommandBuffer> Create(uint32_t count, QueueType queueType);
+		static Ref<CommandBuffer> Create(uint32_t count, Ref<CommandBuffer> primaryCommandBuffer);
 
 	private:
-		void* AllocateCommand(CommandFn func, uint32_t size);
+		inline static constexpr uint32_t MAX_QUERIES = 64;
 
-		ID3D11CommandList* myCommandList = nullptr;
+		void Invalidate();
+		void CreateQueryPools();
+		void FetchTimestampResults();
+		void FetchPipelineStatistics();
 
-		uint8_t* myCommandBufferAllocation = nullptr;
-		uint8_t* myCommandBufferPtr = nullptr;
-		uint32_t myCommandCount = 0;
+		void Release();
+
+		void BeginPrimary();
+		void BeginSecondary();
+
+		std::vector<VkCommandPool> myCommandPools;
+		std::vector<VkCommandBuffer> myCommandBuffers;
+		std::vector<VkFence> mySubmitFences;
+
+		uint32_t myTimestampQueryCount = 0;
+		uint32_t myNextAvailableTimestampQuery = 2; // The two first are command buffer total
+		uint32_t myLastAvailableTimestampQuery = 0;
+
+		std::vector<VkQueryPool> myTimestampQueryPools;
+		std::vector<VkQueryPool> myPipelineStatisticsQueryPools;
+		std::vector<std::vector<uint64_t>> myTimestampQueryResults;
+		std::vector<std::vector<float>> myGPUExecutionTimes;
+
+		uint32_t myPipelineQueryCount = 0;
+		std::vector<RenderPipelineStatistics> myPipelineStatisticsResults;
+
+		QueueType myQueueType = QueueType::Graphics;
+		CommandBufferLevel myLevel = CommandBufferLevel::Primary;
+		Weak<CommandBuffer> myInheritedCommandBuffer;
+
+		bool mySwapchainTarget = false;
+		bool myHasTimestampSupport = false;
+		bool myHasEnded = false;
+
+		uint32_t myCurrentCommandPool = 0;
+		uint32_t myLastCommandPool = 0;
+		uint32_t myCount = 0;
 	};
-
-	template<typename T>
-	inline void CommandBuffer::Submit(T&& func)
-	{
-		auto renderCmd = [](void* ptr)
-		{
-			auto funcPtr = (T*)ptr;
-			(*funcPtr)();
-
-			// Must be done for strings, vectors and such
-			funcPtr->~T();
-		};
-
-		auto storageBuffer = AllocateCommand(renderCmd, sizeof(func));
-		new (storageBuffer) T(std::forward<T>(func));
-	}
 }

@@ -6,13 +6,17 @@
 
 #include <Volt/Core/Profiling.h>
 
+#include <Volt/Utility/StringUtility.h>
+
 const float DISTANCEFACTOR = 100.0f;
 
-namespace Amp 
+namespace Amp
 {
 	bool AudioEngine::Init(const std::string aFileDirectory)
 	{
 		rootDirectory = aFileDirectory;
+
+		rootDirectory = Utils::ReplaceCharacter(rootDirectory, '\\', '/');
 
 		//if (!rootDirectory.empty() && rootDirectory.back() != '\\')
 		//{
@@ -169,6 +173,16 @@ namespace Amp
 		return nullptr;
 	}
 
+	std::vector<std::string> AudioEngine::GetAllEventNames()
+	{
+		std::vector<std::string> eventNames;
+		for (auto& event : events)
+		{
+			eventNames.emplace_back(event.first);
+		}
+		return eventNames;
+	}
+
 	EventInstance& AudioEngine::CreateEventInstance(const std::string& aEventPath)
 	{
 		auto foundEvent = events.find(aEventPath);
@@ -187,7 +201,7 @@ namespace Amp
 		foundEvent->second.instanceIDpool++;
 		int aNewID = foundEvent->second.instanceIDpool;
 		EventInstance newInstance;
-		foundEvent->second.instances.insert({ aNewID, newInstance});
+		foundEvent->second.instances.insert({ aNewID, newInstance });
 		EventInstance& eventInstanceHandle = foundEvent->second.instances.find(aNewID)->second;
 
 		eventInstanceHandle.ID = aNewID;
@@ -236,6 +250,7 @@ namespace Amp
 
 	bool AudioEngine::PlayEvent(FMOD::Studio::EventInstance* aEventInstance)
 	{
+		int debug = 0;
 		return ErrorCheck(aEventInstance->start());
 	}
 
@@ -252,17 +267,17 @@ namespace Amp
 
 		FMOD::Studio::EventInstance* eventInstance;
 		lastResult = foundEvent->second.FmodEventDesc->createInstance(&eventInstance);
-		if(lastResult != FMOD_OK)
+		if (lastResult != FMOD_OK)
 		{
 			return false;
 		}
 
 		lastResult = eventInstance->start();
-		if (aEventData.is3D) 
+		if (aEventData.is3D)
 		{
 			SetEvent3Dattributes(eventInstance, aEventData);
 		}
-		if (aEventData.changeParameter) 
+		if (aEventData.changeParameter)
 		{
 			eventInstance->setParameterByName(aEventData.aParameterPath.c_str(), aEventData.aParameterValue);
 		}
@@ -307,7 +322,7 @@ namespace Amp
 	{
 		for (auto event : events)
 		{
-			for (auto instance : event.second.instances) 
+			for (auto instance : event.second.instances)
 			{
 				SetEvent3Dattributes(instance.second, aDeltaTime);
 			}
@@ -390,7 +405,7 @@ namespace Amp
 		return ErrorCheck(studioSystem->setListenerAttributes(mainListener.listenerID, &mainListener.attributes));
 	}
 
-	bool AudioEngine::UpdateListener(ListenerData aListenerData)
+	bool AudioEngine::UpdateListener(ListenerData& aListenerData)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -435,11 +450,76 @@ namespace Amp
 		FMOD::Studio::Bus* aBus = nullptr;
 		if (!studioSystem->getBus(aBusName.c_str(), &aBus))
 		{
-			return aBus->setVolume(aVolume);
+			if(!aBus->setVolume(aVolume))
+			{
+				return true;
+			}
+			else { return false; }
 		}
+
+		
 
 		return false;
 	}
+
+#pragma region DEPRICATED
+	//bool AudioEngine::CreateGeometry(GeometryData aNewGeometry)
+	//{
+	//	int maxPolygons = aNewGeometry.maxPolygons;
+	//	int maxVerts = aNewGeometry.maxVertices;
+
+	//	FMOD_VECTOR fmodVert[36];
+	//	for (UINT i = 0; i < 36; i++)
+	//	{
+	//		fmodVert[i].x = aNewGeometry.verticies[i].x;
+	//		fmodVert[i].y = aNewGeometry.verticies[i].y;
+	//		fmodVert[i].z = aNewGeometry.verticies[i].z;
+	//	}
+
+	//	FMOD::Geometry* newGeometryPtr;
+
+	//	ErrorCheck(coreSystem->createGeometry(maxPolygons, maxVerts, &newGeometryPtr));
+
+	//	newGeometryPtr->setPosition(&aNewGeometry.position);
+	//	newGeometryPtr->setRotation(&aNewGeometry.forward, &aNewGeometry.up);
+	//	newGeometryPtr->setScale(&aNewGeometry.scale);
+
+	//	int polygonID;
+
+	//	FMOD_RESULT result = newGeometryPtr->addPolygon(1, 1, true, maxVerts, fmodVert, &polygonID);
+
+	//	if (ErrorCheck(result))
+	//	{
+	//		geometry.insert({ ++geometryID, GeometryInstance()});
+	//		GeometryInstance& newInstance = geometry.at(geometryID);
+	//		newInstance.data.position = aNewGeometry.position;
+	//		newInstance.data.scale = aNewGeometry.scale;
+	//		newInstance.data.forward = aNewGeometry.forward;
+	//		newInstance.data.up = aNewGeometry.up;
+	//		newInstance.data.maxPolygons = aNewGeometry.maxPolygons;
+	//		newInstance.data.maxVertices = aNewGeometry.maxVertices;
+	//		newInstance.data.verticies = aNewGeometry.verticies;
+
+	//		newInstance.ID = geometryID;
+	//		newInstance.geometryObj = newGeometryPtr;
+
+	//	}
+
+	//	return ErrorCheck(result);
+	//}
+
+	//void AudioEngine::ReleaseGeometry()
+	//{
+	//	for (auto geoIns : geometry)
+	//	{
+	//		geoIns.second.geometryObj->release();
+	//	}
+
+	//	geometry.clear();
+	//}
+#pragma endregion
+
+
 }
 
 

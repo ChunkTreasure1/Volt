@@ -1,0 +1,4 @@
+Handle: 8192717060657030359
+Path: Engine/Shaders/Definitions/Compute/lightCull.vtsdef
+Dependencies:
+  - Engine/Shaders/Source/HLSL/Compute/LightCull_cs.hlsl

@@ -1,0 +1,5 @@
+Handle: 15640312032357843680
+Path: Assets/VFX/CharacterEffects/bulletHoles/FXasd_bulletHole.vtsdef
+Dependencies:
+  - Assets/VFX/CharacterEffects/bulletHoles/FX_bulletHole_ps.hlsl
+  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl

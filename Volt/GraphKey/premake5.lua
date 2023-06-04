@@ -2,7 +2,7 @@ project "GraphKey"
 	location "."
 	kind "StaticLib"
 	language "C++"
-	cppdialect "C++latest"
+	cppdialect "C++20"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -32,13 +32,24 @@ project "GraphKey"
 	{
 		"src/",
 		"../Volt/src/",
+		"../Amp/src/",
+		"../Nexus/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.Wire}",
 
-		"%{IncludeDir.GEM}"
+		"%{IncludeDir.GEM}",
+		"%{IncludeDir.fmod}",
+
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.imgui_notify}",
+		"%{IncludeDir.GLFW}",
+		
+		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.vma}",
+		"%{IncludeDir.half}",
 	}
 
 	defines

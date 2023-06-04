@@ -1,141 +1,317 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
-#include "Volt/Asset/Asset.h"
-#include "Volt/Rendering/Shader/ShaderCommon.h"
-#include "Volt/Rendering/Texture/ImageCommon.h"
+#include "Volt/Core/Buffer.h"
 
+#include "Volt/Asset/Asset.h"
+#include "Volt/Rendering/Texture/ImageCommon.h"
+#include "Volt/Rendering/Shader/ShaderCommon.h"
 #include "Volt/Rendering/Buffer/BufferLayout.h"
 
-#include <wrl.h>
-
+#include <vulkan/vulkan.h>
 #include <string>
-#include <filesystem>
-#include <unordered_map>
-#include <thread>
-
-using namespace Microsoft::WRL;
-
-struct ID3D11DeviceChild;
-struct ID3D11ShaderReflection;
-struct ID3D11DeviceContext;
-struct ID3D11InputLayout;
-struct ID3D11Device;
-struct ID3D10Blob;
-struct D3D11_INPUT_ELEMENT_DESC;
-
-#define MATERIAL_BUFFER_BINDING 2
+#include <any>
 
 namespace Volt
 {
-	// Shader info:
-	// Custom textures: Range 0 - 10
-	// Material buffer: slot 2
+	enum class ShaderUniformType
+	{
+		Invalid,
+		Bool,
 
-	class SubMaterial;
+		UInt,
+		UInt2,
+		UInt3,
+		UInt4,
+
+		Int,
+		Int2,
+		Int3,
+		Int4,
+
+		Float,
+		Float2,
+		Float3,
+		Float4,
+
+		Float4x4
+	};
+
+	struct ShaderUniform
+	{
+		ShaderUniform(const ShaderUniformType type, const size_t size, const size_t offset);
+		~ShaderUniform() = default;
+
+		size_t size = 0;
+		size_t offset = 0;
+		ShaderUniformType type;
+	};
+
+	class ShaderDataBuffer
+	{
+	public:
+		ShaderDataBuffer() = default;
+		~ShaderDataBuffer();
+
+		void Release();
+
+		void AddMember(const std::string& name, const ShaderUniformType type, const size_t size, const size_t offset);
+
+		inline const std::unordered_map<std::string, ShaderUniform>& GetMembers() const { return myUniforms; }
+		inline const uint32_t GetMemberCount() const { return (uint32_t)myUniforms.size(); }
+		inline const bool IsValid() const { return !myUniforms.empty(); }
+		inline const bool HasMember(const std::string& memberName) const { return myUniforms.contains(memberName); }
+		inline const ShaderUniform& GetMember(const std::string& memberName) const { return myUniforms.at(memberName); }
+
+		inline void SetSize(const size_t size) { mySize = size; }
+		inline const void* GetData() const { return myDataBuffer.As<void>(); }
+		inline const size_t GetSize() const { return mySize; }
+
+		void SetValue(const std::string& name, const void* data, const size_t size);
+		const void* GetValueRaw(const std::string& name, const size_t size) const;
+
+		template<typename T>
+		void SetValue(const std::string& name, const T& value);
+
+		template<typename T>
+		const T& GetValue(const std::string& name) const;
+
+		template<typename T>
+		T& GetValue(const std::string& name);
+
+		ShaderDataBuffer& operator=(const ShaderDataBuffer& lhs);
+
+	private:
+		friend class Shader;
+
+		std::unordered_map<std::string, ShaderUniform> myUniforms;
+		Buffer myDataBuffer{}; // #TODO_Ivar: Memory leak
+		size_t mySize = 0;
+	};
+
+	struct ShaderSSBO
+	{
+		VkDescriptorBufferInfo info{};
+	};
+
+	struct ShaderUniformBuffer
+	{
+		VkDescriptorBufferInfo info{};
+		bool isDynamic = false;
+		std::string name;
+	};
+
+	struct ShaderStorageImage
+	{
+		VkDescriptorImageInfo info{};
+		ImageDimension dimension{};
+	};
+
+	struct ShaderSampledImage
+	{
+		VkDescriptorImageInfo info{};
+		ImageDimension dimension{};
+	};
+
+	struct ShaderSeperateImage
+	{
+		VkDescriptorImageInfo info{};
+		ImageDimension dimension{};
+		std::string name;
+	};
+
+	struct ShaderSampler
+	{
+		VkDescriptorImageInfo info{};
+	};
+
+	struct ShaderSpecializationConstant
+	{
+		std::string name;
+		std::any defaultValue;
+		ShaderUniformType type;
+		VkSpecializationMapEntry constantInfo{};
+	};
+
+	struct ShaderTexture
+	{
+		std::string shaderName;
+		std::string editorName;
+	};
+
+	struct ShaderResources
+	{
+		std::vector<VkDescriptorSetLayout> nullPaddedDescriptorSetLayouts;
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+		std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
+
+		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo;
+
+		std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> descriptorSetBindings{};
+		std::map<uint32_t, std::map<uint32_t, VkWriteDescriptorSet>> writeDescriptors{};
+
+		std::map<uint32_t, std::map<uint32_t, ShaderUniformBuffer>> uniformBuffers{};
+		std::map<uint32_t, std::map<uint32_t, ShaderSSBO>> shaderStorageBuffers{};
+		std::map<uint32_t, std::map<uint32_t, ShaderStorageImage>> storageImages{};
+		std::map<uint32_t, std::map<uint32_t, ShaderSampledImage>> sampledImages{};
+		std::map<uint32_t, std::map<uint32_t, ShaderSeperateImage>> separateImages{};
+		std::map<uint32_t, std::map<uint32_t, ShaderSampler>> samplers;
+
+		std::vector<VkWriteDescriptorSet> materialWriteDescriptors{};
+
+		std::map<VkShaderStageFlagBits, std::map<uint32_t, ShaderSpecializationConstant>> specializationConstants{};
+		std::vector<ShaderTexture> shaderTextureDefinitions{}; // shader name -> editor name
+
+		VkPushConstantRange pushConstantRange;
+		ShaderDataBuffer pushConstantBuffer{};
+		std::map<VkShaderStageFlagBits, ShaderDataBuffer> specializationConstantBuffers{};
+
+		BufferLayout vertexLayout;
+
+		const bool HasUniformBufferAt(uint32_t set, uint32_t binding) const;
+		const bool HasStorageBufferAt(uint32_t set, uint32_t binding) const;
+		const bool HasSampledImageAt(uint32_t set, uint32_t binding) const;
+		const bool HasSeparateImageAt(uint32_t set, uint32_t binding) const;
+		const bool HasStorageImageAt(uint32_t set, uint32_t binding) const;
+
+		inline ShaderUniformBuffer& GetUniformBufferAt(uint32_t set, uint32_t binding) { return uniformBuffers.at(set).at(binding); }
+		inline ShaderSSBO& GetStorageBufferAt(uint32_t set, uint32_t binding) { return shaderStorageBuffers.at(set).at(binding); }
+		inline ShaderStorageImage& GetStorageImageAt(uint32_t set, uint32_t binding) { return storageImages.at(set).at(binding); }
+		inline ShaderSampledImage& GetSampledImageAt(uint32_t set, uint32_t binding) { return sampledImages.at(set).at(binding); }
+		inline ShaderSeperateImage& GetSeparateImageAt(uint32_t set, uint32_t binding) { return separateImages.at(set).at(binding); }
+		inline ShaderSampler& GetSamplerAt(uint32_t set, uint32_t binding) { return samplers.at(set).at(binding); }
+	};
+
 	class Shader : public Asset
 	{
 	public:
-		struct MaterialBuffer
+		enum class Language
 		{
-			struct Parameter
-			{
-				ElementType type;
-				uint32_t offset;
-			};
-
-			std::unordered_map<std::string, Parameter> parameters;
-			std::vector<uint8_t> data;
-
-			uint32_t size = 0;
-			std::string name;
-			bool exists = false;
+			Invalid,
+			GLSL,
+			HLSL
 		};
 
-		struct ConstantBuffer
-		{
-			std::string name;
-		};
-
-		struct Texture
-		{
-			std::string name;
-			ImageDimension dimension;
-		};
-
-		struct ShaderResources
-		{
-			std::map<uint32_t, ConstantBuffer> constantBuffers; // binding -> buffer
-			std::map<uint32_t, Texture> textures; // binding -> textures
-
-			std::unordered_map<uint32_t, std::string> shaderTextureDefinitions; // binding -> name
-			MaterialBuffer materialBuffer{};
-		};
-
-		Shader(const std::string& aName, std::initializer_list<std::filesystem::path> aPaths, bool aForceCompile);
-		Shader(const std::string& aName, std::vector<std::filesystem::path> aPaths, bool aForceCompile, bool aIsInternal);
+		Shader(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile);
 		Shader() = default;
 		~Shader();
 
-		bool Reload(bool forceCompile);
-		void Bind() const;
-		void Unbind() const;
+		const bool Reload(bool forceCompile);
 
-		void AddReference(SubMaterial* material);
-		void RemoveReference(SubMaterial* material);
+		VkDescriptorSet AllocateDescriptorSet(uint32_t set, VkDescriptorPool pool);
+		const ShaderDataBuffer CreateShaderBuffer();
+		const ShaderDataBuffer CreateSpecialiazationConstantsBuffer(ShaderStage stage);
 
-		inline const ShaderResources& GetResources() const { return myResources; }
 		inline const std::string& GetName() const { return myName; }
+		inline const ShaderResources& GetResources() const { return myResources; }
+		inline const auto& GetStageInfos() const { return myPipelineShaderStageInfos; }
+		inline const auto& GetShaderGroups() const { return myShaderGroupInfos; }
+		inline const std::vector<std::filesystem::path> GetSourcePaths() const { return myShaderFiles; }
 		inline const size_t GetHash() const { return myHash; }
 		inline const bool IsInternal() const { return myIsInternal; }
-		inline const std::vector<std::filesystem::path>& GetSources() const { return mySourcePaths; }
 
 		static AssetType GetStaticType() { return AssetType::Shader; }
 		AssetType GetType() override { return GetStaticType(); }
 
-		static Ref<Shader> Create(const std::string& name, std::initializer_list<std::filesystem::path> paths, bool forceCompile = false);
-		static Ref<Shader> Create(const std::string& name, std::vector<std::filesystem::path> paths, bool forceCompile = false, bool aIsInternal = false);
-
-		static const uint32_t MinCustomTextureSlot() { return 0; }
-		static const uint32_t MaxCustomTextureSlot() { return 10; }
+		static Ref<Shader> Create(const std::string& name, std::vector<std::filesystem::path> paths, bool forceCompile = false);
 
 	private:
+		friend class ShaderImporter;
+
 		struct TypeCount
 		{
 			uint32_t count = 0;
 		};
 
 		void GenerateHash();
+		void LoadShaderFromFiles();
 		void Release();
-		void SetupBindAndCreateFunctions();
 
-		void ReflectAllStages();
-		void ReflectStage(ShaderStage aStage, ComPtr<ID3D10Blob> aBlob);
+		const bool CompileOrGetBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outShaderData, bool forceCompile);
+		void LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
+		void ReflectAllStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
+		void ReflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& data);
 
-		std::vector<D3D11_INPUT_ELEMENT_DESC> ReflectInputDescription(ID3D11ShaderReflection* aReflector);
+		void CreateDescriptorSetLayouts();
+		void CalculateDescriptorPoolSizes();
 
-		bool CompileOrGetBinary(std::unordered_map<ShaderStage, ComPtr<ID3D10Blob>>& outBlobs, bool aForceCompile);
+		std::unordered_map<VkShaderStageFlagBits, std::string> myShaderSources;
+		std::vector<std::filesystem::path> myShaderFiles;
 
-		std::vector<SubMaterial*> myMaterialReferences;
-		std::mutex myReferencesMutex;
+		std::vector<VkPipelineShaderStageCreateInfo> myPipelineShaderStageInfos;
+		std::vector<VkRayTracingShaderGroupCreateInfoKHR> myShaderGroupInfos;
+		ShaderResources myResources{};
 
-		std::unordered_map<ShaderStage, ComPtr<ID3D11DeviceChild>> myShaders;
-		std::unordered_map<ShaderStage, ComPtr<ID3D10Blob>> myShaderBlobs;
-
-		ComPtr<ID3D11InputLayout> myInputLayout;
-		std::vector<std::filesystem::path> mySourcePaths;
-		
-		size_t myHash = 0;
 		std::string myName;
+		size_t myHash{};
 		bool myIsInternal = false;
 
-		ShaderResources myResources;
-
-		std::unordered_map<ShaderStage, TypeCount> myPerStageCBCount;
-		std::unordered_map<ShaderStage, TypeCount> myPerStageTextureCount;
-
-		inline static std::unordered_map<ShaderStage, std::function<void(ComPtr<ID3D11DeviceChild>, ComPtr<ID3D11DeviceContext>)>> myBindFunctions;
-		inline static std::unordered_map<ShaderStage, std::function<void(ComPtr<ID3D11DeviceChild>, ComPtr<ID3D11DeviceContext>)>> myUnbindFunctions;
-		inline static std::unordered_map<ShaderStage, std::function<void(ComPtr<ID3D11DeviceChild>&, ComPtr<ID3D10Blob>, ComPtr<ID3D11Device>)>> myCreateFunctions;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageUBOCount;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageDynamicUBOCount;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageSSBOCount;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageStorageImageCount;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageImageCount;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageSeperateImageCount;
+		std::unordered_map<VkShaderStageFlagBits, TypeCount> myPerStageSamplerCount;
 	};
+
+	template<typename T>
+	inline void ShaderDataBuffer::SetValue(const std::string& name, const T& value)
+	{
+		if (!myUniforms.contains(name))
+		{
+			VT_CORE_WARN("Trying to set uniform {0} but it does not exist!", name);
+			return;
+		}
+
+		const auto& uniform = myUniforms.at(name);
+		if (sizeof(T) != uniform.size)
+		{
+			VT_CORE_WARN("Trying to set uniform {0} to a value with size {1}, but uniform has a size of {2}", name, sizeof(T), uniform.size);
+			return;
+		}
+
+		myDataBuffer.Copy(&value, sizeof(T), uniform.offset);
+	}
+
+	template<typename T>
+	inline const T& ShaderDataBuffer::GetValue(const std::string& name) const
+	{
+		static T nullValue{};
+
+		if (!myUniforms.contains(name))
+		{
+			VT_CORE_WARN("Trying to get uniform {0} but it does not exist!", name);
+			return nullValue;
+		}
+
+		const auto& uniform = myUniforms.at(name);
+		if (sizeof(T) != uniform.size)
+		{
+			VT_CORE_WARN("Trying to get uniform {0} to a value with size {1}, but uniform has a size of {2}", name, sizeof(T), uniform.size);
+			return nullValue;
+		}
+
+		return *myDataBuffer.As<T>(uniform.offset);
+	}
+
+	template<typename T>
+	inline T& ShaderDataBuffer::GetValue(const std::string& name)
+	{
+		static T nullValue{};
+
+		if (!myUniforms.contains(name))
+		{
+			VT_CORE_WARN("Trying to get uniform {0} but it does not exist!", name);
+			return nullValue;
+		}
+
+		const auto& uniform = myUniforms.at(name);
+		if (sizeof(T) != uniform.size)
+		{
+			VT_CORE_WARN("Trying to get uniform {0} to a value with size {1}, but uniform has a size of {2}", name, sizeof(T), uniform.size);
+			return nullValue;
+		}
+
+		return *myDataBuffer.As<T>(uniform.offset);
+	}
 }

@@ -2,7 +2,7 @@ project "Amp"
 	location "."
 	kind "StaticLib"
 	language "C++"
-	cppdialect "C++latest"
+	cppdialect "c++20"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -38,7 +38,8 @@ project "Amp"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.GEM}"
+		"%{IncludeDir.GEM}",
+		"%{IncludeDir.wwise}"
 	}
 
 	defines

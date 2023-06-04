@@ -50,7 +50,7 @@ namespace Utils
 	{
 		std::string temp = src;
 		std::replace(temp.begin(), temp.end(), oldCharacter, newCharacter);
-		
+
 		return temp;
 	}
 

@@ -4,6 +4,8 @@
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Asset/Animation/Animation.h"
 
+#include "Volt/Asset/AssetManager.h"
+
 namespace Volt
 {
 	bool AnimationImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
@@ -11,7 +13,7 @@ namespace Volt
 		asset = CreateRef<Animation>();
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
-		const auto filePath = ProjectManager::GetDirectory() / path;
+		const auto filePath = AssetManager::GetContextPath(path) / path;
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
@@ -44,7 +46,7 @@ namespace Volt
 		AnimationHeader header = *(AnimationHeader*)&totalData[0];
 		size_t offset = sizeof(AnimationHeader);
 
-		std::vector<Animation::Frame> frames;
+		std::vector<Animation::Pose> frames;
 		frames.resize(header.frameCount);
 
 		for (uint32_t i = 0; i < header.frameCount; i++)
@@ -65,9 +67,9 @@ namespace Volt
 	void AnimationImporter::Save(const Ref<Asset>& asset) const
 	{
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
-		
+
 		std::vector<uint8_t> outData;
-		
+
 		AnimationHeader header{};
 		header.perFrameTransformCount = (uint32_t)animation->myFrames.front().localTRS.size();
 		header.frameCount = (uint32_t)animation->myFrames.size();
@@ -87,13 +89,14 @@ namespace Volt
 			offset += header.perFrameTransformCount * sizeof(Animation::TRS);
 		}
 
-		std::ofstream fout(ProjectManager::GetDirectory() / asset->path, std::ios::binary | std::ios::out);
+		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path, std::ios::binary | std::ios::out);
 		fout.write((char*)outData.data(), outData.size());
 		fout.close();
 	}
 
 	void AnimationImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{}
+	{
+	}
 
 	bool AnimationImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
 	{

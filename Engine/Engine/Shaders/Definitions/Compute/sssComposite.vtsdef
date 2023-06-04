@@ -1,0 +1,4 @@
+name: "SSSComposite"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/Compute/SSSComposite_cs.hlsl"

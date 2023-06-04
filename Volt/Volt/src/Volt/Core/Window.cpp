@@ -3,6 +3,7 @@
 
 #include "Volt/Core/Graphics/GraphicsContext.h"
 #include "Volt/Core/Graphics/Swapchain.h"
+
 #include "Volt/Core/Application.h"
 
 #include "Volt/Events/ApplicationEvent.h"
@@ -17,7 +18,7 @@
 #include <GLFW/glfw3native.h>
 
 #include <DirectXTex/DirectXTex.h>
-	
+
 namespace Volt
 {
 	static void GLFWErrorCallback(int error, const char* description)
@@ -52,6 +53,8 @@ namespace Volt
 
 	void Window::Shutdown()
 	{
+		mySwapchain = nullptr;
+		myGraphicsContext = nullptr;
 		Release();
 
 		for (auto [path, cursor] : myCursors)
@@ -85,7 +88,24 @@ namespace Volt
 		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
-		myWindow = glfwCreateWindow((int32_t)myData.width, (int32_t)myData.height, myData.title.c_str(), nullptr, nullptr);
+		GLFWmonitor* primaryMonitor = nullptr;
+
+		if (myData.windowMode != WindowMode::Windowed)
+		{
+			primaryMonitor = glfwGetPrimaryMonitor();
+		}
+
+		int32_t createWidth = (uint32_t)myData.width;
+		int32_t createHeight = (uint32_t)myData.height;
+
+		if (primaryMonitor)
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+			createWidth = mode->width;
+			createHeight = mode->height;
+		}
+
+		myWindow = glfwCreateWindow(createWidth, createHeight, myData.title.c_str(), nullptr, nullptr);
 		myWindowHandle = glfwGetWin32Window(myWindow);
 
 		if (!myData.iconPath.empty() && FileSystem::Exists(myData.iconPath))
@@ -98,7 +118,7 @@ namespace Volt
 			image.pixels = textureData.dataBuffer.As<uint8_t>();
 
 			glfwSetWindowIcon(myWindow, 1, &image);
-		
+
 			textureData.dataBuffer.Release();
 		}
 
@@ -115,9 +135,9 @@ namespace Volt
 
 		if (!myHasBeenInitialized)
 		{
-			myGraphicsContext = GraphicsContext::Create(myWindow);
-			mySwapchain = Swapchain::Create(myWindow, myGraphicsContext);
-			mySwapchain->Resize(myData.width, myData.height, myIsFullscreen);
+			myGraphicsContext = GraphicsContext::Create();
+			mySwapchain = Swapchain::Create(myWindow);
+			mySwapchain->Resize(myData.width, myData.height, myData.vsync);
 			myHasBeenInitialized = true;
 		}
 
@@ -129,124 +149,126 @@ namespace Volt
 		glfwSetWindowUserPointer(myWindow, &myData);
 
 		glfwSetWindowSizeCallback(myWindow, [](GLFWwindow* window, int32_t width, int32_t height)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				data.width = width;
-				data.height = height;
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.width = width;
+			data.height = height;
 
-				int32_t x, y;
-				glfwGetWindowPos(window, &x, &y);
+			int32_t x, y;
+			glfwGetWindowPos(window, &x, &y);
 
-				WindowResizeEvent event((uint32_t)x, (uint32_t)y, width, height);
-				data.eventCallback(event);
-			});
+			WindowResizeEvent event((uint32_t)x, (uint32_t)y, width, height);
+			data.eventCallback(event);
+		});
 
 		glfwSetWindowCloseCallback(myWindow, [](GLFWwindow* window)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowCloseEvent event{};
-				data.eventCallback(event);
-			});
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent event{};
+			data.eventCallback(event);
+		});
 
 		glfwSetTitlebarHitTestCallback(myWindow, [](GLFWwindow* window, int x, int y, int* hit)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowTitlebarHittestEvent event{ x, y, *hit };
+			if (data.eventCallback)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				WindowTitlebarHittestEvent event{ x, y, *hit };
-				if (data.eventCallback)
-				{
-					data.eventCallback(event);
-				}
-			});
+				data.eventCallback(event);
+			}
+		});
 
 		glfwSetKeyCallback(myWindow, [](GLFWwindow* window, int32_t key, int32_t, int32_t action, int32_t)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			if (key == -1)
 			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				return;
+			}
 
-				switch (action)
+			switch (action)
+			{
+				case GLFW_PRESS:
 				{
-					case GLFW_PRESS:
-					{
-						KeyPressedEvent event(key, 0);
-						data.eventCallback(event);
-						break;
-					}
-
-					case GLFW_RELEASE:
-					{
-						KeyReleasedEvent event(key);
-						data.eventCallback(event);
-						break;
-					}
-
-					case GLFW_REPEAT:
-					{
-						KeyPressedEvent event(key, 1);
-						data.eventCallback(event);
-						break;
-					}
+					KeyPressedEvent event(key, 0);
+					data.eventCallback(event);
+					break;
 				}
-			});
+
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent event(key);
+					data.eventCallback(event);
+					break;
+				}
+
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent event(key, 1);
+					data.eventCallback(event);
+					break;
+				}
+			}
+		});
 
 		glfwSetCharCallback(myWindow, [](GLFWwindow* window, uint32_t key)
-			{
-				WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-				KeyTypedEvent event(key);
-				data.eventCallback(event);
-			});
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			KeyTypedEvent event(key);
+			data.eventCallback(event);
+		});
 
 		glfwSetMouseButtonCallback(myWindow, [](GLFWwindow* window, int button, int action, int)
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			switch (action)
 			{
-				WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-				switch (action)
+				case GLFW_PRESS:
 				{
-					case GLFW_PRESS:
-					{
-						MouseButtonPressedEvent event(button);
-						data.eventCallback(event);
-						break;
-					}
-					case GLFW_RELEASE:
-					{
-						MouseButtonReleasedEvent event(button);
-						data.eventCallback(event);
-						break;
-					}
+					MouseButtonPressedEvent event(button);
+					data.eventCallback(event);
+					break;
 				}
-			});
+				case GLFW_RELEASE:
+				{
+					MouseButtonReleasedEvent event(button);
+					data.eventCallback(event);
+					break;
+				}
+			}
+		});
 
 		glfwSetScrollCallback(myWindow, [](GLFWwindow* window, double xOffset, double yOffset)
-			{
-				WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-				MouseScrolledEvent event((float)xOffset, (float)yOffset);
-				data.eventCallback(event);
-			});
+			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			data.eventCallback(event);
+		});
 
 		glfwSetCursorPosCallback(myWindow, [](GLFWwindow* window, double xPos, double yPos)
-			{
-				WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-				MouseMovedEvent event((float)xPos, (float)yPos);
-				data.eventCallback(event);
-			});
+			MouseMovedEvent event((float)xPos, (float)yPos);
+
+			data.eventCallback(event);
+		});
 
 		glfwSetDropCallback(myWindow, [](GLFWwindow* window, int32_t count, const char** paths)
-			{
-				WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		{
+			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-				WindowDragDropEvent event(count, paths);
-				data.eventCallback(event);
-			});
+			WindowDragDropEvent event(count, paths);
+			data.eventCallback(event);
+		});
 	}
 
 	void Window::Release()
 	{
-		mySwapchain = nullptr;
-		myGraphicsContext = nullptr;
-
 		if (myWindow)
 		{
-
 			glfwDestroyWindow(myWindow);
 			myWindow = nullptr;
 		}
@@ -273,11 +295,9 @@ namespace Volt
 				glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 				glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-				const auto& monitorMode = mySwapchain->GetMonitorMode();
+				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
 
-				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, monitorMode.width, monitorMode.height, 0);
-
-				mySwapchain->Resize(mode->width, mode->height, myIsFullscreen);
+				mySwapchain->Resize(mode->width, mode->height, myData.vsync);
 				break;
 			}
 
@@ -289,19 +309,19 @@ namespace Volt
 				glfwSetWindowAttrib(myWindow, GLFW_FLOATING, true);
 				glfwSetWindowAttrib(myWindow, GLFW_RESIZABLE, true);
 
-				const auto& monitorMode = mySwapchain->GetMonitorMode();
+				const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-				const int32_t xPos = (int32_t)((monitorMode.width / 2) - (myProperties.width / 2));
-				const int32_t yPos = (int32_t)((monitorMode.height / 2) - (myProperties.height / 2));
+				const int32_t xPos = (int32_t)((mode->width / 2) - (myProperties.width / 2));
+				const int32_t yPos = (int32_t)((mode->height / 2) - (myProperties.height / 2));
 
-				glfwSetWindowMonitor(myWindow, nullptr, 0, 0, myProperties.width, myProperties.height, (int32_t)monitorMode.refreshRate);
+				glfwSetWindowMonitor(myWindow, nullptr, 0, 0, myProperties.width, myProperties.height, GLFW_DONT_CARE);
 				glfwSetWindowPos(myWindow, xPos, yPos);
 
 				myData.width = myProperties.width;
 				myData.height = myProperties.height;
 
 				myIsFullscreen = false;
-				mySwapchain->Resize(myData.width, myData.height, myIsFullscreen);
+				mySwapchain->Resize(myData.width, myData.height, myData.vsync);
 				break;
 			}
 
@@ -314,16 +334,21 @@ namespace Volt
 				glfwSetWindowAttrib(myWindow, GLFW_RESIZABLE, false);
 
 				const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
+				glfwSetWindowMonitor(myWindow, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
 
 				myIsFullscreen = false;
-				mySwapchain->Resize(mode->width, mode->height, myIsFullscreen);
+				mySwapchain->Resize(mode->width, mode->height, myData.vsync);
 
 				myData.width = mode->width;
 				myData.height = mode->height;
 				break;
 			}
 		}
+	}
+
+	void Window::SetVsync(bool aState)
+	{
+		myData.vsync = aState;
 	}
 
 	void Window::BeginFrame()
@@ -333,13 +358,29 @@ namespace Volt
 
 	void Window::Present()
 	{
-		mySwapchain->Present(myData.vsync);
+		mySwapchain->Present();
 		glfwPollEvents();
 	}
 
 	void Window::Resize(uint32_t aWidth, uint32_t aHeight)
 	{
+		if (aWidth == 0 && aHeight == 0)
+		{
+			int tempWidth = 0, tempHeight = 0;
+			while (tempWidth == 0 && tempHeight == 0)
+			{
+				glfwGetFramebufferSize(myWindow, &tempWidth, &tempHeight);
+				glfwWaitEvents();
+			}
+		}
+
 		mySwapchain->Resize(aWidth, aHeight, myIsFullscreen);
+	}
+
+	void Window::SetViewportSize(uint32_t width, uint32_t height)
+	{
+		myViewportWidth = width;
+		myViewportHeight = height;
 	}
 
 	void Window::SetEventCallback(const EventCallbackFn& callback)
@@ -365,11 +406,6 @@ namespace Volt
 	const bool Window::IsMaximized() const
 	{
 		return (bool)glfwGetWindowAttrib(myWindow, GLFW_MAXIMIZED);
-	}
-
-	void Window::ShowCursor(bool aShow) const
-	{
-		glfwSetInputMode(myWindow, GLFW_CURSOR, aShow ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 
 	void Window::SetCursor(const std::filesystem::path& path)
@@ -404,12 +440,22 @@ namespace Volt
 		glfwSetWindowOpacity(myWindow, opacity);
 	}
 
+	void Window::SetClipboard(const std::string& string)
+	{
+		glfwSetClipboardString(myWindow, string.c_str());
+	}
+
 	const std::pair<float, float> Window::GetPosition() const
 	{
 		int32_t x, y;
 		glfwGetWindowPos(myWindow, &x, &y);
 
 		return { (float)x, (float)y };
+	}
+
+	const float Window::GetOpacity() const
+	{
+		return glfwGetWindowOpacity(myWindow);
 	}
 
 	Scope<Window> Window::Create(const WindowProperties& aProperties)

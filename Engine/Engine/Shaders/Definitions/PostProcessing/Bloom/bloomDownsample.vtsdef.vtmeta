@@ -1,0 +1,4 @@
+Handle: 5203104193415275415
+Path: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomDownsample.vtsdef
+Dependencies:
+  []

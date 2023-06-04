@@ -15,15 +15,15 @@
 namespace Volt
 {
 	PhysicsActor::PhysicsActor(Entity entity)
-		: myEntity(entity)
+		: PhysicsActorBase(entity)
 	{
 		myRigidBodyData = myEntity.GetComponent<RigidbodyComponent>();
-		myEntity.GetComponent<RigidbodyComponent>().UpdateLast();
 		CreateRigidActor();
 	}
 
 	PhysicsActor::~PhysicsActor()
-	{}
+	{
+	}
 
 	void PhysicsActor::SetLinearDrag(float drag) const
 	{
@@ -97,6 +97,8 @@ namespace Volt
 		{
 			collider->SetFilterData(myFilterData);
 		}
+
+		myLayerId = layerId;
 	}
 
 	void PhysicsActor::SetKinematicTarget(const gem::vec3& position, const gem::quat& rotation)
@@ -114,7 +116,7 @@ namespace Volt
 
 	void PhysicsActor::SetLinearVelocity(const gem::vec3& velocity)
 	{
-		if (!IsDynamic())
+		if (!IsDynamic() || IsKinematic())
 		{
 			VT_CORE_WARN("Trying to set velocity of non-dynamic PhysicsActor");
 			return;
@@ -259,14 +261,14 @@ namespace Volt
 		return PhysXUtilities::FromPhysXQuat(target.q);
 	}
 
-	void PhysicsActor::SetPosition(const gem::vec3& position, bool autoWake)
+	void PhysicsActor::SetPosition(const gem::vec3& position, bool autoWake, bool synchronize)
 	{
 		physx::PxTransform transform = myRigidActor->getGlobalPose();
 		transform.p = PhysXUtilities::ToPhysXVector(position);
 
 		myRigidActor->setGlobalPose(transform);
 
-		if (myRigidBodyData.bodyType == BodyType::Static)
+		if (myRigidBodyData.bodyType == BodyType::Static && synchronize)
 		{
 			SynchronizeTransform();
 		}
@@ -277,14 +279,14 @@ namespace Volt
 		}
 	}
 
-	void PhysicsActor::SetRotation(const gem::quat& rotation, bool autoWake)
+	void PhysicsActor::SetRotation(const gem::quat& rotation, bool autoWake, bool synchronize)
 	{
 		physx::PxTransform transform = myRigidActor->getGlobalPose();
 		transform.q = PhysXUtilities::ToPhysXQuat(rotation);
 
 		myRigidActor->setGlobalPose(transform);
 
-		if (myRigidBodyData.bodyType == BodyType::Static)
+		if (myRigidBodyData.bodyType == BodyType::Static && synchronize)
 		{
 			SynchronizeTransform();
 		}
@@ -317,7 +319,7 @@ namespace Volt
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
 		VT_CORE_ASSERT(actor, "Actor is null!");
- 		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
+		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
 	}
 
 	void PhysicsActor::AddTorque(const gem::vec3& torque, ForceMode aForceMode)
@@ -379,9 +381,9 @@ namespace Volt
 	void PhysicsActor::RemoveCollider(ColliderType type)
 	{
 		auto it = std::find_if(myColliders.begin(), myColliders.end(), [type](Ref<ColliderShape> coll)
-			{
-				return coll->GetType() == type;
-			});
+		{
+			return coll->GetType() == type;
+		});
 
 		if (it != myColliders.end())
 		{
@@ -447,7 +449,6 @@ namespace Volt
 			SetAngularDrag(myRigidBodyData.angularDrag);
 			SetKinematic(myRigidBodyData.isKinematic);
 			SetGravityDisabled(myRigidBodyData.disableGravity);
-			SetMass(myRigidBodyData.mass);
 			SetLockFlags(myRigidBodyData.lockFlags);
 
 			myRigidActor->is<physx::PxRigidDynamic>()->setSolverIterationCounts(settings.solverIterations, settings.solverVelocityIterations);
@@ -460,7 +461,16 @@ namespace Volt
 		if (myEntity.HasComponent<CapsuleColliderComponent>()) AddCollider(myEntity.GetComponent<CapsuleColliderComponent>(), myEntity);
 		if (myEntity.HasComponent<MeshColliderComponent>()) AddCollider(myEntity.GetComponent<MeshColliderComponent>(), myEntity);
 
+		if (myRigidBodyData.bodyType == BodyType::Dynamic)
+		{
+			SetMass(myRigidBodyData.mass);
+		}
+
 		myRigidActor->userData = this;
+
+#ifndef VT_DIST
+		myRigidActor->setName(myEntity.GetTag().c_str());
+#endif
 
 		SetSimulationData(myRigidBodyData.layerId);
 	}
@@ -468,18 +478,22 @@ namespace Volt
 	void PhysicsActor::SynchronizeTransform()
 	{
 		if (myToBeRemoved)
-		{
+		{ 
 			return;
 		}
 
-		TransformComponent& transComp = myEntity.GetComponent<TransformComponent>();
+		if (!myEntity.HasComponent<TransformComponent>()) 
+		{
+			return; 
+		}
+
 		physx::PxTransform actorPose = myRigidActor->getGlobalPose();
 
 		myEntity.SetPosition(PhysXUtilities::FromPhysXVector(actorPose.p), false);
 
-		if (!IsAllRotationLocked() && myEntity.GetId())
+		if (!IsAllRotationLocked())
 		{
-			transComp.rotation = gem::eulerAngles(PhysXUtilities::FromPhysXQuat(actorPose.q));
+			myEntity.SetRotation(PhysXUtilities::FromPhysXQuat(actorPose.q), false);
 		}
 	}
 }

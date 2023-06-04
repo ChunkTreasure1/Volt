@@ -6,7 +6,7 @@
 #include <string>
 
 class StreamsClientUser : public ClientUser
-{ 
+{
 public:
 	void OutputInfo(char level, const char* data) override;
 	void Clear();

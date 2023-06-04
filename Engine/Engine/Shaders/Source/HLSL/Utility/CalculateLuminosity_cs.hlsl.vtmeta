@@ -1,0 +1,4 @@
+Handle: 7302006162881816969
+Path: Engine/Shaders/Source/HLSL/Utility/CalculateLuminosity_cs.hlsl
+Dependencies:
+  []

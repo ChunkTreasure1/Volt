@@ -7,7 +7,7 @@ void FileListener::handleFileAction(efsw::WatchID watchid, const std::string& di
 	{
 		const std::filesystem::path newPath = std::filesystem::path(dir) / std::filesystem::path(filename);
 		const std::filesystem::path oldPath = oldFilename;
-	
+
 		callback(newPath, oldPath);
 	}
 }

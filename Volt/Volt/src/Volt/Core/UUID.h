@@ -2,14 +2,14 @@
 #include <cstddef>
 #include <stdint.h>
 
-namespace Volt 
+namespace Volt
 {
 	class UUID
 	{
 	public:
 		UUID();
 		UUID(uint64_t uuid);
-		
+
 		UUID(const UUID&) = default;
 		~UUID() = default;
 
@@ -19,7 +19,7 @@ namespace Volt
 	};
 }
 
-namespace std 
+namespace std
 {
 	template <typename T> struct hash;
 

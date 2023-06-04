@@ -1,0 +1,909 @@
+Prefab:
+  version: 8
+  entities:
+    - id: 990788969
+      components:
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [60, 163, 57]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 146, -2]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: true
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 0
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 6
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: PF_PhoneBooth
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                - value: 4143576738
+                - value: 2901805641
+                - value: 753895775
+                - value: 2747918077
+                - value: 2033759348
+                - value: 1789009421
+                - value: 511046046
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 0
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 990788969
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [3700, 0, 13800]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 7.18533993e-05, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1.00000012, 0.99999994, 1.00000012]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+        - guid: [5428802467633469958, 3006162545260469436]
+          properties:
+            - type: 21
+              vectorType: 12
+              name: ScriptNames
+              data:
+                - value: Project.Interactable_PhoneBooth
+            - type: 21
+              vectorType: 16
+              name: ScriptIds
+              data:
+                - value: 10732474558863980337
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 1960561940835109634
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 0
+      MonoScripts:
+        - ScriptEntry:
+            name: Project.Interactable_PhoneBooth
+            id: 10732474558863980337
+            properties:
+              - type: 0
+                name: isInRange
+                enumName: ""
+                data: false
+              - type: 7
+                name: TimeToHold
+                enumName: ""
+                data: 0.200000003
+    - id: 4143576738
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: ReturnPosition
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 4143576738
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-1330.20117, 136.837372, -1136.52661]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+        - guid: [5428802467633469958, 3006162545260469436]
+          properties:
+            - type: 21
+              vectorType: 12
+              name: ScriptNames
+              data:
+                - value: Project.ReturnPosition
+            - type: 21
+              vectorType: 16
+              name: ScriptIds
+              data:
+                - value: 312230472238003785
+      MonoScripts:
+        - ScriptEntry:
+            name: Project.ReturnPosition
+            id: 312230472238003785
+            properties:
+              []
+    - id: 2901805641
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: TeleportPosition
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2901805641
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-11924.0537, -7763.16455, 2600.26074]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+        - guid: [5428802467633469958, 3006162545260469436]
+          properties:
+            - type: 21
+              vectorType: 12
+              name: ScriptNames
+              data:
+                - value: Project.TeleportPosition
+            - type: 21
+              vectorType: 16
+              name: ScriptIds
+              data:
+                - value: 16816651337166113826
+      MonoScripts:
+        - ScriptEntry:
+            name: Project.TeleportPosition
+            id: 16816651337166113826
+            properties:
+              []
+    - id: 753895775
+      components:
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [73, 109, 14]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 0
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: PhoneBoothWall
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 753895775
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [19.4052734, 129.247345, 66.8847656]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999992847, 1.38349938, 0.999992847]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+    - id: 2747918077
+      components:
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [73, 109, 14]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 1
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: PhoneBoothWall
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2747918077
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [19.3583984, 129.247345, -76.0800781]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999992847, 1.38349938, 0.999992847]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+    - id: 2033759348
+      components:
+        - guid: [5594831065701184629, 5808174883320445581]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Half Size
+              data: [73, 10, 93]
+            - type: 10
+              vectorType: 13
+              name: Offset
+              data: [0, 0, 0]
+            - type: 0
+              vectorType: 13
+              name: Is Trigger
+              data: false
+            - type: 16
+              vectorType: 13
+              name: Physics Material
+              data: 0
+        - guid: [5241627842114713378, 11179844935521484427]
+          properties:
+            - type: 24
+              vectorType: 13
+              name: Type
+              data: 0
+            - type: 2
+              vectorType: 13
+              name: Layer ID
+              data: 3
+            - type: 7
+              vectorType: 13
+              name: Mass
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Linear Drag
+              data: 0.00999999978
+            - type: 2
+              vectorType: 13
+              name: Lock Flags
+              data: 0
+            - type: 7
+              vectorType: 13
+              name: Angular Drag
+              data: 0.0500000007
+            - type: 24
+              vectorType: 13
+              name: Collision Type
+              data: 0
+            - type: 0
+              vectorType: 13
+              name: Disable Graivity
+              data: false
+            - type: 0
+              vectorType: 13
+              name: Is Kinematic
+              data: false
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: PhoneBoothWall
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 2033759348
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [19.3837891, 272.783417, -3.89990234]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, 0, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999992847, 1.38349938, 0.999992847]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+    - id: 1789009421
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: BrokenLamp
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 1789009421
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [2.76782227, 295.618256, -0.225585938]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0.707095861, -0.0180184618, -0.0179092828, 0.706661224]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.99999845, 0.999959528, 1.00009239]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+        - guid: [5428802467633469958, 3006162545260469436]
+          properties:
+            - type: 21
+              vectorType: 12
+              name: ScriptNames
+              data:
+                - value: Project.BrokenLamp
+            - type: 21
+              vectorType: 16
+              name: ScriptIds
+              data:
+                - value: 15816587276141188613
+        - guid: [5626495556028174687, 17921645141462244270]
+          properties:
+            - type: 7
+              vectorType: 13
+              name: Intensity
+              data: 2.07999992
+            - type: 7
+              vectorType: 13
+              name: Angle
+              data: 130
+            - type: 7
+              vectorType: 13
+              name: Range
+              data: 359
+            - type: 7
+              vectorType: 13
+              name: Angle Attenuation
+              data: 1
+            - type: 7
+              vectorType: 13
+              name: Falloff
+              data: 0
+            - type: 17
+              vectorType: 13
+              name: Color
+              data: [1, 1, 1]
+            - type: 0
+              vectorType: 13
+              name: Cast Shadows
+              data: true
+      MonoScripts:
+        - ScriptEntry:
+            name: Project.BrokenLamp
+            id: 15816587276141188613
+            properties:
+              []
+    - id: 511046046
+      components:
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: Audio
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 990788969
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 15404924028108601777
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 511046046
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 7
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [-0.009765625, 131.047989, -0.0390625]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [0, -7.18533993e-05, 0, 1]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999999881, 1.00000012, 0.999999881]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 8
+        - guid: [5428802467633469958, 3006162545260469436]
+          properties:
+            - type: 21
+              vectorType: 12
+              name: ScriptNames
+              data:
+                - value: Project.AudioPhoneBooth
+            - type: 21
+              vectorType: 16
+              name: ScriptIds
+              data:
+                - value: 12406834676413794064
+        - guid: [5348793154896568212, 18314826308662138799]
+          properties:
+            []
+      MonoScripts:
+        - ScriptEntry:
+            name: Project.AudioPhoneBooth
+            id: 12406834676413794064
+            properties:
+              []

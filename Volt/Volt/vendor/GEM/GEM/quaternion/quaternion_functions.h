@@ -195,7 +195,7 @@ namespace gem
 		mat<3, 3, T> result;
 
 		result[2] = direction;
-		vec<3, T> const& Right = cross(up, result[2]);
+		vec<3, T> const Right = cross(up, result[2]);
 		result[0] = Right * inversesqrt(max(static_cast<T>(0.00001), dot(Right, Right)));
 		result[1] = cross(result[2], result[0]);
 
@@ -280,5 +280,17 @@ namespace gem
 			rotationAxis.x * invs,
 			rotationAxis.y * invs,
 			rotationAxis.z * invs);
+	}
+
+	template<typename T>
+	inline qua<T> conjugate(const qua<T>& q)
+	{
+		return qua<T>(q.w, -q.x, -q.y, -q.z);
+	}
+
+	template<typename T>
+	inline qua<T> inverse(const qua<T>& q)
+	{
+		return conjugate(q) / dot(q, q);
 	}
 }

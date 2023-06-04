@@ -17,35 +17,42 @@ namespace Volt
 			gem::vec3 scale = { 1.f };
 		};
 
-		struct Frame
+		struct Pose
 		{
 			std::vector<TRS> localTRS;
 		};
 
 		const std::vector<gem::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
-		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping) const;
-		const std::vector<gem::mat4> SampleCrossfaded(float lerpT, float aNormalizedTime, float aOtherNormalizedTime, Ref<Skeleton> aSkeleton, Ref<Animation> otherAnimation);
+		const std::vector<gem::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
+
+		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
+		const bool IsAtEnd(float startTime, float speed);
+		const bool HasPassedTime(float startTime, float speed, float time);
+
+		const uint32_t GetFrameFromStartTime(float startTime, float speed);
 
 		inline const float GetDuration() const { return myDuration; }
+		inline const size_t GetFrameCount() const { return myFrames.size(); }
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 		AssetType GetType() override { return GetStaticType(); };
 
 	private:
-		struct FrameAnimData
+		struct PoseData
 		{
 			size_t currentFrameIndex = 0;
 			size_t nextFrameIndex = 0;
 			float deltaTime = 0.f;
 		};
 
-		static const gem::mat4 BlendFrames(const Frame& currentFrame, const Frame& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor);
-		static const FrameAnimData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
+		static const gem::mat4 BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor);
+		static const PoseData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
 
 		friend class FbxImporter;
 		friend class AnimationImporter;
 
-		std::vector<Frame> myFrames;
+		std::vector<Pose> myFrames;
+
 		uint32_t myFramesPerSecond = 0;
 		float myDuration = 0.f;
 	};

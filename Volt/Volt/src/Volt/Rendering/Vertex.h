@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Volt/Rendering/Buffer/BufferLayout.h"
+
 #include <gem/gem.h>
+#include <half/half.hpp>
 
 namespace Volt
 {
@@ -36,12 +39,13 @@ namespace Volt
 
 		Vertex(const gem::vec3& aPosition)
 			: position(aPosition)
-		{}
+		{
+		}
 
 		Vertex(const gem::vec3& aPosition, const gem::vec2& aTexCoords)
 			: position(aPosition)
 		{
-			texCoords[0] = aTexCoords;
+			texCoords = aTexCoords;
 		}
 
 		bool operator==(const Vertex& aVert) const
@@ -49,45 +53,64 @@ namespace Volt
 			const bool bPos = AbsEqualVector(position, aVert.position);
 			const bool bNorm = AbsEqualVector(normal, aVert.normal);
 			const bool bTangent = AbsEqualVector(normal, aVert.tangent);
-			const bool bBitangent = AbsEqualVector(normal, aVert.bitangent);
 
-			const bool bTex0 = AbsEqualVector(texCoords[0], aVert.texCoords[0]);
-			const bool bTex1 = AbsEqualVector(texCoords[1], aVert.texCoords[1]);
-			const bool bTex2 = AbsEqualVector(texCoords[2], aVert.texCoords[2]);
-			const bool bTex3 = AbsEqualVector(texCoords[3], aVert.texCoords[3]);
-
-			const bool bCol0 = AbsEqualVector(color[0], aVert.color[0]);
-			const bool bCol1 = AbsEqualVector(color[1], aVert.color[1]);
-			const bool bCol2 = AbsEqualVector(color[2], aVert.color[2]);
-			const bool bCol3 = AbsEqualVector(color[3], aVert.color[3]);
+			const bool bTex0 = AbsEqualVector(texCoords, aVert.texCoords);
 
 			const bool bInfluences = AbsEqualVector(influences, aVert.influences);
 			const bool bWeights = AbsEqualVector(weights, aVert.weights);
 
 			return bPos && bNorm && 
-				bTex0 && bTex1 && bTex2 && bTex3 && 
-				bTangent && bBitangent &&
-				bCol0 && bCol1 && bCol2 && bCol3 &&
+				bTex0 &&
+				bTangent &&
 				bWeights && bInfluences;
 		}
 
 		bool ComparePosition(const Vertex& vert) const
 		{
 			bool bPos = AbsEqualVector(position, vert.position);
-		
+
 			return bPos;
 		}
 
 		gem::vec3 position = gem::vec3(0.f);
 		gem::vec3 normal = gem::vec3(0.f);
 		gem::vec3 tangent = gem::vec3(0.f);
-		gem::vec3 bitangent = gem::vec3(0.f);
 
-		gem::vec2 texCoords[4] = { { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 0.f } };
-		gem::vec4 color[4] = { { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f } };
+		gem::vec2 texCoords{ 0.f };
 
 		gem::vec4ui influences = { 0, 0, 0, 0 };
 		gem::vec4 weights = { 0.f, 0.f, 0.f, 0.f };
+
+		inline static const BufferLayout GetVertexLayout()
+		{
+			BufferLayout result = 
+			{
+				{ ElementType::Float3, "POSITION" },
+				
+				{ ElementType::Byte4, "NORMAL" },
+				{ ElementType::Float, "TANGENT" },
+
+				{ ElementType::Half2, "TEXCOORDS" },
+
+				{ ElementType::UShort4, "INFLUENCES" },
+				{ ElementType::Half4, "WEIGHTS" }
+			};
+
+			return result;
+		}
+	};
+
+	struct EncodedVertex
+	{
+		gem::vec3 position = 0.f;
+
+		gem::vec<4, uint8_t> normal;
+		float tangent = 0.f;
+
+		gem::vec<2, half_float::half> texCoords;
+
+		gem::vec<4, uint16_t> influences = 0;
+		gem::vec<4, half_float::half> weights = half_float::half(0.f);
 	};
 
 	struct SpriteVertex
@@ -95,8 +118,6 @@ namespace Volt
 		gem::vec4 position = gem::vec4(0.f);
 		gem::vec4 color = gem::vec4(1.f);
 		gem::vec2 texCoords = gem::vec2(0.f);
-		uint32_t textureIndex = 0;
-		uint32_t id = 0;
 	};
 
 	struct BillboardVertex
@@ -106,12 +127,37 @@ namespace Volt
 		gem::vec3 scale = gem::vec3(1.f);
 		uint32_t textureIndex = 0;
 		uint32_t id = 0;
+
+		inline static const BufferLayout GetVertexLayout()
+		{
+			BufferLayout result =
+			{
+				{ ElementType::Float4, "POSITION" },
+				{ ElementType::Float4, "COLOR" },
+				{ ElementType::Float3, "SCALE" },
+				{ ElementType::UInt, "TEXINDEX" },
+				{ ElementType::UInt, "ID" },
+			};
+
+			return result;
+		}
 	};
 
 	struct LineVertex
 	{
 		gem::vec4 position = gem::vec4(0.f);
 		gem::vec4 color = gem::vec4(1.f);
+
+		inline static const BufferLayout GetVertexLayout()
+		{
+			BufferLayout result =
+			{
+				{ ElementType::Float4, "POSITION" },
+				{ ElementType::Float4, "COLOR" },
+			};
+
+			return result;
+		}
 	};
 
 	struct TextVertex
@@ -120,5 +166,18 @@ namespace Volt
 		gem::vec4 color = gem::vec4(1.f);
 		gem::vec2 texCoords = gem::vec2(0.f);
 		uint32_t textureIndex = 0;
+
+		inline static const BufferLayout GetVertexLayout()
+		{
+			BufferLayout result =
+			{
+				{ ElementType::Float4, "POSITION" },
+				{ ElementType::Float4, "COLOR" },
+				{ ElementType::Float2, "TEXCOORDS" },
+				{ ElementType::UInt, "TEXINDEX" }
+			};
+
+			return result;
+		}
 	};
 }

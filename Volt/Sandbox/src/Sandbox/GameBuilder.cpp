@@ -2,11 +2,11 @@
 #include "GameBuilder.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Rendering/Shader/ShaderRegistry.h>
-#include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Scene/Scene.h>
 
 #include <Volt/Project/ProjectManager.h>
+
+#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 #include <Volt/Utility/SerializationMacros.h>
@@ -38,7 +38,7 @@ namespace Utility
 		{
 			Volt::AssetType::None,
 			Volt::AssetType::MeshSource,
-			Volt::AssetType::ShaderSource
+			Volt::AssetType::MonoScript
 		};
 
 		const std::vector<std::string> skipExtensions =
@@ -52,8 +52,28 @@ namespace Utility
 		const auto assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
 
 		bool result = std::find(skipItems.begin(), skipItems.end(), assetType) != skipItems.end();
-		result |= std::find_if(skipExtensions.begin(), skipExtensions.end(), [&](const std::string ext) { return path.extension().string() == ext; }) != skipExtensions.end();
+		bool skipExtension = std::find_if(skipExtensions.begin(), skipExtensions.end(), [&](const std::string ext) { return path.extension().string() == ext; }) != skipExtensions.end();
+		
+		if (skipExtension && !path.filename().string().contains("vtthumb"))
+		{
+			VT_CORE_ERROR("[Build] Asset {0} with extensin {1} was skipped!", path.string(), path.extension().string());
+		}
 
+		return (result || skipExtension);
+	}
+
+	inline bool ShouldSkipFileType(const std::filesystem::path& path)
+	{
+		const std::vector<std::string> includeExtensions =
+		{
+			".yaml",
+			".bank",
+			".vtmeta",
+			".txt",
+			".bnk"
+		};
+
+		const bool result = std::find(includeExtensions.begin(), includeExtensions.end(), path.extension().string()) == includeExtensions.end();
 		return result;
 	}
 
@@ -64,11 +84,16 @@ namespace Utility
 			return true;
 		}
 
-		const Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+		const Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromPath(Volt::AssetManager::GetRelativePath(path));
 
 		const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(handle);
 
 		Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAsset<Volt::Texture2D>(handle);
+		if (!texture || !texture->IsValid())
+		{
+			VT_CORE_ERROR("Texture {0} is not valid!", path.string());
+			return false;
+		}
 
 		const uint32_t width = texture->GetWidth();
 		const uint32_t height = texture->GetHeight();
@@ -86,7 +111,7 @@ namespace Utility
 
 	inline bool IsEntity(const std::filesystem::path& path)
 	{
-		return path.extension().string() == ".ent";
+		return path.extension().string() == ".vtlayer";
 	}
 }
 
@@ -106,7 +131,7 @@ void GameBuilder::BuildGame(const BuildInfo& buildInfo)
 
 	// Recompile all shaders
 	{
-		for (const auto& [name, shader] : Volt::ShaderRegistry::GetAllShaders())
+		for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
 		{
 			shader->Reload(true);
 		}
@@ -137,6 +162,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 {
 	FileSystem::CopyFileTo("Launcher.exe", buildInfo.buildDirectory);
 
+	// Copy DLL files
 	for (const auto& file : std::filesystem::directory_iterator("."))
 	{
 		if (file.path().extension().string() == ".dll" && !Utility::ShouldSkipDLL(file.path()))
@@ -155,17 +181,18 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 	// Copy Engine folder
 	{
 		const auto enginePath = buildInfo.buildDirectory / "Engine";
-		FileSystem::CreateFolder(enginePath);
+		FileSystem::CreateDirectory(enginePath);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetEnginePath()))
 		{
-			if (!file.is_directory())
+			if (!file.is_directory() && file.path().extension().string() != ".exe" &&
+				file.path().extension().string() != ".pdb")
 			{
 				const auto relPath = std::filesystem::relative(file.path(), FileSystem::GetEnginePath()).parent_path();
 
 				if (!FileSystem::Exists(enginePath / relPath))
 				{
-					FileSystem::CreateFolder(enginePath / relPath);
+					FileSystem::CreateDirectory(enginePath / relPath);
 				}
 
 				{
@@ -182,35 +209,27 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 		FileSystem::Remove(enginePath / "Shaders/HLSL/");
 	}
 
-	// Copy Assets folder
+	// Copy Scripts folder
 	{
-		const auto assetsPath = buildInfo.buildDirectory / "Assets";
-		FileSystem::CreateFolder(assetsPath);
+		const auto scriptsPath = buildInfo.buildDirectory / "Scripts";
+		FileSystem::CreateDirectory(scriptsPath);
 
-		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsPath()))
+		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetScriptsPath()))
 		{
 			if (!file.is_directory())
 			{
-				const auto assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(file.path());
-
-				if (Utility::ShouldSkipAsset(file.path()) && !Utility::IsEntity(file.path()) && file.path().extension().string() != ".yaml")
+				if (file.path().extension() == ".exe" || 
+					file.path().extension() == ".pdb" || 
+					file.path().extension() == ".rsp")
 				{
 					continue;
 				}
 
-				if (assetType == Volt::AssetType::Texture)
-				{
-					if (!Utility::IsTexturePow2(file.path()))
-					{
-						continue;
-					}
-				}
+				const auto relPath = std::filesystem::relative(file.path(), FileSystem::GetScriptsPath()).parent_path();
 
-				const auto relPath = std::filesystem::relative(file.path(), Volt::ProjectManager::GetAssetsPath()).parent_path();
-
-				if (!FileSystem::Exists(assetsPath / relPath))
+				if (!FileSystem::Exists(scriptsPath / relPath))
 				{
-					FileSystem::CreateFolder(assetsPath / relPath);
+					FileSystem::CreateDirectory(scriptsPath / relPath);
 				}
 
 				{
@@ -219,13 +238,98 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				}
 
 				myCurrentFileNumber++;
-				FileSystem::CopyFileTo(file.path(), assetsPath / relPath);
+				FileSystem::CopyFileTo(file.path(), scriptsPath / relPath);
+			}
+		}
+
+		// Remove unneeded files
+		if (FileSystem::Exists(scriptsPath / "Intermediates"))
+		{
+			FileSystem::Remove(scriptsPath / "Intermediates");
+		}
+
+		if (FileSystem::Exists(scriptsPath / "Volt-ScriptCore.pdb"))
+		{
+			FileSystem::Remove(scriptsPath / "Volt-ScriptCore.pdb");
+		}
+	}
+
+	// Copy Project file
+	{
+		const auto& projectFilePath = Volt::ProjectManager::GetProject().projectFilePath;
+		FileSystem::Copy(projectFilePath, buildInfo.buildDirectory / projectFilePath.filename());
+	}
+
+	// Copy Assets folder
+	{
+		const auto assetsDir = buildInfo.buildDirectory / "Assets";
+		FileSystem::CreateDirectory(assetsDir);
+
+		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsDirectory()))
+		{
+			if (!file.is_directory())
+			{
+				const auto assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(file.path());
+
+				if (Utility::ShouldSkipAsset(file.path()) && !Utility::IsEntity(file.path()) && Utility::ShouldSkipFileType(file.path()))
+				{
+					continue;
+				}
+
+				if (assetType == Volt::AssetType::Texture)
+				{
+					if (!Utility::IsTexturePow2(file.path()))
+					{
+						VT_CORE_ERROR("[Build] Texture {0} was not power of 2!", file.path().string());
+						continue;
+					}
+				}
+
+				const auto relPath = std::filesystem::relative(file.path(), Volt::ProjectManager::GetAssetsDirectory()).parent_path();
+
+				if (!FileSystem::Exists(assetsDir / relPath))
+				{
+					FileSystem::CreateDirectory(assetsDir / relPath);
+				}
+
+				{
+					std::scoped_lock lock(myMutex);
+					myCurrentFile = file.path().stem().string();
+				}
+
+				myCurrentFileNumber++;
+				FileSystem::CopyFileTo(file.path(), assetsDir / relPath);
 			}
 		}
 
 		// Copy asset registry
 		myCurrentFileNumber++;
-		FileSystem::CopyFileTo("Assets/AssetRegistry.vtreg", assetsPath);
+		FileSystem::CopyFileTo(Volt::ProjectManager::GetAssetsDirectory() / "AssetRegistry.vtreg", assetsDir);
+	}
+
+	// Copy Binaries
+	{
+		const auto binariesDir = buildInfo.buildDirectory / "Binaries";
+		FileSystem::CreateDirectory(binariesDir);
+
+		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetDirectory() / "Binaries"))
+		{
+			if (!file.is_directory())
+			{
+				if (file.path().extension() == ".pdb")
+				{
+					continue;
+				}
+
+				{
+					std::scoped_lock lock(myMutex);
+					myCurrentFile = file.path().stem().string();
+				}
+
+				myCurrentFileNumber++;
+				FileSystem::CopyFileTo(file.path(), binariesDir);
+			}
+		}
 	}
 
 	// Generate scene dependencies
@@ -309,7 +413,7 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 	// Engine folder
 	{
 		const auto enginePath = buildInfo.buildDirectory / "Engine";
-		FileSystem::CreateFolder(enginePath);
+		FileSystem::CreateDirectory(enginePath);
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetEnginePath()))
 		{
@@ -323,9 +427,9 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 	// Assets folder
 	{
 		const auto assetsPath = buildInfo.buildDirectory / "Assets";
-		FileSystem::CreateFolder(assetsPath);
+		FileSystem::CreateDirectory(assetsPath);
 
-		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsPath()))
+		for (const auto& file : std::filesystem::recursive_directory_iterator(Volt::ProjectManager::GetAssetsDirectory()))
 		{
 			if (!file.is_directory())
 			{

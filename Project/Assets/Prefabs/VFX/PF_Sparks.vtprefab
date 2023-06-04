@@ -1,0 +1,80 @@
+Prefab:
+  version: 0
+  entities:
+    - id: 548370902
+      components:
+        - guid: [5579790378469427390, 5138106327942809248]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: Mesh
+              data: 10928158351518164966
+            - type: 16
+              vectorType: 13
+              name: Material
+              data: 5468458031301149591
+        - guid: [4738578920687929342, 8095123518747964547]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: GraphState
+              data: ""
+        - guid: [5177849256600380923, 13689713549658374275]
+          properties:
+            - type: 12
+              vectorType: 13
+              name: Tag
+              data: New Plane
+        - guid: [5152712443922219371, 10617432012782403218]
+          properties:
+            - type: 10
+              vectorType: 13
+              name: Position
+              data: [3.0433197, 55.0273628, 0]
+            - type: 25
+              vectorType: 13
+              name: Rotation
+              data: [-8.42936956e-08, 0.707106769, -0.707106769, 2.24764722e-08]
+            - type: 10
+              vectorType: 13
+              name: Scale
+              data: [0.999935627, 0.999967813, 0.999967813]
+            - type: 0
+              vectorType: 13
+              name: "Visible "
+              data: true
+            - type: 0
+              vectorType: 13
+              name: "Locked "
+              data: false
+        - guid: [5115013315947959062, 13305215203298195585]
+          properties:
+            - type: 2
+              vectorType: 13
+              name: "LayerId "
+              data: 0
+        - guid: [5521397521163238095, 15170572550557146765]
+          properties:
+            - type: 16
+              vectorType: 13
+              name: PrefabAsset
+              data: 11010762521867456514
+            - type: 22
+              vectorType: 13
+              name: PrefabEntity
+              data: 548370902
+            - type: 2
+              vectorType: 13
+              name: Version
+              data: 0
+        - guid: [5086337540049333714, 3220959922222851753]
+          properties:
+            - type: 21
+              vectorType: 22
+              name: Children
+              data:
+                []
+            - type: 22
+              vectorType: 13
+              name: Parent
+              data: 0

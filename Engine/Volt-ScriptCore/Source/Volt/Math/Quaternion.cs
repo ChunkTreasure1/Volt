@@ -1,182 +1,209 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Volt
 {
-    public struct Quaternion
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Quaternion : IEquatable<Quaternion>
     {
         public float x;
         public float y;
         public float z;
         public float w;
-        public static Quaternion Identity => new Quaternion(1f, 0f, 0f, 0f);
 
-        public Quaternion(Vector3 eulerDegreeAngles)
+        public Quaternion(float w, float y, float z, float x)
         {
-            Vector3 radianAngles = Mathf.Radians(eulerDegreeAngles);
-            Vector3 c = Mathf.Cos(radianAngles * 0.5f);
-            Vector3 s = Mathf.Sin(radianAngles * 0.5f);
-
-            w = c.x * c.y * c.z + s.x * s.y * s.z;
-            x = s.x * c.y * c.z - c.x * s.y * s.z;
-            y = c.x * s.y * c.z + s.x * c.y * s.z;
-            z = c.x * c.y * s.z - s.x * s.y * c.z;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
         }
 
-        public Quaternion(float eulerDegreesX, float eulerDegreesY, float eulerDegreesZ) : this()
+        public Quaternion(Vector3 xyz, float w)
         {
-            Vector3 radianAngles = Mathf.Radians(new Vector3(eulerDegreesX, eulerDegreesY, eulerDegreesZ));
-            Vector3 c = Mathf.Cos(radianAngles * 0.5f);
-            Vector3 s = Mathf.Sin(radianAngles * 0.5f);
-
-            w = c.x * c.y * c.z + s.x * s.y * s.z;
-            x = s.x * c.y * c.z - c.x * s.y * s.z;
-            y = c.x * s.y * c.z + s.x * c.y * s.z;
-            z = c.x * c.y * s.z - s.x * s.y * c.z;
+            this.x = xyz.x;
+            this.y = xyz.y;
+            this.z = xyz.z;
+            this.w = w;
         }
 
-        public Quaternion(float aW, float aX, float aY, float aZ) : this()
+        public Quaternion(Vector3 euler)
         {
-            x = aX;
-            y = aY;
-            z = aZ;
-            w = aW;
+            Vector3 c = Vector3.Cos(euler * 0.5f);
+            Vector3 s = Vector3.Sin(euler * 0.5f);
+
+            this.w = c.x * c.y * c.z + s.x * s.y * s.z;
+            this.x = s.x * c.y * c.z - c.x * s.y * s.z;
+            this.y = c.x * s.y * c.z + s.x * c.y * s.z;
+            this.z = c.x * c.y * s.z - s.x * s.y * c.z;
         }
 
-        public Quaternion(Quaternion q)
+        public static Quaternion Euler(float x, float y, float z)
         {
-            x = q.x;
-            y = q.y;
-            z = q.z;
-            w = q.w;
+            return new Quaternion(new Vector3(x, y, z));
         }
 
-        public Quaternion(float s, Vector3 v)
+        public static Quaternion Euler(Vector3 xyz)
         {
-            x = v.x;
-            y = v.y;
-            z = v.z;
-
-            w = s;
+            return new Quaternion(xyz);
         }
 
-        public Vector3 eulerAngles
+        public static Vector3 operator *(Quaternion q, Vector3 v)
+        {
+            Vector3 qv = new Vector3(q.x, q.y, q.z);
+            Vector3 uv = Vector3.Cross(qv, v);
+            Vector3 uuv = Vector3.Cross(qv, uv);
+            return v + ((uv * q.w) + uuv) * 2.0f;
+        }
+
+        public static Quaternion operator*(Quaternion lhs, Quaternion rhs)
+        {
+            Quaternion newQuat = new Quaternion();
+            newQuat.w = lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
+            newQuat.x = lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y;
+            newQuat.y = lhs.w * rhs.y + lhs.y * rhs.w + lhs.z * rhs.x - lhs.x * rhs.z;
+            newQuat.z = lhs.w * rhs.z + lhs.z * rhs.w + lhs.x * rhs.y - lhs.y * rhs.x;
+
+            return newQuat;
+        }
+
+        public static Quaternion operator /(Quaternion lhs, float rhs)
+        {
+            Quaternion newQuat = new Quaternion();
+            newQuat.w = lhs.w / rhs;
+            newQuat.x = lhs.x / rhs;
+            newQuat.y = lhs.y / rhs;
+            newQuat.z = lhs.z / rhs;
+
+            return newQuat;
+        }
+
+        public override int GetHashCode() => (w, x, y, z).GetHashCode();
+
+        public override bool Equals(object obj) => obj is Quaternion other && Equals(other);
+
+        public bool Equals(Quaternion right) => w == right.w && x == right.x && y == right.y && z == right.z;
+
+        public static bool operator ==(Quaternion left, Quaternion right) => left.Equals(right);
+        public static bool operator !=(Quaternion left, Quaternion right) => !(left == right);
+
+        public float Length
         {
             get
             {
-                return new Vector3(Pitch(), Yaw(), Roll());
+                return (float)System.Math.Sqrt(LengthSquared);
             }
+        }
 
+        public float LengthSquared
+        {
+            get
+            {
+                return x * x + y * y + z * z + w * w;
+            }
+        }
+
+        public Quaternion conjugate
+        {
+            get => new Quaternion(w, -x, -y, -z);
+            private set
+            { }
+        }
+
+        public Quaternion inverse
+        {
+            get
+            {
+                return conjugate / Dot(this, this);
+            }
+        }
+
+        public Vector3 XYZ
+        {
+            get => new Vector3(x, y, z);
             set
             {
-                this = new Quaternion(value);
+                x = value.x;
+                y = value.y;
+                z = value.z;
             }
-        }
-
-        public Quaternion normalized
-        {
-            get
-            {
-                return this * (1f / Mathf.Sqrt(Dot(this, this)));
-            }
-
-            private set { }
-        }
-
-        public static Quaternion AngleAxis(float rotDegrees, Vector3 direction)
-        {
-            float a = Mathf.Radians(rotDegrees);
-            float s = Mathf.Sin(a * 0.5f);
-
-            return new Quaternion(Mathf.Cos(a * 0.5f), direction * s);
         }
 
         public static float Dot(Quaternion lhs, Quaternion rhs)
         {
-            return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+            Vector4 tmp = new Vector4(lhs.w * rhs.w, lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z);
+            return (tmp.x + tmp.y) + (tmp.z + tmp.w);
         }
 
-        public static Quaternion Euler(float xDegrees, float yDegrees, float zDegrees)
+        public static float Angle(Quaternion a, Quaternion b)
         {
-            return new Quaternion(xDegrees, yDegrees, zDegrees);
+            float dot = Quaternion.Dot(a, b);
+
+            // Clamp the dot product to ensure it remains within the valid range of -1 to 1
+            dot = Mathf.Clamp(dot, -1f, 1f);
+
+            // Calculate the angle between the two quaternions using the arccosine of the dot product
+            float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
+
+            return angle;
         }
 
-        public static Quaternion FromToRotation(Vector3 lhs, Vector3 rhs)
+        public static Quaternion RotateTowards(Quaternion currentRotation, Quaternion targetRotation, float maxDegreesDelta)
         {
-            float d = Vector3.Dot(lhs, rhs);
+            // Find the angle between the current rotation and the target rotation
+            float angle = Quaternion.Angle(currentRotation, targetRotation);
 
-            if (d > -0.999999f)
+            // If the angle is already within the threshold, return the target rotation
+            if (angle <= maxDegreesDelta)
             {
-                Vector3 c = Vector3.Cross(lhs, rhs);
-                float s = Mathf.Sqrt((1f + d) * 2f);
-                float invs = 1f / s;
-
-                return new Quaternion(s * 0.5f, c * invs);
+                return targetRotation;
             }
-            else
-            {
-                Vector3 axis = Vector3.Cross(Vector3.Right, lhs);
-                if (axis.magnitude < 0.000001f)
-                    axis = Vector3.Cross(Vector3.Up, lhs);
 
-                return AngleAxis(180f, axis);
-            }
+            // Calculate the fraction of the angle to rotate based on maxDegreesDelta
+            float t = maxDegreesDelta / angle;
+
+            // Spherically interpolate (slerp) between the current and target rotation
+            return Slerp(currentRotation, targetRotation, t);
         }
 
-        public static Quaternion Inverse(Quaternion q)
+        public static Quaternion FromToRotation(Vector3 aFrom, Vector3 aTo)
         {
-            float lengthSq = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
-            if (lengthSq > 0.0f)
-            {
-                float i = 1.0f / lengthSq;
-                return new Quaternion(q.w * i, -q.x * i, -q.y * i, -q.z * i);
-            }
-            return q;
+            Vector3 axis = Vector3.Cross(aFrom, aTo);
+            float angle = Vector3.Angle(aFrom, aTo);
+            return Quaternion.AngleAxis(angle, axis.Normalized());
         }
 
-        public static Quaternion Lerp(Quaternion a, Quaternion rhs, float t)
+        public static Quaternion AngleAxis(float aAngle, Vector3 aAxis)
         {
-            float dot = Dot(a, rhs);
-
-            if (dot < 0.0f)
-            {
-                rhs = new Quaternion(-rhs.x, -rhs.y, -rhs.z, -rhs.w);
-                dot = -dot;
-            }
-
-            if (dot > 0.999999f)
-            {
-                Quaternion result = new Quaternion(a.x + (rhs.x - a.x) * t, a.y + (rhs.y - a.y) * t, a.z + (rhs.z - a.z) * t, a.w + (rhs.w - a.w) * t);
-                return result.normalized;
-            }
-
-            float theta0 = Mathf.Acos(dot);
-            float theta = theta0 * t;
-
-            Quaternion q = rhs - a * dot;
-
-            return a * Mathf.Cos(theta) + q.normalized * Mathf.Sin(theta);
+            aAxis.Normalize();
+            float rad = aAngle * Mathf.Deg2Rad * 0.5f;
+            aAxis *= Mathf.Sin(rad);
+            return new Quaternion(aAxis.x, aAxis.y, aAxis.z, Mathf.Cos(rad));
         }
 
-        public static Quaternion LookRotation(Vector3 forward, Vector3 up)
+        public static Quaternion QuaternionLookRotation(Vector3 direction, Vector3 up)
         {
-            Vector3 right = Vector3.Cross(up, forward);
-            up = Vector3.Cross(forward, right);
+            direction.Normalize();
+            up.Normalize();
 
-            float m00 = right.x;
-            float m01 = right.y;
-            float m02 = right.z;
-            float m10 = up.x;
-            float m11 = up.y;
-            float m12 = up.z;
-            float m20 = forward.x;
-            float m21 = forward.y;
-            float m22 = forward.z;
+            Vector3 vector = direction.Normalized();
+            Vector3 vector2 = Vector3.Cross(-up, vector).Normalized();
+            Vector3 vector3 = Vector3.Cross(vector, vector2);
+            var m00 = vector2.x;
+            var m01 = vector2.y;
+            var m02 = vector2.z;
+            var m10 = vector3.x;
+            var m11 = vector3.y;
+            var m12 = vector3.z;
+            var m20 = vector.x;
+            var m21 = vector.y;
+            var m22 = vector.z;
 
             float num8 = (m00 + m11) + m22;
-            Quaternion quaternion = new Quaternion();
+            var quaternion = new Quaternion();
             if (num8 > 0f)
             {
-                float num = Mathf.Sqrt(num8 + 1f);
+                var num = (float)Math.Sqrt(num8 + 1f);
                 quaternion.w = num * 0.5f;
                 num = 0.5f / num;
                 quaternion.x = (m12 - m21) * num;
@@ -186,8 +213,8 @@ namespace Volt
             }
             if ((m00 >= m11) && (m00 >= m22))
             {
-                float num7 = Mathf.Sqrt(((1f + m00) - m11) - m22);
-                float num4 = 0.5f / num7;
+                var num7 = (float)Math.Sqrt(((1f + m00) - m11) - m22);
+                var num4 = 0.5f / num7;
                 quaternion.x = 0.5f * num7;
                 quaternion.y = (m01 + m10) * num4;
                 quaternion.z = (m02 + m20) * num4;
@@ -196,16 +223,16 @@ namespace Volt
             }
             if (m11 > m22)
             {
-                float num6 = Mathf.Sqrt(((1f + m11) - m00) - m22);
-                float num3 = 0.5f / num6;
+                var num6 = (float)Math.Sqrt(((1f + m11) - m00) - m22);
+                var num3 = 0.5f / num6;
                 quaternion.x = (m10 + m01) * num3;
                 quaternion.y = 0.5f * num6;
                 quaternion.z = (m21 + m12) * num3;
                 quaternion.w = (m20 - m02) * num3;
                 return quaternion;
             }
-            float num5 = Mathf.Sqrt(((1f + m22) - m00) - m11);
-            float num2 = 0.5f / num5;
+            var num5 = (float)Math.Sqrt(((1f + m22) - m00) - m11);
+            var num2 = 0.5f / num5;
             quaternion.x = (m20 + m02) * num2;
             quaternion.y = (m21 + m12) * num2;
             quaternion.z = 0.5f * num5;
@@ -213,118 +240,78 @@ namespace Volt
             return quaternion;
         }
 
-        public static Quaternion Normalize(Quaternion normalize)
+        public void Normalize()
         {
-            float length = Mathf.Sqrt(normalize.x * normalize.x + normalize.y * normalize.y + normalize.z * normalize.z + normalize.w * normalize.w);
-            if (length > 0.00001f)
-            {
-                return new Quaternion(normalize.x / length, normalize.y / length, normalize.z / length, normalize.w / length);
-            }
-            else
-            {
-                return new Quaternion(0, 0, 0, 0);
-            }
+            float scale = 1.0f / this.Length;
+            XYZ *= scale;
+            w *= scale;
         }
 
         public static Quaternion Slerp(Quaternion a, Quaternion b, float t)
         {
-            float dot = Dot(a, b);
+            if (t > 1) t = 1;
+            if (t < 0) t = 0;
+            return SlerpUnclamped(a, b, t);
+        }
 
-            if (dot < 0.0f)
+        public static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t)
+        {
+            // if either input is zero, return the other.
+            if (a.LengthSquared == 0.0f)
             {
-                b = new Quaternion(-b.x, -b.y, -b.z, -b.w);
-                dot = -dot;
+                if (b.LengthSquared == 0.0f)
+                {
+                    return new Quaternion(0, 0, 0, 1);
+                }
+                return b;
+            }
+            else if (b.LengthSquared == 0.0f)
+            {
+                return a;
             }
 
-            if (dot > 0.999999f)
+
+            float cosHalfAngle = a.w * b.w + Vector3.Dot(a.XYZ, b.XYZ);
+
+            if (cosHalfAngle >= 1.0f || cosHalfAngle <= -1.0f)
             {
-                Quaternion result = new Quaternion(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t);
-                return result.normalized;
+                // angle = 0.0f, so just return one input.
+                return a;
+            }
+            else if (cosHalfAngle < 0.0f)
+            {
+                b.XYZ = -b.XYZ;
+                b.w = -b.w;
+                cosHalfAngle = -cosHalfAngle;
             }
 
-            float theta0 = Mathf.Acos(dot);
-            float theta = theta0 * t;
-
-            Quaternion q = b - a * dot;
-
-            return a * Mathf.Cos(theta) + q.normalized * Mathf.Sin(theta);
-        }
-
-        public static Quaternion operator -(Quaternion a)
-        {
-            return new Quaternion(-a.x, -a.y, -a.z, -a.w);
-        }
-
-        public static Quaternion operator+(Quaternion a)
-        {
-            return new Quaternion(a.x, a.y, a.z, a.w);
-        }
-
-        public static Quaternion operator -(Quaternion a, Quaternion b)
-        {
-            return new Quaternion(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-        }
-
-        public static Quaternion operator +(Quaternion a, Quaternion b)
-        {
-            return new Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-        }
-
-        public static Quaternion operator *(Quaternion a, Quaternion b)
-        {
-            return new Quaternion(a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y, a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z, a.w * b.z + a.z * b.w + a.x * b.y - a.y * b.x, a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z);
-        }
-
-        public static Quaternion operator *(Quaternion a, float b)
-        {
-            return new Quaternion(a.x * b, a.y * b, a.z * b, a.w * b);
-        }
-
-        public static Quaternion operator *(float a, Quaternion b)
-        {
-            return new Quaternion(b.x * a, b.y * a, b.z * a, b.w * a);
-        }
-
-        public static bool operator ==(Quaternion a, Quaternion b)
-        {
-            return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
-        }
-
-        public static bool operator !=(Quaternion a, Quaternion b)
-        {
-            return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w;
-        }
-
-        private float Pitch()
-        {
-            float pY = 2f * (y * z + w * x);
-            float pX = w * w - x * x - y * y + z * z;
-
-            if (pX == 0f && pY == 0f)
+            float blendA;
+            float blendB;
+            if (cosHalfAngle < 0.99f)
             {
-                return 2f * (float)Math.Atan2(x, w);
+                // do proper slerp for big angles
+                float halfAngle = (float)System.Math.Acos(cosHalfAngle);
+                float sinHalfAngle = (float)System.Math.Sin(halfAngle);
+                float oneOverSinHalfAngle = 1.0f / sinHalfAngle;
+                blendA = (float)System.Math.Sin(halfAngle * (1.0f - t)) * oneOverSinHalfAngle;
+                blendB = (float)System.Math.Sin(halfAngle * t) * oneOverSinHalfAngle;
+            }
+            else
+            {
+                // do lerp if angle is really small.
+                blendA = 1.0f - t;
+                blendB = t;
             }
 
-            return (float)Math.Atan2(pY, pX);
+            Quaternion result = new Quaternion(blendA * a.XYZ + blendB * b.XYZ, blendA * a.w + blendB * b.w);
+            if (result.LengthSquared > 0.0f)
+            {
+                result.Normalize();
+                return result;
+            }
+
+            return new Quaternion(0, 0, 0, 1);
         }
 
-        private float Yaw()
-        {
-            return (float)Math.Asin(Mathf.Clamp(-2f * (x * z - w * y), -1f, 1f));
-        }
-
-        private float Roll()
-        {
-            return (float)Math.Atan2(2f * x * y + w * z, w * w + x * x - y * y - z * z);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 }

@@ -18,8 +18,8 @@ namespace gem
 	struct mat<4, 4, T>
 	{
 	public:
-		mat<4, 4, T>() {};
-		mat<4, 4, T>(T val)
+		constexpr mat<4, 4, T>() {};
+		constexpr mat<4, 4, T>(T val)
 		{
 			data[0] = vec<4, T>(0);
 			data[1] = vec<4, T>(0);
@@ -31,14 +31,14 @@ namespace gem
 			data[2][2] = val;
 			data[3][3] = val;
 		};
-		mat<4, 4, T>(vec<4, T> x, vec<4, T> y, vec<4, T> z, vec<4, T> w)
+		constexpr mat<4, 4, T>(vec<4, T> x, vec<4, T> y, vec<4, T> z, vec<4, T> w)
 		{
 			data[0] = x;
 			data[1] = y;
 			data[2] = z;
 			data[3] = w;
 		};
-		mat<4, 4, T>(const mat<4, 4, T>& rhs)
+		constexpr mat<4, 4, T>(const mat<4, 4, T>& rhs)
 		{
 			data[0] = rhs.data[0];
 			data[1] = rhs.data[1];
@@ -46,7 +46,7 @@ namespace gem
 			data[3] = rhs.data[3];
 		};
 
-		mat<4, 4, T>(const mat<3, 3, T>& rhs)
+		constexpr mat<4, 4, T>(const mat<3, 3, T>& rhs)
 		{
 			data[0] = vec<4, T>(rhs[0]);
 			data[1] = vec<4, T>(rhs[1]);

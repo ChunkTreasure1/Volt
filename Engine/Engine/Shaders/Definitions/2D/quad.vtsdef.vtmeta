@@ -1,0 +1,5 @@
+Handle: 4187263497913330026
+Path: Engine/Shaders/Definitions/2D/quad.vtsdef
+Dependencies:
+  - Engine/Shaders/Source/HLSL/2D/Quad_vs.hlsl
+  - Engine/Shaders/Source/HLSL/2D/Quad_ps.hlsl

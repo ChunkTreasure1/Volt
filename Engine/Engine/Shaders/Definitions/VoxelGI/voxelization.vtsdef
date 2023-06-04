@@ -1,8 +1,0 @@
-name: "Voxelization"
-internal: true
-paths:
-  - "Engine/Shaders/HLSL/VoxelGI/Voxelization_vs.hlsl"
-  - "Engine/Shaders/HLSL/VoxelGI/Voxelization_gs.hlsl"
-  - "Engine/Shaders/HLSL/VoxelGI/Voxelization_ps.hlsl"
-inputTextures:
-  []

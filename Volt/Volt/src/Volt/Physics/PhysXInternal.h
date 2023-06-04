@@ -23,7 +23,7 @@ namespace Volt
 	public:
 		static void Initialize();
 		static void Shutdown();
-	
+
 		static physx::PxFoundation& GetFoundation();
 		static physx::PxPhysics& GetPhysXSDK();
 		static physx::PxCpuDispatcher* GetCPUDispatcher();

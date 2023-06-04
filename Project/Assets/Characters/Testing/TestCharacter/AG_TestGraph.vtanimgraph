@@ -1,0 +1,44 @@
+AnimationGraph:
+  state: "{\"nodes\":{\"node:11628205180952489426\":{\"location\":{\"x\":257,\"y\":215}},\"node:9283897376147513346\":{\"location\":{\"x\":-184,\"y\":202}}},\"selection\":null,\"view\":{\"scroll\":{\"x\":-248.33795166015625,\"y\":-180.3477783203125},\"zoom\":0.5}}"
+  character: 14237008832281539370
+  Graph:
+    Nodes:
+      - id: 11628205180952489426
+        type: OutputPoseNode
+        state: "{\"location\":{\"x\":257,\"y\":215}}"
+        nodeSpecific:
+          {}
+        inputs:
+          - name: Result
+            id: 17062407176229434325
+        outputs:
+          []
+      - id: 9283897376147513346
+        type: SequencePlayerNode
+        state: "{\"location\":{\"x\":-184,\"y\":202}}"
+        nodeSpecific:
+          {}
+        inputs:
+          - name: ""
+            id: 17236768675459802570
+            data: 11570158372009888739
+          - name: Loop
+            id: 8929533593221781306
+            data: true
+          - name: Speed
+            id: 4432588760247461064
+            data: 1
+          - name: Apply Root Motion
+            id: 6812053186343935429
+            data: false
+        outputs:
+          - name: Output
+            id: 14836822933022928043
+    Links:
+      - id: 17780655339488046623
+        output: 14836822933022928043
+        input: 17062407176229434325
+    Parameters:
+      []
+    Events:
+      []

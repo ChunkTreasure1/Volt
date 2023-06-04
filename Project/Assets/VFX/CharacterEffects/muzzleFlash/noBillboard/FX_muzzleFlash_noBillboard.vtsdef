@@ -1,0 +1,12 @@
+name: FX_muzzleFlash_noBillboard
+internal: false
+paths:
+  - Assets\VFX\CharacterEffects\muzzleFlash\noBillboard\FX_muzzleFlash_noBillboard_ps.hlsl
+  - Assets\VFX\CharacterEffects\muzzleFlash\noBillboard\FX_muzzleFlash_noBillboard_vs.hlsl
+inputTextures:
+  - shaderName: Texture_01
+    editorName: Texture_01
+  - shaderName: Texture_02
+    editorName: Texture_02
+  - shaderName: Texture_03
+    editorName: Texture_03

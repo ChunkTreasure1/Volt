@@ -2,195 +2,168 @@
 #include "ParticleSystem.h"
 
 #include "gem/gem.h"
-#include "../Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
-#include "Volt/Rendering/Renderer.h"
+#include "Volt/Scene/Scene.h"
 
 #include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/Random.h"
 
+#include "Volt/Components/Components.h"
+
 #include <Volt/Core/Base.h>
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/ParticlePreset.h"
-#include "Volt/Rendering/Shader/ShaderRegistry.h"
-#include "Volt/Rendering/Shader/Shader.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <filesystem>
 #include <random>
 
-Volt::ParticleSystem::ParticleSystem(Scene* s)
-{
-	myScene = s;
-}
+#include "Volt/Asset/Mesh/Material.h"
 
-void Volt::ParticleSystem::Update(const float& deltaTime)
+void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const float deltaTime)
 {
-	auto& registry = myScene->GetRegistry();
+	std::set<Wire::EntityId> emittersAliveThisFrame;
 	registry.ForEach<ParticleEmitterComponent, TransformComponent>([&](Wire::EntityId id, ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp)
+	{
+		if (particleEmitterComponent.preset == Asset::Null())
 		{
-			if (particleEmitterComponent.preset == Asset::Null())
-			{
-				particleEmitterComponent.particles.resize(0);
-				particleEmitterComponent.numberOfAliveParticles = 0;
-				return;
-			}
-			Ref<ParticlePreset> preset = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
-			if (preset != nullptr)
-			{
-				if (particleEmitterComponent.preset != particleEmitterComponent.currentPreset)
-				{
-					particleEmitterComponent.currentPreset = particleEmitterComponent.preset;
-
-					for (auto& p : particleEmitterComponent.particles)
-						p.dead = true;
-
-					particleEmitterComponent.particles.resize(100000);
-					particleEmitterComponent.numberOfAliveParticles = 0;
-				}
-
-				if (particleEmitterComponent.pressedPlay == true)
-				{
-					for (auto& p : particleEmitterComponent.particles)
-						p.dead = true;
-
-					particleEmitterComponent.particles.resize(100000);
-					particleEmitterComponent.numberOfAliveParticles = 0;
-					particleEmitterComponent.pressedPlay = false;
-				}
-
-				particleEmitterComponent.isLooping = preset->isLooping;
-				Volt::Entity ent = { id, myScene };
-				
-
-				if (transformComp.visible)
-				{
-					if (myTimeBtwSends <= 0)
-					{
-						while (myTimeBtwSends < 0)
-						{
-							if (particleEmitterComponent.isLooping)
-							{
-								particleEmitterComponent.emittionTimer = 1.f;
-								SendParticles(particleEmitterComponent, ent.GetPosition(), deltaTime, -myTimeBtwSends);
-							}
-							else
-							{
-								if (particleEmitterComponent.emittionTimer >= 0)
-								{
-									SendParticles(particleEmitterComponent, ent.GetPosition(), deltaTime, -myTimeBtwSends);
-								}
-							}
-							myTimeBtwSends += 1 / preset->intensity;
-						}
-						particleEmitterComponent.emittionTimer -= deltaTime;
-						myTimeBtwSends = 1 / preset->intensity;
-					}
-
-					myTimeBtwSends -= deltaTime;
-
-					auto& p_vec = particleEmitterComponent.particles;
-					for (int index = 0; index < particleEmitterComponent.numberOfAliveParticles; index++)
-					{
-						// TODO: add updating stuff
-						auto& p = p_vec[index];
-						ParticlePositionUpdate(p, deltaTime);
-						ParticleSizeUpdate(p, deltaTime);
-						ParticleVelocityUpdate(p, deltaTime);
-						ParticleColorUpdate(p, deltaTime);
-						if (ParticleKillCheck(p, deltaTime))
-						{
-							std::swap(p, p_vec[particleEmitterComponent.numberOfAliveParticles - 1]);
-							// -- ref
-							particleEmitterComponent.numberOfAliveParticles--;
-						}
-					}
-				}
-			}
+			m_particleStorage[id].particles.resize(0);
+			m_particleStorage[id].numberOfAliveParticles = 0;
+			return;
 		}
-	);
-}
-
-void Volt::ParticleSystem::RenderParticles()
-{
-	VT_PROFILE_FUNCTION();
-
-	auto& registry = myScene->GetRegistry();
-	registry.ForEach<ParticleEmitterComponent, TransformComponent>([&](Wire::EntityId id, ParticleEmitterComponent& particleEmitterComponent, const TransformComponent& transformComp)
+		Ref<ParticlePreset> preset = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
+		if (preset != nullptr)
 		{
-			auto e = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
+			if (particleEmitterComponent.preset != particleEmitterComponent.currentPreset)
+			{
+				particleEmitterComponent.currentPreset = particleEmitterComponent.preset;
+
+				for (auto& p : m_particleStorage[id].particles)
+					p.dead = true;
+
+				m_particleStorage[id].particles.resize(10000);
+				m_particleStorage[id].numberOfAliveParticles = 0;
+				m_particleStorage[id].preset = particleEmitterComponent.currentPreset;
+				particleEmitterComponent.emissionTimer = preset->emittionTime;
+				particleEmitterComponent.internalTimer = 0;
+			}
+			emittersAliveThisFrame.insert(id);
+			particleEmitterComponent.isLooping = preset->isLooping;
+			Volt::Entity ent = { id, scene };
 			if (transformComp.visible)
 			{
-				for (int i = 0; i < particleEmitterComponent.numberOfAliveParticles; i++)
+				if (particleEmitterComponent.isLooping || particleEmitterComponent.emissionTimer > 0)
 				{
-					auto& p = particleEmitterComponent.particles[i];
-					Renderer::SubmitBillboard(AssetManager::GetAsset<Volt::Texture2D>(e->texture), p.position, p.size, id, p.color);
+					particleEmitterComponent.internalTimer += deltaTime;
+					particleEmitterComponent.emissionTimer -= deltaTime;
+					if (preset->isBurst)
+					{
+						particleEmitterComponent.burstTimer -= deltaTime;
+						if (particleEmitterComponent.burstTimer < -preset->burstLength)
+						{
+							particleEmitterComponent.burstTimer = preset->burstInterval;
+						}
+					}
+					if (!preset->isBurst || particleEmitterComponent.burstTimer < 0)
+					{
+						SendParticles(particleEmitterComponent, id, ent.GetPosition(), 1 / preset->intensity);
+					}
 				}
 			}
-			if (particleEmitterComponent.preset != Asset::Null())
-			{
-				Ref<ParticlePreset> preset = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
-				if (preset && preset->IsValid())
-				{
-					Ref<Volt::Shader> shader = ShaderRegistry::Get(preset->shader);
-					if (shader != nullptr && shader->IsValid())
-						Renderer::DispatchBillboardsWithShader(shader);
-				}
-			}
-		});
-}
-
-void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitterComponent, gem::vec3 aEntityPos, const float& deltaTime, float aExtraLifeTime)
-{
-	auto e = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
-
-	if (particleEmitterComponent.particles.size() < particleEmitterComponent.numberOfAliveParticles) return;
-
-	auto& p = particleEmitterComponent.particles[particleEmitterComponent.numberOfAliveParticles];
-
-	// TODO: make different starting patterns <func>
-	gem::vec3 dir;
-	float radius = e->sphereRadius;
-	if (e->shape == 0)
-	{
-		if (e->sphereSpawnOnEdge)
-		{
-			dir = gem::normalize(gem::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
-			p.position = aEntityPos + dir * radius;
 		}
-		else
+	});
+
+	std::vector<Wire::EntityId> emittersToRemove{};
+
+	for (auto& _pair : m_particleStorage)
+	{
+		auto id = _pair.first;
+		std::vector<Particle>& p_vec = m_particleStorage[id].particles;
+		for (int index = 0; index < m_particleStorage[id].numberOfAliveParticles; index++)
 		{
-			dir = gem::normalize(gem::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
-			p.position = aEntityPos + dir * Volt::Random::Float(0, radius);
+			Particle& p = p_vec[index];
+			ParticlePositionUpdate(p, id, scene, deltaTime);
+			ParticleSizeUpdate(p, deltaTime);
+			ParticleVelocityUpdate(p, deltaTime);
+			ParticleColorUpdate(p, deltaTime);
+			ParticleTimeUpdate(p, deltaTime);
+			if (ParticleKillCheck(p, deltaTime))
+			{
+				std::swap(p, p_vec[m_particleStorage[id].numberOfAliveParticles - 1]);
+				m_particleStorage[id].numberOfAliveParticles--;
+			}
+		}
+		if (m_particleStorage[id].numberOfAliveParticles == 0)
+		{
+			if (!emittersAliveThisFrame.contains(id))
+			{
+				emittersToRemove.emplace_back(id);
+			}
 		}
 	}
 
-	p.dead = false;
-	p.direction = dir;
-	// temp	value  <--------->
-	p.lifeTime = Volt::Random::Float(e->minLifeTime, e->maxLifeTime);
-	p.totalLifeTime = p.lifeTime + aExtraLifeTime;
+	for (const auto& emitter : emittersToRemove)
+	{
+		m_particleStorage.erase(emitter);
+	}
+}
 
-	p.startColor = e->startColor;
-	p.endColor = e->endColor;
-	p.color = e->startColor;
+void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, gem::vec3 aEntityPos, const float& intencity)
+{
+	auto e = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
+	while (particleEmitterComponent.internalTimer > 0)
+	{
+		if (m_particleStorage[id].particles.size() <= m_particleStorage[id].numberOfAliveParticles || e->colors.empty())
+			return;
 
-	p.size = e->startSize;
-	p.startSize = p.size;
-	p.endSize = e->endSize;
+		auto& p = m_particleStorage[id].particles[m_particleStorage[id].numberOfAliveParticles];
 
+		gem::vec3 dir;
+		float radius = e->sphereRadius;
+		if (e->shape == 0)
+		{
+			// #mmax: make different starting patterns <func>
+			if (e->sphereSpawnOnEdge)
+			{
+				dir = gem::normalize(gem::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
+				p.position = aEntityPos + dir * radius;
+			}
+			else
+			{
+				dir = gem::normalize(gem::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
+				p.position = aEntityPos + dir * Volt::Random::Float(0, radius);
+			}
+		}
 
-	p.velocity = e->startVelocity;
-	p.startVelocity = p.velocity;
-	p.endVelocity = e->endVelocity;
-	p.gravity = e->gravity;
+		p.dead = false;
+		p.direction = dir;
 
+		p.lifeTime = Volt::Random::Float(e->minLifeTime, (e->minLifeTime >= e->maxLifeTime) ? e->minLifeTime : e->maxLifeTime);
+		p.totalLifeTime = p.lifeTime;
 
-	particleEmitterComponent.numberOfAliveParticles++;
+		p.colors = e->colors;
+		p.color = e->colors[0];
+		p.texture = e->texture;
+
+		p.sizes = e->sizes;
+		p.size = e->sizes[0];
+		p.rotation = { Volt::Random::Float(0, 6.28318531f),Volt::Random::Float(0, 6.28318531f),Volt::Random::Float(0, 6.28318531f) };
+
+		p.velocity = e->startVelocity;
+		p.startVelocity = p.velocity;
+		p.endVelocity = e->endVelocity;
+		p.gravity = e->gravity;
+
+		p.randomValue = Random::Float(0.f, 1.f);
+		p.timeSinceSpawn = 0.f;
+
+		m_particleStorage[id].numberOfAliveParticles++;
+		particleEmitterComponent.internalTimer -= intencity;
+	}
 }
 
 bool Volt::ParticleSystem::ParticleKillCheck(Particle& particle, const float& deltaTime)
@@ -203,14 +176,14 @@ bool Volt::ParticleSystem::ParticleKillCheck(Particle& particle, const float& de
 	{
 		particle.lifeTime -= deltaTime;
 	}
-	/*if (particle.distance > particle.endDistance && particle.endDistance > 0)
-		particle.dead = true;*/
 	return particle.dead;
 }
 
-void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, const float& deltaTime)
+void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, Wire::EntityId id, Scene* scene, const float& deltaTime)
 {
-	particle.position += particle.velocity * particle.direction * deltaTime;
+	const gem::vec3 dir = (gem::mat3)scene->GetWorldSpaceTransform(Entity{ id, scene }) * particle.direction;
+
+	particle.position += particle.velocity * dir * deltaTime;
 	particle.distance += particle.velocity * deltaTime;
 	particle.direction += particle.gravity * deltaTime;
 }
@@ -218,28 +191,62 @@ void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, const floa
 void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float& deltaTime)
 {
 	float sizePersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
-	gem::vec3 newSize = gem::lerp(particle.size, particle.endSize, sizePersentage);
+	if (sizePersentage > 1)
+		sizePersentage = 1;
+	float scaledTime = sizePersentage * ((float)particle.sizes.size() - 1);
+	//gem::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
+	gem::vec4 oldSize = particle.sizes[(int)scaledTime];
+	auto newScaled = (int)(scaledTime + 1.0f);
+	gem::vec4 newSize = particle.sizes[(newScaled >= particle.sizes.size()) ? particle.sizes.size() - 1 : newScaled];
+	float newT = scaledTime - (int)(scaledTime);
 
-	particle.size = newSize;
+	float x = gem::lerp(oldSize.x, newSize.x, newT);
+	float y = gem::lerp(oldSize.y, newSize.y, newT);
+	float z = gem::lerp(oldSize.z, newSize.z, newT);
+
+	particle.size = gem::vec3{ x,y,z };
+
+	//float w = gem::lerp(oldColor.w, newColor.w, newT);
+
+
+	/*float sizePersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
+	gem::vec3 newSize = gem::lerp(particle.startSize, particle.endSize, sizePersentage);
+
+	particle.size = newSize;*/
 }
 
 void Volt::ParticleSystem::ParticleVelocityUpdate(Particle& particle, const float& deltaTime)
 {
 	float velocityPersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
-	float newVelocity = gem::lerp(particle.velocity, particle.endVelocity, velocityPersentage);
+	float newVelocity = gem::lerp(particle.startVelocity, particle.endVelocity, velocityPersentage);
 
 	particle.velocity = newVelocity;
 }
 
+
 void Volt::ParticleSystem::ParticleColorUpdate(Particle& particle, const float& deltaTime)
 {
 	float colorPersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
-	float x = gem::lerp(particle.color.x, particle.endColor.x, colorPersentage);
-	float y = gem::lerp(particle.color.y, particle.endColor.y, colorPersentage);
-	float z = gem::lerp(particle.color.z, particle.endColor.z, colorPersentage);
-	float w = gem::lerp(particle.color.w, particle.endColor.w, colorPersentage);
+	if (colorPersentage > 1)
+		colorPersentage = 1;
+	float scaledTime = colorPersentage * ((float)particle.colors.size() - 1);
+	//gem::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
+	gem::vec4 oldColor = particle.colors[(int)scaledTime];
+	auto newScaled = (int)(scaledTime + 1.0f);
+	gem::vec4 newColor = particle.colors[(newScaled >= particle.colors.size()) ? particle.colors.size() - 1 : newScaled];
+	float newT = scaledTime - (int)(scaledTime);
+
+	float x = gem::lerp(oldColor.x, newColor.x, newT);
+	float y = gem::lerp(oldColor.y, newColor.y, newT);
+	float z = gem::lerp(oldColor.z, newColor.z, newT);
+	float w = gem::lerp(oldColor.w, newColor.w, newT);
 
 	particle.color = gem::vec4{ x,y,z,w };
+}
+
+void Volt::ParticleSystem::ParticleTimeUpdate(Particle& particle, float deltaTime)
+{
+	particle.timeSinceSpawn += deltaTime;
 }
 
 void Volt::ParticleSystem::UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime)

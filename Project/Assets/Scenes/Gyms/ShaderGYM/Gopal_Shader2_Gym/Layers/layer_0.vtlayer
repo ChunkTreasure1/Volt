@@ -1,0 +1,466 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 361451252
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  - value: 4263169546
+                  - value: 2988339032
+                  - value: 526609678
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 2431556360
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+    - Entity:
+        id: 526609678
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 361451252
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4065161138
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+    - Entity:
+        id: 608193641
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Camera
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, -500]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5524573352483143404, 11007889460122951339]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Aperture
+                data: 16
+              - type: 7
+                vectorType: 13
+                name: Shutter Speed
+                data: 0.00999999978
+              - type: 7
+                vectorType: 13
+                name: ISO
+                data: 100
+              - type: 7
+                vectorType: 13
+                name: Field of View
+                data: 60
+              - type: 7
+                vectorType: 13
+                name: Near plane
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Far plane
+                data: 100000
+              - type: 2
+                vectorType: 13
+                name: Priority
+                data: 0
+    - Entity:
+        id: 1230095108
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: depthFadePlanes
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 9420902608712137969
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 9862960130846876001
+    - Entity:
+        id: 2197601223
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Skylight
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5130770350572262273, 9533246575187293344]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Environment Map
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: LOD
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Turbidity
+                data: 2
+              - type: 7
+                vectorType: 13
+                name: Azimuth
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Inclination
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Show
+                data: true
+    - Entity:
+        id: 2988339032
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 361451252
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4065161138
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []
+    - Entity:
+        id: 3681794610
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Directional Light
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.866025448, 0, 0, 0.49999997]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [4956947959302657279, 6431008363526150588]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 17
+                vectorType: 13
+                name: Color
+                data: [1, 1, 1]
+              - type: 7
+                vectorType: 13
+                name: Light Size
+                data: 1
+              - type: 0
+                vectorType: 13
+                name: Soft Shadows
+                data: true
+              - type: 0
+                vectorType: 13
+                name: Cast Shadows
+                data: true
+    - Entity:
+        id: 4263169546
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              []
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              []
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              []
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              []
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 361451252
+          - guid: [5521397521163238095, 15170572550557146765]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: PrefabAsset
+                data: 15103541185547910473
+              - type: 22
+                vectorType: 13
+                name: PrefabEntity
+                data: 4149513274
+              - type: 2
+                vectorType: 13
+                name: Version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              []

@@ -8,6 +8,7 @@ struct LogCallbackData
 {
 	std::string message;
 	spdlog::level::level_enum level;
+	std::string category;
 };
 
 template<typename Mutex>
@@ -34,10 +35,28 @@ private:
 	{
 		spdlog::memory_buf_t formatted;
 		spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
+		std::string category = "Default";
+
+		std::string text = fmt::to_string(formatted);
+		
+		auto startOfCat = text.find("$[");
+		if (startOfCat != std::string::npos)
+		{
+			std::string msg = text.substr(startOfCat, text.size());
+			auto endOfCat = msg.find(']');
+			if (endOfCat != std::string::npos)
+			{
+				category = msg.substr(2, endOfCat - 2);
+
+				auto pieceOne = text.substr(0, startOfCat);
+				auto pieceTwo = text.substr(startOfCat + endOfCat + 1, text.size());
+				text = pieceOne + pieceTwo;
+			}
+		}
 
 		for (const auto& callback : m_callbacks)
 		{
-			callback({ fmt::to_string(formatted), msg.level });
+			callback({ text, msg.level, category});
 		}
 	}
 

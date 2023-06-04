@@ -1,52 +1,40 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
+#include "Volt/Core/Graphics/VulkanAllocator.h"
 #include "Volt/Rendering/Vertex.h"
 
-#include "Volt/Rendering/RenderCommand.h"
-
 #include <vector>
-#include <wrl.h>
 
-struct ID3D11Buffer;
-
-using namespace Microsoft::WRL;
 namespace Volt
 {
-	enum class BufferUsage : uint32_t
-	{
-		Immutable = 1,
-		Dynamic = 2
-	};
-
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(const void* data, uint32_t aSize, uint32_t aStride, BufferUsage usage);
-		VertexBuffer(uint32_t aSize, uint32_t aStride);
+		VertexBuffer(const void* data, uint32_t size, bool mappable);
+		VertexBuffer(uint32_t size, bool mappable);
 		~VertexBuffer();
 
-		inline ComPtr<ID3D11Buffer> GetHandle() const { return myBuffer; }
+		void SetData(const void* data, uint32_t size);
+		void SetData(VkCommandBuffer commandBuffer, const void* data, uint32_t size);
+		void SetDataMapped(VkCommandBuffer commandBuffer, const void* data, uint32_t size);
 
-		void SetName(const std::string& name);
-		void SetData(const void* aData, uint32_t aSize);
-		void Bind(uint32_t aSlot = 0) const;
+		void Bind(VkCommandBuffer commandBuffer, uint32_t binding = 0) const;
 
-		template<typename T>
-		T* Map();
-		void Unmap();
+		const uint64_t GetDeviceAddress() const; 
 
-		static Ref<VertexBuffer> Create(const void* data, uint32_t aSize, uint32_t aStride, BufferUsage usage = BufferUsage::Immutable);
-		static Ref<VertexBuffer> Create(uint32_t aSize, uint32_t aStride);
-	
+		static Ref<VertexBuffer> Create(const void* data, uint32_t size, bool mappable = false);
+		static Ref<VertexBuffer> Create(uint32_t size, bool mappable = false);
+
 	private:
-		ComPtr<ID3D11Buffer> myBuffer = nullptr;
-		uint32_t myStride = 0;
+		void Invalidate(const void* data, uint32_t size);
+
+		uint32_t mySize = 0;
+		bool myMappable = false;
+
+		VkBuffer myBuffer = nullptr;
+		VmaAllocation myBufferAllocation = nullptr;
+
+		VkBuffer myStagingBuffer = nullptr;
+		VmaAllocation myStagingAllocation = nullptr;
 	};
-	
-	template<typename T>
-	inline T* VertexBuffer::Map()
-	{
-		return reinterpret_cast<T*>(RenderCommand::VertexBuffer_Map(this));
-	}
 }

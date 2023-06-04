@@ -13,6 +13,7 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/Components.h"
+#include "Volt/ImGui/ImGuiImplementation.h"
 
 #include <gem/gem.h>
 
@@ -35,43 +36,123 @@ enum class NotificationType
 	Success
 };
 
+enum class FontType
+{
+	Regular_16,
+	Regular_17,
+	Regular_20,
+	Bold_16,
+	Bold_17,
+	Bold_40
+};
+
 class UI
 {
 public:
+	struct Button
+	{
+		gem::vec4 normal = { 1.f, 1.f, 1.f, 1.f };
+		gem::vec4 hovered = { 1.f, 1.f, 1.f, 1.f };
+		gem::vec4 active = { 1.f, 1.f, 1.f, 1.f };
+	};
+
+	class ScopedButtonColor
+	{
+	public:
+		ScopedButtonColor(const Button& newColors)
+		{
+			auto& colors = ImGui::GetStyle().Colors;
+			myOldNormalColor = colors[ImGuiCol_Button];
+			myOldHoveredColor = colors[ImGuiCol_ButtonHovered];
+			myOldActiveColor = colors[ImGuiCol_ButtonActive];
+
+			colors[ImGuiCol_Button] = ImVec4{ newColors.normal.x, newColors.normal.y, newColors.normal.z, newColors.normal.w };
+			colors[ImGuiCol_ButtonHovered] = ImVec4{ newColors.hovered.x, newColors.hovered.y, newColors.hovered.z, newColors.hovered.w };
+			colors[ImGuiCol_ButtonActive] = ImVec4{ newColors.active.x, newColors.active.y, newColors.active.z, newColors.active.w };
+		}
+
+		~ScopedButtonColor()
+		{
+			auto& colors = ImGui::GetStyle().Colors;
+			colors[ImGuiCol_Button] = myOldNormalColor;
+			colors[ImGuiCol_ButtonHovered] = myOldHoveredColor;
+			colors[ImGuiCol_ButtonActive] = myOldActiveColor;
+		}
+
+	private:
+		ImVec4 myOldNormalColor;
+		ImVec4 myOldHoveredColor;
+		ImVec4 myOldActiveColor;
+	};
+
 	class ScopedColor
 	{
 	public:
 		ScopedColor(ImGuiCol_ color, const gem::vec4& newColor)
-			: m_Color(color)
+			: myColor(color)
 		{
 			auto& colors = ImGui::GetStyle().Colors;
-			m_OldColor = colors[color];
+			myOldColor = colors[color];
 			colors[color] = ImVec4{ newColor.x, newColor.y, newColor.z, newColor.w };
 		}
 
 		~ScopedColor()
 		{
 			auto& colors = ImGui::GetStyle().Colors;
-			colors[m_Color] = m_OldColor;
-			}
+			colors[myColor] = myOldColor;
+		}
 
-		private:
-			ImVec4 m_OldColor;
-			ImGuiCol_ m_Color;
-		};
+	private:
+		ImVec4 myOldColor;
+		ImGuiCol_ myColor;
+	};
 
-		class ScopedStyleFloat
+	class ScopedColorPrediacate
+	{
+	public:
+		ScopedColorPrediacate(bool predicate, ImGuiCol_ color, const gem::vec4& newColor)
+			: myColor(color), myPredicate(predicate)
 		{
-		public:
-			ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+			if (!myPredicate)
 			{
-				ImGui::PushStyleVar(var, value);
+				return;
 			}
 
-			~ScopedStyleFloat()
+			auto& colors = ImGui::GetStyle().Colors;
+			myOldColor = colors[color];
+			colors[color] = ImVec4{ newColor.x, newColor.y, newColor.z, newColor.w };
+		}
+
+		~ScopedColorPrediacate()
+		{
+			if (!myPredicate)
 			{
-				ImGui::PopStyleVar();
+				return;
 			}
+
+			auto& colors = ImGui::GetStyle().Colors;
+			colors[myColor] = myOldColor;
+		}
+
+	private:
+		ImVec4 myOldColor;
+		ImGuiCol_ myColor;
+
+		bool myPredicate = false;
+	};
+
+	class ScopedStyleFloat
+	{
+	public:
+		ScopedStyleFloat(ImGuiStyleVar_ var, float value)
+		{
+			ImGui::PushStyleVar(var, value);
+		}
+
+		~ScopedStyleFloat()
+		{
+			ImGui::PopStyleVar();
+		}
 	};
 
 	class ScopedStyleFloat2
@@ -86,6 +167,22 @@ public:
 		{
 			ImGui::PopStyleVar();
 		}
+	};
+
+	class ScopedFont
+	{
+	public:
+		inline ScopedFont(FontType font)
+		{
+			ImGui::PushFont(myFonts.at(font));
+		}
+
+		inline ~ScopedFont()
+		{
+			ImGui::PopFont();
+		}
+
+	private:
 	};
 
 	static ImTextureID GetTextureID(Ref<Volt::Texture2D> texture);
@@ -157,6 +254,8 @@ public:
 		return ImGui::InputTextString(id.c_str(), &text, flags);
 	}
 
+	static bool InputTextWithHint(const std::string& name, std::string& text, const std::string& hint, ImGuiInputTextFlags_ flags = ImGuiInputTextFlags_None);
+
 	static bool InputTextMultiline(const std::string& name, std::string& text, ImGuiInputTextFlags_ flags = ImGuiInputTextFlags_None)
 	{
 		if (!name.empty())
@@ -213,7 +312,7 @@ public:
 		}
 	}
 
-	inline static bool TreeNodeImage(Ref<Volt::Texture2D> texture, const std::string& text, ImGuiTreeNodeFlags flags)
+	inline static bool TreeNodeImage(Ref<Volt::Texture2D> texture, const std::string& text, ImGuiTreeNodeFlags flags, bool setOpen = false)
 	{
 		ScopedStyleFloat2 frame{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
 		ScopedStyleFloat2 spacing{ ImGuiStyleVar_ItemSpacing, { 0.f, 0.f } };
@@ -222,6 +321,11 @@ public:
 
 		ImGui::Image(GetTextureID(texture), { size.y, size.y });
 		ImGui::SameLine();
+
+		if (setOpen)
+		{
+			ImGui::SetNextItemOpen(true, ImGuiCond_Always);
+		}
 
 		return ImGui::TreeNodeEx(text.c_str(), flags);
 	}
@@ -407,7 +511,7 @@ public:
 
 	static bool BeginProperties(const std::string& name = "", const ImVec2 size = { 0, 0 })
 	{
-		bool open = ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable, size);
+		bool open = ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable, size);
 
 		if (open)
 		{
@@ -495,6 +599,24 @@ public:
 
 		ImGui::SetNextItemWidth(width);
 		if (ImGui::Combo(id.c_str(), &currentItem, items.data(), (int32_t)items.size()))
+		{
+			changed = true;
+		}
+
+		return changed;
+	}
+
+	static bool Combo(const std::string& text, int& currentItem, const char** items, uint32_t count)
+	{
+		bool changed = false;
+
+		ImGui::TextUnformatted(text.c_str());
+
+		ImGui::SameLine();
+
+		std::string id = "##" + std::to_string(s_stackId++);
+
+		if (ImGui::Combo(id.c_str(), &currentItem, items, count))
 		{
 			changed = true;
 		}
@@ -601,6 +723,20 @@ public:
 		ImGui::EndPopup();
 	}
 
+	static void SmallSeparatorHeader(const std::string& text, float padding)
+	{
+		UI::ScopedFont font{ FontType::Bold_16 };
+
+		const auto pos = ImGui::GetCursorPos();
+		ImGui::TextUnformatted(text.c_str());
+		const auto textSize = ImGui::CalcTextSize(text.c_str());
+
+		const auto availWidth = ImGui::GetWindowWidth();
+		const auto windowPos = ImGui::GetWindowPos();
+
+		ImGui::GetCurrentWindow()->DrawList->AddLine(pos + windowPos + ImVec2{ textSize.x + padding, textSize.y / 2.f }, { pos.x + availWidth + windowPos.x, pos.y + 1.f + windowPos.y + textSize.y / 2.f }, IM_COL32(255, 255, 255, 255));
+	}
+
 	static bool PropertyAxisColor(const std::string& text, gem::vec3& value, float resetValue = 0.f, std::function<void(gem::vec3& value)> callback = nullptr)
 	{
 		ScopedStyleFloat2 cellPad(ImGuiStyleVar_CellPadding, { 4.f, 0.f });
@@ -649,7 +785,7 @@ public:
 
 		if (ImGui::IsItemHovered())
 		{
-			if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_LEFT))
+			if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
 			{
 				changed = true;
 			}
@@ -689,7 +825,7 @@ public:
 
 		if (ImGui::IsItemHovered())
 		{
-			if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_LEFT))
+			if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
 			{
 				changed = true;
 			}
@@ -728,7 +864,91 @@ public:
 
 		if (ImGui::IsItemHovered())
 		{
-			if (Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_LEFT))
+			if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
+			{
+				changed = true;
+			}
+		}
+
+		ImGui::PopItemWidth();
+		ImGui::PopStyleVar();
+
+		return changed;
+	}
+
+	static bool PropertyAxisColor(const std::string& text, gem::vec2& value, float resetValue = 0.f)
+	{
+		ScopedStyleFloat2 cellPad(ImGuiStyleVar_CellPadding, { 4.f, 0.f });
+
+		bool changed = false;
+
+		ImGui::TableNextColumn();
+		ImGui::Text(text.c_str());
+
+		ImGui::TableNextColumn();
+		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
+
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.f;
+		ImVec2 buttonSize = { lineHeight + 3.f, lineHeight };
+
+		{
+			ScopedColor color{ ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.f } };
+			ScopedColor colorh{ ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.f } };
+			ScopedColor colora{ ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.f } };
+
+			std::string butId = "X##" + std::to_string(s_stackId++);
+			if (ImGui::Button(butId.c_str(), buttonSize))
+			{
+				value.x = resetValue;
+				changed = true;
+			}
+		}
+
+		ImGui::SameLine();
+		std::string id = "##" + std::to_string(s_stackId++);
+
+		if (ImGui::DragFloat(id.c_str(), &value.x, 0.1f))
+		{
+			changed = true;
+		}
+
+		if (ImGui::IsItemHovered())
+		{
+			if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
+			{
+				changed = true;
+			}
+		}
+
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		{
+			ScopedColor color{ ImGuiCol_Button, { 0.2f, 0.7f, 0.2f, 1.f } };
+			ScopedColor colorh{ ImGuiCol_ButtonHovered, { 0.3f, 0.8f, 0.3f, 1.f } };
+			ScopedColor colora{ ImGuiCol_ButtonActive, { 0.2f, 0.7f, 0.2f, 1.f } };
+
+			std::string butId = "Y##" + std::to_string(s_stackId++);
+			if (ImGui::Button(butId.c_str(), buttonSize))
+			{
+				value.y = resetValue;
+				changed = true;
+			}
+		}
+
+		ImGui::SameLine();
+		id = "##" + std::to_string(s_stackId++);
+
+		if (ImGui::DragFloat(id.c_str(), &value.y, 0.1f))
+		{
+			changed = true;
+		}
+
+		if (ImGui::IsItemHovered())
+		{
+			if (Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_LEFT))
 			{
 				changed = true;
 			}
@@ -827,7 +1047,45 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		Volt::Entity entity{ value, scene.get()};
+		Volt::Entity entity{ value, scene.get() };
+
+		std::string entityName;
+		if (entity)
+		{
+			entityName = entity.GetComponent<Volt::TagComponent>().tag;
+		}
+		else
+		{
+			entityName = "Null";
+		}
+
+		ImGui::InputTextString(id.c_str(), &entityName, ImGuiInputTextFlags_ReadOnly);
+
+		if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
+		{
+			Wire::EntityId entityId = *(Wire::EntityId*)ptr;
+			value = entityId;
+			changed = true;
+			if (callback)
+			{
+				callback(value);
+			}
+		}
+
+		ImGui::PopItemWidth();
+		return changed;
+	}
+
+	static bool PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, std::function<void(Wire::EntityId& value)> callback = nullptr, const std::string& toolTip = "")
+	{
+		bool changed = false;
+
+		SimpleToolTip(toolTip);
+
+		std::string id = "##" + std::to_string(s_stackId++);
+		ImGui::PushItemWidth(width);
+
+		Volt::Entity entity{ value, scene.get() };
 
 		std::string entityName;
 		if (entity)
@@ -998,7 +1256,52 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragFloat(id.c_str(), &value, 1.f, min, max))
+		if (useMinMax)
+		{
+			changed = ImGui::SliderFloat(id.c_str(), &value, min, max);
+		}
+		else
+		{
+			changed = ImGui::DragFloat(id.c_str(), &value, 1.f, min, max);
+		}
+
+		if (changed)
+		{
+			if (value < min && useMinMax)
+			{
+				value = min;
+			}
+
+			if (value > max && useMinMax)
+			{
+				value = max;
+			}
+
+			changed = true;
+			if (callback)
+			{
+				callback(value);
+			}
+		}
+
+		ImGui::PopItemWidth();
+
+		return changed;
+	}
+
+	static bool PropertyDragFloat(const std::string& text, float& value, float increment, bool useMinMax = false, float min = 0.f, float max = 0.f, std::function<void(float& value)> callback = nullptr, const std::string& toolTip = "")
+	{
+		bool changed = false;
+
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted(text.c_str());
+		SimpleToolTip(toolTip);
+
+		ImGui::TableNextColumn();
+		std::string id = "##" + std::to_string(s_stackId++);
+		ImGui::PushItemWidth(ImGui::GetColumnWidth());
+
+		if (ImGui::DragFloat(id.c_str(), &value, increment, min, max))
 		{
 			if (value < min && useMinMax)
 			{
@@ -1178,6 +1481,84 @@ public:
 		return changed;
 	}
 
+	static bool Property(const std::string& text, gem::vec2i& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec2i& value)> callback = nullptr, const std::string& toolTip = "")
+	{
+		bool changed = false;
+
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted(text.c_str());
+		SimpleToolTip(toolTip);
+
+		ImGui::TableNextColumn();
+		std::string id = "##" + std::to_string(s_stackId++);
+		ImGui::PushItemWidth(ImGui::GetColumnWidth());
+
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, gem::value_ptr(value), 2, 1.f, &min, &max))
+		{
+			changed = true;
+			if (callback)
+			{
+				callback(value);
+			}
+		}
+
+		ImGui::PopItemWidth();
+
+		return changed;
+	}
+
+	static bool Property(const std::string& text, gem::vec3i& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec3i& value)> callback = nullptr, const std::string& toolTip = "")
+	{
+		bool changed = false;
+
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted(text.c_str());
+		SimpleToolTip(toolTip);
+
+		ImGui::TableNextColumn();
+		std::string id = "##" + std::to_string(s_stackId++);
+		ImGui::PushItemWidth(ImGui::GetColumnWidth());
+
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, gem::value_ptr(value), 3, 1.f, &min, &max))
+		{
+			changed = true;
+			if (callback)
+			{
+				callback(value);
+			}
+		}
+
+		ImGui::PopItemWidth();
+
+		return changed;
+	}
+
+	static bool Property(const std::string& text, gem::vec4i& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec4i& value)> callback = nullptr, const std::string& toolTip = "")
+	{
+		bool changed = false;
+
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted(text.c_str());
+		SimpleToolTip(toolTip);
+
+		ImGui::TableNextColumn();
+		std::string id = "##" + std::to_string(s_stackId++);
+		ImGui::PushItemWidth(ImGui::GetColumnWidth());
+
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, gem::value_ptr(value), 4, 1.f, &min, &max))
+		{
+			changed = true;
+			if (callback)
+			{
+				callback(value);
+			}
+		}
+
+		ImGui::PopItemWidth();
+
+		return changed;
+	}
+
 	static bool Property(const std::string& text, const std::string& value, bool readOnly = false, std::function<void(const std::string& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
@@ -1236,6 +1617,29 @@ public:
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
 		if (InputText("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None))
+		{
+			changed = true;
+			if (callback)
+			{
+				callback(value);
+			}
+		}
+
+		return changed;
+	}
+
+	static bool PropertyPassword(const std::string& text, std::string& value, bool readOnly = false, std::function<void(std::string& value)> callback = nullptr, const std::string& toolTip = "")
+	{
+		bool changed = false;
+
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted(text.c_str());
+		SimpleToolTip(toolTip);
+
+		ImGui::TableNextColumn();
+		ImGui::PushItemWidth(ImGui::GetColumnWidth());
+
+		if (InputText("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_Password))
 		{
 			changed = true;
 			if (callback)
@@ -1338,7 +1742,7 @@ public:
 		std::string buttonId = "Open...##" + std::to_string(s_stackId++);
 		if (ImGui::Button(buttonId.c_str(), { ImGui::GetContentRegionAvail().x, 25.f }))
 		{
-			auto newPath = FileSystem::OpenFile("All (*.*)\0*.*\0");
+			auto newPath = FileSystem::OpenFileDialogue({ { "All (*.*)" }, { "*" }});
 			if (!newPath.empty())
 			{
 				path = newPath;
@@ -1381,7 +1785,7 @@ public:
 		std::string buttonId = "Open...##" + std::to_string(s_stackId++);
 		if (ImGui::Button(buttonId.c_str(), { ImGui::GetContentRegionAvail().x, 25.f }))
 		{
-			auto newPath = FileSystem::OpenFolder();
+			auto newPath = FileSystem::PickFolderDialogue();
 			if (!newPath.empty())
 			{
 				path = newPath;
@@ -1448,8 +1852,23 @@ public:
 		return changed;
 	}
 
+	inline static void SetFont(FontType type, ImFont* font)
+	{
+		myFonts[type] = font;
+	}
+
+	static void PushFont(FontType font);
+	static void PopFont();
+
+	static int32_t LevenshteinDistance(const std::string& str1, const std::string& str2);
+	static const std::vector<std::string> GetEntriesMatchingQuery(const std::string& query, const std::vector<std::string>& entries);
+
+	static void RenderMatchingTextBackground(const std::string& query, const std::string& text, const gem::vec4& color, const gem::vec2ui& offset = 0u);
+	static void RenderHighlightedBackground(const gem::vec4& color, float height);
+
 private:
 
 	inline static uint32_t s_contextId = 0;
 	inline static uint32_t s_stackId = 0;
+	inline static std::unordered_map<FontType, ImFont*> myFonts;
 };

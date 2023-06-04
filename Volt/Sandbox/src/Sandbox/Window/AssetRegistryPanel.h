@@ -9,4 +9,9 @@ public:
 	void UpdateMainContent() override;
 
 private:
+	void AddNewModal();
+
+	std::string mySearchQuery;
+
+	bool myActivateSearch = false;
 };

@@ -1,0 +1,6 @@
+name: "Particle"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/2D/Particle_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/2D/Particle_gs.hlsl"
+  - "Engine/Shaders/Source/HLSL/2D/Particle_ps.hlsl"

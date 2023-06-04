@@ -2,101 +2,76 @@
 #include "RendererSettingsPanel.h"
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Rendering/Renderer.h>
 #include <Volt/Rendering/SceneRenderer.h>
 
 RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRenderer>& sceneRenderer)
 	: EditorWindow("Renderer Settings"), mySceneRenderer(sceneRenderer)
-{}
+{
+}
 
 void RendererSettingsPanel::UpdateMainContent()
 {
-	if (ImGui::CollapsingHeader("Post Process"))
+	UI::Header("Settings");
+
+	bool changed = false;
+	auto& settings = mySceneRenderer->GetSettings();
+
+	UI::Header("Ambient Occlusion");
+
+	if (UI::BeginProperties("Rendering-AO"))
 	{
-		UI::PushId();
-		ImGui::Separator();
-		ImGui::TextUnformatted("HBAO");
-		if (UI::BeginProperties("hbao"))
-		{
-			auto& hbaoSettings = mySceneRenderer->GetHBAOSettings();
+		const std::vector<const char*> aoLevels = { "Low", "Medium", "High", "Ultra" };
 
-			UI::Property("Enabled", hbaoSettings.enabled);
-			UI::Property("Radius", hbaoSettings.radius);
-			UI::Property("Intensity", hbaoSettings.intensity);
-			UI::Property("Bias", hbaoSettings.bias);
+		changed |= UI::Property("Enable AO", settings.enableAO);
+		changed |= UI::ComboProperty("AO Quality", *(int32_t*)&settings.aoQuality, aoLevels);
 
-			UI::EndProperties();
-		}
-		ImGui::Separator();
-
-		ImGui::TextUnformatted("Bloom");
-		if (UI::BeginProperties("bloom"))
-		{
-			auto& bloomSettings = mySceneRenderer->GetBloomSettings();
-
-			UI::Property("Enabled", bloomSettings.enabled);
-			UI::EndProperties();
-		}
-		ImGui::Separator();
-
-		ImGui::TextUnformatted("FXAA");
-		if (UI::BeginProperties("vignette"))
-		{
-			auto& fxaaSettings = mySceneRenderer->GetFXAASettings();
-
-			UI::Property("Enabled", fxaaSettings.enabled);
-			UI::EndProperties();
-		}
-		ImGui::Separator();
-
-		ImGui::TextUnformatted("Vignette");
-		if (UI::BeginProperties("vignette"))
-		{
-			auto& vignetteSettings = mySceneRenderer->GetVignetteSettings();
-
-			bool changed = false;
-
-			changed |= UI::Property("Enabled", vignetteSettings.enabled);
-			changed |= UI::Property("Width", vignetteSettings.width);
-			changed |= UI::Property("Sharpness", vignetteSettings.sharpness);
-			changed |= UI::PropertyColor("Color Tint", vignetteSettings.color);
-			
-			if (changed)
-			{
-				mySceneRenderer->UpdateVignetteSettings();
-			}
-			UI::EndProperties();
-		}
-		ImGui::Separator();
-
-		ImGui::TextUnformatted("Gamma");
-		if (UI::BeginProperties("gamma"))
-		{
-			auto& gammaSettings = mySceneRenderer->GetGammaSettingss();
-
-			UI::Property("Enabled", gammaSettings.enabled);
-			UI::EndProperties();
-		}
-
-		UI::PopId();
-
-	}
-	UI::PushId();
-
-	ImGui::TextUnformatted("Environment");
-	if (UI::BeginProperties("env"))
-	{
-		UI::Property("Ambiance multiplier", Volt::Renderer::GetSettings().ambianceMultiplier);
 		UI::EndProperties();
 	}
 
-	ImGui::Separator();
-	ImGui::TextUnformatted("Camera");
-	if (UI::BeginProperties("cam"))
+	UI::Header("Shadows");
+
+	if (UI::BeginProperties("Rendering-Shadows"))
 	{
-		UI::Property("Exposure", Volt::Renderer::GetSettings().exposure);
+		const std::vector<const char*> shadowLevels = { "Low", "Medium", "High" };
+
+		changed |= UI::Property("Enable Shadows", settings.enableShadows);
+		changed |= UI::ComboProperty("Shadow Resolution", *(int32_t*)&settings.shadowResolution, shadowLevels);
+
 		UI::EndProperties();
 	}
 
-	UI::PopId();
+	UI::Header("Anti Aliasing");
+
+	if (UI::BeginProperties("Rendering-AA"))
+	{
+		const std::vector<const char*> aaTypes = { "FXAA", "TAA" };
+
+		changed |= UI::Property("Enable AA", settings.enableAntiAliasing);
+		changed |= UI::ComboProperty("AA Type", *(int32_t*)&settings.antiAliasing, aaTypes);
+
+		UI::EndProperties();
+	}
+
+	UI::Header("Other");
+
+	if (UI::BeginProperties("Rendering-Other"))
+	{
+		changed |= UI::Property("Render Scale", settings.renderScale, true, 0.1f, 4.f);
+		changed |= UI::Property("Enable Bloom", settings.enableBloom);
+		changed |= UI::Property("Enable UI", settings.enableUI);
+		changed |= UI::Property("Enable Skybox", settings.enableSkybox);
+		changed |= UI::Property("Enable Post Processing", settings.enablePostProcessing);
+		
+		UI::EndProperties();
+	}
+
+	if (changed)
+	{
+		mySceneRenderer->ApplySettings();
+	}
+
+	if (ImGui::Button("Reload Ray Tracing"))
+	{
+		mySceneRenderer->UpdateRayTracingScene();
+	}
 }

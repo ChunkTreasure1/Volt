@@ -5,7 +5,7 @@
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Scene/Entity.h>
 
-namespace Volt 
+namespace Volt
 {
 	class SceneRenderer;
 	class Scene;
@@ -26,6 +26,9 @@ public:
 
 	void OnEvent(Volt::Event& e) override;
 
+	void OnOpen() override;
+	void OnClose() override;
+
 private:
 	bool OnRenderEvent(Volt::AppRenderEvent& e);
 
@@ -35,11 +38,9 @@ private:
 	void UpdateMeshList();
 
 	void SaveCurrentMesh();
-	void FlipV();
 
 	Ref<Volt::Scene> myScene;
 	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::Material> myGridMaterial;
 
 	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
 	gem::vec2 myViewportSize = { 1280.f, 720.f };
@@ -48,7 +49,7 @@ private:
 	Ref<Volt::Mesh> myCurrentMesh;
 
 	const float myButtonSize = 22.f;
-	uint32_t mySelectedSubMesh = 0;
+	int32_t mySelectedSubMesh = -1;
 
 	Ref<EditorCameraController> myCameraController;
 };

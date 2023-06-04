@@ -20,10 +20,11 @@ namespace AssetBrowser
 		Volt::AssetHandle handle = 0;
 		Volt::AssetType type = Volt::AssetType::None;
 
-		Ref<AssetPreview> preview;
+		Ref<Volt::Image2D> previewImage;
+
 		MeshImportData& meshImportData;
 		AssetData& meshToImportData;
-		
+
 		bool isRenaming = false;
 		std::string currentRenamingName;
 

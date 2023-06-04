@@ -3,8 +3,12 @@
 
 #include "Volt/Physics/PhysicsActor.h"
 #include "Volt/Physics/PhysicsLayer.h"
-#include "Volt/Scripting/Script.h"
 #include "Volt/Components/Components.h"
+
+#include "Volt/Scripting/Mono/MonoScriptEngine.h"
+#include "Volt/Scripting/Mono/MonoScriptInstance.h"
+
+#include <GraphKey/Nodes/PhysicsNodes.h>
 
 namespace Volt
 {
@@ -36,8 +40,8 @@ namespace Volt
 			return;
 		}
 
-		PhysicsActor* actorA = (PhysicsActor*)pairHeader.actors[0]->userData;
-		PhysicsActor* actorB = (PhysicsActor*)pairHeader.actors[1]->userData;
+		PhysicsActorBase* actorA = (PhysicsActorBase*)pairHeader.actors[0]->userData;
+		PhysicsActorBase* actorB = (PhysicsActorBase*)pairHeader.actors[1]->userData;
 
 		if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH)
 		{
@@ -49,35 +53,61 @@ namespace Volt
 				return;
 			}
 
-			if (entityA.HasComponent<ScriptComponent>())
+			if (entityA.HasComponent<MonoScriptComponent>() && entityA.IsVisible())
 			{
-				auto& scriptComp = entityA.GetComponent<ScriptComponent>();
-				for (const auto& script : scriptComp.scripts)
+				auto& scriptComp = entityA.GetComponent<MonoScriptComponent>();
+				for (const auto& script : scriptComp.scriptIds)
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
+					{
+						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+						if (scriptInstance)
 						{
-							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityA.GetId(), script);
-							if (scriptInstance)
-							{
-								scriptInstance->OnCollisionEnter(entityB);
-							}
-						});
+							scriptInstance->InvokeOnCollisionEnter(entityB);
+						}
+					});
 				}
 			}
 
-			if (entityB.HasComponent<ScriptComponent>())
+			if (entityB.HasComponent<MonoScriptComponent>() && entityB.IsVisible())
 			{
-				auto& scriptComp = entityB.GetComponent<ScriptComponent>();
-				for (const auto& script : scriptComp.scripts)
+				auto& scriptComp = entityB.GetComponent<MonoScriptComponent>();
+				for (const auto& script : scriptComp.scriptIds)
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
+					{
+						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+						if (scriptInstance)
 						{
-							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityB.GetId(), script);
-							if (scriptInstance)
-							{
-								scriptInstance->OnCollisionEnter(entityA);
-							}
-						});
+							scriptInstance->InvokeOnCollisionEnter(entityA);
+						}
+					});
+				}
+			}
+
+			if (entityA.HasComponent<VisualScriptingComponent>() && entityA.IsVisible())
+			{
+				auto& scriptComp = entityA.GetComponent<VisualScriptingComponent>();
+				if (scriptComp.graph)
+				{
+					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
+					{
+						GraphKey::OnCollisionEnterEvent e{ entityB };
+						scriptComp.graph->OnEvent(e);
+					});
+				}
+			}
+
+			if (entityB.HasComponent<VisualScriptingComponent>() && entityB.IsVisible())
+			{
+				auto& scriptComp = entityB.GetComponent<VisualScriptingComponent>();
+				if (scriptComp.graph)
+				{
+					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
+					{
+						GraphKey::OnCollisionEnterEvent e{ entityA };
+						scriptComp.graph->OnEvent(e);
+					});
 				}
 			}
 		}
@@ -91,35 +121,61 @@ namespace Volt
 				return;
 			}
 
-			if (entityA.HasComponent<ScriptComponent>())
+			if (entityA.HasComponent<MonoScriptComponent>() && entityA.IsVisible())
 			{
-				auto& scriptComp = entityA.GetComponent<ScriptComponent>();
-				for (const auto& script : scriptComp.scripts)
+				auto& scriptComp = entityA.GetComponent<MonoScriptComponent>();
+				for (const auto& script : scriptComp.scriptIds)
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
+					{
+						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+						if (scriptInstance)
 						{
-							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityA.GetId(), script);
-							if (scriptInstance)
-							{
-								scriptInstance->OnCollisionExit(entityB);
-							}
-						});
+							scriptInstance->InvokeOnCollisionExit(entityB);
+						}
+					});
 				}
 			}
 
-			if (entityB.HasComponent<ScriptComponent>())
+			if (entityB.HasComponent<MonoScriptComponent>() && entityB.IsVisible())
 			{
-				auto& scriptComp = entityB.GetComponent<ScriptComponent>();
-				for (const auto& script : scriptComp.scripts)
+				auto& scriptComp = entityB.GetComponent<MonoScriptComponent>();
+				for (const auto& script : scriptComp.scriptIds)
 				{
 					myFrameEvents.emplace_back([script, entityA, entityB]()
+					{
+						Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+						if (scriptInstance)
 						{
-							Ref<Script> scriptInstance = ScriptEngine::GetScript(entityB.GetId(), script);
-							if (scriptInstance)
-							{
-								scriptInstance->OnCollisionExit(entityA);
-							}
-						});
+							scriptInstance->InvokeOnCollisionExit(entityA);
+						}
+					});
+				}
+			}
+
+			if (entityA.HasComponent<VisualScriptingComponent>() && entityA.IsVisible())
+			{
+				auto& scriptComp = entityA.GetComponent<VisualScriptingComponent>();
+				if (scriptComp.graph)
+				{
+					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
+					{
+						GraphKey::OnCollisionExitEvent e{ entityB };
+						scriptComp.graph->OnEvent(e);
+					});
+				}
+			}
+
+			if (entityB.HasComponent<VisualScriptingComponent>() && entityB.IsVisible())
+			{
+				auto& scriptComp = entityB.GetComponent<VisualScriptingComponent>();
+				if (scriptComp.graph)
+				{
+					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
+					{
+						GraphKey::OnCollisionExitEvent e{ entityA };
+						scriptComp.graph->OnEvent(e);
+					});
 				}
 			}
 		}
@@ -134,15 +190,15 @@ namespace Volt
 				continue;
 			}
 
-			PhysicsActor* triggerActor = (PhysicsActor*)pairs[i].triggerActor->userData;
-			PhysicsActor* otherActor = (PhysicsActor*)pairs[i].otherActor->userData;
+			PhysicsActorBase* triggerActor = (PhysicsActorBase*)pairs[i].triggerActor->userData;
+			PhysicsActorBase* otherActor = (PhysicsActorBase*)pairs[i].otherActor->userData;
 
 			if (!triggerActor || !otherActor)
 			{
 				continue;
 			}
 
-			if (!PhysicsLayerManager::ShouldCollide(triggerActor->GetRigidbodyData().layerId, otherActor->GetRigidbodyData().layerId))
+			if (!PhysicsLayerManager::ShouldCollide(triggerActor->GetLayerId(), otherActor->GetLayerId()))
 			{
 				continue;
 			}
@@ -157,36 +213,61 @@ namespace Volt
 					return;
 				}
 
-				if (triggerEntity.HasComponent<ScriptComponent>())
+				if (triggerEntity.HasComponent<MonoScriptComponent>() && triggerEntity.IsVisible())
 				{
-					auto& scriptComp = triggerEntity.GetComponent<ScriptComponent>();
-					for (const auto& script : scriptComp.scripts)
+					auto& scriptComp = triggerEntity.GetComponent<MonoScriptComponent>();
+					for (const auto& script : scriptComp.scriptIds)
 					{
 						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
+						{
+							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+							if (scriptInstance)
 							{
-								Ref<Script> scriptInstance = ScriptEngine::GetScript(triggerEntity.GetId(), script);
-								if (scriptInstance)
-								{
-									scriptInstance->OnTriggerEnter(otherEntity, false);
-								}
-							});
-
+								scriptInstance->InvokeOnTriggerEnter(otherEntity);
+							}
+						});
 					}
 				}
 
-				if (otherEntity.HasComponent<ScriptComponent>())
+				if (otherEntity.HasComponent<MonoScriptComponent>() && otherEntity.IsVisible())
 				{
-					auto& scriptComp = otherEntity.GetComponent<ScriptComponent>();
-					for (const auto& script : scriptComp.scripts)
+					auto& scriptComp = otherEntity.GetComponent<MonoScriptComponent>();
+					for (const auto& script : scriptComp.scriptIds)
 					{
 						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
+						{
+							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+							if (scriptInstance)
 							{
-								Ref<Script> scriptInstance = ScriptEngine::GetScript(otherEntity.GetId(), script);
-								if (scriptInstance)
-								{
-									scriptInstance->OnTriggerEnter(triggerEntity, false);
-								}
-							});
+								scriptInstance->InvokeOnTriggerEnter(triggerEntity);
+							}
+						});
+					}
+				}
+
+				if (triggerEntity.HasComponent<VisualScriptingComponent>() && triggerEntity.IsVisible())
+				{
+					auto& scriptComp = triggerEntity.GetComponent<VisualScriptingComponent>();
+					if (scriptComp.graph)
+					{
+						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
+						{
+							GraphKey::OnTriggerEnterEvent e{ otherEntity };
+							scriptComp.graph->OnEvent(e);
+						});
+					}
+				}
+
+				if (otherEntity.HasComponent<VisualScriptingComponent>() && otherEntity.IsVisible())
+				{
+					auto& scriptComp = otherEntity.GetComponent<VisualScriptingComponent>();
+					if (scriptComp.graph)
+					{
+						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
+						{
+							GraphKey::OnTriggerEnterEvent e{ triggerEntity };
+							scriptComp.graph->OnEvent(e);
+						});
 					}
 				}
 			}
@@ -200,36 +281,62 @@ namespace Volt
 					return;
 				}
 
-				if (triggerEntity.HasComponent<ScriptComponent>())
+				if (triggerEntity.HasComponent<MonoScriptComponent>() && triggerEntity.IsVisible())
 				{
-					auto& scriptComp = triggerEntity.GetComponent<ScriptComponent>();
-					for (const auto& script : scriptComp.scripts)
+					auto& scriptComp = triggerEntity.GetComponent<MonoScriptComponent>();
+					for (const auto& script : scriptComp.scriptIds)
 					{
-						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]
+						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
+						{
+							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+							if (scriptInstance)
 							{
-								Ref<Script> scriptInstance = ScriptEngine::GetScript(triggerEntity.GetId(), script);
-								if (scriptInstance)
-								{
-									scriptInstance->OnTriggerExit(otherEntity, false);
-								}
-							});
+								scriptInstance->InvokeOnTriggerExit(otherEntity);
+							}
+						});
 
 					}
 				}
 
-				if (otherEntity.HasComponent<ScriptComponent>())
+				if (otherEntity.HasComponent<MonoScriptComponent>() && otherEntity.IsVisible())
 				{
-					auto& scriptComp = otherEntity.GetComponent<ScriptComponent>();
-					for (const auto& script : scriptComp.scripts)
+					auto& scriptComp = otherEntity.GetComponent<MonoScriptComponent>();
+					for (const auto& script : scriptComp.scriptIds)
 					{
-						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]
+						myFrameEvents.emplace_back([script, triggerEntity, otherEntity]()
+						{
+							Ref<MonoScriptInstance> scriptInstance = MonoScriptEngine::GetInstanceFromId(script);
+							if (scriptInstance)
 							{
-								Ref<Script> scriptInstance = ScriptEngine::GetScript(otherEntity.GetId(), script);
-								if (scriptInstance)
-								{
-									scriptInstance->OnTriggerExit(triggerEntity, false);
-								}
-							});
+								scriptInstance->InvokeOnTriggerExit(triggerEntity);
+							}
+						});
+					}
+				}
+
+				if (triggerEntity.HasComponent<VisualScriptingComponent>() && triggerEntity.IsVisible())
+				{
+					auto& scriptComp = triggerEntity.GetComponent<VisualScriptingComponent>();
+					if (scriptComp.graph)
+					{
+						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
+						{
+							GraphKey::OnTriggerExitEvent e{ otherEntity };
+							scriptComp.graph->OnEvent(e);
+						});
+					}
+				}
+
+				if (otherEntity.HasComponent<VisualScriptingComponent>() && otherEntity.IsVisible())
+				{
+					auto& scriptComp = otherEntity.GetComponent<VisualScriptingComponent>();
+					if (scriptComp.graph)
+					{
+						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
+						{
+							GraphKey::OnTriggerExitEvent e{ triggerEntity };
+							scriptComp.graph->OnEvent(e);
+						});
 					}
 				}
 			}
@@ -242,7 +349,7 @@ namespace Volt
 		PX_UNUSED(poseBuffer);
 		PX_UNUSED(count);
 	}
-	
+
 	void ContactListener::RunEvents()
 	{
 		for (const auto& e : myFrameEvents)
@@ -251,5 +358,21 @@ namespace Volt
 		}
 
 		myFrameEvents.clear();
+	}
+
+	physx::PxQueryHitType::Enum CharacterControllerContactListener::preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags)
+	{
+		if ((filterData.word0 & shape->getQueryFilterData().word1) || (filterData.word1 & shape->getQueryFilterData().word0))
+		{
+			if (shape->getFlags().isSet(physx::PxShapeFlag::eTRIGGER_SHAPE))
+			{
+				return physx::PxQueryHitType::eTOUCH;
+			}
+			else
+			{
+				return physx::PxQueryHitType::eBLOCK;
+			}
+		}
+		return physx::PxQueryHitType::eNONE;
 	}
 }

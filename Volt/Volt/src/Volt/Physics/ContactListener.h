@@ -19,4 +19,10 @@ namespace Volt
 	private:
 		std::vector<std::function<void()>> myFrameEvents;
 	};
+
+	class CharacterControllerContactListener : public physx::PxQueryFilterCallback
+	{
+	public:
+		physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape, const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
+	};
 }

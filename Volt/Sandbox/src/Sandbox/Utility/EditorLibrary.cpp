@@ -10,38 +10,41 @@ void EditorLibrary::Clear()
 	s_editors.clear();
 }
 
-void EditorLibrary::Register(Volt::AssetType type, Ref<EditorWindow> editor)
+void EditorLibrary::Sort()
 {
-	s_editors.emplace(type, editor);
+	std::sort(s_editors.begin(), s_editors.end(), [](const auto& lhs, const auto& rhs) 
+	{
+		return lhs.editorWindow->GetTitle() < rhs.editorWindow->GetTitle();
+	});
 }
 
-void EditorLibrary::OpenAsset(Ref<Volt::Asset> asset)
+bool EditorLibrary::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (!asset)
 	{
-		return;
+		return false;
 	}
 
 	const Volt::AssetType type = asset->GetType();
-	auto it = s_editors.find(type);
+	auto it = std::find_if(s_editors.begin(), s_editors.end(), [type](const auto& lhs) { return lhs.assetType == type; });
 	if (it == s_editors.end())
 	{
-		VT_CORE_ERROR("Editor for asset not registered!");
-		return;
+		return false;
 	}
 
-	it->second->Open();
-	it->second->OpenAsset(asset);
+	it->editorWindow->Open();
+	it->editorWindow->OpenAsset(asset);
+	return true;
 }
 
 Ref<EditorWindow> EditorLibrary::Get(Volt::AssetType type)
 {
-	auto it = s_editors.find(type);
+	auto it = std::find_if(s_editors.begin(), s_editors.end(), [type](const auto& lhs) { return lhs.assetType == type; });
 	if (it == s_editors.end())
 	{
 		VT_CORE_ERROR("Editor for asset not registered!");
 		return nullptr;
 	}
 
-	return it->second;
+	return it->editorWindow;
 }

@@ -10,68 +10,130 @@ namespace Volt
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
-			VT_CORE_WARN("Trying to access animation at invalid index {0}!", index);
 			return {};
 		}
 
 		return myAnimations.at(index)->Sample(aStartTime, mySkeleton, looping);
 	}
 
-	const std::vector<gem::mat4> AnimatedCharacter::SampleCrossfadingAnimation(uint32_t crossfadeFrom, uint32_t crossfadeTo, float fromStartTime, float toStartTime, float speed)
+	const std::vector<gem::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
 	{
-		if (myAnimations.find(crossfadeFrom) == myAnimations.end() || myAnimations.find(crossfadeTo) == myAnimations.end())
+		if (myAnimations.find(index) == myAnimations.end())
 		{
-			VT_CORE_WARN("Trying to crossfade between invalid animations {0} and {1}!", crossfadeFrom, crossfadeTo);
 			return {};
 		}
 
-		const float totalCrossfadeTime = GetCrossfadeTimeFromAnimations(crossfadeFrom, crossfadeTo, speed);
-		
-		const float fromDuration = myAnimations.at(crossfadeFrom)->GetDuration();
-		const float toDuration = myAnimations.at(crossfadeTo)->GetDuration();
-		
-		const float currentTime = gem::clamp(AnimationManager::globalClock - toStartTime, 0.f, totalCrossfadeTime);
-		const float currentFromTime = fmodf(AnimationManager::globalClock - fromStartTime, fromDuration);
-		const float currentToTime = fmodf(AnimationManager::globalClock - toStartTime, toDuration);
-
-		const float normalizedTime = currentFromTime / fromDuration;
-		const float otherNormalizedTime = currentToTime / toDuration;
-
-		const float t = currentTime / totalCrossfadeTime;
-
-		return myAnimations.at(crossfadeFrom)->SampleCrossfaded(t, normalizedTime, otherNormalizedTime, mySkeleton, myAnimations.at(crossfadeTo));
+		return myAnimations.at(index)->Sample(frameIndex, mySkeleton);
 	}
-
 
 	const float AnimatedCharacter::GetAnimationDuration(uint32_t index) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
-			VT_CORE_WARN("Trying to access animation at invalid index {0}!", index);
+			return 0.f;
+		}
+
+		if (!myAnimations.at(index))
+		{
 			return 0.f;
 		}
 
 		return myAnimations.at(index)->GetDuration();
 	}
 
+	const AnimatedCharacter::JointAttachment AnimatedCharacter::GetJointAttachmentFromName(const std::string& name) const
+	{
+		for (const auto& jnt : myJointAttachments)
+		{
+			if (jnt.name == name)
+			{
+				return jnt;
+			}
+		}
+
+		return {};
+	}
+
+	const AnimatedCharacter::JointAttachment AnimatedCharacter::GetJointAttachmentFromID(const UUID& id) const
+	{
+		for (const auto& jnt : myJointAttachments)
+		{
+			if (jnt.id == id)
+			{
+				return jnt;
+			}
+		}
+
+		return {};
+	}
+
+	const bool AnimatedCharacter::HasJointAttachment(const std::string& attachmentName) const
+	{
+		for (const auto& jnt : myJointAttachments)
+		{
+			if (jnt.name == attachmentName)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void AnimatedCharacter::RemoveAnimation(uint32_t index)
 	{
-		if (myAnimations.find(index) == myAnimations.end())
+		if (!myAnimations.contains(index))
 		{
 			return;
+		}
+
+		if (myAnimationEvents.contains(index))
+		{
+			myAnimationEvents.erase(index);
 		}
 
 		myAnimations.erase(index);
 	}
 
-	const float AnimatedCharacter::GetCrossfadeTimeFromAnimations(uint32_t crossfadeFrom, uint32_t crossfadeTo, float crossfadeSpeed)
+	void AnimatedCharacter::RemoveAnimationEvent(const std::string& name, uint32_t frame, uint32_t animationIndex)
 	{
-		if (myAnimations.find(crossfadeFrom) == myAnimations.end() || myAnimations.find(crossfadeTo) == myAnimations.end())
+		if (!myAnimations.contains(animationIndex))
 		{
-			VT_CORE_WARN("Trying to get crossfade time between invalid animations {0} and {1}!", crossfadeFrom, crossfadeTo);
-			return 0.f;
+			VT_CORE_ERROR("Trying to remove animation event from invalid animation index!");
+			return;
 		}
 
-		return gem::max(myAnimations.at(crossfadeFrom)->GetDuration(), myAnimations.at(crossfadeTo)->GetDuration()) / crossfadeSpeed;
+		myAnimationEvents[animationIndex].erase(std::remove_if(myAnimationEvents[animationIndex].begin(), myAnimationEvents[animationIndex].end(), [&name, &frame](const auto& lhs) 
+		{
+			return lhs.name == name && lhs.frame == frame;
+		}));
+	}
+
+	void AnimatedCharacter::AddAnimationEvent(const std::string& name, uint32_t frame, uint32_t animationIndex)
+	{
+		if (!myAnimations.contains(animationIndex))
+		{
+			VT_CORE_ERROR("Trying to add animation event to invalid animation index!");
+			return;
+		}
+
+		myAnimationEvents[animationIndex].emplace_back(frame, name);
+	}
+
+	const int32_t AnimatedCharacter::GetAnimationIndexFromHandle(Volt::AssetHandle handle)
+	{
+		for (const auto& [index, animation] : myAnimations)
+		{
+			if (!animation)
+			{
+				continue;
+			}
+
+			if (animation->handle == handle)
+			{
+				return index;
+			}
+		}
+
+		return -1;
 	}
 }

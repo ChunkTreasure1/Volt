@@ -5,7 +5,8 @@ namespace Volt
 {
 	BoundingSphere::BoundingSphere(const gem::vec3& aCenter, float aRadius)
 		: center(aCenter), radius(aRadius)
-	{}
+	{
+	}
 
 	const bool BoundingSphere::IsOnOrForwardPlane(const FrustumPlane& plane)
 	{
@@ -31,12 +32,13 @@ namespace Volt
 
 		return (l && r && f && n && t && b);
 	}
-	
+
 	BoundingBox::BoundingBox(const gem::vec3& aMax, const gem::vec3& aMin)
 		: max(aMax), min(aMin)
-	{}
+	{
+	}
 
-	const bool BoundingBox::IsOnOrForwardPlane(const FrustumPlane & plane)
+	const bool BoundingBox::IsOnOrForwardPlane(const FrustumPlane& plane)
 	{
 		return false;
 	}

@@ -1,9 +1,14 @@
 #include "Registry.h"
 
 #include "Serialization.h"
+#include <random>
 
 namespace Wire
 {
+	static std::random_device s_randomDevice;
+	static std::mt19937 s_engine(s_randomDevice());
+	static std::uniform_int_distribution<uint32_t> s_uniformDistribution;
+
 	Registry::Registry(const Registry& registry)
 	{
 		m_nextEntityId = registry.m_nextEntityId;
@@ -17,16 +22,28 @@ namespace Wire
 
 	EntityId Registry::CreateEntity()
 	{
-		EntityId id = m_nextEntityId++;
-		m_usedIds.emplace_back(id);
+		EntityId id = s_uniformDistribution(s_engine);
 
+		while (std::find(m_usedIds.begin(), m_usedIds.end(), id) != m_usedIds.end())
+		{
+			id = s_uniformDistribution(s_engine);
+		}
+
+		m_usedIds.emplace_back(id);
 		return id;
 	}
 
 	EntityId Registry::AddEntity(EntityId aId)
 	{
 		assert(aId != 0);
-		assert(std::find(m_usedIds.begin(), m_usedIds.end(), aId) == m_usedIds.end());
+
+		if (std::find(m_usedIds.begin(), m_usedIds.end(), aId) != m_usedIds.end())
+		{
+			while (std::find(m_usedIds.begin(), m_usedIds.end(), aId) != m_usedIds.end())
+			{
+				aId = s_uniformDistribution(s_engine);
+			}
+		}
 
  		if (m_nextEntityId <= aId)
 		{

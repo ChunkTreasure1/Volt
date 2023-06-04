@@ -1,32 +1,29 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
-
+#include "Volt/Core/Graphics/VulkanAllocator.h"
 #include <vector>
-#include <wrl.h>
 
-struct ID3D11Buffer;
-
-using namespace Microsoft::WRL;
 namespace Volt
 {
 	class IndexBuffer
 	{
 	public:
-		IndexBuffer(const std::vector<uint32_t>& aIndices, uint32_t aCount);
-		IndexBuffer(uint32_t* aIndices, uint32_t aCount);
+		IndexBuffer(const std::vector<uint32_t>& indices, uint32_t count);
+		IndexBuffer(uint32_t* indices, uint32_t count);
 		~IndexBuffer();
 
-		inline ComPtr<ID3D11Buffer> GetHandle() const { return myBuffer; }
-		void Bind() const;
+		void Bind(VkCommandBuffer commandBuffer);
 
-		static Ref<IndexBuffer> Create(const std::vector<uint32_t>& aIndices, uint32_t aCount);
-		static Ref<IndexBuffer> Create(uint32_t* aIndices, uint32_t aCount);
+		const uint64_t GetDeviceAddress() const;
+
+		static Ref<IndexBuffer> Create(const std::vector<uint32_t>& pIndices, uint32_t count);
+		static Ref<IndexBuffer> Create(uint32_t* pIndices, uint32_t count);
 
 	private:
-		void SetData(const void* aData, uint32_t aSize);
+		void SetData(const void* data, uint32_t size);
 
-		ComPtr<ID3D11Buffer> myBuffer = nullptr;
-		uint32_t myCount = 0;
+		VkBuffer myBuffer = nullptr;
+		VmaAllocation myBufferAllocation = nullptr;
+		uint32_t m_count = 0;
 	};
 }

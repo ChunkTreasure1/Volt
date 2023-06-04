@@ -3,6 +3,7 @@
 
 #include "Volt/Log/Log.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
+#include "Volt/Rendering/Texture/Image2D.h"
 
 namespace Volt
 {
@@ -100,8 +101,8 @@ namespace Volt
 			spec.width = myReaderState.width;
 			spec.height = myReaderState.height;
 			spec.usage = ImageUsage::Texture;
-			spec.writeable = true;
-			myTexture = Texture2D::Create(Image2D::Create(spec));
+			spec.memoryUsage = MemoryUsage::CPUToGPU;
+			myImage = Image2D::Create(spec);
 		}
 
 
@@ -161,9 +162,9 @@ namespace Volt
 				}
 			}
 
-			uint32_t* data = myTexture->GetImage()->Map<uint32_t>();
+			uint32_t* data = myImage->Map<uint32_t>();
 			GetFrameData(data);
-			myTexture->GetImage()->Unmap();
+			myImage->Unmap();
 
 			myCurrentFrameTime -= 1.f / fps;
 		}

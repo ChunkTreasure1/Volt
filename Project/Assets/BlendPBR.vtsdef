@@ -1,0 +1,24 @@
+name: BlendPBR
+internal: false
+paths:
+  - Assets\BlendPBR_ps.hlsl
+  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl
+inputTextures:
+  - shaderName: Albedo_01
+    editorName: Albedo01
+  - shaderName: Normal_01
+    editorName: Normal01
+  - shaderName: Material_01
+    editorName: Material01
+  - shaderName: Albedo_02
+    editorName: Albedo02
+  - shaderName: Normal_02
+    editorName: Normal02
+  - shaderName: Material_02
+    editorName: Material02
+  - shaderName: Albedo_03
+    editorName: Albedo03
+  - shaderName: Normal_03
+    editorName: Normal03
+  - shaderName: Material_03
+    editorName: Material03

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
+#include "Volt/Asset/Animation/Animation.h"
 
 #include <gem/gem.h>
 
@@ -19,14 +20,17 @@ namespace Volt
 		~Skeleton() override
 		{
 			myJoints.clear();
-			myInverseBindPoses.clear();
+			myInverseBindPose.clear();
 		}
 
 		inline const size_t GetJointCount() const { return myJoints.size(); }
-		inline const std::vector<gem::mat4> GetInverseBindPoses() const { return myInverseBindPoses; }
+		inline const std::vector<gem::mat4>& GetInverseBindPose() const { return myInverseBindPose; }
+		inline const std::vector<Animation::TRS>& GetRestPose() const { return myRestPose; }
 		inline const std::vector<Joint>& GetJoints() const { return myJoints; }
 
-		const size_t GetJointIndexFromName(const std::string& str);
+		const bool JointIsDecendantOf(int32_t jointIndex, int32_t parentIndex) const;
+
+		const int32_t GetJointIndexFromName(const std::string& str);
 		const std::string GetNameFromJointIndex(int32_t index);
 
 		static AssetType GetStaticType() { return AssetType::Skeleton; }
@@ -37,7 +41,11 @@ namespace Volt
 		friend class SkeletonImporter;
 
 		std::vector<Joint> myJoints;
-		std::vector<gem::mat4> myInverseBindPoses;
-		std::string myName = "Skeleton";                 
+		std::vector<Animation::TRS> myRestPose;
+		std::vector<gem::mat4> myInverseBindPose;
+
+		std::unordered_map<std::string, size_t> myJointNameToIndex;
+
+		std::string myName = "Skeleton";
 	};
 }

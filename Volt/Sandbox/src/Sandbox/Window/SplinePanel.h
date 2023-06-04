@@ -4,7 +4,7 @@
 #include "Sandbox/Window/EditorWindow.h"
 #include <Volt/Scene/Scene.h>
 #include "GEM/gem.h"
-#include "Game/Tools/Spline.h"
+#include "Volt/Math/Spline.h"
 
 class SplinePanel : public EditorWindow
 {

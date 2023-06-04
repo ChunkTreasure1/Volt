@@ -36,7 +36,7 @@ namespace Volt
 			PAUSE
 		};
 
-		OnGameStateChangedEvent(const State aState) : m_State(aState){}
+		OnGameStateChangedEvent(const State aState) : m_State(aState) {}
 
 		std::string ToString() const override
 		{
@@ -58,8 +58,9 @@ namespace Volt
 	{
 	public:
 		OnPlayGameEvent(Volt::AssetHandle aLevelHandle)
-			: myLevelHandle(aLevelHandle) 
-		{}
+			: myLevelHandle(aLevelHandle)
+		{
+		}
 
 		std::string ToString() const override
 		{

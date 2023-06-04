@@ -7,7 +7,8 @@
 
 PhysicsPanel::PhysicsPanel()
 	: EditorWindow("Physics Panel")
-{}
+{
+}
 
 void PhysicsPanel::UpdateMainContent()
 {
@@ -85,7 +86,7 @@ void PhysicsPanel::DrawGeneralMenu()
 
 		UI::Property("World Sub Divisions", const_cast<uint32_t&>(Volt::Physics::GetSettings().worldBoundsSubDivisions));
 		UI::Property("Solver Iterations", const_cast<uint32_t&>(Volt::Physics::GetSettings().solverIterations));
-		UI::Property("Solver Velocity Iterations", const_cast<uint32_t&>(Volt::Physics::GetSettings().solverIterations));
+		UI::Property("Solver Velocity Iterations", const_cast<uint32_t&>(Volt::Physics::GetSettings().solverVelocityIterations));
 
 		{
 			std::vector<const char*> boradphaseNames = { "Sweep And Prune", "Multi Box Prune", "Automatic Box Prune" };
@@ -136,7 +137,7 @@ void PhysicsPanel::DrawLayersMenu()
 				UI::EndProperties();
 			}
 			UI::PopId();
-			
+
 			{
 				UI::ScopedColor color{ ImGuiCol_Button, { 0.2f, 0.2f, 0.2f, 1.f } };
 				std::string buttonId = "Remove###rem" + std::to_string(layer.layerId);

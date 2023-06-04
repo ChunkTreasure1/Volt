@@ -10,7 +10,7 @@ namespace Volt
 	class Camera
 	{
 	public:
-		Camera(float fov, float aspect, float nearPlane, float farPlane);
+		Camera(float fov, float aspect, float nearPlane, float farPlane, bool reverse = true);
 		Camera(float left, float right, float bottom, float top, float nearPlane, float farPlane);
 		Camera() = default;
 		~Camera() = default;
@@ -39,9 +39,21 @@ namespace Volt
 		inline const float GetNearPlane() const { return myNearPlane; }
 		inline const float GetFarPlane() const { return myFarPlane; }
 
-		inline const Frustum& GetFrustum() const { return myFrustum; }
+		inline const float GetAperture() const { return myAperture; }
+		inline const float GetShutterSpeed() const { return myShutterSpeed; }
+		inline const float GetISO() const { return myISO; }
 
-		gem::vec3 ScreenToWorldCoords(const gem::vec2& someCoords, const gem::vec2& aSize);
+		inline void SetAperture(float value) { myAperture = value; }
+		inline void SetShutterSpeed(float value) { myShutterSpeed = value; }
+		inline void SetISO(float value) { myISO = value; }
+
+		void SetSubpixelOffset(const gem::vec2& offset);
+		inline const gem::vec2& GetSubpixelOffset() const { return mySubpixelOffset; }
+
+		inline const Frustum& GetFrustum() const { return myFrustum; }
+		const std::vector<gem::vec4> GetFrustumCorners();
+
+		gem::vec3 ScreenToWorldRay(const gem::vec2& someCoords, const gem::vec2& aSize);
 
 		gem::vec3 GetUp() const;
 		gem::vec3 GetRight() const;
@@ -59,9 +71,13 @@ namespace Volt
 		gem::mat4 myProjectionMatrix = gem::mat4(1.f);
 		gem::mat4 myViewMatrix = gem::mat4(1.f);
 
+		gem::vec2 mySubpixelOffset = 0.f;
+
+		bool myReversed = true;
+
 		float myNearPlane = 0.f;
 		float myFarPlane = 0.f;
-		
+
 		// Perspective
 		float myFieldOfView = 0.f;
 		float myAspecRatio = 0.f;
@@ -71,6 +87,11 @@ namespace Volt
 		float myRight = 0.f;
 		float myTop = 0.f;
 		float myBottom = 0.f;
+
+		//Physical settings
+		float myAperture = 16.f;
+		float myShutterSpeed = 1.f / 100.f;
+		float myISO = 100.f;
 
 		bool myIsOrthographic = false;
 		Frustum myFrustum;

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Volt/Rendering/Shader/Shader.h"
 #include "Volt/Log/Log.h"
 
 #include <gem/gem.h>
 #include <filesystem>
 
 #include <d3dcompiler.h>
+#include <vulkan/vulkan.h> 
+#include <shaderc/shaderc.h>
 
 namespace Volt
 {
@@ -25,130 +26,158 @@ namespace Volt
 			}
 		}
 
-		inline ElementType GetTypeFromTypeDesc(D3D11_SHADER_TYPE_DESC desc)
+		inline VkShaderStageFlagBits GetShaderStageFromFilename(const std::string& filename)
 		{
-			if (desc.Class == D3D_SVC_SCALAR)
+			if (filename.find("_fs.glsl") != std::string::npos || filename.find("_ps.hlsl") != std::string::npos)
 			{
-				switch (desc.Type)
-				{
-					case D3D_SVT_BOOL: return ElementType::Bool;
-					case D3D_SVT_INT: return ElementType::Int;
-					case D3D_SVT_FLOAT: return ElementType::Float;
-					case D3D_SVT_UINT: return ElementType::UInt;
-				}
+				return VK_SHADER_STAGE_FRAGMENT_BIT;
 			}
-			else if (desc.Class == D3D_SVC_VECTOR)
+			else if (filename.find("_vs.glsl") != std::string::npos || filename.find("_vs.hlsl") != std::string::npos)
 			{
-				switch (desc.Type)
-				{
-					case D3D_SVT_FLOAT:
-					{
-						switch (desc.Columns)
-						{
-							case 2: return ElementType::Float2;
-							case 3: return ElementType::Float3;
-							case 4: return ElementType::Float4;
-						}
-						break;
-					}
-					case D3D_SVT_UINT:
-					{
-						switch (desc.Columns)
-						{
-							case 2: return ElementType::UInt2;
-							case 3: return ElementType::UInt3;
-							case 4: return ElementType::UInt4;
-						}
-						break;
-					}
-				}
+				return VK_SHADER_STAGE_VERTEX_BIT;
+			}
+			else if (filename.find("_cs.glsl") != std::string::npos || filename.find("_cs.hlsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_COMPUTE_BIT;
+			}
+			else if (filename.find("_gs.glsl") != std::string::npos || filename.find("_gs.hlsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_GEOMETRY_BIT;
+			}
+			else if (filename.find("_te.glsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+			}
+			else if (filename.find("_tc.glsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+			}
+			else if (filename.find("_rgen.glsl") != std::string::npos || filename.find("_rgen.hlsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+			}
+			else if (filename.find("_rmiss.glsl") != std::string::npos || filename.find("_rmiss.hlsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_MISS_BIT_KHR;
+			}
+			else if (filename.find("_rchit.glsl") != std::string::npos || filename.find("_rchit.hlsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+			}
+			else if (filename.find("_rahit.glsl") != std::string::npos || filename.find("_rahit.hlsl") != std::string::npos)
+			{
+				return VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
 			}
 
-			return ElementType::Bool;
+			return (VkShaderStageFlagBits)0;
 		}
 
-		inline ShaderStage GetStageFromPath(const std::filesystem::path& path)
-		{
-			if (path.string().find("_vs") != std::string::npos)
-			{
-				return ShaderStage::Vertex;
-			}
-			else if (path.string().find("_ps") != std::string::npos)
-			{
-				return ShaderStage::Pixel;
-			}
-			else if (path.string().find("_cs") != std::string::npos)
-			{
-				return ShaderStage::Compute;
-			}
-			else if (path.string().find("_hs") != std::string::npos)
-			{
-				return ShaderStage::Hull;
-			}
-			else if (path.string().find("_ds") != std::string::npos)
-			{
-				return ShaderStage::Domain;
-			}
-			else if (path.string().find("_gs") != std::string::npos)
-			{
-				return ShaderStage::Geometry;
-			}
-
-			VT_CORE_ASSERT(false, "");
-			return ShaderStage::Vertex;
-		}
-
-		inline std::string GetProfileFromStage(ShaderStage stage)
+		inline std::string GetShaderStageCachedFileExtension(VkShaderStageFlagBits stage)
 		{
 			switch (stage)
 			{
-				case ShaderStage::Vertex: return "vs_5_0";
-				case ShaderStage::Pixel: return "ps_5_0";
-				case ShaderStage::Hull: return "hs_5_0";
-				case ShaderStage::Domain: return "ds_5_0";
-				case ShaderStage::Geometry: return "gs_5_0";
-				case ShaderStage::Compute: return "cs_5_0";
-				default:
-					break;
-			}
-
-			return "Null";
-		}
-
-		inline std::string GetShaderStageCachedFileExtension(ShaderStage stage)
-		{
-			switch (stage)
-			{
-				case ShaderStage::Vertex: return ".vertex.cached";
-				case ShaderStage::Pixel: return ".pixel.cached";
-				case ShaderStage::Compute: return ".compute.cached";
-				case ShaderStage::Hull: return "hull.cached";
-				case ShaderStage::Domain: return "domain.cached";
-				case ShaderStage::Geometry: return "geometry.cached";
+				case VK_SHADER_STAGE_VERTEX_BIT: return ".vertex.cached";
+				case VK_SHADER_STAGE_FRAGMENT_BIT: return ".fragment.cached";
+				case VK_SHADER_STAGE_COMPUTE_BIT: return ".compute.cached";
+				case VK_SHADER_STAGE_GEOMETRY_BIT: return ".geometry.cached";
+				case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return "tessControl.cached";
+				case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return "tessEvaluation.cached";
+				case VK_SHADER_STAGE_RAYGEN_BIT_KHR: return "raygen.cached";
+				case VK_SHADER_STAGE_MISS_BIT_KHR: return "raymiss.cached";
+				case VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR: return "raychit.cached";
+				case VK_SHADER_STAGE_ANY_HIT_BIT_KHR: return "rayahit.cached";
 			}
 
 			VT_CORE_ASSERT(false, "Stage not supported!");
 			return "";
 		}
 
-		inline std::string StageToString(ShaderStage stage)
+		inline shaderc_shader_kind VulkanToShaderCStage(VkShaderStageFlagBits stage)
 		{
 			switch (stage)
 			{
-				case ShaderStage::Vertex: return "Vertex";
-				case ShaderStage::Domain: return "Domain";
-				case ShaderStage::Hull: return "Hull";
-				case ShaderStage::Geometry: return "Geometry";
-				case ShaderStage::Pixel: return "Pixel";
-				case ShaderStage::Compute: return "Compute";
+				case VK_SHADER_STAGE_VERTEX_BIT: return shaderc_vertex_shader;
+				case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
+				case VK_SHADER_STAGE_COMPUTE_BIT: return shaderc_compute_shader;
+				case VK_SHADER_STAGE_GEOMETRY_BIT: return shaderc_geometry_shader;
+				case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return shaderc_tess_control_shader;
+				case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return shaderc_tess_evaluation_shader;
+				case VK_SHADER_STAGE_RAYGEN_BIT_KHR: return shaderc_raygen_shader;
+				case VK_SHADER_STAGE_MISS_BIT_KHR: return shaderc_miss_shader;
+				case VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR: return shaderc_closesthit_shader;
+				case VK_SHADER_STAGE_ANY_HIT_BIT_KHR: return shaderc_anyhit_shader;
+			}
+
+			VT_CORE_ASSERT(false, "Stage not supported!");
+			return (shaderc_shader_kind)0;
+		}
+
+		inline static const wchar_t* HLSLShaderProfile(const VkShaderStageFlagBits stage)
+		{
+			switch (stage)
+			{
+				case VK_SHADER_STAGE_VERTEX_BIT:    return L"vs_6_5";
+				case VK_SHADER_STAGE_FRAGMENT_BIT:  return L"ps_6_5";
+				case VK_SHADER_STAGE_COMPUTE_BIT:   return L"cs_6_5";
+				case VK_SHADER_STAGE_GEOMETRY_BIT:   return L"gs_6_5";
+				case VK_SHADER_STAGE_RAYGEN_BIT_KHR:   return L"lib_6_5";
+				case VK_SHADER_STAGE_MISS_BIT_KHR:   return L"lib_6_5";
+				case VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR:   return L"lib_6_5";
+				case VK_SHADER_STAGE_ANY_HIT_BIT_KHR:   return L"lib_6_5";
+			}
+			VT_CORE_ASSERT(false, "");
+			return L"";
+		}
+
+		inline std::string StageToString(VkShaderStageFlagBits stage)
+		{
+			switch (stage)
+			{
+				case VK_SHADER_STAGE_VERTEX_BIT: return "Vertex";
+				case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return "Tessellation Control";
+				case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return "Tessellation Evaluation";
+				case VK_SHADER_STAGE_GEOMETRY_BIT: return "Geometry";
+				case VK_SHADER_STAGE_FRAGMENT_BIT: return "Fragment";
+				case VK_SHADER_STAGE_COMPUTE_BIT: return "Compute";
+				case VK_SHADER_STAGE_RAYGEN_BIT_KHR: return "Ray Generation";
+				case VK_SHADER_STAGE_MISS_BIT_KHR: return "Miss";
+				case VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR: return "Close Hit";
+				case VK_SHADER_STAGE_ANY_HIT_BIT_KHR: return "Any Hit";
 			}
 
 			return "Unsupported";
 		}
 
+		inline std::string ReadStringFromFile(const std::filesystem::path& path)
+		{
+			std::string result;
+			std::ifstream in(path, std::ios::in | std::ios::binary);
+			if (in)
+			{
+				in.seekg(0, std::ios::end);
+				result.resize(in.tellg());
+				in.seekg(0, std::ios::beg);
+				in.read(&result[0], result.size());
+			}
+			else
+			{
+				VT_CORE_ERROR("Unable to read shader {0}!", path.string());
+				return {};
+			}
+
+			in.close();
+
+			return result;
+		}
+
 		inline size_t HashCombine(size_t lhs, size_t rhs)
 		{
 			return lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
+		}
+
+		inline uint64_t GetAlignedSize(uint64_t size, uint64_t alignment)
+		{
+			return (size + alignment - 1) & ~(alignment - 1);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 #include "Sandbox/VersionControl/VersionControl.h"
 #include "Sandbox/UserSettingsManager.h"
 
+#include <Volt/Core/Application.h>
 #include <Volt/Utility/UIUtility.h>
 #include <imgui_stdlib.h>
 
@@ -49,6 +50,21 @@ void EditorSettingsPanel::DrawOutline()
 	{
 		m_currentMenu = SettingsMenu::VersionControl;
 	}
+	UI::ShiftCursor(5.f, 5.f);
+	if (ImGui::Selectable("External Tools"))
+	{
+		m_currentMenu = SettingsMenu::ExternalTools;
+	}
+	UI::ShiftCursor(5.f, 5.f);
+	if (ImGui::Selectable("Style Settings"))
+	{
+		m_currentMenu = SettingsMenu::StyleSettings;
+	}
+	UI::ShiftCursor(5.f, 5.f);
+	if (ImGui::Selectable("Editor Settings"))
+	{
+		m_currentMenu = SettingsMenu::EditorSettings;
+	}
 
 	ImGui::EndChild();
 }
@@ -62,6 +78,9 @@ void EditorSettingsPanel::DrawView()
 		switch (m_currentMenu)
 		{
 			case SettingsMenu::VersionControl: DrawVersionControl(); break;
+			case SettingsMenu::ExternalTools: DrawExternalTools(); break;
+			case SettingsMenu::StyleSettings: DrawStyleSettings(); break;
+			case SettingsMenu::EditorSettings: DrawEditorSettings(); break;
 			default: break;
 		}
 
@@ -79,7 +98,7 @@ void EditorSettingsPanel::DrawVersionControl()
 	{
 		UI::Property("Host", versionControlSettings.server);
 		UI::Property("User", versionControlSettings.user);
-		UI::Property("Password", versionControlSettings.password);
+		UI::PropertyPassword("Password", versionControlSettings.password);
 
 		UI::EndProperties();
 	}
@@ -91,7 +110,7 @@ void EditorSettingsPanel::DrawVersionControl()
 		if (ImGui::Button("Connect"))
 		{
 			if (!versionControlSettings.server.empty() &&
-				!versionControlSettings.user.empty())
+				!versionControlSettings.user.empty() && !versionControlSettings.password.empty())
 			{
 				if (VersionControl::Connect(m_editorSettings.versionControlSettings.server, m_editorSettings.versionControlSettings.user, m_editorSettings.versionControlSettings.password))
 				{
@@ -118,7 +137,7 @@ void EditorSettingsPanel::DrawVersionControl()
 		{
 			workspaces.emplace_back("Empty");
 		}
- 
+
 		UI::PushId();
 		if (UI::BeginProperties())
 		{
@@ -129,18 +148,20 @@ void EditorSettingsPanel::DrawVersionControl()
 			{
 				if (currentWorkspace != m_currentWorkspace)
 				{
+					UserSettingsManager::GetSettings().versionControlSettings.workspace = workspaces[m_currentWorkspace];
+
 					VersionControl::SwitchWorkspace(workspaces[m_currentWorkspace]);
 					VersionControl::RefreshStreams();
 				}
 			}
 
-			if (UI::ComboProperty("Stream", m_currentStream, streams))
-			{
-				if (currentStream != m_currentStream)
-				{
-					VersionControl::SwitchStream(streams[m_currentStream]);
-				}
-			}
+			//if (UI::ComboProperty("Stream", m_currentStream, streams))
+			//{
+			//	if (currentStream != m_currentStream)
+			//	{
+			//		VersionControl::SwitchStream(streams[m_currentStream]);
+			//	}
+			//}
 
 			UI::EndProperties();
 		}
@@ -149,5 +170,49 @@ void EditorSettingsPanel::DrawVersionControl()
 		ImGui::SameLine();
 	}
 
+	UI::PopId();
+}
+
+void EditorSettingsPanel::DrawExternalTools()
+{
+	auto& externalToolsSettings = m_editorSettings.externalToolsSettings;
+
+	UI::PushId();
+	if (UI::BeginProperties())
+	{
+		UI::Property("External Script Editor", externalToolsSettings.customExternalScriptEditor);
+
+		UI::EndProperties();
+	}
+	UI::PopId();
+}
+
+void EditorSettingsPanel::DrawStyleSettings()
+{
+	float currentWindowOpacity = Volt::Application::Get().GetWindow().GetOpacity();
+
+	UI::PushId();
+	if (UI::BeginProperties())
+	{
+		if (UI::Property("Window Opacity", currentWindowOpacity, true, 0.f, 1.f))
+		{
+			Volt::Application::Get().GetWindow().SetOpacity(currentWindowOpacity);
+		}
+		UI::EndProperties();
+	}
+	UI::PopId();
+}
+
+void EditorSettingsPanel::DrawEditorSettings()
+{
+	auto& sceneSettings = m_editorSettings.sceneSettings;
+
+	UI::PushId();
+	if (UI::BeginProperties())
+	{
+		UI::Property("Low Memory Usage", sceneSettings.lowMemoryUsage);
+
+		UI::EndProperties();
+	}
 	UI::PopId();
 }

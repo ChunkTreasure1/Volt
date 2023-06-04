@@ -9,6 +9,7 @@ public:
 	ThemesPanel();
 	void UpdateMainContent() override;
 
+	void StyleEditor(ImGuiStyle* ref = nullptr);
 	void SetMinecraftTheme();
 
 private:

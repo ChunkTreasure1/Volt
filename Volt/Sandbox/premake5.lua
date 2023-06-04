@@ -16,7 +16,8 @@ project "Sandbox"
 
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4927"
 	}
 
 	linkoptions 
@@ -26,7 +27,6 @@ project "Sandbox"
 		"/ignore:4098",
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
-		"/WHOLEARCHIVE:Game",
 		"/WHOLEARCHIVE:PhysX",
 		"/WHOLEARCHIVE:GraphKey"
 	}
@@ -35,7 +35,8 @@ project "Sandbox"
     {
         "GLFW_INCLUDE_NONE",
 		"NOMINMAX",
-		"_HAS_STD_BYTE=0"
+		"_HAS_STD_BYTE=0",
+		"CPPHTTPLIB_OPENSSL_SUPPORT"
     }
 
 	files
@@ -56,6 +57,9 @@ project "Sandbox"
 		"../Amp/src/",
 		"../Game/src/",
 		"../GraphKey/src/",
+		"../Sandbox/src/",
+		"../Navigation/src/",
+		"../Nexus/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -65,7 +69,6 @@ project "Sandbox"
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.fbxsdk}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.cr}",
 		"%{IncludeDir.msdf_atlas_gen}",
@@ -73,13 +76,34 @@ project "Sandbox"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.efsw}",
+		"%{IncludeDir.tinyddsloader}",
+		"%{IncludeDir.meshoptimizer}",
+		"%{IncludeDir.half}",
+		"%{IncludeDir.steam}",
+		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.imgui_node_editor}",
+		"%{IncludeDir.DirectXTex}",
 
 		"%{IncludeDir.GEM}",
 		"%{IncludeDir.P4}",
+		"%{IncludeDir.OpenSSL}",
+		"%{IncludeDir.nlohmann}",
+		"%{IncludeDir.httplib}",
 
-		"%{IncludeDir.ffmpeg}"
+		"%{IncludeDir.ffmpeg}",
+		
+		"%{IncludeDir.detour}",
+		"%{IncludeDir.detourcrowd}",
+		"%{IncludeDir.rcdtdebugutils}",
+		"%{IncludeDir.detourtilecache}",
+		"%{IncludeDir.recast}",
+		"%{IncludeDir.fastlz}",
+
+		"%{IncludeDir.VulkanSDK}",
+		"%{IncludeDir.vma}",
+
+		"%{IncludeDir.TGAFbx}"
 	}
 
     links
@@ -87,28 +111,27 @@ project "Sandbox"
         "Volt",
 		"GraphKey",
 		"Amp",
-
+		"meshoptimizer",
+		"DiscordSDK",
 
 		"ImGuizmo",
 		"ImGuiNodeEditor",
 
-		"Game",
-
-		"d3d11.lib",
-		"d3dcompiler.lib",
-		"dxguid.lib",
 		"crypt32.lib",
+		"Bcrypt.lib",
 
 		"Ws2_32.lib",
 		"Winmm.lib",
 		"Version.lib",
 
-		"%{Library.fbxsdk}",
-		"%{Library.libxml2}",
-		"%{Library.zlib}",
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",
 		"%{Library.fsbank}",
+
+		"%{Library.AkMemoryMgr}",
+		"%{Library.AkSoundEngine}",
+		"%{Library.AkStreamMgr}",
+		"%{Library.AkMusicEngine}",
 
 		"%{Library.P4_client}",
 		"%{Library.P4_api}",
@@ -132,7 +155,12 @@ project "Sandbox"
 		"%{Library.swresample}",
 		"%{Library.swscale}",
 
-		"%{Library.mono}"
+		"%{Library.mono}",
+		"%{Library.steam}",
+		"%{Library.discord}",
+
+		"%{Library.Vulkan}",
+		"%{Library.dxc}"
     }
 
 	configmap
@@ -155,18 +183,45 @@ project "Sandbox"
 			symbols "on"
 			optimize "off"
 
+			links
+			{
+				"%{Library.ShaderC_Debug}",
+				"%{Library.ShaderC_Utils_Debug}",
+				"%{Library.SPIRV_Cross_Debug}",
+				"%{Library.SPIRV_Cross_GLSL_Debug}",
+				"%{Library.SPIRV_Tools_Debug}",
+
+				"%{Library.VulkanUtils}"
+			}
+
 		filter "configurations:Release"
 			defines { "VT_RELEASE", "NDEBUG" }
 			runtime "Release"
 			symbols "on"
 			optimize "on"
 
+			links
+			{
+				"%{Library.ShaderC_Release}",
+				"%{Library.ShaderC_Utils_Release}",
+				"%{Library.SPIRV_Cross_Release}",
+				"%{Library.SPIRV_Cross_GLSL_Release}",
+			}
+
 		filter "configurations:Dist"
 			defines { "VT_DIST", "NDEBUG" }
 			runtime "Release"
-			symbols "off"
+			symbols "on"
 			optimize "on"
 			kind "WindowedApp"
+
+            links
+			{
+				"%{Library.ShaderC_Release}",
+				"%{Library.ShaderC_Utils_Release}",
+				"%{Library.SPIRV_Cross_Release}",
+				"%{Library.SPIRV_Cross_GLSL_Release}",
+			}
 
 			postbuildcommands
 			{

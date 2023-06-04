@@ -1,5 +1,0 @@
-name: "EditorPBR"
-internal: true
-paths:
-  - "Engine/Shaders/HLSL/Editor/editorPBR_vs.hlsl"
-  - "Engine/Shaders/HLSL/Editor/editorPBR_ps.hlsl"

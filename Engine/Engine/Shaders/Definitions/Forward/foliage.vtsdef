@@ -1,0 +1,5 @@
+name: "Foliage"
+paths:
+  - "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl"
+  - "Engine/Shaders/Source/HLSL/Forward/FoliagePBR_ps.hlsl"
+inputTextures:

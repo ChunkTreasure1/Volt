@@ -6,7 +6,7 @@ namespace Volt
 	{
 	public:
 		inline static float globalClock = 0.f;
-		
+
 		inline static void Reset()
 		{
 			globalClock = 0.f;

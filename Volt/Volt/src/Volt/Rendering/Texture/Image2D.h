@@ -1,47 +1,52 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
+#include "Volt/Rendering/Texture/ImageCommon.h"
+
+#include "Volt/Core/Graphics/VulkanAllocator.h"
 #include "Volt/Core/Buffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Rendering/Texture/ImageCommon.h"
-#include "Volt/Utility/ImageUtility.h"
-#include "Volt/Utility/DirectXUtils.h"
-
-#include <wrl.h>
-#include <d3d11.h>
-#include <cassert>
-#include <vector>
-
-using namespace Microsoft::WRL;
+#include <vulkan/vulkan.h>
+#include <map>
 
 namespace Volt
 {
+	class CommandBuffer;
 	class Image2D
 	{
 	public:
-		Image2D(const ImageSpecification& aSpecification, const void* aData);
-		Image2D() = default;
+		Image2D(const ImageSpecification& specification, const void* data);
+		Image2D(const ImageSpecification& specification, VmaPool pool);
 		~Image2D();
 
-		void Invalidate(const void* aData = nullptr);
+		void Invalidate(uint32_t width, uint32_t height, VmaPool pool = nullptr, const void* data = nullptr);
 		void Release();
 
+		void TransitionToLayout(VkCommandBuffer commandBuffer, VkImageLayout targetLayout);
+		void GenerateMips(bool readOnly = false, VkCommandBuffer commandBuffer = nullptr); // Optional command buffer, otherwise it will create it's own
+		void CreateMipViews();
+		VkImageView CreateMipView(const uint32_t mip);
+		VkImageAspectFlags GetImageAspect() const;
+
+		void SetName(const std::string& name);
+		inline void OverrideLayout(VkImageLayout layout) { myImageData.layout = layout; myDescriptorInfo.imageLayout = layout; }
+
+		inline const VkImage GetHandle() const { return myImage; }
 		inline const ImageFormat GetFormat() const { return mySpecification.format; }
 		inline const ImageSpecification& GetSpecification() const { return mySpecification; }
 
 		inline const uint32_t GetWidth() const { return mySpecification.width; }
 		inline const uint32_t GetHeight() const { return mySpecification.height; }
-		inline const uint32_t GetMipCount() const { return mySpecification.mips; }
+		const uint32_t CalculateMipCount() const;
 
-		inline ComPtr<ID3D11RenderTargetView> GetRTV() const { return { (ID3D11RenderTargetView*)myTargetView.Get() }; }
-		inline ComPtr<ID3D11DepthStencilView> GetDSV() const { return { (ID3D11DepthStencilView*)myTargetView.Get() }; }
-		inline ComPtr<ID3D11UnorderedAccessView> GetUAV(uint32_t mip = 0) const { return myMipUAVs.at(mip); }
-		inline ComPtr<ID3D11ShaderResourceView> GetSRV() const { return myResourceView; }
+		inline const VkImageView GetView(uint32_t index = 0) const { return myImageViews.at(index); }
+		inline const VkImageView GetArrayView(uint32_t index = 0) const { return myArrayImageViews.at(index); } // Only applicable for Cubic images
+		inline const VkSampler GetSampler() const { return myImageData.sampler; }
+		inline const VkImageLayout GetLayout() const { return myImageData.layout; }
 
-		const Buffer GetDataBuffer() const;
+		inline const VkDescriptorImageInfo& GetDescriptorInfo() const { return myDescriptorInfo; }
+		const VkDescriptorImageInfo& GetDescriptorInfo(VkImageLayout targetLayout);
 
-		void CreateMipUAVs();
+		void CopyFromImage(VkCommandBuffer commandBuffer, Ref<Image2D> srcImage);
 
 		template<typename T>
 		inline T ReadPixel(uint32_t x, uint32_t y);
@@ -51,129 +56,65 @@ namespace Volt
 
 		template<typename T>
 		inline T* Map();
+
 		void Unmap();
 
-		static Ref<Image2D> Create(const ImageSpecification& aSpecification, const void* aData = nullptr);
+		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
+		static Ref<Image2D> Create(const ImageSpecification& specification, VmaPool pool);
 
 	private:
-		friend class DDSTextureImporter;
-		friend class DefaultTextureImporter;
+		friend class TransientResourceSystem;
+
+		Buffer ReadPixelInternal(uint32_t x, uint32_t y, uint32_t size);
+		Buffer ReadPixelRangeInternal(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY, uint32_t size);
+		void* MapInternal();
 
 		ImageSpecification mySpecification;
-		bool myIsDepth = false;
 
-		ComPtr<ID3D11Texture2D> myTexture;
-		ComPtr<ID3D11View> myTargetView;
-		ComPtr<ID3D11ShaderResourceView> myResourceView;
+		VmaAllocation myAllocation = nullptr;
+		VkImage myImage = nullptr;
 
-		std::unordered_map<uint32_t, ComPtr<ID3D11UnorderedAccessView>> myMipUAVs;
-	};
-
-	template<typename T>
-	inline std::vector<T> Image2D::ReadPixelRange(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY)
-	{
-		assert(minX >= 0 && minX <= mySpecification.width);
-		assert(minY >= 0 && minY <= mySpecification.height);
-
-		assert(maxX >= 0 && maxX <= mySpecification.width);
-		assert(maxY >= 0 && maxY <= mySpecification.height);
-
-		D3D11_TEXTURE2D_DESC desc = { 0 };
-		desc.Width = mySpecification.width;
-		desc.Height = mySpecification.height;
-		desc.MipLevels = 1;
-		desc.ArraySize = 1;
-		desc.Format = Utility::VoltToDXFormat(mySpecification.format);
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_STAGING;
-		desc.BindFlags = 0;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-		desc.MiscFlags = 0;
-
-		HRESULT result;
-		ID3D11Texture2D* texture = nullptr;
-		result = GraphicsContext::GetDevice()->CreateTexture2D(&desc, nullptr, &texture);
-		assert(SUCCEEDED(result));
-
-		auto context = GraphicsContext::GetImmediateContext();
-		context->CopyResource(texture, myTexture.Get());
-
-		D3D11_MAPPED_SUBRESOURCE subresource = {};
-
-		context->Map(texture, 0, D3D11_MAP_READ, 0, &subresource);
-
-		T* data = reinterpret_cast<T*>(subresource.pData);
-
-		std::vector<T> returnVal;
-		for (uint32_t x = minX; x < maxX; x++)
+		struct ImageData
 		{
-			for (uint32_t y = minY; y < maxY; y++)
-			{
-				uint32_t loc = (x + y * subresource.RowPitch / sizeof(T));
-				returnVal.emplace_back(data[loc]);
-			}
-		}
+			VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+			VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+			VkSampler sampler = nullptr;
+		} myImageData;
 
-		context->Unmap(texture, 0);
+		std::map<uint32_t, VkImageView> myImageViews;
+		std::map<uint32_t, VkImageView> myArrayImageViews;
 
-		texture->Release();
-		texture = nullptr;
-		return returnVal;
-	}
+		VkDescriptorImageInfo myDescriptorInfo{};
+		bool myHasGeneratedMips = false;
+		bool myAllocatedWithCustomPool = false;
+	};
 
 	template<typename T>
 	inline T Image2D::ReadPixel(uint32_t x, uint32_t y)
 	{
-		assert(x >= 0 && x <= mySpecification.width);
-		assert(y >= 0 && y <= mySpecification.height);
+		auto buffer = ReadPixelInternal(x, y, sizeof(T));
+		T value = *buffer.As<T>();
+		buffer.Release();
 
-		D3D11_TEXTURE2D_DESC desc = { 0 };
-		desc.Width = mySpecification.width;
-		desc.Height = mySpecification.height;
-		desc.MipLevels = 1;
-		desc.ArraySize = 1;
-		desc.Format = Utility::VoltToDXFormat(mySpecification.format);
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_STAGING;
-		desc.BindFlags = 0;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-		desc.MiscFlags = 0;
-
-		HRESULT result;
-		ID3D11Texture2D* texture;
-		result = GraphicsContext::GetDevice()->CreateTexture2D(&desc, nullptr, &texture);
-		assert(SUCCEEDED(result));
-
-		auto context = GraphicsContext::GetImmediateContext();
-		context->CopyResource(texture, myTexture.Get());
-
-		D3D11_MAPPED_SUBRESOURCE subresource = {};
-
-		context->Map(texture, 0, D3D11_MAP_READ, 0, &subresource);
-
-		T* data = reinterpret_cast<T*>(subresource.pData);
-
-		uint32_t loc = (x + y * subresource.RowPitch / sizeof(T));
-		T value = data[loc];
-
-		context->Unmap(texture, 0);
-
-		texture->Release();
-		texture = nullptr;
 		return value;
+	}
+
+	template<typename T>
+	inline std::vector<T> Image2D::ReadPixelRange(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY)
+	{
+		auto buffer = ReadPixelRangeInternal(minX, minY, maxX, maxY, sizeof(T));
+		
+		std::vector<T> result{};
+		result.resize(buffer.GetSize() / sizeof(T));
+		memcpy_s(result.data(), result.size() * sizeof(T), buffer.As<void>(), buffer.GetSize());
+		buffer.Release();
+
+		return result;
 	}
 
 	template<typename T>
 	inline T* Image2D::Map()
 	{
-		VT_CORE_ASSERT(mySpecification.writeable, "Image has to be created with writeable flag!");
-
-		auto context = GraphicsContext::GetImmediateContext();
-		D3D11_MAPPED_SUBRESOURCE subdata{};
-
-		VT_DX_CHECK(context->Map(myTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subdata));
-		return reinterpret_cast<T*>(subdata.pData);
+		return reinterpret_cast<T*>(MapInternal());
 	}
 }

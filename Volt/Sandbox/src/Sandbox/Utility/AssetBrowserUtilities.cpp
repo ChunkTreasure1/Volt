@@ -3,6 +3,7 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
+#include <Volt/Asset/Prefab.h>
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/Mesh/SubMaterial.h>
@@ -12,24 +13,27 @@
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 
 #include <Volt/Rendering/Shader/Shader.h>
+#include <Volt/Rendering/Renderer.h>
+
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/MeshExporterUtilities.h>
 
 namespace AssetBrowser
 {
 	const float AssetBrowserUtilities::GetBrowserItemPadding()
 	{
-		return 10.f;
+		return 4.f;
 	}
 
 	const ImVec2 AssetBrowserUtilities::GetBrowserItemSize(const float thumbnailSize)
 	{
-		constexpr float itemHeightModifier = 40.f;
+		constexpr float itemHeightModifier = 50.f;
 		const float itemPadding = GetBrowserItemPadding();
 
 		return { thumbnailSize + itemPadding, thumbnailSize + itemHeightModifier + itemPadding };
 	}
 
-	const ImVec2 AssetBrowserUtilities::GetBrowserItemMinPos()
+	const ImVec2 AssetBrowserUtilities::GetBrowserItemPos()
 	{
 		const ImVec2 cursorPos = ImGui::GetCursorPos();
 		const ImVec2 windowPos = ImGui::GetWindowPos();
@@ -90,6 +94,34 @@ namespace AssetBrowser
 		return true;
 	}
 
+	void AssetBrowserUtilities::SetMeshExport(AssetItem* item)
+	{
+		switch (item->type)
+		{
+			case Volt::AssetType::Mesh:
+			{
+				meshesToExport.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>(item->handle));
+				break;
+			}
+
+			case Volt::AssetType::Prefab:
+			{
+				auto scene = CreateRef<Volt::Scene>("ExportMeshScene");
+
+				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene.get());
+				std::vector<Volt::Entity> meshEntities;
+
+				for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())
+				{
+					meshEntities.emplace_back(Volt::Entity(ent, scene.get()));
+				}
+
+				meshesToExport = Volt::MeshExporterUtilities::GetMeshes(meshEntities);
+				break;
+			}
+		}
+	}
+
 	const std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>>& AssetBrowserUtilities::GetPopupRenderFunctions()
 	{
 		static std::unordered_map<Volt::AssetType, std::function<void(AssetItem*)>> renderFunctions;
@@ -103,6 +135,7 @@ namespace AssetBrowser
 					Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 					if (shader->Reload(true))
 					{
+						Volt::Renderer::ReloadShader(shader);
 						UI::Notify(NotificationType::Success, "Shader Compiled!", std::format("Shader {} compiled succesfully!", item->path.string()));
 					}
 					else
@@ -128,17 +161,24 @@ namespace AssetBrowser
 
 			renderFunctions[Volt::AssetType::Mesh] = [](AssetItem* item)
 			{
+				if (ImGui::MenuItem("Export Mesh"))
+				{
+					SetMeshExport(item);
+					UI::OpenModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(item->handle)));
+				}
+
 				if (ImGui::MenuItem("Reimport"))
 				{
 					EditorUtils::ReimportSourceMesh(item->handle);
 				}
 			};
-			
+
 			renderFunctions[Volt::AssetType::Animation] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Reimport"))
 				{
-					EditorUtils::ReimportSourceMesh(item->handle);
+					UI::OpenModal(std::format("Reimport Animation##assetBrowser{0}", std::to_string(item->handle)));
+
 				}
 			};
 
@@ -147,6 +187,15 @@ namespace AssetBrowser
 				if (ImGui::MenuItem("Reimport"))
 				{
 					EditorUtils::ReimportSourceMesh(item->handle);
+				}
+			};
+
+			renderFunctions[Volt::AssetType::Prefab] = [](AssetItem* item)
+			{
+				if (ImGui::MenuItem("Export Meshes"))
+				{
+					SetMeshExport(item);
+					UI::OpenModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(item->handle)));
 				}
 			};
 		}

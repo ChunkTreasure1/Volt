@@ -1,0 +1,4 @@
+name: "FXAA"
+internal: true
+paths:
+  - "Engine/Shaders/Source/HLSL/PostProcessing/AA/FXAA_cs.hlsl"

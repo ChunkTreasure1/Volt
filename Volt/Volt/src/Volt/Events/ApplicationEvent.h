@@ -20,7 +20,8 @@ namespace Volt
 
 		WindowResizeEvent(uint32_t width, uint32_t height)
 			: m_width(width), m_height(height), m_x(0), m_y(0)
-		{}
+		{
+		}
 
 		//Getting
 		inline const uint32_t GetWidth() const { return m_width; }
@@ -50,7 +51,8 @@ namespace Volt
 	public:
 		ViewportResizeEvent(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 			: m_width(width), m_height(height), m_x(x), m_y(y)
-		{}
+		{
+		}
 		//Getting
 		inline const uint32_t GetWidth() const { return m_width; }
 		inline const uint32_t GetHeight() const { return m_height; }
@@ -86,9 +88,10 @@ namespace Volt
 	class WindowTitlebarHittestEvent : public Event
 	{
 	public:
-		WindowTitlebarHittestEvent(int x, int y, int& hit) 
+		WindowTitlebarHittestEvent(int x, int y, int& hit)
 			: m_x(x), m_y(y), m_hit(hit)
-		{}
+		{
+		}
 
 		inline const int32_t GetX() const { return m_x; }
 		inline const int32_t GetY() const { return m_y; }
@@ -97,7 +100,7 @@ namespace Volt
 
 		EVENT_CLASS_TYPE(WindowTitlebarHittest);
 		EVENT_CLASS_CATEGORY(EventCategoryApplication);
-	
+
 	private:
 		int m_x;
 		int m_y;
@@ -135,7 +138,8 @@ namespace Volt
 	public:
 		AppLogEvent(const std::string& message, const std::string& severity)
 			: m_message(message), m_severity(severity)
-		{}
+		{
+		}
 
 		inline const std::string& GetMessage() { return m_message; }
 		inline const std::string& GetSeverity() { return m_severity; }
@@ -236,7 +240,8 @@ namespace Volt
 	public:
 		OnSceneLoadedEvent(Ref<Volt::Scene> aScene)
 			: myScene(aScene)
-		{}
+		{
+		}
 
 		std::string ToString() const override
 		{
@@ -249,7 +254,7 @@ namespace Volt
 
 		EVENT_CLASS_TYPE(OnSceneLoaded);
 		EVENT_CLASS_CATEGORY(EventCategoryApplication);
-	
+
 	private:
 		Ref<Volt::Scene> myScene;
 	};
@@ -259,7 +264,8 @@ namespace Volt
 	public:
 		OnSceneTransitionEvent(Volt::AssetHandle aHandle)
 			: myHandle(aHandle)
-		{}
+		{
+		}
 
 		std::string ToString() const override
 		{

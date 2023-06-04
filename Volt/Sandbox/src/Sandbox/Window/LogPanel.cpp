@@ -24,15 +24,19 @@ namespace Utility
 LogPanel::LogPanel()
 	: EditorWindow("Log")
 {
-	Volt::Log::AddCallback([&](const LogCallbackData& message) 
-		{
-			if (myLogMessages.size() >= myMaxMessages)
-			{
-				myLogMessages.erase(myLogMessages.begin());
-			}
+	myIsOpen = true;
 
-			myLogMessages.emplace_back(message);
-		});
+	Volt::Log::AddCallback([&](const LogCallbackData& message)
+	{
+		if (myLogMessages.size() >= myMaxMessages)
+		{
+			myLogMessages.erase(myLogMessages.begin());
+		}
+
+		myLogMessages.emplace_back(message);
+	});
+
+	myCategories.emplace_back("Default");
 }
 
 void LogPanel::UpdateMainContent()
@@ -40,6 +44,8 @@ void LogPanel::UpdateMainContent()
 	if (ImGui::Button("Clear"))
 	{
 		myLogMessages.clear();
+		myCategories.clear();
+		myCategories.emplace_back("Default");
 	}
 
 	ImGui::SameLine();
@@ -59,10 +65,38 @@ void LogPanel::UpdateMainContent()
 	}
 	ImGui::PopItemWidth();
 
+	ImGui::SameLine();
+	static int32_t logCategory = 0;
+
+	if (logCategory > myCategories.size() - 1)
+	{
+		logCategory = 0;
+	}
+
+	ImGui::PushItemWidth(200.f);
+	UI::Combo("Category", *(int*)&logCategory, myCategories);
+	ImGui::PopItemWidth();
+
 	myCurrentLogMessages.clear();
 	for (const auto& msg : myLogMessages)
 	{
-		if (msg.level >= logLevel)
+		bool newCategory = true;
+
+		for (const auto& cat : myCategories)
+		{
+			if (std::string(cat) == msg.category)
+			{
+				newCategory = false;
+				break;
+			}
+		}
+
+		if (newCategory)
+		{
+			myCategories.emplace_back(msg.category);
+		}
+
+		if (msg.level >= logLevel && (logCategory == 0 || msg.category == myCategories[logCategory]))
 		{
 			myCurrentLogMessages.emplace_back(msg);
 		}

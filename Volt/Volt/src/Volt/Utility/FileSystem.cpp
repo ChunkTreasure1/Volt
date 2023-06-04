@@ -4,79 +4,56 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Project/ProjectManager.h"
 
+#include <nfd.hpp>
+
 #include <commdlg.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <windows.h>
 #include <Lmcons.h>
 
-std::filesystem::path FileSystem::OpenFolder()
+std::filesystem::path FileSystem::PickFolderDialogue()
 {
-	HRESULT result;
-	IFileOpenDialog* openFolderDialog;
+	const auto assetsDirectory = Volt::ProjectManager::GetAssetsDirectory();
+	const auto absolutePath = std::filesystem::absolute(assetsDirectory);
 
-	std::filesystem::path resultPath;
+	NFD::UniquePath outPath;
+	nfdresult_t result = NFD::PickFolder(outPath, absolutePath.string().c_str());
 
-	result = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&openFolderDialog));
-	if (SUCCEEDED(result))
+	switch (result)
 	{
-		IShellItem* startLocation = nullptr;
-		result = SHCreateItemFromParsingName(std::filesystem::current_path().c_str(), NULL, IID_IShellItem, (void**)&startLocation);
-
-		if (SUCCEEDED(result))
+		case NFD_OKAY:
 		{
-			openFolderDialog->SetOptions(FOS_PICKFOLDERS);
-			openFolderDialog->SetDefaultFolder(startLocation);
-
-			result = openFolderDialog->Show(Volt::Application::Get().GetWindow().GetHWND());
-			if (SUCCEEDED(result))
-			{
-				IShellItem* itemResult;
-				result = openFolderDialog->GetResult(&itemResult);
-
-				if (SUCCEEDED(result))
-				{
-					LPWSTR wstr = NULL;
-					result = itemResult->GetDisplayName(SIGDN_FILESYSPATH, &wstr);
-					if (SUCCEEDED(result))
-					{
-						resultPath = wstr;
-						CoTaskMemFree(wstr);
-					}
-
-					itemResult->Release();
-				}
-			}
-			startLocation->Release();
+			return Volt::ProjectManager::GetPathRelativeToProject(outPath.get());
 		}
-		openFolderDialog->Release();
 	}
 
-	return Volt::ProjectManager::GetPathRelativeToProject(resultPath);
+	return "";
 }
 
-std::filesystem::path FileSystem::SaveFile(const char* filter)
+std::filesystem::path FileSystem::SaveFileDialogue(const std::vector<FileFilter>& filters)
 {
-	OPENFILENAMEA ofn;
-	CHAR szFile[260] = { 0 };
-
-	const std::string startDir = std::filesystem::current_path().string();
-
-	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-	ofn.lStructSize = sizeof(OPENFILENAMEA);
-	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrInitialDir = startDir.c_str();
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-	if (GetSaveFileNameA(&ofn) == TRUE)
+	std::vector<nfdfilteritem_t> filterItems{};
+	for (const auto& filter : filters)
 	{
-		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
+		filterItems.emplace_back(filter.name.c_str(), filter.extensions.c_str());
 	}
 
-	return std::string();
+	const auto assetsDirectory = Volt::ProjectManager::GetAssetsDirectory();
+	const auto absolutePath = std::filesystem::absolute(assetsDirectory);
+
+	NFD::UniquePath outPath;
+	nfdresult_t result = NFD::SaveDialog(outPath, filterItems.data(), static_cast<nfdfiltersize_t>(filterItems.size()), absolutePath.string().c_str());
+
+	switch (result)
+	{
+		case NFD_OKAY:
+		{
+			return Volt::ProjectManager::GetPathRelativeToProject(outPath.get());
+		}
+	}
+
+	return "";
 }
 
 std::filesystem::path FileSystem::GetDocumentsPath()
@@ -122,40 +99,50 @@ bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
 	return true;
 }
 
-bool FileSystem::OpenFileExternally(const std::filesystem::path& aPath)
+void FileSystem::Initialize()
 {
-	{
-		auto absolutePath = std::filesystem::canonical(aPath);
-		if (!Exists(absolutePath))
-		{
-			return false;
-		}
-
-		ShellExecute(nullptr, L"open", absolutePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-		return true;
-	}
+	NFD::Init();
 }
 
-std::filesystem::path FileSystem::OpenFile(const char* filter)
+void FileSystem::Shutdown()
 {
-	OPENFILENAMEA ofn;
-	CHAR szFile[260] = { 0 };
+	NFD::Quit();
+}
 
-	const std::string startDir = std::filesystem::current_path().string();
-
-	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-	ofn.lStructSize = sizeof(OPENFILENAMEA);
-	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrInitialDir = startDir.c_str();
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-	if (GetOpenFileNameA(&ofn) == TRUE)
+bool FileSystem::OpenFileExternally(const std::filesystem::path& aPath)
+{
+	auto absolutePath = std::filesystem::canonical(aPath);
+	if (!Exists(absolutePath))
 	{
-		return Volt::ProjectManager::GetPathRelativeToProject(ofn.lpstrFile);
+		return false;
 	}
+
+	ShellExecute(nullptr, L"open", absolutePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	return true;
+}
+
+std::filesystem::path FileSystem::OpenFileDialogue(const std::vector<FileFilter>& filters)
+{
+	std::vector<nfdfilteritem_t> filterItems{};
+	for (const auto& filter : filters)
+	{
+		filterItems.emplace_back(filter.name.c_str(), filter.extensions.c_str());
+	}
+
+	const auto assetsDirectory = Volt::ProjectManager::GetAssetsDirectory();
+	const auto absolutePath = std::filesystem::absolute(assetsDirectory);
+
+	NFD::UniquePath outPath;
+	nfdresult_t result = NFD::OpenDialog(outPath, filterItems.data(), static_cast<nfdfiltersize_t>(filterItems.size()), absolutePath.string().c_str());
+	
+	switch (result)
+	{
+		case NFD_OKAY:
+		{
+			return Volt::ProjectManager::GetPathRelativeToProject(outPath.get());
+		}
+	}
+
 	return "";
 }
 
@@ -198,13 +185,13 @@ bool FileSystem::SetEnvVariable(const std::string& key, const std::string& value
 bool FileSystem::SetRegistryValue(const std::string& key, const std::string& value)
 {
 	HKEY hkey;
-	
+
 	char valueCurrent[1000];
 	DWORD type;
 	DWORD size = sizeof(valueCurrent);
 
 	int rc = RegGetValueA(HKEY_CURRENT_USER, key.c_str(), nullptr, RRF_RT_ANY, &type, valueCurrent, &size);
-	
+
 	bool notFound = rc == ERROR_FILE_NOT_FOUND;
 
 	if (rc != ERROR_SUCCESS && !notFound)

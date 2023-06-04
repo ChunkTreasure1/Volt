@@ -1,12 +1,17 @@
 #include "sbpch.h"
 #include "ViewportPanel.h"
 
+#include "Sandbox/Window/SceneViewPanel.h"
+#include "Sandbox/Window/GameViewPanel.h"
 #include "Sandbox/Camera/EditorCameraController.h"
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/GlobalEditorStates.h"
 #include "Sandbox/Utility/EditorResources.h"
+#include "Sandbox/Utility/EditorLibrary.h"
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/Sandbox.h"
+
+#include "Sandbox/EditorCommandStack.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -19,10 +24,8 @@
 #include <Volt/Input/MouseButtonCodes.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
-#include <Volt/Rendering/Framebuffer.h>
+#include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/Rendering/Framebuffer.h>
-#include <Volt/Rendering/Renderer.h>
 #include <Volt/Rendering/Texture/Image2D.h>
 
 #include <Volt/Scene/Entity.h>
@@ -30,8 +33,9 @@
 #include <Volt/Math/MatrixUtilities.h>
 
 #include <Volt/Utility/StringUtility.h>
+#include <Volt/Math/RayTriangle.h>
 
-#include "Sandbox/EditorCommandStack.h"
+#include <Navigation/Core/NavigationSystem.h>
 
 ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
 	SceneState& aSceneState)
@@ -39,7 +43,7 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	mySceneState(aSceneState), myAnimatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
 {
 	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar;
+	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myMidEvent = false;
 }
 
@@ -73,49 +77,52 @@ void ViewportPanel::UpdateMainContent()
 	{
 		if (!settings.sceneSettings.use16by9)
 		{
-			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0)), { myViewportSize.x, myViewportSize.y });
+			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), { myViewportSize.x, myViewportSize.y });
 		}
 		else
 		{
-			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalFramebuffer()->GetColorAttachment(0)), { myViewportSize.x, myViewportSize.y });
+			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), { myViewportSize.x, myViewportSize.y });
 		}
 	}
 	else
 	{
-		const auto& passes = mySceneRenderer->GetAllFramebuffers();
-		const auto& [name, framebuffer] = passes.at(myCurrentRenderPass);
+		//const auto& passes = mySceneRenderer->GetAllFramebuffers();
+		//const auto& [name, framebuffer] = passes.at(myCurrentRenderPass);
 
-		const uint32_t rowCount = (uint32_t)std::sqrt(framebuffer->GetSpecification().attachments.size()) + 1;
+		//const uint32_t rowCount = (uint32_t)std::sqrt(framebuffer->GetSpecification().attachments.size()) + 1;
 
-		ImVec2 perViewportSize = { myViewportSize.x / rowCount, myViewportSize.y / rowCount };
+		//ImVec2 perViewportSize = { myViewportSize.x / rowCount, myViewportSize.y / rowCount };
 
-		ImGui::TextUnformatted(name.c_str());
-		for (uint32_t column = 0, i = 0; i < (uint32_t)framebuffer->GetSpecification().attachments.size(); i++)
-		{
-			const auto& att = framebuffer->GetSpecification().attachments.at(i);
-			if (Volt::Utility::IsDepthFormat(att.format) || Volt::Utility::IsTypeless(att.format))
-			{
-				continue;
-			}
+		//ImGui::TextUnformatted(name.c_str());
+		//for (uint32_t column = 0, i = 0; i < (uint32_t)framebuffer->GetSpecification().attachments.size(); i++)
+		//{
+		//	const auto& att = framebuffer->GetSpecification().attachments.at(i);
+		//	if (Volt::Utility::IsDepthFormat(att.format) || Volt::Utility::IsTypeless(att.format))
+		//	{
+		//		continue;
+		//	}
 
-			const ImVec2 startPos = ImGui::GetCursorPos();
-			ImGui::Image(UI::GetTextureID(framebuffer->GetColorAttachment(i)), perViewportSize);
+		//	const ImVec2 startPos = ImGui::GetCursorPos();
+		//	
+		//	// #TODO_Ivar: Reimplement
 
-			column++;
-			if (column < rowCount)
-			{
-				ImGui::SameLine();
-			}
-			else
-			{
-				column = 0;
-			}
-			const ImVec2 endPos = ImGui::GetCursorPos();
+		//	//ImGui::Image(UI::GetTextureID(framebuffer->GetColorAttachment(i)), perViewportSize);
 
-			ImGui::SetCursorPos(startPos);
-			ImGui::TextUnformatted(framebuffer->GetColorAttachment(i)->GetSpecification().debugName.c_str());
-			ImGui::SetCursorPos(endPos);
-		}
+		//	column++;
+		//	if (column < rowCount)
+		//	{
+		//		ImGui::SameLine();
+		//	}
+		//	else
+		//	{
+		//		column = 0;
+		//	}
+		//	const ImVec2 endPos = ImGui::GetCursorPos();
+
+		//	ImGui::SetCursorPos(startPos);
+		//	ImGui::TextUnformatted(framebuffer->GetColorAttachment(i)->GetSpecification().debugName.c_str());
+		//	ImGui::SetCursorPos(endPos);
+		//}
 	}
 
 	HandleNonMeshDragDrop();
@@ -128,7 +135,7 @@ void ViewportPanel::UpdateMainContent()
 		static bool hasDuplicated = false;
 		static bool isUsing = false;
 
-		if (SelectionManager::IsAnySelected() && mySceneState != SceneState::Play)
+		if (SelectionManager::IsAnySelected())
 		{
 			averageTransform = CalculateAverageTransform();
 			bool snap = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
@@ -162,12 +169,30 @@ void ViewportPanel::UpdateMainContent()
 
 			gem::mat4 deltaMatrix = { 1.f };
 
+			// Temp camera is needed because 1/z messes up the gizmo while it's not in view
+			const auto realCam = myEditorCameraController->GetCamera();
+			Ref<Volt::Camera> tempCamera = CreateRef<Volt::Camera>(realCam->GetFieldOfView(), realCam->GetAspectRatio(), realCam->GetNearPlane(), realCam->GetFarPlane(), false);
+			tempCamera->SetView(realCam->GetView());
+
 			ImGuizmo::Manipulate(
-				gem::value_ptr(myEditorCameraController->GetCamera()->GetView()),
-				gem::value_ptr(myEditorCameraController->GetCamera()->GetProjection()),
+				gem::value_ptr(tempCamera->GetView()),
+				gem::value_ptr(tempCamera->GetProjection()),
 				myGizmoOperation, gizmoMode, gem::value_ptr(averageTransform), gem::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
 
+			bool wasUsedPreviousFrame = isUsing;
 			isUsing = ImGuizmo::IsUsing();
+
+			if (wasUsedPreviousFrame && !isUsing)
+			{
+				for (auto ent : SelectionManager::GetSelectedEntities())
+				{
+					if (Sandbox::Get().CheckForUpdateNavMesh(Volt::Entity(ent, myEditorScene.get())))
+					{
+						Sandbox::Get().BakeNavMesh();
+						break;
+					}
+				}
+			}
 
 			if (isUsing)
 			{
@@ -198,13 +223,13 @@ void ViewportPanel::UpdateMainContent()
 
 		myEditorCameraController->SetIsControllable(myIsHovered && !isUsing);
 	}
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && mySceneState != SceneState::Play && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{
 		myBeganClick = true;
 		HandleSingleSelect();
 	}
 
-	if (myBeganClick && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+	if (myBeganClick && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
 	{
 		myStartDragPos = ImGui::GetMousePos();
 		myIsDragging = true;
@@ -237,7 +262,7 @@ void ViewportPanel::UpdateMainContent()
 
 void ViewportPanel::UpdateContent()
 {
-	if (myMidEvent && Volt::Input::IsMouseButtonReleased(VT_MOUSE_BUTTON_LEFT))
+	if (myMidEvent && ImGui::IsMouseReleased(0))
 	{
 		myMidEvent = false;
 	}
@@ -264,21 +289,20 @@ void ViewportPanel::UpdateContent()
 
 	if (UI::ImageButton("##play", UI::GetTextureID(playIcon), { buttonSize, buttonSize }))
 	{
+		static std::vector<Ref<EditorWindow>> fullscreenDeactivatedWindows;
+
 		if (mySceneState == SceneState::Edit)
 		{
 			Sandbox::Get().OnScenePlay();
-			Volt::ViewportResizeEvent resizeEvent{ (uint32_t)myPerspectiveBounds[0].x, (uint32_t)myPerspectiveBounds[0].y, (uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y };
-			Volt::Application::Get().OnEvent(resizeEvent);
 
 			if (settings.sceneSettings.fullscreenOnPlay)
 			{
-				for (const auto& window : Sandbox::Get().GetEditorWindows())
+				for (const auto& window : EditorLibrary::GetPanels())
 				{
-					if (window->GetTitle() == "Scene View" ||
-						window->GetTitle() == "Asset Browser##Main" ||
-						window->GetTitle() == "Properties")
+					if (window.editorWindow->IsOpen() && window.editorWindow.get() != this && window.editorWindow.get()->GetTitle() != GameViewPanel::GAMEVIEWPANEL_TITLE && window.editorWindow->IsDocked())
 					{
-						const_cast<bool&>(window->IsOpen()) = false;
+						const_cast<bool&>(window.editorWindow->IsOpen()) = false;
+						fullscreenDeactivatedWindows.emplace_back(window.editorWindow);
 					}
 				}
 			}
@@ -289,18 +313,13 @@ void ViewportPanel::UpdateContent()
 
 			if (settings.sceneSettings.fullscreenOnPlay)
 			{
-				for (const auto& window : Sandbox::Get().GetEditorWindows())
+				for (const auto& window : fullscreenDeactivatedWindows)
 				{
-					if (window->GetTitle() == "Scene View" ||
-						window->GetTitle() == "Asset Browser##Main" ||
-						window->GetTitle() == "Properties")
-					{
-						const_cast<bool&>(window->IsOpen()) = true;
-					}
+					const_cast<bool&>(window->IsOpen()) = true;
 				}
+				fullscreenDeactivatedWindows.clear();
 			}
 		}
-
 	}
 
 	ImGui::SameLine();
@@ -308,7 +327,7 @@ void ViewportPanel::UpdateContent()
 	Ref<Volt::Texture2D> physicsIcon = myAnimatedPhysicsIcon.GetCurrentFrame();
 	static Volt::Texture2D* physicsId = physicsIcon.get();
 
-	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { buttonSize, buttonSize }, { 0.f, 0.f }, { 1.f, 1.f }, 0))
+	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { buttonSize, buttonSize }))
 	{
 		if (mySceneState == SceneState::Edit)
 		{
@@ -336,7 +355,7 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
 
-	if (ImGui::Button("FS"))
+	if (UI::ImageButtonState("##fullscreenOnPlay", settings.sceneSettings.fullscreenOnPlay, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::FullscreenOnPlay)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.fullscreenOnPlay = !settings.sceneSettings.fullscreenOnPlay;
 	}
@@ -363,23 +382,30 @@ void ViewportPanel::UpdateContent()
 		settings.sceneSettings.snapToGrid = !settings.sceneSettings.snapToGrid;
 	}
 
-	ImGui::SetNextWindowSize({ 100.f, m_snapToGridValues.size() * 20.f });
-	if (ImGui::BeginPopupContextItem("##gridSnapValues", ImGuiPopupFlags_MouseButtonRight))
+	// Grid Settings
 	{
-		for (uint32_t i = 0; i < m_snapToGridValues.size(); i++)
+		UI::ScopedStyleFloat2 windowPadding{ ImGuiStyleVar_WindowPadding, { 5.f, 5.f } };
+
+		ImGui::SetNextWindowSize({ 100.f, m_snapToGridValues.size() * 22.5f });
+		if (ImGui::BeginPopupContextItem("##gridSnapValues", ImGuiPopupFlags_MouseButtonRight))
 		{
-			std::string valueStr = Utils::RemoveTrailingZeroes(std::to_string(m_snapToGridValues[i]));
-			std::string	id = valueStr + "##gridSnapValue" + std::to_string(i);
-
-			if (ImGui::Selectable(id.c_str()))
+			for (uint32_t i = 0; i < m_snapToGridValues.size(); i++)
 			{
-				settings.sceneSettings.gridSnapValue = m_snapToGridValues[i];
-			}
-		}
+				std::string valueStr = Utils::RemoveTrailingZeroes(std::to_string(m_snapToGridValues[i]));
+				std::string	id = valueStr + "##gridSnapValue" + std::to_string(i);
 
-		ImGui::EndPopup();
+				bool selected = settings.sceneSettings.gridSnapValue == m_snapToGridValues[i];
+
+				if (ImGui::Selectable(id.c_str(), &selected))
+				{
+					settings.sceneSettings.gridSnapValue = m_snapToGridValues[i];
+				}
+			}
+
+			ImGui::EndPopup();
+		}
+		ImGui::SameLine();
 	}
-	ImGui::SameLine();
 
 	if (UI::ImageButtonState("##snapRotation", settings.sceneSettings.snapRotation, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::SnapRotation)), { buttonSize, buttonSize }))
 	{
@@ -428,8 +454,38 @@ void ViewportPanel::UpdateContent()
 	if (UI::ImageButtonState("##showGizmos", settings.sceneSettings.showGizmos, UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::ShowGizmos)), { buttonSize, buttonSize }))
 	{
 		settings.sceneSettings.showGizmos = !settings.sceneSettings.showGizmos;
-		Sandbox::Get().SetShouldRenderGizmos(settings.sceneSettings.showGizmos);
 	}
+	if (ImGui::BeginPopupContextItem("##gizmoSettings", ImGuiPopupFlags_MouseButtonRight))
+	{
+		ImGui::Selectable("Lights", &settings.sceneSettings.showLightSpheres);
+		ImGui::Selectable("Entities", &settings.sceneSettings.showEntityGizmos);
+		ImGui::Selectable("Bounding Spheres", &settings.sceneSettings.showBoundingSpheres);
+
+		static const std::vector<const char*> colliderModes =
+		{
+			"None",
+			"Selected",
+			"All",
+			"AllHideMesh"
+		};
+
+		UI::Combo("Collider View", *(int32_t*)&settings.sceneSettings.colliderViewMode, colliderModes);
+
+		ImGui::Selectable("Environment Probes", &settings.sceneSettings.showEnvironmentProbes);
+
+		static const std::vector<const char*> navmeshModes =
+		{
+			"None",
+			"All",
+			"Only"
+		};
+
+		UI::Combo("NavMesh", *(int32_t*)&settings.sceneSettings.navMeshViewMode, navmeshModes);
+
+		ImGui::Selectable("NavMesh", &settings.sceneSettings.navMeshViewMode);
+		ImGui::EndPopup();
+	}
+
 	ImGui::PopStyleVar(3);
 	ImGui::End();
 }
@@ -437,7 +493,6 @@ void ViewportPanel::UpdateContent()
 void ViewportPanel::OnEvent(Volt::Event& e)
 {
 	Volt::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<Volt::MouseMovedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMouseMoved));
 	dispatcher.Dispatch<Volt::KeyPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnKeyPressedEvent));
 	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMousePressed));
 	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMouseReleased));
@@ -445,23 +500,18 @@ void ViewportPanel::OnEvent(Volt::Event& e)
 	myAnimatedPhysicsIcon.OnEvent(e);
 }
 
-bool ViewportPanel::OnMouseMoved(Volt::MouseMovedEvent& e)
-{
-	Volt::MouseMovedViewportEvent moved{ myViewportMouseCoords.x, myViewportMouseCoords.y };
-	Volt::Application::Get().OnEvent(moved);
-	return false;
-}
-
 bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 {
 	switch (e.GetMouseButton())
 	{
 		case VT_MOUSE_BUTTON_RIGHT:
+		{
 			if (myIsHovered)
 			{
 				ImGui::SetWindowFocus("Viewport");
 			}
 			break;
+		}
 	}
 
 	return false;
@@ -469,7 +519,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!myIsHovered || Volt::Input::IsMouseButtonPressed(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!myIsHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -505,17 +555,158 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			}
 			else
 			{
-				if (myCurrentRenderPass == mySceneRenderer->GetAllFramebuffers().size() - 1)
+				//if (myCurrentRenderPass == mySceneRenderer->GetAllFramebuffers().size() - 1)
+				//{
+				//	myShowRenderTargets = false;
+				//}
+				//else
+				//{
+				//	myCurrentRenderPass++;
+				//}
+			}
+			break;
+		}
+
+		case VT_KEY_G:
+		{
+			if (!ctrlPressed)
+			{
+				UserSettingsManager::GetSettings().sceneSettings.gridEnabled = !UserSettingsManager::GetSettings().sceneSettings.gridEnabled;
+				mySceneRenderer->GetSettings().enableGrid = UserSettingsManager::GetSettings().sceneSettings.gridEnabled;
+			}
+			break;
+		}
+
+		case VT_KEY_END:
+		{
+			// NOT WORKING YET
+			break;
+
+			auto& selected = SelectionManager::GetSelectedEntities();
+
+			if (selected.empty()) { break; }
+
+			auto& selectedTransformComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(selected[0]);
+
+			gem::vec3 currentPos = selectedTransformComp.position; // Get world instead of local
+			bool foundIntersect = false;
+			float bestHeight = FLT_MAX;
+
+			auto meshEntities = myEditorScene->GetAllEntitiesWith<Volt::MeshComponent>();
+
+			for (const auto& ent : meshEntities)
+			{
+				if (ent == selected[0]) { continue; }
+
+				auto& transformcomp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
+				auto& meshcomp = myEditorScene->GetRegistry().GetComponent<Volt::MeshComponent>(ent);
+				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshcomp.handle);
+
+				if (gem::distance(
+					gem::vec3(transformcomp.position.x, 0.f, transformcomp.position.z),
+					gem::vec3(currentPos.x / transformcomp.scale.x, 0.f, currentPos.z / transformcomp.scale.z)) > mesh->GetBoundingSphere().radius)
 				{
-					myShowRenderTargets = false;
+					continue;
 				}
-				else
+
+				auto vList = mesh->GetVertices();
+				auto iList = mesh->GetIndices();
+
+				// Check submeshes
+
+				for (int i = 0; i < iList.size(); i += 3)
 				{
-					myCurrentRenderPass++;
+					auto p1 = vList[iList[i]].position;
+					auto p2 = vList[iList[i + 1]].position;
+					auto p3 = vList[iList[i + 2]].position;
+
+					gem::vec3 intersectionPoint = { 0,0,0 };
+
+					auto relativeScalePos = gem::vec3(
+						currentPos.x / transformcomp.scale.x,
+						currentPos.y,
+						currentPos.z / transformcomp.scale.z);
+
+					if (Volt::rayTriangleIntersection(relativeScalePos, gem::vec3(0.f, -1.f, 0.f), p1, p2, p3, intersectionPoint))
+					{
+						if (std::isnan(intersectionPoint.x) ||
+							std::isnan(intersectionPoint.y) ||
+							std::isnan(intersectionPoint.z) ||
+							std::isinf(intersectionPoint.x) ||
+							std::isinf(intersectionPoint.y) ||
+							std::isinf(intersectionPoint.z))
+						{
+							continue;
+						}
+
+						if (gem::abs(currentPos.y - bestHeight) > gem::abs(currentPos.y - intersectionPoint.y))
+						{
+							bestHeight = intersectionPoint.y;
+							foundIntersect = true;
+						}
+					}
 				}
 			}
+
+			if (foundIntersect)
+			{
+				selectedTransformComp.position.y = bestHeight;
+			}
+
+			break;
 		}
-		;
+
+		case VT_KEY_BACKSPACE:
+		case VT_KEY_DELETE:
+		{
+			std::vector<Volt::Entity> entitiesToRemove;
+
+			auto selection = SelectionManager::GetSelectedEntities();
+			for (const auto& selectedEntity : selection)
+			{
+				Volt::Entity tempEnt = Volt::Entity(selectedEntity, myEditorScene.get());
+				entitiesToRemove.push_back(tempEnt);
+
+				SelectionManager::Deselect(tempEnt.GetId());
+				SelectionManager::GetFirstSelectedRow() = -1;
+				SelectionManager::GetLastSelectedRow() = -1;
+			}
+
+			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(entitiesToRemove, ObjectStateAction::Delete);
+			EditorCommandStack::GetInstance().PushUndo(command);
+
+			bool shouldUpdateNavMesh = false;
+			for (const auto& i : entitiesToRemove)
+			{
+				if (!shouldUpdateNavMesh && Sandbox::Get().CheckForUpdateNavMesh(i))
+				{
+					shouldUpdateNavMesh = true;
+				}
+				myEditorScene->RemoveEntity(i);
+			}
+
+			if (shouldUpdateNavMesh)
+			{
+				Sandbox::Get().BakeNavMesh();
+			}
+
+			break;
+		}
+
+		case VT_KEY_P:
+		{
+			auto& settings = UserSettingsManager::GetSettings().sceneSettings;
+			if (!settings.showGizmos)
+			{
+				settings.showGizmos = true;
+				settings.navMeshViewMode = NavMeshViewMode::All;
+			}
+			else
+			{
+				settings.navMeshViewMode = NavMeshViewMode::None;
+			}
+			break;
+		}
 	}
 
 	return false;
@@ -660,7 +851,7 @@ void ViewportPanel::CheckDragDrop()
 				break;
 			}
 
-			Wire::EntityId id = prefab->Instantiate(myEditorScene->GetRegistry());
+			Wire::EntityId id = prefab->Instantiate(myEditorScene.get());
 			Volt::Entity prefabEntity(id, myEditorScene.get());
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
@@ -682,7 +873,7 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 		return;
 	}
 
-	gem::vec3 dir = myEditorCameraController->GetCamera()->ScreenToWorldCoords(myViewportMouseCoords, myViewportSize);
+	gem::vec3 dir = myEditorCameraController->GetCamera()->ScreenToWorldRay(myViewportMouseCoords, myViewportSize);
 	gem::vec3 targetPos = myEditorCameraController->GetCamera()->GetPosition();
 
 	while (targetPos.y > 0.f)
@@ -695,7 +886,15 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 		targetPos += dir;
 	}
 
-	myCreatedEntity.SetLocalPosition({ targetPos.x, 0.f, targetPos.z });
+	const auto& settings = UserSettingsManager::GetSettings();
+
+	if (settings.sceneSettings.snapToGrid)
+	{
+		targetPos.x = std::round(targetPos.x / settings.sceneSettings.gridSnapValue) * settings.sceneSettings.gridSnapValue;
+		targetPos.z = std::round(targetPos.z / settings.sceneSettings.gridSnapValue) * settings.sceneSettings.gridSnapValue;
+	}
+
+	myCreatedEntity.SetPosition({ targetPos.x, 0.f, targetPos.z });
 }
 
 void ViewportPanel::DuplicateSelection()
@@ -710,7 +909,7 @@ void ViewportPanel::DuplicateSelection()
 			continue;
 		}
 
-		duplicated.emplace_back(Volt::Entity::Duplicate(myEditorScene->GetRegistry(), ent));
+		duplicated.emplace_back(Volt::Entity::Duplicate(myEditorScene->GetRegistry(), myEditorScene->GetScriptFieldCache(), ent));
 	}
 
 	SelectionManager::DeselectAll();
@@ -730,7 +929,9 @@ void ViewportPanel::HandleSingleSelect()
 
 	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 	{
-		uint32_t pixelData = mySceneRenderer->GetSelectionFramebuffer()->ReadPixel<uint32_t>(3, mouseX, mouseY);
+		const auto renderScale = mySceneRenderer->GetSettings().renderScale;
+
+		uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
 		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
 		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
 
@@ -739,8 +940,16 @@ void ViewportPanel::HandleSingleSelect()
 			SelectionManager::DeselectAll();
 		}
 
-		if (pixelData != Wire::NullID)
+		if (pixelData != Wire::NullID && myEditorScene->GetRegistry().Exists(pixelData))
 		{
+			if (myEditorScene->GetRegistry().HasComponent<Volt::TransformComponent>(pixelData))
+			{
+				if (myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(pixelData).locked)
+				{
+					return;
+				}
+			}
+
 			if (deselect)
 			{
 				SelectionManager::Deselect(pixelData);
@@ -748,6 +957,7 @@ void ViewportPanel::HandleSingleSelect()
 			else
 			{
 				SelectionManager::Select(pixelData);
+				EditorLibrary::Get<SceneViewPanel>()->HighlightEntity(pixelData);
 			}
 		}
 	}
@@ -775,7 +985,12 @@ void ViewportPanel::HandleMultiSelect()
 	if (minDragBoxX >= 0 && minDragBoxY >= 0 && minDragBoxX < (int32_t)perspectiveSize.x && minDragBoxY < (int32_t)perspectiveSize.y &&
 		maxDragBoxX >= 0 && maxDragBoxY >= 0 && maxDragBoxX < (int32_t)perspectiveSize.x && maxDragBoxY < (int32_t)perspectiveSize.y)
 	{
-		const std::vector<uint32_t> data = mySceneRenderer->GetSelectionFramebuffer()->ReadPixelRange<uint32_t>(3, minDragBoxX, minDragBoxY, maxDragBoxX, maxDragBoxY);
+		auto renderScale = mySceneRenderer->GetSettings().renderScale;
+
+		const std::vector<uint32_t> data = mySceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
+			(uint32_t)(minDragBoxX * renderScale), (uint32_t)(minDragBoxY * renderScale),
+			(uint32_t)(maxDragBoxX * renderScale), (uint32_t)(maxDragBoxY * renderScale));
+
 		for (const auto& d : data)
 		{
 			if (d != Wire::NullID)
@@ -788,20 +1003,27 @@ void ViewportPanel::HandleMultiSelect()
 
 void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
 {
-	auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(SelectionManager::GetSelectedEntities().front());
-	auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(SelectionManager::GetSelectedEntities().front());
+	auto firstEntity = SelectionManager::GetSelectedEntities().front();
+
+	if (!myEditorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(firstEntity) || !myEditorScene->GetRegistry().HasComponent<Volt::TransformComponent>(firstEntity))
+	{
+		return;
+	}
+
+	auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(firstEntity);
+	auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(firstEntity);
 
 	if (myMidEvent == false)
 	{
-		GizmoCommand<gem::vec3>::GizmoData data;
+		GizmoCommand::GizmoData data;
 		data.positionAdress = &transComp.position;
-		//data.rotationAdress = &transComp.rotation;
+		data.rotationAdress = &transComp.rotation;
 		data.scaleAdress = &transComp.scale;
 		data.previousPositionValue = transComp.position;
 		data.previousRotationValue = gem::eulerAngles(transComp.rotation);
 		data.previousScaleValue = transComp.scale;
 
-		Ref<GizmoCommand<gem::vec3>> command = CreateRef<GizmoCommand<gem::vec3>>(data);
+		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::PushUndo(command);
 		myMidEvent = true;
 	}
@@ -816,28 +1038,42 @@ void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
 		averageTransform = gem::inverse(pTransform) * averageTransform;
 	}
 
-	gem::vec3 p = 0.f, r = 0.f, s = 1.f;
+	gem::vec3 p = 0.f, s = 1.f;
+	gem::quat r;
 	gem::decompose(averageTransform, p, r, s);
 
-	const gem::vec3 originalRot = gem::eulerAngles(transComp.rotation);
-	const gem::vec3 deltaRot = r - originalRot;
+	gem::quat delta = gem::inverse(transComp.rotation) * r;
 
-	transComp.position = p;
-	transComp.rotation = gem::quat{ deltaRot + originalRot };
-	transComp.scale = s;
+	Volt::Entity ent{ firstEntity, myEditorScene.get() };
+
+	ent.SetLocalPosition(p);
+	ent.SetLocalRotation(transComp.rotation * delta);
+	ent.SetLocalScale(s);
 }
 
 void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& deltaTransform)
 {
-	for (const auto& ent : SelectionManager::GetSelectedEntities())
+	std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> previousTransforms;
+
+	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{
-		if (SelectionManager::IsAnyParentSelected(ent, myEditorScene))
+		if (SelectionManager::IsAnyParentSelected(entId, myEditorScene))
 		{
 			continue;
 		}
 
-		auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(ent);
-		auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
+		if (!myEditorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(entId) || !myEditorScene->GetRegistry().HasComponent<Volt::TransformComponent>(entId))
+		{
+			continue;
+		}
+
+		auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId);
+		auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(entId);
+
+		if (!myMidEvent)
+		{
+			previousTransforms.emplace_back(entId, transComp);
+		}
 
 		gem::mat4 entDeltaTransform = deltaTransform;
 
@@ -849,12 +1085,26 @@ void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& deltaTransform)
 			entDeltaTransform = gem::inverse(pTransform) * entDeltaTransform;
 		}
 
-		gem::vec3 p = 0.f, r = 0.f, s = 1.f;
+		gem::vec3 p = 0.f, s = 1.f;
+		gem::quat r;
+
 		gem::decompose(entDeltaTransform * transComp.GetTransform(), p, r, s);
 
-		transComp.position = p;
-		transComp.rotation = r;
-		transComp.scale = s;
+		gem::quat delta = gem::inverse(transComp.rotation) * r;
+
+		Volt::Entity ent{ entId, myEditorScene.get() };
+
+		ent.SetLocalPosition(p);
+		ent.SetLocalRotation(transComp.rotation * delta);
+		ent.SetLocalScale(s);
+	}
+
+	if (!previousTransforms.empty())
+	{
+		myMidEvent = true;
+
+		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myEditorScene, previousTransforms);
+		EditorCommandStack::PushUndo(command);
 	}
 }
 
@@ -887,6 +1137,8 @@ void ViewportPanel::UpdateModals()
 
 void ViewportPanel::HandleNonMeshDragDrop()
 {
+	// #TODO_Ivar: Reimplement
+
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
 	{
 		const Volt::AssetHandle handle = *(const Volt::AssetHandle*)ptr;
@@ -909,7 +1161,7 @@ void ViewportPanel::HandleNonMeshDragDrop()
 
 				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 				{
-					uint32_t pixelData = mySceneRenderer->GetSelectionFramebuffer()->ReadPixel<uint32_t>(3, mouseX, mouseY);
+					uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(mouseX, mouseY);
 
 					if (myEditorScene->GetRegistry().HasComponent<Volt::MeshComponent>(pixelData))
 					{
@@ -970,28 +1222,37 @@ gem::vec2 ViewportPanel::GetViewportLocalPosition(const ImVec2& mousePos)
 	return result;
 }
 
+gem::vec2 ViewportPanel::GetViewportLocalPosition(const gem::vec2& mousePos)
+{
+	auto [mx, my] = mousePos;
+	mx -= myPerspectiveBounds[0].x;
+	my -= myPerspectiveBounds[0].y;
+
+	gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	gem::vec2 result = { mx, my };
+
+	return result;
+}
+
 gem::mat4 ViewportPanel::CalculateAverageTransform()
 {
 	gem::mat4 result;
 
 	gem::vec3 avgTranslation;
-	gem::vec3 avgRotation;
+	gem::quat avgRotation;
 	gem::vec3 avgScale;
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
-		gem::vec3 p = 0.f, r = 0.f, s = 1.f;
-		gem::mat4 transform = myEditorScene->GetWorldSpaceTransform(Volt::Entity{ ent, myEditorScene.get() });
+		const auto trs = myEditorScene->GetWorldSpaceTRS(Volt::Entity{ ent, myEditorScene.get() });
 
-		gem::decompose(transform, p, r, s);
-
-		avgTranslation += p;
-		avgRotation = r;
-		avgScale += s;
+		avgTranslation += trs.position;
+		avgRotation = trs.rotation;
+		avgScale += trs.scale;
 	}
 
 	avgTranslation /= (float)SelectionManager::GetSelectedCount();
 	avgScale /= (float)SelectionManager::GetSelectedCount();
 
-	return gem::translate(gem::mat4(1.f), avgTranslation) * gem::mat4_cast(gem::quat(avgRotation)) * gem::scale(gem::mat4(1.f), avgScale);
+	return gem::translate(gem::mat4(1.f), avgTranslation) * gem::mat4_cast(avgRotation) * gem::scale(gem::mat4(1.f), avgScale);
 }

@@ -2,6 +2,8 @@
 
 #include "Volt/Asset/Importers/AssetImporter.h"
 
+#include <Wire/Wire.h>
+
 namespace Volt
 {
 	class PrefabImporter : public AssetImporter

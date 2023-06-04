@@ -5,9 +5,29 @@
 
 namespace Volt
 {
-	const size_t Skeleton::GetJointIndexFromName(const std::string& str)
+	const bool Skeleton::JointIsDecendantOf(int32_t jointIndex, int32_t parentIndex) const
 	{
-		for (size_t i = 0; const auto& joint : myJoints)
+		if (jointIndex < 0 || jointIndex >= (int32_t)myJoints.size())
+		{
+			return false;
+		}
+
+		if (myJoints.at(jointIndex).parentIndex == parentIndex)
+		{
+			return true;
+		}
+
+		return JointIsDecendantOf(myJoints.at(jointIndex).parentIndex, parentIndex);
+	}
+
+	const int32_t Skeleton::GetJointIndexFromName(const std::string& str)
+	{
+		if (myJointNameToIndex.contains(str))
+		{
+			return static_cast<int32_t>(myJointNameToIndex.at(str));
+		}
+
+		for (int32_t i = 0; const auto & joint : myJoints)
 		{
 			if (joint.name == str)
 			{
@@ -16,7 +36,7 @@ namespace Volt
 			i++;
 		}
 
-		return 0;
+		return -1;
 	}
 
 	const std::string Skeleton::GetNameFromJointIndex(int32_t index)

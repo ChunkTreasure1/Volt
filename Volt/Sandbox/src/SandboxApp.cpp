@@ -1,7 +1,6 @@
 #include "sbpch.h"
 
 #include "Sandbox/Sandbox.h"
-#include "HUD/Layer/LayerDebug.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/EntryPoint.h>
@@ -16,8 +15,6 @@ public:
 	{
 		Sandbox* sandbox = new Sandbox();
 		PushLayer(sandbox);
-		PushLayer(new HUD::LayerDebug(sandbox->GetSceneRenderer(), "DebugLayer"));
-
 	}
 };
 
@@ -32,7 +29,8 @@ Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 	info.iconPath = "Editor/Textures/Icons/icon_volt.dds";
 	info.projectPath = appPath;
 	info.useVSync = false;
-	
+	info.enableSteam = true;
+
 	SandboxApp* app;
 	Create(app, info);
 

@@ -65,7 +65,7 @@
 
 #include "imgui_impl_vulkan.h"
 
-#include <Lamp/Rendering/Renderer.h>
+#include <Volt/Rendering/Renderer.h>
 
 #include <stdio.h>
 
@@ -110,32 +110,35 @@ struct ImGui_ImplVulkan_ViewportData
 // Vulkan data
 struct ImGui_ImplVulkan_Data
 {
-    ImGui_ImplVulkan_InitInfo   VulkanInitInfo;
-    VkRenderPass                RenderPass;
-    VkDeviceSize                BufferMemoryAlignment;
-    VkPipelineCreateFlags       PipelineCreateFlags;
-    VkDescriptorSetLayout       DescriptorSetLayout;
-    VkPipelineLayout            PipelineLayout;
-    VkPipeline                  Pipeline;
-    uint32_t                    Subpass;
-    VkShaderModule              ShaderModuleVert;
-    VkShaderModule              ShaderModuleFrag;
+    ImGui_ImplVulkan_InitInfo   VulkanInitInfo = {};
+    VkRenderPass                RenderPass = nullptr;
+    VkDeviceSize                BufferMemoryAlignment = 0;
+    VkPipelineCreateFlags       PipelineCreateFlags = {};
+    VkDescriptorSetLayout       DescriptorSetLayout = nullptr;
+    VkPipelineLayout            PipelineLayout = nullptr;
+    VkPipeline                  Pipeline = nullptr;
+    uint32_t                    Subpass = 0;
+    VkShaderModule              ShaderModuleVert = nullptr;
+    VkShaderModule              ShaderModuleFrag = nullptr;
 
     // Font data
-    VkSampler                   FontSampler;
-    VkDeviceMemory              FontMemory;
-    VkImage                     FontImage;
-    VkImageView                 FontView;
-    VkDescriptorSet             FontDescriptorSet;
-    VkDeviceMemory              UploadBufferMemory;
-    VkBuffer                    UploadBuffer;
+    VkSampler                   FontSampler = nullptr;
+    VkSampler                   IconSampler = nullptr;
+    VkDeviceMemory              FontMemory = nullptr;
+    VkImage                     FontImage = nullptr;
+    VkImageView                 FontView = nullptr;
+    VkDescriptorSet             FontDescriptorSet = nullptr;
+    VkDeviceMemory              UploadBufferMemory = nullptr;
+    VkBuffer                    UploadBuffer = 0;
 
     // Render buffers for main window
     ImGui_ImplVulkanH_WindowRenderBuffers MainWindowRenderBuffers;
 
+    std::unordered_map<size_t, VkDescriptorSet> CachedDescriptorSets;
+
     ImGui_ImplVulkan_Data()
     {
-        memset((void*)this, 0, sizeof(*this));
+        CachedDescriptorSets = {};
         BufferMemoryAlignment = 256;
     }
 };
@@ -354,6 +357,11 @@ static uint32_t __glsl_shader_frag_spv[] =
 //-----------------------------------------------------------------------------
 // FUNCTIONS
 //-----------------------------------------------------------------------------
+
+inline size_t HashCombine(size_t lhs, size_t rhs)
+{
+    return lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
+}
 
 // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
 // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
@@ -967,14 +975,30 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         check_vk_result(err);
     }
 
+    if (!bd->IconSampler)
+    {
+        VkSamplerCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        info.magFilter = VK_FILTER_LINEAR;
+        info.minFilter = VK_FILTER_LINEAR;
+        info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.minLod = -1000;
+        info.maxLod = 2;
+        info.maxAnisotropy = 1.0f;
+        err = vkCreateSampler(v->Device, &info, v->Allocator, &bd->IconSampler);
+        check_vk_result(err);
+    }
+
     if (!bd->DescriptorSetLayout)
     {
-        VkSampler sampler[1] = { bd->FontSampler };
         VkDescriptorSetLayoutBinding binding[1] = {};
         binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         binding[0].descriptorCount = 1;
         binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        binding[0].pImmutableSamplers = sampler;
+        binding[0].pImmutableSamplers = nullptr;
         VkDescriptorSetLayoutCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         info.bindingCount = 1;
@@ -1035,6 +1059,7 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     if (bd->FontImage) { vkDestroyImage(v->Device, bd->FontImage, v->Allocator); bd->FontImage = VK_NULL_HANDLE; }
     if (bd->FontMemory) { vkFreeMemory(v->Device, bd->FontMemory, v->Allocator); bd->FontMemory = VK_NULL_HANDLE; }
     if (bd->FontSampler) { vkDestroySampler(v->Device, bd->FontSampler, v->Allocator); bd->FontSampler = VK_NULL_HANDLE; }
+    if (bd->IconSampler) { vkDestroySampler(v->Device, bd->IconSampler, v->Allocator); bd->IconSampler = VK_NULL_HANDLE; }
     if (bd->DescriptorSetLayout) { vkDestroyDescriptorSetLayout(v->Device, bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
     if (bd->PipelineLayout) { vkDestroyPipelineLayout(v->Device, bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
     if (bd->Pipeline) { vkDestroyPipeline(v->Device, bd->Pipeline, v->Allocator); bd->Pipeline = VK_NULL_HANDLE; }
@@ -1127,7 +1152,8 @@ void ImGui_ImplVulkan_NewFrame()
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     IM_ASSERT(bd != NULL && "Did you call ImGui_ImplVulkan_Init()?");
-    IM_UNUSED(bd);
+
+    bd->CachedDescriptorSets.clear();
 }
 
 void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)
@@ -1150,7 +1176,16 @@ void ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count)
 // FIXME: This is experimental in the sense that we are unsure how to best design/tackle this problem, please post to https://github.com/ocornut/imgui/pull/914 if you have suggestions.
 ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_view, VkImageLayout image_layout)
 {
+    size_t hash = HashCombine(std::hash<void*>()(sampler), std::hash<void*>()(image_view));
+    hash = HashCombine(hash, std::hash<uint32_t>()(image_layout));
+
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
+
+    if (bd->CachedDescriptorSets.contains(hash))
+    {
+        return bd->CachedDescriptorSets.at(hash);
+    }
+
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
 
     VkDescriptorSetAllocateInfo alloc_info = {};
@@ -1158,8 +1193,10 @@ ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_vie
     alloc_info.descriptorSetCount = 1;
     alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
 
-    VkDescriptorSet descriptor_set = Lamp::Renderer::AllocateDescriptorSet(alloc_info);
-    ImGui_ImplVulkan_UpdateTextureInfo(descriptor_set, sampler, image_view, image_layout);
+    VkDescriptorSet descriptor_set = Volt::Renderer::AllocateDescriptorSet(alloc_info);
+    ImGui_ImplVulkan_UpdateTextureInfo(descriptor_set, bd->IconSampler, image_view, image_layout);
+
+    bd->CachedDescriptorSets.emplace(hash, descriptor_set);
     return (ImTextureID)descriptor_set;
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Core/Base.h"
+
 namespace Volt
 {
 	class Scene;
@@ -7,11 +9,11 @@ namespace Volt
 	{
 	public:
 		static void Shutdown();
-		inline static void SetActiveScene(Ref<Scene> scene) { myActiveScene = scene; }
-		inline static Ref<Scene> GetActiveScene() { return myActiveScene; }
+		inline static void SetActiveScene(Weak<Scene> scene) { myActiveScene = scene; }
+		inline static Weak<Scene> GetActiveScene() { return myActiveScene; }
 
 	private:
 		SceneManager() = delete;
-		inline static Ref<Scene> myActiveScene;
+		inline static Weak<Scene> myActiveScene;
 	};
 }

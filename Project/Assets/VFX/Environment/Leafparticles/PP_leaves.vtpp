@@ -1,0 +1,31 @@
+Emitter:
+  looping: true
+  emittionTime: 1
+  intensity: 0.360000014
+  minLifeTime: 7
+  maxLifeTime: 7
+  texture: 11764334270176426650
+  material: 16516051006344565452
+  direction: [1, 1, 1]
+  gravity: [0, -1, 0]
+  shape: 0
+  innerRadius: 0
+  outerRadius: 0
+  coneSpawnOnEdge: false
+  sphereRadius: 154
+  sphereSpawnOnEdge: true
+  startVelocity: 80
+  endVelocity: 0
+  Sizes:
+    - [0.150000006, 0.150000006, 0.150000006]
+  isBurst: false
+  burstInterval: 0
+  burstLength: 0
+  mesh: 0
+  meshMaterial: 16516051006344565452
+  type: 1
+  Colors:
+    - [1, 1, 1, 1]
+    - [1, 1, 1, 1]
+    - [1, 1, 1, 1]
+    - [1, 1, 1, 0]

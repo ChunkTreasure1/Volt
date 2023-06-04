@@ -746,9 +746,6 @@ struct _GLFWplatform
     void (*waitEventsTimeout)(double);
     void (*postEmptyEvent)(void);
 
-    // Volt
-    void (*setWindowTitlebar)(_GLFWwindow*, GLFWbool);
-
     // EGL
     EGLenum (*getEGLPlatform)(EGLint**);
     EGLNativeDisplayType (*getEGLNativeDisplay)(void);
