@@ -5,8 +5,10 @@
 #ifdef RHI_EXPORT
 #define RHI_API __declspec(dllexport)
 #else
-#define RHI_API __declspec(dllexport)
+#define RHI_API __declspec(dllimport)
 #endif
+
+#define VT_NODISCARD [[nodiscard]]
 
 #define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
 

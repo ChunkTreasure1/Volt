@@ -21,6 +21,11 @@ project "VoltRHI"
 		"/ignore:4099",
 	}
 
+	links
+	{
+		"VoltMock"
+	}
+
 	files
 	{
 		"src/**.h",

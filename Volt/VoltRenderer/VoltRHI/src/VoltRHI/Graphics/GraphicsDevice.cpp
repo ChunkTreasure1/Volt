@@ -5,7 +5,7 @@
 
 namespace Volt
 {
-	Ref<GraphicsDevice> GraphicsDevice::Create(const GraphicsDeviceInfo& deviceInfo)
+	Ref<GraphicsDevice> GraphicsDevice::Create(const GraphicsDeviceCreateInfo& deviceInfo)
 	{
 		// #TODO: Implement
 		return nullptr;

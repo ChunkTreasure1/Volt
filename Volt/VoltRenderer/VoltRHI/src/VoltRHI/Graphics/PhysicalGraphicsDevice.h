@@ -1,25 +1,11 @@
 #pragma once
 
 #include "VoltRHI/Core/RHIInterface.h"
+#include "VoltRHI/Core/RHICommon.h"
 
 namespace Volt
 {
-	struct PhysicalDeviceInfo
-	{};
-
-	enum class DeviceVendor
-	{
-		AMD,
-		NVIDIA,
-		Intel
-	};
-
-	struct DeviceCapabilities
-	{
-		DeviceVendor deviceVendor;
-		std::string_view gpuName;
-	};
-
+	
 	class PhysicalGraphicsDevice : public RHIInterface
 	{
 	public:
@@ -28,7 +14,7 @@ namespace Volt
 
 		inline const DeviceCapabilities& GetCapabilities() const { return m_capabilities; }
 
-		static Ref<PhysicalGraphicsDevice> Create(const PhysicalDeviceInfo& deviceInfo);
+		static Ref<PhysicalGraphicsDevice> Create(const PhysicalDeviceCreateInfo& deviceInfo);
 
 	protected:
 		DeviceCapabilities m_capabilities;

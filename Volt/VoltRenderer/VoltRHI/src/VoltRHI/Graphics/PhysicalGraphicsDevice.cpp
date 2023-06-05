@@ -3,7 +3,7 @@
 
 namespace Volt
 {
-	Ref<PhysicalGraphicsDevice> PhysicalGraphicsDevice::Create(const PhysicalDeviceInfo& deviceInfo)
+	Ref<PhysicalGraphicsDevice> PhysicalGraphicsDevice::Create(const PhysicalDeviceCreateInfo& deviceInfo)
 	{
 		// #TODO: Implement
 		return nullptr;
