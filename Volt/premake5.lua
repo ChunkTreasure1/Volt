@@ -43,6 +43,12 @@ include "Volt/vendor/gem"
 include "Volt/vendor/nfd-extended"
 include "Volt/vendor/TGAFbx"
 
+group "Renderer"
+include "VoltRenderer/VoltRHI"
+include "VoltRenderer/VoltD3D12"
+include "VoltRenderer/VoltVulkan"
+include "VoltRenderer/VoltMock"
+
 group "Core"
 include "Amp"
 include "Volt"

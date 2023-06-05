@@ -54,6 +54,7 @@ project "Volt"
 		"../GraphKey/src/",
 		"../Navigation/src/",
 		"../Nexus/src/",
+		"../VoltRenderer/VoltRHI/src",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -112,7 +113,12 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX"
+		"TGAFBX",
+
+		"VoltRHI",
+		-- "VoltMock",
+		-- "VoltVulkan",
+		-- "VoltD3D12"
 	}
 
 	defines
