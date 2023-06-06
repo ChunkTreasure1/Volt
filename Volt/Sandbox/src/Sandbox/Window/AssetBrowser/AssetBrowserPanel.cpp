@@ -849,7 +849,7 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 		MeshImportData data;
 		auto meshes = AssetBrowser::AssetBrowserUtilities::GetMeshesExport();
 		EditorUtils::MeshExportModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(asset->handle)), myCurrentDirectory->path, data, meshes);
-	
+
 		if (UI::BeginModal(std::format("Reimport Animation##assetBrowser{0}", std::to_string(asset->handle))))
 		{
 			if (UI::BeginProperties())
@@ -899,55 +899,61 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 		if (ImGui::BeginMenu("New"))
 		{
-			UI::SmallSeparatorHeader("Materials", 5.f);
-
-			if (ImGui::MenuItem("Material"))
+			if (ImGui::BeginMenu("Materials##Menu"))
 			{
+				if (ImGui::MenuItem("Material"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
+				}
+
+				if (ImGui::MenuItem("Material Graph"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::MaterialGraph);
+				}
+
+				if (ImGui::MenuItem("Shader"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
+				}
+
+				if (ImGui::MenuItem("Post Processing Stack"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::PostProcessingStack);
+				}
+
+				if (ImGui::MenuItem("Post Processing Material"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::PostProcessingMaterial);
+				}
+
+				if (ImGui::MenuItem("Physics Material"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
+				}
+
+				ImGui::EndMenu();
+			}
+			
+			if (ImGui::BeginMenu("Animation##Menu"))
+			{
+				if (ImGui::MenuItem("Animated Character"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
+				}
+
+				if (ImGui::MenuItem("Animation Graph"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
+				}
+
+				if (ImGui::MenuItem("Blend Space"))
+				{
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
+				}
+				ImGui::EndMenu();
 			}
 
-			if (ImGui::MenuItem("Material Graph"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::MaterialGraph);
-			}
-
-			if (ImGui::MenuItem("Shader"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
-			}
-
-			if (ImGui::MenuItem("Post Processing Stack"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::PostProcessingStack);
-			}
-
-			if (ImGui::MenuItem("Post Processing Material"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::PostProcessingMaterial);
-			}
-
-			if (ImGui::MenuItem("Physics Material"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::PhysicsMaterial);
-			}
-
-			UI::SmallSeparatorHeader("Animation", 5.f);
-
-			if (ImGui::MenuItem("Animated Character"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
-			}
-
-			if (ImGui::MenuItem("Animation Graph"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
-			}
-
-			if (ImGui::MenuItem("Blend Space"))
-			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
-			}
-
-			UI::SmallSeparatorHeader("Other", 5.f);
+			//UI::SmallSeparatorHeader("Other", 5.f);
 
 			if (ImGui::MenuItem("Scene"))
 			{
