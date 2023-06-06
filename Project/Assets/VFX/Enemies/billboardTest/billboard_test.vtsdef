@@ -1,8 +1,0 @@
-name: billboard_test
-internal: false
-paths:
-  - Assets\VFX\Enemies\billboardTest\billboard_test_ps.hlsl
-  - Assets\VFX\Enemies\billboardTest\billboard_test_vs.hlsl
-inputTextures:
-  - shaderName: noise_Texture
-    editorName: noise_Texture

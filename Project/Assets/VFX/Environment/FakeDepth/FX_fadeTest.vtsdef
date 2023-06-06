@@ -1,7 +1,0 @@
-name: FX_fadeTest
-internal: false
-paths:
-  - Assets\VFX\Environment\FakeDepth\FX_fadeTest_ps.hlsl
-  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl
-inputTextures:
-  []

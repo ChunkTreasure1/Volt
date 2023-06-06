@@ -1,8 +1,0 @@
-PostProcessingMaterial:
-  shader: FX_blinkClose
-  specializationData:
-    size: 4
-    members:
-      - name: blinkValue
-        type: 10
-        data: 0

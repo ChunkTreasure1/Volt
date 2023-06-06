@@ -1,7 +1,0 @@
-name: FX_proceduralNoise
-internal: false
-paths:
-  - Assets\VFX\UIEffects\CCTV\FX_proceduralNoise_ps.hlsl
-  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl
-inputTextures:
-  []

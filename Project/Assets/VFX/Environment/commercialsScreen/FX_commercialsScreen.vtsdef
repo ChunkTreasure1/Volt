@@ -1,8 +1,0 @@
-name: FX_commercialsScreen
-internal: false
-paths:
-  - Assets\VFX\Environment\commercialsScreen\FX_commercialsScreen_ps.hlsl
-  - Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl
-inputTextures:
-  - shaderName: Texture_01
-    editorName: Texture_01

@@ -1,6 +1,0 @@
-name: FX_blinkClose
-internal: false
-paths:
-  - Assets\VFX\Environment\Pack-a-Punch\FX_blinkClose_cs.hlsl
-inputTextures:
-  []
