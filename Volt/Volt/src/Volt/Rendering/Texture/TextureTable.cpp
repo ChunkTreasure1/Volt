@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "TextureTable.h"
 
-#include "Volt/Core/Graphics/GraphicsDevice.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Profiling.h"
 
 #include "Volt/Rendering/Texture/Image2D.h"
@@ -79,7 +79,7 @@ namespace Volt
 			return;
 		}
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 	}
 

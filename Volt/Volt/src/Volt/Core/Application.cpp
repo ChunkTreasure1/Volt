@@ -7,9 +7,9 @@
 #include "Volt/Input/Input.h"
 
 #include "Volt/Core/Window.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/Swapchain.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/ImGui/ImGuiImplementation.h"
@@ -35,6 +35,8 @@
 
 #include "Volt/Utility/Noise.h"
 
+#include <VoltRHI/Graphics/GraphicsContext.h>
+
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
@@ -59,6 +61,10 @@ namespace Volt
 		{
 			ProjectManager::SetupWorkingDirectory();
 		}
+
+		GraphicsContextCreateInfo cinfo{};
+		cinfo.graphicsApi = GraphicsAPI::Mock;
+		Ref<GraphicsContext> context = CreateRef<MockGraphicsContext>(cinfo);
 
 		ProjectManager::SetupProject(myInfo.projectPath);
 
@@ -166,7 +172,7 @@ namespace Volt
 
 	Application::~Application()
 	{
-		GraphicsContext::GetDevice()->WaitForIdle();
+		GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 		myNavigationSystem = nullptr;
 		myLayerStack.Clear();

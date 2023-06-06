@@ -4,8 +4,8 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Graphics/Swapchain.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 
 #include "Volt/Rendering/Renderer.h"
@@ -72,7 +72,7 @@ namespace Volt
 			info.pNext = &extendedInfo;
 		}
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myDescriptorSetLayout));
 
 		CreateDescriptorPools();
@@ -81,7 +81,7 @@ namespace Volt
 
 	GlobalDescriptorSet::~GlobalDescriptorSet()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkDestroyDescriptorSetLayout(device->GetHandle(), myDescriptorSetLayout, nullptr);
 
 		for (const auto& pool : myDescriptorPools)
@@ -118,7 +118,7 @@ namespace Volt
 			countInfo.pNext = &countInfo;
 		}
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &myDescriptorSets.at(index)));
 
 		for (auto& [binding, writeDescriptors] : myWriteDescriptors)
@@ -168,7 +168,7 @@ namespace Volt
 
 		for (uint32_t i = 0; i < mySpecification.descriptorSetCount; i++)
 		{
-			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), &info, nullptr, &myDescriptorPools.emplace_back()));
+			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &info, nullptr, &myDescriptorPools.emplace_back()));
 		}
 	}
 }

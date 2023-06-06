@@ -5,9 +5,9 @@
 
 #include "Volt/Core/Application.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/Swapchain.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Shader/ShaderUtility.h"
 #include "Volt/Rendering/Shader/ShaderCompiler.h"
@@ -265,7 +265,7 @@ namespace Volt
 		allocInfo.pSetLayouts = &myResources.nullPaddedDescriptorSetLayouts.at(set);
 
 		VkDescriptorSet descriptorSet;
-		VT_VK_CHECK(vkAllocateDescriptorSets(GraphicsContext::GetDevice()->GetHandle(), &allocInfo, &descriptorSet));
+		VT_VK_CHECK(vkAllocateDescriptorSets(GraphicsContextVolt::GetDevice()->GetHandle(), &allocInfo, &descriptorSet));
 
 		return descriptorSet;
 	}
@@ -358,7 +358,7 @@ namespace Volt
 
 	void Shader::Release()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		for (const auto& stage : myPipelineShaderStageInfos)
 		{
@@ -448,7 +448,7 @@ namespace Volt
 
 	void Shader::LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		myPipelineShaderStageInfos.clear();
 		myShaderGroupInfos.clear();
 
@@ -523,7 +523,7 @@ namespace Volt
 
 	void Shader::ReflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& data)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		VT_CORE_INFO("	Reflecting stage {0}", Utility::StageToString(stage).c_str());
 		spirv_cross::Compiler compiler(data);
@@ -574,7 +574,7 @@ namespace Volt
 
 				if (isDynamic)
 				{
-					const uint64_t minUBOAlignment = GraphicsContext::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
+					const uint64_t minUBOAlignment = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
 					uint32_t dynamicAlignment = (uint32_t)size;
 
 					if (minUBOAlignment > 0)
@@ -891,7 +891,7 @@ namespace Volt
 
 	void Shader::CreateDescriptorSetLayouts()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		constexpr VkDescriptorBindingFlags bindlessFlags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 		constexpr VkDescriptorBindingFlags materialFlags = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 

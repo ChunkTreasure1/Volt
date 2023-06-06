@@ -1,10 +1,10 @@
 #include "vtpch.h"
-#include "GraphicsContext.h"
+#include "GraphicsContextVolt.h"
 
 #include "Volt/Core/Base.h"
 #include "Volt/Log/Log.h"
 
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Graphics/VulkanAllocator.h"
 
 #include <vulkan/vulkan.h>
@@ -66,7 +66,7 @@ namespace Volt
 		return VK_FALSE;
 	}
 
-	GraphicsContext::GraphicsContext()
+	GraphicsContextVolt::GraphicsContextVolt()
 	{
 		VT_CORE_ASSERT(s_instance == nullptr, "Graphics context already exists!");
 		s_instance = this;
@@ -74,13 +74,13 @@ namespace Volt
 		Initialize();
 	}
 
-	GraphicsContext::~GraphicsContext()
+	GraphicsContextVolt::~GraphicsContextVolt()
 	{
 		s_instance = nullptr;
 		Shutdown();
 	}
 
-	void GraphicsContext::Initialize()
+	void GraphicsContextVolt::Initialize()
 	{
 		CreateVulkanInstance();
 		SetupDebugCallback();
@@ -90,7 +90,7 @@ namespace Volt
 		physDevInfo.useSeperateComputeQueue = true;
 		physDevInfo.useSeperateTransferQueue = true;
 
-		myPhysicalDevice = PhysicalGraphicsDevice::Create(physDevInfo);
+		myPhysicalDevice = PhysicalGraphicsDeviceVolt::Create(physDevInfo);
 
 		VkPhysicalDeviceVulkan11Features vulkan11Features{};
 		vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
@@ -143,12 +143,12 @@ namespace Volt
 		info.requestedTransferQueues = 1;
 		info.requestedComputeQueues = 1;
 
-		myDevice = GraphicsDevice::Create(info);
+		myDevice = GraphicsDeviceVolt::Create(info);
 
 		VulkanAllocator::Initialize(myDevice);
 	}
 
-	void GraphicsContext::Shutdown()
+	void GraphicsContextVolt::Shutdown()
 	{
 		VulkanAllocator::Shutdown();
 
@@ -162,7 +162,7 @@ namespace Volt
 		vkDestroyInstance(myVulkanInstance, nullptr);
 	}
 
-	void GraphicsContext::SetImageName(VkImage image, const std::string& name)
+	void GraphicsContextVolt::SetImageName(VkImage image, const std::string& name)
 	{
 #ifdef VT_ENABLE_VALIDATION
 
@@ -172,32 +172,32 @@ namespace Volt
 		nameInfo.objectHandle = (uint64_t)image;
 		nameInfo.pObjectName = name.c_str();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		Get().myVulkanFunctions.setDebugUtilsObjectName(device->GetHandle(), &nameInfo);
 #endif
 	}
 
-	GraphicsContext& GraphicsContext::Get()
+	GraphicsContextVolt& GraphicsContextVolt::Get()
 	{
 		return *s_instance;
 	}
 
-	Ref<GraphicsDevice> GraphicsContext::GetDevice()
+	Ref<GraphicsDeviceVolt> GraphicsContextVolt::GetDevice()
 	{
 		return s_instance->myDevice;
 	}
 
-	Ref<PhysicalGraphicsDevice> GraphicsContext::GetPhysicalDevice()
+	Ref<PhysicalGraphicsDeviceVolt> GraphicsContextVolt::GetPhysicalDevice()
 	{
 		return s_instance->myPhysicalDevice;
 	}
 
-	Ref<GraphicsContext> GraphicsContext::Create()
+	Ref<GraphicsContextVolt> GraphicsContextVolt::Create()
 	{
-		return CreateRef<GraphicsContext>();
+		return CreateRef<GraphicsContextVolt>();
 	}
 
-	void GraphicsContext::CreateVulkanInstance()
+	void GraphicsContextVolt::CreateVulkanInstance()
 	{
 #ifdef VT_ENABLE_VALIDATION
 		if (!CheckValidationLayerSupport())
@@ -244,7 +244,7 @@ namespace Volt
 #endif
 	}
 
-	void GraphicsContext::SetupDebugCallback()
+	void GraphicsContextVolt::SetupDebugCallback()
 	{
 #ifdef VT_ENABLE_VALIDATION
 		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
@@ -254,7 +254,7 @@ namespace Volt
 #endif
 	}
 
-	bool GraphicsContext::CheckValidationLayerSupport()
+	bool GraphicsContextVolt::CheckValidationLayerSupport()
 	{
 		uint32_t layerCount;
 		VT_VK_CHECK(vkEnumerateInstanceLayerProperties(&layerCount, nullptr));
@@ -283,7 +283,7 @@ namespace Volt
 		return true;
 	}
 
-	void GraphicsContext::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& outCreateInfo)
+	void GraphicsContextVolt::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& outCreateInfo)
 	{
 		outCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
@@ -304,7 +304,7 @@ namespace Volt
 		outCreateInfo.pUserData = nullptr;
 	}
 
-	std::vector<const char*> GraphicsContext::GetRequiredExtensions()
+	std::vector<const char*> GraphicsContextVolt::GetRequiredExtensions()
 	{
 		uint32_t extensionCount = 0;
 		const char** extensions;

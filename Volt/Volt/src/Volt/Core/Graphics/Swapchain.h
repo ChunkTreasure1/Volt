@@ -6,11 +6,11 @@ struct GLFWwindow;
 
 namespace Volt
 {
-	class Swapchain
+	class SwapchainVolt
 	{
 	public:
-		Swapchain(GLFWwindow* window);
-		~Swapchain();
+		SwapchainVolt(GLFWwindow* window);
+		~SwapchainVolt();
 
 		void Release();
 
@@ -33,7 +33,7 @@ namespace Volt
 
 		inline const auto& GetMonitorMode() const { return myMonitorMode; }
 
-		static Ref<Swapchain> Create(GLFWwindow* window);
+		static Ref<SwapchainVolt> Create(GLFWwindow* window);
 
 	private:
 		struct MonitorMode

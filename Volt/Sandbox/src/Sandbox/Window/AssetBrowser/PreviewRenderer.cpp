@@ -3,8 +3,8 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
-#include <Volt/Core/Graphics/GraphicsDevice.h>
-#include <Volt/Core/Graphics/GraphicsContext.h>
+#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
+#include <Volt/Core/Graphics/GraphicsContextVolt.h>
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -72,16 +72,16 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 			return;
 	}
 
-	Volt::GraphicsContext::GetDevice()->WaitForIdle();
+	Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 	Volt::ImageSpecification spec{};
 	spec = myPreviewRenderer->GetFinalImage()->GetSpecification();
 
 	itemPtr->previewImage = Volt::Image2D::Create(spec);
 
-	auto commandBuffer = Volt::GraphicsContext::GetDevice()->GetSingleUseCommandBuffer(true);
+	auto commandBuffer = Volt::GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
 	itemPtr->previewImage->CopyFromImage(commandBuffer, myPreviewRenderer->GetFinalImage());
-	Volt::GraphicsContext::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
+	Volt::GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
 }
 
 void PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)

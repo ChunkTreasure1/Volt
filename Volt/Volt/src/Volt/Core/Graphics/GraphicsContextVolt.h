@@ -6,15 +6,15 @@
 
 namespace Volt
 {
-	class PhysicalGraphicsDevice;
-	class GraphicsDevice;
+	class PhysicalGraphicsDeviceVolt;
+	class GraphicsDeviceVolt;
 	class Image2D;
 
-	class GraphicsContext
+	class GraphicsContextVolt
 	{
 	public:
-		GraphicsContext();
-		~GraphicsContext();
+		GraphicsContextVolt();
+		~GraphicsContextVolt();
 
 		void Initialize();
 		void Shutdown();
@@ -23,10 +23,10 @@ namespace Volt
 
 		static void SetImageName(VkImage image, const std::string& name);
 
-		static GraphicsContext& Get();
-		static Ref<GraphicsDevice> GetDevice();
-		static Ref<PhysicalGraphicsDevice> GetPhysicalDevice();
-		static Ref<GraphicsContext> Create();
+		static GraphicsContextVolt& Get();
+		static Ref<GraphicsDeviceVolt> GetDevice();
+		static Ref<PhysicalGraphicsDeviceVolt> GetPhysicalDevice();
+		static Ref<GraphicsContextVolt> Create();
 
 	private:
 		struct VulkanFunctions
@@ -44,12 +44,12 @@ namespace Volt
 
 		const std::vector<const char*> myValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
-		Ref<PhysicalGraphicsDevice> myPhysicalDevice;
-		Ref<GraphicsDevice> myDevice;
+		Ref<PhysicalGraphicsDeviceVolt> myPhysicalDevice;
+		Ref<GraphicsDeviceVolt> myDevice;
 
 		VkInstance myVulkanInstance;
 		VkDebugUtilsMessengerEXT myDebugMessenger;
 
-		inline static GraphicsContext* s_instance = nullptr;
+		inline static GraphicsContextVolt* s_instance = nullptr;
 	};
 }

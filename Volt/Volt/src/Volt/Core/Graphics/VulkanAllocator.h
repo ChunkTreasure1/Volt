@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	class GraphicsDevice;
+	class GraphicsDeviceVolt;
 	class VulkanAllocator
 	{
 	public:
@@ -35,7 +35,7 @@ namespace Volt
 
 		void UnmapMemory(VmaAllocation allocation);
 
-		static void Initialize(Ref<GraphicsDevice> graphicsDevice);
+		static void Initialize(Ref<GraphicsDeviceVolt> graphicsDevice);
 		static void Shutdown();
 		static void SetFrameIndex(const uint32_t index);
 

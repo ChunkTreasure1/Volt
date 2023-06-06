@@ -4,8 +4,8 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Window.h"
 #include "Volt/Core/Graphics/Swapchain.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
@@ -108,7 +108,7 @@ namespace Volt
 		LoadVulkanFunctions();
 #endif
 
-		if (GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+		if (GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
 		{
 			LoadRayTracingFunctions();
 		}
@@ -130,7 +130,7 @@ namespace Volt
 
 	void Renderer::Shutdown()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		device->WaitForIdle();
 
 		DestroyDescriptorPools();
@@ -154,7 +154,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
 		{
@@ -681,7 +681,7 @@ namespace Volt
 		constexpr uint32_t irradianceMapSize = 32;
 		constexpr uint32_t conversionThreadCount = 32;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		Ref<Image2D> environmentUnfiltered;
 		Ref<Image2D> environmentFiltered;
@@ -1014,7 +1014,7 @@ namespace Volt
 	VkDescriptorSet Renderer::AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		VT_PROFILE_FUNCTION();
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
 		allocInfo.descriptorPool = s_rendererData->perFrameDescriptorPools.at(currentFrame);
@@ -1028,7 +1028,7 @@ namespace Volt
 	VkDescriptorSet Renderer::AllocatePersistentDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		VT_PROFILE_FUNCTION();
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
 		allocInfo.descriptorPool = s_rendererData->perFramePersistentDescriptorPools.at(currentFrame);
@@ -1090,12 +1090,12 @@ namespace Volt
 		const uint32_t framesInFlightCount = GetFramesInFlightCount();
 		for (uint32_t i = 0; i < framesInFlightCount; i++)
 		{
-			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFrameDescriptorPools.emplace_back()));
+			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFrameDescriptorPools.emplace_back()));
 		}
 
 		for (uint32_t i = 0; i < framesInFlightCount; i++)
 		{
-			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFramePersistentDescriptorPools.emplace_back()));
+			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFramePersistentDescriptorPools.emplace_back()));
 		}
 	}
 
@@ -1186,7 +1186,7 @@ namespace Volt
 
 	void Renderer::LoadVulkanFunctions()
 	{
-		auto instance = GraphicsContext::Get().GetInstance();
+		auto instance = GraphicsContextVolt::Get().GetInstance();
 
 		s_rendererData->vulkanFunctions.cmdBeginDebugUtilsLabel = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdBeginDebugUtilsLabelEXT");
 		s_rendererData->vulkanFunctions.cmdEndDebugUtilsLabel = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdEndDebugUtilsLabelEXT");
@@ -1194,7 +1194,7 @@ namespace Volt
 
 	void Renderer::LoadRayTracingFunctions()
 	{
-		auto device = GraphicsContext::GetDevice()->GetHandle();
+		auto device = GraphicsContextVolt::GetDevice()->GetHandle();
 
 		s_rendererData->vulkanFunctions.vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkCmdBuildAccelerationStructuresKHR"));
 		s_rendererData->vulkanFunctions.vkBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkBuildAccelerationStructuresKHR"));
@@ -1209,7 +1209,7 @@ namespace Volt
 
 	void Renderer::DestroyDescriptorPools()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		device->WaitForIdle();
 
 		for (const auto& pool : s_rendererData->perFrameDescriptorPools)
@@ -1248,7 +1248,7 @@ namespace Volt
 			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			writeDescriptor.pBufferInfo = &bufferInfo;
 
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 		}
 	}
@@ -1257,7 +1257,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
 		{

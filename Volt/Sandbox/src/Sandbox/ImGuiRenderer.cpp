@@ -9,8 +9,8 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Core/Graphics/GraphicsContext.h>
-#include <Volt/Core/Graphics/GraphicsDevice.h>
+#include <Volt/Core/Graphics/GraphicsContextVolt.h>
+#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
 
 #include <Volt/Asset/AssetManager.h>
 
@@ -684,7 +684,7 @@ void Sandbox::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Recompile all shaders"))
 			{
-				Volt::GraphicsContext::GetDevice()->WaitForIdle();
+				Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 				for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
 				{

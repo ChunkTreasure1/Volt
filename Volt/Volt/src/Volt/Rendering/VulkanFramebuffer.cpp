@@ -68,7 +68,7 @@ namespace Volt
 	{
 		Release();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const bool createImages = myColorAttachmentImages.empty();
 
 		if (!createImages)
@@ -205,7 +205,7 @@ namespace Volt
 		myWidth = width;
 		myHeight = height;
 
-		GraphicsContext::GetDevice()->WaitForIdle();
+		GraphicsContextVolt::GetDevice()->WaitForIdle();
 		Invalidate();
 	}
 

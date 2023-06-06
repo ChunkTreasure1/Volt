@@ -17,8 +17,8 @@
 
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Graphics/Swapchain.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Components/Components.h"
 #include "Volt/Components/LightComponents.h"
@@ -132,7 +132,7 @@ namespace Volt
 
 	SceneRenderer::~SceneRenderer()
 	{
-		GraphicsContext::GetDevice()->WaitForIdle();
+		GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 		myShaderStorageBufferSet = nullptr;
 		myUniformBufferSet = nullptr;
@@ -1881,7 +1881,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pBufferInfo = &descriptorInfo;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1897,7 +1897,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pBufferInfo = &descriptorInfo;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1918,7 +1918,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pImageInfo = &descriptorInfo;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1934,7 +1934,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pImageInfo = &descriptorInfo;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1955,7 +1955,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pImageInfo = descriptorInfos.data();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 

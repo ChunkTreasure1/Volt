@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "GenericBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Renderer.h"
 
@@ -48,7 +48,7 @@ namespace Volt
 		bufferAddr.pNext = nullptr;
 		bufferAddr.buffer = myBuffer;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
 	}

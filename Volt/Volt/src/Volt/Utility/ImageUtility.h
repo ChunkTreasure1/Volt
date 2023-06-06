@@ -3,8 +3,8 @@
 #include "Volt/Rendering/Texture/ImageCommon.h"
 #include "Volt/Rendering/Texture/Image2D.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Base.h"
 #include "Volt/Log/Log.h"
 
@@ -293,7 +293,7 @@ namespace Volt
 
 		inline void TransitionImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout targetLayout)
 		{
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 
 			VkImageSubresourceRange subresource{};
 			subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -311,7 +311,7 @@ namespace Volt
 
 		inline void TransitionImageFromTransferQueue(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
 		{
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 
 			VkImageSubresourceRange subresource{};
 			subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -322,12 +322,12 @@ namespace Volt
 
 			// Release barrier
 			{
-				VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueType::Transfer);
+				VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueTypeVolt::Transfer);
 
 				VkImageMemoryBarrier imageMemoryBarrier = {};
 				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
-				imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
+				imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
+				imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
 				imageMemoryBarrier.oldLayout = oldLayout;
 				imageMemoryBarrier.newLayout = oldLayout;
 				imageMemoryBarrier.image = image;
@@ -346,8 +346,8 @@ namespace Volt
 
 				VkImageMemoryBarrier imageMemoryBarrier = {};
 				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
-				imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
+				imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
+				imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
 				imageMemoryBarrier.oldLayout = oldLayout;
 				imageMemoryBarrier.newLayout = newLayout;
 				imageMemoryBarrier.image = image;
@@ -385,8 +385,8 @@ namespace Volt
 
 		inline void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0)
 		{
-			auto device = GraphicsContext::GetDevice();
-			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueType::Transfer);
+			auto device = GraphicsContextVolt::GetDevice();
+			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueTypeVolt::Transfer);
 
 			VkBufferImageCopy region{};
 			region.bufferOffset = 0;
@@ -407,7 +407,7 @@ namespace Volt
 
 		inline void GenerateMipMaps(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevels)
 		{
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
 			VkImageMemoryBarrier barrier{};

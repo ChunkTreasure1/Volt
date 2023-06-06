@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "UniformBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Shader/ShaderUtility.h"
 #include "Volt/Rendering/Renderer.h"
@@ -36,7 +36,7 @@ namespace Volt
 	{
 		myIsDynamic = true;
 
-		const uint64_t minUBOAlignment = GraphicsContext::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
+		const uint64_t minUBOAlignment = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
 		uint32_t alignedSize = sizePerElement;
 
 		if (minUBOAlignment > 0)

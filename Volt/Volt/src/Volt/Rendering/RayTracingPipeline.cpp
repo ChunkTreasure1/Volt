@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "RayTracingPipeline.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Shader/Shader.h"
@@ -27,7 +27,7 @@ namespace Volt
 		Release();
 
 		auto resources = mySpecification.shader->GetResources();
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		// Pipeline Layout
 		{
@@ -73,7 +73,7 @@ namespace Volt
 		{
 			if (pipeline != VK_NULL_HANDLE)
 			{
-				auto device = GraphicsContext::GetDevice();
+				auto device = GraphicsContextVolt::GetDevice();
 				vkDestroyPipelineLayout(device->GetHandle(), pipelineLayout, nullptr);
 				vkDestroyPipeline(device->GetHandle(), pipeline, nullptr);
 			}

@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "Image3D.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/CommandBuffer.h"
@@ -32,7 +32,7 @@ namespace Volt
 		myImageData.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 		VulkanAllocator allocator{ };
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 		usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -177,7 +177,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([imageViews = myImageViews, image = myImage, allocation = myAllocation]()
 		{
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 			for (auto& [mip, view] : imageViews)
 			{
 				vkDestroyImageView(device->GetHandle(), view, nullptr);
@@ -249,7 +249,7 @@ namespace Volt
 		info.subresourceRange.levelCount = 1;
 		info.image = myImage;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myImageViews[mip]));
 
 		return myImageViews.at(mip);
@@ -268,7 +268,7 @@ namespace Volt
 
 	void Image3D::SetName(const std::string& name)
 	{
-		GraphicsContext::SetImageName(myImage, name);
+		GraphicsContextVolt::SetImageName(myImage, name);
 	}
 
 	Ref<Image3D> Image3D::Create(const ImageSpecification& specification, const void* data)

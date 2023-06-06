@@ -6,8 +6,8 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Core/Profiling.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Utility/ImageUtility.h"
 
@@ -32,14 +32,14 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		for (const auto& [hash, imageDatas] : myCachedImageResources)
 		{
 			for (const auto& imageData : imageDatas)
 			{
 				Renderer::SubmitResourceChange([imageData]()
 				{
-					auto device = GraphicsContext::GetDevice();
+					auto device = GraphicsContextVolt::GetDevice();
 
 					{
 						VT_PROFILE_SCOPE("Destroy Image Views");

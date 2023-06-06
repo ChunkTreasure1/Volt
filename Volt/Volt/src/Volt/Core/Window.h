@@ -36,8 +36,8 @@ namespace Volt
 		std::filesystem::path cursorPath;
 	};
 
-	class GraphicsContext;
-	class Swapchain;
+	class GraphicsContextVolt;
+	class SwapchainVolt;
 
 	class Window
 	{
@@ -88,7 +88,7 @@ namespace Volt
 		inline GLFWwindow* GetNativeWindow() const { return myWindow; }
 		inline HWND GetHWND() const { return myWindowHandle; }
 
-		inline const Swapchain& GetSwapchain() const { return *mySwapchain; }
+		inline const SwapchainVolt& GetSwapchain() const { return *mySwapchain; }
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 
@@ -112,8 +112,8 @@ namespace Volt
 
 		} myData;
 
-		Ref<GraphicsContext> myGraphicsContext;
-		Ref<Swapchain> mySwapchain;
+		Ref<GraphicsContextVolt> myGraphicsContext;
+		Ref<SwapchainVolt> mySwapchain;
 
 		gem::vec2ui myStartPosition = 0;
 		gem::vec2ui myStartSize = 0;

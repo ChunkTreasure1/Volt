@@ -4,9 +4,9 @@
 #include "Volt/Log/Log.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/Swapchain.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Utility/UIUtility.h"
 
@@ -387,7 +387,7 @@ namespace Volt
 		poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
 		poolInfo.pPoolSizes = poolSizes;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const auto& swapchain = Application::Get().GetWindow().GetSwapchain();
 
 		const uint32_t framesInFlight = swapchain.GetMaxFramesInFlight();
@@ -395,9 +395,9 @@ namespace Volt
 		VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle(), &poolInfo, nullptr, &s_descriptorPool));
 
 		ImGui_ImplVulkan_InitInfo initInfo{};
-		initInfo.Instance = GraphicsContext::Get().GetInstance();
-		initInfo.PhysicalDevice = GraphicsContext::GetPhysicalDevice()->GetHandle();
-		initInfo.Device = GraphicsContext::GetDevice()->GetHandle();
+		initInfo.Instance = GraphicsContextVolt::Get().GetInstance();
+		initInfo.PhysicalDevice = GraphicsContextVolt::GetPhysicalDevice()->GetHandle();
+		initInfo.Device = GraphicsContextVolt::GetDevice()->GetHandle();
 		initInfo.Queue = device->GetGraphicsQueue();
 
 		initInfo.DescriptorPool = s_descriptorPool;
@@ -427,8 +427,8 @@ namespace Volt
 
 	void ImGuiImplementation::ReleaseVulkanData()
 	{
-		vkDeviceWaitIdle(GraphicsContext::GetDevice()->GetHandle());
-		vkDestroyDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), s_descriptorPool, nullptr);
+		vkDeviceWaitIdle(GraphicsContextVolt::GetDevice()->GetHandle());
+		vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), s_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();
 	}
 }

@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "Window.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/Swapchain.h"
 
 #include "Volt/Core/Application.h"
@@ -135,8 +135,8 @@ namespace Volt
 
 		if (!myHasBeenInitialized)
 		{
-			myGraphicsContext = GraphicsContext::Create();
-			mySwapchain = Swapchain::Create(myWindow);
+			myGraphicsContext = GraphicsContextVolt::Create();
+			mySwapchain = SwapchainVolt::Create(myWindow);
 			mySwapchain->Resize(myData.width, myData.height, myData.vsync);
 			myHasBeenInitialized = true;
 		}

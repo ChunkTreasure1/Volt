@@ -73,8 +73,8 @@
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Core/Graphics/GraphicsDevice.h>
-#include <Volt/Core/Graphics/GraphicsContext.h>
+#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
+#include <Volt/Core/Graphics/GraphicsContextVolt.h>
 
 #include <Volt/Discord/DiscordSDK.h>
 
@@ -239,7 +239,7 @@ void Sandbox::CreateWatches()
 
 				case Volt::AssetType::ShaderSource:
 				{
-					Volt::GraphicsContext::GetDevice()->WaitForIdle();
+					Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
 					for (const auto& asset : assets)
@@ -425,7 +425,7 @@ void Sandbox::SetupNewSceneData()
 			settings.enableUI = false;
 			settings.enableVolumetricFog = true;
 
-			if (Volt::GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+			if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
 			{
 				settings.enableRayTracing = true;
 			}

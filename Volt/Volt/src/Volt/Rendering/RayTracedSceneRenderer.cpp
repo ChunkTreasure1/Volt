@@ -3,8 +3,8 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Buffer/VertexBuffer.h"
 #include "Volt/Rendering/Buffer/IndexBuffer.h"
@@ -99,7 +99,7 @@ namespace Volt
 
 	AccelerationStructure RayTracedSceneRenderer::BuildBottomLevelAccelerationStructure(Ref<Mesh> mesh)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
@@ -176,7 +176,7 @@ namespace Volt
 
 	AccelerationStructure RayTracedSceneRenderer::BuildTopLevelAccelerationStructure(Wire::EntityId id)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
 		auto scenePtr = myScene.lock();
@@ -279,7 +279,7 @@ namespace Volt
 		accelerationStructureCreateInfo.size = buildSizeInfo.accelerationStructureSize;
 		accelerationStructureCreateInfo.type = type;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
 		vulkanFunctions.vkCreateAccelerationStructureKHR(device->GetHandle(), &accelerationStructureCreateInfo, nullptr, &result.handle);
@@ -298,7 +298,7 @@ namespace Volt
 
 		VulkanAllocator allocator{};
 		allocator.DestroyBuffer(accelerationStructure.buffer, accelerationStructure.allocation);
-		vulkanFunctions.vkDestroyAccelerationStructureKHR(GraphicsContext::GetDevice()->GetHandle(), accelerationStructure.handle, nullptr);
+		vulkanFunctions.vkDestroyAccelerationStructureKHR(GraphicsContextVolt::GetDevice()->GetHandle(), accelerationStructure.handle, nullptr);
 	}
 
 	ScratchBuffer RayTracedSceneRenderer::CreateScratchBuffer(VkDeviceSize deviceSize)
@@ -317,7 +317,7 @@ namespace Volt
 		bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
 		bufferDeviceAddressInfo.buffer = scratchBuffer.handle;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		scratchBuffer.deviceAddress = vkGetBufferDeviceAddress(device->GetHandle(), &bufferDeviceAddressInfo);
 		return scratchBuffer;
 	}

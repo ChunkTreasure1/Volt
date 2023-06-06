@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "IndexBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -54,7 +54,7 @@ namespace Volt
 		bufferAddr.pNext = nullptr;
 		bufferAddr.buffer = myBuffer;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
 	}
@@ -71,7 +71,7 @@ namespace Volt
 
 	void IndexBuffer::SetData(const void* data, uint32_t size)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingAllocation;

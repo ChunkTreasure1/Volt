@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	enum class QueueType : uint32_t
+	enum class QueueTypeVolt : uint32_t
 	{
 		Graphics = 0,
 		Compute,
@@ -47,18 +47,18 @@ namespace Volt
 		VkInstance instance = nullptr;
 	};
 
-	class PhysicalGraphicsDevice
+	class PhysicalGraphicsDeviceVolt
 	{
 	public:
-		PhysicalGraphicsDevice(const PhysicalDeviceInfo& info);
-		~PhysicalGraphicsDevice();
+		PhysicalGraphicsDeviceVolt(const PhysicalDeviceInfo& info);
+		~PhysicalGraphicsDeviceVolt();
 
 		inline const VkPhysicalDevice GetHandle() const { return myPhysicalDevice; }
 		inline const PhysicalDeviceCapabilities& GetCapabilities() const { return myCapabilities; }
 		inline const PhysicalDeviceQueueFamilyIndices& GetQueueFamilies() const { return myQueueFamilies; }
 		inline const std::vector<VkExtensionProperties>& GetAvailiableExtensions() const { return myAvailiableExtensions; }
 
-		static Scope<PhysicalGraphicsDevice> Create(const PhysicalDeviceInfo& info);
+		static Scope<PhysicalGraphicsDeviceVolt> Create(const PhysicalDeviceInfo& info);
 
 	private:
 		void FetchAvailiableExtensions();
@@ -74,18 +74,18 @@ namespace Volt
 	struct GraphicsDeviceInfo
 	{
 		VkPhysicalDeviceFeatures2 requestedFeatures{};
-		Weak<PhysicalGraphicsDevice> physicalDevice;
+		Weak<PhysicalGraphicsDeviceVolt> physicalDevice;
 
 		uint32_t requestedGraphicsQueues = 1;
 		uint32_t requestedComputeQueues = 0;
 		uint32_t requestedTransferQueues = 0;
 	};
 
-	class GraphicsDevice
+	class GraphicsDeviceVolt
 	{
 	public:
-		GraphicsDevice(const GraphicsDeviceInfo& info);
-		~GraphicsDevice();
+		GraphicsDeviceVolt(const GraphicsDeviceInfo& info);
+		~GraphicsDeviceVolt();
 		
 		VkCommandBuffer GetCommandBuffer(bool beginCommandBuffer);
 		VkCommandBuffer CreateSecondaryCommandBuffer();
@@ -94,19 +94,19 @@ namespace Volt
 		void FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, VkQueue queue);
 		void FreeCommandBuffer(VkCommandBuffer cmdBuffer);
 
-		VkCommandBuffer GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueType queueType = QueueType::Graphics);
+		VkCommandBuffer GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueTypeVolt queueType = QueueTypeVolt::Graphics);
 		void FlushSingleUseCommandBuffer(VkCommandBuffer cmdBuffer);
 
 		void WaitForIdle() const;
 		void WaitForIdle(VkQueue queue) const;
 
 		inline VkDevice GetHandle() const { return myDevice; }
-		inline VkQueue GetGraphicsQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueType::Graphics).at(index); }
-		inline VkQueue GetComputeQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueType::Compute).at(index); }
-		inline VkQueue GetTransferQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueType::Transfer).at(index); }
+		inline VkQueue GetGraphicsQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueTypeVolt::Graphics).at(index); }
+		inline VkQueue GetComputeQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueTypeVolt::Compute).at(index); }
+		inline VkQueue GetTransferQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueTypeVolt::Transfer).at(index); }
 
-		inline Weak<PhysicalGraphicsDevice> GetPhysicalDevice() const { return myPhysicalDevice; }
-		static Scope<GraphicsDevice> Create(const GraphicsDeviceInfo& info);
+		inline Weak<PhysicalGraphicsDeviceVolt> GetPhysicalDevice() const { return myPhysicalDevice; }
+		static Scope<GraphicsDeviceVolt> Create(const GraphicsDeviceInfo& info);
 
 	private:
 		struct SingleUseCommandBufferData
@@ -128,7 +128,7 @@ namespace Volt
 		};
 
 		void EnableRayTracing(std::vector<const char*>& extensionsToEnable);
-		const uint32_t GetQueueFamilyIndex(QueueType queueType);
+		const uint32_t GetQueueFamilyIndex(QueueTypeVolt queueType);
 
 		const std::vector<const char*> myValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
@@ -140,10 +140,10 @@ namespace Volt
 		std::mutex myCommandBufferFlushMutex;
 		std::mutex myMainCommandBufferFlushMutex;
 
-		std::unordered_map<QueueType, std::vector<VkQueue>> myDeviceQueues;
+		std::unordered_map<QueueTypeVolt, std::vector<VkQueue>> myDeviceQueues;
 		PhysicalDeviceQueueFamilyIndices myQueueFamilies;
 
 		RayTracingFeatures myRayTracingFeatures;
-		Weak<PhysicalGraphicsDevice> myPhysicalDevice;
+		Weak<PhysicalGraphicsDeviceVolt> myPhysicalDevice;
 	};
 }

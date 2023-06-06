@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "SubMaterial.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Shader/Shader.h"
@@ -205,7 +205,7 @@ namespace Volt
 
 		for (const auto& descriptorPool : myMaterialDescriptorPools)
 		{
-			vkDestroyDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), descriptorPool, nullptr);
+			vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), descriptorPool, nullptr);
 		}
 
 		myMaterialDescriptorPools.clear();
@@ -356,7 +356,7 @@ namespace Volt
 
 			for (uint32_t i = 0; i < framesInFlight; i++)
 			{
-				VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), &poolInfo, nullptr, &myMaterialDescriptorPools[i]));
+				VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &myMaterialDescriptorPools[i]));
 				myMaterialDescriptorSets[i] = myPipeline->GetSpecification().shader->AllocateDescriptorSet(Sets::MATERIAL, myMaterialDescriptorPools[i]);
 			}
 		}
@@ -396,7 +396,7 @@ namespace Volt
 				writeDescriptor.dstSet = myMaterialDescriptorSets.at(commandBuffer->GetCurrentIndex());
 			}
 
-			vkUpdateDescriptorSets(GraphicsContext::GetDevice()->GetHandle(), (uint32_t)myMaterialWriteDescriptors.size(), myMaterialWriteDescriptors.data(), 0, nullptr);
+			vkUpdateDescriptorSets(GraphicsContextVolt::GetDevice()->GetHandle(), (uint32_t)myMaterialWriteDescriptors.size(), myMaterialWriteDescriptors.data(), 0, nullptr);
 			myDirtyDescriptorSets.at(commandBuffer->GetCurrentIndex()) = false;
 		}
 	}
@@ -426,7 +426,7 @@ namespace Volt
 
 		for (const auto& descriptorPool : myMaterialDescriptorPools)
 		{
-			vkDestroyDescriptorPool(GraphicsContext::GetDevice()->GetHandle(), descriptorPool, nullptr);
+			vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), descriptorPool, nullptr);
 		}
 	}
 

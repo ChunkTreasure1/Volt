@@ -2,8 +2,8 @@
 #include "CombinedIndexBuffer.h"
 
 #include "Volt/Core/Profiling.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Renderer.h"
 
@@ -61,7 +61,7 @@ namespace Volt
 
 		// Copy from staging buffer to GPU buffer
 		{
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
 			VkBufferCopy copy{};
@@ -109,7 +109,7 @@ namespace Volt
 
 	void CombinedIndexBuffer::Resize(uint64_t newSize)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		device->WaitForIdle();
 
 		VulkanAllocator allocator{};

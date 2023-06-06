@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "VulkanAllocator.h"
 
-#include "Volt/Core/Graphics/GraphicsDevice.h"
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -224,7 +224,7 @@ namespace Volt
 		vmaUnmapMemory(s_allocatorData->allocator, allocation);
 	}
 
-	void VulkanAllocator::Initialize(Ref<GraphicsDevice> graphicsDevice)
+	void VulkanAllocator::Initialize(Ref<GraphicsDeviceVolt> graphicsDevice)
 	{
 		s_allocatorData = new VulkanAllocatorData();
 
@@ -234,7 +234,7 @@ namespace Volt
 		info.vulkanApiVersion = VK_API_VERSION_1_3;
 		info.physicalDevice = physDevicePtr->GetHandle();
 		info.device = graphicsDevice->GetHandle();
-		info.instance = GraphicsContext::Get().GetInstance();
+		info.instance = GraphicsContextVolt::Get().GetInstance();
 		info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
 		VT_VK_CHECK(vmaCreateAllocator(&info, &s_allocatorData->allocator));

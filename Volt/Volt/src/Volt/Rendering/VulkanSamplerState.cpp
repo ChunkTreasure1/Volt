@@ -37,7 +37,7 @@ namespace Volt
 			info.pNext = &reductionInfo;
 		}
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		VT_VK_CHECK(vkCreateSampler(device->GetHandle(), &info, nullptr, &mySamplerState));
 
 		myDescriptorInfo.sampler = mySamplerState;
@@ -47,7 +47,7 @@ namespace Volt
 
 	VulkanSamplerState::~VulkanSamplerState()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkDestroySampler(device->GetHandle(), mySamplerState, nullptr);
 	}
 

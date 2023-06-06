@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "VertexBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -50,7 +50,7 @@ namespace Volt
 
 	void VertexBuffer::SetData(const void* data, uint32_t size)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 		
 		SetData(cmdBuffer, data, size);
@@ -118,7 +118,7 @@ namespace Volt
 		bufferAddr.pNext = nullptr;
 		bufferAddr.buffer = myBuffer;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
 	}
@@ -135,7 +135,7 @@ namespace Volt
 
 	void VertexBuffer::Invalidate(const void* data, uint32_t size)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingAllocation;
