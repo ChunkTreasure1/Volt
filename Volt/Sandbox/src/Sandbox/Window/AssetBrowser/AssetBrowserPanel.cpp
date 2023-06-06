@@ -903,7 +903,6 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 			if (ImGui::MenuItem("Material"))
 			{
-				CreateNewAssetInCurrentDirectory(Volt::AssetType::Material);
 			}
 
 			if (ImGui::MenuItem("Material Graph"))
