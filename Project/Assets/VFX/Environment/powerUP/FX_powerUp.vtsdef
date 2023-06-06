@@ -1,8 +1,0 @@
-name: FX_powerUp
-internal: false
-paths:
-  - Assets\VFX\Environment\powerUP\FX_powerUp_ps.hlsl
-  - Assets\VFX\Environment\powerUP\FX_powerUp_vs.hlsl
-inputTextures:
-  - shaderName: Texture_01
-    editorName: Texture_01

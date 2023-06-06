@@ -1,8 +1,0 @@
-name: FX_AOE
-internal: false
-paths:
-  - Assets\VFX\CharacterEffects\AOE\FX_AOE_ps.hlsl
-  - Assets\VFX\CharacterEffects\AOE\FX_AOE_vs.hlsl
-inputTextures:
-  - shaderName: Texture_01
-    editorName: Texture_01

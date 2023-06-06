@@ -1,6 +1,0 @@
-Handle: 5080793387262071449
-Path: Assets/VFX/Enemies/BloodSplash(body)/FX_bloodSplatter.vtsdef
-Dependencies:
-  - Assets/VFX/Enemies/BloodSplash(body)/bloodSplatter_ps.hlsl
-  - Engine/Shaders/Source/HLSL/2D/Particle_vs.hlsl
-  - Engine/Shaders/Source/HLSL/2D/Particle_gs.hlsl

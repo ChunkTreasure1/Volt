@@ -1,8 +1,0 @@
-name: FX_EnemyBodySplash
-internal: false
-paths:
-  - Assets\VFX\Enemies\BloodSplash(body)\FX_EnemyBodySplash_ps.hlsl
-  - Engine\Shaders\Source\HLSL\Forward\ForwardPBR_vs.hlsl
-inputTextures:
-  - shaderName: Splash
-    editorName: Splash Texture

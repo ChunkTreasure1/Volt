@@ -1,7 +1,0 @@
-name: FX_blink_postprocess
-internal: false
-paths:
-  - Assets\VFX\Environment\Pack-a-Punch\FX_blink_postprocess_ps.hlsl
-  - Engine\Shaders\Source\HLSL\Forward\ForwardPBR_vs.hlsl
-inputTextures:
-  []

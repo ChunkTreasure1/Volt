@@ -1,6 +1,0 @@
-name: FX_takeDamage
-internal: false
-paths:
-  - Assets\VFX\CharacterEffects\DamageScreen\FX_takeDamage_cs.hlsl
-inputTextures:
-  []

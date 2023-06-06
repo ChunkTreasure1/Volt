@@ -1,6 +1,0 @@
-name: FX_HitIndication_PP
-internal: false
-paths:
-  - D:\Charlin\P8\Project\Project\Assets\VFX\CharacterEffects\Player\FX_HitIndication_PP_cs.hlsl
-inputTextures:
-  []
