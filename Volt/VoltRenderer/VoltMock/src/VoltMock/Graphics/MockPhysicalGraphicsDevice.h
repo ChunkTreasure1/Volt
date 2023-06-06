@@ -6,5 +6,9 @@ namespace Volt
 	{
 	public:
 		MockPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo);
+		~MockPhysicalGraphicsDevice() override = default;
+
+	protected:
+		void* GetHandleImpl() override;
 	};
 }

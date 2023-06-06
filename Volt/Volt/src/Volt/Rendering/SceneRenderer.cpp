@@ -2137,10 +2137,6 @@ namespace Volt
 			AddParticlesPass(frameGraph);
 		}
 
-		SSRTechnique ssrTechnique{ myGlobalDescriptorSets, myRenderSize };
-		ssrTechnique.AddSSRPass(frameGraph, mySSRPipeline);
-
-
 		if (myBillboardData.vertexCount > 0)
 		{
 			AddBillboardPass(frameGraph);

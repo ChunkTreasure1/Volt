@@ -1,6 +1,6 @@
 project "VoltRHI"
 	location "."
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
 	cppdialect "C++20"
 
@@ -36,6 +36,9 @@ project "VoltRHI"
 	includedirs
 	{
 		"src/",
+		"../VoltMock/src",
+		"../VoltD3D12/src",
+		"../VoltVulkan/src",
 	}
 
 	defines
@@ -43,13 +46,6 @@ project "VoltRHI"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"RHI_EXPORT"
-	}
-
-	postbuildcommands
-	{
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltRHI/VoltRHI.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/"',
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltRHI/VoltRHI.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -99,8 +95,3 @@ project "VoltRHI"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
-
-			postbuildcommands
-			{
-				'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltRHI/VoltRHI.dll" "../../../Engine"',
-			}

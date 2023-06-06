@@ -64,7 +64,7 @@ namespace Volt
 
 		GraphicsContextCreateInfo cinfo{};
 		cinfo.graphicsApi = GraphicsAPI::Mock;
-		Ref<GraphicsContext> context = CreateRef<MockGraphicsContext>(cinfo);
+		Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
 
 		ProjectManager::SetupProject(myInfo.projectPath);
 
