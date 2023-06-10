@@ -3,6 +3,7 @@
 #include <memory>
 
 #define VT_NODISCARD [[nodiscard]]
+#define VT_INLINE __forceinline
 #define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
 
 template<typename T>

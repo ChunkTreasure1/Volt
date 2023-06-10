@@ -1,5 +1,8 @@
 #pragma once
 
+// we sould not need to add any tostring function to enums.
+#define GET_NAME(name) std::string(#name)
+
 namespace Volt
 {
 	enum class QueueType
