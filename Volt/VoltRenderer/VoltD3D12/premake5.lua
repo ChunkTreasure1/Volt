@@ -1,6 +1,6 @@
 project "VoltD3D12"
 	location "."
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
 	cppdialect "C++20"
 
@@ -39,12 +39,6 @@ project "VoltD3D12"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-	}
-
-	postbuildcommands
-	{
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltD3D12/VoltD3D12.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/"',
-		'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltD3D12/VoltD3D12.dll" "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/"'
 	}
 
 	filter "files:vendor/**.cpp"
@@ -94,8 +88,3 @@ project "VoltD3D12"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
-
-			postbuildcommands
-			{
-				'{COPY} "../../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/VoltD3D12/VoltD3D12.dll" "../../../Engine"',
-			}

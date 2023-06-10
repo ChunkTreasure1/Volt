@@ -19,7 +19,7 @@ namespace Volt
 		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType);
 
 	protected:
-		CommandBuffer() = default;
+		CommandBuffer(QueueType queueType);
 	
 		QueueType m_queueType = QueueType::Graphics;
 	};

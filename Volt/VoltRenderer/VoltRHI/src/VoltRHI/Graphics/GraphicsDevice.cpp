@@ -2,12 +2,26 @@
 #include "GraphicsDevice.h"
 
 #include "VoltRHI/Buffers/CommandBuffer.h"
+#include "VoltRHI/Graphics/GraphicsContext.h"
+
+#include <VoltMock/Graphics/MockGraphicsDevice.h>
 
 namespace Volt
 {
 	Ref<GraphicsDevice> GraphicsDevice::Create(const GraphicsDeviceCreateInfo& deviceInfo)
 	{
-		// #TODO: Implement
+		const auto api = GraphicsContext::GetAPI();
+
+		switch (api)
+		{
+			case GraphicsAPI::Vulkan:
+			case GraphicsAPI::D3D12:
+			case GraphicsAPI::MoltenVk:
+				break;
+
+			case GraphicsAPI::Mock: return CreateRefRHI<MockGraphicsDevice>(deviceInfo); break;
+		}
+
 		return nullptr;
 	}
 

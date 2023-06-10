@@ -116,9 +116,9 @@ project "Volt"
 		"TGAFBX",
 
 		"VoltRHI",
-		-- "VoltMock",
-		-- "VoltVulkan",
-		-- "VoltD3D12"
+		"VoltMock",
+		"VoltVulkan",
+		"VoltD3D12"
 	}
 
 	defines
