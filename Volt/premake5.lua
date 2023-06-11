@@ -1,4 +1,3 @@
-local VoltRootDirectory = os.getenv("VOLT_PATH")
 
 include "./scripts/premakeCustomization/solution_items.lua"
 include "Dependencies.lua"
@@ -49,7 +48,7 @@ include "Volt"
 include "GraphKey"
 include "Navigation"
 include "Nexus"
-include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
+include "../Engine/Volt-ScriptCore"
 
 group "Tools"
 include "Sandbox"
