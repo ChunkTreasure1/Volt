@@ -20,7 +20,7 @@ namespace Volt
 		Font(const std::filesystem::path& aPath);
 		~Font() override;
 
-		float GetStringWidth(const std::string& string, const gem::vec2& scale, float maxWidth);
+		float GetStringWidth(const std::string& string, const glm::vec2& scale, float maxWidth);
 		inline Ref<Texture2D> GetAtlas() const { return myAtlas; }
 		inline MSDFData* GetMSDFData() const { return myMSDFData; }
 

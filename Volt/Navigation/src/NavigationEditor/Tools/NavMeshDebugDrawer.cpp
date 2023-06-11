@@ -6,7 +6,7 @@
 
 #include <Volt/Rendering/DebugRenderer.h>
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <DetourDebugDraw.h>
 
@@ -25,7 +25,7 @@ void NavMeshDebugDrawer::DrawNavMesh()
 	auto mesh = debugDrawCompiler.GetDebugMesh();
 	if (mesh)
 	{
-		Volt::DebugRenderer::DrawMesh(mesh, gem::mat4(1.f));
+		Volt::DebugRenderer::DrawMesh(mesh, glm::mat4(1.f));
 
 		for (auto line : debugDrawCompiler.GetDebugLines())
 		{
@@ -39,7 +39,7 @@ void NavMeshDebugDrawer::DrawNavMesh()
 	//auto& mesh = navmesh->GetMesh();
 	//mesh->SetMaterial(Volt::AssetManager::GetAsset<Volt::Material>(path));
 
-	//Volt::DebugRenderer::DrawMesh(mesh, gem::mat4(1.f));
+	//Volt::DebugRenderer::DrawMesh(mesh, glm::mat4(1.f));
 
 	//// Draw NavMesh Lines
 
@@ -48,9 +48,9 @@ void NavMeshDebugDrawer::DrawNavMesh()
 	//
 	//for (uint32_t i = 0; i < indices.size(); i += 3)
 	//{
-	//	Volt::DebugRenderer::DrawLine(vertices[indices[i]].position, vertices[indices[i + 1]].position, gem::vec4(0.2f, 0.2, 0.2, 1.f));
-	//	Volt::DebugRenderer::DrawLine(vertices[indices[i + 1]].position, vertices[indices[i + 2]].position, gem::vec4(0.2, 0.2, 0.2, 1.f));
-	//	Volt::DebugRenderer::DrawLine(vertices[indices[i + 2]].position, vertices[indices[i]].position, gem::vec4(0.2, 0.2, 0.2, 1.f));
+	//	Volt::DebugRenderer::DrawLine(vertices[indices[i]].position, vertices[indices[i + 1]].position, glm::vec4(0.2f, 0.2, 0.2, 1.f));
+	//	Volt::DebugRenderer::DrawLine(vertices[indices[i + 1]].position, vertices[indices[i + 2]].position, glm::vec4(0.2, 0.2, 0.2, 1.f));
+	//	Volt::DebugRenderer::DrawLine(vertices[indices[i + 2]].position, vertices[indices[i]].position, glm::vec4(0.2, 0.2, 0.2, 1.f));
 	//}
 }
 
@@ -58,23 +58,23 @@ void NavMeshDebugDrawer::DrawLinks(const std::vector<Volt::AI::NavLinkConnection
 {
 	for (const auto& link : links)
 	{
-		Volt::DebugRenderer::DrawLineSphere(link.start, 100.f, gem::vec4(1.f, 1.f, 0.f, 1.f));
-		Volt::DebugRenderer::DrawLine(link.start, link.end, gem::vec4(1.f, 1.f, 0.f, 1.f));
-		Volt::DebugRenderer::DrawLineSphere(link.end, 100.f, gem::vec4(1.f, 1.f, 0.f, 1.f));
+		Volt::DebugRenderer::DrawLineSphere(link.start, 100.f, glm::vec4(1.f, 1.f, 0.f, 1.f));
+		Volt::DebugRenderer::DrawLine(link.start, link.end, glm::vec4(1.f, 1.f, 0.f, 1.f));
+		Volt::DebugRenderer::DrawLineSphere(link.end, 100.f, glm::vec4(1.f, 1.f, 0.f, 1.f));
 	}
 }
 
-void NavMeshDebugDrawer::DrawPath(const std::vector<gem::vec3>& path)
+void NavMeshDebugDrawer::DrawPath(const std::vector<glm::vec3>& path)
 {
 	for (uint32_t i = 0; i < path.size(); i++)
 	{
 		if (i == path.size() - 1)
 		{
-			Volt::DebugRenderer::DrawLine(path[i], path[0], gem::vec4(1.f, 0.f, 0.f, 1.f));
+			Volt::DebugRenderer::DrawLine(path[i], path[0], glm::vec4(1.f, 0.f, 0.f, 1.f));
 		}
 		else
 		{
-			Volt::DebugRenderer::DrawLine(path[i], path[i + 1], gem::vec4(1.f, 0.f, 0.f, 1.f));
+			Volt::DebugRenderer::DrawLine(path[i], path[i + 1], glm::vec4(1.f, 0.f, 0.f, 1.f));
 		}
 	}
 }
@@ -113,7 +113,7 @@ void NavMeshDrawCompiler::begin(duDebugDrawPrimitives prim, float size)
 void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color)
 {
 	Volt::Vertex vertex;
-	vertex.position = *(gem::vec3*)pos;
+	vertex.position = *(glm::vec3*)pos;
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -129,7 +129,7 @@ void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color)
 void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, unsigned int color)
 {
 	Volt::Vertex vertex;
-	vertex.position = gem::vec3(x, y, z);
+	vertex.position = glm::vec3(x, y, z);
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -145,8 +145,8 @@ void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, un
 void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color, const float* uv)
 {
 	Volt::Vertex vertex;
-	vertex.position = *(gem::vec3*)pos;
-	vertex.texCoords = *(gem::vec2*)uv;
+	vertex.position = *(glm::vec3*)pos;
+	vertex.texCoords = *(glm::vec2*)uv;
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -162,8 +162,8 @@ void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color, const flo
 void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v)
 {
 	Volt::Vertex vertex;
-	vertex.position = gem::vec3(x, y, z);
-	vertex.texCoords = gem::vec2(u, v);
+	vertex.position = glm::vec3(x, y, z);
+	vertex.texCoords = glm::vec2(u, v);
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -206,7 +206,7 @@ std::vector<NavMeshLine> NavMeshDrawCompiler::GetDebugLines() const
 		NavMeshLine line;
 		line.start = myLineVertices[i].position;
 		line.end = myLineVertices[i + 1].position;
-		line.color = gem::vec4(0.2, 0.2, 0.2, 1.f);
+		line.color = glm::vec4(0.2, 0.2, 0.2, 1.f);
 		lines.emplace_back(line);
 	}
 

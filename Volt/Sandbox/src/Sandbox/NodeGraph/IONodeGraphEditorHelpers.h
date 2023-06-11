@@ -5,7 +5,7 @@
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Utility/UIUtility.h>
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 #include <imgui.h>
 #include <imgui_stdlib.h>
 
@@ -37,12 +37,12 @@ public:
 			myAttributeFunctions[GetTypeIndex<uint8_t>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<uint8_t&>(value)); };
 			myAttributeFunctions[GetTypeIndex<double>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<double&>(value)); };
 			myAttributeFunctions[GetTypeIndex<float>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<float&>(value)); };
-			myAttributeFunctions[GetTypeIndex<gem::vec2>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<gem::vec2&>(value)); };
-			myAttributeFunctions[GetTypeIndex<gem::vec3>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<gem::vec3&>(value)); };
-			myAttributeFunctions[GetTypeIndex<gem::vec4>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<gem::vec4&>(value)); };
-			myAttributeFunctions[GetTypeIndex<gem::vec2ui>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<gem::vec2ui&>(value)); };
-			myAttributeFunctions[GetTypeIndex<gem::vec3ui>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<gem::vec3ui&>(value)); };
-			myAttributeFunctions[GetTypeIndex<gem::vec4ui>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<gem::vec4ui&>(value)); };
+			myAttributeFunctions[GetTypeIndex<glm::vec2>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<glm::vec2&>(value)); };
+			myAttributeFunctions[GetTypeIndex<glm::vec3>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<glm::vec3&>(value)); };
+			myAttributeFunctions[GetTypeIndex<glm::vec4>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<glm::vec4&>(value)); };
+			myAttributeFunctions[GetTypeIndex<glm::uvec2>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<glm::uvec2&>(value)); };
+			myAttributeFunctions[GetTypeIndex<glm::uvec3>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<glm::uvec3&>(value)); };
+			myAttributeFunctions[GetTypeIndex<glm::uvec4>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<glm::uvec4&>(value)); };
 			myAttributeFunctions[GetTypeIndex<std::string>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<std::string&>(value)); };
 
 			myAttributeFunctions[GetTypeIndex<Volt::Entity>()] = [](std::any& value) { IONodeGraphEditorHelpers::Attribute(std::any_cast<Volt::Entity&>(value)); };
@@ -71,14 +71,14 @@ public:
 			myAttributeColors[GetTypeIndex<double>()] = { 0.2f, 0.72f, 0.011f, 1.f };
 			myAttributeColors[GetTypeIndex<float>()] = { 0.2f, 0.72f, 0.011f, 1.f };
 
-			myAttributeColors[GetTypeIndex<gem::vec2>()] = { 0.88f, 0.7f, 0.13f, 1.f };
-			myAttributeColors[GetTypeIndex<gem::vec3>()] = { 0.88f, 0.7f, 0.13f, 1.f };
-			myAttributeColors[GetTypeIndex<gem::vec4>()] = { 0.88f, 0.7f, 0.13f, 1.f };
-			myAttributeColors[GetTypeIndex<gem::quat>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::vec2>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::vec3>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::vec4>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::quat>()] = { 0.88f, 0.7f, 0.13f, 1.f };
 
-			myAttributeColors[GetTypeIndex<gem::vec2ui>()] = { 0.88f, 0.7f, 0.13f, 1.f };
-			myAttributeColors[GetTypeIndex<gem::vec3ui>()] = { 0.88f, 0.7f, 0.13f, 1.f };
-			myAttributeColors[GetTypeIndex<gem::vec4ui>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::uvec2>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::uvec3>()] = { 0.88f, 0.7f, 0.13f, 1.f };
+			myAttributeColors[GetTypeIndex<glm::uvec4>()] = { 0.88f, 0.7f, 0.13f, 1.f };
 
 			myAttributeColors[GetTypeIndex<std::string>()] = { 0.83f, 0.023f, 0.7f, 1.f };
 
@@ -213,7 +213,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(gem::vec2& value)
+	inline static void Attribute(glm::vec2& value)
 	{
 		ImGui::PushItemWidth(40.f);
 
@@ -230,7 +230,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(gem::vec3& value)
+	inline static void Attribute(glm::vec3& value)
 	{
 		ImGui::PushItemWidth(40.f);
 
@@ -252,7 +252,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(gem::vec4& value)
+	inline static void Attribute(glm::vec4& value)
 	{
 		ImGui::PushItemWidth(40.f);
 
@@ -279,7 +279,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(gem::vec2ui& value)
+	inline static void Attribute(glm::uvec2& value)
 	{
 		ImGui::PushItemWidth(40.f);
 
@@ -296,7 +296,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(gem::vec3ui& value)
+	inline static void Attribute(glm::uvec3& value)
 	{
 		ImGui::PushItemWidth(40.f);
 
@@ -318,7 +318,7 @@ public:
 		ImGui::PopItemWidth();
 	}
 
-	inline static void Attribute(gem::vec4ui& value)
+	inline static void Attribute(glm::uvec4& value)
 	{
 		ImGui::PushItemWidth(40.f);
 
@@ -418,8 +418,8 @@ private:
 	inline static constexpr float ATTR_PADDING = 5.f;
 
 	inline static std::unordered_map<std::type_index, std::function<void(std::any& data)>> myAttributeFunctions;
-	inline static std::unordered_map<std::type_index, gem::vec4> myAttributeColors;
-	inline static gem::vec4 myDefaultPinColor;
+	inline static std::unordered_map<std::type_index, glm::vec4> myAttributeColors;
+	inline static glm::vec4 myDefaultPinColor;
 
 	IONodeGraphEditorHelpers() = delete;
 };

@@ -424,9 +424,9 @@ void VisionPanel::UpdateSelectedCamera()
 	if (visionCamComp.lookAtId != 0)
 	{
 		Volt::Entity lookAtEnt = Volt::Entity{ visionCamComp.lookAtId, myCurrentScene.get() };
-		gem::vec3 lookAtPos = lookAtEnt.GetPosition();
+		glm::vec3 lookAtPos = lookAtEnt.GetPosition();
 
-		selectedEnt.SetLocalRotation(gem::quatLookAtLH(gem::normalize(lookAtPos - selectedEnt.GetPosition()), { 0,1,0 }));
+		selectedEnt.SetLocalRotation(glm::quatLookAtLH(glm::normalize(lookAtPos - selectedEnt.GetPosition()), { 0,1,0 }));
 	}
 }
 

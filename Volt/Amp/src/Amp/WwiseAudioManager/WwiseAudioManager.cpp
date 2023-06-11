@@ -63,7 +63,7 @@ namespace Amp
 		return WWiseEngine::Get().RemoveAllObjects();
 	}
 
-	bool WwiseAudioManager::SetObjectPosition(uint32_t aObjID, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+	bool WwiseAudioManager::SetObjectPosition(uint32_t aObjID, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 	{
 		AkTransform transform;
 		transform.SetPosition({ aPosition.x, aPosition.y, aPosition.z });
@@ -81,7 +81,7 @@ namespace Amp
 		return Amp::WWiseEngine::Get().PlayOneShotEvent(eventName, transform);
 	}
 
-	bool WwiseAudioManager::PlayOneShotEvent(const char* eventName, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+	bool WwiseAudioManager::PlayOneShotEvent(const char* eventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 	{
 		AkTransform transform;
 		transform.SetPosition({ aPosition.x, aPosition.y, aPosition.z });
@@ -195,7 +195,7 @@ namespace Amp
 		return Amp::WWiseEngine::Get().UnregisterListener();
 	}
 
-	bool WwiseAudioManager::SetListenerPosition(const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+	bool WwiseAudioManager::SetListenerPosition(const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 	{
 		AkTransform transform;
 		transform.SetPosition({ aPosition.x, aPosition.y, aPosition.z });

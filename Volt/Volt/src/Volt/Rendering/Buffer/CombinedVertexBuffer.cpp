@@ -33,7 +33,7 @@ namespace Volt
 		// If the buffer is too small, allocate at least enough or 1.25 times the size
 		if (myTotalBufferSize < myConsumedSize + myVertexSize * count)
 		{
-			const uint64_t newSize = gem::max(myConsumedSize + myVertexSize * count, (uint64_t)(myTotalBufferSize * 1.25));
+			const uint64_t newSize = glm::max(myConsumedSize + myVertexSize * count, (uint64_t)(myTotalBufferSize * 1.25));
 			Resize(newSize);
 		}
 

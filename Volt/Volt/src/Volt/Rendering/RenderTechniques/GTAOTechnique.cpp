@@ -25,7 +25,7 @@ namespace Volt
 		FrameGraphResourceHandle edgesOutput;
 	};
 
-	GTAOTechnique::GTAOTechnique(Ref<Camera> camera, const gem::vec2ui& renderSize, uint64_t frameIndex, const GTAOSettings& settings)
+	GTAOTechnique::GTAOTechnique(Ref<Camera> camera, const glm::uvec2& renderSize, uint64_t frameIndex, const GTAOSettings& settings)
 		: myRenderSize(renderSize), myFrameIndex(frameIndex)
 	{
 		// Setup constants

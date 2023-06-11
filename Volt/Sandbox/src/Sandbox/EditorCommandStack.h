@@ -54,13 +54,13 @@ struct GizmoCommand : EditorCommand
 {
 	struct GizmoData
 	{
-		gem::vec3* positionAdress;
-		gem::quat* rotationAdress;
-		gem::vec3* scaleAdress;
+		glm::vec3* positionAdress;
+		glm::quat* rotationAdress;
+		glm::vec3* scaleAdress;
 
-		gem::vec3 previousPositionValue;
-		gem::quat previousRotationValue;
-		gem::vec3 previousScaleValue;
+		glm::vec3 previousPositionValue;
+		glm::quat previousRotationValue;
+		glm::vec3 previousScaleValue;
 	};
 
 	GizmoCommand(GizmoData aGizmoData)
@@ -112,12 +112,12 @@ struct GizmoCommand : EditorCommand
 	}
 
 private:
-	gem::vec3* myPositionAdress;
-	gem::quat* myRotationAdress;
-	gem::vec3* myScaleAdress;
-	const gem::vec3 myPreviousPositionValue;
-	const gem::quat myPreviousRotationValue;
-	const gem::vec3 myPreviousScaleValue;
+	glm::vec3* myPositionAdress;
+	glm::quat* myRotationAdress;
+	glm::vec3* myScaleAdress;
+	const glm::vec3 myPreviousPositionValue;
+	const glm::quat myPreviousRotationValue;
+	const glm::vec3 myPreviousScaleValue;
 };
 
 struct MultiGizmoCommand : EditorCommand

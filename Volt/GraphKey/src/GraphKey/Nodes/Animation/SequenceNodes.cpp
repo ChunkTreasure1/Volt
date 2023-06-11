@@ -118,12 +118,12 @@ namespace GraphKey
 
 			output.rootTRS.position = output.pose.at(0).position - myLastRootTransform.position;
 			output.rootTRS.scale = output.pose.at(0).scale - myLastRootTransform.scale;
-			output.rootTRS.rotation = output.pose.at(0).rotation * gem::inverse(myLastRootTransform.rotation);
+			output.rootTRS.rotation = output.pose.at(0).rotation * glm::inverse(myLastRootTransform.rotation);
 
 			myLastRootTransform = output.rootTRS;
 
 			output.pose.at(0).position = 0.f;
-			output.pose.at(0).rotation = gem::quat{ 1.f, 0.f, 0.f, 0.f };
+			output.pose.at(0).rotation = glm::quat{ 1.f, 0.f, 0.f, 0.f };
 			output.pose.at(0).scale = 1.f;
 		}
 

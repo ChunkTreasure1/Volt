@@ -70,7 +70,7 @@ namespace Volt
 		uint32_t myIndexStartOffset = 0;
 		uint32_t myVertexStartOffset = 0;
 
-		gem::vec3 myAverageScale{ 1.f };
+		glm::vec3 myAverageScale{ 1.f };
 		std::map<uint32_t, BoundingSphere> mySubMeshBoundingSpheres;
 	};
 }

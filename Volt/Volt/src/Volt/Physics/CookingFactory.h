@@ -4,7 +4,7 @@
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Physics/PhysicsEnums.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <PhysX/PxPhysicsAPI.h>
 
 namespace Volt
@@ -12,7 +12,7 @@ namespace Volt
 	struct MeshColliderData
 	{
 		Buffer data{};
-		gem::mat4 transform = { 1.f };
+		glm::mat4 transform = { 1.f };
 	};
 
 	struct MeshColliderCacheData

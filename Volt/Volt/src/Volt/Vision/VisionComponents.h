@@ -1,6 +1,6 @@
 #pragma once
 #include <Wire/Serialization.h>
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <string>
 
 namespace Volt
@@ -45,7 +45,7 @@ namespace Volt
 		PROPERTY(Name = Blend Type, SpecialType = Enum, Visible = false) eBlendType blendType = eBlendType::None;
 
 		PROPERTY(Name = Damping, Visible = false) float damping = 0.f;
-		PROPERTY(Name = Offset, Visible = false) gem::vec3 offset = { 0 };
+		PROPERTY(Name = Offset, Visible = false) glm::vec3 offset = { 0 };
 
 		PROPERTY(Name = Follow, Visible = false) Wire::EntityId followId = Wire::NullID;
 		PROPERTY(Name = LookAt, Visible = false) Wire::EntityId lookAtId = Wire::NullID;
@@ -92,13 +92,13 @@ namespace Volt
 		float myCurrentLerpTime = 0.f;
 		float myCurrentDampTime = 0.f;
 
-		gem::vec3 myRotation = { 0 };
-		gem::vec3 myPosition = { 0 };
+		glm::vec3 myRotation = { 0 };
+		glm::vec3 myPosition = { 0 };
 
-		gem::vec3 myDampedFocalPoint = { 0 };
+		glm::vec3 myDampedFocalPoint = { 0 };
 
-		gem::vec2 myLastMousePos = { 0 };
-		gem::vec2 myMousePos = { 0.f };
+		glm::vec2 myLastMousePos = { 0 };
+		glm::vec2 myMousePos = { 0.f };
 
 
 	}), VisionCameraComponent);

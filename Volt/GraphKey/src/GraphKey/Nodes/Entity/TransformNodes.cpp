@@ -14,9 +14,9 @@ namespace GraphKey
 
 		outputs =
 		{
-			AttributeConfig<gem::vec3>("Position", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetPosition)),
-			AttributeConfig<gem::vec3>("Rotation", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetRotation)),
-			AttributeConfig<gem::vec3>("Scale", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetScale)),
+			AttributeConfig<glm::vec3>("Position", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetPosition)),
+			AttributeConfig<glm::vec3>("Rotation", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetRotation)),
+			AttributeConfig<glm::vec3>("Scale", AttributeDirection::Output, true, GK_BIND_FUNCTION(GetEntityTransformNode::GetScale)),
 		};
 	}
 
@@ -42,7 +42,7 @@ namespace GraphKey
 		const Volt::Entity entity = GetInput<Volt::Entity>(0);
 		if (entity)
 		{
-			SetOutputData(1, gem::degrees(gem::eulerAngles(entity.GetRotation())));
+			SetOutputData(1, glm::degrees(glm::eulerAngles(entity.GetRotation())));
 		}
 	}
 
@@ -61,9 +61,9 @@ namespace GraphKey
 		{
 			AttributeConfig("Set", AttributeDirection::Input, GK_BIND_FUNCTION(SetEntityTransformNode::SetTransform)),
 			AttributeConfig<Volt::Entity>("Entity", GraphKey::AttributeDirection::Input),
-			AttributeConfigDefault<gem::vec3>("Position", AttributeDirection::Input, gem::vec3{ 0.f }),
-			AttributeConfigDefault<gem::vec3>("Rotation", AttributeDirection::Input, gem::vec3{ 0.f }),
-			AttributeConfigDefault<gem::vec3>("Scale", AttributeDirection::Input, gem::vec3{ 1.f }),
+			AttributeConfigDefault<glm::vec3>("Position", AttributeDirection::Input, glm::vec3{ 0.f }),
+			AttributeConfigDefault<glm::vec3>("Rotation", AttributeDirection::Input, glm::vec3{ 0.f }),
+			AttributeConfigDefault<glm::vec3>("Scale", AttributeDirection::Input, glm::vec3{ 1.f }),
 		};
 
 		outputs =
@@ -85,9 +85,9 @@ namespace GraphKey
 		Volt::Entity entity = GetInput<Volt::Entity>(1);
 		if (entity)
 		{
-			entity.SetPosition(GetInput<gem::vec3>(2));
-			entity.SetRotation(gem::radians(GetInput<gem::vec3>(3)));
-			entity.SetScale(GetInput<gem::vec3>(4));
+			entity.SetPosition(GetInput<glm::vec3>(2));
+			entity.SetRotation(glm::radians(GetInput<glm::vec3>(3)));
+			entity.SetScale(GetInput<glm::vec3>(4));
 		}
 
 		ActivateOutput(0);
@@ -99,7 +99,7 @@ namespace GraphKey
 		{
 			AttributeConfig("Set", AttributeDirection::Input, GK_BIND_FUNCTION(SetEntityPositionNode::SetPosition)),
 			AttributeConfig<Volt::Entity>("Entity", GraphKey::AttributeDirection::Input),
-			AttributeConfigDefault<gem::vec3>("Position", AttributeDirection::Input, gem::vec3{0.f}),
+			AttributeConfigDefault<glm::vec3>("Position", AttributeDirection::Input, glm::vec3{0.f}),
 		};
 
 		outputs =
@@ -121,7 +121,7 @@ namespace GraphKey
 		Volt::Entity entity = GetInput<Volt::Entity>(1);
 		if (entity)
 		{
-			entity.SetPosition(GetInput<gem::vec3>(2));
+			entity.SetPosition(GetInput<glm::vec3>(2));
 		}
 
 		ActivateOutput(0);
@@ -133,7 +133,7 @@ namespace GraphKey
 		{
 			AttributeConfig("Set", AttributeDirection::Input, GK_BIND_FUNCTION(SetEntityRotationNode::SetRotation)),
 			AttributeConfig<Volt::Entity>("Entity", GraphKey::AttributeDirection::Input),
-			AttributeConfigDefault<gem::vec3>("Rotation", AttributeDirection::Input, gem::vec3{0.f}),
+			AttributeConfigDefault<glm::vec3>("Rotation", AttributeDirection::Input, glm::vec3{0.f}),
 		};
 
 		outputs =
@@ -155,7 +155,7 @@ namespace GraphKey
 		Volt::Entity entity = GetInput<Volt::Entity>(1);
 		if (entity)
 		{
-			entity.SetRotation(gem::quat{ gem::radians(GetInput<gem::vec3>(2)) });
+			entity.SetRotation(glm::quat{ glm::radians(GetInput<glm::vec3>(2)) });
 		}
 
 		ActivateOutput(0);
@@ -167,7 +167,7 @@ namespace GraphKey
 		{
 			AttributeConfig("Add", AttributeDirection::Input, GK_BIND_FUNCTION(AddEntityRotationNode::AddRotation)),
 			AttributeConfig<Volt::Entity>("Entity", GraphKey::AttributeDirection::Input),
-			AttributeConfigDefault<gem::vec3>("Rotation", AttributeDirection::Input, gem::vec3{0.f}),
+			AttributeConfigDefault<glm::vec3>("Rotation", AttributeDirection::Input, glm::vec3{0.f}),
 		};
 
 		outputs =
@@ -189,7 +189,7 @@ namespace GraphKey
 		Volt::Entity entity = GetInput<Volt::Entity>(1);
 		if (entity)
 		{
-			gem::quat addRot = { gem::radians(GetInput<gem::vec3>(2)) };
+			glm::quat addRot = { glm::radians(GetInput<glm::vec3>(2)) };
 			entity.SetRotation(entity.GetRotation() * addRot);
 		}
 

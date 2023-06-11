@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "AudioSystem.h"
 
-#include "gem/gem.h"
+#include <glm/glm.hpp>
 #include "../Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
@@ -105,19 +105,19 @@ void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* sc
 //			for (auto& AS : audioSources)
 //			{
 //				Volt::Entity targetEntity({ audioListenerComp.target, scene });
-//				gem::vec3 targetPos = targetEntity.GetPosition();
+//				glm::vec3 targetPos = targetEntity.GetPosition();
 //				targetPos = { targetPos.x ,targetPos.y + 50.f, targetPos.z };
-//				gem::vec3 direction = targetPos - entity.GetPosition();
+//				glm::vec3 direction = targetPos - entity.GetPosition();
 //				float distToObj = audioListenerComp.cameraDistance;
 //
-//				gem::vec3 listnerPos = { (entity.GetPosition() + (direction * distToObj)) };
-//				gem::vec3 sourcePos = AS.GetPosition();
+//				glm::vec3 listnerPos = { (entity.GetPosition() + (direction * distToObj)) };
+//				glm::vec3 sourcePos = AS.GetPosition();
 //
-//				gem::vec3 listLeft = CalculatePoint(listnerPos, sourcePos, 100.f, true);
-//				gem::vec3 listRight = CalculatePoint(listnerPos, sourcePos, 100.f, false);
+//				glm::vec3 listLeft = CalculatePoint(listnerPos, sourcePos, 100.f, true);
+//				glm::vec3 listRight = CalculatePoint(listnerPos, sourcePos, 100.f, false);
 //
-//				gem::vec3 sourceLeft = CalculatePoint(sourcePos, listnerPos, 100.f, true);
-//				gem::vec3 sourceRight = CalculatePoint(sourcePos, listnerPos, 100.f, false);
+//				glm::vec3 sourceLeft = CalculatePoint(sourcePos, listnerPos, 100.f, true);
+//				glm::vec3 sourceRight = CalculatePoint(sourcePos, listnerPos, 100.f, false);
 //
 //				AudioSourceComponent& ASC = AS.GetComponent<AudioSourceComponent>();
 //
@@ -134,7 +134,7 @@ void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* sc
 //					}
 //				}
 //
-//				float distance = gem::distance(sourcePos, listnerPos);
+//				float distance = glm::distance(sourcePos, listnerPos);
 //
 //				if (distance < mostDist)
 //				{
@@ -166,14 +166,14 @@ void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* sc
 //
 //}
 //
-//gem::vec3 Volt::AudioSystem::CalculatePoint(const gem::vec3& posA, const gem::vec3& posB, float soundWidth, bool isPositive)
+//glm::vec3 Volt::AudioSystem::CalculatePoint(const glm::vec3& posA, const glm::vec3& posB, float soundWidth, bool isPositive)
 //{
 //	//Based on https://awaismunir.net/universal/tangents/3rd-third-vertext-calculate-right-angled-triangle.gif formula
 //	float x;
 //	float z;
-//	gem::vec3 a = { posA.x,0.f, posA.z };
-//	gem::vec3 b = { posB.x,0.f, posB.z };
-//	float distance = gem::distance(a, b);
+//	glm::vec3 a = { posA.x,0.f, posA.z };
+//	glm::vec3 b = { posB.x,0.f, posB.z };
+//	float distance = glm::distance(a, b);
 //	float mn = (soundWidth / distance);
 //	if (isPositive)
 //	{
@@ -189,7 +189,7 @@ void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* sc
 //	return { x, posA.y, z };
 //}
 
-int Volt::AudioSystem::CastRay(const gem::vec3& posA, const gem::vec3& posB, bool debug)
+int Volt::AudioSystem::CastRay(const glm::vec3& posA, const glm::vec3& posB, bool debug)
 {
 	RaycastHit hit;
 	if (Physics::GetScene()->Linecast(posA, posB, &hit, 1))

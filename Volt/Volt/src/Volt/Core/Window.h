@@ -6,7 +6,7 @@
 #include <functional>
 #include <Windows.h>
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 struct GLFWwindow;
 struct GLFWcursor;
@@ -115,8 +115,8 @@ namespace Volt
 		Ref<GraphicsContext> myGraphicsContext;
 		Ref<Swapchain> mySwapchain;
 
-		gem::vec2ui myStartPosition = 0;
-		gem::vec2ui myStartSize = 0;
+		glm::uvec2 myStartPosition = 0;
+		glm::uvec2 myStartSize = 0;
 
 		uint32_t myViewportWidth = 0;
 		uint32_t myViewportHeight = 0;

@@ -20,6 +20,6 @@ namespace GraphKey
 		const AnimationOutputData Sample(bool moveToWorldSpace, float startTime);
 
 		inline const std::string GetName() override { return "Output Pose"; }
-		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 	};
 }

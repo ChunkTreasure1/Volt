@@ -17,7 +17,7 @@ namespace GraphKey
 		~GetAnimationDurationNode() override = default;
 
 		inline const std::string GetName() override { return "Get Animation Duration"; }
-		inline const gem::vec4 GetColor() override { return { 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 1.f }; }
 
 		void GetAnimationDuration();
 		void GetAnimationSpeed();

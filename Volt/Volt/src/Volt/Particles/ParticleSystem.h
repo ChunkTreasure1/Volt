@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 #include <Volt/Asset/Asset.h>
 
 namespace Wire
@@ -35,7 +35,7 @@ namespace Volt
 
 	private:
 		void UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime);
-		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, gem::vec3 aEntityPos, const float& deltaTime);
+		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, glm::vec3 aEntityPos, const float& deltaTime);
 
 		bool ParticleKillCheck(Particle& particle, const float& deltaTime);
 		void ParticlePositionUpdate(Particle& particle, Wire::EntityId id, Scene* scene, const float& deltaTime);

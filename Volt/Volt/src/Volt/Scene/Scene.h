@@ -9,7 +9,7 @@
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
 #include <Wire/Wire.h>
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <map>
 #include <set>
@@ -55,9 +55,9 @@ namespace Volt
 
 		struct TQS
 		{
-			gem::vec3 position = { 0.f, 0.f, 0.f };
-			gem::quat rotation = { 1.f, 0.f, 0.f, 0.f };
-			gem::vec3 scale = { 1.f, 1.f, 1.f };
+			glm::vec3 position = { 0.f, 0.f, 0.f };
+			glm::quat rotation = { 1.f, 0.f, 0.f, 0.f };
+			glm::vec3 scale = { 1.f, 1.f, 1.f };
 		};
 
 		Scene();
@@ -108,7 +108,7 @@ namespace Volt
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		gem::mat4 GetWorldSpaceTransform(Entity entity);
+		glm::mat4 GetWorldSpaceTransform(Entity entity);
 		TQS GetWorldSpaceTRS(Entity entity);
 
 		Vision& GetVision() { return *myVisionSystem; }
@@ -116,9 +116,9 @@ namespace Volt
 
 		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
-		gem::vec3 GetWorldForward(Entity entity);
-		gem::vec3 GetWorldRight(Entity entity);
-		gem::vec3 GetWorldUp(Entity entity);
+		glm::vec3 GetWorldForward(Entity entity);
+		glm::vec3 GetWorldRight(Entity entity);
+		glm::vec3 GetWorldUp(Entity entity);
 
 		template<typename T>
 		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;

@@ -15,7 +15,7 @@ namespace Volt
 		FrameGraphResourceHandle tempColor;
 	};
 
-	FXAATechnique::FXAATechnique(const gem::vec2ui& renderSize)
+	FXAATechnique::FXAATechnique(const glm::uvec2& renderSize)
 		: myRenderSize(renderSize)
 	{
 	}
@@ -37,7 +37,7 @@ namespace Volt
 		{
 			struct PushConstantData
 			{
-				gem::vec2 inverseViewportSize;
+				glm::vec2 inverseViewportSize;
 			} pushConstants;
 
 			pushConstants.inverseViewportSize = { 1.f / myRenderSize.x, 1.f / myRenderSize.y };

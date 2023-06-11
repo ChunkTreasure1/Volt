@@ -11,9 +11,9 @@ namespace GraphKey
 		{
 			AttributeConfig("", AttributeDirection::Input, GK_BIND_FUNCTION(CreateEntityNode::CreateEntity)),
 			AttributeConfig<std::string>("Tag", AttributeDirection::Input),
-			AttributeConfig<gem::vec3>("Position", AttributeDirection::Input),
-			AttributeConfig<gem::quat>("Rotation", AttributeDirection::Input),
-			AttributeConfig<gem::vec3>("Scale", AttributeDirection::Input),
+			AttributeConfig<glm::vec3>("Position", AttributeDirection::Input),
+			AttributeConfig<glm::quat>("Rotation", AttributeDirection::Input),
+			AttributeConfig<glm::vec3>("Scale", AttributeDirection::Input),
 		};
 
 		outputs =
@@ -31,9 +31,9 @@ namespace GraphKey
 		if (scenePtr)
 		{
 			auto entity = scenePtr->CreateEntity();
-			entity.SetPosition(GetInput<gem::vec3>(2));
-			entity.SetLocalRotation(GetInput<gem::quat>(3));
-			entity.SetLocalScale(GetInput<gem::vec3>(4));
+			entity.SetPosition(GetInput<glm::vec3>(2));
+			entity.SetLocalRotation(GetInput<glm::quat>(3));
+			entity.SetLocalScale(GetInput<glm::vec3>(4));
 
 			SetOutputData(1, entity);
 		};

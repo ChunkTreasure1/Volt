@@ -3,15 +3,17 @@
 
 #include "Volt/Physics/PhysicsLayer.h"
 
+#include "Volt/Math/Math.h"
+
 namespace Volt
 {
 	namespace PhysXUtilities
 	{
-		physx::PxTransform ToPhysXTransform(const gem::mat4& transform)
+		physx::PxTransform ToPhysXTransform(const glm::mat4& transform)
 		{
-			gem::vec3 trans, scale;
-			gem::quat rot;
-			gem::decompose(transform, trans, rot, scale);
+			glm::vec3 trans, scale;
+			glm::quat rot;
+			Math::Decompose(transform, trans, rot, scale);
 
 			physx::PxQuat r = ToPhysXQuat(rot);
 			physx::PxVec3 p = ToPhysXVector(trans);
@@ -19,32 +21,32 @@ namespace Volt
 			return physx::PxTransform(p, r);
 		}
 
-		physx::PxTransform ToPhysXTransform(const gem::vec3& position, const gem::quat& rotation)
+		physx::PxTransform ToPhysXTransform(const glm::vec3& position, const glm::quat& rotation)
 		{
 			return physx::PxTransform(ToPhysXVector(position), ToPhysXQuat(rotation));
 		}
 
-		physx::PxMat44 ToPhysXMatrix(const gem::mat4& mat)
+		physx::PxMat44 ToPhysXMatrix(const glm::mat4& mat)
 		{
 			return *(physx::PxMat44*)&mat;
 		}
 
-		const physx::PxVec3& ToPhysXVector(const gem::vec3& vec)
+		const physx::PxVec3& ToPhysXVector(const glm::vec3& vec)
 		{
 			return *(physx::PxVec3*)&vec;
 		}
 
-		const physx::PxVec4& ToPhysXVector(const gem::vec4& vec)
+		const physx::PxVec4& ToPhysXVector(const glm::vec4& vec)
 		{
 			return *(physx::PxVec4*)&vec;
 		}
 
-		const physx::PxExtendedVec3 ToPhysXVectorExtended(const gem::vec3& vec)
+		const physx::PxExtendedVec3 ToPhysXVectorExtended(const glm::vec3& vec)
 		{
 			return physx::PxExtendedVec3{ (double)vec.x, (double)vec.y, (double)vec.z };
 		}
 
-		physx::PxQuat ToPhysXQuat(const gem::quat& quat)
+		physx::PxQuat ToPhysXQuat(const glm::quat& quat)
 		{
 			return { quat.x, quat.y, quat.z, quat.w };
 		}
@@ -61,34 +63,34 @@ namespace Volt
 			return data;
 		}
 
-		gem::mat4 FromPhysXTransform(const physx::PxTransform& transform)
+		glm::mat4 FromPhysXTransform(const physx::PxTransform& transform)
 		{
-			gem::quat rotation = FromPhysXQuat(transform.q);
-			gem::vec3 position = FromPhysXVector(transform.p);
-			return gem::translate(gem::mat4(1.0f), position) * gem::mat4_cast(rotation);
+			glm::quat rotation = FromPhysXQuat(transform.q);
+			glm::vec3 position = FromPhysXVector(transform.p);
+			return glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
 		}
 
-		gem::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
+		glm::mat4 FromPhysXMatrix(const physx::PxMat44& matrix)
 		{
-			return *(gem::mat4*)&matrix;
+			return *(glm::mat4*)&matrix;
 		}
 
-		gem::vec3 FromPhysXVector(const physx::PxVec3& vector)
+		glm::vec3 FromPhysXVector(const physx::PxVec3& vector)
 		{
-			return *(gem::vec3*)&vector;
+			return *(glm::vec3*)&vector;
 		}
 
-		gem::vec3 FromPhysXVector(const physx::PxExtendedVec3& vector)
+		glm::vec3 FromPhysXVector(const physx::PxExtendedVec3& vector)
 		{
 			return { (float)vector.x, (float)vector.y, (float)vector.z };
 		}
 
-		gem::vec4 FromPhysXVector(const physx::PxVec4& vector)
+		glm::vec4 FromPhysXVector(const physx::PxVec4& vector)
 		{
-			return *(gem::vec4*)&vector;
+			return *(glm::vec4*)&vector;
 		}
 
-		gem::quat FromPhysXQuat(const physx::PxQuat& quat)
+		glm::quat FromPhysXQuat(const physx::PxQuat& quat)
 		{
 			return { quat.w, quat.x, quat.y, quat.z };
 		}

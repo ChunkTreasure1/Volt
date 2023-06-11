@@ -206,7 +206,7 @@ private:
 
 	const std::vector<std::string> GetEventNamesFromCurrentNewPin();
 
-	const gem::vec4 GetColorFromAttribute(const GraphKey::Attribute& attr);
+	const glm::vec4 GetColorFromAttribute(const GraphKey::Attribute& attr);
 	void DrawPinIcon(const GraphKey::Attribute& pin, bool connected, ImColor color, int32_t alpha);
 	Ref<GraphKey::Node> DrawNodeList(std::string& query, std::type_index typeIndex = std::type_index{ typeid(void) });
 
@@ -380,7 +380,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawNodes()
 			builder.Input(ed::PinId(input.id));
 
 			const bool connected = !input.links.empty();
-			gem::vec4 color = GetColorFromAttribute(input);
+			glm::vec4 color = GetColorFromAttribute(input);
 
 			if (input.linkable)
 			{
@@ -463,7 +463,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawNodes()
 			ImGui::TextUnformatted(output.name.c_str());
 			ImGui::Spring(0.f);
 
-			gem::vec4 color = GetColorFromAttribute(output);
+			glm::vec4 color = GetColorFromAttribute(output);
 
 			if (output.linkable)
 			{
@@ -711,7 +711,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 			showLabel("+ Create Node", ImColor(32, 45, 32, 180));
 		}
 
-		const gem::vec4 draggedLinkColor = newLinkPin ? GetColorFromAttribute(*newLinkPin) : gem::vec4(1.f, 1.f, 1.f, 1.f);
+		const glm::vec4 draggedLinkColor = newLinkPin ? GetColorFromAttribute(*newLinkPin) : glm::vec4(1.f, 1.f, 1.f, 1.f);
 		const float lineThickness = 2.f;
 
 		if (ed::AcceptNewItem(ImColor{ draggedLinkColor.x, draggedLinkColor.y, draggedLinkColor.z }, lineThickness))
@@ -1477,7 +1477,7 @@ inline const std::vector<std::string> IONodeGraphEditor<TGraphType, EditorBacken
 }
 
 template<GraphKey::GraphType graphType, typename EditorBackend>
-inline const gem::vec4 IONodeGraphEditor<graphType, EditorBackend>::GetColorFromAttribute(const GraphKey::Attribute& attr)
+inline const glm::vec4 IONodeGraphEditor<graphType, EditorBackend>::GetColorFromAttribute(const GraphKey::Attribute& attr)
 {
 	const auto typeIndex = std::type_index(attr.data.type());
 	if (attr.type == GraphKey::AttributeType::Flow)

@@ -23,7 +23,7 @@ namespace Volt
 		FrameGraphResourceHandle currentColor;
 	};
 
-	TAATechnique::TAATechnique(Ref<Camera> camera, const gem::mat4& reprojectionMatrix, const gem::vec2ui renderSize, uint64_t frameIndex, const gem::vec2& jitterDelta)
+	TAATechnique::TAATechnique(Ref<Camera> camera, const glm::mat4& reprojectionMatrix, const glm::uvec2 renderSize, uint64_t frameIndex, const glm::vec2& jitterDelta)
 		: myCamera(camera), myRenderSize(renderSize), myReprojectionMatrix(reprojectionMatrix), myJitterDelta(jitterDelta), myFrameIndex(frameIndex)
 	{
 	}
@@ -44,9 +44,9 @@ namespace Volt
 		{
 			struct PushConstantData 
 			{
-				gem::mat4 reprojectionMatrix;
-				gem::vec2 viewportSize2x;
-				gem::vec2 jitter;
+				glm::mat4 reprojectionMatrix;
+				glm::vec2 viewportSize2x;
+				glm::vec2 jitter;
 			} pushConstants;
 
 			pushConstants.reprojectionMatrix = myReprojectionMatrix;
@@ -102,8 +102,8 @@ namespace Volt
 		{
 			struct PushConstantData
 			{
-				gem::mat4 reprojectionMatrix;
-				gem::vec2 texelSize;
+				glm::mat4 reprojectionMatrix;
+				glm::vec2 texelSize;
 
 			} pushConstants;
 

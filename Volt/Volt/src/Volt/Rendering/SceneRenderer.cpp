@@ -66,11 +66,10 @@
 
 #include "Volt/Particles/ParticleSystem.h"
 
-#include "Volt/Math/MatrixUtilities.h"
-
 #include "Volt/Utility/ImageUtility.h"
 #include "Volt/Utility/ShadowMappingUtility.h"
 #include "Volt/Utility/Noise.h"
+#include "Volt/Math/Math.h"
 #include "Volt/Platform/ThreadUtility.h"
 
 namespace Volt
@@ -105,7 +104,7 @@ namespace Volt
 	{
 		myScene = mySpecification.scene;
 		myOriginalSize = mySpecification.initialResolution;
-		myScaledSize = (gem::vec2ui)((gem::vec2)mySpecification.initialResolution * mySettings.renderScale);
+		myScaledSize = (glm::uvec2)((glm::vec2)mySpecification.initialResolution * mySettings.renderScale);
 		myRenderSize = myScaledSize;
 
 		myTimestamps.resize(Renderer::GetFramesInFlightCount());
@@ -189,11 +188,11 @@ namespace Volt
 	void SceneRenderer::Resize(uint32_t width, uint32_t height)
 	{
 		myShouldResize = true;
-		myOriginalSize = gem::vec2ui{ width, height };
-		myScaledSize = (gem::vec2ui)gem::max(gem::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, gem::vec2{ 1.f });
+		myOriginalSize = glm::uvec2{ width, height };
+		myScaledSize = (glm::uvec2)glm::max(glm::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, glm::vec2{ 1.f });
 	}
 
-	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, const gem::mat4& transform)
+	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -210,7 +209,7 @@ namespace Volt
 		}
 	}
 
-	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const gem::mat4& transform)
+	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -241,7 +240,7 @@ namespace Volt
 
 	void SceneRenderer::ApplySettings()
 	{
-		myScaledSize = (gem::vec2ui)gem::max(gem::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, gem::vec2{ 1.f });
+		myScaledSize = (glm::uvec2)glm::max(glm::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, glm::vec2{ 1.f });
 		myShouldResize = true;
 	}
 
@@ -261,7 +260,7 @@ namespace Volt
 		return myStatistics;
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, const std::vector<gem::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id)
 	{
 		for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
 		{
@@ -281,7 +280,7 @@ namespace Volt
 		GetCPUData().animationBoneCount += (uint32_t)boneTransforms.size();
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id)
 	{
 		for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
 		{
@@ -509,9 +508,6 @@ namespace Volt
 			myTAAPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("TAA"), framesInFlight, true);
 			myFXAAPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("FXAA"), framesInFlight, true);
 			myAACompositePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("AAComposite"), framesInFlight, false);
-
-			mySSRPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("SSR"), framesInFlight, true);
-			mySSRCompositePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("SSRComposite"), framesInFlight, true);
 		}
 
 		// Materials
@@ -635,7 +631,7 @@ namespace Volt
 		myShaderStorageBufferSet->Add<IndirectGPUCommand>(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, START_OBJECT_COUNT, MemoryUsage::CPUToGPU | MemoryUsage::Indirect);
 		myShaderStorageBufferSet->Add<ObjectData>(Sets::RENDERER_BUFFERS, Bindings::OBJECT_DATA, START_OBJECT_COUNT, MemoryUsage::CPUToGPU);
 
-		myShaderStorageBufferSet->Add<gem::mat4>(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, MAX_ANIMATION_BONES, MemoryUsage::CPUToGPU);
+		myShaderStorageBufferSet->Add<glm::mat4>(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, MAX_ANIMATION_BONES, MemoryUsage::CPUToGPU);
 
 		myShaderStorageBufferSet->Add<PointLight>(Sets::RENDERER_BUFFERS, Bindings::POINT_LIGHTS, START_LIGHT_COUNT, MemoryUsage::CPUToGPU);
 		myShaderStorageBufferSet->Add<SpotLight>(Sets::RENDERER_BUFFERS, Bindings::SPOT_LIGHTS, START_LIGHT_COUNT, MemoryUsage::CPUToGPU);
@@ -643,7 +639,7 @@ namespace Volt
 		myShaderStorageBufferSet->Add<RectangleLight>(Sets::RENDERER_BUFFERS, Bindings::RECTANGLE_LIGHTS, START_LIGHT_COUNT, MemoryUsage::CPUToGPU);
 
 		myShaderStorageBufferSet->Add<ParticleRenderingInfo>(Sets::RENDERER_BUFFERS, Bindings::PARTICLE_INFO, START_PARTICLE_COUNT, MemoryUsage::CPUToGPU);
-		myShaderStorageBufferSet->Add<gem::vec4>(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, START_VERTEX_COLOR_COUNT, MemoryUsage::CPUToGPU);
+		myShaderStorageBufferSet->Add<glm::vec4>(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, START_VERTEX_COLOR_COUNT, MemoryUsage::CPUToGPU);
 
 		const uint32_t workGroupsX = (myScaledSize.x + 16 - 1) / 16;
 		const uint32_t workGroupsY = (myScaledSize.y + 16 - 1) / 16;
@@ -750,13 +746,13 @@ namespace Volt
 
 			camBuffer.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
 
-			camBuffer.inverseProj = gem::inverse(camBuffer.proj);
-			camBuffer.inverseView = gem::inverse(camBuffer.view);
-			camBuffer.nonReversedProj = gem::perspective(gem::radians(camera->GetFieldOfView()), camera->GetAspectRatio(), camera->GetNearPlane(), camera->GetFarPlane());
-			camBuffer.inverseNonReverseViewProj = gem::inverse(camBuffer.nonReversedProj * camera->GetView());
+			camBuffer.inverseProj = glm::inverse(camBuffer.proj);
+			camBuffer.inverseView = glm::inverse(camBuffer.view);
+			camBuffer.nonReversedProj = glm::perspective(glm::radians(camera->GetFieldOfView()), camera->GetAspectRatio(), camera->GetNearPlane(), camera->GetFarPlane());
+			camBuffer.inverseNonReverseViewProj = glm::inverse(camBuffer.nonReversedProj * camera->GetView());
 
 			const auto pos = camera->GetPosition();
-			camBuffer.position = gem::vec4(pos.x, pos.y, pos.z, 0.f);
+			camBuffer.position = glm::vec4(pos.x, pos.y, pos.z, 0.f);
 			camBuffer.nearPlane = camera->GetNearPlane();
 			camBuffer.farPlane = camera->GetFarPlane();
 
@@ -798,10 +794,10 @@ namespace Volt
 			auto lightEntity = Entity{ id, scenePtr.get() };
 
 			DirectionalLight light{};
-			light.colorIntensity = gem::vec4(dirLightComp.color.x, dirLightComp.color.y, dirLightComp.color.z, dirLightComp.intensity);
+			light.colorIntensity = glm::vec4(dirLightComp.color.x, dirLightComp.color.y, dirLightComp.color.z, dirLightComp.intensity);
 
-			const gem::vec3 dir = gem::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
-			light.direction = gem::vec4(dir.x, dir.y, dir.z, 1.f);
+			const glm::vec3 dir = glm::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
+			light.direction = glm::vec4(dir.x, dir.y, dir.z, 1.f);
 			light.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
 			light.softShadows = static_cast<uint32_t>(dirLightComp.softShadows);
 			light.lightSize = dirLightComp.lightSize;
@@ -843,23 +839,23 @@ namespace Volt
 			const auto position = lightEntity.GetPosition();
 
 			auto& pointLight = GetCPUData().pointLights.emplace_back();
-			pointLight.color = pointLightComp.color;
+			pointLight.color = glm::vec4(pointLightComp.color, 1.f);
 			pointLight.falloff = pointLightComp.falloff;
 			pointLight.intensity = pointLightComp.intensity;
 			pointLight.radius = pointLightComp.radius;
 			pointLight.castShadows = (uint32_t)pointLightComp.castShadows;
-			pointLight.position = position;
+			pointLight.position = glm::vec4(position, 0.f);
 
 			if (pointLightComp.castShadows)
 			{
-				const gem::mat4 projection = gem::perspective(gem::radians(90.f), 1.f, 1.f, pointLightComp.radius);
+				const glm::mat4 projection = glm::perspective(glm::radians(90.f), 1.f, 1.f, pointLightComp.radius);
 
-				pointLight.viewProjectionMatrices[0] = projection * gem::lookAtLH(position, position + gem::vec3{ 1.f, 0.f, 0.f }, gem::vec3{ 0.f, 1.f, 0.f });
-				pointLight.viewProjectionMatrices[1] = projection * gem::lookAtLH(position, position + gem::vec3{ -1.f, 0.f, 0.f }, gem::vec3{ 0.f, 1.f, 0.f });
-				pointLight.viewProjectionMatrices[2] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, 1.f, 0.f }, gem::vec3{ 0.f, 0.f, -1.f });
-				pointLight.viewProjectionMatrices[3] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, -1.f, 0.f }, gem::vec3{ 0.f, 0.f, 1.f });
-				pointLight.viewProjectionMatrices[4] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, 0.f, 1.f }, gem::vec3{ 0.f, 1.f, 0.f });
-				pointLight.viewProjectionMatrices[5] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, 0.f, -1.f }, gem::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[0] = projection * glm::lookAtLH(position, position + glm::vec3{ 1.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[1] = projection * glm::lookAtLH(position, position + glm::vec3{ -1.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[2] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, 1.f, 0.f }, glm::vec3{ 0.f, 0.f, -1.f });
+				pointLight.viewProjectionMatrices[3] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, -1.f, 0.f }, glm::vec3{ 0.f, 0.f, 1.f });
+				pointLight.viewProjectionMatrices[4] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, 0.f, 1.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[5] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
 			}
 		});
 
@@ -879,12 +875,12 @@ namespace Volt
 			spotLight.angleAttenuation = spotLightComp.angleAttenuation;
 			spotLight.direction = lightEntity.GetForward() * -1.f;
 			spotLight.range = spotLightComp.range;
-			spotLight.angle = gem::radians(spotLightComp.angle);
+			spotLight.angle = glm::radians(spotLightComp.angle);
 			spotLight.castShadows = (uint32_t)spotLightComp.castShadows;
 
 			if (spotLight.castShadows)
 			{
-				spotLight.viewProjection = gem::perspective(spotLight.angle, 1.f, 0.1f, spotLight.range) * gem::lookAt(lightEntity.GetPosition(), lightEntity.GetPosition() + lightEntity.GetForward(), { 0.f, 1.f, 0.f });
+				spotLight.viewProjection = glm::perspective(spotLight.angle, 1.f, 0.1f, spotLight.range) * glm::lookAt(lightEntity.GetPosition(), lightEntity.GetPosition() + lightEntity.GetForward(), { 0.f, 1.f, 0.f });
 			}
 
 			spotLight.position = lightEntity.GetPosition();
@@ -896,16 +892,16 @@ namespace Volt
 
 			std::sort(data.pointLights.begin(), data.pointLights.end(), [&](const auto& lhs, const auto& rhs)
 			{
-				const float distL = gem::distance2(gem::vec3{ lhs.position }, camera->GetPosition());
-				const float distR = gem::distance2(gem::vec3{ rhs.position }, camera->GetPosition());
+				const float distL = glm::distance2(glm::vec3{ lhs.position }, camera->GetPosition());
+				const float distR = glm::distance2(glm::vec3{ rhs.position }, camera->GetPosition());
 
 				return distL < distR;
 			});
 
 			std::sort(data.spotLights.begin(), data.spotLights.end(), [&](const auto& lhs, const auto& rhs)
 			{
-				const float distL = gem::distance2(gem::vec3{ lhs.position }, camera->GetPosition());
-				const float distR = gem::distance2(gem::vec3{ rhs.position }, camera->GetPosition());
+				const float distL = glm::distance2(glm::vec3{ lhs.position }, camera->GetPosition());
+				const float distR = glm::distance2(glm::vec3{ rhs.position }, camera->GetPosition());
 
 				return distL < distR;
 			});
@@ -959,9 +955,9 @@ namespace Volt
 			}
 
 			auto lightEntity = Entity{ id, scenePtr.get() };
-			const gem::vec3 dir = gem::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f });
-			const gem::vec3 left = gem::rotate(lightEntity.GetRotation(), { -1.f, 0.f, 0.f });
-			const gem::vec3 up = gem::rotate(lightEntity.GetRotation(), { 0.f, 1.f, 0.f });
+			const glm::vec3 dir = glm::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f });
+			const glm::vec3 left = glm::rotate(lightEntity.GetRotation(), { -1.f, 0.f, 0.f });
+			const glm::vec3 up = glm::rotate(lightEntity.GetRotation(), { 0.f, 1.f, 0.f });
 
 			const auto scale = lightEntity.GetScale();
 
@@ -1129,7 +1125,7 @@ namespace Volt
 				material = mesh->GetMaterial();
 			}
 
-			const gem::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+			const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
 			auto& submitCommands = perThreadSubmitCommands.at(threadIndex);
 
 			const bool hasVertexPaintedComponent = entity.HasComponent<VertexPaintedComponent>();
@@ -1263,7 +1259,7 @@ namespace Volt
 
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
-				const gem::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
 				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, id);
 			}
 			else
@@ -1300,7 +1296,7 @@ namespace Volt
 					}
 				}
 
-				const gem::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
 				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, id);
 			}
 		});
@@ -1325,7 +1321,7 @@ namespace Volt
 			}
 
 			Volt::Entity ent{ id, scenePtr.get() };
-			std::vector<gem::mat4> anim{};
+			std::vector<glm::mat4> anim{};
 
 			if (charComp.selectedFrame != -1)
 			{
@@ -1346,11 +1342,11 @@ namespace Volt
 						continue;
 					}
 
-					const gem::mat4 offsetTransform = gem::translate({ 1.f }, attachment.positionOffset) * gem::mat4_cast(attachment.rotationOffset);
+					const glm::mat4 offsetTransform = glm::translate({ 1.f }, attachment.positionOffset) * glm::mat4_cast(attachment.rotationOffset);
 
-					gem::vec3 t, s;
-					gem::quat q;
-					gem::decompose(anim[attachment.jointIndex] * offsetTransform * gem::inverse(character->GetSkeleton()->GetInverseBindPose().at(attachment.jointIndex)), t, q, s);
+					glm::vec3 t, s;
+					glm::quat q;
+					Math::Decompose(anim[attachment.jointIndex] * offsetTransform * glm::inverse(character->GetSkeleton()->GetInverseBindPose().at(attachment.jointIndex)), t, q, s);
 
 					for (auto attachedEntity : attachedEntities)
 					{
@@ -1426,7 +1422,7 @@ namespace Volt
 				for (int32_t i = 0; i < storage.numberOfAliveParticles; i++)
 				{
 					const auto& particle = storage.particles.at(i);
-					const auto particleTransform = gem::translate(gem::mat4(1.f), particle.position) * gem::mat4_cast(gem::quat(particle.rotation)) * gem::scale(gem::mat4(1.f), particle.size);
+					const auto particleTransform = glm::translate(glm::mat4(1.f), particle.position) * glm::mat4_cast(glm::quat(particle.rotation)) * glm::scale(glm::mat4(1.f), particle.size);
 
 					if (material && material->IsValid())
 					{
@@ -1718,13 +1714,13 @@ namespace Volt
 			uint32_t currentBoneOffset = 0;
 
 			auto ssbo = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, currentIndex);
-			gem::mat4* animationData = ssbo->Map<gem::mat4>();
+			glm::mat4* animationData = ssbo->Map<glm::mat4>();
 
 			for (uint32_t i = 0; const auto & cmd : data.submitCommands)
 			{
 				if (!cmd.boneTransforms.empty())
 				{
-					memcpy_s(&animationData[currentBoneOffset], ssbo->GetElementCount() * sizeof(gem::mat4), cmd.boneTransforms.data(), sizeof(gem::mat4) * cmd.boneTransforms.size());
+					memcpy_s(&animationData[currentBoneOffset], ssbo->GetElementCount() * sizeof(glm::mat4), cmd.boneTransforms.data(), sizeof(glm::mat4) * cmd.boneTransforms.size());
 
 					boneOffsets[i] = currentBoneOffset;
 					currentBoneOffset += (uint32_t)cmd.boneTransforms.size();
@@ -1743,13 +1739,13 @@ namespace Volt
 			uint32_t currentColorOffset = 0;
 
 			auto ssbo = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, currentIndex);
-			gem::vec4* colorData = ssbo->Map<gem::vec4>();
+			glm::vec4* colorData = ssbo->Map<glm::vec4>();
 
 			for (uint32_t i = 0; const auto & cmd : data.submitCommands)
 			{
 				if (!cmd.vertexColors.empty())
 				{
-					memcpy_s(&colorData[currentColorOffset], ssbo->GetElementCount() * sizeof(gem::vec4), cmd.vertexColors.data(), sizeof(gem::vec4) * cmd.vertexColors.size());
+					memcpy_s(&colorData[currentColorOffset], ssbo->GetElementCount() * sizeof(glm::vec4), cmd.vertexColors.data(), sizeof(glm::vec4) * cmd.vertexColors.size());
 
 					colorOffsets[i] = currentColorOffset;
 					currentColorOffset += static_cast<uint32_t>(cmd.vertexColors.size());
@@ -1788,9 +1784,9 @@ namespace Volt
 				}
 
 				Volt::BoundingSphere boundingSphere = cmd.mesh->GetBoundingSphere();
-				const gem::vec3 globalScale = { gem::length(cmd.transform[0]), gem::length(cmd.transform[1]), gem::length(cmd.transform[2]) };
-				float maxScale = gem::max(gem::max(globalScale.x, globalScale.y), globalScale.z);
-				const gem::vec3 globalCenter = cmd.transform * gem::vec4(boundingSphere.center, 1.f);
+				const glm::vec3 globalScale = { glm::length(cmd.transform[0]), glm::length(cmd.transform[1]), glm::length(cmd.transform[2]) };
+				float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
+				const glm::vec3 globalCenter = cmd.transform * glm::vec4(boundingSphere.center, 1.f);
 
 				if (!cmd.boneTransforms.empty())
 				{
@@ -1971,7 +1967,7 @@ namespace Volt
 			VT_PROFILE_SCOPE("Sort Systems");
 			std::sort(data.particleBatches.begin(), data.particleBatches.end(), [&](const auto& lhs, const auto& rhs)
 			{
-				return gem::distance2(camPos, lhs.emitterPosition) < gem::distance2(camPos, lhs.emitterPosition);
+				return glm::distance2(camPos, lhs.emitterPosition) < glm::distance2(camPos, lhs.emitterPosition);
 			});
 		}
 
@@ -1982,7 +1978,7 @@ namespace Volt
 			{
 				std::sort(std::execution::par, batch.particles.begin(), batch.particles.end(), [&](const auto& lhs, const auto& rhs)
 				{
-					return gem::distance2(camPos, lhs.position) > gem::distance2(camPos, rhs.position);
+					return glm::distance2(camPos, lhs.position) > glm::distance2(camPos, rhs.position);
 				});
 			}
 		}
@@ -2185,11 +2181,11 @@ namespace Volt
 
 				case AntiAliasingSetting::TAA:
 				{
-					gem::mat4 viewProj = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
-					gem::mat4 reprojectionMatrix = myPreviousViewProjection * gem::inverse(viewProj);
+					glm::mat4 viewProj = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
+					glm::mat4 reprojectionMatrix = myPreviousViewProjection * glm::inverse(viewProj);
 					myPreviousViewProjection = viewProj;
 
-					gem::vec2 jitterDelta = myPreviousJitter - myCurrentCamera->GetSubpixelOffset();
+					glm::vec2 jitterDelta = myPreviousJitter - myCurrentCamera->GetSubpixelOffset();
 
 					TAATechnique taaTechnique{ myCurrentCamera, reprojectionMatrix, myRenderSize, myFrameIndex, jitterDelta };
 					taaTechnique.AddGenerateMotionVectorsPass(frameGraph, myGenerateMotionVectorsPipeline, myGlobalDescriptorSets[Sets::RENDERER_BUFFERS], frameGraph.GetBlackboard().Get<PreDepthData>().preDepth);
@@ -2466,8 +2462,8 @@ namespace Volt
 
 			//	const auto& pointLight = GetGPUData().pointLights.at(data.pointLightIndices.at(index));
 
-			//	const gem::vec3 max = { pointLight.position.x + pointLight.radius, pointLight.position.y + pointLight.radius, pointLight.position.z + pointLight.radius };
-			//	const gem::vec3 min = { pointLight.position.x - pointLight.radius, pointLight.position.y - pointLight.radius, pointLight.position.z - pointLight.radius };
+			//	const glm::vec3 max = { pointLight.position.x + pointLight.radius, pointLight.position.y + pointLight.radius, pointLight.position.z + pointLight.radius };
+			//	const glm::vec3 min = { pointLight.position.x - pointLight.radius, pointLight.position.y - pointLight.radius, pointLight.position.z - pointLight.radius };
 
 			//	IndirectPassParams params;
 			//	params.cullMode = DrawCullMode::AABB;
@@ -3328,8 +3324,8 @@ namespace Volt
 
 			struct PushConstants
 			{
-				gem::vec2 texelSize;
-				gem::vec2 dir;
+				glm::vec2 texelSize;
+				glm::vec2 dir;
 				float sssWidth;
 			} pushConstants;
 
@@ -3339,7 +3335,7 @@ namespace Volt
 			constexpr float sssWidth = 10.f;
 
 			pushConstants.dir = { 1.f, 0.f };
-			pushConstants.sssWidth = sssWidth * 1.f / std::tanf(gem::radians(myCurrentCamera->GetFieldOfView()) * 0.05f) * static_cast<float>(myRenderSize.x) / static_cast<float>(myRenderSize.y);
+			pushConstants.sssWidth = sssWidth * 1.f / std::tanf(glm::radians(myCurrentCamera->GetFieldOfView()) * 0.05f) * static_cast<float>(myRenderSize.x) / static_cast<float>(myRenderSize.y);
 
 			// Blur 0
 			{
@@ -3861,22 +3857,22 @@ namespace Volt
 			uint32_t cullMode;
 			uint32_t padding;
 
-			gem::vec4 aabbMin = 0.f;
-			gem::vec4 aabbMax = 0.f;
+			glm::vec4 aabbMin = 0.f;
+			glm::vec4 aabbMax = 0.f;
 		} indirectCullData{};
 
 		indirectCullData.drawCallCount = (uint32_t)GetGPUData().submitCommands.size();
 
 		const auto& projection = myCurrentCamera->GetProjection();
-		const gem::mat4 projTranspose = gem::transpose(projection);
+		const glm::mat4 projTranspose = glm::transpose(projection);
 
 		indirectCullData.P00 = projection[0][0];
 		indirectCullData.P11 = projection[1][1];
 		indirectCullData.zNear = myCurrentCamera->GetNearPlane();
 		indirectCullData.zFar = myCurrentCamera->GetFarPlane();
 
-		const gem::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-		const gem::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+		const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+		const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
 		indirectCullData.frustum0 = frustumX.x;
 		indirectCullData.frustum1 = frustumX.z;
@@ -3885,8 +3881,8 @@ namespace Volt
 
 		indirectCullData.materialFlags = static_cast<uint32_t>(params.materialFlags);
 		indirectCullData.cullMode = static_cast<uint32_t>(params.cullMode);
-		indirectCullData.aabbMin = params.aabbMin;
-		indirectCullData.aabbMax = params.aabbMax;
+		indirectCullData.aabbMin = glm::vec4(params.aabbMin, 0.f);
+		indirectCullData.aabbMax = glm::vec4(params.aabbMax, 0.f);
 
 		{
 			BufferBarrierInfo barrierInfo{};
@@ -3944,13 +3940,13 @@ namespace Volt
 		{
 			struct LightCullData
 			{
-				gem::vec2ui	targetSize;
-				gem::vec2 depthUnpackConsts;
+				glm::uvec2	targetSize;
+				glm::vec2 depthUnpackConsts;
 			} cullData;
 
 			cullData.targetSize = myRenderSize;
 
-			const auto projectionMatrix = gem::perspective(gem::radians(myCurrentCamera->GetFieldOfView()), myCurrentCamera->GetAspectRatio(), myCurrentCamera->GetNearPlane(), myCurrentCamera->GetFarPlane());
+			const auto projectionMatrix = glm::perspective(glm::radians(myCurrentCamera->GetFieldOfView()), myCurrentCamera->GetAspectRatio(), myCurrentCamera->GetNearPlane(), myCurrentCamera->GetFarPlane());
 
 			float depthLinearizeMul = (-projectionMatrix[3][2]);
 			float depthLinearizeAdd = (projectionMatrix[2][2]);
@@ -3965,7 +3961,7 @@ namespace Volt
 
 			const uint32_t workGroupsX = (myRenderSize.x + 16 - 1) / 16;
 			const uint32_t workGroupsY = (myRenderSize.y + 16 - 1) / 16;
-			const gem::vec2ui numWorkGroups = { workGroupsX, workGroupsY };
+			const glm::uvec2 numWorkGroups = { workGroupsX, workGroupsY };
 
 			BeginTimestamp("Cull Lights");
 			Renderer::BeginSection(commandBuffer, "Cull Lights", TO_NORMALIZEDRGB(239, 222, 107));
@@ -4064,10 +4060,10 @@ namespace Volt
 
 		auto scenePtr = myScene.lock();
 
-		const auto halfSize = myScaledSize / 2;
+		const glm::uvec2 halfSize = myScaledSize / 2u;
 
 		UIRenderer::Begin(myOutputImage);
-		UIRenderer::SetProjection(gem::orthoLH(-(float)halfSize.x, (float)halfSize.x, -(float)halfSize.y, (float)halfSize.y, 0.1f, 100.f));
+		UIRenderer::SetProjection(glm::ortho(-(float)halfSize.x, (float)halfSize.x, -(float)halfSize.y, (float)halfSize.y, 0.1f, 100.f));
 		UIRenderer::SetView({ 1.f });
 
 		scenePtr->GetRegistry().ForEachSafe<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)

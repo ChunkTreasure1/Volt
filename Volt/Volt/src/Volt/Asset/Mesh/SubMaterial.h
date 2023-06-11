@@ -34,8 +34,8 @@ namespace Volt
 
 	struct MaterialData
 	{
-		gem::vec4 color = 1.f;
-		gem::vec3 emissiveColor = 1.f;
+		glm::vec4 color = 1.f;
+		glm::vec3 emissiveColor = 1.f;
 		float emissiveStrength = 0.f;
 
 		float roughness = 0.5f;

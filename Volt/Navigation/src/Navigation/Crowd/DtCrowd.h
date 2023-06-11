@@ -22,8 +22,8 @@ namespace Volt
 			const dtCrowdAgent* GetAgent(Wire::EntityId entityId);
 			const std::unordered_map<Wire::EntityId, uint32_t>& GetAgentMap() const { return myEntityToAgentMap; };
 
-			void SetAgentPosition(Volt::Entity entity, gem::vec3 position);
-			void SetAgentTarget(Volt::Entity entity, gem::vec3 target);
+			void SetAgentPosition(Volt::Entity entity, glm::vec3 position);
+			void SetAgentTarget(Volt::Entity entity, glm::vec3 target);
 			void ResetAgentTarget(Volt::Entity entity);
 
 			void UpdateAgentParams(Volt::Entity entity);
