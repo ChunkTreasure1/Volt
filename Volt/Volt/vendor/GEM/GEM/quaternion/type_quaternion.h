@@ -37,8 +37,8 @@ namespace gem
 
 		qua(vec<3, T> const& eulerAngles)
 		{
-			vec<3, T> c = gem::cos(eulerAngles * T(0.5));
-			vec<3, T> s = gem::sin(eulerAngles * T(0.5));
+			vec<3, T> c = glm::cos(eulerAngles * T(0.5));
+			vec<3, T> s = glm::sin(eulerAngles * T(0.5));
 
 			this->w = c.x * c.y * c.z + s.x * s.y * s.z;
 			this->x = s.x * c.y * c.z - c.x * s.y * s.z;
@@ -170,8 +170,8 @@ namespace gem
 	vec<3, T> operator*(qua<T> const& q, vec<3, T> const& v)
 	{
 		vec<3, T> const QuatVector(q.x, q.y, q.z);
-		vec<3, T> const uv(gem::cross(QuatVector, v));
-		vec<3, T> const uuv(gem::cross(QuatVector, uv));
+		vec<3, T> const uv(glm::cross(QuatVector, v));
+		vec<3, T> const uuv(glm::cross(QuatVector, uv));
 
 		return v + ((uv * q.w) + uuv) * static_cast<T>(2);
 	}

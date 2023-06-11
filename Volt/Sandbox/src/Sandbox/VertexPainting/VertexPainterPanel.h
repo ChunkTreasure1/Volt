@@ -12,7 +12,7 @@ public:
 	void UpdateMainContent() override;
 	bool OnViewportResizeEvent(Volt::ViewportResizeEvent& e);
 	virtual void OnEvent(Volt::Event& e) override;
-	void SetBrushPosition(const gem::vec3& in_position) { m_brushPosition = in_position; }
+	void SetBrushPosition(const glm::vec3& in_position) { m_brushPosition = in_position; }
 	void OnClose() override { SetView(false); }
 
 	bool BrushUpdate();
@@ -59,8 +59,8 @@ public:
 
 	struct Ray
 	{
-		gem::vec3 dir{ 1,0,0 };
-		gem::vec3 pos{ 0,0,0 };
+		glm::vec3 dir{ 1,0,0 };
+		glm::vec3 pos{ 0,0,0 };
 	}ray;
 
 	struct MaterialSettings
@@ -72,9 +72,9 @@ public:
 private:
 	float m_deltaTime = 0;
 
-	gem::vec2ui myViewportPosition;
-	gem::vec2ui myViewportSize;
-	gem::vec3 m_brushPosition = { 0,0,0 };
+	glm::uvec2 myViewportPosition;
+	glm::uvec2 myViewportSize;
+	glm::vec3 m_brushPosition = { 0,0,0 };
 	Ref<Volt::Scene>& ex_scene;
 	Ref<EditorCameraController>& ex_cameraController;
 

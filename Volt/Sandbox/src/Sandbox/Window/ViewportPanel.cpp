@@ -30,9 +30,9 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Math/MatrixUtilities.h>
 
 #include <Volt/Utility/StringUtility.h>
+#include <Volt/Math/Math.h>
 #include <Volt/Math/RayTriangle.h>
 
 #include <Navigation/Core/NavigationSystem.h>
@@ -66,7 +66,7 @@ void ViewportPanel::UpdateMainContent()
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-	if (myViewportSize != (*(gem::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
+	if (myViewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
 	{
 		Resize({ viewportSize.x, viewportSize.y });
 	}
@@ -129,8 +129,8 @@ void ViewportPanel::UpdateMainContent()
 
 	// Gizmo
 	{
-		static gem::mat4 averageTransform = gem::mat4(1.f);
-		static gem::mat4 averageStartTransform = gem::mat4(1.f);
+		static glm::mat4 averageTransform = glm::mat4(1.f);
+		static glm::mat4 averageStartTransform = glm::mat4(1.f);
 
 		static bool hasDuplicated = false;
 		static bool isUsing = false;
@@ -167,7 +167,7 @@ void ViewportPanel::UpdateMainContent()
 
 			ImGuizmo::SetRect(myPerspectiveBounds[0].x, myPerspectiveBounds[0].y, myPerspectiveBounds[1].x - myPerspectiveBounds[0].x, myPerspectiveBounds[1].y - myPerspectiveBounds[0].y);
 
-			gem::mat4 deltaMatrix = { 1.f };
+			glm::mat4 deltaMatrix = { 1.f };
 
 			// Temp camera is needed because 1/z messes up the gizmo while it's not in view
 			const auto realCam = myEditorCameraController->GetCamera();
@@ -175,9 +175,9 @@ void ViewportPanel::UpdateMainContent()
 			tempCamera->SetView(realCam->GetView());
 
 			ImGuizmo::Manipulate(
-				gem::value_ptr(tempCamera->GetView()),
-				gem::value_ptr(tempCamera->GetProjection()),
-				myGizmoOperation, gizmoMode, gem::value_ptr(averageTransform), gem::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
+				glm::value_ptr(tempCamera->GetView()),
+				glm::value_ptr(tempCamera->GetProjection()),
+				myGizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
 
 			bool wasUsedPreviousFrame = isUsing;
 			isUsing = ImGuizmo::IsUsing();
@@ -588,7 +588,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 			auto& selectedTransformComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(selected[0]);
 
-			gem::vec3 currentPos = selectedTransformComp.position; // Get world instead of local
+			glm::vec3 currentPos = selectedTransformComp.position; // Get world instead of local
 			bool foundIntersect = false;
 			float bestHeight = FLT_MAX;
 
@@ -602,9 +602,9 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				auto& meshcomp = myEditorScene->GetRegistry().GetComponent<Volt::MeshComponent>(ent);
 				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshcomp.handle);
 
-				if (gem::distance(
-					gem::vec3(transformcomp.position.x, 0.f, transformcomp.position.z),
-					gem::vec3(currentPos.x / transformcomp.scale.x, 0.f, currentPos.z / transformcomp.scale.z)) > mesh->GetBoundingSphere().radius)
+				if (glm::distance(
+					glm::vec3(transformcomp.position.x, 0.f, transformcomp.position.z),
+					glm::vec3(currentPos.x / transformcomp.scale.x, 0.f, currentPos.z / transformcomp.scale.z)) > mesh->GetBoundingSphere().radius)
 				{
 					continue;
 				}
@@ -620,14 +620,14 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 					auto p2 = vList[iList[i + 1]].position;
 					auto p3 = vList[iList[i + 2]].position;
 
-					gem::vec3 intersectionPoint = { 0,0,0 };
+					glm::vec3 intersectionPoint = { 0,0,0 };
 
-					auto relativeScalePos = gem::vec3(
+					auto relativeScalePos = glm::vec3(
 						currentPos.x / transformcomp.scale.x,
 						currentPos.y,
 						currentPos.z / transformcomp.scale.z);
 
-					if (Volt::rayTriangleIntersection(relativeScalePos, gem::vec3(0.f, -1.f, 0.f), p1, p2, p3, intersectionPoint))
+					if (Volt::rayTriangleIntersection(relativeScalePos, glm::vec3(0.f, -1.f, 0.f), p1, p2, p3, intersectionPoint))
 					{
 						if (std::isnan(intersectionPoint.x) ||
 							std::isnan(intersectionPoint.y) ||
@@ -639,7 +639,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 							continue;
 						}
 
-						if (gem::abs(currentPos.y - bestHeight) > gem::abs(currentPos.y - intersectionPoint.y))
+						if (glm::abs(currentPos.y - bestHeight) > glm::abs(currentPos.y - intersectionPoint.y))
 						{
 							bestHeight = intersectionPoint.y;
 							foundIntersect = true;
@@ -735,7 +735,7 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 
 void ViewportPanel::CheckDragDrop()
 {
-	gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 
 	int32_t mouseX = (int32_t)myViewportMouseCoords.x;
 	int32_t mouseY = (int32_t)myViewportMouseCoords.y;
@@ -873,8 +873,8 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 		return;
 	}
 
-	gem::vec3 dir = myEditorCameraController->GetCamera()->ScreenToWorldRay(myViewportMouseCoords, myViewportSize);
-	gem::vec3 targetPos = myEditorCameraController->GetCamera()->GetPosition();
+	glm::vec3 dir = myEditorCameraController->GetCamera()->ScreenToWorldRay(myViewportMouseCoords, myViewportSize);
+	glm::vec3 targetPos = myEditorCameraController->GetCamera()->GetPosition();
 
 	while (targetPos.y > 0.f)
 	{
@@ -922,7 +922,7 @@ void ViewportPanel::DuplicateSelection()
 
 void ViewportPanel::HandleSingleSelect()
 {
-	gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 
 	int32_t mouseX = (int32_t)myViewportMouseCoords.x;
 	int32_t mouseY = (int32_t)myViewportMouseCoords.y;
@@ -971,16 +971,16 @@ void ViewportPanel::HandleMultiSelect()
 
 	drawList->AddRectFilled(myStartDragPos, ImGui::GetMousePos(), IM_COL32(97, 192, 255, 127));
 
-	const gem::vec2 startDragPos = GetViewportLocalPosition(myStartDragPos);
-	const gem::vec2 currentDragPos = GetViewportLocalPosition(ImGui::GetMousePos());
+	const glm::vec2 startDragPos = GetViewportLocalPosition(myStartDragPos);
+	const glm::vec2 currentDragPos = GetViewportLocalPosition(ImGui::GetMousePos());
 
-	int32_t minDragBoxX = (int32_t)gem::min(startDragPos.x, currentDragPos.x);
-	int32_t minDragBoxY = (int32_t)gem::min(startDragPos.y, currentDragPos.y);
+	int32_t minDragBoxX = (int32_t)glm::min(startDragPos.x, currentDragPos.x);
+	int32_t minDragBoxY = (int32_t)glm::min(startDragPos.y, currentDragPos.y);
 
-	int32_t maxDragBoxX = (int32_t)gem::max(startDragPos.x, currentDragPos.x);
-	int32_t maxDragBoxY = (int32_t)gem::max(startDragPos.y, currentDragPos.y);
+	int32_t maxDragBoxX = (int32_t)glm::max(startDragPos.x, currentDragPos.x);
+	int32_t maxDragBoxY = (int32_t)glm::max(startDragPos.y, currentDragPos.y);
 
-	gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 
 	if (minDragBoxX >= 0 && minDragBoxY >= 0 && minDragBoxX < (int32_t)perspectiveSize.x && minDragBoxY < (int32_t)perspectiveSize.y &&
 		maxDragBoxX >= 0 && maxDragBoxY >= 0 && maxDragBoxX < (int32_t)perspectiveSize.x && maxDragBoxY < (int32_t)perspectiveSize.y)
@@ -1001,7 +1001,7 @@ void ViewportPanel::HandleMultiSelect()
 	}
 }
 
-void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
+void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 {
 	auto firstEntity = SelectionManager::GetSelectedEntities().front();
 
@@ -1020,7 +1020,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
 		data.rotationAdress = &transComp.rotation;
 		data.scaleAdress = &transComp.scale;
 		data.previousPositionValue = transComp.position;
-		data.previousRotationValue = gem::eulerAngles(transComp.rotation);
+		data.previousRotationValue = glm::eulerAngles(transComp.rotation);
 		data.previousScaleValue = transComp.scale;
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
@@ -1028,21 +1028,21 @@ void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
 		myMidEvent = true;
 	}
 
-	gem::mat4 averageTransform = avgTransform;
+	glm::mat4 averageTransform = avgTransform;
 
 	if (relationshipComp.Parent != 0)
 	{
 		Volt::Entity parent(relationshipComp.Parent, myEditorScene.get());
 		auto pTransform = myEditorScene->GetWorldSpaceTransform(parent);
 
-		averageTransform = gem::inverse(pTransform) * averageTransform;
+		averageTransform = glm::inverse(pTransform) * averageTransform;
 	}
 
-	gem::vec3 p = 0.f, s = 1.f;
-	gem::quat r;
-	gem::decompose(averageTransform, p, r, s);
+	glm::vec3 p = 0.f, s = 1.f;
+	glm::quat r;
+	Math::Decompose(averageTransform, p, r, s);
 
-	gem::quat delta = gem::inverse(transComp.rotation) * r;
+	glm::quat delta = glm::inverse(transComp.rotation) * r;
 
 	Volt::Entity ent{ firstEntity, myEditorScene.get() };
 
@@ -1051,7 +1051,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const gem::mat4& avgTransform)
 	ent.SetLocalScale(s);
 }
 
-void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& deltaTransform)
+void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 {
 	std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> previousTransforms;
 
@@ -1075,22 +1075,22 @@ void ViewportPanel::HandleMultiGizmoInteraction(const gem::mat4& deltaTransform)
 			previousTransforms.emplace_back(entId, transComp);
 		}
 
-		gem::mat4 entDeltaTransform = deltaTransform;
+		glm::mat4 entDeltaTransform = deltaTransform;
 
 		if (relationshipComp.Parent != 0)
 		{
 			Volt::Entity parent(relationshipComp.Parent, myEditorScene.get());
 			auto pTransform = myEditorScene->GetWorldSpaceTransform(parent);
 
-			entDeltaTransform = gem::inverse(pTransform) * entDeltaTransform;
+			entDeltaTransform = glm::inverse(pTransform) * entDeltaTransform;
 		}
 
-		gem::vec3 p = 0.f, s = 1.f;
-		gem::quat r;
+		glm::vec3 p = 0.f, s = 1.f;
+		glm::quat r;
 
-		gem::decompose(entDeltaTransform * transComp.GetTransform(), p, r, s);
+		Math::Decompose(entDeltaTransform * transComp.GetTransform(), p, r, s);
 
-		gem::quat delta = gem::inverse(transComp.rotation) * r;
+		glm::quat delta = glm::inverse(transComp.rotation) * r;
 
 		Volt::Entity ent{ entId, myEditorScene.get() };
 
@@ -1154,7 +1154,7 @@ void ViewportPanel::HandleNonMeshDragDrop()
 					break;
 				}
 
-				gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+				glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 
 				int32_t mouseX = (int32_t)myViewportMouseCoords.x;
 				int32_t mouseY = (int32_t)myViewportMouseCoords.y;
@@ -1184,7 +1184,7 @@ void ViewportPanel::HandleNonMeshDragDrop()
 	}
 }
 
-void ViewportPanel::Resize(const gem::vec2& viewportSize)
+void ViewportPanel::Resize(const glm::vec2& viewportSize)
 {
 	myViewportSize = { viewportSize.x, viewportSize.y };
 
@@ -1210,37 +1210,38 @@ void ViewportPanel::Resize(const gem::vec2& viewportSize)
 	Volt::Application::Get().OnEvent(resizeEvent);
 }
 
-gem::vec2 ViewportPanel::GetViewportLocalPosition(const ImVec2& mousePos)
+glm::vec2 ViewportPanel::GetViewportLocalPosition(const ImVec2& mousePos)
 {
 	auto [mx, my] = mousePos;
 	mx -= myPerspectiveBounds[0].x;
 	my -= myPerspectiveBounds[0].y;
 
-	gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
-	gem::vec2 result = { mx, my };
+	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 result = { mx, my };
 
 	return result;
 }
 
-gem::vec2 ViewportPanel::GetViewportLocalPosition(const gem::vec2& mousePos)
+glm::vec2 ViewportPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 {
-	auto [mx, my] = mousePos;
+	float mx = mousePos.x;
+	float my = mousePos.y;
 	mx -= myPerspectiveBounds[0].x;
 	my -= myPerspectiveBounds[0].y;
 
-	gem::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
-	gem::vec2 result = { mx, my };
+	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 result = { mx, my };
 
 	return result;
 }
 
-gem::mat4 ViewportPanel::CalculateAverageTransform()
+glm::mat4 ViewportPanel::CalculateAverageTransform()
 {
-	gem::mat4 result;
+	glm::mat4 result;
 
-	gem::vec3 avgTranslation;
-	gem::quat avgRotation;
-	gem::vec3 avgScale;
+	glm::vec3 avgTranslation;
+	glm::quat avgRotation;
+	glm::vec3 avgScale;
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
@@ -1254,5 +1255,5 @@ gem::mat4 ViewportPanel::CalculateAverageTransform()
 	avgTranslation /= (float)SelectionManager::GetSelectedCount();
 	avgScale /= (float)SelectionManager::GetSelectedCount();
 
-	return gem::translate(gem::mat4(1.f), avgTranslation) * gem::mat4_cast(avgRotation) * gem::scale(gem::mat4(1.f), avgScale);
+	return glm::translate(glm::mat4(1.f), avgTranslation) * glm::mat4_cast(avgRotation) * glm::scale(glm::mat4(1.f), avgScale);
 }

@@ -5,8 +5,8 @@
 namespace gem
 {
 	using vec3 = vec<3, float>;
-	using vec3i = vec<3, int32_t>;
-	using vec3ui = vec<3, uint32_t>;
+	using ivec3 = vec<3, int32_t>;
+	using uvec3 = vec<3, uint32_t>;
 
 	template<typename T>
 	struct vec<3, T>
@@ -28,12 +28,12 @@ namespace gem
 		bool operator==(const vec<3, T>& rhs) const { return (x == rhs.x && y == rhs.y && z == rhs.z); };
 		bool operator!=(const vec<3, T>& rhs) const { return !(*this == rhs); };
 
-		bool operator<=(const gem::vec<3, T>& rhs)
+		bool operator<=(const glm::vec<3, T>& rhs)
 		{
 			return (x <= rhs.x && y <= rhs.y && z <= rhs.z);
 		}
 
-		bool operator>=(const gem::vec<3, T>& rhs)
+		bool operator>=(const glm::vec<3, T>& rhs)
 		{
 			return (x >= rhs.x && y >= rhs.y && z >= rhs.z);
 		}

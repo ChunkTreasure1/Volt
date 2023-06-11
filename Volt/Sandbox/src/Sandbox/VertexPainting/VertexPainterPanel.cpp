@@ -41,7 +41,7 @@ void VertexPainterPanel::UpdateMainContent()
 	if (Volt::Input::IsMouseButtonDown(0) && Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT)) Paint(m_settings.paintColor);
 	else if (Volt::Input::IsMouseButtonDown(0) && Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL)) Paint(m_settings.eraseColor);
 
-	Volt::DebugRenderer::DrawLine(ray.pos + ray.dir * 10, m_brushPosition, { 1,0,0,1 });
+	Volt::DebugRenderer::DrawLine(ray.pos + ray.dir * 10.f, m_brushPosition, { 1,0,0,1 });
 	Volt::DebugRenderer::DrawBillboard(m_brushPosition, { 0.1f,0.1f,0.1f }, { 0,1,0,1 });
 }
 
@@ -71,8 +71,8 @@ bool VertexPainterPanel::BrushUpdate()
 		ray.dir = rayDir;
 		ray.pos = ex_cameraController->GetCamera()->GetPosition();
 
-		std::vector<gem::vec3> intersectionPoints;
-		gem::vec3 intersectionPoint;
+		std::vector<glm::vec3> intersectionPoints;
+		glm::vec3 intersectionPoint;
 		for (auto wireId : SelectionManager::GetSelectedEntities())
 		{
 			Volt::Entity currentEntity(wireId, ex_scene.get());
@@ -93,7 +93,7 @@ bool VertexPainterPanel::BrushUpdate()
 			{
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					vList[index].position = entTransform * submesh.transform * gem::vec4(vList[index].position, 1);
+					vList[index].position = entTransform * submesh.transform * glm::vec4(vList[index].position, 1);
 				}
 			}
 
@@ -128,7 +128,7 @@ bool VertexPainterPanel::BrushUpdate()
 		auto cPos = ex_cameraController->GetCamera()->GetPosition();
 		for (const auto& point : intersectionPoints)
 		{
-			if (gem::distance(iPoint, cPos) > gem::distance(point, cPos)) iPoint = point;
+			if (glm::distance(iPoint, cPos) > glm::distance(point, cPos)) iPoint = point;
 		}
 		//VT_INFO(std::to_string(iPoint.x) + " : " + std::to_string(iPoint.y) + " : " + std::to_string(iPoint.z));
 		m_brushPosition = iPoint;
@@ -188,7 +188,7 @@ void VertexPainterPanel::PanelDraw()
 				if (!AddPainted(ent)) continue;
 				for (auto& vertex : ent.GetComponent<Volt::VertexPaintedComponent>().vertecies)
 				{
-					gem::vec4 color =
+					glm::vec4 color =
 					{
 						m_settings.paintRedChannel ? m_settings.paintColor : 0,
 							m_settings.paintGreenChannel ? m_settings.paintColor : 0,
@@ -396,10 +396,10 @@ void VertexPainterPanel::BillboardDraw()
 				{
 					auto& vertex = mesh->GetVertices().at(index);
 
-					gem::vec4 vertexColor = hasPainted ? paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertecies[index] : 0.f;
+					glm::vec4 vertexColor = hasPainted ? paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertecies[index] : 0.f;
 
-					auto vPos = gem::vec3(paintedEnt.GetTransform() * submesh.transform * gem::vec4(vertex.position, 1));
-					if (!m_settings.isSelecting && gem::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
+					auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex.position, 1));
+					if (!m_settings.isSelecting && glm::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
 					{
 						switch (m_settings.view)
 						{
@@ -430,7 +430,7 @@ void VertexPainterPanel::BillboardDraw()
 								break;
 							case Settings::eView::ALPHA:
 							{
-								gem::vec4 alphaColor = { vertexColor.w, vertexColor.w, vertexColor.w, 1 };
+								glm::vec4 alphaColor = { vertexColor.w, vertexColor.w, vertexColor.w, 1 };
 								if (Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
 									alphaColor = { m_settings.paintColor, m_settings.paintColor, m_settings.paintColor,1 };
 								else if (Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
@@ -441,7 +441,7 @@ void VertexPainterPanel::BillboardDraw()
 							case Settings::eView::ALL:
 							{
 
-								gem::vec4 drawColor;
+								glm::vec4 drawColor;
 
 								if (Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
 								{
@@ -491,7 +491,7 @@ void VertexPainterPanel::BillboardDraw()
 							case Settings::eView::ALPHA:
 							{
 								// #mmax: broken, it no workie, do later, maybe
-								gem::vec4 alphaColor = { vertexColor.w, vertexColor.w, vertexColor.w, m_settings.billboardAlpha };
+								glm::vec4 alphaColor = { vertexColor.w, vertexColor.w, vertexColor.w, m_settings.billboardAlpha };
 								Volt::DebugRenderer::DrawBillboard(vPos, { .1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar,.1f * m_settings.billboadScalar }, alphaColor);
 							} break;
 							case Settings::eView::ALL:
@@ -521,7 +521,7 @@ bool VertexPainterPanel::AddPainted(Volt::Entity entity)
 	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().handle);
 	auto& vpComp = entity.AddComponent<Volt::VertexPaintedComponent>();
 
-	vpComp.vertecies = std::vector<gem::vec4>(mesh->GetVertices().size(), { 0,0,0,1 });
+	vpComp.vertecies = std::vector<glm::vec4>(mesh->GetVertices().size(), { 0,0,0,1 });
 	vpComp.meshHandle = mesh->handle;
 
 	//for (auto& vertex : entity.GetComponent<Volt::VertexPaintedComponent>().vertecies)
@@ -557,8 +557,8 @@ void VertexPainterPanel::Paint(float color)
 			for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 			{
 				auto& vertex = mesh->GetVertices().at(index);
-				auto vPos = gem::vec3(paintedEnt.GetTransform() * submesh.transform * gem::vec4(vertex.position, 1));
-				if (gem::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
+				auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex.position, 1));
+				if (glm::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
 				{
 					auto& currentVertexColor = vertecies[index];
 

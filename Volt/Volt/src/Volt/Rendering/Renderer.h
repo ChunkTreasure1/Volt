@@ -113,7 +113,7 @@ namespace Volt
 		static void BeginFrameGraphPass(Ref<CommandBuffer> commandBuffer, const FrameGraphRenderPassInfo& renderPassInfo, const FrameGraphRenderingInfo& renderingInfo);
 		static void EndFrameGraphPass(Ref<CommandBuffer> commandBuffer);
 
-		static void BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const gem::vec4& sectionColor);
+		static void BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const glm::vec4& sectionColor);
 		static void EndSection(Ref<CommandBuffer> commandBuffer);
 
 		static void SubmitResourceChange(std::function<void()>&& function);
@@ -134,7 +134,7 @@ namespace Volt
 		static void DrawIndexedVertexBuffer(Ref<CommandBuffer> commandBuffer, uint32_t indexCount, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<RenderPipeline> pipeline, const void* pushConstantData = nullptr, uint32_t pushConstantSize = 0);
 
 		static void DispatchComputePipeline(Ref<CommandBuffer> commandBuffer, Ref<ComputePipeline> pipeline, uint32_t groupX, uint32_t groupY, uint32_t groupZ);
-		static void ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const gem::vec4& clearValue);
+		static void ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const glm::vec4& clearValue);
 
 		static SceneEnvironment GenerateEnvironmentMap(AssetHandle textureHandle);
 

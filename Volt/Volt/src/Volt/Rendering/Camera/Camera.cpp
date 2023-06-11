@@ -1,6 +1,5 @@
 #include "vtpch.h"
 #include "Camera.h"
-#include "gem/matrix/matrix_clip_space.h"
 
 namespace Volt
 {
@@ -9,13 +8,13 @@ namespace Volt
 	{
 		if (reverse)
 		{
-			myProjectionMatrix = gem::perspective(gem::radians(myFieldOfView), aspect, myFarPlane, myNearPlane);
+			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), aspect, myFarPlane, myNearPlane);
 		}
 		else
 		{
-			myProjectionMatrix = gem::perspective(gem::radians(myFieldOfView), aspect, myNearPlane, myFarPlane);
+			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), aspect, myNearPlane, myFarPlane);
 		}
-		myViewMatrix = gem::mat4(1.f);
+		myViewMatrix = glm::mat4(1.f);
 		myIsOrthographic = false;
 
 		RecalculateFrustum();
@@ -24,8 +23,8 @@ namespace Volt
 	Camera::Camera(float left, float right, float bottom, float top, float nearPlane, float farPlane)
 		: myNearPlane(nearPlane), myFarPlane(farPlane), myLeft(left), myRight(right), myBottom(bottom), myTop(top)
 	{
-		myProjectionMatrix = gem::ortho(left, right, bottom, top, nearPlane, farPlane);
-		myViewMatrix = gem::mat4(1.f);
+		myProjectionMatrix = glm::ortho(left, right, bottom, top, nearPlane, farPlane);
+		myViewMatrix = glm::mat4(1.f);
 		myIsOrthographic = true;
 
 		RecalculateFrustum();
@@ -40,46 +39,46 @@ namespace Volt
 
 		if (myReversed)
 		{
-			myProjectionMatrix = gem::perspective(gem::radians(myFieldOfView), myAspecRatio, myFarPlane, myNearPlane);
+			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myFarPlane, myNearPlane);
 		}
 		else
 		{
-			myProjectionMatrix = gem::perspective(gem::radians(myFieldOfView), aspect, myNearPlane, myFarPlane);
+			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), aspect, myNearPlane, myFarPlane);
 		}
 
 		myIsOrthographic = false;
 		RecalculateFrustum();
 	}
 
-	void Camera::SetSubpixelOffset(const gem::vec2& offset)
+	void Camera::SetSubpixelOffset(const glm::vec2& offset)
 	{
 		mySubpixelOffset = offset;
 
-		if (offset == 0.f)
+		if (offset == glm::vec2(0.f))
 		{
 			return;
 		}
 
 		if (myReversed)
 		{
-			myProjectionMatrix = gem::perspective(gem::radians(myFieldOfView), myAspecRatio, myFarPlane, myNearPlane);
+			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myFarPlane, myNearPlane);
 		}
 		else
 		{
-			myProjectionMatrix = gem::perspective(gem::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
+			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
 		}
 
-		if (mySubpixelOffset != 0.f)
+		if (mySubpixelOffset != glm::vec2(0.f))
 		{
-			myProjectionMatrix = gem::translate(gem::mat4{ 1.f }, { offset.x, offset.y, 0.f }) * myProjectionMatrix;
+			myProjectionMatrix = glm::translate(glm::mat4{ 1.f }, { offset.x, offset.y, 0.f }) * myProjectionMatrix;
 		}
 	}
 
-	const std::vector<gem::vec4> Camera::GetFrustumCorners()
+	const std::vector<glm::vec4> Camera::GetFrustumCorners()
 	{
-		const auto inv = gem::inverse(myProjectionMatrix * myViewMatrix);
+		const auto inv = glm::inverse(myProjectionMatrix * myViewMatrix);
 
-		std::vector<gem::vec4> frustumCorners;
+		std::vector<glm::vec4> frustumCorners;
 
 		for (uint32_t x = 0; x < 2; ++x)
 		{
@@ -87,7 +86,7 @@ namespace Volt
 			{
 				for (uint32_t z = 0; z < 2; ++z)
 				{
-					gem::vec4 pt = inv * gem::vec4(2.0f * x - 1.0f, 2.0f * y - 1.0f, 2.0f * z - 1.0f, 1.0f);
+					glm::vec4 pt = inv * glm::vec4(2.0f * x - 1.0f, 2.0f * y - 1.0f, 2.0f * z - 1.0f, 1.0f);
 					if (pt.w > 0.f)
 					{
 						pt /= pt.w;
@@ -100,17 +99,17 @@ namespace Volt
 		return frustumCorners;
 	}
 
-	gem::vec3 Camera::ScreenToWorldRay(const gem::vec2& someCoords, const gem::vec2& aSize)
+	glm::vec3 Camera::ScreenToWorldRay(const glm::vec2& someCoords, const glm::vec2& aSize)
 	{
 		float x = (someCoords.x / aSize.x) * 2.f - 1.f;
 		float y = (someCoords.y / aSize.y) * 2.f - 1.f;
 
-		gem::mat4 tempProj = gem::perspective(gem::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
+		glm::mat4 tempProj = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
 
-		gem::mat4 matInv = gem::inverse(tempProj * myViewMatrix);
+		glm::mat4 matInv = glm::inverse(tempProj * myViewMatrix);
 
-		gem::vec4 rayOrigin = matInv * gem::vec4(x, -y, 0.f, 1.f);
-		gem::vec4 rayEnd = matInv * gem::vec4(x, -y, 1.f, 1.f);
+		glm::vec4 rayOrigin = matInv * glm::vec4(x, -y, 0.f, 1.f);
+		glm::vec4 rayEnd = matInv * glm::vec4(x, -y, 1.f, 1.f);
 
 		if (rayOrigin.w == 0 || rayEnd.w == 0)
 		{
@@ -120,49 +119,49 @@ namespace Volt
 		rayOrigin /= rayOrigin.w;
 		rayEnd /= rayEnd.w;
 
-		gem::vec3 rayDir = gem::normalize(rayEnd - rayOrigin);
+		glm::vec3 rayDir = glm::normalize(rayEnd - rayOrigin);
 
 		return rayDir;
 	}
 
 	void Camera::RecalculateFrustum()
 	{
-		const gem::vec3 forward = gem::normalize(GetForward());
-		const gem::vec3 up = gem::normalize(GetUp());
-		const gem::vec3 right = gem::normalize(GetRight());
+		const glm::vec3 forward = glm::normalize(GetForward());
+		const glm::vec3 up = glm::normalize(GetUp());
+		const glm::vec3 right = glm::normalize(GetRight());
 
-		const gem::vec3 frontMulFar = myFarPlane * forward;
+		const glm::vec3 frontMulFar = myFarPlane * forward;
 
 		if (!myIsOrthographic)
 		{
-			const float halfVSide = myFarPlane * std::tanf(gem::radians(myFieldOfView) * 0.5f);
+			const float halfVSide = myFarPlane * std::tanf(glm::radians(myFieldOfView) * 0.5f);
 			const float halfHSide = halfVSide * myAspecRatio;
 
 			myFrustum.nearPlane = { myPosition + myNearPlane * forward, forward };
 			myFrustum.farPlane = { myPosition + frontMulFar, -1.f * forward };
 
-			myFrustum.rightPlane = { myPosition, gem::cross(up, frontMulFar - right * halfHSide) };
-			myFrustum.leftPlane = { myPosition, gem::cross(frontMulFar + right * halfHSide, up) };
+			myFrustum.rightPlane = { myPosition, glm::cross(up, frontMulFar - right * halfHSide) };
+			myFrustum.leftPlane = { myPosition, glm::cross(frontMulFar + right * halfHSide, up) };
 
-			myFrustum.topPlane = { myPosition, gem::cross(right, frontMulFar + up * halfVSide) };
-			myFrustum.bottomPlane = { myPosition, gem::cross(frontMulFar - up * halfVSide, right) };
+			myFrustum.topPlane = { myPosition, glm::cross(right, frontMulFar + up * halfVSide) };
+			myFrustum.bottomPlane = { myPosition, glm::cross(frontMulFar - up * halfVSide, right) };
 		}
 		else
 		{
 			myFrustum.nearPlane = { myPosition + myNearPlane * forward, forward };
 			myFrustum.farPlane = { myPosition + frontMulFar, -1.f * forward };
 
-			myFrustum.rightPlane = { myPosition + gem::vec3{ myRight, 0.f, 0.f }, -1.f * right };
-			myFrustum.leftPlane = { myPosition + gem::vec3{ myLeft, 0.f, 0.f }, right };
+			myFrustum.rightPlane = { myPosition + glm::vec3{ myRight, 0.f, 0.f }, -1.f * right };
+			myFrustum.leftPlane = { myPosition + glm::vec3{ myLeft, 0.f, 0.f }, right };
 
-			myFrustum.topPlane = { myPosition + gem::vec3{ 0.f, myTop, 0.f }, up };
-			myFrustum.bottomPlane = { myPosition + gem::vec3{ 0.f, myBottom, 0.f }, -1.f * up };
+			myFrustum.topPlane = { myPosition + glm::vec3{ 0.f, myTop, 0.f }, up };
+			myFrustum.bottomPlane = { myPosition + glm::vec3{ 0.f, myBottom, 0.f }, -1.f * up };
 		}
 	}
 
 	void Camera::SetOrthographicProjection(float left, float right, float bottom, float top)
 	{
-		myProjectionMatrix = gem::ortho(left, right, bottom, top, myNearPlane, myFarPlane);
+		myProjectionMatrix = glm::ortho(left, right, bottom, top, myNearPlane, myFarPlane);
 		myIsOrthographic = true;
 
 		myLeft = left;
@@ -171,32 +170,32 @@ namespace Volt
 		myBottom = bottom;
 	}
 
-	gem::vec3 Camera::GetUp() const
+	glm::vec3 Camera::GetUp() const
 	{
-		return gem::rotate(GetOrientation(), gem::vec3{ 0.f, 1.f, 0.f });
+		return glm::rotate(GetOrientation(), glm::vec3{ 0.f, 1.f, 0.f });
 	}
 
-	gem::vec3 Camera::GetRight() const
+	glm::vec3 Camera::GetRight() const
 	{
-		return gem::rotate(GetOrientation(), gem::vec3{ 1.f, 0.f, 0.f });
+		return glm::rotate(GetOrientation(), glm::vec3{ 1.f, 0.f, 0.f });
 	}
 
-	gem::vec3 Camera::GetForward() const
+	glm::vec3 Camera::GetForward() const
 	{
-		return gem::rotate(GetOrientation(), gem::vec3{ 0.f, 0.f, 1.f });
+		return glm::rotate(GetOrientation(), glm::vec3{ 0.f, 0.f, 1.f });
 	}
 
-	gem::quat Camera::GetOrientation() const
+	glm::quat Camera::GetOrientation() const
 	{
-		return gem::quat(myRotation);
+		return glm::quat(myRotation);
 	}
 
 	void Camera::RecalculateViewMatrix()
 	{
 		const float yawSign = GetUp().y < 0 ? -1.0f : 1.0f;
 
-		const gem::vec3 lookAt = myPosition + GetForward();
-		myViewMatrix = gem::lookAt(myPosition, lookAt, gem::vec3(0.f, yawSign, 0.f));
+		const glm::vec3 lookAt = myPosition + GetForward();
+		myViewMatrix = glm::lookAt(myPosition, lookAt, glm::vec3(0.f, yawSign, 0.f));
 
 		RecalculateFrustum();
 	}

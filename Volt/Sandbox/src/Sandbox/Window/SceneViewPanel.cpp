@@ -28,7 +28,7 @@
 
 namespace Utility
 {
-	inline static void SetRowColor(const gem::vec4& color)
+	inline static void SetRowColor(const glm::vec4& color)
 	{
 		for (int32_t i = 0; i < ImGui::TableGetColumnCount(); i++)
 		{
@@ -685,7 +685,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	};
 
 	const bool descendantSelected = isAnyDescendantSelected(entity, isAnyDescendantSelected);
-	const gem::vec4 selectedColor = myIsFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
+	const glm::vec4 selectedColor = myIsFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
 
 	if (isRowHovered)
 	{
@@ -712,7 +712,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		Utility::SetRowColor(EditorTheme::ItemChildActive);
 	}
 
-	gem::vec2 offset = { 25.f, 6.f };
+	glm::vec2 offset = { 25.f, 6.f };
 	if (parentId == Wire::NullID)
 	{
 		offset.x -= 20.f;

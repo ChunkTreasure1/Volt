@@ -22,7 +22,7 @@ namespace Volt
 		myGraph = graph->CreateCopy(entity.GetId());
 	}
 
-	const std::vector<gem::mat4> AnimationController::Sample()
+	const std::vector<glm::mat4> AnimationController::Sample()
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -43,7 +43,7 @@ namespace Volt
 		const auto sample = outputPoseNode->Sample(true, 0.f);
 		const auto& invBindPose = character->GetSkeleton()->GetInverseBindPose();
 
-		std::vector<gem::mat4> result{};
+		std::vector<glm::mat4> result{};
 		result.resize(sample.pose.size());
 
 		myRootMotion = sample.rootTRS;
@@ -52,7 +52,7 @@ namespace Volt
 		{
 			const auto& trs = sample.pose.at(i);
 
-			const gem::mat4 transform = gem::translate(gem::mat4{ 1.f }, trs.position)* gem::mat4_cast(trs.rotation)* gem::scale(gem::mat4{ 1.f }, trs.scale);
+			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, trs.position)* glm::mat4_cast(trs.rotation)* glm::scale(glm::mat4{ 1.f }, trs.scale);
 			result[i] = transform * invBindPose[i];
 		}
 
@@ -69,8 +69,8 @@ namespace Volt
 
 				const auto& currentTRS = sample.pose.at(attachment.jointIndex);
 
-				const gem::vec3 resultPos = currentTRS.position + currentTRS.rotation * attachment.positionOffset;
-				const gem::quat resultRot = currentTRS.rotation * attachment.rotationOffset;
+				const glm::vec3 resultPos = currentTRS.position + currentTRS.rotation * attachment.positionOffset;
+				const glm::quat resultRot = currentTRS.rotation * attachment.rotationOffset;
 
 				for (auto ent : attachedEntities)
 				{

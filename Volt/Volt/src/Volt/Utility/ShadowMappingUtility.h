@@ -4,27 +4,27 @@
 #include "Volt/Rendering/Camera/Camera.h"
 
 #include <vector>
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
 	namespace Utility
 	{
-		inline gem::mat4 CalculateLightSpaceMatrix(Ref<Camera> sceneCamera, const float nearPlane, const float farPlane, const gem::vec3& lightDirection)
+		inline glm::mat4 CalculateLightSpaceMatrix(Ref<Camera> sceneCamera, const float nearPlane, const float farPlane, const glm::vec3& lightDirection)
 		{
 			Ref<Camera> frustumCamera = CreateRef<Camera>(sceneCamera->GetFieldOfView(), sceneCamera->GetAspectRatio(), nearPlane, farPlane, false);
 			frustumCamera->SetView(sceneCamera->GetView());
 			const auto corners = frustumCamera->GetFrustumCorners();
 
-			gem::vec3 center = 0.f;
+			glm::vec3 center = 0.f;
 			for (const auto& c : corners)
 			{
-				center += gem::vec3{ c };
+				center += glm::vec3{ c };
 			}
 
 			center /= (float)corners.size();
 
-			const gem::mat4 view = gem::lookAtLH(lightDirection + center, center, { 0.f, 1.f, 0.f });
+			const glm::mat4 view = glm::lookAtLH(lightDirection + center, center, { 0.f, 1.f, 0.f });
 
 			float minX = std::numeric_limits<float>::max();
 			float maxX = std::numeric_limits<float>::lowest();
@@ -62,14 +62,14 @@ namespace Volt
 				maxZ *= zMult;
 			}
 
-			const gem::mat4 lightProjection = gem::orthoLH(minX, maxX, minY, maxY, minZ, maxZ);
+			const glm::mat4 lightProjection = glm::orthoLH(minX, maxX, minY, maxY, minZ, maxZ);
 
 			return lightProjection * view;
 		}
 
-		inline const std::vector<gem::mat4> CalculateCascadeMatrices(Ref<Camera> sceneCamera, const gem::vec3& lightDirection, const std::vector<float>& cascades)
+		inline const std::vector<glm::mat4> CalculateCascadeMatrices(Ref<Camera> sceneCamera, const glm::vec3& lightDirection, const std::vector<float>& cascades)
 		{
-			std::vector<gem::mat4> result{};
+			std::vector<glm::mat4> result{};
 			for (size_t i = 0; i < cascades.size() + 1; i++)
 			{
 				if (i == 0)

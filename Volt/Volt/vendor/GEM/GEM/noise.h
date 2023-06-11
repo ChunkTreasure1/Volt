@@ -88,9 +88,9 @@ namespace gem
 	template<typename T>
 	T perlin(const vec<2, T>& position)
 	{
-		//vec<4, T> Pi = gem::floor(vec<4, T>(position.x, position.y, position.x, position.y)) + vec<4, T>(0.0, 0.0, 1.0, 1.0);
-		//vec<4, T> Pf = gem::fract(vec<4, T>(position.x, position.y, position.x, position.y)) - vec<4, T>(0.0, 0.0, 1.0, 1.0);
-		//Pi = gem::mod(Pi, vec<4, T>(289)); // To avoid truncation effects in permutation
+		//vec<4, T> Pi = glm::floor(vec<4, T>(position.x, position.y, position.x, position.y)) + vec<4, T>(0.0, 0.0, 1.0, 1.0);
+		//vec<4, T> Pf = glm::fract(vec<4, T>(position.x, position.y, position.x, position.y)) - vec<4, T>(0.0, 0.0, 1.0, 1.0);
+		//Pi = glm::mod(Pi, vec<4, T>(289)); // To avoid truncation effects in permutation
 		//vec<4, T> ix(Pi.x, Pi.z, Pi.x, Pi.z);
 		//vec<4, T> iy(Pi.y, Pi.y, Pi.w, Pi.w);
 		//vec<4, T> fx(Pf.x, Pf.z, Pf.x, Pf.z);
@@ -98,9 +98,9 @@ namespace gem
 
 		//vec<4, T> i = permute(permute(ix) + iy);
 
-		//vec<4, T> gx = gem::fract(i / T(41)) * static_cast<T>(2) - T(1);
-		//vec<4, T> gy = gem::abs(gx) - T(0.5);
-		//vec<4, T> tx = gem::floor(gx + T(0.5));
+		//vec<4, T> gx = glm::fract(i / T(41)) * static_cast<T>(2) - T(1);
+		//vec<4, T> gy = glm::abs(gx) - T(0.5);
+		//vec<4, T> tx = glm::floor(gx + T(0.5));
 		//gx = gx - tx;
 
 		//vec<2, T> g00(gx.x, gy.x);

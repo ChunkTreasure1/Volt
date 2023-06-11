@@ -24,7 +24,7 @@ const std::string GraphKey::PlayAudioNode::GetName()
 	return "Play Audio";
 }
 
-const gem::vec4 GraphKey::PlayAudioNode::GetColor()
+const glm::vec4 GraphKey::PlayAudioNode::GetColor()
 {
 	return { 0.f, 0.f, 1.f, 1.f };
 }

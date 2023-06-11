@@ -136,8 +136,8 @@ bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 
 	auto& swapchain = Volt::Application::Get().GetWindow().GetSwapchain();
 
-	const gem::vec2ui srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
-	const gem::vec2ui dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
+	const glm::uvec2 srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
+	const glm::uvec2 dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

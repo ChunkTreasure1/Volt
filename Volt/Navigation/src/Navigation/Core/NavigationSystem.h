@@ -38,7 +38,7 @@ namespace Volt
 			void InitAgents();
 			void ClearAgents();
 
-			std::unordered_map<uint32_t, gem::vec3> myEntityIdToTargetPosMap;
+			std::unordered_map<uint32_t, glm::vec3> myEntityIdToTargetPosMap;
 
 			Ref<NavMesh> myNavMesh = nullptr;
 			Ref<Scene> myActiveScene = nullptr;

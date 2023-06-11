@@ -570,19 +570,19 @@ void MaterialEditorPanel::UpdateProperties()
 						{
 							case Volt::ShaderUniformType::Bool: UI::Property(name, materialSpecializationParams.GetValue<bool>(name)); break;
 							case Volt::ShaderUniformType::UInt:  UI::Property(name, materialSpecializationParams.GetValue<uint32_t>(name)); break;
-							case Volt::ShaderUniformType::UInt2: UI::Property(name, materialSpecializationParams.GetValue<gem::vec2ui>(name)); break;
-							case Volt::ShaderUniformType::UInt3: UI::Property(name, materialSpecializationParams.GetValue<gem::vec3ui>(name)); break;
-							case Volt::ShaderUniformType::UInt4: UI::Property(name, materialSpecializationParams.GetValue<gem::vec4ui>(name)); break;
+							case Volt::ShaderUniformType::UInt2: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec2>(name)); break;
+							case Volt::ShaderUniformType::UInt3: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec3>(name)); break;
+							case Volt::ShaderUniformType::UInt4: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec4>(name)); break;
 
 							case Volt::ShaderUniformType::Int: UI::Property(name, materialSpecializationParams.GetValue<int32_t>(name)); break;
-							case Volt::ShaderUniformType::Int2: UI::Property(name, materialSpecializationParams.GetValue<gem::vec2i>(name)); break;
-							case Volt::ShaderUniformType::Int3: UI::Property(name, materialSpecializationParams.GetValue<gem::vec3i>(name)); break;
-							case Volt::ShaderUniformType::Int4: UI::Property(name, materialSpecializationParams.GetValue<gem::vec4i>(name)); break;
+							case Volt::ShaderUniformType::Int2: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec2>(name)); break;
+							case Volt::ShaderUniformType::Int3: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec3>(name)); break;
+							case Volt::ShaderUniformType::Int4: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec4>(name)); break;
 
 							case Volt::ShaderUniformType::Float: UI::Property(name, materialSpecializationParams.GetValue<float>(name)); break;
-							case Volt::ShaderUniformType::Float2: UI::Property(name, materialSpecializationParams.GetValue<gem::vec2>(name)); break;
-							case Volt::ShaderUniformType::Float3: UI::Property(name, materialSpecializationParams.GetValue<gem::vec3>(name)); break;
-							case Volt::ShaderUniformType::Float4: UI::Property(name, materialSpecializationParams.GetValue<gem::vec4>(name)); break;
+							case Volt::ShaderUniformType::Float2: UI::Property(name, materialSpecializationParams.GetValue<glm::vec2>(name)); break;
+							case Volt::ShaderUniformType::Float3: UI::Property(name, materialSpecializationParams.GetValue<glm::vec3>(name)); break;
+							case Volt::ShaderUniformType::Float4: UI::Property(name, materialSpecializationParams.GetValue<glm::vec4>(name)); break;
 						}
 					}
 
@@ -615,19 +615,19 @@ void MaterialEditorPanel::UpdateProperties()
 								{
 									case Volt::ShaderUniformType::Bool: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<bool>(name)); break;
 									case Volt::ShaderUniformType::UInt: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<uint32_t>(name)); break;
-									case Volt::ShaderUniformType::UInt2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec2ui>(name)); break;
-									case Volt::ShaderUniformType::UInt3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec3ui>(name)); break;
-									case Volt::ShaderUniformType::UInt4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec4ui>(name)); break;
+									case Volt::ShaderUniformType::UInt2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec2>(name)); break;
+									case Volt::ShaderUniformType::UInt3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec3>(name)); break;
+									case Volt::ShaderUniformType::UInt4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec4>(name)); break;
 
 									case Volt::ShaderUniformType::Int: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<int32_t>(name)); break;
-									case Volt::ShaderUniformType::Int2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec2i>(name)); break;
-									case Volt::ShaderUniformType::Int3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec3i>(name)); break;
-									case Volt::ShaderUniformType::Int4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec4i>(name)); break;
+									case Volt::ShaderUniformType::Int2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec2>(name)); break;
+									case Volt::ShaderUniformType::Int3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec3>(name)); break;
+									case Volt::ShaderUniformType::Int4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec4>(name)); break;
 
 									case Volt::ShaderUniformType::Float: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<float>(name)); break;
-									case Volt::ShaderUniformType::Float2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec2>(name)); break;
-									case Volt::ShaderUniformType::Float3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec3>(name)); break;
-									case Volt::ShaderUniformType::Float4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec4>(name)); break;
+									case Volt::ShaderUniformType::Float2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec2>(name)); break;
+									case Volt::ShaderUniformType::Float3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec3>(name)); break;
+									case Volt::ShaderUniformType::Float4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec4>(name)); break;
 								}
 							}
 

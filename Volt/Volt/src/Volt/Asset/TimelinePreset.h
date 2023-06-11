@@ -1,7 +1,7 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
-#include "gem/gem.h"
 #include "Wire/Wire.h"
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -36,8 +36,8 @@ namespace Volt
 		float time = 0.f;
 		int frame = 0;
 
-		gem::vec3 position = 0;
-		gem::quat rotation = gem::quat();
+		glm::vec3 position = 0;
+		glm::quat rotation = glm::quat();
 	};
 
 	struct Clip

@@ -14,8 +14,8 @@ namespace Volt
 	struct RaycastHit
 	{
 		Wire::EntityId hitEntity;
-		gem::vec3 position;
-		gem::vec3 normal;
+		glm::vec3 position;
+		glm::vec3 normal;
 		float distance;
 	};
 
@@ -39,18 +39,18 @@ namespace Volt
 		Ref<PhysicsControllerActor> CreateControllerActor(Entity entity);
 		void RemoveControllerActor(Ref<PhysicsControllerActor> controllerActor);
 
-		inline const gem::vec3 GetGravity() const { return PhysXUtilities::FromPhysXVector(myPhysXScene->getGravity()); }
-		inline void SetGravity(const gem::vec3& gravity) { myPhysXScene->setGravity(PhysXUtilities::ToPhysXVector(gravity)); }
+		inline const glm::vec3 GetGravity() const { return PhysXUtilities::FromPhysXVector(myPhysXScene->getGravity()); }
+		inline void SetGravity(const glm::vec3& gravity) { myPhysXScene->setGravity(PhysXUtilities::ToPhysXVector(gravity)); }
 
-		bool Raycast(const gem::vec3& origin, const gem::vec3& direction, float maxDistance, RaycastHit* outHit);
-		bool Raycast(const gem::vec3& origin, const gem::vec3& direction, float maxDistance, RaycastHit* outHit, uint32_t layerMask);
+		bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit);
+		bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, uint32_t layerMask);
 
-		bool Linecast(const gem::vec3& origin, const gem::vec3& destination, RaycastHit* outHit);
-		bool Linecast(const gem::vec3& origin, const gem::vec3& destination, RaycastHit* outHit, uint32_t layerMask);
+		bool Linecast(const glm::vec3& origin, const glm::vec3& destination, RaycastHit* outHit);
+		bool Linecast(const glm::vec3& origin, const glm::vec3& destination, RaycastHit* outHit, uint32_t layerMask);
 
-		bool OverlapBox(const gem::vec3& origin, const gem::vec3& halfSize, std::vector<Entity>& buffer, uint32_t layerMask = 0);
-		bool OverlapCapsule(const gem::vec3& origin, float radius, float halfHeight, std::vector<Entity>& buffer, uint32_t layerMask = 0);
-		bool OverlapSphere(const gem::vec3& origin, float radius, std::vector<Entity>& buffer, uint32_t layerMask = 0);
+		bool OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::vector<Entity>& buffer, uint32_t layerMask = 0);
+		bool OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, std::vector<Entity>& buffer, uint32_t layerMask = 0);
+		bool OverlapSphere(const glm::vec3& origin, float radius, std::vector<Entity>& buffer, uint32_t layerMask = 0);
 
 		inline const bool IsValid() const { return myPhysXScene != nullptr; }
 
@@ -63,7 +63,7 @@ namespace Volt
 		void SubstepStrategy(float timeStep);
 
 		void Destroy();
-		bool OverlapGeometry(const gem::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData);
+		bool OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData);
 
 		physx::PxScene* myPhysXScene = nullptr;
 		physx::PxControllerManager* myControllerManager = nullptr;

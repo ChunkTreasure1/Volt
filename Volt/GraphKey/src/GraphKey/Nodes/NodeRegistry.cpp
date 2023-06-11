@@ -32,7 +32,7 @@
 
 #include <Volt/Utility/UIUtility.h>
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace GraphKey
 {
@@ -93,6 +93,6 @@ namespace GraphKey
 	GK_REGISTER_PARAMETER_TYPE(float, Float, [](std::string name, std::any& value) { UI::Property(name, std::any_cast<float&>(value)); });
 	GK_REGISTER_PARAMETER_TYPE(int32_t, Int, [](std::string name, std::any& value) { UI::Property(name, std::any_cast<int32_t&>(value)); });
 	GK_REGISTER_PARAMETER_TYPE(bool, Boolean, [](std::string name, std::any& value) { UI::Property(name, std::any_cast<bool&>(value)); });
-	GK_REGISTER_PARAMETER_TYPE(gem::vec3, Vector3, [](std::string name, std::any& value) { UI::Property(name, std::any_cast<gem::vec3&>(value)); });
+	GK_REGISTER_PARAMETER_TYPE(glm::vec3, Vector3, [](std::string name, std::any& value) { UI::Property(name, std::any_cast<glm::vec3&>(value)); });
 	GK_REGISTER_PARAMETER_TYPE(std::string, String, [](std::string name, std::any& value) { UI::Property(name, std::any_cast<std::string&>(value)); });
 }

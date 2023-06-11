@@ -3,7 +3,7 @@
 #include "Volt/Asset/Asset.h"
 
 #include <Wire/Serialization.h>
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -14,8 +14,8 @@ namespace Volt
 
 	SERIALIZE_COMPONENT((struct NavLinkComponent
 	{
-		PROPERTY(Name = Start, Visible = true) gem::vec3 start = { 0.f };
-		PROPERTY(Name = End, Visible = true) gem::vec3 end = { 0.f };
+		PROPERTY(Name = Start, Visible = true) glm::vec3 start = { 0.f };
+		PROPERTY(Name = End, Visible = true) glm::vec3 end = { 0.f };
 		PROPERTY(Name = Bidirectional, Visible = true) bool bidirectional = true;
 		PROPERTY(Name = Active, Visible = true) bool active = true;
 

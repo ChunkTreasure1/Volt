@@ -56,7 +56,7 @@ namespace Volt
 		Ref<IndexBuffer> indexBuffer;
 		Ref<RenderPipeline> renderPipeline;
 
-		gem::vec4 vertices[4];
+		glm::vec4 vertices[4];
 		uint32_t indexCount = 0;
 
 		TextVertex* vertexBufferBase = nullptr;
@@ -69,15 +69,15 @@ namespace Volt
 		TextData textData;
 
 		Weak<Image2D> currentRenderTarget;
-		gem::mat4 currentProjection = { 1.f };
-		gem::mat4 currentView = { 1.f };
+		glm::mat4 currentProjection = { 1.f };
+		glm::mat4 currentView = { 1.f };
 
 		Ref<CommandBuffer> commandBuffer;
 		Ref<Image2D> depthImage;
 	};
 
 	Scope<UIRendererData> s_uiRendererData;
-	inline static constexpr gem::vec2 CORE_SIZE = { 1920.f / 2.f, 1080.f / 2.f };
+	inline static glm::vec2 CORE_SIZE = glm::vec2{ 1920.f / 2.f, 1080.f / 2.f };
 
 	inline static float Remap(float value, float fromMin, float fromMax, float toMin, float toMax)
 	{
@@ -195,12 +195,12 @@ namespace Volt
 		}
 	}
 
-	void UIRenderer::SetView(const gem::mat4& viewMatrix)
+	void UIRenderer::SetView(const glm::mat4& viewMatrix)
 	{
 		s_uiRendererData->currentView = viewMatrix;
 	}
 
-	void UIRenderer::SetProjection(const gem::mat4& projectionMatrix)
+	void UIRenderer::SetProjection(const glm::mat4& projectionMatrix)
 	{
 		s_uiRendererData->currentProjection = projectionMatrix;
 	}
@@ -229,20 +229,20 @@ namespace Volt
 		vkCmdSetScissor(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 0, 1, &rect);
 	}
 
-	void UIRenderer::DrawSprite(Ref<Texture2D> texture, const gem::vec3& position, const gem::vec2& scale, float rotation, const gem::vec4& color, const gem::vec2& offset)
+	void UIRenderer::DrawSprite(Ref<Texture2D> texture, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
 		VT_PROFILE_FUNCTION();
 
 		auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
 
-		const gem::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
-		const gem::vec2 halfSize = currentSize / 2.f;
+		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+		const glm::vec2 halfSize = currentSize / 2.f;
 
-		const gem::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
-		const gem::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
-		const float minScale = gem::min(newScale.x, newScale.y);
+		const glm::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
+		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+		const float minScale = glm::min(newScale.x, newScale.y);
 
-		const gem::mat4 transform = gem::translate(gem::mat4{ 1.f }, remappedPosition)* gem::rotate(gem::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* gem::scale(gem::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
+		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
 
 		subMat->Bind(s_uiRendererData->commandBuffer);
 
@@ -283,7 +283,7 @@ namespace Volt
 		vkCmdDrawIndexed(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0, 0);
 	}
 
-	void UIRenderer::DrawSprite(const gem::vec3& position, const gem::vec2& scale, float rotation, const gem::vec4& color, const gem::vec2& offset)
+	void UIRenderer::DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
 		DrawSprite(nullptr, position, scale, rotation, color, offset);
 	}
@@ -301,7 +301,7 @@ namespace Volt
 		return false;
 	}
 
-	void UIRenderer::DrawString(const std::string& text, const Ref<Font> font, const gem::vec3& position, const gem::vec2& scale, float rotation, float maxWidth, const gem::vec4& color)
+	void UIRenderer::DrawString(const std::string& text, const Ref<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, float maxWidth, const glm::vec4& color)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -360,13 +360,13 @@ namespace Volt
 					// Calculate geometry
 					double pl, pb, pr, pt;
 					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-					gem::vec2 quadMin((float)pl, (float)pb);
-					gem::vec2 quadMax((float)pl, (float)pb);
+					glm::vec2 quadMin((float)pl, (float)pb);
+					glm::vec2 quadMax((float)pl, (float)pb);
 
 					quadMin *= (float)fsScale;
 					quadMax *= (float)fsScale;
-					quadMin += gem::vec2((float)x, (float)y);
-					quadMax += gem::vec2((float)x, (float)y);
+					quadMin += glm::vec2((float)x, (float)y);
+					quadMax += glm::vec2((float)x, (float)y);
 
 					if (quadMax.x > maxWidth && lastSpace != -1)
 					{
@@ -394,14 +394,14 @@ namespace Volt
 			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 			double y = 0.0;
 
-			const gem::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
-			const gem::vec2 halfSize = currentSize / 2.f;
+			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+			const glm::vec2 halfSize = currentSize / 2.f;
 
-			const gem::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
-			const gem::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
-			const float minScale = gem::min(newScale.x, newScale.y);
+			const glm::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
+			const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+			const float minScale = glm::min(newScale.x, newScale.y);
 
-			const gem::mat4 transform = gem::translate(gem::mat4{ 1.f }, remappedPosition)* gem::rotate(gem::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* gem::scale(gem::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
+			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
 
 			for (int32_t i = 0; i < utf32string.size(); i++)
 			{
@@ -440,25 +440,25 @@ namespace Volt
 				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
 
 
-				textData.vertexBufferPtr->position = transform * gem::vec4{ (float)pl, (float)pb, 0.f, 1.f };
+				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pb, 0.f, 1.f };
 				textData.vertexBufferPtr->color = color;
 				textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
 				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
 				textData.vertexBufferPtr++;
 
-				textData.vertexBufferPtr->position = transform * gem::vec4{ (float)pr, (float)pb, 0.f, 1.f };
+				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pr, (float)pb, 0.f, 1.f };
 				textData.vertexBufferPtr->color = color;
 				textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
 				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
 				textData.vertexBufferPtr++;
 
-				textData.vertexBufferPtr->position = transform * gem::vec4{ (float)pr, (float)pt, 0.f, 1.f };
+				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pr, (float)pt, 0.f, 1.f };
 				textData.vertexBufferPtr->color = color;
 				textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
 				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
 				textData.vertexBufferPtr++;
 
-				textData.vertexBufferPtr->position = transform * gem::vec4{ (float)pl, (float)pt, 0.f, 1.f };
+				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pt, 0.f, 1.f };
 				textData.vertexBufferPtr->color = color;
 				textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
 				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
@@ -490,8 +490,8 @@ namespace Volt
 		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
 		vertexBuffer->SetDataMapped(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
 
-		const gem::mat4 viewProjection = s_uiRendererData->currentProjection * s_uiRendererData->currentView;
-		Renderer::DrawIndexedVertexBuffer(s_uiRendererData->commandBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(gem::mat4));
+		const glm::mat4 viewProjection = s_uiRendererData->currentProjection * s_uiRendererData->currentView;
+		Renderer::DrawIndexedVertexBuffer(s_uiRendererData->commandBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
 	}
 
 	float UIRenderer::GetCurrentScaleModifier()
@@ -501,9 +501,9 @@ namespace Volt
 			return 0.f;
 		}
 
-		const gem::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
-		const gem::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
-		const float minScale = gem::min(newScale.x, newScale.y);
+		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+		const float minScale = glm::min(newScale.x, newScale.y);
 
 		return minScale;
 	}

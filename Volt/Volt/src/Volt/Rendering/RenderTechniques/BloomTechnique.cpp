@@ -14,7 +14,7 @@
 
 namespace Volt
 {
-	BloomTechnique::BloomTechnique(const gem::vec2ui& renderSize)
+	BloomTechnique::BloomTechnique(const glm::uvec2& renderSize)
 		: myRenderSize(renderSize)
 	{
 	}
@@ -36,11 +36,11 @@ namespace Volt
 
 			const auto& targetResource = resources.GetImageResource(luminosityData.luminosityImage);
 
-			gem::vec2ui mipSize = myRenderSize;
+			glm::uvec2 mipSize = myRenderSize;
 
 			struct DownsampleData
 			{
-				gem::vec2 texelSize = 0.f;
+				glm::vec2 texelSize = 0.f;
 				uint32_t mipLevel = 0;
 			} downsampleData;
 
@@ -51,8 +51,8 @@ namespace Volt
 
 			for (uint32_t i = 1; i < targetResource.image.lock()->GetSpecification().mips; i++)
 			{
-				downsampleData.texelSize.x = 1.f / gem::vec2(mipSize).x;
-				downsampleData.texelSize.y = 1.f / gem::vec2(mipSize).y;
+				downsampleData.texelSize.x = 1.f / glm::vec2(mipSize).x;
+				downsampleData.texelSize.y = 1.f / glm::vec2(mipSize).y;
 				downsampleData.mipLevel = i;
 
 				downsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 1, i - 1, ImageAccess::Write);
@@ -62,8 +62,8 @@ namespace Volt
 				downsamplePipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), samplerDescriptorSet, Sets::SAMPLERS);
 
 				constexpr uint32_t threadCount = 8;
-				const uint32_t dispatchX = (uint32_t)gem::ceil((float)mipSize.x / threadCount);
-				const uint32_t dispatchY = (uint32_t)gem::ceil((float)mipSize.y / threadCount);
+				const uint32_t dispatchX = (uint32_t)glm::ceil((float)mipSize.x / threadCount);
+				const uint32_t dispatchY = (uint32_t)glm::ceil((float)mipSize.y / threadCount);
 
 				downsamplePipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), dispatchX, dispatchY, 1, currentIndex);
 
@@ -103,13 +103,13 @@ namespace Volt
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 			upsamplePipeline->Clear(currentIndex);
 
-			gem::vec2ui mipSize = myRenderSize;
+			glm::uvec2 mipSize = myRenderSize;
 
 			auto samplerDescriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
 			for (uint32_t i = targetResource.image.lock()->GetSpecification().mips - 1; i >= 1; i--)
 			{
-				mipSize.x = (uint32_t)gem::max(1.0f, gem::floor(float(targetResource.image.lock()->GetWidth()) / gem::pow(2.0f, float(i - 1))));
-				mipSize.y = (uint32_t)gem::max(1.0f, gem::floor(float(targetResource.image.lock()->GetHeight()) / gem::pow(2.0f, float(i - 1))));
+				mipSize.x = (uint32_t)glm::max(1.0f, glm::floor(float(targetResource.image.lock()->GetWidth()) / glm::pow(2.0f, float(i - 1))));
+				mipSize.y = (uint32_t)glm::max(1.0f, glm::floor(float(targetResource.image.lock()->GetHeight()) / glm::pow(2.0f, float(i - 1))));
 
 				upsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, i - 1, ImageAccess::Write);
 				upsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 1, i, ImageAccess::Write);
@@ -120,8 +120,8 @@ namespace Volt
 				upsamplePipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &filterRadius, sizeof(float));
 
 				constexpr uint32_t threadCount = 8;
-				const uint32_t dispatchX = (uint32_t)gem::ceil((float)mipSize.x / threadCount);
-				const uint32_t dispatchY = (uint32_t)gem::ceil((float)mipSize.y / threadCount);
+				const uint32_t dispatchX = (uint32_t)glm::ceil((float)mipSize.x / threadCount);
+				const uint32_t dispatchY = (uint32_t)glm::ceil((float)mipSize.y / threadCount);
 
 				upsamplePipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), dispatchX, dispatchY, 1, currentIndex);
 

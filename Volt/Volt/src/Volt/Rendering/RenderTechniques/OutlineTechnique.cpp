@@ -30,7 +30,7 @@ namespace Volt
 		FrameGraphResourceHandle outputImage[2];
 	};
 
-	OutlineTechnique::OutlineTechnique(const gem::vec2ui& renderSize, const GlobalDescriptorMap& descriptorMap)
+	OutlineTechnique::OutlineTechnique(const glm::uvec2& renderSize, const GlobalDescriptorMap& descriptorMap)
 		: myRenderSize(renderSize), myGlobalDescriptorMap(descriptorMap)
 	{
 	}
@@ -64,7 +64,7 @@ namespace Volt
 
 			for (const auto& cmd : outlineCmds)
 			{
-				PushConstantDrawData drawData{ &cmd.transform, sizeof(gem::mat4) };
+				PushConstantDrawData drawData{ &cmd.transform, sizeof(glm::mat4) };
 				Renderer::DrawMesh(commandBuffer, cmd.mesh, cmd.subMeshIndex, myGlobalDescriptorMap, drawData);
 			}
 
@@ -124,7 +124,7 @@ namespace Volt
 
 			struct FloodPassData
 			{
-				gem::vec2 texelSize;
+				glm::vec2 texelSize;
 				int32_t step;
 				int32_t padding;
 			} floodPassData;
@@ -197,8 +197,8 @@ namespace Volt
 			pipeline->SetImage(jumpFloodPassResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
-			const gem::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
-			pipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &color, sizeof(gem::vec4));
+			const glm::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
+			pipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &color, sizeof(glm::vec4));
 
 			constexpr uint32_t threadCount = 8;
 

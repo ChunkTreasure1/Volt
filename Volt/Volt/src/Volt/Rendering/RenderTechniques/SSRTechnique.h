@@ -12,13 +12,13 @@ namespace Volt
 	class SSRTechnique
 	{
 	public:
-		SSRTechnique(const GlobalDescriptorMap& descriptorMap, const gem::vec2ui& renderSize);
+		SSRTechnique(const GlobalDescriptorMap& descriptorMap, const glm::uvec2& renderSize);
 
 		void AddSSRPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline);
 		void AddSSRComposite(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline);
 
 	private:
 		const GlobalDescriptorMap& myGlobalDescriptorMap;
-		const gem::vec2ui& myRenderSize;
+		const glm::uvec2& myRenderSize;
 	};
 }

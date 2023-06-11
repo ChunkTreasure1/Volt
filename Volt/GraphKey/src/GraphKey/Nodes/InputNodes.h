@@ -2,7 +2,7 @@
 
 #include "GraphKey/Node.h"
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace GraphKey
 {
@@ -13,7 +13,7 @@ namespace GraphKey
 		~KeyPressedNode() override = default;
 
 		const std::string GetName() override { return "Key Pressed"; }
-		const gem::vec4 GetColor() override { return { 1.f, 0.37f, 0.53f, 1.f }; }
+		const glm::vec4 GetColor() override { return { 1.f, 0.37f, 0.53f, 1.f }; }
 
 		void OnEvent(Volt::Event& e) override;
 	};
@@ -25,7 +25,7 @@ namespace GraphKey
 		~KeyReleasedNode() override = default;
 
 		const std::string GetName() override { return "Key Released"; }
-		const gem::vec4 GetColor() override { return { 1.f, 0.37f, 0.53f, 1.f }; }
+		const glm::vec4 GetColor() override { return { 1.f, 0.37f, 0.53f, 1.f }; }
 
 		void OnEvent(Volt::Event& e) override;
 	};
