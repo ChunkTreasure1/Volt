@@ -45,8 +45,8 @@ private:
 	Ref<Volt::Scene> myScene;
 	Ref<Volt::SceneRenderer> mySceneRenderer;
 
-	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	glm::vec2 myViewportSize = { 1280.f, 720.f };
+	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	gem::vec2 myViewportSize = { 1280.f, 720.f };
 
 	Volt::Entity myPreviewEntity;
 	Ref<Volt::Mesh> myCurrentMesh;
@@ -56,6 +56,8 @@ private:
 	uint32_t mySelectedSubMesh = 0;
 
 	Ref<EditorCameraController> myCameraController;
+
+	SceneState mySceneState;
 
 	Ref<SceneViewPanel> mySceneViewPanel;
 	Ref<PropertiesPanel> myPropertiesPanel;

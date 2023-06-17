@@ -14,12 +14,12 @@ namespace Volt
 	inline static float myHaltonX[8];
 	inline static float myHaltonY[8];
 
-	std::array<glm::vec4, 16> Noise::HBAOJitter()
+	std::array<gem::vec4, 16> Noise::HBAOJitter()
 	{
 		constexpr float PI = 3.14159265358979323846264338f;
 		const float numDir = 8.f;  // keep in sync to hlsl
 
-		std::array<glm::vec4, 16> result{};
+		std::array<gem::vec4, 16> result{};
 
 		for (int32_t i = 0; i < 16; i++)
 		{
@@ -36,7 +36,7 @@ namespace Volt
 		return result;
 	}
 
-	const glm::vec2 Noise::GetTAAJitter(uint64_t frameIndex, const glm::uvec2& viewportSize)
+	const gem::vec2 Noise::GetTAAJitter(uint64_t frameIndex, const gem::vec2ui& viewportSize)
 	{
 		return { myHaltonX[frameIndex % 8] / static_cast<float>(viewportSize.x), myHaltonY[frameIndex % 8] / static_cast<float>(viewportSize.y) };
 	}

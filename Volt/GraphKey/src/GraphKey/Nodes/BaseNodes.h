@@ -14,7 +14,7 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		const std::string GetName() override { return "Start"; }
-		const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 	};
 
 	class UpdateNode : public Node
@@ -24,6 +24,6 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		const std::string GetName() override { return "Update"; }
-		const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 	};
 }

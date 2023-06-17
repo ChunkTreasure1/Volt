@@ -338,7 +338,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 				if (shouldCreateNewMaterial && originalMaterial)
 				{
 					Ref<Volt::Mesh> reimportedMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(originalAsset->path);
-					const uint32_t subMaterialCount = glm::min(reimportedMesh->GetMaterial()->GetSubMaterialCount(), originalMaterial->GetSubMaterialCount());
+					const uint32_t subMaterialCount = gem::min(reimportedMesh->GetMaterial()->GetSubMaterialCount(), originalMaterial->GetSubMaterialCount());
 
 					for (uint32_t i = 0; i < subMaterialCount; i++)
 					{

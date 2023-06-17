@@ -8,6 +8,7 @@
 #include <vector>
 #include <variant>
 #include "Sandbox/EditorCommand.h"
+#include "Sandbox/Sandbox.h"
 
 enum class PropertyEventType
 {
@@ -20,7 +21,7 @@ struct PropertyEvent
 {
 	Wire::EntityId myEntityId;
 	PropertyEventType myType;
-	std::variant<glm::vec3> myValue;
+	std::variant<gem::vec3> myValue;
 };
 
 namespace Volt
@@ -31,7 +32,7 @@ namespace Volt
 class PropertiesPanel : public EditorWindow
 {
 public:
-	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, const std::string& id);
+	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id);
 	void UpdateMainContent() override;
 
 private:
@@ -45,6 +46,7 @@ private:
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;
+	SceneState& mySceneState;
 
 	std::string myComponentSearchQuery;
 	std::string myScriptSearchQuery;
@@ -54,7 +56,7 @@ private:
 
 	bool myMidEvent = false;
 	std::shared_ptr<PropertyEvent> myLastValue;
-	glm::vec3 myLastValue2;
+	gem::vec3 myLastValue2;
 	std::vector<std::shared_ptr<PropertyEvent>> myUndoList;
 	std::vector<std::shared_ptr<PropertyEvent>> myRedoList;
 	int myMaxEventListSize;

@@ -5,7 +5,7 @@
 
 #include "Volt/Rendering/RendererStructs.h"
 
-#include <glm/glm.hpp>
+#include <GEM/gem.h>
 #include <vector>
 
 namespace Volt
@@ -22,10 +22,10 @@ namespace Volt
 	struct SubmitCommand
 	{
 		SubMesh subMesh;
-		glm::mat4 transform;
+		gem::mat4 transform;
 
-		std::vector<glm::mat4> boneTransforms;
-		std::vector<glm::vec4> vertexColors;
+		std::vector<gem::mat4> boneTransforms;
+		std::vector<uint32_t> vertexColors;
 
 		Ref<Mesh> mesh;
 		Ref<SubMaterial> material;
@@ -40,16 +40,16 @@ namespace Volt
 
 	struct LineCommand
 	{
-		glm::vec3 startPosition;
-		glm::vec3 endPosition;
-		glm::vec4 color;
+		gem::vec3 startPosition;
+		gem::vec3 endPosition;
+		gem::vec4 color;
 	};
 
 	struct BillboardCommand
 	{
-		glm::vec4 color;
-		glm::vec3 position;
-		glm::vec3 scale;
+		gem::vec4 color;
+		gem::vec3 position;
+		gem::vec3 scale;
 
 		Ref<Texture2D> texture;
 		uint32_t id;
@@ -57,17 +57,17 @@ namespace Volt
 
 	struct TextCommand
 	{
-		glm::mat4 transform;
+		gem::mat4 transform;
 		std::string text;
-		glm::vec4 color;
+		gem::vec4 color;
 		Ref<Font> font;
 		float maxWidth;
 	};
 
 	struct DecalCommand
 	{
-		glm::mat4 transform;
-		glm::vec4 color;
+		gem::mat4 transform;
+		gem::vec4 color;
 		float randomValue;
 		float timeSinceCreation;
 		

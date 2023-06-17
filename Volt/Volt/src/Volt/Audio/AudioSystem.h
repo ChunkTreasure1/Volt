@@ -27,8 +27,8 @@ namespace Volt
 		void UpdateAudioListeners(Wire::Registry& registry, Scene* scene, const float& aDeltaTime);
 
 		void UpdateAudioOcclusion(Wire::Registry& registry, Scene* scene);
-		glm::vec3 CalculatePoint(const glm::vec3& posA, const glm::vec3& posB, float soundWidth, bool isPositive);
-		int CastRay(const glm::vec3& posA, const glm::vec3& posB, bool debug);
+		gem::vec3 CalculatePoint(const gem::vec3& posA, const gem::vec3& posB, float soundWidth, bool isPositive);
+		int CastRay(const gem::vec3& posA, const gem::vec3& posB, bool debug);
 
 		float fixedUpdateTimer = 0.f;
 

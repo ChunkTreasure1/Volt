@@ -19,6 +19,8 @@ namespace Volt
 		inline const Ref<ShaderStorageBuffer> Get(uint32_t set, uint32_t binding, uint32_t index) const { return myShaderStorageBuffers.at(set).at(binding).at(index); }
 		inline bool HasBufferAt(uint32_t set, uint32_t binding) const { return myShaderStorageBuffers.contains(set) && myShaderStorageBuffers.at(set).contains(binding); }
 
+		void ResizeWithElementCount(uint32_t set, uint32_t binding, uint32_t newElementCount);
+
 		template<typename T>
 		void Add(uint32_t set, uint32_t binding, uint32_t count, MemoryUsage usage = MemoryUsage::None);
 

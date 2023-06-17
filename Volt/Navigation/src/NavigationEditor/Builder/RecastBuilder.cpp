@@ -405,8 +405,8 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildSingleNavMesh()
 	dtStatus status;
 	Ref<Volt::AI::NavMesh> result;
 
-	glm::vec3 bmin(0.f);
-	glm::vec3 bmax(0.f);
+	gem::vec3 bmin(0.f);
+	gem::vec3 bmax(0.f);
 
 	const float* verts = m_geom->getVerts();
 	const int nverts = m_geom->getVertCount();
@@ -798,8 +798,8 @@ Ref<Volt::AI::NavMesh> RecastBuilder::BuildTiledNavMesh()
 	dtStatus status;
 	Ref<Volt::AI::NavMesh> result;
 
-	glm::vec3 bmin(0.f);
-	glm::vec3 bmax(0.f);
+	gem::vec3 bmin(0.f);
+	gem::vec3 bmax(0.f);
 
 	const float* verts = m_geom->getVerts();
 	const int nverts = m_geom->getVertCount();

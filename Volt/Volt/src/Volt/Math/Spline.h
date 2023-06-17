@@ -1,6 +1,6 @@
 #pragma once
 #include <Volt/Core/Base.h>
-#include <glm/glm.hpp>
+#include "gem/gem.h"
 #include <vector>
 #include <Volt/Scene/Scene.h>
 #include "Volt/Scene/Entity.h"
@@ -15,7 +15,7 @@ public:
 	~Spline() = default;
 	
 	int GetNumSegments() { return ((int32_t)myPointEntitys.size() - 4) / 3 + 1; }
-	std::vector<glm::vec3> GetPointsInSegment(int index);
+	std::vector<gem::vec3> GetPointsInSegment(int index);
 
 	void CreateNewBezierPoints();
 	void UpdateSpline();
@@ -33,7 +33,7 @@ private:
 
 	Ref<Volt::Scene>& myCurrentScene;
 
-	glm::vec3 Lerp(glm::vec3 a, glm::vec3 b, float t);
-	glm::vec3 QuadraticLerp(glm::vec3 a, glm::vec3 b, glm::vec3 c, float t);
-	glm::vec3 CubicLerp(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d, float t);
+	gem::vec3 Lerp(gem::vec3 a, gem::vec3 b, float t);
+	gem::vec3 QuadraticLerp(gem::vec3 a, gem::vec3 b, gem::vec3 c, float t);
+	gem::vec3 CubicLerp(gem::vec3 a, gem::vec3 b, gem::vec3 c, gem::vec3 d, float t);
 };

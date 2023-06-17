@@ -22,9 +22,9 @@
             InternalCalls.UIRenderer_DrawSpriteTexture(texture.handle, ref position, ref scale, rotation, ref color, ref offset);
         }
 
-        public static void DrawString(string text, Font font, Vector3 position, Vector2 scale, float rotation, float maxWidth, Vector4 color) 
+        public static void DrawString(string text, Font font, Vector3 position, Vector2 scale, float rotation, float maxWidth, Vector4 color, Vector2 positionOffset = default) 
         {
-            InternalCalls.UIRenderer_DrawString(text, font.handle, ref position, ref scale, rotation, maxWidth, ref color);
+            InternalCalls.UIRenderer_DrawString(text, font.handle, ref position, ref scale, rotation, maxWidth, ref color, ref positionOffset);
         }
     }
 }

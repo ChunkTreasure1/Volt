@@ -84,25 +84,25 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			Volt::Entity entity{ id, myRuntimeScene.get() };
 
-			glm::vec3 p = entity.GetPosition();
+			gem::vec3 p = entity.GetPosition();
 
 			const float maxDist = 5000.f * 5000.f;
 			const float lerpStartDist = 4000.f * 4000.f;
 			const float maxScale = 1.f;
 			const float minScale = 0.3f;
-			const float distance = glm::distance2(camera->GetPosition(), p);
+			const float distance = gem::distance2(camera->GetPosition(), p);
 
 			float alpha = 1.f;
 
 			if (distance >= lerpStartDist)
 			{
-				alpha = glm::mix(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
+				alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
 			}
 
 			if (distance < maxDist)
 			{
-				float scale = glm::max(glm::min(distance / maxDist * 2.f, maxScale), minScale);
-				Volt::DebugRenderer::DrawBillboard(EditorResources::GetEditorIcon(EditorIcon::EntityGizmo), p, scale, glm::vec4{ 1.f, 1.f, 1.f, alpha }, id);
+				float scale = gem::max(gem::min(distance / maxDist * 2.f, maxScale), minScale);
+				Volt::DebugRenderer::DrawBillboard(EditorResources::GetEditorIcon(EditorIcon::EntityGizmo), p, scale, gem::vec4{ 1.f, 1.f, 1.f, alpha }, id);
 			}
 		});
 	}
@@ -118,24 +118,24 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			Volt::Entity entity{ id, myRuntimeScene.get() };
 
-			glm::vec3 p = entity.GetPosition();
+			gem::vec3 p = entity.GetPosition();
 
 			const float maxDist = 5000.f;
 			const float lerpStartDist = 4000.f;
 			const float maxScale = 1.f;
-			const float distance = glm::distance(camera->GetPosition(), p);
+			const float distance = gem::distance(camera->GetPosition(), p);
 
 			float alpha = 1.f;
 
 			if (distance >= lerpStartDist)
 			{
-				alpha = glm::mix(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
+				alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
 			}
 
 			if (distance < maxDist)
 			{
-				float scale = glm::min(distance / maxDist, maxScale);
-				Volt::DebugRenderer::DrawBillboard(EditorResources::GetEditorIcon(EditorIcon::LightGizmo), p, scale, glm::vec4{ 1.f, 1.f, 1.f, alpha }, id);
+				float scale = gem::min(distance / maxDist, maxScale);
+				Volt::DebugRenderer::DrawBillboard(EditorResources::GetEditorIcon(EditorIcon::LightGizmo), p, scale, gem::vec4{ 1.f, 1.f, 1.f, alpha }, id);
 			}
 		});
 
@@ -148,24 +148,24 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			Volt::Entity entity{ id, myRuntimeScene.get() };
 
-			glm::vec3 p = entity.GetPosition();
+			gem::vec3 p = entity.GetPosition();
 
 			const float maxDist = 5000.f;
 			const float lerpStartDist = 4000.f;
 			const float maxScale = 1.f;
-			const float distance = glm::distance(camera->GetPosition(), p);
+			const float distance = gem::distance(camera->GetPosition(), p);
 
 			float alpha = 1.f;
 
 			if (distance >= lerpStartDist)
 			{
-				alpha = glm::mix(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
+				alpha = gem::lerp(1.f, 0.f, (distance - lerpStartDist) / (maxDist - lerpStartDist));
 			}
 
 			if (distance < maxDist)
 			{
-				float scale = glm::min(distance / maxDist, maxScale);
-				Volt::DebugRenderer::DrawBillboard(EditorResources::GetEditorIcon(EditorIcon::LightGizmo), p, scale, glm::vec4{ 1.f, 1.f, 1.f, alpha }, id);
+				float scale = gem::min(distance / maxDist, maxScale);
+				Volt::DebugRenderer::DrawBillboard(EditorResources::GetEditorIcon(EditorIcon::LightGizmo), p, scale, gem::vec4{ 1.f, 1.f, 1.f, alpha }, id);
 			}
 		});
 
@@ -199,7 +199,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				const auto& boundingSphere = mesh->GetBoundingSphere();
 				const auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
 
-				const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
+				const gem::vec3 globalScale = { gem::length(transform[0]), gem::length(transform[1]), gem::length(transform[2]) };
 				const float maxScale = std::max(std::max(globalScale.x, globalScale.y), globalScale.z);
 
 				Volt::DebugRenderer::DrawLineSphere(entity.GetPosition() + boundingSphere.center, boundingSphere.radius * maxScale);
@@ -294,7 +294,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 				auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 
-				const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f);
+				const gem::mat4 colliderTransform = gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), collider.halfSize * 2.f * 0.01f);
 				Volt::DebugRenderer::DrawMesh(cubeMesh, collisionMaterial, transform * colliderTransform, id);
 			});
 
@@ -305,7 +305,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 				auto sphereMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 
-				const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f });
+				const gem::mat4 colliderTransform = gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f });
 				Volt::DebugRenderer::DrawMesh(sphereMesh, collisionMaterial, transform * colliderTransform, id);
 			});
 
@@ -314,7 +314,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				Volt::Entity entity{ id, myRuntimeScene.get() };
 				auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
 
-				const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f });
+				const gem::mat4 colliderTransform = gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f });
 				auto capsuleMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
 
 				Volt::DebugRenderer::DrawMesh(capsuleMesh, collisionMaterial, transform * colliderTransform, id);
@@ -355,7 +355,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 					auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
 					auto cubeMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 
-					const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f);
+					const gem::mat4 colliderTransform = gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), collider.halfSize * 2.f * 0.01f);
 					Volt::DebugRenderer::DrawMesh(cubeMesh, collisionMaterial, transform * colliderTransform, id);
 				}
 
@@ -366,7 +366,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 					auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
 					auto sphereMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 
-					const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f });
+					const gem::mat4 colliderTransform = gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f });
 					Volt::DebugRenderer::DrawMesh(sphereMesh, collisionMaterial, transform * colliderTransform, id);
 				}
 
@@ -375,7 +375,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 					const auto& collider = entity.GetComponent<Volt::CapsuleColliderComponent>();
 					auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
 
-					const glm::mat4 colliderTransform = glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f });
+					const gem::mat4 colliderTransform = gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f });
 					auto capsuleMesh = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
 
 					Volt::DebugRenderer::DrawMesh(capsuleMesh, collisionMaterial, transform * colliderTransform, id);

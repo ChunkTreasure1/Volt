@@ -25,7 +25,7 @@ namespace GraphKey
 		~AddNode() override = default;
 
 		inline const std::string GetName() override { return "Add"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 
 	private:
 		inline void Add()
@@ -56,7 +56,7 @@ namespace GraphKey
 		~SubtractNode() override = default;
 
 		inline const std::string GetName() override { return "Subtract"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 
 	private:
 		inline void Subtract()
@@ -94,7 +94,7 @@ namespace GraphKey
 		~MultiplyNode() override = default;
 
 		inline const std::string GetName() override { return "Multiply"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 	};
 
 	template<typename T>
@@ -118,7 +118,7 @@ namespace GraphKey
 		~DivisionNode() override = default;
 
 		inline const std::string GetName() override { return "Division"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 
 	private:
 		inline void Divide()
@@ -151,7 +151,7 @@ namespace GraphKey
 		~BreakVectorNode() override = default;
 
 		inline const std::string GetName() override { return "Break Vector"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 
 	private:
 		inline void Decompose()
@@ -188,7 +188,7 @@ namespace GraphKey
 		~MakeVectorNode() override = default;
 
 		inline const std::string GetName() override { return "Make Vector"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 	private:
 		inline void Compose()
 		{
@@ -223,15 +223,15 @@ namespace GraphKey
 		~NormalizeVectorNode() override = default;
 
 		inline const std::string GetName() override { return "Normalize"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 	private:
 		inline void Normalize()
 		{
 			T result = GetInput<T>(0);
 
-			if (result != T(0.f))
+			if (result != 0.f)
 			{
-				SetOutputData(0, glm::normalize(result));
+				SetOutputData(0, gem::normalize(result));
 			}
 			else
 			{
@@ -260,15 +260,15 @@ namespace GraphKey
 		~LengthVectorNode() override = default;
 
 		inline const std::string GetName() override { return "Length"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 	private:
 		inline void Length()
 		{
 			T result = GetInput<T>(0);
 
-			if (result != T(0.f))
+			if (result != 0.f)
 			{
-				SetOutputData(0, glm::length(result));
+				SetOutputData(0, gem::length(result));
 			}
 			else
 			{
@@ -284,21 +284,21 @@ namespace GraphKey
 		{
 			inputs =
 			{
-				AttributeConfig<glm::vec3>("A", AttributeDirection::Input),
-				AttributeConfig<glm::vec3>("B", AttributeDirection::Input),
+				AttributeConfig<gem::vec3>("A", AttributeDirection::Input),
+				AttributeConfig<gem::vec3>("B", AttributeDirection::Input),
 				AttributeConfig<float>("t", AttributeDirection::Input)
 			};
 
 			outputs =
 			{
-				AttributeConfig<glm::vec3>("Output", AttributeDirection::Output, true, GK_BIND_FUNCTION(SlerpNode::Slerp))
+				AttributeConfig<gem::vec3>("Output", AttributeDirection::Output, true, GK_BIND_FUNCTION(SlerpNode::Slerp))
 			};
 		}
 
 		~SlerpNode() override = default;
 
 		inline const std::string GetName() override { return "Slerp"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 	private:
 
 		void Slerp();
@@ -311,21 +311,21 @@ namespace GraphKey
 		{
 			inputs =
 			{
-				AttributeConfig<glm::vec3>("A", AttributeDirection::Input),
-				AttributeConfig<glm::vec3>("B", AttributeDirection::Input),
+				AttributeConfig<gem::vec3>("A", AttributeDirection::Input),
+				AttributeConfig<gem::vec3>("B", AttributeDirection::Input),
 				AttributeConfig<float>("t", AttributeDirection::Input)
 			};
 
 			outputs =
 			{
-				AttributeConfig<glm::vec3>("Output", AttributeDirection::Output, true, GK_BIND_FUNCTION(LerpNode::Lerp))
+				AttributeConfig<gem::vec3>("Output", AttributeDirection::Output, true, GK_BIND_FUNCTION(LerpNode::Lerp))
 			};
 		}
 
 		~LerpNode() override = default;
 
 		inline const std::string GetName() override { return "Lerp"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 1.f, 0.f, 1.f }; }
 	private:
 
 		void Lerp();
@@ -352,7 +352,7 @@ namespace GraphKey
 		~ConvertFromToNode() override = default;
 
 		inline const std::string GetName() override { return "To"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void Convert()

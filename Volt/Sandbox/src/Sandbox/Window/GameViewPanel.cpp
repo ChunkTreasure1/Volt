@@ -24,6 +24,7 @@
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Math/MatrixUtilities.h>
 
 #include <Volt/Utility/StringUtility.h>
 
@@ -54,7 +55,7 @@ void GameViewPanel::UpdateMainContent()
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-	if (myViewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
+	if (myViewportSize != (*(gem::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
 	{
 		Resize({ viewportSize.x, viewportSize.y });
 	}
@@ -92,13 +93,12 @@ void GameViewPanel::OnClose()
 	mySceneRenderer = nullptr;
 }
 
-glm::vec2 GameViewPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
+gem::vec2 GameViewPanel::GetViewportLocalPosition(const gem::vec2& mousePos)
 {
-	float mx = mousePos.x;
-	float my = mousePos.y;
+	auto [mx, my] = mousePos;
 	mx -= myPerspectiveBounds[0].x;
 	my -= myPerspectiveBounds[0].y;
-	glm::vec2 result = { mx, my };
+	gem::vec2 result = { mx, my };
 
 	return result;
 }
@@ -147,7 +147,7 @@ bool GameViewPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 	return false;
 }
 
-void GameViewPanel::Resize(const glm::vec2& viewportSize)
+void GameViewPanel::Resize(const gem::vec2& viewportSize)
 {
 	myViewportSize = { viewportSize.x, viewportSize.y };
 

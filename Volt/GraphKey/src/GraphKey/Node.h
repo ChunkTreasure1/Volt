@@ -70,7 +70,7 @@ namespace GraphKey
 		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Wire::EntityId entity = 0);
 
 		virtual const std::string GetName() = 0;
-		virtual const glm::vec4 GetColor() = 0;
+		virtual const gem::vec4 GetColor() = 0;
 
 		inline const std::string& GetRegistryName() const { return myRegistryName; }
 		const uint32_t GetAttributeIndexFromID(const Volt::UUID id) const;

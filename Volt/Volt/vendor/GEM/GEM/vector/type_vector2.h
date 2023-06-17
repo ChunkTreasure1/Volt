@@ -5,8 +5,8 @@
 namespace gem
 {
 	using vec2 = vec<2, float>;
-	using ivec2 = vec<2, int32_t>;
-	using uvec2 = vec<2, uint32_t>;
+	using vec2i = vec<2, int32_t>;
+	using vec2ui = vec<2, uint32_t>;
 
 	template<typename T>
 	struct vec<2, T>
@@ -29,12 +29,12 @@ namespace gem
 		bool operator==(const vec<2, T>& rhs) const { return (x == rhs.x && y == rhs.y); };
 		bool operator<(const vec<2, T>& rhs) const { return (x < rhs.x&& y < rhs.y); };
 		bool operator>(const vec<2, T>& rhs) const { return (x > rhs.x && y > rhs.y); };
-		bool operator<=(const glm::vec<2, T>& rhs)
+		bool operator<=(const gem::vec<2, T>& rhs)
 		{
 			return (x <= rhs.x && y <= rhs.y);
 		}
 
-		bool operator>=(const glm::vec<2, T>& rhs)
+		bool operator>=(const gem::vec<2, T>& rhs)
 		{
 			return (x >= rhs.x && y >= rhs.y);
 		}

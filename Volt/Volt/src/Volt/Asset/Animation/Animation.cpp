@@ -5,9 +5,11 @@
 #include "Volt/Animation/AnimationManager.h"
 #include "Volt/Core/Profiling.h"
 
+#include "Volt/Math/MatrixUtilities.h"
+
 namespace Volt
 {
-	const std::vector<glm::mat4> Animation::Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
+	const std::vector<gem::mat4> Animation::Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -33,8 +35,8 @@ namespace Volt
 			}
 		}
 
-		std::vector<glm::mat4> result;
-		result.resize(aSkeleton->GetJointCount(), glm::mat4(1.f));
+		std::vector<gem::mat4> result;
+		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
 
 		if (result.empty())
 		{
@@ -55,7 +57,7 @@ namespace Volt
 		{
 			const auto& joint = joints[i];
 
-			glm::mat4 parentTransform = { 1.f };
+			gem::mat4 parentTransform = { 1.f };
 
 			if (joint.parentIndex >= 0)
 			{
@@ -65,18 +67,18 @@ namespace Volt
 			const auto& currentLocalTransform = currentFrame.localTRS[i];
 			const auto& nextLocalTransform = nextFrame.localTRS[i];
 
-			glm::mat4 resultTransform;
+			gem::mat4 resultTransform;
 
 			// Blend
 			{
-				const glm::vec3 position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, deltaTime);
-				const glm::quat rotation = glm::slerp(glm::normalize(currentLocalTransform.rotation), glm::normalize(nextLocalTransform.rotation), deltaTime);
-				const glm::vec3 scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, deltaTime);
+				const gem::vec3 position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, deltaTime);
+				const gem::quat rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), deltaTime);
+				const gem::vec3 scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, deltaTime);
 
-				resultTransform = glm::translate(glm::mat4{ 1.f }, position)* glm::mat4_cast(rotation)* glm::scale(glm::mat4{ 1.f }, scale);
+				resultTransform = gem::translate(gem::mat4{ 1.f }, position)* gem::mat4_cast(rotation)* gem::scale(gem::mat4{ 1.f }, scale);
 			}
 
-			glm::mat4 resultT = parentTransform * resultTransform;
+			gem::mat4 resultT = parentTransform * resultTransform;
 			result[i] = resultT;
 		}
 
@@ -88,12 +90,12 @@ namespace Volt
 		return result;
 	}
 
-	const std::vector<glm::mat4> Animation::Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton)
+	const std::vector<gem::mat4> Animation::Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton)
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<glm::mat4> result;
-		result.resize(aSkeleton->GetJointCount(), glm::mat4(1.f));
+		std::vector<gem::mat4> result;
+		result.resize(aSkeleton->GetJointCount(), gem::mat4(1.f));
 
 		if (result.empty())
 		{
@@ -109,7 +111,7 @@ namespace Volt
 		{
 			const auto& joint = joints[i];
 
-			glm::mat4 parentTransform = { 1.f };
+			gem::mat4 parentTransform = { 1.f };
 
 			if (joint.parentIndex >= 0)
 			{
@@ -118,15 +120,15 @@ namespace Volt
 
 			const auto& currentLocalTransform = currentFrame.localTRS[i];
 
-			glm::mat4 resultTransform;
+			gem::mat4 resultTransform;
 
-			const glm::vec3 position = currentLocalTransform.position;
-			const glm::quat rotation = glm::normalize(currentLocalTransform.rotation);
-			const glm::vec3 scale = currentLocalTransform.scale;
+			const gem::vec3 position = currentLocalTransform.position;
+			const gem::quat rotation = gem::normalize(currentLocalTransform.rotation);
+			const gem::vec3 scale = currentLocalTransform.scale;
 
-			resultTransform = glm::translate(glm::mat4{ 1.f }, position)* glm::mat4_cast(rotation)* glm::scale(glm::mat4{ 1.f }, scale);
+			resultTransform = gem::translate(gem::mat4{ 1.f }, position)* gem::mat4_cast(rotation)* gem::scale(gem::mat4{ 1.f }, scale);
 
-			glm::mat4 resultT = parentTransform * resultTransform;
+			gem::mat4 resultT = parentTransform * resultTransform;
 			result[i] = resultT;
 		}
 
@@ -192,9 +194,9 @@ namespace Volt
 			const auto& nextLocalTransform = nextFrame.localTRS[i];
 
 			// Blend
-			result[i].position = glm::mix(currentLocalTransform.position, nextLocalTransform.position, blendValue);
-			result[i].rotation = glm::slerp(glm::normalize(currentLocalTransform.rotation), glm::normalize(nextLocalTransform.rotation), blendValue);
-			result[i].scale = glm::mix(currentLocalTransform.scale, nextLocalTransform.scale, blendValue);
+			result[i].position = gem::lerp(currentLocalTransform.position, nextLocalTransform.position, blendValue);
+			result[i].rotation = gem::slerp(gem::normalize(currentLocalTransform.rotation), gem::normalize(nextLocalTransform.rotation), blendValue);
+			result[i].scale = gem::lerp(currentLocalTransform.scale, nextLocalTransform.scale, blendValue);
 		}
 
 		return result;
@@ -281,17 +283,17 @@ namespace Volt
 		return animData;
 	}
 
-	const glm::mat4 Animation::BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const glm::mat4& parentTransform, const size_t jointIndex, const float blendFactor)
+	const gem::mat4 Animation::BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor)
 	{
-		//const glm::mat4 currentLocalTransform = currentFrame.localTransforms.at(jointIndex);
-		//const glm::mat4 nextLocalTransform = nextFrame.localTransforms.at(jointIndex);
+		//const gem::mat4 currentLocalTransform = currentFrame.localTransforms.at(jointIndex);
+		//const gem::mat4 nextLocalTransform = nextFrame.localTransforms.at(jointIndex);
 
-		//const glm::mat4 currentGlobalTransform = parentTransform * glm::transpose(currentLocalTransform);
-		//const glm::mat4 nextGlobalTransform = parentTransform * glm::transpose(nextLocalTransform);
+		//const gem::mat4 currentGlobalTransform = parentTransform * gem::transpose(currentLocalTransform);
+		//const gem::mat4 nextGlobalTransform = parentTransform * gem::transpose(nextLocalTransform);
 
 		//return Math::Lerp(currentGlobalTransform, nextGlobalTransform, blendFactor);
 
-		return glm::mat4{ 1.f };
+		return gem::mat4{ 1.f };
 	}
 }
 

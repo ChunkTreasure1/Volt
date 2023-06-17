@@ -92,7 +92,7 @@ namespace Volt
 			return myCrowd->getAgent(myEntityToAgentMap.at(entityId));
 		}
 
-		void DtCrowd::SetAgentPosition(Volt::Entity entity, glm::vec3 position)
+		void DtCrowd::SetAgentPosition(Volt::Entity entity, gem::vec3 position)
 		{
 			auto entityId = entity.GetId();
 
@@ -118,7 +118,7 @@ namespace Volt
 			}
 		}
 
-		void DtCrowd::SetAgentTarget(Volt::Entity entity, glm::vec3 target)
+		void DtCrowd::SetAgentTarget(Volt::Entity entity, gem::vec3 target)
 		{
 			auto entityId = entity.GetId();
 
@@ -137,7 +137,7 @@ namespace Volt
 			if (ag && ag->active)
 			{
 				dtPolyRef targetRef;
-				glm::vec3 targetPos;
+				gem::vec3 targetPos;
 
 				myNavMesh->GetNavMeshQuery()->findNearestPoly((const float*)&target, halfExtents, filter, &targetRef, (float*)&targetPos);
 				myCrowd->requestMoveTarget(agentIndex, targetRef, (const float*)&targetPos);

@@ -3,7 +3,7 @@
 #include "Volt/Rendering/FrameGraph/FrameGraphResourceHandle.h"
 #include "Volt/Rendering/Texture/ImageCommon.h"
 
-#include <glm/glm.hpp>
+#include <GEM/gem.h>
 #include <vulkan/vulkan.h>
 
 namespace Volt
@@ -18,11 +18,11 @@ namespace Volt
 		FrameGraphTextureSpecification()
 		{}
 
-		FrameGraphTextureSpecification(ImageFormat aFormat, const glm::uvec2& size, const glm::vec4 aClearColor = { 1.f, 1.f, 1.f, 1.f }, const std::string& aName = "", ImageUsage aUsage = ImageUsage::Attachment)
+		FrameGraphTextureSpecification(ImageFormat aFormat, const gem::vec2ui& size, const gem::vec4 aClearColor = { 1.f, 1.f, 1.f, 1.f }, const std::string& aName = "", ImageUsage aUsage = ImageUsage::Attachment)
 			: format(aFormat), clearColor(aClearColor), name(aName), usage(aUsage), width(size.x), height(size.y)
 		{}
 
-		FrameGraphTextureSpecification(ImageFormat aFormat, const glm::uvec2& size, const std::string& aName, ImageUsage aUsage = ImageUsage::Attachment)
+		FrameGraphTextureSpecification(ImageFormat aFormat, const gem::vec2ui& size, const std::string& aName, ImageUsage aUsage = ImageUsage::Attachment)
 			: format(aFormat), name(aName), usage(aUsage), width(size.x), height(size.y)
 		{}
 
@@ -34,7 +34,7 @@ namespace Volt
 		ImageUsage usage = ImageUsage::Attachment;
 		ClearMode clearMode = ClearMode::Clear;
 
-		glm::vec4 clearColor = { 0.f };
+		gem::vec4 clearColor = { 0.f };
 
 		std::string name;
 

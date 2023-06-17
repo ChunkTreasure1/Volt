@@ -45,12 +45,12 @@ namespace GraphKey
 			{
 				if (myTargetEntity.HasComponent<Volt::PointLightComponent>())
 				{
-					myTargetEntity.GetComponent<Volt::PointLightComponent>().color = glm::mix(myStartColor, myTargetColor, myLerpTime / myTotalLerpTime);
+					myTargetEntity.GetComponent<Volt::PointLightComponent>().color = gem::lerp(myStartColor, myTargetColor, myLerpTime / myTotalLerpTime);
 				}
 
 				if (myTargetEntity.HasComponent<Volt::SpotLightComponent>())
 				{
-					myTargetEntity.GetComponent<Volt::SpotLightComponent>().color = glm::mix(myStartColor, myTargetColor, myLerpTime / myTotalLerpTime);
+					myTargetEntity.GetComponent<Volt::SpotLightComponent>().color = gem::lerp(myStartColor, myTargetColor, myLerpTime / myTotalLerpTime);
 				}
 			}
 
@@ -68,7 +68,7 @@ namespace GraphKey
 	void ChangeLightColorNode::SetProperties()
 	{
 		auto entity = GetInput<Volt::Entity>(1);
-		myTargetColor = GetInput<glm::vec3>(2);
+		myTargetColor = GetInput<gem::vec3>(2);
 		myTotalLerpTime = GetInput<float>(3);
 
 		myTargetEntity = entity;

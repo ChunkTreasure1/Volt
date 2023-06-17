@@ -2,30 +2,30 @@
 
 #include "Volt/Physics/PhysicsEnums.h"
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 #include <PhysX/PxPhysicsAPI.h>
 
 namespace Volt
 {
 	namespace PhysXUtilities
 	{
-		physx::PxTransform ToPhysXTransform(const glm::mat4& transform);
-		physx::PxTransform ToPhysXTransform(const glm::vec3& position, const glm::quat& rotation);
-		physx::PxMat44 ToPhysXMatrix(const glm::mat4& mat);
+		physx::PxTransform ToPhysXTransform(const gem::mat4& transform);
+		physx::PxTransform ToPhysXTransform(const gem::vec3& position, const gem::quat& rotation);
+		physx::PxMat44 ToPhysXMatrix(const gem::mat4& mat);
 
-		const physx::PxVec3& ToPhysXVector(const glm::vec3& vec);
-		const physx::PxVec4& ToPhysXVector(const glm::vec4& vec);
-		const physx::PxExtendedVec3 ToPhysXVectorExtended(const glm::vec3& vec);
+		const physx::PxVec3& ToPhysXVector(const gem::vec3& vec);
+		const physx::PxVec4& ToPhysXVector(const gem::vec4& vec);
+		const physx::PxExtendedVec3 ToPhysXVectorExtended(const gem::vec3& vec);
 
-		physx::PxQuat ToPhysXQuat(const glm::quat& quat);
+		physx::PxQuat ToPhysXQuat(const gem::quat& quat);
 		physx::PxFilterData CreateFilterDataFromLayer(uint32_t layerId, CollisionDetectionType collisionDetection);
 
-		glm::mat4 FromPhysXTransform(const physx::PxTransform& transform);
-		glm::mat4 FromPhysXMatrix(const physx::PxMat44& matrix);
-		glm::vec3 FromPhysXVector(const physx::PxVec3& vector);
-		glm::vec3 FromPhysXVector(const physx::PxExtendedVec3& vector);
-		glm::vec4 FromPhysXVector(const physx::PxVec4& vector);
-		glm::quat FromPhysXQuat(const physx::PxQuat& quat);
+		gem::mat4 FromPhysXTransform(const physx::PxTransform& transform);
+		gem::mat4 FromPhysXMatrix(const physx::PxMat44& matrix);
+		gem::vec3 FromPhysXVector(const physx::PxVec3& vector);
+		gem::vec3 FromPhysXVector(const physx::PxExtendedVec3& vector);
+		gem::vec4 FromPhysXVector(const physx::PxVec4& vector);
+		gem::quat FromPhysXQuat(const physx::PxQuat& quat);
 
 
 		CookingResult FromPhysXCookingResult(physx::PxConvexMeshCookingResult::Enum cookingResult);

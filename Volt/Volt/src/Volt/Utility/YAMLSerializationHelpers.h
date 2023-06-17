@@ -7,7 +7,7 @@
 
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 #include <Wire/WireGUID.h>
 #include <Wire/Serialization.h>
 #include <yaml-cpp/yaml.h>
@@ -15,9 +15,9 @@
 namespace YAML
 {
 	template<>
-	struct convert<glm::vec2>
+	struct convert<gem::vec2>
 	{
-		static Node encode(const glm::vec2& rhs)
+		static Node encode(const gem::vec2& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -25,7 +25,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec2& rhs)
+		static bool decode(const Node& node, gem::vec2& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 2)
 			{
@@ -39,9 +39,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::vec3>
+	struct convert<gem::vec3>
 	{
-		static Node encode(const glm::vec3& rhs)
+		static Node encode(const gem::vec3& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -50,7 +50,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec3& rhs)
+		static bool decode(const Node& node, gem::vec3& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 3)
 			{
@@ -65,9 +65,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::vec4>
+	struct convert<gem::vec4>
 	{
-		static Node encode(const glm::vec4& rhs)
+		static Node encode(const gem::vec4& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -77,7 +77,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec4& rhs)
+		static bool decode(const Node& node, gem::vec4& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 4)
 			{
@@ -93,9 +93,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::uvec2>
+	struct convert<gem::vec2ui>
 	{
-		static Node encode(const glm::uvec2& rhs)
+		static Node encode(const gem::vec2ui& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -103,7 +103,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::uvec2& rhs)
+		static bool decode(const Node& node, gem::vec2ui& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 2)
 			{
@@ -117,9 +117,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::uvec3>
+	struct convert<gem::vec3ui>
 	{
-		static Node encode(const glm::uvec3& rhs)
+		static Node encode(const gem::vec3ui& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -128,7 +128,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::uvec3& rhs)
+		static bool decode(const Node& node, gem::vec3ui& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 3)
 			{
@@ -143,9 +143,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::uvec4>
+	struct convert<gem::vec4ui>
 	{
-		static Node encode(const glm::uvec4& rhs)
+		static Node encode(const gem::vec4ui& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -155,7 +155,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::uvec4& rhs)
+		static bool decode(const Node& node, gem::vec4ui& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 4)
 			{
@@ -171,9 +171,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::ivec2>
+	struct convert<gem::vec2i>
 	{
-		static Node encode(const glm::ivec2& rhs)
+		static Node encode(const gem::vec2i& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -181,7 +181,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::ivec2& rhs)
+		static bool decode(const Node& node, gem::vec2i& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 2)
 			{
@@ -195,9 +195,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::ivec3>
+	struct convert<gem::vec3i>
 	{
-		static Node encode(const glm::ivec3& rhs)
+		static Node encode(const gem::vec3i& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -206,7 +206,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::ivec3& rhs)
+		static bool decode(const Node& node, gem::vec3i& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 3)
 			{
@@ -221,9 +221,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::ivec4>
+	struct convert<gem::vec4i>
 	{
-		static Node encode(const glm::ivec4& rhs)
+		static Node encode(const gem::vec4i& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -233,7 +233,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::ivec4& rhs)
+		static bool decode(const Node& node, gem::vec4i& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 4)
 			{
@@ -249,9 +249,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::quat>
+	struct convert<gem::quat>
 	{
-		static Node encode(const glm::quat& rhs)
+		static Node encode(const gem::quat& rhs)
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -261,7 +261,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::quat& rhs)
+		static bool decode(const Node& node, gem::quat& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 4)
 			{
@@ -277,9 +277,9 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<glm::mat4>
+	struct convert<gem::mat4>
 	{
-		static Node encode(const glm::mat4& rhs)
+		static Node encode(const gem::mat4& rhs)
 		{
 			Node node;
 			node.push_back(rhs[0][0]);
@@ -304,7 +304,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::mat4& rhs)
+		static bool decode(const Node& node, gem::mat4& rhs)
 		{
 			if (!node.IsSequence() || node.size() != 16)
 			{
@@ -492,77 +492,77 @@ namespace YAML
 
 namespace Volt
 {
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::uvec2& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2ui& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::uvec3& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3ui& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::uvec4& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4ui& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec2& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec2i& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec3& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec3i& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::ivec4& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::vec4i& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::quat& v)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::quat& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const glm::mat4& mat)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const gem::mat4& mat)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq

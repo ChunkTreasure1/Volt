@@ -22,7 +22,7 @@ uint GetCascadeIndexFromWorldPosition(in DirectionalLight light, in float3 world
 {
     const float4 viewSpacePosition = mul(viewMatrix, float4(worldPosition, 1.f));
     
-    const int cascadeCount = 5;
+    const int cascadeCount = 4;
     int cascadeIndex = 0;
     
     [unroll]

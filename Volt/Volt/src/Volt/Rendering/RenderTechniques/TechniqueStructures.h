@@ -48,7 +48,7 @@ namespace Volt
 	{
 		FrameGraphResourceHandle shadowMap;
 
-		glm::uvec2 size = { 0 };
+		gem::vec2ui size = { 0 };
 	};
 
 	struct PreethamSkyData

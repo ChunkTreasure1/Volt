@@ -104,7 +104,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 	return result;
 }
 
-void UI::RenderMatchingTextBackground(const std::string& query, const std::string& text, const glm::vec4& color, const glm::uvec2& offset)
+void UI::RenderMatchingTextBackground(const std::string& query, const std::string& text, const gem::vec4& color, const gem::vec2ui& offset)
 {
 	const auto matchOffset = Utils::ToLower(text).find(Utils::ToLower(query));
 
@@ -132,7 +132,7 @@ void UI::RenderMatchingTextBackground(const std::string& query, const std::strin
 	currentWindow->DrawList->AddRectFilled(min + windowPos, max + windowPos, imguiCol);
 }
 
-void UI::RenderHighlightedBackground(const glm::vec4& color, float height)
+void UI::RenderHighlightedBackground(const gem::vec4& color, float height)
 {
 	auto currentWindow = ImGui::GetCurrentWindow();
 	const auto windowPos = ImGui::GetWindowPos();

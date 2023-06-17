@@ -626,6 +626,8 @@ GLFWbool _glfwConnectWin32(int platformID, _GLFWplatform* platform)
 		_glfwGetRequiredInstanceExtensionsWin32,
 		_glfwGetPhysicalDevicePresentationSupportWin32,
 		_glfwCreateWindowSurfaceWin32,
+
+		_glfwSetWindowTitleWin32
 	};
 
 	*platform = win32;

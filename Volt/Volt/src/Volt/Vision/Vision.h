@@ -9,8 +9,8 @@ namespace Volt
 
 	struct CameraShakeSettings
 	{
-		glm::vec3 rotationAmount = { 1.f,1.f,1.f };
-		glm::vec3 translationAmount = { 0.f,0.f,0.f };
+		gem::vec3 rotationAmount = { 1.f,1.f,1.f };
+		gem::vec3 translationAmount = { 0.f,0.f,0.f };
 
 		float rotationMagnitude = 1.f;
 		float translationMagnitude = 1.f;
@@ -58,6 +58,7 @@ namespace Volt
 		void SetCameraDampAmount(Volt::Entity aCamera, float aDampAmount);
 		void SetCameraFieldOfView(Volt::Entity aCamera, float aFoV);
 		void SetCameraLocked(Volt::Entity aCamera, bool locked);
+		void SetCameraMouseSensentivity(Volt::Entity aCamera, float mouseSens);
 		//Camera Settings
 
 
@@ -82,10 +83,10 @@ namespace Volt
 		Volt::Entity myTransitionCamera = Volt::Entity{ 0,nullptr };
 		Volt::Entity myActiveTiggerCamera = Volt::Entity{ 0,nullptr };
 
-		glm::vec3 myNoiseSeeds = { 0 };
+		gem::vec3 myNoiseSeeds = { 0 };
 
-		glm::vec3 myTransitionCamStartPos = { 0 };
-		glm::quat myTransitionCamStartRot = glm::quat(1, 0, 0, 0);
+		gem::vec3 myTransitionCamStartPos = { 0 };
+		gem::quat myTransitionCamStartRot = gem::quat(1, 0, 0, 0);
 		float myTransitionCameraStartFoV = 0.f;
 
 		CameraShakeSettings myCurrentShakeSetting;

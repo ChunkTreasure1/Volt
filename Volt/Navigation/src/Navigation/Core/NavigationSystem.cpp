@@ -72,6 +72,7 @@ namespace Volt
 					for (auto entityId : agentEntities)
 					{
 						auto entity = Volt::Entity(entityId, myActiveScene.get());
+						crowd->SetAgentPosition(entity, entity.GetPosition());
 
 						if (!crowd->GetAgentMap().contains(entityId))
 						{
@@ -144,7 +145,7 @@ namespace Volt
 			if (myEntityIdToTargetPosMap.contains(entity.GetId())) { return; }
 			auto& crowd = myNavMesh->GetCrowd();
 
-			myEntityIdToTargetPosMap[entity.GetId()] = *(glm::vec3*)&crowd->GetAgent(entity.GetId())->targetPos;
+			myEntityIdToTargetPosMap[entity.GetId()] = *(gem::vec3*)&crowd->GetAgent(entity.GetId())->targetPos;
 			crowd->ResetAgentTarget(entity);
 
 			SyncDetourPosition(entity, deltaTime);
@@ -179,8 +180,8 @@ namespace Volt
 
 					if (actorController)
 					{
-						actorController->SetFootPosition(*(glm::vec3*)&agent->npos);
-						//actorController->Move(*(glm::vec3*)&agent->vel * deltaTime);
+						//actorController->SetFootPosition(*(gem::vec3*)&agent->npos);
+						actorController->Move(*(gem::vec3*)&agent->vel * deltaTime);
 					}
 					else
 					{
@@ -190,7 +191,7 @@ namespace Volt
 			}
 			else
 			{
-				entity.SetPosition(*(glm::vec3*)&agent->npos);
+				entity.SetPosition(*(gem::vec3*)&agent->npos);
 			}
 		}
 

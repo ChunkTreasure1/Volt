@@ -98,10 +98,10 @@ void PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 	myEntity.GetComponent<Volt::MeshComponent>().handle = itemPtr->handle;
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
 
-	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
+	const gem::vec3 rotation = { gem::radians(30.f), gem::radians(135.f), 0.f };
 	myCamera->SetRotation(rotation);
 
-	const glm::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 2.f;
+	const gem::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 2.f;
 	myCamera->SetPosition(position);
 
 	myPreviewRenderer->OnRenderEditor(myCamera);

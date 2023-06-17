@@ -22,7 +22,7 @@
 #include <d3dcompiler.h>
 #include <wrl.h>
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 #include <imgui.h>
 
 #include <yaml-cpp/yaml.h>

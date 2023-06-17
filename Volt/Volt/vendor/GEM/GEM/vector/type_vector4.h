@@ -5,8 +5,8 @@
 namespace gem
 {
 	using vec4 = vec<4, float>;
-	using uvec4 = vec<4, uint32_t>;
-	using ivec4 = vec<4, int32_t>;
+	using vec4ui = vec<4, uint32_t>;
+	using vec4i = vec<4, int32_t>;
 
 	template<typename T>
 	struct vec<4, T>
@@ -44,12 +44,12 @@ namespace gem
 
 		bool operator<(const vec<4, T>& rhs) const { return (x < rhs.x && y < rhs.y && z < rhs.z && w < rhs.w); };
 		bool operator>(const vec<4, T>& rhs) const { return (x > rhs.x&& y > rhs.y&& z > rhs.z&& w > rhs.w); };
-		bool operator<=(const glm::vec<4, T>& rhs)
+		bool operator<=(const gem::vec<4, T>& rhs)
 		{
 			return (x <= rhs.x && y <= rhs.y && z <= rhs.z && w <= rhs.w);
 		}
 
-		bool operator>=(const glm::vec<4, T>& rhs)
+		bool operator>=(const gem::vec<4, T>& rhs)
 		{
 			return (x >= rhs.x && y >= rhs.y && z >= rhs.z && w >= rhs.w);
 		}

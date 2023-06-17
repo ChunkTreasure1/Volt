@@ -108,7 +108,7 @@ namespace gem
 	{
 		vec<3, T> Tmp = v;
 
-		T len = glm::length(Tmp);
+		T len = gem::length(Tmp);
 		if (abs(len - static_cast<T>(1)) > static_cast<T>(0.001))
 		{
 			T oneOverLen = static_cast<T>(1) / len;

@@ -41,6 +41,7 @@ namespace Volt
 
 		// Space 1
 		inline static constexpr uint32_t MATERIAL_TABLE = 0;
+		inline static constexpr uint32_t MESH_TABLE = 1;
 
 		// Space 2
 		inline static constexpr uint32_t SAMPLER_LINEAR = 0;
@@ -59,7 +60,7 @@ namespace Volt
 
 		// Space 3
 		inline static constexpr uint32_t CAMERA_BUFFER = 1;
-		inline static constexpr uint32_t INDIRECT_ARGS = 2;
+		inline static constexpr uint32_t MAIN_INDIRECT_ARGS = 2;
 		inline static constexpr uint32_t OBJECT_DATA = 4;
 		inline static constexpr uint32_t DIRECTIONAL_LIGHT = 6;
 		inline static constexpr uint32_t POINT_LIGHTS = 7;

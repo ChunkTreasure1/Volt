@@ -76,6 +76,25 @@ float EncodeTangent(float3 normal, float3 tangent)
     return DiamondEncode(packed_tangent);
 }
 
+float4 UnpackUIntToFloat4(uint packedValue)
+{
+    float4 result = 0.f;
+    
+    // Extract the components from the packed uint
+    uint packedX = (packedValue >> 24) & 0xFF;
+    uint packedY = (packedValue >> 16) & 0xFF;
+    uint packedZ = (packedValue >> 8) & 0xFF;
+    uint packedW = packedValue & 0xFF;
+
+    // Convert packed components back to float range
+    result.x = float(packedX) / 255.0f;
+    result.y = float(packedY) / 255.0f;
+    result.z = float(packedZ) / 255.0f;
+    result.w = float(packedW) / 255.0f;
+    
+    return result;
+}
+
 float3 OctNormalDecode(float2 f)
 {
     f = f * 2.0 - 1.0;
@@ -196,7 +215,8 @@ struct DefaultVertexInput
             return 0.f;
         }
         
-        return u_paintedVertexColors[objectData.colorOffset + vertexId];
+        const uint uintColor = u_paintedVertexColors[objectData.colorOffset + vertexId];
+        return UnpackUIntToFloat4(uintColor);
     }
     
     //float3 GetColor()
@@ -223,8 +243,7 @@ struct DefaultPixelInput
     
     ObjectData GetObjectData()
     {
-        const uint objectMapIndex = u_drawToObjectId[objectIndex];
-        return u_objectData[objectMapIndex];
+        return u_objectData[objectIndex];
     }
 };
 

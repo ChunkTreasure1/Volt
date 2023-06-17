@@ -98,10 +98,14 @@ namespace Volt
 		{
 			ImageSpecification spec{};
 			spec.format = ImageFormat::RGBA;
+			spec.usage = ImageUsage::Storage;
 			spec.width = myReaderState.width;
 			spec.height = myReaderState.height;
-			spec.usage = ImageUsage::Texture;
-			spec.memoryUsage = MemoryUsage::CPUToGPU;
+			spec.isCubeMap = false;
+			spec.layers = 1;
+			spec.debugName = "Video Image";
+			spec.mappable = true;
+
 			myImage = Image2D::Create(spec);
 		}
 

@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
+	const std::vector<gem::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
@@ -16,7 +16,7 @@ namespace Volt
 		return myAnimations.at(index)->Sample(aStartTime, mySkeleton, looping);
 	}
 
-	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
+	const std::vector<gem::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{

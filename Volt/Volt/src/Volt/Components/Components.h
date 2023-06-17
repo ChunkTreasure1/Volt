@@ -7,7 +7,7 @@
 #include "Volt/BehaviorTree/BehaviorTree.hpp"
 
 #include <Wire/Serialization.h>
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 #include <string>
 
 namespace GraphKey
@@ -31,32 +31,32 @@ namespace Volt
 
 	SERIALIZE_COMPONENT((struct TransformComponent
 	{
-		PROPERTY(Name = Position) glm::vec3 position;
-		PROPERTY(Name = Rotation) glm::quat rotation;
-		PROPERTY(Name = Scale) glm::vec3 scale;
+		PROPERTY(Name = Position) gem::vec3 position;
+		PROPERTY(Name = Rotation) gem::quat rotation;
+		PROPERTY(Name = Scale) gem::vec3 scale;
 
 		PROPERTY(Visible = false) bool visible = true;
 		PROPERTY(Visible = false) bool locked = false;
 
-		inline const glm::mat4 GetTransform() const
+		inline const gem::mat4 GetTransform() const
 		{
-			return glm::translate(glm::mat4(1.f), position) *
-				glm::mat4_cast(rotation) * glm::scale(glm::mat4(1.f), scale);
+			return gem::translate(gem::mat4(1.f), position) *
+				gem::mat4_cast(rotation) * gem::scale(gem::mat4(1.f), scale);
 		}
 
-		inline const glm::vec3 GetForward() const
+		inline const gem::vec3 GetForward() const
 		{
-			return glm::rotate(rotation, glm::vec3{ 0.f, 0.f, 1.f });
+			return gem::rotate(rotation, gem::vec3{ 0.f, 0.f, 1.f });
 		}
 
-		inline const glm::vec3 GetRight() const
+		inline const gem::vec3 GetRight() const
 		{
-			return glm::rotate(rotation, glm::vec3{ 1.f, 0.f, 0.f });
+			return gem::rotate(rotation, gem::vec3{ 1.f, 0.f, 0.f });
 		}
 
-		inline const glm::vec3 GetUp() const
+		inline const gem::vec3 GetUp() const
 		{
-			return glm::rotate(rotation, glm::vec3{ 0.f, 1.f, 0.f });
+			return gem::rotate(rotation, gem::vec3{ 0.f, 1.f, 0.f });
 		}
 
 		CREATE_COMPONENT_GUID("{E1B8016B-1CAA-4782-927E-C17C29B25893}"_guid);
@@ -183,7 +183,7 @@ namespace Volt
 		PROPERTY(Name = Text) std::string text = "Text";
 		PROPERTY(Name = Font, SpecialType = Asset, AssetType = Font) AssetHandle fontHandle;
 		PROPERTY(Name = Max Width) float maxWidth = 100.f;
-		PROPERTY(Name = Color, SpecialType = Color) glm::vec4 color{ 1.f };
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec4 color{ 1.f };
 
 		CREATE_COMPONENT_GUID("{8AAA0646-40D2-47E6-B83F-72EA26BD8C01}"_guid);
 	}), TextRendererComponent);
@@ -208,6 +208,7 @@ namespace Volt
 	{
 		PROPERTY(Name = Animation Graph, SpecialType = Asset, AssetType = AnimationGraph) AssetHandle animationGraph = Volt::Asset::Null();
 		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle overrideMaterial = Volt::Asset::Null();
+		PROPERTY(Name = Override Skin, SpecialType = Asset, AssetType = Mesh) AssetHandle overrideSkin = Volt::Asset::Null();
 		PROPERTY(Name = Apply Root Motion) bool applyRootMotion = false;
 
 		Ref<AnimationController> controller;
@@ -234,7 +235,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct VertexPaintedComponent
 	{
 		PROPERTY(Visible = false, Serializable =  false) AssetHandle meshHandle;
-		PROPERTY(Visible = false, Serializable = false) std::vector<glm::vec4> vertecies;
+		PROPERTY(Visible = false, Serializable = false) std::vector<uint32_t> vertexColors;
 		CREATE_COMPONENT_GUID("{480B6514-05CB-4532-A366-B5DFD419E310}"_guid);
 	}), VertexPaintedComponent);
 

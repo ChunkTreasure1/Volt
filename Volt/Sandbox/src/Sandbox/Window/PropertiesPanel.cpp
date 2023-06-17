@@ -39,22 +39,33 @@ namespace Utility
 	{
 		switch (type)
 		{
-			case Volt::MonoFieldType::Animation: return Volt::AssetType::Animation; break;
-			case Volt::MonoFieldType::Prefab: return Volt::AssetType::Prefab; break;
-			case Volt::MonoFieldType::Scene: return Volt::AssetType::Scene; break;
-			case Volt::MonoFieldType::Mesh: return Volt::AssetType::Mesh; break;
-			case Volt::MonoFieldType::Font: return Volt::AssetType::Font; break;
-			case Volt::MonoFieldType::Material: return Volt::AssetType::Material; break;
-			case Volt::MonoFieldType::Texture: return Volt::AssetType::Texture; break;
-			case Volt::MonoFieldType::PostProcessingMaterial: return Volt::AssetType::PostProcessingMaterial; break;
+			case Volt::MonoFieldType::Animation: return Volt::AssetType::Animation;
+				break;
+			case Volt::MonoFieldType::Prefab: return Volt::AssetType::Prefab;
+				break;
+			case Volt::MonoFieldType::Scene: return Volt::AssetType::Scene;
+				break;
+			case Volt::MonoFieldType::Mesh: return Volt::AssetType::Mesh;
+				break;
+			case Volt::MonoFieldType::Font: return Volt::AssetType::Font;
+				break;
+			case Volt::MonoFieldType::Material: return Volt::AssetType::Material;
+				break;
+			case Volt::MonoFieldType::Texture: return Volt::AssetType::Texture;
+				break;
+			case Volt::MonoFieldType::PostProcessingMaterial: return Volt::AssetType::PostProcessingMaterial;
+				break;
+			case Volt::MonoFieldType::Video: return Volt::AssetType::Video;
+				break;
+			case Volt::MonoFieldType::AnimationGraph: return Volt::AssetType::AnimationGraph;
 		}
 
 		return Volt::AssetType::None;
 	}
 }
 
-PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, const std::string& id)
-	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer)
+PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
+	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
 {
 	myIsOpen = true;
 	myMaxEventListSize = 20;
@@ -157,7 +168,9 @@ void PropertiesPanel::UpdateMainContent()
 
 				auto& transform = registry.GetComponent<Volt::TransformComponent>(entity);
 
-				if (UI::PropertyAxisColor("Position", transform.position, 0.f, (singleSelected) ? std::function<void(glm::vec3&)>() : [&](glm::vec3& val)
+				if (UI::PropertyAxisColor("Position", transform.position, 0.f, (singleSelected)
+					? std::function<void(gem::vec3&)>()
+					: [&](gem::vec3& val)
 				{
 					for (auto& entId : entities)
 					{
@@ -170,16 +183,20 @@ void PropertiesPanel::UpdateMainContent()
 
 					if (myMidEvent == false)
 					{
-						Ref<ValueCommand<glm::vec3>> command = CreateRef<ValueCommand<glm::vec3>>(&transform.position, transform.position);
+						Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.position, transform.position);
 						EditorCommandStack::PushUndo(command);
 						myMidEvent = true;
 					}
+
+					myCurrentScene->InvalidateEntityTransform(entity);
 				}
 
-				const glm::vec3 originalEuler = glm::eulerAngles(transform.rotation);
-				glm::vec3 rotDegrees = glm::degrees(originalEuler);
+				const gem::vec3 originalEuler = gem::eulerAngles(transform.rotation);
+				gem::vec3 rotDegrees = gem::degrees(originalEuler);
 
-				if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected) ? std::function<void(glm::vec3&)>() : [&](glm::vec3& val)
+				if (UI::PropertyAxisColor("Rotation", rotDegrees, 0.f, (singleSelected)
+					? std::function<void(gem::vec3&)>()
+					: [&](gem::vec3& val)
 				{
 					for (auto& entId : entities)
 					{
@@ -189,17 +206,21 @@ void PropertiesPanel::UpdateMainContent()
 				}))
 				{
 					shouldUpdateNavMesh = true;
-					transform.rotation = glm::quat{ glm::radians(rotDegrees) };
+					transform.rotation = gem::quat{ gem::radians(rotDegrees) };
 
 					if (myMidEvent == false)
 					{
-						Ref<ValueCommand<glm::quat>> command = CreateRef<ValueCommand<glm::quat>>(&transform.rotation, transform.rotation);
+						Ref<ValueCommand<gem::quat>> command = CreateRef<ValueCommand<gem::quat>>(&transform.rotation, transform.rotation);
 						EditorCommandStack::PushUndo(command);
 						myMidEvent = true;
 					}
+
+					myCurrentScene->InvalidateEntityTransform(entity);
 				}
 
-				if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected) ? std::function<void(glm::vec3&)>() : [&](glm::vec3& val)
+				if (UI::PropertyAxisColor("Scale", transform.scale, 1.f, (singleSelected)
+					? std::function<void(gem::vec3&)>()
+					: [&](gem::vec3& val)
 				{
 					for (auto& entId : entities)
 					{
@@ -212,13 +233,15 @@ void PropertiesPanel::UpdateMainContent()
 
 					if (myMidEvent == false)
 					{
-						Ref<ValueCommand<glm::vec3>> command = CreateRef<ValueCommand<glm::vec3>>(&transform.scale, transform.scale);
+						Ref<ValueCommand<gem::vec3>> command = CreateRef<ValueCommand<gem::vec3>>(&transform.scale, transform.scale);
 						EditorCommandStack::PushUndo(command);
 						myMidEvent = true;
 					}
+
+					myCurrentScene->InvalidateEntityTransform(entity);
 				}
 
-				if (shouldUpdateNavMesh && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+				if (shouldUpdateNavMesh && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && Sandbox::Get().CheckForUpdateNavMesh({ entity, myCurrentScene.get() }))
 				{
 					Sandbox::Get().BakeNavMesh();
 					shouldUpdateNavMesh = false;
@@ -343,29 +366,46 @@ void PropertiesPanel::UpdateMainContent()
 
 						switch (prop.type)
 						{
-							case Wire::ComponentRegistry::PropertyType::Bool: UI::Property(prop.name, *(bool*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::String: UI::Property(prop.name, *(std::string*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Bool: UI::Property(prop.name, *(bool*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::String: UI::Property(prop.name, *(std::string*)(&data[prop.offset]));
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Int: UI::Property(prop.name, *(int32_t*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::UInt: UI::Property(prop.name, *(uint32_t*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Int: UI::Property(prop.name, *(int32_t*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::UInt: UI::Property(prop.name, *(uint32_t*)(&data[prop.offset]));
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Short: UI::Property(prop.name, *(int16_t*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::UShort: UI::Property(prop.name, *(uint16_t*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Short: UI::Property(prop.name, *(int16_t*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::UShort: UI::Property(prop.name, *(uint16_t*)(&data[prop.offset]));
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Char: UI::Property(prop.name, *(int8_t*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::UChar: UI::Property(prop.name, *(uint8_t*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Char: UI::Property(prop.name, *(int8_t*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::UChar: UI::Property(prop.name, *(uint8_t*)(&data[prop.offset]));
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Float: UI::Property(prop.name, *(float*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::Double: UI::Property(prop.name, *(double*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Float: UI::Property(prop.name, *(float*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::Double: UI::Property(prop.name, *(double*)(&data[prop.offset]));
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(glm::vec2*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(gem::vec2*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(gem::vec3*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset]));
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::Color4: UI::PropertyColor(prop.name, *(glm::vec4*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(gem::vec3*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::Color4: UI::PropertyColor(prop.name, *(gem::vec4*)(&data[prop.offset]));
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::AssetHandle:
 							{
@@ -380,8 +420,10 @@ void PropertiesPanel::UpdateMainContent()
 								break;
 							}
 
-							case Wire::ComponentRegistry::PropertyType::Folder: UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset])); break;
-							case Wire::ComponentRegistry::PropertyType::Path: UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset])); break;
+							case Wire::ComponentRegistry::PropertyType::Folder: UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset]));
+								break;
+							case Wire::ComponentRegistry::PropertyType::Path: UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset]));
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::Enum:
 							{
@@ -500,7 +542,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(bool*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 							case Wire::ComponentRegistry::PropertyType::String: UI::Property(prop.name, *(std::string*)(&data[prop.offset]), false, [&](std::string& val)
 							{
 								for (auto& ent : entities)
@@ -508,7 +551,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(std::string*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::Int: UI::Property(prop.name, *(int32_t*)(&data[prop.offset]), [&](int32_t& val)
 							{
@@ -517,7 +561,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(int32_t*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 							case Wire::ComponentRegistry::PropertyType::UInt: UI::Property(prop.name, *(uint32_t*)(&data[prop.offset]), [&](uint32_t& val)
 							{
 								for (auto& ent : entities)
@@ -525,7 +570,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(uint32_t*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset]), [&](Wire::EntityId& val)
 							{
@@ -534,7 +580,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(Wire::EntityId*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::Short: UI::Property(prop.name, *(int16_t*)(&data[prop.offset]), [&](int16_t& val)
 							{
@@ -543,7 +590,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(int16_t*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 							case Wire::ComponentRegistry::PropertyType::UShort: UI::Property(prop.name, *(uint16_t*)(&data[prop.offset]), [&](uint16_t& val)
 							{
 								for (auto& ent : entities)
@@ -551,7 +599,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(uint16_t*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::Char: UI::Property(prop.name, *(int8_t*)(&data[prop.offset]), [&](int8_t& val)
 							{
@@ -560,7 +609,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(int8_t*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 							case Wire::ComponentRegistry::PropertyType::UChar: UI::Property(prop.name, *(uint8_t*)(&data[prop.offset]), [&](uint8_t& val)
 							{
 								for (auto& ent : entities)
@@ -568,7 +618,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(uint8_t*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::Float: UI::Property(prop.name, *(float*)(&data[prop.offset]), false, 0.f, 0.f, [&](float& val)
 							{
@@ -577,7 +628,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(float*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 							case Wire::ComponentRegistry::PropertyType::Double: UI::Property(prop.name, *(double*)(&data[prop.offset]), [&](double& val)
 							{
 								for (auto& ent : entities)
@@ -585,58 +637,65 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(double*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(glm::vec2*)(&data[prop.offset]), 0.f, 0.f, [&](glm::vec2& val)
+							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(gem::vec2*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec2& val)
 							{
 								for (auto& ent : entities)
 								{
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-									*(glm::vec2*)&entData[prop.offset] = val;
+									*(gem::vec2*)&entData[prop.offset] = val;
 								}
-							}); break;
-							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset]), 0.f, 0.f, [&](glm::vec3& val)
+							});
+								break;
+							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(gem::vec3*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec3& val)
 							{
 								for (auto& ent : entities)
 								{
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-									*(glm::vec3*)&entData[prop.offset] = val;
+									*(gem::vec3*)&entData[prop.offset] = val;
 								}
-							}); break;
-							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](glm::vec4& val)
+							});
+								break;
+							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec4& val)
 							{
 								for (auto& ent : entities)
 								{
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-									*(glm::vec4*)&entData[prop.offset] = val;
+									*(gem::vec4*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](glm::vec4& val)
+							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(gem::vec4*)(&data[prop.offset]), 0.f, 0.f, [&](gem::vec4& val)
 							{
 								for (auto& ent : entities)
 								{
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-									*(glm::vec4*)&entData[prop.offset] = val;
+									*(gem::vec4*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
-							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset]), [&](glm::vec3& val)
+							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(gem::vec3*)(&data[prop.offset]), [&](gem::vec3& val)
 							{
 								for (auto& ent : entities)
 								{
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-									*(glm::vec3*)&entData[prop.offset] = val;
+									*(gem::vec3*)&entData[prop.offset] = val;
 								}
-							}); break;
-							case Wire::ComponentRegistry::PropertyType::Color4: UI::PropertyColor(prop.name, *(glm::vec4*)(&data[prop.offset]), [&](glm::vec4& val)
+							});
+								break;
+							case Wire::ComponentRegistry::PropertyType::Color4: UI::PropertyColor(prop.name, *(gem::vec4*)(&data[prop.offset]), [&](gem::vec4& val)
 							{
 								for (auto& ent : entities)
 								{
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-									*(glm::vec4*)&entData[prop.offset] = val;
+									*(gem::vec4*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::AssetHandle:
 							{
@@ -664,7 +723,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(std::filesystem::path*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 							case Wire::ComponentRegistry::PropertyType::Path: UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset]), [&](std::filesystem::path& val)
 							{
 								for (auto& ent : entities)
@@ -672,7 +732,8 @@ void PropertiesPanel::UpdateMainContent()
 									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
 									*(std::filesystem::path*)&entData[prop.offset] = val;
 								}
-							}); break;
+							});
+								break;
 
 							case Wire::ComponentRegistry::PropertyType::Enum:
 							{
@@ -873,6 +934,8 @@ void PropertiesPanel::AddMonoScriptPopup()
 			scriptNames = UI::GetEntriesMatchingQuery(myScriptSearchQuery, scriptNames);
 		}
 
+		bool addedScript = false;
+
 		{
 			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
@@ -914,6 +977,8 @@ void PropertiesPanel::AddMonoScriptPopup()
 						}
 					}
 					ImGui::CloseCurrentPopup();
+
+					addedScript = true;
 				}
 			}
 
@@ -940,9 +1005,17 @@ void PropertiesPanel::AddMonoScriptPopup()
 					}
 				}
 				ImGui::CloseCurrentPopup();
+
+				addedScript = true;
 			}
 
 			ImGui::EndChild();
+		}
+
+		if (addedScript && mySceneState == SceneState::Edit)
+		{
+			myCurrentScene->ShutdownEngineScripts();
+			myCurrentScene->InitializeEngineScripts();
 		}
 
 		UI::EndPopup();
@@ -1074,6 +1147,12 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const W
 		{
 			registry.RemoveComponent<Volt::MonoScriptComponent>(entity);
 		}
+
+		if (mySceneState == SceneState::Edit)
+		{
+			myCurrentScene->ShutdownEngineScripts();
+			myCurrentScene->InitializeEngineScripts();
+		}
 	}
 }
 
@@ -1082,7 +1161,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 	Ref<Volt::MonoScriptInstance> scriptInstance = Volt::MonoScriptEngine::GetInstanceFromId(scriptEntry.id);
 	if (UI::BeginProperties(registryInfo.name))
 	{
-		if (myCurrentScene->IsPlaying() && scriptInstance)
+		if ((myCurrentScene->IsPlaying()) && scriptInstance)
 		{
 			for (const auto& [name, field] : scriptInstance->GetClass()->GetFields())
 			{
@@ -1092,6 +1171,17 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 
 				switch (field.type)
 				{
+					case Volt::MonoFieldType::String:
+					{
+						std::string value = scriptInstance->GetField<std::string>(name);
+						if (UI::Property(displayName, value))
+						{
+							scriptInstance->SetField(name, value);
+						}
+
+						break;
+					}
+
 					case Volt::MonoFieldType::Bool:
 					{
 						bool value = scriptInstance->GetField<bool>(name);
@@ -1196,7 +1286,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 
 					case Volt::MonoFieldType::Vector2:
 					{
-						glm::vec2 value = scriptInstance->GetField<glm::vec2>(name);
+						gem::vec2 value = scriptInstance->GetField<gem::vec2>(name);
 
 						if (UI::Property(displayName, value))
 						{
@@ -1207,7 +1297,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 
 					case Volt::MonoFieldType::Vector3:
 					{
-						glm::vec3 value = scriptInstance->GetField<glm::vec3>(name);
+						gem::vec3 value = scriptInstance->GetField<gem::vec3>(name);
 
 						if (UI::Property(displayName, value))
 						{
@@ -1218,7 +1308,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 
 					case Volt::MonoFieldType::Vector4:
 					{
-						glm::vec4 value = scriptInstance->GetField<glm::vec4>(name);
+						gem::vec4 value = scriptInstance->GetField<gem::vec4>(name);
 
 						if (UI::Property(displayName, value))
 						{
@@ -1230,7 +1320,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 
 					case Volt::MonoFieldType::Quaternion:
 					{
-						glm::vec4 value = scriptInstance->GetField<glm::vec4>(name);
+						gem::vec4 value = scriptInstance->GetField<gem::vec4>(name);
 
 						if (UI::Property(displayName, value))
 						{
@@ -1246,6 +1336,8 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 					case Volt::MonoFieldType::Font:
 					case Volt::MonoFieldType::Mesh:
 					case Volt::MonoFieldType::Material:
+					case Volt::MonoFieldType::Video:
+					case Volt::MonoFieldType::AnimationGraph:
 					case Volt::MonoFieldType::Texture:
 					{
 						Volt::AssetHandle value = scriptInstance->GetField<Volt::AssetHandle>(name);
@@ -1255,6 +1347,28 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							scriptInstance->SetField(name, &value);
 						}
 						break;
+					}
+
+					case Volt::MonoFieldType::Enum:
+					{
+						int32_t enumVal = scriptInstance->GetField<uint32_t>(name);
+
+						auto& entityFields = myCurrentScene->GetScriptFieldCache().GetCache()[scriptEntry.id];
+						const auto enumName = entityFields[name]->field.enumName;
+
+						const auto& enumData = Volt::MonoScriptEngine::GetRegisteredEnums().at(enumName);
+						const auto& enumValues = enumData->GetValues();
+
+						std::vector<std::string> valueNames{}; // #TODO_Ivar: Add support for non linear enum values
+						for (const auto& [name, val] : enumValues)
+						{
+							valueNames.emplace_back(name);
+						}
+
+						if (UI::ComboProperty(displayName, enumVal, valueNames))
+						{
+							scriptInstance->SetField(name, &enumVal);
+						}
 					}
 				}
 			}
@@ -1300,9 +1414,11 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							UI::PushFont(FontType::Bold_17);
 						}
 
+						bool fieldChanged = false;
+
 						switch (field.type)
 						{
-							case Volt::MonoFieldType::Bool: UI::Property(name, *entField->data.As<bool>()); break;
+							case Volt::MonoFieldType::Bool: fieldChanged = UI::Property(name, *entField->data.As<bool>()); break;
 							case Volt::MonoFieldType::String:
 							{
 								std::string str;
@@ -1315,40 +1431,69 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 								if (UI::Property(name, str))
 								{
 									entField->SetValue(str, str.size(), field.type);
+									if (scriptInstance)
+									{
+										scriptInstance->SetField(name, str);
+									}
 								}
 								break;
 							}
 
-							case Volt::MonoFieldType::Int: UI::Property(displayName, *entField->data.As<int32_t>()); break;
-							case Volt::MonoFieldType::UInt: UI::Property(displayName, *entField->data.As<uint32_t>()); break;
+							case Volt::MonoFieldType::Int: fieldChanged = UI::Property(displayName, *entField->data.As<int32_t>());
+								break;
+							case Volt::MonoFieldType::UInt: fieldChanged = UI::Property(displayName, *entField->data.As<uint32_t>());
+								break;
 
-							case Volt::MonoFieldType::Short: UI::Property(displayName, *entField->data.As<int16_t>()); break;
-							case Volt::MonoFieldType::UShort: UI::Property(displayName, *entField->data.As<uint16_t>()); break;
+							case Volt::MonoFieldType::Short: fieldChanged = UI::Property(displayName, *entField->data.As<int16_t>());
+								break;
+							case Volt::MonoFieldType::UShort: fieldChanged = UI::Property(displayName, *entField->data.As<uint16_t>());
+								break;
 
-							case Volt::MonoFieldType::Char: UI::Property(displayName, *entField->data.As<int8_t>()); break;
-							case Volt::MonoFieldType::UChar: UI::Property(displayName, *entField->data.As<uint8_t>()); break;
+							case Volt::MonoFieldType::Char: fieldChanged = UI::Property(displayName, *entField->data.As<int8_t>());
+								break;
+							case Volt::MonoFieldType::UChar: fieldChanged = UI::Property(displayName, *entField->data.As<uint8_t>());
+								break;
 
-							case Volt::MonoFieldType::Float: UI::Property(displayName, *entField->data.As<float>()); break;
-							case Volt::MonoFieldType::Double: UI::Property(displayName, *entField->data.As<double>()); break;
+							case Volt::MonoFieldType::Float: fieldChanged = UI::Property(displayName, *entField->data.As<float>());
+								break;
+							case Volt::MonoFieldType::Double: fieldChanged = UI::Property(displayName, *entField->data.As<double>());
+								break;
 
-							case Volt::MonoFieldType::Vector2: UI::Property(displayName, *entField->data.As<glm::vec2>()); break;
-							case Volt::MonoFieldType::Vector3: UI::Property(displayName, *entField->data.As<glm::vec3>()); break;
-							case Volt::MonoFieldType::Vector4: UI::Property(displayName, *entField->data.As<glm::vec4>()); break;
-							case Volt::MonoFieldType::Quaternion: UI::Property(displayName, *entField->data.As<glm::vec4>()); break;
+							case Volt::MonoFieldType::Vector2: fieldChanged = UI::Property(displayName, *entField->data.As<gem::vec2>());
+								break;
+							case Volt::MonoFieldType::Vector3: fieldChanged = UI::Property(displayName, *entField->data.As<gem::vec3>());
+								break;
+							case Volt::MonoFieldType::Vector4: fieldChanged = UI::Property(displayName, *entField->data.As<gem::vec4>());
+								break;
+							case Volt::MonoFieldType::Quaternion: fieldChanged = UI::Property(displayName, *entField->data.As<gem::vec4>());
+								break;
 
-							case Volt::MonoFieldType::Animation: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Animation); break;
-							case Volt::MonoFieldType::Prefab: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Prefab); break;
-							case Volt::MonoFieldType::Scene: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Scene); break;
-							case Volt::MonoFieldType::Font: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Font); break;
-							case Volt::MonoFieldType::Mesh: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Mesh); break;
-							case Volt::MonoFieldType::Material: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Material); break;
-							case Volt::MonoFieldType::Texture: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Texture); break;
-							case Volt::MonoFieldType::PostProcessingMaterial: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::PostProcessingMaterial); break;
-							case Volt::MonoFieldType::Asset: EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::None); break;
+							case Volt::MonoFieldType::Animation: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Animation);
+								break;
+							case Volt::MonoFieldType::Prefab: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Prefab);
+								break;
+							case Volt::MonoFieldType::Scene: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Scene);
+								break;
+							case Volt::MonoFieldType::Font: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Font);
+								break;
+							case Volt::MonoFieldType::Mesh: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Mesh);
+								break;
+							case Volt::MonoFieldType::Material: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Material);
+								break;
+							case Volt::MonoFieldType::Texture: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Texture);
+								break;
+							case Volt::MonoFieldType::PostProcessingMaterial: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::PostProcessingMaterial);
+								break;
+							case Volt::MonoFieldType::Video: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::Video);
+								break;
+							case Volt::MonoFieldType::Asset: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::None);
+								break;
 
-							case Volt::MonoFieldType::Entity: UI::PropertyEntity(displayName, myCurrentScene, *entField->data.As<Wire::EntityId>()); break;
+							case Volt::MonoFieldType::Entity: fieldChanged = UI::PropertyEntity(displayName, myCurrentScene, *entField->data.As<Wire::EntityId>());
+								break;
 
-							case Volt::MonoFieldType::Color: UI::PropertyColor(displayName, *entField->data.As<glm::vec4>()); break;
+							case Volt::MonoFieldType::Color: fieldChanged = UI::PropertyColor(displayName, *entField->data.As<gem::vec4>());
+								break;
 							case Volt::MonoFieldType::Enum:
 							{
 								int32_t& enumVal = (int32_t&)*entField->data.As<uint32_t>();
@@ -1363,8 +1508,13 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 									valueNames.emplace_back(name);
 								}
 
-								UI::ComboProperty(displayName, enumVal, valueNames);
+								fieldChanged = UI::ComboProperty(displayName, enumVal, valueNames);
 							}
+						}
+
+						if (fieldChanged && scriptInstance)
+						{
+							scriptInstance->SetField(name, entField->data.As<void>());
 						}
 
 						if (fontChanged)

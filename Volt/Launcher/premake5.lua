@@ -31,11 +31,7 @@ project "Launcher"
     {
         "GLFW_INCLUDE_NONE",
 		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
-		"GLM_FORCE_LEFT_HANDED"
+		"_HAS_STD_BYTE=0"
     }
 
 	files
@@ -80,7 +76,7 @@ project "Launcher"
 		"%{IncludeDir.steam}",
 		"%{IncludeDir.discord}",
 
-		"%{IncludeDir.glm}",
+		"%{IncludeDir.GEM}",
 		"%{IncludeDir.ffmpeg}",
 
 		"%{IncludeDir.detour}",
@@ -120,6 +116,8 @@ project "Launcher"
 		"%{Library.AkSoundEngine}",
 		"%{Library.AkStreamMgr}",
 		"%{Library.AkMusicEngine}",
+
+		"%{Library.AkRoomVerbFX}",
 
 		"%{Library.avcodec}",
 		"%{Library.avdevice}",

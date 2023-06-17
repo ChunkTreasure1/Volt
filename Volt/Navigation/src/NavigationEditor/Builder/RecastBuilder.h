@@ -6,7 +6,7 @@
 #include <DetourNavMesh.h>
 #include <Recast.h>
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 
 enum PartitionType
 {

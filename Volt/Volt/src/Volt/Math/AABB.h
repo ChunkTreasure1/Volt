@@ -1,7 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 
 namespace Volt
 {
@@ -15,16 +15,16 @@ namespace Volt
 		/// Builds an AABB that encompasses a sphere.
 		/// \param[in]  center Center of the sphere.
 		/// \param[in]  radius Radius of the sphere.
-		AABB(const glm::vec3& center, float radius);
+		AABB(const gem::vec3& center, float radius);
 
 		/// Builds an AABB that contains the two points.
-		AABB(const glm::vec3& p1, const glm::vec3& p2);
+		AABB(const gem::vec3& p1, const gem::vec3& p2);
 
 		AABB(const AABB& aabb);
 		~AABB() = default;
 
 		/// Set the AABB as NULL (not set).
-		void setNull() { mMin = glm::vec3(1.0); mMax = glm::vec3(-1.0); }
+		void setNull() { mMin = gem::vec3(1.0); mMax = gem::vec3(-1.0); }
 
 		/// Returns true if AABB is NULL (not set).
 		bool isNull() const { return mMin.x > mMax.x || mMin.y > mMax.y || mMin.z > mMax.z; }
@@ -33,13 +33,13 @@ namespace Volt
 		void extend(float val);
 
 		/// Expand the AABB to include point \p p.
-		void extend(const glm::vec3& p);
+		void extend(const gem::vec3& p);
 
 		/// Expand the AABB to include a sphere centered at \p center and of radius \p
 		/// radius.
 		/// \param[in]  center Center of sphere.
 		/// \param[in]  radius Radius of sphere.
-		void extend(const glm::vec3& center, float radius);
+		void extend(const gem::vec3& center, float radius);
 
 		/// Expand the AABB to encompass the given \p aabb.
 		void extend(const AABB& aabb);
@@ -47,24 +47,24 @@ namespace Volt
 		/// Expand the AABB to include a disk centered at \p center, with normal \p
 		/// normal, and radius \p radius.
 		/// \xxx Untested -- This function is not represented in our unit tests.
-		void extendDisk(const glm::vec3& center, const glm::vec3& normal,
+		void extendDisk(const gem::vec3& center, const gem::vec3& normal,
 						float radius);
 
 		/// Translates AABB by vector \p v.
-		void translate(const glm::vec3& v);
+		void translate(const gem::vec3& v);
 
 		/// Scale the AABB by \p scale, centered around \p origin.
 		/// \param[in]  scale  3D vector specifying scale along each axis.
 		/// \param[in]  origin Origin of scaling operation. Most useful origin would
 		///                    be the center of the AABB.
-		void scale(const glm::vec3& scale, const glm::vec3& origin);
+		void scale(const gem::vec3& scale, const gem::vec3& origin);
 
 		/// Retrieves the center of the AABB.
-		glm::vec3 getCenter() const;
+		gem::vec3 getCenter() const;
 
 		/// Retrieves the diagonal vector (computed as mMax - mMin).
 		/// If the AABB is NULL, then a vector of all zeros is returned.
-		glm::vec3 getDiagonal() const;
+		gem::vec3 getDiagonal() const;
 
 		/// Retrieves the longest edge.
 		/// If the AABB is NULL, then 0 is returned.
@@ -75,10 +75,10 @@ namespace Volt
 		float getShortestEdge() const;
 
 		/// Retrieves the AABB's minimum point.
-		glm::vec3 getMin() const { return mMin; }
+		gem::vec3 getMin() const { return mMin; }
 
 		/// Retrieves the AABB's maximum point.
-		glm::vec3 getMax() const { return mMax; }
+		gem::vec3 getMax() const { return mMax; }
 
 		/// Returns true if AABBs share a face overlap.
 		/// \xxx Untested -- This function is not represented in our unit tests.
@@ -100,8 +100,8 @@ namespace Volt
 
 	private:
 
-		glm::vec3 mMin;   ///< Minimum point.
-		glm::vec3 mMax;   ///< Maximum point.
+		gem::vec3 mMin;   ///< Minimum point.
+		gem::vec3 mMax;   ///< Maximum point.
 	};
 
 	inline AABB::AABB()
@@ -109,13 +109,13 @@ namespace Volt
 		setNull();
 	}
 
-	inline AABB::AABB(const glm::vec3& center, float radius)
+	inline AABB::AABB(const gem::vec3& center, float radius)
 	{
 		setNull();
 		extend(center, radius);
 	}
 
-	inline AABB::AABB(const glm::vec3& p1, const glm::vec3& p2)
+	inline AABB::AABB(const gem::vec3& p1, const gem::vec3& p2)
 	{
 		setNull();
 		extend(p1);
@@ -132,17 +132,17 @@ namespace Volt
 	{
 		if (!isNull())
 		{
-			mMin -= glm::vec3(val);
-			mMax += glm::vec3(val);
+			mMin -= gem::vec3(val);
+			mMax += gem::vec3(val);
 		}
 	}
 
-	inline void AABB::extend(const glm::vec3& p)
+	inline void AABB::extend(const gem::vec3& p)
 	{
 		if (!isNull())
 		{
-			mMin = glm::min(p, mMin);
-			mMax = glm::max(p, mMax);
+			mMin = gem::min(p, mMin);
+			mMax = gem::max(p, mMax);
 		}
 		else
 		{
@@ -151,13 +151,13 @@ namespace Volt
 		}
 	}
 
-	inline void AABB::extend(const glm::vec3& p, float radius)
+	inline void AABB::extend(const gem::vec3& p, float radius)
 	{
-		glm::vec3 r(radius);
+		gem::vec3 r(radius);
 		if (!isNull())
 		{
-			mMin = glm::min(p - r, mMin);
-			mMax = glm::max(p + r, mMax);
+			mMin = gem::min(p - r, mMin);
+			mMax = gem::max(p + r, mMax);
 		}
 		else
 		{
@@ -175,51 +175,51 @@ namespace Volt
 		}
 	}
 
-	inline void AABB::extendDisk(const glm::vec3& c, const glm::vec3& n, float r)
+	inline void AABB::extendDisk(const gem::vec3& c, const gem::vec3& n, float r)
 	{
-		if (glm::length(n) < 1.e-12) { extend(c); return; }
-		glm::vec3 norm = glm::normalize(n);
+		if (gem::length(n) < 1.e-12) { extend(c); return; }
+		gem::vec3 norm = gem::normalize(n);
 		float x = sqrt(1 - norm.x) * r;
 		float y = sqrt(1 - norm.y) * r;
 		float z = sqrt(1 - norm.z) * r;
-		extend(c + glm::vec3(x, y, z));
-		extend(c - glm::vec3(x, y, z));
+		extend(c + gem::vec3(x, y, z));
+		extend(c - gem::vec3(x, y, z));
 	}
 
-	inline glm::vec3 AABB::getDiagonal() const
+	inline gem::vec3 AABB::getDiagonal() const
 	{
 		if (!isNull())
 			return mMax - mMin;
 		else
-			return glm::vec3(0);
+			return gem::vec3(0);
 	}
 
 	inline float AABB::getLongestEdge() const
 	{
-		glm::vec3 d = getDiagonal();
+		gem::vec3 d = getDiagonal();
 		return std::max(d.x, std::max(d.y, d.z));
 	}
 
 	inline float AABB::getShortestEdge() const
 	{
-		glm::vec3 d = getDiagonal();
+		gem::vec3 d = getDiagonal();
 		return std::min(d.x, std::min(d.y, d.z));
 	}
 
-	inline glm::vec3 AABB::getCenter() const
+	inline gem::vec3 AABB::getCenter() const
 	{
 		if (!isNull())
 		{
-			glm::vec3 d = getDiagonal();
+			gem::vec3 d = getDiagonal();
 			return mMin + (d * float(0.5f));
 		}
 		else
 		{
-			return glm::vec3(0.0);
+			return gem::vec3(0.0);
 		}
 	}
 
-	inline void AABB::translate(const glm::vec3& v)
+	inline void AABB::translate(const gem::vec3& v)
 	{
 		if (!isNull())
 		{
@@ -228,7 +228,7 @@ namespace Volt
 		}
 	}
 
-	inline void AABB::scale(const glm::vec3& s, const glm::vec3& o)
+	inline void AABB::scale(const gem::vec3& s, const gem::vec3& o)
 	{
 		if (!isNull())
 		{
@@ -284,14 +284,14 @@ namespace Volt
 	{
 		if (isNull() || b.isNull()) return false;
 
-		glm::vec3 acceptable_diff = ((getDiagonal() + b.getDiagonal()) / float(2.0f)) * diff;
-		glm::vec3 min_diff(mMin - b.mMin);
-		min_diff = glm::vec3(fabs(min_diff.x), fabs(min_diff.y), fabs(min_diff.z));
+		gem::vec3 acceptable_diff = ((getDiagonal() + b.getDiagonal()) / float(2.0f)) * diff;
+		gem::vec3 min_diff(mMin - b.mMin);
+		min_diff = gem::vec3(fabs(min_diff.x), fabs(min_diff.y), fabs(min_diff.z));
 		if (min_diff.x > acceptable_diff.x) return false;
 		if (min_diff.y > acceptable_diff.y) return false;
 		if (min_diff.z > acceptable_diff.z) return false;
-		glm::vec3 max_diff(mMax - b.mMax);
-		max_diff = glm::vec3(fabs(max_diff.x), fabs(max_diff.y), fabs(max_diff.z));
+		gem::vec3 max_diff(mMax - b.mMax);
+		max_diff = gem::vec3(fabs(max_diff.x), fabs(max_diff.y), fabs(max_diff.z));
 		if (max_diff.x > acceptable_diff.x) return false;
 		if (max_diff.y > acceptable_diff.y) return false;
 		if (max_diff.z > acceptable_diff.z) return false;

@@ -16,7 +16,7 @@ namespace Volt
 	class OutlineTechnique
 	{
 	public:
-		OutlineTechnique(const glm::uvec2& renderSize, const GlobalDescriptorMap& descriptorMap);
+		OutlineTechnique(const gem::vec2ui& renderSize, const GlobalDescriptorMap& descriptorMap);
 
 		void AddOutlineGeometryPass(FrameGraph& frameGraph, Ref<RenderPipeline> pipeline, const std::vector<SubmitCommand>& outlineCmds);
 		void AddJumpFloodInitPass(FrameGraph& frameGraph, Ref<Material> material);
@@ -26,6 +26,6 @@ namespace Volt
 	private:
 		const GlobalDescriptorMap& myGlobalDescriptorMap;
 
-		glm::uvec2 myRenderSize;
+		gem::vec2ui myRenderSize;
 	};
 }

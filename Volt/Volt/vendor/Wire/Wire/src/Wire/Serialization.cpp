@@ -33,10 +33,10 @@ namespace Wire
 			if (string == "float") return ComponentRegistry::PropertyType::Float;
 			if (string == "double") return ComponentRegistry::PropertyType::Double;
 
-			if (string == "glm::vec2") return ComponentRegistry::PropertyType::Vector2;
-			if (string == "glm::vec3") return ComponentRegistry::PropertyType::Vector3;
-			if (string == "glm::vec4") return ComponentRegistry::PropertyType::Vector4;
-			if (string == "glm::quat") return ComponentRegistry::PropertyType::Quaternion;
+			if (string == "gem::vec2") return ComponentRegistry::PropertyType::Vector2;
+			if (string == "gem::vec3") return ComponentRegistry::PropertyType::Vector3;
+			if (string == "gem::vec4") return ComponentRegistry::PropertyType::Vector4;
+			if (string == "gem::quat") return ComponentRegistry::PropertyType::Quaternion;
 
 			if (string == "int64_t") return ComponentRegistry::PropertyType::Int64;
 			if (string == "uint64_t") return ComponentRegistry::PropertyType::UInt64;

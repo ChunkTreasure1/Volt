@@ -20,7 +20,7 @@ namespace GraphKey
 		const std::string GetName() override;
 		Ref<Node> CreateCopy(Graph* ownerGraph, Wire::EntityId entity = 0) override;
 
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 		inline const Ref<Volt::AnimationStateMachine> GetStateMachine() const { return myStateMachine; }
 
 	private:

@@ -11,7 +11,7 @@ namespace GraphKey
 		~BranchNode() override = default;
 
 		inline const std::string GetName() override { return "Branch"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		void Branch();
@@ -24,7 +24,7 @@ namespace GraphKey
 		~DoOnceNode() override = default;
 
 		inline const std::string GetName() override { return "Do Once"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		bool myHasDone = false;
@@ -53,7 +53,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "=="; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void Equal()
@@ -86,7 +86,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "<"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void Less()
@@ -119,7 +119,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return ">"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void Greater()
@@ -152,7 +152,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "<="; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void LessOrEqual()
@@ -185,7 +185,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return ">="; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void GreaterOrEqual()
@@ -218,7 +218,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "For Loop"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void ForRange()
@@ -255,7 +255,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Flip Flop"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void FlipFlop()
@@ -295,7 +295,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Not"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void Not()
@@ -326,7 +326,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "And"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void And()
@@ -355,7 +355,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Or"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void Or()

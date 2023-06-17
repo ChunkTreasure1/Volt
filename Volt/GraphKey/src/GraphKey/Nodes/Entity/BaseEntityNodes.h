@@ -11,7 +11,7 @@ namespace GraphKey
 		~CreateEntityNode() override = default;
 
 		inline const std::string GetName() override { return "Create Entity"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 		void CreateEntity();
@@ -24,7 +24,7 @@ namespace GraphKey
 		~DestroyEntityNode() override = default;
 
 		inline const std::string GetName() override { return "Destroy Entity"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 		void DestroyEntity();
@@ -39,7 +39,7 @@ namespace GraphKey
 		void Initialize() override;
 
 		inline const std::string GetName() override { return "Entity"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 		void GetEntity();
@@ -54,7 +54,7 @@ namespace GraphKey
 		void Initialize() override;
 
 		inline const std::string GetName() override { return "Self"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 		void GetEntity();
@@ -69,7 +69,7 @@ namespace GraphKey
 		void Initialize() override;
 
 		inline const std::string GetName() override { return "Get Child Count"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 		void GetChildCount();

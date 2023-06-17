@@ -326,8 +326,8 @@ namespace Volt
 			auto materialDataNode = materialNode["data"];
 			if (materialDataNode)
 			{
-				VT_DESERIALIZE_PROPERTY(color, material->myMaterialData.color, materialDataNode, glm::vec4(1.f));
-				VT_DESERIALIZE_PROPERTY(emissiveColor, material->myMaterialData.emissiveColor, materialDataNode, glm::vec3(1.f));
+				VT_DESERIALIZE_PROPERTY(color, material->myMaterialData.color, materialDataNode, gem::vec4(1.f));
+				VT_DESERIALIZE_PROPERTY(emissiveColor, material->myMaterialData.emissiveColor, materialDataNode, gem::vec3(1.f));
 				VT_DESERIALIZE_PROPERTY(emissiveStrength, material->myMaterialData.emissiveStrength, materialDataNode, 1.f);
 				VT_DESERIALIZE_PROPERTY(roughness, material->myMaterialData.roughness, materialDataNode, 0.5f);
 				VT_DESERIALIZE_PROPERTY(metalness, material->myMaterialData.metalness, materialDataNode, 0.f);
@@ -374,19 +374,19 @@ namespace Volt
 						{
 							case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), memberNode, false); break;
 							case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), memberNode, 0u); break;
-							case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-							case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-							case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+							case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2ui>(memberName), memberNode, gem::vec2ui{ 0 }); break;
+							case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3ui>(memberName), memberNode, gem::vec3ui{ 0 }); break;
+							case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4ui>(memberName), memberNode, gem::vec4ui{ 0 }); break;
 
 							case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), memberNode, 0); break;
-							case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-							case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-							case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+							case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2i>(memberName), memberNode, gem::vec2i{ 0 }); break;
+							case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3i>(memberName), memberNode, gem::vec3i{ 0 }); break;
+							case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4i>(memberName), memberNode, gem::vec4i{ 0 }); break;
 
 							case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), memberNode, 0.f); break;
-							case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-							case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-							case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+							case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2>(memberName), memberNode, gem::vec2{ 0.f }); break;
+							case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3>(memberName), memberNode, gem::vec3{ 0.f }); break;
+							case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4>(memberName), memberNode, gem::vec4{ 0.f }); break;
 						}
 					}
 				}
@@ -426,19 +426,19 @@ namespace Volt
 							{
 								case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<bool>(memberName), memberNode, false); break;
 								case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<uint32_t>(memberName), memberNode, 0u); break;
-								case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-								case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-								case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+								case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec2ui>(memberName), memberNode, gem::vec2ui{ 0 }); break;
+								case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec3ui>(memberName), memberNode, gem::vec3ui{ 0 }); break;
+								case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec4ui>(memberName), memberNode, gem::vec4ui{ 0 }); break;
 
 								case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<int32_t>(memberName), memberNode, 0); break;
-								case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-								case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-								case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+								case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec2i>(memberName), memberNode, gem::vec2i{ 0 }); break;
+								case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec3i>(memberName), memberNode, gem::vec3i{ 0 }); break;
+								case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec4i>(memberName), memberNode, gem::vec4i{ 0 }); break;
 
 								case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<float>(memberName), memberNode, 0.f); break;
-								case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-								case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-								case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+								case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec2>(memberName), memberNode, gem::vec2{ 0.f }); break;
+								case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec3>(memberName), memberNode, gem::vec3{ 0.f }); break;
+								case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<gem::vec4>(memberName), memberNode, gem::vec4{ 0.f }); break;
 							}
 						}
 					}
@@ -533,19 +533,19 @@ namespace Volt
 								{
 									case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), out); break;
 									case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), out); break;
+									case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2ui>(memberName), out); break;
+									case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3ui>(memberName), out); break;
+									case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4ui>(memberName), out); break;
 
 									case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), out); break;
-									case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), out); break;
-									case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), out); break;
-									case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), out); break;
+									case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2i>(memberName), out); break;
+									case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3i>(memberName), out); break;
+									case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4i>(memberName), out); break;
 
 									case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), out); break;
-									case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), out); break;
-									case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), out); break;
-									case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), out); break;
+									case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2>(memberName), out); break;
+									case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3>(memberName), out); break;
+									case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4>(memberName), out); break;
 								}
 
 								out << YAML::EndMap;
@@ -576,19 +576,19 @@ namespace Volt
 									{
 										case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<bool>(memberName), out); break;
 										case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<uint32_t>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::uvec2>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::uvec3>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::uvec4>(memberName), out); break;
+										case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec2ui>(memberName), out); break;
+										case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec3ui>(memberName), out); break;
+										case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec4ui>(memberName), out); break;
 
 										case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<int32_t>(memberName), out); break;
-										case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::ivec2>(memberName), out); break;
-										case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::ivec3>(memberName), out); break;
-										case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::ivec4>(memberName), out); break;
+										case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec2i>(memberName), out); break;
+										case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec3i>(memberName), out); break;
+										case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec4i>(memberName), out); break;
 
 										case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<float>(memberName), out); break;
-										case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::vec2>(memberName), out); break;
-										case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::vec3>(memberName), out); break;
-										case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::vec4>(memberName), out); break;
+										case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec2>(memberName), out); break;
+										case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec3>(memberName), out); break;
+										case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<gem::vec4>(memberName), out); break;
 									}
 
 									out << YAML::EndMap;
@@ -912,19 +912,19 @@ namespace Volt
 		YAML::Node rootBlendSpaceNode = root["BlendSpace"];
 
 		uint32_t dimension = 0;
-		glm::vec2 horizontalValues;
-		glm::vec2 verticalValues;
-		std::vector<std::pair<glm::vec2, AssetHandle>> animations;
+		gem::vec2 horizontalValues;
+		gem::vec2 verticalValues;
+		std::vector<std::pair<gem::vec2, AssetHandle>> animations;
 
 		VT_DESERIALIZE_PROPERTY(dimension, dimension, rootBlendSpaceNode, 0u);
-		VT_DESERIALIZE_PROPERTY(horizontalValues, horizontalValues, rootBlendSpaceNode, glm::vec2(-1.f, 1.f));
-		VT_DESERIALIZE_PROPERTY(verticalValues, verticalValues, rootBlendSpaceNode, glm::vec2(-1.f, 1.f));
+		VT_DESERIALIZE_PROPERTY(horizontalValues, horizontalValues, rootBlendSpaceNode, gem::vec2(-1.f, 1.f));
+		VT_DESERIALIZE_PROPERTY(verticalValues, verticalValues, rootBlendSpaceNode, gem::vec2(-1.f, 1.f));
 
 		for (const auto& animNode : rootBlendSpaceNode["Animations"])
 		{
 			auto& [value, anim] = animations.emplace_back();
 			VT_DESERIALIZE_PROPERTY(animation, anim, animNode, AssetHandle(0));
-			VT_DESERIALIZE_PROPERTY(value, value, animNode, glm::vec2(0.f));
+			VT_DESERIALIZE_PROPERTY(value, value, animNode, gem::vec2(0.f));
 		}
 
 		Ref<BlendSpace> blendSpace = std::reinterpret_pointer_cast<BlendSpace>(asset);
@@ -1144,19 +1144,19 @@ namespace Volt
 					{
 						case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), memberNode, false); break;
 						case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), memberNode, 0u); break;
-						case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-						case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-						case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+						case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2ui>(memberName), memberNode, gem::vec2ui{ 0 }); break;
+						case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3ui>(memberName), memberNode, gem::vec3ui{ 0 }); break;
+						case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4ui>(memberName), memberNode, gem::vec4ui{ 0 }); break;
 
 						case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), memberNode, 0); break;
-						case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-						case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-						case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+						case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2i>(memberName), memberNode, gem::vec2i{ 0 }); break;
+						case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3i>(memberName), memberNode, gem::vec3i{ 0 }); break;
+						case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4i>(memberName), memberNode, gem::vec4i{ 0 }); break;
 
 						case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), memberNode, 0.f); break;
-						case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-						case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-						case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+						case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2>(memberName), memberNode, gem::vec2{ 0.f }); break;
+						case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3>(memberName), memberNode, gem::vec3{ 0.f }); break;
+						case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4>(memberName), memberNode, gem::vec4{ 0.f }); break;
 					}
 				}
 			}
@@ -1197,19 +1197,19 @@ namespace Volt
 							{
 								case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), out); break;
 								case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), out); break;
-								case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), out); break;
-								case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), out); break;
-								case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2ui>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3ui>(memberName), out); break;
+								case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4ui>(memberName), out); break;
 
 								case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), out); break;
-								case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), out); break;
-								case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), out); break;
-								case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), out); break;
+								case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2i>(memberName), out); break;
+								case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3i>(memberName), out); break;
+								case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4i>(memberName), out); break;
 
 								case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), out); break;
-								case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), out); break;
-								case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), out); break;
-								case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), out); break;
+								case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec2>(memberName), out); break;
+								case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec3>(memberName), out); break;
+								case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<gem::vec4>(memberName), out); break;
 							}
 
 							out << YAML::EndMap;

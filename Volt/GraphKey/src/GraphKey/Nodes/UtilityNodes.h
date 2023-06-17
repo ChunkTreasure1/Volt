@@ -13,7 +13,7 @@ namespace GraphKey
 		ToStringNode();
 
 		inline const std::string GetName() override { return "To String"; }
-		inline const glm::vec4 GetColor() override { return { 1.f, 0.f, 0.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f, 0.f, 0.f, 1.f }; }
 
 	private:
 		void ToString()

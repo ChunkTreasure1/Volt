@@ -6,7 +6,7 @@
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Asset/Asset.h>
 
-#include <glm/glm.hpp>
+#include <GEM/gem.h>
 
 namespace Volt
 {
@@ -79,8 +79,8 @@ private:
 
 	Volt::Entity myCharacterEntity;
 
-	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	glm::vec2 myViewportSize = { 1280.f, 720.f };
+	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	gem::vec2 myViewportSize = { 1280.f, 720.f };
 
 	const float myButtonSize = 22.f;
 

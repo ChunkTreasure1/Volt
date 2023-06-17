@@ -55,12 +55,14 @@ namespace Volt
 			return y;
 		}
 
+		static float GetScrollOffset();
+
 		static void ShowCursor(bool state);
 		static void DisableInput(bool state);
 		static bool IsInputDisabled() { return myDisableInput; };
 
-		static void SetViewportMousePosition(const glm::vec2& viewportPos);
-		static const glm::vec2& GetViewportMousePosition();
+		static void SetViewportMousePosition(const gem::vec2& viewportPos);
+		static const gem::vec2& GetViewportMousePosition();
 
 	private:
 		enum class KeyState
@@ -70,8 +72,9 @@ namespace Volt
 			Pressed
 		};
 
-		inline static glm::vec2 myViewportMousePos;
+		inline static gem::vec2 myViewportMousePos;
 		static inline bool myDisableInput = false;
+		inline static float myScrollOffset = 0.f;
 		static inline std::array<KeyState, 349> myKeyStates;
 	};
 }

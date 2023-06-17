@@ -4,7 +4,7 @@
 #include "Volt/Scene/Scene.h"
 
 #include <Wire/Serialization.h>
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 
 namespace Volt
 {
@@ -13,7 +13,7 @@ namespace Volt
 		PROPERTY(Name = Intensity) float intensity = 1.f;
 		PROPERTY(Name = Radius) float radius = 100.f;
 		PROPERTY(Name = Falloff) float falloff = 1.f;
-		PROPERTY(Name = Color, SpecialType = Color) glm::vec3 color = { 1.f, 1.f, 1.f };
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec3 color = { 1.f, 1.f, 1.f };
 		PROPERTY(Name = Cast Shadows) bool castShadows = false;
 		PROPERTY(Name = Ambient Only) bool ambientOnly = false;
 
@@ -27,7 +27,7 @@ namespace Volt
 		PROPERTY(Name = Range) float range = 100.f;
 		PROPERTY(Name = Angle Attenuation) float angleAttenuation = 1.f;
 		PROPERTY(Name = Falloff) float falloff = 1.f;
-		PROPERTY(Name = Color, SpecialType = Color) glm::vec3 color = { 1.f, 1.f, 1.f };
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec3 color = { 1.f, 1.f, 1.f };
 		PROPERTY(Name = Cast Shadows) bool castShadows = false;
 
 		CREATE_COMPONENT_GUID("{D35F915F-53E5-4E15-AE5B-769F4D79B6F8}"_guid)
@@ -37,7 +37,7 @@ namespace Volt
 	{
 		PROPERTY(Name = Intensity) float intensity = 1.f;
 		PROPERTY(Name = Radius) float radius = 50.f;
-		PROPERTY(Name = Color, SpecialType = Color) glm::vec3 color = { 1.f, 1.f, 1.f };
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec3 color = { 1.f, 1.f, 1.f };
 
 		CREATE_COMPONENT_GUID("{0D0CEEE2-A331-442A-BB4B-FBDB8E06C692}"_guid)
 	}), SphereLightComponent);
@@ -45,7 +45,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct RectangleLightComponent
 	{
 		PROPERTY(Name = Intensity) float intensity = 1.f;
-		PROPERTY(Name = Color, SpecialType = Color) glm::vec3 color = { 1.f, 1.f, 1.f };
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec3 color = { 1.f, 1.f, 1.f };
 		PROPERTY(Name = Width) float width = 50.f;
 		PROPERTY(Name = Height) float height = 50.f;
 
@@ -55,7 +55,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct DirectionalLightComponent
 	{
 		PROPERTY(Name = Intensity) float intensity = 1.f;
-		PROPERTY(Name = Color, SpecialType = Color) glm::vec3 color = { 1.f, 1.f, 1.f };
+		PROPERTY(Name = Color, SpecialType = Color) gem::vec3 color = { 1.f, 1.f, 1.f };
 
 		PROPERTY(Name = Light Size) float lightSize = 1.f;
 

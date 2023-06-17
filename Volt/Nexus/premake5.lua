@@ -38,7 +38,7 @@ project "Nexus"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.GEM}"
 	}
 
 	defines
@@ -48,11 +48,7 @@ project "Nexus"
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
 		"_WINSOCKAPI_",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
-		"GLM_FORCE_LEFT_HANDED"
+		"_WINSOCK_DEPRECATED_NO_WARNINGS"
 	}
 
 	links 

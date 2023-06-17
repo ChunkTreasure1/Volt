@@ -9,7 +9,7 @@
 
 #include <Volt/Events/MouseEvent.h>
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 #include <Wire/Entity.h>
 
 #include <imgui.h>
@@ -33,7 +33,7 @@ public:
 	void OnOpen() override;
 	void OnClose() override;
 
-	glm::vec2 GetViewportLocalPosition(const glm::vec2& mousePos);
+	gem::vec2 GetViewportLocalPosition(const gem::vec2& mousePos);
 
 	inline static const std::string GAMEVIEWPANEL_TITLE = "Game Viewport";
 
@@ -43,13 +43,13 @@ private:
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 	bool OnMouseReleased(Volt::MouseButtonReleasedEvent& e);
 
-	void Resize(const glm::vec2& viewportSize);
+	void Resize(const gem::vec2& viewportSize);
 
 	Ref<Volt::SceneRenderer>& mySceneRenderer;
 	Ref<Volt::Scene>& myEditorScene;
 	SceneState& mySceneState;
 
-	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	glm::vec2 myViewportSize = { 1280.f, 720.f };
+	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	gem::vec2 myViewportSize = { 1280.f, 720.f };
 };
 

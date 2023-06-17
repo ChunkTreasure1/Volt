@@ -33,7 +33,7 @@ namespace Volt
 		s_debugRenderData->functionQueue.clear();
 	}
 
-	void DebugRenderer::DrawBillboard(const glm::vec3& pos, const glm::vec3& size, const glm::vec4& color, uint32_t id)
+	void DebugRenderer::DrawBillboard(const gem::vec3& pos, const gem::vec3& size, const gem::vec4& color, uint32_t id)
 	{
 		s_debugRenderData->functionQueue.emplace_back([pos, size, color, id](SceneRenderer::PerThreadData& threadData)
 		{
@@ -45,7 +45,7 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawBillboard(Ref<Texture2D> texture, const glm::vec3& pos, const glm::vec3& size, const glm::vec4& color, uint32_t id)
+	void DebugRenderer::DrawBillboard(Ref<Texture2D> texture, const gem::vec3& pos, const gem::vec3& size, const gem::vec4& color, uint32_t id)
 	{
 		s_debugRenderData->functionQueue.emplace_back([pos, size, color, id, texture](SceneRenderer::PerThreadData& threadData)
 		{
@@ -58,7 +58,7 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawLine(const glm::vec3& startPosition, const glm::vec3& endPosition, const glm::vec4& color)
+	void DebugRenderer::DrawLine(const gem::vec3& startPosition, const gem::vec3& endPosition, const gem::vec4& color)
 	{
 		s_debugRenderData->functionQueue.emplace_back([startPosition, endPosition, color](SceneRenderer::PerThreadData& data)
 		{
@@ -69,29 +69,29 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawSprite(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const glm::vec4& color)
+	void DebugRenderer::DrawSprite(const gem::vec3& position, const gem::vec3& rotation, const gem::vec3& scale, const gem::vec4& color)
 	{
 		//s_debugRenderData->functionQueue.emplace_back([position, rotation, scale, color]()
 		//	{
-		//		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, position) * glm::mat4_cast(glm::quat(rotation)) * glm::scale(glm::mat4{ 1.f }, scale);
+		//		const gem::mat4 transform = gem::translate(gem::mat4{ 1.f }, position) * gem::mat4_cast(gem::quat(rotation)) * gem::scale(gem::mat4{ 1.f }, scale);
 		//		Renderer::SubmitSprite(transform, color);
 		//	});
 	}
 
-	void DebugRenderer::DrawText(const std::string& text, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
+	void DebugRenderer::DrawText(const std::string& text, const gem::vec3& position, const gem::vec3& rotation, const gem::vec3& scale)
 	{
 		//s_debugRenderData->functionQueue.emplace_back([text, position, rotation, scale]()
 		//	{
-		//		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, position) * glm::mat4_cast(glm::quat(rotation)) * glm::scale(glm::mat4{ 1.f }, scale);
+		//		const gem::mat4 transform = gem::translate(gem::mat4{ 1.f }, position) * gem::mat4_cast(gem::quat(rotation)) * gem::scale(gem::mat4{ 1.f }, scale);
 		//		//Renderer::SubmitText(text, Renderer::GetDefaultData().de)
 		//	});
 	}
 
-	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
+	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, const gem::vec3& position, const gem::vec3& rotation, const gem::vec3& scale)
 	{
 		s_debugRenderData->functionQueue.emplace_back([mesh, position, rotation, scale](SceneRenderer::PerThreadData& data)
 		{
-			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, position)* glm::mat4_cast(glm::quat(rotation))* glm::scale(glm::mat4{ 1.f }, scale);
+			const gem::mat4 transform = gem::translate(gem::mat4{ 1.f }, position)* gem::mat4_cast(gem::quat(rotation))* gem::scale(gem::mat4{ 1.f }, scale);
 
 			for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
 			{
@@ -105,7 +105,7 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, const gem::mat4& transform)
 	{
 		s_debugRenderData->functionQueue.emplace_back([mesh, transform](SceneRenderer::PerThreadData& data)
 		{
@@ -121,7 +121,7 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, uint32_t id)
+	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, uint32_t id)
 	{
 		s_debugRenderData->functionQueue.emplace_back([mesh, transform, id, material](SceneRenderer::PerThreadData& data)
 		{
@@ -138,15 +138,15 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawLineSphere(const glm::vec3& center, float radius, const glm::vec4& color)
+	void DebugRenderer::DrawLineSphere(const gem::vec3& center, float radius, const gem::vec4& color)
 	{
-		std::vector<glm::vec3> positions;
+		std::vector<gem::vec3> positions;
 		positions.reserve(36);
 
 		for (float i = 0; i <= 360; i += 10.f)
 		{
-			const float x = radius * glm::cos(glm::radians(i));
-			const float z = radius * glm::sin(glm::radians(i));
+			const float x = radius * gem::cos(gem::radians(i));
+			const float z = radius * gem::sin(gem::radians(i));
 
 			positions.emplace_back(x, 0.f, z);
 		}
@@ -171,8 +171,8 @@ namespace Volt
 
 		for (float i = 0; i <= 360; i += 10.f)
 		{
-			const float x = radius * glm::cos(glm::radians(i));
-			const float z = radius * glm::sin(glm::radians(i));
+			const float x = radius * gem::cos(gem::radians(i));
+			const float z = radius * gem::sin(gem::radians(i));
 
 			positions.emplace_back(x, z, 0.f);
 		}
@@ -197,8 +197,8 @@ namespace Volt
 
 		for (float i = 0; i <= 360; i += 10.f)
 		{
-			const float x = radius * glm::cos(glm::radians(i));
-			const float z = radius * glm::sin(glm::radians(i));
+			const float x = radius * gem::cos(gem::radians(i));
+			const float z = radius * gem::sin(gem::radians(i));
 
 			positions.emplace_back(0.f, z, x);
 		}
@@ -220,17 +220,17 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawLineBox(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
+	void DebugRenderer::DrawLineBox(const gem::vec3& min, const gem::vec3& max, const gem::vec4& color)
 	{
-		glm::vec3 p1 = { min };
-		glm::vec3 p2 = { min.x, min.y, max.z };
-		glm::vec3 p3 = { min.x, max.y, min.z };
-		glm::vec3 p4 = { min.x, max.y, max.z };
+		gem::vec3 p1 = { min };
+		gem::vec3 p2 = { min.x, min.y, max.z };
+		gem::vec3 p3 = { min.x, max.y, min.z };
+		gem::vec3 p4 = { min.x, max.y, max.z };
 
-		glm::vec3 p5 = { max.x, min.y, min.z };
-		glm::vec3 p6 = { max.x, min.y, max.z };
-		glm::vec3 p7 = { max.x, max.y, min.z };
-		glm::vec3 p8 = { max };
+		gem::vec3 p5 = { max.x, min.y, min.z };
+		gem::vec3 p6 = { max.x, min.y, max.z };
+		gem::vec3 p7 = { max.x, max.y, min.z };
+		gem::vec3 p8 = { max };
 
 		s_debugRenderData->functionQueue.emplace_back([=](SceneRenderer::PerThreadData& data)
 		{
@@ -255,17 +255,17 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawLineOBB(const glm::vec3& min, const glm::vec3& max, const glm::mat4& transform, const glm::vec4& color)
+	void DebugRenderer::DrawLineOBB(const gem::vec3& min, const gem::vec3& max, const gem::mat4& transform, const gem::vec4& color)
 	{
-		glm::vec3 p1 = transform * glm::vec4{ min.x, min.y, min.z, 1.f };
-		glm::vec3 p2 = transform * glm::vec4{ min.x, min.y, max.z, 1.f };
-		glm::vec3 p3 = transform * glm::vec4{ min.x, max.y, min.z, 1.f };
-		glm::vec3 p4 = transform * glm::vec4{ min.x, max.y, max.z, 1.f };
+		gem::vec3 p1 = transform * gem::vec4{ min.x, min.y, min.z, 1.f };
+		gem::vec3 p2 = transform * gem::vec4{ min.x, min.y, max.z, 1.f };
+		gem::vec3 p3 = transform * gem::vec4{ min.x, max.y, min.z, 1.f };
+		gem::vec3 p4 = transform * gem::vec4{ min.x, max.y, max.z, 1.f };
 
-		glm::vec3 p5 = transform * glm::vec4{ max.x, min.y, min.z, 1.f };
-		glm::vec3 p6 = transform * glm::vec4{ max.x, min.y, max.z, 1.f };
-		glm::vec3 p7 = transform * glm::vec4{ max.x, max.y, min.z, 1.f };
-		glm::vec3 p8 = transform * glm::vec4{ max.x, max.y, max.z, 1.f };
+		gem::vec3 p5 = transform * gem::vec4{ max.x, min.y, min.z, 1.f };
+		gem::vec3 p6 = transform * gem::vec4{ max.x, min.y, max.z, 1.f };
+		gem::vec3 p7 = transform * gem::vec4{ max.x, max.y, min.z, 1.f };
+		gem::vec3 p8 = transform * gem::vec4{ max.x, max.y, max.z, 1.f };
 
 		s_debugRenderData->functionQueue.emplace_back([=](SceneRenderer::PerThreadData& data)
 		{
@@ -290,11 +290,11 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawSphere(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color)
+	void DebugRenderer::DrawSphere(const gem::vec3& position, const gem::vec3& scale, const gem::vec4& color)
 	{
 	}
 
-	void DebugRenderer::DrawCube(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const glm::vec4& color)
+	void DebugRenderer::DrawCube(const gem::vec3& position, const gem::vec3& rotation, const gem::vec3& scale, const gem::vec4& color)
 	{
 	}
 }

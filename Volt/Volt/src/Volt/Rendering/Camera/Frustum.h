@@ -1,25 +1,25 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 
 namespace Volt
 {
 	struct FrustumPlane
 	{
 		FrustumPlane() = default;
-		FrustumPlane(const glm::vec3& aPoint, const glm::vec3& aNormal)
+		FrustumPlane(const gem::vec3& aPoint, const gem::vec3& aNormal)
 			: point(aPoint), normal(aNormal)
 		{
-			normal = glm::normalize(normal);
+			normal = gem::normalize(normal);
 		}
 
-		const float GetSignedDistanceToPlane(const glm::vec3& position) const
+		const float GetSignedDistanceToPlane(const gem::vec3& position) const
 		{
-			return glm::dot(position - point, normal);
+			return gem::dot(position - point, normal);
 		}
 
-		glm::vec3 point = { 0.f, 0.f, 0.f };
-		glm::vec3 normal = { 0.f, 1.f, 0.f };
+		gem::vec3 point = { 0.f, 0.f, 0.f };
+		gem::vec3 normal = { 0.f, 1.f, 0.f };
 	};
 
 	struct Frustum

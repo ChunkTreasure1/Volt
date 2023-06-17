@@ -30,7 +30,7 @@ namespace Volt
 		FrameGraphResourceHandle outputImage[2];
 	};
 
-	OutlineTechnique::OutlineTechnique(const glm::uvec2& renderSize, const GlobalDescriptorMap& descriptorMap)
+	OutlineTechnique::OutlineTechnique(const gem::vec2ui& renderSize, const GlobalDescriptorMap& descriptorMap)
 		: myRenderSize(renderSize), myGlobalDescriptorMap(descriptorMap)
 	{
 	}
@@ -64,7 +64,7 @@ namespace Volt
 
 			for (const auto& cmd : outlineCmds)
 			{
-				PushConstantDrawData drawData{ &cmd.transform, sizeof(glm::mat4) };
+				PushConstantDrawData drawData{ &cmd.transform, sizeof(gem::mat4) };
 				Renderer::DrawMesh(commandBuffer, cmd.mesh, cmd.subMeshIndex, myGlobalDescriptorMap, drawData);
 			}
 
@@ -124,7 +124,7 @@ namespace Volt
 
 			struct FloodPassData
 			{
-				glm::vec2 texelSize;
+				gem::vec2 texelSize;
 				int32_t step;
 				int32_t padding;
 			} floodPassData;
@@ -186,8 +186,6 @@ namespace Volt
 
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "Outline Composite Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& jumpFloodPassResource = resources.GetImageResource(jumpFloodPassData.outputImage[0]);
 
@@ -197,8 +195,8 @@ namespace Volt
 			pipeline->SetImage(jumpFloodPassResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
-			const glm::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
-			pipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &color, sizeof(glm::vec4));
+			const gem::vec4 color = { 1.f, 0.5f, 0.f, 1.f };
+			pipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &color, sizeof(gem::vec4));
 
 			constexpr uint32_t threadCount = 8;
 
@@ -206,7 +204,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (myRenderSize.y / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

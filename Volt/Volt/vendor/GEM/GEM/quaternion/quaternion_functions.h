@@ -224,9 +224,9 @@ namespace gem
 	qua<T> angleAxis(T const& angle, vec<3, T> const& v)
 	{
 		T const a(angle);
-		T const s = glm::sin(a * static_cast<T>(0.5));
+		T const s = gem::sin(a * static_cast<T>(0.5));
 
-		return qua<T>(glm::cos(a * static_cast<T>(0.5f)), v * s);
+		return qua<T>(gem::cos(a * static_cast<T>(0.5f)), v * s);
 	}
 
 	template<typename T>

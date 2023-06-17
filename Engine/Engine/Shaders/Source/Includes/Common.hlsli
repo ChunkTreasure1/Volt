@@ -47,6 +47,9 @@ struct CameraData
 	float nearPlane;
 	float farPlane;
     float2 depthUnpackConsts;
+    
+    float2 NDCToViewMul;
+    float2 NDCToViewAdd;
 };
 
 struct SceneData
@@ -85,7 +88,7 @@ struct ObjectData
     float randomValue;
     uint boneOffset;
     int colorOffset;
-    uint padding;
+    uint meshIndex;
 };
 
 struct IndirectGPUBatch
@@ -115,6 +118,20 @@ struct ParticleRenderingInfo
     uint materialIndex;
     float timeSinceSpawn;
     float2 padding2;
+};
+
+struct GPUMeshLOD
+{
+    uint indexCount;
+    uint indexOffset;
+};
+
+struct GPUMesh
+{
+    uint lodCount;
+    uint3 padding;
+    
+    GPUMeshLOD lods[8];
 };
 
 ///// Lights //////
@@ -151,6 +168,7 @@ struct SpotLight
     int shadowMapIndex;
     
     float4x4 viewProjection;
+    float4x4 projection;
 };
 
 struct SphereLight
@@ -185,8 +203,8 @@ struct DirectionalLight
     float4 direction;
     float4 colorIntensity;
 
-    float4x4 viewProjections[5];
-    float4 cascadeDistances[5];
+    float4x4 viewProjections[4];
+    float4 cascadeDistances[4];
     
     uint castShadows;
     uint softShadows;

@@ -80,9 +80,9 @@ void PhysicsPanel::DrawGeneralMenu()
 	UI::PushId();
 	if (UI::BeginProperties(""))
 	{
-		UI::Property("Gravity", const_cast<glm::vec3&>(Volt::Physics::GetSettings().gravity));
-		UI::Property("World Max Bounds", const_cast<glm::vec3&>(Volt::Physics::GetSettings().worldBoundsMax));
-		UI::Property("World Min Bounds", const_cast<glm::vec3&>(Volt::Physics::GetSettings().worldBoundsMin));
+		UI::Property("Gravity", const_cast<gem::vec3&>(Volt::Physics::GetSettings().gravity));
+		UI::Property("World Max Bounds", const_cast<gem::vec3&>(Volt::Physics::GetSettings().worldBoundsMax));
+		UI::Property("World Min Bounds", const_cast<gem::vec3&>(Volt::Physics::GetSettings().worldBoundsMin));
 
 		UI::Property("World Sub Divisions", const_cast<uint32_t&>(Volt::Physics::GetSettings().worldBoundsSubDivisions));
 		UI::Property("Solver Iterations", const_cast<uint32_t&>(Volt::Physics::GetSettings().solverIterations));

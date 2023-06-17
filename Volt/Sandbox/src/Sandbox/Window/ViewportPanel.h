@@ -9,7 +9,7 @@
 
 #include <Volt/Events/MouseEvent.h>
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 #include <Wire/Entity.h>
 
 #include <imgui.h>
@@ -21,7 +21,7 @@ struct GizmoEvent
 	//[1] = rotation
 	//[2] = scale
 	Wire::EntityId myEntityId;
-	std::array<glm::vec3, 3> myValue;
+	std::array<gem::vec3, 3> myValue;
 };
 
 namespace Volt
@@ -40,9 +40,9 @@ public:
 	void UpdateContent() override;
 	void OnEvent(Volt::Event& e) override;
 
-	glm::vec2 GetSize() { return myViewportSize; }
-	glm::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
-	glm::vec2 GetViewportLocalPosition(const glm::vec2& mousePos);
+	gem::vec2 GetSize() { return myViewportSize; }
+	gem::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
+	gem::vec2 GetViewportLocalPosition(const gem::vec2& mousePos);
 
 private:
 	bool OnMousePressed(Volt::MouseButtonPressedEvent& e);
@@ -55,15 +55,15 @@ private:
 	void DuplicateSelection();
 	void HandleSingleSelect();
 	void HandleMultiSelect();
-	void HandleSingleGizmoInteraction(const glm::mat4& avgTransform);
-	void HandleMultiGizmoInteraction(const glm::mat4& deltaTransform);
+	void HandleSingleGizmoInteraction(const gem::mat4& avgTransform);
+	void HandleMultiGizmoInteraction(const gem::mat4& deltaTransform);
 
 	void UpdateModals();
 	void HandleNonMeshDragDrop();
 
-	void Resize(const glm::vec2& viewportSize);
+	void Resize(const gem::vec2& viewportSize);
 
-	glm::mat4 CalculateAverageTransform();
+	gem::mat4 CalculateAverageTransform();
 
 	Ref<Volt::SceneRenderer>& mySceneRenderer;
 	Ref<Volt::Scene>& myEditorScene;
@@ -71,8 +71,8 @@ private:
 	AnimatedIcon myAnimatedPhysicsIcon;
 	EditorCameraController* myEditorCameraController;
 
-	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	glm::vec2 myViewportSize = { 1280.f, 720.f };
+	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	gem::vec2 myViewportSize = { 1280.f, 720.f };
 
 	ImGuizmo::OPERATION myGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 	SceneState& mySceneState;
@@ -81,7 +81,7 @@ private:
 	const std::vector<float> m_snapRotationValues = { 10.f, 30.f, 45.f, 90.f };
 	const std::vector<float> m_snapScaleValues = { 0.01f, 0.1f, 0.25f, 0.5f, 1.f };
 
-	glm::vec2 myViewportMouseCoords;
+	gem::vec2 myViewportMouseCoords;
 	bool myMidEvent;
 
 	bool myCreatedAssetOnDrag = false;

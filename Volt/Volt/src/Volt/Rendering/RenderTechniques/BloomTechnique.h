@@ -12,13 +12,13 @@ namespace Volt
 	class BloomTechnique
 	{
 	public:
-		BloomTechnique(const glm::uvec2& renderSize);
+		BloomTechnique(const gem::vec2ui& renderSize);
 
 		void AddBloomDownsamplePass(FrameGraph& frameGraph, Ref<ComputePipeline> downsamplePipeline);
 		void AddBloomUpsamplePass(FrameGraph& frameGraph, Ref<ComputePipeline> upsamplePipeline);
 		void AddBloomCompositePass(FrameGraph& frameGraph, Ref<ComputePipeline> compositePipeline);
 
 	private:
-		glm::uvec2 myRenderSize;
+		gem::vec2ui myRenderSize;
 	};
 }

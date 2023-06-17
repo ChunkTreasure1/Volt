@@ -55,7 +55,7 @@ namespace Volt
 		}
 	}
 
-	const glm::vec3 Entity::GetLocalPosition() const
+	const gem::vec3 Entity::GetLocalPosition() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -63,10 +63,10 @@ namespace Volt
 			return comp.position;
 		}
 
-		return glm::vec3{ 0.f, 0.f, 0.f };
+		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const glm::quat Entity::GetLocalRotation() const
+	const gem::quat Entity::GetLocalRotation() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -74,10 +74,10 @@ namespace Volt
 			return comp.rotation;
 		}
 
-		return glm::vec3{ 0.f, 0.f, 0.f };
+		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const glm::vec3 Entity::GetLocalScale() const
+	const gem::vec3 Entity::GetLocalScale() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -85,22 +85,22 @@ namespace Volt
 			return comp.scale;
 		}
 
-		return glm::vec3{ 0.f, 0.f, 0.f };
+		return gem::vec3{ 0.f, 0.f, 0.f };
 	}
 
-	const glm::vec3 Entity::GetPosition() const
+	const gem::vec3 Entity::GetPosition() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.position;
 	}
 
-	const glm::quat Entity::GetRotation() const
+	const gem::quat Entity::GetRotation() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.rotation;
 	}
 
-	const glm::vec3 Entity::GetScale() const
+	const gem::vec3 Entity::GetScale() const
 	{
 		auto trs = myScene->GetWorldSpaceTRS(*this);
 		return trs.scale;
@@ -272,7 +272,7 @@ namespace Volt
 			auto actor = Physics::GetScene()->GetActor(*this);
 			if (actor)
 			{
-				const glm::vec3 tempPosition = GetPosition();
+				const gem::vec3 tempPosition = GetPosition();
 				actor->SetPosition(tempPosition, true, false);
 			}
 			else
@@ -290,13 +290,13 @@ namespace Volt
 			auto actor = Physics::GetScene()->GetActor(*this);
 			if (actor)
 			{
-				const glm::quat tempRotation = GetRotation();
+				const gem::quat tempRotation = GetRotation();
 				actor->SetRotation(tempRotation, true, false);
 			}
 		}
 	}
 
-	void Entity::SetPosition(const glm::vec3& position, bool updatePhysics)
+	void Entity::SetPosition(const gem::vec3& position, bool updatePhysics)
 	{
 		Volt::Entity parent = GetParent();
 		Scene::TQS parentTransform{};
@@ -307,15 +307,15 @@ namespace Volt
 		}
 
 		// Calculate new local position
-		const glm::vec3 translatedPoint = position - parentTransform.position;
-		const glm::vec3 invertedScale = 1.f / parentTransform.scale;
-		const glm::vec3 rotatedPoint = glm::conjugate(parentTransform.rotation) * translatedPoint;
+		const gem::vec3 translatedPoint = position - parentTransform.position;
+		const gem::vec3 invertedScale = 1.f / parentTransform.scale;
+		const gem::vec3 rotatedPoint = gem::conjugate(parentTransform.rotation) * translatedPoint;
 
-		const glm::vec3 localPoint = rotatedPoint * invertedScale;
+		const gem::vec3 localPoint = rotatedPoint * invertedScale;
 		SetLocalPosition(localPoint, updatePhysics);
 	}
 
-	void Entity::SetRotation(const glm::quat& rotation, bool updatePhysics)
+	void Entity::SetRotation(const gem::quat& rotation, bool updatePhysics)
 	{
 		Volt::Entity parent = GetParent();
 		Scene::TQS parentTransform{};
@@ -325,11 +325,11 @@ namespace Volt
 			parentTransform = myScene->GetWorldSpaceTRS(parent);
 		}
 
-		const glm::quat localRotation = glm::conjugate(parentTransform.rotation) * rotation;
+		const gem::quat localRotation = gem::conjugate(parentTransform.rotation) * rotation;
 		SetLocalRotation(localRotation, updatePhysics);
 	}
 
-	void Entity::SetScale(const glm::vec3& scale)
+	void Entity::SetScale(const gem::vec3& scale)
 	{
 		Volt::Entity parent = GetParent();
 		Scene::TQS parentTransform{};
@@ -339,31 +339,37 @@ namespace Volt
 			parentTransform = myScene->GetWorldSpaceTRS(parent);
 		}
 
-		const glm::vec3 inverseScale = 1.f / parentTransform.scale;
-		const glm::vec3 localScale = scale * inverseScale;
+		const gem::vec3 inverseScale = 1.f / parentTransform.scale;
+		const gem::vec3 localScale = scale * inverseScale;
 
 		SetLocalScale(localScale);
 	}
 
-	void Entity::SetLocalPosition(const glm::vec3& position, bool updatePhysics)
+	void Entity::SetLocalPosition(const gem::vec3& position, bool updatePhysics)
 	{
 		GetComponent<TransformComponent>().position = position;
 		UpdatePhysicsTranslation(updatePhysics);
+
+		myScene->InvalidateEntityTransform(myId);
 	}
 
-	void Entity::SetLocalRotation(const glm::quat& rotation, bool updatePhysics)
+	void Entity::SetLocalRotation(const gem::quat& rotation, bool updatePhysics)
 	{
 		auto& transComp = GetComponent<TransformComponent>();
 		transComp.rotation = rotation;
 		UpdatePhysicsRotation(updatePhysics);
+
+		myScene->InvalidateEntityTransform(myId);
 	}
 
-	void Entity::SetLocalScale(const glm::vec3& scale)
+	void Entity::SetLocalScale(const gem::vec3& scale)
 	{
 		GetComponent<TransformComponent>().scale = scale;
+
+		myScene->InvalidateEntityTransform(myId);
 	}
 
-	const glm::mat4 Entity::GetLocalTransform() const
+	const gem::mat4 Entity::GetLocalTransform() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -371,15 +377,15 @@ namespace Volt
 			return comp.GetTransform();
 		}
 
-		return glm::mat4{ 1.f };
+		return gem::mat4{ 1.f };
 	}
 
-	const glm::mat4 Entity::GetTransform() const
+	const gem::mat4 Entity::GetTransform() const
 	{
 		return myScene->GetWorldSpaceTransform(*this);
 	}
 
-	const glm::vec3 Entity::GetLocalForward() const
+	const gem::vec3 Entity::GetLocalForward() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -387,10 +393,10 @@ namespace Volt
 			return comp.GetForward();
 		}
 
-		return glm::vec3{ 0.f, 0.f, 1.f };
+		return gem::vec3{ 0.f, 0.f, 1.f };
 	}
 
-	const glm::vec3 Entity::GetLocalRight() const
+	const gem::vec3 Entity::GetLocalRight() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -398,10 +404,10 @@ namespace Volt
 			return comp.GetRight();
 		}
 
-		return glm::vec3{ 1.f, 0.f, 0.f };
+		return gem::vec3{ 1.f, 0.f, 0.f };
 	}
 
-	const glm::vec3 Entity::GetLocalUp() const
+	const gem::vec3 Entity::GetLocalUp() const
 	{
 		if (HasComponent<TransformComponent>())
 		{
@@ -409,20 +415,20 @@ namespace Volt
 			return comp.GetUp();
 		}
 
-		return glm::vec3{ 0.f, 1.f, 0.f };
+		return gem::vec3{ 0.f, 1.f, 0.f };
 	}
 
-	const glm::vec3 Entity::GetForward() const
+	const gem::vec3 Entity::GetForward() const
 	{
 		return myScene->GetWorldForward(*this);
 	}
 
-	const glm::vec3 Entity::GetRight() const
+	const gem::vec3 Entity::GetRight() const
 	{
 		return myScene->GetWorldRight(*this);
 	}
 
-	const glm::vec3 Entity::GetUp() const
+	const gem::vec3 Entity::GetUp() const
 	{
 		return myScene->GetWorldUp(*this);
 	}
@@ -533,10 +539,10 @@ namespace Volt
 									case MonoFieldType::Float: toEntityFields[name]->SetValue(*entField->data.As<float>(), entField->data.GetSize(), field.type); break;
 									case MonoFieldType::Double: toEntityFields[name]->SetValue(*entField->data.As<double>(), entField->data.GetSize(), field.type); break;
 
-									case MonoFieldType::Vector2: toEntityFields[name]->SetValue(*entField->data.As<glm::vec2>(), entField->data.GetSize(), field.type); break;
-									case MonoFieldType::Vector3: toEntityFields[name]->SetValue(*entField->data.As<glm::vec3>(), entField->data.GetSize(), field.type); break;
-									case MonoFieldType::Vector4: toEntityFields[name]->SetValue(*entField->data.As<glm::vec4>(), entField->data.GetSize(), field.type); break;
-									case MonoFieldType::Quaternion: toEntityFields[name]->SetValue(*entField->data.As<glm::quat>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Vector2: toEntityFields[name]->SetValue(*entField->data.As<gem::vec2>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Vector3: toEntityFields[name]->SetValue(*entField->data.As<gem::vec3>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Vector4: toEntityFields[name]->SetValue(*entField->data.As<gem::vec4>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Quaternion: toEntityFields[name]->SetValue(*entField->data.As<gem::quat>(), entField->data.GetSize(), field.type); break;
 									case MonoFieldType::Entity: toEntityFields[name]->SetValue(*entField->data.As<Wire::EntityId>(), entField->data.GetSize(), field.type); break;
 
 									case MonoFieldType::Animation:
@@ -547,9 +553,10 @@ namespace Volt
 									case MonoFieldType::Material:
 									case MonoFieldType::Texture:
 									case MonoFieldType::PostProcessingMaterial:
+									case MonoFieldType::Video:
 									case MonoFieldType::Asset: toEntityFields[name]->SetValue(*entField->data.As<Volt::AssetHandle>(), entField->data.GetSize(), field.type); break;
 
-									case MonoFieldType::Color: toEntityFields[name]->SetValue(*entField->data.As<glm::vec4>(), entField->data.GetSize(), field.type); break;
+									case MonoFieldType::Color: toEntityFields[name]->SetValue(*entField->data.As<gem::vec4>(), entField->data.GetSize(), field.type); break;
 									case MonoFieldType::Enum: toEntityFields[name]->SetValue(*entField->data.As<uint32_t>(), entField->data.GetSize(), field.type); break;
 								}
 							}
@@ -594,16 +601,16 @@ namespace Volt
 						case Wire::ComponentRegistry::PropertyType::UChar: (*(uint8_t*)&otherComponent[prop.offset]) = (*(uint8_t*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Float: (*(float*)&otherComponent[prop.offset]) = (*(float*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Double: (*(double*)&otherComponent[prop.offset]) = (*(double*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Vector2: (*(glm::vec2*)&otherComponent[prop.offset]) = (*(glm::vec2*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Vector3: (*(glm::vec3*)&otherComponent[prop.offset]) = (*(glm::vec3*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Vector4: (*(glm::vec4*)&otherComponent[prop.offset]) = (*(glm::vec4*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Quaternion: (*(glm::quat*)&otherComponent[prop.offset]) = (*(glm::quat*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector2: (*(gem::vec2*)&otherComponent[prop.offset]) = (*(gem::vec2*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Vector4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Quaternion: (*(gem::quat*)&otherComponent[prop.offset]) = (*(gem::quat*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::String: (*(std::string*)&otherComponent[prop.offset]) = (*(std::string*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Int64: (*(int64_t*)&otherComponent[prop.offset]) = (*(int64_t*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::UInt64: (*(uint64_t*)&otherComponent[prop.offset]) = (*(uint64_t*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(AssetHandle*)&otherComponent[prop.offset]) = (*(AssetHandle*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Color3: (*(glm::vec3*)&otherComponent[prop.offset]) = (*(glm::vec3*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Color4: (*(glm::vec4*)&otherComponent[prop.offset]) = (*(glm::vec4*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Color3: (*(gem::vec3*)&otherComponent[prop.offset]) = (*(gem::vec3*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Color4: (*(gem::vec4*)&otherComponent[prop.offset]) = (*(gem::vec4*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Folder: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Path: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::EntityId: (*(Wire::EntityId*)&otherComponent[prop.offset]) = (*(Wire::EntityId*)&thisComponent[prop.offset]); break;
@@ -622,17 +629,17 @@ namespace Volt
 								case Wire::ComponentRegistry::PropertyType::UChar: (*(std::vector<uint8_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint8_t>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Float: (*(std::vector<float>*) & otherComponent[prop.offset]) = (*(std::vector<float>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Double: (*(std::vector<double>*) & otherComponent[prop.offset]) = (*(std::vector<double>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Vector2: (*(std::vector<glm::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec2>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Vector3: (*(std::vector<glm::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec3>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Vector4: (*(std::vector<glm::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec4>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Quaternion: (*(std::vector<glm::quat>*) & otherComponent[prop.offset]) = (*(std::vector<glm::quat>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Vector2: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Vector3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Vector4: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Quaternion: (*(std::vector<gem::quat>*) & otherComponent[prop.offset]) = (*(std::vector<gem::quat>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::String: (*(std::vector<std::string>*) & otherComponent[prop.offset]) = (*(std::vector<std::string>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Int64: (*(std::vector<int64_t>*) & otherComponent[prop.offset]) = (*(std::vector<int64_t>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::UInt64: (*(std::vector<uint64_t>*) & otherComponent[prop.offset]) = (*(std::vector<uint64_t>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(std::vector<AssetHandle>*) & otherComponent[prop.offset]) = (*(std::vector<AssetHandle>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Color4: (*(std::vector<glm::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec2>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Color3: (*(std::vector<glm::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec3>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Folder: (*(std::vector<glm::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec4>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Color4: (*(std::vector<gem::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec2>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Color3: (*(std::vector<gem::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec3>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Folder: (*(std::vector<gem::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<gem::vec4>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::EntityId: (*(std::vector<Wire::EntityId>*) & otherComponent[prop.offset]) = (*(std::vector<Wire::EntityId>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::GUID: (*(std::vector<WireGUID>*) & otherComponent[prop.offset]) = (*(std::vector<WireGUID>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Enum: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;

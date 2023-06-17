@@ -25,7 +25,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Start Timer"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void StartTimer()
@@ -58,7 +58,7 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Stop Timer"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void StopTimer()

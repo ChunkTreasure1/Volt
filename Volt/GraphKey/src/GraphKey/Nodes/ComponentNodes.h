@@ -30,7 +30,7 @@ namespace GraphKey
 		void Initialize() override;
 
 		inline const std::string GetName() override { return "Light"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 
@@ -46,7 +46,7 @@ namespace GraphKey
 			{
 				AttributeConfig("", AttributeDirection::Input, GK_BIND_FUNCTION(ChangeLightColorNode::SetProperties)),
 				AttributeConfig<Volt::Entity>("Entity", AttributeDirection::Input),
-				AttributeConfigDefault("Color", AttributeDirection::Input, glm::vec3{ 1.f }),
+				AttributeConfigDefault("Color", AttributeDirection::Input, gem::vec3{ 1.f }),
 				AttributeConfigDefault("Time", AttributeDirection::Input, 1.f)
 			};
 
@@ -63,15 +63,15 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		inline const std::string GetName() override { return "Change Light Color"; }
-		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 	private:
 		bool myHasStartedLerp = false;
 		float myLerpTime = 0.f;
 		float myTotalLerpTime = 0.f;
 
-		glm::vec3 myTargetColor{};
-		glm::vec3 myStartColor{};
+		gem::vec3 myTargetColor{};
+		gem::vec3 myStartColor{};
 
 		Volt::Entity myTargetEntity{};
 

@@ -5,21 +5,21 @@ namespace GraphKey
 {
 	void SlerpNode::Slerp()
 	{
-		const glm::vec3 a = GetInput<glm::vec3>(0);
-		const glm::vec3 b = GetInput<glm::vec3>(1);
+		const gem::vec3 a = GetInput<gem::vec3>(0);
+		const gem::vec3 b = GetInput<gem::vec3>(1);
 		const float t = GetInput<float>(2);
 
-		const auto slerpedQuat = glm::slerp(glm::quat{ glm::radians(a) }, glm::quat{ glm::radians(b) }, t);
-		SetOutputData(0, glm::degrees(glm::eulerAngles(slerpedQuat)));
+		const auto slerpedQuat = gem::slerp(gem::quat{ gem::radians(a) }, gem::quat{ gem::radians(b) }, t);
+		SetOutputData(0, gem::degrees(gem::eulerAngles(slerpedQuat)));
 	}
 
 	void LerpNode::Lerp()
 	{
-		const glm::vec3 a = GetInput<glm::vec3>(0);
-		const glm::vec3 b = GetInput<glm::vec3>(1);
+		const gem::vec3 a = GetInput<gem::vec3>(0);
+		const gem::vec3 b = GetInput<gem::vec3>(1);
 		const float t = GetInput<float>(2);
 
-		const auto result = glm::mix(a, b, t);
+		const auto result = gem::lerp(a, b, t);
 		SetOutputData(0, result);
 	}
 }

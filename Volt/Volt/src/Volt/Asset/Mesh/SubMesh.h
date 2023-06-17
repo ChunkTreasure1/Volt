@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 
 namespace Volt
 {
@@ -25,7 +25,7 @@ namespace Volt
 		uint32_t vertexStartOffset = 0;
 		uint32_t indexStartOffset = 0;
 
-		glm::mat4 transform = { 1.f };
+		gem::mat4 transform = { 1.f };
 		std::string name;
 
 	private:

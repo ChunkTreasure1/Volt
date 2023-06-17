@@ -19,6 +19,7 @@
 
 namespace GraphKey
 {
+	VT_OPTIMIZE_OFF
 	GetAnimationDurationNode::GetAnimationDurationNode()
 	{
 		inputs =
@@ -38,13 +39,19 @@ namespace GraphKey
 	void GetAnimationDurationNode::GetAnimationDuration()
 	{
 		auto anim = GetAnimation();
-		SetOutputData<float>(0, GetInput<float>(1) * ((anim) ? GetAnimation()->GetDuration() : 1.f));
+		auto duration = (anim) ? GetAnimation()->GetDuration() : 1.f;
+		auto inputSpeed = GetInput<float>(1);
+		auto outDuration = inputSpeed * duration;
+		SetOutputData<float>(0, outDuration);
 	}
 
 	void GetAnimationDurationNode::GetAnimationSpeed()
 	{
 		auto anim = GetAnimation();
-		SetOutputData<float>(1, ((anim) ? GetAnimation()->GetDuration() : 1.f) / GetInput<float>(2));
+		auto duration = (anim) ? GetAnimation()->GetDuration() : 1.f;
+		auto inputDuration = GetInput<float>(2);
+		auto speed = duration / ((inputDuration) ? inputDuration : 1.f);
+		SetOutputData<float>(1, speed);
 	}
 
 	Ref<Volt::Animation> GetAnimationDurationNode::GetAnimation()
@@ -52,4 +59,5 @@ namespace GraphKey
 		const auto animHandle = GetInput<Volt::AssetHandle>(0);
 		return Volt::AssetManager::GetAsset<Volt::Animation>(animHandle);
 	}
+	VT_OPTIMIZE_ON
 }

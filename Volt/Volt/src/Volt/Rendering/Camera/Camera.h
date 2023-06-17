@@ -2,7 +2,8 @@
 
 #include "Volt/Rendering/Camera/Frustum.h"
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
+#include <GEM/quaternion/quaternion.h>
 
 namespace Volt
 {
@@ -17,20 +18,20 @@ namespace Volt
 		void SetPerspectiveProjection(float fov, float aspect, float nearPlane, float farPlane);
 		void SetOrthographicProjection(float left, float right, float bottom, float top);
 
-		inline void SetProjection(const glm::mat4& projection) { myProjectionMatrix = projection; }
-		inline void SetView(const glm::mat4& view) { myViewMatrix = view; }
+		inline void SetProjection(const gem::mat4& projection) { myProjectionMatrix = projection; }
+		inline void SetView(const gem::mat4& view) { myViewMatrix = view; }
 
-		inline void SetPosition(const glm::vec3& pos) { myPosition = pos; RecalculateViewMatrix(); }
-		inline void SetRotation(const glm::vec3& rot) { myRotation = rot; RecalculateViewMatrix(); }
+		inline void SetPosition(const gem::vec3& pos) { myPosition = pos; RecalculateViewMatrix(); }
+		inline void SetRotation(const gem::vec3& rot) { myRotation = rot; RecalculateViewMatrix(); }
 
 		inline void SetNearPlane(float nearPlane) { myNearPlane = nearPlane; }
 		inline void SetFarPlane(float farPlane) { myFarPlane = farPlane; }
 
-		inline const glm::mat4& GetProjection() const { return myProjectionMatrix; }
-		inline const glm::mat4& GetView() const { return myViewMatrix; }
+		inline const gem::mat4& GetProjection() const { return myProjectionMatrix; }
+		inline const gem::mat4& GetView() const { return myViewMatrix; }
 
-		inline const glm::vec3& GetPosition() const { return myPosition; }
-		inline const glm::vec3& GetRotation() const { return myRotation; }
+		inline const gem::vec3& GetPosition() const { return myPosition; }
+		inline const gem::vec3& GetRotation() const { return myRotation; }
 
 		inline const float GetFieldOfView() const { return myFieldOfView; }
 		inline const float GetAspectRatio() const { return myAspecRatio; }
@@ -46,31 +47,31 @@ namespace Volt
 		inline void SetShutterSpeed(float value) { myShutterSpeed = value; }
 		inline void SetISO(float value) { myISO = value; }
 
-		void SetSubpixelOffset(const glm::vec2& offset);
-		inline const glm::vec2& GetSubpixelOffset() const { return mySubpixelOffset; }
+		void SetSubpixelOffset(const gem::vec2& offset);
+		inline const gem::vec2& GetSubpixelOffset() const { return mySubpixelOffset; }
 
 		inline const Frustum& GetFrustum() const { return myFrustum; }
-		const std::vector<glm::vec4> GetFrustumCorners();
+		const std::vector<gem::vec4> GetFrustumCorners();
 
-		glm::vec3 ScreenToWorldRay(const glm::vec2& someCoords, const glm::vec2& aSize);
+		gem::vec3 ScreenToWorldRay(const gem::vec2& someCoords, const gem::vec2& aSize);
 
-		glm::vec3 GetUp() const;
-		glm::vec3 GetRight() const;
-		glm::vec3 GetForward() const;
+		gem::vec3 GetUp() const;
+		gem::vec3 GetRight() const;
+		gem::vec3 GetForward() const;
 
-		glm::quat GetOrientation() const;
+		gem::quat GetOrientation() const;
 
 	private:
 		void RecalculateViewMatrix();
 		void RecalculateFrustum();
 
-		glm::vec3 myPosition = { 0.f, 0.f, 0.f };
-		glm::vec3 myRotation = { 0.f, 0.f, 0.f };
+		gem::vec3 myPosition = { 0.f, 0.f, 0.f };
+		gem::vec3 myRotation = { 0.f, 0.f, 0.f };
 
-		glm::mat4 myProjectionMatrix = glm::mat4(1.f);
-		glm::mat4 myViewMatrix = glm::mat4(1.f);
+		gem::mat4 myProjectionMatrix = gem::mat4(1.f);
+		gem::mat4 myViewMatrix = gem::mat4(1.f);
 
-		glm::vec2 mySubpixelOffset = 0.f;
+		gem::vec2 mySubpixelOffset = 0.f;
 
 		bool myReversed = true;
 

@@ -59,8 +59,8 @@ bool Volt::TimelineImporter::Load(const std::filesystem::path& path, Ref<Asset>&
 				VT_DESERIALIZE_PROPERTY(time, newKeyFrame.time, keyFrame, 0.f);
 				VT_DESERIALIZE_PROPERTY(frame, newKeyFrame.frame, keyFrame, 0);
 				VT_DESERIALIZE_PROPERTY(timelineXPos, newKeyFrame.timelineXPos, keyFrame, 0.f);
-				VT_DESERIALIZE_PROPERTY(position, newKeyFrame.position, keyFrame, glm::vec3(0.f));
-				VT_DESERIALIZE_PROPERTY(rotation, newKeyFrame.rotation, keyFrame, glm::quat());
+				VT_DESERIALIZE_PROPERTY(position, newKeyFrame.position, keyFrame, gem::vec3(0.f));
+				VT_DESERIALIZE_PROPERTY(rotation, newKeyFrame.rotation, keyFrame, gem::quat());
 
 				newTrack.keyframes.emplace_back(newKeyFrame);
 			}

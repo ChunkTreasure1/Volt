@@ -15,7 +15,7 @@ namespace Volt
 		FrameGraphResourceHandle tempColor;
 	};
 
-	FXAATechnique::FXAATechnique(const glm::uvec2& renderSize)
+	FXAATechnique::FXAATechnique(const gem::vec2ui& renderSize)
 		: myRenderSize(renderSize)
 	{
 	}
@@ -37,12 +37,10 @@ namespace Volt
 		{
 			struct PushConstantData
 			{
-				glm::vec2 inverseViewportSize;
+				gem::vec2 inverseViewportSize;
 			} pushConstants;
 
 			pushConstants.inverseViewportSize = { 1.f / myRenderSize.x, 1.f / myRenderSize.y };
-
-			Renderer::BeginSection(commandBuffer, "FXAA Pass", { 1.f, 0.5f, 1.f, 1.f });
 
 			const auto& currentColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& resultResource = resources.GetImageResource(data.tempColor);
@@ -63,8 +61,6 @@ namespace Volt
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
 
 			pipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 
@@ -84,8 +80,6 @@ namespace Volt
 
 			[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "FXAA Apply Pass", { 1.f, 0.5f, 1.f, 1.f });
-
 			const auto& tempColorResource = resources.GetImageResource(fxaaMainData.tempColor);
 			const auto& resultResource = resources.GetImageResource(skyboxData.outputImage);
 
@@ -100,8 +94,6 @@ namespace Volt
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
 
 			pipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

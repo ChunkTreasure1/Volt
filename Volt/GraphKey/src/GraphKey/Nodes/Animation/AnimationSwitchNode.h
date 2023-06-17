@@ -17,7 +17,7 @@ namespace GraphKey
 		~AnimationSwitchNode() override = default;
 
 		inline const std::string GetName() override { return "Animation Switch Node"; }
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void GetSwitchedAnimation();

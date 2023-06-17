@@ -33,6 +33,20 @@
 
     public class PointLightComponent : Component
     {
+        public Vector3 color
+        {
+            get
+            {
+                InternalCalls.PointlightComponent_GetColor(entity.Id, out Vector3 color);
+                return color;
+            }
+
+            set
+            {
+                InternalCalls.PointlightComponent_SetColor(entity.Id, ref value);
+            }
+        }
+
         public float intensity
         {
             get

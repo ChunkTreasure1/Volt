@@ -63,7 +63,7 @@ namespace Volt
 	struct FrameGraphRenderPassInfo
 	{
 		std::string_view name;
-		glm::vec4 color;
+		gem::vec4 color;
 		MaterialFlag materialFlags;
 		Ref<RenderPipeline> overridePipeline;
 	};

@@ -7,7 +7,7 @@
 #include "fmod.hpp"
 #include "fmod_errors.h"
 
-#include <glm/glm.hpp>
+#include "GEM/gem.h"
 
 namespace Amp
 {
@@ -72,9 +72,9 @@ namespace Amp
 	{
 		int ID = -1;
 		float aDeltaTime = 0;
-		glm::vec3 position;
-		glm::vec3 forward;
-		glm::vec3 up;
+		gem::vec3 position;
+		gem::vec3 forward;
+		gem::vec3 up;
 	};
 
 	class AudioEngine

@@ -24,6 +24,14 @@ namespace Volt
             this.w = w;
         }
 
+        public Color(uint x, uint y, uint z, uint w)
+        {
+            this.x = x / 255f;
+            this.y = y / 255f;
+            this.z = z / 255f;
+            this.w = w / 255f;
+        }
+
         public Vector4 AsVector4()
         {
             return new Vector4(x, y, z, w);

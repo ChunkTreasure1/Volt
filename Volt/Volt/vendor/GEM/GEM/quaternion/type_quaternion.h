@@ -5,6 +5,12 @@
 
 namespace gem
 {
+	template<typename T>
+	struct xyzw
+	{
+		T x, y, z, w;
+	};
+
 	typedef qua<float> quat;
 
 	template<typename T>
@@ -12,6 +18,7 @@ namespace gem
 	{
 	public:
 		constexpr qua() : x(0.f), y(0.f), z(0.f), w(1.f) {};
+		constexpr qua(xyzw<T> in_xyzw) : x(in_xyzw.x), y(in_xyzw.y), z(in_xyzw.z), w(in_xyzw.w) {};
 		constexpr qua(qua<T> const& q) : x(q.x), y(q.y), z(q.z), w(q.w) {};
 		constexpr qua(T w, T x, T y, T z) : x(x), y(y), z(z), w(w) {};
 		constexpr qua(T s, vec<3, T> const& v) : x(v.x), y(v.y), z(v.z), w(s) {};
@@ -37,8 +44,8 @@ namespace gem
 
 		qua(vec<3, T> const& eulerAngles)
 		{
-			vec<3, T> c = glm::cos(eulerAngles * T(0.5));
-			vec<3, T> s = glm::sin(eulerAngles * T(0.5));
+			vec<3, T> c = gem::cos(eulerAngles * T(0.5));
+			vec<3, T> s = gem::sin(eulerAngles * T(0.5));
 
 			this->w = c.x * c.y * c.z + s.x * s.y * s.z;
 			this->x = s.x * c.y * c.z - c.x * s.y * s.z;
@@ -57,10 +64,11 @@ namespace gem
 		}
 
 		template<typename U>
-		qua(qua<U> const& q) 
+		qua(qua<U> const& q)
 			: x(static_cast<T>(q.x)), y(static_cast<T>(q.y)), z(static_cast<T>(q.z)), w(static_cast<T>(q.w))
-		{}
-		
+		{
+		}
+
 		template<typename T>
 		qua<T>& operator+=(qua<T> const& p)
 		{
@@ -120,6 +128,11 @@ namespace gem
 			return *this;
 		}
 
+		xyzw<T> GetXYZW()
+		{
+			return xyzw<T>{this->x, this->y, this->z, this->w};
+		}
+
 		union
 		{
 			struct { T x, y, z, w; };
@@ -170,8 +183,8 @@ namespace gem
 	vec<3, T> operator*(qua<T> const& q, vec<3, T> const& v)
 	{
 		vec<3, T> const QuatVector(q.x, q.y, q.z);
-		vec<3, T> const uv(glm::cross(QuatVector, v));
-		vec<3, T> const uuv(glm::cross(QuatVector, uv));
+		vec<3, T> const uv(gem::cross(QuatVector, v));
+		vec<3, T> const uuv(gem::cross(QuatVector, uv));
 
 		return v + ((uv * q.w) + uuv) * static_cast<T>(2);
 	}
@@ -183,7 +196,7 @@ namespace gem
 	}
 
 	template<typename T>
-	vec<4, T> operator*(qua<T> const& q, vec<4, T> const& v) 
+	vec<4, T> operator*(qua<T> const& q, vec<4, T> const& v)
 	{
 		return vec<4, T>(1 * vec<3, T>(v), v.w);
 	}

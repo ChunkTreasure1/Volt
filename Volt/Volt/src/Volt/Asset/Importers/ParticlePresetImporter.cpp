@@ -49,8 +49,8 @@ bool Volt::ParticlePresetImporter::Load(const std::filesystem::path& path, Ref<A
 		VT_DESERIALIZE_PROPERTY(texture, preset->texture, emitterNode, Volt::AssetHandle(0));
 		VT_DESERIALIZE_PROPERTY(material, preset->material, emitterNode, Volt::AssetHandle(0));
 
-		VT_DESERIALIZE_PROPERTY(direction, preset->direction, emitterNode, glm::vec3(0.f));
-		VT_DESERIALIZE_PROPERTY(gravity, preset->gravity, emitterNode, glm::vec3(0.f));
+		VT_DESERIALIZE_PROPERTY(direction, preset->direction, emitterNode, gem::vec3(0.f));
+		VT_DESERIALIZE_PROPERTY(gravity, preset->gravity, emitterNode, gem::vec3(0.f));
 
 		VT_DESERIALIZE_PROPERTY(shape, preset->shape, emitterNode, 0);
 		VT_DESERIALIZE_PROPERTY(innerRadius, preset->coneInnerRadius, emitterNode, 0.f);
@@ -69,7 +69,7 @@ bool Volt::ParticlePresetImporter::Load(const std::filesystem::path& path, Ref<A
 		if (emitterNode["Colors"] && emitterNode["Colors"])
 			for (auto color : emitterNode["Colors"])
 			{
-				preset->colors.push_back(color.as<glm::vec4>());
+				preset->colors.push_back(color.as<gem::vec4>());
 			}
 
 
@@ -84,14 +84,14 @@ bool Volt::ParticlePresetImporter::Load(const std::filesystem::path& path, Ref<A
 		VT_DESERIALIZE_PROPERTY(type, emitterType, emitterNode, 0);
 		preset->type = (ParticlePreset::eType)emitterType;
 
-		/*VT_DESERIALIZE_PROPERTY(startColor, preset->startColor, emitterNode, glm::vec4(1.f));
-		VT_DESERIALIZE_PROPERTY(middleColor, preset->middleColor, emitterNode, glm::vec4(1.f));
-		VT_DESERIALIZE_PROPERTY(endColor, preset->endColor, emitterNode, glm::vec4(1.f));*/
+		/*VT_DESERIALIZE_PROPERTY(startColor, preset->startColor, emitterNode, gem::vec4(1.f));
+		VT_DESERIALIZE_PROPERTY(middleColor, preset->middleColor, emitterNode, gem::vec4(1.f));
+		VT_DESERIALIZE_PROPERTY(endColor, preset->endColor, emitterNode, gem::vec4(1.f));*/
 
 		if (emitterNode["Sizes"])
 			for (auto size : emitterNode["Sizes"])
 			{
-				preset->sizes.push_back(size.as<glm::vec3>());
+				preset->sizes.push_back(size.as<gem::vec3>());
 			}
 
 		if (preset->colors.size() == 0)
@@ -103,8 +103,8 @@ bool Volt::ParticlePresetImporter::Load(const std::filesystem::path& path, Ref<A
 			preset->sizes.push_back({ 0.1f,0.1f,0.1f });
 		}
 
-		/*VT_DESERIALIZE_PROPERTY(startSize, preset->startSize, emitterNode, glm::vec3(0.f));
-		VT_DESERIALIZE_PROPERTY(endSize, preset->endSize, emitterNode, glm::vec3(0.f));*/
+		/*VT_DESERIALIZE_PROPERTY(startSize, preset->startSize, emitterNode, gem::vec3(0.f));
+		VT_DESERIALIZE_PROPERTY(endSize, preset->endSize, emitterNode, gem::vec3(0.f));*/
 	}
 	return true;
 }

@@ -38,7 +38,7 @@ project "Amp"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.glm}",
+		"%{IncludeDir.GEM}",
 		"%{IncludeDir.wwise}"
 	}
 
@@ -47,11 +47,13 @@ project "Amp"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"PX_PHYSX_STATIC_LIB",
+		"PX_PHYSX_STATIC_LIB"
+	}
 
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
-		"GLM_FORCE_LEFT_HANDED"
+	configmap
+	{
+		["GameOnlyDebug"] = "Dist",
+		["SandboxOnlyDebug"] = "Dist"
 	}
 
 	filter "files:vendor/**.cpp"

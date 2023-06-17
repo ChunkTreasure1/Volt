@@ -32,6 +32,11 @@ namespace Volt
 		if (colliderComp.isConvex)
 		{
 			Ref<Mesh> srcMesh = AssetManager::GetAsset<Mesh>(colliderComp.colliderMesh);
+			if (!srcMesh || !srcMesh->IsValid())
+			{
+				return CookingResult::Failure;
+			}
+
 			std::vector<MeshColliderData> colliderData;
 
 			// Cook the mesh
@@ -74,6 +79,11 @@ namespace Volt
 		else
 		{
 			Ref<Mesh> srcMesh = AssetManager::GetAsset<Mesh>(colliderComp.colliderMesh);
+			if (!srcMesh || !srcMesh->IsValid())
+			{
+				return CookingResult::Failure;
+			}
+
 			std::vector<MeshColliderData> colliderData;
 
 			// Cook the mesh

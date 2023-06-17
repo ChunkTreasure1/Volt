@@ -13,24 +13,28 @@ namespace Volt
 		void Transmit(const Nexus::Packet& in_packet) override;
 		void Shutdown();
 		void Init() override;
+
+		void Reload() override;
 	private:
 		friend class NetPanel;
 
-		void Update() override;
+		void BackendUpdate() override;
 
 		void OnConnect() override;
 		void OnConnectionConfirmed() override;
 		void OnDisconnect() override;
 		void OnUpdate() override;
 
+		void OnReload() override;
+
 		void OnCreateEntity() override;
 		void OnDestroyEntity() override;
+		void OnConstructRegistry() override;
 
 		void OnComponentUpdate() override;
 		void OnRPC() override;
 
 		void OnEvent() override;
-
 
 		void OnChatMessage() override;
 		void OnMoveUpdate() override;
@@ -39,5 +43,6 @@ namespace Volt
 		void OnBadPacket() override;
 
 		void CreateDebugEnemy();
+		bool m_reload = false;
 	};
 }

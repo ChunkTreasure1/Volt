@@ -12,7 +12,7 @@ namespace GraphKey
 		PlayAudioNode();
 
 		const std::string GetName() override; 
-		const glm::vec4 GetColor() override;
+		const gem::vec4 GetColor() override;
 
 	private:
 		void Play();

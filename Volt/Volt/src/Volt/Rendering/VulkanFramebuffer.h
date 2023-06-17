@@ -13,7 +13,7 @@ namespace Volt
 		FramebufferAttachment()
 		{}
 
-		FramebufferAttachment(ImageFormat aFormat, const glm::vec4 aClearColor = { 1.f, 1.f, 1.f, 1.f }, TextureBlend aBlending = TextureBlend::None, const std::string& aDebugName = "", bool aStorageCompatible = false)
+		FramebufferAttachment(ImageFormat aFormat, const gem::vec4 aClearColor = { 1.f, 1.f, 1.f, 1.f }, TextureBlend aBlending = TextureBlend::None, const std::string& aDebugName = "", bool aStorageCompatible = false)
 			: format(aFormat), clearColor(aClearColor), debugName(aDebugName), storageCompatible(aStorageCompatible), blending(aBlending)
 		{}
 
@@ -23,8 +23,8 @@ namespace Volt
 		TextureBlend blending = TextureBlend::Alpha;
 		ClearMode clearMode = ClearMode::Clear;
 
-		glm::vec4 clearColor = { 1.f };
-		glm::vec4 borderColor = { 1.f };
+		gem::vec4 clearColor = { 1.f };
+		gem::vec4 borderColor = { 1.f };
 
 		std::string debugName;
 

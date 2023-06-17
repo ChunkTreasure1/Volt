@@ -13,13 +13,13 @@ namespace Volt
 	Image2D::Image2D(const ImageSpecification& specification, const void* data)
 		: mySpecification(specification)
 	{
-		Invalidate(specification.width, specification.height, nullptr, data);
+		Invalidate(specification.width, specification.height, true, data);
 	}
 
-	Image2D::Image2D(const ImageSpecification& specification, VmaPool pool)
+	Image2D::Image2D(const ImageSpecification& specification, bool transitionTolayout)
 		: mySpecification(specification)
 	{
-		Invalidate(specification.width, specification.height, pool, nullptr);
+		Invalidate(specification.width, specification.height, transitionTolayout, nullptr);
 	}
 
 	Image2D::~Image2D()
@@ -27,7 +27,7 @@ namespace Volt
 		Release();
 	}
 
-	void Image2D::Invalidate(uint32_t width, uint32_t height, VmaPool pool, const void* data)
+	void Image2D::Invalidate(uint32_t width, uint32_t height, bool transitionLayout, const void* data)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -39,10 +39,6 @@ namespace Volt
 		myImageData.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 		std::string allocatorName = "Image2D - Create";
-		if (pool)
-		{
-			allocatorName = {};
-		}
 
 		VulkanAllocator allocator{ allocatorName };
 		auto device = GraphicsContext::GetDevice();
@@ -126,17 +122,21 @@ namespace Volt
 				break;
 		}
 
-		if (pool)
-		{
-			myAllocation = allocator.AllocateImageInPool(imageInfo, memUsage, myImage, pool, std::format("Image {}", mySpecification.debugName));
-			myAllocatedWithCustomPool = true;
-		}
-		else
-		{
-			myAllocation = allocator.AllocateImage(imageInfo, memUsage, myImage, std::format("Image {}", mySpecification.debugName));
-		}
-
+		myAllocation = allocator.AllocateImage(imageInfo, memUsage, myImage, std::format("Image {}", mySpecification.debugName));
 		SetName(mySpecification.debugName);
+
+		if (mySpecification.mappable)
+		{
+			const VkDeviceSize bufferSize = mySpecification.width * mySpecification.height * Utility::PerPixelSizeFromFormat(mySpecification.format);
+
+			VkBufferCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			info.size = bufferSize;
+			info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			myMappingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, myMappingBuffer);
+		}
 
 		if (data)
 		{
@@ -211,7 +211,7 @@ namespace Volt
 		}
 
 		// Transition to correct layout
-		if (!pool)
+		if (transitionLayout)
 		{
 			VkImageLayout targetLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			switch (mySpecification.usage)
@@ -262,7 +262,7 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([imageViews = myImageViews, arrayViews = myArrayImageViews, image = myImage, allocation = myAllocation, usedCustomPool = myAllocatedWithCustomPool]()
+		Renderer::SubmitResourceChange([imageViews = myImageViews, arrayViews = myArrayImageViews, image = myImage, allocation = myAllocation, usedCustomPool = myAllocatedWithCustomPool, mappingAlloc = myMappingAllocation, mappingBuffer = myMappingBuffer]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			for (auto& [mip, view] : imageViews)
@@ -279,6 +279,12 @@ namespace Volt
 			{
 				VulkanAllocator allocator{ "Image2D - Destroy" };
 				allocator.DestroyImage(image, allocation);
+			}
+
+			if (mappingBuffer)
+			{
+				VulkanAllocator allocator{ "Image2D - Destroy" };
+				allocator.DestroyBuffer(mappingBuffer, mappingAlloc);
 			}
 		});
 
@@ -348,7 +354,7 @@ namespace Volt
 		for (uint32_t layer = 0; layer < mySpecification.layers; layer++)
 		{
 			barrier.subresourceRange.baseArrayLayer = layer;
-			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		}
 
 		for (uint32_t i = 1; i < mipLevels; i++)
@@ -544,7 +550,15 @@ namespace Volt
 	void Image2D::Unmap()
 	{
 		VulkanAllocator allocator{};
-		allocator.UnmapMemory(myAllocation);
+		allocator.UnmapMemory(myMappingAllocation);
+
+		VkCommandBuffer commandBuffer = GraphicsContext::GetDevice()->GetCommandBuffer(true);
+
+		Utility::TransitionImageLayout(commandBuffer, myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		Utility::CopyBufferToImage(commandBuffer, myMappingBuffer, myImage, mySpecification.width, mySpecification.height);
+		Utility::TransitionImageLayout(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, myImageData.layout);
+
+		GraphicsContext::GetDevice()->FlushCommandBuffer(commandBuffer);
 	}
 
 	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data)
@@ -552,9 +566,9 @@ namespace Volt
 		return CreateRef<Image2D>(specification, data);
 	}
 
-	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, VmaPool pool)
+	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, bool transitionLayout)
 	{
-		return CreateRef<Image2D>(specification, pool);
+		return CreateRef<Image2D>(specification, transitionLayout);
 	}
 
 	Buffer Image2D::ReadPixelInternal(uint32_t x, uint32_t y, uint32_t size)
@@ -680,6 +694,6 @@ namespace Volt
 	void* Image2D::MapInternal()
 	{
 		VulkanAllocator allocator{};
-		return allocator.MapMemory<void>(myAllocation);
+		return allocator.MapMemory<void>(myMappingAllocation);
 	}
 }

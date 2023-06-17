@@ -1,4 +1,5 @@
 name: "SSR"
 internal: true
 paths:
-  - "Engine/Shaders/Source/HLSL/PostProcessing/SSR/SSR_cs.hlsl"
+  - "Engine/Shaders/Source/HLSL/PostProcessing/SSR/SSR_ps.hlsl"
+  - "Engine/Shaders/Source/HLSL/Utility/FullscreenTriangle_vs.hlsl"

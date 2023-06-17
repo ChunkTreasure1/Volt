@@ -4,7 +4,7 @@
 #include <Volt/Events/ApplicationEvent.h>
 #include <Volt/Events/MouseEvent.h>
 
-#include <glm/glm.hpp>
+#include <GEM/gem.h>
 
 namespace Volt
 {
@@ -27,7 +27,7 @@ public:
 	float GetTranslationSpeed() { return m_translationSpeed; }
 
 	inline const bool HasControl() const { return m_isControllable; }
-	void Focus(const glm::vec3& focusPoint);
+	void Focus(const gem::vec3& focusPoint);
 
 	inline Ref<Volt::Camera> GetCamera() { return m_camera; }
 
@@ -46,22 +46,22 @@ private:
 	void DisableMouse();
 	void EnableMouse();
 
-	void ArcBall(const glm::vec2& deltaPos);
+	void ArcBall(const gem::vec2& deltaPos);
 	void ArcZoom(float deltaPos);
 
-	const glm::vec3 CalculatePosition() const;
+	const gem::vec3 CalculatePosition() const;
 
 	Ref<Volt::Camera> m_camera;
 
-	glm::vec2 m_lastMousePosition = { 0.f, 0.f };
-	glm::vec3 m_position = { 0.f, 0.f, 0.f };
-	glm::vec3 m_rotation = { 0.f, 0.f, 0.f };
+	gem::vec2 m_lastMousePosition = { 0.f, 0.f };
+	gem::vec3 m_position = { 0.f, 0.f, 0.f };
+	gem::vec3 m_rotation = { 0.f, 0.f, 0.f };
 
-	glm::vec3 m_positionDelta = { 0.f, 0.f, 0.f };
+	gem::vec3 m_positionDelta = { 0.f, 0.f, 0.f };
 	float m_pitchDelta = 0.f;
 	float m_yawDelta = 0.f;
 
-	glm::vec3 m_focalPoint = { 0.f, 0.f, 0.f };
+	gem::vec3 m_focalPoint = { 0.f, 0.f, 0.f };
 	float m_focalDistance = 100.f;
 	float m_minFocalDistance = 10000.f;
 

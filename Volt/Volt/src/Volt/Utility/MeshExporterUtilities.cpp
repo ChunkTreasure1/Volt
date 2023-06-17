@@ -24,7 +24,7 @@ namespace Volt
 			{
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					vertices[index].position = entity.GetTransform() * submesh.transform * glm::vec4(vertices[index].position, 1.f);
+					vertices[index].position = entity.GetTransform() * submesh.transform * gem::vec4(vertices[index].position, 1.f);
 				}
 			}
 
@@ -40,7 +40,7 @@ namespace Volt
 		return (!v.empty()) ? CreateRef<Volt::Mesh>(v, i, material) : nullptr;
 	}
 
-	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(const std::vector<Ref<Volt::Mesh>>& meshes, const std::vector<glm::mat4>& transforms, Ref<Volt::Material> material)
+	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(const std::vector<Ref<Volt::Mesh>>& meshes, const std::vector<gem::mat4>& transforms, Ref<Volt::Material> material)
 	{
 		std::vector<Volt::Vertex> v;
 		std::vector<uint32_t> i;
@@ -56,7 +56,7 @@ namespace Volt
 			{
 				for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
 				{
-					vertices[index].position = transforms[meshIndex] * submesh.transform * glm::vec4(vertices[index].position, 1.f);
+					vertices[index].position = transforms[meshIndex] * submesh.transform * gem::vec4(vertices[index].position, 1.f);
 				}
 			}
 
@@ -90,7 +90,7 @@ namespace Volt
 
 					for (auto& vert : mesh->myVertices)
 					{
-						auto v4 = glm::vec4(vert.position, 1.f);
+						auto v4 = gem::vec4(vert.position);
 						v4.w = 1.f;
 						vert.position = transform.GetTransform() * v4;
 					}

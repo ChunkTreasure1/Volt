@@ -43,9 +43,9 @@ namespace GraphKey
 			const auto& aTRS = a.pose.at(i);
 			const auto& bTRS = b.pose.at(i);
 
-			result[i].position = glm::mix(aTRS.position, bTRS.position, alpha);
-			result[i].rotation = glm::mix(aTRS.rotation, bTRS.rotation, alpha);
-			result[i].scale = glm::mix(aTRS.scale, bTRS.scale, alpha);
+			result[i].position = gem::lerp(aTRS.position, bTRS.position, alpha);
+			result[i].rotation = gem::slerp(aTRS.rotation, bTRS.rotation, alpha);
+			result[i].scale = gem::lerp(aTRS.scale, bTRS.scale, alpha);
 		}
 
 		AnimationOutputData output{};
@@ -100,7 +100,7 @@ namespace GraphKey
 			const auto& additiveBaseTRS = additiveBase.at(i);
 
 			result[i].position = baseTRS.position + (additiveTRS.position - additiveBaseTRS.position);
-			result[i].rotation = glm::normalize(baseTRS.rotation * (glm::inverse(additiveBaseTRS.rotation) * additiveTRS.rotation));
+			result[i].rotation = gem::normalize(baseTRS.rotation * (gem::inverse(additiveBaseTRS.rotation) * additiveTRS.rotation));
 			result[i].scale = baseTRS.scale + (additiveTRS.scale - additiveBaseTRS.scale);
 		}
 
@@ -116,7 +116,7 @@ namespace GraphKey
 		inputs =
 		{
 			AttributeConfigDefault("", AttributeDirection::Input, Volt::AssetHandle(0)),
-			AttributeConfigDefault("Value", AttributeDirection::Input, glm::vec2(0.f)),
+			AttributeConfigDefault("Value", AttributeDirection::Input, gem::vec2(0.f)),
 		};
 
 		outputs =
@@ -128,7 +128,7 @@ namespace GraphKey
 	void BlendSpaceNode::Sample()
 	{
 		const auto blendSpaceHandle = GetInput<Volt::AssetHandle>(0);
-		const auto blendSpaceValue = GetInput<glm::vec2>(1);
+		const auto blendSpaceValue = GetInput<gem::vec2>(1);
 
 		const auto blendSpace = Volt::AssetManager::GetAsset<Volt::BlendSpace>(blendSpaceHandle);
 
@@ -166,9 +166,9 @@ namespace GraphKey
 					const auto& aTRS = minAnimSample.at(i);
 					const auto& bTRS = maxAnimSample.at(i);
 
-					result[i].position = glm::mix(aTRS.position, bTRS.position, t);
-					result[i].rotation = glm::slerp(aTRS.rotation, bTRS.rotation, t);
-					result[i].scale = glm::mix(aTRS.scale, bTRS.scale, t);
+					result[i].position = gem::lerp(aTRS.position, bTRS.position, t);
+					result[i].rotation = gem::slerp(aTRS.rotation, bTRS.rotation, t);
+					result[i].scale = gem::lerp(aTRS.scale, bTRS.scale, t);
 				}
 
 				AnimationOutputData output{};
@@ -206,15 +206,15 @@ namespace GraphKey
 
 						if (i > 1)
 						{
-							result[j].position = glm::mix(result[j].position, bTRS.position, secondValue);
-							result[j].rotation = glm::slerp(result[j].rotation, bTRS.rotation, secondValue);
-							result[j].scale = glm::mix(result[j].scale, bTRS.scale, secondValue);
+							result[j].position = gem::lerp(result[j].position, bTRS.position, secondValue);
+							result[j].rotation = gem::slerp(result[j].rotation, bTRS.rotation, secondValue);
+							result[j].scale = gem::lerp(result[j].scale, bTRS.scale, secondValue);
 						}
 						else
 						{
-							result[j].position = glm::mix(aTRS.position, bTRS.position, secondValue);
-							result[j].rotation = glm::slerp(aTRS.rotation, bTRS.rotation, secondValue);
-							result[j].scale = glm::mix(aTRS.scale, bTRS.scale, secondValue);
+							result[j].position = gem::lerp(aTRS.position, bTRS.position, secondValue);
+							result[j].rotation = gem::slerp(aTRS.rotation, bTRS.rotation, secondValue);
+							result[j].scale = gem::lerp(aTRS.scale, bTRS.scale, secondValue);
 						}
 
 					}
@@ -278,7 +278,7 @@ namespace GraphKey
 		return anim->SampleTRS(animGraph->GetStartTime(), character->GetSkeleton(), true);
 	}
 
-	const std::vector<std::pair<float, Volt::AssetHandle>> BlendSpaceNode::GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue)
+	const std::vector<std::pair<float, Volt::AssetHandle>> BlendSpaceNode::GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const gem::vec2& blendValue)
 	{
 		if (blendSpace->GetAnimations().size() < 3)
 		{
@@ -290,7 +290,7 @@ namespace GraphKey
 
 		for (const auto& [value, anim] : blendSpace->GetAnimations())
 		{
-			const float distance = glm::distance(value, blendValue);
+			const float distance = gem::distance(value, blendValue);
 			distances.emplace_back(distance, anim);
 		}
 
@@ -487,9 +487,9 @@ namespace GraphKey
 
 			const auto& bTRS = blendPose.pose.at(i);
 
-			result[i].position = glm::mix(aTRS.position, bTRS.position, alpha);
-			result[i].rotation = glm::slerp(aTRS.rotation, bTRS.rotation, alpha);
-			result[i].scale = glm::mix(aTRS.scale, bTRS.scale, alpha);
+			result[i].position = gem::lerp(aTRS.position, bTRS.position, alpha);
+			result[i].rotation = gem::slerp(aTRS.rotation, bTRS.rotation, alpha);
+			result[i].scale = gem::lerp(aTRS.scale, bTRS.scale, alpha);
 		}
 
 		AnimationOutputData output{};
@@ -503,7 +503,7 @@ namespace GraphKey
 		{
 			AttributeConfig("Pose", AttributeDirection::Input),
 			AttributeConfigDefault("Bone Name", AttributeDirection::Input, std::string("")),
-			AttributeConfigDefault("Rotation", AttributeDirection::Input, glm::vec3{ 0.f })
+			AttributeConfigDefault("Rotation", AttributeDirection::Input, gem::vec3{ 0.f })
 		};
 
 		outputs =
@@ -526,12 +526,12 @@ namespace GraphKey
 
 		auto basePose = GetInput<AnimationOutputData>(0);
 		const auto& boneName = GetInput<std::string>(1);
-		const auto& rotation = GetInput<glm::vec3>(2);
+		const auto& rotation = GetInput<gem::vec3>(2);
 
 		int32_t jointIndex = skeleton->GetJointIndexFromName(boneName);
 		if (jointIndex != -1)
 		{
-			basePose.pose[jointIndex].rotation *= glm::quat{ glm::radians(rotation) };
+			basePose.pose[jointIndex].rotation *= gem::quat{ gem::radians(rotation) };
 		}
 
 		SetOutputData(0, basePose);

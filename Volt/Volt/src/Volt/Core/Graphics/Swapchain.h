@@ -31,8 +31,6 @@ namespace Volt
 		inline VkCommandBuffer GetCommandBuffer(uint32_t index) const { return myFrameInFlightData[index].commandBuffer; }
 		inline VkCommandPool GetCommandPool(uint32_t index) const { return myFrameInFlightData[index].commandPool; }
 
-		inline const auto& GetMonitorMode() const { return myMonitorMode; }
-
 		static Ref<Swapchain> Create(GLFWwindow* window);
 
 	private:

@@ -11,8 +11,8 @@ namespace Volt
 	{
 		Wire::EntityId entID;
 
-		glm::vec3 Position = glm::vec3(0);
-		glm::quat Rotation = glm::quat();
+		gem::vec3 Position = gem::vec3(0);
+		gem::quat Rotation = gem::quat();
 	};
 
 	class TimelinePlayer

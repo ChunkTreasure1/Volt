@@ -30,7 +30,7 @@ namespace Volt
 	{
 		if (myTotalBufferSize < myConsumedSize + sizeof(uint32_t) * indexCount)
 		{
-			const uint64_t newSize = glm::max(myConsumedSize + sizeof(uint32_t) * indexCount, (uint64_t)(myTotalBufferSize * 1.25));
+			const uint64_t newSize = gem::max(myConsumedSize + sizeof(uint32_t) * indexCount, (uint64_t)(myTotalBufferSize * 1.25));
 			Resize(newSize);
 		}
 

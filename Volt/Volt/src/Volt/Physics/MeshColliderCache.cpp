@@ -83,7 +83,7 @@ namespace Volt
 
 		for (size_t i = 0; i < count; i++)
 		{
-			const glm::mat4 transform = *(glm::mat4*)&totalData[offset];
+			const gem::mat4 transform = *(gem::mat4*)&totalData[offset];
 			offset += sizeof(transform);
 
 			const size_t collSize = *(size_t*)&totalData[offset];

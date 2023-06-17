@@ -42,7 +42,6 @@ include "Volt/vendor/DiscordSDK"
 include "Volt/vendor/gem"
 include "Volt/vendor/nfd-extended"
 include "Volt/vendor/TGAFbx"
-include "Volt/vendor/glm"
 
 group "Core"
 include "Amp"

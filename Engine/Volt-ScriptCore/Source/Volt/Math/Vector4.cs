@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace Volt
 {
@@ -42,6 +43,18 @@ namespace Volt
             x = (float)func(x);
             y = (float)func(y);
             z = (float)func(z);
+        }
+
+        [SecuritySafeCritical]
+        public unsafe byte[] GetBytes()
+        {
+            byte[] bytes = new byte[sizeof(Vector4)];
+            fixed (byte* ptr = bytes)
+            {
+                *(Vector4*)ptr = this;
+            }
+
+            return bytes;
         }
 
         /// <summary>

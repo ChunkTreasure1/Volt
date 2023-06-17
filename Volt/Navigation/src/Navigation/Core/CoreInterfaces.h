@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <gem/gem.h>
 
 namespace Volt
 {
@@ -28,8 +28,8 @@ namespace Volt
 
 		struct NavLinkConnection
 		{
-			glm::vec3 start = 0.f;
-			glm::vec3 end = 0.f;
+			gem::vec3 start = { 0.f };
+			gem::vec3 end = { 0.f };
 			bool bidirectional = true;
 			bool active = true;
 		};

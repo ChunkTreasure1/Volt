@@ -37,6 +37,7 @@
 #include "Volt/Rendering/Texture/Image3D.h"
 
 #include "Volt/Rendering/MaterialTable.h"
+#include "Volt/Rendering/MeshTable.h"
 #include "Volt/Rendering/SamplerStateSet.h"
 
 #include "Volt/Rendering/GlobalDescriptorSetManager.h"
@@ -82,6 +83,7 @@ namespace Volt
 	inline static std::mutex s_resourceQueueMutex;
 	inline static std::mutex s_materialMutex;
 	inline static std::mutex s_textureMutex;
+	inline static std::mutex s_meshMutex;
 
 	inline static std::unordered_map<size_t, ShaderDependencies> s_shaderDependencies;
 	inline static std::unordered_map<std::thread::id, ThreadRenderData> s_renderData;
@@ -119,6 +121,7 @@ namespace Volt
 
 		UpdateSamplerStateDescriptors();
 		UpdateMaterialDescriptors();
+		UpdateMeshDescriptors();
 
 		CreateDefaultData();
 	}
@@ -182,6 +185,11 @@ namespace Volt
 		}
 
 		{
+			std::scoped_lock lock{ s_meshMutex };
+			bindlessData.meshTable->UpdateMeshData(currentFrame);
+		}
+
+		{
 			std::scoped_lock lock{ s_textureMutex };
 		bindlessData.textureTable->UpdateDescriptors(bindlessData.globalDescriptorSets.at(Sets::TEXTURES), currentFrame);
 		}
@@ -205,8 +213,6 @@ namespace Volt
 	void Renderer::BeginPass(Ref<CommandBuffer> commandBuffer, Ref<VulkanRenderPass> renderPass)
 	{
 		VT_PROFILE_FUNCTION();
-
-		BeginSection(commandBuffer, renderPass->debugName, renderPass->debugColor);
 
 		auto& threadData = GetThreadData();
 
@@ -248,15 +254,11 @@ namespace Volt
 		threadData.currentRenderPass->framebuffer->Unbind(commandBuffer->GetCurrentCommandBuffer());
 		threadData.currentRenderPass = nullptr;
 		threadData.currentOverridePipeline = nullptr;
-
-		EndSection(commandBuffer);
 	}
 
 	void Renderer::BeginFrameGraphPass(Ref<CommandBuffer> commandBuffer, const FrameGraphRenderPassInfo& renderPassInfo, const FrameGraphRenderingInfo& renderingInfo)
 	{
 		VT_PROFILE_FUNCTION();
-
-		BeginSection(commandBuffer, renderPassInfo.name, renderPassInfo.color);
 
 		auto& threadData = GetThreadData();
 		threadData.currentOverridePipeline = renderPassInfo.overridePipeline;
@@ -307,11 +309,9 @@ namespace Volt
 
 		auto& threadData = GetThreadData();
 		threadData.currentOverridePipeline = nullptr;
-
-		EndSection(commandBuffer);
 	}
 
-	void Renderer::BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const glm::vec4& sectionColor)
+	void Renderer::BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const gem::vec4& sectionColor)
 	{
 #ifdef VT_ENABLE_GPU_MARKERS
 		VkDebugUtilsLabelEXT markerInfo{};
@@ -424,7 +424,7 @@ namespace Volt
 			const VkDeviceSize countOffset = i * sizeof(uint32_t);
 			const uint32_t drawStride = sizeof(IndirectGPUCommand);
 
-			const Ref<ShaderStorageBuffer> currentIndirectBuffer = indirectPass.drawArgsStorageBuffer->Get(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex);
+			const Ref<ShaderStorageBuffer> currentIndirectBuffer = indirectPass.drawArgsStorageBuffer->Get(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex);
 			const Ref<ShaderStorageBuffer> currentCountBuffer = indirectPass.drawCountIDStorageBuffer->Get(Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, currentIndex);
 
 			DrawIndirectBatch(commandBuffer, currentIndirectBuffer, drawOffset, currentCountBuffer, countOffset, batches.at(i));
@@ -643,7 +643,7 @@ namespace Volt
 		pipeline->InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), currentIndex);
 	}
 
-	void Renderer::ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const glm::vec4& clearValue)
+	void Renderer::ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const gem::vec4& clearValue)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -749,16 +749,17 @@ namespace Volt
 
 			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentMipFilter"), 1, true);
 
-			const float deltaRoughness = 1.f / glm::max((float)imageSpec.mips - 1.f, 1.f);
+			const float deltaRoughness = 1.f / gem::max((float)imageSpec.mips - 1.f, 1.f);
 			for (uint32_t i = 0, size = cubeMapSize; i < imageSpec.mips; i++, size /= 2)
 			{
-				const uint32_t numGroups = glm::max(1u, size / 32);
+				const uint32_t numGroups = gem::max(1u, size / 32);
 
 				float roughness = i * deltaRoughness;
-				roughness = glm::max(roughness, 0.05f);
+				roughness = gem::max(roughness, 0.05f);
 
 				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
 
+				filterPipeline->Clear(0);
 				filterPipeline->Bind(cmdBuffer);
 				filterPipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
 
@@ -812,7 +813,16 @@ namespace Volt
 
 				irradiancePipeline->SetImage(irradianceMap, Sets::OTHER, 0, ImageAccess::Write);
 				irradiancePipeline->SetImage(environmentFiltered, Sets::OTHER, 1, ImageAccess::Read);
+
+				ExecutionBarrierInfo barrierInfo{};
+				barrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+				barrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+				barrierInfo.dstAccessMask = 0;
+				barrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+
+				irradiancePipeline->InsertExecutionBarrier(barrierInfo);
 				irradiancePipeline->Dispatch(cmdBuffer, irradianceMapSize / conversionThreadCount, irradianceMapSize / conversionThreadCount, 6);
+				irradiancePipeline->InsertBarriers(cmdBuffer);
 
 				irradianceMap->GenerateMips(false, cmdBuffer);
 				irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -980,6 +990,23 @@ namespace Volt
 		s_rendererData->bindlessData.materialTable->UpdateMaterial(material);
 	}
 
+	const uint32_t Renderer::AddMesh(Mesh* mesh, const uint32_t subMeshIndex)
+	{
+		std::scoped_lock lock{ s_meshMutex };
+		return s_rendererData->bindlessData.meshTable->AddMesh(mesh, subMeshIndex);
+	}
+
+	void Renderer::RemoveMesh(Mesh* mesh, const uint32_t subMeshIndex)
+	{
+		if (!s_rendererData)
+		{
+			return;
+		}
+
+		std::scoped_lock lock{ s_meshMutex };
+		s_rendererData->bindlessData.meshTable->RemoveMesh(mesh, subMeshIndex);
+	}
+
 	Renderer::BindlessData& Renderer::GetBindlessData()
 	{
 		return s_rendererData->bindlessData;
@@ -1046,6 +1073,7 @@ namespace Volt
 		//data.combinedIndexBuffer = CombinedIndexBuffer::Create(BindlessData::START_INDEX_COUNT);
 		data.textureTable = TextureTable::Create();
 		data.materialTable = MaterialTable::Create();
+		data.meshTable = MeshTable::Create();
 		data.samplerStateSet = SamplerStateSet::Create(GetFramesInFlightCount());
 
 		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_LINEAR, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::None);
@@ -1140,14 +1168,14 @@ namespace Volt
 
 		// Empty normal
 		{
-			const glm::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
+			const gem::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
 			s_defaultData->emptyNormal = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &normalData);
 			s_defaultData->emptyNormal->handle = Asset::Null();
 		}
 
 		// Empty Material
 		{
-			const glm::vec4 materialData = { 0.f, 1.f, 1.f, 0.f };
+			const gem::vec4 materialData = { 0.f, 1.f, 1.f, 0.f };
 			s_defaultData->emptyMaterial = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &materialData);
 			s_defaultData->emptyMaterial->handle = Asset::Null();
 		}
@@ -1162,7 +1190,7 @@ namespace Volt
 			spec.usage = ImageUsage::Texture;
 			spec.debugName = "Black 3D Image";
 
-			const glm::vec4 blackColor = { 0.f };
+			const gem::vec4 blackColor = { 0.f };
 			s_defaultData->black3DImage = Image3D::Create(spec, &blackColor);
 		}
 	}
@@ -1232,7 +1260,6 @@ namespace Volt
 		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
 		{
 			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(i);
-
 			const auto buffer = s_rendererData->bindlessData.materialTable->GetStorageBuffer(i);
 
 			VkDescriptorBufferInfo bufferInfo{};
@@ -1243,6 +1270,35 @@ namespace Volt
 			VkWriteDescriptorSet writeDescriptor{};
 			writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptor.dstSet = descriptorSet;
+			writeDescriptor.dstBinding = Bindings::MATERIAL_TABLE;
+			writeDescriptor.dstArrayElement = 0;
+			writeDescriptor.descriptorCount = 1;
+			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			writeDescriptor.pBufferInfo = &bufferInfo;
+
+			auto device = GraphicsContext::GetDevice();
+			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+		}
+	}
+
+	void Renderer::UpdateMeshDescriptors()
+	{
+		VT_PROFILE_FUNCTION();
+
+		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
+		{
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(i);
+			const auto buffer = s_rendererData->bindlessData.meshTable->GetStorageBuffer(i);
+
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = buffer->GetHandle();
+			bufferInfo.offset = 0;
+			bufferInfo.range = buffer->GetSize();
+
+			VkWriteDescriptorSet writeDescriptor{};
+			writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptor.dstSet = descriptorSet;
+			writeDescriptor.dstBinding = Bindings::MESH_TABLE;
 			writeDescriptor.dstArrayElement = 0;
 			writeDescriptor.descriptorCount = 1;
 			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1298,7 +1354,9 @@ namespace Volt
 
 		if (renderPipeline->HasDescriptorSet(Sets::MAINBUFFERS))
 		{
-			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(currentIndex);
+			const auto appIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(appIndex);
 			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
 		}
 
@@ -1335,7 +1393,9 @@ namespace Volt
 
 		if (renderPipeline->HasDescriptorSet(Sets::MAINBUFFERS))
 		{
-			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(currentIndex);
+			const auto appIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
+			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(appIndex);
 			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
 		}
 	}

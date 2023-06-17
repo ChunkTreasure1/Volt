@@ -148,7 +148,7 @@ void ParticleEmitterEditor::UpdateViewport()
 	myPerspectiveBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-	if (myViewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
+	if (myViewportSize != (*(gem::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
 	{
 		myViewportSize = { viewportSize.x, viewportSize.y };
 		myPreviewRenderer->Resize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
@@ -261,9 +261,9 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 				ImGui::Separator();
 				if (UI::BeginProperties("emitterScene"))
 				{
-					static glm::vec3 modelPos{ 0 };
-					static glm::vec3 modelRot{ 0 };
-					static glm::vec3 modelScale{ 1 };
+					static gem::vec3 modelPos{ 0 };
+					static gem::vec3 modelRot{ 0 };
+					static gem::vec3 modelScale{ 1 };
 
 					UI::PropertyAxisColor("Position", modelPos);
 					UI::PropertyAxisColor("Rotation", modelRot);
@@ -282,8 +282,8 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 
 			if (UI::BeginProperties("emitterSceneSkybox"))
 			{
-				static glm::vec3 lightRot{ 0 };
-				static glm::vec3 lightColor{ 0 };
+				static gem::vec3 lightRot{ 0 };
+				static gem::vec3 lightColor{ 0 };
 				UI::PropertyAxisColor("Light Rotation", lightRot);
 				myLightEntity.SetRotation(lightRot);
 
@@ -368,7 +368,7 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 						ImGui::PopItemWidth();
 					}
 
-					static glm::vec2 lifespan{ myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
+					static gem::vec2 lifespan{ myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
 					lifespan = { myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
 
 					UI::Property("Particle Lifespan", lifespan, 0.f, 0.f, nullptr, "x = min life time, y = max life time");
@@ -511,7 +511,7 @@ void ParticleEmitterEditor::UpdateEmitter(float aDeltaTime)
 {
 	if (myIsMoving)
 	{
-		glm::vec3 entPos = myEmitterEntity.GetLocalPosition();
+		gem::vec3 entPos = myEmitterEntity.GetLocalPosition();
 
 		if (entPos.x > myMoveLength || entPos.x < -myMoveLength)
 		{

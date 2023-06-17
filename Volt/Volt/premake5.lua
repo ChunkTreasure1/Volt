@@ -79,7 +79,7 @@ project "Volt"
 		"%{IncludeDir.discord}",
 		"%{IncludeDir.NFDExtended}",
 
-		"%{IncludeDir.glm}",
+		"%{IncludeDir.GEM}",
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.DirectXTex}",
@@ -112,8 +112,7 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX",
-		"glm"
+		"TGAFBX"
 	}
 
 	defines
@@ -123,11 +122,7 @@ project "Volt"
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
 		"OPTICK_ENABLE_GPU_VULKAN",
-		"_WINSOCKAPI_",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
-		"GLM_FORCE_LEFT_HANDED"
+		"_WINSOCKAPI_"
 	}
 
 	filter "files:vendor/**.cpp"

@@ -8,9 +8,9 @@ struct NavMeshLine
 {
 	void Draw();
 
-	glm::vec3 start;
-	glm::vec3 end;
-	glm::vec4 color;
+	gem::vec3 start;
+	gem::vec3 end;
+	gem::vec4 color;
 };
 
 class NavMeshDrawCompiler : public duDebugDraw
@@ -50,7 +50,7 @@ public:
 
 	static void DrawNavMesh();
 	static void DrawLinks(const std::vector<Volt::AI::NavLinkConnection>& links);
-	static void DrawPath(const std::vector<glm::vec3>& path);
+	static void DrawPath(const std::vector<gem::vec3>& path);
 
 	static void CompileDebugMesh(Volt::AI::NavMesh* navmesh);
 

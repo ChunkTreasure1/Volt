@@ -62,11 +62,11 @@ namespace Volt
 		float segIncr = 1.0f / (float)(segments - 1);
 		for (size_t s = 0; s < segments; s++)
 		{
-			float x = glm::cos(float(glm::pi<float>() * 2) * s * segIncr) * radius;
-			float z = glm::sin(float(glm::pi<float>() * 2) * s * segIncr) * radius;
+			float x = gem::cos(float(gem::pi<float>() * 2) * s * segIncr) * radius;
+			float z = gem::sin(float(gem::pi<float>() * 2) * s * segIncr) * radius;
 
 			Vertex& vertex = vertices.emplace_back();
-			vertex.position = glm::vec3(actualRadius * x, actualRadius * y + height * dy, actualRadius * z);
+			vertex.position = gem::vec3(actualRadius * x, actualRadius * y + height * dy, actualRadius * z);
 		}
 	}
 
@@ -90,7 +90,7 @@ namespace Volt
 
 		for (int r = 0; r < subdivisionsHeight / 2; r++)
 		{
-			CalculateRing(numSegments, glm::sin(glm::pi<float>() * r * ringIncr), glm::sin(glm::pi<float>() * (r * ringIncr - 0.5f)), -0.5f, height, radius + radiusModifier, vertices);
+			CalculateRing(numSegments, gem::sin(gem::pi() * r * ringIncr), gem::sin(gem::pi() * (r * ringIncr - 0.5f)), -0.5f, height, radius + radiusModifier, vertices);
 		}
 
 		for (int r = 0; r < ringsBody; r++)
@@ -100,7 +100,7 @@ namespace Volt
 
 		for (int r = subdivisionsHeight / 2; r < subdivisionsHeight; r++)
 		{
-			CalculateRing(numSegments, glm::sin(glm::pi<float>() * r * ringIncr), glm::sin(glm::pi<float>() * (r * ringIncr - 0.5f)), 0.5f, height, radius + radiusModifier, vertices);
+			CalculateRing(numSegments, gem::sin(gem::pi() * r * ringIncr), gem::sin(gem::pi() * (r * ringIncr - 0.5f)), 0.5f, height, radius + radiusModifier, vertices);
 		}
 
 		uint32_t indexCount = 0;

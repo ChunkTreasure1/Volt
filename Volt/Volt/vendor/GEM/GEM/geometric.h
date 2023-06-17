@@ -140,7 +140,7 @@ namespace gem
 		// use lerp if the quaternions are collinear
 		if (std::abs(cosTheta) > 1 - 1e-3)
 		{
-			return glm::normalize(qua<T>(
+			return gem::normalize(qua<T>(
 				lerp(w.w, z.w, a),
 				lerp(w.x, z.x, a),
 				lerp(w.y, z.y, a),

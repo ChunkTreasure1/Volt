@@ -18,7 +18,7 @@ namespace GraphKey
 		~CrossfadeNode() override = default;
 
 		inline const std::string GetName() override { return "Crossfade"; }
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void TryApplyCrossfade();
@@ -30,7 +30,7 @@ namespace GraphKey
 		~AdditiveNode() override = default;
 
 		inline const std::string GetName() override { return "Additive"; }
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void TryApplyAdditive();
@@ -42,14 +42,14 @@ namespace GraphKey
 		~BlendSpaceNode() override = default;
 	
 		inline const std::string GetName() override { return "Blend Space"; }
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void Sample();
 
 		const std::array<std::pair<float, Volt::AssetHandle>, 2> FindClosestKeys1D(Ref<Volt::BlendSpace> blendSpace, float blendValue);
 		const std::vector<Volt::Animation::TRS> TrySampleAnimation(Volt::AssetHandle animationHandle);
-		const std::vector<std::pair<float, Volt::AssetHandle>> GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue);
+		const std::vector<std::pair<float, Volt::AssetHandle>> GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const gem::vec2& blendValue);
 		const size_t GetSkeletonJointCount() const;
 	};
 
@@ -64,7 +64,7 @@ namespace GraphKey
 		~LayeredBlendPerBoneNode() override = default;
 
 		inline const std::string GetName() override { return "Layered blend per bone"; }
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 
 		void Serialize(YAML::Emitter& out) override;
 		void Deserialize(const YAML::Node& node) override;
@@ -87,7 +87,7 @@ namespace GraphKey
 		~RotateBoneNode() override = default;
 
 		inline const std::string GetName() override { return "Rotate bone"; }
-		inline const glm::vec4 GetColor() override { return { 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void RotateBone();

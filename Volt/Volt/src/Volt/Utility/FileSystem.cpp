@@ -134,7 +134,7 @@ std::filesystem::path FileSystem::OpenFileDialogue(const std::vector<FileFilter>
 
 	NFD::UniquePath outPath;
 	nfdresult_t result = NFD::OpenDialog(outPath, filterItems.data(), static_cast<nfdfiltersize_t>(filterItems.size()), absolutePath.string().c_str());
-	
+
 	switch (result)
 	{
 		case NFD_OKAY:
@@ -251,6 +251,8 @@ std::string FileSystem::GetEnvVariable(const std::string& key)
 			delete[] data;
 			return result;
 		}
+		
+		delete[] data;
 	}
 
 	return std::string{};

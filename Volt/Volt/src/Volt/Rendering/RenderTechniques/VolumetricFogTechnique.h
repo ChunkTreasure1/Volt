@@ -19,7 +19,7 @@ namespace Volt
 	class VolumetricFogTechnique
 	{
 	public:
-		VolumetricFogTechnique(const glm::uvec2& renderSize, const GlobalDescriptorMap& descriptorMap, const VolumetricFogSettings& settings, bool dirLightShadows);
+		VolumetricFogTechnique(const gem::vec2ui& renderSize, const GlobalDescriptorMap& descriptorMap, const VolumetricFogSettings& settings, bool dirLightShadows);
 
 		void AddInjectionPass(FrameGraph& frameGraph, Ref<ComputePipeline> injectionPipeline, Ref<Image3D> resultImage);
 		void AddRayMarchPass(FrameGraph& frameGraph, Ref<ComputePipeline> rayMarchPipeline, Ref<Image3D> resultImage);
@@ -29,6 +29,6 @@ namespace Volt
 		const VolumetricFogSettings& mySettings;
 		bool myDirLightShadows = false;
 
-		glm::uvec2 myRenderSize;
+		gem::vec2ui myRenderSize;
 	};
 }

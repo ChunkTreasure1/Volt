@@ -113,7 +113,7 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		inline const std::string GetName() override { return "On Collision Enter"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 	};
 
 	class OnCollisionExitNode : public Node
@@ -124,7 +124,7 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		inline const std::string GetName() override { return "On Collision Exit"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 	};
 
 	class OnTriggerExitNode : public Node
@@ -135,7 +135,7 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		inline const std::string GetName() override { return "On Trigger Exit"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 	};
 
 	class OnTriggerEnterNode : public Node
@@ -146,6 +146,6 @@ namespace GraphKey
 		void OnEvent(Volt::Event& e) override;
 
 		inline const std::string GetName() override { return "On Trigger Enter"; }
-		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 	};
 }

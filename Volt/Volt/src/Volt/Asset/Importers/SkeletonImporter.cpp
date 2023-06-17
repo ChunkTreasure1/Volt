@@ -79,7 +79,7 @@ namespace Volt
 		{
 			for (const auto& invBindPoseNode : invBindPosesNode)
 			{
-				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, glm::mat4(1.f));
+				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, gem::mat4(1.f));
 			}
 		}
 
@@ -89,9 +89,9 @@ namespace Volt
 			for (const auto& transform : restPoseNode)
 			{
 				auto& trs = skeleton->myRestPose.emplace_back();
-				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, glm::vec3{ 0.f });
-				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, glm::quat{});
-				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, glm::vec3{ 1.f });
+				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, gem::vec3{ 0.f });
+				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, gem::quat{});
+				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, gem::vec3{ 1.f });
 			}
 		}
 

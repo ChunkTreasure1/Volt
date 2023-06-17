@@ -32,6 +32,7 @@ namespace Nexus
 		void ClearRegistry() { m_registry.clear(); }
 		void ClearLinks() { m_registry.clear(); }
 
+		// make 1 map from rep id to hieracy id std::unordered_map<TYPE::REP_ID, std::pair<TYPE::HID, Ref<Replicated>>>
 		std::unordered_map<TYPE::REP_ID, Ref<Replicated>> m_registry;
 		std::unordered_map<TYPE::REP_ID, std::unordered_map<std::string, TYPE::REP_ID>> m_links;
 	};

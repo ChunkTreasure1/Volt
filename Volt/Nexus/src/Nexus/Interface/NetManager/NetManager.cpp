@@ -45,7 +45,7 @@ namespace Nexus
 		m_timer += deltaTime;
 		if (m_timer > TICK_LEN)
 		{
-			Update();
+			BackendUpdate();
 			m_timer -= TICK_LEN;
 		}
 	}
@@ -63,10 +63,16 @@ namespace Nexus
 				case Nexus::ePacketID::CONNECT:OnConnect(); break;
 				case Nexus::ePacketID::CONNECTION_CONFIRMED:OnConnectionConfirmed(); break;
 				case Nexus::ePacketID::DISCONNECT:OnDisconnect(); break;
+				case Nexus::ePacketID::DISCONNECTION_CONFIRMED:OnDisconnectConfirmed(); break;
 				case Nexus::ePacketID::UPDATE:OnUpdate(); break;
+
+				case Nexus::ePacketID::RELOAD:OnReload(); break;
+				case Nexus::ePacketID::RELOAD_DENIED:OnReloadDenied(); break;
+				case Nexus::ePacketID::RELOAD_CONFIRMED:OnReloadConfirmed(); break;
 
 				case Nexus::ePacketID::CREATE_ENTITY: OnCreateEntity(); break;
 				case Nexus::ePacketID::REMOVE_ENTITY: OnDestroyEntity(); break;
+				case Nexus::ePacketID::CONSTRUCT_REGISTRY: OnConstructRegistry(); break;
 
 				case Nexus::ePacketID::MOVE: OnMoveUpdate(); break;
 				case Nexus::ePacketID::RPC: OnRPC(); break;
@@ -81,4 +87,4 @@ namespace Nexus
 			}
 		}
 	}
-}
+}	

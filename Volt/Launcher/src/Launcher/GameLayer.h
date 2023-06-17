@@ -34,8 +34,9 @@ private:
 	bool OnSceneLoaded(Volt::OnSceneLoadedEvent& e);
 	bool OnGameStateChanged(Volt::OnGameStateChangedEvent& e);
 
-	void TransitionToNewScene();
 	Volt::SceneRendererSettings LoadGraphicSettings();
+
+	void TrySceneTransition();
 
 	Ref<Volt::SceneRenderer> mySceneRenderer;
 	Ref<Volt::Scene> myScene;
@@ -45,7 +46,6 @@ private:
 
 	// Loading
 	bool myShouldLoadNewScene = false;
-	bool myIsLoadingScene = false;
 	uint32_t myLastWidth = 0;
 	uint32_t myLastHeight = 0;
 };
