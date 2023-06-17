@@ -137,6 +137,8 @@ project "Sandbox"
 		"%{Library.AkStreamMgr}",
 		"%{Library.AkMusicEngine}",
 
+		"%{Library.AkRoomVerbFX}",
+
 		"%{Library.P4_client}",
 		"%{Library.P4_api}",
 		"%{Library.P4_script}",
@@ -166,12 +168,6 @@ project "Sandbox"
 		"%{Library.Vulkan}",
 		"%{Library.dxc}"
     }
-
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Debug"
-	}
 
 	debugargs 
 	{

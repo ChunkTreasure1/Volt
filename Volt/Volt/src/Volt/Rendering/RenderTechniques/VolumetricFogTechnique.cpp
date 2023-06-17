@@ -49,6 +49,8 @@ namespace Volt
 					builder.ReadResource(lightHandle);
 				}
 			}
+
+			builder.SetIsComputePass();
 		},
 
 		[=](const InjectionData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
@@ -66,11 +68,9 @@ namespace Volt
 			pushConstants.anisotropy = mySettings.anisotropy;
 			pushConstants.density = mySettings.density;
 			pushConstants.globalDensity = mySettings.globalDensity;
-			pushConstants.globalColor = glm::vec4(mySettings.globalColor, 1.f);
+			pushConstants.globalColor = glm::vec4{ mySettings.globalColor, 1.f };
 			pushConstants.sizeMultiplier.x = static_cast<float>(myRenderSize.x) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_WIDTH);
 			pushConstants.sizeMultiplier.y = static_cast<float>(myRenderSize.y) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_HEIGHT);
-
-			Renderer::BeginSection(commandBuffer, "Fog Injection Pass", TO_NORMALIZEDRGB(6, 71, 24));
 
 			const auto& outputInjectionResource = resources.GetImageResource(data.injectionImage);
 
@@ -95,7 +95,6 @@ namespace Volt
 			const uint32_t groupZ = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_DEPTH / (float)localSizeZ);
 
 			Renderer::DispatchComputePipeline(commandBuffer, injectionPipeline, groupX, groupY, groupZ);
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 
@@ -113,12 +112,12 @@ namespace Volt
 
 			builder.WriteResource(data.rayMarched);
 			builder.ReadResource(injectionData.injectionImage);
+
+			builder.SetIsComputePass();
 		},
 
 		[=](const VolumetricFogData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "Fog Ray March Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& outputRayMarchedResource = resources.GetImageResource(data.rayMarched);
 			const auto& injectionResource = resources.GetImageResource(injectionData.injectionImage);
 
@@ -143,7 +142,6 @@ namespace Volt
 			const uint32_t groupZ = 1;
 
 			Renderer::DispatchComputePipeline(commandBuffer, rayMarchPipeline, groupX, groupY, groupZ);
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

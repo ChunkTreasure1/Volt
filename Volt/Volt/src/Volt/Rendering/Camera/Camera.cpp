@@ -54,7 +54,7 @@ namespace Volt
 	{
 		mySubpixelOffset = offset;
 
-		if (offset == glm::vec2(0.f))
+		if (glm::all(glm::equal(offset, { 0.f })))
 		{
 			return;
 		}
@@ -68,9 +68,9 @@ namespace Volt
 			myProjectionMatrix = glm::perspective(glm::radians(myFieldOfView), myAspecRatio, myNearPlane, myFarPlane);
 		}
 
-		if (mySubpixelOffset != glm::vec2(0.f))
+		if (glm::all(glm::notEqual(mySubpixelOffset, { 0.f })))
 		{
-			myProjectionMatrix = glm::translate(glm::mat4{ 1.f }, { offset.x, offset.y, 0.f }) * myProjectionMatrix;
+			myProjectionMatrix = glm::translate(glm::mat4{ 1.f }, { offset.x, offset.y, 0.f })* myProjectionMatrix;
 		}
 	}
 

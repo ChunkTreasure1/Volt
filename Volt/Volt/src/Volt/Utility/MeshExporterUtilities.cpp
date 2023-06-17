@@ -91,7 +91,6 @@ namespace Volt
 					for (auto& vert : mesh->myVertices)
 					{
 						auto v4 = glm::vec4(vert.position, 1.f);
-						v4.w = 1.f;
 						vert.position = transform.GetTransform() * v4;
 					}
 

@@ -14,6 +14,8 @@
 #include "Volt/Rendering/FrameGraph/TransientResourceSystem.h"
 #include "Volt/Rendering/FrameGraph/CommandBufferCache.h"
 
+#include "Volt/Rendering/Vertex.h"
+
 namespace Volt
 {
 	class Mesh;
@@ -31,6 +33,7 @@ namespace Volt
 
 	class GlobalDescriptorSet;
 	class VertexBufferSet;
+	class IndexBuffer;
 
 	class PostProcessingStack;
 
@@ -58,6 +61,19 @@ namespace Volt
 			pipelineStatistics = {};
 			triangleCount = 0;
 		}
+	};
+
+	enum class RenderMode : uint32_t
+	{
+		Default = 0,
+		Normals,
+		Roughness,
+		Metallic,
+		WorldPosition,
+		LightComplexity,
+		Emissive,
+		AO,
+		COUNT
 	};
 
 	class SceneRenderer
@@ -92,7 +108,9 @@ namespace Volt
 
 			DirectionalLight directionalLight{};
 			std::vector<PointLight> pointLights{};
+
 			std::vector<SpotLight> spotLights{};
+
 			std::vector<SphereLight> sphereLights{};
 			std::vector<RectangleLight> rectangleLights{};
 
@@ -146,8 +164,13 @@ namespace Volt
 		Ref<Image2D> GetIDImage();
 
 		inline SceneRendererSettings& GetSettings() { return mySettings; }
+		inline const glm::uvec2& GetOriginalSize() const { return myOriginalSize; }
 
 		void ApplySettings();
+		void UpdateSettings(const SceneRendererSettings& settings);
+
+		void SetRenderMode(RenderMode renderingMode);
+		inline const RenderMode GetCurrentRenderMode() const { return myCurrentRenderMode; }
 
 		void UpdateRayTracingScene(); // #TODO_Ivar: Remove!
 
@@ -161,6 +184,7 @@ namespace Volt
 		{
 			None = 0,
 			Frustum,
+			CameraFrustum,
 			AABB
 		};
 
@@ -185,10 +209,12 @@ namespace Volt
 		struct IndirectPassParams
 		{
 			MaterialFlag materialFlags = MaterialFlag::All;
-			DrawCullMode cullMode = DrawCullMode::Frustum;
+			DrawCullMode cullMode = DrawCullMode::CameraFrustum;
 
 			glm::vec3 aabbMin = 0.f;
 			glm::vec3 aabbMax = 0.f;
+
+			glm::mat4 projection = 1.f;
 		};
 
 		struct LineData
@@ -217,6 +243,35 @@ namespace Volt
 			uint32_t vertexCount = 0;
 		};
 
+		struct TextData
+		{
+			inline ~TextData()
+			{
+				if (!vertexBufferBase)
+				{
+					return;
+				}
+
+				delete[] vertexBufferBase;
+				vertexBufferBase = nullptr;
+				vertexBufferPtr = nullptr;
+			}
+
+			inline static constexpr uint32_t MAX_QUADS = 10000;
+			inline static constexpr uint32_t MAX_VERTICES = MAX_QUADS * 4;
+			inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
+
+			Ref<VertexBufferSet> vertexBuffer;
+			Ref<IndexBuffer> indexBuffer;
+			Ref<RenderPipeline> renderPipeline;
+
+			glm::vec4 vertices[4];
+			uint32_t indexCount = 0;
+
+			TextVertex* vertexBufferBase = nullptr;
+			TextVertex* vertexBufferPtr = nullptr;
+		};
+
 		void BeginTimestamp(const std::string& label);
 		void EndTimestamp();
 
@@ -229,12 +284,17 @@ namespace Volt
 
 		void CreateLineData();
 		void CreateBillboardData();
+		void CreateTextData();
 
 		void UpdateBuffers(Ref<Camera> camera);
 		void FetchCommands(Ref<Camera> camera);
 		void FetchMeshCommands();
 		void FetchAnimatedMeshCommands();
 		void FetchParticles(Ref<Camera> camera);
+
+		void DispatchText(Ref<CommandBuffer> cmdBuffer);
+
+		void SubmitString(const TextCommand& cmd);
 
 		void ResizeBuffersIfNeeded();
 
@@ -309,13 +369,12 @@ namespace Volt
 
 		void ClearCountBuffer(const IndirectPass& pass, Ref<CommandBuffer> commandBuffer);
 		void CullRenderCommands(const IndirectPass& pass, const IndirectPassParams& params, Ref<CommandBuffer> commandBuffer);
+		void PerformLODSelection(Ref<CommandBuffer> commandBuffer);
 
-		inline static constexpr uint32_t MAX_OBJECT_COUNT = 20000;
 		inline static constexpr uint32_t MAX_POINT_LIGHTS = 1024;
 		inline static constexpr uint32_t MAX_SPOT_LIGHTS = 1024;
 		inline static constexpr uint32_t MAX_SPHERE_LIGHTS = 1024;
 		inline static constexpr uint32_t MAX_RECTANGLE_LIGHTS = 1024;
-		inline static constexpr uint32_t MAX_ANIMATION_BONES = 8192;
 		inline static constexpr uint32_t MAX_PARTICLES = 1'000'000;
 
 		SceneRendererSpecification mySpecification{};
@@ -327,6 +386,8 @@ namespace Volt
 		glm::uvec2	myRenderSize = { 1 };
 		glm::uvec2	myScaledSize = { 1 };
 		glm::uvec2 myOriginalSize = { 1 };
+
+		RenderMode myCurrentRenderMode = RenderMode::Default;
 
 		Weak<Scene> myScene;
 
@@ -400,16 +461,20 @@ namespace Volt
 		Ref<ComputePipeline> mySSSBlurPipeline[2];
 		Ref<ComputePipeline> mySSSCompositePipeline;
 
-		Ref<ComputePipeline> mySSRPipeline;
-		Ref<ComputePipeline> mySSRCompositePipeline;
+		Ref<ComputePipeline> myLODSelectionPipeline;
 
 		Ref<Material> myGridMaterial;
 		Ref<Material> myDefaultParticleMaterial;
 		Ref<Material> myTransparentCompositeMaterial;
 		Ref<Material> myDecalMaterial;
+		Ref<Material> mySSRMaterial;
+		Ref<Material> mySSRCompositeMaterial;
 
 		Ref<Material> myOutlineJumpFloodInitMaterial;
 		Ref<Material> myOutlineJumpFloodPassMaterial;
+
+		glm::uvec2 myLightCullingWorkGroups = 0;
+		std::vector<bool> myResizeLightCullingBuffers;
 
 		///// Draw calls /////
 		PerThreadData myPerThreadDatas[2];
@@ -422,6 +487,7 @@ namespace Volt
 		Ref<Camera> myCurrentCamera;
 		LineData myLineData;
 		BillboardData myBillboardData;
+		TextData myTextData;
 
 		////// Timestamps //////
 		std::mutex myTimestampsMutex;
@@ -434,7 +500,6 @@ namespace Volt
 		glm::vec2 myLastJitter = 0.f;
 
 		////// Threading //////
-		ThreadPool myRenderThreadPool;
 		CommandBufferCache myCommandBufferCache;
 		std::mutex myRenderingMutex;
 	};

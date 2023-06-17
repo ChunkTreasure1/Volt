@@ -566,8 +566,6 @@ bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter)
 {
-	VT_PROFILE_FUNCTION();
-
 	bool entityDeleted = false;
 
 	auto& registry = myScene->GetRegistry();
@@ -592,9 +590,11 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	const bool hasMatchingChild = SearchRecursively(entity, filter, 10);
 	const bool matchesQuery = MatchesQuery(entityName, filter);
 	const bool hasId = std::to_string(entity) == filter;
+	const bool hasComponent = HasComponent(entity, filter);
+	const bool hasScript = HasScript(entity, filter);
 	const bool isVisionCamera = registry.HasComponent<Volt::VisionCameraComponent>(entity);
 
-	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent)
+	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent && !hasComponent && !hasScript)
 	{
 		return;
 	}
@@ -1510,6 +1510,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			registry.ForEach<Volt::NetActorComponent>([&](Wire::EntityId id, Volt::NetActorComponent& dataComp)
 			{
 				dataComp.repId = Nexus::RandRepID();
+				dataComp.clientId = 0;
 			});
 			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");
 		}

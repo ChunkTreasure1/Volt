@@ -58,6 +58,7 @@ namespace Volt
 		void SetCameraDampAmount(Volt::Entity aCamera, float aDampAmount);
 		void SetCameraFieldOfView(Volt::Entity aCamera, float aFoV);
 		void SetCameraLocked(Volt::Entity aCamera, bool locked);
+		void SetCameraMouseSensentivity(Volt::Entity aCamera, float mouseSens);
 		//Camera Settings
 
 

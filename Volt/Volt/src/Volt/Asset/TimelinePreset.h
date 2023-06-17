@@ -1,7 +1,6 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
 #include "Wire/Wire.h"
-#include <glm/glm.hpp>
 
 namespace Volt
 {

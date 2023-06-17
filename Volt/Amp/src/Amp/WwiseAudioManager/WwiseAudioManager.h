@@ -28,9 +28,14 @@ namespace Amp
 		static bool PauseEvent(uint32_t aPlayingID);
 		static bool ResumeEvent(uint32_t aPlayingID);
 
+		static void StopAllEvents();
+		static void StopAllEvents(uint32_t aObjID);
+		
 		//GAME SYNCS
 		static bool SetState(const char* aStateGroup, const char* aState);
 		static bool SetSwitch(const char* aSwitchGroup, const char* aState, uint64_t AkGameObjectID);
+
+		static bool SetRTPC(const char* aParameterName, float avalue);
 
 		static bool SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID);
 		static bool SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID, int32_t aOvertime);

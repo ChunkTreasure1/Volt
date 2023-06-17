@@ -24,6 +24,9 @@
 
 #include "Volt/Asset/Mesh/Material.h"
 
+#include "Volt/Core/Application.h"
+#include "Volt/Core/Threading/ThreadPool.h"
+
 void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const float deltaTime)
 {
 	std::set<Wire::EntityId> emittersAliveThisFrame;
@@ -78,32 +81,52 @@ void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const 
 	});
 
 	std::vector<Wire::EntityId> emittersToRemove{};
+	std::vector<std::future<void>> futures{};
+	std::mutex emittersToRemoveMutex;
 
-	for (auto& _pair : m_particleStorage)
+	auto& threadPool = Application::GetThreadPool();
+
+	for (auto& [id, particleStorage] : m_particleStorage)
 	{
-		auto id = _pair.first;
-		std::vector<Particle>& p_vec = m_particleStorage[id].particles;
-		for (int index = 0; index < m_particleStorage[id].numberOfAliveParticles; index++)
+		futures.emplace_back(threadPool.SubmitTask([&]() 
 		{
-			Particle& p = p_vec[index];
-			ParticlePositionUpdate(p, id, scene, deltaTime);
-			ParticleSizeUpdate(p, deltaTime);
-			ParticleVelocityUpdate(p, deltaTime);
-			ParticleColorUpdate(p, deltaTime);
-			ParticleTimeUpdate(p, deltaTime);
-			if (ParticleKillCheck(p, deltaTime))
+			VT_PROFILE_SCOPE("Update particle system");
+
+			Entity entity{ id, scene };
+			const auto forward = entity.GetForward();
+
+			std::vector<Particle>& p_vec = particleStorage.particles;
+			for (int index = 0; index < particleStorage.numberOfAliveParticles; index++)
 			{
-				std::swap(p, p_vec[m_particleStorage[id].numberOfAliveParticles - 1]);
-				m_particleStorage[id].numberOfAliveParticles--;
+				Particle& p = p_vec[index];
+
+				if (ParticleKillCheck(p, deltaTime))
+				{
+					std::swap(p, p_vec[particleStorage.numberOfAliveParticles - 1]);
+					particleStorage.numberOfAliveParticles--;
+					continue;
+				}
+
+				ParticlePositionUpdate(p, deltaTime, forward);
+				ParticleSizeUpdate(p, deltaTime);
+				ParticleVelocityUpdate(p, deltaTime);
+				ParticleColorUpdate(p, deltaTime);
+				ParticleTimeUpdate(p, deltaTime);
 			}
-		}
-		if (m_particleStorage[id].numberOfAliveParticles == 0)
-		{
-			if (!emittersAliveThisFrame.contains(id))
+			if (particleStorage.numberOfAliveParticles == 0)
 			{
-				emittersToRemove.emplace_back(id);
+				if (!emittersAliveThisFrame.contains(id))
+				{
+					std::scoped_lock lock{ emittersToRemoveMutex };
+					emittersToRemove.emplace_back(id);
+				}
 			}
-		}
+		}));
+	}
+
+	for (auto& future : futures)
+	{
+		future.wait();
 	}
 
 	for (const auto& emitter : emittersToRemove)
@@ -179,9 +202,9 @@ bool Volt::ParticleSystem::ParticleKillCheck(Particle& particle, const float& de
 	return particle.dead;
 }
 
-void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, Wire::EntityId id, Scene* scene, const float& deltaTime)
+void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, const float& deltaTime, const glm::vec3& entityForward)
 {
-	const glm::vec3 dir = (glm::mat3)scene->GetWorldSpaceTransform(Entity{ id, scene }) * particle.direction;
+	const glm::vec3 dir = glm::normalize(entityForward + particle.direction);
 
 	particle.position += particle.velocity * dir * deltaTime;
 	particle.distance += particle.velocity * deltaTime;
@@ -195,9 +218,9 @@ void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float& d
 		sizePersentage = 1;
 	float scaledTime = sizePersentage * ((float)particle.sizes.size() - 1);
 	//glm::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
-	glm::vec4 oldSize = glm::vec4(particle.sizes[(int)scaledTime], 0.f);
+	glm::vec4 oldSize = glm::vec4{ particle.sizes[(int)scaledTime], 0.f };
 	auto newScaled = (int)(scaledTime + 1.0f);
-	glm::vec4 newSize = glm::vec4(particle.sizes[(newScaled >= particle.sizes.size()) ? particle.sizes.size() - 1 : newScaled], 1.f);
+	glm::vec4 newSize = glm::vec4{ particle.sizes[(newScaled >= particle.sizes.size()) ? particle.sizes.size() - 1 : newScaled], 1.f };
 	float newT = scaledTime - (int)(scaledTime);
 
 	float x = glm::mix(oldSize.x, newSize.x, newT);

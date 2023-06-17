@@ -266,6 +266,11 @@ namespace Volt
 				sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 				destStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			}
+			else if (currentLayout == VK_IMAGE_LAYOUT_GENERAL && targetLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+			{
+				sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+				destStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			}
 			else
 			{
 				VT_CORE_ASSERT(false, "Layouts are not configured!");
@@ -289,6 +294,18 @@ namespace Volt
 			const auto [sourceStage, destStage] = GetStageFlagsFromLayouts(currentLayout, targetLayout);
 
 			vkCmdPipelineBarrier(commandBuffer, sourceStage, destStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+		}
+
+		inline void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout currentLayout, VkImageLayout targetLayout)
+		{
+			VkImageSubresourceRange subresource{};
+			subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresource.baseMipLevel = 0;
+			subresource.levelCount = VK_REMAINING_MIP_LEVELS;
+			subresource.baseArrayLayer = 0;
+			subresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
+
+			TransitionImageLayout(commandBuffer, image, currentLayout, targetLayout, subresource);
 		}
 
 		inline void TransitionImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout targetLayout)
@@ -383,10 +400,9 @@ namespace Volt
 
 		void InsertImageMemoryBarriers(VkCommandBuffer commandBuffer, const std::vector<VkImageMemoryBarrier>& barriers, VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags);
 
-		inline void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0)
+		inline void CopyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0)
 		{
-			auto device = GraphicsContext::GetDevice();
-			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueType::Transfer);
+			VkCommandBuffer cmdBuffer = commandBuffer;
 
 			VkBufferImageCopy region{};
 			region.bufferOffset = 0;
@@ -402,6 +418,14 @@ namespace Volt
 			region.imageExtent = { width, height, 1 };
 
 			vkCmdCopyBufferToImage(cmdBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		}
+
+		inline void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0)
+		{
+			auto device = GraphicsContext::GetDevice();
+
+			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+			CopyBufferToImage(cmdBuffer, buffer, image, width, height, mipLevel);
 			device->FlushSingleUseCommandBuffer(cmdBuffer);
 		}
 

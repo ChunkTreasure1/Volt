@@ -60,12 +60,6 @@ project "Nexus"
 		"Ws2_32.lib"
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
-
 	filter "files:vendor/**.cpp"
 		flags {"NoPCH"}
 		warnings "off"

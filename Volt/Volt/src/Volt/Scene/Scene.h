@@ -71,6 +71,9 @@ namespace Volt
 
 		void SetTimeScale(const float aTimeScale);
 
+		void InitializeEngineScripts();
+		void ShutdownEngineScripts();
+
 		void OnRuntimeStart();
 		void OnRuntimeEnd();
 
@@ -110,6 +113,8 @@ namespace Volt
 
 		glm::mat4 GetWorldSpaceTransform(Entity entity);
 		TQS GetWorldSpaceTRS(Entity entity);
+
+		void InvalidateEntityTransform(Wire::EntityId entity);
 
 		Vision& GetVision() { return *myVisionSystem; }
 		TimelinePlayer& GetTimelinePlayer() { return myTimelinePlayer; };
@@ -167,6 +172,8 @@ namespace Volt
 		std::map<Wire::EntityId, float> myEntityTimesToDestroy;
 
 		std::vector<SceneLayer> mySceneLayers;
+		std::unordered_map<Wire::EntityId, glm::mat4> myCachedEntityTransforms;
+		std::shared_mutex myCachedEntityTransformMutex;
 
 		uint32_t myWidth = 1;
 		uint32_t myHeight = 1;

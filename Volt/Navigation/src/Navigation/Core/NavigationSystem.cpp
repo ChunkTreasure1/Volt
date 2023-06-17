@@ -72,6 +72,7 @@ namespace Volt
 					for (auto entityId : agentEntities)
 					{
 						auto entity = Volt::Entity(entityId, myActiveScene.get());
+						crowd->SetAgentPosition(entity, entity.GetPosition());
 
 						if (!crowd->GetAgentMap().contains(entityId))
 						{
@@ -179,8 +180,8 @@ namespace Volt
 
 					if (actorController)
 					{
-						actorController->SetFootPosition(*(glm::vec3*)&agent->npos);
-						//actorController->Move(*(glm::vec3*)&agent->vel * deltaTime);
+						//actorController->SetFootPosition(*(glm::vec3*)&agent->npos);
+						actorController->Move(*(glm::vec3*)&agent->vel * deltaTime);
 					}
 					else
 					{

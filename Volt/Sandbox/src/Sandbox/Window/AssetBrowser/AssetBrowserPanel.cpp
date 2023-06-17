@@ -415,7 +415,7 @@ bool AssetBrowserPanel::OnMouseReleasedEvent(Volt::MouseButtonReleasedEvent& e)
 
 bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
+	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage || !myPreviewRenderer)
 	{
 		return false;
 	}
@@ -849,7 +849,7 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 		MeshImportData data;
 		auto meshes = AssetBrowser::AssetBrowserUtilities::GetMeshesExport();
 		EditorUtils::MeshExportModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(asset->handle)), myCurrentDirectory->path, data, meshes);
-
+	
 		if (UI::BeginModal(std::format("Reimport Animation##assetBrowser{0}", std::to_string(asset->handle))))
 		{
 			if (UI::BeginProperties())
@@ -891,7 +891,6 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 
 void AssetBrowserPanel::RenderWindowRightClickPopup()
 {
-
 	if (ImGui::BeginPopupContextWindow("CreateMenu", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_NoOpenOverItems))
 	{
 		ImGui::SetCursorPosX(150.f);
@@ -933,7 +932,7 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 				ImGui::EndMenu();
 			}
-			
+
 			if (ImGui::BeginMenu("Animation##Menu"))
 			{
 				if (ImGui::MenuItem("Animated Character"))

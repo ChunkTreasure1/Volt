@@ -121,6 +121,8 @@ project "Launcher"
 		"%{Library.AkStreamMgr}",
 		"%{Library.AkMusicEngine}",
 
+		"%{Library.AkRoomVerbFX}",
+
 		"%{Library.avcodec}",
 		"%{Library.avdevice}",
 		"%{Library.avfilter}",
@@ -136,13 +138,7 @@ project "Launcher"
 		"%{Library.Vulkan}",
 		"%{Library.dxc}"
     }
-
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
-
+	
 	debugargs 
 	{
 		"../Project/Project.vtproj"

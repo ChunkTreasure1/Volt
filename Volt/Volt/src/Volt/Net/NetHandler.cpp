@@ -23,7 +23,7 @@ namespace Volt
 
 	void NetHandler::StartSinglePlayer()
 	{
-		StartServer(27018);
+		StartServer();
 		//netHandler.m_backend->Start();
 		//netHandler.m_backend->StoreServerData(m_netSettings.connectAddress, m_netSettings.hostingPort);
 
@@ -153,27 +153,34 @@ namespace Volt
 
 				RecursiveHandleMono(repEnt->GetEntityId(), id, beginId, &m_backend->m_registry, false);
 			}
+			m_backend->m_sceneInstanceId = Nexus::RandSceneInstanceID();
 			m_handleTick = true;
 		}
 	}
 
-	void NetHandler::StartClient(uint16_t port)
+	void NetHandler::Reload()
+	{
+		if (!m_backend) return;
+		m_backend->Reload();
+	}
+
+	void NetHandler::StartClient()
 	{
 		if (m_backend)
 			m_backend->Shutdown();
 		m_isHost = false;
 		m_backend = CreateScope<NetClient>();
 		Nexus::WSA::Session::Start();
-		m_backend->Start(port);
+		m_backend->Start(m_forcedPort);
 	}
 
-	void NetHandler::StartServer(uint16_t port)
+	void NetHandler::StartServer()
 	{
 		if (m_backend)
 			m_backend->Shutdown();
 		m_isHost = true;
 		m_backend = CreateScope<NetServer>();
 		Nexus::WSA::Session::Start();
-		m_backend->Start(port);
+		m_backend->Start(m_forcedPort);
 	}
 }

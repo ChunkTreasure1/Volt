@@ -75,6 +75,7 @@
 
 #include <Volt/Core/Graphics/GraphicsDevice.h>
 #include <Volt/Core/Graphics/GraphicsContext.h>
+#include <Volt/Events/SettingsEvent.h>
 
 #include <Volt/Discord/DiscordSDK.h>
 
@@ -109,6 +110,9 @@ void Sandbox::OnAttach()
 
 	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
+	UserSettingsManager::LoadUserSettings();
+	const auto& userSettings = UserSettingsManager::GetSettings();
+
 	NewScene();
 
 	// WIP Panels.
@@ -127,7 +131,7 @@ void Sandbox::OnAttach()
 #endif
 
 	myNavigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", myRuntimeScene);
-	EditorLibrary::Register<PropertiesPanel>("Level Editor", myRuntimeScene, mySceneRenderer, "");
+	EditorLibrary::Register<PropertiesPanel>("Level Editor", myRuntimeScene, mySceneRenderer, mySceneState, "");
 	myViewportPanel = EditorLibrary::Register<ViewportPanel>("Level Editor", mySceneRenderer, myRuntimeScene, myEditorCameraController.get(), mySceneState);
 	EditorLibrary::Register<LogPanel>("Advanced");
 	EditorLibrary::Register<SceneViewPanel>("Level Editor", myRuntimeScene, "");
@@ -143,7 +147,15 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<NetPanel>("Advanced");
 	EditorLibrary::Register<NetContractPanel>("Advanced");
 
-	myGameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", myGameSceneRenderer, myRuntimeScene, mySceneState);
+	if (userSettings.sceneSettings.lowMemoryUsage)
+	{
+		myGameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", mySceneRenderer, myRuntimeScene, mySceneState);
+	}
+	else
+	{
+		myGameViewPanel = EditorLibrary::Register<GameViewPanel>("Level Editor", myGameSceneRenderer, myRuntimeScene, mySceneState);
+	}
+
 	myAssetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", myRuntimeScene, "##Main");
 
 	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
@@ -163,9 +175,6 @@ void Sandbox::OnAttach()
 	CreateWatches();
 
 	ImGuizmo::AllowAxisFlip(false);
-
-	UserSettingsManager::LoadUserSettings();
-	const auto& userSettings = UserSettingsManager::GetSettings();
 
 	if (!userSettings.versionControlSettings.password.empty() && !userSettings.versionControlSettings.user.empty() && !userSettings.versionControlSettings.server.empty())
 	{
@@ -192,16 +201,20 @@ void Sandbox::OnAttach()
 		OpenScene(userSettings.sceneSettings.lastOpenScene);
 	}
 
-	Volt::DiscordSDK::Init(1108502963447681106, false);
+	constexpr int64_t discordAppId = 1108502963447681106;
+
+	Volt::DiscordSDK::Init(discordAppId, false);
 
 	auto& act = Volt::DiscordSDK::GetRichPresence();
 
-	act.SetApplicationId(1108502963447681106);
+	act.SetApplicationId(discordAppId);
 	act.GetAssets().SetLargeImage("icon_volt");
 	act.GetAssets().SetLargeText("Volt");
 	act.SetType(discord::ActivityType::Playing);
 
 	Volt::DiscordSDK::UpdateRichPresence();
+
+	myRuntimeScene->InitializeEngineScripts();
 }
 
 void Sandbox::CreateWatches()
@@ -221,7 +234,18 @@ void Sandbox::CreateWatches()
 				{
 					Sandbox::Get().OnSceneStop();
 				}
+				else if (mySceneState == SceneState::Edit)
+				{
+					myRuntimeScene->ShutdownEngineScripts();
+				}
+
 				Volt::MonoScriptEngine::ReloadAssembly();
+
+				if (mySceneState == SceneState::Edit)
+				{
+					myRuntimeScene->InitializeEngineScripts();
+				}
+
 				UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
 				return;
 			}
@@ -393,6 +417,8 @@ void Sandbox::SetupNewSceneData()
 
 	// Scene Renderers
 	{
+		const auto& lowMemory = UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage;
+
 		Volt::SceneRendererSpecification spec{};
 		Volt::SceneRendererSpecification gameSpec{};
 
@@ -422,7 +448,7 @@ void Sandbox::SetupNewSceneData()
 			settings.enableOutline = true;
 			settings.enableDebugRenderer = true;
 			settings.enableGrid = true;
-			settings.enableUI = false;
+			settings.enableUI = lowMemory;
 			settings.enableVolumetricFog = true;
 
 			if (Volt::GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
@@ -440,7 +466,11 @@ void Sandbox::SetupNewSceneData()
 		}
 
 		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
-		myGameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec, gameSettings);
+
+		if (!lowMemory)
+		{
+			myGameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec, gameSettings);
+		}
 	}
 
 	Volt::SceneManager::SetActiveScene(myRuntimeScene);
@@ -456,6 +486,8 @@ void Sandbox::OnDetach()
 	{
 		OnSceneStop();
 	}
+
+	myRuntimeScene->ShutdownEngineScripts();
 
 	if (myRuntimeScene && !myRuntimeScene->path.empty())
 	{
@@ -497,6 +529,44 @@ void Sandbox::OnEvent(Volt::Event& e)
 	dispatcher.Dispatch<Volt::WindowTitlebarHittestEvent>([&](Volt::WindowTitlebarHittestEvent& e)
 	{
 		e.SetHit(myTitlebarHovered);
+		return true;
+	});
+
+	dispatcher.Dispatch<Volt::OnRenderScaleChangedEvent>([&](Volt::OnRenderScaleChangedEvent& e)
+	{
+		if (mySceneState == SceneState::Play)
+		{
+			const auto& lowMemory = UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage;
+
+			auto sceneRenderer = mySceneRenderer;
+
+			if (!lowMemory)
+			{
+				sceneRenderer = myGameSceneRenderer;
+			}
+			sceneRenderer->GetSettings().renderScale = e.GetRenderScale();
+			sceneRenderer->ApplySettings();
+		}
+
+		return true;
+	});
+
+	dispatcher.Dispatch<Volt::OnRendererSettingsChangedEvent>([&](Volt::OnRendererSettingsChangedEvent& e)
+	{
+		if (mySceneState == SceneState::Play)
+		{
+			const auto& lowMemory = UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage;
+
+			auto sceneRenderer = mySceneRenderer;
+
+			if (!lowMemory)
+			{
+				sceneRenderer = myGameSceneRenderer;
+			}
+
+			sceneRenderer->UpdateSettings(e.GetSettings());
+			sceneRenderer->ApplySettings();
+		}
 		return true;
 	});
 
@@ -547,10 +617,14 @@ void Sandbox::OnEvent(Volt::Event& e)
 
 void Sandbox::OnScenePlay()
 {
+	if (!Volt::Application::Get().GetNetHandler().IsRunning())
+		Volt::Application::Get().GetNetHandler().StartSinglePlayer();
+
 	mySceneState = SceneState::Play;
 	SelectionManager::DeselectAll();
 
 	myIntermediateScene = myRuntimeScene;
+	myIntermediateScene->ShutdownEngineScripts();
 
 	myRuntimeScene = CreateRef<Volt::Scene>();
 	myIntermediateScene->CopyTo(myRuntimeScene);
@@ -609,6 +683,8 @@ void Sandbox::OnSceneStop()
 	myViewportPanel->Focus();
 
 	myRuntimeScene = myIntermediateScene;
+	myRuntimeScene->InitializeEngineScripts();
+
 	mySceneState = SceneState::Edit;
 
 	SetupNewSceneData();
@@ -983,14 +1059,31 @@ bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 	RenderSelection(myEditorCameraController->GetCamera());
 	RenderGizmos(myRuntimeScene, myEditorCameraController->GetCamera());
 
-	switch (mySceneState)
+	if (UserSettingsManager::GetSettings().sceneSettings.lowMemoryUsage)
 	{
-		case SceneState::Edit:
-		case SceneState::Play:
-		case SceneState::Pause:
-		case SceneState::Simulating:
-			mySceneRenderer->OnRenderEditor(myEditorCameraController->GetCamera());
-			break;
+		switch (mySceneState)
+		{
+			case SceneState::Play:
+				mySceneRenderer->OnRenderRuntime();
+				break;
+			case SceneState::Edit:
+			case SceneState::Pause:
+			case SceneState::Simulating:
+				mySceneRenderer->OnRenderEditor(myEditorCameraController->GetCamera());
+				break;
+		}
+	}
+	else
+	{
+		switch (mySceneState)
+		{
+			case SceneState::Edit:
+			case SceneState::Play:
+			case SceneState::Pause:
+			case SceneState::Simulating:
+				mySceneRenderer->OnRenderEditor(myEditorCameraController->GetCamera());
+				break;
+		}
 	}
 
 	if (myShouldLoadNewScene)

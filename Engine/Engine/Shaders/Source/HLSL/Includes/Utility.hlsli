@@ -102,6 +102,18 @@ float3 ReconstructWorldPosition(float2 texCoords, float pixelDepth)
     return ReconstructWorldPositionViewProj(u_cameraData.inverseProjection, u_cameraData.inverseView, texCoords, pixelDepth);
 }
 
+float3 ReconstructViewPosition(float2 texCoords, float pixelDepth)
+{
+    float x = texCoords.x * 2.f - 1.f;
+    float y = texCoords.y * 2.f - 1.f;
+
+    const float4 projSpacePos = float4(x, y, pixelDepth, 1.f);
+    float4 viewSpacePos = mul(u_cameraData.inverseProjection, projSpacePos);
+
+    viewSpacePos /= viewSpacePos.w;
+    return viewSpacePos.xyz;
+}
+
 float3x3 CalculateTBN(in float3 inNormal, in float3 inTangent)
 {
     const float3 normal = normalize(inNormal);
@@ -118,6 +130,17 @@ float LinearizeDepth(const float screenDepth)
     float depthLinearizeAdd = u_cameraData.depthUnpackConsts.y;
     // Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
     return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+}
+
+// Gives a linear depth value between near plane and far plane
+float LinearizeDepth01(const float screenDepth)
+{
+    float depthLinearizeMul = u_cameraData.depthUnpackConsts.x;
+    float depthLinearizeAdd = u_cameraData.depthUnpackConsts.y;
+    // Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
+    const float linearDepth = depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+
+    return (linearDepth - u_cameraData.farPlane) / (u_cameraData.nearPlane - linearDepth);
 }
 
 template<typename T>

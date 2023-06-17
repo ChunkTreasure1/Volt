@@ -112,26 +112,7 @@ namespace Volt
 
 				VT_VK_CHECK(vkResetFences(device->GetHandle(), 1, &mySubmitFences.at(index)));
 
-				VkQueue submitQueue = nullptr;
-
-				switch (myQueueType)
-				{
-					case QueueType::Graphics:
-						submitQueue = device->GetGraphicsQueue();
-						break;
-					case QueueType::Compute:
-						submitQueue = device->GetComputeQueue();
-						break;
-					case QueueType::Transfer:
-						submitQueue = device->GetTransferQueue();
-						break;
-
-					default:
-						VT_CORE_ASSERT(false, "Invalid QueueType!");
-						break;
-				}
-
-				VT_VK_CHECK(vkQueueSubmit(submitQueue, 1, &info, mySubmitFences.at(index)));
+				device->FlushCommandBuffer(info, mySubmitFences.at(index), myQueueType);
 			}
 			else if (!myInheritedCommandBuffer.expired())
 			{

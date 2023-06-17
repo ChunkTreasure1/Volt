@@ -22,6 +22,12 @@ namespace Volt
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void VoltApplication_Quit();
 
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static string VoltApplication_GetClipboard();
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VoltApplication_SetClipboard(string text);
+
         #endregion
 
         #region GraphKey
@@ -78,6 +84,9 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Scene_Load(ulong handle);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Scene_Preload(string scenePath);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Scene_Save(ulong handle);
@@ -323,7 +332,7 @@ namespace Volt
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void MeshColliderComponent_SetSubMeshIndex(uint entityId, ref int subMeshIndex);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]   
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static ulong MeshColliderComponent_GetColliderMesh(uint entityId);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -423,7 +432,7 @@ namespace Volt
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void AnimationControllerComponent_GetBoundingSphere(uint entityId, out Vector3 center, out float radius);
 
-	    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float AnimationControllerComponent_GetParameterFloat(uint entityId, string name);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -467,6 +476,15 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static ulong AnimationControllerComponent_GetOverrideMaterial(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AnimationControllerComponent_SetOverrideSkin(uint entityId, ulong skinHandle);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AnimationControllerComponent_SetController(uint entityId, ulong animGraphHandle);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ulong AnimationControllerComponent_GetOverrideSkin(uint entityId);
         #endregion
 
         #region TextRendererComponent
@@ -492,6 +510,9 @@ namespace Volt
         #region MeshComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static ulong MeshComponent_GetMeshHandle(uint entityId);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void MeshComponent_SetMeshHandle(uint entityId, ulong handle);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool MeshComponent_HasOverrideMaterial(uint entityId);
@@ -532,6 +553,12 @@ namespace Volt
         #endregion
 
         #region PointlightComponent
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PointlightComponent_GetColor(uint entityId, out Vector3 color);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PointlightComponent_SetColor(uint entityId, ref Vector3 color);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float PointlightComponent_GetIntensity(uint entityId);
@@ -780,6 +807,9 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Input_ShowCursor(bool state);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Input_GetScrollOffset();
         #endregion
 
         #region Log
@@ -803,6 +833,12 @@ namespace Volt
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool AMP_PlayOneshotEvent(string aString);
 
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool AMP_SetRTPC(string aRTPCName, int aValue);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AMP_StopAllEvents();
+
         //EVENT
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -819,6 +855,9 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool AudioSourceComponent_ResumeEvent(uint ID, uint aPlayingID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void AudioSourceComponent_StopAllEvent(uint ID);
 
         //GAME SYNCS
 
@@ -867,6 +906,9 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Vision_SetCameraLocked(uint camId, bool locked);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Vision_SetCameraMouseSensentivity(uint camId, float mouseSens);
 
         #endregion
 
@@ -973,6 +1015,10 @@ namespace Volt
         #region Project
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static string Project_GetDirectory();
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static string Project_GetProjectName();
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static string Project_GetCompanyName();
         #endregion
 
         #region UIRenderer
@@ -989,7 +1035,7 @@ namespace Volt
         internal extern static void UIRenderer_DrawSpriteTexture(ulong textureHandle, ref Vector3 position, ref Vector2 scale, float rotation, ref Vector4 color, ref Vector2 offset);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void UIRenderer_DrawString(string text, ulong fontHandle, ref Vector3 position, ref Vector2 scale, float rotation, float maxWidth, ref Vector4 color);
+        internal extern static void UIRenderer_DrawString(string text, ulong fontHandle, ref Vector3 position, ref Vector2 scale, float rotation, float maxWidth, ref Vector4 color, ref Vector2 positionOffset);
         #endregion
 
         #region Net
@@ -1002,11 +1048,11 @@ namespace Volt
 
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void NetEvent_TriggerEventFromNetId(UInt16 repId, eNetEvent netEvent, byte[] args);
+        internal extern static void NetEvent_TriggerEventFromNetId(UInt64 repId, eNetEvent netEvent, byte[] args);
 
         // Scene interactions
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void NetScene_DestroyFromNetId(UInt16 repId);
+        internal extern static void NetScene_DestroyFromNetId(UInt64 repId);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void NetScene_DestroyFromLocalId(uint repId);
@@ -1018,16 +1064,16 @@ namespace Volt
         internal extern static void Net_Notify(uint repId, string fieldName);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void Net_NotifyFromNetId(UInt16 repId, string fieldName);
+        internal extern static void Net_NotifyFromNetId(UInt64 repId, string fieldName);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Net_SceneLoad();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void Net_StartClient(ushort port);
+        internal extern static void Net_StartClient();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void Net_StartServer(ushort port);
+        internal extern static void Net_StartServer();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Net_StartSinglePlayer();
@@ -1041,10 +1087,48 @@ namespace Volt
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Net_Disconnect();
 
-        //[MethodImplAttribute(MethodImplOptions.InternalCall)]
-        //internal extern static void Net_();
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Net_InstantiatePlayer();
 
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ushort Net_GetBoundPort();
 
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ushort Net_ForcePortBinding(ushort port);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ushort Net_Reload();
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Net_IsHost();
+         
+        #endregion
+
+        #region SteamAPI
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SteamAPI_StartLobby(string address);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SteamAPI_SetStatInt(string name, int value);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void SteamAPI_SetStatFloat(string name, float value);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static int SteamAPI_GetStatInt(string name);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float SteamAPI_GetStatFloat(string name);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool SteamAPI_IsStatsValid();
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool SteamAPI_StoreStats();
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool SteamAPI_RequestStats();
         #endregion
 
         #region Window
@@ -1053,11 +1137,17 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float Window_GetHeight();
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Window_SetCursor(string path);
         #endregion
 
         #region Font
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float Font_GetStringWidth(ulong fontHandle, string text, ref Vector2 scale, float maxWidth);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Font_GetStringHeight(ulong fontHandle, string text, ref Vector2 scale, float maxWidth);
         #endregion
 
         #region PostProcessingStack
@@ -1072,6 +1162,39 @@ namespace Volt
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void DiscordSDK_Init(long appId);
+
+        #endregion
+
+        #region Renderer
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Renderer_SetRenderScale(float renderScale);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Renderer_SetRendererSettings(ref RendererSettings settings);
+
+        #endregion
+
+        #region VideoPlayer
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VideoPlayer_Play(ulong assetHandle, bool loop);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VideoPlayer_Stop(ulong assetHandle);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VideoPlayer_Restart(ulong assetHandle);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VideoPlayer_Pause(ulong assetHandle);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VideoPlayer_Update(ulong assetHandle, float deltaTime);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void VideoPlayer_DrawSpriteTexture(ulong videoHandle, ref Vector3 position, ref Vector2 scale, float rotation, ref Vector4 color, ref Vector2 offset);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static VideoStatus VideoPlayer_GetStatus(ulong videoHandle);
 
         #endregion
     }

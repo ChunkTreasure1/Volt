@@ -11,7 +11,7 @@ namespace Nexus
 
 	// #nexus_todo: failsafe unloading functions
 	struct Packet
-	{
+	{		
 		TYPE::CLIENT_ID ownerID = 0;
 		ePacketID id = ePacketID::NIL;
 		std::vector<TYPE::BYTE> body;
@@ -41,6 +41,19 @@ namespace Nexus
 			size_t i = body.size();
 			body.resize(body.size() + size);
 			memcpy(body.data() + i, data, size);
+		}
+
+		void Unload(void* data, size_t size)
+		{
+			if (body.size() < size)
+			{
+				LogError("unload too big: " + std::to_string(Size() + size));
+				return;
+			}
+
+			size_t i = body.size() - size;
+			memcpy(data, body.data() + i, size);
+			body.resize(i);
 		}
 
 		friend Packet& operator<<(Packet& packet, const Packet& data)

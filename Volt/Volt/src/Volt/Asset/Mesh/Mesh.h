@@ -6,6 +6,8 @@
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/BoundingStructures.h"
 
+#include "Volt/Rendering/RendererStructs.h"
+
 namespace Volt
 {
 	class Material;
@@ -36,6 +38,7 @@ namespace Volt
 
 		inline const BoundingSphere& GetBoundingSphere() const { return myBoundingSphere; }
 		inline const BoundingBox& GetBoundingBox() const { return myBoundingBox; }
+		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return myGPUMeshes; }
 
 		inline const uint32_t GetVertexStartOffset() const { return myVertexStartOffset; }
 		inline const uint32_t GetIndexStartOffset() const { return myIndexStartOffset; }
@@ -49,6 +52,9 @@ namespace Volt
 		AssetType GetType() override { return GetStaticType(); }
 
 	private:
+		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
+		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
+
 		friend class FbxImporter;
 		friend class MeshCompiler;
 		friend class MeshExporterUtilities;
@@ -66,6 +72,8 @@ namespace Volt
 
 		BoundingSphere myBoundingSphere;
 		BoundingBox myBoundingBox;
+
+		std::vector<GPUMesh> myGPUMeshes;
 
 		uint32_t myIndexStartOffset = 0;
 		uint32_t myVertexStartOffset = 0;

@@ -278,7 +278,12 @@ namespace Volt
 		skeleton->myJointNameToIndex[currentJoint.Name] = static_cast<size_t>(currentIndex);
 
 		skeleton->myRestPose[currentIndex].position = { currentJoint.restPosition[0], currentJoint.restPosition[1], currentJoint.restPosition[2] };
-		skeleton->myRestPose[currentIndex].rotation = { currentJoint.restRotation[0], currentJoint.restRotation[1], currentJoint.restRotation[2], currentJoint.restRotation[3] };
+
+		skeleton->myRestPose[currentIndex].rotation.x = currentJoint.restRotation[0];
+		skeleton->myRestPose[currentIndex].rotation.y = currentJoint.restRotation[1];
+		skeleton->myRestPose[currentIndex].rotation.z = currentJoint.restRotation[2];
+		skeleton->myRestPose[currentIndex].rotation.w = currentJoint.restRotation[3];
+		
 		skeleton->myRestPose[currentIndex].scale = { currentJoint.restScale[0], currentJoint.restScale[1], currentJoint.restScale[2] };
 
 		for (const auto& child : currentJoint.Children)

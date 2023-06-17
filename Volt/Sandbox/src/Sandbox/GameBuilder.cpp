@@ -8,6 +8,8 @@
 
 #include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 
+#include <Volt/Scripting/Mono/MonoScriptClass.h>
+
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 #include <Volt/Utility/SerializationMacros.h>
 
@@ -111,7 +113,7 @@ namespace Utility
 
 	inline bool IsEntity(const std::filesystem::path& path)
 	{
-		return path.extension().string() == ".vtlayer";
+		return path.extension().string() == ".vtlayer" || path.extension().string() == ".entVp";
 	}
 }
 
@@ -131,10 +133,10 @@ void GameBuilder::BuildGame(const BuildInfo& buildInfo)
 
 	// Recompile all shaders
 	{
-		for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
-		{
-			shader->Reload(true);
-		}
+		//for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
+		//{
+		//	shader->Reload(true);
+		//}
 	}
 
 	myIsBuilding = true;
@@ -368,6 +370,25 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 							}
 						}
 					}
+				}
+			}
+
+			for (const auto& [instanceId, fieldMap] : scene->GetScriptFieldCache().GetCache())
+			{
+				for (const auto& [name, instance] : fieldMap)
+				{
+					if (!instance)
+					{
+						continue;
+					}
+
+					if (!Volt::MonoScriptClass::IsAsset(instance->field.type))
+					{
+						continue;
+					}
+
+					uint64_t assetHandle = *instance->data.As<uint64_t>();
+					sceneDependencies.emplace(assetHandle);
 				}
 			}
 

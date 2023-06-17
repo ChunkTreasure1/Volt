@@ -15,10 +15,10 @@ namespace Volt
 	{
 	public:
 		Image2D(const ImageSpecification& specification, const void* data);
-		Image2D(const ImageSpecification& specification, VmaPool pool);
+		Image2D(const ImageSpecification& specification, bool transitionTolayout);
 		~Image2D();
 
-		void Invalidate(uint32_t width, uint32_t height, VmaPool pool = nullptr, const void* data = nullptr);
+		void Invalidate(uint32_t width, uint32_t height, bool transitionLayout = true, const void* data = nullptr);
 		void Release();
 
 		void TransitionToLayout(VkCommandBuffer commandBuffer, VkImageLayout targetLayout);
@@ -60,7 +60,7 @@ namespace Volt
 		void Unmap();
 
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
-		static Ref<Image2D> Create(const ImageSpecification& specification, VmaPool pool);
+		static Ref<Image2D> Create(const ImageSpecification& specification, bool transitionTolayout);
 
 	private:
 		friend class TransientResourceSystem;
@@ -73,6 +73,9 @@ namespace Volt
 
 		VmaAllocation myAllocation = nullptr;
 		VkImage myImage = nullptr;
+
+		VmaAllocation myMappingAllocation = nullptr;
+		VkBuffer myMappingBuffer = nullptr;
 
 		struct ImageData
 		{

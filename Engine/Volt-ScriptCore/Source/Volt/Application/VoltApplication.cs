@@ -29,5 +29,17 @@ namespace Volt
         {
             InternalCalls.VoltApplication_Quit();
         }
+
+        public static string Clipboard
+        {
+            get
+            {
+                return InternalCalls.VoltApplication_GetClipboard();
+            }
+            set
+            {
+                InternalCalls.VoltApplication_SetClipboard(value);
+            }
+        }
     }
 }

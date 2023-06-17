@@ -18,11 +18,13 @@ namespace Volt
 		NetHandler();
 		~NetHandler();
 
-		void StartClient(uint16_t port = 0);
-		void StartServer(uint16_t port);
+		void StartClient();
+		void StartServer();
 		void StartSinglePlayer();
 		void Update(const float& deltaTime);
 		void Stop();
+
+		void SetForcedPort(unsigned short port) { m_forcedPort = port; }
 
 		void Disconnect();
 
@@ -39,6 +41,8 @@ namespace Volt
 		void OnEvent(Volt::Event& in_event);
 
 		void EnableTick(bool tick) { m_handleTick = tick; }
+		
+		void Reload();
 
 	private:
 		friend class NetPanel;
@@ -49,5 +53,7 @@ namespace Volt
 		bool m_handleTick = true;
 		bool m_isHost = false;
 		bool m_netSceneLoaded = false;
+
+		unsigned short m_forcedPort = 0;
 	};
 }

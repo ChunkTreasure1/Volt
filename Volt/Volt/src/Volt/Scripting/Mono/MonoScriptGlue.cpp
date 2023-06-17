@@ -2,6 +2,8 @@
 #include "MonoScriptGlue.h"
 #include "Volt/Net/Serialization/NetSerialization.h"
 
+#include "Volt/Events/SettingsEvent.h"
+
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
@@ -39,7 +41,10 @@
 #include "Volt/Asset/Animation/AnimationGraphAsset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Video/Video.h"
 #include "Volt/Animation/AnimationController.h"
+
+#include "Volt/Steam/SteamImplementation.h"
 
 #include <Navigation/Core/NavigationSystem.h>
 
@@ -50,10 +55,10 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
+#include "Volt/Net/Client/NetClient.h"
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 #include <Nexus/Interface/NetManager/NetManager.h>
 #include <Nexus/Winsock/AddressHelpers.hpp>
-#include "Volt/Net/Client/NetClient.h"
 
 namespace Volt
 {
@@ -68,7 +73,7 @@ namespace Volt
 
 	inline static void VoltApplication_SetResolution(uint32_t aResolutionX, uint32_t aResolutionY)
 	{
-		Volt::WindowResizeEvent event{ aResolutionY, aResolutionX };
+		Volt::WindowResizeEvent event{ aResolutionX, aResolutionY };
 		Volt::Application::Get().OnEvent(event);
 	}
 
@@ -79,7 +84,6 @@ namespace Volt
 
 	inline static void VoltApplication_LoadLevel(MonoString* aLevelAssetPath)
 	{
-		//"Assets/Scenes/Levels/SC_LVL_07_HeartChamber/SC_LVL_07_HeartChamber.vtscene"
 		std::string levelPath = MonoScriptUtils::GetStringFromMonoString(aLevelAssetPath);
 		Volt::AssetHandle aHandle = Volt::AssetManager::Get().GetAssetHandleFromPath(levelPath);
 		Volt::OnSceneTransitionEvent loadEvent{ aHandle };
@@ -90,6 +94,16 @@ namespace Volt
 	{
 		Volt::WindowCloseEvent loadEvent{};
 		Volt::Application::Get().OnEvent(loadEvent);
+	}
+
+	inline static MonoString* VoltApplication_GetClipboard()
+	{
+		return MonoScriptUtils::GetMonoStringFromString(Volt::Application::Get().GetWindow().GetClipboard());
+	}
+
+	inline static void VoltApplication_SetClipboard(MonoString* string)
+	{
+		Volt::Application::Get().GetWindow().SetClipboard(MonoScriptUtils::GetStringFromMonoString(string));
 	}
 
 #pragma endregion
@@ -450,6 +464,13 @@ namespace Volt
 
 		OnSceneTransitionEvent scene(handle);
 		Application::Get().OnEvent(scene);
+	}
+
+	inline static void Scene_Preload(MonoString* path)
+	{
+		std::string str = MonoScriptUtils::GetStringFromMonoString(path);
+
+		Scene::PreloadSceneAssets(str);
 	}
 
 	inline static void Scene_Save(uint64_t handle)
@@ -2323,8 +2344,9 @@ namespace Volt
 
 		if (Application::Get().IsRuntime())
 		{
+			const auto [wx, wy] = Application::Get().GetWindow().GetPosition();
 			const auto [x, y] = Input::GetMousePosition();
-			*position = { x, y };
+			*position = { x - wx, y - wy };
 		}
 		else
 		{
@@ -2336,6 +2358,11 @@ namespace Volt
 	inline static void Input_ShowCursor(bool state)
 	{
 		Volt::Input::ShowCursor(state);
+	}
+
+	inline static float Input_GetScrollOffset()
+	{
+		return Volt::Input::GetScrollOffset();
 	}
 #pragma endregion
 
@@ -2971,6 +2998,19 @@ namespace Volt
 		return Amp::WwiseAudioManager::PlayOneShotEvent(eventName.c_str());
 	}
 
+	inline static bool AMP_SetRTPC(MonoString* aRTPC, int aValue)
+	{
+		std::string RTPCName = MonoScriptUtils::GetStringFromMonoString(aRTPC);
+
+		return Amp::WwiseAudioManager::SetRTPC(RTPCName.c_str(), aValue);
+	}
+
+	inline static void AMP_StopAllEvents()
+	{
+		Amp::WwiseAudioManager::StopAllEvents();
+	}
+
+
 	//EVENT
 	inline static uint32_t AudioSourceComponent_PlayEvent(Wire::EntityId entityId, MonoString* aEventName)
 	{
@@ -3040,6 +3080,19 @@ namespace Volt
 		}
 
 		return entity.GetComponent<AudioSourceComponent>().ResumeEvent(aPlayingID);
+	}
+
+	inline static void AudioSourceComponent_StopAllEvents(Wire::EntityId entityId)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ entityId, scene };
+
+		if (!entity.HasComponent<AudioSourceComponent>())
+		{
+			return;
+		}
+
+		entity.GetComponent<AudioSourceComponent>().StopEvent(entityId);
 	}
 
 	//GAME SYNCS
@@ -3159,6 +3212,11 @@ namespace Volt
 	inline static void Vision_SetCameraLocked(Wire::EntityId cameraId, bool locked)
 	{
 		MonoScriptEngine::GetSceneContext()->GetVision().SetCameraLocked(Volt::Entity{ cameraId, MonoScriptEngine::GetSceneContext() }, locked);
+	}
+
+	inline static void Vision_SetCameraMouseSensentivity(Wire::EntityId cameraId, float mouseSens)
+	{
+		MonoScriptEngine::GetSceneContext()->GetVision().SetCameraMouseSensentivity(Volt::Entity{ cameraId, MonoScriptEngine::GetSceneContext() }, mouseSens);
 	}
 
 #pragma endregion
@@ -4008,6 +4066,64 @@ namespace Volt
 
 		return entity.GetComponent<AnimationControllerComponent>().overrideMaterial;
 	}
+
+	inline static void AnimationControllerComponent_SetOverrideSkin(Wire::EntityId id, uint64_t skinHandle)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ id, scene };
+
+		if (!entity)
+		{
+			return;
+		}
+
+		if (!entity.HasComponent<AnimationControllerComponent>())
+		{
+			return;
+		}
+
+		entity.GetComponent<AnimationControllerComponent>().overrideSkin = skinHandle;
+	}
+
+	inline static uint64_t AnimationControllerComponent_GetOverrideSkin(Wire::EntityId id)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ id, scene };
+
+		if (!entity)
+		{
+			return 0;
+		}
+
+		if (!entity.HasComponent<AnimationControllerComponent>())
+		{
+			return 0;
+		}
+
+		return entity.GetComponent<AnimationControllerComponent>().overrideSkin;
+	}
+
+	inline static void AnimationControllerComponent_SetController(Wire::EntityId id, uint64_t animGraphHandle)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ id, scene };
+
+		if (!entity)
+		{
+			return;
+		}
+
+		if (!entity.HasComponent<AnimationControllerComponent>())
+		{
+			return;
+		}
+
+		auto graph = AssetManager::GetAsset<AnimationGraphAsset>(animGraphHandle);
+		if (graph && graph->IsValid())
+		{
+			entity.GetComponent<AnimationControllerComponent>().controller = CreateRef<AnimationController>(graph, entity);
+		}
+	}
 #pragma endregion
 
 #pragma region TextRendererComponent
@@ -4138,6 +4254,18 @@ namespace Volt
 		std::string directory = ProjectManager::GetDirectory().string();
 		return MonoScriptUtils::GetMonoStringFromString(directory);
 	}
+
+	inline static MonoString* Project_GetProjectName()
+	{
+		std::string name = ProjectManager::GetProject().name;
+		return MonoScriptUtils::GetMonoStringFromString(name);
+	}
+
+	inline static MonoString* Project_GetCompanyName()
+	{
+		std::string name = ProjectManager::GetProject().companyName;
+		return MonoScriptUtils::GetMonoStringFromString(name);
+	}
 #pragma endregion
 
 #pragma region MeshComponent
@@ -4157,6 +4285,19 @@ namespace Volt
 		}
 
 		return entity.GetComponent<MeshComponent>().handle;
+	}
+
+	inline static void MeshComponent_SetMeshHandle(Wire::EntityId id, AssetHandle handle)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ id, scene };
+
+		if (!entity.HasComponent<MeshComponent>())
+		{
+			return;
+		}
+
+		entity.GetComponent<MeshComponent>().handle = handle;
 	}
 
 	inline static bool MeshComponent_HasOverrideMaterial(Wire::EntityId id)
@@ -4294,6 +4435,42 @@ namespace Volt
 
 
 #pragma region PointlightComponent
+
+	inline static void PointlightComponent_GetColor(Wire::EntityId id, glm::vec3* outColor)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ id, scene };
+
+		if (!entity)
+		{
+			return;
+		}
+
+		if (!entity.HasComponent<PointLightComponent>())
+		{
+			return;
+		}
+
+		*outColor = entity.GetComponent<PointLightComponent>().color;
+	}
+
+	inline static void PointlightComponent_SetColor(Wire::EntityId id, glm::vec3* color)
+	{
+		auto scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ id, scene };
+
+		if (!entity)
+		{
+			return;
+		}
+
+		if (!entity.HasComponent<PointLightComponent>())
+		{
+			return;
+		}
+
+		entity.GetComponent<PointLightComponent>().color = *color;
+	}
 
 	inline static bool PointlightComponent_GetIntensity(Wire::EntityId id)
 	{
@@ -4731,7 +4908,7 @@ namespace Volt
 		UIRenderer::DrawSprite(AssetManager::GetAsset<Texture2D>(textureHandle), *position, *scale, rotation, *color, *offset);
 	}
 
-	inline static void UIRenderer_DrawString(MonoString* text, uint64_t fontHandle, glm::vec3* position, glm::vec2* scale, float rotation, float maxWidth, glm::vec4* color)
+	inline static void UIRenderer_DrawString(MonoString* text, uint64_t fontHandle, glm::vec3* position, glm::vec2* scale, float rotation, float maxWidth, glm::vec4* color, glm::vec2* positionOffset)
 	{
 		Ref<Font> font = AssetManager::GetAsset<Font>(fontHandle);
 		if (!font || !font->IsValid())
@@ -4740,7 +4917,7 @@ namespace Volt
 		}
 
 		const std::string strText = MonoScriptUtils::GetStringFromMonoString(text);
-		UIRenderer::DrawString(strText, font, *position, *scale, rotation, maxWidth, *color);
+		UIRenderer::DrawString(strText, font, *position, *scale, rotation, maxWidth, *color, *positionOffset);
 	}
 #pragma endregion UIRenderer
 
@@ -4758,7 +4935,7 @@ namespace Volt
 #pragma endregion Animation
 
 #pragma region Net
-	inline static uint16_t NetActorComponent_GetRepId(uint32_t id)
+	inline static Nexus::TYPE::REP_ID NetActorComponent_GetRepId(uint32_t id)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		auto entity = Entity(id, scene);
@@ -4768,10 +4945,10 @@ namespace Volt
 			entity = entity.GetParent();
 		}
 		auto netId = entity.GetComponent<NetActorComponent>().repId;
-		return (uint16_t)netId;
+		return (Nexus::TYPE::REP_ID)netId;
 	}
 
-	inline static void NetEvent_TriggerEventFromNetId(uint16_t id, eNetEvent netEvent, MonoArray* data)
+	inline static void NetEvent_TriggerEventFromNetId(Nexus::TYPE::REP_ID id, eNetEvent netEvent, MonoArray* data)
 	{
 		std::vector<uint8_t> byteVec;
 		byteVec.resize(mono_array_length(data));
@@ -4795,10 +4972,15 @@ namespace Volt
 		NetEvent_TriggerEventFromNetId(NetActorComponent_GetRepId(id), netEvent, data);
 	}
 
-	inline static void NetScene_DestroyFromNetId(uint16_t repId)
+	inline static void NetScene_DestroyFromNetId(Nexus::TYPE::REP_ID repId)
 	{
 		auto& handler = Application::Get().GetNetHandler();
 		auto& backend = handler.GetBackend();
+
+		if (!backend)
+		{
+			return;
+		}
 
 		Nexus::Packet packet;
 		packet.ownerID = handler.GetBackend()->GetClientId();
@@ -4852,7 +5034,7 @@ namespace Volt
 		backend->Transmit(packet);
 	}
 
-	inline static void Net_NotifyFromNetId(uint16_t repId, MonoString* fieldName)
+	inline static void Net_NotifyFromNetId(Nexus::TYPE::REP_ID repId, MonoString* fieldName)
 	{
 		if (!fieldName) return;
 		const std::string str = MonoScriptUtils::GetStringFromMonoString(fieldName);
@@ -4874,6 +5056,7 @@ namespace Volt
 			backend->AddPacketToIncomming(packet);
 			return;
 		}
+		backend->AddPacketToIncomming(packet);
 		backend->Transmit(packet);
 	}
 
@@ -4882,14 +5065,14 @@ namespace Volt
 		Net_NotifyFromNetId(NetActorComponent_GetRepId(repId), fieldName);
 	}
 
-	inline static void Net_StartClient(unsigned short port)
+	inline static void Net_StartClient()
 	{
-		Application::Get().GetNetHandler().StartClient(port);
+		Application::Get().GetNetHandler().StartClient();
 	}
 
-	inline static void Net_StartServer(unsigned short port)
+	inline static void Net_StartServer()
 	{
-		Application::Get().GetNetHandler().StartServer(port);
+		Application::Get().GetNetHandler().StartServer();
 	}
 
 	inline static void Net_StartSinglePlayer()
@@ -4905,7 +5088,11 @@ namespace Volt
 	inline static void Net_Connect(MonoString* ip, unsigned short port)
 	{
 		auto& netHandler = Application::Get().GetNetHandler();
-		if (!netHandler.GetBackend()) return;
+		if (!netHandler.GetBackend())
+		{
+			// 
+			return;
+		}
 		if (netHandler.IsHost())
 		{
 			Nexus::Packet connectionPacket;
@@ -4919,7 +5106,7 @@ namespace Volt
 		const std::string formattedIp = MonoScriptUtils::GetStringFromMonoString(ip);
 		if (formattedIp.empty()) return;
 
-		netHandler.StartClient();
+		//netHandler.StartClient();
 		// #nexus_todo: failsafe ip
 		((Volt::NetClient*)(netHandler.GetBackend().get()))->StoreServerData(formattedIp, port);
 		Nexus::Packet connectionPacket;
@@ -4932,14 +5119,148 @@ namespace Volt
 	{
 		auto& netHandler = Application::Get().GetNetHandler();
 		if (!netHandler.GetBackend()) return;
-		// #nexus_todo: disconnect
+
+		Nexus::Packet packet;
+		packet.id = Nexus::ePacketID::DISCONNECT;
+		packet.ownerID = netHandler.GetBackend()->GetClientId();
+
+		if (netHandler.IsHost())
+		{
+			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),packet });
+			return;
+		}
+		netHandler.GetBackend()->Transmit(packet);
 	}
 
 	inline static void Net_SceneLoad()
 	{
 		Volt::Application::Get().GetNetHandler().LoadNetScene();
 	}
+
+	inline static void Net_InstantiatePlayer()
+	{
+		auto& netHandler = Application::Get().GetNetHandler();
+		if (!netHandler.GetBackend()) return;
+
+		if (netHandler.IsHost())
+		{
+			Nexus::Packet connectionPacket;
+			connectionPacket.id = Nexus::ePacketID::CONSTRUCT_REGISTRY;
+			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),connectionPacket });
+			return;
+		}
+
+		Nexus::Packet connectionPacket;
+		connectionPacket.id = Nexus::ePacketID::CONSTRUCT_REGISTRY;
+		netHandler.GetBackend()->Transmit(connectionPacket);
+	}
+
+	inline static void Net_Reload()
+	{
+		Application::Get().GetNetHandler().Reload();
+	}
+
+	inline static void Net_ForcePortBinding(unsigned short port)
+	{
+		Application::Get().GetNetHandler().SetForcedPort(port);
+	}
+
+	inline static bool Net_IsHost()
+	{
+		return Application::Get().GetNetHandler().IsHost();
+	}
+
+	inline static unsigned short Net_GetBoundPort()
+	{
+		auto& backend = Volt::Application::Get().GetNetHandler().GetBackend();
+		if (!backend) return 0;
+		return backend->GetRelay().GetBoundPort();
+	}
+
+	void MonoScriptGlue::Net_OnConnectCallback()
+	{
+		auto klass = MonoScriptClass(MonoScriptEngine::GetCoreAssembly().assemblyImage, "Volt", "Net");
+
+		auto method = klass.GetMethod("OnConnectCallback", 0);
+		if (!method)
+		{
+			return;
+		}
+
+		MonoScriptEngine::CallStaticMethod(method, nullptr);
+	}
 #pragma endregion Net
+
+#pragma region Steam
+
+	inline static void SteamAPI_StartLobby(MonoString* address)
+	{
+		Application::Get().GetSteam().StartLobby(MonoScriptUtils::GetStringFromMonoString(address));
+	}
+
+	void MonoScriptGlue::SteamAPI_Clean()
+	{
+		Application::Get().GetSteam().ClearRichPresence();
+		auto klass = MonoScriptClass(MonoScriptEngine::GetCoreAssembly().assemblyImage, "Volt", "SteamAPI");
+		MonoScriptEngine::CallStaticMethod(klass.GetMethod("Clean", 0), nullptr);
+	}
+
+	void MonoScriptGlue::SteamAPI_OnJoinRequest(std::string address)
+	{
+		auto klass = MonoScriptClass(MonoScriptEngine::GetCoreAssembly().assemblyImage, "Volt", "SteamAPI");
+		void* args[1] = { MonoScriptUtils::GetMonoStringFromString(address) };
+		MonoScriptEngine::CallStaticMethod(klass.GetMethod("OnJoinRequest", 1), args);
+	}
+
+	inline static void SteamAPI_SetStatInt(MonoString* name, int32_t value)
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		const std::string str = MonoScriptUtils::GetStringFromMonoString(name);
+		steamAPI.SetStat(str, value);
+	}
+
+	inline static void SteamAPI_SetStatFloat(MonoString* name, float value)
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		const std::string str = MonoScriptUtils::GetStringFromMonoString(name);
+		steamAPI.SetStat(str, value);
+	}
+
+	inline static int32_t SteamAPI_GetStatInt(MonoString* name)
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		const std::string str = MonoScriptUtils::GetStringFromMonoString(name);
+
+		return steamAPI.GetStatInt(str);
+	}
+
+	inline static float SteamAPI_GetStatFloat(MonoString* name)
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		const std::string str = MonoScriptUtils::GetStringFromMonoString(name);
+
+		return steamAPI.GetStatFloat(str);
+	}
+
+	inline static bool SteamAPI_IsStatsValid()
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		return steamAPI.IsStatsValid();
+	}
+
+	inline static void SteamAPI_StoreStats()
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		steamAPI.StoreStats();
+	}
+
+	inline static void SteamAPI_RequestStats()
+	{
+		auto& steamAPI = Application::Get().GetSteam();
+		steamAPI.RequestStats();
+	}
+
+#pragma endregion Steam
 
 #pragma region Window
 	inline static float Window_GetWidth()
@@ -4961,6 +5282,14 @@ namespace Volt
 
 		return Application::Get().GetWindow().GetViewportHeight();
 	}
+
+	inline static void Window_SetCursor(MonoString* path)
+	{
+		const std::string str = MonoScriptUtils::GetStringFromMonoString(path);
+		const std::filesystem::path contextPath = AssetManager::GetContextPath(str);
+		Application::Get().GetWindow().SetCursor(str);
+	}
+
 #pragma endregion Window
 
 #pragma region Asset
@@ -5000,6 +5329,31 @@ namespace Volt
 		const float textWidth = font->GetStringWidth(str, (*scale) * currentScaleModifier, maxWidth);
 
 		return textWidth;
+	}
+
+	inline static float Font_GetStringHeight(uint64_t fontHandle, MonoString* text, glm::vec2* scale, float maxWidth)
+	{
+		if (!text)
+		{
+			return 0.f;
+		}
+
+		const std::string str = MonoScriptUtils::GetStringFromMonoString(text);
+		if (str.empty())
+		{
+			return 0.f;
+		}
+
+		Ref<Font> font = AssetManager::GetAsset<Font>(fontHandle);
+		if (!font || !font->IsValid())
+		{
+			return 0.f;
+		}
+
+		const float currentScaleModifier = UIRenderer::GetCurrentScaleModifier();
+		const float textHeight = font->GetStringHeight(str, (*scale) * currentScaleModifier, maxWidth);
+
+		return textHeight;
 	}
 #pragma endregion
 
@@ -5053,6 +5407,99 @@ namespace Volt
 	}
 #pragma endregion
 
+#pragma region Renderer
+	inline static void Renderer_SetRenderScale(float renderScale)
+	{
+		OnRenderScaleChangedEvent renderScaleEvent{ renderScale };
+		Application::Get().OnEvent(renderScaleEvent);
+	}
+
+	inline static void Renderer_SetRendererSettings(SceneRendererSettings* rendererSettings)
+	{
+		OnRendererSettingsChangedEvent settingsEvent{ *rendererSettings };
+		Application::Get().OnEvent(settingsEvent);
+	}
+#pragma endregion Renderer
+
+#pragma region VideoPlayer
+	inline static void VideoPlayer_Play(uint64_t assetHandle, bool loop)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
+		if (!video || !video->IsValid())
+		{
+			return;
+		}
+
+		video->Play(loop);
+	}
+
+	inline static void VideoPlayer_Stop(uint64_t assetHandle)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
+		if (!video || !video->IsValid())
+		{
+			return;
+		}
+
+		video->Stop();
+	}
+
+	inline static void VideoPlayer_Restart(uint64_t assetHandle)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
+		if (!video || !video->IsValid())
+		{
+			return;
+		}
+
+		video->Restart();
+	}
+
+	inline static void VideoPlayer_Pause(uint64_t assetHandle)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
+		if (!video || !video->IsValid())
+		{
+			return;
+		}
+
+		video->Pause();
+	}
+
+	inline static void VideoPlayer_Update(uint64_t assetHandle, float deltaTime)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(assetHandle);
+		if (!video || !video->IsValid())
+		{
+			return;
+		}
+
+		video->Update(deltaTime);
+	}
+
+	inline static void VideoPlayer_DrawSpriteTexture(uint64_t videoHandle, glm::vec3* position, glm::vec2* scale, float rotation, glm::vec4* color, glm::vec2* offset)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(videoHandle);
+		if (!video || !video->IsValid())
+		{
+			return;
+		}
+
+		UIRenderer::DrawSprite(video->GetImage(), *position, *scale, rotation, *color, *offset);
+	}
+
+	inline static VideoStatus VideoPlayer_GetStatus(uint64_t videoHandle)
+	{
+		Ref<Video> video = AssetManager::GetAsset<Video>(videoHandle);
+		if (!video || !video->IsValid())
+		{
+			return VideoStatus::Stopped;
+		}
+
+		return video->GetStatus();
+	}
+#pragma endregion
+
 	void MonoScriptGlue::RegisterFunctions()
 	{
 		//VoltApplication
@@ -5060,11 +5507,12 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(VoltApplication_LoadLevel);
 			VT_ADD_INTERNAL_CALL(VoltApplication_IsRuntime);
 			VT_ADD_INTERNAL_CALL(VoltApplication_Quit);
+			VT_ADD_INTERNAL_CALL(VoltApplication_GetClipboard);
+			VT_ADD_INTERNAL_CALL(VoltApplication_SetClipboard);
 
 			VT_ADD_INTERNAL_CALL(VoltApplication_SetResolution);
 			VT_ADD_INTERNAL_CALL(VoltApplication_SetWindowMode);
 		}
-
 
 		// Net
 		{
@@ -5086,6 +5534,11 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Net_SetHandleTick);
 			VT_ADD_INTERNAL_CALL(Net_Disconnect);
 			VT_ADD_INTERNAL_CALL(Net_Connect);
+			VT_ADD_INTERNAL_CALL(Net_InstantiatePlayer);
+			VT_ADD_INTERNAL_CALL(Net_GetBoundPort);
+			VT_ADD_INTERNAL_CALL(Net_ForcePortBinding);
+			VT_ADD_INTERNAL_CALL(Net_Reload);
+			VT_ADD_INTERNAL_CALL(Net_IsHost);
 		}
 
 		// Graph Key
@@ -5121,6 +5574,7 @@ namespace Volt
 		{
 			VT_ADD_INTERNAL_CALL(Scene_Load);
 			VT_ADD_INTERNAL_CALL(Scene_Save);
+			VT_ADD_INTERNAL_CALL(Scene_Preload);
 			VT_ADD_INTERNAL_CALL(Scene_GetAllEntities);
 			VT_ADD_INTERNAL_CALL(Scene_GetAllEntitiesWithComponent);
 			VT_ADD_INTERNAL_CALL(Scene_GetAllEntitiesWithScript);
@@ -5168,6 +5622,8 @@ namespace Volt
 
 		// PointLightComponent
 		{
+			VT_ADD_INTERNAL_CALL(PointlightComponent_GetColor);
+			VT_ADD_INTERNAL_CALL(PointlightComponent_SetColor);
 			VT_ADD_INTERNAL_CALL(PointlightComponent_GetIntensity);
 			VT_ADD_INTERNAL_CALL(PointlightComponent_SetIntensity);
 		}
@@ -5376,6 +5832,7 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Input_SetMousePosition);
 			VT_ADD_INTERNAL_CALL(Input_GetMousePosition);
 			VT_ADD_INTERNAL_CALL(Input_ShowCursor);
+			VT_ADD_INTERNAL_CALL(Input_GetScrollOffset);
 		}
 
 		// Math
@@ -5393,16 +5850,21 @@ namespace Volt
 		// AMP
 		{
 			VT_ADD_INTERNAL_CALL(AMP_PlayOneshotEvent);
+			VT_ADD_INTERNAL_CALL(AMP_SetRTPC);
+			VT_ADD_INTERNAL_CALL(AMP_StopAllEvents);
 
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_PlayEvent);
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_PlayOneshotEvent);
 
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_StopEvent);
+			VT_ADD_INTERNAL_CALL(AudioSourceComponent_StopAllEvents);
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_PauseEvent);
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_SetState);
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_SetSwitch);
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_SetParameter);
 			VT_ADD_INTERNAL_CALL(AudioSourceComponent_SetParameterOverTime);
+
+
 
 		}
 
@@ -5417,6 +5879,7 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Vision_SetCameraFieldOfView);
 			VT_ADD_INTERNAL_CALL(Vision_SetCameraDampAmount);
 			VT_ADD_INTERNAL_CALL(Vision_SetCameraLocked);
+			VT_ADD_INTERNAL_CALL(Vision_SetCameraMouseSensentivity);
 		}
 
 		// Render
@@ -5491,6 +5954,9 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_HasOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetOverrideMaterial);
+			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_GetOverrideSkin);
+			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetOverrideSkin);
+			VT_ADD_INTERNAL_CALL(AnimationControllerComponent_SetController);
 		}
 
 		// Text Renderer Component
@@ -5512,11 +5978,14 @@ namespace Volt
 		// Project
 		{
 			VT_ADD_INTERNAL_CALL(Project_GetDirectory);
+			VT_ADD_INTERNAL_CALL(Project_GetCompanyName);
+			VT_ADD_INTERNAL_CALL(Project_GetProjectName);
 		}
 
 		// Mesh Component
 		{
 			VT_ADD_INTERNAL_CALL(MeshComponent_GetMeshHandle);
+			VT_ADD_INTERNAL_CALL(MeshComponent_SetMeshHandle);
 			VT_ADD_INTERNAL_CALL(MeshComponent_HasOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(MeshComponent_GetOverrideMaterial);
 			VT_ADD_INTERNAL_CALL(MeshComponent_SetOverrideMaterial);
@@ -5582,6 +6051,7 @@ namespace Volt
 		{
 			VT_ADD_INTERNAL_CALL(Window_GetHeight);
 			VT_ADD_INTERNAL_CALL(Window_GetWidth);
+			VT_ADD_INTERNAL_CALL(Window_SetCursor);
 		}
 
 		// Asset
@@ -5589,15 +6059,45 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Asset_IsValid);
 		}
 
+		// Steam
+		{
+			VT_ADD_INTERNAL_CALL(SteamAPI_StartLobby);
+			VT_ADD_INTERNAL_CALL(SteamAPI_SetStatInt);
+			VT_ADD_INTERNAL_CALL(SteamAPI_SetStatFloat);
+			VT_ADD_INTERNAL_CALL(SteamAPI_GetStatInt);
+			VT_ADD_INTERNAL_CALL(SteamAPI_GetStatFloat);
+			VT_ADD_INTERNAL_CALL(SteamAPI_IsStatsValid);
+			VT_ADD_INTERNAL_CALL(SteamAPI_StoreStats);
+			VT_ADD_INTERNAL_CALL(SteamAPI_RequestStats);
+		}
+
 		// Font
 		{
 			VT_ADD_INTERNAL_CALL(Font_GetStringWidth);
+			VT_ADD_INTERNAL_CALL(Font_GetStringHeight);
 		}
 
 		// Post Processing Stack
 		{
 			VT_ADD_INTERNAL_CALL(PostProcessingStack_PushEffect);
 			VT_ADD_INTERNAL_CALL(PostProcessingStack_PopEffect);
+		}
+
+		// Renderer
+		{
+			VT_ADD_INTERNAL_CALL(Renderer_SetRenderScale);
+			VT_ADD_INTERNAL_CALL(Renderer_SetRendererSettings);
+		}
+
+		// Video Player
+		{
+			VT_ADD_INTERNAL_CALL(VideoPlayer_Play);
+			VT_ADD_INTERNAL_CALL(VideoPlayer_Stop);
+			VT_ADD_INTERNAL_CALL(VideoPlayer_Restart);
+			VT_ADD_INTERNAL_CALL(VideoPlayer_Pause);
+			VT_ADD_INTERNAL_CALL(VideoPlayer_Update);
+			VT_ADD_INTERNAL_CALL(VideoPlayer_DrawSpriteTexture);
+			VT_ADD_INTERNAL_CALL(VideoPlayer_GetStatus);
 		}
 	}
 }

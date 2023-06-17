@@ -77,5 +77,10 @@
         {
             InternalCalls.Vision_SetCameraLocked(cameraEnt.Id, locked);
         }
+
+        public static void SetCameraMouseSensentivity(Entity cameraEnt, float mouseSens)
+        {
+            InternalCalls.Vision_SetCameraMouseSensentivity(cameraEnt.Id, mouseSens);
+        }
     }
 }

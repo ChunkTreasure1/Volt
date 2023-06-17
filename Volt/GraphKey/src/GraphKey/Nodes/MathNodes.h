@@ -229,7 +229,7 @@ namespace GraphKey
 		{
 			T result = GetInput<T>(0);
 
-			if (result != T(0.f))
+			if (glm::all(glm::notEqual(result, { 0.f })))
 			{
 				SetOutputData(0, glm::normalize(result));
 			}
@@ -266,7 +266,7 @@ namespace GraphKey
 		{
 			T result = GetInput<T>(0);
 
-			if (result != T(0.f))
+			if (glm::all(glm::notEqual(result, { 0.f })))
 			{
 				SetOutputData(0, glm::length(result));
 			}

@@ -71,12 +71,16 @@ void Volt::Vision::Update(float aDeltaTime)
 {
 	std::vector<Wire::EntityId> cams = myScene->GetRegistry().GetComponentView<Volt::VisionCameraComponent>();
 
+	cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetId()), cams.end());
+
 	if (myVTCams.size() != cams.size())
 	{
 		myVTCams.clear();
 		for (auto& cam : cams)
 		{
 			Volt::Entity newCam{ cam, myScene };
+
+			newCam.GetComponent<Volt::VisionCameraComponent>().Init(newCam);
 
 			myVTCams.push_back(newCam);
 		}
@@ -120,7 +124,7 @@ void Volt::Vision::InitTransitionCam()
 				myTransitionCamera.SetLocalRotation(myLastActiveCamera.GetRotation());
 			}
 		}
-		myTransitionCameraStartFoV = myTransitionCamera.GetComponent<Volt::CameraComponent>().fieldOfView;
+		myTransitionCameraStartFoV = myActiveCamera.GetComponent<Volt::CameraComponent>().fieldOfView;
 	}
 
 	auto& vtCamComp = myTransitionCamera.GetComponent<Volt::VisionCameraComponent>();
@@ -481,6 +485,19 @@ void Volt::Vision::SetCameraLocked(Volt::Entity aCamera, bool locked)
 		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
 		{
 			aCamera.GetComponent<Volt::VisionCameraComponent>().myIsLocked = locked;
+		}
+	}
+}
+
+void Volt::Vision::SetCameraMouseSensentivity(Volt::Entity aCamera, float mouseSens)
+{
+	if (myVTCams.empty()) { return; }
+
+	if (aCamera)
+	{
+		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
+		{
+			aCamera.GetComponent<Volt::VisionCameraComponent>().mouseSensitivity = mouseSens;
 		}
 	}
 }

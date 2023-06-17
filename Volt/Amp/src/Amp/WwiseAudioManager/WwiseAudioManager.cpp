@@ -122,6 +122,16 @@ namespace Amp
 		return Amp::WWiseEngine::Get().ExecuteEventAction(AK::SoundEngine::AkActionOnEventType_Resume, aPlayingID);
 	}
 
+	void WwiseAudioManager::StopAllEvents()
+	{
+		Amp::WWiseEngine::Get().StopAllEvents();
+	}
+
+	void WwiseAudioManager::StopAllEvents(uint32_t aObjID)
+	{
+		Amp::WWiseEngine::Get().StopAllEvents(aObjID);
+	}
+
 	bool WwiseAudioManager::SetState(const char* aStateGroup, const char* aState)
 	{
 		return Amp::WWiseEngine::Get().SetState(aStateGroup, aState);
@@ -130,6 +140,11 @@ namespace Amp
 	bool WwiseAudioManager::SetSwitch(const char* aSwitchGroup, const char* aState, uint64_t AkGameObjectID)
 	{
 		return Amp::WWiseEngine::Get().SetSwitch(aSwitchGroup, aState, AkGameObjectID);
+	}
+
+	bool WwiseAudioManager::SetRTPC(const char* aParameterName, float avalue)
+	{
+		return Amp::WWiseEngine::Get().SetGlobalParameter(aParameterName, avalue);
 	}
 
 	bool WwiseAudioManager::SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID)

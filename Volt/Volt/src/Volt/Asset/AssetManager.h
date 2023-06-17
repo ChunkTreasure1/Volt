@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <shared_mutex>
+#include <functional>
 
 namespace Volt
 {
@@ -103,6 +104,9 @@ namespace Volt
 		template<typename T>
 		static Ref<T> QueueAsset(AssetHandle handle);
 
+		template<typename T>
+		static Ref<T> QueueAsset(AssetHandle handle, const std::function<void()>& assetLoadedCallback);
+
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args&&... args);
 
@@ -136,11 +140,17 @@ namespace Volt
 		void QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset);
 		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset);
 
+		void QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset, const std::function<void()>& loadedCallback);
+		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset, const std::function<void()>& loadedCallback);
+
+		static const std::filesystem::path GetCleanPath(const std::filesystem::path& path);
+
 		std::vector<std::filesystem::path> GetMetaFiles();
 
 		std::unordered_map<AssetType, Scope<AssetImporter>> myAssetImporters;
-		std::unordered_map<std::filesystem::path, AssetHandle> myAssetRegistry;
 		std::unordered_map <AssetHandle, std::vector<std::filesystem::path>> myAssetDependencies;
+
+		std::unordered_map<std::filesystem::path, AssetHandle> myAssetRegistry;
 
 		std::unordered_map<AssetHandle, Ref<Asset>> myAssetCache;
 		std::unordered_map<AssetHandle, Ref<Asset>> myMemoryAssets;
@@ -162,7 +172,11 @@ namespace Volt
 
 		if (asset)
 		{
-			VT_CORE_ASSERT(asset->GetType() == T::GetStaticType(), "Type mismatch!")
+			if (asset->GetType() != T::GetStaticType())
+			{
+				AssetType assetType = asset->GetType();
+				VT_CORE_CRITICAL("Type Mismatch!");
+			}
 		}
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
@@ -181,7 +195,7 @@ namespace Volt
 			return nullptr;
 		}
 
-		Ref<Asset> asset = GetAsset<T>(assetHandle);
+		Ref<Asset> asset = QueueAsset<T>(assetHandle);
 		if (!asset)
 		{
 			return nullptr;
@@ -190,7 +204,11 @@ namespace Volt
 		while (!asset->IsValid())
 		{}
 
-		VT_CORE_ASSERT(asset->GetType() == T::GetStaticType(), "Type mismatch!");
+		if (asset->GetType() != T::GetStaticType())
+		{
+			VT_CORE_CRITICAL("Type Mismatch!");
+		}
+
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -217,7 +235,11 @@ namespace Volt
 		asset->SetFlag(AssetFlag::Queued, true);
 		Get().QueueAssetInternal(path, asset);
 
-		VT_CORE_ASSERT(asset->GetType() == T::GetStaticType(), "Type mismatch!");
+		if (asset->GetType() != T::GetStaticType())
+		{
+			VT_CORE_CRITICAL("Type Mismatch!");
+		}
+
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -229,12 +251,10 @@ namespace Volt
 			return nullptr;
 		}
 
-		// If it's not valid, return
+		// If it's a memory asset, return it
+		if (Get().myMemoryAssets.contains(handle))
 		{
-			if (!Get().ExistsInRegistry(handle))
-			{
-				return nullptr;
-			}
+			return std::reinterpret_pointer_cast<T>(Get().myMemoryAssets.at(handle));
 		}
 
 		// If it's already loaded, return it
@@ -249,7 +269,43 @@ namespace Volt
 		asset->SetFlag(AssetFlag::Queued, true);
 		Get().QueueAssetInternal(handle, asset);
 
-		VT_CORE_ASSERT(asset->GetType() == T::GetStaticType(), "Type mismatch!");
+		if (asset->GetType() != T::GetStaticType())
+		{
+			VT_CORE_CRITICAL("Type Mismatch!");
+		}
+		return std::reinterpret_pointer_cast<T>(asset);
+	}
+
+	template<typename T>
+	inline Ref<T> AssetManager::QueueAsset(AssetHandle handle, const std::function<void()>& assetLoadedCallback)
+	{
+		if (handle == Asset::Null())
+		{
+			return nullptr;
+		}
+
+		// If it's a memory asset, return it
+		if (Get().myMemoryAssets.contains(handle))
+		{
+			return std::reinterpret_pointer_cast<T>(Get().myMemoryAssets.at(handle));
+		}
+
+		// If it's already loaded, return it
+		{
+			if (IsLoaded(handle))
+			{
+				return GetAsset<T>(handle);
+			}
+		}
+
+		Ref<Asset> asset = CreateRef<T>();
+		asset->SetFlag(AssetFlag::Queued, true);
+		Get().QueueAssetInternal(handle, asset, assetLoadedCallback);
+
+		if (asset->GetType() != T::GetStaticType())
+		{
+			VT_CORE_CRITICAL("Type Mismatch!");
+		}
 		return std::reinterpret_pointer_cast<T>(asset);
 	}
 
@@ -262,7 +318,7 @@ namespace Volt
 		WriteLock lockCache{ Get().myAssetCacheMutex };
 		WriteLock lockRegistry{ Get().myAssetRegistryMutex };
 
-		AssetManager::Get().myAssetRegistry.emplace(asset->path, asset->handle);
+		AssetManager::Get().myAssetRegistry.emplace(GetCleanPath(asset->path), asset->handle);
 		AssetManager::Get().myAssetCache.emplace(asset->handle, asset);
 
 		Get().SaveAssetMetaFile(asset->path);

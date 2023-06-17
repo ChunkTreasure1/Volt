@@ -25,7 +25,7 @@ namespace Volt
 		glm::mat4 transform;
 
 		std::vector<glm::mat4> boneTransforms;
-		std::vector<glm::vec4> vertexColors;
+		std::vector<uint32_t> vertexColors;
 
 		Ref<Mesh> mesh;
 		Ref<SubMaterial> material;

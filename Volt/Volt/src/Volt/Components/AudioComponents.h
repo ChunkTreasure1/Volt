@@ -70,6 +70,11 @@ namespace Volt
 			return Amp::WwiseAudioManager::StopEvent(aPlayingID);
 		}
 
+		void StopAllEvents()
+		{
+			Amp::WwiseAudioManager::StopAllEvents(myID);
+		}
+
 		bool PauseEvent(const uint32_t& aPlayingID)
 		{
 			return Amp::WwiseAudioManager::PauseEvent(aPlayingID);

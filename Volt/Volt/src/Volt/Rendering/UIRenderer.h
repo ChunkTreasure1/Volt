@@ -22,12 +22,15 @@ namespace Volt
 		static void SetScissor(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
 		static void DrawSprite(Ref<Texture2D> texture, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color = 1.f, const glm::vec2& offset = 0.f);
+		static void DrawSprite(Ref<Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color = 1.f, const glm::vec2& offset = 0.f);
 		static void DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset = 0.f);
 
-		static void DrawString(const std::string& text, const Ref<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, float maxWidth, const glm::vec4& color);
+		static void DrawString(const std::string& text, const Ref<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, float maxWidth, const glm::vec4& color, const glm::vec2& positionOffset);
 		static void DispatchText();
+		static void DispatchSprites();
 
 		static float GetCurrentScaleModifier();
+		static float GetCurrentScaleModifierX();
 
 	private:
 		static void CreateQuadData();

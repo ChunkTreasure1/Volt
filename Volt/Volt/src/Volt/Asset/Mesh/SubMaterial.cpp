@@ -28,24 +28,23 @@ namespace Volt
 	{
 		myName = subMaterial.myName;
 		myIndex = subMaterial.myIndex;
-		myPipeline = subMaterial.myPipeline;
 		myTopology = subMaterial.myTopology;
 		myCullMode = subMaterial.myCullMode;
 		myTriangleFillMode = subMaterial.myTriangleFillMode;
 		myDepthMode = subMaterial.myDepthMode;
-
-		Renderer::AddMaterial(this);
-		Renderer::AddShaderDependency(myPipeline->GetSpecification().shader, this);
+		myMaterialData = subMaterial.myMaterialData;
 
 		myPipelineGenerationData = subMaterial.myPipelineGenerationData;
 		myMaterialSpecializationData = subMaterial.myMaterialSpecializationData;
 		myMaterialFlags = subMaterial.myMaterialFlags;
 
+		InvalidatePipeline(subMaterial.myPipeline->GetSpecification().shader);
 		Invalidate();
 		GenerateHash();
 
 		myTextures = subMaterial.myTextures;
-		Renderer::UpdateMaterial(this);
+		Renderer::AddMaterial(this);
+		Renderer::AddShaderDependency(myPipeline->GetSpecification().shader, this);
 	}
 
 	SubMaterial::SubMaterial(const std::string& aName, uint32_t aIndex, Ref<Shader> shader)

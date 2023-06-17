@@ -1,5 +1,12 @@
 ﻿namespace Volt
 {
+    public enum VideoStatus : uint
+    {
+        Stopped = 0,
+        Playing,
+        End
+    }
+
     public abstract class Component
     {
         public Entity entity { get; internal set; }
@@ -867,7 +874,7 @@
 
                 return myController;
             }
-            private set { }
+            set { }
         }
 
         public BoundingSphere boundingSphere
@@ -906,6 +913,26 @@
                 else
                 {
                     InternalCalls.AnimationControllerComponent_SetOverrideMaterial(entity.Id, value.handle);
+                }
+            }
+        }
+
+        public Mesh overrideSkin
+        {
+            get
+            {
+                return AssetManager.GetAsset<Mesh>(InternalCalls.AnimationControllerComponent_GetOverrideSkin(entity.Id));
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    InternalCalls.AnimationControllerComponent_SetOverrideSkin(entity.Id, 0);
+                }
+                else
+                {
+                    InternalCalls.AnimationControllerComponent_SetOverrideSkin(entity.Id, value.handle);
                 }
             }
         }
@@ -955,7 +982,10 @@
                 return mesh;
             }
 
-            private set { }
+            set 
+            {
+                InternalCalls.MeshComponent_SetMeshHandle(entity.Id, value.handle);
+            }
         }
 
         public Material material

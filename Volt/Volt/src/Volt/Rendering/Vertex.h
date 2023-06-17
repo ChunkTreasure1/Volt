@@ -102,15 +102,15 @@ namespace Volt
 
 	struct EncodedVertex
 	{
-		glm::vec3 position = glm::vec3(0.f);
+		glm::vec3 position = 0.f;
 
 		glm::vec<4, uint8_t> normal;
 		float tangent = 0.f;
 
-		half_float::half texCoords[2];
+		half_float::half texCoords[2] = { half_float::half(0.f), half_float::half(0.f) };
 
-		glm::vec<4, uint16_t> influences = 0u;
-		half_float::half weights[4];
+		glm::vec<4, uint16_t> influences = 0;
+		half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
 	};
 
 	struct SpriteVertex

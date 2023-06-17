@@ -27,6 +27,16 @@
 
 namespace Volt
 {
+	struct SpriteCommand
+	{
+		Ref<Image2D> image;
+		glm::vec4 color;
+		glm::vec3 position;
+		glm::vec2 scale;
+		glm::vec2 offset;
+		float rotation;
+	};
+
 	struct QuadData
 	{
 		Ref<VertexBuffer> vertexBuffer;
@@ -74,10 +84,12 @@ namespace Volt
 
 		Ref<CommandBuffer> commandBuffer;
 		Ref<Image2D> depthImage;
+
+		std::vector<SpriteCommand> spriteCommands;
 	};
 
 	Scope<UIRendererData> s_uiRendererData;
-	inline static glm::vec2 CORE_SIZE = glm::vec2{ 1920.f / 2.f, 1080.f / 2.f };
+	inline static const glm::vec2 CORE_SIZE = { 1920.f / 2.f, 1080.f / 2.f };
 
 	inline static float Remap(float value, float fromMin, float fromMax, float toMin, float toMax)
 	{
@@ -233,59 +245,31 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
+		auto& newCmd = s_uiRendererData->spriteCommands.emplace_back();
+		newCmd.image = texture ? texture->GetImage() : nullptr;
+		newCmd.position = position;
+		newCmd.scale = scale;
+		newCmd.rotation = rotation;
+		newCmd.color = color;
+		newCmd.offset = offset;
+	}
 
-		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
-		const glm::vec2 halfSize = currentSize / 2.f;
+	void UIRenderer::DrawSprite(Ref<Image2D> image, const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
+	{
+		VT_PROFILE_FUNCTION();
 
-		const glm::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
-		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
-		const float minScale = glm::min(newScale.x, newScale.y);
-
-		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
-
-		subMat->Bind(s_uiRendererData->commandBuffer);
-
-		if (texture)
-		{
-			uint32_t textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(texture->GetImage());
-			if (textureIndex == 0)
-			{
-				textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(texture->GetImage());
-			}
-
-			subMat->SetValue("textureIndex", textureIndex);
-		}
-		else
-		{
-			subMat->SetValue("textureIndex", 0);
-		}
-
-		subMat->SetValue("color", color);
-		subMat->SetValue("viewProjectionTransform", s_uiRendererData->currentProjection * s_uiRendererData->currentView * transform);
-		subMat->SetValue("vertexOffset", offset);
-		subMat->PushMaterialData(s_uiRendererData->commandBuffer);
-
-		const uint32_t currentIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
-
-		if (subMat->GetPipeline()->HasDescriptorSet(Sets::SAMPLERS))
-		{
-			auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
-			subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
-		}
-
-		if (subMat->GetPipeline()->HasDescriptorSet(Sets::TEXTURES))
-		{
-			auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
-			subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
-		}
-
-		vkCmdDrawIndexed(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0, 0);
+		auto& newCmd = s_uiRendererData->spriteCommands.emplace_back();
+		newCmd.image = image;
+		newCmd.position = position;
+		newCmd.scale = scale;
+		newCmd.rotation = rotation;
+		newCmd.color = color;
+		newCmd.offset = offset;
 	}
 
 	void UIRenderer::DrawSprite(const glm::vec3& position, const glm::vec2& scale, float rotation, const glm::vec4& color, const glm::vec2& offset)
 	{
-		DrawSprite(nullptr, position, scale, rotation, color, offset);
+		DrawSprite(Ref<Image2D>(nullptr), position, scale, rotation, color, offset);
 	}
 
 	static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
@@ -301,7 +285,7 @@ namespace Volt
 		return false;
 	}
 
-	void UIRenderer::DrawString(const std::string& text, const Ref<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, float maxWidth, const glm::vec4& color)
+	void UIRenderer::DrawString(const std::string& text, const Ref<Font> font, const glm::vec3& position, const glm::vec2& scale, float rotation, float maxWidth, const glm::vec4& color, const glm::vec2& positionOffset)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -401,7 +385,9 @@ namespace Volt
 			const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
 			const float minScale = glm::min(newScale.x, newScale.y);
 
-			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
+			glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, glm::vec3{ remappedPosition.x, remappedPosition.y, remappedPosition.z })* glm::rotate(glm::mat4{ 1.f }, rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { scale.x * minScale, scale.y * minScale, 1.f });
+			transform[3][0] -= positionOffset.x;
+			transform[3][1] -= positionOffset.y;
 
 			for (int32_t i = 0; i < utf32string.size(); i++)
 			{
@@ -438,7 +424,6 @@ namespace Volt
 				double texelHeight = 1.0 / fontAtlas->GetHeight();
 
 				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
-
 
 				textData.vertexBufferPtr->position = transform * glm::vec4{ (float)pl, (float)pb, 0.f, 1.f };
 				textData.vertexBufferPtr->color = color;
@@ -494,6 +479,68 @@ namespace Volt
 		Renderer::DrawIndexedVertexBuffer(s_uiRendererData->commandBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
 	}
 
+	void UIRenderer::DispatchSprites()
+	{
+		std::sort(s_uiRendererData->spriteCommands.begin(), s_uiRendererData->spriteCommands.end(), [](const auto& lhs, const auto& rhs)
+		{
+			return lhs.position.z > rhs.position.z;
+		});
+
+		for (const auto& cmd : s_uiRendererData->spriteCommands)
+		{
+			auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
+
+			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+			const glm::vec2 halfSize = currentSize / 2.f;
+
+			const glm::vec3 remappedPosition = { Remap(cmd.position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(cmd.position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), cmd.position.z };
+			const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+			const float minScale = glm::min(newScale.x, newScale.y);
+
+			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, cmd.rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { cmd.scale.x * minScale, cmd.scale.y * minScale, 1.f });
+
+			subMat->Bind(s_uiRendererData->commandBuffer);
+
+			if (cmd.image)
+			{
+				uint32_t textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(cmd.image);
+				if (textureIndex == 0)
+				{
+					textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(cmd.image);
+				}
+
+				subMat->SetValue("textureIndex", textureIndex);
+			}
+			else
+			{
+				subMat->SetValue("textureIndex", 0);
+			}
+
+			subMat->SetValue("color", cmd.color);
+			subMat->SetValue("viewProjectionTransform", s_uiRendererData->currentProjection * s_uiRendererData->currentView * transform);
+			subMat->SetValue("vertexOffset", cmd.offset);
+			subMat->PushMaterialData(s_uiRendererData->commandBuffer);
+
+			const uint32_t currentIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
+			if (subMat->GetPipeline()->HasDescriptorSet(Sets::SAMPLERS))
+			{
+				auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
+				subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
+			}
+
+			if (subMat->GetPipeline()->HasDescriptorSet(Sets::TEXTURES))
+			{
+				auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
+				subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
+			}
+
+			vkCmdDrawIndexed(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0, 0);
+		}
+
+		s_uiRendererData->spriteCommands.clear();
+	}
+
 	float UIRenderer::GetCurrentScaleModifier()
 	{
 		if (s_uiRendererData->currentRenderTarget.expired())
@@ -506,6 +553,19 @@ namespace Volt
 		const float minScale = glm::min(newScale.x, newScale.y);
 
 		return minScale;
+	}
+
+	float UIRenderer::GetCurrentScaleModifierX()
+	{
+		if (s_uiRendererData->currentRenderTarget.expired())
+		{
+			return 0.f;
+		}
+
+		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
+
+		return newScale.x;
 	}
 
 	void UIRenderer::CreateQuadData()

@@ -6,7 +6,8 @@
 #include "Volt/Rendering/FrameGraph/FrameGraph.h"
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/CommandBuffer.h"
-#include "Volt/Rendering/ComputePipeline.h"
+
+#include "Volt/Asset/Mesh/Material.h"
 
 namespace Volt
 {
@@ -20,7 +21,7 @@ namespace Volt
 	{
 	}
 
-	void SSRTechnique::AddSSRPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline)
+	void SSRTechnique::AddSSRPass(FrameGraph& frameGraph, Ref<Material> material)
 	{
 		const auto& preDepthData = frameGraph.GetBlackboard().Get<PreDepthData>();
 		const auto& skyboxData = frameGraph.GetBlackboard().Get<SkyboxData>();
@@ -28,43 +29,80 @@ namespace Volt
 		frameGraph.GetBlackboard().Add<SSROutput>() = frameGraph.AddRenderPass<SSROutput>("SSR Pass", 
 			[&](FrameGraph::Builder& builder, SSROutput& data) 
 		{
-			data.output = builder.CreateTexture({ ImageFormat::RGBA16F, { myRenderSize }, "SSR Output", ImageUsage::Storage });
+			data.output = builder.CreateTexture({ ImageFormat::RGBA16F, { myRenderSize }, "SSR Output", ImageUsage::Attachment });
 
 			builder.ReadResource(preDepthData.preDepth);
 			builder.ReadResource(preDepthData.viewNormals);
 			builder.ReadResource(skyboxData.outputImage);
-			builder.SetIsComputePass();
 
 			builder.SetHasSideEffect();
 		}, 
 			[=](const SSROutput& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "SSR Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& preDepthResource = resources.GetImageResource(preDepthData.preDepth);
 			const auto& viewNormalsResource = resources.GetImageResource(preDepthData.viewNormals);
-			const auto& sceneColorResource = resources.GetImageResource(skyboxData.outputImage);
+			const auto& colorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& outputResource = resources.GetImageResource(data.output);
 
-			pipeline->SetImage(outputResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			pipeline->SetImage(preDepthResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-			pipeline->SetImage(viewNormalsResource.image.lock(), Sets::OTHER, 2, ImageAccess::Read);
-			pipeline->SetImage(sceneColorResource.image.lock(), Sets::OTHER, 3, ImageAccess::Read);
-			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+			FrameGraphRenderPassInfo renderPassInfo{};
+			renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);
+			renderPassInfo.name = "SSR Pass";
 
-			pipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorMap.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(commandBuffer->GetCurrentIndex()), Sets::RENDERER_BUFFERS);
+			FrameGraphRenderingInfo renderingInfo = FrameGraph::CreateRenderingInfoFromResources(
+				{
+					resources.GetImageResource(data.output)
+				});
 
-			const uint32_t dispatchX = (myRenderSize.x + 8 - 1) / 8;
-			const uint32_t dispatchY = (myRenderSize.y + 8 - 1) / 8;
+			renderingInfo.width = myRenderSize.x;
+			renderingInfo.height = myRenderSize.y;
 
-			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
+			material->GetSubMaterialAt(0)->Set(0, preDepthResource.image.lock());
+			material->GetSubMaterialAt(0)->Set(1, viewNormalsResource.image.lock());
+			material->GetSubMaterialAt(0)->Set(2, colorResource.image.lock());
 
-			pipeline->ClearAllResources();
+			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
+			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
+			Renderer::EndFrameGraphPass(commandBuffer);
 		});
 	}
-	
-	void SSRTechnique::AddSSRComposite(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline)
+
+	void SSRTechnique::AddSSRCompositePass(FrameGraph& frameGraph, Ref<Material> material)
 	{
+		const auto& skyboxData = frameGraph.GetBlackboard().Get<SkyboxData>();
+		const auto& ssrData = frameGraph.GetBlackboard().Get<SSROutput>();
+
+		frameGraph.AddRenderPass("SSR Composite Pass",
+			[&](FrameGraph::Builder& builder)
+		{
+			builder.ReadResource(ssrData.output);
+			builder.WriteResource(skyboxData.outputImage);
+
+			builder.SetHasSideEffect();
+		},
+			[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
+		{
+			const auto& ssrResource = resources.GetImageResource(ssrData.output);
+			const auto& colorResource = resources.GetImageResource(skyboxData.outputImage);
+
+			FrameGraphRenderPassInfo renderPassInfo{};
+			renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);
+			renderPassInfo.name = "SSR Pass";
+
+			FrameGraphRenderingInfo renderingInfo = FrameGraph::CreateRenderingInfoFromResources(
+				{
+					colorResource
+				});
+
+			renderingInfo.colorAttachmentInfo.front().loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+			renderingInfo.width = myRenderSize.x;
+			renderingInfo.height = myRenderSize.y;
+
+			material->GetSubMaterialAt(0)->Set(0, ssrResource.image.lock());
+
+			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
+			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
+			Renderer::EndFrameGraphPass(commandBuffer);
+		});
 	}
 }

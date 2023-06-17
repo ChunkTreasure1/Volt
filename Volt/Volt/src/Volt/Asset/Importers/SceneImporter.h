@@ -38,9 +38,6 @@ namespace Volt
 		static void DeserializeMono(Wire::EntityId id, MonoScriptFieldCache& scriptFieldCache, const YAML::Node& node);
 	
 	private:
-		void SerializeEntity(Wire::EntityId id, const Wire::Registry& registry, Ref<Scene> scene, const std::filesystem::path& targetDir) const;
-		void DeserializeEntity(const std::filesystem::path& path, Wire::Registry& registry, Ref<Scene> scene) const;
-
 		void SerializeEntityLayer(Wire::EntityId id, const Wire::Registry& registry, YAML::Emitter& out, const Ref<Scene>& scene) const;
 		void DeserializeEntityLayer(Wire::Registry& registry, Ref<Scene> scene, const YAML::Node& node) const;
 

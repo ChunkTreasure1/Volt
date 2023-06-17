@@ -19,6 +19,8 @@
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 
+#include "Volt/Utility/PackUtility.h"
+
 #include <GraphKey/Graph.h>
 #include <GraphKey/Node.h>
 #include <GraphKey/Registry.h>
@@ -1074,6 +1076,8 @@ namespace Volt
 						case AssetType::Material: fieldType = MonoFieldType::Material; break;
 						case AssetType::Texture: fieldType = MonoFieldType::Texture; break;
 						case AssetType::PostProcessingMaterial: fieldType = MonoFieldType::PostProcessingMaterial; break;
+						case AssetType::Video: fieldType = MonoFieldType::Video; break;
+						case AssetType::AnimationGraph: fieldType = MonoFieldType::AnimationGraph; break;
 						default: fieldType = MonoFieldType::Asset; break;
 					}
 				}
@@ -1113,237 +1117,6 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::Color4: savedFieldMap.at(propName)->SetValue(*(glm::vec4*)&propData[0], sizeof(glm::vec4), fieldType); break;
 					case Wire::ComponentRegistry::PropertyType::Enum: savedFieldMap.at(propName)->SetValue(*(uint32_t*)&propData[0], sizeof(uint32_t), fieldType); break;
 				}
-			}
-		}
-	}
-
-	void SceneImporter::SerializeEntity(Wire::EntityId id, const Wire::Registry& registry, Ref<Scene> scene, const std::filesystem::path& targetDir) const
-	{
-		VT_PROFILE_FUNCTION();
-
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(id, id, out);
-
-			out << YAML::Key << "components" << YAML::BeginSeq;
-			for (const auto& [guid, pool] : registry.GetPools())
-			{
-				if (!pool->HasComponent(id))
-				{
-					continue;
-				}
-
-				auto* componentData = (uint8_t*)pool->GetComponent(id);
-				const auto& compInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-
-				out << YAML::BeginMap;
-				out << YAML::Key << "guid" << YAML::Value << guid;
-				out << YAML::Key << "properties" << YAML::BeginSeq;
-				for (const auto& prop : compInfo.properties)
-				{
-					if (prop.serializable)
-					{
-						out << YAML::BeginMap;
-						VT_SERIALIZE_PROPERTY(type, prop.type, out);
-						VT_SERIALIZE_PROPERTY(vectorType, prop.vectorType, out);
-						VT_SERIALIZE_PROPERTY(name, prop.name, out);
-
-						myPropertySerializer[prop.type](componentData, prop.offset, prop.vectorType, out);
-
-						out << YAML::EndMap;
-					}
-				}
-				out << YAML::EndSeq;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-
-			if (registry.HasComponent<VisualScriptingComponent>(id))
-			{
-				auto* vsComp = (VisualScriptingComponent*)registry.GetComponentPtr(VisualScriptingComponent::comp_guid, id);
-				if (vsComp->graph)
-				{
-					GraphKey::Graph::Serialize(vsComp->graph, out);
-				}
-			}
-
-			if (registry.HasComponent<VertexPaintedComponent>(id))
-			{
-				std::filesystem::path vpPath = (targetDir / ("ent_" + std::to_string(id) + ".entVp"));
-				auto* vpComp = (VertexPaintedComponent*)registry.GetComponentPtr(VertexPaintedComponent::comp_guid, id);
-				BinarySerializer binaryVp(vpPath, sizeof(glm::vec4) * vpComp->vertecies.size() + sizeof(vpComp->meshHandle));
-
-				binaryVp.Serialize(vpComp->vertecies.data(), sizeof(glm::vec4) * vpComp->vertecies.size());
-				binaryVp.Serialize(vpComp->meshHandle);
-				binaryVp.WriteToFile();
-			}
-
-			if (registry.HasComponent<MonoScriptComponent>(id))
-			{
-				SerializeMono(id, scene->GetScriptFieldCache(), registry, out);
-			}
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-
-		std::ofstream output(targetDir / ("ent_" + std::to_string(id) + ".ent"), std::ios::out);
-		output << out.c_str();
-		output.close();
-	}
-
-	void SceneImporter::DeserializeEntity(const std::filesystem::path& path, Wire::Registry& registry, Ref<Scene> scene) const
-	{
-		VT_PROFILE_FUNCTION();
-		if (path.extension() == ".entVp") return;
-
-		std::ifstream file(path);
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
-
-		YAML::Node root;
-
-		try
-		{
-			root = YAML::Load(sstream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
-			return;
-		}
-
-		YAML::Node entityNode = root["Entity"];
-
-		Wire::EntityId entityId = Wire::NullID;
-		VT_DESERIALIZE_PROPERTY(id, entityId, entityNode, (Wire::EntityId)Wire::NullID);
-
-		if (entityId == Wire::NullID)
-		{
-			return;
-		}
-
-		entityId = registry.AddEntity(entityId);
-
-		YAML::Node componentsNode = entityNode["components"];
-		if (componentsNode)
-		{
-			VT_PROFILE_SCOPE("Components");
-
-			for (auto compNode : componentsNode)
-			{
-				WireGUID componentGUID;
-				VT_DESERIALIZE_PROPERTY(guid, componentGUID, compNode, WireGUID::Null());
-				if (componentGUID == WireGUID::Null())
-				{
-					continue;
-				}
-
-				auto* componentData = (uint8_t*)registry.AddComponent(componentGUID, entityId);
-
-				YAML::Node propertiesNode = compNode["properties"];
-				if (propertiesNode)
-				{
-					const auto& regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
-
-					for (auto propNode : propertiesNode)
-					{
-						Wire::ComponentRegistry::PropertyType type;
-						Wire::ComponentRegistry::PropertyType vectorType;
-						std::string name;
-
-						VT_DESERIALIZE_PROPERTY(type, type, propNode, Wire::ComponentRegistry::PropertyType::Unknown);
-						VT_DESERIALIZE_PROPERTY(vectorType, vectorType, propNode, Wire::ComponentRegistry::PropertyType::Unknown);
-						VT_DESERIALIZE_PROPERTY(name, name, propNode, std::string("Null"));
-
-						if (type == Wire::ComponentRegistry::PropertyType::Unknown)
-						{
-							continue;
-						}
-
-						// Try to find property
-						auto it = std::find_if(regInfo.properties.begin(), regInfo.properties.end(), [name, type](const auto& prop)
-						{
-							return prop.name == name && prop.type == type;
-						});
-
-						if (it != regInfo.properties.end())
-						{
-							myPropertyDeserializer[type](componentData, it->offset, it->vectorType, propNode);
-						}
-					}
-				}
-			}
-		}
-
-		YAML::Node graphNode = entityNode["Graph"];
-		if (graphNode && registry.HasComponent<VisualScriptingComponent>(entityId))
-		{
-			auto& vsComp = registry.GetComponent<VisualScriptingComponent>(entityId);
-			vsComp.graph = CreateRef<GraphKey::Graph>(entityId);
-
-			GraphKey::Graph::Deserialize(vsComp.graph, graphNode);
-		}
-
-		if (registry.HasComponent<VertexPaintedComponent>(entityId))
-		{
-			std::filesystem::path vpPath = path;
-			vpPath.replace_extension(".entVp");
-
-			if (std::filesystem::exists(vpPath))
-			{
-				auto* vpComp = (VertexPaintedComponent*)registry.GetComponentPtr(VertexPaintedComponent::comp_guid, entityId);
-				std::ifstream vpFile(vpPath, std::ios::in | std::ios::binary);
-				if (!vpFile.is_open())
-				{
-					VT_CORE_ERROR("Could not open entVp file!");
-				}
-
-				std::vector<uint8_t> totalData;
-				const size_t srcSize = vpFile.seekg(0, std::ios::end).tellg();
-				totalData.resize(srcSize);
-				vpFile.seekg(0, std::ios::beg);
-				vpFile.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
-				vpFile.close();
-
-				memcpy_s(&vpComp->meshHandle, sizeof(vpComp->meshHandle), totalData.data() + totalData.size() - sizeof(vpComp->meshHandle), sizeof(vpComp->meshHandle));
-				totalData.resize(totalData.size() - sizeof(vpComp->meshHandle));
-
-				//vpComp->vertecies.resize(totalData.size() / sizeof(glm::vec4));
-				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(glm::vec4))
-				{
-					glm::vec4 vpColor;
-					memcpy_s(&vpColor, sizeof(glm::vec4), totalData.data() + offset, sizeof(glm::vec4));
-					vpComp->vertecies.push_back(vpColor);
-				}
-
-			}
-
-
-			//binaryVp.Serialize(vpComp->vertecies.data(), sizeof(glm::vec4)* vpComp->vertecies.size());
-			//binaryVp.Serialize(vpComp->meshHandle);
-		}
-
-		YAML::Node monoNode = entityNode["MonoScripts"];
-		if (monoNode && registry.HasComponent<MonoScriptComponent>(entityId))
-		{
-			DeserializeMono(entityId, scene->GetScriptFieldCache(), entityNode);
-		}
-
-		if (registry.HasComponent<PrefabComponent>(entityId))
-		{
-			VT_PROFILE_SCOPE("Prefab Version Check")
-
-			auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
-			const uint32_t prefabVersion = Prefab::GetPrefabVersion(prefabComp.prefabAsset);
-			const bool isParent = Prefab::IsRootInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
-
-			if (prefabComp.version < prefabVersion && isParent)
-			{
-				prefabComp.isDirty = true;
 			}
 		}
 	}
@@ -1424,9 +1197,16 @@ namespace Volt
 			{
 				std::filesystem::path vpPath = (ProjectManager::GetDirectory() / scene->path.parent_path() / "Layers" / ("ent_" + std::to_string(id) + ".entVp"));
 				auto* vpComp = (VertexPaintedComponent*)registry.GetComponentPtr(VertexPaintedComponent::comp_guid, id);
-				BinarySerializer binaryVp(vpPath, sizeof(glm::vec4) * vpComp->vertecies.size() + sizeof(vpComp->meshHandle));
 
-				binaryVp.Serialize(vpComp->vertecies.data(), sizeof(glm::vec4) * vpComp->vertecies.size());
+				if (std::filesystem::exists(vpPath))
+				{
+					using std::filesystem::perms;
+					std::filesystem::permissions(vpPath, perms::_All_write);
+				}
+
+				BinarySerializer binaryVp(vpPath, sizeof(uint32_t) * vpComp->vertexColors.size() + sizeof(vpComp->meshHandle));
+
+				binaryVp.Serialize(vpComp->vertexColors.data(), sizeof(uint32_t) * vpComp->vertexColors.size());
 				binaryVp.Serialize(vpComp->meshHandle);
 				binaryVp.WriteToFile();
 			}
@@ -1615,12 +1395,12 @@ namespace Volt
 				memcpy_s(&vpComp->meshHandle, sizeof(vpComp->meshHandle), totalData.data() + totalData.size() - sizeof(vpComp->meshHandle), sizeof(vpComp->meshHandle));
 				totalData.resize(totalData.size() - sizeof(vpComp->meshHandle));
 
-				vpComp->vertecies.reserve(totalData.size() / sizeof(glm::vec4));
-				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(glm::vec4))
+				vpComp->vertexColors.reserve(totalData.size() / sizeof(uint32_t));
+				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(uint32_t))
 				{
-					glm::vec4 vpColor;
-					memcpy_s(&vpColor, sizeof(glm::vec4), totalData.data() + offset, sizeof(glm::vec4));
-					vpComp->vertecies.push_back(vpColor);
+					uint32_t vpColor;
+					memcpy_s(&vpColor, sizeof(uint32_t), totalData.data() + offset, sizeof(uint32_t));
+					vpComp->vertexColors.push_back(vpColor);
 				}
 			}
 		}

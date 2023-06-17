@@ -32,8 +32,8 @@
 #include <Volt/Utility/UIUtility.h>
 
 #include <Volt/Utility/StringUtility.h>
-#include <Volt/Math/Math.h>
 #include <Volt/Math/RayTriangle.h>
+#include <Volt/Math/Math.h>
 
 #include <Navigation/Core/NavigationSystem.h>
 
@@ -1022,6 +1022,8 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 		data.previousPositionValue = transComp.position;
 		data.previousRotationValue = glm::eulerAngles(transComp.rotation);
 		data.previousScaleValue = transComp.scale;
+		data.id = firstEntity;
+		data.scene = myEditorScene;
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::PushUndo(command);
@@ -1226,6 +1228,7 @@ glm::vec2 ViewportPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 {
 	float mx = mousePos.x;
 	float my = mousePos.y;
+
 	mx -= myPerspectiveBounds[0].x;
 	my -= myPerspectiveBounds[0].y;
 

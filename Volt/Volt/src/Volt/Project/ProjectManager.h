@@ -5,6 +5,7 @@ namespace Volt
 	struct Project
 	{
 		std::string name;
+		std::string companyName;
 		std::filesystem::path projectFilePath;
 		std::filesystem::path projectDirectory;
 

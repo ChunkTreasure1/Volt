@@ -44,6 +44,7 @@ namespace Volt
 		int32_t shadowMapIndex = -1;
 
 		glm::mat4 viewProjection = { 1.f };
+		glm::mat4 projection = { 1.f };
 	};
 
 	struct SphereLight
@@ -78,9 +79,8 @@ namespace Volt
 		glm::vec4 direction = { 0.f, 0.f, 0.f, 0.f };
 		glm::vec4 colorIntensity = { 0.f, 0.f, 0.f, 0.f };
 
-		glm::mat4 viewProjections[5];
-
-		glm::vec4 cascadeDistances[5];
+		glm::mat4 viewProjections[4];
+		glm::vec4 cascadeDistances[4];
 
 		uint32_t castShadows = 1;
 		uint32_t softShadows = 1;
@@ -105,30 +105,20 @@ namespace Volt
 		float padding1 = 0.f;
 	};
 
-	struct EnvironmentProbeInfo
+	struct GPUMeshLOD
 	{
-		uint32_t priority;
-		glm::vec3 center;
-
-		glm::vec4 size;
-		glm::mat4 transform;
-
-		float diffuseMultiplier = 1.f;
-		float specularMultiplier = 1.f;
-		float falloff = 1.f;
-		float blendRadius;
+		uint32_t indexCount = 0;
+		uint32_t indexOffset = 0;
 	};
 
-	struct FogVolume
+	struct GPUMesh
 	{
-		glm::vec3 center;
-		float density;
+		inline static constexpr uint32_t MAX_LOD_COUNT = 8;
 
-		glm::vec4 size;
-		glm::mat4 transform;
+		uint32_t lodCount = 0;
+		glm::ivec3 padding = 0;
 
-		glm::vec3 color;
-		float padding;
+		GPUMeshLOD lods[MAX_LOD_COUNT];
 	};
 
 	///// Indirect /////
@@ -204,6 +194,9 @@ namespace Volt
 		float nearPlane;
 		float farPlane;
 		glm::vec2 depthUnpackConsts;
+
+		glm::vec2 NDCToViewMul;
+		glm::vec2 NDCToViewAdd;
 	};
 
 	struct RendererGPUData
@@ -228,7 +221,7 @@ namespace Volt
 		float randomValue = 0.f;
 		uint32_t boneOffset = 0;		
 		int32_t colorOffset = -1;
-		uint32_t padding = 0;
+		uint32_t meshIndex = 0;
 	};
 
 	struct SceneData

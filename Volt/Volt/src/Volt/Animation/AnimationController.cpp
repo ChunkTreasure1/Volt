@@ -67,6 +67,11 @@ namespace Volt
 					continue;
 				}
 
+				if (static_cast<uint32_t>(sample.pose.size()) <= attachment.jointIndex)
+				{
+					continue;
+				}
+
 				const auto& currentTRS = sample.pose.at(attachment.jointIndex);
 
 				const glm::vec3 resultPos = currentTRS.position + currentTRS.rotation * attachment.positionOffset;
@@ -87,6 +92,11 @@ namespace Volt
 	void AnimationController::AttachEntity(const std::string& attachment, Entity entity)
 	{
 		const auto character = AssetManager::GetAsset<AnimatedCharacter>(myGraph->GetCharacterHandle());
+
+		if (!character || !character->IsValid())
+		{
+			return;
+		}
 
 		if (!character->HasJointAttachment(attachment))
 		{

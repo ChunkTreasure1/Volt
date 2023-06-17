@@ -44,7 +44,7 @@ namespace GraphKey
 			const auto& bTRS = b.pose.at(i);
 
 			result[i].position = glm::mix(aTRS.position, bTRS.position, alpha);
-			result[i].rotation = glm::mix(aTRS.rotation, bTRS.rotation, alpha);
+			result[i].rotation = glm::slerp(aTRS.rotation, bTRS.rotation, alpha);
 			result[i].scale = glm::mix(aTRS.scale, bTRS.scale, alpha);
 		}
 

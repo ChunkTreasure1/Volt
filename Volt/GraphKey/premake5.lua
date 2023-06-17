@@ -64,12 +64,6 @@ project "GraphKey"
 		"GLM_FORCE_LEFT_HANDED"
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
-
 	filter "files:vendor/**.cpp"
 		flags {"NoPCH"}
 		warnings "off"

@@ -349,6 +349,8 @@ namespace Volt
 	{
 		GetComponent<TransformComponent>().position = position;
 		UpdatePhysicsTranslation(updatePhysics);
+
+		myScene->InvalidateEntityTransform(myId);
 	}
 
 	void Entity::SetLocalRotation(const glm::quat& rotation, bool updatePhysics)
@@ -356,11 +358,15 @@ namespace Volt
 		auto& transComp = GetComponent<TransformComponent>();
 		transComp.rotation = rotation;
 		UpdatePhysicsRotation(updatePhysics);
+
+		myScene->InvalidateEntityTransform(myId);
 	}
 
 	void Entity::SetLocalScale(const glm::vec3& scale)
 	{
 		GetComponent<TransformComponent>().scale = scale;
+
+		myScene->InvalidateEntityTransform(myId);
 	}
 
 	const glm::mat4 Entity::GetLocalTransform() const
@@ -547,6 +553,7 @@ namespace Volt
 									case MonoFieldType::Material:
 									case MonoFieldType::Texture:
 									case MonoFieldType::PostProcessingMaterial:
+									case MonoFieldType::Video:
 									case MonoFieldType::Asset: toEntityFields[name]->SetValue(*entField->data.As<Volt::AssetHandle>(), entField->data.GetSize(), field.type); break;
 
 									case MonoFieldType::Color: toEntityFields[name]->SetValue(*entField->data.As<glm::vec4>(), entField->data.GetSize(), field.type); break;

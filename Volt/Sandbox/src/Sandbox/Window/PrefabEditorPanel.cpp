@@ -29,7 +29,7 @@ PrefabEditorPanel::PrefabEditorPanel()
 	myScene->Clear();
 
 	mySceneViewPanel = CreateRef<SceneViewPanel>(myScene, "##PrefabEditor");
-	myPropertiesPanel = CreateRef<PropertiesPanel>(myScene, mySceneRenderer, "##PrefabEditor");
+	myPropertiesPanel = CreateRef<PropertiesPanel>(myScene, mySceneRenderer, mySceneState, "##PrefabEditor");
 }
 
 void PrefabEditorPanel::UpdateMainContent()

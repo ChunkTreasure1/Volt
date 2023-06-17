@@ -5,11 +5,13 @@ using System.Security.Permissions;
 namespace Volt
 {
     public delegate void OnInputEnter();
+    public delegate void OnInputUpdate();
 
     [EngineScript]
     public class TextInput : Script
     {
         public event OnInputEnter OnInputEnterEvent;
+        public event OnInputUpdate OnInputUpdateEvent;
 
         public Font Font = null;
         public string Text = "...";
@@ -152,6 +154,7 @@ namespace Volt
                 if (currentText == string.Empty) { return; }
                 currentText = currentText.Remove(currentText.Length - 1, 1);
                 Text = currentText;
+                OnInputUpdateEvent?.Invoke();
                 return;
             }
 
@@ -179,7 +182,20 @@ namespace Volt
                     return;
                 }
 
-                if(currentText.Length == MaxCharacters) { return; }
+                if (key == 86)
+                {
+                    if (Input.IsKeyDown(KeyCode.Left_Control))
+                    {
+                        currentText += VoltApplication.Clipboard;
+                        if (currentText.Length > MaxCharacters)
+                        {
+                            currentText = currentText.Substring(0, 20);
+                        }
+                        continue;
+                    }
+                }
+
+                if (currentText.Length == MaxCharacters) { return; }
 
                 if(key >= 48 && key <= 57)
                 {
@@ -210,13 +226,11 @@ namespace Volt
 
             }
 
-            if(Input.IsKeyDown(KeyCode.Left_Control) && Input.IsKeyPressed(KeyCode.V))
+            if (Text != currentText)
             {
-                
+                Text = currentText;
+                OnInputUpdateEvent?.Invoke();
             }
-
-            Text = currentText;
-
         }
     }
 }

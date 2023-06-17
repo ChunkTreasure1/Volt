@@ -53,8 +53,6 @@ namespace Volt
 			pushConstants.viewportSize2x = { 2.f / myRenderSize.x, 2.f / myRenderSize.y };
 			pushConstants.jitter = myJitterDelta;
 
-			Renderer::BeginSection(commandBuffer, "Generate Motion Vectors", { 1.f, 0.5f, 1.f, 1.f });
-
 			const auto& srcDepthResource = resources.GetImageResource(srcDepthHandle);
 
 			const auto& motionVectorResource = resources.GetImageResource(data.motionVectors);
@@ -75,8 +73,6 @@ namespace Volt
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
 
 			pipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 
@@ -110,8 +106,6 @@ namespace Volt
 			pushConstants.texelSize = { 1.f / myRenderSize.x, 1.f / myRenderSize.y };
 			pushConstants.reprojectionMatrix = myReprojectionMatrix;
 
-			Renderer::BeginSection(commandBuffer, "TAA Pass", { 1.f, 0.5f, 1.f, 1.f });
-
 			const auto& depthResource = resources.GetImageResource(srcDepthHandle);
 			const auto& currentColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& historyColorResource = resources.GetImageResource(data.historyColor);
@@ -136,8 +130,6 @@ namespace Volt
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
 
 			pipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 
 	}
@@ -158,8 +150,6 @@ namespace Volt
 
 			[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "TAA Apply Pass", { 1.f, 0.5f, 1.f, 1.f });
-
 			const auto& tempColorResource = resources.GetImageResource(taaMainData.tempColor);
 			const auto& resultResource = resources.GetImageResource(skyboxData.outputImage);
 
@@ -174,8 +164,6 @@ namespace Volt
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
 
 			pipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

@@ -917,30 +917,31 @@ namespace Volt
 			info.bindingCount = (uint32_t)bindings.size();
 			info.pBindings = bindings.data();
 
+			std::vector<VkDescriptorBindingFlags> bindingFlags{};
+
 			VkDescriptorSetLayoutBindingFlagsCreateInfo extendedInfo{};
+			extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+			extendedInfo.bindingCount = info.bindingCount;
+
 			for (const auto& binding : bindings)
 			{
+				auto& flags = bindingFlags.emplace_back();
+				flags = 0;
+
 				if (Utility::IsBindlessDescriptorBinding(binding) && set == 0)
 				{
 					info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-					extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-					extendedInfo.bindingCount = 1;
-					extendedInfo.pBindingFlags = &bindlessFlags;
-
-					info.pNext = &extendedInfo;
-					break;
+					flags = bindlessFlags;
 				}
 				else if (set == Sets::MATERIAL)
 				{
 					info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-					extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-					extendedInfo.bindingCount = 1;
-					extendedInfo.pBindingFlags = &materialFlags;
-
-					info.pNext = &extendedInfo;
-					break;
+					flags = materialFlags;
 				}
 			}
+
+			extendedInfo.pBindingFlags = bindingFlags.data();
+			info.pNext = &extendedInfo;
 
 			VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myResources.nullPaddedDescriptorSetLayouts.emplace_back()));
 			myResources.descriptorSetLayouts.emplace_back(myResources.nullPaddedDescriptorSetLayouts.back());

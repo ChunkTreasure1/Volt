@@ -6,6 +6,16 @@
         {
             return InternalCalls.AMP_PlayOneshotEvent(aEventName);
         }
+
+        public static bool SetRTPC(string aRTPCName, int aValue)
+        {
+            return InternalCalls.AMP_SetRTPC(aRTPCName, aValue);
+        }
+
+        public static void StopAllEvents()
+        {
+            InternalCalls.AMP_StopAllEvents();
+        }
     }
 
     public class AudioSourceComponent : Component
@@ -36,6 +46,12 @@
         {
             return InternalCalls.AudioSourceComponent_PauseEvent(entity.Id, aPlayingID);
         }
+
+        public void StopAllEvents()
+        {
+            InternalCalls.AudioSourceComponent_StopAllEvent(entity.Id);
+        }
+
         #endregion
 
         #region GameSyncs

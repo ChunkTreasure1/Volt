@@ -4,7 +4,7 @@ namespace Volt
 {
 	class CommandBuffer;
 	class GlobalDescriptorSet;
-	class ComputePipeline;
+	class Material;
 	class FrameGraph;
 
 	using GlobalDescriptorMap = std::unordered_map<uint32_t, Ref<GlobalDescriptorSet>>;
@@ -14,8 +14,8 @@ namespace Volt
 	public:
 		SSRTechnique(const GlobalDescriptorMap& descriptorMap, const glm::uvec2& renderSize);
 
-		void AddSSRPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline);
-		void AddSSRComposite(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline);
+		void AddSSRPass(FrameGraph& frameGraph, Ref<Material> material);
+		void AddSSRCompositePass(FrameGraph& frameGraph, Ref<Material> material);
 
 	private:
 		const GlobalDescriptorMap& myGlobalDescriptorMap;

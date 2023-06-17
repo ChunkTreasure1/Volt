@@ -57,6 +57,8 @@ private:
 
 	Ref<EditorCameraController> myCameraController;
 
+	SceneState mySceneState;
+
 	Ref<SceneViewPanel> mySceneViewPanel;
 	Ref<PropertiesPanel> myPropertiesPanel;
 };

@@ -41,10 +41,13 @@ namespace GraphKey
 	GK_REGISTER_NODE_SPECIALIZED(Vector4LengthNode, "Math", GraphType::All, (LengthVectorNode<glm::vec4>));
 
 	GK_REGISTER_NODE_SPECIALIZED(EqualNodeFloat, "Logic", GraphType::All, (EqualNode<float>));
-	GK_REGISTER_NODE_SPECIALIZED(EqualNodeVector2, "Logic", GraphType::All, (EqualNode<glm::vec2>));
-	GK_REGISTER_NODE_SPECIALIZED(EqualNodeVector3, "Logic", GraphType::All, (EqualNode<glm::vec3>));
-	GK_REGISTER_NODE_SPECIALIZED(EqualNodeVector4, "Logic", GraphType::All, (EqualNode<glm::vec4>));
 	GK_REGISTER_NODE_SPECIALIZED(EqualNodeInt, "Logic", GraphType::All, (EqualNode<int32_t>));
+
+	GK_REGISTER_NODE_SPECIALIZED(LessThanNodeFloat, "Logic", GraphType::All, (LessThanNode<float>));
+	GK_REGISTER_NODE_SPECIALIZED(LessThanNodeInt, "Logic", GraphType::All, (LessThanNode<int32_t>));
+
+	GK_REGISTER_NODE_SPECIALIZED(GreaterThanNodeFloat, "Logic", GraphType::All, (GreaterThanNode<float>));
+	GK_REGISTER_NODE_SPECIALIZED(GreaterThanNodeInt, "Logic", GraphType::All, (GreaterThanNode<int32_t>));
 
 	GK_REGISTER_NODE_SPECIALIZED(AddNodeFloat, "Math", GraphType::All, (AddNode<float>));
 	GK_REGISTER_NODE_SPECIALIZED(AddNodeVector2, "Math", GraphType::All, (AddNode<glm::vec2>));
@@ -53,15 +56,9 @@ namespace GraphKey
 	GK_REGISTER_NODE_SPECIALIZED(AddNodeInt, "Math", GraphType::All, (AddNode<int32_t>));
 
 	GK_REGISTER_NODE_SPECIALIZED(SubtractNodeFloat, "Math", GraphType::All, (SubtractNode<float>));
-	GK_REGISTER_NODE_SPECIALIZED(SubtractNodeVector2, "Math", GraphType::All, (SubtractNode<glm::vec2>));
-	GK_REGISTER_NODE_SPECIALIZED(SubtractNodeVector3, "Math", GraphType::All, (SubtractNode<glm::vec3>));
-	GK_REGISTER_NODE_SPECIALIZED(SubtractNodeVector4, "Math", GraphType::All, (SubtractNode<glm::vec4>));
 	GK_REGISTER_NODE_SPECIALIZED(SubtractNodeInt, "Math", GraphType::All, (SubtractNode<int32_t>));
 
 	GK_REGISTER_NODE_SPECIALIZED(MultiplyNodeFloat, "Math", GraphType::All, (MultiplyNode<float>));
-	GK_REGISTER_NODE_SPECIALIZED(MultiplyNodeVector2, "Math", GraphType::All, (MultiplyNode<glm::vec2>));
-	GK_REGISTER_NODE_SPECIALIZED(MultiplyNodeVector3, "Math", GraphType::All, (MultiplyNode<glm::vec3>));
-	GK_REGISTER_NODE_SPECIALIZED(MultiplyNodeVector4, "Math", GraphType::All, (MultiplyNode<glm::vec4>));
 	GK_REGISTER_NODE_SPECIALIZED(MultiplyNodeInt, "Math", GraphType::All, (MultiplyNode<int32_t>));
 
 	GK_REGISTER_NODE_SPECIALIZED(LessOrEqualNodeFloat, "Logic", GraphType::All, (LessOrEqualNode<float>));

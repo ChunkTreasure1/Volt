@@ -13,6 +13,8 @@
 
 #include "Amp/WWiseEngine/SoundEngine/Win32/AkFilePackageLowLevelIOBlocking.h"
 
+#include "AK/Plugin/AkRoomVerbFXFactory.h"
+
 //#ifndef AK_OPTIMIZED
 //#include <AK/Comm/AkCommunication.h>
 //#endif // AK_OPTIMIZED
@@ -99,6 +101,7 @@ namespace Amp
 		AK::MemoryMgr::Term();
 
 	}
+
 	void WWiseEngine::Update()
 	{
 		AK::SoundEngine::RenderAudio();
@@ -288,6 +291,18 @@ namespace Amp
 	bool WWiseEngine::ExecuteEventAction(AK::SoundEngine::AkActionOnEventType aAction, AkPlayingID aPlayingID)
 	{
 		AK::SoundEngine::ExecuteActionOnPlayingID(aAction, aPlayingID);
+		return true;
+	}
+
+	bool WWiseEngine::StopAllEvents()
+	{
+		AK::SoundEngine::StopAll();
+		return true;
+	}
+
+	bool WWiseEngine::StopAllEvents(UINT64 AkGameObjectID)
+	{
+		AK::SoundEngine::StopAll(AkGameObjectID);
 		return true;
 	}
 

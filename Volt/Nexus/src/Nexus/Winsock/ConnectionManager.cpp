@@ -82,6 +82,16 @@ namespace Nexus
 		return m_aliasMap[in_id];
 	}
 
+	std::vector<TYPE::CLIENT_ID> ConnectionManager::GetIdList()
+	{
+		std::vector<TYPE::CLIENT_ID> ret;
+		for (auto _pair : m_clientIDs)
+		{
+			ret.push_back(_pair.first);
+		}
+		return ret;
+	}
+
 	bool ConnectionManager::ValidateConnection(const TYPE::CLIENT_ID& in_id, const sockaddr_in& in_addr)
 	{
 		if (ConnectionExists(in_id))

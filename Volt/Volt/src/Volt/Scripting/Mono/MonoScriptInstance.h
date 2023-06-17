@@ -47,16 +47,23 @@ namespace Volt
 		void InvokeOnDisable();
 
 		void SetField(const std::string& name, const void* value);
+		void SetField(const std::string& name, const std::string& value);
 
 		template<typename T>
 		const T GetField(const std::string& name);
+
+		template<>
+		const std::string GetField(const std::string& name);
 
 		inline const Ref<MonoScriptClass> GetClass() const { return myMonoClass; }
 		inline const GCHandle GetHandle() const { return myHandle; }
 
 	private:
 		bool GetFieldInternal(const std::string& name, void* outData);
+		bool GetFieldInternal(const std::string& name, std::string& outData);
+
 		bool SetFieldInternal(const std::string& name, const void* value);
+		bool SetFieldInternal(const std::string& name, const std::string& value);
 
 		Ref<MonoScriptClass> myMonoClass;
 
@@ -97,5 +104,14 @@ namespace Volt
 		}
 
 		return *myFieldBuffer.As<T>();
+	}
+
+	template<>
+	inline const std::string MonoScriptInstance::GetField(const std::string& name)
+	{
+		std::string result;
+
+		GetFieldInternal(name, result);
+		return result;
 	}
 }

@@ -15,13 +15,12 @@
 #include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Input/KeyCodes.h>
+#include <Volt/Scene/SceneManager.h>
+#include <Volt/Math/RayTriangle.h>
+#include <Volt/Utility/PackUtility.h>
 
 #include <Sandbox/Utility/EditorLibrary.h>
 #include <Sandbox/Window/ViewportPanel.h>
-
-#include <Volt/Scene/SceneManager.h>
-
-#include <Volt/Math/RayTriangle.h>
 
 VertexPainterPanel::VertexPainterPanel(Ref<Volt::Scene>& in_scene, Ref<EditorCameraController>& in_cc)
 	: ex_scene(in_scene), ex_cameraController(in_cc), EditorWindow("Vertex Painting")
@@ -186,7 +185,7 @@ void VertexPainterPanel::PanelDraw()
 			{
 				auto ent = Volt::Entity(_entId, Volt::SceneManager::GetActiveScene().lock().get());
 				if (!AddPainted(ent)) continue;
-				for (auto& vertex : ent.GetComponent<Volt::VertexPaintedComponent>().vertecies)
+				for (auto& vertex : ent.GetComponent<Volt::VertexPaintedComponent>().vertexColors)
 				{
 					glm::vec4 color =
 					{
@@ -195,7 +194,9 @@ void VertexPainterPanel::PanelDraw()
 							m_settings.paintBlueChannel ? m_settings.paintColor : 0,
 							m_settings.paintAlphaChannel ? m_settings.paintColor : 0
 					};
-					vertex = color;
+
+					const uint32_t packedColor = Volt::Utility::PackUNormFloat4AsUInt(color);
+					vertex = packedColor;
 				}
 			}
 		}
@@ -396,7 +397,7 @@ void VertexPainterPanel::BillboardDraw()
 				{
 					auto& vertex = mesh->GetVertices().at(index);
 
-					glm::vec4 vertexColor = hasPainted ? paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertecies[index] : 0.f;
+					glm::vec4 vertexColor = hasPainted ? Volt::Utility::UnpackUIntToUNormFloat4(paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertexColors[index]) : 0.f;
 
 					auto vPos = glm::vec3(paintedEnt.GetTransform() * submesh.transform * glm::vec4(vertex.position, 1));
 					if (!m_settings.isSelecting && glm::distance2(vPos, m_brushPosition) < m_settings.billboardRange * m_settings.billboardRange)
@@ -521,7 +522,7 @@ bool VertexPainterPanel::AddPainted(Volt::Entity entity)
 	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().handle);
 	auto& vpComp = entity.AddComponent<Volt::VertexPaintedComponent>();
 
-	vpComp.vertecies = std::vector<glm::vec4>(mesh->GetVertices().size(), { 0,0,0,1 });
+	vpComp.vertexColors = std::vector<uint32_t>(mesh->GetVertices().size(), Volt::Utility::PackUNormFloat4AsUInt({ 0.f, 0.f, 0.f, 1.f }));
 	vpComp.meshHandle = mesh->handle;
 
 	//for (auto& vertex : entity.GetComponent<Volt::VertexPaintedComponent>().vertecies)
@@ -551,7 +552,7 @@ void VertexPainterPanel::Paint(float color)
 		}
 
 		if (!AddPainted(paintedEnt)) continue;
-		auto& vertecies = paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertecies;
+		auto& vertecies = paintedEnt.GetComponent<Volt::VertexPaintedComponent>().vertexColors;
 		for (auto& submesh : mesh->GetSubMeshes())
 		{
 			for (uint32_t index = submesh.vertexStartOffset; index < submesh.vertexStartOffset + submesh.vertexCount; index++)
@@ -562,11 +563,14 @@ void VertexPainterPanel::Paint(float color)
 				{
 					auto& currentVertexColor = vertecies[index];
 
-					if (m_settings.paintRedChannel)		ApplyColor(currentVertexColor.x, color);
-					if (m_settings.paintGreenChannel)	ApplyColor(currentVertexColor.y, color);
-					if (m_settings.paintBlueChannel)	ApplyColor(currentVertexColor.z, color);
-					if (m_settings.paintAlphaChannel)	ApplyColor(currentVertexColor.w, color);
+					glm::vec4 unpackedColor = Volt::Utility::UnpackUIntToUNormFloat4(currentVertexColor);
 
+					if (m_settings.paintRedChannel)		ApplyColor(unpackedColor.x, color);
+					if (m_settings.paintGreenChannel)	ApplyColor(unpackedColor.y, color);
+					if (m_settings.paintBlueChannel)	ApplyColor(unpackedColor.z, color);
+					if (m_settings.paintAlphaChannel)	ApplyColor(unpackedColor.w, color);
+
+					currentVertexColor = Volt::Utility::PackUNormFloat4AsUInt(unpackedColor);
 				}
 			}
 		}

@@ -17,6 +17,7 @@ namespace Volt
 	class CombinedIndexBuffer;
 	class TextureTable;
 	class MaterialTable;
+	class MeshTable;
 
 	class RenderPipeline;
 	class ComputePipeline;
@@ -63,6 +64,7 @@ namespace Volt
 	{
 	public:
 		inline static constexpr uint32_t MAX_MATERIALS = 10000;
+		inline static constexpr uint32_t MAX_MESHES = 10000;
 
 		struct BindlessData
 		{
@@ -75,6 +77,7 @@ namespace Volt
 
 			Ref<TextureTable> textureTable;
 			Ref<MaterialTable> materialTable;
+			Ref<MeshTable> meshTable;
 			Ref<SamplerStateSet> samplerStateSet;
 
 			GlobalDescriptorMap globalDescriptorSets;
@@ -157,6 +160,9 @@ namespace Volt
 		static void RemoveMaterial(SubMaterial* material);
 		static void UpdateMaterial(SubMaterial* material);
 
+		static const uint32_t AddMesh(Mesh* mesh, const uint32_t subMeshIndex);
+		static void RemoveMesh(Mesh* mesh, const uint32_t subMeshIndex);
+
 		static BindlessData& GetBindlessData();
 		static DefaultData& GetDefaultData();
 		static const VulkanFunctions& GetVulkanFunctions();
@@ -183,6 +189,7 @@ namespace Volt
 		static void DestroyDescriptorPools();
 
 		static void UpdateMaterialDescriptors();
+		static void UpdateMeshDescriptors();
 		static void UpdateSamplerStateDescriptors();
 
 		static void SetupPipelineForRendering(Ref<CommandBuffer> commandBuffer, Ref<RenderPipeline> renderPipeline, const GlobalDescriptorMap& globalDescriptorSets, Ref<GlobalDescriptorSet> drawBufferSet = nullptr);

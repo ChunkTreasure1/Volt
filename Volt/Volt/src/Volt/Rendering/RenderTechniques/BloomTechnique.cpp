@@ -32,8 +32,6 @@ namespace Volt
 
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "Bloom Downsample Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& targetResource = resources.GetImageResource(luminosityData.luminosityImage);
 
 			glm::uvec2 mipSize = myRenderSize;
@@ -79,8 +77,6 @@ namespace Volt
 			}
 
 			downsamplePipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 
@@ -97,8 +93,6 @@ namespace Volt
 
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "Bloom Upsample Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& targetResource = resources.GetImageResource(luminosityData.luminosityImage);
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 			upsamplePipeline->Clear(currentIndex);
@@ -136,8 +130,6 @@ namespace Volt
 			}
 
 			upsamplePipeline->ClearAllResources();
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 	
@@ -156,8 +148,6 @@ namespace Volt
 
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "Bloom Composite Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& bloomSrcImageResource = resources.GetImageResource(luminosityData.luminosityImage);
 
@@ -173,7 +163,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, compositePipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

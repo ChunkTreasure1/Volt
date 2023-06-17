@@ -30,7 +30,6 @@ void Volt::AudioSystem::RuntimeStart(Wire::Registry& registry, Scene* scene)
 		Amp::WwiseAudioManager::RegisterListener(entity.GetId(), entity.GetTag().c_str(), audioListenerComp.isDefault);	
 	}
 	);
-
 }
 
 void Volt::AudioSystem::RuntimeStop(Wire::Registry& registry, Scene* scene)
@@ -47,6 +46,8 @@ void Volt::AudioSystem::RuntimeStop(Wire::Registry& registry, Scene* scene)
 
 void Volt::AudioSystem::Update(Wire::Registry& registry, Scene* scene, const float& aDeltaTime)
 {
+	VT_PROFILE_FUNCTION();
+
 	fixedUpdateTimer += aDeltaTime;
 	UpdateAudioListeners(registry, scene, aDeltaTime);
 	//UpdateAudioOcclusion(registry, scene);
@@ -55,11 +56,11 @@ void Volt::AudioSystem::Update(Wire::Registry& registry, Scene* scene, const flo
 
 void Volt::AudioSystem::OnEvent(Wire::Registry& registry, Volt::Event& e)
 {
-	registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
-	{
+	//registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
+	//{
 
-	}
-	);
+	//}
+	//);
 }
 
 void Volt::AudioSystem::UpdateAudioSources(Wire::Registry& registry, Scene* scene, const float& aDeltaTime)

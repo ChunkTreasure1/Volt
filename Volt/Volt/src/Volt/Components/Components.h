@@ -208,6 +208,7 @@ namespace Volt
 	{
 		PROPERTY(Name = Animation Graph, SpecialType = Asset, AssetType = AnimationGraph) AssetHandle animationGraph = Volt::Asset::Null();
 		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle overrideMaterial = Volt::Asset::Null();
+		PROPERTY(Name = Override Skin, SpecialType = Asset, AssetType = Mesh) AssetHandle overrideSkin = Volt::Asset::Null();
 		PROPERTY(Name = Apply Root Motion) bool applyRootMotion = false;
 
 		Ref<AnimationController> controller;
@@ -234,7 +235,7 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct VertexPaintedComponent
 	{
 		PROPERTY(Visible = false, Serializable =  false) AssetHandle meshHandle;
-		PROPERTY(Visible = false, Serializable = false) std::vector<glm::vec4> vertecies;
+		PROPERTY(Visible = false, Serializable = false) std::vector<uint32_t> vertexColors;
 		CREATE_COMPONENT_GUID("{480B6514-05CB-4532-A366-B5DFD419E310}"_guid);
 	}), VertexPaintedComponent);
 

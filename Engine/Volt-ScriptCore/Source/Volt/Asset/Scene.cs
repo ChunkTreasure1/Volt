@@ -19,6 +19,11 @@ namespace Volt
             aScene.Load();
         }
 
+        static public void Preload(string scenePath)
+        {
+            InternalCalls.Scene_Preload(scenePath);
+        }
+
         public static void Save(Scene aScene)
         {
             aScene.Save();
@@ -70,26 +75,40 @@ namespace Volt
 
         static internal void UpdateSceneTimers()
         {
+            List<int> timersToRemove = new List<int>();
+
             for (int i = myTimers.Count - 1; i >= 0; i--)
             {
                 myTimers[i].time -= Time.deltaTime;
                 if (myTimers[i].time <= 0f)
                 {
                     myTimers[i].onTimerEndFunction();
-                    myTimers.RemoveAt(i);
+                    timersToRemove.Add(i);
                 }
+            }
+
+            for (int i = 0; i < timersToRemove.Count; i++)
+            {
+                myTimers.RemoveAt(timersToRemove[i]);
             }
 
             foreach (KeyValuePair<uint, List<EntityTimer>> entry in myEntityTimers)
             {
-                for(int i = entry.Value.Count - 1; i >= 0; i--)
+                List<int> entTimersToRemove = new List<int>();
+
+                for (int i = entry.Value.Count - 1; i >= 0; i--)
                 {
                     entry.Value[i].time -= Time.deltaTime;
                     if (entry.Value[i].time <= 0f)
                     {
                         entry.Value[i].onTimerEndFunction();
-                        myEntityTimers[entry.Key].RemoveAt(i);
+                        entTimersToRemove.Add(i);
                     }
+                }
+
+                for (int j = 0; j < entTimersToRemove.Count; j++)
+                {
+                    myEntityTimers[entry.Key].RemoveAt(entTimersToRemove[j]);
                 }
             }
         }

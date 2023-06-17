@@ -186,8 +186,6 @@ namespace Volt
 
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "Outline Composite Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& jumpFloodPassResource = resources.GetImageResource(jumpFloodPassData.outputImage[0]);
 
@@ -206,7 +204,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (myRenderSize.y / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, pipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

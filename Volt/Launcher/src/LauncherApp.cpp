@@ -31,7 +31,7 @@ Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 	info.enableImGui = false;
 	info.width = 1600;
 	info.height = 900;
-	info.windowMode = WindowMode::Windowed;
+	info.windowMode = WindowMode::Borderless;
 	info.title = "Vipertrace";
 	info.cursorPath = "Assets/UI/Sprites/cursor.dds";
 	info.iconPath = "Assets/UI/Sprites/GUI/GUI_pebbles.dds";

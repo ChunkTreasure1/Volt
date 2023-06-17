@@ -71,6 +71,8 @@ void Volt::VisionCameraComponent::Init(Entity& camEntity)
 
 void Volt::VisionCameraComponent::Update(Entity& camEntity, float aDeltaTime)
 {
+
+
 	switch (cameraType)
 	{
 		case Volt::eCameraType::Free:

@@ -112,8 +112,7 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX",
-		"glm"
+		"TGAFBX"
 	}
 
 	defines

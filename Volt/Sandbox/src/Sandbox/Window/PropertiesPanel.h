@@ -8,6 +8,7 @@
 #include <vector>
 #include <variant>
 #include "Sandbox/EditorCommand.h"
+#include "Sandbox/Sandbox.h"
 
 enum class PropertyEventType
 {
@@ -31,7 +32,7 @@ namespace Volt
 class PropertiesPanel : public EditorWindow
 {
 public:
-	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, const std::string& id);
+	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id);
 	void UpdateMainContent() override;
 
 private:
@@ -45,6 +46,7 @@ private:
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;
+	SceneState& mySceneState;
 
 	std::string myComponentSearchQuery;
 	std::string myScriptSearchQuery;

@@ -88,6 +88,7 @@ namespace Volt
 		static void SetScriptFieldDefaultData(UUID instanceId, Wire::EntityId entity, const std::string& fullClassName);
 
 		static void CallMethod(GCHandle instanceHandle, MonoMethod* method, void** args = nullptr);
+		static void CallStaticMethod(MonoMethod* method, void** args = nullptr);
 
 		// #max_stuff: 
 		static void* CallMethodImpl(GCHandle instanceHandle, MonoMethod* method, void** args = nullptr);
