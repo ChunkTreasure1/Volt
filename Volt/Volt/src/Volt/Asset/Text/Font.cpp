@@ -385,7 +385,7 @@ namespace Volt
 		return false;
 	}
 
-	float Font::GetStringWidth(const std::string& string, const gem::vec2& scale, float maxWidth)
+	float Font::GetStringWidth(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
 		std::u32string utf32string = Utils::To_UTF32(string);
 
@@ -428,13 +428,13 @@ namespace Volt
 					// Calculate geometry
 					double pl, pb, pr, pt;
 					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-					gem::vec2 quadMin((float)pl, (float)pb);
-					gem::vec2 quadMax((float)pl, (float)pb);
+					glm::vec2 quadMin((float)pl, (float)pb);
+					glm::vec2 quadMax((float)pl, (float)pb);
 
 					quadMin *= (float)fsScale;
 					quadMax *= (float)fsScale;
-					quadMin += gem::vec2((float)x, (float)y);
-					quadMax += gem::vec2((float)x, (float)y);
+					quadMin += glm::vec2((float)x, (float)y);
+					quadMax += glm::vec2((float)x, (float)y);
 
 					if (quadMax.x > maxWidth && lastSpace != -1)
 					{
@@ -456,7 +456,7 @@ namespace Volt
 			}
 		}
 
-		const gem::mat4 transform = gem::scale(gem::mat4{ 1.f }, { scale.x, scale.y, 1.f });
+		const glm::mat4 transform = glm::scale(glm::mat4{ 1.f }, { scale.x, scale.y, 1.f });
 
 		double x = 0.0;
 		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
@@ -497,7 +497,7 @@ namespace Volt
 			double advance = glyph->getAdvance();
 			fontGeom.getAdvance(advance, character, utf32string[i + 1]);
 
-			const auto transformedPosition = transform * gem::vec4{ float(fsScale* advance), 0.f, 0.f, 1.f };
+			const auto transformedPosition = transform * glm::vec4{ float(fsScale* advance), 0.f, 0.f, 1.f };
 			widths.back() += transformedPosition.x;
 		}
 
@@ -511,7 +511,7 @@ namespace Volt
 		return (float)maxStringWidth;
 	}
 	
-	float Font::GetStringHeight(const std::string& string, const gem::vec2& scale, float maxWidth)
+	float Font::GetStringHeight(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
 		std::u32string utf32string = Utils::To_UTF32(string);
 
@@ -554,13 +554,13 @@ namespace Volt
 					// Calculate geometry
 					double pl, pb, pr, pt;
 					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-					gem::vec2 quadMin((float)pl, (float)pb);
-					gem::vec2 quadMax((float)pl, (float)pb);
+					glm::vec2 quadMin((float)pl, (float)pb);
+					glm::vec2 quadMax((float)pl, (float)pb);
 
 					quadMin *= (float)fsScale;
 					quadMax *= (float)fsScale;
-					quadMin += gem::vec2((float)x, (float)y);
-					quadMax += gem::vec2((float)x, (float)y);
+					quadMin += glm::vec2((float)x, (float)y);
+					quadMax += glm::vec2((float)x, (float)y);
 
 					if (quadMax.x > maxWidth && lastSpace != -1)
 					{
@@ -582,7 +582,7 @@ namespace Volt
 			}
 		}
 
-		const gem::mat4 transform = gem::scale(gem::mat4{ 1.f }, { scale.x, scale.y, 1.f });
+		const glm::mat4 transform = glm::scale(glm::mat4{ 1.f }, { scale.x, scale.y, 1.f });
 
 		double x = 0.0;
 		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
@@ -626,7 +626,7 @@ namespace Volt
 			}
 		}
 
-		const auto transformedPosition = transform * gem::vec4{ 0.f, float(height), 0.f, 1.f };
+		const auto transformedPosition = transform * glm::vec4{ 0.f, float(height), 0.f, 1.f };
 		return transformedPosition.y;
 	}
 }

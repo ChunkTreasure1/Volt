@@ -16,7 +16,7 @@ namespace Volt
 		FrameGraphResourceHandle output;
 	};
 
-	SSRTechnique::SSRTechnique(const GlobalDescriptorMap& descriptorMap, const gem::vec2ui& renderSize)
+	SSRTechnique::SSRTechnique(const GlobalDescriptorMap& descriptorMap, const glm::uvec2& renderSize)
 		: myGlobalDescriptorMap(descriptorMap), myRenderSize(renderSize)
 	{
 	}

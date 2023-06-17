@@ -576,7 +576,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region TransformComponent
-	inline static void TransformComponent_GetPosition(Wire::EntityId entityId, gem::vec3* outPosition)
+	inline static void TransformComponent_GetPosition(Wire::EntityId entityId, glm::vec3* outPosition)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -594,7 +594,7 @@ namespace Volt
 		*outPosition = entity.GetPosition();
 	}
 
-	inline static void TransformComponent_SetPosition(Wire::EntityId entityId, gem::vec3* translation)
+	inline static void TransformComponent_SetPosition(Wire::EntityId entityId, glm::vec3* translation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -612,7 +612,7 @@ namespace Volt
 		entity.SetPosition(*translation);
 	}
 
-	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, gem::quat* outRotation)
+	inline static void TransformComponent_GetRotation(Wire::EntityId entityId, glm::quat* outRotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -630,7 +630,7 @@ namespace Volt
 		*outRotation = entity.GetRotation();
 	}
 
-	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, gem::quat* rotation)
+	inline static void TransformComponent_SetRotation(Wire::EntityId entityId, glm::quat* rotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -648,7 +648,7 @@ namespace Volt
 		entity.SetRotation(*rotation);
 	}
 
-	inline static void TransformComponent_GetScale(Wire::EntityId entityId, gem::vec3* outScale)
+	inline static void TransformComponent_GetScale(Wire::EntityId entityId, glm::vec3* outScale)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -666,7 +666,7 @@ namespace Volt
 		*outScale = entity.GetLocalScale();
 	}
 
-	inline static void TransformComponent_SetScale(Wire::EntityId entityId, gem::vec3* scale)
+	inline static void TransformComponent_SetScale(Wire::EntityId entityId, glm::vec3* scale)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -684,7 +684,7 @@ namespace Volt
 		entity.SetLocalScale(*scale);
 	}
 
-	inline static void TransformComponent_GetForward(Wire::EntityId entityId, gem::vec3* outForward)
+	inline static void TransformComponent_GetForward(Wire::EntityId entityId, glm::vec3* outForward)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -702,7 +702,7 @@ namespace Volt
 		*outForward = entity.GetForward();
 	}
 
-	inline static void TransformComponent_GetRight(Wire::EntityId entityId, gem::vec3* outRight)
+	inline static void TransformComponent_GetRight(Wire::EntityId entityId, glm::vec3* outRight)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -720,7 +720,7 @@ namespace Volt
 		*outRight = entity.GetRight();
 	}
 
-	inline static void TransformComponent_GetUp(Wire::EntityId entityId, gem::vec3* outUp)
+	inline static void TransformComponent_GetUp(Wire::EntityId entityId, glm::vec3* outUp)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -738,7 +738,7 @@ namespace Volt
 		*outUp = entity.GetUp();
 	}
 
-	inline static void TransformComponent_GetLocalPosition(Wire::EntityId entityId, gem::vec3* outPosition)
+	inline static void TransformComponent_GetLocalPosition(Wire::EntityId entityId, glm::vec3* outPosition)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -756,7 +756,7 @@ namespace Volt
 		*outPosition = entity.GetLocalPosition();
 	}
 
-	inline static void TransformComponent_SetLocalPosition(Wire::EntityId entityId, gem::vec3* translation)
+	inline static void TransformComponent_SetLocalPosition(Wire::EntityId entityId, glm::vec3* translation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -774,7 +774,7 @@ namespace Volt
 		entity.SetLocalPosition(*translation);
 	}
 
-	inline static void TransformComponent_GetLocalRotation(Wire::EntityId entityId, gem::quat* outRotation)
+	inline static void TransformComponent_GetLocalRotation(Wire::EntityId entityId, glm::quat* outRotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -792,7 +792,7 @@ namespace Volt
 		*outRotation = entity.GetLocalRotation();
 	}
 
-	inline static void TransformComponent_SetLocalRotation(Wire::EntityId entityId, gem::quat* rotation)
+	inline static void TransformComponent_SetLocalRotation(Wire::EntityId entityId, glm::quat* rotation)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -810,7 +810,7 @@ namespace Volt
 		entity.SetLocalRotation(*rotation);
 	}
 
-	inline static void TransformComponent_GetLocalScale(Wire::EntityId entityId, gem::vec3* outScale)
+	inline static void TransformComponent_GetLocalScale(Wire::EntityId entityId, glm::vec3* outScale)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -828,7 +828,7 @@ namespace Volt
 		*outScale = entity.GetLocalScale();
 	}
 
-	inline static void TransformComponent_SetLocalScale(Wire::EntityId entityId, gem::vec3* scale)
+	inline static void TransformComponent_SetLocalScale(Wire::EntityId entityId, glm::vec3* scale)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -846,7 +846,7 @@ namespace Volt
 		entity.SetLocalScale(*scale);
 	}
 
-	inline static void TransformComponent_GetLocalForward(Wire::EntityId entityId, gem::vec3* outForward)
+	inline static void TransformComponent_GetLocalForward(Wire::EntityId entityId, glm::vec3* outForward)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -864,7 +864,7 @@ namespace Volt
 		*outForward = entity.GetLocalForward();
 	}
 
-	inline static void TransformComponent_GetLocalRight(Wire::EntityId entityId, gem::vec3* outRight)
+	inline static void TransformComponent_GetLocalRight(Wire::EntityId entityId, glm::vec3* outRight)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -882,7 +882,7 @@ namespace Volt
 		*outRight = entity.GetLocalRight();
 	}
 
-	inline static void TransformComponent_GetLocalUp(Wire::EntityId entityId, gem::vec3* outUp)
+	inline static void TransformComponent_GetLocalUp(Wire::EntityId entityId, glm::vec3* outUp)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -1579,7 +1579,7 @@ namespace Volt
 		actor->SetGravity(gravity);
 	}
 
-	inline static void CharacterControllerComponent_GetAngularVelocity(Wire::EntityId entityId, gem::vec3* outLinearVelocity)
+	inline static void CharacterControllerComponent_GetAngularVelocity(Wire::EntityId entityId, glm::vec3* outLinearVelocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -1601,7 +1601,7 @@ namespace Volt
 		*outLinearVelocity = actor->GetAngularVelocity();
 	}
 
-	inline static void CharacterControllerComponent_GetLinearVelocity(Wire::EntityId entityId, gem::vec3* outLinearVelocity)
+	inline static void CharacterControllerComponent_GetLinearVelocity(Wire::EntityId entityId, glm::vec3* outLinearVelocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -1623,7 +1623,7 @@ namespace Volt
 		*outLinearVelocity = actor->GetLinearVelocity();
 	}
 
-	inline static void CharacterControllerComponent_SetAngularVelocity(Wire::EntityId entityId, gem::vec3* linearVelocity)
+	inline static void CharacterControllerComponent_SetAngularVelocity(Wire::EntityId entityId, glm::vec3* linearVelocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -1645,7 +1645,7 @@ namespace Volt
 		actor->SetAngularVelocity(*linearVelocity);
 	}
 
-	inline static void CharacterControllerComponent_SetLinearVelocity(Wire::EntityId entityId, gem::vec3* linearVelocity)
+	inline static void CharacterControllerComponent_SetLinearVelocity(Wire::EntityId entityId, glm::vec3* linearVelocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -1669,7 +1669,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region BoxColliderComponent
-	inline static void BoxColliderComponent_GetHalfSize(Wire::EntityId entityId, gem::vec3* outHalfSize)
+	inline static void BoxColliderComponent_GetHalfSize(Wire::EntityId entityId, glm::vec3* outHalfSize)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene, };
@@ -1685,7 +1685,7 @@ namespace Volt
 		}
 	}
 
-	inline static void BoxColliderComponent_SetHalfSize(Wire::EntityId entityId, gem::vec3* halfSize)
+	inline static void BoxColliderComponent_SetHalfSize(Wire::EntityId entityId, glm::vec3* halfSize)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene, };
@@ -1714,7 +1714,7 @@ namespace Volt
 		}
 	}
 
-	inline static void BoxColliderComponent_GetOffset(Wire::EntityId entityId, gem::vec3* outOffset)
+	inline static void BoxColliderComponent_GetOffset(Wire::EntityId entityId, glm::vec3* outOffset)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene };
@@ -1729,7 +1729,7 @@ namespace Volt
 		}
 	}
 
-	inline static void BoxColliderComponent_SetOffset(Wire::EntityId entityId, gem::vec3* offset)
+	inline static void BoxColliderComponent_SetOffset(Wire::EntityId entityId, glm::vec3* offset)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene, };
@@ -1845,7 +1845,7 @@ namespace Volt
 		}
 	}
 
-	inline static void SphereColliderComponent_GetOffset(Wire::EntityId entityId, gem::vec3* outOffset)
+	inline static void SphereColliderComponent_GetOffset(Wire::EntityId entityId, glm::vec3* outOffset)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene };
@@ -1860,7 +1860,7 @@ namespace Volt
 		}
 	}
 
-	inline static void SphereColliderComponent_SetOffset(Wire::EntityId entityId, gem::vec3* offset)
+	inline static void SphereColliderComponent_SetOffset(Wire::EntityId entityId, glm::vec3* offset)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene, };
@@ -2019,7 +2019,7 @@ namespace Volt
 		}
 	}
 
-	inline static void CapsuleColliderComponent_GetOffset(Wire::EntityId entityId, gem::vec3* outOffset)
+	inline static void CapsuleColliderComponent_GetOffset(Wire::EntityId entityId, glm::vec3* outOffset)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene };
@@ -2034,7 +2034,7 @@ namespace Volt
 		}
 	}
 
-	inline static void CapsuleColliderComponent_SetOffset(Wire::EntityId entityId, gem::vec3* offset)
+	inline static void CapsuleColliderComponent_SetOffset(Wire::EntityId entityId, glm::vec3* offset)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene, };
@@ -2335,7 +2335,7 @@ namespace Volt
 		Input::SetMousePosition(x, y);
 	}
 
-	inline static void Input_GetMousePosition(gem::vec2* position)
+	inline static void Input_GetMousePosition(glm::vec2* position)
 	{
 		if (Input::IsInputDisabled())
 		{
@@ -2367,7 +2367,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region PhysicsActor
-	inline static void PhysicsActor_SetKinematicTarget(Wire::EntityId entityId, gem::vec3* position, gem::quat* rotation)
+	inline static void PhysicsActor_SetKinematicTarget(Wire::EntityId entityId, glm::vec3* position, glm::quat* rotation)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2386,10 +2386,10 @@ namespace Volt
 			return;
 		}
 
-		actor->SetKinematicTarget(*position, gem::eulerAngles(*rotation));
+		actor->SetKinematicTarget(*position, glm::eulerAngles(*rotation));
 	}
 
-	inline static void PhysicsActor_SetLinearVelocity(Wire::EntityId entityId, gem::vec3* velocity)
+	inline static void PhysicsActor_SetLinearVelocity(Wire::EntityId entityId, glm::vec3* velocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2411,7 +2411,7 @@ namespace Volt
 		actor->SetLinearVelocity(*velocity);
 	}
 
-	inline static void PhysicsActor_SetAngularVelocity(Wire::EntityId entityId, gem::vec3* velocity)
+	inline static void PhysicsActor_SetAngularVelocity(Wire::EntityId entityId, glm::vec3* velocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2433,7 +2433,7 @@ namespace Volt
 		actor->SetAngularVelocity(*velocity);
 	}
 
-	inline static void PhysicsActor_GetLinearVelocity(Wire::EntityId entityId, gem::vec3* velocity)
+	inline static void PhysicsActor_GetLinearVelocity(Wire::EntityId entityId, glm::vec3* velocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2455,7 +2455,7 @@ namespace Volt
 		*velocity = actor->GetLinearVelocity();
 	}
 
-	inline static void PhysicsActor_GetAngularVelocity(Wire::EntityId entityId, gem::vec3* velocity)
+	inline static void PhysicsActor_GetAngularVelocity(Wire::EntityId entityId, glm::vec3* velocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2521,7 +2521,7 @@ namespace Volt
 		actor->SetMaxAngularVelocity(*velocity);
 	}
 
-	inline static void PhysicsActor_GetKinematicTargetPosition(Wire::EntityId entityId, gem::vec3* outPosition)
+	inline static void PhysicsActor_GetKinematicTargetPosition(Wire::EntityId entityId, glm::vec3* outPosition)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2543,7 +2543,7 @@ namespace Volt
 		*outPosition = actor->GetKinematicTargetPosition();
 	}
 
-	inline static void PhysicsActor_GetKinematicTargetRotation(Wire::EntityId entityId, gem::quat* outRotation)
+	inline static void PhysicsActor_GetKinematicTargetRotation(Wire::EntityId entityId, glm::quat* outRotation)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2565,7 +2565,7 @@ namespace Volt
 		*outRotation = actor->GetKinematicTargetRotation();
 	}
 
-	inline static void PhysicsActor_AddForce(Wire::EntityId entityId, gem::vec3* force, ForceMode forceMode)
+	inline static void PhysicsActor_AddForce(Wire::EntityId entityId, glm::vec3* force, ForceMode forceMode)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2587,7 +2587,7 @@ namespace Volt
 		actor->AddForce(*force, forceMode);
 	}
 
-	inline static void PhysicsActor_AddTorque(Wire::EntityId entityId, gem::vec3* torque, ForceMode forceMode)
+	inline static void PhysicsActor_AddTorque(Wire::EntityId entityId, glm::vec3* torque, ForceMode forceMode)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2743,7 +2743,7 @@ namespace Volt
 		actor->SetRadius(radius);
 	}
 
-	inline static void PhysicsControllerActor_Move(Wire::EntityId entityId, gem::vec3* velocity)
+	inline static void PhysicsControllerActor_Move(Wire::EntityId entityId, glm::vec3* velocity)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2765,7 +2765,7 @@ namespace Volt
 		actor->Move(*velocity);
 	}
 
-	inline static void PhysicsControllerActor_SetPosition(Wire::EntityId entityId, gem::vec3* position)
+	inline static void PhysicsControllerActor_SetPosition(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2787,7 +2787,7 @@ namespace Volt
 		actor->SetPosition(*position);
 	}
 
-	inline static void PhysicsControllerActor_SetFootPosition(Wire::EntityId entityId, gem::vec3* position)
+	inline static void PhysicsControllerActor_SetFootPosition(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2809,7 +2809,7 @@ namespace Volt
 		actor->SetFootPosition(*position);
 	}
 
-	inline static void PhysicsControllerActor_GetPosition(Wire::EntityId entityId, gem::vec3* position)
+	inline static void PhysicsControllerActor_GetPosition(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2831,7 +2831,7 @@ namespace Volt
 		*position = actor->GetPosition();
 	}
 
-	inline static void PhysicsControllerActor_GetFootPosition(Wire::EntityId entityId, gem::vec3* position)
+	inline static void PhysicsControllerActor_GetFootPosition(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto physicsScene = Physics::GetScene();
 		if (!physicsScene)
@@ -2899,27 +2899,27 @@ namespace Volt
 #pragma endregion
 
 #pragma region Physics
-	inline static void Physics_GetGravity(gem::vec3* outGravity)
+	inline static void Physics_GetGravity(glm::vec3* outGravity)
 	{
 		*outGravity = Physics::GetScene()->GetGravity();
 	}
 
-	inline static void Physics_SetGravity(gem::vec3* gravity)
+	inline static void Physics_SetGravity(glm::vec3* gravity)
 	{
 		Physics::GetScene()->SetGravity(*gravity);
 	}
 
-	inline static bool Physics_Raycast(gem::vec3* origin, gem::vec3* direction, RaycastHit* outHit, float maxDistance)
+	inline static bool Physics_Raycast(glm::vec3* origin, glm::vec3* direction, RaycastHit* outHit, float maxDistance)
 	{
 		return Physics::GetScene()->Raycast(*origin, *direction, maxDistance, outHit);
 	}
 
-	inline static bool Physics_RaycastLayerMask(gem::vec3* origin, gem::vec3* direction, RaycastHit* outHit, float maxDistance, uint32_t layerMask)
+	inline static bool Physics_RaycastLayerMask(glm::vec3* origin, glm::vec3* direction, RaycastHit* outHit, float maxDistance, uint32_t layerMask)
 	{
 		return Physics::GetScene()->Raycast(*origin, *direction, maxDistance, outHit, layerMask);
 	}
 
-	inline static MonoArray* Physics_OverlapBox(gem::vec3* origin, gem::vec3* halfSize, uint32_t layerMask)
+	inline static MonoArray* Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize, uint32_t layerMask)
 	{
 		std::vector<Entity> tempHitList;
 		bool hit = Physics::GetScene()->OverlapBox(*origin, *halfSize, tempHitList, layerMask);
@@ -2944,7 +2944,7 @@ namespace Volt
 		return array;
 	}
 
-	inline static MonoArray* Physics_OverlapSphere(gem::vec3* origin, float radius, uint32_t layerMask)
+	inline static MonoArray* Physics_OverlapSphere(glm::vec3* origin, float radius, uint32_t layerMask)
 	{
 		std::vector<Entity> tempHitList;
 		bool hit = Physics::GetScene()->OverlapSphere(*origin, radius, tempHitList, layerMask);
@@ -3222,17 +3222,17 @@ namespace Volt
 #pragma endregion
 
 #pragma region Render
-	inline static void DebugRenderer_DrawLine(gem::vec3* startPosition, gem::vec3* endPosition, gem::vec4* color)
+	inline static void DebugRenderer_DrawLine(glm::vec3* startPosition, glm::vec3* endPosition, glm::vec4* color)
 	{
 		DebugRenderer::DrawLine(*startPosition, *endPosition, *color);
 	}
 
-	inline static void DebugRenderer_DrawSprite(gem::vec3* position, gem::vec3* rotation, gem::vec3* scale, gem::vec4* color)
+	inline static void DebugRenderer_DrawSprite(glm::vec3* position, glm::vec3* rotation, glm::vec3* scale, glm::vec4* color)
 	{
 		DebugRenderer::DrawSprite(*position, *rotation, *scale, *color);
 	}
 
-	inline static void DebugRenderer_DrawText(MonoString* text, gem::vec3* position, gem::vec3* rotation, gem::vec3* scale)
+	inline static void DebugRenderer_DrawText(MonoString* text, glm::vec3* position, glm::vec3* rotation, glm::vec3* scale)
 	{
 		const auto str = MonoScriptUtils::GetStringFromMonoString(text);
 		DebugRenderer::DrawText(str, *position, *rotation, *scale);
@@ -3241,7 +3241,7 @@ namespace Volt
 
 #pragma region Navigation
 
-	inline static MonoArray* Navigation_FindPath(gem::vec3* start, gem::vec3* end, gem::vec3* searchDistance)
+	inline static MonoArray* Navigation_FindPath(glm::vec3* start, glm::vec3* end, glm::vec3* searchDistance)
 	{
 		auto navmesh = Volt::Application::Get().GetNavigationSystem().GetVTNavMesh();
 
@@ -3258,7 +3258,7 @@ namespace Volt
 
 			for (uint16_t i = 0; i < path.size(); ++i)
 			{
-				mono_array_set(array, gem::vec3, i, path[i]);
+				mono_array_set(array, glm::vec3, i, path[i]);
 			}
 		}
 
@@ -3269,17 +3269,17 @@ namespace Volt
 
 #pragma region NavAgentComponent
 
-	inline static void NavAgentComponent_GetTarget(Wire::EntityId entityId, gem::vec3* position)
+	inline static void NavAgentComponent_GetTarget(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto navmesh = Volt::Application::Get().GetNavigationSystem().GetVTNavMesh();
 
 		if (navmesh)
 		{
-			*position = *(gem::vec3*)&Volt::Application::Get().GetNavigationSystem().GetVTNavMesh()->GetCrowd()->GetAgent(entityId)->targetPos;
+			*position = *(glm::vec3*)&Volt::Application::Get().GetNavigationSystem().GetVTNavMesh()->GetCrowd()->GetAgent(entityId)->targetPos;
 		}
 	}
 
-	inline static void NavAgentComponent_SetTarget(Wire::EntityId entityId, gem::vec3* position)
+	inline static void NavAgentComponent_SetTarget(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene };
@@ -3292,17 +3292,17 @@ namespace Volt
 		}
 	}
 
-	inline static void NavAgentComponent_GetPosition(Wire::EntityId entityId, gem::vec3* position)
+	inline static void NavAgentComponent_GetPosition(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto navmesh = Volt::Application::Get().GetNavigationSystem().GetVTNavMesh();
 
 		if (navmesh)
 		{
-			*position = *(gem::vec3*)&Volt::Application::Get().GetNavigationSystem().GetVTNavMesh()->GetCrowd()->GetAgent(entityId)->npos;
+			*position = *(glm::vec3*)&Volt::Application::Get().GetNavigationSystem().GetVTNavMesh()->GetCrowd()->GetAgent(entityId)->npos;
 		}
 	}
 
-	inline static void NavAgentComponent_SetPosition(Wire::EntityId entityId, gem::vec3* position)
+	inline static void NavAgentComponent_SetPosition(Wire::EntityId entityId, glm::vec3* position)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ entityId, scene };
@@ -3315,13 +3315,13 @@ namespace Volt
 		}
 	}
 
-	inline static void NavAgentComponent_GetVelocity(Wire::EntityId entityId, gem::vec3* velocity)
+	inline static void NavAgentComponent_GetVelocity(Wire::EntityId entityId, glm::vec3* velocity)
 	{
 		auto navmesh = Volt::Application::Get().GetNavigationSystem().GetVTNavMesh();
 
 		if (navmesh)
 		{
-			*velocity = *(gem::vec3*)&Volt::Application::Get().GetNavigationSystem().GetVTNavMesh()->GetCrowd()->GetAgent(entityId)->vel;
+			*velocity = *(glm::vec3*)&Volt::Application::Get().GetNavigationSystem().GetVTNavMesh()->GetCrowd()->GetAgent(entityId)->vel;
 		}
 	}
 
@@ -3616,7 +3616,7 @@ namespace Volt
 		graph->SetParameterValue(paramName, value);
 	}
 
-	inline static void VisualScriptingComponent_SetParameterVector3(Wire::EntityId id, MonoString* name, gem::vec3* value)
+	inline static void VisualScriptingComponent_SetParameterVector3(Wire::EntityId id, MonoString* name, glm::vec3* value)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -3744,7 +3744,7 @@ namespace Volt
 		controller->GetGraph()->SetParameterValue(paramName, value);
 	}
 
-	inline static void AnimationControllerComponent_SetParameterVector3(Wire::EntityId id, MonoString* name, gem::vec3* value)
+	inline static void AnimationControllerComponent_SetParameterVector3(Wire::EntityId id, MonoString* name, glm::vec3* value)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -3794,7 +3794,7 @@ namespace Volt
 		controller->GetGraph()->SetParameterValue(paramName, value);
 	}
 
-	inline static void AnimationControllerComponent_GetBoundingSphere(Wire::EntityId id, gem::vec3* center, float* radius)
+	inline static void AnimationControllerComponent_GetBoundingSphere(Wire::EntityId id, glm::vec3* center, float* radius)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -3890,7 +3890,7 @@ namespace Volt
 		return controller->GetGraph()->GetParameterValue<bool>(paramName);
 	}
 
-	inline static gem::vec3 AnimationControllerComponent_GetParameterVector3(Wire::EntityId id, MonoString* name)
+	inline static glm::vec3 AnimationControllerComponent_GetParameterVector3(Wire::EntityId id, MonoString* name)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -3912,7 +3912,7 @@ namespace Volt
 
 		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
 		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		return controller->GetGraph()->GetParameterValue<gem::vec3>(paramName);
+		return controller->GetGraph()->GetParameterValue<glm::vec3>(paramName);
 	}
 
 	inline static std::string AnimationControllerComponent_GetParameterString(Wire::EntityId id, MonoString* name)
@@ -3940,7 +3940,7 @@ namespace Volt
 		return controller->GetGraph()->GetParameterValue<std::string>(paramName);
 	}
 
-	inline static void AnimationControllerComponent_GetRootMotion(Wire::EntityId id, gem::vec3* value)
+	inline static void AnimationControllerComponent_GetRootMotion(Wire::EntityId id, glm::vec3* value)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4199,7 +4199,7 @@ namespace Volt
 		entity.GetComponent<TextRendererComponent>().maxWidth = value;
 	}
 
-	inline static void TextRendererComponent_GetColor(Wire::EntityId id, gem::vec4* outColor)
+	inline static void TextRendererComponent_GetColor(Wire::EntityId id, glm::vec4* outColor)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4217,7 +4217,7 @@ namespace Volt
 		*outColor = entity.GetComponent<TextRendererComponent>().color;
 	}
 
-	inline static void TextRendererComponent_SetColor(Wire::EntityId id, gem::vec4* value)
+	inline static void TextRendererComponent_SetColor(Wire::EntityId id, glm::vec4* value)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4357,7 +4357,7 @@ namespace Volt
 
 #pragma region SpotlightComponent
 
-	inline static void SpotlightComponent_GetColor(Wire::EntityId id, gem::vec3* outColor)
+	inline static void SpotlightComponent_GetColor(Wire::EntityId id, glm::vec3* outColor)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4375,7 +4375,7 @@ namespace Volt
 		*outColor = entity.GetComponent<SpotLightComponent>().color;
 	}
 
-	inline static void SpotlightComponent_SetColor(Wire::EntityId id, gem::vec3* color)
+	inline static void SpotlightComponent_SetColor(Wire::EntityId id, glm::vec3* color)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4436,7 +4436,7 @@ namespace Volt
 
 #pragma region PointlightComponent
 
-	inline static void PointlightComponent_GetColor(Wire::EntityId id, gem::vec3* outColor)
+	inline static void PointlightComponent_GetColor(Wire::EntityId id, glm::vec3* outColor)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4454,7 +4454,7 @@ namespace Volt
 		*outColor = entity.GetComponent<PointLightComponent>().color;
 	}
 
-	inline static void PointlightComponent_SetColor(Wire::EntityId id, gem::vec3* color)
+	inline static void PointlightComponent_SetColor(Wire::EntityId id, glm::vec3* color)
 	{
 		auto scene = MonoScriptEngine::GetSceneContext();
 		Entity entity{ id, scene };
@@ -4525,7 +4525,7 @@ namespace Volt
 #pragma endregion
 
 #pragma region Material
-	inline static void Material_SetColor(uint64_t handle, gem::vec4* color)
+	inline static void Material_SetColor(uint64_t handle, glm::vec4* color)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4537,7 +4537,7 @@ namespace Volt
 		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
 	}
 
-	inline static void Material_GetColor(uint64_t handle, gem::vec4* outColor)
+	inline static void Material_GetColor(uint64_t handle, glm::vec4* outColor)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4548,7 +4548,7 @@ namespace Volt
 		*outColor = material->GetSubMaterialAt(0)->GetMaterialData().color;
 	}
 
-	inline static void Material_SetEmissiveColor(uint64_t handle, gem::vec3* color)
+	inline static void Material_SetEmissiveColor(uint64_t handle, glm::vec3* color)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4560,7 +4560,7 @@ namespace Volt
 		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
 	}
 
-	inline static void Material_GetEmissiveColor(uint64_t handle, gem::vec3* outColor)
+	inline static void Material_GetEmissiveColor(uint64_t handle, glm::vec3* outColor)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4715,7 +4715,7 @@ namespace Volt
 		material->GetSubMaterialAt(0)->SetValue(param, value);
 	}
 
-	inline static void Material_SetFloat2(uint64_t handle, MonoString* name, gem::vec2* value)
+	inline static void Material_SetFloat2(uint64_t handle, MonoString* name, glm::vec2* value)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4728,7 +4728,7 @@ namespace Volt
 		material->GetSubMaterialAt(0)->SetValue(param, *value);
 	}
 
-	inline static void Material_SetFloat3(uint64_t handle, MonoString* name, gem::vec3* value)
+	inline static void Material_SetFloat3(uint64_t handle, MonoString* name, glm::vec3* value)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4741,7 +4741,7 @@ namespace Volt
 		material->GetSubMaterialAt(0)->SetValue(param, *value);
 	}
 
-	inline static void Material_SetFloat4(uint64_t handle, MonoString* name, gem::vec4* value)
+	inline static void Material_SetFloat4(uint64_t handle, MonoString* name, glm::vec4* value)
 	{
 		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 		if (!material || !material->IsValid())
@@ -4821,7 +4821,7 @@ namespace Volt
 		material->SetValue(param, value);
 	}
 
-	inline static void PostProcessingMaterial_SetFloat2(uint64_t handle, MonoString* name, gem::vec2* value)
+	inline static void PostProcessingMaterial_SetFloat2(uint64_t handle, MonoString* name, glm::vec2* value)
 	{
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
@@ -4834,7 +4834,7 @@ namespace Volt
 		material->SetValue(param, *value);
 	}
 
-	inline static void PostProcessingMaterial_SetFloat3(uint64_t handle, MonoString* name, gem::vec3* value)
+	inline static void PostProcessingMaterial_SetFloat3(uint64_t handle, MonoString* name, glm::vec3* value)
 	{
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
@@ -4847,7 +4847,7 @@ namespace Volt
 		material->SetValue(param, *value);
 	}
 
-	inline static void PostProcessingMaterial_SetFloat4(uint64_t handle, MonoString* name, gem::vec4* value)
+	inline static void PostProcessingMaterial_SetFloat4(uint64_t handle, MonoString* name, glm::vec4* value)
 	{
 		Ref<PostProcessingMaterial> material = AssetManager::GetAsset<PostProcessingMaterial>(handle);
 		if (!material || !material->IsValid())
@@ -4898,17 +4898,17 @@ namespace Volt
 		UIRenderer::SetScissor(x, y, width, height);
 	}
 
-	inline static void UIRenderer_DrawSprite(gem::vec3* position, gem::vec2* scale, float rotation, gem::vec4* color, gem::vec2* offset)
+	inline static void UIRenderer_DrawSprite(glm::vec3* position, glm::vec2* scale, float rotation, glm::vec4* color, glm::vec2* offset)
 	{
 		UIRenderer::DrawSprite(*position, *scale, rotation, *color, *offset);
 	}
 
-	inline static void UIRenderer_DrawSpriteTexture(uint64_t textureHandle, gem::vec3* position, gem::vec2* scale, float rotation, gem::vec4* color, gem::vec2* offset)
+	inline static void UIRenderer_DrawSpriteTexture(uint64_t textureHandle, glm::vec3* position, glm::vec2* scale, float rotation, glm::vec4* color, glm::vec2* offset)
 	{
 		UIRenderer::DrawSprite(AssetManager::GetAsset<Texture2D>(textureHandle), *position, *scale, rotation, *color, *offset);
 	}
 
-	inline static void UIRenderer_DrawString(MonoString* text, uint64_t fontHandle, gem::vec3* position, gem::vec2* scale, float rotation, float maxWidth, gem::vec4* color, gem::vec2* positionOffset)
+	inline static void UIRenderer_DrawString(MonoString* text, uint64_t fontHandle, glm::vec3* position, glm::vec2* scale, float rotation, float maxWidth, glm::vec4* color, glm::vec2* positionOffset)
 	{
 		Ref<Font> font = AssetManager::GetAsset<Font>(fontHandle);
 		if (!font || !font->IsValid())
@@ -5306,7 +5306,7 @@ namespace Volt
 #pragma endregion Asset
 
 #pragma region Font
-	inline static float Font_GetStringWidth(uint64_t fontHandle, MonoString* text, gem::vec2* scale, float maxWidth)
+	inline static float Font_GetStringWidth(uint64_t fontHandle, MonoString* text, glm::vec2* scale, float maxWidth)
 	{
 		if (!text)
 		{
@@ -5331,7 +5331,7 @@ namespace Volt
 		return textWidth;
 	}
 
-	inline static float Font_GetStringHeight(uint64_t fontHandle, MonoString* text, gem::vec2* scale, float maxWidth)
+	inline static float Font_GetStringHeight(uint64_t fontHandle, MonoString* text, glm::vec2* scale, float maxWidth)
 	{
 		if (!text)
 		{
@@ -5477,7 +5477,7 @@ namespace Volt
 		video->Update(deltaTime);
 	}
 
-	inline static void VideoPlayer_DrawSpriteTexture(uint64_t videoHandle, gem::vec3* position, gem::vec2* scale, float rotation, gem::vec4* color, gem::vec2* offset)
+	inline static void VideoPlayer_DrawSpriteTexture(uint64_t videoHandle, glm::vec3* position, glm::vec2* scale, float rotation, glm::vec4* color, glm::vec2* offset)
 	{
 		Ref<Video> video = AssetManager::GetAsset<Video>(videoHandle);
 		if (!video || !video->IsValid())

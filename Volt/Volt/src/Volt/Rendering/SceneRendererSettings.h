@@ -48,7 +48,7 @@ namespace Volt
 		bool enableIDRendering = false;
 		bool enableGrid = false;
 			
-		inline static const gem::vec2ui GetResolutionFromShadowSetting(ShadowResolutionSetting setting)
+		inline static const glm::uvec2 GetResolutionFromShadowSetting(ShadowResolutionSetting setting)
 		{
 			switch (setting)
 			{

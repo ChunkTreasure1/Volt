@@ -211,9 +211,9 @@ Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::
 		}break;
 		case Volt::MonoFieldType::Quaternion:
 		{
-			gem::quat data;
+			glm::quat data;
 			variable.GetValue(data);
-			varData = Volt::RepVariableData(data.GetXYZW(), fieldType);
+			varData = Volt::RepVariableData(data, fieldType);
 		}break;
 		default: break;
 	}
@@ -295,7 +295,7 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 		}break;
 		case Volt::MonoFieldType::Quaternion:
 		{
-			gem::xyzw data = { 0,0,0,0 };
+			glm::quat data = { 0,0,0,0 };
 			packet >> data;
 			varData.data = CreateRef<Volt::VariableData>(data);
 		}break;

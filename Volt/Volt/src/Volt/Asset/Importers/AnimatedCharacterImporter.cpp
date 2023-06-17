@@ -104,8 +104,8 @@ namespace Volt
 				VT_DESERIALIZE_PROPERTY(name, newAttachment.name, attachmentNode, std::string("Empty"));
 				VT_DESERIALIZE_PROPERTY(jointIndex, newAttachment.jointIndex, attachmentNode, -1);
 				VT_DESERIALIZE_PROPERTY(id, newAttachment.id, attachmentNode, UUID(0));
-				VT_DESERIALIZE_PROPERTY(positionOffset, newAttachment.positionOffset, attachmentNode, gem::vec3{ 0.f });
-				VT_DESERIALIZE_PROPERTY(rotationOffset, newAttachment.rotationOffset, attachmentNode, gem::quat(1.f, 0.f, 0.f, 0.f));
+				VT_DESERIALIZE_PROPERTY(positionOffset, newAttachment.positionOffset, attachmentNode, glm::vec3{ 0.f });
+				VT_DESERIALIZE_PROPERTY(rotationOffset, newAttachment.rotationOffset, attachmentNode, glm::quat(1.f, 0.f, 0.f, 0.f));
 			}
 		}
 

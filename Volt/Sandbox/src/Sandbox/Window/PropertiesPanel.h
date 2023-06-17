@@ -21,7 +21,7 @@ struct PropertyEvent
 {
 	Wire::EntityId myEntityId;
 	PropertyEventType myType;
-	std::variant<gem::vec3> myValue;
+	std::variant<glm::vec3> myValue;
 };
 
 namespace Volt
@@ -56,7 +56,7 @@ private:
 
 	bool myMidEvent = false;
 	std::shared_ptr<PropertyEvent> myLastValue;
-	gem::vec3 myLastValue2;
+	glm::vec3 myLastValue2;
 	std::vector<std::shared_ptr<PropertyEvent>> myUndoList;
 	std::vector<std::shared_ptr<PropertyEvent>> myRedoList;
 	int myMaxEventListSize;

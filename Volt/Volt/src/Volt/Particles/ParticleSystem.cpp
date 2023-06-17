@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ParticleSystem.h"
 
-#include "gem/gem.h"
+#include <glm/glm.hpp>
 #include "Volt/Scene/Entity.h"
 #include "Volt/Scene/Scene.h"
 
@@ -135,7 +135,7 @@ void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const 
 	}
 }
 
-void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, gem::vec3 aEntityPos, const float& intencity)
+void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, glm::vec3 aEntityPos, const float& intencity)
 {
 	auto e = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
 	while (particleEmitterComponent.internalTimer > 0)
@@ -145,19 +145,19 @@ void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitt
 
 		auto& p = m_particleStorage[id].particles[m_particleStorage[id].numberOfAliveParticles];
 
-		gem::vec3 dir;
+		glm::vec3 dir;
 		float radius = e->sphereRadius;
 		if (e->shape == 0)
 		{
 			// #mmax: make different starting patterns <func>
 			if (e->sphereSpawnOnEdge)
 			{
-				dir = gem::normalize(gem::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
+				dir = glm::normalize(glm::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
 				p.position = aEntityPos + dir * radius;
 			}
 			else
 			{
-				dir = gem::normalize(gem::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
+				dir = glm::normalize(glm::vec3{ Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius),Volt::Random::Float(-radius, radius) });
 				p.position = aEntityPos + dir * Volt::Random::Float(0, radius);
 			}
 		}
@@ -202,9 +202,9 @@ bool Volt::ParticleSystem::ParticleKillCheck(Particle& particle, const float& de
 	return particle.dead;
 }
 
-void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, const float& deltaTime, const gem::vec3& entityForward)
+void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, const float& deltaTime, const glm::vec3& entityForward)
 {
-	const gem::vec3 dir = gem::normalize(entityForward + particle.direction);
+	const glm::vec3 dir = glm::normalize(entityForward + particle.direction);
 
 	particle.position += particle.velocity * dir * deltaTime;
 	particle.distance += particle.velocity * deltaTime;
@@ -217,23 +217,23 @@ void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float& d
 	if (sizePersentage > 1)
 		sizePersentage = 1;
 	float scaledTime = sizePersentage * ((float)particle.sizes.size() - 1);
-	//gem::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
-	gem::vec4 oldSize = particle.sizes[(int)scaledTime];
+	//glm::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
+	glm::vec4 oldSize = glm::vec4{ particle.sizes[(int)scaledTime], 0.f };
 	auto newScaled = (int)(scaledTime + 1.0f);
-	gem::vec4 newSize = particle.sizes[(newScaled >= particle.sizes.size()) ? particle.sizes.size() - 1 : newScaled];
+	glm::vec4 newSize = glm::vec4{ particle.sizes[(newScaled >= particle.sizes.size()) ? particle.sizes.size() - 1 : newScaled], 1.f };
 	float newT = scaledTime - (int)(scaledTime);
 
-	float x = gem::lerp(oldSize.x, newSize.x, newT);
-	float y = gem::lerp(oldSize.y, newSize.y, newT);
-	float z = gem::lerp(oldSize.z, newSize.z, newT);
+	float x = glm::mix(oldSize.x, newSize.x, newT);
+	float y = glm::mix(oldSize.y, newSize.y, newT);
+	float z = glm::mix(oldSize.z, newSize.z, newT);
 
-	particle.size = gem::vec3{ x,y,z };
+	particle.size = glm::vec3{ x,y,z };
 
-	//float w = gem::lerp(oldColor.w, newColor.w, newT);
+	//float w = glm::mix(oldColor.w, newColor.w, newT);
 
 
 	/*float sizePersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
-	gem::vec3 newSize = gem::lerp(particle.startSize, particle.endSize, sizePersentage);
+	glm::vec3 newSize = glm::mix(particle.startSize, particle.endSize, sizePersentage);
 
 	particle.size = newSize;*/
 }
@@ -241,7 +241,7 @@ void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float& d
 void Volt::ParticleSystem::ParticleVelocityUpdate(Particle& particle, const float& deltaTime)
 {
 	float velocityPersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
-	float newVelocity = gem::lerp(particle.startVelocity, particle.endVelocity, velocityPersentage);
+	float newVelocity = glm::mix(particle.startVelocity, particle.endVelocity, velocityPersentage);
 
 	particle.velocity = newVelocity;
 }
@@ -253,18 +253,18 @@ void Volt::ParticleSystem::ParticleColorUpdate(Particle& particle, const float& 
 	if (colorPersentage > 1)
 		colorPersentage = 1;
 	float scaledTime = colorPersentage * ((float)particle.colors.size() - 1);
-	//gem::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
-	gem::vec4 oldColor = particle.colors[(int)scaledTime];
+	//glm::vec4 colorArray[3] = { particle.startColor, particle.middleColor, particle.endColor };
+	glm::vec4 oldColor = particle.colors[(int)scaledTime];
 	auto newScaled = (int)(scaledTime + 1.0f);
-	gem::vec4 newColor = particle.colors[(newScaled >= particle.colors.size()) ? particle.colors.size() - 1 : newScaled];
+	glm::vec4 newColor = particle.colors[(newScaled >= particle.colors.size()) ? particle.colors.size() - 1 : newScaled];
 	float newT = scaledTime - (int)(scaledTime);
 
-	float x = gem::lerp(oldColor.x, newColor.x, newT);
-	float y = gem::lerp(oldColor.y, newColor.y, newT);
-	float z = gem::lerp(oldColor.z, newColor.z, newT);
-	float w = gem::lerp(oldColor.w, newColor.w, newT);
+	float x = glm::mix(oldColor.x, newColor.x, newT);
+	float y = glm::mix(oldColor.y, newColor.y, newT);
+	float z = glm::mix(oldColor.z, newColor.z, newT);
+	float w = glm::mix(oldColor.w, newColor.w, newT);
 
-	particle.color = gem::vec4{ x,y,z,w };
+	particle.color = glm::vec4{ x,y,z,w };
 }
 
 void Volt::ParticleSystem::ParticleTimeUpdate(Particle& particle, float deltaTime)

@@ -2,7 +2,7 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <map>
 
@@ -27,15 +27,15 @@ namespace Volt
 			int32_t jointIndex = -1;
 			UUID id{};
 
-			gem::vec3 positionOffset = 0.f;
-			gem::quat rotationOffset = { 1.f, 0.f, 0.f, 0.f };
+			glm::vec3 positionOffset = 0.f;
+			glm::quat rotationOffset = { 1.f, 0.f, 0.f, 0.f };
 		};
 
 		AnimatedCharacter() = default;
 		~AnimatedCharacter() override = default;
 
-		const std::vector<gem::mat4> SampleAnimation(uint32_t index, float aStartTime, bool looping = true) const;
-		const std::vector<gem::mat4> SampleAnimation(uint32_t index, uint32_t frameIndex) const;
+		const std::vector<glm::mat4> SampleAnimation(uint32_t index, float aStartTime, bool looping = true) const;
+		const std::vector<glm::mat4> SampleAnimation(uint32_t index, uint32_t frameIndex) const;
 		const float GetAnimationDuration(uint32_t index) const;
 
 		inline const std::map<uint32_t, Ref<Animation>>& GetAnimations() const { return myAnimations; }

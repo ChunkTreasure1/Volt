@@ -14,7 +14,7 @@
 
 #include "Volt/Project/ProjectManager.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -55,24 +55,24 @@ namespace Volt
 			newSubMesh.materialIndex = element.MaterialIndex;
 			newSubMesh.name = element.MeshName;
 
-			const gem::vec3 translation = { element.localTranslation[0], element.localTranslation[1], element.localTranslation[2] };
-			const gem::vec3 rotation = { element.localRotation[0], element.localRotation[1], element.localRotation[2] };
-			const gem::vec3 scale = { element.localScale[0], element.localScale[1], element.localScale[2] };
+			const glm::vec3 translation = { element.localTranslation[0], element.localTranslation[1], element.localTranslation[2] };
+			const glm::vec3 rotation = { element.localRotation[0], element.localRotation[1], element.localRotation[2] };
+			const glm::vec3 scale = { element.localScale[0], element.localScale[1], element.localScale[2] };
 
-			const gem::mat4 localTransform = gem::translate(gem::mat4(1.f), translation) *
-				gem::mat4_cast(gem::quat(gem::radians(rotation))) * gem::scale(gem::mat4(1.f), scale);
+			const glm::mat4 localTransform = glm::translate(glm::mat4(1.f), translation) *
+				glm::mat4_cast(glm::quat(glm::radians(rotation))) * glm::scale(glm::mat4(1.f), scale);
 
 			newSubMesh.transform = localTransform;
 
 			for (const auto& tgaVertex : element.Vertices)
 			{
 				auto& newVertex = mesh->myVertices.emplace_back();
-				newVertex.position = *reinterpret_cast<const gem::vec4*>(tgaVertex.Position);
-				newVertex.normal = *reinterpret_cast<const gem::vec3*>(tgaVertex.Normal);
-				newVertex.tangent = *reinterpret_cast<const gem::vec3*>(tgaVertex.Tangent);
-				newVertex.texCoords = *reinterpret_cast<const gem::vec2*>(tgaVertex.UVs[0]);
-				newVertex.influences = *reinterpret_cast<const gem::vec4ui*>(tgaVertex.BoneIDs);
-				newVertex.weights = *reinterpret_cast<const gem::vec4*>(tgaVertex.BoneWeights);
+				newVertex.position = *reinterpret_cast<const glm::vec4*>(tgaVertex.Position);
+				newVertex.normal = *reinterpret_cast<const glm::vec3*>(tgaVertex.Normal);
+				newVertex.tangent = *reinterpret_cast<const glm::vec3*>(tgaVertex.Tangent);
+				newVertex.texCoords = *reinterpret_cast<const glm::vec2*>(tgaVertex.UVs[0]);
+				newVertex.influences = *reinterpret_cast<const glm::uvec4*>(tgaVertex.BoneIDs);
+				newVertex.weights = *reinterpret_cast<const glm::vec4*>(tgaVertex.BoneWeights);
 			}
 
 			mesh->myIndices.insert(mesh->myIndices.end(), element.Indices.begin(), element.Indices.end());
@@ -90,7 +90,7 @@ namespace Volt
 			}
 		}
 
-		mesh->myBoundingBox = BoundingBox{ *reinterpret_cast<const gem::vec3*>(tgaMesh.BoxBounds.Max), *reinterpret_cast<const gem::vec3*>(tgaMesh.BoxBounds.Min) };
+		mesh->myBoundingBox = BoundingBox{ *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Max), *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Min) };
 		mesh->myBoundingSphere.center = { tgaMesh.BoxSphereBounds.Center[0], tgaMesh.BoxSphereBounds.Center[1], tgaMesh.BoxSphereBounds.Center[2] };
 		mesh->myBoundingSphere.radius = tgaMesh.BoxSphereBounds.Radius;
 
@@ -274,7 +274,7 @@ namespace Volt
 
 		skeleton->myJoints[currentIndex].name = currentJoint.Name;
 		skeleton->myJoints[currentIndex].parentIndex = currentJoint.ParentIdx;
-		skeleton->myInverseBindPose[currentIndex] = gem::transpose(*reinterpret_cast<const gem::mat4*>(currentJoint.BindPoseInverse.Data));
+		skeleton->myInverseBindPose[currentIndex] = glm::transpose(*reinterpret_cast<const glm::mat4*>(currentJoint.BindPoseInverse.Data));
 		skeleton->myJointNameToIndex[currentJoint.Name] = static_cast<size_t>(currentIndex);
 
 		skeleton->myRestPose[currentIndex].position = { currentJoint.restPosition[0], currentJoint.restPosition[1], currentJoint.restPosition[2] };

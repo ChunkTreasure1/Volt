@@ -2,7 +2,7 @@
 
 #include "Volt/Asset/Mesh/SubMesh.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
 namespace Volt
@@ -14,28 +14,28 @@ namespace Volt
 	///// Structures /////
 	struct PointLight
 	{
-		gem::vec4 position;
-		gem::vec4 color;
+		glm::vec4 position;
+		glm::vec4 color;
 
 		float intensity;
 		float radius;
 		float falloff;
 		int32_t shadowMapIndex = -1;
 
-		gem::vec3 padding2;
+		glm::vec3 padding2;
 		uint32_t castShadows = 0;
-		gem::mat4 viewProjectionMatrices[6];
+		glm::mat4 viewProjectionMatrices[6];
 	};
 
 	struct SpotLight
 	{
-		gem::vec3 position;
+		glm::vec3 position;
 		float intensity;
 
-		gem::vec3 color;
+		glm::vec3 color;
 		float angleAttenuation;
 
-		gem::vec3 direction;
+		glm::vec3 direction;
 		float range;
 
 		float angle;
@@ -43,44 +43,44 @@ namespace Volt
 		uint32_t castShadows = 0;
 		int32_t shadowMapIndex = -1;
 
-		gem::mat4 viewProjection = { 1.f };
-		gem::mat4 projection = { 1.f };
+		glm::mat4 viewProjection = { 1.f };
+		glm::mat4 projection = { 1.f };
 	};
 
 	struct SphereLight
 	{
-		gem::vec3 position;
+		glm::vec3 position;
 		float intensity;
 
-		gem::vec3 color;
+		glm::vec3 color;
 		float radius;
 	};
 
 	struct RectangleLight
 	{
-		gem::vec3 direction;
+		glm::vec3 direction;
 		float intensity;
 
-		gem::vec3 left;
+		glm::vec3 left;
 		float width;
 
-		gem::vec3 up;
+		glm::vec3 up;
 		float height;
 
-		gem::vec3 position;
+		glm::vec3 position;
 		float padding;
 
-		gem::vec3 color;
+		glm::vec3 color;
 		float padding2;
 	};
 
 	struct DirectionalLight
 	{
-		gem::vec4 direction = { 0.f, 0.f, 0.f, 0.f };
-		gem::vec4 colorIntensity = { 0.f, 0.f, 0.f, 0.f };
+		glm::vec4 direction = { 0.f, 0.f, 0.f, 0.f };
+		glm::vec4 colorIntensity = { 0.f, 0.f, 0.f, 0.f };
 
-		gem::mat4 viewProjections[4];
-		gem::vec4 cascadeDistances[4];
+		glm::mat4 viewProjections[4];
+		glm::vec4 cascadeDistances[4];
 
 		uint32_t castShadows = 1;
 		uint32_t softShadows = 1;
@@ -95,8 +95,8 @@ namespace Volt
 		uint32_t materialTexture = 0;
 		uint32_t materialFlags = 0;
 
-		gem::vec4 color = 1.f;
-		gem::vec3 emissiveColor = 1.f;
+		glm::vec4 color = 1.f;
+		glm::vec3 emissiveColor = 1.f;
 		float emissiveStrength = 1.f;
 
 		float roughness = 0.5f;
@@ -116,7 +116,7 @@ namespace Volt
 		inline static constexpr uint32_t MAX_LOD_COUNT = 8;
 
 		uint32_t lodCount = 0;
-		gem::vec3i padding = 0;
+		glm::ivec3 padding = 0;
 
 		GPUMeshLOD lods[MAX_LOD_COUNT];
 	};
@@ -153,18 +153,18 @@ namespace Volt
 
 	struct ParticleRenderingInfo
 	{
-		gem::vec3 position;
+		glm::vec3 position;
 		float randomValue;
 
-		gem::vec4 color;
+		glm::vec4 color;
 
-		gem::vec2 scale;
+		glm::vec2 scale;
 		uint32_t albedoIndex = 0;
 		uint32_t normalIndex = 0;
 
 		uint32_t materialIndex = 0;
 		float timeSinceSpawn = 0.f;
-		gem::vec2 padding2;
+		glm::vec2 padding2;
 	};
 
 	struct ParticleBatch
@@ -173,49 +173,49 @@ namespace Volt
 		Ref<Material> material;
 		uint32_t startOffset = 0;
 
-		gem::vec3 emitterPosition = 0.f;
+		glm::vec3 emitterPosition = 0.f;
 	};
 
 	///// Buffers /////
 	struct CameraData
 	{
-		gem::mat4 view;
-		gem::mat4 proj;
-		gem::mat4 viewProjection;
+		glm::mat4 view;
+		glm::mat4 proj;
+		glm::mat4 viewProjection;
 
-		gem::mat4 inverseView;
-		gem::mat4 inverseProj;
+		glm::mat4 inverseView;
+		glm::mat4 inverseProj;
 
-		gem::mat4 nonReversedProj;
-		gem::mat4 inverseNonReverseViewProj;
+		glm::mat4 nonReversedProj;
+		glm::mat4 inverseNonReverseViewProj;
 
-		gem::vec4 position;
+		glm::vec4 position;
 
 		float nearPlane;
 		float farPlane;
-		gem::vec2 depthUnpackConsts;
+		glm::vec2 depthUnpackConsts;
 
-		gem::vec2 NDCToViewMul;
-		gem::vec2 NDCToViewAdd;
+		glm::vec2 NDCToViewMul;
+		glm::vec2 NDCToViewAdd;
 	};
 
 	struct RendererGPUData
 	{
 		uint32_t screenTilesCountX;
 		uint32_t enableAO;
-		gem::vec2ui padding;
+		glm::uvec2 padding;
 	};
 
 	struct ObjectData
 	{
-		gem::mat4 transform;
+		glm::mat4 transform;
 
 		uint32_t id;
 		uint32_t isAnimated;
 		float timeSinceCreation = 0.f;
 		float boundingSphereRadius = 0.f;
 
-		gem::vec3 boundingSphereCenter = 0.f;
+		glm::vec3 boundingSphereCenter = 0.f;
 		uint32_t materialIndex = 0;
 
 		float randomValue = 0.f;
@@ -243,7 +243,7 @@ namespace Volt
 		float anisotropy = 0.f;
 		float density = 0.04f;
 		float globalDensity = 0.f;
-		gem::vec3 globalColor = { 1.f };
+		glm::vec3 globalColor = { 1.f };
 	};
 
 	struct GTAOSettings

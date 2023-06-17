@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 #include <Volt/Asset/Asset.h>
 
 #include <shared_mutex>
@@ -37,10 +37,10 @@ namespace Volt
 
 	private:
 		void UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime);
-		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, gem::vec3 aEntityPos, const float& deltaTime);
+		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, glm::vec3 aEntityPos, const float& deltaTime);
 
 		bool ParticleKillCheck(Particle& particle, const float& deltaTime);
-		void ParticlePositionUpdate(Particle& particle, const float& deltaTime, const gem::vec3& entityForward);
+		void ParticlePositionUpdate(Particle& particle, const float& deltaTime, const glm::vec3& entityForward);
 		void ParticleSizeUpdate(Particle& particle, const float& deltaTime);
 		void ParticleVelocityUpdate(Particle& particle, const float& deltaTime);
 		void ParticleColorUpdate(Particle& particle, const float& deltaTime);

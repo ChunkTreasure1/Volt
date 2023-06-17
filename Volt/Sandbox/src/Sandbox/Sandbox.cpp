@@ -1042,7 +1042,7 @@ void Sandbox::RenderGameView()
 
 			Ref<Volt::Camera> camera = CreateRef<Volt::Camera>(camComp.fieldOfView, (float)finalImage->GetWidth() / (float)finalImage->GetHeight(), camComp.nearPlane, camComp.farPlane);
 			camera->SetPosition(cameraEntity.GetPosition());
-			camera->SetRotation(gem::eulerAngles(cameraEntity.GetRotation()));
+			camera->SetRotation(glm::eulerAngles(cameraEntity.GetRotation()));
 
 			myGameSceneRenderer->OnRenderEditor(camera);
 			break;
@@ -1170,7 +1170,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 		{
 			if (SelectionManager::IsAnySelected())
 			{
-				gem::vec3 avgPos = 0.f;
+				glm::vec3 avgPos = 0.f;
 
 				for (const auto& id : SelectionManager::GetSelectedEntities())
 				{

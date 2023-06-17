@@ -4,7 +4,7 @@
 #include "Volt/Scene/Entity.h"
 #include "Volt/Components/PhysicsComponents.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <PhysX/PxPhysicsAPI.h>
 
 namespace Volt
@@ -21,8 +21,8 @@ namespace Volt
 		virtual const bool IsTrigger() const = 0;
 		virtual void SetTrigger(bool isTrigger) const = 0;
 
-		virtual const gem::vec3& GetOffset() const = 0;
-		virtual void SetOffset(const gem::vec3& offset) = 0;
+		virtual const glm::vec3& GetOffset() const = 0;
+		virtual void SetOffset(const glm::vec3& offset) = 0;
 
 		virtual void SetFilterData(const physx::PxFilterData& filterData) = 0;
 		virtual void DetachFromActor(physx::PxRigidActor* actor) = 0;
@@ -47,14 +47,14 @@ namespace Volt
 		BoxColliderShape(BoxColliderComponent& component, const PhysicsActor& actor, Entity entity);
 		~BoxColliderShape() override;
 
-		inline const gem::vec3& GetHalfSize() const { return myEntity.GetComponent<BoxColliderComponent>().halfSize; }
-		void SetHalfSize(const gem::vec3& halfSize);
+		inline const glm::vec3& GetHalfSize() const { return myEntity.GetComponent<BoxColliderComponent>().halfSize; }
+		void SetHalfSize(const glm::vec3& halfSize);
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<BoxColliderComponent>().isTrigger; }
 		void SetTrigger(bool isTrigger) const override;
 
-		inline const gem::vec3& GetOffset() const override { return myEntity.GetComponent<BoxColliderComponent>().offset; }
-		void SetOffset(const gem::vec3& offset) override;
+		inline const glm::vec3& GetOffset() const override { return myEntity.GetComponent<BoxColliderComponent>().offset; }
+		void SetOffset(const glm::vec3& offset) override;
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
@@ -72,8 +72,8 @@ namespace Volt
 		inline const float GetRadius() const { return myEntity.GetComponent<SphereColliderComponent>().radius; }
 		void SetRadius(float radius);
 
-		const gem::vec3& GetOffset() const override { return myEntity.GetComponent<SphereColliderComponent>().offset; }
-		void SetOffset(const gem::vec3& offset) override;
+		const glm::vec3& GetOffset() const override { return myEntity.GetComponent<SphereColliderComponent>().offset; }
+		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<SphereColliderComponent>().isTrigger; }
 		void SetTrigger(bool isTrigger) const override;
@@ -97,8 +97,8 @@ namespace Volt
 		inline const float GetRadius() const { return myEntity.GetComponent<CapsuleColliderComponent>().radius; }
 		void SetRadius(float radius);
 
-		const gem::vec3& GetOffset() const override { return myEntity.GetComponent<CapsuleColliderComponent>().offset; }
-		void SetOffset(const gem::vec3& offset) override;
+		const glm::vec3& GetOffset() const override { return myEntity.GetComponent<CapsuleColliderComponent>().offset; }
+		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<CapsuleColliderComponent>().isTrigger; }
 		void SetTrigger(bool isTrigger) const override;
@@ -116,8 +116,8 @@ namespace Volt
 		ConvexMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
 		~ConvexMeshShape() override;
 
-		const gem::vec3& GetOffset() const override { return myOffset; }
-		void SetOffset(const gem::vec3& offset) override;
+		const glm::vec3& GetOffset() const override { return myOffset; }
+		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<MeshColliderComponent>().isTrigger; }
 		void SetTrigger(bool isTrigger) const override;
@@ -127,7 +127,7 @@ namespace Volt
 
 	private:
 		std::vector<physx::PxShape*> myShapes;
-		gem::vec3 myOffset = 0.f;
+		glm::vec3 myOffset = 0.f;
 	};
 
 	class TriangleMeshShape : public ColliderShape
@@ -136,8 +136,8 @@ namespace Volt
 		TriangleMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
 		~TriangleMeshShape() override;
 
-		const gem::vec3& GetOffset() const override { return myOffset; }
-		void SetOffset(const gem::vec3& offset) override;
+		const glm::vec3& GetOffset() const override { return myOffset; }
+		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<MeshColliderComponent>().isTrigger; }
 		void SetTrigger(bool isTrigger) const override;
@@ -147,6 +147,6 @@ namespace Volt
 
 	private:
 		std::vector<physx::PxShape*> myShapes;
-		gem::vec3 myOffset = 0.f;
+		glm::vec3 myOffset = 0.f;
 	};
 }

@@ -9,7 +9,7 @@
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
 #include <Wire/Wire.h>
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <map>
 #include <set>
@@ -55,9 +55,9 @@ namespace Volt
 
 		struct TQS
 		{
-			gem::vec3 position = { 0.f, 0.f, 0.f };
-			gem::quat rotation = { 1.f, 0.f, 0.f, 0.f };
-			gem::vec3 scale = { 1.f, 1.f, 1.f };
+			glm::vec3 position = { 0.f, 0.f, 0.f };
+			glm::quat rotation = { 1.f, 0.f, 0.f, 0.f };
+			glm::vec3 scale = { 1.f, 1.f, 1.f };
 		};
 
 		Scene();
@@ -111,7 +111,7 @@ namespace Volt
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		gem::mat4 GetWorldSpaceTransform(Entity entity);
+		glm::mat4 GetWorldSpaceTransform(Entity entity);
 		TQS GetWorldSpaceTRS(Entity entity);
 
 		void InvalidateEntityTransform(Wire::EntityId entity);
@@ -121,9 +121,9 @@ namespace Volt
 
 		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
-		gem::vec3 GetWorldForward(Entity entity);
-		gem::vec3 GetWorldRight(Entity entity);
-		gem::vec3 GetWorldUp(Entity entity);
+		glm::vec3 GetWorldForward(Entity entity);
+		glm::vec3 GetWorldRight(Entity entity);
+		glm::vec3 GetWorldUp(Entity entity);
 
 		template<typename T>
 		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;
@@ -172,7 +172,7 @@ namespace Volt
 		std::map<Wire::EntityId, float> myEntityTimesToDestroy;
 
 		std::vector<SceneLayer> mySceneLayers;
-		std::unordered_map<Wire::EntityId, gem::mat4> myCachedEntityTransforms;
+		std::unordered_map<Wire::EntityId, glm::mat4> myCachedEntityTransforms;
 		std::shared_mutex myCachedEntityTransformMutex;
 
 		uint32_t myWidth = 1;

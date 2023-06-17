@@ -1,5 +1,5 @@
 #pragma once
-#include "GEM/vector/vector.h"
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -7,16 +7,16 @@ namespace Volt
 	{
 		Volt::AssetHandle texture = Volt::Asset::Null();
 
-		std::vector<gem::vec4> colors;
-		gem::vec4 color;
+		std::vector<glm::vec4> colors;
+		glm::vec4 color;
 
-		gem::vec3 direction;
-		gem::vec3 position;
+		glm::vec3 direction;
+		glm::vec3 position;
 
-		gem::vec3 gravity;
-		gem::vec3 rotation;
-		std::vector<gem::vec3> sizes;
-		gem::vec3 size;
+		glm::vec3 gravity;
+		glm::vec3 rotation;
+		std::vector<glm::vec3> sizes;
+		glm::vec3 size;
 
 		float velocity;
 		float startVelocity;

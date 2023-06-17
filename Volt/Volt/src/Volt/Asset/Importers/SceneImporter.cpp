@@ -75,16 +75,16 @@ namespace Volt
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::UChar] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(uint8_t*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Float] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(float*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Double] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(double*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector2] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(gem::vec2*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(gem::vec3*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(gem::vec4*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Quaternion] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(gem::quat*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector2] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec2*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec3*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec4*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Quaternion] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::quat*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::String] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(std::string*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Int64] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(int64_t*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::UInt64] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(uint64_t*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::AssetHandle] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(AssetHandle*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Color3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(gem::vec3*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Color4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(gem::vec4*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Color3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec3*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Color4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec4*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Folder] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(std::filesystem::path*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Path] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(std::filesystem::path*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::GUID] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(WireGUID*)&componentData[offset], out); };
@@ -105,16 +105,16 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::UChar: SerializeVector<uint8_t>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Float: SerializeVector<float>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Double: SerializeVector<double>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Vector2: SerializeVector<gem::vec2>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Vector3: SerializeVector<gem::vec3>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Vector4: SerializeVector<gem::vec4>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Quaternion: SerializeVector<gem::quat>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Vector2: SerializeVector<glm::vec2>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Vector3: SerializeVector<glm::vec3>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Vector4: SerializeVector<glm::vec4>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Quaternion: SerializeVector<glm::quat>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::String: SerializeVector<std::string>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Int64: SerializeVector<int64_t>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::UInt64: SerializeVector<uint64_t>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: SerializeVector<AssetHandle>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Color3: SerializeVector<gem::vec3>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Color4: SerializeVector<gem::vec4>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Color3: SerializeVector<glm::vec3>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Color4: SerializeVector<glm::vec4>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Folder: SerializeVector<std::filesystem::path>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Path: SerializeVector<std::filesystem::path>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::GUID: SerializeVector<WireGUID>(componentData, offset, out); break;
@@ -194,30 +194,30 @@ namespace Volt
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector2] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
-				gem::vec2 input;
-				VT_DESERIALIZE_PROPERTY(data, input, node, gem::vec2{ 0.f });
-				memcpy_s(&componentData[offset], sizeof(gem::vec2), &input, sizeof(gem::vec2));
+				glm::vec2 input;
+				VT_DESERIALIZE_PROPERTY(data, input, node, glm::vec2{ 0.f });
+				memcpy_s(&componentData[offset], sizeof(glm::vec2), &input, sizeof(glm::vec2));
 			};
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
-				gem::vec3 input;
-				VT_DESERIALIZE_PROPERTY(data, input, node, gem::vec3{ 0.f });
-				memcpy_s(&componentData[offset], sizeof(gem::vec3), &input, sizeof(gem::vec3));
+				glm::vec3 input;
+				VT_DESERIALIZE_PROPERTY(data, input, node, glm::vec3{ 0.f });
+				memcpy_s(&componentData[offset], sizeof(glm::vec3), &input, sizeof(glm::vec3));
 			};
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
-				gem::vec4 input;
-				VT_DESERIALIZE_PROPERTY(data, input, node, gem::vec4{ 0.f });
-				memcpy_s(&componentData[offset], sizeof(gem::vec4), &input, sizeof(gem::vec4));
+				glm::vec4 input;
+				VT_DESERIALIZE_PROPERTY(data, input, node, glm::vec4{ 0.f });
+				memcpy_s(&componentData[offset], sizeof(glm::vec4), &input, sizeof(glm::vec4));
 			};
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Quaternion] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
-				gem::quat input{};
-				VT_DESERIALIZE_PROPERTY(data, input, node, gem::quat{});
-				memcpy_s(&componentData[offset], sizeof(gem::quat), &input, sizeof(gem::quat));
+				glm::quat input{};
+				VT_DESERIALIZE_PROPERTY(data, input, node, glm::quat{});
+				memcpy_s(&componentData[offset], sizeof(glm::quat), &input, sizeof(glm::quat));
 			};
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::String] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
@@ -251,16 +251,16 @@ namespace Volt
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Color3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
-				gem::vec3 input;
-				VT_DESERIALIZE_PROPERTY(data, input, node, gem::vec3{ 0.f });
-				memcpy_s(&componentData[offset], sizeof(gem::vec3), &input, sizeof(gem::vec3));
+				glm::vec3 input;
+				VT_DESERIALIZE_PROPERTY(data, input, node, glm::vec3{ 0.f });
+				memcpy_s(&componentData[offset], sizeof(glm::vec3), &input, sizeof(glm::vec3));
 			};
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Color4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
-				gem::vec4 input;
-				VT_DESERIALIZE_PROPERTY(data, input, node, gem::vec4{ 0.f });
-				memcpy_s(&componentData[offset], sizeof(gem::vec4), &input, sizeof(gem::vec4));
+				glm::vec4 input;
+				VT_DESERIALIZE_PROPERTY(data, input, node, glm::vec4{ 0.f });
+				memcpy_s(&componentData[offset], sizeof(glm::vec4), &input, sizeof(glm::vec4));
 			};
 
 			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Folder] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
@@ -316,16 +316,16 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::UChar: DeserializeVector<uint8_t>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::Float: DeserializeVector<float>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::Double: DeserializeVector<double>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Vector2: DeserializeVector<gem::vec2>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Vector3: DeserializeVector<gem::vec3>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Vector4: DeserializeVector<gem::vec4>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Quaternion: DeserializeVector<gem::quat>(componentData, offset, node["data"], gem::quat{ 1.f, 0.f, 0.f, 0.f }); break;
+					case Wire::ComponentRegistry::PropertyType::Vector2: DeserializeVector<glm::vec2>(componentData, offset, node["data"], 0); break;
+					case Wire::ComponentRegistry::PropertyType::Vector3: DeserializeVector<glm::vec3>(componentData, offset, node["data"], 0); break;
+					case Wire::ComponentRegistry::PropertyType::Vector4: DeserializeVector<glm::vec4>(componentData, offset, node["data"], 0); break;
+					case Wire::ComponentRegistry::PropertyType::Quaternion: DeserializeVector<glm::quat>(componentData, offset, node["data"], glm::quat{ 1.f, 0.f, 0.f, 0.f }); break;
 					case Wire::ComponentRegistry::PropertyType::String: DeserializeVector<std::string>(componentData, offset, node["data"], "Null"); break;
 					case Wire::ComponentRegistry::PropertyType::Int64: DeserializeVector<int64_t>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::UInt64: DeserializeVector<uint64_t>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: DeserializeVector<AssetHandle>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Color3: DeserializeVector<gem::vec3>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Color4: DeserializeVector<gem::vec4>(componentData, offset, node["data"], 0); break;
+					case Wire::ComponentRegistry::PropertyType::Color3: DeserializeVector<glm::vec3>(componentData, offset, node["data"], 0); break;
+					case Wire::ComponentRegistry::PropertyType::Color4: DeserializeVector<glm::vec4>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::Folder: DeserializeVector<std::filesystem::path>(componentData, offset, node["data"], "Null"); break;
 					case Wire::ComponentRegistry::PropertyType::Path: DeserializeVector<std::filesystem::path>(componentData, offset, node["data"], "Null"); break;
 					case Wire::ComponentRegistry::PropertyType::GUID: DeserializeVector<WireGUID>(componentData, offset, node["data"], WireGUID::Null()); break;
@@ -390,27 +390,27 @@ namespace Volt
 				myPropertySerializer[Wire::ComponentRegistry::PropertyType::Double]((uint8_t*)&var, 0, Wire::ComponentRegistry::PropertyType::Double, out);
 			};
 
-			myTypeIndexSerializeMap[GetTypeIndex<gem::vec2>()] = [](const std::any& data, YAML::Emitter& out)
+			myTypeIndexSerializeMap[GetTypeIndex<glm::vec2>()] = [](const std::any& data, YAML::Emitter& out)
 			{
-				auto var = std::any_cast<gem::vec2>(data);
+				auto var = std::any_cast<glm::vec2>(data);
 				myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector2]((uint8_t*)&var, 0, Wire::ComponentRegistry::PropertyType::Vector2, out);
 			};
 
-			myTypeIndexSerializeMap[GetTypeIndex<gem::vec3>()] = [](const std::any& data, YAML::Emitter& out)
+			myTypeIndexSerializeMap[GetTypeIndex<glm::vec3>()] = [](const std::any& data, YAML::Emitter& out)
 			{
-				auto var = std::any_cast<gem::vec3>(data);
+				auto var = std::any_cast<glm::vec3>(data);
 				myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector3]((uint8_t*)&var, 0, Wire::ComponentRegistry::PropertyType::Vector3, out);
 			};
 
-			myTypeIndexSerializeMap[GetTypeIndex<gem::vec4>()] = [](const std::any& data, YAML::Emitter& out)
+			myTypeIndexSerializeMap[GetTypeIndex<glm::vec4>()] = [](const std::any& data, YAML::Emitter& out)
 			{
-				auto var = std::any_cast<gem::vec4>(data);
+				auto var = std::any_cast<glm::vec4>(data);
 				myPropertySerializer[Wire::ComponentRegistry::PropertyType::Vector4]((uint8_t*)&var, 0, Wire::ComponentRegistry::PropertyType::Vector4, out);
 			};
 
-			myTypeIndexSerializeMap[GetTypeIndex<gem::quat>()] = [](const std::any& data, YAML::Emitter& out)
+			myTypeIndexSerializeMap[GetTypeIndex<glm::quat>()] = [](const std::any& data, YAML::Emitter& out)
 			{
-				auto var = std::any_cast<gem::quat>(data);
+				auto var = std::any_cast<glm::quat>(data);
 				myPropertySerializer[Wire::ComponentRegistry::PropertyType::Quaternion]((uint8_t*)&var, 0, Wire::ComponentRegistry::PropertyType::Quaternion, out);
 			};
 
@@ -514,28 +514,28 @@ namespace Volt
 				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Double]((uint8_t*)&std::any_cast<double&>(data), 0, Wire::ComponentRegistry::PropertyType::Double, node);
 			};
 
-			myTypeIndexDeserializeMap[GetTypeIndex<gem::vec2>()] = [](std::any& data, const YAML::Node& node)
+			myTypeIndexDeserializeMap[GetTypeIndex<glm::vec2>()] = [](std::any& data, const YAML::Node& node)
 			{
-				data = gem::vec2{ 0.f };
-				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector2]((uint8_t*)&std::any_cast<gem::vec2&>(data), 0, Wire::ComponentRegistry::PropertyType::Vector2, node);
+				data = glm::vec2{ 0.f };
+				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector2]((uint8_t*)&std::any_cast<glm::vec2&>(data), 0, Wire::ComponentRegistry::PropertyType::Vector2, node);
 			};
 
-			myTypeIndexDeserializeMap[GetTypeIndex<gem::vec3>()] = [](std::any& data, const YAML::Node& node)
+			myTypeIndexDeserializeMap[GetTypeIndex<glm::vec3>()] = [](std::any& data, const YAML::Node& node)
 			{
-				data = gem::vec3{ 0.f };
-				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector3]((uint8_t*)&std::any_cast<gem::vec3&>(data), 0, Wire::ComponentRegistry::PropertyType::Vector3, node);
+				data = glm::vec3{ 0.f };
+				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector3]((uint8_t*)&std::any_cast<glm::vec3&>(data), 0, Wire::ComponentRegistry::PropertyType::Vector3, node);
 			};
 
-			myTypeIndexDeserializeMap[GetTypeIndex<gem::vec4>()] = [](std::any& data, const YAML::Node& node)
+			myTypeIndexDeserializeMap[GetTypeIndex<glm::vec4>()] = [](std::any& data, const YAML::Node& node)
 			{
-				data = gem::vec4{ 0.f };
-				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector4]((uint8_t*)&std::any_cast<gem::vec4&>(data), 0, Wire::ComponentRegistry::PropertyType::Vector4, node);
+				data = glm::vec4{ 0.f };
+				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Vector4]((uint8_t*)&std::any_cast<glm::vec4&>(data), 0, Wire::ComponentRegistry::PropertyType::Vector4, node);
 			};
 
-			myTypeIndexDeserializeMap[GetTypeIndex<gem::quat>()] = [](std::any& data, const YAML::Node& node)
+			myTypeIndexDeserializeMap[GetTypeIndex<glm::quat>()] = [](std::any& data, const YAML::Node& node)
 			{
-				data = gem::quat{ 1.f, 0.f, 0.f, 0.f };
-				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Quaternion]((uint8_t*)&std::any_cast<gem::quat&>(data), 0, Wire::ComponentRegistry::PropertyType::Quaternion, node);
+				data = glm::quat{ 1.f, 0.f, 0.f, 0.f };
+				myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Quaternion]((uint8_t*)&std::any_cast<glm::quat&>(data), 0, Wire::ComponentRegistry::PropertyType::Quaternion, node);
 			};
 
 			myTypeIndexDeserializeMap[GetTypeIndex<std::string>()] = [](std::any& data, const YAML::Node& node)
@@ -895,16 +895,16 @@ namespace Volt
 			case Wire::ComponentRegistry::PropertyType::UChar: return ((*(uint8_t*)&buf1[prop.offset]) == (*(uint8_t*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Float: return ((*(float*)&buf1[prop.offset]) == (*(float*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Double: return ((*(double*)&buf1[prop.offset]) == (*(double*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Vector2: return ((*(gem::vec2*)&buf1[prop.offset]) == (*(gem::vec2*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Vector3: return ((*(gem::vec3*)&buf1[prop.offset]) == (*(gem::vec3*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Vector4: return ((*(gem::vec4*)&buf1[prop.offset]) == (*(gem::vec4*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Quaternion: return ((*(gem::quat*)&buf1[prop.offset]) == (*(gem::quat*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Vector2: return ((*(glm::vec2*)&buf1[prop.offset]) == (*(glm::vec2*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Vector3: return ((*(glm::vec3*)&buf1[prop.offset]) == (*(glm::vec3*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Vector4: return ((*(glm::vec4*)&buf1[prop.offset]) == (*(glm::vec4*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Quaternion: return ((*(glm::quat*)&buf1[prop.offset]) == (*(glm::quat*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::String: return ((*(std::string*)&buf1[prop.offset]) == (*(std::string*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Int64: return ((*(int64_t*)&buf1[prop.offset]) == (*(int64_t*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::UInt64: return ((*(uint64_t*)&buf1[prop.offset]) == (*(uint64_t*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::AssetHandle: return ((*(AssetHandle*)&buf1[prop.offset]) == (*(AssetHandle*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Color3: return ((*(gem::vec3*)&buf1[prop.offset]) == (*(gem::vec3*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Color4: return ((*(gem::vec4*)&buf1[prop.offset]) == (*(gem::vec4*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Color3: return ((*(glm::vec3*)&buf1[prop.offset]) == (*(glm::vec3*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Color4: return ((*(glm::vec4*)&buf1[prop.offset]) == (*(glm::vec4*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Folder: return ((*(std::filesystem::path*)&buf1[prop.offset]) == (*(std::filesystem::path*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Path: return ((*(std::filesystem::path*)&buf1[prop.offset]) == (*(std::filesystem::path*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::EntityId: return ((*(Wire::EntityId*)&buf1[prop.offset]) == (*(Wire::EntityId*)&buf2[prop.offset])) ? true : false;
@@ -923,17 +923,17 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::UChar: return ((*(std::vector<uint8_t>*) & buf1[prop.offset]) == (*(std::vector<uint8_t>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Float: return ((*(std::vector<float>*) & buf1[prop.offset]) == (*(std::vector<float>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Double: return ((*(std::vector<double>*) & buf1[prop.offset]) == (*(std::vector<double>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Vector2: return ((*(std::vector<gem::vec2>*) & buf1[prop.offset]) == (*(std::vector<gem::vec2>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Vector3: return ((*(std::vector<gem::vec3>*) & buf1[prop.offset]) == (*(std::vector<gem::vec3>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Vector4: return ((*(std::vector<gem::vec4>*) & buf1[prop.offset]) == (*(std::vector<gem::vec4>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Quaternion: return ((*(std::vector<gem::quat>*) & buf1[prop.offset]) == (*(std::vector<gem::quat>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Vector2: return ((*(std::vector<glm::vec2>*) & buf1[prop.offset]) == (*(std::vector<glm::vec2>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Vector3: return ((*(std::vector<glm::vec3>*) & buf1[prop.offset]) == (*(std::vector<glm::vec3>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Vector4: return ((*(std::vector<glm::vec4>*) & buf1[prop.offset]) == (*(std::vector<glm::vec4>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Quaternion: return ((*(std::vector<glm::quat>*) & buf1[prop.offset]) == (*(std::vector<glm::quat>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::String: return ((*(std::vector<std::string>*) & buf1[prop.offset]) == (*(std::vector<std::string>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Int64: return ((*(std::vector<int64_t>*) & buf1[prop.offset]) == (*(std::vector<int64_t>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::UInt64: return ((*(std::vector<uint64_t>*) & buf1[prop.offset]) == (*(std::vector<uint64_t>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: return ((*(std::vector<AssetHandle>*) & buf1[prop.offset]) == (*(std::vector<AssetHandle>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Color4: return ((*(std::vector<gem::vec2>*) & buf1[prop.offset]) == (*(std::vector<gem::vec2>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Color3: return ((*(std::vector<gem::vec3>*) & buf1[prop.offset]) == (*(std::vector<gem::vec3>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Folder: return ((*(std::vector<gem::vec4>*) & buf1[prop.offset]) == (*(std::vector<gem::vec4>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Color4: return ((*(std::vector<glm::vec2>*) & buf1[prop.offset]) == (*(std::vector<glm::vec2>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Color3: return ((*(std::vector<glm::vec3>*) & buf1[prop.offset]) == (*(std::vector<glm::vec3>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Folder: return ((*(std::vector<glm::vec4>*) & buf1[prop.offset]) == (*(std::vector<glm::vec4>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::EntityId: return ((*(std::vector<Wire::EntityId>*) & buf1[prop.offset]) == (*(std::vector<Wire::EntityId>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::GUID: return ((*(std::vector<WireGUID>*) & buf1[prop.offset]) == (*(std::vector<WireGUID>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Enum: return ((*(uint32_t*)&buf1[prop.offset]) == (*(uint32_t*)&buf2[prop.offset])) ? true : false;
@@ -1106,15 +1106,15 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::Float: savedFieldMap.at(propName)->SetValue(*(float*)&propData[0], sizeof(float), fieldType); break;
 					case Wire::ComponentRegistry::PropertyType::Double: savedFieldMap.at(propName)->SetValue(*(double*)&propData[0], sizeof(double), fieldType); break;
 
-					case Wire::ComponentRegistry::PropertyType::Vector2: savedFieldMap.at(propName)->SetValue(*(gem::vec2*)&propData[0], sizeof(gem::vec2), fieldType); break;
-					case Wire::ComponentRegistry::PropertyType::Vector3: savedFieldMap.at(propName)->SetValue(*(gem::vec3*)&propData[0], sizeof(gem::vec3), fieldType); break;
-					case Wire::ComponentRegistry::PropertyType::Vector4: savedFieldMap.at(propName)->SetValue(*(gem::vec4*)&propData[0], sizeof(gem::vec4), fieldType); break;
-					case Wire::ComponentRegistry::PropertyType::Quaternion: savedFieldMap.at(propName)->SetValue(*(gem::vec4*)&propData[0], sizeof(gem::vec4), fieldType); break;
+					case Wire::ComponentRegistry::PropertyType::Vector2: savedFieldMap.at(propName)->SetValue(*(glm::vec2*)&propData[0], sizeof(glm::vec2), fieldType); break;
+					case Wire::ComponentRegistry::PropertyType::Vector3: savedFieldMap.at(propName)->SetValue(*(glm::vec3*)&propData[0], sizeof(glm::vec3), fieldType); break;
+					case Wire::ComponentRegistry::PropertyType::Vector4: savedFieldMap.at(propName)->SetValue(*(glm::vec4*)&propData[0], sizeof(glm::vec4), fieldType); break;
+					case Wire::ComponentRegistry::PropertyType::Quaternion: savedFieldMap.at(propName)->SetValue(*(glm::vec4*)&propData[0], sizeof(glm::vec4), fieldType); break;
 					case Wire::ComponentRegistry::PropertyType::EntityId: savedFieldMap.at(propName)->SetValue(*(Wire::EntityId*)&propData[0], sizeof(Wire::EntityId), fieldType); break;
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: savedFieldMap.at(propName)->SetValue(*(AssetHandle*)&propData[0], sizeof(AssetHandle), fieldType); break;
 
-					case Wire::ComponentRegistry::PropertyType::Color3: savedFieldMap.at(propName)->SetValue(*(gem::vec3*)&propData[0], sizeof(gem::vec3), fieldType); break;
-					case Wire::ComponentRegistry::PropertyType::Color4: savedFieldMap.at(propName)->SetValue(*(gem::vec4*)&propData[0], sizeof(gem::vec4), fieldType); break;
+					case Wire::ComponentRegistry::PropertyType::Color3: savedFieldMap.at(propName)->SetValue(*(glm::vec3*)&propData[0], sizeof(glm::vec3), fieldType); break;
+					case Wire::ComponentRegistry::PropertyType::Color4: savedFieldMap.at(propName)->SetValue(*(glm::vec4*)&propData[0], sizeof(glm::vec4), fieldType); break;
 					case Wire::ComponentRegistry::PropertyType::Enum: savedFieldMap.at(propName)->SetValue(*(uint32_t*)&propData[0], sizeof(uint32_t), fieldType); break;
 				}
 			}

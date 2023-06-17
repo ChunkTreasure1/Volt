@@ -17,7 +17,7 @@ namespace Volt
 		AnimationController(Ref<Volt::AnimationGraphAsset> graph);
 		AnimationController(Ref<Volt::AnimationGraphAsset> graph, Entity entity);
 
-		const std::vector<gem::mat4> Sample();
+		const std::vector<glm::mat4> Sample();
 
 		inline Ref<Volt::AnimationGraphAsset> GetGraph() const { return myGraph; }
 		inline const auto& GetRootMotion() const { return myRootMotion; }

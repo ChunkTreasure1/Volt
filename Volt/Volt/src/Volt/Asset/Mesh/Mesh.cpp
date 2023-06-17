@@ -9,27 +9,29 @@
 #include "Volt/Rendering/Buffer/VertexBuffer.h"
 #include "Volt/Rendering/Buffer/IndexBuffer.h"
 
+#include "Volt/Math/Math.h"
+
 #include <meshoptimizer/meshoptimizer.h>
 
 namespace Volt
 {
 	namespace Utility
 	{
-		static gem::vec2 OctNormalWrap(gem::vec2 v)
+		static glm::vec2 OctNormalWrap(glm::vec2 v)
 		{
-			gem::vec2 wrap;
-			wrap.x = (1.0f - gem::abs(v.y)) * (v.x >= 0.0f ? 1.0f : -1.0f);
-			wrap.y = (1.0f - gem::abs(v.x)) * (v.y >= 0.0f ? 1.0f : -1.0f);
+			glm::vec2 wrap;
+			wrap.x = (1.0f - glm::abs(v.y)) * (v.x >= 0.0f ? 1.0f : -1.0f);
+			wrap.y = (1.0f - glm::abs(v.x)) * (v.y >= 0.0f ? 1.0f : -1.0f);
 			return wrap;
 		}
 
-		static gem::vec2 OctNormalEncode(gem::vec3 n)
+		static glm::vec2 OctNormalEncode(glm::vec3 n)
 		{
-			n /= (gem::abs(n.x) + gem::abs(n.y) + gem::abs(n.z));
+			n /= (glm::abs(n.x) + glm::abs(n.y) + glm::abs(n.z));
 
-			gem::vec2 wrapped = OctNormalWrap(n);
+			glm::vec2 wrapped = OctNormalWrap(n);
 
-			gem::vec2 result;
+			glm::vec2 result;
 			result.x = n.z >= 0.0f ? n.x : wrapped.x;
 			result.y = n.z >= 0.0f ? n.y : wrapped.y;
 
@@ -40,10 +42,10 @@ namespace Volt
 		}
 
 		// From https://www.jeremyong.com/graphics/2023/01/09/tangent-spaces-and-diamond-encoding/
-		static float DiamondEncode(const gem::vec2& p)
+		static float DiamondEncode(const glm::vec2& p)
 		{
 			// Project to the unit diamond, then to the x-axis.
-			float x = p.x / (gem::abs(p.x) + gem::abs(p.y));
+			float x = p.x / (glm::abs(p.x) + glm::abs(p.y));
 
 			// Contract the x coordinate by a factor of 4 to represent all 4 quadrants in
 			// the unit range and remap
@@ -62,27 +64,27 @@ namespace Volt
 
 		// Given a normal and tangent vector, encode the tangent as a single float that can be
 		// subsequently quantized.
-		float EncodeTangent(const gem::vec3& normal, const gem::vec3& tangent)
+		float EncodeTangent(const glm::vec3& normal, const glm::vec3& tangent)
 		{
 			// First, find a canonical direction in the tangent plane
-			gem::vec3 t1;
+			glm::vec3 t1;
 			if (abs(normal.y) > abs(normal.z))
 			{
 				// Pick a canonical direction orthogonal to n with z = 0
-				t1 = gem::vec3(normal.y, -normal.x, 0.f);
+				t1 = glm::vec3(normal.y, -normal.x, 0.f);
 			}
 			else
 			{
 				// Pick a canonical direction orthogonal to n with y = 0
-				t1 = gem::vec3(normal.z, 0.f, -normal.x);
+				t1 = glm::vec3(normal.z, 0.f, -normal.x);
 			}
 			t1 = normalize(t1);
 
 			// Construct t2 such that t1 and t2 span the plane
-			gem::vec3 t2 = cross(t1, normal);
+			glm::vec3 t2 = cross(t1, normal);
 
 			// Decompose the tangent into two coordinates in the canonical basis
-			gem::vec2 packed_tangent = gem::vec2(dot(tangent, t1), dot(tangent, t2));
+			glm::vec2 packed_tangent = glm::vec2(dot(tangent, t1), dot(tangent, t2));
 
 			// Apply our diamond encoding to our two coordinates
 			return DiamondEncode(packed_tangent);
@@ -91,21 +93,21 @@ namespace Volt
 
 	inline static BoundingSphere GetBoundingSphereFromVertices(const std::vector<Vertex>& vertices)
 	{
-		gem::vec3 minVertex(std::numeric_limits<float>::max());
-		gem::vec3 maxVertex(-std::numeric_limits<float>::max());
+		glm::vec3 minVertex(std::numeric_limits<float>::max());
+		glm::vec3 maxVertex(-std::numeric_limits<float>::max());
 
 		for (const auto& vertex : vertices)
 		{
-			minVertex = gem::min(minVertex, vertex.position);
-			maxVertex = gem::max(maxVertex, vertex.position);
+			minVertex = glm::min(minVertex, vertex.position);
+			maxVertex = glm::max(maxVertex, vertex.position);
 		}
 
-		const gem::vec3 center = (minVertex + maxVertex) * 0.5f;
+		const glm::vec3 center = (minVertex + maxVertex) * 0.5f;
 
 		float radius = 0.0f;
 		for (const auto& vertex : vertices)
 		{
-			const float distanceSquared = gem::length2(vertex.position - center);
+			const float distanceSquared = glm::length2(vertex.position - center);
 			if (distanceSquared > radius)
 			{
 				radius = distanceSquared;
@@ -234,27 +236,27 @@ namespace Volt
 
 		for (auto& subMesh : mySubMeshes)
 		{
-			gem::vec3 t, r, s;
-			gem::decompose(subMesh.transform, t, r, s);
+			glm::vec3 t, r, s;
+			Math::Decompose(subMesh.transform, t, r, s);
 
 			myAverageScale += s;
 		}
 
 		myAverageScale /= (float)mySubMeshes.size();
 
-		gem::vec3 min = { FLT_MAX, FLT_MAX, FLT_MAX };
-		gem::vec3 max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+		glm::vec3 min = { FLT_MAX, FLT_MAX, FLT_MAX };
+		glm::vec3 max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
 		for (const auto& vertex : myVertices)
 		{
 			const auto scaledPos = vertex.position * myAverageScale;
 
-			if (scaledPos < min)
+			if (glm::all(glm::lessThan(scaledPos, min)))
 			{
 				min = scaledPos;
 			}
 
-			if (scaledPos > max)
+			if (glm::all(glm::greaterThan(scaledPos, max)))
 			{
 				max = scaledPos * myAverageScale;
 			}
@@ -310,8 +312,8 @@ namespace Volt
 
 			// Tex coords
 			{
-				encodedVertex.texCoords.x = static_cast<half_float::half>(vertex.texCoords.x);
-				encodedVertex.texCoords.y = static_cast<half_float::half>(vertex.texCoords.y);
+				encodedVertex.texCoords[0] = static_cast<half_float::half>(vertex.texCoords.x);
+				encodedVertex.texCoords[1] = static_cast<half_float::half>(vertex.texCoords.y);
 			}
 
 			// Influences
@@ -324,10 +326,10 @@ namespace Volt
 
 			// Weights
 			{
-				encodedVertex.weights.x = static_cast<half_float::half>(vertex.weights.x);
-				encodedVertex.weights.y = static_cast<half_float::half>(vertex.weights.y);
-				encodedVertex.weights.z = static_cast<half_float::half>(vertex.weights.z);
-				encodedVertex.weights.w = static_cast<half_float::half>(vertex.weights.w);
+				encodedVertex.weights[0] = static_cast<half_float::half>(vertex.weights.x);
+				encodedVertex.weights[1] = static_cast<half_float::half>(vertex.weights.y);
+				encodedVertex.weights[2] = static_cast<half_float::half>(vertex.weights.z);
+				encodedVertex.weights[3] = static_cast<half_float::half>(vertex.weights.w);
 			}
 		}
 

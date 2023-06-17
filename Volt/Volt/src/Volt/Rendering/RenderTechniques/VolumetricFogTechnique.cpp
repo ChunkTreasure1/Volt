@@ -17,7 +17,7 @@ namespace Volt
 		FrameGraphResourceHandle injectionImage;
 	};
 
-	VolumetricFogTechnique::VolumetricFogTechnique(const gem::vec2ui& renderSize, const GlobalDescriptorMap& descriptorMap, const VolumetricFogSettings& settings, bool dirLightShadows)
+	VolumetricFogTechnique::VolumetricFogTechnique(const glm::uvec2& renderSize, const GlobalDescriptorMap& descriptorMap, const VolumetricFogSettings& settings, bool dirLightShadows)
 		: myRenderSize(renderSize), myGlobalDescriptorMap(descriptorMap), mySettings(settings), myDirLightShadows(dirLightShadows)
 	{
 	}
@@ -61,14 +61,14 @@ namespace Volt
 				float density = 0.04f;
 				float globalDensity = 0.f;
 				float padding;
-				gem::vec4 sizeMultiplier = 1.f;
-				gem::vec4 globalColor = { 1.f };
+				glm::vec4 sizeMultiplier = 1.f;
+				glm::vec4 globalColor = { 1.f };
 			} pushConstants;
 
 			pushConstants.anisotropy = mySettings.anisotropy;
 			pushConstants.density = mySettings.density;
 			pushConstants.globalDensity = mySettings.globalDensity;
-			pushConstants.globalColor = mySettings.globalColor;
+			pushConstants.globalColor = glm::vec4{ mySettings.globalColor, 1.f };
 			pushConstants.sizeMultiplier.x = static_cast<float>(myRenderSize.x) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_WIDTH);
 			pushConstants.sizeMultiplier.y = static_cast<float>(myRenderSize.y) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_HEIGHT);
 

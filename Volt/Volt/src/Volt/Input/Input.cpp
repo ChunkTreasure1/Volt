@@ -276,12 +276,12 @@ namespace Volt
 		myDisableInput = state;
 	}
 
-	const gem::vec2& Input::GetViewportMousePosition()
+	const glm::vec2& Input::GetViewportMousePosition()
 	{
 		return myViewportMousePos;
 	}
 
-	void Input::SetViewportMousePosition(const gem::vec2& viewportPos)
+	void Input::SetViewportMousePosition(const glm::vec2& viewportPos)
 	{
 		myViewportMousePos = viewportPos;
 	}

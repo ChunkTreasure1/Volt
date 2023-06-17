@@ -17,7 +17,7 @@ namespace Volt
 	static CharacterControllerContactListener s_contactListener;
 
 	PhysicsControllerActor::PhysicsControllerActor(Entity entity)
-		: PhysicsActorBase(entity), myGravity(gem::length(Physics::GetSettings().gravity))
+		: PhysicsActorBase(entity), myGravity(glm::length(Physics::GetSettings().gravity))
 	{
 		myControllerData = myEntity.GetComponent<CharacterControllerComponent>();
 	}
@@ -54,7 +54,7 @@ namespace Volt
 		filters.mFilterCallback = &s_contactListener;
 		filters.mFilterData = &myFilterData;
 
-		gem::vec3 movement = myMovement - gem::vec3{ 0.f, 1.f, 0.f } * myDownSpeed * deltaTime;
+		glm::vec3 movement = myMovement - glm::vec3{ 0.f, 1.f, 0.f } * myDownSpeed * deltaTime;
 		myCurrentCollisionFlags = myController->move(PhysXUtilities::ToPhysXVector(movement), 0.f, deltaTime, filters);
 
 		if (IsGrounded())
@@ -96,7 +96,7 @@ namespace Volt
 		GetCapsuleController()->setRadius(radius);
 	}
 
-	void PhysicsControllerActor::Move(const gem::vec3& velocity)
+	void PhysicsControllerActor::Move(const glm::vec3& velocity)
 	{
 		myMovement += velocity;
 	}
@@ -106,7 +106,7 @@ namespace Volt
 		myDownSpeed = -1.f * jumpPower;
 	}
 
-	void PhysicsControllerActor::SetPosition(const gem::vec3& position)
+	void PhysicsControllerActor::SetPosition(const glm::vec3& position)
 	{
 		if (!myController)
 		{
@@ -116,7 +116,7 @@ namespace Volt
 		myController->setPosition(PhysXUtilities::ToPhysXVectorExtended(position));
 	}
 
-	void PhysicsControllerActor::SetFootPosition(const gem::vec3& position)
+	void PhysicsControllerActor::SetFootPosition(const glm::vec3& position)
 	{
 		if (!myController)
 		{
@@ -126,7 +126,7 @@ namespace Volt
 		myController->setFootPosition(PhysXUtilities::ToPhysXVectorExtended(position));
 	}
 
-	void PhysicsControllerActor::SetAngularVelocity(const gem::vec3& velocity)
+	void PhysicsControllerActor::SetAngularVelocity(const glm::vec3& velocity)
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
 		VT_CORE_ASSERT(actor, "Actor is null!");
@@ -134,7 +134,7 @@ namespace Volt
 		actor->setAngularVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
 
-	const gem::vec3 PhysicsControllerActor::GetAngularVelocity() const
+	const glm::vec3 PhysicsControllerActor::GetAngularVelocity() const
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
 		VT_CORE_ASSERT(actor, "Actor is null!");
@@ -142,7 +142,7 @@ namespace Volt
 		return PhysXUtilities::FromPhysXVector(actor->getAngularVelocity());
 	}
 
-	void PhysicsControllerActor::SetLinearVelocity(const gem::vec3& velocity)
+	void PhysicsControllerActor::SetLinearVelocity(const glm::vec3& velocity)
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
 		VT_CORE_ASSERT(actor, "Actor is null!");
@@ -154,7 +154,7 @@ namespace Volt
 		myMovement.z = velocity.z;
 	}
 
-	const gem::vec3 PhysicsControllerActor::GetLinearVelocity() const
+	const glm::vec3 PhysicsControllerActor::GetLinearVelocity() const
 	{
 		physx::PxRigidDynamic* actor = myController->getActor()->is<physx::PxRigidDynamic>();
 		VT_CORE_ASSERT(actor, "Actor is null!");
@@ -172,7 +172,7 @@ namespace Volt
 		return myController != nullptr;
 	}
 
-	const gem::vec3 PhysicsControllerActor::GetPosition() const
+	const glm::vec3 PhysicsControllerActor::GetPosition() const
 	{
 		if (!myController)
 		{
@@ -182,7 +182,7 @@ namespace Volt
 		return PhysXUtilities::FromPhysXVector(myController->getPosition());
 	}
 
-	const gem::vec3 PhysicsControllerActor::GetFootPosition() const
+	const glm::vec3 PhysicsControllerActor::GetFootPosition() const
 	{
 		if (!myController)
 		{
@@ -210,7 +210,7 @@ namespace Volt
 		myLayerId = layerId;
 	}
 
-	void PhysicsControllerActor::SetOffset(const gem::vec3& offset)
+	void PhysicsControllerActor::SetOffset(const glm::vec3& offset)
 	{
 		myOffset = offset;
 	}
@@ -225,11 +225,11 @@ namespace Volt
 		if (myEntity.HasComponent<CapsuleColliderComponent>())
 		{
 			auto& capsuleCollider = myEntity.GetComponent<CapsuleColliderComponent>();
-			const float radiusScale = gem::max(myEntity.GetScale().x, myEntity.GetScale().z);
+			const float radiusScale = glm::max(myEntity.GetScale().x, myEntity.GetScale().z);
 
 			physx::PxCapsuleControllerDesc desc{};
 			desc.upDirection = { 0.f, 1.f, 0.f };
-			desc.slopeLimit = std::max(0.f, gem::cos(gem::radians(myControllerData.slopeLimit)));
+			desc.slopeLimit = std::max(0.f, glm::cos(glm::radians(myControllerData.slopeLimit)));
 			desc.invisibleWallHeight = myControllerData.invisibleWallHeight;
 			desc.maxJumpHeight = myControllerData.maxJumpHeight;
 			desc.contactOffset = myControllerData.contactOffset;

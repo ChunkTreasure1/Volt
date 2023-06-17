@@ -8,7 +8,7 @@
 #include "Volt/Asset/Mesh/Mesh.h"
 
 #include <Wire/Serialization.h>
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <Volt/Events/ApplicationEvent.h>
 
@@ -55,7 +55,7 @@ namespace Volt
 			Amp::WwiseAudioManager::CreateAudioObject(myID, entity.GetTag().c_str());
 		}
 
-		bool PlayOneshotEvent(const char* aEventName, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+		bool PlayOneshotEvent(const char* aEventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 		{
 			return Amp::WwiseAudioManager::PlayOneShotEvent(aEventName, aPosition, aForward, aUp);
 		}

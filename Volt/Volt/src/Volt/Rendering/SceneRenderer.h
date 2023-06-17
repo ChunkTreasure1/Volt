@@ -44,7 +44,7 @@ namespace Volt
 	struct SceneRendererSpecification
 	{
 		std::string debugName;
-		gem::vec2ui initialResolution = { 1280, 720 };
+		glm::uvec2 initialResolution = { 1280, 720 };
 		Weak<Scene> scene;
 
 		bool enablePostProcess = true;
@@ -153,18 +153,18 @@ namespace Volt
 
 		void Resize(uint32_t width, uint32_t height);
 
-		void SubmitOutlineMesh(Ref<Mesh> mesh, const gem::mat4& transform);
-		void SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const gem::mat4& transform);
+		void SubmitOutlineMesh(Ref<Mesh> mesh, const glm::mat4& transform);
+		void SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform);
 		void ClearOutlineCommands();
 
-		void SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id);
-		void SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, const std::vector<gem::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id);
+		void SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id);
+		void SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id);
 
 		Ref<Image2D> GetFinalImage();
 		Ref<Image2D> GetIDImage();
 
 		inline SceneRendererSettings& GetSettings() { return mySettings; }
-		inline const gem::vec2ui& GetOriginalSize() const { return myOriginalSize; }
+		inline const glm::uvec2& GetOriginalSize() const { return myOriginalSize; }
 
 		void ApplySettings();
 		void UpdateSettings(const SceneRendererSettings& settings);
@@ -211,10 +211,10 @@ namespace Volt
 			MaterialFlag materialFlags = MaterialFlag::All;
 			DrawCullMode cullMode = DrawCullMode::CameraFrustum;
 
-			gem::vec3 aabbMin = 0.f;
-			gem::vec3 aabbMax = 0.f;
+			glm::vec3 aabbMin = 0.f;
+			glm::vec3 aabbMax = 0.f;
 
-			gem::mat4 projection = 1.f;
+			glm::mat4 projection = 1.f;
 		};
 
 		struct LineData
@@ -265,7 +265,7 @@ namespace Volt
 			Ref<IndexBuffer> indexBuffer;
 			Ref<RenderPipeline> renderPipeline;
 
-			gem::vec4 vertices[4];
+			glm::vec4 vertices[4];
 			uint32_t indexCount = 0;
 
 			TextVertex* vertexBufferBase = nullptr;
@@ -383,9 +383,9 @@ namespace Volt
 
 		bool myShouldHideMeshes = false;
 		bool myShouldResize = false;
-		gem::vec2ui	myRenderSize = { 1 };
-		gem::vec2ui	myScaledSize = { 1 };
-		gem::vec2ui myOriginalSize = { 1 };
+		glm::uvec2	myRenderSize = { 1 };
+		glm::uvec2	myScaledSize = { 1 };
+		glm::uvec2 myOriginalSize = { 1 };
 
 		RenderMode myCurrentRenderMode = RenderMode::Default;
 
@@ -473,7 +473,7 @@ namespace Volt
 		Ref<Material> myOutlineJumpFloodInitMaterial;
 		Ref<Material> myOutlineJumpFloodPassMaterial;
 
-		gem::vec2ui myLightCullingWorkGroups = 0;
+		glm::uvec2 myLightCullingWorkGroups = 0;
 		std::vector<bool> myResizeLightCullingBuffers;
 
 		///// Draw calls /////
@@ -495,9 +495,9 @@ namespace Volt
 		RenderPipelineStatistics myRenderPipelineStatistics;
 
 		uint64_t myFrameIndex = 0;
-		gem::mat4 myPreviousViewProjection = 1.f;
-		gem::vec2 myPreviousJitter = 0.f;
-		gem::vec2 myLastJitter = 0.f;
+		glm::mat4 myPreviousViewProjection = 1.f;
+		glm::vec2 myPreviousJitter = 0.f;
+		glm::vec2 myLastJitter = 0.f;
 
 		////// Threading //////
 		CommandBufferCache myCommandBufferCache;

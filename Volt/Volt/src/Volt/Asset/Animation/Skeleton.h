@@ -3,7 +3,7 @@
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/Animation/Animation.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -24,7 +24,7 @@ namespace Volt
 		}
 
 		inline const size_t GetJointCount() const { return myJoints.size(); }
-		inline const std::vector<gem::mat4>& GetInverseBindPose() const { return myInverseBindPose; }
+		inline const std::vector<glm::mat4>& GetInverseBindPose() const { return myInverseBindPose; }
 		inline const std::vector<Animation::TRS>& GetRestPose() const { return myRestPose; }
 		inline const std::vector<Joint>& GetJoints() const { return myJoints; }
 
@@ -42,7 +42,7 @@ namespace Volt
 
 		std::vector<Joint> myJoints;
 		std::vector<Animation::TRS> myRestPose;
-		std::vector<gem::mat4> myInverseBindPose;
+		std::vector<glm::mat4> myInverseBindPose;
 
 		std::unordered_map<std::string, size_t> myJointNameToIndex;
 

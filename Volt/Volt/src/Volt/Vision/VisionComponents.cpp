@@ -90,7 +90,7 @@ void Volt::VisionCameraComponent::Update(Entity& camEntity, float aDeltaTime)
 
 	auto& baseCamComp = camEntity.GetComponent<CameraComponent>();
 	
-	baseCamComp.fieldOfView = gem::lerp(baseCamComp.fieldOfView, myTargetFoV, 1.f - gem::pow(2.f, -10.f * aDeltaTime));
+	baseCamComp.fieldOfView = glm::mix(baseCamComp.fieldOfView, myTargetFoV, 1.f - glm::pow(2.f, -10.f * aDeltaTime));
 }
 
 void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDeltaTime)
@@ -101,8 +101,8 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 
 		if (followEnt)
 		{
-			gem::vec3 targetPos = followEnt.GetPosition() + offset;
-			const gem::vec3 camPos = camEntity.GetPosition();
+			glm::vec3 targetPos = followEnt.GetPosition() + offset;
+			const glm::vec3 camPos = camEntity.GetPosition();
 
 			if (xFollowLock) targetPos.x = camPos.x;
 			if (yFollowLock) targetPos.y = camPos.y;
@@ -110,7 +110,7 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 
 			if (damping > 0)
 			{
-				camEntity.SetPosition(gem::lerp(camPos, targetPos, 1 - gem::pow(2.f, -aDeltaTime * damping)));
+				camEntity.SetPosition(glm::mix(camPos, targetPos, 1 - glm::pow(2.f, -aDeltaTime * damping)));
 			}
 			else
 			{
@@ -125,8 +125,8 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 
 		if (lookAtEnt)
 		{
-			gem::vec3 lookAtPos = lookAtEnt.GetPosition();
-			camEntity.SetRotation(gem::quatLookAtLH(gem::normalize(lookAtPos - camEntity.GetPosition()), { 0,1,0 }));
+			glm::vec3 lookAtPos = lookAtEnt.GetPosition();
+			camEntity.SetRotation(glm::quatLookAtLH(glm::normalize(lookAtPos - camEntity.GetPosition()), { 0,1,0 }));
 		}
 	}
 }
@@ -137,7 +137,7 @@ void Volt::VisionCameraComponent::FPSController(Entity& camEntity, float aDeltaT
 
 	if (!target) { return; }
 
-	const gem::vec2 deltaPos = (myMousePos - myLastMousePos);
+	const glm::vec2 deltaPos = (myMousePos - myLastMousePos);
 
 	myLastMousePos = myMousePos;
 
@@ -145,20 +145,20 @@ void Volt::VisionCameraComponent::FPSController(Entity& camEntity, float aDeltaT
 	myYawDelta = yawSign * deltaPos.x * mouseSensitivity;
 	myPitchDelta = deltaPos.y * mouseSensitivity;
 
-	myRotation += gem::radians(gem::vec3{ myPitchDelta, myYawDelta, 0.f });
+	myRotation += glm::radians(glm::vec3{ myPitchDelta, myYawDelta, 0.f });
 
-	myRotation.x = gem::clamp(myRotation.x, -1.35f, 1.35f);
+	myRotation.x = glm::clamp(myRotation.x, -1.35f, 1.35f);
 
 	if (myIsLocked == false)
 	{
-		camEntity.SetLocalRotation(gem::quat(myRotation));
+		camEntity.SetLocalRotation(glm::quat(myRotation));
 	}
 }
 
 
 void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaTime)
 {
-	const gem::vec2 deltaPos = (myMousePos - myLastMousePos);
+	const glm::vec2 deltaPos = (myMousePos - myLastMousePos);
 
 	myLastMousePos = myMousePos;
 
@@ -166,9 +166,9 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 	myYawDelta = yawSign * deltaPos.x * mouseSensitivity;
 	myPitchDelta = deltaPos.y * mouseSensitivity;
 
-	myRotation += gem::radians(gem::vec3{ myPitchDelta, myYawDelta, 0.f });
+	myRotation += glm::radians(glm::vec3{ myPitchDelta, myYawDelta, 0.f });
 
-	myRotation.x = gem::clamp(myRotation.x, -1.35f, 1.35f);
+	myRotation.x = glm::clamp(myRotation.x, -1.35f, 1.35f);
 
 	Volt::Entity target = Volt::Entity{ followId, camEntity.GetScene() };
 
@@ -176,12 +176,12 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 	{
 		if (myIsLocked == false)
 		{
-			camEntity.SetLocalRotation(gem::quat(myRotation));
+			camEntity.SetLocalRotation(glm::quat(myRotation));
 		}
-		gem::vec3 focalTargetPoint = target.GetPosition() + camEntity.GetRight() * offset.x + target.GetUp() * offset.y + camEntity.GetForward() * offset.z;
+		glm::vec3 focalTargetPoint = target.GetPosition() + camEntity.GetRight() * offset.x + target.GetUp() * offset.y + camEntity.GetForward() * offset.z;
 
-		const gem::vec3 dir = camEntity.GetPosition() - focalTargetPoint;
-		gem::vec3 position = { 0 };
+		const glm::vec3 dir = camEntity.GetPosition() - focalTargetPoint;
+		glm::vec3 position = { 0 };
 
 		Volt::Entity rayFocalPointEnt = Volt::Entity{ collisionRayPoint, camEntity.GetScene() };
 
@@ -190,16 +190,16 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 			//Temp Vars
 			Volt::RaycastHit hit;
 
-			gem::vec3 rayDir;
-			gem::vec3 rayFromPos;
-			gem::vec3 rayTargetPoint = focalTargetPoint;
+			glm::vec3 rayDir;
+			glm::vec3 rayFromPos;
+			glm::vec3 rayTargetPoint = focalTargetPoint;
 
 			if (rayFocalPointEnt)
 			{
 				rayTargetPoint = rayFocalPointEnt.GetPosition() + camEntity.GetRight() * offset.x + rayFocalPointEnt.GetUp() * offset.y + camEntity.GetForward() * offset.z;
 			}
 
-			const gem::vec3 dirFromTargetToOffset = rayTargetPoint - target.GetPosition();
+			const glm::vec3 dirFromTargetToOffset = rayTargetPoint - target.GetPosition();
 
 			//Check if any layer masks
 			uint32_t mask = 0;
@@ -214,17 +214,17 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 			//Raycast from target to offset to know if offset is inside wall and has to be moved
 			if (rayFocalPointEnt)
 			{
-				if (Volt::Physics::GetScene()->Raycast(rayFocalPointEnt.GetPosition(), gem::normalize(dirFromTargetToOffset), gem::length(dirFromTargetToOffset) + 25, &hit, mask))
+				if (Volt::Physics::GetScene()->Raycast(rayFocalPointEnt.GetPosition(), glm::normalize(dirFromTargetToOffset), glm::length(dirFromTargetToOffset) + 25, &hit, mask))
 				{
-					rayTargetPoint = rayFocalPointEnt.GetPosition() + (gem::normalize(dirFromTargetToOffset) * hit.distance) - 25;
+					rayTargetPoint = rayFocalPointEnt.GetPosition() + (glm::normalize(dirFromTargetToOffset) * hit.distance) - 25.f;
 					focalTargetPoint = rayTargetPoint;
 				}
 			}
 			else
 			{
-				if (Volt::Physics::GetScene()->Raycast(target.GetPosition(), gem::normalize(dirFromTargetToOffset), gem::length(dirFromTargetToOffset) + 25, &hit, mask))
+				if (Volt::Physics::GetScene()->Raycast(target.GetPosition(), glm::normalize(dirFromTargetToOffset), glm::length(dirFromTargetToOffset) + 25, &hit, mask))
 				{
-					rayTargetPoint = target.GetPosition() + (gem::normalize(dirFromTargetToOffset) * hit.distance) - 25;
+					rayTargetPoint = target.GetPosition() + (glm::normalize(dirFromTargetToOffset) * hit.distance) - 25.f;
 					focalTargetPoint = rayTargetPoint;
 				}
 			}
@@ -235,7 +235,7 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 
 			bool rayHit = false;
 
-			const gem::vec3 normRayDir = gem::normalize(rayDir);
+			const glm::vec3 normRayDir = glm::normalize(rayDir);
 
 			if (mask == 0)
 			{
@@ -249,7 +249,7 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 			if (rayHit)
 			{
 				myCurrentLerpTime = 0.f;
-				myCurrentFocalDist = gem::length(normRayDir * hit.distance) - collisionRadius;
+				myCurrentFocalDist = glm::length(normRayDir * hit.distance) - collisionRadius;
 				myLastHitFocalDist = myCurrentFocalDist;
 			}
 			else
@@ -263,14 +263,14 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 
 				float t = myCurrentLerpTime / myLerpTime;
 
-				t = gem::sin(t * gem::pi() * 0.5f); //Ease Ou
-				myCurrentFocalDist = gem::lerp(myLastHitFocalDist, myMaxFocalDist, t);
+				t = glm::sin(t * glm::pi<float>() * 0.5f); //Ease Ou
+				myCurrentFocalDist = glm::mix(myLastHitFocalDist, myMaxFocalDist, t);
 			}
 		}
 
 		if (damping > 0)
 		{
-			myDampedFocalPoint = gem::lerp(myDampedFocalPoint, focalTargetPoint, 1 - gem::pow(2.f, -damping * aDeltaTime));
+			myDampedFocalPoint = glm::mix(myDampedFocalPoint, focalTargetPoint, 1 - glm::pow(2.f, -damping * aDeltaTime));
 
 			if (!xShouldDamp) { myDampedFocalPoint.x = focalTargetPoint.x; }
 			if (!yShouldDamp) { myDampedFocalPoint.y = focalTargetPoint.y; }

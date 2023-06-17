@@ -311,7 +311,7 @@ namespace Volt
 		threadData.currentOverridePipeline = nullptr;
 	}
 
-	void Renderer::BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const gem::vec4& sectionColor)
+	void Renderer::BeginSection(Ref<CommandBuffer> commandBuffer, std::string_view sectionName, const glm::vec4& sectionColor)
 	{
 #ifdef VT_ENABLE_GPU_MARKERS
 		VkDebugUtilsLabelEXT markerInfo{};
@@ -643,7 +643,7 @@ namespace Volt
 		pipeline->InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), currentIndex);
 	}
 
-	void Renderer::ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const gem::vec4& clearValue)
+	void Renderer::ClearImage(Ref<CommandBuffer> commandBuffer, Ref<Image2D> image, const glm::vec4& clearValue)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -749,13 +749,13 @@ namespace Volt
 
 			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentMipFilter"), 1, true);
 
-			const float deltaRoughness = 1.f / gem::max((float)imageSpec.mips - 1.f, 1.f);
+			const float deltaRoughness = 1.f / glm::max((float)imageSpec.mips - 1.f, 1.f);
 			for (uint32_t i = 0, size = cubeMapSize; i < imageSpec.mips; i++, size /= 2)
 			{
-				const uint32_t numGroups = gem::max(1u, size / 32);
+				const uint32_t numGroups = glm::max(1u, size / 32);
 
 				float roughness = i * deltaRoughness;
-				roughness = gem::max(roughness, 0.05f);
+				roughness = glm::max(roughness, 0.05f);
 
 				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
 
@@ -1168,14 +1168,14 @@ namespace Volt
 
 		// Empty normal
 		{
-			const gem::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
+			const glm::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
 			s_defaultData->emptyNormal = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &normalData);
 			s_defaultData->emptyNormal->handle = Asset::Null();
 		}
 
 		// Empty Material
 		{
-			const gem::vec4 materialData = { 0.f, 1.f, 1.f, 0.f };
+			const glm::vec4 materialData = { 0.f, 1.f, 1.f, 0.f };
 			s_defaultData->emptyMaterial = Texture2D::Create(ImageFormat::RGBA32F, 1, 1, &materialData);
 			s_defaultData->emptyMaterial->handle = Asset::Null();
 		}
@@ -1190,7 +1190,7 @@ namespace Volt
 			spec.usage = ImageUsage::Texture;
 			spec.debugName = "Black 3D Image";
 
-			const gem::vec4 blackColor = { 0.f };
+			const glm::vec4 blackColor = { 0.f };
 			s_defaultData->black3DImage = Image3D::Create(spec, &blackColor);
 		}
 	}

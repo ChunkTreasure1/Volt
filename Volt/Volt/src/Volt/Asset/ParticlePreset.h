@@ -1,6 +1,6 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
-#include "gem/gem.h"
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -29,8 +29,8 @@ namespace Volt
 		float coneOuterRadius;
 		bool coneSpawnOnEdge = false;
 
-		std::vector<gem::vec3> sizes;
-		std::vector<gem::vec4> colors;
+		std::vector<glm::vec3> sizes;
+		std::vector<glm::vec4> colors;
 
 		float startVelocity = 0.f;
 		float endVelocity = 0.f;
@@ -39,8 +39,8 @@ namespace Volt
 		float minLifeTime = 1.f;
 		float maxLifeTime = 1.f;
 
-		gem::vec3 direction = { 1 };
-		gem::vec3 gravity = { 0 };
+		glm::vec3 direction = { 1 };
+		glm::vec3 gravity = { 0 };
 
 		bool isLooping = true;
 

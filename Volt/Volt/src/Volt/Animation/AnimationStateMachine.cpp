@@ -455,9 +455,9 @@ namespace Volt
 			const auto& aTRS = lastSample.pose.at(i);
 			const auto& bTRS = currentSample.pose.at(i);
 
-			result[i].position = gem::lerp(aTRS.position, bTRS.position, t);
-			result[i].rotation = gem::slerp(aTRS.rotation, bTRS.rotation, t);
-			result[i].scale = gem::lerp(aTRS.scale, bTRS.scale, t);
+			result[i].position = glm::mix(aTRS.position, bTRS.position, t);
+			result[i].rotation = glm::slerp(aTRS.rotation, bTRS.rotation, t);
+			result[i].scale = glm::mix(aTRS.scale, bTRS.scale, t);
 		}
 
 		GraphKey::AnimationOutputData output{};

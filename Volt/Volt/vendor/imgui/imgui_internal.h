@@ -299,7 +299,7 @@ namespace ImStb
 // - Helpers: Maths
 // - Helpers: Geometry
 // - Helper: ImVec1
-// - Helper: ImVec2ih
+// - Helper: Imivec2h
 // - Helper: ImRect
 // - Helper: ImBitArray
 // - Helper: ImBitVector
@@ -488,13 +488,13 @@ struct ImVec1
 	ImVec1(float _x) { x = _x; }
 };
 
-// Helper: ImVec2ih (2D vector, half-size integer, for long-term packed storage)
-struct ImVec2ih
+// Helper: Imivec2h (2D vector, half-size integer, for long-term packed storage)
+struct Imivec2h
 {
 	short   x, y;
-	ImVec2ih() { x = y = 0; }
-	ImVec2ih(short _x, short _y) { x = _x; y = _y; }
-	explicit ImVec2ih(const ImVec2& rhs) { x = (short)rhs.x; y = (short)rhs.y; }
+	Imivec2h() { x = y = 0; }
+	Imivec2h(short _x, short _y) { x = _x; y = _y; }
+	explicit Imivec2h(const ImVec2& rhs) { x = (short)rhs.x; y = (short)rhs.y; }
 };
 
 // Helper: ImRect (2D axis aligned bounding-box)
@@ -1697,9 +1697,9 @@ struct ImGuiViewportP : public ImGuiViewport
 struct ImGuiWindowSettings
 {
 	ImGuiID     ID;
-	ImVec2ih    Pos;            // NB: Settings position are stored RELATIVE to the viewport! Whereas runtime ones are absolute positions.
-	ImVec2ih    Size;
-	ImVec2ih    ViewportPos;
+	Imivec2h    Pos;            // NB: Settings position are stored RELATIVE to the viewport! Whereas runtime ones are absolute positions.
+	Imivec2h    Size;
+	Imivec2h    ViewportPos;
 	ImGuiID     ViewportId;
 	ImGuiID     DockId;         // ID of last known DockNode (even if the DockNode is invisible because it has only 1 active window), or 0 if none.
 	ImGuiID     ClassId;        // ID of window class if specified
@@ -2366,8 +2366,8 @@ struct IMGUI_API ImGuiWindow
 	ImRect                  ParentWorkRect;                     // Backup of WorkRect before entering a container such as columns/tables. Used by e.g. SpanAllColumns functions to easily access. Stacked containers are responsible for maintaining this. // FIXME-WORKRECT: Could be a stack?
 	ImRect                  ClipRect;                           // Current clipping/scissoring rectangle, evolve as we are using PushClipRect(), etc. == DrawList->clip_rect_stack.back().
 	ImRect                  ContentRegionRect;                  // FIXME: This is currently confusing/misleading. It is essentially WorkRect but not handling of scrolling. We currently rely on it as right/bottom aligned sizing operation need some size to rely on.
-	ImVec2ih                HitTestHoleSize;                    // Define an optional rectangular hole where mouse will pass-through the window.
-	ImVec2ih                HitTestHoleOffset;
+	Imivec2h                HitTestHoleSize;                    // Define an optional rectangular hole where mouse will pass-through the window.
+	Imivec2h                HitTestHoleOffset;
 
 	int                     LastFrameActive;                    // Last frame number the window was Active.
 	int                     LastFrameJustFocused;               // Last frame number the window was made Focused.

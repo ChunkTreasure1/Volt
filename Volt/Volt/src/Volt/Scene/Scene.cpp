@@ -25,8 +25,9 @@
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoGCManager.h"
 
-#include "Volt/Math/MatrixUtilities.h"
 #include "Volt/Utility/FileSystem.h"
+
+#include "Volt/Math/Math.h"
 
 #include "Volt/Rendering/RendererStructs.h"
 
@@ -306,7 +307,7 @@ namespace Volt
 				 
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 				cameraComp.camera->SetPosition(entity.GetPosition());
-				cameraComp.camera->SetRotation(gem::eulerAngles(entity.GetRotation()));
+				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
 
 				cameraComp.camera->SetAperture(cameraComp.aperture);
 				cameraComp.camera->SetShutterSpeed(cameraComp.shutterSpeed);
@@ -409,7 +410,7 @@ namespace Volt
 			{
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 				cameraComp.camera->SetPosition(transComp.position);
-				cameraComp.camera->SetRotation(gem::eulerAngles(transComp.rotation));
+				cameraComp.camera->SetRotation(glm::eulerAngles(transComp.rotation));
 			}
 		});
 	}
@@ -575,7 +576,7 @@ namespace Volt
 		entity.GetComponent<RelationshipComponent>().Parent = Wire::NullID;
 	}
 
-	gem::mat4 Scene::GetWorldSpaceTransform(Entity entity)
+	glm::mat4 Scene::GetWorldSpaceTransform(Entity entity)
 	{
 		{
 			std::shared_lock lock(myCachedEntityTransformMutex);
@@ -591,7 +592,7 @@ namespace Volt
 		}
 
 		const auto tqs = GetWorldSpaceTRS(entity);
-		const gem::mat4 transform = gem::translate(gem::mat4{1.f}, tqs.position)* gem::mat4_cast(tqs.rotation)* gem::scale(gem::mat4{ 1.f }, tqs.scale);
+		const glm::mat4 transform = glm::translate(glm::mat4{1.f}, tqs.position)* glm::mat4_cast(tqs.rotation)* glm::scale(glm::mat4{ 1.f }, tqs.scale);
 
 		{
 			std::unique_lock lock{ myCachedEntityTransformMutex };
@@ -685,19 +686,19 @@ namespace Volt
 		return parentEntity;
 	}
 
-	gem::vec3 Scene::GetWorldForward(Entity entity)
+	glm::vec3 Scene::GetWorldForward(Entity entity)
 	{
-		return gem::rotate(entity.GetRotation(), gem::vec3{ 0.f, 0.f, 1.f });
+		return glm::rotate(entity.GetRotation(), glm::vec3{ 0.f, 0.f, 1.f });
 	}
 
-	gem::vec3 Scene::GetWorldRight(Entity entity)
+	glm::vec3 Scene::GetWorldRight(Entity entity)
 	{
-		return gem::rotate(entity.GetRotation(), gem::vec3{ 1.f, 0.f, 0.f });
+		return glm::rotate(entity.GetRotation(), glm::vec3{ 1.f, 0.f, 0.f });
 	}
 
-	gem::vec3 Scene::GetWorldUp(Entity entity)
+	glm::vec3 Scene::GetWorldUp(Entity entity)
 	{
-		return gem::rotate(entity.GetRotation(), gem::vec3{ 0.f, 1.f, 0.f });
+		return glm::rotate(entity.GetRotation(), glm::vec3{ 0.f, 1.f, 0.f });
 	}
 
 	const Entity Scene::GetEntityWithName(std::string name)
@@ -820,7 +821,7 @@ namespace Volt
 				ent.AddComponent<DirectionalLightComponent>();
 
 				auto& trans = ent.GetComponent<TransformComponent>();
-				trans.rotation = gem::quat{ gem::vec3{ gem::radians(120.f), 0.f, 0.f } };
+				trans.rotation = glm::quat{ glm::vec3{ glm::radians(120.f), 0.f, 0.f } };
 			}
 
 			// Skylight
@@ -1152,12 +1153,12 @@ namespace Volt
 
 		auto& transform = entity.GetComponent<TransformComponent>();
 
-		const gem::mat4 transformMatrix = GetWorldSpaceTransform(entity);
+		const glm::mat4 transformMatrix = GetWorldSpaceTransform(entity);
 
-		gem::vec3 r;
-		gem::decompose(transformMatrix, transform.position, r, transform.scale);
+		glm::vec3 r;
+		Math::Decompose(transformMatrix, transform.position, r, transform.scale);
 
-		transform.rotation = gem::quat{ r };
+		transform.rotation = glm::quat{ r };
 
 		InvalidateEntityTransform(entity.GetId());
 	}
@@ -1172,12 +1173,12 @@ namespace Volt
 		}
 
 		auto& transform = entity.GetComponent<TransformComponent>();
-		const gem::mat4 parentTransform = GetWorldSpaceTransform(parent);
-		const gem::mat4 localTransform = gem::inverse(parentTransform) * transform.GetTransform();
+		const glm::mat4 parentTransform = GetWorldSpaceTransform(parent);
+		const glm::mat4 localTransform = glm::inverse(parentTransform) * transform.GetTransform();
 
-		gem::vec3 r;
-		gem::decompose(localTransform, transform.position, r, transform.scale);
-		transform.rotation = gem::quat{ r };
+		glm::vec3 r;
+		Math::Decompose(localTransform, transform.position, r, transform.scale);
+		transform.rotation = glm::quat{ r };
 
 		InvalidateEntityTransform(entity.GetId());
 	}

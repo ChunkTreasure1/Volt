@@ -1,12 +1,12 @@
 #pragma once
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
 	namespace Utility
 	{
-		inline const uint32_t PackUNormFloat4AsUInt(const gem::vec4& value)
+		inline const uint32_t PackUNormFloat4AsUInt(const glm::vec4& value)
 		{
 			uint32_t result = 0;
 
@@ -23,9 +23,9 @@ namespace Volt
 			return result;
 		}
 	
-		inline const gem::vec4 UnpackUIntToUNormFloat4(const uint32_t value)
+		inline const glm::vec4 UnpackUIntToUNormFloat4(const uint32_t value)
 		{
-			gem::vec4 result = 0.f;
+			glm::vec4 result = 0.f;
 
 			const uint32_t packedX = (value >> 24) & 0xFF;
 			const uint32_t packedY = (value >> 16) & 0xFF;

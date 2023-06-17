@@ -822,10 +822,10 @@ namespace Volt
 					case MonoFieldType::Float: fieldInst->SetValue(instance->GetField<float>(name), sizeof(float), fieldInst->field.type); break;
 					case MonoFieldType::Double: fieldInst->SetValue(instance->GetField<double>(name), sizeof(double), fieldInst->field.type); break;
 
-					case MonoFieldType::Vector2: fieldInst->SetValue(instance->GetField<gem::vec2>(name), sizeof(gem::vec2), fieldInst->field.type); break;
-					case MonoFieldType::Vector3: fieldInst->SetValue(instance->GetField<gem::vec3>(name), sizeof(gem::vec3), fieldInst->field.type); break;
-					case MonoFieldType::Vector4: fieldInst->SetValue(instance->GetField<gem::vec4>(name), sizeof(gem::vec4), fieldInst->field.type); break;
-					case MonoFieldType::Quaternion: fieldInst->SetValue(instance->GetField<gem::vec4>(name), sizeof(gem::vec4), fieldInst->field.type); break;
+					case MonoFieldType::Vector2: fieldInst->SetValue(instance->GetField<glm::vec2>(name), sizeof(glm::vec2), fieldInst->field.type); break;
+					case MonoFieldType::Vector3: fieldInst->SetValue(instance->GetField<glm::vec3>(name), sizeof(glm::vec3), fieldInst->field.type); break;
+					case MonoFieldType::Vector4: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
+					case MonoFieldType::Quaternion: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
 					case MonoFieldType::Entity: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
 
 					case MonoFieldType::Animation:
@@ -839,7 +839,7 @@ namespace Volt
 					case MonoFieldType::Video:
 					case MonoFieldType::AnimationGraph:
 					case MonoFieldType::Asset: fieldInst->SetValue(instance->GetField<AssetHandle>(name), sizeof(AssetHandle), fieldInst->field.type); break;
-					case MonoFieldType::Color: fieldInst->SetValue(instance->GetField<gem::vec4>(name), sizeof(gem::vec4), fieldInst->field.type); break;
+					case MonoFieldType::Color: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
 					case MonoFieldType::Enum: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
 				}
 			}

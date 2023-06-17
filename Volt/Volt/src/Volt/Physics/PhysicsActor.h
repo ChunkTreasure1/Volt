@@ -28,30 +28,30 @@ namespace Volt
 		void SetKinematic(bool isKinematic);
 		void SetSimulationData(uint32_t layerId) override;
 
-		void SetKinematicTarget(const gem::vec3& position, const gem::quat& rotation);
-		void SetLinearVelocity(const gem::vec3& velocity);
-		void SetAngularVelocity(const gem::vec3& velocity);
+		void SetKinematicTarget(const glm::vec3& position, const glm::quat& rotation);
+		void SetLinearVelocity(const glm::vec3& velocity);
+		void SetAngularVelocity(const glm::vec3& velocity);
 
 		void SetMaxLinearVelocity(float velocity);
 		void SetMaxAngularVelocity(float velocity);
 
 		const float GetMass() const;
-		const gem::vec3 GetLinearVelocity() const;
-		const gem::vec3 GetAngularVelocity() const;
+		const glm::vec3 GetLinearVelocity() const;
+		const glm::vec3 GetAngularVelocity() const;
 
 		const float GetMaxLinearVelocity() const;
 		const float GetMaxAngularVelocity() const;
 
-		const gem::vec3 GetKinematicTargetPosition() const;
-		const gem::quat GetKinematicTargetRotation() const;
+		const glm::vec3 GetKinematicTargetPosition() const;
+		const glm::quat GetKinematicTargetRotation() const;
 
-		void SetPosition(const gem::vec3& position, bool autoWake = true, bool synchronize = true);
-		void SetRotation(const gem::quat& rotation, bool autoWake = true, bool synchronize = true);
+		void SetPosition(const glm::vec3& position, bool autoWake = true, bool synchronize = true);
+		void SetRotation(const glm::quat& rotation, bool autoWake = true, bool synchronize = true);
 
 		Ref<ColliderShape> GetColliderOfType(ColliderType aType) const;
 
-		void AddForce(const gem::vec3& aForce, ForceMode aForceMode);
-		void AddTorque(const gem::vec3& torque, ForceMode aForceMode);
+		void AddForce(const glm::vec3& aForce, ForceMode aForceMode);
+		void AddTorque(const glm::vec3& torque, ForceMode aForceMode);
 
 		void WakeUp();
 		void PutToSleep();

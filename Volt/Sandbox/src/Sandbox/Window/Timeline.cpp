@@ -204,7 +204,7 @@ void Timeline::HandleSelectedKeyframe()
 	if (mySelectedKeyframe != nullptr && mySelectedClip == nullptr && myIsDraging && !myMovingMarker)
 	{
 		mySelectedKeyframe->timelineXPos = ImGui::GetMousePos().x;
-		mySelectedKeyframe->timelineXPos = gem::clamp(mySelectedKeyframe->timelineXPos, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
+		mySelectedKeyframe->timelineXPos = glm::clamp(mySelectedKeyframe->timelineXPos, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
 
 		const float frameTime = 1.f / 30.f;
 		mySelectedKeyframe->time = mySelectedKeyframe->frame * frameTime;
@@ -731,7 +731,7 @@ void Timeline::UpdateTimeLine()
 		myMPoint1 = ImVec2(myMPoint3.x - myMarkerWidth, canvasPos.y + 5);
 		myMPoint2 = ImVec2(myMPoint3.x + myMarkerWidth, canvasPos.y + 5);
 
-		myMPoint3.x = gem::clamp(myMPoint3.x, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
+		myMPoint3.x = glm::clamp(myMPoint3.x, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
 
 		drawlist->AddText(io.MousePos + ImVec2(5, -15), IM_COL32(255, 100, 100, 255), std::to_string(GetFrameFromPos(myMPoint3)).c_str());
 	}

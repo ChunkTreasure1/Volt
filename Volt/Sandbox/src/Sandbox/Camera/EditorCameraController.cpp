@@ -17,8 +17,8 @@
 EditorCameraController::EditorCameraController(float fov, float nearPlane, float farPlane)
 	: m_fov(fov), m_nearPlane(nearPlane), m_farPlane(farPlane)
 {
-	const gem::vec3 startPosition = { 500.f, 500.f, 500.f };
-	m_focalDistance = gem::distance(startPosition, m_focalPoint);
+	const glm::vec3 startPosition = { 500.f, 500.f, 500.f };
+	m_focalDistance = glm::distance(startPosition, m_focalPoint);
 	m_rotation = { 45.f, 135.f, 0.f };
 	m_position = startPosition;
 
@@ -42,7 +42,7 @@ void EditorCameraController::ForceLooseControl()
 	m_isControllable = false;
 }
 
-void EditorCameraController::Focus(const gem::vec3& focusPoint)
+void EditorCameraController::Focus(const glm::vec3& focusPoint)
 {
 	m_focalPoint = focusPoint;
 	m_cameraMode = Mode::Fly;
@@ -102,7 +102,7 @@ void EditorCameraController::EnableMouse()
 	UI::SetInputEnabled(true);
 }
 
-void EditorCameraController::ArcBall(const gem::vec2& deltaPos)
+void EditorCameraController::ArcBall(const glm::vec2& deltaPos)
 {
 	const float yawSign = m_camera->GetUp().y < 0.f ? -1.f : 1.f;
 	m_yawDelta += yawSign * deltaPos.x * m_sensitivity;
@@ -112,9 +112,9 @@ void EditorCameraController::ArcBall(const gem::vec2& deltaPos)
 void EditorCameraController::ArcZoom(float deltaPos)
 {
 	float distance = m_focalDistance * 0.2f;
-	distance = gem::max(distance, 0.0f);
+	distance = glm::max(distance, 0.0f);
 	float speed = distance * distance;
-	speed = gem::min(speed, 10.f); // max speed = 50
+	speed = glm::min(speed, 10.f); // max speed = 50
 
 	m_focalDistance -= deltaPos * speed;
 	m_position = m_focalPoint - m_camera->GetForward() * m_focalDistance;
@@ -127,7 +127,7 @@ void EditorCameraController::ArcZoom(float deltaPos)
 	m_positionDelta += deltaPos * speed * m_camera->GetForward();
 }
 
-const gem::vec3 EditorCameraController::CalculatePosition() const
+const glm::vec3 EditorCameraController::CalculatePosition() const
 {
 	return m_focalPoint - m_camera->GetForward() * m_focalDistance + m_positionDelta;
 }
@@ -136,8 +136,8 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
 	if (!s_mouseEnabled && !m_isControllable) { return false; }
 
-	const gem::vec2 mousePos = { Volt::Input::GetMouseX(), Volt::Input::GetMouseY() };
-	const gem::vec2 deltaPos = (mousePos - m_lastMousePosition);
+	const glm::vec2 mousePos = { Volt::Input::GetMouseX(), Volt::Input::GetMouseY() };
+	const glm::vec2 deltaPos = (mousePos - m_lastMousePosition);
 
 	m_pitchDelta = 0.f;
 	m_yawDelta = 0.f;
@@ -176,19 +176,19 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 		if (Volt::Input::IsKeyDown(VT_KEY_E))
 		{
-			m_positionDelta += m_translationSpeed * e.GetTimestep() * gem::vec3{ 0.f, yawSign, 0.f };
+			m_positionDelta += m_translationSpeed * e.GetTimestep() * glm::vec3{ 0.f, yawSign, 0.f };
 		}
 		if (Volt::Input::IsKeyDown(VT_KEY_Q))
 		{
-			m_positionDelta -= m_translationSpeed * e.GetTimestep() * gem::vec3{ 0.f, yawSign, 0.f };
+			m_positionDelta -= m_translationSpeed * e.GetTimestep() * glm::vec3{ 0.f, yawSign, 0.f };
 		}
 
 		constexpr float maxSpeed = 30.f;
 
-		m_yawDelta += gem::clamp(yawSign * deltaPos.x * m_sensitivity, -maxSpeed, maxSpeed);
-		m_pitchDelta += gem::clamp(deltaPos.y * m_sensitivity, -maxSpeed, maxSpeed);
+		m_yawDelta += glm::clamp(yawSign * deltaPos.x * m_sensitivity, -maxSpeed, maxSpeed);
+		m_pitchDelta += glm::clamp(deltaPos.y * m_sensitivity, -maxSpeed, maxSpeed);
 
-		m_focalDistance = gem::distance(m_focalPoint, m_position);
+		m_focalDistance = glm::distance(m_focalPoint, m_position);
 		m_focalPoint = m_position + m_camera->GetForward() * m_focalDistance;
 	}
 	else if (Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && m_isControllable)
@@ -223,15 +223,15 @@ bool EditorCameraController::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	}
 
 	m_position += m_positionDelta;
-	m_rotation += { m_pitchDelta, m_yawDelta, 0.f };
+	m_rotation += glm::vec3{ m_pitchDelta, m_yawDelta, 0.f };
 
 	if (m_cameraMode == Mode::Fly)
 	{
-		m_rotation.x = gem::clamp(m_rotation.x, -89.f, 89.f);
+		m_rotation.x = glm::clamp(m_rotation.x, -89.f, 89.f);
 	}
 
 	m_camera->SetPosition(m_position);
-	m_camera->SetRotation(gem::radians(m_rotation));
+	m_camera->SetRotation(glm::radians(m_rotation));
 
 	if (m_cameraMode == Mode::ArcBall)
 	{
