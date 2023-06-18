@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <codecvt>
 
-namespace Utils
+namespace Utility
 {
 	inline std::string ToLower(const std::string& str)
 	{
@@ -52,6 +52,11 @@ namespace Utils
 		std::replace(temp.begin(), temp.end(), oldCharacter, newCharacter);
 
 		return temp;
+	}
+
+	inline const bool StringContains(std::string_view str, std::string_view token)
+	{
+		return str.find(token) != std::string_view::npos;
 	}
 
 #pragma warning(disable : 4996)

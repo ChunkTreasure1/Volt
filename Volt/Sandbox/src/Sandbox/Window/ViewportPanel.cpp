@@ -391,7 +391,7 @@ void ViewportPanel::UpdateContent()
 		{
 			for (uint32_t i = 0; i < m_snapToGridValues.size(); i++)
 			{
-				std::string valueStr = Utils::RemoveTrailingZeroes(std::to_string(m_snapToGridValues[i]));
+				std::string valueStr = Utility::RemoveTrailingZeroes(std::to_string(m_snapToGridValues[i]));
 				std::string	id = valueStr + "##gridSnapValue" + std::to_string(i);
 
 				bool selected = settings.sceneSettings.gridSnapValue == m_snapToGridValues[i];
@@ -415,7 +415,7 @@ void ViewportPanel::UpdateContent()
 	{
 		for (uint32_t i = 0; i < m_snapRotationValues.size(); i++)
 		{
-			std::string valueStr = Utils::RemoveTrailingZeroes(std::to_string(m_snapRotationValues[i]));
+			std::string valueStr = Utility::RemoveTrailingZeroes(std::to_string(m_snapRotationValues[i]));
 			std::string	id = valueStr + "##rotationSnapValue" + std::to_string(i);
 
 			if (ImGui::Selectable(id.c_str()))
@@ -437,7 +437,7 @@ void ViewportPanel::UpdateContent()
 	{
 		for (uint32_t i = 0; i < m_snapScaleValues.size(); i++)
 		{
-			std::string valueStr = Utils::RemoveTrailingZeroes(std::to_string(m_snapScaleValues[i]));
+			std::string valueStr = Utility::RemoveTrailingZeroes(std::to_string(m_snapScaleValues[i]));
 			std::string	id = valueStr + "##scaleSnapValue" + std::to_string(i);
 
 			if (ImGui::Selectable(id.c_str()))

@@ -181,7 +181,7 @@ namespace Volt
 		uint32_t myLastLayerId = 1;
 		uint32_t myActiveLayerIndex = 0;
 		TimelinePlayer myTimelinePlayer;
-
+			
 		ParticleSystem myParticleSystem;
 		AudioSystem myAudioSystem;
 		AnimationSystem myAnimationSystem;

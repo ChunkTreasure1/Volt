@@ -81,6 +81,7 @@ project "Launcher"
 		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 		"%{IncludeDir.ffmpeg}",
 
 		"%{IncludeDir.detour}",

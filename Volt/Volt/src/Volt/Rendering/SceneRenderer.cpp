@@ -1665,7 +1665,7 @@ namespace Volt
 
 		auto& textData = myTextData;
 
-		std::u32string utf32string = Utils::To_UTF32(cmd.text);
+		std::u32string utf32string = ::Utility::To_UTF32(cmd.text);
 		Ref<Texture2D> fontAtlas = cmd.font->GetAtlas();
 
 		if (!fontAtlas)

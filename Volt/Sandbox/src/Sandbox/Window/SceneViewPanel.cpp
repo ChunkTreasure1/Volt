@@ -1195,8 +1195,8 @@ bool SceneViewPanel::MatchesQuery(const std::string& text, const std::string& fi
 		return true;
 	}
 
-	std::string query = Utils::ToLower(filter);
-	const std::string lowerText = Utils::ToLower(text);
+	std::string query = Utility::ToLower(filter);
+	const std::string lowerText = Utility::ToLower(text);
 
 	query.push_back(' ');
 	std::vector<std::string> queries;
@@ -1235,7 +1235,7 @@ bool SceneViewPanel::HasComponent(Wire::EntityId id, const std::string& filter)
 
 	for (const auto& [name, info] : Wire::ComponentRegistry::ComponentGUIDs())
 	{
-		if (Utils::ToLower(name).contains(Utils::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
+		if (Utility::ToLower(name).contains(Utility::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
 		{
 			return true;
 		}
@@ -1261,7 +1261,7 @@ bool SceneViewPanel::HasScript(Wire::EntityId id, const std::string& filter)
 	{
 		for (const auto& name : myScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(id).scriptNames)
 		{
-			if (Utils::ToLower(name).contains(Utils::ToLower(scriptSearchString)))
+			if (Utility::ToLower(name).contains(Utility::ToLower(scriptSearchString)))
 			{
 				return true;
 			}

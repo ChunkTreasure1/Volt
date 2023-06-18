@@ -106,7 +106,7 @@ namespace Volt
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath)
 	{
-		const std::string pathString = Utils::ReplaceCharacter(Get().GetRelativePath(dependencyPath).string(), '\\', '/');
+		const std::string pathString = Utility::ReplaceCharacter(Get().GetRelativePath(dependencyPath).string(), '\\', '/');
 		std::vector<AssetHandle> result{};
 
 		for (const auto& [handle, dependencies] : Get().myAssetDependencies)
@@ -573,10 +573,10 @@ namespace Volt
 
 	bool AssetManager::IsEngineAsset(const std::filesystem::path& path)
 	{
-		const auto pathSplit = Utils::SplitStringsByCharacter(path.string(), '/');
+		const auto pathSplit = Utility::SplitStringsByCharacter(path.string(), '/');
 		if (!pathSplit.empty())
 		{
-			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
+			std::string lowerFirstPart = Utility::ToLower(pathSplit.front());
 			if (lowerFirstPart.contains("engine") || lowerFirstPart.contains("editor"))
 			{
 				return true;
@@ -624,7 +624,7 @@ namespace Volt
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		std::string ext = Utils::ToLower(extension);
+		std::string ext = Utility::ToLower(extension);
 		if (!s_assetExtensionsMap.contains(ext)) [[unlikely]]
 		{
 			return AssetType::None;
@@ -970,7 +970,7 @@ namespace Volt
 
 	const std::filesystem::path AssetManager::GetCleanPath(const std::filesystem::path& path)
 	{
-		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		auto pathClean = Utility::ReplaceCharacter(path.string(), '\\', '/');
 		return pathClean;
 	}
 
@@ -992,7 +992,7 @@ namespace Volt
 		std::vector<std::string> dependenciesToSerialize;
 		for (const auto& d : GetDependencies(handle))
 		{
-			dependenciesToSerialize.push_back(Utils::ReplaceCharacter(d.string(), '\\', '/'));
+			dependenciesToSerialize.push_back(Utility::ReplaceCharacter(d.string(), '\\', '/'));
 		}
 
 		out << YAML::Key << "Dependencies" << YAML::Value << dependenciesToSerialize;

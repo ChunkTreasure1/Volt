@@ -78,6 +78,7 @@ project "Volt"
 		"%{IncludeDir.steam}",
 		"%{IncludeDir.discord}",
 		"%{IncludeDir.NFDExtended}",
+		"%{IncludeDir.entt}",
 
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ffmpeg}",

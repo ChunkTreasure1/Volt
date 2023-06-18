@@ -291,7 +291,7 @@ namespace Volt
 
 		auto& textData = s_uiRendererData->textData;
 
-		std::u32string utf32string = Utils::To_UTF32(text);
+		std::u32string utf32string = Utility::To_UTF32(text);
 		Ref<Texture2D> fontAtlas = font->GetAtlas();
 
 		if (!fontAtlas)

@@ -16,7 +16,7 @@ namespace Amp
 	{
 		rootDirectory = aFileDirectory;
 
-		rootDirectory = Utils::ReplaceCharacter(rootDirectory, '\\', '/');
+		rootDirectory = Utility::ReplaceCharacter(rootDirectory, '\\', '/');
 
 		//if (!rootDirectory.empty() && rootDirectory.back() != '\\')
 		//{

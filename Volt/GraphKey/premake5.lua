@@ -50,6 +50,7 @@ project "GraphKey"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.half}",
+		"%{IncludeDir.entt}",
 	}
 
 	defines

@@ -9,7 +9,7 @@ namespace GraphKey
 {
 	inline static int32_t GetKeyCodeFromKeyName(const std::string& name)
 	{
-		const std::string lowerName = Utils::ToLower(name);
+		const std::string lowerName = Utility::ToLower(name);
 		if (lowerName == "space" || lowerName == " ") return VT_KEY_SPACE;
 		if (lowerName == "apostrophe" || lowerName == "'") return VT_KEY_APOSTROPHE;
 		if (lowerName == "comma" || lowerName == ",") return VT_KEY_COMMA;

@@ -38,7 +38,8 @@ project "Nexus"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 	}
 
 	defines

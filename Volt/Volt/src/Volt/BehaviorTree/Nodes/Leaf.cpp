@@ -9,7 +9,7 @@ namespace Volt::BehaviorTree
 {
 	eNodeStatus Leaf::Run()
 	{
-		auto monoElements = Utils::SplitStringsByCharacter(m_monoScriptFunctonName, '.');
+		auto monoElements = Utility::SplitStringsByCharacter(m_monoScriptFunctonName, '.');
 		if (monoElements.size() != 3)
 		{
 			VT_CORE_ERROR("Bad leaf");

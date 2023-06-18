@@ -93,7 +93,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 	std::vector<std::string> result{};
 	for (const auto& [score, entry] : scores)
 	{
-		if (!Utils::ToLower(entry).contains(Utils::ToLower(query)))
+		if (!Utility::ToLower(entry).contains(Utility::ToLower(query)))
 		{
 			continue;
 		}
@@ -106,7 +106,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 
 void UI::RenderMatchingTextBackground(const std::string& query, const std::string& text, const glm::vec4& color, const glm::uvec2& offset)
 {
-	const auto matchOffset = Utils::ToLower(text).find(Utils::ToLower(query));
+	const auto matchOffset = Utility::ToLower(text).find(Utility::ToLower(query));
 
 	if (matchOffset == std::string::npos)
 	{

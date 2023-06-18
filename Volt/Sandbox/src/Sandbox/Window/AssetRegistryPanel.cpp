@@ -72,9 +72,9 @@ void AssetRegistryPanel::UpdateMainContent()
 		{
 			if (!mySearchQuery.empty())
 			{
-				auto path_lower = Utils::ToLower(path.string());
-				auto handle_lower = Utils::ToLower(std::to_string(handle));
-				auto search_lower = Utils::ToLower(mySearchQuery);
+				auto path_lower = Utility::ToLower(path.string());
+				auto handle_lower = Utility::ToLower(std::to_string(handle));
+				auto search_lower = Utility::ToLower(mySearchQuery);
 
 				if (!path_lower.contains(search_lower) && !handle_lower.contains(search_lower))
 				{

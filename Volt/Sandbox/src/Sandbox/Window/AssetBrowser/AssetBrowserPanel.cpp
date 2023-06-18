@@ -634,7 +634,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 						Reload();
 					}
 
-					for (const auto& asset : Volt::s_assetNamesMap)
+					for (const auto& asset : Volt::GetAssetNames())
 					{
 						bool selected = (myAssetMask & asset.second) != Volt::AssetType::None;
 						if (ImGui::Checkbox(asset.first.c_str(), &selected))

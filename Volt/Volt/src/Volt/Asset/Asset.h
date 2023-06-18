@@ -116,41 +116,46 @@ namespace Volt
 		{ ".vtncon", AssetType::NetContract },
 	};
 
-	inline static std::unordered_map<std::string, AssetType> s_assetNamesMap =
+	inline static const std::unordered_map<std::string, AssetType>& GetAssetNames()
 	{
-		{ "Mesh Source", AssetType::MeshSource },
-		{ "Mesh", AssetType::Mesh },
-		{ "NavMesh", AssetType::NavMesh },
+		static std::unordered_map<std::string, AssetType> assetNamesMap =
+		{
+			{ "Mesh Source", AssetType::MeshSource },
+			{ "Mesh", AssetType::Mesh },
+			{ "NavMesh", AssetType::NavMesh },
 
-		{ "Skeleton", AssetType::Skeleton },
-		{ "Animation", AssetType::Animation },
-		{ "Animated Character", AssetType::AnimatedCharacter },
-		{ "Animation Graph", AssetType::AnimationGraph },
+			{ "Skeleton", AssetType::Skeleton },
+			{ "Animation", AssetType::Animation },
+			{ "Animated Character", AssetType::AnimatedCharacter },
+			{ "Animation Graph", AssetType::AnimationGraph },
 
-		{ "Texture", AssetType::Texture },
+			{ "Texture", AssetType::Texture },
 
-		{ "Shader", AssetType::Shader },
-		{ "Shader Source", AssetType::ShaderSource },
+			{ "Shader", AssetType::Shader },
+			{ "Shader Source", AssetType::ShaderSource },
 
-		{ "Material Graph", AssetType::MaterialGraph },
-		{ "Material", AssetType::Material },
-		{ "Post Processing Material", AssetType::PostProcessingMaterial },
-		{ "Post Processing Stack", AssetType::PostProcessingStack },
-		{ "Physics Material", AssetType::PhysicsMaterial },
+			{ "Material Graph", AssetType::MaterialGraph },
+			{ "Material", AssetType::Material },
+			{ "Post Processing Material", AssetType::PostProcessingMaterial },
+			{ "Post Processing Stack", AssetType::PostProcessingStack },
+			{ "Physics Material", AssetType::PhysicsMaterial },
 
-		{ "Scene", AssetType::Scene },
-		{ "Prefab", AssetType::Prefab },
-		{ "Particle Preset", AssetType::ParticlePreset },
-		{ "Font", AssetType::Font },
-		{ "Video", AssetType::Video },
+			{ "Scene", AssetType::Scene },
+			{ "Prefab", AssetType::Prefab },
+			{ "Particle Preset", AssetType::ParticlePreset },
+			{ "Font", AssetType::Font },
+			{ "Video", AssetType::Video },
 
-		{ "Mono Script", AssetType::MonoScript },
-		{ "Behavior Graph", AssetType::BehaviorGraph},
-		{ "Blend Space", AssetType::BlendSpace },
+			{ "Mono Script", AssetType::MonoScript },
+			{ "Behavior Graph", AssetType::BehaviorGraph},
+			{ "Blend Space", AssetType::BlendSpace },
 
-		{ "Net Contract", AssetType::NetContract }
-	};
+			{ "Net Contract", AssetType::NetContract }
+		};
 
+		return assetNamesMap;
+	}
+	
 	class Asset
 	{
 	public:

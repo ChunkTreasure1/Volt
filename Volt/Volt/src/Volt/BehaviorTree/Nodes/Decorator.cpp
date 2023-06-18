@@ -57,7 +57,7 @@ namespace Volt::BehaviorTree
 			} break;
 			case eDecoratorType::IF:
 			{
-				auto monoElements = Utils::SplitStringsByCharacter(m_if, '.');
+				auto monoElements = Utility::SplitStringsByCharacter(m_if, '.');
 				if (monoElements.size() != 3)
 				{
 					VT_ERROR("bad decorator function string");

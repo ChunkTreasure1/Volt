@@ -387,7 +387,7 @@ namespace Volt
 
 	float Font::GetStringWidth(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
-		std::u32string utf32string = Utils::To_UTF32(string);
+		std::u32string utf32string = ::Utility::To_UTF32(string);
 
 		auto& fontGeom = GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();
@@ -513,7 +513,7 @@ namespace Volt
 	
 	float Font::GetStringHeight(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
-		std::u32string utf32string = Utils::To_UTF32(string);
+		std::u32string utf32string = ::Utility::To_UTF32(string);
 
 		auto& fontGeom = GetMSDFData()->fontGeometry;
 		const auto& metrics = fontGeom.getMetrics();

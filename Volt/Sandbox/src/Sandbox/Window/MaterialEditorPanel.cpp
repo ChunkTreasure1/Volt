@@ -803,7 +803,7 @@ void MaterialEditorPanel::UpdateMaterials()
 		{
 			for (auto& material : materials)
 			{
-				if (myHasSearchQuery && !Utils::ToLower(material.stem().string()).contains(Utils::ToLower(mySearchQuery)))
+				if (myHasSearchQuery && !Utility::ToLower(material.stem().string()).contains(Utility::ToLower(mySearchQuery)))
 				{
 					continue;
 				}

@@ -70,6 +70,7 @@ project "Sandbox"
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Wire}",
+		"%{IncludeDir.entt}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
