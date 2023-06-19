@@ -9,6 +9,9 @@
 /// This leads to more readable and scalable code, another upside to this is that Volt RHI can handle future api extensions or platform limitations.
 /// </summary>
 
+#define REGISTER_EXTENSION(extension) static std::string GetName() { return #extension; }
+
+
 namespace Volt
 {
 	class Extension
@@ -20,9 +23,29 @@ namespace Volt
 		VT_DELETE_COMMON_OPERATORS(Extension);
 
 
-		VT_INLINE VT_NODISCARD std::string_view GetExtensionName() { return m_name; }
+
+		static Ref<Extension> Create() { return CreateRefRHI<Extension>(); }
+
 
 	protected:
 		std::string_view m_name;
 	};
+
+	template<class T>
+	inline Ref<T> GetExtensionFromContainer(const std::vector<Ref<Extension>>& extensions)
+	{
+		Ref<T> requestedExtension = nullptr;
+		const auto requestedExtensionName = T::GetName();
+		for (auto& extension : extensions)
+		{
+			if (requestedExtensionName != extension->GetName())
+			{
+				continue;
+			}
+
+			requestedExtension = extension;
+		}
+
+		return requestedExtension;
+	}
 }

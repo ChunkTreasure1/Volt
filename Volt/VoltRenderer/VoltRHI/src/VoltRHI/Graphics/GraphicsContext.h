@@ -6,6 +6,8 @@ namespace Volt
 	class GraphicsDevice;
 	class PhysicalGraphicsDevice;
 
+	class DebugLogExtension;
+
 	class GraphicsContext
 	{
 	public:
@@ -35,5 +37,6 @@ namespace Volt
 	private:
 		inline static GraphicsContext* s_context;
 		inline static GraphicsAPI s_graphicsAPI;
+		inline static Ref<DebugLogExtension> s_logExtension;
 	};
 }

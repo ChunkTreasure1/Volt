@@ -5,16 +5,16 @@ namespace Volt
 {
 	enum class LogSeverity
 	{
-		Trace,
-		Log,
-		Warning,
-		Error,
+		Trace = 1 << 0,
+		Log = 1 << 1,
+		Warning = 1 << 2,
+		Error = 1 << 3,
 	};
 
 	class DebugLogExtension : public Extension
 	{
 	public:
-		DebugLogExtension() { m_name = "DebugLog"; };
+		DebugLogExtension() { };
 		~DebugLogExtension() = default;
 
 
@@ -25,15 +25,20 @@ namespace Volt
 
 		void AssignLogCallback(std::function<void(std::string_view, LogSeverity)>&& callback) { m_logCallback = callback; }
 
+		void Log(const LogSeverity severity, const std::string& message);
 
+		REGISTER_EXTENSION(DebugLogExtension);
+		
 	private:
 		void SetBitValue(bool flag, int8_t bit)
 		{
-			flag ? m_CallbackFilter |= (1 << bit) : m_CallbackFilter &= ~(1 << bit);
+			auto filter = static_cast<int8_t>(m_callbackFilter);
+			flag ? filter |= (1 << bit) : filter &= ~(1 << bit);
+			m_callbackFilter = static_cast<LogSeverity>(filter);
 		}
 
 		std::function<void(std::string_view, LogSeverity)> m_logCallback;
 		
-		int8_t m_CallbackFilter = ~0; // packed bools in order | Send Trace | Send Log | Send warning | Send Error |
+		LogSeverity m_callbackFilter;
 	};
 }

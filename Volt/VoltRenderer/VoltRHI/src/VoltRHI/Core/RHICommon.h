@@ -1,10 +1,11 @@
 #pragma once
-
-// we sould not need to add any tostring function to enums.
-#define GET_NAME(name) std::string(#name)
+#include "VoltRHI/Core/Core.h"
 
 namespace Volt
 {
+	// forward Extension
+	class Extension;
+
 	enum class QueueType
 	{
 		Graphics,
@@ -48,6 +49,7 @@ namespace Volt
 		GraphicsAPI graphicsApi;
 		PhysicalDeviceCreateInfo physicalDeviceInfo;
 		GraphicsDeviceCreateInfo graphicsDeviceInfo;
+		std::vector<Ref<Extension>> extensions;
 	};
 
 }
