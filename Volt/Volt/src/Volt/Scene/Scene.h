@@ -11,6 +11,8 @@
 #include <Wire/Wire.h>
 #include <glm/glm.hpp>
 
+#include <entt.hpp>
+
 #include <map>
 #include <set>
 
@@ -26,6 +28,8 @@ namespace Volt
 	class AnimatedCharacter;
 	class Event;
 	class Image2D;
+
+	class EnttEntity;
 
 	struct SceneEnvironment
 	{
@@ -45,7 +49,7 @@ namespace Volt
 		bool locked = false;
 	};
 
-	class Scene : public Asset
+	class Scene : public Asset, public std::enable_shared_from_this<Scene>
 	{
 	public:
 		struct Statistics
@@ -144,6 +148,21 @@ namespace Volt
 		void Clear();
 
 	private:
+		friend class EnttEntity;
+
+		///// EnTT //////
+		const glm::vec3 GetWorldPosition(EnttEntity entity) const;
+		const glm::quat GetWorldRotation(EnttEntity entity) const;
+		const glm::vec3 GetWorldScale(EnttEntity entity) const;
+
+		const glm::mat4 GetWorldTransform(EnttEntity entity) const;
+		const TQS GetWorldTQS(EnttEntity entity) const;
+
+		inline entt::registry& GetEnTTRegistry() { return m_enttRegistry; }
+		
+		entt::registry m_enttRegistry;
+		/////////////////
+
 		friend class Entity;
 		friend class SceneImporter;
 

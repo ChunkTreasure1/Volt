@@ -10,6 +10,8 @@
 #define ENTT_PROPERTY(compType, var, prettyName, ...) inline static const entt::meta_factory<compType> _ ## compType ## var ## _factory = entt::meta<compType>().data<&compType::var>(prettyName ## _hs); \
 													  inline static bool _ ## var ## _registered = Volt::ComponentRegistry::RegisterPropertyToComponent(#compType, prettyName, #compType ## "," ## #var ## "," ## prettyName ## "," #__VA_ARGS__) \
 
+using namespace entt::literals;
+
 namespace Volt
 {
 	constexpr std::string_view SPECIAL_TYPE_NAME = "specialtype";

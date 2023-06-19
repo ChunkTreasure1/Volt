@@ -7,8 +7,6 @@
 
 namespace Volt
 {
-	using namespace entt::literals;
-
 	struct TestComponent
 	{
 		AssetHandle meshHandle = Asset::Null();

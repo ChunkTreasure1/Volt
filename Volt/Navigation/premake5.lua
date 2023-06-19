@@ -73,6 +73,7 @@ project "Navigation"
 		"%{IncludeDir.fastlz}",
 
 		"%{IncludeDir.half}",
+		"%{IncludeDir.entt}",
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",

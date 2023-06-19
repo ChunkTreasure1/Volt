@@ -8,12 +8,15 @@
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Video/Video.h"
 
-#include "Volt/core/Profiling.h"
+#include "Volt/Core/Profiling.h"
+
 #include "Volt/Scene/Entity.h"
+#include "Volt/Scene/EnttEntity.h"
 
 #include "Volt/Components/Components.h"
 #include "Volt/Components/AudioComponents.h"
 #include "Volt/Components/LightComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Animation/AnimationManager.h"
 #include "Volt/Animation/AnimationController.h"
@@ -899,6 +902,124 @@ namespace Volt
 	void Scene::Clear()
 	{
 		myRegistry.Clear();
+	}
+
+	const glm::vec3 Scene::GetWorldPosition(EnttEntity entity) const
+	{
+		std::vector<EnttEntity> hierarchy{};
+		hierarchy.emplace_back(entity);
+
+		EnttEntity currentEntity = entity;
+		while (currentEntity.HasParent())
+		{
+			auto parent = currentEntity.GetParent();
+			hierarchy.emplace_back(parent);
+			currentEntity = parent;
+		}
+
+		glm::vec3 resultPosition = 0.f;
+		for (const auto& parent : std::ranges::reverse_view(hierarchy))
+		{
+			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			resultPosition = resultPosition + transComp.position * transComp.rotation;
+		}
+
+		return resultPosition;
+	}
+
+	const glm::quat Scene::GetWorldRotation(EnttEntity entity) const
+	{
+		std::vector<EnttEntity> hierarchy{};
+		hierarchy.emplace_back(entity);
+
+		EnttEntity currentEntity = entity;
+		while (currentEntity.HasParent())
+		{
+			auto parent = currentEntity.GetParent();
+			hierarchy.emplace_back(parent);
+			currentEntity = parent;
+		}
+
+		glm::quat resultRotation = glm::identity<glm::quat>();
+		for (const auto& parent : std::ranges::reverse_view(hierarchy))
+		{
+			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			resultRotation = resultRotation * transComp.rotation;
+		}
+
+		return resultRotation;
+	}
+
+	const glm::vec3 Scene::GetWorldScale(EnttEntity entity) const
+	{
+		std::vector<EnttEntity> hierarchy{};
+		hierarchy.emplace_back(entity);
+
+		EnttEntity currentEntity = entity;
+		while (currentEntity.HasParent())
+		{
+			auto parent = currentEntity.GetParent();
+			hierarchy.emplace_back(parent);
+			currentEntity = parent;
+		}
+
+		glm::vec3 resultScale = 0.f;
+		for (const auto& parent : std::ranges::reverse_view(hierarchy))
+		{
+			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			resultScale = resultScale + transComp.scale;
+		}
+
+		return resultScale;
+	}
+
+	const glm::mat4 Scene::GetWorldTransform(EnttEntity entity) const
+	{
+		std::vector<EnttEntity> hierarchy{};
+		hierarchy.emplace_back(entity);
+
+		EnttEntity currentEntity = entity;
+		while (currentEntity.HasParent())
+		{
+			auto parent = currentEntity.GetParent();
+			hierarchy.emplace_back(parent);
+			currentEntity = parent;
+		}
+
+		glm::mat4 resultTransform = glm::identity<glm::mat4>();
+		for (const auto& parent : std::ranges::reverse_view(hierarchy))
+		{
+			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			resultTransform = resultTransform * transComp.GetTransform();
+		}
+
+		return resultTransform;
+	}
+
+	const Scene::TQS Scene::GetWorldTQS(EnttEntity entity) const
+	{
+		std::vector<EnttEntity> hierarchy{};
+		hierarchy.emplace_back(entity);
+
+		EnttEntity currentEntity = entity;
+		while (currentEntity.HasParent())
+		{
+			auto parent = currentEntity.GetParent();
+			hierarchy.emplace_back(parent);
+			currentEntity = parent;
+		}
+
+		TQS resultTransform{};
+		for (const auto& parent : std::ranges::reverse_view(hierarchy))
+		{
+			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+		
+			resultTransform.position = resultTransform.position + transComp.rotation * transComp.position;
+			resultTransform.rotation = resultTransform.rotation * transComp.rotation;
+			resultTransform.scale = resultTransform.scale * transComp.scale;
+		}
+
+		return resultTransform;
 	}
 
 	void Scene::MoveToLayerRecursive(Entity entity, uint32_t targetLayer)
