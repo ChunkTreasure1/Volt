@@ -137,7 +137,7 @@ void AssetRegistryPanel::AddNewModal()
 				!Volt::AssetManager::Get().ExistsInRegistry(assetHandle))
 			{
 				UI::Notify(NotificationType::Success, "Assethandle registered!", "Successfully added assethandle.");
-				Volt::AssetManager::Get().AddToRegistry(assetPath, assetHandle);
+				Volt::AssetManager::Get().AddAssetToRegistry(assetPath, assetHandle);
 			}
 			else
 			{

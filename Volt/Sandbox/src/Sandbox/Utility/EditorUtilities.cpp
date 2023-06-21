@@ -192,12 +192,13 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 	// An asset can have multiple dependencies, we must find the source mesh
 	std::filesystem::path sourcePath;
-	const auto& dependencies = Volt::AssetManager::Get().GetDependencies(assetHandle);
+	const auto& dependencies = Volt::AssetManager::GetMetaDataFromHandle(assetHandle).dependencies;
 	for (const auto& d : dependencies)
 	{
-		if (d.extension().string() == ".fbx")
+		const auto& depMeta = Volt::AssetManager::GetMetaDataFromHandle(d);
+		if (depMeta.filePath.extension().string() == ".fbx")
 		{
-			sourcePath = d;
+			sourcePath = depMeta.filePath;
 			break;
 		}
 	}
@@ -494,7 +495,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", aImportData.destination.string()));
 					}
 
-					auto handle = Volt::AssetManager::Get().AddToRegistry(aImportData.destination);
+					auto handle = Volt::AssetManager::Get().AddAssetToRegistry(aImportData.destination);
 					Volt::AssetManager::Get().AddDependency(handle, aMeshToImport);
 				}
 				else
@@ -646,7 +647,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 						UI::Notify(NotificationType::Error, "Failed to compile mesh!", std::format("Failed to compile mesh to location {}!", destinationPath.string()));
 					}
 
-					auto handle = Volt::AssetManager::Get().AddToRegistry(destinationPath);
+					auto handle = Volt::AssetManager::Get().AddAssetToRegistry(destinationPath);
 					Volt::AssetManager::Get().AddDependency(handle, src);
 				}
 				else

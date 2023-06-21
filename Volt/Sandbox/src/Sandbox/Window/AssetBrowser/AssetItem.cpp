@@ -28,7 +28,7 @@ namespace AssetBrowser
 		handle = Volt::AssetManager::GetAssetHandleFromPath(path);
 		if (handle == Volt::Asset::Null() && !Volt::AssetManager::Get().HasAssetMetaFile(path))
 		{
-			handle = Volt::AssetManager::Get().AddToRegistry(path);
+			handle = Volt::AssetManager::Get().AddAssetToRegistry(path);
 		}
 	}
 

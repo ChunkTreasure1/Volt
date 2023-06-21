@@ -89,7 +89,7 @@ namespace Volt
 				{
 					if (!AssetManager::Get().ExistsInRegistry(relPath))
 					{
-						AssetManager::Get().AddToRegistry(relPath);
+						AssetManager::Get().AddAssetToRegistry(relPath);
 					}
 
 					Ref<Shader> pipelineAsset = AssetManager::GetAsset<Shader>(relPath);

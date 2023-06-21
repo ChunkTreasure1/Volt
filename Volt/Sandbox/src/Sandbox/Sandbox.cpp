@@ -373,7 +373,7 @@ void Sandbox::CreateWatches()
 		{
 			if (!newPath.has_extension())
 			{
-				Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
+				Volt::AssetManager::Get().MoveFullFolder(oldPath, newPath);
 			}
 			else
 			{

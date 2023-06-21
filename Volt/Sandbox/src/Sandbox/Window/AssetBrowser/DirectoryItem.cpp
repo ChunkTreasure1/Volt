@@ -91,7 +91,7 @@ namespace AssetBrowser
 								if (item->isDirectory && item != this)
 								{
 									const std::filesystem::path newPath = path / item->path.stem();
-									Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+									Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
 									FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, newPath);
 								}
 							}
@@ -116,7 +116,7 @@ namespace AssetBrowser
 								if (item->isDirectory && item != this)
 								{
 									const std::filesystem::path newPath = path / item->path.stem();
-									Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+									Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
 									FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, newPath);
 								}
 							}

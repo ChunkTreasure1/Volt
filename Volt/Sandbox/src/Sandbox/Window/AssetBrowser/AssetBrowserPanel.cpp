@@ -246,7 +246,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			myDragDroppedMeshes.pop_back();
 
 			AssetData assetData;
-			assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
+			assetData.handle = Volt::AssetManager::Get().AddAssetToRegistry(path);
 			assetData.path = path;
 			assetData.type = Volt::AssetType::MeshSource;
 
@@ -757,7 +757,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 			if (item->isDirectory && item != dirData.get())
 			{
 				const std::filesystem::path newPath = dirData->path / item->path.stem();
-				Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+				Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
 				FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, Volt::ProjectManager::GetDirectory() / newPath);
 			}
 		}

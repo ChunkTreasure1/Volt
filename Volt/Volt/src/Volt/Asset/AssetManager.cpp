@@ -47,28 +47,28 @@ namespace Volt
 		MeshTypeImporter::Initialize();
 		TextureImporter::Initialize();
 
-		myAssetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>());
-		myAssetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>());
-		myAssetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>());
-		myAssetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
-		myAssetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
-		myAssetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
-		myAssetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
-		myAssetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>());
-		myAssetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>());
-		myAssetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>());
-		myAssetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>());
-		myAssetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>());
-		myAssetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>());
-		myAssetImporters.emplace(AssetType::Font, CreateScope<FontImporter>());
-		myAssetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>());
-		myAssetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>());
-		myAssetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>());
-		myAssetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());
-		myAssetImporters.emplace(AssetType::RenderPipeline, CreateScope<RenderPipelineImporter>());
-		myAssetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
-		myAssetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
-		myAssetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
+		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>());
+		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>());
+		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>());
+		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
+		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
+		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
+		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
+		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>());
+		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>());
+		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>());
+		m_assetImporters.emplace(AssetType::AnimatedCharacter, CreateScope<AnimatedCharacterImporter>());
+		m_assetImporters.emplace(AssetType::ParticlePreset, CreateScope<ParticlePresetImporter>());
+		m_assetImporters.emplace(AssetType::Prefab, CreateScope<PrefabImporter>());
+		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>());
+		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>());
+		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>());
+		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>());
+		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());
+		m_assetImporters.emplace(AssetType::RenderPipeline, CreateScope<RenderPipelineImporter>());
+		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
+		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
+		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
 
 		LoadAssetMetaFiles();
 	}
@@ -81,27 +81,40 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
 	{
-		if (myAssetDependencies.contains(asset))
-		{
-			auto& dependencies = myAssetDependencies.at(asset);
-			if (std::find(dependencies.begin(), dependencies.end(), dependency) != dependencies.end())
-			{
-				return;
-			}
-		}
+		auto& metaData = GetMetaDataFromHandleMutable(asset);
+		const auto& dependencyMetaData = GetMetaDataFromFilePath(dependency);
 
-		myAssetDependencies[asset].emplace_back(dependency);
+		AddDependency(asset, dependencyMetaData.handle);
 	}
 
-	const std::vector<std::filesystem::path>& AssetManager::GetDependencies(AssetHandle asset) const
+	void AssetManager::AddDependency(AssetHandle asset, AssetHandle dependency)
 	{
-		static std::vector<std::filesystem::path> emptyDependency;
-		if (!myAssetDependencies.contains(asset))
+		auto& metaData = GetMetaDataFromHandleMutable(asset);
+		const auto& dependencyMetaData = GetMetaDataFromHandle(dependency);
+
+		if (!metaData.IsValid())
 		{
-			return emptyDependency;
+			VT_CORE_WARN("[AssetManager] Trying to add dependency {0} to invalid asset {1}", dependency, asset);
+			return;
 		}
 
-		return myAssetDependencies.at(asset);
+		if (!dependencyMetaData.IsValid())
+		{
+			VT_CORE_WARN("[AssetManager] Trying to add invalid dependency {0} to asset {1}", dependency, asset);
+			return;
+		}
+
+		auto it = std::find_if(metaData.dependencies.begin(), metaData.dependencies.end(), [&](AssetHandle dep)
+		{
+			return dep == dependencyMetaData.handle;
+		});
+
+		if (it != metaData.dependencies.end())
+		{
+			return;
+		}
+
+		metaData.dependencies.emplace_back(dependencyMetaData.handle);
 	}
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyPath)
@@ -123,17 +136,17 @@ namespace Volt
 	void AssetManager::LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset)
 	{
 		{
-			ReadLock lock{ myAssetCacheMutex };
-			if (myAssetCache.contains(assetHandle))
+			ReadLock lock{ m_assetCacheMutex };
+			if (m_assetCache.contains(assetHandle))
 			{
-				asset = myAssetCache.at(assetHandle);
+				asset = m_assetCache.at(assetHandle);
 				return;
 			}
 		}
 
-		if (myMemoryAssets.contains(assetHandle))
+		if (m_memoryAssets.contains(assetHandle))
 		{
-			asset = myMemoryAssets.at(assetHandle);
+			asset = m_memoryAssets.at(assetHandle);
 			return;
 		}
 
@@ -141,24 +154,23 @@ namespace Volt
 		if (!path.empty())
 		{
 			const auto type = GetAssetTypeFromPath(path);
-			if (!myAssetImporters.contains(type))
+			if (!m_assetImporters.contains(type))
 			{
 				VT_CORE_WARN("[AssetManager] No importer for asset found!");
 				return;
 			}
 
-			myAssetImporters.at(type)->Load(path, asset);
+			m_assetImporters.at(type)->Load(path, asset);
 #ifdef VT_DEBUG
-			VT_CORE_TRACE("Tried loading asset {0} with handle {1}!", path.string(), assetHandle);
+			VT_CORE_TRACE("[AssetManager] Tried loading asset {0} with handle {1}!", path.string(), assetHandle);
 #endif	
 
 			if (!asset) { return; }
-			asset->path = path;
 			asset->handle = assetHandle;
 
 			{
-				WriteLock lock{ myAssetCacheMutex };
-				myAssetCache.emplace(asset->handle, asset);
+				WriteLock lock{ m_assetCacheMutex };
+				m_assetCache.emplace(asset->handle, asset);
 			}
 		}
 	}
@@ -173,16 +185,16 @@ namespace Volt
 
 	void AssetManager::Unload(AssetHandle assetHandle)
 	{
-		WriteLock lock{ myAssetCacheMutex };
+		WriteLock lock{ m_assetCacheMutex };
 
-		auto it = myAssetCache.find(assetHandle);
-		if (it == myAssetCache.end())
+		auto it = m_assetCache.find(assetHandle);
+		if (it == m_assetCache.end())
 		{
-			VT_CORE_WARN("Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
+			VT_CORE_WARN("[AssetManager] Unable to unload asset with handle {0}, it has not been loaded!", assetHandle);
 			return;
 		}
 
-		myAssetCache.erase(it);
+		m_assetCache.erase(it);
 	}
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& path)
@@ -190,7 +202,7 @@ namespace Volt
 		AssetHandle handle = GetAssetHandleFromPath(path);
 		if (handle == Asset::Null())
 		{
-			VT_CORE_ERROR("Asset with path {0} is not loaded!", path.string());
+			VT_CORE_ERROR("[AssetManager] Asset with path {0} is not loaded!", path.string());
 			return;
 		}
 
@@ -205,41 +217,75 @@ namespace Volt
 		LoadAsset(handle, asset);
 	}
 
-	void AssetManager::SaveAsset(const Ref<Asset> asset)
+	void AssetManager::SaveAssetAs(Ref<Asset> asset, const std::filesystem::path& targetFilePath)
 	{
-		if (myAssetImporters.find(asset->GetType()) == myAssetImporters.end())
+		auto& instance = Get();
+
+		if (instance.m_assetImporters.find(asset->GetType()) == instance.m_assetImporters.end())
 		{
-			VT_CORE_ERROR("No exporter for asset found!");
+			VT_CORE_ERROR("[AssetManager] No exporter for asset {0} found!", asset->handle);
 			return;
 		}
 
 		if (!asset->IsValid())
 		{
-			VT_CORE_ERROR("Unable to save invalid asset!");
+			VT_CORE_ERROR("[AssetManager] Unable to save invalid asset {0}!", asset->handle);
+			return;
+		}
+
+		if (!instance.m_assetRegistry.contains(asset->handle))
+		{
+			WriteLock lock{ instance.m_assetRegistryMutex };
+
+			AssetMetaData& metaData = instance.m_assetRegistry[asset->handle];
+			metaData.filePath = targetFilePath;
+			metaData.handle = asset->handle;
+			metaData.isLoaded = true;
+			metaData.type = asset->GetType();
+		}
+
+		{
+			WriteLock lock{ instance.m_assetCacheMutex };
+			if (!instance.m_assetCache.contains(asset->handle))
+			{
+				instance.m_assetCache.emplace(asset->handle, asset);
+			}
+		}
+
+		instance.SaveAssetMetaFile(targetFilePath);
+	}
+
+	void AssetManager::SaveAsset(const Ref<Asset> asset)
+	{
+		auto& instance = Get();
+
+		if (instance.m_assetImporters.find(asset->GetType()) == instance.m_assetImporters.end())
+		{
+			VT_CORE_ERROR("[AssetManager] No exporter for asset {0} found!", asset->handle);
+			return;
+		}
+
+		if (!asset->IsValid())
+		{
+			VT_CORE_ERROR("[AssetManager] Unable to save invalid asset {0}!", asset->handle);
+			return;
+		}
+
+		if (!instance.m_assetRegistry.contains(asset->handle))
+		{
+			VT_CORE_ERROR("[AssetManager] Unable to save asset which has not been saved before!");
 			return;
 		}
 
 		const auto type = asset->GetType();
-		myAssetImporters[type]->Save(asset);
-
-		if (myAssetRegistry.find(asset->path) == myAssetRegistry.end())
-		{
-			WriteLock lock{ myAssetRegistryMutex };
-			myAssetRegistry.emplace(asset->path, asset->handle);
-		}
+		instance.m_assetImporters[type]->Save(asset);
 
 		{
-			WriteLock lock{ myAssetCacheMutex };
-
-			if (!myAssetCache.contains(asset->handle))
+			WriteLock lock{ instance.m_assetCacheMutex };
+			if (!instance.m_assetCache.contains(asset->handle))
 			{
-				myAssetCache.emplace(asset->handle, asset);
+				instance.m_assetCache.emplace(asset->handle, asset);
 			}
-		}
-
-		if (!HasAssetMetaFile(asset->path))
-		{
-			SaveAssetMetaFile(asset->path);
 		}
 	}
 
@@ -247,95 +293,116 @@ namespace Volt
 	{
 		const auto projDir = GetContextPath(targetDir);
 
-		FileSystem::Move(projDir / asset->path, projDir / targetDir);
-
-		const std::filesystem::path newPath = targetDir / asset->path.filename();
-
-		auto oldPath = asset->path;
+		std::filesystem::path assetFilePath;
 
 		{
-			WriteLock lock{ myAssetRegistryMutex };
-			myAssetRegistry.erase(asset->path);
-			asset->path = newPath;
+			ReadLock lock{ m_assetRegistryMutex };
 
-			myAssetRegistry.emplace(asset->path, asset->handle);
+			const auto& assetMetaData = GetMetaDataFromHandle(asset->handle);
+			if (!assetMetaData.IsValid())
+			{
+				VT_CORE_WARN("[AssetMananger] Unable to move invalid asset {0}!", asset->handle);
+				return;
+			}
+
+			assetFilePath = assetMetaData.filePath;
 		}
 
-		RemoveMetaFile(oldPath);
+		FileSystem::Move(projDir / assetFilePath, projDir / targetDir);
+
+		const std::filesystem::path newPath = targetDir / assetFilePath.filename();
+
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			m_assetRegistry[asset->handle].filePath = newPath;
+		}
+
+		RemoveMetaFile(assetFilePath);
 		SaveAssetMetaFile(newPath);
 	}
 
-	void AssetManager::MoveAsset(AssetHandle asset, const std::filesystem::path& targetDir)
+	void AssetManager::MoveAsset(AssetHandle assetHandle, const std::filesystem::path& targetDir)
 	{
-		const std::filesystem::path oldPath = GetPathFromAssetHandle(asset);
-		const std::filesystem::path newPath = targetDir / oldPath.filename();
+		std::filesystem::path assetFilePath;
+
+		{
+			ReadLock lock{ m_assetRegistryMutex };
+
+			const auto& assetMetaData = GetMetaDataFromHandle(assetHandle);
+			if (!assetMetaData.IsValid())
+			{
+				VT_CORE_WARN("[AssetMananger] Unable to move invalid asset {0}!", assetHandle);
+				return;
+			}
+
+			assetFilePath = assetMetaData.filePath;
+		}
+
+		const std::filesystem::path newPath = targetDir / assetFilePath.filename();
 		const auto projDir = GetContextPath(targetDir);
 
-		FileSystem::Move(projDir / oldPath, projDir / targetDir);
+		FileSystem::Move(projDir / assetFilePath, projDir / targetDir);
 
 		{
-			WriteLock registryLock{ myAssetRegistryMutex };
-			ReadLock cacheLock{ myAssetCacheMutex };
-
-			myAssetRegistry.erase(oldPath);
-			auto it = myAssetCache.find(asset);
-			if (it != myAssetCache.end())
-			{
-				it->second->path = newPath;
-			}
-			myAssetRegistry.emplace(newPath, asset);
+			WriteLock lock{ m_assetRegistryMutex };
+			m_assetRegistry[assetHandle].filePath = newPath;
 		}
 
-		RemoveMetaFile(oldPath);
+		RemoveMetaFile(assetFilePath);
 		SaveAssetMetaFile(newPath);
 	}
 
-	void AssetManager::MoveFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir)
+	void AssetManager::MoveFullFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir)
 	{
-		if (!targetDir.empty() && !sourceDir.empty())
+		if (sourceDir.empty())
 		{
-			std::vector<std::filesystem::path> filesToMove{};
+			VT_CORE_WARN("[AssetManager] Trying to move invalid directory!");
+			return;
+		}
 
+		if (targetDir.empty())
+		{
+			VT_CORE_WARN("[AssetManager] Trying to move directory {0} to an invalid directory!");
+			return;
+		}
+
+		std::vector<AssetHandle> filesToMove{};
+		{
+			ReadLock lock{ m_assetRegistryMutex };
+			const std::string sourceDirLower = Utils::ToLower(sourceDir.string());
+
+			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				ReadLock lock{ myAssetRegistryMutex };
-				for (const auto& [path, handle] : myAssetRegistry)
+				const std::string filePathLower = Utils::ToLower(metaData.filePath.string());
+
+				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
-					if (path.string().contains(sourceDir.string()))
-					{
-						filesToMove.emplace_back(path);
-					}
+					filesToMove.emplace_back(handle);
 				}
 			}
+		}
 
-			std::vector<std::pair<std::filesystem::path, AssetHandle>> filesToAddToRegistry{};
-
-			for (const auto& p : filesToMove)
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			for (const auto& handle : filesToMove)
 			{
-				const auto& handle = GetAssetHandleFromPath(p);
+				auto& metaData = GetMetaDataFromHandleMutable(handle);
 
-				std::string newPath = p.string();
-				const size_t dirLoc = newPath.find(sourceDir.string());
+				std::string newPath = metaData.filePath.string();
+				const size_t directoryStringLoc = Utils::ToLower(newPath).find(Utils::ToLower(sourceDir.string()));
 
-				newPath.erase(dirLoc, sourceDir.string().length());
-				newPath.insert(dirLoc, targetDir.string());
-
-				filesToAddToRegistry.emplace_back(std::make_pair<>(newPath, handle));
-
+				if (directoryStringLoc == std::string::npos)
 				{
-					WriteLock lock{ myAssetRegistryMutex };
-					myAssetRegistry.erase(p);
+					continue;
 				}
 
-				RemoveMetaFile(p);
+				newPath.erase(directoryStringLoc, sourceDir.string().length());
+				newPath.insert(directoryStringLoc, targetDir.string());
+
+				RemoveMetaFile(metaData.filePath);
+				metaData.filePath = newPath;
+
 				SaveAssetMetaFile(newPath);
-			}
-
-			{
-				WriteLock lock{ myAssetRegistryMutex };
-				for (const auto& f : filesToAddToRegistry)
-				{
-					myAssetRegistry.emplace(f);
-				}
 			}
 		}
 	}
@@ -346,20 +413,18 @@ namespace Volt
 		const std::filesystem::path newPath = oldPath.parent_path() / (newName + oldPath.extension().string());
 		const auto projDir = GetContextPath(oldPath);
 
-		FileSystem::Rename(projDir / oldPath, newName);
-
 		{
-			WriteLock registryLock{ myAssetRegistryMutex };
-			ReadLock cacheLock{ myAssetCacheMutex };
-
-			myAssetRegistry.erase(oldPath);
-			auto it = myAssetCache.find(asset);
-			if (it != myAssetCache.end())
+			WriteLock lock{ m_assetRegistryMutex };
+			if (!m_assetRegistry.contains(asset))
 			{
-				it->second->path = newPath;
+				VT_CORE_WARN("[AssetManager] Trying to rename invalid asset!");
+				return;
 			}
-			myAssetRegistry.emplace(newPath, asset);
+
+			m_assetRegistry.at(asset).filePath = newPath;
 		}
+
+		FileSystem::Rename(projDir / oldPath, newName);
 
 		RemoveMetaFile(oldPath);
 		SaveAssetMetaFile(newPath);
@@ -371,16 +436,16 @@ namespace Volt
 		myAssetRegistry.erase(oldPath);
 
 		{
-			ReadLock lock{ myAssetCacheMutex };
-			auto it = myAssetCache.find(asset);
-			if (it != myAssetCache.end())
+			ReadLock lock{ m_assetCacheMutex };
+			auto it = m_assetCache.find(asset);
+			if (it != m_assetCache.end())
 			{
 				it->second->path = targetPath;
 			}
 		}
 
 		{
-			WriteLock lock{ myAssetRegistryMutex };
+			WriteLock lock{ m_assetRegistryMutex };
 			myAssetRegistry.emplace(targetPath, asset);
 		}
 
@@ -394,13 +459,13 @@ namespace Volt
 		const auto projDir = GetContextPath(path);
 
 		{
-			WriteLock lock{ myAssetRegistryMutex };
+			WriteLock lock{ m_assetRegistryMutex };
 			myAssetRegistry.erase(path);
 		}
 
 		{
-			WriteLock lock{ myAssetCacheMutex };
-			myAssetCache.erase(asset);
+			WriteLock lock{ m_assetCacheMutex };
+			m_assetCache.erase(asset);
 		}
 
 		FileSystem::MoveToRecycleBin(projDir / path);
@@ -417,12 +482,12 @@ namespace Volt
 		const auto handle = GetAssetHandleFromPath(path);
 
 		{
-			WriteLock lock{ myAssetCacheMutex };
-			myAssetCache.erase(handle);
+			WriteLock lock{ m_assetCacheMutex };
+			m_assetCache.erase(handle);
 		}
 
 		{
-			WriteLock lock{ myAssetRegistryMutex };
+			WriteLock lock{ m_assetRegistryMutex };
 			myAssetRegistry.erase(path);
 		}
 
@@ -454,13 +519,13 @@ namespace Volt
 		if (!path.empty() && myAssetRegistry.contains(pathClean))
 		{
 			{
-				WriteLock lock{ myAssetRegistryMutex };
+				WriteLock lock{ m_assetRegistryMutex };
 				myAssetRegistry.erase(pathClean);
 			}
 
 			{
-				WriteLock lock{ myAssetCacheMutex };
-				myAssetCache.erase(asset);
+				WriteLock lock{ m_assetCacheMutex };
+				m_assetCache.erase(asset);
 			}
 
 			RemoveMetaFile(pathClean);
@@ -480,12 +545,12 @@ namespace Volt
 			const auto handle = GetAssetHandleFromPath(pathClean);
 
 			{
-				WriteLock lock{ myAssetCacheMutex };
-				myAssetCache.erase(handle);
+				WriteLock lock{ m_assetCacheMutex };
+				m_assetCache.erase(handle);
 			}
 
 			{
-				WriteLock lock{ myAssetRegistryMutex };
+				WriteLock lock{ m_assetRegistryMutex };
 				myAssetRegistry.erase(pathClean);
 			}
 
@@ -504,7 +569,7 @@ namespace Volt
 			std::vector<std::filesystem::path> filesToRemove{};
 
 			{
-				ReadLock lock{ myAssetRegistryMutex };
+				ReadLock lock{ m_assetRegistryMutex };
 				for (const auto& [path, handle] : myAssetRegistry)
 				{
 					if (path.string().contains(folderPath.string()))
@@ -519,10 +584,10 @@ namespace Volt
 				const auto& handle = GetAssetHandleFromPath(p);
 
 				{
-					WriteLock lock{ myAssetCacheMutex };
-					if (myAssetCache.contains(handle))
+					WriteLock lock{ m_assetCacheMutex };
+					if (m_assetCache.contains(handle))
 					{
-						myAssetCache.erase(handle);
+						m_assetCache.erase(handle);
 					}
 				}
 
@@ -531,7 +596,7 @@ namespace Volt
 #endif
 
 				{
-					WriteLock lock{ myAssetRegistryMutex };
+					WriteLock lock{ m_assetRegistryMutex };
 					myAssetRegistry.erase(p);
 				}
 
@@ -540,7 +605,7 @@ namespace Volt
 		}
 	}
 
-	const Volt::AssetHandle AssetManager::AddToRegistry(const std::filesystem::path& path, AssetHandle handle /*= 0*/)
+	const Volt::AssetHandle AssetManager::AddAssetToRegistry(const std::filesystem::path& path, AssetHandle handle /*= 0*/)
 	{
 		auto pathClean = GetCleanPath(path);
 
@@ -567,8 +632,8 @@ namespace Volt
 
 	bool AssetManager::IsLoaded(AssetHandle handle)
 	{
-		ReadLock lock{ Get().myAssetCacheMutex };
-		return Get().myAssetCache.contains(handle);
+		ReadLock lock{ Get().m_assetCacheMutex };
+		return Get().m_assetCache.contains(handle);
 	}
 
 	bool AssetManager::IsEngineAsset(const std::filesystem::path& path)
@@ -589,9 +654,9 @@ namespace Volt
 	Ref<Asset> AssetManager::GetAssetRaw(AssetHandle assetHandle)
 	{
 		{
-			ReadLock lock{ myAssetCacheMutex };
-			auto it = myAssetCache.find(assetHandle);
-			if (it != myAssetCache.end())
+			ReadLock lock{ m_assetCacheMutex };
+			auto it = m_assetCache.find(assetHandle);
+			if (it != m_assetCache.end())
 			{
 				return it->second;
 			}
@@ -625,7 +690,7 @@ namespace Volt
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
 		std::string ext = Utils::ToLower(extension);
-		if (!s_assetExtensionsMap.contains(ext)) [[unlikely]]
+		if (!s_assetExtensionsMap.contains(ext))
 		{
 			return AssetType::None;
 		}
@@ -656,6 +721,33 @@ namespace Volt
 		}
 
 		return Get().myAssetRegistry.at(pathClean);
+	}
+
+	const AssetMetaData& AssetManager::GetMetaDataFromHandle(AssetHandle handle)
+	{
+		auto& instance = Get();
+
+		if (!instance.m_assetRegistry.contains(handle))
+		{
+			return s_nullMetaData;
+		}
+
+		return instance.m_assetRegistry.at(handle);
+	}
+
+	const AssetMetaData& AssetManager::GetMetaDataFromFilePath(const std::filesystem::path filePath)
+	{
+		auto& instance = Get();
+
+		for (const auto& [handle, metaData] : instance.m_assetRegistry)
+		{
+			if (metaData.filePath == filePath)
+			{
+				return metaData;
+			}
+		}
+
+		return s_nullMetaData;
 	}
 
 	const std::filesystem::path AssetManager::GetPathFromAssetHandle(AssetHandle handle)
@@ -722,7 +814,7 @@ namespace Volt
 
 	bool AssetManager::ExistsInRegistry(AssetHandle handle) const
 	{
-		if (myMemoryAssets.contains(handle))
+		if (m_memoryAssets.contains(handle))
 		{
 			return true;
 		}
@@ -772,25 +864,25 @@ namespace Volt
 
 		// Check if asset is loaded
 		{
-			ReadLock registryLock{ myAssetRegistryMutex };
+			ReadLock registryLock{ m_assetRegistryMutex };
 			if (myAssetRegistry.find(path) != myAssetRegistry.end())
 			{
 				handle = myAssetRegistry.at(path);
 			}
 
-			ReadLock cacheLock{ myAssetCacheMutex };
-			if (handle != Asset::Null() && myAssetCache.find(handle) != myAssetCache.end())
+			ReadLock cacheLock{ m_assetCacheMutex };
+			if (handle != Asset::Null() && m_assetCache.find(handle) != m_assetCache.end())
 			{
-				asset = myAssetCache[handle];
+				asset = m_assetCache[handle];
 				return;
 			}
 		}
 
 		if (handle != Asset::Null())
 		{
-			WriteLock lock{ myAssetCacheMutex };
+			WriteLock lock{ m_assetCacheMutex };
 			asset->handle = handle;
-			myAssetCache.emplace(handle, asset);
+			m_assetCache.emplace(handle, asset);
 		}
 
 		asset->path = path;
@@ -802,7 +894,7 @@ namespace Volt
 			threadPool.SubmitTask([this](const std::filesystem::path& path, AssetHandle handle)
 			{
 				const auto type = GetAssetTypeFromPath(path);
-				if (!myAssetImporters.contains(type))
+				if (!m_assetImporters.contains(type))
 				{
 					VT_CORE_ERROR("No importer for asset found!");
 					return;
@@ -810,11 +902,11 @@ namespace Volt
 
 				Ref<Asset> asset;
 				{
-					ReadLock lock{ myAssetCacheMutex };
-					asset = myAssetCache.at(handle);
+					ReadLock lock{ m_assetCacheMutex };
+					asset = m_assetCache.at(handle);
 				}
 
-				myAssetImporters.at(type)->Load(path, asset);
+				m_assetImporters.at(type)->Load(path, asset);
 				if (handle != Asset::Null())
 				{
 					asset->handle = handle;
@@ -829,13 +921,13 @@ namespace Volt
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{
-					WriteLock lock{ myAssetCacheMutex };
-					myAssetCache[handle] = asset;
+					WriteLock lock{ m_assetCacheMutex };
+					m_assetCache[handle] = asset;
 				}
 
 				if (handle == Asset::Null())
 				{
-					WriteLock lock{ myAssetRegistryMutex };
+					WriteLock lock{ m_assetRegistryMutex };
 					myAssetRegistry.emplace(path, asset->handle);
 				}
 
@@ -850,9 +942,9 @@ namespace Volt
 	void AssetManager::QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset)
 	{
 		{
-			ReadLock lock{ myAssetCacheMutex };
-			auto it = myAssetCache.find(assetHandle);
-			if (it != myAssetCache.end())
+			ReadLock lock{ m_assetCacheMutex };
+			auto it = m_assetCache.find(assetHandle);
+			if (it != m_assetCache.end())
 			{
 				asset = it->second;
 				return;
@@ -872,25 +964,25 @@ namespace Volt
 
 		// Check if asset is loaded
 		{
-			ReadLock registryLock{ myAssetRegistryMutex };
+			ReadLock registryLock{ m_assetRegistryMutex };
 			if (myAssetRegistry.find(path) != myAssetRegistry.end())
 			{
 				handle = myAssetRegistry.at(path);
 			}
 
-			ReadLock cacheLock{ myAssetCacheMutex };
-			if (handle != Asset::Null() && myAssetCache.find(handle) != myAssetCache.end())
+			ReadLock cacheLock{ m_assetCacheMutex };
+			if (handle != Asset::Null() && m_assetCache.find(handle) != m_assetCache.end())
 			{
-				asset = myAssetCache[handle];
+				asset = m_assetCache[handle];
 				return;
 			}
 		}
 
 		if (handle != Asset::Null())
 		{
-			WriteLock lock{ myAssetCacheMutex };
+			WriteLock lock{ m_assetCacheMutex };
 			asset->handle = handle;
-			myAssetCache.emplace(handle, asset);
+			m_assetCache.emplace(handle, asset);
 		}
 
 		asset->path = path;
@@ -902,7 +994,7 @@ namespace Volt
 			threadPool.SubmitTask([this, loadedCallback](const std::filesystem::path& path, AssetHandle handle)
 			{
 				const auto type = GetAssetTypeFromPath(path);
-				if (!myAssetImporters.contains(type))
+				if (!m_assetImporters.contains(type))
 				{
 					VT_CORE_ERROR("No importer for asset found!");
 					return;
@@ -910,11 +1002,11 @@ namespace Volt
 
 				Ref<Asset> asset;
 				{
-					ReadLock lock{ myAssetCacheMutex };
-					asset = myAssetCache.at(handle);
+					ReadLock lock{ m_assetCacheMutex };
+					asset = m_assetCache.at(handle);
 				}
 
-				myAssetImporters.at(type)->Load(path, asset);
+				m_assetImporters.at(type)->Load(path, asset);
 				if (handle != Asset::Null())
 				{
 					asset->handle = handle;
@@ -929,13 +1021,13 @@ namespace Volt
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{
-					WriteLock lock{ myAssetCacheMutex };
-					myAssetCache[handle] = asset;
+					WriteLock lock{ m_assetCacheMutex };
+					m_assetCache[handle] = asset;
 				}
 
 				if (handle == Asset::Null())
 				{
-					WriteLock lock{ myAssetRegistryMutex };
+					WriteLock lock{ m_assetRegistryMutex };
 					myAssetRegistry.emplace(path, asset->handle);
 				}
 
@@ -952,9 +1044,9 @@ namespace Volt
 	void AssetManager::QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset, const std::function<void()>& loadedCallback)
 	{
 		{
-			ReadLock lock{ myAssetCacheMutex };
-			auto it = myAssetCache.find(assetHandle);
-			if (it != myAssetCache.end())
+			ReadLock lock{ m_assetCacheMutex };
+			auto it = m_assetCache.find(assetHandle);
+			if (it != m_assetCache.end())
 			{
 				asset = it->second;
 				return;
@@ -966,6 +1058,33 @@ namespace Volt
 		{
 			QueueAssetInternal(path, asset, loadedCallback);
 		}
+	}
+
+	AssetMetaData& AssetManager::GetMetaDataFromHandleMutable(AssetHandle handle)
+	{
+		auto& instance = Get();
+
+		if (!instance.m_assetRegistry.contains(handle))
+		{
+			return s_nullMetaData;
+		}
+
+		return instance.m_assetRegistry.at(handle);
+	}
+
+	AssetMetaData& AssetManager::GetMetaDataFromFilePathMutable(const std::filesystem::path filePath)
+	{
+		auto& instance = Get();
+
+		for (auto& [handle, metaData] : instance.m_assetRegistry)
+		{
+			if (metaData.filePath == filePath)
+			{
+				return metaData;
+			}
+		}
+
+		return s_nullMetaData;
 	}
 
 	const std::filesystem::path AssetManager::GetCleanPath(const std::filesystem::path& path)
@@ -1009,15 +1128,6 @@ namespace Volt
 		std::ofstream fout(metaPath);
 		fout << out.c_str();
 		fout.close();
-
-		//const wchar_t* fileLPCWSTR = Utils::ToWString(metaPath.string()).c_str();
-
-		//int attr = GetFileAttributes(fileLPCWSTR);
-
-		//if ((attr & FILE_ATTRIBUTE_HIDDEN) == 0)
-		//{
-		//	SetFileAttributes(fileLPCWSTR, attr | FILE_ATTRIBUTE_HIDDEN);
-		//}
 	}
 
 	bool AssetManager::HasAssetMetaFile(const std::filesystem::path& assetPath)

@@ -151,6 +151,57 @@ namespace Volt
 		{ "Net Contract", AssetType::NetContract }
 	};
 
+	struct AssetMetaData
+	{
+		template<typename T>
+		inline void SetValue(std::string_view key, const T& data)
+		{
+			if (metaData.contains(key))
+			{
+				auto& value = metaData.at(key);
+
+				if (value.type() != typeid(T))
+				{
+					VT_CORE_ASSERT(false, "Trying to set value at {0} with wrong type!", key);
+				}
+			}
+
+			metaData[key] = data;
+		}
+
+		template<typename T>
+		inline const T GetValue(std::string_view key) const
+		{
+			if (!metaData.contains(key))
+			{
+				return {};
+			}
+
+			const auto& value = metaData.at(key);
+
+			if (value.type() != typeid(T))
+			{
+				VT_CORE_ASSERT(false, "Trying to get value at {0} with wrong type!", key);
+				return {};
+			}
+
+			return metaData.at(key);
+		}
+		
+		inline const bool IsValid() const { return handle != 0; }
+
+		AssetHandle handle = 0;
+		AssetType type = AssetType::None;
+
+		bool isLoaded = false;
+		bool isQueued = false;
+		bool isMemoryAsset = false;
+
+		std::filesystem::path filePath;
+		std::vector<AssetHandle> dependencies;
+		std::unordered_map<std::string_view, std::any> metaData;
+	};
+
 	class Asset
 	{
 	public:
@@ -188,6 +239,5 @@ namespace Volt
 
 		uint16_t flags = (uint16_t)AssetFlag::None;
 		AssetHandle handle = {};
-		std::filesystem::path path;
 	};
 }
