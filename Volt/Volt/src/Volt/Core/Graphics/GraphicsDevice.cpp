@@ -42,6 +42,7 @@ namespace Volt
 			{
 				myPhysicalDevice = device; // Select first discrete GPU. Might not be the optimal one
 				break;
+
 			}
 		}
 
@@ -89,7 +90,7 @@ namespace Volt
 			{
 				myCapabilities.maxTransferQueueCount = queueFamily.queueCount;
 				myQueueFamilies.transferFamilyQueueIndex = i;
-				i++; 
+				i++;
 				continue;
 			}
 
@@ -321,6 +322,10 @@ namespace Volt
 			{
 				myDeviceQueues[QueueType::Transfer].emplace_back(myDeviceQueues[QueueType::Graphics].front());
 			}
+
+			myQueueMutexes[QueueType::Compute];
+			myQueueMutexes[QueueType::Graphics];
+			myQueueMutexes[QueueType::Transfer];
 		}
 
 		// Create main thread (faster to use) command pool
@@ -419,14 +424,13 @@ namespace Volt
 
 	void GraphicsDevice::FlushCommandBuffer(VkCommandBuffer cmdBuffer)
 	{
-		FlushCommandBuffer(cmdBuffer, myMainCommandPool, myDeviceQueues[QueueType::Graphics].at(0));
+		FlushCommandBuffer(cmdBuffer, myMainCommandPool, QueueType::Graphics);
 	}
 
-	void GraphicsDevice::FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, VkQueue queue)
+	void GraphicsDevice::FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, QueueType queueType)
 	{
 		VT_CORE_ASSERT(cmdBuffer != VK_NULL_HANDLE, "Unable to flush null command buffer!");
 
-		const std::scoped_lock<std::mutex> lock(myMainCommandBufferFlushMutex);
 		VT_VK_CHECK(vkEndCommandBuffer(cmdBuffer));
 
 		VkSubmitInfo submitInfo{};
@@ -440,16 +444,40 @@ namespace Volt
 
 		VkFence fence;
 		VT_VK_CHECK(vkCreateFence(myDevice, &fenceInfo, nullptr, &fence));
-		VT_VK_CHECK(vkQueueSubmit(queue, 1, &submitInfo, fence));
+
+		{
+			auto& mutex = myQueueMutexes[queueType];
+			std::unique_lock<std::mutex> lock{ mutex };
+			VT_VK_CHECK(vkQueueSubmit(myDeviceQueues[queueType].front(), 1, &submitInfo, fence));
+		}
+
 		VT_VK_CHECK(vkWaitForFences(myDevice, 1, &fence, VK_TRUE, 1000000000));
 
 		vkDestroyFence(myDevice, fence, nullptr);
 		vkFreeCommandBuffers(myDevice, commandPool, 1, &cmdBuffer);
 	}
 
+	void GraphicsDevice::FlushCommandBuffer(const VkSubmitInfo& submitInfo, VkFence fence, QueueType queue, uint32_t wantedQueueIndex)
+	{
+		auto& mutex = myQueueMutexes[queue];
+		std::unique_lock<std::mutex> lock{ mutex };
+
+		const uint32_t queueIndex = std::clamp(wantedQueueIndex, 0u, uint32_t(myDeviceQueues.at(queue).size()));
+		VT_VK_CHECK(vkQueueSubmit(myDeviceQueues.at(queue).at(queueIndex), 1, &submitInfo, fence));
+	}
+
 	void GraphicsDevice::FreeCommandBuffer(VkCommandBuffer cmdBuffer)
 	{
 		vkFreeCommandBuffers(myDevice, myMainCommandPool, 1, &cmdBuffer);
+	}
+
+	VkResult GraphicsDevice::QueuePresent(const VkPresentInfoKHR& presentInfo, QueueType queueType, uint32_t wantedQueueIndex)
+	{
+		auto& mutex = myQueueMutexes[queueType];
+		std::unique_lock<std::mutex> lock{ mutex };
+
+		const uint32_t queueIndex = std::clamp(wantedQueueIndex, 0u, uint32_t(myDeviceQueues.at(queueType).size()));
+		return vkQueuePresentKHR(myDeviceQueues.at(queueType).at(queueIndex), &presentInfo);
 	}
 
 	VkCommandBuffer GraphicsDevice::GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueType queueType)
@@ -458,6 +486,8 @@ namespace Volt
 		{
 			return nullptr;
 		}
+
+		std::scoped_lock lock{ myCommandBufferDataMutex };
 
 		auto physDevicePtr = myPhysicalDevice.lock();
 
@@ -496,24 +526,16 @@ namespace Volt
 			VT_VK_CHECK(vkBeginCommandBuffer(newCmdBuffer.commandBuffer, &cmdBufferBegin));
 		}
 
-		switch (queueType)
-		{
-			case QueueType::Graphics:
-				newCmdBuffer.queue = myDeviceQueues[QueueType::Graphics].back();
-				break;
-			case QueueType::Compute:
-				newCmdBuffer.queue = myDeviceQueues[QueueType::Compute].back();
-				break;
-			case QueueType::Transfer:
-				newCmdBuffer.queue = myDeviceQueues[QueueType::Transfer].back();
-				break;
-		}
+		newCmdBuffer.queue = myDeviceQueues[queueType].back();
+		newCmdBuffer.queueType = queueType;
 
 		return newCmdBuffer.commandBuffer;
 	}
 
 	void GraphicsDevice::FlushSingleUseCommandBuffer(VkCommandBuffer cmdBuffer)
 	{
+		std::scoped_lock lock{ myCommandBufferDataMutex };
+
 		VT_CORE_ASSERT(cmdBuffer != VK_NULL_HANDLE, "Unable to flush null command buffer!");
 
 		const auto threadId = std::this_thread::get_id();
@@ -521,7 +543,7 @@ namespace Volt
 		VT_CORE_ASSERT(myPerThreadCommandBuffers.find(threadId) != myPerThreadCommandBuffers.end(), "Thread ID not found in map. Was this command buffer created on another thread?");
 		auto& perThreadData = myPerThreadCommandBuffers.at(threadId);
 
-		auto it = std::find_if(perThreadData.commandBuffers.begin(), perThreadData.commandBuffers.end(), [&](const auto& data) 
+		auto it = std::find_if(perThreadData.commandBuffers.begin(), perThreadData.commandBuffers.end(), [&](const auto& data)
 		{
 			return data.commandBuffer == cmdBuffer;
 		});
@@ -537,12 +559,15 @@ namespace Volt
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = 0;
 
-		VkFence fence; 
+		VkFence fence;
 		VT_VK_CHECK(vkCreateFence(myDevice, &fenceInfo, nullptr, &fence));
 
-		std::unique_lock<std::mutex> lock{ myDeviceQueues[QueueType::Graphics].size() == 1 ? myMainCommandBufferFlushMutex : myCommandBufferFlushMutex };
+		{
+			auto& mutex = myQueueMutexes[it->queueType];
+			std::unique_lock<std::mutex> lock{ mutex };
+			VT_VK_CHECK(vkQueueSubmit(it->queue, 1, &submitInfo, fence));
+		}
 
-		VT_VK_CHECK(vkQueueSubmit(it->queue, 1, &submitInfo, fence));
 		VT_VK_CHECK(vkWaitForFences(myDevice, 1, &fence, VK_TRUE, 1000000000));
 
 		vkDestroyFence(myDevice, fence, nullptr);

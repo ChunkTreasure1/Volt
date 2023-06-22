@@ -11,6 +11,6 @@ namespace Volt
 		Ref<RenderPipeline> overridePipeline;
 
 		std::string debugName;
-		gem::vec4 debugColor = { 1.f };
+		glm::vec4 debugColor = { 1.f };
 	};
 }

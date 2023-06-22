@@ -71,12 +71,16 @@ void Volt::Vision::Update(float aDeltaTime)
 {
 	std::vector<Wire::EntityId> cams = myScene->GetRegistry().GetComponentView<Volt::VisionCameraComponent>();
 
+	cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetId()), cams.end());
+
 	if (myVTCams.size() != cams.size())
 	{
 		myVTCams.clear();
 		for (auto& cam : cams)
 		{
 			Volt::Entity newCam{ cam, myScene };
+
+			newCam.GetComponent<Volt::VisionCameraComponent>().Init(newCam);
 
 			myVTCams.push_back(newCam);
 		}
@@ -120,7 +124,7 @@ void Volt::Vision::InitTransitionCam()
 				myTransitionCamera.SetLocalRotation(myLastActiveCamera.GetRotation());
 			}
 		}
-		myTransitionCameraStartFoV = myTransitionCamera.GetComponent<Volt::CameraComponent>().fieldOfView;
+		myTransitionCameraStartFoV = myActiveCamera.GetComponent<Volt::CameraComponent>().fieldOfView;
 	}
 
 	auto& vtCamComp = myTransitionCamera.GetComponent<Volt::VisionCameraComponent>();
@@ -199,7 +203,7 @@ void Volt::Vision::ShakeCamera(const float aDeltaTime)
 		myIsShaking = false;
 		return;
 	}
-	gem::vec3 rotOffset;
+	glm::vec3 rotOffset;
 
 	Volt::Noise::SetSeed((int32_t)myNoiseSeeds.x);
 	Volt::Noise::SetFrequency(myCurrentShakeSetting.rotationAmount.x);
@@ -215,9 +219,9 @@ void Volt::Vision::ShakeCamera(const float aDeltaTime)
 
 	float magPersentage = (myCurrentShakeSetting.shakeTime - myNoiseStep) / myCurrentShakeSetting.shakeTime;
 
-	rotOffset *= gem::lerp(0.f, myMaxShakeMag, magPersentage);
+	rotOffset *= glm::mix(0.f, myMaxShakeMag, magPersentage);
 
-	myCurrentShakeCamera.SetRotation(myCurrentShakeCamera.GetRotation() * gem::quat(gem::radians(rotOffset)));
+	myCurrentShakeCamera.SetRotation(myCurrentShakeCamera.GetRotation() * glm::quat(glm::radians(rotOffset)));
 }
 
 void Volt::Vision::BlendCameras(float aDeltaTime)
@@ -262,11 +266,11 @@ void Volt::Vision::BlendCameras(float aDeltaTime)
 			break;
 
 		case Volt::eBlendType::EaseIn:
-			t = 1.f - gem::cos(t * gem::pi() * 0.5f);
+			t = 1.f - glm::cos(t * glm::pi<float>() * 0.5f);
 			break;
 
 		case Volt::eBlendType::EaseOut:
-			t = gem::sin(t * gem::pi() * 0.5f);
+			t = glm::sin(t * glm::pi<float>() * 0.5f);
 			break;
 
 		default:
@@ -275,20 +279,20 @@ void Volt::Vision::BlendCameras(float aDeltaTime)
 
 	if (transitionVtCamComp.additiveBlend == true)
 	{
-		myTransitionCamera.SetPosition(gem::lerp(myLastActiveCamera.GetPosition(), myActiveCamera.GetPosition(), t));
+		myTransitionCamera.SetPosition(glm::mix(myLastActiveCamera.GetPosition(), myActiveCamera.GetPosition(), t));
 
-		const auto q = gem::slerp(gem::normalize(myLastActiveCamera.GetRotation()), gem::normalize(myActiveCamera.GetRotation()), t);
+		const auto q = glm::slerp(glm::normalize(myLastActiveCamera.GetRotation()), glm::normalize(myActiveCamera.GetRotation()), t);
 		myTransitionCamera.SetRotation(q);
 	}
 	else
 	{
-		myTransitionCamera.SetPosition(gem::lerp(myTransitionCamStartPos, myActiveCamera.GetPosition(), t));
+		myTransitionCamera.SetPosition(glm::mix(myTransitionCamStartPos, myActiveCamera.GetPosition(), t));
 
-		const auto q = gem::slerp(gem::normalize(myTransitionCamStartRot), gem::normalize(myActiveCamera.GetRotation()), t);
+		const auto q = glm::slerp(glm::normalize(myTransitionCamStartRot), glm::normalize(myActiveCamera.GetRotation()), t);
 		myTransitionCamera.SetRotation(q);
 	}
 
-	transitionBaseCamComp.fieldOfView = gem::lerp(myTransitionCameraStartFoV, activeBaseCamComp.fieldOfView, t);
+	transitionBaseCamComp.fieldOfView = glm::mix(myTransitionCameraStartFoV, activeBaseCamComp.fieldOfView, t);
 }
 
 void Volt::Vision::SetActiveCamera(const std::string aCamName)
@@ -481,6 +485,19 @@ void Volt::Vision::SetCameraLocked(Volt::Entity aCamera, bool locked)
 		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
 		{
 			aCamera.GetComponent<Volt::VisionCameraComponent>().myIsLocked = locked;
+		}
+	}
+}
+
+void Volt::Vision::SetCameraMouseSensentivity(Volt::Entity aCamera, float mouseSens)
+{
+	if (myVTCams.empty()) { return; }
+
+	if (aCamera)
+	{
+		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
+		{
+			aCamera.GetComponent<Volt::VisionCameraComponent>().mouseSensitivity = mouseSens;
 		}
 	}
 }

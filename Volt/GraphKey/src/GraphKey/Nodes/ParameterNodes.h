@@ -17,7 +17,7 @@ namespace GraphKey
 		~GetParameterNode() override = default;
 
 		inline const std::string GetName() override { return "Get " + myGraph->GetParameterNameFromId(parameterId); }
-		inline const gem::vec4 GetColor() override { return { 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void GetParameter();
@@ -30,7 +30,7 @@ namespace GraphKey
 		~SetParameterNode() override = default;
 
 		inline const std::string GetName() override { return "Set " + myGraph->GetParameterNameFromId(parameterId); }
-		inline const gem::vec4 GetColor() override { return { 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void SetParameter();

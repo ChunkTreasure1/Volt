@@ -23,6 +23,7 @@ namespace Volt
 	{
 	public:
 		ComputePipeline(Ref<Shader> computeShader, uint32_t count, bool useGlobalDescriptors);
+		ComputePipeline(Ref<Shader> computeShader, uint32_t count, bool useGlobalDescriptors, const ShaderDataBuffer& specializationConstants);
 		~ComputePipeline();
 
 		void Bind(VkCommandBuffer commandBuffer);
@@ -56,7 +57,10 @@ namespace Volt
 
 		inline const Ref<Shader> GetShader() const { return myShader; }
 
+		inline ShaderDataBuffer& GetSpecializationConstantBuffer() { return mySpecializationConstantsBuffer; }
+
 		static Ref<ComputePipeline> Create(Ref<Shader> computeShader, uint32_t count = 1, bool useGlobalDescriptors = false);
+		static Ref<ComputePipeline> Create(Ref<Shader> computeShader, uint32_t count, bool useGlobalDescriptors, const ShaderDataBuffer& specializationConstants);
 
 	private:
 		void Release();
@@ -97,6 +101,7 @@ namespace Volt
 		Ref<Shader> myShader;
 		uint32_t myCount;
 		bool myUseGlobalDescriptors = false;
+		bool myIsPermutation = false;
 
 		VkPipelineLayout myPipelineLayout = nullptr;
 		VkPipelineCache myPipelineCache = nullptr;
@@ -113,5 +118,7 @@ namespace Volt
 
 		std::map<uint32_t, std::map<uint32_t, uint32_t>> myImageBarrierIndexMap;
 		std::map<uint32_t, std::map<uint32_t, uint32_t>> myBufferBarrierIndexMap;
+
+		ShaderDataBuffer mySpecializationConstantsBuffer;
 	};
 }

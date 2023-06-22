@@ -63,7 +63,7 @@ namespace Volt
 
 		component.added = true;
 
-		const gem::vec3 colliderSize = gem::abs(transform.scale * component.halfSize);
+		const glm::vec3 colliderSize = glm::abs(transform.scale * component.halfSize);
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		myShape = physx::PxRigidActorExt::createExclusiveShape(actor.GetActor(), geometry, *myMaterial);
 		myShape->setSimulationFilterData(actor.GetFilterData());
@@ -71,7 +71,7 @@ namespace Volt
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset * transform.scale, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset * transform.scale, glm::vec3{ 0.f }));
 		myShape->userData = this;
 	}
 
@@ -79,7 +79,7 @@ namespace Volt
 	{
 	}
 
-	void BoxColliderShape::SetHalfSize(const gem::vec3& halfSize)
+	void BoxColliderShape::SetHalfSize(const glm::vec3& halfSize)
 	{
 		Scene::TQS transform;
 
@@ -88,7 +88,7 @@ namespace Volt
 			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
 		}
 
-		const gem::vec3 colliderSize = transform.scale * halfSize;
+		const glm::vec3 colliderSize = transform.scale * halfSize;
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		myShape->setGeometry(geometry);
 
@@ -104,9 +104,9 @@ namespace Volt
 		myEntity.GetComponent<BoxColliderComponent>().isTrigger = isTrigger;
 	}
 
-	void BoxColliderShape::SetOffset(const gem::vec3& offset)
+	void BoxColliderShape::SetOffset(const glm::vec3& offset)
 	{
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, glm::vec3{ 0.f }));
 		myEntity.GetComponent<BoxColliderComponent>().offset = offset;
 	}
 
@@ -138,7 +138,7 @@ namespace Volt
 			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
 		}
 
-		const float maxScale = gem::max(transform.scale.x, gem::max(transform.scale.y, transform.scale.z));
+		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
 
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(maxScale * component.radius);
 		myShape = physx::PxRigidActorExt::createExclusiveShape(actor.GetActor(), geometry, *myMaterial);
@@ -147,7 +147,7 @@ namespace Volt
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, glm::vec3{ 0.f }));
 		myShape->userData = this;
 	}
 
@@ -164,7 +164,7 @@ namespace Volt
 			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
 		}
 
-		const float maxScale = gem::max(transform.scale.x, gem::max(transform.scale.y, transform.scale.z));
+		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
 
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(maxScale * radius);
 		myShape->setGeometry(geometry);
@@ -172,9 +172,9 @@ namespace Volt
 		myEntity.GetComponent<SphereColliderComponent>().radius = radius;
 	}
 
-	void SphereColliderShape::SetOffset(const gem::vec3& offset)
+	void SphereColliderShape::SetOffset(const glm::vec3& offset)
 	{
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, gem::vec3{ 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, glm::vec3{ 0.f }));
 		myEntity.GetComponent<SphereColliderComponent>().offset = offset;
 	}
 
@@ -215,7 +215,7 @@ namespace Volt
 			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
 		}
 
-		const float radiusScale = gem::max(transform.scale.x, transform.scale.z);
+		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
 		const float heightScale = transform.scale.y;
 
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.radius * radiusScale, (component.height / 2.f) * heightScale);
@@ -227,7 +227,7 @@ namespace Volt
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !component.isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.isTrigger);
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, gem::vec3{ 0.f, gem::pi() / 2.f, 0.f }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(component.offset, glm::vec3{ 0.f, glm::pi<float>() / 2.f, 0.f }));
 		myShape->userData = this;
 	}
 
@@ -264,7 +264,7 @@ namespace Volt
 			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
 		}
 
-		const float radiusScale = gem::max(transform.scale.x, transform.scale.z);
+		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
 
 		physx::PxCapsuleGeometry oldGeom;
 		myShape->getCapsuleGeometry(oldGeom);
@@ -275,9 +275,9 @@ namespace Volt
 		myEntity.GetComponent<CapsuleColliderComponent>().radius = radius;
 	}
 
-	void CapsuleColliderShape::SetOffset(const gem::vec3& offset)
+	void CapsuleColliderShape::SetOffset(const glm::vec3& offset)
 	{
-		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, gem::quat{ gem::vec3{ 0.f } }));
+		myShape->setLocalPose(PhysXUtilities::ToPhysXTransform(offset, glm::quat{ glm::vec3{ 0.f } }));
 		myEntity.GetComponent<CapsuleColliderComponent>().offset = offset;
 	}
 
@@ -388,7 +388,7 @@ namespace Volt
 	{
 	}
 
-	void ConvexMeshShape::SetOffset(const gem::vec3&)
+	void ConvexMeshShape::SetOffset(const glm::vec3&)
 	{
 	}
 
@@ -507,7 +507,7 @@ namespace Volt
 	{
 	}
 
-	void TriangleMeshShape::SetOffset(const gem::vec3&)
+	void TriangleMeshShape::SetOffset(const glm::vec3&)
 	{
 	}
 

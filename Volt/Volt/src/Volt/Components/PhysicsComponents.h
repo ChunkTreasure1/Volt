@@ -5,7 +5,7 @@
 #include "Volt/Physics/PhysicsEnums.h"
 
 #include <Wire/Serialization.h>
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -70,22 +70,22 @@ namespace Volt
 
 	struct LastBoxColliderData
 	{
-		gem::vec3 halfSize = { 50.f, 50.f, 50.f };
-		gem::vec3 offset = { 0.f, 0.f, 0.f };
+		glm::vec3 halfSize = { 50.f, 50.f, 50.f };
+		glm::vec3 offset = { 0.f, 0.f, 0.f };
 		bool isTrigger = false;
 		AssetHandle material = Asset::Null();
 	};
 
 	SERIALIZE_COMPONENT((struct BoxColliderComponent
 	{
-		PROPERTY(Name = Half Size) gem::vec3 halfSize = { 50.f, 50.f, 50.f };
-		PROPERTY(Name = Offset) gem::vec3 offset = { 0.f, 0.f, 0.f };
+		PROPERTY(Name = Half Size) glm::vec3 halfSize = { 50.f, 50.f, 50.f };
+		PROPERTY(Name = Offset) glm::vec3 offset = { 0.f, 0.f, 0.f };
 		PROPERTY(Name = Is Trigger) bool isTrigger = false;
 		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
 
 		bool added = false;
 
-		inline BoxColliderComponent(const gem::vec3& aHalfSize = { 50.f, 50.f, 50.f }, const gem::vec3& aOffset = { 0.f }, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null())
+		inline BoxColliderComponent(const glm::vec3& aHalfSize = { 50.f, 50.f, 50.f }, const glm::vec3& aOffset = { 0.f }, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null())
 			: halfSize(aHalfSize), offset(aOffset), isTrigger(aIsTrigger), material(aMaterial)
 		{
 		}
@@ -96,7 +96,7 @@ namespace Volt
 	struct LastSphereColliderData
 	{
 		float radius = 50.f;
-		gem::vec3 offset = { 0.f, 0.f, 0.f };
+		glm::vec3 offset = { 0.f, 0.f, 0.f };
 		bool isTrigger = false;
 		AssetHandle material = Asset::Null();
 	};
@@ -104,13 +104,13 @@ namespace Volt
 	SERIALIZE_COMPONENT((struct SphereColliderComponent
 	{
 		PROPERTY(Name = Radius) float radius = 50.f;
-		PROPERTY(Name = Offset) gem::vec3 offset = { 0.f, 0.f, 0.f };
+		PROPERTY(Name = Offset) glm::vec3 offset = { 0.f, 0.f, 0.f };
 		PROPERTY(Name = Is Trigger) bool isTrigger = false;
 		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
 
 		bool added = false;
 
-		inline SphereColliderComponent(float aRadius = 50.f, const gem::vec3& aOffset = { 0.f }, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null())
+		inline SphereColliderComponent(float aRadius = 50.f, const glm::vec3& aOffset = { 0.f }, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null())
 			: radius(aRadius), offset(aOffset), isTrigger(aIsTrigger), material(aMaterial)
 		{
 		}
@@ -122,7 +122,7 @@ namespace Volt
 	{
 		float radius = 50.f;
 		float height = 50.f;
-		gem::vec3 offset = { 0.f, 0.f, 0.f };
+		glm::vec3 offset = { 0.f, 0.f, 0.f };
 		bool isTrigger = false;
 		AssetHandle material = Asset::Null();
 	};
@@ -131,13 +131,13 @@ namespace Volt
 	{
 		PROPERTY(Name = Radius) float radius = 50.f;
 		PROPERTY(Name = Height) float height = 50.f;
-		PROPERTY(Name = Offset) gem::vec3 offset = { 0.f, 0.f, 0.f };
+		PROPERTY(Name = Offset) glm::vec3 offset = { 0.f, 0.f, 0.f };
 		PROPERTY(Name = Is Trigger) bool isTrigger = false;
 		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
 
 		bool added = false;
 
-		inline CapsuleColliderComponent(float aRadius = 50.f, float aHeight = 50.f, const gem::vec3& aOffset = { 0.f }, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null())
+		inline CapsuleColliderComponent(float aRadius = 50.f, float aHeight = 50.f, const glm::vec3& aOffset = { 0.f }, bool aIsTrigger = false, AssetHandle aMaterial = Asset::Null())
 			: radius(aRadius), height(aHeight), offset(aOffset), isTrigger(aIsTrigger), material(aMaterial)
 		{
 		}

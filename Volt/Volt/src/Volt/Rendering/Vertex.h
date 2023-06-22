@@ -2,25 +2,25 @@
 
 #include "Volt/Rendering/Buffer/BufferLayout.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <half/half.hpp>
 
 namespace Volt
 {
-	static bool AbsEqualVector(const gem::vec3& aFirst, const gem::vec3& aSecond)
+	static bool AbsEqualVector(const glm::vec3& aFirst, const glm::vec3& aSecond)
 	{
 		return std::abs(aFirst.x - aSecond.x) < std::numeric_limits<float>::epsilon() &&
 			std::abs(aFirst.y - aSecond.y) < std::numeric_limits<float>::epsilon() &&
 			std::abs(aFirst.z - aSecond.z) < std::numeric_limits<float>::epsilon();
 	}
 
-	static bool AbsEqualVector(const gem::vec2& aFirst, const gem::vec2& aSecond)
+	static bool AbsEqualVector(const glm::vec2& aFirst, const glm::vec2& aSecond)
 	{
 		return std::abs(aFirst.x - aSecond.x) < std::numeric_limits<float>::epsilon() &&
 			std::abs(aFirst.y - aSecond.y) < std::numeric_limits<float>::epsilon();
 	}
 
-	static bool AbsEqualVector(const gem::vec4& aFirst, const gem::vec4& aSecond)
+	static bool AbsEqualVector(const glm::vec4& aFirst, const glm::vec4& aSecond)
 	{
 		return std::abs(aFirst.x - aSecond.x) < std::numeric_limits<float>::epsilon() &&
 			std::abs(aFirst.y - aSecond.y) < std::numeric_limits<float>::epsilon() &&
@@ -28,7 +28,7 @@ namespace Volt
 			std::abs(aFirst.w - aSecond.w) < std::numeric_limits<float>::epsilon();
 	}
 
-	static bool AbsEqualVector(const gem::vec4ui& aFirst, const gem::vec4ui& aSecond)
+	static bool AbsEqualVector(const glm::uvec4& aFirst, const glm::uvec4& aSecond)
 	{
 		return aFirst == aSecond;
 	}
@@ -37,12 +37,12 @@ namespace Volt
 	{
 		Vertex() = default;
 
-		Vertex(const gem::vec3& aPosition)
+		Vertex(const glm::vec3& aPosition)
 			: position(aPosition)
 		{
 		}
 
-		Vertex(const gem::vec3& aPosition, const gem::vec2& aTexCoords)
+		Vertex(const glm::vec3& aPosition, const glm::vec2& aTexCoords)
 			: position(aPosition)
 		{
 			texCoords = aTexCoords;
@@ -72,14 +72,14 @@ namespace Volt
 			return bPos;
 		}
 
-		gem::vec3 position = gem::vec3(0.f);
-		gem::vec3 normal = gem::vec3(0.f);
-		gem::vec3 tangent = gem::vec3(0.f);
+		glm::vec3 position = glm::vec3(0.f);
+		glm::vec3 normal = glm::vec3(0.f);
+		glm::vec3 tangent = glm::vec3(0.f);
 
-		gem::vec2 texCoords{ 0.f };
+		glm::vec2 texCoords{ 0.f };
 
-		gem::vec4ui influences = { 0, 0, 0, 0 };
-		gem::vec4 weights = { 0.f, 0.f, 0.f, 0.f };
+		glm::uvec4 influences = { 0, 0, 0, 0 };
+		glm::vec4 weights = { 0.f, 0.f, 0.f, 0.f };
 
 		inline static const BufferLayout GetVertexLayout()
 		{
@@ -102,29 +102,29 @@ namespace Volt
 
 	struct EncodedVertex
 	{
-		gem::vec3 position = 0.f;
+		glm::vec3 position = 0.f;
 
-		gem::vec<4, uint8_t> normal;
+		glm::vec<4, uint8_t> normal;
 		float tangent = 0.f;
 
-		gem::vec<2, half_float::half> texCoords;
+		half_float::half texCoords[2] = { half_float::half(0.f), half_float::half(0.f) };
 
-		gem::vec<4, uint16_t> influences = 0;
-		gem::vec<4, half_float::half> weights = half_float::half(0.f);
+		glm::vec<4, uint16_t> influences = 0;
+		half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
 	};
 
 	struct SpriteVertex
 	{
-		gem::vec4 position = gem::vec4(0.f);
-		gem::vec4 color = gem::vec4(1.f);
-		gem::vec2 texCoords = gem::vec2(0.f);
+		glm::vec4 position = glm::vec4(0.f);
+		glm::vec4 color = glm::vec4(1.f);
+		glm::vec2 texCoords = glm::vec2(0.f);
 	};
 
 	struct BillboardVertex
 	{
-		gem::vec4 postition = gem::vec4(0.f);
-		gem::vec4 color = gem::vec4(1.f);
-		gem::vec3 scale = gem::vec3(1.f);
+		glm::vec4 postition = glm::vec4(0.f);
+		glm::vec4 color = glm::vec4(1.f);
+		glm::vec3 scale = glm::vec3(1.f);
 		uint32_t textureIndex = 0;
 		uint32_t id = 0;
 
@@ -145,8 +145,8 @@ namespace Volt
 
 	struct LineVertex
 	{
-		gem::vec4 position = gem::vec4(0.f);
-		gem::vec4 color = gem::vec4(1.f);
+		glm::vec4 position = glm::vec4(0.f);
+		glm::vec4 color = glm::vec4(1.f);
 
 		inline static const BufferLayout GetVertexLayout()
 		{
@@ -162,9 +162,9 @@ namespace Volt
 
 	struct TextVertex
 	{
-		gem::vec4 position = gem::vec4(0.f);
-		gem::vec4 color = gem::vec4(1.f);
-		gem::vec2 texCoords = gem::vec2(0.f);
+		glm::vec4 position = glm::vec4(0.f);
+		glm::vec4 color = glm::vec4(1.f);
+		glm::vec2 texCoords = glm::vec2(0.f);
 		uint32_t textureIndex = 0;
 
 		inline static const BufferLayout GetVertexLayout()

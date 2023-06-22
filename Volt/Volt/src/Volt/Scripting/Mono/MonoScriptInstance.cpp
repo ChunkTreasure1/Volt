@@ -201,6 +201,11 @@ namespace Volt
 		SetFieldInternal(name, value);
 	}
 
+	void MonoScriptInstance::SetField(const std::string& name, const std::string& value)
+	{
+		SetFieldInternal(name, value);
+	}
+
 	bool MonoScriptInstance::GetFieldInternal(const std::string& name, void* outData)
 	{
 		auto instance = MonoGCManager::GetObjectFromHandle(myHandle);
@@ -237,6 +242,53 @@ namespace Volt
 
 		const auto& field = fields.at(name);
 		mono_field_set_value(instance, field.fieldPtr, (void*)value);
+		return true;
+	}
+
+	bool MonoScriptInstance::SetFieldInternal(const std::string& name, const std::string& value)
+	{
+		auto instance = MonoGCManager::GetObjectFromHandle(myHandle);
+		if (!instance)
+		{
+			return false;
+		}
+
+		const auto& fields = myMonoClass->GetFields();
+		if (!fields.contains(name))
+		{
+			return false;
+		}
+
+		const auto& field = fields.at(name);
+
+		MonoString* monoStr = MonoScriptUtils::GetMonoStringFromString(value);
+		mono_field_set_value(instance, field.fieldPtr, monoStr);
+		return true;
+	}
+
+	bool MonoScriptInstance::GetFieldInternal(const std::string& name, std::string& outData)
+	{
+		auto instance = MonoGCManager::GetObjectFromHandle(myHandle);
+		if (!instance)
+		{
+			return false;
+		}
+
+		const auto& fields = myMonoClass->GetFields();
+		if (!fields.contains(name))
+		{
+			return false;
+		}
+
+		const auto& field = fields.at(name);
+		MonoObject* monoStr = mono_field_get_value_object(MonoScriptEngine::GetAppDomain(), field.fieldPtr, instance);
+		if (!monoStr)
+		{
+			return false;
+		}
+
+		outData = MonoScriptUtils::GetStringFromMonoString((MonoString*)monoStr);
+
 		return true;
 	}
 }

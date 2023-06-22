@@ -8,7 +8,7 @@
 #include <Volt/Events/KeyEvent.h>
 #include <Volt/Events/MouseEvent.h>
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <Wire/Wire.h>
 
 namespace Volt
@@ -95,7 +95,7 @@ private:
 	bool myHasSearchQuery = false;
 	bool myShouldDeleteSelected = false;
 
-	gem::vec2 myViewBounds[2];
+	glm::vec2 myViewBounds[2];
 
 	std::string mySearchQuery;
 	std::vector<Ref<AssetBrowser::DirectoryItem>> mySearchDirectories;

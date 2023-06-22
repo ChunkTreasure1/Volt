@@ -121,7 +121,7 @@ namespace Volt
 			const VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			submitInfo.pWaitDstStageMask = &waitStage;
 
-			VT_VK_CHECK(vkQueueSubmit(GraphicsContext::GetDevice()->GetGraphicsQueue(), 1, &submitInfo, frameData.fence));
+			GraphicsContext::GetDevice()->FlushCommandBuffer(submitInfo, frameData.fence, QueueType::Graphics);
 		}
 
 		// Present to screen
@@ -139,7 +139,7 @@ namespace Volt
 			presentInfo.pImageIndices = &myCurrentImage;
 
 			OPTICK_GPU_FLIP(&mySwapchain);
-			VkResult presentResult = vkQueuePresentKHR(GraphicsContext::GetDevice()->GetGraphicsQueue(), &presentInfo);
+			VkResult presentResult = GraphicsContext::GetDevice()->QueuePresent(presentInfo, QueueType::Graphics);
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{
 				Resize(myWidth, myHeight, myVSyncEnabled);

@@ -53,6 +53,9 @@ namespace Amp
 
 		bool ExecuteEventAction(AK::SoundEngine::AkActionOnEventType aAction, AkPlayingID aPlayingID);
 
+		bool StopAllEvents();
+		bool StopAllEvents(UINT64 AkGameObjectID);
+
 		//GAME SYNCS
 		bool SetState(const char* aStateGroup, const char* aState);
 		bool SetSwitch(const char* aStateGroup, const char* aState, UINT64 AkGameObjectID);

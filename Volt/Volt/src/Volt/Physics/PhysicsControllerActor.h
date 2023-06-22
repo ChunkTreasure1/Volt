@@ -30,17 +30,17 @@ namespace Volt
 		void SetHeight(float height);
 		void SetRadius(float radius);
 
-		void Move(const gem::vec3& velocity);
+		void Move(const glm::vec3& velocity);
 		void Jump(float jumpPower);
 
-		void SetPosition(const gem::vec3& position);
-		void SetFootPosition(const gem::vec3& position);
+		void SetPosition(const glm::vec3& position);
+		void SetFootPosition(const glm::vec3& position);
 
-		void SetAngularVelocity(const gem::vec3& velocity);
-		const gem::vec3 GetAngularVelocity() const;
+		void SetAngularVelocity(const glm::vec3& velocity);
+		const glm::vec3 GetAngularVelocity() const;
 
-		void SetLinearVelocity(const gem::vec3& velocity);
-		const gem::vec3 GetLinearVelocity() const;
+		void SetLinearVelocity(const glm::vec3& velocity);
+		const glm::vec3 GetLinearVelocity() const;
 
 		void SetGravity(const float& gravity) { myGravity = gravity; };
 		float GetGravity() { return myGravity; };
@@ -48,11 +48,11 @@ namespace Volt
 		const bool IsGrounded() const;
 		const bool IsValid() const;
 
-		const gem::vec3 GetPosition() const;
-		const gem::vec3 GetFootPosition() const;
+		const glm::vec3 GetPosition() const;
+		const glm::vec3 GetFootPosition() const;
 
 		void SetSimulationData(uint32_t layerId) override;
-		void SetOffset(const gem::vec3& offset);
+		void SetOffset(const glm::vec3& offset);
 
 	protected:
 		friend class PhysicsScene;
@@ -75,7 +75,7 @@ namespace Volt
 
 		float myDeltaTime = 0.f;
 
-		gem::vec3 myMovement = 0.f;
-		gem::vec3 myOffset = 0.f;
+		glm::vec3 myMovement = 0.f;
+		glm::vec3 myOffset = 0.f;
 	};
 }

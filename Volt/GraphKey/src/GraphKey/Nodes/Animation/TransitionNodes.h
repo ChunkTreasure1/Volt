@@ -12,6 +12,6 @@ namespace GraphKey
 		const bool Evaluate();
 
 		inline const std::string GetName() override { return "Result"; }
-		inline const gem::vec4 GetColor() override { return { 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 1.f }; }
 	};
 }

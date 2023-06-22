@@ -4,7 +4,7 @@
 
 #include <Volt/Scene/Entity.h>
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace GraphKey
 {
@@ -15,7 +15,7 @@ namespace GraphKey
 		~GetEntityTransformNode() override = default;
 
 		inline const std::string GetName() override { return "Get Entity Transform"; }
-		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 		void Initialize() override;
 
@@ -32,7 +32,7 @@ namespace GraphKey
 		~SetEntityTransformNode() override = default;
 
 		inline const std::string GetName() override { return "Set Entity Transform"; }
-		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 		void Initialize() override;
 
@@ -48,7 +48,7 @@ namespace GraphKey
 		~SetEntityPositionNode() override = default;
 
 		inline const std::string GetName() override { return "Set Entity Position"; }
-		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 		void Initialize() override;
 
@@ -63,7 +63,7 @@ namespace GraphKey
 		~SetEntityRotationNode() override = default;
 
 		inline const std::string GetName() override { return "Set Entity Rotation"; }
-		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 		void Initialize() override;
 
@@ -78,7 +78,7 @@ namespace GraphKey
 		~AddEntityRotationNode() override = default;
 
 		inline const std::string GetName() override { return "Add Entity Rotation"; }
-		inline const gem::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.3f, 1.f, 0.49f, 1.f }; }
 
 		void Initialize() override;
 

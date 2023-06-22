@@ -14,7 +14,7 @@ namespace Volt
 	class GTAOTechnique
 	{
 	public:
-		GTAOTechnique(Ref<Camera> camera, const gem::vec2ui& renderSize, uint64_t frameIndex, const GTAOSettings& settings);
+		GTAOTechnique(Ref<Camera> camera, const glm::uvec2& renderSize, uint64_t frameIndex, const GTAOSettings& settings);
 
 		void AddPrefilterDepthPass(FrameGraph& frameGraph, Ref<ComputePipeline> prefilterDepthPipeline, FrameGraphResourceHandle srcDepthHandle);
 		void AddMainPass(FrameGraph& frameGraph, Ref<ComputePipeline> mainPassPipeline, FrameGraphResourceHandle viewNormalsHandle);
@@ -23,16 +23,16 @@ namespace Volt
 	private:
 		struct GTAOConstants
 		{
-			gem::vec2ui ViewportSize;
-			gem::vec2 ViewportPixelSize;                  // .zw == 1.0 / ViewportSize.xy
+			glm::uvec2 ViewportSize;
+			glm::vec2 ViewportPixelSize;                  // .zw == 1.0 / ViewportSize.xy
 
-			gem::vec2 DepthUnpackConsts = { -0.01f, -1.e10f };
-			gem::vec2 CameraTanHalfFOV = { 0.99057f, 0.52057f };
+			glm::vec2 DepthUnpackConsts = { -0.01f, -1.e10f };
+			glm::vec2 CameraTanHalfFOV = { 0.99057f, 0.52057f };
 
-			gem::vec2 NDCToViewMul = { 1.98115f, -1.04113f };
-			gem::vec2 NDCToViewAdd = { -0.99057f, 0.52057f };
+			glm::vec2 NDCToViewMul = { 1.98115f, -1.04113f };
+			glm::vec2 NDCToViewAdd = { -0.99057f, 0.52057f };
 
-			gem::vec2 NDCToViewMul_x_PixelSize = { NDCToViewMul.x * ViewportPixelSize.x, NDCToViewMul.y * ViewportPixelSize.y };
+			glm::vec2 NDCToViewMul_x_PixelSize = { NDCToViewMul.x * ViewportPixelSize.x, NDCToViewMul.y * ViewportPixelSize.y };
 			float EffectRadius = 0.5f;                       // world (viewspace) maximum size of the shadow
 			float EffectFalloffRange = 0.615f;
 
@@ -47,7 +47,7 @@ namespace Volt
 			int NoiseIndex = 0;                         // frameIndex % 64 if using TAA or 0 otherwise
 		} myConstants;
 
-		gem::vec2ui myRenderSize = {};
+		glm::uvec2 myRenderSize = {};
 
 		uint64_t myFrameIndex = 0;
 	};

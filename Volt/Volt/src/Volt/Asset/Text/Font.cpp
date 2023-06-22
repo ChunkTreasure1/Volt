@@ -9,6 +9,8 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 
+#include "Volt/Core/Application.h"
+
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/StringUtility.h"
 
@@ -383,7 +385,7 @@ namespace Volt
 		return false;
 	}
 
-	float Font::GetStringWidth(const std::string& string, const gem::vec2& scale, float maxWidth)
+	float Font::GetStringWidth(const std::string& string, const glm::vec2& scale, float maxWidth)
 	{
 		std::u32string utf32string = Utils::To_UTF32(string);
 
@@ -426,13 +428,13 @@ namespace Volt
 					// Calculate geometry
 					double pl, pb, pr, pt;
 					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-					gem::vec2 quadMin((float)pl, (float)pb);
-					gem::vec2 quadMax((float)pl, (float)pb);
+					glm::vec2 quadMin((float)pl, (float)pb);
+					glm::vec2 quadMax((float)pl, (float)pb);
 
 					quadMin *= (float)fsScale;
 					quadMax *= (float)fsScale;
-					quadMin += gem::vec2((float)x, (float)y);
-					quadMax += gem::vec2((float)x, (float)y);
+					quadMin += glm::vec2((float)x, (float)y);
+					quadMax += glm::vec2((float)x, (float)y);
 
 					if (quadMax.x > maxWidth && lastSpace != -1)
 					{
@@ -454,9 +456,14 @@ namespace Volt
 			}
 		}
 
+		const glm::mat4 transform = glm::scale(glm::mat4{ 1.f }, { scale.x, scale.y, 1.f });
+
 		double x = 0.0;
 		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 		double y = 0.0;
+
+		std::vector<double> widths;
+		widths.emplace_back(0.0);
 
 		for (int32_t i = 0; i < utf32string.size(); i++)
 		{
@@ -465,6 +472,8 @@ namespace Volt
 			{
 				x = 0.0;
 				y -= fsScale * metrics.lineHeight;
+
+				widths.emplace_back(0.0);
 				continue;
 			}
 
@@ -483,11 +492,141 @@ namespace Volt
 			double pl, pb, pr, pt;
 			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
 
+			pr *= fsScale;
+
 			double advance = glyph->getAdvance();
 			fontGeom.getAdvance(advance, character, utf32string[i + 1]);
-			x += fsScale * advance * scale.x;
+
+			const auto transformedPosition = transform * glm::vec4{ float(fsScale* advance), 0.f, 0.f, 1.f };
+			widths.back() += transformedPosition.x;
 		}
 
-		return (float)x;
+		double maxStringWidth = 0.0;
+
+		for (const auto& width : widths)
+		{
+			maxStringWidth = std::max(width, maxStringWidth);
+		}
+
+		return (float)maxStringWidth;
+	}
+	
+	float Font::GetStringHeight(const std::string& string, const glm::vec2& scale, float maxWidth)
+	{
+		std::u32string utf32string = Utils::To_UTF32(string);
+
+		auto& fontGeom = GetMSDFData()->fontGeometry;
+		const auto& metrics = fontGeom.getMetrics();
+
+		std::vector<int32_t> nextLines;
+
+		// Find new lines
+		{
+			double x = 0.0;
+			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			double y = -fsScale * metrics.ascenderY;
+
+			int32_t lastSpace = -1;
+
+			for (int32_t i = 0; i < utf32string.size(); i++)
+			{
+				char32_t character = utf32string[i];
+				if (character == '\n')
+				{
+					x = 0.0;
+					y -= fsScale * metrics.lineHeight;
+					continue;
+				}
+
+				auto glyph = fontGeom.getGlyph(character);
+				if (!glyph)
+				{
+					glyph = fontGeom.getGlyph('?');
+				}
+
+				if (!glyph)
+				{
+					continue;
+				}
+
+				if (character != ' ')
+				{
+					// Calculate geometry
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+					glm::vec2 quadMin((float)pl, (float)pb);
+					glm::vec2 quadMax((float)pl, (float)pb);
+
+					quadMin *= (float)fsScale;
+					quadMax *= (float)fsScale;
+					quadMin += glm::vec2((float)x, (float)y);
+					quadMax += glm::vec2((float)x, (float)y);
+
+					if (quadMax.x > maxWidth && lastSpace != -1)
+					{
+						i = lastSpace;
+						nextLines.emplace_back(lastSpace);
+						lastSpace = -1;
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+					}
+				}
+				else
+				{
+					lastSpace = i;
+				}
+
+				double advance = glyph->getAdvance();
+				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+				x += fsScale * advance;
+			}
+		}
+
+		const glm::mat4 transform = glm::scale(glm::mat4{ 1.f }, { scale.x, scale.y, 1.f });
+
+		double x = 0.0;
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+		double y = 0.0;
+
+		double height = 0.0;
+
+		for (int32_t i = 0; i < utf32string.size(); i++)
+		{
+			char32_t character = utf32string[i];
+			if (character == '\n' || NextLine(i, nextLines))
+			{
+				x = 0.0;
+				y -= fsScale * metrics.lineHeight;
+
+				height += y;
+				continue;
+			}
+
+			auto glyph = fontGeom.getGlyph(character);
+
+			if (!glyph)
+			{
+				glyph = fontGeom.getGlyph('?');
+			}
+
+			if (!glyph)
+			{
+				continue;
+			}
+
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+			pt *= fsScale;
+			pt += y;
+
+			if (i == 0)
+			{
+				height += pt;
+			}
+		}
+
+		const auto transformedPosition = transform * glm::vec4{ 0.f, float(height), 0.f, 1.f };
+		return transformedPosition.y;
 	}
 }

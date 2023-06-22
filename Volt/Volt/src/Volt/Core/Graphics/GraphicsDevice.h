@@ -3,6 +3,7 @@
 #include "Volt/Core/Base.h"
 
 #include <vulkan/vulkan.h>
+#include <shared_mutex>
 
 namespace Volt
 {
@@ -91,8 +92,11 @@ namespace Volt
 		VkCommandBuffer CreateSecondaryCommandBuffer();
 
 		void FlushCommandBuffer(VkCommandBuffer cmdBuffer);
-		void FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, VkQueue queue);
+		void FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, QueueType queueType);
+		void FlushCommandBuffer(const VkSubmitInfo& submitInfo, VkFence fence, QueueType queue, uint32_t wantedQueueIndex = 0);
 		void FreeCommandBuffer(VkCommandBuffer cmdBuffer);
+
+		VkResult QueuePresent(const VkPresentInfoKHR& presentInfo, QueueType queueType, uint32_t wantedQueueIndex = 0);
 
 		VkCommandBuffer GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueType queueType = QueueType::Graphics);
 		void FlushSingleUseCommandBuffer(VkCommandBuffer cmdBuffer);
@@ -114,6 +118,8 @@ namespace Volt
 			VkCommandPool commandPool;
 			VkCommandBuffer commandBuffer;
 			VkQueue queue;
+
+			QueueType queueType;
 		};
 
 		struct PerThreadPoolData
@@ -137,10 +143,11 @@ namespace Volt
 
 		std::unordered_map<std::thread::id, PerThreadPoolData> myPerThreadCommandBuffers; // Thread -> Command Pool & Command Buffers
 		
-		std::mutex myCommandBufferFlushMutex;
-		std::mutex myMainCommandBufferFlushMutex;
-
 		std::unordered_map<QueueType, std::vector<VkQueue>> myDeviceQueues;
+		std::unordered_map<QueueType, std::mutex> myQueueMutexes;
+
+		std::shared_mutex myCommandBufferDataMutex;
+
 		PhysicalDeviceQueueFamilyIndices myQueueFamilies;
 
 		RayTracingFeatures myRayTracingFeatures;

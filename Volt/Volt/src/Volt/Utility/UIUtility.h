@@ -15,7 +15,7 @@
 #include "Volt/Components/Components.h"
 #include "Volt/ImGui/ImGuiImplementation.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -54,9 +54,9 @@ class UI
 public:
 	struct Button
 	{
-		gem::vec4 normal = { 1.f, 1.f, 1.f, 1.f };
-		gem::vec4 hovered = { 1.f, 1.f, 1.f, 1.f };
-		gem::vec4 active = { 1.f, 1.f, 1.f, 1.f };
+		glm::vec4 normal = { 1.f, 1.f, 1.f, 1.f };
+		glm::vec4 hovered = { 1.f, 1.f, 1.f, 1.f };
+		glm::vec4 active = { 1.f, 1.f, 1.f, 1.f };
 	};
 
 	class ScopedButtonColor
@@ -91,7 +91,7 @@ public:
 	class ScopedColor
 	{
 	public:
-		ScopedColor(ImGuiCol_ color, const gem::vec4& newColor)
+		ScopedColor(ImGuiCol_ color, const glm::vec4& newColor)
 			: myColor(color)
 		{
 			auto& colors = ImGui::GetStyle().Colors;
@@ -113,7 +113,7 @@ public:
 	class ScopedColorPrediacate
 	{
 	public:
-		ScopedColorPrediacate(bool predicate, ImGuiCol_ color, const gem::vec4& newColor)
+		ScopedColorPrediacate(bool predicate, ImGuiCol_ color, const glm::vec4& newColor)
 			: myColor(color), myPredicate(predicate)
 		{
 			if (!myPredicate)
@@ -161,7 +161,7 @@ public:
 	class ScopedStyleFloat2
 	{
 	public:
-		ScopedStyleFloat2(ImGuiStyleVar_ var, const gem::vec2& value)
+		ScopedStyleFloat2(ImGuiStyleVar_ var, const glm::vec2& value)
 		{
 			ImGui::PushStyleVar(var, { value.x, value.y });
 		}
@@ -740,7 +740,7 @@ public:
 		ImGui::GetCurrentWindow()->DrawList->AddLine(pos + windowPos + ImVec2{ textSize.x + padding, textSize.y / 2.f }, { pos.x + availWidth + windowPos.x, pos.y + 1.f + windowPos.y + textSize.y / 2.f }, IM_COL32(255, 255, 255, 255));
 	}
 
-	static bool PropertyAxisColor(const std::string& text, gem::vec3& value, float resetValue = 0.f, std::function<void(gem::vec3& value)> callback = nullptr)
+	static bool PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue = 0.f, std::function<void(glm::vec3& value)> callback = nullptr)
 	{
 		ScopedStyleFloat2 cellPad(ImGuiStyleVar_CellPadding, { 4.f, 0.f });
 
@@ -879,7 +879,7 @@ public:
 		return changed;
 	}
 
-	static bool PropertyAxisColor(const std::string& text, gem::vec2& value, float resetValue = 0.f)
+	static bool PropertyAxisColor(const std::string& text, glm::vec2& value, float resetValue = 0.f)
 	{
 		ScopedStyleFloat2 cellPad(ImGuiStyleVar_CellPadding, { 4.f, 0.f });
 
@@ -1328,7 +1328,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec2& value, float min = 0.f, float max = 0.f, std::function<void(gem::vec2& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::vec2& value, float min = 0.f, float max = 0.f, std::function<void(glm::vec2& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1340,7 +1340,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragFloat2(id.c_str(), gem::value_ptr(value), 1.f, min, max))
+		if (ImGui::DragFloat2(id.c_str(), glm::value_ptr(value), 1.f, min, max))
 		{
 			changed = true;
 			if (callback)
@@ -1354,7 +1354,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec3& value, float min = 0.f, float max = 0.f, std::function<void(gem::vec3& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::vec3& value, float min = 0.f, float max = 0.f, std::function<void(glm::vec3& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1366,7 +1366,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragFloat3(id.c_str(), gem::value_ptr(value), 1.f, min, max))
+		if (ImGui::DragFloat3(id.c_str(), glm::value_ptr(value), 1.f, min, max))
 		{
 			changed = true;
 			if (callback)
@@ -1380,7 +1380,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec4& value, float min = 0.f, float max = 0.f, std::function<void(gem::vec4& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::vec4& value, float min = 0.f, float max = 0.f, std::function<void(glm::vec4& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1392,7 +1392,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragFloat4(id.c_str(), gem::value_ptr(value), 1.f, min, max))
+		if (ImGui::DragFloat4(id.c_str(), glm::value_ptr(value), 1.f, min, max))
 		{
 			changed = true;
 			if (callback)
@@ -1406,7 +1406,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec2ui& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec2ui& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::uvec2& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::uvec2& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1418,7 +1418,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, gem::value_ptr(value), 2, 1.f, &min, &max))
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 2, 1.f, &min, &max))
 		{
 			changed = true;
 			if (callback)
@@ -1432,7 +1432,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec3ui& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec3ui& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::uvec3& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::uvec3& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1444,7 +1444,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, gem::value_ptr(value), 3, 1.f, &min, &max))
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 3, 1.f, &min, &max))
 		{
 			changed = true;
 			if (callback)
@@ -1458,7 +1458,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec4ui& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec4ui& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::uvec4& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::uvec4& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1470,7 +1470,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, gem::value_ptr(value), 4, 1.f, &min, &max))
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 4, 1.f, &min, &max))
 		{
 			changed = true;
 			if (callback)
@@ -1484,7 +1484,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec2i& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec2i& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::ivec2& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::ivec2& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1496,7 +1496,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, gem::value_ptr(value), 2, 1.f, &min, &max))
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 2, 1.f, &min, &max))
 		{
 			changed = true;
 			if (callback)
@@ -1510,7 +1510,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec3i& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec3i& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::ivec3& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::ivec3& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1522,7 +1522,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, gem::value_ptr(value), 3, 1.f, &min, &max))
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 3, 1.f, &min, &max))
 		{
 			changed = true;
 			if (callback)
@@ -1536,7 +1536,7 @@ public:
 		return changed;
 	}
 
-	static bool Property(const std::string& text, gem::vec4i& value, uint32_t min = 0, uint32_t max = 0, std::function<void(gem::vec4i& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool Property(const std::string& text, glm::ivec4& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::ivec4& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		bool changed = false;
 
@@ -1548,7 +1548,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, gem::value_ptr(value), 4, 1.f, &min, &max))
+		if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 4, 1.f, &min, &max))
 		{
 			changed = true;
 			if (callback)
@@ -1673,7 +1673,7 @@ public:
 		return changed;
 	}
 
-	static bool PropertyColor(const std::string& text, gem::vec4& value, std::function<void(gem::vec4& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool PropertyColor(const std::string& text, glm::vec4& value, std::function<void(glm::vec4& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		ImGui::TableNextColumn();
 		ImGui::TextUnformatted(text.c_str());
@@ -1683,7 +1683,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::ColorEdit4(id.c_str(), gem::value_ptr(value)))
+		if (ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value)))
 		{
 			if (callback)
 			{
@@ -1695,7 +1695,7 @@ public:
 		return false;
 	}
 
-	static bool PropertyColor(const std::string& text, gem::vec3& value, std::function<void(gem::vec3& value)> callback = nullptr, const std::string& toolTip = "")
+	static bool PropertyColor(const std::string& text, glm::vec3& value, std::function<void(glm::vec3& value)> callback = nullptr, const std::string& toolTip = "")
 	{
 		ImGui::TableNextColumn();
 		ImGui::TextUnformatted(text.c_str());
@@ -1705,7 +1705,7 @@ public:
 		std::string id = "##" + std::to_string(s_stackId++);
 		ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-		if (ImGui::ColorEdit3(id.c_str(), gem::value_ptr(value)))
+		if (ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value)))
 		{
 			if (callback)
 			{
@@ -1866,8 +1866,8 @@ public:
 	static int32_t LevenshteinDistance(const std::string& str1, const std::string& str2);
 	static const std::vector<std::string> GetEntriesMatchingQuery(const std::string& query, const std::vector<std::string>& entries);
 
-	static void RenderMatchingTextBackground(const std::string& query, const std::string& text, const gem::vec4& color, const gem::vec2ui& offset = 0u);
-	static void RenderHighlightedBackground(const gem::vec4& color, float height);
+	static void RenderMatchingTextBackground(const std::string& query, const std::string& text, const glm::vec4& color, const glm::uvec2& offset = 0u);
+	static void RenderHighlightedBackground(const glm::vec4& color, float height);
 
 private:
 

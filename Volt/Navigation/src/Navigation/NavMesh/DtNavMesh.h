@@ -2,7 +2,7 @@
 
 #include <Volt/Core/Base.h>
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
@@ -19,7 +19,7 @@ namespace Volt
 		public:
 			DtNavMesh(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache = nullptr);
 
-			std::vector<gem::vec3> FindPath(gem::vec3 start, gem::vec3 end, gem::vec3 polySearchDistance);
+			std::vector<glm::vec3> FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance);
 
 			Ref<dtNavMesh>& GetNavMesh() { return myNavMesh; };
 			Ref<dtNavMeshQuery>& GetNavMeshQuery() { return myNavMeshQuery; };

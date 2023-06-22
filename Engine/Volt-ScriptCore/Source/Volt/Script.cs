@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace Volt
 {
@@ -13,6 +14,11 @@ namespace Volt
         {
             entity = aEntity;
             scriptId = aScriptId;
+        }
+
+        public void Notify(string fieldName)
+        {
+            NetScene.Notify(entity.Id, fieldName);
         }
 
         // Available Functions.

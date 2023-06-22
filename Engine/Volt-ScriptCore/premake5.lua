@@ -13,6 +13,8 @@ project "Volt-ScriptCore"
 		"./Properties/**.cs"
 	}
 
+	clr "Unsafe"
+
 	filter "configurations:Debug"
 		optimize "Off"
 		symbols "Default"

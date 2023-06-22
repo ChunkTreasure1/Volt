@@ -506,6 +506,8 @@ namespace Volt
 		UpdateComponents(targetScene, newEnt);
 		CorrectEntityReferences(targetScene, newEnt);
 
+		targetScene->InvalidateEntityTransform(newEnt);
+
 		return newEnt;
 	}
 

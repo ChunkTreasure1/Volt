@@ -3,7 +3,7 @@
 #include "Volt/Core/Base.h"
 #include "Sandbox/Window/EditorWindow.h"
 #include <Volt/Scene/Scene.h>
-#include "GEM/gem.h"
+#include <glm/glm.hpp>
 #include "Volt/Math/Spline.h"
 
 class SplinePanel : public EditorWindow

@@ -3,7 +3,7 @@
 #include "MeshTypeImporter.h"
 #include "Volt/Rendering/Vertex.h"
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace tinygltf
 {
@@ -33,7 +33,7 @@ namespace Volt
 			Node* parent;
 			std::vector<Node> children;
 			Mesh mesh;
-			gem::mat4 transform = { 1.f };
+			glm::mat4 transform = { 1.f };
 		};
 	}
 

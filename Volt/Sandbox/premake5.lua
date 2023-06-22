@@ -36,7 +36,11 @@ project "Sandbox"
         "GLFW_INCLUDE_NONE",
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
-		"CPPHTTPLIB_OPENSSL_SUPPORT"
+		"CPPHTTPLIB_OPENSSL_SUPPORT",
+
+		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
+		"GLM_FORCE_SSE2",
+		"GLM_FORCE_LEFT_HANDED"
     }
 
 	files
@@ -85,7 +89,7 @@ project "Sandbox"
 		"%{IncludeDir.imgui_node_editor}",
 		"%{IncludeDir.DirectXTex}",
 
-		"%{IncludeDir.GEM}",
+		"%{IncludeDir.glm}",
 		"%{IncludeDir.P4}",
 		"%{IncludeDir.OpenSSL}",
 		"%{IncludeDir.nlohmann}",
@@ -133,6 +137,8 @@ project "Sandbox"
 		"%{Library.AkStreamMgr}",
 		"%{Library.AkMusicEngine}",
 
+		"%{Library.AkRoomVerbFX}",
+
 		"%{Library.P4_client}",
 		"%{Library.P4_api}",
 		"%{Library.P4_script}",
@@ -162,12 +168,6 @@ project "Sandbox"
 		"%{Library.Vulkan}",
 		"%{Library.dxc}"
     }
-
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Debug"
-	}
 
 	debugargs 
 	{

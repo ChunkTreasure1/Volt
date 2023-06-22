@@ -25,7 +25,7 @@ namespace Volt
 		FrameGraphResourceHandle edgesOutput;
 	};
 
-	GTAOTechnique::GTAOTechnique(Ref<Camera> camera, const gem::vec2ui& renderSize, uint64_t frameIndex, const GTAOSettings& settings)
+	GTAOTechnique::GTAOTechnique(Ref<Camera> camera, const glm::uvec2& renderSize, uint64_t frameIndex, const GTAOSettings& settings)
 		: myRenderSize(renderSize), myFrameIndex(frameIndex)
 	{
 		// Setup constants
@@ -93,8 +93,6 @@ namespace Volt
 
 		[=](const PrefilterDepthData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "GTAO Prefilter Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& srcDepthResource = resources.GetImageResource(srcDepthHandle);
 			const auto& targetResource = resources.GetImageResource(data.prefilteredDepth);
 
@@ -113,7 +111,6 @@ namespace Volt
 			const uint32_t dispatchY = (myRenderSize.y + 16 - 1) / 16;
 
 			Renderer::DispatchComputePipeline(commandBuffer, prefilterDepthPipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 
 			prefilterDepthPipeline->ClearAllResources();
 		});
@@ -157,8 +154,6 @@ namespace Volt
 
 		[=](const GTAOData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "GTAO Main Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& prefilteredDepthResource = resources.GetImageResource(prefilterDepthData.prefilteredDepth);
 			const auto& viewNormalsResource = resources.GetImageResource(viewNormalsHandle);
 
@@ -181,7 +176,6 @@ namespace Volt
 			const uint32_t dispatchY = (myRenderSize.y + 16 - 1) / 16;
 
 			Renderer::DispatchComputePipeline(commandBuffer, mainPassPipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 
 			mainPassPipeline->ClearAllResources();
 		});
@@ -210,13 +204,34 @@ namespace Volt
 
 		[=](const GTAOOutput& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			Renderer::BeginSection(commandBuffer, "GTAO Denoise Pass", TO_NORMALIZEDRGB(6, 71, 24));
-
 			const auto& aoTermResource = resources.GetImageResource(mainData.aoOutput);
 			const auto& edgeTermResource = resources.GetImageResource(mainData.edgesOutput);
 			const auto& finalOutputResource = resources.GetImageResource(data.outputImage);
 
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
+
+			VkImageSubresourceRange subresourceRange{};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.layerCount = 1;
+			subresourceRange.levelCount = 1;
+
+			ImageBarrierInfo writeReadBarrierInfo{};
+			writeReadBarrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			writeReadBarrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			writeReadBarrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			writeReadBarrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			writeReadBarrierInfo.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			writeReadBarrierInfo.subresourceRange = subresourceRange;
+
+			ImageBarrierInfo readWriteBarrierInfo{};
+			readWriteBarrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			readWriteBarrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			readWriteBarrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			readWriteBarrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			readWriteBarrierInfo.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			readWriteBarrierInfo.subresourceRange = subresourceRange;
 
 			for (size_t i = 0; i < denoisePipelines.size(); i++)
 			{
@@ -235,6 +250,9 @@ namespace Volt
 
 				currentPipeline->SetImage(edgeTermResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 
+				currentPipeline->InsertImageBarrier(Sets::OTHER, 0, readWriteBarrierInfo);
+				currentPipeline->InsertImageBarrier(Sets::OTHER, 2, writeReadBarrierInfo);
+
 				currentPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 				currentPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &myConstants, sizeof(GTAOConstants));
 
@@ -245,8 +263,6 @@ namespace Volt
 
 				currentPipeline->ClearAllResources();
 			}
-
-			Renderer::EndSection(commandBuffer);
 		});
 	}
 }

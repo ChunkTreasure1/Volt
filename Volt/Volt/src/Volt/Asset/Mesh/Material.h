@@ -14,6 +14,8 @@ namespace Volt
 		Material() = default;
 		Material(const Material& material);
 
+		~Material() override = default;
+
 		Ref<SubMaterial> GetSubMaterialAt(const uint32_t index) const;
 		Ref<SubMaterial> TryGetSubMaterialAt(const uint32_t index) const;
 

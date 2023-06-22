@@ -115,7 +115,7 @@ namespace Volt
 		myIsDirty.at(index) = false;
 
 		auto buffer = myStorageBuffer->Get(Sets::MAINBUFFERS, Bindings::MATERIAL_TABLE, index);
-		auto* mappedPtr = buffer->Map<GPUMaterial*>();
+		auto* mappedPtr = buffer->Map<GPUMaterial>();
 
 		const size_t startOffset = sizeof(GPUMaterial) * myStartIndex;
 

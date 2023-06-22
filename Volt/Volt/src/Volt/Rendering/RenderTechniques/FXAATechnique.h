@@ -3,7 +3,7 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Rendering/FrameGraph/FrameGraphResourceHandle.h"
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -14,12 +14,12 @@ namespace Volt
 	class FXAATechnique
 	{
 	public:
-		FXAATechnique(const gem::vec2ui& renderSize);
+		FXAATechnique(const glm::uvec2& renderSize);
 
 		void AddFXAAPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline);
 		void AddFXAAApplyPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline);
 
 	private:
-		gem::vec2ui myRenderSize;
+		glm::uvec2 myRenderSize;
 	};
 }

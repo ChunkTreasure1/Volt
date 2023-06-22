@@ -386,8 +386,6 @@ namespace TGA
 						// This is the default position of the vertices.
 						fbxsdk::FbxAMatrix bindPoseInverseTransform = linkTransform.Inverse() * meshBindTransform * rootTransform;
 						fbxsdk::FbxAMatrix bindPose = bindPoseInverseTransform.Inverse();
-						// Remember to do this or you will get very interesting results :).
-						bindPoseInverseTransform = bindPoseInverseTransform.Transpose();
 
 						// The Link in the skin cluster is the actual joint.
 						// Because we already collected all joints we should be able to find it using
@@ -401,6 +399,9 @@ namespace TGA
 						size_t jointIndex = aSkeleton.BoneNameToIndex[jointName];
 
 						bindPoses[jointIndex] = bindPoseInverseTransform.Inverse();
+
+						// Remember to do this or you will get very interesting results :).
+						bindPoseInverseTransform = bindPoseInverseTransform.Transpose();
 
 
 						// Store the bind pose on the joint so we can access it later.

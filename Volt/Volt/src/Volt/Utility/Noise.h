@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 #include <array>
 
 namespace Volt
@@ -15,8 +15,8 @@ namespace Volt
 			Simplex
 		};
 
-		static std::array<gem::vec4, 16> HBAOJitter();
-		static const gem::vec2 GetTAAJitter(uint64_t frameIndex, const gem::vec2ui& viewportSize);
+		static std::array<glm::vec4, 16> HBAOJitter();
+		static const glm::vec2 GetTAAJitter(uint64_t frameIndex, const glm::uvec2& viewportSize);
 
 		static void Initialize();
 

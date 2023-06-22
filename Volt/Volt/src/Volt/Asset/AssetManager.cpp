@@ -449,7 +449,7 @@ namespace Volt
 	void AssetManager::RemoveFromRegistry(AssetHandle asset)
 	{
 		const std::filesystem::path path = GetPathFromAssetHandle(asset);
-		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		auto pathClean = GetCleanPath(path);
 
 		if (!path.empty() && myAssetRegistry.contains(pathClean))
 		{
@@ -473,7 +473,7 @@ namespace Volt
 
 	void AssetManager::RemoveFromRegistry(const std::filesystem::path& path)
 	{
-		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		auto pathClean = GetCleanPath(path);
 
 		if (!pathClean.empty() && myAssetRegistry.contains(pathClean))
 		{
@@ -542,7 +542,7 @@ namespace Volt
 
 	const Volt::AssetHandle AssetManager::AddToRegistry(const std::filesystem::path& path, AssetHandle handle /*= 0*/)
 	{
-		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		auto pathClean = GetCleanPath(path);
 
 		if (myAssetRegistry.contains(pathClean))
 		{
@@ -635,7 +635,7 @@ namespace Volt
 
 	AssetHandle AssetManager::GetAssetHandleFromPath(const std::filesystem::path& path)
 	{
-		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		auto pathClean = GetCleanPath(path);
 
 		if (!Get().myAssetRegistry.contains(pathClean))
 		{
@@ -655,7 +655,7 @@ namespace Volt
 			return 0;
 		}
 
-		return Get().myAssetRegistry.at(path);
+		return Get().myAssetRegistry.at(pathClean);
 	}
 
 	const std::filesystem::path AssetManager::GetPathFromAssetHandle(AssetHandle handle)
@@ -740,7 +740,7 @@ namespace Volt
 
 	bool AssetManager::ExistsInRegistry(const std::filesystem::path& path) const
 	{
-		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		auto pathClean = GetCleanPath(path);
 		return myAssetRegistry.contains(pathClean);
 	}
 
@@ -793,6 +793,8 @@ namespace Volt
 			myAssetCache.emplace(handle, asset);
 		}
 
+		asset->path = path;
+
 		// If not, queue
 		{
 			auto& threadPool = Application::GetThreadPool();
@@ -818,7 +820,9 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-#ifdef VT_DEBUG
+				asset->path = path;
+
+#ifndef VT_DIST
 				VT_CORE_INFO("Loaded asset {0} with handle {1}!", path.string().c_str(), asset->handle);
 #endif
 
@@ -837,7 +841,7 @@ namespace Volt
 
 			}, path, handle);
 
-#ifdef VT_DEBUG
+#ifndef VT_DIST
 			VT_CORE_TRACE("Queued asset {0}", path.string());
 #endif
 		}
@@ -862,13 +866,121 @@ namespace Volt
 		}
 	}
 
+	void AssetManager::QueueAssetInternal(const std::filesystem::path& path, Ref<Asset>& asset, const std::function<void()>& loadedCallback)
+	{
+		AssetHandle handle = Asset::Null();
+
+		// Check if asset is loaded
+		{
+			ReadLock registryLock{ myAssetRegistryMutex };
+			if (myAssetRegistry.find(path) != myAssetRegistry.end())
+			{
+				handle = myAssetRegistry.at(path);
+			}
+
+			ReadLock cacheLock{ myAssetCacheMutex };
+			if (handle != Asset::Null() && myAssetCache.find(handle) != myAssetCache.end())
+			{
+				asset = myAssetCache[handle];
+				return;
+			}
+		}
+
+		if (handle != Asset::Null())
+		{
+			WriteLock lock{ myAssetCacheMutex };
+			asset->handle = handle;
+			myAssetCache.emplace(handle, asset);
+		}
+
+		asset->path = path;
+
+		// If not, queue
+		{
+			auto& threadPool = Application::GetThreadPool();
+
+			threadPool.SubmitTask([this, loadedCallback](const std::filesystem::path& path, AssetHandle handle)
+			{
+				const auto type = GetAssetTypeFromPath(path);
+				if (!myAssetImporters.contains(type))
+				{
+					VT_CORE_ERROR("No importer for asset found!");
+					return;
+				}
+
+				Ref<Asset> asset;
+				{
+					ReadLock lock{ myAssetCacheMutex };
+					asset = myAssetCache.at(handle);
+				}
+
+				myAssetImporters.at(type)->Load(path, asset);
+				if (handle != Asset::Null())
+				{
+					asset->handle = handle;
+				}
+
+				asset->path = path;
+
+#ifndef VT_DIST
+				VT_CORE_INFO("Loaded asset {0} with handle {1}!", path.string().c_str(), asset->handle);
+#endif
+
+				asset->SetFlag(AssetFlag::Queued, false);
+
+				{
+					WriteLock lock{ myAssetCacheMutex };
+					myAssetCache[handle] = asset;
+				}
+
+				if (handle == Asset::Null())
+				{
+					WriteLock lock{ myAssetRegistryMutex };
+					myAssetRegistry.emplace(path, asset->handle);
+				}
+
+				loadedCallback();
+
+			}, path, handle);
+
+#ifndef VT_DIST
+			VT_CORE_TRACE("Queued asset {0}", path.string());
+#endif
+		}
+	}
+
+	void AssetManager::QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset, const std::function<void()>& loadedCallback)
+	{
+		{
+			ReadLock lock{ myAssetCacheMutex };
+			auto it = myAssetCache.find(assetHandle);
+			if (it != myAssetCache.end())
+			{
+				asset = it->second;
+				return;
+			}
+		}
+
+		const auto path = GetPathFromAssetHandle(assetHandle);
+		if (!path.empty())
+		{
+			QueueAssetInternal(path, asset, loadedCallback);
+		}
+	}
+
+	const std::filesystem::path AssetManager::GetCleanPath(const std::filesystem::path& path)
+	{
+		auto pathClean = Utils::ReplaceCharacter(path.string(), '\\', '/');
+		return pathClean;
+	}
+
 	void AssetManager::SaveAssetMetaFile(std::filesystem::path assetPath)
 	{
 		if (!assetPath.has_stem())
 		{
 			return;
 		}
-		auto pathClean = Utils::ReplaceCharacter(assetPath.string(), '\\', '/');
+		auto pathClean = GetCleanPath(assetPath);
 		auto handle = GetAssetHandleFromPath(pathClean);
 
 		YAML::Emitter out;

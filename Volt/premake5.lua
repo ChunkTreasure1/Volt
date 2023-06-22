@@ -39,7 +39,7 @@ include "Volt/vendor/DirectXTex"
 include "Volt/vendor/efsw"
 include "Volt/vendor/meshoptimizer"
 include "Volt/vendor/DiscordSDK"
-include "Volt/vendor/gem"
+include "Volt/vendor/glm"
 include "Volt/vendor/nfd-extended"
 include "Volt/vendor/TGAFbx"
 

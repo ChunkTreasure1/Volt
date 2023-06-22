@@ -20,7 +20,7 @@ namespace GraphKey
 
 		const std::string GetName() override;
 
-		inline const gem::vec4 GetColor() override { return { 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 1.f }; }
 
 	private:
 		void CallEvent();
@@ -34,6 +34,6 @@ namespace GraphKey
 		~RecieveCustomEventNode() override;
 
 		inline const std::string GetName() override { return "On " + myGraph->GetEventNameFromId(eventId); }
-		inline const gem::vec4 GetColor() override { return { 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 1.f }; }
 	};
 }
