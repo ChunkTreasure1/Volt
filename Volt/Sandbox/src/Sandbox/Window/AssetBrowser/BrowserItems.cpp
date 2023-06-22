@@ -267,7 +267,7 @@ namespace AssetBrowser
 
 		ImGui::TextUnformatted(aInfo.data());
 	}
-	gem::vec4 Item::GetTypeNameColor(bool aHoverFlag, bool aSelectedFlag) const
+	glm::vec4 Item::GetTypeNameColor(bool aHoverFlag, bool aSelectedFlag) const
 	{
 		if (aHoverFlag)
 		{

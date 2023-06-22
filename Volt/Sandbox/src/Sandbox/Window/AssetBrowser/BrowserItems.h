@@ -42,7 +42,7 @@ namespace AssetBrowser
 		std::string myTypeName;
 
 	private:
-		gem::vec4 GetTypeNameColor(bool aHoverFlag,bool aSelectedFlag) const;
+		glm::vec4 GetTypeNameColor(bool aHoverFlag,bool aSelectedFlag) const;
 
 	};
 }
