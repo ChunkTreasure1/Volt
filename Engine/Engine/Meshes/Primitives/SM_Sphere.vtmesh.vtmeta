@@ -1,4 +1,6 @@
-Handle: 6734968127793405018
-Path: Engine/Meshes/Primitives/SM_Sphere.vtmesh
-Dependencies:
-  []
+Metadata:
+  assetHandle: 13284073328817328588
+  filePath: Engine\Meshes\Primitives\SM_Sphere.vtmesh
+  type: 1
+  Dependencies:
+    []

@@ -1,4 +1,6 @@
-Handle: 12781696215708042702
-Path: Engine/Shaders/Source/HLSL/Deferred/GBufferGeneration_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10898963995029698262
+  filePath: Engine\Shaders\Source\HLSL\Deferred\GBufferGeneration_ps.hlsl
+  type: 128
+  Dependencies:
+    []

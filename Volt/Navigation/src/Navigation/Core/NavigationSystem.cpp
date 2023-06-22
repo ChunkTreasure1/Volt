@@ -38,7 +38,7 @@ namespace Volt
 		bool NavigationSystem::OnAppUpdateEvent(Volt::AppUpdateEvent& e)
 		{
 			VT_PROFILE_FUNCTION()
-			if (myNavMesh && myActiveScene->IsPlaying())
+			if (myNavMesh && myActiveScene && myActiveScene->IsPlaying())
 			{
 				auto& crowd = myNavMesh->GetCrowd();
 
@@ -113,19 +113,21 @@ namespace Volt
 
 		bool NavigationSystem::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 		{
-			myActiveScene = e.GetScene();
-			if (myActiveScene->path.empty() && myActiveScene->GetName() != "New Scene") { return false; }
+			//#TODO_Ivar: Reimplement
 
-			auto scenePath = myActiveScene->path;
-			scenePath.replace_extension(".vtnavmesh");
+			//myActiveScene = e.GetScene();
+			//if (myActiveScene->path.empty() && myActiveScene->GetName() != "New Scene") { return false; }
 
-			SetVTNavMesh(Volt::AssetManager::Get().GetAsset<Volt::AI::NavMesh>(scenePath));
+			//auto scenePath = myActiveScene->path;
+			//scenePath.replace_extension(".vtnavmesh");
 
-			if (myActiveScene->IsPlaying())
-			{
-				ClearAgents();
-				InitAgents();
-			}
+			//SetVTNavMesh(Volt::AssetManager::Get().GetAsset<Volt::AI::NavMesh>(scenePath));
+
+			//if (myActiveScene->IsPlaying())
+			//{
+			//	ClearAgents();
+			//	InitAgents();
+			//}
 			return false;
 		}
 

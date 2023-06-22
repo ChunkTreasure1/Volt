@@ -133,10 +133,10 @@ void MaterialEditorPanel::UpdateToolbar()
 		{
 			if (mySelectedMaterial)
 			{
-				if (FileSystem::IsWriteable(mySelectedMaterial->path))
+				if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(mySelectedMaterial->handle)))
 				{
 					Volt::AssetManager::Get().SaveAsset(mySelectedMaterial);
-					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->path.string()));
+					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->name));
 				}
 				else
 				{
@@ -244,7 +244,7 @@ void MaterialEditorPanel::UpdateProperties()
 			}
 
 			bool changed = false;
-			
+
 			UI::PushId();
 			if (UI::BeginProperties("Shader"))
 			{
@@ -803,18 +803,22 @@ void MaterialEditorPanel::UpdateMaterials()
 		{
 			for (auto& material : materials)
 			{
-				if (myHasSearchQuery && !Utils::ToLower(material.stem().string()).contains(Utils::ToLower(mySearchQuery)))
+				const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(material);
+				if (myHasSearchQuery)
 				{
-					continue;
+					if (!Utils::ToLower(metadata.filePath.stem().string()).contains(Utils::ToLower(mySearchQuery)))
+					{
+						continue;
+					}
 				}
 
 				bool selected = false;
 				if (mySelectedMaterial)
 				{
-					selected = material == mySelectedMaterial->path;
+					selected = material == mySelectedMaterial->handle;
 				}
 
-				if (ImGui::Selectable(material.stem().string().c_str(), &selected))
+				if (ImGui::Selectable(metadata.filePath.string().c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);

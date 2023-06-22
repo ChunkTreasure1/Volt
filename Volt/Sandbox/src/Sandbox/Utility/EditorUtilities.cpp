@@ -47,7 +47,7 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 	const Ref<Volt::Asset> rawAsset = Volt::AssetManager::Get().GetAssetRaw(assetHandle);
 	if (rawAsset)
 	{
-		assetFileName = rawAsset->path.filename().string();
+		assetFileName = rawAsset->name;
 
 		if (wantedType != Volt::AssetType::None)
 		{
@@ -192,10 +192,10 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 	// An asset can have multiple dependencies, we must find the source mesh
 	std::filesystem::path sourcePath;
-	const auto& dependencies = Volt::AssetManager::GetMetaDataFromHandle(assetHandle).dependencies;
+	const auto& dependencies = Volt::AssetManager::GetMetadataFromHandle(assetHandle).dependencies;
 	for (const auto& d : dependencies)
 	{
-		const auto& depMeta = Volt::AssetManager::GetMetaDataFromHandle(d);
+		const auto& depMeta = Volt::AssetManager::GetMetadataFromHandle(d);
 		if (depMeta.filePath.extension().string() == ".fbx")
 		{
 			sourcePath = depMeta.filePath;
@@ -205,7 +205,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 	if (sourcePath.empty())
 	{
-		auto meshPath = Volt::AssetManager::GetPathFromAssetHandle(assetHandle);
+		auto meshPath = Volt::AssetManager::GetFilePathFromAssetHandle(assetHandle);
 		meshPath.replace_extension(".fbx");
 
 		if (!FileSystem::Exists(Volt::ProjectManager::GetDirectory() / meshPath))
@@ -226,13 +226,15 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	Ref<Volt::Asset> originalAsset = Volt::AssetManager::Get().GetAssetRaw(assetHandle);
 	if (!originalAsset || !originalAsset->IsValid())
 	{
-		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is invalid!", originalAsset->path.string()));
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is invalid!", originalAsset->name));
 		return false;
 	}
 
-	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / originalAsset->path))
+	const auto& origialAssetMeta = Volt::AssetManager::GetMetadataFromHandle(assetHandle);
+
+	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / origialAssetMeta.filePath))
 	{
-		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is not writeable!", originalAsset->path.string()));
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is not writeable!", originalAsset->name));
 		return false;
 	}
 
@@ -248,7 +250,6 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 			}
 
 			newAnim->handle = originalAsset->handle;
-			newAnim->path = originalAsset->path;
 
 			Volt::AssetManager::Get().Unload(assetHandle);
 			Volt::AssetManager::Get().SaveAsset(newAnim);
@@ -268,7 +269,6 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 			}
 
 			newSkel->handle = originalAsset->handle;
-			newSkel->path = originalAsset->path;
 
 			Volt::AssetManager::Get().Unload(assetHandle);
 			Volt::AssetManager::Get().SaveAsset(newSkel);
@@ -297,12 +297,12 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 			{
 				originalMaterial = nullptr;
 				shouldCreateNewMaterial = true;
-				VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", originalMesh->path);
+				VT_CORE_WARN("Material for mesh {0} was invalid! Creating a new one!", origialAssetMeta.filePath);
 			}
 			else
 			{
 				// We try to check if the material was created with the mesh. This it to make sure that we don't override a shared material
-				if (originalMaterial->path.stem() == originalMesh->path.stem())
+				if (originalMaterial->name == originalMesh->name)
 				{
 					if (newMesh->GetMaterial()->GetSubMaterialCount() != originalMaterial->GetSubMaterialCount())
 					{
@@ -332,13 +332,13 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 				}
 			}
 
-			if (Volt::MeshCompiler::TryCompile(newMesh, originalAsset->path, materialHandle))
+			if (Volt::MeshCompiler::TryCompile(newMesh, origialAssetMeta.filePath, materialHandle))
 			{
 				Volt::AssetManager::Get().ReloadAsset(originalAsset->handle);
 
 				if (shouldCreateNewMaterial && originalMaterial)
 				{
-					Ref<Volt::Mesh> reimportedMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(originalAsset->path);
+					Ref<Volt::Mesh> reimportedMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(origialAssetMeta.filePath);
 					const uint32_t subMaterialCount = glm::min(reimportedMesh->GetMaterial()->GetSubMaterialCount(), originalMaterial->GetSubMaterialCount());
 
 					for (uint32_t i = 0; i < subMaterialCount; i++)
@@ -350,7 +350,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 					}
 
 					Volt::AssetManager::Get().SaveAsset(reimportedMesh->GetMaterial());
-					Volt::AssetManager::Get().ReloadAsset(reimportedMesh->GetMaterial()->path);
+					Volt::AssetManager::Get().ReloadAsset(origialAssetMeta.filePath);
 				}
 
 				UI::Notify(NotificationType::Success, "Mesh re imported!", std::format("Mesh {0} was re imported successfully!", sourcePath.string()));
@@ -518,8 +518,9 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				}
 				else
 				{
-					skeleton->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtsk");
-					Volt::AssetManager::Get().SaveAsset(skeleton);
+					const std::filesystem::path filePath = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtsk");
+
+					Volt::AssetManager::Get().SaveAssetAs(skeleton, filePath);
 					Volt::AssetManager::Get().AddDependency(skeleton->handle, aMeshToImport);
 					succeded = true;
 				}
@@ -541,8 +542,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 					}
 					else
 					{
-						animation->path = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
-						Volt::AssetManager::Get().SaveAsset(animation);
+						const std::filesystem::path filePath = aImportData.destination.parent_path() / (aImportData.destination.stem().string() + ".vtanim");
+						Volt::AssetManager::Get().SaveAssetAs(animation, filePath);
 						Volt::AssetManager::Get().AddDependency(animation->handle, aMeshToImport);
 						succeded = true;
 					}

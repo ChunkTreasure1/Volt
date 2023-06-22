@@ -338,7 +338,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 	{
 		for (const auto& handle : buildInfo.sceneHandles)
 		{
-			const std::filesystem::path path = Volt::AssetManager::Get().GetPathFromAssetHandle(handle);
+			const std::filesystem::path path = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle);
 
 			const auto targetScenePath = buildInfo.buildDirectory / path;
 

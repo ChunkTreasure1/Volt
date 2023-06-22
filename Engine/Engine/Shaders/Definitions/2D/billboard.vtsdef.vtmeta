@@ -1,4 +1,6 @@
-Handle: 12415911846962293417
-Path: Engine/Shaders/Definitions/2D/billboard.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4325764776416571665
+  filePath: Engine\Shaders\Definitions\2D\billboard.vtsdef
+  type: 64
+  Dependencies:
+    []

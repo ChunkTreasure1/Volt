@@ -1,4 +1,6 @@
-Handle: 2360445132466607143
-Path: Engine/Shaders/Source/HLSL/2D/Particle_gs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6620932187611783559
+  filePath: Engine\Shaders\Source\HLSL\2D\Particle_gs.hlsl
+  type: 128
+  Dependencies:
+    []

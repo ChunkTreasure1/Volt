@@ -1,4 +1,6 @@
-Handle: 15579090475476890997
-Path: Engine/Shaders/Definitions/Utility/preDepth.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 8051856383995057076
+  filePath: Engine\Shaders\Definitions\Utility\preDepth.vtsdef
+  type: 64
+  Dependencies:
+    []

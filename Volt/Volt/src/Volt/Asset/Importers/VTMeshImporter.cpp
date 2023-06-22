@@ -124,7 +124,6 @@ namespace Volt
 			mesh->myMaterial->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, Renderer::GetDefaultData().defaultShader));
 		}
 
-		mesh->path = path;
 		mesh->Construct();
 
 		return mesh;

@@ -101,9 +101,9 @@ void NavMeshDrawCompiler::begin(duDebugDrawPrimitives prim, float size)
 	myPrimitive = prim;
 	if(myPrimitive == DU_DRAW_TRIS)
 	{
-		Volt::SubMesh submesh;
-		submesh.vertexStartOffset = myVertices.size();
-		submesh.indexStartOffset = myIndices.size();
+		Volt::SubMesh submesh{};
+		submesh.vertexStartOffset = static_cast<uint32_t>(myVertices.size());
+		submesh.indexStartOffset = static_cast<uint32_t>(myIndices.size());
 		submesh.materialIndex = 0;
 
 		mySubmeshes.emplace_back(submesh);

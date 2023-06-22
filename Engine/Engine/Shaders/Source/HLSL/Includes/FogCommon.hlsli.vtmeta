@@ -1,4 +1,6 @@
-Handle: 12681547828811032279
-Path: Engine/Shaders/Source/HLSL/Includes/FogCommon.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 15738463244458646352
+  filePath: Engine\Shaders\Source\HLSL\Includes\FogCommon.hlsli
+  type: 128
+  Dependencies:
+    []

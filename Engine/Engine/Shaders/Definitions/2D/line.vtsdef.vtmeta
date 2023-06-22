@@ -1,4 +1,6 @@
-Handle: 10752030207557040890
-Path: Engine/Shaders/Definitions/2D/line.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 16436485541698111006
+  filePath: Engine\Shaders\Definitions\2D\line.vtsdef
+  type: 64
+  Dependencies:
+    []

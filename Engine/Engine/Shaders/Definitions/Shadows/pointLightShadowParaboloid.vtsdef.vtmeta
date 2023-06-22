@@ -1,4 +1,6 @@
-Handle: 1959961036036531614
-Path: Engine/Shaders/Definitions/Shadows/pointLightShadowParaboloid.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6877693438518255046
+  filePath: Engine\Shaders\Definitions\Shadows\pointLightShadowParaboloid.vtsdef
+  type: 64
+  Dependencies:
+    []

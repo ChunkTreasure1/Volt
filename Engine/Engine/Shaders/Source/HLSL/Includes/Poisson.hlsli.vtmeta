@@ -1,4 +1,6 @@
-Handle: 16216184963604545863
-Path: Engine/Shaders/Source/HLSL/Includes/Poisson.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5259184828654964679
+  filePath: Engine\Shaders\Source\HLSL\Includes\Poisson.hlsli
+  type: 128
+  Dependencies:
+    []

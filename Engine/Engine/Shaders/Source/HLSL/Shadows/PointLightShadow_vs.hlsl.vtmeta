@@ -1,4 +1,6 @@
-Handle: 7645562204291502238
-Path: Engine/Shaders/Source/HLSL/Shadows/PointLightShadow_vs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 16267128561453504734
+  filePath: Engine\Shaders\Source\HLSL\Shadows\PointLightShadow_vs.hlsl
+  type: 128
+  Dependencies:
+    []

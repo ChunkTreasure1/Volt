@@ -1,4 +1,6 @@
-Handle: 3435745506935047886
-Path: Engine/Shaders/Source/HLSL/PostProcessing/SSR/SSRComposite_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 14371202342865566247
+  filePath: Engine\Shaders\Source\HLSL\PostProcessing\SSR\SSRComposite_cs.hlsl
+  type: 128
+  Dependencies:
+    []

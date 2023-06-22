@@ -260,18 +260,24 @@ void MeshPreviewPanel::SaveCurrentMesh()
 		return;
 	}
 
-	if (!FileSystem::IsWriteable(myCurrentMesh->path))
+	const auto& currentMeshMeta = Volt::AssetManager::GetMetadataFromHandle(myCurrentMesh->handle);
+	if (!currentMeshMeta.IsValid())
 	{
-		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}! It is not writeable!", myCurrentMesh->path.string()));
 		return;
 	}
 
-	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, myCurrentMesh->path, myCurrentMesh->GetMaterial()->handle))
+	if (!FileSystem::IsWriteable(currentMeshMeta.filePath))
 	{
-		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}!", myCurrentMesh->path.string()));
+		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}! It is not writeable!", currentMeshMeta.filePath.string()));
+		return;
+	}
+
+	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, currentMeshMeta.filePath, myCurrentMesh->GetMaterial()->handle))
+	{
+		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}!", currentMeshMeta.filePath.string()));
 	}
 	else
 	{
-		UI::Notify(NotificationType::Success, "Saved Mesh!", std::format("Mesh {0} was saved successfully", myCurrentMesh->path.string()));
+		UI::Notify(NotificationType::Success, "Saved Mesh!", std::format("Mesh {0} was saved successfully", currentMeshMeta.filePath.string()));
 	}
 }

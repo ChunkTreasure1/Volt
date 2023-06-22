@@ -1,4 +1,6 @@
-Handle: 10458027523790139288
-Path: Engine/Shaders/Definitions/Shadows/pointLightShadow.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 13796763493266791211
+  filePath: Engine\Shaders\Definitions\Shadows\pointLightShadow.vtsdef
+  type: 64
+  Dependencies:
+    []

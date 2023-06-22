@@ -1,4 +1,6 @@
-Handle: 3977487908805606498
-Path: Engine/Shaders/Source/HLSL/Forward/FoliagePBR_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 11596174639345722308
+  filePath: Engine\Shaders\Source\HLSL\Forward\FoliagePBR_ps.hlsl
+  type: 128
+  Dependencies:
+    []

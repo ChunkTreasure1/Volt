@@ -1,4 +1,6 @@
-Handle: 3839469698151963320
-Path: Engine/Meshes/Primitives/SM_Cylinder.fbx
-Dependencies:
-  []
+Metadata:
+  assetHandle: 11651600627140429328
+  filePath: Engine\Meshes\Primitives\SM_Cylinder.fbx
+  type: 2
+  Dependencies:
+    []

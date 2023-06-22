@@ -1,4 +1,6 @@
-Handle: 10114258561505856143
-Path: Engine/Shaders/Source/HLSL/Compute/GenerateMotionVectors_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6968535334662448923
+  filePath: Engine\Shaders\Source\HLSL\Compute\GenerateMotionVectors_cs.hlsl
+  type: 128
+  Dependencies:
+    []

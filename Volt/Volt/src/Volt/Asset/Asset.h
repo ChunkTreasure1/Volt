@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include <cassert>
+#include <any>
 
 
 namespace Volt
@@ -151,7 +152,7 @@ namespace Volt
 		{ "Net Contract", AssetType::NetContract }
 	};
 
-	struct AssetMetaData
+	struct AssetMetadata
 	{
 		template<typename T>
 		inline void SetValue(std::string_view key, const T& data)
@@ -162,7 +163,8 @@ namespace Volt
 
 				if (value.type() != typeid(T))
 				{
-					VT_CORE_ASSERT(false, "Trying to set value at {0} with wrong type!", key);
+					assert(false && "Trying to set value with wrong type!");
+					return;
 				}
 			}
 
@@ -181,13 +183,13 @@ namespace Volt
 
 			if (value.type() != typeid(T))
 			{
-				VT_CORE_ASSERT(false, "Trying to get value at {0} with wrong type!", key);
+				assert(false && "Trying to get value with wrong type!");
 				return {};
 			}
 
 			return metaData.at(key);
 		}
-		
+
 		inline const bool IsValid() const { return handle != 0; }
 
 		AssetHandle handle = 0;
@@ -239,5 +241,6 @@ namespace Volt
 
 		uint16_t flags = (uint16_t)AssetFlag::None;
 		AssetHandle handle = {};
+		std::string name;
 	};
 }

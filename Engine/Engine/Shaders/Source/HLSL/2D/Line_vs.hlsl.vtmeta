@@ -1,4 +1,6 @@
-Handle: 17587718936107507050
-Path: Engine/Shaders/Source/HLSL/2D/Line_vs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 3255265651704047357
+  filePath: Engine\Shaders\Source\HLSL\2D\Line_vs.hlsl
+  type: 128
+  Dependencies:
+    []

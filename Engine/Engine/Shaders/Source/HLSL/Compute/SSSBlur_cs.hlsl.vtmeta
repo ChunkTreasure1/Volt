@@ -1,4 +1,6 @@
-Handle: 11427098283685515332
-Path: Engine/Shaders/Source/HLSL/Compute/SSSBlur_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 7282224269429522258
+  filePath: Engine\Shaders\Source\HLSL\Compute\SSSBlur_cs.hlsl
+  type: 128
+  Dependencies:
+    []

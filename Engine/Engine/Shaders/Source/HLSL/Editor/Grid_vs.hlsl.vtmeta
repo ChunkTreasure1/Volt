@@ -1,4 +1,6 @@
-Handle: 16569764063415998407
-Path: Engine/Shaders/Source/HLSL/Editor/Grid_vs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 3110728110601415414
+  filePath: Engine\Shaders\Source\HLSL\Editor\Grid_vs.hlsl
+  type: 128
+  Dependencies:
+    []

@@ -1,4 +1,6 @@
-Handle: 909180903868777263
-Path: Engine/Shaders/Definitions/Editor/grid.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6629911314227173172
+  filePath: Engine\Shaders\Definitions\Editor\grid.vtsdef
+  type: 64
+  Dependencies:
+    []

@@ -1,4 +1,6 @@
-Handle: 5902731076894278233
-Path: Engine/Shaders/Source/HLSL/Includes/ComputeUtility.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 7556732480077651727
+  filePath: Engine\Shaders\Source\HLSL\Includes\ComputeUtility.hlsli
+  type: 128
+  Dependencies:
+    []

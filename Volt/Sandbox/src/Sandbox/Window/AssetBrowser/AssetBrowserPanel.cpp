@@ -1033,7 +1033,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 			{
 				if (item->isDirectory)
 				{
-					Volt::AssetManager::Get().RemoveFolderFromRegistry(Volt::AssetManager::GetRelativePath(item->path));
+					Volt::AssetManager::Get().RemoveFullFolderFromRegistry(Volt::AssetManager::GetRelativePath(item->path));
 					FileSystem::MoveToRecycleBin(Volt::ProjectManager::GetDirectory() / item->path);
 				}
 			}
@@ -1376,8 +1376,8 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			FileSystem::CreateDirectory(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / tempName);
 
 			Ref<Volt::Scene> scene = Volt::Scene::CreateDefaultScene("New Scene");
-			scene->path = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
-			Volt::AssetManager::Get().SaveAsset(scene);
+			const std::filesystem::path targetFilePath = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
+			Volt::AssetManager::Get().SaveAssetAs(scene, targetFilePath);
 			break;
 		}
 

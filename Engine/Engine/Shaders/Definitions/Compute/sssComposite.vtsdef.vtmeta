@@ -1,4 +1,6 @@
-Handle: 10729241739604584924
-Path: Engine/Shaders/Definitions/Compute/sssComposite.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10561695767506091234
+  filePath: Engine\Shaders\Definitions\Compute\sssComposite.vtsdef
+  type: 64
+  Dependencies:
+    []

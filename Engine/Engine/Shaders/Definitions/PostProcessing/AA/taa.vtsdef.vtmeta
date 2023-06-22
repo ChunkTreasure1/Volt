@@ -1,4 +1,6 @@
-Handle: 337723999716260363
-Path: Engine/Shaders/Definitions/PostProcessing/AA/taa.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 16618428244349753270
+  filePath: Engine\Shaders\Definitions\PostProcessing\AA\taa.vtsdef
+  type: 64
+  Dependencies:
+    []

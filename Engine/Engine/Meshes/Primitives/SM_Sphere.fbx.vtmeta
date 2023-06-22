@@ -1,4 +1,6 @@
-Handle: 1452199010178660411
-Path: Engine/Meshes/Primitives/SM_Sphere.fbx
-Dependencies:
-  []
+Metadata:
+  assetHandle: 752336731670359351
+  filePath: Engine\Meshes\Primitives\SM_Sphere.fbx
+  type: 2
+  Dependencies:
+    []

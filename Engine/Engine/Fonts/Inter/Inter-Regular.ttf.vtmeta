@@ -1,4 +1,6 @@
-Handle: 6228676811939167833
-Path: Engine/Fonts/Inter/Inter-Regular.ttf
-Dependencies:
-  []
+Metadata:
+  assetHandle: 11496241924021676954
+  filePath: Engine\Fonts\Inter\Inter-Regular.ttf
+  type: 4096
+  Dependencies:
+    []

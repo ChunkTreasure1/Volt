@@ -1,4 +1,6 @@
-Handle: 18437988262528333997
-Path: Engine/Shaders/Definitions/2D/text.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 14105567693122248224
+  filePath: Engine\Shaders\Definitions\2D\text.vtsdef
+  type: 64
+  Dependencies:
+    []

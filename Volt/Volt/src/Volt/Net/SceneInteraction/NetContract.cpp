@@ -90,8 +90,11 @@ namespace Volt
 	void NetContractContainer::AddContract(const AssetHandle& in_handle)
 	{
 		if (m_contracts.contains(in_handle)) return;
-		Ref<NetContract> contract = CreateRef<NetContract>();
-		contract->path = "Assets/Networking/Contracts/" + std::to_string(in_handle) + ".vtncon";
+
+		const std::filesystem::path contractDirectory = "Assets/Networking/Contracts";
+		const std::string filename = std::to_string(in_handle) + ".vtncon";
+
+		Ref<NetContract> contract = AssetManager::CreateAsset<NetContract>(contractDirectory, filename);
 		contract->prefab = in_handle;
 		m_contracts.insert({ in_handle, contract });
 	}

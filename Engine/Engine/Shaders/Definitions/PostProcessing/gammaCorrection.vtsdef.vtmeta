@@ -1,4 +1,6 @@
-Handle: 7500424696466418907
-Path: Engine/Shaders/Definitions/PostProcessing/gammaCorrection.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 15146146951709039091
+  filePath: Engine\Shaders\Definitions\PostProcessing\gammaCorrection.vtsdef
+  type: 64
+  Dependencies:
+    []

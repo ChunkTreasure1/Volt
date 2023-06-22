@@ -1,4 +1,6 @@
-Handle: 271815327177806375
-Path: Engine/Shaders/Source/HLSL/PostProcessing/AA/FXAA_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 12076624703560236511
+  filePath: Engine\Shaders\Source\HLSL\PostProcessing\AA\FXAA_cs.hlsl
+  type: 128
+  Dependencies:
+    []

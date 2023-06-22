@@ -1,4 +1,6 @@
-Handle: 10603182226929197771
-Path: Engine/Shaders/Source/HLSL/Environment/EnvironmentMipFilter_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 7601634584268938325
+  filePath: Engine\Shaders\Source\HLSL\Environment\EnvironmentMipFilter_cs.hlsl
+  type: 128
+  Dependencies:
+    []

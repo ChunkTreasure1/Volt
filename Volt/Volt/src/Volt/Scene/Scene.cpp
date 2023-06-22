@@ -852,7 +852,6 @@ namespace Volt
 		otherScene->mySceneLayers = mySceneLayers;
 		otherScene->myActiveLayerIndex = myActiveLayerIndex;
 		otherScene->myLastLayerId = myLastLayerId;
-		otherScene->path = path;
 
 		auto& otherRegistry = otherScene->GetRegistry();
 

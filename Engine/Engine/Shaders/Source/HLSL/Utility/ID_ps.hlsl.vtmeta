@@ -1,4 +1,6 @@
-Handle: 3785726626550343993
-Path: Engine/Shaders/Source/HLSL/Utility/ID_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 17876056862606828490
+  filePath: Engine\Shaders\Source\HLSL\Utility\ID_ps.hlsl
+  type: 128
+  Dependencies:
+    []

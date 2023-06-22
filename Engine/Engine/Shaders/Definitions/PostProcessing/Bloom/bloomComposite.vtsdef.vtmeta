@@ -1,4 +1,6 @@
-Handle: 2619764138882606014
-Path: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomComposite.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 9175638432037814483
+  filePath: Engine\Shaders\Definitions\PostProcessing\Bloom\bloomComposite.vtsdef
+  type: 64
+  Dependencies:
+    []

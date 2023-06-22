@@ -1,4 +1,6 @@
-Handle: 11601430879402162539
-Path: Engine/Shaders/Definitions/Forward/forwardSSS.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 9493294644320603352
+  filePath: Engine\Shaders\Definitions\Forward\forwardSSS.vtsdef
+  type: 64
+  Dependencies:
+    []

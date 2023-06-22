@@ -1,4 +1,6 @@
-Handle: 392177118040807667
-Path: Engine/Meshes/Primitives/SM_Capsule.fbx
-Dependencies:
-  []
+Metadata:
+  assetHandle: 12702906467566067970
+  filePath: Engine\Meshes\Primitives\SM_Capsule.fbx
+  type: 2
+  Dependencies:
+    []

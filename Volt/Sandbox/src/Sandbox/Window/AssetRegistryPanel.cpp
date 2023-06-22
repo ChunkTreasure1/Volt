@@ -31,14 +31,12 @@ void AssetRegistryPanel::UpdateMainContent()
 		if (ImGui::Button("Remove Reds"))
 		{
 			static std::vector<std::filesystem::path> pathsToClear;
-			for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
+			for (const auto& [handle, metadata] : Volt::AssetManager::Get().GetAssetRegistry())
 			{
-				if (!handle || path.empty()) { continue; }
-				const std::filesystem::path completePath = Volt::AssetManager::GetContextPath(path) / path;
-
+				const std::filesystem::path completePath = Volt::AssetManager::GetContextPath(metadata.filePath) / metadata.filePath;
 				if (!FileSystem::Exists(completePath))
 				{
-					pathsToClear.emplace_back(path);
+					pathsToClear.emplace_back(metadata.filePath);
 				}
 			}
 
@@ -68,11 +66,11 @@ void AssetRegistryPanel::UpdateMainContent()
 		ImGui::TableSetupScrollFreeze(ImGui::TableGetColumnCount(), 1);
 		ImGui::TableHeadersRow();
 
-		for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
+		for (const auto& [handle, metadata] : Volt::AssetManager::Get().GetAssetRegistry())
 		{
 			if (!mySearchQuery.empty())
 			{
-				auto path_lower = Utils::ToLower(path.string());
+				auto path_lower = Utils::ToLower(metadata.filePath.string());
 				auto handle_lower = Utils::ToLower(std::to_string(handle));
 				auto search_lower = Utils::ToLower(mySearchQuery);
 
@@ -83,7 +81,7 @@ void AssetRegistryPanel::UpdateMainContent()
 			}
 
 			ImGui::TableNextColumn();
-			const std::filesystem::path completePath = Volt::AssetManager::GetContextPath(path) / path;
+			const std::filesystem::path completePath = Volt::AssetManager::GetContextPath(metadata.filePath) / metadata.filePath;
 
 			if (!FileSystem::Exists(completePath))
 			{
@@ -91,7 +89,7 @@ void AssetRegistryPanel::UpdateMainContent()
 				hasReds = true;
 			}
 			ImGui::PushItemWidth(ImGui::GetColumnWidth());
-			std::string pathString = path.string();
+			std::string pathString = metadata.filePath.string();
 			UI::InputText("", pathString, ImGuiInputTextFlags_ReadOnly);
 			ImGui::PopItemWidth();
 
@@ -121,20 +119,17 @@ void AssetRegistryPanel::UpdateMainContent()
 
 void AssetRegistryPanel::AddNewModal()
 {
-	if(UI::BeginModal("Add New Handle##AssetRegistryPanel"))
+	if (UI::BeginModal("Add New Handle##AssetRegistryPanel"))
 	{
 		static std::filesystem::path assetPath = "";
 		static Volt::AssetHandle assetHandle = 0;
-		
+
 		UI::Property("Asset", assetPath);
 		ImGui::InputScalar("Handle", ImGuiDataType_U64, &assetHandle);
 
 		if (ImGui::Button("Add"))
 		{
-			if (assetHandle && 
-				!assetPath.empty() &&
-				!Volt::AssetManager::Get().ExistsInRegistry(assetPath) &&
-				!Volt::AssetManager::Get().ExistsInRegistry(assetHandle))
+			if (assetHandle && !assetPath.empty() && !Volt::AssetManager::Get().ExistsInRegistry(assetPath) && !Volt::AssetManager::Get().ExistsInRegistry(assetHandle))
 			{
 				UI::Notify(NotificationType::Success, "Assethandle registered!", "Successfully added assethandle.");
 				Volt::AssetManager::Get().AddAssetToRegistry(assetPath, assetHandle);

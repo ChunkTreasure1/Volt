@@ -1,4 +1,6 @@
-Handle: 2658278516971117895
-Path: Engine/Shaders/Source/HLSL/2D/Line_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 1330398496802115339
+  filePath: Engine\Shaders\Source\HLSL\2D\Line_ps.hlsl
+  type: 128
+  Dependencies:
+    []

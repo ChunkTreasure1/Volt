@@ -36,7 +36,14 @@ namespace Volt
 
 		for (const auto& p : shader->GetSourcePaths())
 		{
-			AssetManager::Get().AddDependency(shader->handle, Volt::AssetManager::GetRelativePath(p));
+			const auto sourceRelPath = Volt::AssetManager::GetRelativePath(p);
+
+			if (AssetManager::ExistsInRegistry(sourceRelPath))
+			{
+				AssetManager::Get().AddAssetToRegistry(sourceRelPath);
+			}
+
+			AssetManager::Get().AddDependency(shader->handle, sourceRelPath);
 		}
 	}
 

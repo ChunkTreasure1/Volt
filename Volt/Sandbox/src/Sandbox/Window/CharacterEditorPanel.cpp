@@ -76,7 +76,7 @@ void CharacterEditorPanel::UpdateMainContent()
 				if (myCurrentCharacter)
 				{
 					Volt::AssetManager::Get().SaveAsset(myCurrentCharacter);
-					UI::Notify(NotificationType::Success, "Saved character!", std::format("Character {0} successfully saved!", myCurrentCharacter->path.stem().string()));
+					UI::Notify(NotificationType::Success, "Saved character!", std::format("Character {0} successfully saved!", myCurrentCharacter->name));
 				}
 			}
 
@@ -242,7 +242,7 @@ void CharacterEditorPanel::UpdateToolbar()
 		if (myCurrentCharacter)
 		{
 			Volt::AssetManager::Get().SaveAsset(myCurrentCharacter);
-			UI::Notify(NotificationType::Success, "Saved Character!", std::format("Saved character {0} to file!", myCurrentCharacter->path.stem().string()));
+			UI::Notify(NotificationType::Success, "Saved Character!", std::format("Saved character {0} to file!", myCurrentCharacter->name));
 		}
 	}
 
@@ -430,7 +430,7 @@ void CharacterEditorPanel::UpdateAnimations()
 				std::string animName;
 				if (anim && anim->IsValid())
 				{
-					animName = anim->path.stem().string();
+					animName = anim->name;
 				}
 				else
 				{

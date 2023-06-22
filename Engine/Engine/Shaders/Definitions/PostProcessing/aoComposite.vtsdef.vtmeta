@@ -1,4 +1,6 @@
-Handle: 11256548978818670374
-Path: Engine/Shaders/Definitions/PostProcessing/aoComposite.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 18060873306985952621
+  filePath: Engine\Shaders\Definitions\PostProcessing\aoComposite.vtsdef
+  type: 64
+  Dependencies:
+    []

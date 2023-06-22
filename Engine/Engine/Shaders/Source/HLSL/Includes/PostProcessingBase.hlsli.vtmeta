@@ -1,4 +1,6 @@
-Handle: 4109305801722002624
-Path: Engine/Shaders/Source/HLSL/Includes/PostProcessingBase.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6906027368149112087
+  filePath: Engine\Shaders\Source\HLSL\Includes\PostProcessingBase.hlsli
+  type: 128
+  Dependencies:
+    []

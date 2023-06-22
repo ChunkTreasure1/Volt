@@ -35,21 +35,7 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
 		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
-			std::vector<std::filesystem::path> items;
-			for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
-			{
-				if (!FileSystem::Exists(Volt::AssetManager::GetContextPath(path) / path))
-				{
-					continue;
-				}
-
-				const Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
-				if (myWantedType == Volt::AssetType::None || assetType == myWantedType)
-				{
-					items.emplace_back(path);
-				}
-			}
-
+			const std::vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);
 			state = RenderView(items);
 			ImGui::EndChild();
 		}
@@ -59,23 +45,22 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 	return state;
 }
 
-AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<std::filesystem::path>& items)
+AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::AssetHandle>& items)
 {
 	State state = State::Open;
 	std::vector<std::string> names;
 	std::unordered_map<std::string, Volt::AssetHandle> nameToAssetHandleMap;
 
-	for (const auto& p : items)
+	for (const auto& handle : items)
 	{
-		auto ext = p.extension().string();
-
-		auto assetType = Volt::AssetManager::GetAssetTypeFromPath(p);
-		if (myWantedType == Volt::AssetType::None || assetType == myWantedType &&
-			!ext.contains(".png"))
+		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(handle);
+		if (!metadata.IsValid())
 		{
-			names.emplace_back(p.stem().string());
-			nameToAssetHandleMap.emplace(names.back(), Volt::AssetManager::GetAssetHandleFromPath(p));
+			continue;
 		}
+
+		names.emplace_back(metadata.filePath.stem().string());
+		nameToAssetHandleMap[names.back()] = handle;
 	}
 
 	if (!mySearchQuery.empty())

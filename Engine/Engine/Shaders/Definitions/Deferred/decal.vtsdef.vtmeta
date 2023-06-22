@@ -1,4 +1,6 @@
-Handle: 11366095937693618479
-Path: Engine/Shaders/Definitions/Deferred/decal.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4358432931269904815
+  filePath: Engine\Shaders\Definitions\Deferred\decal.vtsdef
+  type: 64
+  Dependencies:
+    []

@@ -1,4 +1,6 @@
-Handle: 12759323569720343972
-Path: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomUpsample.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 12976563746694919899
+  filePath: Engine\Shaders\Definitions\PostProcessing\Bloom\bloomUpsample.vtsdef
+  type: 64
+  Dependencies:
+    []

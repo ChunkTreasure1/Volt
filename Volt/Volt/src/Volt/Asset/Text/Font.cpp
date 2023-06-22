@@ -2,6 +2,8 @@
 #include "Font.h"
 
 #include "Volt/Asset/Text/MSDFData.h"
+#include "Volt/Asset/AssetManager.h"
+
 #include "Volt/Log/Log.h"
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Buffer.h"
@@ -101,7 +103,6 @@ namespace Volt
 	Font::Font(const std::filesystem::path& aPath)
 	{
 		myMSDFData = new MSDFData();
-		this->path = aPath;
 
 		FontInput fontInput = {};
 		Configuration config = {};
@@ -313,7 +314,7 @@ namespace Volt
 			}
 		}
 
-		std::string fontName = path.filename().string();
+		std::string fontName = AssetManager::GetMetadataFromHandle(handle).filePath.stem().string(); // #TODO_Ivar: change font constructor
 		const std::filesystem::path cachePath = Utility::GetCachePath(fontName);
 
 		Ref<Texture2D> texture;

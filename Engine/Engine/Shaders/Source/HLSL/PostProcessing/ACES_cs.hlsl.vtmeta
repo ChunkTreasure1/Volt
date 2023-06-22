@@ -1,4 +1,6 @@
-Handle: 5701904244827334125
-Path: Engine/Shaders/Source/HLSL/PostProcessing/ACES_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 16399509536166299362
+  filePath: Engine\Shaders\Source\HLSL\PostProcessing\ACES_cs.hlsl
+  type: 128
+  Dependencies:
+    []

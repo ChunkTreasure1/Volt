@@ -1,4 +1,6 @@
-Handle: 9470634712467282871
-Path: Engine/Shaders/Definitions/PostProcessing/GTAO/gtaoMainPass.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10324372748003679291
+  filePath: Engine\Shaders\Definitions\PostProcessing\GTAO\gtaoMainPass.vtsdef
+  type: 64
+  Dependencies:
+    []

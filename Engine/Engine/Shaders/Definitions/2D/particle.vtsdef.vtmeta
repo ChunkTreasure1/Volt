@@ -1,4 +1,6 @@
-Handle: 6462289146913077069
-Path: Engine/Shaders/Definitions/2D/particle.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5146572472566269024
+  filePath: Engine\Shaders\Definitions\2D\particle.vtsdef
+  type: 64
+  Dependencies:
+    []

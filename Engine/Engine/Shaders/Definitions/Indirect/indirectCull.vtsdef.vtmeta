@@ -1,4 +1,6 @@
-Handle: 17979073905613497533
-Path: Engine/Shaders/Definitions/Indirect/indirectCull.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 7554589635178892123
+  filePath: Engine\Shaders\Definitions\Indirect\indirectCull.vtsdef
+  type: 64
+  Dependencies:
+    []

@@ -1,4 +1,6 @@
-Handle: 8409767807064287562
-Path: Engine/Shaders/Definitions/PostProcessing/aces.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 13764301666596282418
+  filePath: Engine\Shaders\Definitions\PostProcessing\aces.vtsdef
+  type: 64
+  Dependencies:
+    []

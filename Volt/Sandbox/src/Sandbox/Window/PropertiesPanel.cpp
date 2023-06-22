@@ -1087,8 +1087,8 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const W
 	{
 		if (ImGui::Button("Open in Visual Studio"))
 		{
-			auto path = Volt::AssetManager::GetPathFromFilename(scriptClassName + ".cs");
-			if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, path[0]))
+			auto path = Volt::AssetManager::GetFilePathFromFilename(scriptClassName + ".cs");
+			if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, path))
 			{
 				UI::Notify(NotificationType::Error, "Open file failed!", "External script editor is not valid!");
 			}

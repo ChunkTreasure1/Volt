@@ -1,4 +1,6 @@
-Handle: 8192717060657030359
-Path: Engine/Shaders/Definitions/Compute/lightCull.vtsdef
-Dependencies:
-  - Engine/Shaders/Source/HLSL/Compute/LightCull_cs.hlsl
+Metadata:
+  assetHandle: 2466595929433413448
+  filePath: Engine\Shaders\Definitions\Compute\lightCull.vtsdef
+  type: 64
+  Dependencies:
+    []

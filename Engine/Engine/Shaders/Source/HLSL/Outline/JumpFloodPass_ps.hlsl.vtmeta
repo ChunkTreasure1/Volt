@@ -1,4 +1,6 @@
-Handle: 14565528090059344435
-Path: Engine/Shaders/Source/HLSL/Outline/JumpFloodPass_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 2113792592938538038
+  filePath: Engine\Shaders\Source\HLSL\Outline\JumpFloodPass_ps.hlsl
+  type: 128
+  Dependencies:
+    []

@@ -1,4 +1,6 @@
-Handle: 4148367452202859361
-Path: Engine/Shaders/Source/HLSL/Editor/ColliderDebug_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6103420546199147017
+  filePath: Engine\Shaders\Source\HLSL\Editor\ColliderDebug_ps.hlsl
+  type: 128
+  Dependencies:
+    []

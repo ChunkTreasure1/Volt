@@ -1,4 +1,6 @@
-Handle: 1180605586476932351
-Path: Engine/Shaders/Source/HLSL/Includes/PBR.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4566262909289434973
+  filePath: Engine\Shaders\Source\HLSL\Includes\PBR.hlsli
+  type: 128
+  Dependencies:
+    []

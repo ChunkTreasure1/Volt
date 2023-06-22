@@ -1,4 +1,6 @@
-Handle: 18163685030177505608
-Path: Engine/Shaders/Definitions/Forward/foliage.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 7017426884653803553
+  filePath: Engine\Shaders\Definitions\Forward\foliage.vtsdef
+  type: 64
+  Dependencies:
+    []

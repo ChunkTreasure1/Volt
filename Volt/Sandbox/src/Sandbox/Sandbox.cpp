@@ -296,7 +296,7 @@ void Sandbox::CreateWatches()
 					{
 						if (EditorUtils::ReimportSourceMesh(asset))
 						{
-							UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetPathFromAssetHandle(asset).string()));
+							UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetFilePathFromAssetHandle(asset).string()));
 						}
 					}
 					break;
@@ -327,7 +327,7 @@ void Sandbox::CreateWatches()
 		{
 			if (!newPath.has_extension())
 			{
-				Volt::AssetManager::Get().RemoveFolderFromRegistry(Volt::AssetManager::Get().GetRelativePath(newPath));
+				Volt::AssetManager::Get().RemoveFullFolderFromRegistry(Volt::AssetManager::Get().GetRelativePath(newPath));
 			}
 			else
 			{
@@ -489,11 +489,14 @@ void Sandbox::OnDetach()
 
 	myRuntimeScene->ShutdownEngineScripts();
 
-	if (myRuntimeScene && !myRuntimeScene->path.empty())
 	{
-		UserSettingsManager::GetSettings().sceneSettings.lastOpenScene = myRuntimeScene->path;
+		// #TODO_Ivar: Change so that scene copy creates a memory asset instead
+		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
+		if (myRuntimeScene && !metadata.filePath.empty())
+		{
+			UserSettingsManager::GetSettings().sceneSettings.lastOpenScene = metadata.filePath;
+		}
 	}
-
 	UserSettingsManager::SaveUserSettings();
 	EditorLibrary::Clear();
 	EditorResources::Shutdown();
@@ -750,11 +753,13 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 	{
 		SelectionManager::DeselectAll();
 
-		if (myRuntimeScene->path == path)
+		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
+
+		if (metadata.filePath == path)
 		{
 			Volt::AssetManager::Get().ReloadAsset(myRuntimeScene->handle);
 		}
-		else if (myRuntimeScene && !myRuntimeScene->path.empty())
+		else if (myRuntimeScene && !metadata.filePath.empty())
 		{
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}
@@ -795,16 +800,16 @@ void Sandbox::SaveScene()
 {
 	if (myRuntimeScene)
 	{
-		if (!myRuntimeScene->path.empty())
+		if (Volt::AssetManager::ExistsInRegistry(myRuntimeScene->handle))
 		{
-			if (FileSystem::IsWriteable(myRuntimeScene->path))
+			if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(myRuntimeScene->handle)))
 			{
 				Volt::AssetManager::Get().SaveAsset(myRuntimeScene);
-				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->path.string()));
+				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->name));
 			}
 			else
 			{
-				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->path.string()));
+				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->name));
 			}
 		}
 		else

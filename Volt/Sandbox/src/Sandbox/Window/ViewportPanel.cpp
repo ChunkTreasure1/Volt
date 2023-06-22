@@ -778,7 +778,7 @@ void ViewportPanel::CheckDragDrop()
 				meshComp.handle = mesh->handle;
 			}
 
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 			myCreatedEntity = newEntity;
 
 			break;
@@ -786,7 +786,7 @@ void ViewportPanel::CheckDragDrop()
 
 		case Volt::AssetType::MeshSource:
 		{
-			const std::filesystem::path meshSourcePath = Volt::AssetManager::Get().GetPathFromAssetHandle(handle);
+			const std::filesystem::path meshSourcePath = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle);
 			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtmesh");
 
 			Volt::AssetHandle resultHandle = handle;
@@ -837,7 +837,7 @@ void ViewportPanel::CheckDragDrop()
 				particleEmitter.preset = preset->handle;
 			}
 
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 			myCreatedEntity = newEntity;
 
 			break;
@@ -1132,7 +1132,7 @@ void ViewportPanel::UpdateModals()
 			Sandbox::Get().SaveScene();
 		}
 
-		Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
+		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(mySceneToOpen));
 		mySceneToOpen = Volt::Asset::Null();
 	}
 }
