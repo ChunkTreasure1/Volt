@@ -65,6 +65,8 @@ private:
 
 	void ClearAssetPreviewsInCurrentDirectory();
 
+	float GetThumbnailSize();
+
 	///// Asset Creation /////	
 	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
 	void CreateNewShaderModal();
@@ -90,7 +92,6 @@ private:
 	AssetBrowser::DirectoryItem* myAssetsDirectory = nullptr;
 
 	float myThumbnailPadding = 16.f;
-	float myThumbnailSize = 85.f;
 	bool myHasSearchQuery = false;
 	bool myShouldDeleteSelected = false;
 

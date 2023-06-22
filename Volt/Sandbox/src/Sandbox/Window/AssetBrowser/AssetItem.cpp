@@ -14,6 +14,9 @@
 
 #include "Sandbox/UserSettingsManager.h"
 
+#include "Sandbox/Window/AssetBrowser/EditorAssetRegistry.h"
+
+
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Input/KeyCodes.h>
@@ -21,8 +24,8 @@
 
 namespace AssetBrowser
 {
-	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& aMeshImportData, AssetData& aMeshToImportData)
-		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData), meshToImportData(aMeshToImportData)
+	AssetItem::AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, MeshImportData& aMeshImportData, AssetData& aMeshToImportData)
+		: Item(selectionManager, path), meshImportData(aMeshImportData), meshToImportData(aMeshToImportData)
 	{
 		type = Volt::AssetManager::GetAssetTypeFromPath(path);
 		handle = Volt::AssetManager::GetAssetHandleFromPath(path);
@@ -34,298 +37,155 @@ namespace AssetBrowser
 
 	bool AssetItem::Render()
 	{
-		bool reload = false;
+		bool reload = Item::Render();
 
-		ImGui::PushID((uint32_t)handle);
-
-		const Ref<Volt::Image2D> icon = GetIcon();
-		const bool selected = mySelectionManager->IsSelected(this);
-
-		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(myThumbnailSize);
-		const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
-		const ImVec4 assetTypeColor = GetBackgroundColorFromType(type);
-
-		UI::ScopedColor outerChild{ ImGuiCol_ChildBg, { 0.f } };
-		ImGui::BeginChild("hoverWindow", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenSceneAssetBrowser"); returnState != SaveReturnState::None)
 		{
-			const bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
-			const ImVec4 bgColor = AssetBrowserUtilities::GetBackgroundColor(hovered, selected);
-
-			UI::ScopedColor middleChild{ ImGuiCol_ChildBg, { bgColor.x, bgColor.y, bgColor.z, bgColor.w } };
-			UI::ScopedStyleFloat rounding{ ImGuiStyleVar_ChildRounding, 2.f };
-			ImGui::BeginChild("item", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			if (returnState == SaveReturnState::Save)
 			{
-				UI::ShiftCursor(itemPadding / 2.f, itemPadding / 2.f);
-
-				constexpr float colorModifier = 0.6f;
-				UI::ScopedColor innerChild{ ImGuiCol_ChildBg, { assetTypeColor.x * colorModifier, assetTypeColor.y * colorModifier, assetTypeColor.z * colorModifier, assetTypeColor.w } };
-				ImGui::BeginChild("Image", { myThumbnailSize, myThumbnailSize + 4.f }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-				{
-					// Icon
-					{
-						ImGui::Image(UI::GetTextureID(icon), { myThumbnailSize, myThumbnailSize });
-
-						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-						{
-							//Data being copied
-							ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(Volt::AssetHandle), ImGuiCond_Once);
-							ImGui::TextUnformatted("Move:");
-
-							constexpr uint32_t maxShownPaths = 3;
-							for (uint32_t i = 0; const auto & selected : mySelectionManager->GetSelectedItems())
-							{
-								if (i == maxShownPaths)
-								{
-									ImGui::TextUnformatted("...");
-									break;
-								}
-								ImGui::TextUnformatted(selected->path.string().c_str());
-								i++;
-							}
-
-							// Viewport Drag drop
-							GlobalEditorStates::dragStartedInAssetBrowser = true;
-							GlobalEditorStates::dragAsset = handle;
-							GlobalEditorStates::isDragging = true;
-
-							ImGui::EndDragDropSource();
-						}
-					}
-
-					const ImVec2 maxChildPos = AssetBrowserUtilities::GetBrowserItemPos();
-
-					// Bottom bar
-					{
-						const ImVec2 barMin = maxChildPos;
-						const ImVec2 barMax = barMin + ImVec2{ 10.f, 4.f };
-
-						ImVec4 color = assetTypeColor;
-						color.w = 1.f;
-
-						ImGui::GetWindowDrawList()->AddRectFilled(barMin, barMax, ImColor(assetTypeColor));
-					}
-				}
-
-				ImGui::EndChild();
-
-				if (RenderRightClickPopup())
-				{
-					reload = true;
-					goto renderEnd;
-				}
-
-				UI::ShiftCursor(itemPadding / 2.f, 0.f);
-
-				if (isRenaming)
-				{
-					const std::string renameId = "###renameId" + std::to_string(handle);
-					ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
-
-					UI::ScopedColor background{ ImGuiCol_FrameBg, { 0.1f, 0.1f, 0.1f, 0.1f } };
-					if (ImGui::InputTextString(renameId.c_str(), &currentRenamingName, ImGuiInputTextFlags_EnterReturnsTrue))
-					{
-						Volt::AssetManager::Get().RenameAsset(handle, currentRenamingName);
-						switch (type)
-						{
-							case Volt::AssetType::Material:
-								Volt::AssetManager::GetAsset<Volt::Material>(handle)->SetName(currentRenamingName);
-								break;
-						}
-
-						reload = true;
-						ImGui::PopItemWidth();
-
-						goto renderEnd;
-					}
-
-					if (isRenaming != myLastRenaming)
-					{
-						const ImGuiID widgetId = ImGui::GetCurrentWindow()->GetID(renameId.c_str());
-						ImGui::SetFocusID(widgetId, ImGui::GetCurrentWindow());
-						ImGui::SetKeyboardFocusHere(-1);
-					}
-
-					if (!ImGui::IsItemFocused())
-					{
-						Volt::AssetManager::Get().RenameAsset(handle, currentRenamingName);
-
-						isRenaming = false;
-						reload = true;
-
-						ImGui::PopItemWidth();
-
-						goto renderEnd;
-					}
-
-					if (!ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-					{
-						Volt::AssetManager::Get().RenameAsset(handle, currentRenamingName);
-						isRenaming = false;
-						reload = true;
-
-						ImGui::PopItemWidth();
-						goto renderEnd;
-					}
-
-					myLastRenaming = true;
-					ImGui::PopItemWidth();
-				}
-				else
-				{
-					myLastRenaming = false;
-					ImGui::TextWrapped("%s", path.stem().string().c_str());
-				}
-
-				static Volt::AssetHandle sceneToOpen = Volt::Asset::Null();
-
-				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && hovered)
-				{
-					if (!EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle)))
-					{
-						switch (type)
-						{
-							case Volt::AssetType::Animation:
-								break;
-							case Volt::AssetType::Skeleton:
-								break;
-							case Volt::AssetType::Texture:
-								break;
-							case Volt::AssetType::Shader:
-								break;
-							case Volt::AssetType::ShaderSource:
-								break;
-							case Volt::AssetType::Scene:
-							{
-								UI::OpenModal("Do you want to save scene?##OpenSceneAssetBrowser");
-								sceneToOpen = handle;
-								break;
-							}
-							case Volt::AssetType::Font:
-								break;
-							case Volt::AssetType::PhysicsMaterial:
-								break;
-							case Volt::AssetType::Video:
-								break;
-							case Volt::AssetType::NavMesh:
-								break;
-							case Volt::AssetType::GraphKey:
-								break;
-							case Volt::AssetType::MonoScript:
-							{
-								if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, Volt::AssetManager::GetPathFromAssetHandle(handle)))
-								{
-									UI::Notify(NotificationType::Error, "Open file failed!", "External script editor is not valid!");
-								}
-								break;
-							}
-							default:
-								break;
-						}
-					}
-				}
-
-				if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenSceneAssetBrowser"); returnState != SaveReturnState::None)
-				{
-					if (returnState == SaveReturnState::Save)
-					{
-						Sandbox::Get().SaveScene();
-					}
-
-					Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(sceneToOpen));
-					sceneToOpen = Volt::Asset::Null();
-				}
-
-				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && hovered && !mySelectionManager->IsSelected(this))
-				{
-					mySelectionManager->DeselectAll();
-					mySelectionManager->Select(this);
-				}
-
-				const bool mouseDown = mySelectionManager->IsAnySelected() ? ImGui::IsMouseReleased(ImGuiMouseButton_Left) : ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-				if (mouseDown && hovered)
-				{
-					if (!Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL))
-					{
-						mySelectionManager->DeselectAll();
-					}
-
-					if (mySelectionManager->IsSelected(this))
-					{
-						mySelectionManager->Deselect(this);
-					}
-					else
-					{
-						mySelectionManager->Select(this);
-					}
-				}
-
+				Sandbox::Get().SaveScene();
 			}
 
-		renderEnd:
-			ImGui::EndChild();
+			Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
+			mySceneToOpen = Volt::Asset::Null();
 		}
-		ImGui::EndChild();
-		ImGui::PopID();
 
 		return reload;
+	}
+
+	void AssetItem::PushID()
+	{
+		ImGui::PushID(handle);
 	}
 
 	bool AssetItem::RenderRightClickPopup()
 	{
 		bool removed = false;
-
-		if (UI::BeginPopupItem(path.string(), ImGuiPopupFlags_MouseButtonRight))
+		if (!mySelectionManager->IsSelected(this))
 		{
-			if (!mySelectionManager->IsSelected(this))
-			{
-				mySelectionManager->DeselectAll();
-				mySelectionManager->Select(this);
-			}
+			mySelectionManager->DeselectAll();
+			mySelectionManager->Select(this);
+		}
 
-			if (ImGui::MenuItem("Open Externally"))
-			{
-				FileSystem::OpenFileExternally(Volt::ProjectManager::GetDirectory() / path);
-			}
+		if (ImGui::MenuItem("Open Externally"))
+		{
+			FileSystem::OpenFileExternally(Volt::ProjectManager::GetDirectory() / path);
+		}
 
-			if (ImGui::MenuItem("Show In Explorer"))
-			{
-				FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
-			}
+		if (ImGui::MenuItem("Show In Explorer"))
+		{
+			FileSystem::ShowFileInExplorer(Volt::ProjectManager::GetDirectory() / path);
+		}
 
-			if (ImGui::MenuItem("Reload"))
-			{
-				Volt::AssetManager::Get().ReloadAsset(handle);
-			}
+		if (ImGui::MenuItem("Reload"))
+		{
+			Volt::AssetManager::Get().ReloadAsset(handle);
+		}
 
+		ImGui::Separator();
+
+		bool extraItemsRendered = AssetBrowserUtilities::RenderAssetTypePopup(this);
+
+		if (extraItemsRendered)
+		{
 			ImGui::Separator();
+		}
 
-			bool extraItemsRendered = AssetBrowserUtilities::RenderAssetTypePopup(this);
+		if (ImGui::MenuItem("Rename"))
+		{
+			StartRename();
+		}
 
-			if (extraItemsRendered)
-			{
-				ImGui::Separator();
-			}
+		if (ImGui::MenuItem("Delete"))
+		{
+			UI::OpenModal("Delete Selected Files?");
+		}
 
-			if (ImGui::MenuItem("Rename"))
-			{
-				isRenaming = true;
-				currentRenamingName = path.stem().string();
-			}
-
-			if (ImGui::MenuItem("Delete"))
-			{
-				UI::OpenModal("Delete Selected Files?");
-			}
-
-			if (ImGui::MenuItem("Checkout"))
-			{
-				VersionControl::Edit(Volt::AssetManager::Get().GetFilesystemPath(handle));
-			}
-
-			UI::EndPopup();
+		if (ImGui::MenuItem("Checkout"))
+		{
+			VersionControl::Edit(Volt::AssetManager::Get().GetFilesystemPath(handle));
 		}
 
 		return removed;
+	}
+
+	bool AssetItem::Rename(const std::string& aNewName)
+	{
+		if (aNewName.empty()) { return false; }
+
+		Volt::AssetManager::Get().RenameAsset(handle, aNewName);
+		switch (type)
+		{
+			case Volt::AssetType::Material:
+				Volt::AssetManager::GetAsset<Volt::Material>(handle)->SetName(myCurrentRenamingName);
+				break;
+		}
+
+		return true;
+	}
+
+	void AssetItem::Open()
+	{
+		if (!EditorLibrary::OpenAsset(Volt::AssetManager::Get().GetAssetRaw(handle)))
+		{
+			switch (type)
+			{
+				case Volt::AssetType::Animation:
+					break;
+				case Volt::AssetType::Skeleton:
+					break;
+				case Volt::AssetType::Texture:
+					break;
+				case Volt::AssetType::Shader:
+					break;
+				case Volt::AssetType::ShaderSource:
+					break;
+				case Volt::AssetType::Scene:
+				{
+					UI::OpenModal("Do you want to save scene?##OpenSceneAssetBrowser");
+					mySceneToOpen = handle;
+					break;
+				}
+				case Volt::AssetType::Font:
+					break;
+				case Volt::AssetType::PhysicsMaterial:
+					break;
+				case Volt::AssetType::Video:
+					break;
+				case Volt::AssetType::NavMesh:
+					break;
+				case Volt::AssetType::GraphKey:
+					break;
+				case Volt::AssetType::MonoScript:
+				{
+					if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, Volt::AssetManager::GetPathFromAssetHandle(handle)))
+					{
+						UI::Notify(NotificationType::Error, "Open file failed!", "External script editor is not valid!");
+					}
+					break;
+				}
+				default:
+					break;
+			}
+		}
+	}
+
+	void AssetItem::DrawAdditionalHoverInfo()
+	{
+		auto extraData = EditorAssetRegistry::GetAssetBrowserPopupData(type, handle);
+		for (auto& data : extraData)
+		{
+			DrawHoverInfo(data.first, data.second);
+		}
+		//file size
+		{
+			const auto fullPath = Volt::ProjectManager::GetAssetsDirectory() / std::filesystem::relative(path, "Assets\\");
+			const uintmax_t fileSize = std::filesystem::file_size(fullPath);
+			const std::string sizeStringWithMetricPrefix = Utils::ToStringWithMetricPrefixCharacterForBytes(fileSize);
+			const std::string sizeStringWithSeparator = Utils::ToStringWithThousandSeparator(fileSize);
+
+			DrawHoverInfo("Size", sizeStringWithMetricPrefix + " (" + sizeStringWithSeparator +" bytes)");
+		}
 	}
 
 	Ref<Volt::Image2D> AssetItem::GetIcon() const
@@ -360,7 +220,28 @@ namespace AssetBrowser
 		return icon;
 	}
 
-	const ImVec4 AssetItem::GetBackgroundColorFromType(Volt::AssetType type)
+	ImVec4 AssetItem::GetBackgroundColor() const
+	{
+		return GetBackgroundColorFromType(type);
+	}
+
+	std::string AssetItem::GetTypeName() const
+	{
+		return Volt::GetAssetTypeName(type);
+	}
+
+	void AssetItem::SetDragDropPayload()
+	{
+		//Data being copied
+		ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(Volt::AssetHandle), ImGuiCond_Once);
+
+		// Viewport Drag drop
+		GlobalEditorStates::dragStartedInAssetBrowser = true;
+		GlobalEditorStates::dragAsset = handle;
+		GlobalEditorStates::isDragging = true;
+	}
+
+	const ImVec4 AssetItem::GetBackgroundColorFromType(Volt::AssetType type) const
 	{
 		switch (type)
 		{

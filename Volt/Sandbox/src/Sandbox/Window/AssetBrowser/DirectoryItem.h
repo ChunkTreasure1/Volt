@@ -8,7 +8,7 @@ namespace AssetBrowser
 	class DirectoryItem : public Item
 	{
 	public:
-		DirectoryItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize);
+		DirectoryItem(SelectionManager* selectionManager, const std::filesystem::path& path);
 		~DirectoryItem() override = default;
 
 		bool Render() override;
@@ -19,15 +19,19 @@ namespace AssetBrowser
 		std::vector<Ref<DirectoryItem>> subDirectories;
 
 		bool isNext = false;
-		bool isRenaming = false;
-		std::string currentRenamingName;
 
+	protected:
+		void PushID() override;
+		Ref<Volt::Image2D> GetIcon() const override;
+		ImVec4 GetBackgroundColor() const override;
+		std::string GetTypeName() const override;
+		void SetDragDropPayload() override;
+		bool RenderRightClickPopup() override;
+		bool Rename(const std::string& newName) override;
+		void Open() override;
+		
+		
 	private:
-		bool RenderRightClickPopup();
-		bool Rename(const std::string& newName);
 		void RecursivlyRenameAssets(DirectoryItem* directory, const std::filesystem::path& targetDirectory);
-
-		float& myThumbnailSize;
-		bool myLastRenaming = false;
 	};
 }

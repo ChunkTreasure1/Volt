@@ -20,6 +20,7 @@ namespace AssetBrowser
 
 		static const ImVec2 GetBrowserItemSize(const float thumbnailSize);
 		static const ImVec2 GetBrowserItemPos();
+		static float GetItemHeightModifier() { return myItemHeightModifier; };
 
 		static const ImVec4 GetBrowserItemHoveredColor();
 		static const ImVec4 GetBrowserItemClickedColor();
@@ -31,10 +32,13 @@ namespace AssetBrowser
 		static std::vector<Ref<Volt::Mesh>> GetMeshesExport() { return meshesToExport; };
 		static void ResetMeshExport() { meshesToExport.clear(); };
 		static bool RenderAssetTypePopup(AssetItem* item);
+		
 
 	private:
 		AssetBrowserUtilities() = delete;
 		static void SetMeshExport(AssetItem* item);
+
+		static constexpr float myItemHeightModifier = 90.f;
 
 		inline static std::vector<Ref<Volt::Mesh>> meshesToExport;
 

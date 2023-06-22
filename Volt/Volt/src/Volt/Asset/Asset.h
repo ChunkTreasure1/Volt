@@ -148,6 +148,17 @@ namespace Volt
 		{ "Net Contract", AssetType::NetContract }
 	};
 
+	inline static std::string GetAssetTypeName(AssetType aType)
+	{
+		for (auto& [name, type] : s_assetNamesMap)
+		{
+			if (type == aType)
+				return name;
+		}
+
+		return "Unknown";
+	}
+
 	class Asset
 	{
 	public:
