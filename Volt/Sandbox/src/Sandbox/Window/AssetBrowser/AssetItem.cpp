@@ -319,7 +319,7 @@ namespace AssetBrowser
 
 			if (ImGui::MenuItem("Checkout"))
 			{
-				VersionControl::Edit(Volt::AssetManager::Get().GetFilesystemPath(handle));
+				VersionControl::Edit(Volt::AssetManager::GetFilesystemPath(handle));
 			}
 
 			UI::EndPopup();

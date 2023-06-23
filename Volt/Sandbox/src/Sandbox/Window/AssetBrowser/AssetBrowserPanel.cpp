@@ -446,13 +446,13 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 	{
 		if (!entry.is_directory())
 		{
-			auto type = Volt::AssetManager::Get().GetAssetTypeFromPath(entry);
+			auto type = Volt::AssetManager::GetAssetTypeFromPath(entry);
 
 			if (type != Volt::AssetType::None && !entry.path().filename().string().contains(".vtthumb.png"))
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData, myMeshToImport);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData, myMeshToImport);
 					dirData->assets.emplace_back(assetItem);
 				}
 			}
