@@ -85,7 +85,7 @@ namespace Volt
 	inline static void VoltApplication_LoadLevel(MonoString* aLevelAssetPath)
 	{
 		std::string levelPath = MonoScriptUtils::GetStringFromMonoString(aLevelAssetPath);
-		Volt::AssetHandle aHandle = Volt::AssetManager::Get().GetAssetHandleFromPath(levelPath);
+		Volt::AssetHandle aHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(levelPath);
 		Volt::OnSceneTransitionEvent loadEvent{ aHandle };
 		Volt::Application::Get().OnEvent(loadEvent);
 	}
@@ -448,7 +448,7 @@ namespace Volt
 	inline static uint64_t AssetManager_GetAssetHandleFromPath(MonoString* string)
 	{
 		const std::string str = MonoScriptUtils::GetStringFromMonoString(string);
-		return Volt::AssetManager::Get().GetAssetHandleFromPath(str);
+		return Volt::AssetManager::Get().GetAssetHandleFromFilePath(str);
 	}
 
 #pragma endregion

@@ -40,7 +40,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto entity = myPreviewScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 		myPreviewEntity = entity;
 	}
 
@@ -49,7 +49,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
 
@@ -99,7 +99,7 @@ void MaterialEditorPanel::OnOpen()
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
 
@@ -804,9 +804,10 @@ void MaterialEditorPanel::UpdateMaterials()
 			for (auto& material : materials)
 			{
 				const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(material);
+				const std::string materialName = metadata.filePath.stem().string();
 				if (myHasSearchQuery)
 				{
-					if (!Utils::ToLower(metadata.filePath.stem().string()).contains(Utils::ToLower(mySearchQuery)))
+					if (!Utils::ToLower(materialName).contains(Utils::ToLower(mySearchQuery)))
 					{
 						continue;
 					}
@@ -818,7 +819,7 @@ void MaterialEditorPanel::UpdateMaterials()
 					selected = material == mySelectedMaterial->handle;
 				}
 
-				if (ImGui::Selectable(metadata.filePath.string().c_str(), &selected))
+				if (ImGui::Selectable(materialName.c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);

@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Forward\forwardSSS.vtsdef
   type: 64
   Dependencies:
-    []
+    - 4250290455979523595
+    - 7743275261274014655

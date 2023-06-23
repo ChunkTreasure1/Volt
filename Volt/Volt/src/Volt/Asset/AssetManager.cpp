@@ -88,10 +88,10 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, AssetHandle dependency)
 	{
-		auto& metaData = GetMetaDataFromHandleMutable(asset);
+		auto& metadata = GetMetaDataFromHandleMutable(asset);
 		const auto& dependencyMetaData = GetMetadataFromHandle(dependency);
 
-		if (!metaData.IsValid())
+		if (!metadata.IsValid())
 		{
 			VT_CORE_WARN("[AssetManager] Trying to add dependency {0} to invalid asset {1}", dependency, asset);
 			return;
@@ -103,17 +103,18 @@ namespace Volt
 			return;
 		}
 
-		auto it = std::find_if(metaData.dependencies.begin(), metaData.dependencies.end(), [&](AssetHandle dep)
+		auto it = std::find_if(metadata.dependencies.begin(), metadata.dependencies.end(), [&](AssetHandle dep)
 		{
 			return dep == dependencyMetaData.handle;
 		});
 
-		if (it != metaData.dependencies.end())
+		if (it != metadata.dependencies.end())
 		{
 			return;
 		}
 
-		metaData.dependencies.emplace_back(dependencyMetaData.handle);
+		metadata.dependencies.emplace_back(dependencyMetaData.handle);
+		SerializeAssetMetaFile(metadata.filePath);
 	}
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
@@ -193,12 +194,13 @@ namespace Volt
 		}
 
 		m_assetImporters.at(metadata.type)->Load(metadata, asset);
+		if (!asset) { return; }
+
 #ifdef VT_DEBUG
-		VT_CORE_TRACE("[AssetManager] Tried loading asset {0} with handle {1}!", metadata.filePath, assetHandle);
+		VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
 #endif	
 
-		if (!asset) { return; }
-		asset->handle = assetHandle;
+		asset->handle = metadata.handle;
 		asset->name = metadata.filePath.stem().string();
 
 		{
@@ -231,7 +233,7 @@ namespace Volt
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& path)
 	{
-		AssetHandle handle = GetAssetHandleFromPath(path);
+		AssetHandle handle = GetAssetHandleFromFilePath(path);
 		if (handle == Asset::Null())
 		{
 			VT_CORE_ERROR("[AssetManager] Asset with path {0} is not loaded!", path.string());
@@ -774,7 +776,7 @@ namespace Volt
 		return s_assetExtensionsMap.at(ext);
 	}
 
-	AssetHandle AssetManager::GetAssetHandleFromPath(const std::filesystem::path& filePath)
+	AssetHandle AssetManager::GetAssetHandleFromFilePath(const std::filesystem::path& filePath)
 	{
 		const auto& metadata = GetMetadataFromFilePath(filePath);
 		if (!metadata.IsValid())
@@ -1146,11 +1148,6 @@ namespace Volt
 
 		auto metaPath = GetContextPath(assetFilePath) / assetFilePath;
 		metaPath.replace_filename(assetFilePath.filename().string() + ".vtmeta");
-
-		if (std::filesystem::exists(metaPath))
-		{
-			return;
-		}
 
 		std::ofstream fout(metaPath);
 		fout << out.c_str();

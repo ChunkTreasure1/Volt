@@ -52,7 +52,7 @@ namespace Volt
             return asset;
         }
 
-        public static AssetHandle GetAssetHandleFromPath(string path)
+        public static AssetHandle GetAssetHandleFromFilePath(string path)
         {
             return InternalCalls.AssetManager_GetAssetHandleFromPath(path);
         }

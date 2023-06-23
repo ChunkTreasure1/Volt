@@ -3,4 +3,6 @@ Metadata:
   filePath: Engine\Shaders\Definitions\2D\billboard.vtsdef
   type: 64
   Dependencies:
-    []
+    - 2040818730422367409
+    - 12880179785723552096
+    - 1520216012744092054

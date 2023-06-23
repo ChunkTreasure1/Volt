@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Deferred\decal.vtsdef
   type: 64
   Dependencies:
-    []
+    - 3089714592611109738
+    - 3042993481645845988

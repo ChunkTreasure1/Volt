@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Compute\generateMotionVectors.vtsdef
   type: 64
   Dependencies:
-    []
+    - 6968535334662448923

@@ -24,8 +24,8 @@ public:
 	void RenderPreview(Weak<AssetBrowser::AssetItem> assetItem);
 
 private:
-	void RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem);
-	void RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem);
+	bool RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem);
+	bool RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem);
 
 	Ref<Volt::SceneRenderer> myPreviewRenderer;
 	Ref<Volt::Scene> myPreviewScene;

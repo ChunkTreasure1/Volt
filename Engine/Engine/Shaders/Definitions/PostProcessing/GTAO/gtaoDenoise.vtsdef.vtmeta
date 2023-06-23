@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\PostProcessing\GTAO\gtaoDenoise.vtsdef
   type: 64
   Dependencies:
-    []
+    - 4561460200726597294

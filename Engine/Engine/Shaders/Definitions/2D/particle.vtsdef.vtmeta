@@ -3,4 +3,6 @@ Metadata:
   filePath: Engine\Shaders\Definitions\2D\particle.vtsdef
   type: 64
   Dependencies:
-    []
+    - 7835326944519448275
+    - 6620932187611783559
+    - 9876788608626397626

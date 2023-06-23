@@ -776,7 +776,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 					}
 				}
 
-				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), dirData->path);
+				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromFilePath(item->path), dirData->path);
 			}
 		}
 

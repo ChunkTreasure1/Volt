@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Deferred\deferred.vtsdef
   type: 64
   Dependencies:
-    []
+    - 3583919531511956376
+    - 10898963995029698262

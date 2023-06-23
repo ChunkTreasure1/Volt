@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Forward\foliage.vtsdef
   type: 64
   Dependencies:
-    []
+    - 4250290455979523595
+    - 11596174639345722308

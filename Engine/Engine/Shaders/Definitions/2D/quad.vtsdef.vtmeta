@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\2D\quad.vtsdef
   type: 64
   Dependencies:
-    []
+    - 12798692738070935361
+    - 4006471386856544277

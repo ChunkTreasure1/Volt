@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\2D\line.vtsdef
   type: 64
   Dependencies:
-    []
+    - 3255265651704047357
+    - 1330398496802115339

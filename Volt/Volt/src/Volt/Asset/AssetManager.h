@@ -82,7 +82,7 @@ namespace Volt
 		static AssetType GetAssetTypeFromHandle(const AssetHandle& handle);
 		static AssetType GetAssetTypeFromPath(const std::filesystem::path& path);
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
-		static AssetHandle GetAssetHandleFromPath(const std::filesystem::path& path);
+		static AssetHandle GetAssetHandleFromFilePath(const std::filesystem::path& path);
 		
 		static const AssetMetadata& GetMetadataFromHandle(AssetHandle handle);
 		static const AssetMetadata& GetMetadataFromFilePath(const std::filesystem::path filePath);
@@ -107,9 +107,6 @@ namespace Volt
 
 		template<typename T>
 		static Ref<T> GetAssetLocking(const std::filesystem::path& path);
-
-		template<typename T>
-		static Ref<T> QueueAsset(const std::filesystem::path& path);
 
 		template<typename T>
 		static Ref<T> QueueAsset(AssetHandle handle);
@@ -186,7 +183,7 @@ namespace Volt
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& path)
 	{
-		return GetAsset<T>(GetAssetHandleFromPath(path));
+		return GetAsset<T>(GetAssetHandleFromFilePath(path));
 	}
 
 	template<typename T>
@@ -217,32 +214,7 @@ namespace Volt
 	template<typename T>
 	inline Ref<T> AssetManager::GetAssetLocking(const std::filesystem::path& path)
 	{
-		return GetAsset<T>(GetAssetHandleFromPath(path));
-	}
-
-	template<typename T>
-	inline Ref<T> AssetManager::QueueAsset(const std::filesystem::path& path)
-	{
-		// If it's already loaded, return it
-		{
-			ReadLock lock{ Get().m_assetRegistryMutex };
-			const auto handle = GetAssetHandleFromPath(path);
-			if (IsLoaded(handle))
-			{
-				return GetAsset<T>(handle);
-			}
-		}
-
-		Ref<Asset> asset = CreateRef<T>();
-		asset->SetFlag(AssetFlag::Queued, true);
-		Get().QueueAssetInternal(path, asset);
-
-		if (asset->GetType() != T::GetStaticType())
-		{
-			VT_CORE_CRITICAL("Type Mismatch!");
-		}
-
-		return std::reinterpret_pointer_cast<T>(asset);
+		return GetAsset<T>(GetAssetHandleFromFilePath(path));
 	}
 
 	template<typename T>

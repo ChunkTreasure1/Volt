@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Outline\outlineComposite.vtsdef
   type: 64
   Dependencies:
-    []
+    - 15709789324740268877

@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Shadows\directionalShadow.vtsdef
   type: 64
   Dependencies:
-    []
+    - 15795761239472953617
+    - 14584721078458664882

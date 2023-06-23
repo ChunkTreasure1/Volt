@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\PostProcessing\SSR\ssr.vtsdef
   type: 64
   Dependencies:
-    []
+    - 13371572312449959338
+    - 17639223079929110092

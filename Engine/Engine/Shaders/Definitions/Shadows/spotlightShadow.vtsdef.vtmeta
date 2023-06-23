@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Shadows\spotlightShadow.vtsdef
   type: 64
   Dependencies:
-    []
+    - 7877892135211839954

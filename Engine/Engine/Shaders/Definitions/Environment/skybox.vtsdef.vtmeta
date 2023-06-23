@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Environment\skybox.vtsdef
   type: 64
   Dependencies:
-    []
+    - 2851876523706579558
+    - 15317122620877483372

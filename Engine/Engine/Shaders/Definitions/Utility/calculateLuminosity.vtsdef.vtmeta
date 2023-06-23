@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Utility\calculateLuminosity.vtsdef
   type: 64
   Dependencies:
-    []
+    - 7543633714239196510

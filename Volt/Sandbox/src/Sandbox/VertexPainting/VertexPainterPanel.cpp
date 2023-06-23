@@ -615,7 +615,7 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 			entry.second = meshComp.overrideMaterial;
 			m_originalMaterials.insert(entry);
 
-			meshComp.overrideMaterial = Volt::AssetManager::GetAssetHandleFromPath("Editor/Materials/M_VisualizeVertexColors.vtmat");
+			meshComp.overrideMaterial = Volt::AssetManager::GetAssetHandleFromFilePath("Editor/Materials/M_VisualizeVertexColors.vtmat");
 		}
 		return;
 	}

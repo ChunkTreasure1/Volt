@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Outline\outlineGeometry.vtsdef
   type: 64
   Dependencies:
-    []
+    - 13026879838239857144
+    - 13396821517761092595

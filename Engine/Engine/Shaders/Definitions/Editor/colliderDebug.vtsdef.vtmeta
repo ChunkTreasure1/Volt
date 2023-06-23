@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Editor\colliderDebug.vtsdef
   type: 64
   Dependencies:
-    []
+    - 4250290455979523595
+    - 6103420546199147017

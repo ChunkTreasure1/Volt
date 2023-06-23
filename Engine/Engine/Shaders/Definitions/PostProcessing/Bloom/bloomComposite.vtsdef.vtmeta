@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\PostProcessing\Bloom\bloomComposite.vtsdef
   type: 64
   Dependencies:
-    []
+    - 4407727548769796503

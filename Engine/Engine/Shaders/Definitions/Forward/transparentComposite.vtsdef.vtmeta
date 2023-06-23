@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Forward\transparentComposite.vtsdef
   type: 64
   Dependencies:
-    []
+    - 17639223079929110092
+    - 4579883011036556919

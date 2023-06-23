@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\PostProcessing\Bloom\bloomUpsample.vtsdef
   type: 64
   Dependencies:
-    []
+    - 6545904534975783022

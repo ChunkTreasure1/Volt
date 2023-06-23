@@ -38,7 +38,7 @@ namespace Volt
 		{
 			const auto sourceRelPath = Volt::AssetManager::GetRelativePath(p);
 
-			if (AssetManager::ExistsInRegistry(sourceRelPath))
+			if (!AssetManager::ExistsInRegistry(sourceRelPath))
 			{
 				AssetManager::Get().AddAssetToRegistry(sourceRelPath);
 			}
@@ -94,7 +94,7 @@ namespace Volt
 
 				if (type == AssetType::Shader)
 				{
-					if (!AssetManager::Get().ExistsInRegistry(relPath))
+					if (!AssetManager::ExistsInRegistry(relPath))
 					{
 						AssetManager::Get().AddAssetToRegistry(relPath);
 					}

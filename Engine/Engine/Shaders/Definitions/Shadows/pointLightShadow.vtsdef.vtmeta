@@ -3,4 +3,6 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Shadows\pointLightShadow.vtsdef
   type: 64
   Dependencies:
-    []
+    - 16267128561453504734
+    - 7574893811837146393
+    - 15209472119873846981

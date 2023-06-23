@@ -3,4 +3,6 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Shadows\pointLightShadowParaboloid.vtsdef
   type: 64
   Dependencies:
-    []
+    - 5909566896735348492
+    - 17868886001521922316
+    - 3710714289415272267

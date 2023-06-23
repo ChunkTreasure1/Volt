@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Indirect\lodSelection.vtsdef
   type: 64
   Dependencies:
-    []
+    - 16807778846909104243

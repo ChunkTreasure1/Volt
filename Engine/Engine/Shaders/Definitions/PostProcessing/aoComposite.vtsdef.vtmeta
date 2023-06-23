@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\PostProcessing\aoComposite.vtsdef
   type: 64
   Dependencies:
-    []
+    - 13278262272801869233
+    - 17639223079929110092

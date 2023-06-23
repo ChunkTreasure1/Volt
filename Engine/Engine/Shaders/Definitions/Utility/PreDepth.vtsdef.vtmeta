@@ -3,4 +3,5 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Utility\preDepth.vtsdef
   type: 64
   Dependencies:
-    []
+    - 13343915389072606593
+    - 3919307621946057885

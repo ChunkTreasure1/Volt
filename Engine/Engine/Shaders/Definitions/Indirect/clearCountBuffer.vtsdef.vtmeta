@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Indirect\clearCountBuffer.vtsdef
   type: 64
   Dependencies:
-    []
+    - 17412659239327979687

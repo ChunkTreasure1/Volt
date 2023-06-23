@@ -3,4 +3,4 @@ Metadata:
   filePath: Engine\Shaders\Definitions\Environment\VolumetricFog\volumetricFogInjectLight.vtsdef
   type: 64
   Dependencies:
-    []
+    - 14085122624650530229

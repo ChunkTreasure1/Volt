@@ -174,9 +174,12 @@ void ViewportPanel::UpdateMainContent()
 			Ref<Volt::Camera> tempCamera = CreateRef<Volt::Camera>(realCam->GetFieldOfView(), realCam->GetAspectRatio(), realCam->GetNearPlane(), realCam->GetFarPlane(), false);
 			tempCamera->SetView(realCam->GetView());
 
+			const auto view = tempCamera->GetView();
+			const auto projection = tempCamera->GetProjection();
+
 			ImGuizmo::Manipulate(
-				glm::value_ptr(tempCamera->GetView()),
-				glm::value_ptr(tempCamera->GetProjection()),
+				glm::value_ptr(view),
+				glm::value_ptr(projection),
 				myGizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
 
 			bool wasUsedPreviousFrame = isUsing;
