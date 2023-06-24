@@ -3,9 +3,6 @@
 
 namespace Volt
 {
-	// forward Extension
-	class Extension;
-
 	enum class QueueType
 	{
 		Graphics,
@@ -28,7 +25,21 @@ namespace Volt
 		Intel
 	};
 
+	enum class Severity
+	{
+		Trace,
+		Log,
+		Warning,
+		Error,
+	};
+
 	// --- structures --- \\
+
+	struct LogHookInfo
+	{
+		std::function<void(Severity, std::string_view)> logCallback;
+		bool enabled = false;
+	};
 
 	struct PhysicalDeviceCreateInfo
 	{
@@ -49,7 +60,7 @@ namespace Volt
 		GraphicsAPI graphicsApi;
 		PhysicalDeviceCreateInfo physicalDeviceInfo;
 		GraphicsDeviceCreateInfo graphicsDeviceInfo;
-		std::vector<Ref<Extension>> extensions;
+		LogHookInfo loghookInfo;
 	};
 
 }

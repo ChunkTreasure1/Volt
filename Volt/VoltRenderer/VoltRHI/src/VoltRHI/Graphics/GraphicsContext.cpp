@@ -19,4 +19,17 @@ namespace Volt
 
 		return nullptr;
 	}
+
+	void GraphicsContext::Log(Severity logSeverity, std::string_view message)
+	{
+		if (!s_logHook.enabled)
+		{
+			return;
+		}
+
+		if (s_logHook.logCallback)
+		{
+			s_logHook.logCallback(logSeverity, message);
+		}
+	}
 }

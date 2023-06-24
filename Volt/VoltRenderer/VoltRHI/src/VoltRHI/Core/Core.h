@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #define VT_NODISCARD [[nodiscard]]
 #define VT_INLINE __forceinline
