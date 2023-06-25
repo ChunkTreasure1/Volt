@@ -1,7 +1,7 @@
 Metadata:
-  assetHandle: 9493294644320603352
-  filePath: Engine\Shaders\Definitions\Forward\forwardSSS.vtsdef
+  assetHandle: 7166489633697507333
+  filePath: Engine/Shaders/Definitions/Forward/forwardSSS.vtsdef
   type: 64
   Dependencies:
-    - 4250290455979523595
-    - 7743275261274014655
+    - 13639218079433149575
+    - 1912433441300303228

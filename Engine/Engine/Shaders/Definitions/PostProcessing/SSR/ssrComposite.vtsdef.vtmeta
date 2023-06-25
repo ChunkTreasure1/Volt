@@ -1,7 +1,7 @@
 Metadata:
-  assetHandle: 2376835244195300536
-  filePath: Engine\Shaders\Definitions\PostProcessing\SSR\ssrComposite.vtsdef
+  assetHandle: 4306437944461798434
+  filePath: Engine/Shaders/Definitions/PostProcessing/SSR/ssrComposite.vtsdef
   type: 64
   Dependencies:
-    - 10385244400571102879
-    - 17639223079929110092
+    - 9622597732795510661
+    - 7568016120944877380

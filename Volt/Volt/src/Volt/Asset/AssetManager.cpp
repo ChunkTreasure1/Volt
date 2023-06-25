@@ -80,7 +80,7 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
 	{
-		auto& metaData = GetMetaDataFromHandleMutable(asset);
+		auto& metaData = GetMetadataFromHandleMutable(asset);
 		const auto& dependencyMetaData = GetMetadataFromFilePath(dependency);
 
 		AddDependency(asset, dependencyMetaData.handle);
@@ -88,7 +88,7 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, AssetHandle dependency)
 	{
-		auto& metadata = GetMetaDataFromHandleMutable(asset);
+		auto& metadata = GetMetadataFromHandleMutable(asset);
 		const auto& dependencyMetaData = GetMetadataFromHandle(dependency);
 
 		if (!metadata.IsValid())
@@ -114,7 +114,7 @@ namespace Volt
 		}
 
 		metadata.dependencies.emplace_back(dependencyMetaData.handle);
-		SerializeAssetMetaFile(metadata.filePath);
+		SerializeAssetMetaFile(metadata.handle);
 	}
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsOfType(AssetType wantedAssetType)
@@ -181,27 +181,33 @@ namespace Volt
 			return;
 		}
 
-		const AssetMetadata& metadata = GetMetadataFromHandle(assetHandle);
-		if (!metadata.IsValid())
-		{
-			return;
-		}
+		{ 
+			ReadLock lock{ m_assetRegistryMutex };
 
-		if (!m_assetImporters.contains(metadata.type))
-		{
-			VT_CORE_WARN("[AssetManager] No importer for asset found!");
-			return;
-		}
+			AssetMetadata& metadata = GetMetadataFromHandleMutable(assetHandle);
+			if (!metadata.IsValid())
+			{
+				return;
+			}
 
-		m_assetImporters.at(metadata.type)->Load(metadata, asset);
-		if (!asset) { return; }
+			if (!m_assetImporters.contains(metadata.type))
+			{
+				VT_CORE_WARN("[AssetManager] No importer for asset found!");
+				return;
+			}
+
+			m_assetImporters.at(metadata.type)->Load(metadata, asset);
+			if (!asset) { return; }
 
 #ifdef VT_DEBUG
-		VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
+			VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
 #endif	
 
-		asset->handle = metadata.handle;
-		asset->name = metadata.filePath.stem().string();
+			asset->handle = metadata.handle;
+			asset->name = metadata.filePath.stem().string();
+
+			metadata.isLoaded = true;
+		}
 
 		{
 			WriteLock lock{ m_assetCacheMutex };
@@ -272,7 +278,7 @@ namespace Volt
 			WriteLock lock{ instance.m_assetRegistryMutex };
 
 			AssetMetadata& metaData = instance.m_assetRegistry[asset->handle];
-			metaData.filePath = targetFilePath;
+			metaData.filePath = GetCleanAssetFilePath(targetFilePath);
 			metaData.handle = asset->handle;
 			metaData.isLoaded = true;
 			metaData.type = asset->GetType();
@@ -286,7 +292,7 @@ namespace Volt
 			}
 		}
 
-		instance.SerializeAssetMetaFile(targetFilePath);
+		instance.SerializeAssetMetaFile(asset->handle);
 	}
 
 	void AssetManager::SaveAsset(const Ref<Asset> asset)
@@ -313,7 +319,7 @@ namespace Volt
 		}
 
 		instance.m_assetImporters[metadata.type]->Save(metadata, asset);
-		
+
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };
 			if (!instance.m_assetCache.contains(asset->handle))
@@ -352,7 +358,7 @@ namespace Volt
 		}
 
 		RemoveMetaFile(assetFilePath);
-		SerializeAssetMetaFile(newPath);
+		SerializeAssetMetaFile(asset->handle);
 	}
 
 	void AssetManager::MoveAsset(AssetHandle assetHandle, const std::filesystem::path& targetDir)
@@ -383,7 +389,25 @@ namespace Volt
 		}
 
 		RemoveMetaFile(assetFilePath);
-		SerializeAssetMetaFile(newPath);
+		SerializeAssetMetaFile(assetHandle);
+	}
+
+	void AssetManager::MoveAssetInRegistry(const std::filesystem::path& sourcePath, const std::filesystem::path& targetPath)
+	{
+		const auto projDir = GetContextPath(targetPath);
+
+		AssetHandle assetHandle = Asset::Null();
+
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			AssetMetadata& metadata = GetMetadataFromFilePathMutable(sourcePath);
+
+			metadata.filePath = GetCleanAssetFilePath(targetPath);
+			assetHandle = metadata.handle;
+		}
+
+		RemoveMetaFile(sourcePath);
+		SerializeAssetMetaFile(assetHandle);
 	}
 
 	void AssetManager::MoveFullFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir)
@@ -420,9 +444,9 @@ namespace Volt
 			WriteLock lock{ m_assetRegistryMutex };
 			for (const auto& handle : filesToMove)
 			{
-				auto& metaData = GetMetaDataFromHandleMutable(handle);
+				auto& metadata = GetMetadataFromHandleMutable(handle);
 
-				std::string newPath = metaData.filePath.string();
+				std::string newPath = metadata.filePath.string();
 				const size_t directoryStringLoc = Utils::ToLower(newPath).find(Utils::ToLower(sourceDir.string()));
 
 				if (directoryStringLoc == std::string::npos)
@@ -433,42 +457,42 @@ namespace Volt
 				newPath.erase(directoryStringLoc, sourceDir.string().length());
 				newPath.insert(directoryStringLoc, targetDir.string());
 
-				RemoveMetaFile(metaData.filePath);
-				metaData.filePath = newPath;
+				RemoveMetaFile(metadata.filePath);
+				metadata.filePath = GetCleanAssetFilePath(newPath);
 
-				SerializeAssetMetaFile(newPath);
+				SerializeAssetMetaFile(metadata.handle);
 			}
 		}
 	}
 
-	void AssetManager::RenameAsset(AssetHandle asset, const std::string& newName)
+	void AssetManager::RenameAsset(AssetHandle assetHandle, const std::string& newName)
 	{
-		const std::filesystem::path oldPath = GetFilePathFromAssetHandle(asset);
+		const std::filesystem::path oldPath = GetFilePathFromAssetHandle(assetHandle);
 		const std::filesystem::path newPath = oldPath.parent_path() / (newName + oldPath.extension().string());
 		const auto projDir = GetContextPath(oldPath);
 
 		{
 			WriteLock lock{ m_assetRegistryMutex };
-			if (!m_assetRegistry.contains(asset))
+			if (!m_assetRegistry.contains(assetHandle))
 			{
 				VT_CORE_WARN("[AssetManager] Trying to rename invalid asset!");
 				return;
 			}
 
-			m_assetRegistry.at(asset).filePath = newPath;
+			m_assetRegistry.at(assetHandle).filePath = newPath;
 		}
 
 		FileSystem::Rename(projDir / oldPath, newName);
 
 		RemoveMetaFile(oldPath);
-		SerializeAssetMetaFile(newPath);
+		SerializeAssetMetaFile(assetHandle);
 	}
 
 	void AssetManager::RenameAssetFolder(AssetHandle assetHandle, const std::filesystem::path& targetFilePath)
 	{
 		WriteLock lock{ m_assetRegistryMutex };
 
-		auto& metadata = GetMetaDataFromHandleMutable(assetHandle);
+		auto& metadata = GetMetadataFromHandleMutable(assetHandle);
 		if (!metadata.IsValid())
 		{
 			VT_CORE_WARN("[AssetManager] Trying to rename invalid asset {0}!", assetHandle);
@@ -476,8 +500,8 @@ namespace Volt
 		}
 
 		RemoveMetaFile(metadata.filePath);
-		metadata.filePath = targetFilePath;
-		SerializeAssetMetaFile(targetFilePath);
+		metadata.filePath = GetCleanAssetFilePath(targetFilePath);
+		SerializeAssetMetaFile(metadata.handle);
 	}
 
 	void AssetManager::RemoveAsset(AssetHandle assetHandle)
@@ -678,13 +702,12 @@ namespace Volt
 		}
 	}
 
-	const Volt::AssetHandle AssetManager::AddAssetToRegistry(const std::filesystem::path& filePath, AssetHandle handle /*= 0*/)
+	const AssetHandle AssetManager::AddAssetToRegistry(const std::filesystem::path& filePath, AssetHandle handle /*= 0*/)
 	{
 		{
 			ReadLock lock{ m_assetRegistryMutex };
 			if (m_assetRegistry.contains(handle))
 			{
-				VT_CORE_WARN("[AssetManager] Trying to add asset {0} with file path {1} to registry which already exists! Skipping!", handle, filePath);
 				return handle;
 			}
 		}
@@ -696,13 +719,13 @@ namespace Volt
 			WriteLock lock{ m_assetRegistryMutex };
 			AssetMetadata& metadata = m_assetRegistry[newHandle];
 			metadata.handle = newHandle;
-			metadata.filePath = filePath;
+			metadata.filePath = cleanFilePath;
 			metadata.type = GetAssetTypeFromPath(filePath);
 		}
 
-		if (!HasAssetMetaFile(cleanFilePath))
+		if (!HasAssetMetaFile(newHandle))
 		{
-			SerializeAssetMetaFile(cleanFilePath);
+			SerializeAssetMetaFile(newHandle);
 		}
 
 		return newHandle;
@@ -991,6 +1014,11 @@ namespace Volt
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{
+					ReadLock lock{ m_assetRegistryMutex };
+					m_assetRegistry.at(handle).isLoaded = true;
+				}
+
+				{
 					WriteLock lock{ m_assetCacheMutex };
 					m_assetCache[handle] = asset;
 				}
@@ -1074,6 +1102,11 @@ namespace Volt
 				asset->SetFlag(AssetFlag::Queued, false);
 
 				{
+					ReadLock lock{ m_assetRegistryMutex };
+					m_assetRegistry.at(handle).isLoaded = true;
+				}
+
+				{
 					WriteLock lock{ m_assetCacheMutex };
 					m_assetCache[handle] = asset;
 				}
@@ -1084,7 +1117,7 @@ namespace Volt
 		}
 	}
 
-	AssetMetadata& AssetManager::GetMetaDataFromHandleMutable(AssetHandle handle)
+	AssetMetadata& AssetManager::GetMetadataFromHandleMutable(AssetHandle handle)
 	{
 		auto& instance = Get();
 
@@ -1096,7 +1129,7 @@ namespace Volt
 		return instance.m_assetRegistry.at(handle);
 	}
 
-	AssetMetadata& AssetManager::GetMetaDataFromFilePathMutable(const std::filesystem::path filePath)
+	AssetMetadata& AssetManager::GetMetadataFromFilePathMutable(const std::filesystem::path filePath)
 	{
 		auto& instance = Get();
 
@@ -1117,17 +1150,12 @@ namespace Volt
 		return pathClean;
 	}
 
-	void AssetManager::SerializeAssetMetaFile(const std::filesystem::path& assetFilePath)
+	void AssetManager::SerializeAssetMetaFile(AssetHandle assetHandle)
 	{
-		if (!assetFilePath.has_stem())
-		{
-			return;
-		}
-
-		const auto& metadata = GetMetadataFromFilePath(assetFilePath);
+		const auto& metadata = GetMetadataFromHandle(assetHandle);
 		if (!metadata.IsValid())
 		{
-			VT_CORE_WARN("[AssetManager] Unable to save meta file for invalid asset {0}!", assetFilePath);
+			VT_CORE_WARN("[AssetManager] Unable to save meta file for invalid asset {0}!", metadata.filePath);
 			return;
 		}
 
@@ -1146,18 +1174,18 @@ namespace Volt
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 
-		auto metaPath = GetContextPath(assetFilePath) / assetFilePath;
-		metaPath.replace_filename(assetFilePath.filename().string() + ".vtmeta");
+		auto metaPath = GetFilesystemPath(assetHandle);
+		metaPath.replace_filename(metaPath.filename().string() + ".vtmeta");
 
 		std::ofstream fout(metaPath);
 		fout << out.c_str();
 		fout.close();
 	}
 
-	bool AssetManager::HasAssetMetaFile(const std::filesystem::path& assetFilePath)
+	bool AssetManager::HasAssetMetaFile(AssetHandle assetHandle)
 	{
-		auto metaPath = GetContextPath(assetFilePath) / assetFilePath;
-		metaPath.replace_filename(assetFilePath.filename().string() + ".vtmeta");
+		auto metaPath = GetFilesystemPath(assetHandle);
+		metaPath.replace_filename(metaPath.filename().string() + ".vtmeta");
 
 		return FileSystem::Exists(metaPath);
 	}

@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 4407727548769796503
-  filePath: Engine\Shaders\Source\HLSL\PostProcessing\Bloom\BloomComposite_cs.hlsl
+  assetHandle: 5420418239250088550
+  filePath: Engine/Shaders/Source/HLSL/PostProcessing/Bloom/BloomComposite_cs.hlsl
   type: 128
   Dependencies:
     []

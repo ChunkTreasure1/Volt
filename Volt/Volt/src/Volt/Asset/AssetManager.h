@@ -36,13 +36,13 @@ namespace Volt
 		void AddDependency(AssetHandle asset, const std::filesystem::path& dependency);
 		void AddDependency(AssetHandle asset, AssetHandle dependency);
 
-		void SerializeAssetMetaFile(const std::filesystem::path& assetFilePath);
-		bool HasAssetMetaFile(const std::filesystem::path& assetFilePath);
+		bool HasAssetMetaFile(AssetHandle assetHandle);
 
 		void Unload(AssetHandle assetHandle);
 
 		void MoveAsset(Ref<Asset> asset, const std::filesystem::path& targetDir);
 		void MoveAsset(AssetHandle asset, const std::filesystem::path& targetDir);
+		void MoveAssetInRegistry(const std::filesystem::path& sourcePath, const std::filesystem::path& targetPath);
 		void MoveFullFolder(const std::filesystem::path& sourceDir, const std::filesystem::path& targetDir);
 
 		void RenameAsset(AssetHandle asset, const std::string& newName);
@@ -50,7 +50,6 @@ namespace Volt
 
 		void RemoveAsset(AssetHandle asset);
 		void RemoveAsset(const std::filesystem::path& path);
-		void RemoveMetaFile(const std::filesystem::path& path);
 
 		void RemoveFromRegistry(AssetHandle asset);
 		void RemoveFromRegistry(const std::filesystem::path& path);
@@ -140,11 +139,14 @@ namespace Volt
 		void DeserializeAssetMetaFile(std::filesystem::path metaPath);
 		void LoadAssetMetaFiles();
 
+		void SerializeAssetMetaFile(AssetHandle assetHandle);
+		void RemoveMetaFile(const std::filesystem::path& filePath);
+
 		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset);
 		void QueueAssetInternal(AssetHandle assetHandle, Ref<Asset>& asset, const std::function<void()>& loadedCallback);
 
-		static AssetMetadata& GetMetaDataFromHandleMutable(AssetHandle handle);
-		static AssetMetadata& GetMetaDataFromFilePathMutable(const std::filesystem::path filePath);
+		static AssetMetadata& GetMetadataFromHandleMutable(AssetHandle handle);
+		static AssetMetadata& GetMetadataFromFilePathMutable(const std::filesystem::path filePath);
 
 		static const std::filesystem::path GetCleanAssetFilePath(const std::filesystem::path& path);
 		std::vector<std::filesystem::path> GetMetaFiles();
@@ -303,7 +305,7 @@ namespace Volt
 		AssetManager::Get().m_assetRegistry.emplace(asset->handle, metadata);
 		AssetManager::Get().m_assetCache.emplace(asset->handle, asset);
 
-		Get().SerializeAssetMetaFile(metadata.filePath);
+		Get().SerializeAssetMetaFile(metadata.handle);
 
 		return asset;
 	}

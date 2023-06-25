@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 12798692738070935361
-  filePath: Engine\Shaders\Source\HLSL\2D\Quad_vs.hlsl
+  assetHandle: 7152991874206907308
+  filePath: Engine/Shaders/Source/HLSL/2D/Quad_vs.hlsl
   type: 128
   Dependencies:
     []

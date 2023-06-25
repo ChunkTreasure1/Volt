@@ -1,7 +1,7 @@
 Metadata:
-  assetHandle: 16436485541698111006
-  filePath: Engine\Shaders\Definitions\2D\line.vtsdef
+  assetHandle: 18206175193682700952
+  filePath: Engine/Shaders/Definitions/2D/line.vtsdef
   type: 64
   Dependencies:
-    - 3255265651704047357
-    - 1330398496802115339
+    - 8776199808573287842
+    - 12203960555318322233

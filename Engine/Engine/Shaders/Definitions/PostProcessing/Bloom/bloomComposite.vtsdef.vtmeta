@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 9175638432037814483
-  filePath: Engine\Shaders\Definitions\PostProcessing\Bloom\bloomComposite.vtsdef
+  assetHandle: 18397944932988778124
+  filePath: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomComposite.vtsdef
   type: 64
   Dependencies:
-    - 4407727548769796503
+    - 5420418239250088550

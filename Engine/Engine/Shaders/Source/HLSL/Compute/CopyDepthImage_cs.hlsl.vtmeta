@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 13950160097863883902
-  filePath: Engine\Shaders\Source\HLSL\Compute\CopyDepthImage_cs.hlsl
+  assetHandle: 7168560137198967094
+  filePath: Engine/Shaders/Source/HLSL/Compute/CopyDepthImage_cs.hlsl
   type: 128
   Dependencies:
     []

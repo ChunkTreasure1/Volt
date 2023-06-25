@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 17320092009929799749
-  filePath: Engine\Shaders\Source\HLSL\Includes\SamplerStates.hlsli
+  assetHandle: 1825468765663574700
+  filePath: Engine/Shaders/Source/HLSL/Includes/SamplerStates.hlsli
   type: 128
   Dependencies:
     []

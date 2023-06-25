@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 1412584390167143169
-  filePath: Engine\Shaders\Definitions\Utility\calculateLuminosity.vtsdef
+  assetHandle: 12154042732740778724
+  filePath: Engine/Shaders/Definitions/Utility/calculateLuminosity.vtsdef
   type: 64
   Dependencies:
-    - 7543633714239196510
+    - 2678238120770184226

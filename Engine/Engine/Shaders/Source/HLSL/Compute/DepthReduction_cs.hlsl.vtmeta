@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 3485746843137566109
-  filePath: Engine\Shaders\Source\HLSL\Compute\DepthReduction_cs.hlsl
+  assetHandle: 18167008216203469594
+  filePath: Engine/Shaders/Source/HLSL/Compute/DepthReduction_cs.hlsl
   type: 128
   Dependencies:
     []

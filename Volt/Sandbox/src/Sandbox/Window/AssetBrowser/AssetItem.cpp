@@ -25,11 +25,7 @@ namespace AssetBrowser
 		: Item(selectionManager, path), myThumbnailSize(thumbnailSize), meshImportData(aMeshImportData), meshToImportData(aMeshToImportData)
 	{
 		type = Volt::AssetManager::GetAssetTypeFromPath(path);
-		handle = Volt::AssetManager::GetAssetHandleFromFilePath(path);
-		if (handle == Volt::Asset::Null() && !Volt::AssetManager::Get().HasAssetMetaFile(path))
-		{
-			handle = Volt::AssetManager::Get().AddAssetToRegistry(path);
-		}
+		handle = Volt::AssetManager::Get().AddAssetToRegistry(path);
 	}
 
 	bool AssetItem::Render()

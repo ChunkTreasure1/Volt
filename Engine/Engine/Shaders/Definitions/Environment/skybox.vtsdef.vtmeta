@@ -1,7 +1,7 @@
 Metadata:
-  assetHandle: 7987704232521177678
-  filePath: Engine\Shaders\Definitions\Environment\skybox.vtsdef
+  assetHandle: 1663766610126236181
+  filePath: Engine/Shaders/Definitions/Environment/skybox.vtsdef
   type: 64
   Dependencies:
-    - 2851876523706579558
-    - 15317122620877483372
+    - 15198442702326247597
+    - 1256321360654773268

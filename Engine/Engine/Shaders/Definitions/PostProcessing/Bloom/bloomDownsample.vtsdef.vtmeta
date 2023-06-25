@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 359917064320195110
-  filePath: Engine\Shaders\Definitions\PostProcessing\Bloom\bloomDownsample.vtsdef
+  assetHandle: 9369601642342299978
+  filePath: Engine/Shaders/Definitions/PostProcessing/Bloom/bloomDownsample.vtsdef
   type: 64
   Dependencies:
-    - 417926210975971837
+    - 18079996369421442925

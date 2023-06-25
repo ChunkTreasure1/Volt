@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 7877892135211839954
-  filePath: Engine\Shaders\Source\HLSL\Shadows\SpotlightShadow_vs.hlsl
+  assetHandle: 2432299985604488168
+  filePath: Engine/Shaders/Source/HLSL/Shadows/SpotlightShadow_vs.hlsl
   type: 128
   Dependencies:
     []

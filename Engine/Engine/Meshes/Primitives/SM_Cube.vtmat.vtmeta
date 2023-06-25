@@ -1,6 +1,6 @@
 Metadata:
   assetHandle: 5982810701670072430
-  filePath: Engine\Meshes\Primitives\SM_Cube.vtmat
+  filePath: Engine/Meshes/Primitives/SM_Cube.vtmat
   type: 32
   Dependencies:
     []

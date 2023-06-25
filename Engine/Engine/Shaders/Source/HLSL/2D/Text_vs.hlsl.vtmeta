@@ -1,6 +1,6 @@
 Metadata:
-  assetHandle: 13271335753309035192
-  filePath: Engine\Shaders\Source\HLSL\2D\Text_vs.hlsl
+  assetHandle: 430456437815251791
+  filePath: Engine/Shaders/Source/HLSL/2D/Text_vs.hlsl
   type: 128
   Dependencies:
     []
