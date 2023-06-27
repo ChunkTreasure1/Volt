@@ -69,7 +69,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
 		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
 
-		LoadAssetMetaFiles();
+		LoadAssetMetafiles();
 	}
 
 	void AssetManager::Shutdown()
@@ -137,7 +137,7 @@ namespace Volt
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyFilePath)
 	{
-		const std::string pathString = Utils::ReplaceCharacter(Get().GetRelativePath(dependencyFilePath).string(), '\\', '/');
+		const std::string pathString = Utils::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
 		std::vector<AssetHandle> result{};
 
 		auto& instance = Get();
@@ -215,11 +215,13 @@ namespace Volt
 		}
 	}
 
-	void AssetManager::LoadAssetMetaFiles()
+	void AssetManager::LoadAssetMetafiles()
 	{
-		for (auto file : GetMetaFiles())
+		const auto metafiles = GetMetafiles();
+
+		for (auto file : metafiles)
 		{
-			DeserializeAssetMetaFile(file);
+			DeserializeAssetMetafile(file);
 		}
 	}
 
@@ -706,9 +708,12 @@ namespace Volt
 	{
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			if (m_assetRegistry.contains(handle))
+			const std::filesystem::path cleanPath = GetCleanAssetFilePath(filePath);
+			const auto& metadata = GetMetadataFromFilePath(filePath);
+
+			if (metadata.IsValid())
 			{
-				return handle;
+				return metadata.handle;
 			}
 		}
 
@@ -894,8 +899,11 @@ namespace Volt
 		return {};
 	}
 
-	bool AssetManager::IsSourceFile(AssetHandle handle) const
+	bool AssetManager::IsSourceFile(AssetHandle handle)
 	{
+		auto& instance = Get();
+		ReadLock lock{ instance.m_assetRegistryMutex };
+
 		const AssetType type = GetAssetTypeFromHandle(handle);
 		switch (type)
 		{
@@ -1190,7 +1198,7 @@ namespace Volt
 		return FileSystem::Exists(metaPath);
 	}
 
-	void AssetManager::DeserializeAssetMetaFile(std::filesystem::path metaFilePath)
+	void AssetManager::DeserializeAssetMetafile(std::filesystem::path metaFilePath)
 	{
 		if (!std::filesystem::exists(metaFilePath))
 		{
@@ -1258,7 +1266,7 @@ namespace Volt
 		}
 	}
 
-	std::vector<std::filesystem::path> AssetManager::GetMetaFiles()
+	std::vector<std::filesystem::path> AssetManager::GetMetafiles()
 	{
 		std::vector<std::filesystem::path> files;
 		std::string ext(".vtmeta");

@@ -59,7 +59,7 @@ namespace Volt
 		void ReloadAsset(AssetHandle handle);
 		void ReloadAsset(const std::filesystem::path& path);
 
-		bool IsSourceFile(AssetHandle handle) const;
+		static bool IsSourceFile(AssetHandle handle);
 		static bool IsLoaded(AssetHandle handle);
 
 		static bool IsEngineAsset(const std::filesystem::path& path);
@@ -136,8 +136,8 @@ namespace Volt
 		inline static AssetMetadata s_nullMetadata = {};
 
 		void LoadAsset(AssetHandle assetHandle, Ref<Asset>& asset);
-		void DeserializeAssetMetaFile(std::filesystem::path metaPath);
-		void LoadAssetMetaFiles();
+		void DeserializeAssetMetafile(std::filesystem::path metaPath);
+		void LoadAssetMetafiles();
 
 		void SerializeAssetMetaFile(AssetHandle assetHandle);
 		void RemoveMetaFile(const std::filesystem::path& filePath);
@@ -149,7 +149,7 @@ namespace Volt
 		static AssetMetadata& GetMetadataFromFilePathMutable(const std::filesystem::path filePath);
 
 		static const std::filesystem::path GetCleanAssetFilePath(const std::filesystem::path& path);
-		std::vector<std::filesystem::path> GetMetaFiles();
+		std::vector<std::filesystem::path> GetMetafiles();
 
 		std::unordered_map<AssetType, Scope<AssetImporter>> m_assetImporters;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;
