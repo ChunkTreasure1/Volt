@@ -38,12 +38,15 @@ enum class NotificationType
 
 enum class FontType
 {
+	Regular_12,
 	Regular_16,
 	Regular_17,
 	Regular_20,
+	Bold_12,
 	Bold_16,
 	Bold_17,
-	Bold_40
+	Bold_20,
+	Bold_90
 };
 
 class UI

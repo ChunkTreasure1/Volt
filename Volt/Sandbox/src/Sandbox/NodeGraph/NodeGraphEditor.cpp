@@ -348,7 +348,7 @@ namespace NodeGraph
 
 			if (!myGraphTypeText.empty())
 			{
-				UI::ScopedFont font{ FontType::Bold_40 };
+				UI::ScopedFont font{ FontType::Bold_90 };
 				UI::ScopedStyleFloat alpha{ ImGuiStyleVar_Alpha, 0.2f };
 
 				const auto textSize = ImGui::CalcTextSize(myGraphTypeText.c_str());

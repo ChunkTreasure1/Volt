@@ -81,7 +81,7 @@ AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string
 
 void AssetBrowserPanel::UpdateMainContent()
 {
-	float cellSize = myThumbnailSize + myThumbnailPadding;
+	float cellSize = GetThumbnailSize() + myThumbnailPadding;
 
 	if (myNextDirectory)
 	{
@@ -185,7 +185,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			{
 				static float padding = 16.f;
 
-				float cellSize = myThumbnailSize + padding;
+				float cellSize = GetThumbnailSize() + padding;
 				float panelWidth = ImGui::GetContentRegionAvail().x;
 				auto columnCount = (int)(panelWidth / cellSize);
 
@@ -439,7 +439,7 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 
 Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
 {
-	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(path), myThumbnailSize);
+	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(path));
 	dirData->parentDirectory = parent;
 
 	for (const auto& entry : std::filesystem::directory_iterator(path))
@@ -452,7 +452,7 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(entry.path()), myThumbnailSize, myMeshImportData, myMeshToImport);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(entry.path()), myMeshImportData, myMeshToImport);
 					dirData->assets.emplace_back(assetItem);
 				}
 			}
@@ -665,7 +665,7 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 				if (ImGui::BeginPopupContextItem("settingsMenu", ImGuiPopupFlags_MouseButtonLeft))
 				{
 					ImGui::PushItemWidth(100.f);
-					ImGui::SliderFloat("Icon size", &myThumbnailSize, 20.f, 200.f);
+					ImGui::SliderFloat("Icon size", &UserSettingsManager::GetSettings().assetBrowserSettings.thumbnailSize, 20.f, 200.f);
 					ImGui::PopItemWidth();
 
 					ImGui::EndPopup();
@@ -952,7 +952,7 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 				ImGui::EndMenu();
 			}
 
-			//UI::SmallSeparatorHeader("Other", 5.f);
+			UI::SmallSeparatorHeader("Other", 5.f);
 
 			if (ImGui::MenuItem("Scene"))
 			{
@@ -993,8 +993,7 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 				if (dirIt != myCurrentDirectory->subDirectories.end())
 				{
-					(*dirIt)->isRenaming = true;
-					(*dirIt)->currentRenamingName = tempName;
+					(*dirIt)->StartRename();
 
 					mySelectionManager->Select((*dirIt).get());
 				}
@@ -1295,6 +1294,12 @@ void AssetBrowserPanel::ClearAssetPreviewsInCurrentDirectory()
 	//}
 }
 
+float AssetBrowserPanel::GetThumbnailSize()
+{
+	return UserSettingsManager::GetSettings().assetBrowserSettings.thumbnailSize;
+
+}
+
 void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 {
 	const std::string extension = Volt::AssetManager::Get().GetExtensionFromAssetType(type);
@@ -1434,8 +1439,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 	if (assetIt != myCurrentDirectory->assets.end())
 	{
-		(*assetIt)->currentRenamingName = tempName;
-		(*assetIt)->isRenaming = true;
+		(*assetIt)->StartRename();
 
 		mySelectionManager->Select((*assetIt).get());
 	}

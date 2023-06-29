@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define CREATE_ASSET_BROWSER_POPUP_DATA_FUNCTION(type, x) [](Volt::AssetHandle aAssetHandle)->std::vector<std::pair<std::string, std::string>> { auto asset = Volt::AssetManager::GetAsset<type>(aAssetHandle); std::vector<std::pair<std::string, std::string>> data = x; return data; \

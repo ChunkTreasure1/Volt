@@ -109,9 +109,18 @@ namespace Volt
 		MergeIconsWithLatestFont(17.f);
 
 		UI::SetFont(FontType::Bold_16, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 16.f));
+		MergeIconsWithLatestFont(16.f);
+
+		UI::SetFont(FontType::Bold_90, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 90.f));
+		MergeIconsWithLatestFont(90.f);
+
+		UI::SetFont(FontType::Bold_20, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 20.f));
+		MergeIconsWithLatestFont(20.f);
+
+		UI::SetFont(FontType::Bold_12, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 12.f));
 		MergeIconsWithLatestFont(12.f);
 
-		UI::SetFont(FontType::Bold_40, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 90.f));
+		UI::SetFont(FontType::Regular_12, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Regular.ttf", 12.f));
 		MergeIconsWithLatestFont(12.f);
 
 		fontCfg.FontDataOwnedByAtlas = false;

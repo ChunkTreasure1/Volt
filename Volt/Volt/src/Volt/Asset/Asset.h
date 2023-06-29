@@ -183,6 +183,17 @@ namespace Volt
 		std::vector<AssetHandle> dependencies;
 		std::unordered_map<std::string, std::string> properties;
 	};
+  
+	inline static std::string GetAssetTypeName(AssetType aType)
+	{
+		for (auto& [name, type] : s_assetNamesMap)
+		{
+			if (type == aType)
+				return name;
+		}
+
+		return "Unknown";
+	}
 
 	class Asset
 	{
