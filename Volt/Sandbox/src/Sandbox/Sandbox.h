@@ -120,6 +120,13 @@ private:
 	void RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera);
 	///////////////////////////
 
+	///// File Watchers /////
+	void CreateModifiedWatch();
+	void CreateDeleteWatch();
+	void CreateAddWatch();
+	void CreateMovedWatch();
+	/////////////////////////
+
 	BuildInfo myBuildInfo;
 
 	Ref<EditorCameraController> myEditorCameraController;

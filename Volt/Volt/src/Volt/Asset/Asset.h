@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include <cassert>
+#include <any>
 
 
 namespace Volt
@@ -151,6 +152,38 @@ namespace Volt
 		{ "Net Contract", AssetType::NetContract }
 	};
 
+	struct AssetMetadata
+	{
+		inline void SetValue(const std::string& key, const std::string& data)
+		{
+			properties[key] = data;
+		}
+
+		inline const std::string& GetValue(const std::string& key) const
+		{
+			if (!properties.contains(key))
+			{
+				return {};
+			}
+
+			const auto& value = properties.at(key);
+			return properties.at(key);
+		}
+
+		inline const bool IsValid() const { return handle != 0; }
+
+		AssetHandle handle = 0;
+		AssetType type = AssetType::None;
+
+		bool isLoaded = false;
+		bool isQueued = false;
+		bool isMemoryAsset = false;
+
+		std::filesystem::path filePath;
+		std::vector<AssetHandle> dependencies;
+		std::unordered_map<std::string, std::string> properties;
+	};
+  
 	inline static std::string GetAssetTypeName(AssetType aType)
 	{
 		for (auto& [name, type] : s_assetNamesMap)
@@ -199,6 +232,6 @@ namespace Volt
 
 		uint16_t flags = (uint16_t)AssetFlag::None;
 		AssetHandle handle = {};
-		std::filesystem::path path;
+		std::string name;
 	};
 }

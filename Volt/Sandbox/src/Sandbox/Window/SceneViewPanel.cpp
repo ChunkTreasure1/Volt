@@ -203,9 +203,11 @@ void SceneViewPanel::UpdateMainContent()
 						const std::string checkoutId = "Checkout##" + std::to_string(layer.id);
 						if (ImGui::MenuItem(checkoutId.c_str()))
 						{
-							if (!myScene->path.empty())
+							const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myScene->handle);
+
+							if (!metadata.filePath.empty())
 							{
-								std::filesystem::path layerPath = myScene->path.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
+								std::filesystem::path layerPath = metadata.filePath.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
 								const auto path = Volt::ProjectManager::GetDirectory() / layerPath;
 
 								if (FileSystem::Exists(path))
@@ -441,7 +443,7 @@ void SceneViewPanel::UpdateMainContent()
 					meshComp.handle = mesh->handle;
 				}
 
-				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 
 				break;
 			}
@@ -457,7 +459,7 @@ void SceneViewPanel::UpdateMainContent()
 					particleEmitter.preset = preset->handle;
 				}
 
-				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 
 				break;
 			}
@@ -897,7 +899,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 				if (ImGui::MenuItem(menuId.c_str()))
 				{
-					const auto prefabPath = Volt::AssetManager::Get().GetPathFromAssetHandle(prefabComp.prefabAsset);
+					const auto prefabPath = Volt::AssetManager::Get().GetFilePathFromAssetHandle(prefabComp.prefabAsset);
 					if (!FileSystem::IsWriteable(prefabPath))
 					{
 						UI::Notify(NotificationType::Error, "Unable to override prefab!", std::format("The prefab file {0} is not writeable!", prefabPath.string()));
@@ -948,12 +950,14 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 				if (!hasValidLink && isRoot)
 				{
-					auto listOfPrefabsPaths = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
+					const auto listOfPrefabs = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
 
-					for (const auto& p : listOfPrefabsPaths)
+					for (const auto& p : listOfPrefabs)
 					{
-						auto ext = p.filename().extension();
-						if (p.filename() == std::format("{0}{1}", registry.GetComponent<Volt::TagComponent>(entity).tag, ext.string()))
+						const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(p);
+
+						auto ext = metadata.filePath.extension();
+						if (metadata.filePath.filename() == std::format("{0}{1}", registry.GetComponent<Volt::TagComponent>(entity).tag, ext.string()))
 						{
 							auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(p);
 							if (prefab)
@@ -1115,9 +1119,7 @@ void SceneViewPanel::CreatePrefabAndSetupEntities(Wire::EntityId entity)
 
 	std::string path = "Assets/Prefabs/" + tagComp.tag + ".vtprefab";
 	path.erase(std::remove_if(path.begin(), path.end(), ::isspace), path.end());
-
-	prefab->path = path;
-	Volt::AssetManager::Get().SaveAsset(prefab);
+	Volt::AssetManager::Get().SaveAssetAs(prefab, path);
 }
 
 bool SceneViewPanel::SearchRecursively(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth)
@@ -1298,7 +1300,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 					ent.SetTag("New Cube");
 
 					SelectionManager::DeselectAll();
@@ -1309,7 +1311,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
 					ent.SetTag("New Capsule");
 
 					SelectionManager::DeselectAll();
@@ -1320,7 +1322,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cone.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtmesh");
 					ent.SetTag("New Cone");
 
 					SelectionManager::DeselectAll();
@@ -1331,7 +1333,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
 					ent.SetTag("New Cylinder");
 
 					SelectionManager::DeselectAll();
@@ -1342,7 +1344,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 					ent.SetTag("New Sphere");
 
 					SelectionManager::DeselectAll();
@@ -1353,7 +1355,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Plane.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtmesh");
 					ent.SetTag("New Plane");
 
 					SelectionManager::DeselectAll();
@@ -1523,7 +1525,7 @@ void SceneViewPanel::CorrectMissingPrefabs()
 {
 	auto& registry = myScene->GetRegistry();
 
-	auto listOfPrefabsPaths = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
+	auto listOfPrefabs = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
 
 	for (auto id : registry.GetComponentView<Volt::PrefabComponent>())
 	{
@@ -1542,9 +1544,11 @@ void SceneViewPanel::CorrectMissingPrefabs()
 
 			if (isRoot && !hasValidLink)
 			{
-				for (const auto& p : listOfPrefabsPaths)
+				for (const auto& p : listOfPrefabs)
 				{
-					auto prefabName = p.stem();
+					const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(p);
+
+					auto prefabName = metadata.filePath.stem();
 					if (prefabName == registry.GetComponent<Volt::TagComponent>(id).tag)
 					{
 						auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(p);

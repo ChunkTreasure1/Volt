@@ -75,7 +75,7 @@ void Timeline::UpdateContent()
 
 void Timeline::OpenAsset(Ref<Volt::Asset> asset)
 {
-	myTimelinePreset = Volt::AssetManager::GetAsset<Volt::TimelinePreset>(asset->path);
+	myTimelinePreset = Volt::AssetManager::GetAsset<Volt::TimelinePreset>(asset->handle);
 }
 
 void Timeline::OnEvent(Volt::Event& e)

@@ -1,4 +1,6 @@
-Handle: 17877084219258779045
-Path: Engine/Meshes/Primitives/SM_Cube.fbx
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6184134929358402430
+  filePath: Engine/Meshes/Primitives/SM_Cube.fbx
+  type: 2
+  Dependencies:
+    []

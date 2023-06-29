@@ -1,4 +1,6 @@
-Handle: 5266208942739793890
-Path: Engine/Shaders/Definitions/Compute/generateMotionVectors.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 11609366764096634010
+  filePath: Engine/Shaders/Definitions/Compute/generateMotionVectors.vtsdef
+  type: 64
+  Dependencies:
+    - 11452112379808569437

@@ -8,16 +8,16 @@
 
 namespace Volt
 {
-	bool AnimationImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool AnimationImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Animation>();
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -25,7 +25,7 @@ namespace Volt
 		std::ifstream input(filePath, std::ios::binary | std::ios::in);
 		if (!input.is_open())
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -38,7 +38,7 @@ namespace Volt
 
 		if (totalData.size() < sizeof(AnimationHeader))
 		{
-			VT_CORE_ERROR("File is smaller than header!", path.string().c_str());
+			VT_CORE_ERROR("File is smaller than header!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -64,7 +64,7 @@ namespace Volt
 		return true;
 	}
 
-	void AnimationImporter::Save(const Ref<Asset>& asset) const
+	void AnimationImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
 
@@ -89,17 +89,8 @@ namespace Volt
 			offset += header.perFrameTransformCount * sizeof(Animation::TRS);
 		}
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path, std::ios::binary | std::ios::out);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath), std::ios::binary | std::ios::out);
 		fout.write((char*)outData.data(), outData.size());
 		fout.close();
-	}
-
-	void AnimationImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool AnimationImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
 	}
 }

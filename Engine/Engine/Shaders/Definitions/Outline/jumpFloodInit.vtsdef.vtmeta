@@ -1,4 +1,7 @@
-Handle: 14369118430629046380
-Path: Engine/Shaders/Definitions/Outline/jumpFloodInit.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 12910718822860452514
+  filePath: Engine/Shaders/Definitions/Outline/jumpFloodInit.vtsdef
+  type: 64
+  Dependencies:
+    - 7568016120944877380
+    - 4129469491381260990

@@ -73,7 +73,7 @@ void NetContractPanel::DrawActions()
 {
 	if (ImGui::Button("Save"))
 	{
-		if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / Volt::NetContractContainer::GetContract(m_handle)->path))
+		if (!FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(m_handle)))
 		{
 			UI::Notify(NotificationType::Error, "NetContract save Failed", "Make sure file is writable");
 		}
@@ -81,9 +81,9 @@ void NetContractPanel::DrawActions()
 		{
 			UI::Notify(NotificationType::Success, "NetContract Saved ", "");
 			auto contract = Volt::NetContractContainer::GetContract(m_handle);
-			if (!std::filesystem::exists(Volt::AssetManager::GetContextPath(contract->path) / "Assets/Networking/Contracts"))
+			if (!std::filesystem::exists(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts"))
 			{
-				std::filesystem::create_directory(Volt::AssetManager::GetContextPath(contract->path) / "Assets/Networking/Contracts");
+				std::filesystem::create_directory(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts");
 			}
 			Volt::AssetManager::Get().SaveAsset(contract);
 		}

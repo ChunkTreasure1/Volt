@@ -1,4 +1,6 @@
-Handle: 763271610229750941
-Path: Engine/Shaders/Definitions/Indirect/lodSelection.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4756019189639819567
+  filePath: Engine/Shaders/Definitions/Indirect/lodSelection.vtsdef
+  type: 64
+  Dependencies:
+    - 5496024832058910497

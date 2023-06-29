@@ -174,9 +174,12 @@ void ViewportPanel::UpdateMainContent()
 			Ref<Volt::Camera> tempCamera = CreateRef<Volt::Camera>(realCam->GetFieldOfView(), realCam->GetAspectRatio(), realCam->GetNearPlane(), realCam->GetFarPlane(), false);
 			tempCamera->SetView(realCam->GetView());
 
+			const auto view = tempCamera->GetView();
+			const auto projection = tempCamera->GetProjection();
+
 			ImGuizmo::Manipulate(
-				glm::value_ptr(tempCamera->GetView()),
-				glm::value_ptr(tempCamera->GetProjection()),
+				glm::value_ptr(view),
+				glm::value_ptr(projection),
 				myGizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
 
 			bool wasUsedPreviousFrame = isUsing;
@@ -778,7 +781,7 @@ void ViewportPanel::CheckDragDrop()
 				meshComp.handle = mesh->handle;
 			}
 
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 			myCreatedEntity = newEntity;
 
 			break;
@@ -786,7 +789,7 @@ void ViewportPanel::CheckDragDrop()
 
 		case Volt::AssetType::MeshSource:
 		{
-			const std::filesystem::path meshSourcePath = Volt::AssetManager::Get().GetPathFromAssetHandle(handle);
+			const std::filesystem::path meshSourcePath = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle);
 			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtmesh");
 
 			Volt::AssetHandle resultHandle = handle;
@@ -837,7 +840,7 @@ void ViewportPanel::CheckDragDrop()
 				particleEmitter.preset = preset->handle;
 			}
 
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 			myCreatedEntity = newEntity;
 
 			break;
@@ -1132,7 +1135,7 @@ void ViewportPanel::UpdateModals()
 			Sandbox::Get().SaveScene();
 		}
 
-		Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
+		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(mySceneToOpen));
 		mySceneToOpen = Volt::Asset::Null();
 	}
 }

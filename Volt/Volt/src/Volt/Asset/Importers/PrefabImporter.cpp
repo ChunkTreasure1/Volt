@@ -22,248 +22,24 @@
 
 namespace Volt
 {
-	//bool PrefabImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
-	//{
-	//	asset = CreateRef<Prefab>();
-	//	const auto filePath = AssetManager::GetContextPath(path) / path;
-
-	//	Wire::Registry registry;
-
-	//	if (!std::filesystem::exists(filePath)) [[unlikely]]
-	//	{
-	//		VT_CORE_ERROR("File {0} not found!", path.string().c_str());
-	//		asset->SetFlag(AssetFlag::Missing, true);
-	//		return false;
-	//	}
-
-	//	std::ifstream file(filePath);
-	//	if (!file.is_open()) [[unlikely]]
-	//	{
-	//		VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
-	//		asset->SetFlag(AssetFlag::Invalid, true);
-	//		return false;
-	//	}
-
-	//	std::stringstream sstream;
-	//	sstream << file.rdbuf();
-	//	file.close();
-
-	//	YAML::Node root;
-
-	//	try
-	//	{
-	//		root = YAML::Load(sstream.str());
-	//	}
-	//	catch (std::exception& e)
-	//	{
-	//		VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
-	//		asset->SetFlag(AssetFlag::Invalid, true);
-	//		return false;
-	//	}
-
-	//	uint32_t version = 0;
-	//	AssetHandle assetHandle;
-
-	//	YAML::Node prefabNode = root["Prefab"];
-	//	VT_DESERIALIZE_PROPERTY(assetHandle, assetHandle, prefabNode, AssetHandle(0));
-	//	VT_DESERIALIZE_PROPERTY(version, version, prefabNode, 0);
-
-	//	YAML::Node entitiesNode = prefabNode["entities"];
-
-	//	for (const auto& entityNode : entitiesNode)
-	//	{
-	//		Wire::EntityId entityId = Wire::NullID;
-	//		VT_DESERIALIZE_PROPERTY(id, entityId, entityNode, (Wire::EntityId)Wire::NullID);
-
-	//		if (entityId == Wire::NullID)
-	//		{
-	//			continue;
-	//		}
-
-	//		registry.AddEntity(entityId);
-
-	//		YAML::Node componentsNode = entityNode["components"];
-	//		if (componentsNode)
-	//		{
-	//			for (auto compNode : componentsNode)
-	//			{
-	//				WireGUID componentGUID;
-	//				VT_DESERIALIZE_PROPERTY(guid, componentGUID, compNode, WireGUID::Null());
-	//				if (componentGUID == WireGUID::Null())
-	//				{
-	//					continue;
-	//				}
-
-	//				auto* componentData = (uint8_t*)registry.AddComponent(componentGUID, entityId);
-
-	//				YAML::Node propertiesNode = compNode["properties"];
-	//				if (propertiesNode)
-	//				{
-	//					auto regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
-
-	//					for (auto propNode : propertiesNode)
-	//					{
-	//						Wire::ComponentRegistry::PropertyType type;
-	//						Wire::ComponentRegistry::PropertyType vectorType;
-	//						std::string name;
-
-	//						VT_DESERIALIZE_PROPERTY(type, type, propNode, Wire::ComponentRegistry::PropertyType::Unknown);
-	//						VT_DESERIALIZE_PROPERTY(vectorType, vectorType, propNode, Wire::ComponentRegistry::PropertyType::Unknown);
-	//						VT_DESERIALIZE_PROPERTY(name, name, propNode, std::string("Null"));
-
-	//						if (type == Wire::ComponentRegistry::PropertyType::Unknown)
-	//						{
-	//							continue;
-	//						}
-
-	//						// Try to find property
-	//						auto it = std::find_if(regInfo.properties.begin(), regInfo.properties.end(), [name, type](const auto& prop)
-	//						{
-	//							return prop.name == name && prop.type == type;
-	//						});
-
-	//						if (it != regInfo.properties.end())
-	//						{
-	//							SceneImporter::GetPropertyDeserializers()[type](componentData, it->offset, it->vectorType, propNode);
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-
-	//		YAML::Node monoNode = entityNode["MonoScripts"];
-	//		if (monoNode && registry.HasComponent<MonoScriptComponent>(entityId))
-	//		{
-	//			SceneImporter::DeserializeMono(entityId, entityNode);
-	//		}
-
-	//		YAML::Node graphNode = entityNode["Graph"];
-	//		if (graphNode && registry.HasComponent<VisualScriptingComponent>(entityId))
-	//		{
-	//			auto& vsComp = registry.GetComponent<VisualScriptingComponent>(entityId);
-	//			vsComp.graph = CreateRef<GraphKey::Graph>(entityId);
-
-	//			GraphKey::Graph::Deserialize(vsComp.graph, graphNode);
-	//		}
-
-	//		if (!registry.HasComponent<EntityDataComponent>(entityId))
-	//		{
-	//			registry.AddComponent<EntityDataComponent>(entityId);
-	//		}
-	//	}
-
-	//	Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
-	//	prefab->myRegistry = registry;
-	//	prefab->myVersion = version;
-	//	prefab->path = path;
-
-	//	if (prefab->handle != assetHandle && assetHandle != Asset::Null())
-	//	{
-	//		VT_CORE_ERROR("Asset handle mismatch in prefab {0}! Please correct the asset registry! Registry: {1}, Asset: {2}", path.string(), prefab->handle, assetHandle);
-	//	}
-
-	//	prefab->handle = assetHandle;
-
-	//	return true;
-	//}
-
-	//void PrefabImporter::Save(const Ref<Asset>& asset) const
-	//{
-	//	Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
-	//	auto& registry = prefab->myRegistry;
-
-	//	YAML::Emitter out;
-	//	out << YAML::BeginMap;
-	//	out << YAML::Key << "Prefab" << YAML::Value;
-	//	{
-	//		out << YAML::BeginMap;
-	//		VT_SERIALIZE_PROPERTY(version, prefab->myVersion, out);
-	//		VT_SERIALIZE_PROPERTY(handle, prefab->handle, out);
-
-	//		out << YAML::Key << "entities" << YAML::BeginSeq;
-	//		for (const auto& id : registry.GetAllEntities())
-	//		{
-	//			out << YAML::BeginMap;
-	//			VT_SERIALIZE_PROPERTY(id, id, out);
-	//			{
-
-	//				out << YAML::Key << "components" << YAML::BeginSeq;
-	//				for (const auto& [guid, pool] : registry.GetPools())
-	//				{
-	//					if (!pool->HasComponent(id))
-	//					{
-	//						continue;
-	//					}
-
-	//					auto* componentData = (uint8_t*)pool->GetComponent(id);
-	//					const auto& compInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-
-	//					out << YAML::BeginMap;
-	//					out << YAML::Key << "guid" << YAML::Value << guid;
-	//					out << YAML::Key << "properties" << YAML::BeginSeq;
-	//					for (const auto& prop : compInfo.properties)
-	//					{
-	//						if (prop.serializable)
-	//						{
-	//							out << YAML::BeginMap;
-	//							VT_SERIALIZE_PROPERTY(type, prop.type, out);
-	//							VT_SERIALIZE_PROPERTY(vectorType, prop.vectorType, out);
-	//							VT_SERIALIZE_PROPERTY(name, prop.name, out);
-
-	//							SceneImporter::GetPropertySerializers()[prop.type](componentData, prop.offset, prop.vectorType, out);
-
-	//							out << YAML::EndMap;
-	//						}
-	//					}
-	//					out << YAML::EndSeq;
-	//					out << YAML::EndMap;
-	//				}
-	//				out << YAML::EndSeq;
-
-	//				if (registry.HasComponent<MonoScriptComponent>(id))
-	//				{
-	//					SceneImporter::SerializeMono(id, registry, out);
-	//				}
-
-	//				if (registry.HasComponent<VisualScriptingComponent>(id))
-	//				{
-	//					auto* vsComp = (VisualScriptingComponent*)registry.GetComponentPtr(VisualScriptingComponent::comp_guid, id);
-	//					if (vsComp->graph)
-	//					{
-	//						GraphKey::Graph::Serialize(vsComp->graph, out);
-	//					}
-	//				}
-	//			}
-	//			out << YAML::EndMap;
-	//		}
-	//		out << YAML::EndSeq;
-	//		out << YAML::EndMap;
-	//	}
-	//	out << YAML::EndMap;
-
-	//	std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
-	//	fout << out.c_str();
-	//	fout.close();
-	//}
-
-	bool PrefabImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool PrefabImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Prefab>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		Wire::Registry registry;
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
 		std::ifstream file(filePath);
-		if (!file.is_open()) [[unlikely]]
+		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -280,7 +56,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -288,8 +64,6 @@ namespace Volt
 		Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
 
 		uint32_t version = 0;
-		AssetHandle assetHandle = AssetManager::GetAssetHandleFromPath(path);
-
 		YAML::Node prefabNode = root["Prefab"];
 		VT_DESERIALIZE_PROPERTY(version, version, prefabNode, 0);
 
@@ -382,7 +156,7 @@ namespace Volt
 			}
 
 			auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
-			prefabComp.prefabAsset = assetHandle;
+			prefabComp.prefabAsset = metadata.handle;
 			prefabComp.prefabEntity = entityId;
 
 			if (prefab->myRootId == 0 && registry.HasComponent<RelationshipComponent>(entityId))
@@ -397,12 +171,11 @@ namespace Volt
 
 		prefab->myRegistry = registry;
 		prefab->myVersion = version;
-		prefab->path = path;
 
 		return true;
 	}
 
-	void PrefabImporter::Save(const Ref<Asset>& asset) const
+	void PrefabImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
 		auto& registry = prefab->myRegistry;
@@ -475,16 +248,8 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
-	}
-
-	void PrefabImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-	bool PrefabImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
 	}
 }

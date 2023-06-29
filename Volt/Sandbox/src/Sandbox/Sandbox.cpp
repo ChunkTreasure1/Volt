@@ -222,175 +222,10 @@ void Sandbox::CreateWatches()
 	myFileWatcher->AddWatch(Volt::ProjectManager::GetEngineDirectory());
 	myFileWatcher->AddWatch(Volt::ProjectManager::GetProjectDirectory());
 
-	myFileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
-	{
-		std::scoped_lock lock(myFileWatcherMutex);
-		myFileChangeQueue.emplace_back([newPath, oldPath, this]()
-		{
-			auto assemblyPath = Volt::ProjectManager::GetMonoAssemblyPath();
-			if ((newPath.parent_path().filename() / newPath.filename()).string().contains((assemblyPath.parent_path().filename() / assemblyPath.filename()).string()))
-			{
-				if (mySceneState == SceneState::Play)
-				{
-					Sandbox::Get().OnSceneStop();
-				}
-				else if (mySceneState == SceneState::Edit)
-				{
-					myRuntimeScene->ShutdownEngineScripts();
-				}
-
-				Volt::MonoScriptEngine::ReloadAssembly();
-
-				if (mySceneState == SceneState::Edit)
-				{
-					myRuntimeScene->InitializeEngineScripts();
-				}
-
-				UI::Notify(NotificationType::Success, "C# Assembly Reloaded!", "The C# assembly was reloaded successfully!");
-				return;
-			}
-
-			Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(newPath);
-			switch (assetType)
-			{
-				case Volt::AssetType::Mesh:
-				case Volt::AssetType::Video:
-				case Volt::AssetType::Prefab:
-				case Volt::AssetType::Material:
-				case Volt::AssetType::Texture:
-					Volt::AssetManager::Get().ReloadAsset(Volt::AssetManager::Get().GetRelativePath(newPath));
-					break;
-
-				case Volt::AssetType::ShaderSource:
-				{
-					Volt::GraphicsContext::GetDevice()->WaitForIdle();
-
-					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
-					for (const auto& asset : assets)
-					{
-						Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
-						if (!shader || !shader->IsValid())
-						{
-							continue;
-						}
-
-						if (shader->Reload(true))
-						{
-							UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shader->GetName()));
-
-							Volt::Renderer::ReloadShader(shader);
-						}
-						else
-						{
-							UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shader->GetName()));
-						}
-					}
-					break;
-				}
-
-
-				case Volt::AssetType::MeshSource:
-				{
-					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::Get().GetRelativePath(newPath));
-					for (const auto& asset : assets)
-					{
-						if (EditorUtils::ReimportSourceMesh(asset))
-						{
-							UI::Notify(NotificationType::Success, "Re imported mesh!", std::format("Mesh {0} has been reimported!", Volt::AssetManager::GetPathFromAssetHandle(asset).string()));
-						}
-					}
-					break;
-				}
-
-				case Volt::AssetType::None:
-					break;
-				default:
-					break;
-			}
-		});
-
-		if (newPath.string().contains("Entities"))
-		{
-			return;
-		}
-
-		//myFileChangeQueue.emplace_back([&]()
-		//{
-		//	myAssetBrowserPanel->Reload();
-		//});
-	});
-
-	myFileWatcher->AddCallback(efsw::Actions::Delete, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
-	{
-		std::scoped_lock lock(myFileWatcherMutex);
-		myFileChangeQueue.emplace_back([newPath, oldPath]()
-		{
-			if (!newPath.has_extension())
-			{
-				Volt::AssetManager::Get().RemoveFolderFromRegistry(Volt::AssetManager::Get().GetRelativePath(newPath));
-			}
-			else
-			{
-				Volt::AssetType assetType = Volt::AssetManager::GetAssetTypeFromPath(Volt::AssetManager::Get().GetRelativePath(newPath));
-				if (assetType != Volt::AssetType::None)
-				{
-					if (Volt::AssetManager::Get().ExistsInRegistry(Volt::AssetManager::Get().GetRelativePath(newPath)))
-					{
-						Volt::AssetManager::Get().RemoveFromRegistry(Volt::AssetManager::Get().GetRelativePath(newPath));
-					}
-				}
-			}
-		});
-
-		if (newPath.string().contains("Entities"))
-		{
-			return;
-		}
-
-		//myFileChangeQueue.emplace_back([&]()
-		//{
-		//	myAssetBrowserPanel->Reload();
-		//});
-	});
-
-	myFileWatcher->AddCallback(efsw::Actions::Add, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
-	{
-		if (newPath.string().contains("Entities"))
-		{
-			return;
-		}
-
-		//myFileChangeQueue.emplace_back([&]()
-		//{
-		//	myAssetBrowserPanel->Reload();
-		//});
-	});
-
-	myFileWatcher->AddCallback(efsw::Actions::Moved, [&](const std::filesystem::path newPath, const std::filesystem::path oldPath)
-	{
-		std::scoped_lock lock(myFileWatcherMutex);
-		myFileChangeQueue.emplace_back([newPath, oldPath]()
-		{
-			if (!newPath.has_extension())
-			{
-				Volt::AssetManager::Get().MoveFolder(oldPath, newPath);
-			}
-			else
-			{
-				//Volt::AssetManager::Get().
-			}
-		});
-
-		if (newPath.string().contains("Entities"))
-		{
-			return;
-		}
-
-		//myFileChangeQueue.emplace_back([&]()
-		//{
-		//	myAssetBrowserPanel->Reload();
-		//});
-	});
+	CreateModifiedWatch();
+	CreateDeleteWatch();
+	CreateAddWatch();
+	CreateMovedWatch();
 }
 
 void Sandbox::SetEditorHasMouseControl()
@@ -489,11 +324,14 @@ void Sandbox::OnDetach()
 
 	myRuntimeScene->ShutdownEngineScripts();
 
-	if (myRuntimeScene && !myRuntimeScene->path.empty())
 	{
-		UserSettingsManager::GetSettings().sceneSettings.lastOpenScene = myRuntimeScene->path;
+		// #TODO_Ivar: Change so that scene copy creates a memory asset instead
+		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
+		if (myRuntimeScene && !metadata.filePath.empty())
+		{
+			UserSettingsManager::GetSettings().sceneSettings.lastOpenScene = metadata.filePath;
+		}
 	}
-
 	UserSettingsManager::SaveUserSettings();
 	EditorLibrary::Clear();
 	EditorResources::Shutdown();
@@ -750,11 +588,13 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 	{
 		SelectionManager::DeselectAll();
 
-		if (myRuntimeScene->path == path)
+		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
+
+		if (metadata.filePath == path)
 		{
 			Volt::AssetManager::Get().ReloadAsset(myRuntimeScene->handle);
 		}
-		else if (myRuntimeScene && !myRuntimeScene->path.empty())
+		else if (myRuntimeScene && !metadata.filePath.empty())
 		{
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}
@@ -795,16 +635,16 @@ void Sandbox::SaveScene()
 {
 	if (myRuntimeScene)
 	{
-		if (!myRuntimeScene->path.empty())
+		if (Volt::AssetManager::ExistsInRegistry(myRuntimeScene->handle))
 		{
-			if (FileSystem::IsWriteable(myRuntimeScene->path))
+			if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(myRuntimeScene->handle)))
 			{
 				Volt::AssetManager::Get().SaveAsset(myRuntimeScene);
-				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->path.string()));
+				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->name));
 			}
 			else
 			{
-				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->path.string()));
+				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->name));
 			}
 		}
 		else

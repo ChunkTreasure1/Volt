@@ -1,4 +1,6 @@
-Handle: 4792330654918086634
-Path: Engine/Shaders/Source/HLSL/Editor/VertexColorVisualization_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 986534500284155151
+  filePath: Engine/Shaders/Source/HLSL/Editor/VertexColorVisualization_ps.hlsl
+  type: 128
+  Dependencies:
+    []

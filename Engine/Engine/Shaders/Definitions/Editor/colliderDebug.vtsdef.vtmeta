@@ -1,4 +1,7 @@
-Handle: 4837859078657493765
-Path: Engine/Shaders/Definitions/Editor/colliderDebug.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5914096883732218415
+  filePath: Engine/Shaders/Definitions/Editor/colliderDebug.vtsdef
+  type: 64
+  Dependencies:
+    - 13639218079433149575
+    - 9706206547984285303

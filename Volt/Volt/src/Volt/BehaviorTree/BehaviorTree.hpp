@@ -59,8 +59,6 @@ namespace Volt::BehaviorTree
 
 	inline Tree::Tree(Tree& in_tree)
 	{
-		path = in_tree.path;
-
 		m_root = 1;
 		auto rootID = CreateNode<Root>();
 		m_nodeManger.GetNodeFromUUID(rootID)->SetUUID(m_root);

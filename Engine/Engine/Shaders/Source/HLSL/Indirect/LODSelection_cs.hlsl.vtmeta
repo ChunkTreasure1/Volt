@@ -1,4 +1,6 @@
-Handle: 6373117003785735745
-Path: Engine/Shaders/Source/HLSL/Indirect/LODSelection_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5496024832058910497
+  filePath: Engine/Shaders/Source/HLSL/Indirect/LODSelection_cs.hlsl
+  type: 128
+  Dependencies:
+    []

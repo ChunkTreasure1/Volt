@@ -319,7 +319,7 @@ namespace Volt
 			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
 		}
 
-		const std::string colliderName = AssetManager::Get().GetPathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Convex";
+		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Convex";
 		std::vector<MeshColliderData> meshColliderData;
 		CookingResult result = CookingResult::Failure;
 
@@ -431,7 +431,7 @@ namespace Volt
 			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
 		}
 
-		const std::string colliderName = AssetManager::Get().GetPathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Triangle";
+		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Triangle";
 		std::vector<MeshColliderData> meshColliderData;
 		CookingResult result = CookingResult::Failure;
 

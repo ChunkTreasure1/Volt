@@ -789,11 +789,16 @@ void Sandbox::SaveSceneAsModal()
 				std::filesystem::create_directories(Volt::ProjectManager::GetDirectory() / destPath);
 			}
 
-			myRuntimeScene->path = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + mySaveSceneData.name + ".vtscene");
-			myRuntimeScene->handle = Volt::AssetHandle{};
-			Volt::AssetManager::Get().SaveAsset(myRuntimeScene);
+			const auto relPath = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + mySaveSceneData.name + ".vtscene");
+			
+			myRuntimeScene->CopyTo(myRuntimeScene);
+			myRuntimeScene->handle = {};
+
+			Volt::AssetManager::SaveAssetAs(myRuntimeScene, relPath);
 
 			UI::Notify(NotificationType::Success, "Successfully saved scene!", std::format("Scene {0} was saved successfully!", mySaveSceneData.name));
+
+			SetupNewSceneData();
 			ImGui::CloseCurrentPopup();
 		}
 

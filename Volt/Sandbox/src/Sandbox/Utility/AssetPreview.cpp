@@ -37,7 +37,7 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 	myEntity = myScene->CreateEntity();
 	myEntity.AddComponent<Volt::MeshComponent>();
 
-	myAssetHandle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+	myAssetHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
 }
 
 void AssetPreview::Render()

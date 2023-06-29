@@ -86,7 +86,7 @@ void SelectiveAssetBrowserPanel::UpdateAssetList()
 			{
 				auto& data = myAllAssetsOfType.emplace_back();
 				data.path = path;
-				data.handle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+				data.handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
 				data.type = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
 			}
 		}

@@ -1,4 +1,6 @@
-Handle: 13803306883170560245
-Path: Engine/Shaders/Definitions/Environment/environmentIrradiance.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 15644985095527646627
+  filePath: Engine/Shaders/Definitions/Environment/environmentIrradiance.vtsdef
+  type: 64
+  Dependencies:
+    - 15135292149693505992

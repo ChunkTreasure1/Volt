@@ -125,7 +125,6 @@ project "Volt"
 		"_WINSOCKAPI_",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
 		"GLM_FORCE_LEFT_HANDED"
 	}
 

@@ -9,21 +9,21 @@
 
 namespace Volt
 {
-	bool NetContractImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool NetContractImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
 		std::ifstream file(filePath);
-		if (!file.is_open()) [[unlikely]]
+		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -79,7 +79,7 @@ namespace Volt
 		return true;
 	}
 
-	void NetContractImporter::Save(const Ref<Asset>& asset) const
+	void NetContractImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<NetContract> p = std::reinterpret_pointer_cast<NetContract>(asset);
 		YAML::Emitter out;
@@ -116,7 +116,7 @@ namespace Volt
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
 	}

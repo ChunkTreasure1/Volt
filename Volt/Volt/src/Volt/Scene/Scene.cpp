@@ -811,7 +811,7 @@ namespace Volt
 			{
 				auto ent = newScene->CreateEntity("Cube");
 				auto& meshComp = ent.AddComponent<MeshComponent>();
-				meshComp.handle = AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 			}
 
 			// Light
@@ -852,7 +852,6 @@ namespace Volt
 		otherScene->mySceneLayers = mySceneLayers;
 		otherScene->myActiveLayerIndex = myActiveLayerIndex;
 		otherScene->myLastLayerId = myLastLayerId;
-		otherScene->path = path;
 
 		auto& otherRegistry = otherScene->GetRegistry();
 

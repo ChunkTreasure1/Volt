@@ -1,4 +1,6 @@
-Handle: 7971819273394914384
-Path: Engine/Shaders/Source/HLSL/Includes/Buffers.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5567244163331274740
+  filePath: Engine/Shaders/Source/HLSL/Includes/Buffers.hlsli
+  type: 128
+  Dependencies:
+    []

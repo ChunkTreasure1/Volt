@@ -86,7 +86,7 @@ namespace Utility
 			return true;
 		}
 
-		const Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromPath(Volt::AssetManager::GetRelativePath(path));
+		const Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(Volt::AssetManager::GetRelativePath(path));
 
 		const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(handle);
 
@@ -338,11 +338,11 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 	{
 		for (const auto& handle : buildInfo.sceneHandles)
 		{
-			const std::filesystem::path path = Volt::AssetManager::Get().GetPathFromAssetHandle(handle);
+			const std::filesystem::path path = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle);
 
 			const auto targetScenePath = buildInfo.buildDirectory / path;
 
-			const Volt::AssetHandle sceneHandle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+			const Volt::AssetHandle sceneHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
 			const bool isLoaded = Volt::AssetManager::Get().IsLoaded(sceneHandle);
 
 			Ref<Volt::Scene> scene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);

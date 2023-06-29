@@ -14,11 +14,11 @@
 
 namespace Volt
 {
-	bool VTNavMeshImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool VTNavMeshImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto realPath = AssetManager::GetContextPath(path) / path;
+		auto realPath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		std::ifstream file(realPath, std::ios::in | std::ios::binary);
 		if (!file.is_open())
@@ -39,10 +39,10 @@ namespace Volt
 		return true;
 	}
 
-	void VTNavMeshImporter::Save(const Ref<Asset>& asset) const
+	void VTNavMeshImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		auto navmesh = reinterpret_pointer_cast<AI::NavMesh>(asset);
-		auto realPath = AssetManager::GetContextPath(navmesh->path) / navmesh->path;
+		auto realPath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		const auto* mesh = navmesh->GetNavMesh()->GetNavMesh().get();
 
@@ -61,15 +61,5 @@ namespace Volt
 		AI::NavMeshImporter::SaveNavMesh(output, navmesh);
 
 		output.close();
-	}
-
-	void VTNavMeshImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
-	{
-
-	}
-
-	bool VTNavMeshImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
 	}
 }

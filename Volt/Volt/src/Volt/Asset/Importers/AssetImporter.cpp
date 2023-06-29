@@ -30,53 +30,43 @@
 
 namespace Volt
 {
-	bool TextureSourceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool TextureSourceImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Texture2D>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 		auto mesh = TextureImporter::ImportTexture(filePath);
 
-		if (!mesh) [[unlikely]]
+		if (!mesh)
 		{
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
 		asset = mesh;
-		asset->path = path;
 
 		Renderer::AddTexture(std::reinterpret_pointer_cast<Texture2D>(asset)->GetImage());
 		return true;
 	}
 
-	void TextureSourceImporter::Save(const Ref<Asset>&) const
+	void TextureSourceImporter::Save(const AssetMetadata& metadata, const Ref<Asset>&) const
 	{
 	}
 
-	void TextureSourceImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool TextureSourceImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
-	bool ShaderImporter::Load(const std::filesystem::path& inPath, Ref<Asset>& asset) const
+	bool ShaderImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Shader>();
-		const std::filesystem::path filesytemPath = AssetManager::GetContextPath(inPath) / inPath;
+		const auto filesytemPath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filesytemPath)) [[unlikely]]
 		{
-			VT_CORE_ERROR("File {0} not found!", inPath.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -84,7 +74,7 @@ namespace Volt
 		std::ifstream file(filesytemPath);
 		if (!file.is_open()) [[unlikely]]
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", inPath.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -101,7 +91,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", inPath, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -111,9 +101,9 @@ namespace Volt
 		bool isInternal;
 		VT_DESERIALIZE_PROPERTY(internal, isInternal, root, false);
 
-		if (!root["paths"]) [[unlikely]]
+		if (!root["paths"])
 		{
-			VT_CORE_ERROR("No shaders defined in shader definition {0}!", inPath.string().c_str());
+			VT_CORE_ERROR("No shaders defined in shader definition {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -150,12 +140,11 @@ namespace Volt
 		}
 
 		asset = shader;
-		asset->path = inPath;
 
 		return true;
 	}
 
-	void ShaderImporter::Save(const Ref<Asset>& asset) const
+	void ShaderImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Shader> shader = std::reinterpret_pointer_cast<Shader>(asset);
 
@@ -183,28 +172,19 @@ namespace Volt
 
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
 	}
 
-	void ShaderImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool ShaderImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
-	bool MaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool MaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Material>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -212,7 +192,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -229,7 +209,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -455,12 +435,11 @@ namespace Volt
 		Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
 		material->myName = nameString;
 		material->mySubMaterials = materials;
-		material->path = path;
 
 		return true;
 	}
 
-	void MaterialImporter::Save(const Ref<Asset>& asset) const
+	void MaterialImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
 
@@ -608,54 +587,35 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
 	}
 
-	void MaterialImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool MaterialImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
-	bool FontImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool FontImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Font>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
 		asset = CreateRef<Font>(filePath);
-		asset->path = path;
 		return true;
 	}
 
-	void FontImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool FontImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
-	bool PhysicsMaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool PhysicsMaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<PhysicsMaterial>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -663,7 +623,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -682,7 +642,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -693,12 +653,10 @@ namespace Volt
 		VT_DESERIALIZE_PROPERTY(dynamicFriction, physicsMat->dynamicFriction, materialNode, 0.1f);
 		VT_DESERIALIZE_PROPERTY(bounciness, physicsMat->bounciness, materialNode, 0.1f);
 
-		physicsMat->path = path;
-
 		return false;
 	}
 
-	void PhysicsMaterialImporter::Save(const Ref<Asset>& asset) const
+	void PhysicsMaterialImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<PhysicsMaterial> material = std::reinterpret_pointer_cast<PhysicsMaterial>(asset);
 
@@ -712,174 +670,39 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
 	}
 
-	void PhysicsMaterialImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool PhysicsMaterialImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
-	bool VideoImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool VideoImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Video>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
 		asset = CreateRef<Video>(filePath);
-		asset->path = path;
 		return true;
 	}
 
-	void VideoImporter::Save(const Ref<Asset>&) const
-	{
-	}
-	void VideoImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-	bool VideoImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
-	bool RenderPipelineImporter::Load(const std::filesystem::path& inPath, Ref<Asset>& asset) const
-	{
-		asset = CreateRef<RenderPipeline>();
-		Ref<RenderPipeline> renderPipeline = std::reinterpret_pointer_cast<RenderPipeline>(asset);
-
-		if (!std::filesystem::exists(inPath)) [[unlikely]]
-		{
-			VT_CORE_ERROR("File {0} not found!", inPath.string().c_str());
-			asset->SetFlag(AssetFlag::Missing, true);
-			return false;
-		}
-
-		std::ifstream file(inPath);
-		if (!file.is_open()) [[unlikely]]
-		{
-			VT_CORE_ERROR("Failed to open file: {0}!", inPath.string().c_str());
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
-
-		YAML::Node root;
-
-		try
-		{
-			root = YAML::Load(sstream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", inPath, e.what());
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		auto pipelineNode = root["RenderPipeline"];
-
-		RenderPipelineSpecification specification{};
-
-		std::string shaderName;
-		VT_DESERIALIZE_PROPERTY(Shader, shaderName, pipelineNode, std::string(""));
-
-		Ref<Shader> shader;
-		if (!ShaderRegistry::IsShaderRegistered(shaderName))
-		{
-			VT_CORE_ERROR("Unable to find shader {0}! Falling back to default!", shaderName.c_str());
-			shader = Renderer::GetDefaultData().defaultShader;
-		}
-		else
-		{
-			shader = ShaderRegistry::GetShader(shaderName);
-		}
-
-		uint32_t topology = 0;
-		uint32_t cullMode = 0;
-		uint32_t fillMode = 0;
-		uint32_t depthMode = 0;
-
-		VT_DESERIALIZE_PROPERTY(topology, topology, pipelineNode, 0);
-		VT_DESERIALIZE_PROPERTY(cullMode, cullMode, pipelineNode, 0);
-		VT_DESERIALIZE_PROPERTY(fillMode, fillMode, pipelineNode, 0);
-		VT_DESERIALIZE_PROPERTY(depthMode, depthMode, pipelineNode, 0);
-
-		specification.topology = (Topology)topology;
-		specification.cullMode = (CullMode)cullMode;
-		specification.fillMode = (FillMode)fillMode;
-		specification.depthMode = (DepthMode)depthMode;
-		specification.shader = shader;
-		specification.vertexLayout = Vertex::GetVertexLayout();
-
-		VT_DESERIALIZE_PROPERTY(lineWidth, specification.lineWidth, pipelineNode, 1.f);
-		VT_DESERIALIZE_PROPERTY(tessellationControlPoints, specification.tessellationControlPoints, pipelineNode, 4);
-		VT_DESERIALIZE_PROPERTY(name, specification.name, pipelineNode, std::string("Null"));
-
-		asset = RenderPipeline::Create(specification);
-		return true;
-	}
-
-	void RenderPipelineImporter::Save(const Ref<Asset>& asset) const
-	{
-		Ref<RenderPipeline> renderPipeline = std::reinterpret_pointer_cast<RenderPipeline>(asset);
-
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "RenderPipeline" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Shader" << YAML::Value << renderPipeline->GetSpecification().shader->GetName();
-
-			VT_SERIALIZE_PROPERTY(topology, (uint32_t)renderPipeline->mySpecification.topology, out);
-			VT_SERIALIZE_PROPERTY(cullMode, (uint32_t)renderPipeline->mySpecification.cullMode, out);
-			VT_SERIALIZE_PROPERTY(fillMode, (uint32_t)renderPipeline->mySpecification.fillMode, out);
-			VT_SERIALIZE_PROPERTY(depthMode, (uint32_t)renderPipeline->mySpecification.depthMode, out);
-
-			VT_SERIALIZE_PROPERTY(lineWidth, renderPipeline->mySpecification.lineWidth, out);
-			VT_SERIALIZE_PROPERTY(tessellationControlPoints, renderPipeline->mySpecification.tessellationControlPoints, out);
-			VT_SERIALIZE_PROPERTY(name, renderPipeline->mySpecification.name, out);
-
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
-		fout << out.c_str();
-		fout.close();
-	}
-
-	void RenderPipelineImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
+	void VideoImporter::Save(const AssetMetadata& metadata, const Ref<Asset>&) const
 	{
 	}
 
-	bool RenderPipelineImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
-	}
-
-	bool BlendSpaceImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool BlendSpaceImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<BlendSpace>();
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -887,7 +710,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -904,7 +727,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -936,7 +759,7 @@ namespace Volt
 		return true;
 	}
 
-	void BlendSpaceImporter::Save(const Ref<Asset>& asset) const
+	void BlendSpaceImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<BlendSpace> blendSpace = std::reinterpret_pointer_cast<BlendSpace>(asset);
 
@@ -962,30 +785,21 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
 	}
 
-	void BlendSpaceImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
-	{
-	}
-
-	bool BlendSpaceImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
-	}
-
-	bool PostProcessingStackImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool PostProcessingStackImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<PostProcessingStack>();
 		Ref<PostProcessingStack> postStack = std::reinterpret_pointer_cast<PostProcessingStack>(asset);
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -993,7 +807,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -1010,7 +824,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -1026,7 +840,7 @@ namespace Volt
 		return true;
 	}
 
-	void PostProcessingStackImporter::Save(const Ref<Asset>& asset) const
+	void PostProcessingStackImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<PostProcessingStack> postStack = std::reinterpret_pointer_cast<PostProcessingStack>(asset);
 
@@ -1047,29 +861,20 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
 	}
 
-	void PostProcessingStackImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
-	{
-	}
-
-	bool PostProcessingStackImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
-	}
-
-	bool PostProcessingMaterialImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool PostProcessingMaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<PostProcessingMaterial>();
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -1077,7 +882,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -1094,7 +899,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -1162,11 +967,10 @@ namespace Volt
 			}
 		}
 
-		postMat->path = path;
 		return true;
 	}
 
-	void PostProcessingMaterialImporter::Save(const Ref<Asset>& asset) const
+	void PostProcessingMaterialImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<PostProcessingMaterial> material = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
 
@@ -1224,17 +1028,8 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
-	}
-
-	void PostProcessingMaterialImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
-	{
-	}
-
-	bool PostProcessingMaterialImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
 	}
 }

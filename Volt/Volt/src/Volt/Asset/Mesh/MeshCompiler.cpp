@@ -145,7 +145,10 @@ namespace Volt
 
 	void MeshCompiler::CreateMaterial(Ref<Mesh> mesh, const std::filesystem::path& destination)
 	{
-		mesh->myMaterial->path = destination.parent_path().string() + "\\" + destination.stem().string() + ".vtmat";
+		const auto materialPath = destination.parent_path().string() + "\\";
+		const auto filename = destination.stem().string() + ".vtmat";
+
+		mesh->myMaterial = AssetManager::CreateAsset<Material>(materialPath, filename, *mesh->myMaterial);
 		AssetManager::Get().SaveAsset(mesh->myMaterial);
 	}
 }

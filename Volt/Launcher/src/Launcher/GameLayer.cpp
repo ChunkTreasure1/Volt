@@ -207,7 +207,7 @@ bool GameLayer::OnWindowResizeEvent(Volt::WindowResizeEvent& e)
 bool GameLayer::OnSceneTransition(Volt::OnSceneTransitionEvent& e)
 {
 	myStoredScene = Volt::AssetManager::QueueAsset<Volt::Scene>(e.GetHandle());
-	Volt::Scene::PreloadSceneAssets(myStoredScene->path);
+	Volt::Scene::PreloadSceneAssets(Volt::AssetManager::GetFilePathFromAssetHandle(myStoredScene->handle));
 
 	myShouldLoadNewScene = true;
 
@@ -269,7 +269,7 @@ void GameLayer::TrySceneTransition()
 		return;
 	}
 
-	if (!Volt::Scene::IsSceneFullyLoaded(myStoredScene->path))
+	if (!Volt::Scene::IsSceneFullyLoaded(Volt::AssetManager::GetFilePathFromAssetHandle(myStoredScene->handle)))
 	{
 		return;
 	}

@@ -1,4 +1,6 @@
-Handle: 16357892450835334496
-Path: Engine/Shaders/Source/HLSL/Utility/FullscreenTriangle_vs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 7568016120944877380
+  filePath: Engine/Shaders/Source/HLSL/Utility/FullscreenTriangle_vs.hlsl
+  type: 128
+  Dependencies:
+    []

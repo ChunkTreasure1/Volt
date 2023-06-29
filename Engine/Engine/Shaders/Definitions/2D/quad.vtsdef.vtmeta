@@ -1,5 +1,7 @@
-Handle: 4187263497913330026
-Path: Engine/Shaders/Definitions/2D/quad.vtsdef
-Dependencies:
-  - Engine/Shaders/Source/HLSL/2D/Quad_vs.hlsl
-  - Engine/Shaders/Source/HLSL/2D/Quad_ps.hlsl
+Metadata:
+  assetHandle: 4468448007958601890
+  filePath: Engine/Shaders/Definitions/2D/quad.vtsdef
+  type: 64
+  Dependencies:
+    - 7152991874206907308
+    - 15192232920369362307

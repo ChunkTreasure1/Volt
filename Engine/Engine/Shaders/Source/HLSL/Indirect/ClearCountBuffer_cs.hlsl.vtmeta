@@ -1,4 +1,6 @@
-Handle: 899460148318377010
-Path: Engine/Shaders/Source/HLSL/Indirect/ClearCountBuffer_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10489521087417306666
+  filePath: Engine/Shaders/Source/HLSL/Indirect/ClearCountBuffer_cs.hlsl
+  type: 128
+  Dependencies:
+    []

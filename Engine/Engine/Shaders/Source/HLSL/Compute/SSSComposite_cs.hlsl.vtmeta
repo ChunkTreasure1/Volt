@@ -1,4 +1,6 @@
-Handle: 8643262057798183013
-Path: Engine/Shaders/Source/HLSL/Compute/SSSComposite_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5645580429641607226
+  filePath: Engine/Shaders/Source/HLSL/Compute/SSSComposite_cs.hlsl
+  type: 128
+  Dependencies:
+    []

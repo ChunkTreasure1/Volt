@@ -1,4 +1,6 @@
-Handle: 13341749574582503568
-Path: Engine/Shaders/Definitions/Environment/equirectangularToCubemap.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 529713139892464117
+  filePath: Engine/Shaders/Definitions/Environment/equirectangularToCubemap.vtsdef
+  type: 64
+  Dependencies:
+    - 7570414632418687075

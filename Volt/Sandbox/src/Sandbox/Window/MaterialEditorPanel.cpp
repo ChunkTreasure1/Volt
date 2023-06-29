@@ -40,7 +40,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto entity = myPreviewScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 		myPreviewEntity = entity;
 	}
 
@@ -49,7 +49,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
 
@@ -99,7 +99,7 @@ void MaterialEditorPanel::OnOpen()
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
 
@@ -133,10 +133,10 @@ void MaterialEditorPanel::UpdateToolbar()
 		{
 			if (mySelectedMaterial)
 			{
-				if (FileSystem::IsWriteable(mySelectedMaterial->path))
+				if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(mySelectedMaterial->handle)))
 				{
 					Volt::AssetManager::Get().SaveAsset(mySelectedMaterial);
-					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->path.string()));
+					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->name));
 				}
 				else
 				{
@@ -244,7 +244,7 @@ void MaterialEditorPanel::UpdateProperties()
 			}
 
 			bool changed = false;
-			
+
 			UI::PushId();
 			if (UI::BeginProperties("Shader"))
 			{
@@ -803,18 +803,23 @@ void MaterialEditorPanel::UpdateMaterials()
 		{
 			for (auto& material : materials)
 			{
-				if (myHasSearchQuery && !Utils::ToLower(material.stem().string()).contains(Utils::ToLower(mySearchQuery)))
+				const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(material);
+				const std::string materialName = metadata.filePath.stem().string();
+				if (myHasSearchQuery)
 				{
-					continue;
+					if (!Utils::ToLower(materialName).contains(Utils::ToLower(mySearchQuery)))
+					{
+						continue;
+					}
 				}
 
 				bool selected = false;
 				if (mySelectedMaterial)
 				{
-					selected = material == mySelectedMaterial->path;
+					selected = material == mySelectedMaterial->handle;
 				}
 
-				if (ImGui::Selectable(material.stem().string().c_str(), &selected))
+				if (ImGui::Selectable(materialName.c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);

@@ -246,7 +246,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			myDragDroppedMeshes.pop_back();
 
 			AssetData assetData;
-			assetData.handle = Volt::AssetManager::Get().AddToRegistry(path);
+			assetData.handle = Volt::AssetManager::Get().AddAssetToRegistry(path);
 			assetData.path = path;
 			assetData.type = Volt::AssetType::MeshSource;
 
@@ -446,13 +446,13 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 	{
 		if (!entry.is_directory())
 		{
-			auto type = Volt::AssetManager::Get().GetAssetTypeFromPath(entry);
+			auto type = Volt::AssetManager::GetAssetTypeFromPath(entry);
 
 			if (type != Volt::AssetType::None && !entry.path().filename().string().contains(".vtthumb.png"))
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
-					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(entry.path()), myMeshImportData, myMeshToImport);
+					Ref<AssetBrowser::AssetItem> assetItem = CreateRef<AssetBrowser::AssetItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(entry.path()), myMeshImportData, myMeshToImport);
 					dirData->assets.emplace_back(assetItem);
 				}
 			}
@@ -757,7 +757,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 			if (item->isDirectory && item != dirData.get())
 			{
 				const std::filesystem::path newPath = dirData->path / item->path.stem();
-				Volt::AssetManager::Get().MoveFolder(item->path, newPath);
+				Volt::AssetManager::Get().MoveFullFolder(item->path, newPath);
 				FileSystem::MoveFolder(Volt::ProjectManager::GetDirectory() / item->path, Volt::ProjectManager::GetDirectory() / newPath);
 			}
 		}
@@ -776,7 +776,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 					}
 				}
 
-				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromPath(item->path), dirData->path);
+				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromFilePath(item->path), dirData->path);
 			}
 		}
 
@@ -1032,7 +1032,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 			{
 				if (item->isDirectory)
 				{
-					Volt::AssetManager::Get().RemoveFolderFromRegistry(Volt::AssetManager::GetRelativePath(item->path));
+					Volt::AssetManager::Get().RemoveFullFolderFromRegistry(Volt::AssetManager::GetRelativePath(item->path));
 					FileSystem::MoveToRecycleBin(Volt::ProjectManager::GetDirectory() / item->path);
 				}
 			}
@@ -1381,8 +1381,8 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			FileSystem::CreateDirectory(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path) / tempName);
 
 			Ref<Volt::Scene> scene = Volt::Scene::CreateDefaultScene("New Scene");
-			scene->path = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
-			Volt::AssetManager::Get().SaveAsset(scene);
+			const std::filesystem::path targetFilePath = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
+			Volt::AssetManager::Get().SaveAssetAs(scene, targetFilePath);
 			break;
 		}
 
