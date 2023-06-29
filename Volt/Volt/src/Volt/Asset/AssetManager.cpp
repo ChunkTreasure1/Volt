@@ -1177,6 +1177,14 @@ namespace Volt
 			VT_SERIALIZE_PROPERTY(type, (uint32_t)metadata.type, out);
 
 			out << YAML::Key << "Dependencies" << YAML::Value << metadata.dependencies;
+
+			out << YAML::BeginMap;
+			out << YAML::Key << "Properties" << YAML::Value;
+			for (const auto& [name, data] : metadata.properties)
+			{
+				out << YAML::Key << name << YAML::Value << data;
+			}
+			out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -1254,15 +1262,28 @@ namespace Volt
 			}
 		}
 
+		std::unordered_map<std::string, std::string> assetProperties;
+
+		if (metaRoot["Properties"])
+		{
+			for (const auto& node : metaRoot["Properties"])
+			{
+				const auto key = node.first.as<std::string>();
+				const auto value = node.as<std::string>();
+
+				assetProperties[key] = value;
+			}
+		}
+
 		{
 			WriteLock lock{ m_assetRegistryMutex };
 			AssetMetadata& metadata = m_assetRegistry[assetHandle];
 			metadata.handle = assetHandle;
 			metadata.filePath = filePath;
 			metadata.dependencies = dependencies;
+			metadata.properties = assetProperties;
 
 			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
-
 		}
 	}
 

@@ -154,40 +154,20 @@ namespace Volt
 
 	struct AssetMetadata
 	{
-		template<typename T>
-		inline void SetValue(std::string_view key, const T& data)
+		inline void SetValue(const std::string& key, const std::string& data)
 		{
-			if (metaData.contains(key))
-			{
-				auto& value = metaData.at(key);
-
-				if (value.type() != typeid(T))
-				{
-					assert(false && "Trying to set value with wrong type!");
-					return;
-				}
-			}
-
-			metaData[key] = data;
+			properties[key] = data;
 		}
 
-		template<typename T>
-		inline const T GetValue(std::string_view key) const
+		inline const std::string& GetValue(const std::string& key) const
 		{
-			if (!metaData.contains(key))
+			if (!properties.contains(key))
 			{
 				return {};
 			}
 
-			const auto& value = metaData.at(key);
-
-			if (value.type() != typeid(T))
-			{
-				assert(false && "Trying to get value with wrong type!");
-				return {};
-			}
-
-			return metaData.at(key);
+			const auto& value = properties.at(key);
+			return properties.at(key);
 		}
 
 		inline const bool IsValid() const { return handle != 0; }
@@ -201,7 +181,7 @@ namespace Volt
 
 		std::filesystem::path filePath;
 		std::vector<AssetHandle> dependencies;
-		std::unordered_map<std::string_view, std::any> metaData;
+		std::unordered_map<std::string, std::string> properties;
 	};
 
 	class Asset
