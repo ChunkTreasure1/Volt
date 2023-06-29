@@ -82,8 +82,6 @@ project "Navigation"
 
 	defines
 	{
-		"NOMINMAX",
-
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
 		"GLM_FORCE_LEFT_HANDED"
 	}
@@ -108,37 +106,46 @@ project "Navigation"
 	filter "system:windows"
 		systemversion "latest"
 
-		filter "configurations:Debug"
-			defines 
-			{ 
-				"VT_DEBUG", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING"
-			}
-			runtime "Debug"
-			optimize "off"
-			symbols "on"
+		defines
+		{
+			"NOMINMAX",
+		}
 
-		filter "configurations:Release"
-			defines 
-			{ 
-				"VT_RELEASE", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING",
-				"NDEBUG"
-			}
-			runtime "Release"
-			optimize "on"
-			symbols "on"
+	filter "configurations:Debug"
+		defines 
+		{ 
+			"VT_DEBUG", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING"
+		}
+		runtime "Debug"
+		optimize "off"
+		symbols "on"
 
-		filter "configurations:Dist"
-			defines 
-			{ 
-				"VT_DIST", 
-				"NDEBUG" 
-			}
-			runtime "Release"
-			optimize "on"
-			symbols "off"
+	filter "configurations:Release"
+		defines 
+		{ 
+			"VT_RELEASE", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING",
+			"NDEBUG"
+		}
+		runtime "Release"
+		optimize "on"
+		symbols "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+
+	filter "configurations:Dist"
+		defines 
+		{ 
+			"VT_DIST", 
+			"NDEBUG" 
+		}
+		runtime "Release"
+		optimize "on"
+		symbols "off"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }

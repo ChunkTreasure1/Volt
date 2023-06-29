@@ -2432,7 +2432,7 @@ namespace Volt
 
 				myLightCullingWorkGroups = size / TILE_SIZE;
 
-				for (const auto& value : myResizeLightCullingBuffers)
+				for (auto&& value : myResizeLightCullingBuffers)
 				{
 					value = true;
 				}

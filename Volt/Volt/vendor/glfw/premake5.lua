@@ -28,11 +28,7 @@ project "GLFW"
 		"src/null_joystick.c",
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
+	warnings "off"
 
 	filter "system:linux"
 		pic "On"

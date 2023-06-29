@@ -175,7 +175,6 @@ namespace Volt
 		{
 			if (asset->GetType() != T::GetStaticType())
 			{
-				AssetType assetType = asset->GetType();
 				VT_CORE_CRITICAL("Type Mismatch!");
 			}
 		}

@@ -34,7 +34,7 @@ void Volt::AudioSystem::RuntimeStart(Wire::Registry& registry, Scene* scene)
 
 void Volt::AudioSystem::RuntimeStop(Wire::Registry& registry, Scene* scene)
 {
-	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent& audioListenerComp)
+	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent&)
 	{
 		Volt::Entity entity({ id, scene });
 		Amp::WwiseAudioManager::UnregisterListener();
@@ -54,16 +54,11 @@ void Volt::AudioSystem::Update(Wire::Registry& registry, Scene* scene, const flo
 	UpdateAudioSources(registry, scene, aDeltaTime);
 }
 
-void Volt::AudioSystem::OnEvent(Wire::Registry& registry, Volt::Event& e)
+void Volt::AudioSystem::OnEvent(Wire::Registry&, Volt::Event&)
 {
-	//registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
-	//{
-
-	//}
-	//);
 }
 
-void Volt::AudioSystem::UpdateAudioSources(Wire::Registry& registry, Scene* scene, const float& aDeltaTime)
+void Volt::AudioSystem::UpdateAudioSources(Wire::Registry& registry, Scene* scene, const float&)
 {
 	registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
 	{
@@ -73,9 +68,9 @@ void Volt::AudioSystem::UpdateAudioSources(Wire::Registry& registry, Scene* scen
 	);
 }
 
-void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* scene, const float& aDeltaTime)
+void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* scene, const float&)
 {
-	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent& audioListenerComp)
+	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent&)
 	{
 		Volt::Entity entity({ id, scene });
 		Amp::WwiseAudioManager::SetListenerPosition(entity.GetPosition(), entity.GetForward(), entity.GetUp());

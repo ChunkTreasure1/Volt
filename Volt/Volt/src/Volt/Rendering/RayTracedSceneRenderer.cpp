@@ -53,7 +53,7 @@ namespace Volt
 
 		auto scenePtr = myScene.lock();
 
-		scenePtr->GetRegistry().ForEach<MeshComponent>([&](Wire::EntityId id, const MeshComponent& comp)
+		scenePtr->GetRegistry().ForEach<MeshComponent>([&](Wire::EntityId, const MeshComponent& comp)
 		{
 			if (comp.handle == Asset::Null())
 			{

@@ -807,7 +807,7 @@ void MaterialEditorPanel::UpdateMaterials()
 				const std::string materialName = metadata.filePath.stem().string();
 				if (myHasSearchQuery)
 				{
-					if (!Utils::ToLower(materialName).contains(Utils::ToLower(mySearchQuery)))
+					if (!Utils::StringContains(Utils::ToLower(materialName), Utils::ToLower(mySearchQuery)))
 					{
 						continue;
 					}

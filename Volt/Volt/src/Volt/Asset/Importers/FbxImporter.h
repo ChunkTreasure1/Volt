@@ -20,8 +20,8 @@ namespace Volt
 		Ref<Animation> ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton) override;
 
 		void ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path) override;
-		void ExportSkeletonImpl(std::vector<Ref<Skeleton>> assets, const std::filesystem::path& path) override {};
-		void ExportAnimationImpl(std::vector<Ref<Animation>> assets, const std::filesystem::path& path) override {};
+		void ExportSkeletonImpl(std::vector<Ref<Skeleton>> assets, const std::filesystem::path&) override {};
+		void ExportAnimationImpl(std::vector<Ref<Animation>> assets, const std::filesystem::path&) override {};
 
 	private:
 		struct VertexDuplicateData

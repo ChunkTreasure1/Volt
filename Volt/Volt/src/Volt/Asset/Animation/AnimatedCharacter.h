@@ -42,7 +42,7 @@ namespace Volt
 		inline const size_t GetAnimationCount() const { return myAnimations.size(); }
 		inline const bool HasAnimationEvents(const uint32_t animationIndex) const { return myAnimationEvents.contains(animationIndex); }
 		inline const std::vector<Event>& GetAnimationEvents(uint32_t animationIndex) const { return myAnimationEvents.at(animationIndex); }
-		inline const std::map<uint32_t,std::vector<Event>>& GetAnimationEventsAndIndex(uint32_t animationIndex) const { return myAnimationEvents; }
+		inline const std::map<uint32_t,std::vector<Event>>& GetAnimationEventsAndIndex(uint32_t) const { return myAnimationEvents; }
 
 		inline const std::vector<JointAttachment>& GetJointAttachments() const { return myJointAttachments; };
 		const JointAttachment GetJointAttachmentFromName(const std::string& name) const;

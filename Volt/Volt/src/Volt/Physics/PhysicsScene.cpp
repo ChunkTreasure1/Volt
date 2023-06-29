@@ -84,7 +84,7 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("InvokeOnFixedUpdate");
 
-				myEntityScene->GetRegistry().ForEach<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
+				myEntityScene->GetRegistry().ForEach<MonoScriptComponent, TransformComponent>([&](Wire::EntityId, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
 				{
 					if (!transComp.visible)
 					{
@@ -389,11 +389,11 @@ namespace Volt
 		bool hit = OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count, qFilterData);
 		if (!buffer.empty())
 		{
-			for (auto& hit : buffer)
+			for (auto& overlap : buffer)
 			{
-				if (hit.actor != nullptr)
+				if (overlap.actor != nullptr)
 				{
-					auto actor = (PhysicsActorBase*)hit.actor->userData;
+					auto actor = (PhysicsActorBase*)overlap.actor->userData;
 					if (actor)
 					{
 						tempEnts.push_back(actor->GetEntity());

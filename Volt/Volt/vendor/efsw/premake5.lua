@@ -1,6 +1,7 @@
 project "efsw-static-lib"
 	kind "StaticLib"
 	language "C++"
+	warnings "off"
 	targetdir("./lib")
 	includedirs { "include", "src" }
 	files { "src/efsw/*.cpp", "src/efsw/platform/win/*.cpp" }

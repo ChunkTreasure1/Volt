@@ -166,7 +166,6 @@ namespace Volt
 				return {};
 			}
 
-			const auto& value = properties.at(key);
 			return properties.at(key);
 		}
 

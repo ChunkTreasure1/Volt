@@ -53,6 +53,11 @@ namespace Utils
 
 		return temp;
 	}
+
+	inline const bool StringContains(const std::string& srcString, const std::string& token)
+	{
+		return srcString.find(token) != std::string::npos;
+	}
 	
 	template<typename T, typename std::enable_if_t<std::is_integral<T>::value, bool> = true>
 	inline const std::string ToStringWithMetricPrefixCharacterForBytes(const T aValue)
@@ -102,10 +107,6 @@ namespace Utils
 
 		return result;
 	}
-
-	
-
-	
 
 #pragma warning(disable : 4996)
 

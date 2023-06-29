@@ -55,7 +55,7 @@ namespace Volt
 		return true;
 	}
 
-	void TextureSourceImporter::Save(const AssetMetadata& metadata, const Ref<Asset>&) const
+	void TextureSourceImporter::Save(const AssetMetadata&, const Ref<Asset>&) const
 	{
 	}
 
@@ -691,7 +691,7 @@ namespace Volt
 		return true;
 	}
 
-	void VideoImporter::Save(const AssetMetadata& metadata, const Ref<Asset>&) const
+	void VideoImporter::Save(const AssetMetadata&, const Ref<Asset>&) const
 	{
 	}
 

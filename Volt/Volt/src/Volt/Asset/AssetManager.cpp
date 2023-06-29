@@ -80,9 +80,7 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
 	{
-		auto& metaData = GetMetadataFromHandleMutable(asset);
 		const auto& dependencyMetaData = GetMetadataFromFilePath(dependency);
-
 		AddDependency(asset, dependencyMetaData.handle);
 	}
 
@@ -523,7 +521,7 @@ namespace Volt
 		const auto projDir = GetContextPath(filePath);
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
+			WriteLock cacheLock{ m_assetCacheMutex };
 			m_assetCache.erase(assetHandle);
 		}
 
@@ -552,7 +550,7 @@ namespace Volt
 		const auto projDir = GetContextPath(filePath);
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
+			WriteLock cacheLock{ m_assetCacheMutex };
 			m_assetCache.erase(metadata.handle);
 		}
 
@@ -748,7 +746,7 @@ namespace Volt
 		if (!pathSplit.empty())
 		{
 			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
-			if (lowerFirstPart.contains("engine") || lowerFirstPart.contains("editor"))
+			if (Utils::StringContains(lowerFirstPart, "engine") || Utils::StringContains(lowerFirstPart, "editor"))
 			{
 				return true;
 			}

@@ -46,7 +46,6 @@ namespace Volt
 			float deltaTime = 0.f;
 		};
 
-		static const glm::mat4 BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const glm::mat4& parentTransform, const size_t jointIndex, const float blendFactor);
 		static const PoseData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
 
 		friend class FbxImporter;

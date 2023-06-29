@@ -22,6 +22,8 @@
 #include "Volt/Scene/SceneManager.h"
 #include "Volt/Components/Components.h"
 
+#include "Volt/Utility/StringUtility.h"
+
 #include <Wire/Entity.h>
 
 #include <mono/jit/jit.h>
@@ -998,12 +1000,12 @@ namespace Volt
 
 		for (const auto& name : assemblyNames)
 		{
-			if (name.contains("Volt-ScriptCore"))
+			if (Utils::StringContains(name, "Volt-ScriptCore"))
 			{
 				continue;
 			}
 
-			if (name.contains("mscorlib"))
+			if (Utils::StringContains(name, "mscorlib"))
 			{
 				continue;
 			}

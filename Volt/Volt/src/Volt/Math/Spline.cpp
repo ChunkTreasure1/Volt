@@ -51,13 +51,9 @@ void Spline::InitSpline()
 	myBezierPointParent.GetComponent<Volt::TagComponent>().tag = "BezierPoints";
 
 	Volt::Entity anchorPoint0 = myCurrentScene->CreateEntity();
-	auto& comp0 = anchorPoint0.AddComponent<Volt::MeshComponent>();
 	Volt::Entity anchorPoint1 = myCurrentScene->CreateEntity();
-	auto& comp1 = anchorPoint1.AddComponent<Volt::MeshComponent>();
 	Volt::Entity handlePoint0 = myCurrentScene->CreateEntity();
-	auto& comp2 = handlePoint0.AddComponent<Volt::MeshComponent>();
 	Volt::Entity handlePoint1 = myCurrentScene->CreateEntity();
-	auto& comp3 = handlePoint1.AddComponent<Volt::MeshComponent>();
 
 	handlePoint0.GetComponent<Volt::TagComponent>().tag = "Handle";
 	handlePoint1.GetComponent<Volt::TagComponent>().tag = "Handle";
@@ -116,12 +112,10 @@ void Spline::AddSegment()
 void Spline::CreateNewBezierPoints()
 {
 	std::vector<Volt::Entity> bezPoints;
-	float offset = 1.f / 100.f;
 	for (int n = 0; n < myAmountOfCubes; n++)
 	{
 		Volt::Entity point = myCurrentScene->CreateEntity();
 		point.GetComponent<Volt::TagComponent>().tag = "BezierPoint" + std::to_string(n);
-		auto& comp = point.AddComponent<Volt::MeshComponent>();
 
 		bezPoints.push_back(point);
 		myCurrentScene->ParentEntity(myBezierPointParent, point);

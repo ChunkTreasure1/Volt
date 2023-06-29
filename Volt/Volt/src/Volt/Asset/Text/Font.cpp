@@ -296,7 +296,7 @@ namespace Volt
 		{
 			if (config.expensiveColoring)
 			{
-				msdf_atlas::Workload([&glyphs = myMSDFData->glyphs, &config](int i, int threadNo) -> bool
+				msdf_atlas::Workload([&glyphs = myMSDFData->glyphs, &config](int i, int) -> bool
 				{
 					uint64_t glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
 					glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);

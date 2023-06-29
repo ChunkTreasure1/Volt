@@ -211,7 +211,7 @@ void Volt::ParticleSystem::ParticlePositionUpdate(Particle& particle, const floa
 	particle.direction += particle.gravity * deltaTime;
 }
 
-void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float& deltaTime)
+void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float&)
 {
 	float sizePersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
 	if (sizePersentage > 1)
@@ -238,7 +238,7 @@ void Volt::ParticleSystem::ParticleSizeUpdate(Particle& particle, const float& d
 	particle.size = newSize;*/
 }
 
-void Volt::ParticleSystem::ParticleVelocityUpdate(Particle& particle, const float& deltaTime)
+void Volt::ParticleSystem::ParticleVelocityUpdate(Particle& particle, const float&)
 {
 	float velocityPersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
 	float newVelocity = glm::mix(particle.startVelocity, particle.endVelocity, velocityPersentage);
@@ -247,7 +247,7 @@ void Volt::ParticleSystem::ParticleVelocityUpdate(Particle& particle, const floa
 }
 
 
-void Volt::ParticleSystem::ParticleColorUpdate(Particle& particle, const float& deltaTime)
+void Volt::ParticleSystem::ParticleColorUpdate(Particle& particle, const float&)
 {
 	float colorPersentage = (particle.totalLifeTime - particle.lifeTime) / particle.totalLifeTime;
 	if (colorPersentage > 1)
@@ -272,6 +272,6 @@ void Volt::ParticleSystem::ParticleTimeUpdate(Particle& particle, float deltaTim
 	particle.timeSinceSpawn += deltaTime;
 }
 
-void Volt::ParticleSystem::UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime)
+void Volt::ParticleSystem::UpdateParticles(ParticleEmitterComponent&, TransformComponent&, const float&)
 {
 }

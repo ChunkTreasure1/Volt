@@ -88,6 +88,7 @@ namespace Volt
 	}
 
 	SubMaterial::SubMaterial(const std::string& aName, uint32_t aIndex, const RenderPipelineSpecification& specification)
+		: myName(aName), myIndex(aIndex)
 	{
 		InvalidatePipeline(specification);
 		Invalidate();

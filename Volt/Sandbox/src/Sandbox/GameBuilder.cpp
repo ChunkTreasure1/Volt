@@ -56,7 +56,9 @@ namespace Utility
 		bool result = std::find(skipItems.begin(), skipItems.end(), assetType) != skipItems.end();
 		bool skipExtension = std::find_if(skipExtensions.begin(), skipExtensions.end(), [&](const std::string ext) { return path.extension().string() == ext; }) != skipExtensions.end();
 		
-		if (skipExtension && !path.filename().string().contains("vtthumb"))
+		const auto filename = path.filename().string();
+
+		if (skipExtension && !Utils::StringContains(filename, "vtthumb"))
 		{
 			VT_CORE_ERROR("[Build] Asset {0} with extensin {1} was skipped!", path.string(), path.extension().string());
 		}
@@ -438,7 +440,9 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 
 		for (const auto& file : std::filesystem::recursive_directory_iterator(FileSystem::GetEnginePath()))
 		{
-			if (!file.is_directory() && !file.path().string().contains("HLSL"))
+			const auto filePath = file.path().string();
+
+			if (!file.is_directory() && !Utils::StringContains(filePath, "HLSL"))
 			{
 				result++;
 			}

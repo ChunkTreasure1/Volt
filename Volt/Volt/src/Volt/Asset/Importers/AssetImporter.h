@@ -56,7 +56,7 @@ namespace Volt
 		~FontImporter() override = default;
 
 		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
-		void Save(const AssetMetadata& metadata, const Ref<Asset>&) const override {}
+		void Save(const AssetMetadata&, const Ref<Asset>&) const override {}
 	};
 
 	class PhysicsMaterialImporter : public AssetImporter
