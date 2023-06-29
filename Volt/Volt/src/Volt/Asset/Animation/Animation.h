@@ -33,6 +33,7 @@ namespace Volt
 
 		inline const float GetDuration() const { return myDuration; }
 		inline const size_t GetFrameCount() const { return myFrames.size(); }
+		inline const uint32_t GetFramesPerSecond() const { return myFramesPerSecond; }
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 		AssetType GetType() override { return GetStaticType(); };

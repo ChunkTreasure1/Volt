@@ -53,6 +53,59 @@ namespace Utils
 
 		return temp;
 	}
+	
+	template<typename T, typename std::enable_if_t<std::is_integral<T>::value, bool> = true>
+	inline const std::string ToStringWithMetricPrefixCharacterForBytes(const T aValue)
+	{
+		if (aValue > 1000000000000)
+		{
+			return std::format("{:.1f}",aValue / 1000000000000.f) + " TB";
+		}
+		else if (aValue > 1000000000)
+		{
+			return std::format("{:.1f}", aValue / 1000000000.f) + " GB";
+		}
+		else if (aValue > 1000000)
+		{
+			return std::format("{:.1f}", aValue / 1000000.f) + " MB";
+		}
+		else if (aValue > 1000)
+		{
+			return std::format("{: .1f}", aValue / 1000.f) + " kB";
+		}
+		else
+		{
+			return std::to_string(aValue) + " B";
+		}
+	}
+
+	template<typename T, typename std::enable_if_t<std::is_integral<T>::value, bool> = true>
+	inline const std::string ToStringWithThousandSeparator(const T aValue)
+	{
+		std::string result = "";
+
+		std::string valueAsString = std::to_string(aValue);
+
+		//traverse the string backwards
+		int counter = 0;
+		for (int i = valueAsString.size() - 1; i >= 0; i--)
+		{
+			result.push_back(valueAsString[i]);
+			counter++;
+			if (counter >= 3 && i != 0)
+			{
+				counter = 0;
+				result.push_back(',');
+			}
+		}
+		std::reverse(result.begin(), result.end());
+
+		return result;
+	}
+
+	
+
+	
 
 #pragma warning(disable : 4996)
 
