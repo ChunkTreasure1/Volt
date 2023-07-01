@@ -38,10 +38,10 @@ namespace Volt
 		}
 
 		auto outputPoseNode = std::reinterpret_pointer_cast<GraphKey::OutputPoseNode>(nodes.at(0));
-		const auto character = AssetManager::GetAsset<AnimatedCharacter>(myGraph->GetCharacterHandle());
+		const auto skeleton = AssetManager::GetAsset<Skeleton>(myGraph->GetSkeletonHandle());
 
 		const auto sample = outputPoseNode->Sample(true, 0.f);
-		const auto& invBindPose = character->GetSkeleton()->GetInverseBindPose();
+		const auto& invBindPose = skeleton->GetInverseBindPose();
 
 		std::vector<glm::mat4> result{};
 		result.resize(sample.pose.size());
@@ -56,7 +56,8 @@ namespace Volt
 			result[i] = transform * invBindPose[i];
 		}
 
-		{
+
+		/* {
 			VT_PROFILE_SCOPE("Joint Attachments");
 
 			for (const auto& [attachmentId, attachedEntities] : myAttachedEntities)
@@ -84,14 +85,14 @@ namespace Volt
 					ent.SetLocalScale(currentTRS.scale);
 				}
 			}
-		}
+		}*/
 
 		return result;
 	}
 
 	void AnimationController::AttachEntity(const std::string& attachment, Entity entity)
 	{
-		const auto character = AssetManager::GetAsset<AnimatedCharacter>(myGraph->GetCharacterHandle());
+		/*const auto character = AssetManager::GetAsset<AnimatedCharacter>(myGraph->GetCharacterHandle());
 
 		if (!character || !character->IsValid())
 		{
@@ -103,12 +104,12 @@ namespace Volt
 			return;
 		}
 
-		myAttachedEntities[character->GetJointAttachmentFromName(attachment).id].emplace_back(entity);
+		myAttachedEntities[character->GetJointAttachmentFromName(attachment).id].emplace_back(entity);*/
 	}
 
 	void AnimationController::DetachEntity(Entity entity)
 	{
-		for (auto& [attachmentName, attachedEntities] : myAttachedEntities)
+		/*for (auto& [attachmentName, attachedEntities] : myAttachedEntities)
 		{
 			auto it = std::find(attachedEntities.begin(), attachedEntities.end(), entity);
 			if (it != attachedEntities.end())
@@ -116,7 +117,7 @@ namespace Volt
 				attachedEntities.erase(it);
 				return;
 			}
-		}
+		}*/
 	}
 
 	void AnimationController::OnEvent(Event& e)

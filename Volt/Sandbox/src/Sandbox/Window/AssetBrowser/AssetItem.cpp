@@ -42,7 +42,7 @@ namespace AssetBrowser
 				Sandbox::Get().SaveScene();
 			}
 
-			Sandbox::Get().OpenScene(Volt::AssetManager::GetPathFromAssetHandle(mySceneToOpen));
+			Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(mySceneToOpen));
 			mySceneToOpen = Volt::Asset::Null();
 		}
 
@@ -154,7 +154,7 @@ namespace AssetBrowser
 					break;
 				case Volt::AssetType::MonoScript:
 				{
-					if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, Volt::AssetManager::GetPathFromAssetHandle(handle)))
+					if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, Volt::AssetManager::GetFilePathFromAssetHandle(handle)))
 					{
 						UI::Notify(NotificationType::Error, "Open file failed!", "External script editor is not valid!");
 					}

@@ -3803,16 +3803,20 @@ namespace Volt
 		{
 			return;
 		}
+		if (!entity.HasComponent<MeshComponent>())
+		{
+			return;
+		}
 
 		if (!entity.GetComponent<AnimationControllerComponent>().controller)
 		{
 			return;
 		}
 
-		auto controller = entity.GetComponent<AnimationControllerComponent>().controller;
-		auto animatedCharacter = AssetManager::GetAsset<AnimatedCharacter>(controller->GetGraph()->GetCharacterHandle());
-		*center = animatedCharacter->GetSkin()->GetBoundingSphere().center;
-		*radius = animatedCharacter->GetSkin()->GetBoundingSphere().radius;
+		auto meshComp = entity.GetComponent<MeshComponent>();
+		auto mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
+		*center = mesh->GetBoundingSphere().center;
+		*radius = mesh->GetBoundingSphere().radius;
 	}
 
 	inline static float AnimationControllerComponent_GetParameterFloat(Wire::EntityId id, MonoString* name)

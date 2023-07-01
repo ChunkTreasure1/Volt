@@ -1,0 +1,818 @@
+AnimationGraph:
+  state: "{\"nodes\":{\"node:14478923545599575399\":{\"location\":{\"x\":312,\"y\":-6}},\"node:17301805690779624226\":{\"location\":{\"x\":244,\"y\":198}},\"node:17868484199422907988\":{\"location\":{\"x\":488,\"y\":198}}},\"selection\":[\"node:17301805690779624226\"],\"view\":{\"scroll\":{\"x\":-68,\"y\":-184},\"zoom\":1}}"
+  skeleton: 10080715167332384675
+  Graph:
+    Nodes:
+      - id: 17868484199422907988
+        type: OutputPoseNode
+        state: "{\"location\":{\"x\":488,\"y\":198}}"
+        nodeSpecific:
+          {}
+        inputs:
+          - name: Result
+            id: 15529003614232630594
+        outputs:
+          []
+      - id: 17301805690779624226
+        type: StateMachineNode
+        state: "{\"location\":{\"x\":244,\"y\":198}}"
+        nodeSpecific:
+          StateMachine:
+            name: Main State Machine
+            editorState: "{\"nodes\":{\"node:16788735106587868172\":{\"location\":{\"x\":355,\"y\":254}},\"node:17362013720582400113\":{\"location\":{\"x\":-12,\"y\":314}},\"node:2878473185253437245\":{\"location\":{\"x\":243,\"y\":14}},\"node:3665464684957549364\":{\"location\":{\"x\":-28,\"y\":58}},\"node:3681991280272765136\":{\"location\":{\"x\":-12,\"y\":174}},\"node:4959086316646373199\":{\"location\":{\"x\":195,\"y\":154}},\"node:5853113754576418241\":{\"location\":{\"x\":323,\"y\":378}}},\"selection\":[\"node:5853113754576418241\"],\"view\":{\"scroll\":{\"x\":93,\"y\":-43},\"zoom\":1}}"
+            skeletonHandle: 10080715167332384675
+            States:
+              - name: Entry
+                isEntry: true
+                isAny: false
+                editorState: "{\"location\":{\"x\":-28,\"y\":58}}"
+                id: 3665464684957549364
+                pinId: 12902782254156092098
+                pinId2: 14258103125107884637
+                Transitions:
+                  - 15724984446624483268
+              - name: Any
+                isEntry: false
+                isAny: true
+                editorState: "{\"location\":{\"x\":243,\"y\":14}}"
+                id: 2878473185253437245
+                pinId: 5269647802711289343
+                pinId2: 10660380611335689211
+                Transitions:
+                  - 7924813067403359603
+                  - 16741418222055495425
+              - name: Idle
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":-12,\"y\":174}}"
+                id: 3681991280272765136
+                pinId: 2894418162706173443
+                pinId2: 13804721687551360234
+                Transitions:
+                  - 15724984446624483268
+                  - 2885412559387363311
+                  - 1559816839792901889
+                  - 10274687952614952111
+                skeletonHandle: 10080715167332384675
+                Graph:
+                  Nodes:
+                    - id: 14536892748128745780
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":392,\"y\":214}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 14105913789575905908
+                      outputs:
+                        []
+                    - id: 16221844271113134588
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":34,\"y\":210}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 10580947816370530482
+                          data: 16802240511195054919
+                        - name: Loop
+                          id: 123450497769363306
+                          data: true
+                        - name: Speed
+                          id: 8336879108405323436
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 11090811506985761982
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 3099520766036006655
+                  Links:
+                    - id: 9662818189681954966
+                      output: 3099520766036006655
+                      input: 14105913789575905908
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                  Events:
+                    []
+              - name: Run
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":-12,\"y\":314}}"
+                id: 17362013720582400113
+                pinId: 7817618331721326880
+                pinId2: 9430452183247307602
+                Transitions:
+                  - 2885412559387363311
+                  - 1559816839792901889
+                skeletonHandle: 10080715167332384675
+                Graph:
+                  Nodes:
+                    - id: 13182824102293636283
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":56,\"y\":-26}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 2434102622300016631
+                      outputs:
+                        []
+                    - id: 16767149402094149869
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":-302,\"y\":-14}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 10031653943577889520
+                          data: 1087306084089571470
+                        - name: Loop
+                          id: 3012088715339929536
+                          data: true
+                        - name: Speed
+                          id: 14780628045392394899
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 11703811859076888858
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 3273018439142468825
+                  Links:
+                    - id: 14411293871932759808
+                      output: 3273018439142468825
+                      input: 2434102622300016631
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                  Events:
+                    []
+              - name: StartJump
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":195,\"y\":154}}"
+                id: 4959086316646373199
+                pinId: 10295643871073811521
+                pinId2: 16267254125773997612
+                Transitions:
+                  - 7924813067403359603
+                  - 13269834706927116307
+                skeletonHandle: 10080715167332384675
+                Graph:
+                  Nodes:
+                    - id: 12596166692664476774
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":392,\"y\":214}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 5861817840940044885
+                      outputs:
+                        []
+                    - id: 15180245410823459525
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":82,\"y\":210}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 16262223745919603949
+                          data: 9874085243310133722
+                        - name: Loop
+                          id: 12070280934059552080
+                          data: false
+                        - name: Speed
+                          id: 4387072234620904110
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 11149968965430831207
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 17182538447330918633
+                  Links:
+                    - id: 7423060123162994628
+                      output: 17182538447330918633
+                      input: 5861817840940044885
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+              - name: InAir
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":355,\"y\":254}}"
+                id: 16788735106587868172
+                pinId: 12345812838632408803
+                pinId2: 13133448969614549550
+                Transitions:
+                  - 16741418222055495425
+                  - 4770872081588975154
+                  - 13269834706927116307
+                skeletonHandle: 10080715167332384675
+                Graph:
+                  Nodes:
+                    - id: 10375549879072757522
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":168,\"y\":118}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 7993111188786885993
+                      outputs:
+                        []
+                    - id: 72906687750208911
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":24,\"y\":222}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 10867885091214013952
+                          data: 16379139790018569206
+                        - name: Loop
+                          id: 9146347772134529951
+                          data: true
+                        - name: Speed
+                          id: 15267910550696299263
+                          data: 1
+                        - name: Apply Root Motion
+                          id: 11935242591066892335
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 11680064864603595249
+                  Links:
+                    - id: 1881370631314135528
+                      output: 11680064864603595249
+                      input: 7993111188786885993
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+              - name: Land
+                isEntry: false
+                isAny: false
+                editorState: "{\"location\":{\"x\":323,\"y\":378}}"
+                id: 5853113754576418241
+                pinId: 17490356693278968614
+                pinId2: 9356542095790036010
+                Transitions:
+                  - 4770872081588975154
+                  - 10274687952614952111
+                skeletonHandle: 10080715167332384675
+                Graph:
+                  Nodes:
+                    - id: 7972067113546953247
+                      type: OutputPoseNode
+                      state: "{\"location\":{\"x\":184,\"y\":134}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Result
+                          id: 14476689878508423546
+                      outputs:
+                        []
+                    - id: 6123819316360548125
+                      type: SequencePlayerNode
+                      state: "{\"location\":{\"x\":72,\"y\":178}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: ""
+                          id: 15254946406601266251
+                          data: 13719070777493897150
+                        - name: Loop
+                          id: 1916361062164798703
+                          data: false
+                        - name: Speed
+                          id: 2070241052447209235
+                          data: 100
+                        - name: Apply Root Motion
+                          id: 8106797449584285687
+                          data: false
+                      outputs:
+                        - name: Output
+                          id: 3721232241028352589
+                  Links:
+                    - id: 15423302180500718702
+                      output: 3721232241028352589
+                      input: 14476689878508423546
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+            Transitions:
+              - id: 15724984446624483268
+                fromState: 3665464684957549364
+                toState: 3681991280272765136
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 3623410152680394859
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 5330600848135263334
+                          data: false
+                      outputs:
+                        []
+                  Links:
+                    []
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                  Events:
+                    []
+              - id: 2885412559387363311
+                fromState: 3681991280272765136
+                toState: 17362013720582400113
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0
+                Graph:
+                  Nodes:
+                    - id: 11731338212989462854
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":120,\"y\":118}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 12462159291396020858
+                      outputs:
+                        []
+                    - id: 5005875258605301911
+                      type: GetParameterFloat
+                      state: "{\"location\":{\"x\":-34,\"y\":230}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 14724677624567781970
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 18275963554927969773
+                          data: 0
+                    - id: 2811085383675707505
+                      type: GreaterThanNodeFloat
+                      state: "{\"location\":{\"x\":-104,\"y\":128}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 10872483824638756943
+                        - name: B
+                          id: 9457170580670463800
+                          data: 0.100000001
+                      outputs:
+                        - name: Result
+                          id: 5036612592930820697
+                          data: false
+                  Links:
+                    - id: 7146303879928486359
+                      output: 18275963554927969773
+                      input: 10872483824638756943
+                    - id: 12870605454712754654
+                      output: 5036612592930820697
+                      input: 12462159291396020858
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                  Events:
+                    []
+              - id: 1559816839792901889
+                fromState: 17362013720582400113
+                toState: 3681991280272765136
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 0
+                Graph:
+                  Nodes:
+                    - id: 4353185446893683017
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":216,\"y\":118}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 3827972964461496599
+                      outputs:
+                        []
+                    - id: 8401262388928910263
+                      type: GetParameterFloat
+                      state: "{\"location\":{\"x\":-34,\"y\":214}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 14724677624567781970
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 6726792203143162984
+                          data: 0
+                    - id: 7227732160314416901
+                      type: LessThanNodeFloat
+                      state: "{\"location\":{\"x\":142,\"y\":252}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 12187121267027445680
+                        - name: B
+                          id: 13814791514744881313
+                          data: 0.100000001
+                      outputs:
+                        - name: Result
+                          id: 738529439542813677
+                          data: false
+                  Links:
+                    - id: 15904718365980337666
+                      output: 6726792203143162984
+                      input: 12187121267027445680
+                    - id: 11862470462851682223
+                      output: 738529439542813677
+                      input: 3827972964461496599
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                  Events:
+                    []
+              - id: 7924813067403359603
+                fromState: 2878473185253437245
+                toState: 4959086316646373199
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 11062424893867846629
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":280,\"y\":166}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 8334824368944772969
+                      outputs:
+                        []
+                    - id: 8824535931127518854
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-61,\"y\":134}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 1479367072072825218
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 15363129655624191644
+                          data: false
+                    - id: 17282162711169094560
+                      type: AndNode
+                      state: "{\"location\":{\"x\":88,\"y\":124}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: A
+                          id: 10132646139662137838
+                        - name: B
+                          id: 11743468572293499736
+                      outputs:
+                        - name: Result
+                          id: 11010260275052348966
+                          data: false
+                    - id: 13484925391025310362
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":-201,\"y\":54}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 14089125791968877663
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 2365682830968910570
+                          data: false
+                  Links:
+                    - id: 8924923132298007691
+                      output: 15363129655624191644
+                      input: 11743468572293499736
+                    - id: 17403562062281532048
+                      output: 11010260275052348966
+                      input: 8334824368944772969
+                    - id: 1399652018617867899
+                      output: 2365682830968910570
+                      input: 10132646139662137838
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+              - id: 16741418222055495425
+                fromState: 2878473185253437245
+                toState: 16788735106587868172
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 15319280053520300675
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":184,\"y\":326}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 17511013795618814745
+                      outputs:
+                        []
+                    - id: 2365174270754884041
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":222,\"y\":186}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 14089125791968877663
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 9256431525144238956
+                          data: false
+                    - id: 5203943386703931362
+                      type: NotNode
+                      state: "{\"location\":{\"x\":152,\"y\":268}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Value
+                          id: 8850764303543511227
+                      outputs:
+                        - name: Result
+                          id: 7683167445072757152
+                          data: false
+                  Links:
+                    - id: 11848749067612066567
+                      output: 9256431525144238956
+                      input: 8850764303543511227
+                    - id: 17677665878225347876
+                      output: 7683167445072757152
+                      input: 17511013795618814745
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+              - id: 4770872081588975154
+                fromState: 16788735106587868172
+                toState: 5853113754576418241
+                hasExitTime: false
+                shouldBlend: true
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 6339755224688244053
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":168,\"y\":134}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 13931501205392875816
+                      outputs:
+                        []
+                    - id: 4169333806093001417
+                      type: GetParameterBoolean
+                      state: "{\"location\":{\"x\":46,\"y\":122}}"
+                      nodeSpecific:
+                        {}
+                      parameterId: 14089125791968877663
+                      inputs:
+                        []
+                      outputs:
+                        - name: Get
+                          id: 15125974727342423453
+                          data: false
+                  Links:
+                    - id: 1046760825910924135
+                      output: 15125974727342423453
+                      input: 13931501205392875816
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+              - id: 10274687952614952111
+                fromState: 5853113754576418241
+                toState: 3681991280272765136
+                hasExitTime: true
+                shouldBlend: true
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 12685031745682105689
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":0,\"y\":0}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 14146025927140979864
+                          data: true
+                      outputs:
+                        []
+                  Links:
+                    []
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+              - id: 13269834706927116307
+                fromState: 4959086316646373199
+                toState: 16788735106587868172
+                hasExitTime: true
+                shouldBlend: false
+                blendTime: 1
+                Graph:
+                  Nodes:
+                    - id: 15364653686485468151
+                      type: TransitionOutputNode
+                      state: "{\"location\":{\"x\":248,\"y\":54}}"
+                      nodeSpecific:
+                        {}
+                      inputs:
+                        - name: Can Enter Transition
+                          id: 353687032276741306
+                          data: true
+                      outputs:
+                        []
+                  Links:
+                    []
+                  Parameters:
+                    - name: CurrentSpeed
+                      type: Float
+                      id: 14724677624567781970
+                      data: 0
+                    - name: YSpeed
+                      type: Float
+                      id: 514367242580045919
+                      data: 0
+                    - name: Jump
+                      type: Boolean
+                      id: 1479367072072825218
+                      data: false
+                    - name: Grounded
+                      type: Boolean
+                      id: 14089125791968877663
+                      data: false
+                  Events:
+                    []
+        inputs:
+          []
+        outputs:
+          - name: Output
+            id: 9596355334609294623
+    Links:
+      - id: 9171493557640758720
+        output: 9596355334609294623
+        input: 15529003614232630594
+    Parameters:
+      - name: CurrentSpeed
+        type: Float
+        id: 14724677624567781970
+        data: 0
+      - name: YSpeed
+        type: Float
+        id: 514367242580045919
+        data: 0
+      - name: Jump
+        type: Boolean
+        id: 1479367072072825218
+        data: false
+      - name: Grounded
+        type: Boolean
+        id: 14089125791968877663
+        data: false
+    Events:
+      []

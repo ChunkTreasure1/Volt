@@ -36,7 +36,7 @@ struct NewCharacterData
 struct NewAnimationGraphData
 {
 	std::string name = "None";
-	Volt::AssetHandle characterHandle = Volt::Asset::Null();
+	Volt::AssetHandle skeletonHandle = Volt::Asset::Null();
 
 	std::filesystem::path destination = "Assets/Animations/";
 };

@@ -483,11 +483,11 @@ void AnimationGraphPanel::DrawPropertiesPanel()
 		{
 			if (UI::BeginProperties("graphProperties"))
 			{
-				auto handle = myCurrentAsset->GetCharacterHandle();
+				/*auto handle = myCurrentAsset->GetCharacterHandle();
 				if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
 				{
 					myCurrentAsset->SetCharacterHandle(handle);
-				}
+				}*/
 
 
 				UI::EndProperties();
@@ -857,11 +857,11 @@ void AnimationGraphPanel::DrawGraphProperties()
 			}
 		}
 
-		auto handle = myCurrentAsset->GetCharacterHandle();
-		if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
-		{
-			myCurrentAsset->SetCharacterHandle(handle);
-		}
+		//auto handle = myCurrentAsset->GetCharacterHandle();
+		//if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
+		//{
+		//	myCurrentAsset->SetCharacterHandle(handle);
+		//}
 
 		UI::EndProperties();
 	}

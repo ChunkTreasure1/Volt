@@ -23,9 +23,9 @@ namespace GraphKey
 		AnimationOutputData output{};
 
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return output;
 		}
@@ -42,7 +42,7 @@ namespace GraphKey
 
 		if (moveToWorldSpace)
 		{
-			const auto& joints = character->GetSkeleton()->GetJoints();
+			const auto& joints = skeleton->GetJoints();
 			for (size_t i = 0; i < joints.size(); i++)
 			{
 				const auto& joint = joints[i];

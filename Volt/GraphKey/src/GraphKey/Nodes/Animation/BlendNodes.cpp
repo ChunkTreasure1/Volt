@@ -6,7 +6,7 @@
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
-#include <Volt/Asset/Animation/AnimatedCharacter.h>
+#include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Animation/BlendSpace.h>
 
 namespace GraphKey
@@ -73,16 +73,16 @@ namespace GraphKey
 	void AdditiveNode::TryApplyAdditive()
 	{
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return;
 		}
 
 		const auto& base = GetInput<AnimationOutputData>(0);
 		const auto& additive = GetInput<AnimationOutputData>(1);
-		const auto& additiveBase = character->GetSkeleton()->GetRestPose();
+		const auto& additiveBase = skeleton->GetRestPose();
 
 		const float alpha = std::clamp(GetInput<float>(2), 0.f, 1.f);
 
@@ -258,9 +258,9 @@ namespace GraphKey
 	const std::vector<Volt::Animation::TRS> BlendSpaceNode::TrySampleAnimation(Volt::AssetHandle animationHandle)
 	{
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return {};
 		}
@@ -275,7 +275,7 @@ namespace GraphKey
 		{
 			return {};
 		}
-		return anim->SampleTRS(animGraph->GetStartTime(), character->GetSkeleton(), true);
+		return anim->SampleTRS(animGraph->GetStartTime(), skeleton, true);
 	}
 
 	const std::vector<std::pair<float, Volt::AssetHandle>> BlendSpaceNode::GetSortedAnimationWeights(Ref<Volt::BlendSpace> blendSpace, const glm::vec2& blendValue)
@@ -337,14 +337,14 @@ namespace GraphKey
 	const size_t BlendSpaceNode::GetSkeletonJointCount() const
 	{
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return 0;
 		}
 
-		return character->GetSkeleton()->GetJointCount();
+		return skeleton->GetJointCount();
 	}
 
 	LayeredBlendPerBoneNode::LayeredBlendPerBoneNode()
@@ -412,14 +412,12 @@ namespace GraphKey
 		void LayeredBlendPerBoneNode::TryApplyLayeredBlendPerBone()
 	{
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return;
 		}
-
-		auto skeleton = character->GetSkeleton();
 
 		const auto& basePose = GetInput<AnimationOutputData>(0);
 		const auto& blendPose = GetInput<AnimationOutputData>(1);
@@ -515,14 +513,12 @@ namespace GraphKey
 	void RotateBoneNode::RotateBone()
 	{
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return;
 		}
-
-		auto skeleton = character->GetSkeleton();
 
 		auto basePose = GetInput<AnimationOutputData>(0);
 		const auto& boneName = GetInput<std::string>(1);

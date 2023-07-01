@@ -42,7 +42,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Mesh>(aAssetHandle);
 				std::filesystem::path sourceMeshPath = "Could not find the source mesh path";
-				const auto& dependencies = Volt::AssetManager::Get().GetDependencies(aAssetHandle);
+				//const auto& dependencies = Volt::AssetManager::Get().GetDependencies(aAssetHandle);
 				//for (const auto& d : dependencies)
 				//{
 				//	if (d.extension().string() == ".fbx")
@@ -54,7 +54,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				std::vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Submesh Count", std::to_string(asset->GetSubMeshes().size())),
-					std::make_pair("Material Path", asset->GetMaterial()->path.string()),
+					std::make_pair("Material Path", Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetMaterial()->handle).string()),
 					std::make_pair("Vertex Count", Utils::ToStringWithThousandSeparator(asset->GetVertexCount())),
 					std::make_pair("Index Count", Utils::ToStringWithThousandSeparator(asset->GetIndexCount())),
 					std::make_pair("Source Mesh Path", sourceMeshPath.string())
@@ -147,8 +147,8 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				auto asset = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(aAssetHandle);
 				std::vector<std::pair<std::string, std::string>> data =
 				{
-					std::make_pair("Skeleton Path", asset->GetSkeleton()->path.string()),
-					std::make_pair("Mesh Path", asset->GetSkin()->path.string()),
+					std::make_pair("Skeleton Path", Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetSkeleton()->handle).string()),
+					std::make_pair("Mesh Path",Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetSkin()->handle).string()),
 					std::make_pair("Animation Count", std::to_string(asset->GetAnimationCount())),
 				};
 				return data;

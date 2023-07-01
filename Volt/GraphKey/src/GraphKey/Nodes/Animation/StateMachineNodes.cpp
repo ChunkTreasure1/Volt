@@ -2,7 +2,7 @@
 #include "StateMachineNodes.h"
 
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
-#include <Volt/Asset/Animation/AnimatedCharacter.h>
+#include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Animation/AnimationTransitionGraph.h>
 #include <Volt/Asset/AssetManager.h>
 
@@ -45,7 +45,7 @@ namespace GraphKey
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
 		if (!myStateMachine)
 		{
-			myStateMachine = CreateRef<Volt::AnimationStateMachine>("New State Machine", animGraph->GetCharacterHandle());
+			myStateMachine = CreateRef<Volt::AnimationStateMachine>("New State Machine", animGraph->GetSkeletonHandle());
 		}
 	}
 
@@ -56,7 +56,7 @@ namespace GraphKey
 		{
 			VT_SERIALIZE_PROPERTY(name, myStateMachine->GetName(), out);
 			VT_SERIALIZE_PROPERTY(editorState, myStateMachine->GetEditorState(), out);
-			VT_SERIALIZE_PROPERTY(characterHandle, myStateMachine->GetCharacterHandle(), out);
+			VT_SERIALIZE_PROPERTY(skeletonHandle, myStateMachine->GetSkeletonHandle(), out);
 
 			out << YAML::Key << "States" << YAML::BeginSeq;
 			for (const auto& state : myStateMachine->GetStates())
@@ -81,7 +81,7 @@ namespace GraphKey
 
 					if (state->stateGraph)
 					{
-						VT_SERIALIZE_PROPERTY(characterHandle, state->stateGraph->GetCharacterHandle(), out);
+						VT_SERIALIZE_PROPERTY(skeletonHandle, state->stateGraph->GetSkeletonHandle(), out);
 						Graph::Serialize(state->stateGraph, out);
 					}
 				}
@@ -237,14 +237,14 @@ namespace GraphKey
 		}
 
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return;
 		}
 
-		SetOutputData(0, myStateMachine->Sample(character->GetSkeleton()));
+		SetOutputData(0, myStateMachine->Sample(skeleton));
 	}
 }
 

@@ -58,7 +58,7 @@ namespace Volt
 	class AnimationStateMachine
 	{
 	public:
-		AnimationStateMachine(const std::string& name, AssetHandle characterHandle);
+		AnimationStateMachine(const std::string& name, AssetHandle aSkeletonHandle);
 
 		void Update(float deltaTime);
 		const GraphKey::AnimationOutputData Sample(Ref<Skeleton> skeleton);
@@ -87,13 +87,13 @@ namespace Volt
 		inline const std::vector<Ref<AnimationState>>& GetStates() const { return myStates; }
 		inline const std::vector<Ref<AnimationTransition>>& GetTransitions() const { return myTransitions; }
 		inline const std::string& GetEditorState() const { return myState; }
-		inline const AssetHandle GetCharacterHandle() const { return myCharacterHandle; }
+		inline const AssetHandle GetSkeletonHandle() const { return mySkeletonHandle; }
 
 		inline const std::string& GetName() const { return myName; }
 		inline void SetEditorState(const std::string& state) { myState = state; }
 		inline void SetName(const std::string& name) { myName = name; }
 
-		void SetCharacterHandle(AssetHandle handle);
+		void SetSkeletonHandle(AssetHandle aSkeletonHandle);
 
 		void Clear();
 
@@ -119,6 +119,6 @@ namespace Volt
 		std::vector<Ref<AnimationState>> myStates;
 		std::vector<Ref<AnimationTransition>> myTransitions;
 
-		AssetHandle myCharacterHandle = 0;
+		AssetHandle mySkeletonHandle = 0;
 	};
 }

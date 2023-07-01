@@ -6,7 +6,7 @@
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
-#include <Volt/Asset/Animation/AnimatedCharacter.h>
+#include <Volt/Asset/Animation/Skeleton.h>
 
 #include <Volt/Asset/AssetManager.h>
 
@@ -51,9 +51,9 @@ namespace GraphKey
 		const auto animHandle = GetInput<Volt::AssetHandle>(0);
 
 		Volt::AnimationGraphAsset* animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
-		const auto character = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(animGraph->GetCharacterHandle());
+		const auto skeleton = Volt::AssetManager::GetAsset<Volt::Skeleton>(animGraph->GetSkeletonHandle());
 
-		if (!character || !character->IsValid())
+		if (!skeleton || !skeleton->IsValid())
 		{
 			return;
 		}
@@ -74,6 +74,7 @@ namespace GraphKey
 		const bool applyRootMotion = GetInput<bool>(3);
 
 		const uint32_t currentFrame = anim->GetFrameFromStartTime(animGraph->GetStartTime(), speed);
+		/* ANIMATION EVENT STUFF
 		const int32_t animationIndex = character->GetAnimationIndexFromHandle(animHandle);
 		if (myGraph->GetEntity() != Wire::NullID && Volt::SceneManager::GetActiveScene().lock() && animationIndex != -1 && character->HasAnimationEvents((uint32_t)animationIndex))
 		{
@@ -102,12 +103,12 @@ namespace GraphKey
 					}
 				}
 			}
-		}
+		}*/
 
 		myLastFrame = (int32_t)currentFrame;
 
 		AnimationOutputData output{};
-		output.pose = anim->SampleTRS(animGraph->GetStartTime(), character->GetSkeleton(), shouldLoop, speed);
+		output.pose = anim->SampleTRS(animGraph->GetStartTime(), skeleton, shouldLoop, speed);
 
 		if (applyRootMotion)
 		{

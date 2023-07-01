@@ -15,8 +15,8 @@
 
 namespace Volt
 {
-	AnimationStateMachine::AnimationStateMachine(const std::string& name, AssetHandle characterHandle)
-		: myName(name), myCharacterHandle(characterHandle)
+	AnimationStateMachine::AnimationStateMachine(const std::string& name, AssetHandle aSkeletonHandle)
+		: myName(name), mySkeletonHandle(aSkeletonHandle)
 	{
 		AddState("Entry", true);
 		AddState("Any", false, true);
@@ -112,14 +112,14 @@ namespace Volt
 		}
 	}
 
-	void AnimationStateMachine::SetCharacterHandle(AssetHandle handle)
+	void AnimationStateMachine::SetSkeletonHandle(AssetHandle aSkeletonHandle)
 	{
-		myCharacterHandle = handle;
+		mySkeletonHandle = aSkeletonHandle;
 		for (const auto& state : myStates)
 		{
 			if (state->stateGraph)
 			{
-				state->stateGraph->SetCharacterHandle(handle);
+				state->stateGraph->SetSkeletonHandle(aSkeletonHandle);
 			}
 		}
 	}
@@ -160,12 +160,12 @@ namespace Volt
 
 		auto outputPoseNode = std::reinterpret_pointer_cast<GraphKey::OutputPoseNode>(nodes.at(0));
 		auto sample = outputPoseNode->Sample(false, currState->startTime);
-		
+
 		if (myStateChanged)
 		{
 			myStateChanged = false;
 		}
-		
+
 		return sample;
 	}
 
@@ -174,7 +174,7 @@ namespace Volt
 		auto state = CreateRef<AnimationState>(name, isEntry, isAny);
 		if (!isEntry && !isAny)
 		{
-			state->stateGraph = CreateRef<AnimationGraphAsset>(myCharacterHandle);
+			state->stateGraph = CreateRef<AnimationGraphAsset>(mySkeletonHandle);
 			state->stateGraph->AddNode(GraphKey::Registry::Create("OutputPoseNode"));
 		}
 
@@ -222,9 +222,9 @@ namespace Volt
 	void AnimationStateMachine::RemoveState(const UUID id)
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [&id](const auto& lhs)
-		{
-			return lhs->id == id;
-		});
+			{
+				return lhs->id == id;
+			});
 
 		if (it == myStates.end())
 		{
@@ -243,9 +243,9 @@ namespace Volt
 	void AnimationStateMachine::RemoveTransition(const UUID id)
 	{
 		auto it = std::find_if(myTransitions.begin(), myTransitions.end(), [&id](const auto& lhs)
-		{
-			return lhs->id == id;
-		});
+			{
+				return lhs->id == id;
+			});
 
 		if (it == myTransitions.end())
 		{
@@ -320,7 +320,7 @@ namespace Volt
 
 	Ref<AnimationStateMachine> AnimationStateMachine::CreateCopy(GraphKey::Graph* ownerGraph, Wire::EntityId entity) const
 	{
-		Ref<AnimationStateMachine> newStateMachine = CreateRef<AnimationStateMachine>(myName, myCharacterHandle);
+		Ref<AnimationStateMachine> newStateMachine = CreateRef<AnimationStateMachine>(myName, mySkeletonHandle);
 		newStateMachine->myStartState = myStartState;
 		newStateMachine->myCurrentState = myCurrentState;
 
