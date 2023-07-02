@@ -76,7 +76,6 @@ namespace Volt
 	{
 		inline static MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
 		{
-			uint32_t fileSize = 0;
 			Buffer buffer = Buffer::ReadFromFile(assemblyPath);
 
 			MonoImageOpenStatus status;
@@ -276,7 +275,7 @@ namespace Volt
 		s_monoData->monoEnums.clear();
 
 		MonoImage* image = mono_assembly_get_image(assembly);
-		MonoClass* scriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -295,7 +294,7 @@ namespace Volt
 				continue;
 			}
 
-			if (monoClass == scriptClass)
+			if (monoClass == monoScriptClass)
 			{
 				continue;
 			}
@@ -351,7 +350,7 @@ namespace Volt
 	void MonoScriptEngine::LoadAndCreateMonoClasses(MonoAssembly* assembly)
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
-		MonoClass* scriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -370,7 +369,7 @@ namespace Volt
 				continue;
 			}
 
-			if (monoClass == scriptClass)
+			if (monoClass == monoScriptClass)
 			{
 				continue;
 			}

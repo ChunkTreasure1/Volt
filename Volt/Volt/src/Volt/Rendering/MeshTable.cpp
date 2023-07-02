@@ -95,7 +95,7 @@ namespace Volt
 
 	const uint32_t MeshTable::GetMeshIndex(Mesh* mesh, const uint32_t subMeshIndex)
 	{
-		const size_t hash = GetHash(mesh, subMeshIndex);
+		//const size_t hash = GetHash(mesh, subMeshIndex);
 		return 0; /*myMeshMap.at(hash);*/
 	}
 

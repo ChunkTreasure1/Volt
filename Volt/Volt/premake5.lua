@@ -20,7 +20,8 @@ project "Volt"
 	disablewarnings
 	{
 		"4005",
-		"4201"
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -162,7 +163,7 @@ project "Volt"
 			"NOMINMAX",
 			"_HAS_STD_BYTE=0",
 			"_WINSOCKAPI_",
-			"_WINSOCK_DEPRECATED_NO_WARNINGS"
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
 		}
 
 	filter "configurations:Debug"

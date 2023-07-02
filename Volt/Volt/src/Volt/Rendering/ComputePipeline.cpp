@@ -838,7 +838,6 @@ namespace Volt
 		}
 
 		auto device = GraphicsContext::GetDevice();
-		auto& resources = myShaderResources.at(index);
 		auto& descriptorSets = myDescriptorSets.at(index);
 		descriptorSets.clear();
 

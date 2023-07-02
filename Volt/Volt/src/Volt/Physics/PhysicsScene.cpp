@@ -422,7 +422,7 @@ namespace Volt
 		std::vector<Entity> tempEnts;
 		uint32_t count;
 
-		bool hit = OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count, qFilterData);
+		bool hasHit = OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count, qFilterData);
 		if (!buffer.empty())
 		{
 			for (auto& hit : buffer)
@@ -439,7 +439,7 @@ namespace Volt
 		}
 
 		hitList = tempEnts;
-		return hit;
+		return hasHit;
 	}
 
 	bool PhysicsScene::OverlapSphere(const glm::vec3& origin, float radius, std::vector<Entity>& hitList, uint32_t layerMask)
@@ -455,7 +455,7 @@ namespace Volt
 		std::vector<Entity> tempEnts;
 		uint32_t count;
 
-		bool hit = OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count, qFilterData);
+		bool hasHit = OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count, qFilterData);
 		if (!buffer.empty())
 		{
 			for (auto& hit : buffer)
@@ -472,7 +472,7 @@ namespace Volt
 		}
 
 		hitList = tempEnts;
-		return hit;
+		return hasHit;
 	}
 
 	void PhysicsScene::CreateRegions()

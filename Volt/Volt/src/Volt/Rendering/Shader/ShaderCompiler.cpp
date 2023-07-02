@@ -156,10 +156,6 @@ namespace Volt
 				return false;
 			}
 
-			const auto* begin = (const uint8_t*)compileResult.cbegin();
-			const auto* end = (const uint8_t*)compileResult.cend();
-			const ptrdiff_t size = end - begin;
-
 			outShaderData = std::vector<uint32_t>(compileResult.cbegin(), compileResult.cend());
 		}
 
@@ -346,11 +342,11 @@ namespace Volt
 
 		if (error.empty())
 		{
-			IDxcBlob* result;
-			compilationResult->GetResult(&result);
+			IDxcBlob* compileResult;
+			compilationResult->GetResult(&compileResult);
 
-			outSource = (const char*)result->GetBufferPointer();
-			result->Release();
+			outSource = (const char*)compileResult->GetBufferPointer();
+			compileResult->Release();
 		}
 
 		sourcePtr->Release();

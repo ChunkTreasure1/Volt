@@ -160,8 +160,6 @@ namespace Volt
 			const auto& aoOutputResource = resources.GetImageResource(data.aoOutput);
 			const auto& edgesOutputResource = resources.GetImageResource(data.edgesOutput);
 
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
-
 			mainPassPipeline->SetImage(prefilteredDepthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
 
 			mainPassPipeline->SetImage(aoOutputResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
@@ -207,8 +205,6 @@ namespace Volt
 			const auto& aoTermResource = resources.GetImageResource(mainData.aoOutput);
 			const auto& edgeTermResource = resources.GetImageResource(mainData.edgesOutput);
 			const auto& finalOutputResource = resources.GetImageResource(data.outputImage);
-
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			VkImageSubresourceRange subresourceRange{};
 			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

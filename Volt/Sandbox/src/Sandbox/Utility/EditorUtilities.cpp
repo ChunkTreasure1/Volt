@@ -47,7 +47,7 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 	const Ref<Volt::Asset> rawAsset = Volt::AssetManager::Get().GetAssetRaw(assetHandle);
 	if (rawAsset)
 	{
-		assetFileName = rawAsset->name;
+		assetFileName = rawAsset->assetName;
 
 		if (wantedType != Volt::AssetType::None)
 		{
@@ -226,7 +226,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	Ref<Volt::Asset> originalAsset = Volt::AssetManager::Get().GetAssetRaw(assetHandle);
 	if (!originalAsset || !originalAsset->IsValid())
 	{
-		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is invalid!", originalAsset->name));
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is invalid!", originalAsset->assetName));
 		return false;
 	}
 
@@ -234,7 +234,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / origialAssetMeta.filePath))
 	{
-		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is not writeable!", originalAsset->name));
+		UI::Notify(NotificationType::Error, "Unable to re import source mesh!", std::format("The asset {0} is not writeable!", originalAsset->assetName));
 		return false;
 	}
 
@@ -302,7 +302,7 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 			else
 			{
 				// We try to check if the material was created with the mesh. This it to make sure that we don't override a shared material
-				if (originalMaterial->name == originalMesh->name)
+				if (originalMaterial->assetName == originalMesh->assetName)
 				{
 					if (newMesh->GetMaterial()->GetSubMaterialCount() != originalMaterial->GetSubMaterialCount())
 					{

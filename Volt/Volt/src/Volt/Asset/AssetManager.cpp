@@ -202,7 +202,7 @@ namespace Volt
 #endif	
 
 			asset->handle = metadata.handle;
-			asset->name = metadata.filePath.stem().string();
+			asset->assetName = metadata.filePath.stem().string();
 
 			metadata.isLoaded = true;
 		}
@@ -1011,7 +1011,7 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-				asset->name = metadata.filePath.stem().string();
+				asset->assetName = metadata.filePath.stem().string();
 
 #ifndef VT_DIST
 				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);
@@ -1099,7 +1099,7 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-				asset->name = metadata.filePath.stem().string();
+				asset->assetName = metadata.filePath.stem().string();
 
 #ifndef VT_DIST
 				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);

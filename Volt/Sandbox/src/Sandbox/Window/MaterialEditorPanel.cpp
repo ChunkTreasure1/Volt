@@ -136,7 +136,7 @@ void MaterialEditorPanel::UpdateToolbar()
 				if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(mySelectedMaterial->handle)))
 				{
 					Volt::AssetManager::Get().SaveAsset(mySelectedMaterial);
-					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->name));
+					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->assetName));
 				}
 				else
 				{

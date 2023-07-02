@@ -145,7 +145,7 @@ void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitt
 
 		auto& p = m_particleStorage[id].particles[m_particleStorage[id].numberOfAliveParticles];
 
-		glm::vec3 dir;
+		glm::vec3 dir = { 0.f, 1.f, 0.f };
 		float radius = e->sphereRadius;
 		if (e->shape == 0)
 		{

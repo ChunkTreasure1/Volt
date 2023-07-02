@@ -137,8 +137,8 @@ namespace Volt
 	{
 		auto device = GraphicsContext::GetDevice();
 
-		VkBuffer stagingBuffer;
-		VmaAllocation stagingAllocation;
+		VkBuffer stagingBuffer = nullptr;
+		VmaAllocation stagingAllocation = nullptr;
 		VkDeviceSize bufferSize = size;
 		VulkanAllocator allocator{ "VertexBuffer - Create" };
 

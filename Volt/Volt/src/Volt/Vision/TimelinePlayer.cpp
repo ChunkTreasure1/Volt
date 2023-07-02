@@ -183,7 +183,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 	}
 
 	myCurrentPlaybackTime += deltaTime;
-	const float timelineMaxLengthTime = myTimelinePreset.maxLength / 30;
+	const float timelineMaxLengthTime = myTimelinePreset.maxLength / 30.f;
 	if (myCurrentPlaybackTime >= timelineMaxLengthTime)
 	{
 		Loop();

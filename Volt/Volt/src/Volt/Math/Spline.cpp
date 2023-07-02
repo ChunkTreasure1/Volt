@@ -79,11 +79,8 @@ void Spline::InitSpline()
 void Spline::AddSegment()
 {
 	Volt::Entity handlePoint0 = myCurrentScene->CreateEntity();
-	auto& comp0 = handlePoint0.AddComponent<Volt::MeshComponent>();
 	Volt::Entity handlePoint1 = myCurrentScene->CreateEntity();
-	auto& comp1 = handlePoint1.AddComponent<Volt::MeshComponent>();
 	Volt::Entity anchorPoint = myCurrentScene->CreateEntity();
-	auto& comp2 = anchorPoint.AddComponent<Volt::MeshComponent>();
 
 	handlePoint0.GetComponent<Volt::TagComponent>().tag = "Handle";
 	handlePoint1.GetComponent<Volt::TagComponent>().tag = "Handle";

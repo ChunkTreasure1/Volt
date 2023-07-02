@@ -102,7 +102,7 @@ void BlendSpaceEditorPanel::UpdateProperties()
 
 			if (animAsset && animAsset->IsValid())
 			{
-				animName = animAsset->name;
+				animName = animAsset->assetName;
 			}
 			UI::Property(animName, value);
 		}

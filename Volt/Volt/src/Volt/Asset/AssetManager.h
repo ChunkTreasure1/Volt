@@ -299,7 +299,7 @@ namespace Volt
 		metadata.type = T::GetStaticType();
 		metadata.isLoaded = true;
 
-		asset->name = metadata.filePath.stem().string();
+		asset->assetName = metadata.filePath.stem().string();
 
 		AssetManager::Get().m_assetRegistry.emplace(asset->handle, metadata);
 		AssetManager::Get().m_assetCache.emplace(asset->handle, asset);
