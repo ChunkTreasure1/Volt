@@ -250,7 +250,6 @@ namespace Amp
 
 	bool AudioEngine::PlayEvent(FMOD::Studio::EventInstance* aEventInstance)
 	{
-		int debug = 0;
 		return ErrorCheck(aEventInstance->start());
 	}
 

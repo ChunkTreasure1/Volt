@@ -53,6 +53,11 @@ namespace Utils
 
 		return temp;
 	}
+
+	inline const bool StringContains(const std::string& srcString, const std::string& token)
+	{
+		return srcString.find(token) != std::string::npos;
+	}
 	
 	template<typename T, typename std::enable_if_t<std::is_integral<T>::value, bool> = true>
 	inline const std::string ToStringWithMetricPrefixCharacterForBytes(const T aValue)
@@ -88,7 +93,7 @@ namespace Utils
 
 		//traverse the string backwards
 		int counter = 0;
-		for (int i = valueAsString.size() - 1; i >= 0; i--)
+		for (int32_t i = static_cast<int32_t>(valueAsString.size()) - 1; i >= 0; i--)
 		{
 			result.push_back(valueAsString[i]);
 			counter++;
@@ -102,10 +107,6 @@ namespace Utils
 
 		return result;
 	}
-
-	
-
-	
 
 #pragma warning(disable : 4996)
 

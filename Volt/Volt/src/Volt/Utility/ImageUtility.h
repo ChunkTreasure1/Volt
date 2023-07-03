@@ -696,7 +696,7 @@ namespace Volt
 			return VK_COMPARE_OP_LESS;
 		}
 
-		static VkAttachmentLoadOp VoltToVulkanLoadOp(ClearMode clearMode)
+		inline static VkAttachmentLoadOp VoltToVulkanLoadOp(ClearMode clearMode)
 		{
 			switch (clearMode)
 			{
@@ -741,12 +741,12 @@ namespace Volt
 			return 0;
 		}
 
-		static uint32_t CalculateMipCount(uint32_t width, uint32_t height)
+		inline static uint32_t CalculateMipCount(uint32_t width, uint32_t height)
 		{
 			return static_cast<uint32_t>(std::floor(std::log2(std::min(width, height)))) + 1;
 		}
 
-		static uint32_t PreviousPOW2(uint32_t value)
+		inline static uint32_t PreviousPOW2(uint32_t value)
 		{
 			uint32_t r = 1;
 

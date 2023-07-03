@@ -74,7 +74,7 @@ namespace Wire
 
 	template<typename T>
 	template<typename ...Args>
-	inline T& ComponentPool<T>::AddComponent(EntityId id, bool test, Args&& ...args)
+	inline T& ComponentPool<T>::AddComponent(EntityId id, bool, Args&& ...args)
 	{
 		assert(!HasComponent(id));
 

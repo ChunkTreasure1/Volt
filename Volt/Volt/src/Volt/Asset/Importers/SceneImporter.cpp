@@ -832,7 +832,7 @@ namespace Volt
 			prefabComp.isDirty = false;
 		}
 
-		scene->myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, VisualScriptingComponent& comp)
+		scene->myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId, VisualScriptingComponent& comp)
 		{
 			if (comp.graph)
 			{
@@ -860,7 +860,7 @@ namespace Volt
 		});
 
 		// Remove all child that do not exist
-		scene->myRegistry.ForEach<RelationshipComponent>([&](Wire::EntityId id, RelationshipComponent& comp)
+		scene->myRegistry.ForEach<RelationshipComponent>([&](Wire::EntityId, RelationshipComponent& comp)
 		{
 			for (int32_t i = (int32_t)comp.Children.size() - 1; i > 0; i--)
 			{
@@ -1008,7 +1008,7 @@ namespace Volt
 		out << YAML::EndSeq;
 	}
 
-	void SceneImporter::DeserializeMono(Wire::EntityId id, MonoScriptFieldCache& scriptFieldCache, const YAML::Node& node)
+	void SceneImporter::DeserializeMono(Wire::EntityId, MonoScriptFieldCache& scriptFieldCache, const YAML::Node& node)
 	{
 		for (const auto& n : node["MonoScripts"])
 		{

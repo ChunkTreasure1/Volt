@@ -14,14 +14,14 @@ namespace Volt
 		return newGraph;
 	}
 
-	void AnimationGraphAsset::SetCharacterHandle(AssetHandle handle)
+	void AnimationGraphAsset::SetCharacterHandle(AssetHandle charHandle)
 	{
-		myAnimatedCharacter = handle;
+		myAnimatedCharacter = charHandle;
 		auto stateMachines = GetNodesOfType("StateMachineNode");
 		for (const auto& node : stateMachines)
 		{
 			auto stateNodeType = std::reinterpret_pointer_cast<GraphKey::StateMachineNode>(node);
-			stateNodeType->GetStateMachine()->SetCharacterHandle(handle);
+			stateNodeType->GetStateMachine()->SetCharacterHandle(charHandle);
 		}
 	}
 }

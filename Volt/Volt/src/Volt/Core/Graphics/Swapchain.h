@@ -45,7 +45,7 @@ namespace Volt
 
 		void QuerySwapchainCapabilities();
 		VkSurfaceFormatKHR ChooseSwapchainFormat();
-		VkPresentModeKHR ChooseSwapchainPresentMode();
+		VkPresentModeKHR ChooseSwapchainPresentMode(bool useVSync);
 
 		void CreateSwapchain(uint32_t width, uint32_t height, bool useVSync);
 		void CreateImageViews();

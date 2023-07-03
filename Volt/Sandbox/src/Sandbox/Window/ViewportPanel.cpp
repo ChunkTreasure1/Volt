@@ -283,7 +283,6 @@ void ViewportPanel::UpdateContent()
 
 	auto& settings = UserSettingsManager::GetSettings();
 
-	float size = ImGui::GetWindowHeight() - 4.f;
 	Ref<Volt::Texture2D> playIcon = EditorResources::GetEditorIcon(EditorIcon::Play);
 	if (mySceneState == SceneState::Play)
 	{
@@ -1243,8 +1242,6 @@ glm::vec2 ViewportPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 
 glm::mat4 ViewportPanel::CalculateAverageTransform()
 {
-	glm::mat4 result;
-
 	glm::vec3 avgTranslation;
 	glm::quat avgRotation;
 	glm::vec3 avgScale;

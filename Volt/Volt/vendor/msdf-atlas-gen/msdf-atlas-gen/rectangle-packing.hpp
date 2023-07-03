@@ -6,12 +6,12 @@
 
 namespace msdf_atlas {
 
-static void copyRectanglePlacement(Rectangle &dst, const Rectangle &src) {
+inline static void copyRectanglePlacement(Rectangle &dst, const Rectangle &src) {
     dst.x = src.x;
     dst.y = src.y;
 }
 
-static void copyRectanglePlacement(OrientedRectangle &dst, const OrientedRectangle &src) {
+inline static void copyRectanglePlacement(OrientedRectangle &dst, const OrientedRectangle &src) {
     dst.x = src.x;
     dst.y = src.y;
     dst.rotated = src.rotated;

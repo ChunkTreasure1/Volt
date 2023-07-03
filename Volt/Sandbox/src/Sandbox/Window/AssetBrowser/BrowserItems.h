@@ -4,6 +4,8 @@
 
 #include <Volt/Asset/Asset.h>
 
+#include <imgui.h>
+
 namespace AssetBrowser
 {
 	class SelectionManager;

@@ -38,11 +38,11 @@ namespace Volt
 	{
 	}
 
-	const bool BoundingBox::IsOnOrForwardPlane(const FrustumPlane& plane)
+	const bool BoundingBox::IsOnOrForwardPlane(const FrustumPlane&)
 	{
 		return false;
 	}
-	const bool BoundingBox::IsInFrusum(const Frustum& frustum, const glm::mat4& transform) const
+	const bool BoundingBox::IsInFrusum(const Frustum&, const glm::mat4&) const
 	{
 		return false;
 	}

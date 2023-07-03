@@ -16,7 +16,6 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#define _USE_MATH_DEFINES
 #include "nvpch.h"
 #include <math.h>
 #include <stdio.h>
@@ -32,7 +31,7 @@
 
 #include <Volt/Log/Log.h>
 
-static bool intersectSegmentTriangle(const float* sp, const float* sq,
+inline static bool intersectSegmentTriangle(const float* sp, const float* sq,
 									 const float* a, const float* b, const float* c,
 									 float& t)
 {
@@ -72,7 +71,7 @@ static bool intersectSegmentTriangle(const float* sp, const float* sq,
 	return true;
 }
 
-static char* parseRow(char* buf, char* bufEnd, char* row, int len)
+inline static char* parseRow(char* buf, char* bufEnd, char* row, int len)
 {
 	bool start = true;
 	bool done = false;
@@ -119,8 +118,8 @@ InputGeom::InputGeom(Ref<Volt::Mesh> asset) :
 	m_normals = new float[srcVertices.size() * 3];
 	m_tris = new int[srcIndices.size()];
 
-	m_vertCount = srcVertices.size();
-	m_triCount = srcIndices.size() / 3;
+	m_vertCount = static_cast<int32_t>(srcVertices.size());
+	m_triCount = static_cast<int32_t>(srcIndices.size()) / 3;
 
 	for (uint32_t i = 0; i < srcVertices.size(); ++i)
 	{

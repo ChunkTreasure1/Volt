@@ -8,6 +8,8 @@ project "freetype"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	warnings "off"
+
 	files
 	{
 		"freetype/include/ft2build.h",

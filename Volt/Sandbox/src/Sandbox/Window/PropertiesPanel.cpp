@@ -912,7 +912,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 		for (const auto& klass : scriptInfo)
 		{
 			auto classname = Volt::MonoScriptUtils::GetClassName(klass.first);
-			classname[0] = std::toupper(classname[0]);
+			classname[0] = static_cast<char>(std::toupper(classname[0]));
 			scriptNames.emplace_back(classname);
 			fullScriptNames.emplace_back(klass.first);
 		}
@@ -1076,7 +1076,7 @@ void PropertiesPanel::AcceptMonoDragDrop()
 void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const Wire::EntityId& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo)
 {
 	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName(scriptEntry.name);
-	scriptClassName[0] = std::toupper(scriptClassName[0]);
+	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
 	bool removeComp = false;
 	bool open = UI::TreeNodeFramed(scriptClassName + " Script", true, 2.f);
@@ -1360,9 +1360,9 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 						const auto& enumValues = enumData->GetValues();
 
 						std::vector<std::string> valueNames{}; // #TODO_Ivar: Add support for non linear enum values
-						for (const auto& [name, val] : enumValues)
+						for (const auto& [valueName, val] : enumValues)
 						{
-							valueNames.emplace_back(name);
+							valueNames.emplace_back(valueName);
 						}
 
 						if (UI::ComboProperty(displayName, enumVal, valueNames))
@@ -1503,9 +1503,9 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 								const auto& enumValues = enumData->GetValues();
 
 								std::vector<std::string> valueNames{}; // #TODO_Ivar: Add support for non linear enum values
-								for (const auto& [name, val] : enumValues)
+								for (const auto& [valueName, val] : enumValues)
 								{
-									valueNames.emplace_back(name);
+									valueNames.emplace_back(valueName);
 								}
 
 								fieldChanged = UI::ComboProperty(displayName, enumVal, valueNames);

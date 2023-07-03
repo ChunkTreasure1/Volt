@@ -135,7 +135,6 @@ namespace Volt
 
 			constexpr uint32_t localSizeX = 8;
 			constexpr uint32_t localSizeY = 8;
-			constexpr uint32_t localSizeZ = 1;
 
 			const uint32_t groupX = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_WIDTH / (float)localSizeX);
 			const uint32_t groupY = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_HEIGHT / (float)localSizeY);

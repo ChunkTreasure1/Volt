@@ -2,7 +2,7 @@ project "Volt"
 	location "."
 	kind "StaticLib"
 	language "C++"
-	cppdialect "C++latest"
+	cppdialect "C++20"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
@@ -10,9 +10,18 @@ project "Volt"
 	pchheader "vtpch.h"
 	pchsource "src/vtpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -26,15 +35,6 @@ project "Volt"
 		"src/**.h",
 		"src/**.cpp",
 		"src/**.hpp",
-
-		"vendor/DirectXTK/**.h",
-		"vendor/DirectXTK/**.cpp",
-
-		"vendor/stb_image/**.cpp",
-		"vendor/stb_image/**.h",
-
-		"vendor/vma/vma/VulkanMemoryAllocator.h",
-		"vendor/vma/vma/VulkanMemoryAllocator.cpp",
 
 		"%{IncludeDir.shaderc_glslc}/**.cc",
 		"%{IncludeDir.shaderc_glslc}/**.h",
@@ -112,17 +112,20 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX"
+		"TGAFBX",
+
+		"DirectXTK",
+		"stb",
+		"VulkanMemoryAllocator"
 	}
 
 	defines
 	{
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+		"_CRT_SECURE_NO_WARNINGS",
+
 		"PX_PHYSX_STATIC_LIB",
 		"OPTICK_ENABLE_GPU_VULKAN",
-		"_WINSOCKAPI_",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
 		"GLM_FORCE_LEFT_HANDED"
@@ -139,42 +142,60 @@ project "Volt"
 		pchheader ""
 		pchsource ""
 
+	filter "files:vendor/**.hpp"
+		warnings "off"
+		pchheader ""
+		pchsource ""
+
+	filter "files:vendor/**.inl"
+		warnings "off"
+		pchheader ""
+		pchsource ""
+
 	filter "system:windows"
 		systemversion "latest"
 
-		filter "configurations:Debug"
-			defines 
-			{ 
-				"VT_DEBUG", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING"
-			}
-			runtime "Debug"
-			optimize "off"
-			symbols "on"
+		defines
+		{
+			"NOMINMAX",
+			"_HAS_STD_BYTE=0",
+			"_WINSOCKAPI_",
+			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+		}
 
-		filter "configurations:Release"
-			defines 
-			{ 
-				"VT_RELEASE", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING",
-				"NDEBUG"
-			}
+	filter "configurations:Debug"
+		defines 
+		{ 
+			"VT_DEBUG", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING"
+		}
+		runtime "Debug"
+		optimize "off"
+		symbols "on"
 
-			buildoptions { "/Ot", "/Ob2" }
-			runtime "Release"
-			optimize "on"
-			symbols "on"
+	filter "configurations:Release"
+		defines 
+		{ 
+			"VT_RELEASE", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING",
+			"NDEBUG"
+		}
 
-		filter "configurations:Dist"
-			defines { "VT_DIST", "NDEBUG" }
-			buildoptions { "/Ot", "/Ob2" }
-			runtime "Release"
-			optimize "on"
-			symbols "on"
+		buildoptions { "/Ot", "/Ob2" }
+		runtime "Release"
+		optimize "on"
+		symbols "on"
+
+	filter "configurations:Dist"
+		defines { "VT_DIST", "NDEBUG" }
+		buildoptions { "/Ot", "/Ob2" }
+		runtime "Release"
+		optimize "on"
+		symbols "on"
 
 project "Shaders"
 	location "."
@@ -202,9 +223,6 @@ project "Shaders"
 		"../../Project/Assets/**.hlsli"
 	}
 
-	filter "system:windows"
-	systemversion "latest"
-
 	filter "configurations:Debug"
 		runtime "Debug"
 		optimize "off"
@@ -214,8 +232,12 @@ project "Shaders"
 		runtime "Release"
 		optimize "on"
 		symbols "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
 	filter "configurations:Dist"
 		runtime "Release"
 		optimize "on"
 		symbols "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }

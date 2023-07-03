@@ -31,6 +31,8 @@ project "TGAFbx"
 		"zlib-md.lib"
 	}
 
+	warnings "off"
+
 	filter "system:windows"
 		systemversion "latest"
 		cppdialect "C++20"

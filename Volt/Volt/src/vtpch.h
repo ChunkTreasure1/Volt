@@ -18,12 +18,7 @@
 
 #include <future>
 
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <wrl.h>
-
 #include <glm/glm.hpp>
-#include <imgui.h>
 
 #include <yaml-cpp/yaml.h>
 

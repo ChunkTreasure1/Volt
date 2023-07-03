@@ -17,6 +17,8 @@ project "NFD-Extended"
 		"src/include/"
 	}
 
+	warnings "off"
+
 	filter "configurations:Debug"
 		runtime "Debug"
 		optimize "off"

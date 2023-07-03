@@ -67,7 +67,7 @@ namespace Volt
 					continue;
 				}
 
-				if (static_cast<uint32_t>(sample.pose.size()) <= attachment.jointIndex)
+				if (static_cast<int32_t>(sample.pose.size()) <= attachment.jointIndex)
 				{
 					continue;
 				}

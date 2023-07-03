@@ -69,7 +69,7 @@ namespace Volt
 			{
 				DWORD valueType{};
 				DWORD dataSize = sizeof(int32_t);
-				int32_t buffer = 0.f;
+				int32_t buffer = 0;
 
 				RegGetValueA(regKey, nullptr, key.c_str(), RRF_RT_ANY, &valueType, (PVOID)&buffer, &dataSize);
 				myRegistry[key] = buffer;

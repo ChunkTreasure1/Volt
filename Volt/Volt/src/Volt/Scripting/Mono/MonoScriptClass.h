@@ -113,7 +113,7 @@ namespace Volt
 		}
 
 		template<>
-		void SetValue(const std::string& value, const size_t size, const MonoFieldType& type)
+		void SetValue(const std::string& value, const size_t, const MonoFieldType& type)
 		{
 			data.Allocate(value.size() + 1);
 			data.Copy(value.c_str(), value.size() + 1);

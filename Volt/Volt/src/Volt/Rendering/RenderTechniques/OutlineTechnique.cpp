@@ -189,8 +189,6 @@ namespace Volt
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& jumpFloodPassResource = resources.GetImageResource(jumpFloodPassData.outputImage[0]);
 
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
-
 			pipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			pipeline->SetImage(jumpFloodPassResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
