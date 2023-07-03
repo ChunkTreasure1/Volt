@@ -7,7 +7,7 @@
 #include "Volt/Rendering/VulkanFramebuffer.h"
 
 #include <vector>
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 namespace Volt
 {
