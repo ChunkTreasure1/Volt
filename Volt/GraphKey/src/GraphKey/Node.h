@@ -96,7 +96,7 @@ namespace GraphKey
 		void SetOutputData(uint32_t index, const T& data);
 
 		Volt::UUID id{};
-		Wire::EntityId entity = 0;
+		Wire::EntityId nodeEntity = 0;
 
 		std::vector<Attribute> inputs;
 		std::vector<Attribute> outputs;

@@ -10,9 +10,18 @@ project "Nexus"
 	pchheader "nexuspch.h"
 	pchsource "src/nexuspch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 

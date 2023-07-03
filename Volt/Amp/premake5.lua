@@ -10,9 +10,18 @@ project "Amp"
 	pchheader "amppch.h"
 	pchsource "src/amppch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 

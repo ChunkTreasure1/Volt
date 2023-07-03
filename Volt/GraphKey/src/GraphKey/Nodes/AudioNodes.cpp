@@ -42,7 +42,6 @@ void GraphKey::PlayAudioNode::Play()
 	{
 		const auto eventName = GetInput<std::string>(2);
 		const auto parameterName = GetInput<std::string>(3);
-		const auto parameterValue = GetInput<float>(4);
 	}
 	ActivateOutput(0);
 }

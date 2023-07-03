@@ -10,9 +10,18 @@ project "Navigation"
 	pchheader "nvpch.h"
 	pchsource "src/nvpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -83,7 +92,11 @@ project "Navigation"
 	defines
 	{
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
+		"GLM_FORCE_LEFT_HANDED",
+
+		"_USE_MATH_DEFINES",
+		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	filter "files:vendor/**.c"
