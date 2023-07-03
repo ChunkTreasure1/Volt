@@ -10,9 +10,18 @@ project "VoltVulkan"
 	pchheader "vkpch.h"
 	pchsource "src/vkpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 

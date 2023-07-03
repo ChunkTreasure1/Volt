@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "ComputePipeline.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
-#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Image2D.h"
@@ -65,14 +65,14 @@ namespace Volt
 
 	void ComputePipeline::Clear(uint32_t index)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
 	}
 
 	void ComputePipeline::Execute(uint32_t groupX, uint32_t groupY, uint32_t groupZ, const void* pushConstantData, const size_t pushConstantSize, uint32_t index)
 	{
-		auto device = GraphicsContext::GetDevice();
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(myCount, QueueType::Compute);
+		auto device = GraphicsContextVolt::GetDevice();
+		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(myCount, QueueTypeVolt::Compute);
 		vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
 
 		AllocateDescriptorSets(index);
@@ -151,7 +151,7 @@ namespace Volt
 			}
 		}
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		auto resources = myShader->GetResources();
 
 		// Find global descriptor sets
@@ -683,7 +683,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([pipelineLayout = myPipelineLayout, pipelineCache = myPipelineCache, pipeline = myPipeline, descriptorPools = myDescriptorPools]()
 		{
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 			for (const auto& descriptorPool : descriptorPools)
 			{
 				vkDestroyDescriptorPool(device->GetHandle(), descriptorPool, nullptr);
@@ -704,7 +704,7 @@ namespace Volt
 
 	void ComputePipeline::SetupFromShader()
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const auto& shaderResources = myShader->GetResources();
 
 		myShaderResources = { myCount, shaderResources };
@@ -783,7 +783,7 @@ namespace Volt
 		poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
 		poolInfo.pPoolSizes = poolSizes.data();
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		for (uint32_t i = 0; i < myCount; i++)
 		{
@@ -793,7 +793,7 @@ namespace Volt
 
 	void ComputePipeline::AllocateDescriptorSets(uint32_t index)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		auto& resources = myShaderResources.at(index);
 		auto& descriptorSets = myDescriptorSets.at(index);
@@ -806,7 +806,7 @@ namespace Volt
 
 	void ComputePipeline::UpdateDescriptorSets(VkCommandBuffer commandBuffer, uint32_t index)
 	{
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 
 		if (myWriteDescriptors.at(index).empty())
 		{
@@ -837,7 +837,7 @@ namespace Volt
 			return;
 		}
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		auto& descriptorSets = myDescriptorSets.at(index);
 		descriptorSets.clear();
 

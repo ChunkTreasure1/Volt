@@ -73,8 +73,8 @@
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Core/Graphics/GraphicsDevice.h>
-#include <Volt/Core/Graphics/GraphicsContext.h>
+#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
+#include <Volt/Core/Graphics/GraphicsContextVolt.h>
 #include <Volt/Events/SettingsEvent.h>
 
 #include <Volt/Discord/DiscordSDK.h>
@@ -286,7 +286,7 @@ void Sandbox::SetupNewSceneData()
 			settings.enableUI = lowMemory;
 			settings.enableVolumetricFog = true;
 
-			if (Volt::GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+			if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
 			{
 				settings.enableRayTracing = true;
 			}

@@ -3,7 +3,7 @@
 
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Window.h"
-#include "Volt/Core/Graphics/Swapchain.h"
+#include "Volt/Core/Graphics/SwapchainVolt.h"
 #include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
@@ -1267,7 +1267,7 @@ namespace Volt
 			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			writeDescriptor.pBufferInfo = &bufferInfo;
 
-			auto device = GraphicsContext::GetDevice();
+			auto device = GraphicsContextVolt::GetDevice();
 			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 		}
 	}

@@ -10,11 +10,19 @@ project "VoltMock"
 	pchheader "mkpch.h"
 	pchsource "src/mkpch.cpp"
 
-	disablewarnings
+	warnings "Extra"
+
+	flags
 	{
-		"4005"
+		"FatalWarnings"
 	}
 
+	disablewarnings
+	{
+		"4005",
+		"4201",
+		"4100"
+	}
 	linkoptions 
 	{
 		"/ignore:4006",

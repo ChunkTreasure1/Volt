@@ -550,13 +550,13 @@ namespace Volt
 		VulkanAllocator allocator{};
 		allocator.UnmapMemory(myMappingAllocation);
 
-		VkCommandBuffer commandBuffer = GraphicsContext::GetDevice()->GetCommandBuffer(true);
+		VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetCommandBuffer(true);
 
 		Utility::TransitionImageLayout(commandBuffer, myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		Utility::CopyBufferToImage(commandBuffer, myMappingBuffer, myImage, mySpecification.width, mySpecification.height);
 		Utility::TransitionImageLayout(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, myImageData.layout);
 
-		GraphicsContext::GetDevice()->FlushCommandBuffer(commandBuffer);
+		GraphicsContextVolt::GetDevice()->FlushCommandBuffer(commandBuffer);
 	}
 
 	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data)

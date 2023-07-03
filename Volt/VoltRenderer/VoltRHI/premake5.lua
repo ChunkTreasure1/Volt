@@ -10,9 +10,18 @@ project "VoltRHI"
 	pchheader "rhipch.h"
 	pchsource "src/rhipch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 

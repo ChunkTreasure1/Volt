@@ -47,12 +47,6 @@ include "Volt/vendor/stb_image"
 include "Volt/vendor/vma"
 -- include "Volt/vendor/shaderc"
 
-group "Renderer"
-include "VoltRenderer/VoltRHI"
-include "VoltRenderer/VoltD3D12"
-include "VoltRenderer/VoltVulkan"
-include "VoltRenderer/VoltMock"
-
 group "Core"
 include "Amp"
 include "Volt"
@@ -60,6 +54,12 @@ include "GraphKey"
 include "Navigation"
 include "Nexus"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
+
+group "Core/Renderer"
+include "VoltRenderer/VoltRHI"
+include "VoltRenderer/VoltD3D12"
+include "VoltRenderer/VoltVulkan"
+include "VoltRenderer/VoltMock"
 
 group "Tools"
 include "Sandbox"

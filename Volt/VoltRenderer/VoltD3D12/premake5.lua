@@ -10,9 +10,18 @@ project "VoltD3D12"
 	pchheader "dxpch.h"
 	pchsource "src/dxpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 

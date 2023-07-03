@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "ShaderStorageBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Rendering/Renderer.h"
 
@@ -24,7 +24,7 @@ namespace Volt
 
 		mySize = newSize;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
 		VulkanAllocator allocator{ "ShaderStorageBuffer - Create" };
@@ -60,7 +60,7 @@ namespace Volt
 		myCurrentElementCount = newElementCount;
 		mySize = newSize;
 
-		auto device = GraphicsContext::GetDevice();
+		auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
 		VulkanAllocator allocator{ "ShaderStorageBuffer - Create" };

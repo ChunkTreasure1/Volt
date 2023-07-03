@@ -2,7 +2,7 @@
 #include "Window.h"
 
 #include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/Swapchain.h"
+#include "Volt/Core/Graphics/SwapchainVolt.h"
 
 #include "Volt/Core/Application.h"
 

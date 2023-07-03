@@ -6,8 +6,8 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 
-#include <Volt/Core/Graphics/GraphicsContext.h>
-#include <Volt/Core/Graphics/GraphicsDevice.h>
+#include <Volt/Core/Graphics/GraphicsContextVolt.h>
+#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
 #include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Project/ProjectManager.h>
@@ -58,8 +58,8 @@ void Sandbox::CreateModifiedWatch()
 
 				case Volt::AssetType::ShaderSource:
 				{
-					Volt::GraphicsContext::GetDevice()->WaitForIdle();
-
+					Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
+					
 					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::GetRelativePath(newPath));
 					for (const auto& asset : assets)
 					{

@@ -6,11 +6,11 @@ struct GLFWwindow;
 
 namespace Volt
 {
-	class Swapchain
+	class SwapchainVolt
 	{
 	public:
-		Swapchain(GLFWwindow* window);
-		~Swapchain();
+		SwapchainVolt(GLFWwindow* window);
+		~SwapchainVolt();
 
 		void Release();
 
@@ -31,7 +31,7 @@ namespace Volt
 		inline VkCommandBuffer GetCommandBuffer(uint32_t index) const { return myFrameInFlightData[index].commandBuffer; }
 		inline VkCommandPool GetCommandPool(uint32_t index) const { return myFrameInFlightData[index].commandPool; }
 
-		static Ref<Swapchain> Create(GLFWwindow* window);
+		static Ref<SwapchainVolt> Create(GLFWwindow* window);
 
 	private:
 		struct MonitorMode
