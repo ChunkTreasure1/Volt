@@ -1125,7 +1125,7 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 	act.SetDetails("Working on:");
 	act.SetState(scene->GetName().c_str());
 	act.GetParty().GetSize().SetCurrentSize(myRuntimeScene->GetActiveLayer() + 1);
-	act.GetParty().GetSize().SetMaxSize(myRuntimeScene->GetLayers().size());
+	act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(myRuntimeScene->GetLayers().size()));
 	act.GetTimestamps().SetStart(std::time(nullptr));
 
 	Volt::DiscordSDK::UpdateRichPresence();

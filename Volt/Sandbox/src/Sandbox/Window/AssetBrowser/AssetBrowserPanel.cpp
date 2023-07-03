@@ -126,9 +126,9 @@ void AssetBrowserPanel::UpdateMainContent()
 
 			if (ImGui::BeginChild("##outline"))
 			{
-				UI::ScopedColor color{ ImGuiCol_Header, { 0.f } };
-				UI::ScopedColor colorActive{ ImGuiCol_HeaderActive, { 0.f } };
-				UI::ScopedColor colorHovered{ ImGuiCol_HeaderHovered, { 0.f } };
+				UI::ScopedColor headerColor{ ImGuiCol_Header, { 0.f } };
+				UI::ScopedColor headerColorActive{ ImGuiCol_HeaderActive, { 0.f } };
+				UI::ScopedColor headerColorHovered{ ImGuiCol_HeaderHovered, { 0.f } };
 
 				UI::ShiftCursor(5.f, 5.f);
 
@@ -183,9 +183,6 @@ void AssetBrowserPanel::UpdateMainContent()
 
 			ImGui::BeginChild("Scrolling");
 			{
-				static float padding = 16.f;
-
-				float cellSize = GetThumbnailSize() + padding;
 				float panelWidth = ImGui::GetContentRegionAvail().x;
 				auto columnCount = (int)(panelWidth / cellSize);
 
@@ -524,8 +521,6 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 			ImGui::SameLine();
 			UI::ShiftCursor(0.f, -1.f);
 			{
-				UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-
 				if (UI::ImageButton("##reloadButton", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Reload)), { height - buttonSizeOffset, height - buttonSizeOffset }))
 				{
 					Reload();
@@ -620,14 +615,11 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 
 			// Filter button
 			{
-				{
-					UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-					UI::ImageButton("##filter", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Filter)), { height - buttonSizeOffset, height - buttonSizeOffset });
-				}
+				UI::ImageButton("##filter", UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Filter)), { height - buttonSizeOffset, height - buttonSizeOffset });
 
 				if (ImGui::BeginPopupContextItem("filterMenu", ImGuiPopupFlags_MouseButtonLeft))
 				{
-					UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.3f, 0.3f, 0.3f, 1.f });
+					UI::ScopedColor clearButtonBackground(ImGuiCol_Button, { 0.3f, 0.3f, 0.3f, 1.f });
 
 					if (ImGui::Button("Clear##filterMenu"))
 					{
@@ -660,8 +652,6 @@ void AssetBrowserPanel::RenderControlsBar(float height)
 
 			// Settings button
 			{
-				UI::ScopedColor buttonBackground(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-
 				ImGui::ImageButton(UI::GetTextureID(EditorResources::GetEditorIcon(EditorIcon::Settings)), { height - buttonSizeOffset, height - buttonSizeOffset });
 				if (ImGui::BeginPopupContextItem("settingsMenu", ImGuiPopupFlags_MouseButtonLeft))
 				{
@@ -717,7 +707,6 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 
 	// Check if item is hovered
 	{
-		auto currentWindow = ImGui::GetCurrentWindow();
 		const auto windowPos = ImGui::GetWindowPos();
 		const auto availRegion = ImGui::GetContentRegionMax();
 		const auto cursorPos = ImGui::GetCursorPos();
@@ -850,7 +839,7 @@ void AssetBrowserPanel::RenderView(std::vector<Ref<AssetBrowser::DirectoryItem>>
 		MeshImportData data;
 		auto meshes = AssetBrowser::AssetBrowserUtilities::GetMeshesExport();
 		EditorUtils::MeshExportModal(std::format("Mesh Export##assetBrowser{0}", std::to_string(asset->handle)), myCurrentDirectory->path, data, meshes);
-	
+
 		if (UI::BeginModal(std::format("Reimport Animation##assetBrowser{0}", std::to_string(asset->handle))))
 		{
 			if (UI::BeginProperties())
@@ -1100,13 +1089,12 @@ void AssetBrowserPanel::Reload()
 	myDirectoryButtons = FindParentDirectoriesOfDirectory(myCurrentDirectory);
 }
 
-void AssetBrowserPanel::Search(const std::string& query)
+void AssetBrowserPanel::Search(const std::string& inQuery)
 {
 	std::vector<std::string> queries;
 	std::vector<std::string> types;
 
-	std::string searchQuery = query;
-
+	std::string searchQuery = inQuery;
 	searchQuery.push_back(' ');
 
 	for (auto next = searchQuery.find_first_of(' '); next != std::string::npos; next = searchQuery.find_first_of(' '))

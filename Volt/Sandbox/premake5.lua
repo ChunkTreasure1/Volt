@@ -15,9 +15,18 @@ project "Sandbox"
 	pchheader "sbpch.h"
 	pchsource "src/sbpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
 		"4005",
+		"4201",
+		"4100",
 		"4927"
 	}
 
@@ -34,6 +43,10 @@ project "Sandbox"
 
     defines
     {
+		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+		"_CRT_SECURE_NO_WARNINGS",
+		"_WINSOCK_DEPRECATED_NO_WARNINGS",
+		
         "GLFW_INCLUDE_NONE",
 		"CPPHTTPLIB_OPENSSL_SUPPORT",
 

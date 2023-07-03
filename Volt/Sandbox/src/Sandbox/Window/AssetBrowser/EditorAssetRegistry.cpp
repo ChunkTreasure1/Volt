@@ -42,7 +42,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::Mesh>(aAssetHandle);
 				std::filesystem::path sourceMeshPath = "Could not find the source mesh path";
-				const auto& dependencies = Volt::AssetManager::GetMetadataFromHandle(aAssetHandle).dependencies;
+				//const auto& dependencies = Volt::AssetManager::GetMetadataFromHandle(aAssetHandle).dependencies;
 				//for (const auto& d : dependencies)
 				//{
 				//	if (d.extension().string() == ".fbx")

@@ -51,7 +51,7 @@ namespace AssetBrowser
 
 	void AssetItem::PushID()
 	{
-		ImGui::PushID(handle);
+		ImGui::PushID(static_cast<int32_t>(handle));
 	}
 
 	bool AssetItem::RenderRightClickPopup()
@@ -237,9 +237,9 @@ namespace AssetBrowser
 		GlobalEditorStates::isDragging = true;
 	}
 
-	const ImVec4 AssetItem::GetBackgroundColorFromType(Volt::AssetType type) const
+	const ImVec4 AssetItem::GetBackgroundColorFromType(Volt::AssetType assetType) const
 	{
-		switch (type)
+		switch (assetType)
 		{
 			case Volt::AssetType::Mesh: return { 0.73f, 0.9f, 0.26f, 1.f };
 			case Volt::AssetType::MeshSource: return { 0.43f, 0.9f, 0.26f, 1.f };

@@ -587,7 +587,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		entityName = registry.GetComponent<Volt::TagComponent>(entity).tag;
 	}
 
-	constexpr uint32_t maxSearchDepth = 10;
 	const bool hasMatchingParent = SearchRecursivelyParent(entity, filter, 10);
 	const bool hasMatchingChild = SearchRecursively(entity, filter, 10);
 	const bool matchesQuery = MatchesQuery(entityName, filter);
@@ -606,7 +605,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		entityName = VT_ICON_FA_CAMERA + std::string(" ") + entityName;
 	}
 
-	const float edgeOffset = 4.f;
 	const float rowHeight = 17.f;
 
 	auto* window = ImGui::GetCurrentWindow();
@@ -831,7 +829,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		{
 			std::vector<Wire::EntityId> selectedEntities = SelectionManager::GetSelectedEntities();
 
-			constexpr uint32_t maxEntNames = 5;
 			for (uint32_t i = 0; const auto & id : selectedEntities)
 			{
 				if (i >= 5)
@@ -1370,7 +1367,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem("Decal"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::DecalComponent>();
+					ent.AddComponent<Volt::DecalComponent>();
 					ent.SetTag("New Decal");
 
 					SelectionManager::DeselectAll();

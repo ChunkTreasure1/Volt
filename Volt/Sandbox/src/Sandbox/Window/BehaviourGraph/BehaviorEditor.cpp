@@ -538,7 +538,6 @@ OwnedPin BehaviorEditor::FindPin(ed::PinId id)
 void BehaviorEditor::DrawPanels()
 {
 	ImGui::SetNextWindowClass(GetWindowClass());
-	int uniqueId = 0;
 	const std::string id = "Nodes##" + myContext;
 	if (ImGui::Begin(id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse))
 	{

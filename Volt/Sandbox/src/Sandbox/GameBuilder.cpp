@@ -51,7 +51,7 @@ namespace Utility
 			".tga"
 		};
 
-		const auto assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
+		const auto assetType = Volt::AssetManager::GetAssetTypeFromPath(path);
 
 		bool result = std::find(skipItems.begin(), skipItems.end(), assetType) != skipItems.end();
 		bool skipExtension = std::find_if(skipExtensions.begin(), skipExtensions.end(), [&](const std::string ext) { return path.extension().string() == ext; }) != skipExtensions.end();
@@ -88,9 +88,9 @@ namespace Utility
 			return true;
 		}
 
-		const Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(Volt::AssetManager::GetRelativePath(path));
+		const Volt::AssetHandle handle = Volt::AssetManager::GetAssetHandleFromFilePath(Volt::AssetManager::GetRelativePath(path));
 
-		const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(handle);
+		const bool wasLoaded = Volt::AssetManager::IsLoaded(handle);
 
 		Ref<Volt::Texture2D> texture = Volt::AssetManager::GetAsset<Volt::Texture2D>(handle);
 		if (!texture || !texture->IsValid())
@@ -273,7 +273,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 		{
 			if (!file.is_directory())
 			{
-				const auto assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(file.path());
+				const auto assetType = Volt::AssetManager::GetAssetTypeFromPath(file.path());
 
 				if (Utility::ShouldSkipAsset(file.path()) && !Utility::IsEntity(file.path()) && Utility::ShouldSkipFileType(file.path()))
 				{
@@ -340,12 +340,12 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 	{
 		for (const auto& handle : buildInfo.sceneHandles)
 		{
-			const std::filesystem::path path = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle);
+			const std::filesystem::path path = Volt::AssetManager::GetFilePathFromAssetHandle(handle);
 
 			const auto targetScenePath = buildInfo.buildDirectory / path;
 
-			const Volt::AssetHandle sceneHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
-			const bool isLoaded = Volt::AssetManager::Get().IsLoaded(sceneHandle);
+			const Volt::AssetHandle sceneHandle = Volt::AssetManager::GetAssetHandleFromFilePath(path);
+			const bool wasLoaded = Volt::AssetManager::IsLoaded(sceneHandle);
 
 			Ref<Volt::Scene> scene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
 			std::set<Volt::AssetHandle> sceneDependencies;
@@ -365,7 +365,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 								uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, ent);
 
 								Volt::AssetHandle assetHandle = *(Volt::AssetHandle*)&data[prop.offset];
-								if (assetHandle != Volt::Asset::Null() && Volt::AssetManager::Get().ExistsInRegistry(assetHandle))
+								if (assetHandle != Volt::Asset::Null() && Volt::AssetManager::ExistsInRegistry(assetHandle))
 								{
 									sceneDependencies.emplace(assetHandle);
 								}
@@ -414,6 +414,11 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 				std::ofstream fout(dependeciesPath);
 				fout << out.c_str();
 				fout.close();
+			}
+
+			if (!wasLoaded)
+			{
+				Volt::AssetManager::Get().Unload(sceneHandle);
 			}
 		}
 	}

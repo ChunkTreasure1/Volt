@@ -237,10 +237,9 @@ void MaterialEditorPanel::UpdateProperties()
 			int32_t selectedShader = 0;
 			const std::string shaderName = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName();
 
-			auto it = std::find(shaderNames.begin(), shaderNames.end(), shaderName);
-			if (it != shaderNames.end())
+			if (auto namesIt = std::find(shaderNames.begin(), shaderNames.end(), shaderName); namesIt != shaderNames.end())
 			{
-				selectedShader = (int32_t)std::distance(shaderNames.begin(), it);
+				selectedShader = (int32_t)std::distance(shaderNames.begin(), namesIt);
 			}
 
 			bool changed = false;
@@ -296,7 +295,6 @@ void MaterialEditorPanel::UpdateProperties()
 					"Decal"
 				};
 
-				auto flags = mySelectedSubMaterial->GetFlags();
 				int32_t selected = 0;
 				Volt::MaterialFlag currentType = Volt::MaterialFlag::All;
 
@@ -515,18 +513,17 @@ void MaterialEditorPanel::UpdateProperties()
 					}
 				}
 
-				for (const auto& [shaderName, editorName] : textureDefinitions)
+				for (const auto& [textureShaderName, editorName] : textureDefinitions)
 				{
-					auto it = textures.find(shaderName);
-					if (it == textures.end())
+					if (!textures.contains(textureShaderName))
 					{
 						continue;
 					}
 
 					Volt::AssetHandle textureHandle = Volt::Asset::Null();
-					if (it->second)
+					if (textures.at(textureShaderName))
 					{
-						textureHandle = it->second->handle;
+						textureHandle = textures.at(textureShaderName)->handle;
 					}
 
 					if (EditorUtils::Property(editorName, textureHandle, Volt::AssetType::Texture))
@@ -535,11 +532,11 @@ void MaterialEditorPanel::UpdateProperties()
 
 						if (newTex && newTex->IsValid())
 						{
-							mySelectedSubMaterial->SetTexture(shaderName, newTex);
+							mySelectedSubMaterial->SetTexture(textureShaderName, newTex);
 						}
 						else
 						{
-							mySelectedSubMaterial->SetTexture(shaderName, Volt::Renderer::GetDefaultData().whiteTexture);
+							mySelectedSubMaterial->SetTexture(textureShaderName, Volt::Renderer::GetDefaultData().whiteTexture);
 						}
 					}
 				}
@@ -676,7 +673,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 		{
 			static float padding = 16.f;
 
-			const float thumbnailSize = 85.f;
+			constexpr float thumbnailSize = 85.f;
 			float cellSize = thumbnailSize + padding;
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			int32_t columnCount = (int32_t)(panelWidth / cellSize);
@@ -695,7 +692,6 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			{
 				ImGui::PushID(std::string(material->GetName() + "##" + std::to_string(index)).c_str());
 
-				constexpr float thumbnailSize = 85.f;
 				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemPos();

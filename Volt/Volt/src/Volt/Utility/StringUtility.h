@@ -93,7 +93,7 @@ namespace Utils
 
 		//traverse the string backwards
 		int counter = 0;
-		for (int i = valueAsString.size() - 1; i >= 0; i--)
+		for (int32_t i = static_cast<int32_t>(valueAsString.size()) - 1; i >= 0; i--)
 		{
 			result.push_back(valueAsString[i]);
 			counter++;
