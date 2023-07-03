@@ -166,7 +166,7 @@ namespace Volt
 						msdfgen::destroyFont(myFontHandle);
 					}
 
-					if ((myFontHandle = msdfgen::loadFont(myFreeTypeHandle, fontFilename.c_str())))
+					if (myFontHandle = msdfgen::loadFont(myFreeTypeHandle, fontFilename.c_str()); myFontHandle != nullptr)
 					{
 						myFontFilename = fontFilename;
 						return true;

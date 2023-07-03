@@ -36,21 +36,6 @@ project "Volt"
 		"src/**.cpp",
 		"src/**.hpp",
 
-		"vendor/DirectXTK/**.h",
-		"vendor/DirectXTK/**.cpp",
-
-		"vendor/stb_image/**.cpp",
-		"vendor/stb_image/**.h",
-
-		"vendor/vma/vma/VulkanMemoryAllocator.h",
-		"vendor/vma/vma/VulkanMemoryAllocator.cpp",
-
-		"%{IncludeDir.shaderc_glslc}/**.cc",
-		"%{IncludeDir.shaderc_glslc}/**.h",
-
-		"%{IncludeDir.shaderc_utils}/**.cc",
-		"%{IncludeDir.shaderc_utils}/**.h",
-
 		"%{IncludeDir.tinyddsloader}/**.h",
 		"%{IncludeDir.TinyGLTF}/**.h",
 	}
@@ -121,12 +106,19 @@ project "Volt"
 		"efsw-static-lib",
 		"Nexus",
 		"NFD-Extended",
-		"TGAFBX"
+		"TGAFBX",
+
+		"DirectXTK",
+		"stb",
+		"VulkanMemoryAllocator",
+		"shaderc"
 	}
 
 	defines
 	{
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+		"_CRT_SECURE_NO_WARNINGS",
+
 		"PX_PHYSX_STATIC_LIB",
 		"OPTICK_ENABLE_GPU_VULKAN",
 
