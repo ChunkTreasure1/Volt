@@ -1,4 +1,6 @@
-Handle: 10928158351518164966
-Path: Engine/Meshes/Primitives/SM_Plane.vtmesh
-Dependencies:
-  []
+Metadata:
+  assetHandle: 3087037750680072373
+  filePath: Engine/Meshes/Primitives/SM_Plane.vtmesh
+  type: 1
+  Dependencies:
+    []

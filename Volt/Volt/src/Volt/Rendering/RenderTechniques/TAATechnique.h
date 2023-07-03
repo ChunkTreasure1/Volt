@@ -14,7 +14,7 @@ namespace Volt
 	class TAATechnique
 	{
 	public:
-		TAATechnique(Ref<Camera> camera, const gem::mat4& reprojectionMatrix, const gem::vec2ui renderSize, uint64_t frameIndex, const gem::vec2& jitterDelta);
+		TAATechnique(Ref<Camera> camera, const glm::mat4& reprojectionMatrix, const glm::uvec2 renderSize, uint64_t frameIndex, const glm::vec2& jitterDelta);
 
 		void AddGenerateMotionVectorsPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline, Ref<GlobalDescriptorSet> rendererBuffersSet, FrameGraphResourceHandle srcDepth);
 		void AddTAAPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline, Ref<Image2D> colorHistory, FrameGraphResourceHandle srcDepthHandle);
@@ -23,8 +23,8 @@ namespace Volt
 	private:
 		struct TAAConstants
 		{
-			gem::vec4 resolution; //width, height, 1/width, 1/height
-			gem::vec2 jitter;
+			glm::vec4 resolution; //width, height, 1/width, 1/height
+			glm::vec2 jitter;
 
 			uint32_t frameNumber;
 			uint32_t debugFlags;
@@ -41,9 +41,9 @@ namespace Volt
 
 		Ref<Camera> myCamera;
 		
-		gem::vec2 myJitterDelta;
-		gem::vec2ui myRenderSize;
-		gem::mat4 myReprojectionMatrix;
+		glm::vec2 myJitterDelta;
+		glm::uvec2 myRenderSize;
+		glm::mat4 myReprojectionMatrix;
 
 		uint64_t myFrameIndex = 0;
 	};

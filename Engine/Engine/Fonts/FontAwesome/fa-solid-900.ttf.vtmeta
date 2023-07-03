@@ -1,4 +1,6 @@
-Handle: 14107289143968247942
-Path: Engine/Fonts/FontAwesome/fa-solid-900.ttf
-Dependencies:
-  []
+Metadata:
+  assetHandle: 15725233011673306780
+  filePath: Engine/Fonts/FontAwesome/fa-solid-900.ttf
+  type: 4096
+  Dependencies:
+    []

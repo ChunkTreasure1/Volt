@@ -17,7 +17,7 @@ namespace Volt
 			spec.descriptorBindings =
 			{
 				{ Bindings::CAMERA_BUFFER, 1, DescriptorType::UniformBuffer, ShaderStage::All },
-				{ Bindings::INDIRECT_ARGS, 1, DescriptorType::StorageBuffer, ShaderStage::Compute },
+				{ Bindings::MAIN_INDIRECT_ARGS, 1, DescriptorType::StorageBuffer, ShaderStage::Compute },
 				{ Bindings::OBJECT_DATA, 1, DescriptorType::StorageBuffer, ShaderStage::Vertex | ShaderStage::Compute | ShaderStage::Pixel },
 				{ Bindings::DIRECTIONAL_LIGHT, 1, DescriptorType::UniformBuffer, ShaderStage::Compute | ShaderStage::Pixel | ShaderStage::Geometry },
 				{ Bindings::SCENE_DATA, 1, DescriptorType::UniformBuffer, ShaderStage::Vertex | ShaderStage::Compute | ShaderStage::Pixel },
@@ -44,13 +44,14 @@ namespace Volt
 			spec.descriptorSetCount = Renderer::GetFramesInFlightCount();
 			spec.descriptorBindings =
 			{
-				{ Bindings::MATERIAL_TABLE, 1, DescriptorType::StorageBuffer, ShaderStage::All }
+				{ Bindings::MATERIAL_TABLE, 1, DescriptorType::StorageBuffer, ShaderStage::All },
+				{ Bindings::MESH_TABLE, 1, DescriptorType::StorageBuffer, ShaderStage::All }
 			};
 
 			myDescriptorSets[Sets::MAINBUFFERS] = GlobalDescriptorSet::Create(spec);
 		}
 
-		// Textures
+		// Texture
 		{
 			GlobalDescriptorSetSpecification spec{};
 			spec.set = Sets::TEXTURES;

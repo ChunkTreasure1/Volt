@@ -41,7 +41,7 @@ private:
 	void UpdateViewport();
 	void UpdateProperties();
 
-	void OpenParticleSystem(const std::filesystem::path& aPath);
+	void OpenParticleSystem(const Volt::AssetHandle handle);
 	void PlayParticles();
 		
 	bool DrawEditorPanel();
@@ -58,8 +58,8 @@ private:
 	std::vector<std::string> myPresets;
 	std::vector<std::string> myShapes{ "Sphere", "Cone" };
 
-	gem::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	gem::vec2 myViewportSize = { 1280.f, 720.f };
+	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	glm::vec2 myViewportSize = { 1280.f, 720.f };
 
 	Ref<Volt::ParticlePreset> myCurrentPreset;
 

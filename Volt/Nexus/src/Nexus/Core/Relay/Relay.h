@@ -18,7 +18,6 @@ namespace Nexus
 		void StopBackend();
 
 		unsigned short GetBoundPort() { return m_boundPort; }
-
 		bool IsRunning() { return m_isRunning; }
 
 	private:
@@ -27,7 +26,8 @@ namespace Nexus
 
 		unsigned short m_boundPort = 0;
 		UDPSocket m_socket;
-		std::thread m_backendThread;
+		std::thread m_backendThreadIn;
+		std::thread m_backendThreadOut;
 		std::atomic<bool> m_isRunning = false;
 		
 		// #nexus_todo: Should probably be a map with data identifier instead.

@@ -62,6 +62,11 @@ struct NetworkSettings
 	bool enableNetworking = false;
 };
 
+struct AssetBrowserSettings
+{
+	float thumbnailSize = 85.f;
+};
+
 struct EditorSettings
 {
 	WindowSettings windowSettings;
@@ -70,6 +75,7 @@ struct EditorSettings
 	ExternalToolsSettings externalToolsSettings;
 	RecastBuildSettings navmeshBuildSettings;
 	NetworkSettings networkSettings;
+	AssetBrowserSettings assetBrowserSettings;
 };
 
 class EditorWindow;

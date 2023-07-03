@@ -1,4 +1,6 @@
-Handle: 1484336012090354082
-Path: Engine/Meshes/Primitives/SM_Cube.vtmesh
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10149696181569838305
+  filePath: Engine/Meshes/Primitives/SM_Cube.vtmesh
+  type: 1
+  Dependencies:
+    []

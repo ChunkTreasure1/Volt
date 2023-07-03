@@ -6,7 +6,7 @@
 #include <functional>
 #include <Windows.h>
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 struct GLFWwindow;
 struct GLFWcursor;
@@ -59,19 +59,21 @@ namespace Volt
 		void SetViewportSize(uint32_t width, uint32_t height);
 
 		void SetEventCallback(const EventCallbackFn& callback);
-		void SetWindowMode(WindowMode aWindowMode);
+		void SetWindowMode(WindowMode aWindowMode, bool first = false);
 
 		void SetVsync(bool aState);
 
 		void Maximize() const;
 		void Minimize() const;
 		void Restore() const;
+		bool IsFocused() const;
 
 		const bool IsMaximized() const;
 
 		void SetCursor(const std::filesystem::path& path);
 
 		void SetOpacity(float opacity) const;
+		std::string GetClipboard() const;
 		void SetClipboard(const std::string& string);
 
 		const std::pair<float, float> GetPosition() const;
@@ -115,8 +117,8 @@ namespace Volt
 		Ref<GraphicsContextVolt> myGraphicsContext;
 		Ref<SwapchainVolt> mySwapchain;
 
-		gem::vec2ui myStartPosition = 0;
-		gem::vec2ui myStartSize = 0;
+		glm::uvec2 myStartPosition = 0;
+		glm::uvec2 myStartSize = 0;
 
 		uint32_t myViewportWidth = 0;
 		uint32_t myViewportHeight = 0;

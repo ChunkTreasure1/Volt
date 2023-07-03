@@ -1,4 +1,6 @@
-Handle: 13087622592329078345
-Path: Engine/Shaders/Source/HLSL/Outline/OutlineGeometry_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5725027122480814311
+  filePath: Engine/Shaders/Source/HLSL/Outline/OutlineGeometry_ps.hlsl
+  type: 128
+  Dependencies:
+    []

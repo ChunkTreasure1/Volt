@@ -14,24 +14,24 @@
 
 namespace Volt
 {
-	bool SkeletonImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool SkeletonImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Skeleton>();
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(asset);
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
 
 		std::ifstream file(filePath);
-		if (!file.is_open()) [[unlikely]]
+		if (!file.is_open())
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -48,7 +48,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -56,7 +56,7 @@ namespace Volt
 		YAML::Node skeletonNode = root["Skeleton"];
 		if (!skeletonNode)
 		{
-			VT_CORE_ERROR("File {0} is corrupted!", path.string().c_str());
+			VT_CORE_ERROR("File {0} is corrupted!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -79,7 +79,7 @@ namespace Volt
 		{
 			for (const auto& invBindPoseNode : invBindPosesNode)
 			{
-				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, gem::mat4(1.f));
+				VT_DESERIALIZE_PROPERTY(invBindPose, skeleton->myInverseBindPose.emplace_back(), invBindPoseNode, glm::mat4(1.f));
 			}
 		}
 
@@ -89,16 +89,16 @@ namespace Volt
 			for (const auto& transform : restPoseNode)
 			{
 				auto& trs = skeleton->myRestPose.emplace_back();
-				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, gem::vec3{ 0.f });
-				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, gem::quat{});
-				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, gem::vec3{ 1.f });
+				VT_DESERIALIZE_PROPERTY(position, trs.position, transform, glm::vec3{ 0.f });
+				VT_DESERIALIZE_PROPERTY(rotation, trs.rotation, transform, glm::quat{});
+				VT_DESERIALIZE_PROPERTY(scale, trs.scale, transform, glm::vec3{ 1.f });
 			}
 		}
 
 		return true;
 	}
 
-	void SkeletonImporter::Save(const Ref<Asset>& asset) const
+	void SkeletonImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Skeleton> skeleton = std::reinterpret_pointer_cast<Skeleton>(asset);
 
@@ -142,15 +142,8 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
-	}
-	void SkeletonImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-	bool SkeletonImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
 	}
 }

@@ -75,7 +75,7 @@ void Timeline::UpdateContent()
 
 void Timeline::OpenAsset(Ref<Volt::Asset> asset)
 {
-	myTimelinePreset = Volt::AssetManager::GetAsset<Volt::TimelinePreset>(asset->path);
+	myTimelinePreset = Volt::AssetManager::GetAsset<Volt::TimelinePreset>(asset->handle);
 }
 
 void Timeline::OnEvent(Volt::Event& e)
@@ -97,10 +97,8 @@ bool Timeline::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 int Timeline::GetFrameFromPos(ImVec2 pos)
 {
-	const auto& style = ImGui::GetStyle();
-
 	const float posPercentage = (pos.x - myTimelinePos.x) / myTimelineSize.x;
-	const int resultFrame = myTimelinePreset->maxLength * posPercentage;
+	const int resultFrame = static_cast<int32_t>(myTimelinePreset->maxLength * posPercentage);
 
 	return resultFrame;
 }
@@ -144,9 +142,6 @@ void Timeline::OnStop()
 void Timeline::HandleTimelineInfo()
 {
 	const ImVec2 timelineWindowSize = ImGui::GetContentRegionAvail();
-	const auto& style = ImGui::GetStyle();
-
-	const int currentMarkerFrame = GetFrameFromPos(myMPoint3);
 
 	if (ImGui::IsMouseHoveringRect(myTimelinePos, myTimelinePos + timelineWindowSize))
 	{
@@ -186,7 +181,7 @@ void Timeline::HandleTrackContent()
 {
 	auto style = ImGui::GetStyle();
 
-	for (size_t i = 0; i < myTimelinePreset->myTracks.size(); i++)
+	for (int32_t i = 0; i < static_cast<int32_t>(myTimelinePreset->myTracks.size()); i++)
 	{
 		if (myTimelinePreset->myTracks[i].trackType == Volt::TrackType::T_Animation)
 		{
@@ -204,7 +199,7 @@ void Timeline::HandleSelectedKeyframe()
 	if (mySelectedKeyframe != nullptr && mySelectedClip == nullptr && myIsDraging && !myMovingMarker)
 	{
 		mySelectedKeyframe->timelineXPos = ImGui::GetMousePos().x;
-		mySelectedKeyframe->timelineXPos = gem::clamp(mySelectedKeyframe->timelineXPos, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
+		mySelectedKeyframe->timelineXPos = glm::clamp(mySelectedKeyframe->timelineXPos, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
 
 		const float frameTime = 1.f / 30.f;
 		mySelectedKeyframe->time = mySelectedKeyframe->frame * frameTime;
@@ -317,7 +312,7 @@ void Timeline::AddKeyframe()
 	SortTrack(*mySelectedTrack);
 }
 
-void Timeline::AddClip(const uint32_t& entityId)
+void Timeline::AddClip(uint32_t entityId)
 {
 	if (mySelectedTrack == nullptr)
 	{
@@ -350,7 +345,7 @@ void Timeline::PreviewTimeline()
 	myCurrentScene->GetTimelinePlayer().GetPreviewOnTime(*myTimelinePreset, timeStamp, *mySelectedTrack, myCurrentScene.get());
 }
 
-void Timeline::DrawEntityTracks(ImDrawList& drawlist, const int& trackIndex)
+void Timeline::DrawEntityTracks(ImDrawList& drawlist, int trackIndex)
 {
 	const float recordButtonWidth = 23.f;
 
@@ -405,7 +400,7 @@ void Timeline::DrawEntityTracks(ImDrawList& drawlist, const int& trackIndex)
 	}
 }
 
-void Timeline::DrawKeyframesOnTrack(const int& trackIndex)
+void Timeline::DrawKeyframesOnTrack(int trackIndex)
 {
 	auto drawlist = ImGui::GetWindowDrawList();
 	auto style = ImGui::GetStyle();
@@ -471,7 +466,7 @@ void Timeline::DrawKeyframesOnTrack(const int& trackIndex)
 	}
 }
 
-void Timeline::DrawClipsOnTrack(const int& trackIndex)
+void Timeline::DrawClipsOnTrack(int trackIndex)
 {
 	auto drawlist = ImGui::GetWindowDrawList();
 	auto style = ImGui::GetStyle();
@@ -672,8 +667,6 @@ void Timeline::UpdateTimeLine()
 	}
 
 	const ImVec2 trackSize = ImVec2{ canvasSize.x, 22 };
-	auto trackBackgroundColor = IM_COL32(45, 45, 45, 255);
-
 	const ImVec2 trackCanvasPos = ImVec2{ canvasPos.x, canvasPos.y + myTimelineSize.y };
 
 	//Draws Timeline background
@@ -731,7 +724,7 @@ void Timeline::UpdateTimeLine()
 		myMPoint1 = ImVec2(myMPoint3.x - myMarkerWidth, canvasPos.y + 5);
 		myMPoint2 = ImVec2(myMPoint3.x + myMarkerWidth, canvasPos.y + 5);
 
-		myMPoint3.x = gem::clamp(myMPoint3.x, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
+		myMPoint3.x = glm::clamp(myMPoint3.x, myTimelinePos.x, myTimelinePos.x + myTimelineSize.x);
 
 		drawlist->AddText(io.MousePos + ImVec2(5, -15), IM_COL32(255, 100, 100, 255), std::to_string(GetFrameFromPos(myMPoint3)).c_str());
 	}

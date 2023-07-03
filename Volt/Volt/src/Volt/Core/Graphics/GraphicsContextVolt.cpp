@@ -39,7 +39,7 @@ namespace Volt
 		}
 	}
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
 	{
 		std::string message = pCallbackData->pMessage;
 		if (message.find("-06195") != std::string::npos)
@@ -139,7 +139,7 @@ namespace Volt
 		GraphicsDeviceInfo info{};
 		info.physicalDevice = myPhysicalDevice;
 		info.requestedFeatures = enabledFeatures;
-		info.requestedGraphicsQueues = 2;
+		info.requestedGraphicsQueues = 1;
 		info.requestedTransferQueues = 1;
 		info.requestedComputeQueues = 1;
 
@@ -227,7 +227,17 @@ namespace Volt
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 		PopulateDebugMessengerCreateInfo(debugCreateInfo);
 
-		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+		const std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT */ };
+
+		VkValidationFeaturesEXT validationFeatures{};
+		validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+		validationFeatures.pNext = &debugCreateInfo;
+		validationFeatures.disabledValidationFeatureCount = 0;
+		validationFeatures.pDisabledValidationFeatures = nullptr;
+		validationFeatures.enabledValidationFeatureCount = static_cast<uint32_t>(enabledValidationFeatures.size());
+		validationFeatures.pEnabledValidationFeatures = enabledValidationFeatures.data();
+
+		createInfo.pNext = &validationFeatures;
 		createInfo.enabledLayerCount = static_cast<uint32_t>(myValidationLayers.size());
 		createInfo.ppEnabledLayerNames = myValidationLayers.data();
 

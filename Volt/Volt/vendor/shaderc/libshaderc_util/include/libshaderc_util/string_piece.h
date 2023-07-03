@@ -30,7 +30,7 @@ namespace shaderc_util {
 class string_piece {
  public:
   typedef const char* iterator;
-  static const size_t npos = -1;
+  static const size_t npos = std::numeric_limits<size_t>::max();
 
   string_piece() {}
 
@@ -331,13 +331,14 @@ inline std::ostream& operator<<(std::ostream& os, const string_piece& piece) {
   return os;
 }
 
-inline bool operator==(const char* first, const string_piece second) {
-  return second == first;
-}
-
-inline bool operator!=(const char* first, const string_piece second) {
-  return !operator==(first, second);
-}
+//inline bool operator==(const char* first, const string_piece second)
+//{
+//	return second == first;
+//}
+//
+//inline bool operator!=(const char* first, const string_piece second) {
+//  return !operator==(first, second);
+//}
 }
 
 namespace std {

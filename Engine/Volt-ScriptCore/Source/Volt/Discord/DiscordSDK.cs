@@ -9,5 +9,15 @@ namespace Volt
             InternalCalls.DiscordSDK_Init(appId);
             return true;
         }
+
+        public static void SetDetails(string value)
+        {
+
+        }
+
+        public static void SetState(string state)
+        {
+
+        }
     }
 }

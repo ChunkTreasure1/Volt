@@ -5,9 +5,12 @@
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
 
+#include <Volt/Asset/AssetManager.h>
+
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/StringUtility.h>
-#include <Volt/Asset/AssetManager.h>
+#include <Volt/Math/Math.h>
+
 #include <imgui.h>
 
 AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
@@ -35,21 +38,7 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
 		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
-			std::vector<std::filesystem::path> items;
-			for (const auto& [path, handle] : Volt::AssetManager::Get().GetAssetRegistry())
-			{
-				if (!FileSystem::Exists(Volt::AssetManager::GetContextPath(path) / path))
-				{
-					continue;
-				}
-
-				const Volt::AssetType assetType = Volt::AssetManager::Get().GetAssetTypeFromPath(path);
-				if (myWantedType == Volt::AssetType::None || assetType == myWantedType)
-				{
-					items.emplace_back(path);
-				}
-			}
-
+			const std::vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);
 			state = RenderView(items);
 			ImGui::EndChild();
 		}
@@ -59,39 +48,68 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 	return state;
 }
 
-AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<std::filesystem::path>& items)
+inline static size_t GetHashFromMetadata(const Volt::AssetMetadata& metadata)
 {
+	size_t hash = 0;
+	hash = std::hash<std::string>()(metadata.filePath.stem().string());
+	hash = Math::HashCombine(hash, std::hash<uint64_t>()(metadata.handle));
+
+	return hash;
+}
+
+AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::AssetHandle>& items)
+{
+	VT_PROFILE_FUNCTION();
+
 	State state = State::Open;
-	std::vector<std::string> names;
-	std::unordered_map<std::string, Volt::AssetHandle> nameToAssetHandleMap;
+	std::vector<std::pair<std::string, Volt::AssetHandle>> nameHandle;
 
-	for (const auto& p : items)
+	for (const auto& handle : items)
 	{
-		auto ext = p.extension().string();
-
-		auto assetType = Volt::AssetManager::GetAssetTypeFromPath(p);
-		if (myWantedType == Volt::AssetType::None || assetType == myWantedType &&
-			!ext.contains(".png"))
+		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(handle);
+		if (!metadata.IsValid())
 		{
-			names.emplace_back(p.stem().string());
-			nameToAssetHandleMap.emplace(names.back(), Volt::AssetManager::GetAssetHandleFromPath(p));
+			continue;
 		}
+
+		if (Volt::AssetManager::IsSourceFile(handle))
+		{
+			continue;
+		}
+
+		const std::string assetName = metadata.filePath.stem().string();
+		nameHandle.emplace_back(assetName, metadata.handle);
+	}
+
+	std::vector<std::string> searchNames{};
+	for (const auto& [name, handle] : nameHandle)
+	{
+		if (std::find(searchNames.begin(), searchNames.end(), name) != searchNames.end())
+		{
+			continue;
+		}
+
+		searchNames.emplace_back(name);
 	}
 
 	if (!mySearchQuery.empty())
 	{
-		names = UI::GetEntriesMatchingQuery(mySearchQuery, names);
+		searchNames = UI::GetEntriesMatchingQuery(mySearchQuery, searchNames);
 	}
 
-	for (const auto& name : names)
+	for (const auto& [name, handle] : nameHandle)
 	{
-		const Volt::AssetHandle assetHandle = nameToAssetHandleMap.at(name);
-		std::string assetId = name + "###" + std::to_string(assetHandle);
+		if (std::find(searchNames.begin(), searchNames.end(), name) == searchNames.end())
+		{
+			continue;
+		}
+
+		std::string assetId = name + "##" + std::to_string(handle);
 
 		UI::RenderMatchingTextBackground(mySearchQuery, name, EditorTheme::MatchingTextBackground);
 		if (ImGui::Selectable(assetId.c_str()))
 		{
-			myHandle = assetHandle;
+			myHandle = handle;
 			state = State::Changed;
 			if (myCallback)
 			{

@@ -1,4 +1,6 @@
-Handle: 17818994122627307099
-Path: Engine/Meshes/Primitives/SM_Plane.fbx
-Dependencies:
-  []
+Metadata:
+  assetHandle: 13661243206498577773
+  filePath: Engine/Meshes/Primitives/SM_Plane.fbx
+  type: 2
+  Dependencies:
+    []

@@ -65,8 +65,8 @@ namespace Volt
 			return mesh;
 		}
 
-		mesh->myBoundingSphere.center = *(gem::vec3*)&totalData[offset];
-		offset += sizeof(gem::vec3);
+		mesh->myBoundingSphere.center = *(glm::vec3*)&totalData[offset];
+		offset += sizeof(glm::vec3);
 
 		mesh->myBoundingSphere.radius = *(float*)&totalData[offset];
 		offset += sizeof(float);
@@ -107,8 +107,8 @@ namespace Volt
 			subMesh.indexStartOffset = *(uint32_t*)&totalData[offset];
 			offset += sizeof(uint32_t);
 
-			subMesh.transform = *(gem::mat4*)&totalData[offset];
-			offset += sizeof(gem::mat4);
+			subMesh.transform = *(glm::mat4*)&totalData[offset];
+			offset += sizeof(glm::mat4);
 
 			if (i < (uint32_t)names.size())
 			{
@@ -124,7 +124,6 @@ namespace Volt
 			mesh->myMaterial->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, Renderer::GetDefaultData().defaultShader));
 		}
 
-		mesh->path = path;
 		mesh->Construct();
 
 		return mesh;
@@ -136,7 +135,7 @@ namespace Volt
 		staticSize += sizeof(AssetHandle); // AssetHandle
 		staticSize += sizeof(uint32_t); // Vertex count
 		staticSize += sizeof(uint32_t); // Index count
-		staticSize += sizeof(gem::vec3); // Bounding Sphere center
+		staticSize += sizeof(glm::vec3); // Bounding Sphere center
 		staticSize += sizeof(float); // Bounding Sphere radius
 		staticSize += sizeof(uint32_t); // Name count
 
@@ -147,7 +146,7 @@ namespace Volt
 			uint32_t indexCount = 0;
 			uint32_t vertexStartOffset = 0;
 			uint32_t indexStartOffset = 0;
-			gem::mat4 transform = { 1.f };
+			glm::mat4 transform = { 1.f };
 		};
 
 		size_t dynamicSize = sizeof(SubMesh) * subMeshCount;

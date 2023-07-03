@@ -56,13 +56,15 @@ void NavigationPanel::Bake()
 
 		if (myNavigationSystem.GetVTNavMesh()->GetNavMesh() && !myBuildSettings.useTileCache)
 		{
-			auto outputPath = myScene->path;
+			const auto& sceneMeta = Volt::AssetManager::GetMetadataFromHandle(myScene->handle);
+
+			auto outputPath = sceneMeta.filePath;
 			outputPath.replace_extension(".vtnavmesh");
 
 			if (!outputPath.stem().empty())
 			{
-				myNavigationSystem.GetVTNavMesh()->path = outputPath;
-				Volt::AssetManager::Get().SaveAsset(myNavigationSystem.GetVTNavMesh());
+				myNavigationSystem.GetVTNavMesh();
+				Volt::AssetManager::Get().SaveAssetAs(myNavigationSystem.GetVTNavMesh(), outputPath);
 			}
 		}
 	}
@@ -105,7 +107,7 @@ void NavigationPanel::BuildSettingsTab()
 Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 {
 	std::vector<Ref<Volt::Mesh>> srcMeshes;
-	std::vector<gem::mat4> srcTransforms;
+	std::vector<glm::mat4> srcTransforms;
 
 	auto entitiesWithNavMesh = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent>();
 
@@ -122,7 +124,7 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 			auto& collider = myScene->GetRegistry().GetComponent<Volt::BoxColliderComponent>(ent);
 
 			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
-			srcTransforms.emplace_back(transform * gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), collider.halfSize * 2.f * 0.01f));
+			srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f));
 		}
 
 		for (auto ent : entitiesWithCapsuleCollider)
@@ -131,7 +133,7 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 			auto& collider = myScene->GetRegistry().GetComponent<Volt::CapsuleColliderComponent>(ent);
 
 			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
-			srcTransforms.emplace_back(transform * gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f }));
+			srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f }));
 		}
 
 		for (auto ent : entitiesWithSphereCollider)
@@ -140,7 +142,7 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 			auto& collider = myScene->GetRegistry().GetComponent<Volt::SphereColliderComponent>(ent);
 
 			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
-			srcTransforms.emplace_back(transform * gem::translate(gem::mat4(1.f), collider.offset) * gem::scale(gem::mat4(1.f), { collider.radius * 2.f * 0.01f }));
+			srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f }));
 		}
 
 		for (auto ent : entitiesWithMeshCollider)

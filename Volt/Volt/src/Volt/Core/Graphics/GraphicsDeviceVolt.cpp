@@ -1,5 +1,5 @@
 #include "vtpch.h"
-#include "GraphicsDeviceVolt.h"
+#include "GraphicsDevice.h"
 
 #include <optick.h>
 
@@ -20,7 +20,7 @@ namespace Volt
 		}
 	}
 
-	PhysicalGraphicsDeviceVolt::PhysicalGraphicsDeviceVolt(const PhysicalDeviceInfo& info)
+	PhysicalGraphicsDevice::PhysicalGraphicsDevice(const PhysicalDeviceInfo& info)
 	{
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(info.instance, &deviceCount, nullptr);
@@ -42,6 +42,7 @@ namespace Volt
 			{
 				myPhysicalDevice = device; // Select first discrete GPU. Might not be the optimal one
 				break;
+
 			}
 		}
 
@@ -89,7 +90,7 @@ namespace Volt
 			{
 				myCapabilities.maxTransferQueueCount = queueFamily.queueCount;
 				myQueueFamilies.transferFamilyQueueIndex = i;
-				i++; 
+				i++;
 				continue;
 			}
 
@@ -127,16 +128,16 @@ namespace Volt
 		CheckRayTracingSupport();
 	}
 
-	PhysicalGraphicsDeviceVolt::~PhysicalGraphicsDeviceVolt()
+	PhysicalGraphicsDevice::~PhysicalGraphicsDevice()
 	{
 	}
 
-	Scope<PhysicalGraphicsDeviceVolt> PhysicalGraphicsDeviceVolt::Create(const PhysicalDeviceInfo& info)
+	Scope<PhysicalGraphicsDevice> PhysicalGraphicsDevice::Create(const PhysicalDeviceInfo& info)
 	{
-		return CreateScope<PhysicalGraphicsDeviceVolt>(info);
+		return CreateScope<PhysicalGraphicsDevice>(info);
 	}
 
-	void PhysicalGraphicsDeviceVolt::FetchAvailiableExtensions()
+	void PhysicalGraphicsDevice::FetchAvailiableExtensions()
 	{
 		uint32_t extensionCount = 0;
 		VT_VK_CHECK(vkEnumerateDeviceExtensionProperties(myPhysicalDevice, nullptr, &extensionCount, nullptr));
@@ -145,7 +146,7 @@ namespace Volt
 		VT_VK_CHECK(vkEnumerateDeviceExtensionProperties(myPhysicalDevice, nullptr, &extensionCount, myAvailiableExtensions.data()));
 	}
 
-	void PhysicalGraphicsDeviceVolt::CheckRayTracingSupport()
+	void PhysicalGraphicsDevice::CheckRayTracingSupport()
 	{
 		uint32_t foundExtensionCount = 0;
 		for (const auto& ext : myAvailiableExtensions)
@@ -169,7 +170,7 @@ namespace Volt
 		myCapabilities.supportsRayTracing = foundExtensionCount == 3;
 	}
 
-	GraphicsDeviceVolt::GraphicsDeviceVolt(const GraphicsDeviceInfo& info)
+	GraphicsDevice::GraphicsDevice(const GraphicsDeviceInfo& info)
 		: myQueueFamilies(info.physicalDevice.lock()->GetQueueFamilies())
 	{
 		myPhysicalDevice = info.physicalDevice;
@@ -273,7 +274,7 @@ namespace Volt
 				const uint32_t queueCount = std::min(info.requestedGraphicsQueues, capabilities.maxGraphicsQueueCount);
 				for (uint32_t i = startIndex; i < queueCount + startIndex; i++)
 				{
-					VkQueue& newQueue = myDeviceQueues[QueueTypeVolt::Graphics].emplace_back();
+					VkQueue& newQueue = myDeviceQueues[QueueType::Graphics].emplace_back();
 					vkGetDeviceQueue(myDevice, (uint32_t)myQueueFamilies.graphicsFamilyQueueIndex, i, &newQueue);
 				}
 
@@ -290,7 +291,7 @@ namespace Volt
 				const uint32_t queueCount = std::min(info.requestedComputeQueues, capabilities.maxComputeQueueCount);
 				for (uint32_t i = startIndex; i < queueCount + startIndex; i++)
 				{
-					VkQueue& newQueue = myDeviceQueues[QueueTypeVolt::Compute].emplace_back();
+					VkQueue& newQueue = myDeviceQueues[QueueType::Compute].emplace_back();
 					vkGetDeviceQueue(myDevice, (uint32_t)myQueueFamilies.computeFamilyQueueIndex, startIndex, &newQueue);
 				}
 
@@ -298,7 +299,7 @@ namespace Volt
 			}
 			else
 			{
-				myDeviceQueues[QueueTypeVolt::Compute].emplace_back(myDeviceQueues[QueueTypeVolt::Graphics].front());
+				myDeviceQueues[QueueType::Compute].emplace_back(myDeviceQueues[QueueType::Graphics].front());
 			}
 
 			if (myQueueFamilies.computeFamilyQueueIndex != myQueueFamilies.transferFamilyQueueIndex)
@@ -311,7 +312,7 @@ namespace Volt
 				const uint32_t queueCount = std::min(info.requestedTransferQueues, capabilities.maxTransferQueueCount);
 				for (uint32_t i = startIndex; i < queueCount + startIndex; i++)
 				{
-					VkQueue& newQueue = myDeviceQueues[QueueTypeVolt::Transfer].emplace_back();
+					VkQueue& newQueue = myDeviceQueues[QueueType::Transfer].emplace_back();
 					vkGetDeviceQueue(myDevice, (uint32_t)myQueueFamilies.transferFamilyQueueIndex, startIndex, &newQueue);
 				}
 
@@ -319,22 +320,26 @@ namespace Volt
 			}
 			else
 			{
-				myDeviceQueues[QueueTypeVolt::Transfer].emplace_back(myDeviceQueues[QueueTypeVolt::Graphics].front());
+				myDeviceQueues[QueueType::Transfer].emplace_back(myDeviceQueues[QueueType::Graphics].front());
 			}
+
+			myQueueMutexes[QueueType::Compute];
+			myQueueMutexes[QueueType::Graphics];
+			myQueueMutexes[QueueType::Transfer];
 		}
 
 		// Create main thread (faster to use) command pool
 		{
-			VkCommandPoolCreateInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			info.queueFamilyIndex = myQueueFamilies.graphicsFamilyQueueIndex;
-			info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			VkCommandPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			poolInfo.queueFamilyIndex = myQueueFamilies.graphicsFamilyQueueIndex;
+			poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-			VT_VK_CHECK(vkCreateCommandPool(myDevice, &info, nullptr, &myMainCommandPool));
+			VT_VK_CHECK(vkCreateCommandPool(myDevice, &poolInfo, nullptr, &myMainCommandPool));
 		}
 	}
 
-	GraphicsDeviceVolt::~GraphicsDeviceVolt()
+	GraphicsDevice::~GraphicsDevice()
 	{
 		for (auto& [threadId, poolData] : myPerThreadCommandBuffers)
 		{
@@ -349,12 +354,12 @@ namespace Volt
 		vkDestroyDevice(myDevice, nullptr);
 	}
 
-	Scope<GraphicsDeviceVolt> GraphicsDeviceVolt::Create(const GraphicsDeviceInfo& info)
+	Scope<GraphicsDevice> GraphicsDevice::Create(const GraphicsDeviceInfo& info)
 	{
-		return CreateScope<GraphicsDeviceVolt>(info);
+		return CreateScope<GraphicsDevice>(info);
 	}
 
-	void GraphicsDeviceVolt::EnableRayTracing(std::vector<const char*>& extensionsToEnable)
+	void GraphicsDevice::EnableRayTracing(std::vector<const char*>& extensionsToEnable)
 	{
 		extensionsToEnable.emplace_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
 		extensionsToEnable.emplace_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
@@ -368,19 +373,19 @@ namespace Volt
 		myRayTracingFeatures.accelerationStructureFeature.pNext = &myRayTracingFeatures.rayTracingPipelineFeature;
 	}
 
-	const uint32_t GraphicsDeviceVolt::GetQueueFamilyIndex(QueueTypeVolt queueType)
+	const uint32_t GraphicsDevice::GetQueueFamilyIndex(QueueType queueType)
 	{
 		switch (queueType)
 		{
-			case QueueTypeVolt::Graphics: return myQueueFamilies.graphicsFamilyQueueIndex;
-			case QueueTypeVolt::Compute: return myQueueFamilies.computeFamilyQueueIndex;
-			case QueueTypeVolt::Transfer: return myQueueFamilies.transferFamilyQueueIndex;
+			case QueueType::Graphics: return myQueueFamilies.graphicsFamilyQueueIndex;
+			case QueueType::Compute: return myQueueFamilies.computeFamilyQueueIndex;
+			case QueueType::Transfer: return myQueueFamilies.transferFamilyQueueIndex;
 		}
 
 		return 0;
 	}
 
-	VkCommandBuffer GraphicsDeviceVolt::GetCommandBuffer(bool beginCommandBuffer)
+	VkCommandBuffer GraphicsDevice::GetCommandBuffer(bool beginCommandBuffer)
 	{
 		VkCommandBuffer commandBuffer;
 
@@ -404,7 +409,7 @@ namespace Volt
 		return commandBuffer;
 	}
 
-	VkCommandBuffer GraphicsDeviceVolt::CreateSecondaryCommandBuffer()
+	VkCommandBuffer GraphicsDevice::CreateSecondaryCommandBuffer()
 	{
 		VkCommandBuffer commandBuffer;
 		VkCommandBufferAllocateInfo allocInfo{};
@@ -417,16 +422,15 @@ namespace Volt
 		return commandBuffer;
 	}
 
-	void GraphicsDeviceVolt::FlushCommandBuffer(VkCommandBuffer cmdBuffer)
+	void GraphicsDevice::FlushCommandBuffer(VkCommandBuffer cmdBuffer)
 	{
-		FlushCommandBuffer(cmdBuffer, myMainCommandPool, myDeviceQueues[QueueTypeVolt::Graphics].at(0));
+		FlushCommandBuffer(cmdBuffer, myMainCommandPool, QueueType::Graphics);
 	}
 
-	void GraphicsDeviceVolt::FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, VkQueue queue)
+	void GraphicsDevice::FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, QueueType queueType)
 	{
 		VT_CORE_ASSERT(cmdBuffer != VK_NULL_HANDLE, "Unable to flush null command buffer!");
 
-		const std::scoped_lock<std::mutex> lock(myMainCommandBufferFlushMutex);
 		VT_VK_CHECK(vkEndCommandBuffer(cmdBuffer));
 
 		VkSubmitInfo submitInfo{};
@@ -440,24 +444,50 @@ namespace Volt
 
 		VkFence fence;
 		VT_VK_CHECK(vkCreateFence(myDevice, &fenceInfo, nullptr, &fence));
-		VT_VK_CHECK(vkQueueSubmit(queue, 1, &submitInfo, fence));
+
+		{
+			auto& mutex = myQueueMutexes[queueType];
+			std::unique_lock<std::mutex> lock{ mutex };
+			VT_VK_CHECK(vkQueueSubmit(myDeviceQueues[queueType].front(), 1, &submitInfo, fence));
+		}
+
 		VT_VK_CHECK(vkWaitForFences(myDevice, 1, &fence, VK_TRUE, 1000000000));
 
 		vkDestroyFence(myDevice, fence, nullptr);
 		vkFreeCommandBuffers(myDevice, commandPool, 1, &cmdBuffer);
 	}
 
-	void GraphicsDeviceVolt::FreeCommandBuffer(VkCommandBuffer cmdBuffer)
+	void GraphicsDevice::FlushCommandBuffer(const VkSubmitInfo& submitInfo, VkFence fence, QueueType queue, uint32_t wantedQueueIndex)
+	{
+		auto& mutex = myQueueMutexes[queue];
+		std::unique_lock<std::mutex> lock{ mutex };
+
+		const uint32_t queueIndex = std::clamp(wantedQueueIndex, 0u, uint32_t(myDeviceQueues.at(queue).size()));
+		VT_VK_CHECK(vkQueueSubmit(myDeviceQueues.at(queue).at(queueIndex), 1, &submitInfo, fence));
+	}
+
+	void GraphicsDevice::FreeCommandBuffer(VkCommandBuffer cmdBuffer)
 	{
 		vkFreeCommandBuffers(myDevice, myMainCommandPool, 1, &cmdBuffer);
 	}
 
-	VkCommandBuffer GraphicsDeviceVolt::GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueTypeVolt queueType)
+	VkResult GraphicsDevice::QueuePresent(const VkPresentInfoKHR& presentInfo, QueueType queueType, uint32_t wantedQueueIndex)
+	{
+		auto& mutex = myQueueMutexes[queueType];
+		std::unique_lock<std::mutex> lock{ mutex };
+
+		const uint32_t queueIndex = std::clamp(wantedQueueIndex, 0u, uint32_t(myDeviceQueues.at(queueType).size()));
+		return vkQueuePresentKHR(myDeviceQueues.at(queueType).at(queueIndex), &presentInfo);
+	}
+
+	VkCommandBuffer GraphicsDevice::GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueType queueType)
 	{
 		if (myPhysicalDevice.expired())
 		{
 			return nullptr;
 		}
+
+		std::scoped_lock lock{ myCommandBufferDataMutex };
 
 		auto physDevicePtr = myPhysicalDevice.lock();
 
@@ -496,24 +526,16 @@ namespace Volt
 			VT_VK_CHECK(vkBeginCommandBuffer(newCmdBuffer.commandBuffer, &cmdBufferBegin));
 		}
 
-		switch (queueType)
-		{
-			case QueueTypeVolt::Graphics:
-				newCmdBuffer.queue = myDeviceQueues[QueueTypeVolt::Graphics].back();
-				break;
-			case QueueTypeVolt::Compute:
-				newCmdBuffer.queue = myDeviceQueues[QueueTypeVolt::Compute].back();
-				break;
-			case QueueTypeVolt::Transfer:
-				newCmdBuffer.queue = myDeviceQueues[QueueTypeVolt::Transfer].back();
-				break;
-		}
+		newCmdBuffer.queue = myDeviceQueues[queueType].back();
+		newCmdBuffer.queueType = queueType;
 
 		return newCmdBuffer.commandBuffer;
 	}
 
-	void GraphicsDeviceVolt::FlushSingleUseCommandBuffer(VkCommandBuffer cmdBuffer)
+	void GraphicsDevice::FlushSingleUseCommandBuffer(VkCommandBuffer cmdBuffer)
 	{
+		std::scoped_lock lock{ myCommandBufferDataMutex };
+
 		VT_CORE_ASSERT(cmdBuffer != VK_NULL_HANDLE, "Unable to flush null command buffer!");
 
 		const auto threadId = std::this_thread::get_id();
@@ -521,7 +543,7 @@ namespace Volt
 		VT_CORE_ASSERT(myPerThreadCommandBuffers.find(threadId) != myPerThreadCommandBuffers.end(), "Thread ID not found in map. Was this command buffer created on another thread?");
 		auto& perThreadData = myPerThreadCommandBuffers.at(threadId);
 
-		auto it = std::find_if(perThreadData.commandBuffers.begin(), perThreadData.commandBuffers.end(), [&](const auto& data) 
+		auto it = std::find_if(perThreadData.commandBuffers.begin(), perThreadData.commandBuffers.end(), [&](const auto& data)
 		{
 			return data.commandBuffer == cmdBuffer;
 		});
@@ -537,12 +559,15 @@ namespace Volt
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = 0;
 
-		VkFence fence; 
+		VkFence fence;
 		VT_VK_CHECK(vkCreateFence(myDevice, &fenceInfo, nullptr, &fence));
 
-		std::unique_lock<std::mutex> lock{ myDeviceQueues[QueueTypeVolt::Graphics].size() == 1 ? myMainCommandBufferFlushMutex : myCommandBufferFlushMutex };
+		{
+			auto& mutex = myQueueMutexes[it->queueType];
+			std::unique_lock<std::mutex> queueLock{ mutex };
+			VT_VK_CHECK(vkQueueSubmit(it->queue, 1, &submitInfo, fence));
+		}
 
-		VT_VK_CHECK(vkQueueSubmit(it->queue, 1, &submitInfo, fence));
 		VT_VK_CHECK(vkWaitForFences(myDevice, 1, &fence, VK_TRUE, 1000000000));
 
 		vkDestroyFence(myDevice, fence, nullptr);
@@ -550,12 +575,12 @@ namespace Volt
 		perThreadData.commandBuffers.erase(it);
 	}
 
-	void GraphicsDeviceVolt::WaitForIdle() const
+	void GraphicsDevice::WaitForIdle() const
 	{
 		vkDeviceWaitIdle(myDevice);
 	}
 
-	void GraphicsDeviceVolt::WaitForIdle(VkQueue queue) const
+	void GraphicsDevice::WaitForIdle(VkQueue queue) const
 	{
 		vkQueueWaitIdle(queue);
 	}

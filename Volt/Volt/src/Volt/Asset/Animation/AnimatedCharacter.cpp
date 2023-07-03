@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	const std::vector<gem::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
+	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, float aStartTime, bool looping) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
@@ -16,7 +16,7 @@ namespace Volt
 		return myAnimations.at(index)->Sample(aStartTime, mySkeleton, looping);
 	}
 
-	const std::vector<gem::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
+	const std::vector<glm::mat4> AnimatedCharacter::SampleAnimation(uint32_t index, uint32_t frameIndex) const
 	{
 		if (myAnimations.find(index) == myAnimations.end())
 		{
@@ -41,11 +41,11 @@ namespace Volt
 		return myAnimations.at(index)->GetDuration();
 	}
 
-	const AnimatedCharacter::JointAttachment AnimatedCharacter::GetJointAttachmentFromName(const std::string& name) const
+	const AnimatedCharacter::JointAttachment AnimatedCharacter::GetJointAttachmentFromName(const std::string& jntName) const
 	{
 		for (const auto& jnt : myJointAttachments)
 		{
-			if (jnt.name == name)
+			if (jnt.name == jntName)
 			{
 				return jnt;
 			}
@@ -94,7 +94,7 @@ namespace Volt
 		myAnimations.erase(index);
 	}
 
-	void AnimatedCharacter::RemoveAnimationEvent(const std::string& name, uint32_t frame, uint32_t animationIndex)
+	void AnimatedCharacter::RemoveAnimationEvent(const std::string& eventName, uint32_t frame, uint32_t animationIndex)
 	{
 		if (!myAnimations.contains(animationIndex))
 		{
@@ -102,13 +102,13 @@ namespace Volt
 			return;
 		}
 
-		myAnimationEvents[animationIndex].erase(std::remove_if(myAnimationEvents[animationIndex].begin(), myAnimationEvents[animationIndex].end(), [&name, &frame](const auto& lhs) 
+		myAnimationEvents[animationIndex].erase(std::remove_if(myAnimationEvents[animationIndex].begin(), myAnimationEvents[animationIndex].end(), [&eventName, &frame](const auto& lhs)
 		{
-			return lhs.name == name && lhs.frame == frame;
+			return lhs.name == eventName && lhs.frame == frame;
 		}));
 	}
 
-	void AnimatedCharacter::AddAnimationEvent(const std::string& name, uint32_t frame, uint32_t animationIndex)
+	void AnimatedCharacter::AddAnimationEvent(const std::string& eventName, uint32_t frame, uint32_t animationIndex)
 	{
 		if (!myAnimations.contains(animationIndex))
 		{
@@ -116,10 +116,10 @@ namespace Volt
 			return;
 		}
 
-		myAnimationEvents[animationIndex].emplace_back(frame, name);
+		myAnimationEvents[animationIndex].emplace_back(frame, eventName);
 	}
 
-	const int32_t AnimatedCharacter::GetAnimationIndexFromHandle(Volt::AssetHandle handle)
+	const int32_t AnimatedCharacter::GetAnimationIndexFromHandle(Volt::AssetHandle animationHandle)
 	{
 		for (const auto& [index, animation] : myAnimations)
 		{
@@ -128,7 +128,7 @@ namespace Volt
 				continue;
 			}
 
-			if (animation->handle == handle)
+			if (animation->handle == animationHandle)
 			{
 				return index;
 			}

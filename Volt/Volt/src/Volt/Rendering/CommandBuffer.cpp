@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "CommandBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
 
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Graphics/Swapchain.h"
@@ -17,7 +17,7 @@ namespace Volt
 		Invalidate();
 	}
 
-	CommandBuffer::CommandBuffer(uint32_t count, QueueTypeVolt queueType)
+	CommandBuffer::CommandBuffer(uint32_t count, QueueType queueType)
 		: myCount(count), myQueueType(queueType)
 	{
 		Invalidate();
@@ -38,7 +38,7 @@ namespace Volt
 	{
 		myHasEnded = false;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		const uint32_t index = GetCurrentIndex();
 
 		if (!mySwapchainTarget)
@@ -63,7 +63,7 @@ namespace Volt
 			vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, myTimestampQueryPools.at(index), 0);
 			myNextAvailableTimestampQuery = 2;
 
-			if (myQueueType == QueueTypeVolt::Graphics)
+			if (myQueueType == QueueType::Graphics)
 			{
 				vkCmdResetQueryPool(myCommandBuffers.at(index), myPipelineStatisticsQueryPools.at(index), 0, myPipelineQueryCount);
 				vkCmdBeginQuery(myCommandBuffers.at(index), myPipelineStatisticsQueryPools.at(index), 0, 0);
@@ -79,7 +79,7 @@ namespace Volt
 		{
 			vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, myTimestampQueryPools.at(index), 1);
 
-			if (myQueueType == QueueTypeVolt::Graphics)
+			if (myQueueType == QueueType::Graphics)
 			{
 				vkCmdEndQuery(myCommandBuffers.at(index), myPipelineStatisticsQueryPools.at(index), 0);
 			}
@@ -98,7 +98,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		if (!mySwapchainTarget)
 		{
@@ -112,26 +112,7 @@ namespace Volt
 
 				VT_VK_CHECK(vkResetFences(device->GetHandle(), 1, &mySubmitFences.at(index)));
 
-				VkQueue submitQueue = nullptr;
-
-				switch (myQueueType)
-				{
-					case QueueTypeVolt::Graphics:
-						submitQueue = device->GetGraphicsQueue();
-						break;
-					case QueueTypeVolt::Compute:
-						submitQueue = device->GetComputeQueue();
-						break;
-					case QueueTypeVolt::Transfer:
-						submitQueue = device->GetTransferQueue();
-						break;
-
-					default:
-						VT_CORE_ASSERT(false, "Invalid QueueType!");
-						break;
-				}
-
-				VT_VK_CHECK(vkQueueSubmit(submitQueue, 1, &info, mySubmitFences.at(index)));
+				device->FlushCommandBuffer(info, mySubmitFences.at(index), myQueueType);
 			}
 			else if (!myInheritedCommandBuffer.expired())
 			{
@@ -152,7 +133,7 @@ namespace Volt
 
 		FetchTimestampResults();
 
-		if (myQueueType == QueueTypeVolt::Graphics)
+		if (myQueueType == QueueType::Graphics)
 		{
 			FetchPipelineStatistics();
 		}
@@ -264,7 +245,7 @@ namespace Volt
 	{
 		return CreateRef<CommandBuffer>(count, swapchainTarget);
 	}
-	Ref<CommandBuffer> CommandBuffer::Create(uint32_t count, QueueTypeVolt queueType)
+	Ref<CommandBuffer> CommandBuffer::Create(uint32_t count, QueueType queueType)
 	{
 		return CreateRef<CommandBuffer>(count, queueType);
 	}
@@ -276,7 +257,7 @@ namespace Volt
 
 	void CommandBuffer::Invalidate()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		if (!mySwapchainTarget)
 		{
@@ -294,14 +275,14 @@ namespace Volt
 
 				switch (myQueueType)
 				{
-					case QueueTypeVolt::Graphics:
-						queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
+					case QueueType::Graphics:
+						queueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
 						break;
-					case QueueTypeVolt::Compute:
-						queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().computeFamilyQueueIndex;
+					case QueueType::Compute:
+						queueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().computeFamilyQueueIndex;
 						break;
-					case QueueTypeVolt::Transfer:
-						queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
+					case QueueType::Transfer:
+						queueFamilyIndex = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
 						break;
 					default:
 						VT_CORE_ASSERT(false, "Invalid QueueType!");
@@ -349,7 +330,7 @@ namespace Volt
 			}
 		}
 
-		myHasTimestampSupport = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsTimestamps;
+		myHasTimestampSupport = GraphicsContext::GetPhysicalDevice()->GetCapabilities().supportsTimestamps;
 		if (myHasTimestampSupport)
 		{
 			CreateQueryPools();
@@ -358,7 +339,7 @@ namespace Volt
 
 	void CommandBuffer::CreateQueryPools()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		myTimestampQueryCount = 2 + 2 * MAX_QUERIES;
 
@@ -387,7 +368,7 @@ namespace Volt
 		}
 
 		///// Statistics
-		if (myQueueType == QueueTypeVolt::Graphics)
+		if (myQueueType == QueueType::Graphics)
 		{
 			info.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS;
 
@@ -419,7 +400,7 @@ namespace Volt
 			return;
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
 
 		vkGetQueryPoolResults(device->GetHandle(), myTimestampQueryPools.at(index), 0, myLastAvailableTimestampQuery, myLastAvailableTimestampQuery * sizeof(uint64_t), myTimestampQueryResults.at(index).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
@@ -428,7 +409,7 @@ namespace Volt
 			const uint64_t startTime = myTimestampQueryResults.at(index).at(i);
 			const uint64_t endTime = myTimestampQueryResults.at(index).at(i + 1);
 
-			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
+			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
 			myGPUExecutionTimes[index][i / 2] = nsTime * 0.000001f; // Convert to ms
 		}
 	}
@@ -440,10 +421,10 @@ namespace Volt
 			return;
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
 
-		if (myQueueType == QueueTypeVolt::Graphics)
+		if (myQueueType == QueueType::Graphics)
 		{
 			vkGetQueryPoolResults(device->GetHandle(), myPipelineStatisticsQueryPools.at(index), 0, 1, sizeof(RenderPipelineStatistics), &myPipelineStatisticsResults.at(index), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
 		}
@@ -451,7 +432,7 @@ namespace Volt
 
 	void CommandBuffer::Release()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		if (!mySwapchainTarget)
 		{
 			device->WaitForIdle();

@@ -9,6 +9,10 @@ local function getAssemblyFiles(directory, is_windows)
 			if string.find(f, "System.") then
 				table.insert(t, f)
 			end
+
+			if string.find(f, "Mono.Nat") then
+				table.insert(t, f)
+			end
 		end
 	end
 

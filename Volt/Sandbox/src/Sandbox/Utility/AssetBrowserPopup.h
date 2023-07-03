@@ -17,7 +17,7 @@ public:
 	State Update();
 
 private:
-	State RenderView(const std::vector<std::filesystem::path>& items);
+	State RenderView(const std::vector<Volt::AssetHandle>& items);
 
 	std::string myId;
 	Volt::AssetType myWantedType;

@@ -1,4 +1,6 @@
-Handle: 11770569875458535345
-Path: Engine/Shaders/Definitions/Environment/environmentMipFilter.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10898740408385641356
+  filePath: Engine/Shaders/Definitions/Environment/environmentMipFilter.vtsdef
+  type: 64
+  Dependencies:
+    - 11714447210381227792

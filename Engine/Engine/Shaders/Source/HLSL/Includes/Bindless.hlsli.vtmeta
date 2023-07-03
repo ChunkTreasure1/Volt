@@ -1,4 +1,6 @@
-Handle: 17717101530016989105
-Path: Engine/Shaders/Source/HLSL/Includes/Bindless.hlsli
-Dependencies:
-  []
+Metadata:
+  assetHandle: 8369259923981066609
+  filePath: Engine/Shaders/Source/HLSL/Includes/Bindless.hlsli
+  type: 128
+  Dependencies:
+    []

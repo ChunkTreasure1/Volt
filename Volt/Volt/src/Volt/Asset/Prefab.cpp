@@ -506,6 +506,8 @@ namespace Volt
 		UpdateComponents(targetScene, newEnt);
 		CorrectEntityReferences(targetScene, newEnt);
 
+		targetScene->InvalidateEntityTransform(newEnt);
+
 		return newEnt;
 	}
 
@@ -671,7 +673,7 @@ namespace Volt
 			{
 				const auto& fieldMap = scene->GetScriptFieldCache().GetCache().at(script);
 
-				for (const auto& [name, fieldInstance] : fieldMap)
+				for (const auto& [fieldName, fieldInstance] : fieldMap)
 				{
 					if (fieldInstance->field.type == MonoFieldType::Entity)
 					{

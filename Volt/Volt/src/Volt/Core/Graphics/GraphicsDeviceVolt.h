@@ -3,10 +3,11 @@
 #include "Volt/Core/Base.h"
 
 #include <vulkan/vulkan.h>
+#include <shared_mutex>
 
 namespace Volt
 {
-	enum class QueueTypeVolt : uint32_t
+	enum class QueueType : uint32_t
 	{
 		Graphics = 0,
 		Compute,
@@ -47,18 +48,18 @@ namespace Volt
 		VkInstance instance = nullptr;
 	};
 
-	class PhysicalGraphicsDeviceVolt
+	class PhysicalGraphicsDevice
 	{
 	public:
-		PhysicalGraphicsDeviceVolt(const PhysicalDeviceInfo& info);
-		~PhysicalGraphicsDeviceVolt();
+		PhysicalGraphicsDevice(const PhysicalDeviceInfo& info);
+		~PhysicalGraphicsDevice();
 
 		inline const VkPhysicalDevice GetHandle() const { return myPhysicalDevice; }
 		inline const PhysicalDeviceCapabilities& GetCapabilities() const { return myCapabilities; }
 		inline const PhysicalDeviceQueueFamilyIndices& GetQueueFamilies() const { return myQueueFamilies; }
 		inline const std::vector<VkExtensionProperties>& GetAvailiableExtensions() const { return myAvailiableExtensions; }
 
-		static Scope<PhysicalGraphicsDeviceVolt> Create(const PhysicalDeviceInfo& info);
+		static Scope<PhysicalGraphicsDevice> Create(const PhysicalDeviceInfo& info);
 
 	private:
 		void FetchAvailiableExtensions();
@@ -74,39 +75,42 @@ namespace Volt
 	struct GraphicsDeviceInfo
 	{
 		VkPhysicalDeviceFeatures2 requestedFeatures{};
-		Weak<PhysicalGraphicsDeviceVolt> physicalDevice;
+		Weak<PhysicalGraphicsDevice> physicalDevice;
 
 		uint32_t requestedGraphicsQueues = 1;
 		uint32_t requestedComputeQueues = 0;
 		uint32_t requestedTransferQueues = 0;
 	};
 
-	class GraphicsDeviceVolt
+	class GraphicsDevice
 	{
 	public:
-		GraphicsDeviceVolt(const GraphicsDeviceInfo& info);
-		~GraphicsDeviceVolt();
+		GraphicsDevice(const GraphicsDeviceInfo& info);
+		~GraphicsDevice();
 		
 		VkCommandBuffer GetCommandBuffer(bool beginCommandBuffer);
 		VkCommandBuffer CreateSecondaryCommandBuffer();
 
 		void FlushCommandBuffer(VkCommandBuffer cmdBuffer);
-		void FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, VkQueue queue);
+		void FlushCommandBuffer(VkCommandBuffer cmdBuffer, VkCommandPool commandPool, QueueType queueType);
+		void FlushCommandBuffer(const VkSubmitInfo& submitInfo, VkFence fence, QueueType queue, uint32_t wantedQueueIndex = 0);
 		void FreeCommandBuffer(VkCommandBuffer cmdBuffer);
 
-		VkCommandBuffer GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueTypeVolt queueType = QueueTypeVolt::Graphics);
+		VkResult QueuePresent(const VkPresentInfoKHR& presentInfo, QueueType queueType, uint32_t wantedQueueIndex = 0);
+
+		VkCommandBuffer GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueType queueType = QueueType::Graphics);
 		void FlushSingleUseCommandBuffer(VkCommandBuffer cmdBuffer);
 
 		void WaitForIdle() const;
 		void WaitForIdle(VkQueue queue) const;
 
 		inline VkDevice GetHandle() const { return myDevice; }
-		inline VkQueue GetGraphicsQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueTypeVolt::Graphics).at(index); }
-		inline VkQueue GetComputeQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueTypeVolt::Compute).at(index); }
-		inline VkQueue GetTransferQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueTypeVolt::Transfer).at(index); }
+		inline VkQueue GetGraphicsQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueType::Graphics).at(index); }
+		inline VkQueue GetComputeQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueType::Compute).at(index); }
+		inline VkQueue GetTransferQueue(uint32_t index = 0) const { return myDeviceQueues.at(QueueType::Transfer).at(index); }
 
-		inline Weak<PhysicalGraphicsDeviceVolt> GetPhysicalDevice() const { return myPhysicalDevice; }
-		static Scope<GraphicsDeviceVolt> Create(const GraphicsDeviceInfo& info);
+		inline Weak<PhysicalGraphicsDevice> GetPhysicalDevice() const { return myPhysicalDevice; }
+		static Scope<GraphicsDevice> Create(const GraphicsDeviceInfo& info);
 
 	private:
 		struct SingleUseCommandBufferData
@@ -114,6 +118,8 @@ namespace Volt
 			VkCommandPool commandPool;
 			VkCommandBuffer commandBuffer;
 			VkQueue queue;
+
+			QueueType queueType;
 		};
 
 		struct PerThreadPoolData
@@ -128,7 +134,7 @@ namespace Volt
 		};
 
 		void EnableRayTracing(std::vector<const char*>& extensionsToEnable);
-		const uint32_t GetQueueFamilyIndex(QueueTypeVolt queueType);
+		const uint32_t GetQueueFamilyIndex(QueueType queueType);
 
 		const std::vector<const char*> myValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
@@ -137,13 +143,14 @@ namespace Volt
 
 		std::unordered_map<std::thread::id, PerThreadPoolData> myPerThreadCommandBuffers; // Thread -> Command Pool & Command Buffers
 		
-		std::mutex myCommandBufferFlushMutex;
-		std::mutex myMainCommandBufferFlushMutex;
+		std::unordered_map<QueueType, std::vector<VkQueue>> myDeviceQueues;
+		std::unordered_map<QueueType, std::mutex> myQueueMutexes;
 
-		std::unordered_map<QueueTypeVolt, std::vector<VkQueue>> myDeviceQueues;
+		std::shared_mutex myCommandBufferDataMutex;
+
 		PhysicalDeviceQueueFamilyIndices myQueueFamilies;
 
 		RayTracingFeatures myRayTracingFeatures;
-		Weak<PhysicalGraphicsDeviceVolt> myPhysicalDevice;
+		Weak<PhysicalGraphicsDevice> myPhysicalDevice;
 	};
 }

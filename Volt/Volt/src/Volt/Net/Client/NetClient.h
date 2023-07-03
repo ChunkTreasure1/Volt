@@ -1,5 +1,6 @@
 #pragma once
 #include <Nexus/Interface/NetManager/NetManager.h>
+#include <queue>
 namespace Volt
 {
 	class NetClient : public Nexus::NetManager
@@ -12,20 +13,28 @@ namespace Volt
 
 		void Transmit(const Nexus::Packet& in_packet) override;
 		void Init() override;
+
+		void Reload() override { m_requestReload = true; }
+
 	private:
 		friend class NetPanel;
 
 		void MissingEntity(Nexus::TYPE::REP_ID repId);
 
-		void Update() override;
+		void BackendUpdate() override;
 
 		void OnConnect() override;
 		void OnConnectionConfirmed() override;
 		void OnDisconnect() override;
+		void OnDisconnectConfirmed() override;
 		void OnUpdate() override;
+
+		void OnReloadDenied() override;
+		void OnReloadConfirmed() override;
 
 		void OnCreateEntity() override;
 		void OnDestroyEntity() override;
+		void OnConstructRegistry() override;
 
 		void OnMoveUpdate() override;
 
@@ -39,9 +48,11 @@ namespace Volt
 		void OnPing() override;
 		void OnBadPacket() override;
 
-
+		std::queue<Nexus::Packet> onLoadedQueue;
 		std::string m_serverAdress;
 		unsigned short m_serverPort = 0;
 		float m_timer = 0;
+
+		bool m_requestReload = false;
 	};
 }

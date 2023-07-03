@@ -49,8 +49,13 @@ namespace Nexus
 			return;
 		}
 
+		if (m_isRunning)
+		{
+			StopBackend();
+		}
 		m_isRunning = true;
-		m_backendThread = std::thread([&]() { ReadIncomming(); });
+		m_backendThreadIn = std::thread([&]() { ReadIncomming(); });
+		m_backendThreadOut = std::thread([&]() { HandleOutgoing(); });
 	}
 
 	void Relay::StopBackend()
@@ -60,22 +65,36 @@ namespace Nexus
 			return;
 		}
 		m_isRunning = false;
-		char data[256];
-		std::fill_n(data, 256, (char)ePacketID::CLOSE);
-		m_socket.SendTo("127.0.0.1", m_boundPort, data, 10);
-		m_backendThread.join();
 		m_socket.Close();
-		ex_packetQueueIn.clear();
+		m_backendThreadIn.join();
+		m_backendThreadOut.join();
 	}
 
 	void Relay::Transmit(Packet in_packet, sockaddr_in in_sockAddr)
 	{
-		m_socket.SendTo(in_sockAddr, in_packet.WGet().data(), (int)in_packet.Size());
+		if (!m_socket.SendTo(in_sockAddr, in_packet.WGet().data(), (int)in_packet.Size()))
+		{
+			LogError("wes");
+			return;
+		}
+		int i = 0;
+		i++;
+		//m_packetQueueOut.push_back({ in_sockAddr, in_packet });
 	}
 
 	void Relay::HandleOutgoing()
 	{
+		while (m_isRunning)
+		{
+			while (!m_packetQueueOut.empty())
+			{
+				auto _pair = m_packetQueueOut.pop_front();
+				/*	if (!m_socket.SendTo(_pair.first, _pair.second.WGet().data(), (int)_pair.second.Size()))
+					{
 
+					}*/
+			}
+		}
 	}
 
 	void Relay::ReadIncomming()
@@ -86,8 +105,11 @@ namespace Nexus
 		while (m_isRunning)
 		{
 			auto addr = m_socket.RecvFrom(byteBuffer, packetSize, PACKET_SIZE);
-			auto packet = ConstructPacket(byteBuffer, packetSize);
-			ex_packetQueueIn.push_back({ addr,packet });
+			if (packetSize > 0)
+			{
+				auto packet = ConstructPacket(byteBuffer, packetSize);
+				ex_packetQueueIn.push_back({ addr,packet });
+			}
 		}
 	}
 }

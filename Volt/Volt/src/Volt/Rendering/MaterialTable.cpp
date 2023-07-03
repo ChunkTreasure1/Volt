@@ -115,9 +115,7 @@ namespace Volt
 		myIsDirty.at(index) = false;
 
 		auto buffer = myStorageBuffer->Get(Sets::MAINBUFFERS, Bindings::MATERIAL_TABLE, index);
-		auto* mappedPtr = buffer->Map<GPUMaterial*>();
-
-		const size_t startOffset = sizeof(GPUMaterial) * myStartIndex;
+		auto* mappedPtr = buffer->Map<GPUMaterial>();
 
 		memcpy_s(mappedPtr, sizeof(GPUMaterial) * Renderer::MAX_MATERIALS, myGPUMaterials.data(), std::min((uint32_t)myGPUMaterials.size(), Renderer::MAX_MATERIALS) * sizeof(GPUMaterial));
 		buffer->Unmap();
@@ -158,7 +156,7 @@ namespace Volt
 
 	void MaterialTable::SetDirty(bool state)
 	{
-		for (const auto& val : myIsDirty)
+		for (auto&& val : myIsDirty)
 		{
 			val = state;
 		}

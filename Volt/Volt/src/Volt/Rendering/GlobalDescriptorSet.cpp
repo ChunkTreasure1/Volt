@@ -129,7 +129,7 @@ namespace Volt
 		return myDescriptorSets.at(index);
 	}
 
-	VkWriteDescriptorSet GlobalDescriptorSet::GetWriteDescriptor(uint32_t index, uint32_t binding, uint32_t arrayElement)
+	VkWriteDescriptorSet GlobalDescriptorSet::GetWriteDescriptor(uint32_t index, uint32_t binding, uint32_t)
 	{
 		return myWriteDescriptors.at(binding).at(index);
 	}

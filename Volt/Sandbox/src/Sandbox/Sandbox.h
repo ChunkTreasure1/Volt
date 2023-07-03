@@ -120,6 +120,13 @@ private:
 	void RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera);
 	///////////////////////////
 
+	///// File Watchers /////
+	void CreateModifiedWatch();
+	void CreateDeleteWatch();
+	void CreateAddWatch();
+	void CreateMovedWatch();
+	/////////////////////////
+
 	BuildInfo myBuildInfo;
 
 	Ref<EditorCameraController> myEditorCameraController;
@@ -149,8 +156,8 @@ private:
 
 	Ref<AssetBrowserPanel> myAssetBrowserPanel;
 
-	gem::vec2ui myViewportSize = { 1280, 720 };
-	gem::vec2ui myViewportPosition = { 0, 0 };
+	glm::uvec2 myViewportSize = { 1280, 720 };
+	glm::uvec2 myViewportPosition = { 0, 0 };
 
 	bool myShouldOpenSaveSceneAs = false;
 	bool myOpenShouldSaveScenePopup = false;
@@ -160,7 +167,7 @@ private:
 	bool myPlayHasMouseControl = false;
 
 	bool myShouldMovePlayer = false;
-	gem::vec3 myMovePlayerToPosition = 0.f;
+	glm::vec3 myMovePlayerToPosition = 0.f;
 
 	Ref<Volt::Scene> myStoredScene;
 	bool myShouldLoadNewScene = false;

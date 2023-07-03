@@ -57,7 +57,7 @@ namespace Volt
 		* uint32_t: Index count
 		* uint32_t: Vertex start offset
 		* uint32_t: Index start offset
-		* gem::mat4: transform
+		* glm::mat4: transform
 		*/
 
 		BinarySerializer serializer{ Volt::ProjectManager::GetDirectory() / destination, CalculateMeshSize(mesh) };
@@ -66,7 +66,7 @@ namespace Volt
 		const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
 		const uint32_t indexCount = (uint32_t)mesh->myIndices.size();
 
-		const gem::vec3 boundingCenter = mesh->myBoundingSphere.center;
+		const glm::vec3 boundingCenter = mesh->myBoundingSphere.center;
 		const float boundingRadius = mesh->myBoundingSphere.radius;
 
 		serializer.Serialize<uint32_t>(submeshCount);
@@ -78,7 +78,7 @@ namespace Volt
 		serializer.Serialize<uint32_t>(indexCount);
 		serializer.Serialize(mesh->myIndices.data(), sizeof(uint32_t) * indexCount);
 
-		serializer.Serialize<gem::vec3>(boundingCenter);
+		serializer.Serialize<glm::vec3>(boundingCenter);
 		serializer.Serialize<float>(boundingRadius);
 
 		serializer.Serialize<uint32_t>(submeshCount);
@@ -96,7 +96,7 @@ namespace Volt
 			serializer.Serialize<uint32_t>(subMesh.indexCount);
 			serializer.Serialize<uint32_t>(subMesh.vertexStartOffset);
 			serializer.Serialize<uint32_t>(subMesh.indexStartOffset);
-			serializer.Serialize<gem::mat4>(subMesh.transform);
+			serializer.Serialize<glm::mat4>(subMesh.transform);
 		}
 
 		serializer.WriteToFile();
@@ -115,7 +115,7 @@ namespace Volt
 		size += sizeof(uint32_t); // Index count
 		size += sizeof(uint32_t) * mesh->myIndices.size(); // Indices
 
-		size += sizeof(gem::vec3); // Bounding sphere center
+		size += sizeof(glm::vec3); // Bounding sphere center
 		size += sizeof(float); // Bounding sphere radius
 
 		// Sub mesh names
@@ -137,7 +137,7 @@ namespace Volt
 			size += sizeof(uint32_t); // Index count
 			size += sizeof(uint32_t); // Vertex start offset
 			size += sizeof(uint32_t); // Index start offset
-			size += sizeof(gem::mat4); // Sub mesh transform
+			size += sizeof(glm::mat4); // Sub mesh transform
 		}
 
 		return size;
@@ -145,7 +145,10 @@ namespace Volt
 
 	void MeshCompiler::CreateMaterial(Ref<Mesh> mesh, const std::filesystem::path& destination)
 	{
-		mesh->myMaterial->path = destination.parent_path().string() + "\\" + destination.stem().string() + ".vtmat";
+		const auto materialPath = destination.parent_path().string() + "\\";
+		const auto filename = destination.stem().string() + ".vtmat";
+
+		mesh->myMaterial = AssetManager::CreateAsset<Material>(materialPath, filename, *mesh->myMaterial);
 		AssetManager::Get().SaveAsset(mesh->myMaterial);
 	}
 }

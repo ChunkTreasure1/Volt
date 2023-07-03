@@ -10,6 +10,8 @@
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Image3D.h"
 
+#include "Volt/Rendering/Renderer.h"
+
 #include "Volt/Utility/ImageUtility.h"
 
 #include <ranges>
@@ -191,8 +193,8 @@ namespace Volt
 				barrier.pNext = nullptr;
 				barrier.srcStageMask = lastRenderPass->isComputePass ? VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT : VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 				barrier.dstStageMask = renderPass->isComputePass ? VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT : VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-				barrier.srcAccessMask = lastRenderPass->isComputePass ? VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT : VK_ACCESS_2_NONE;
-				barrier.dstAccessMask = renderPass->isComputePass ? VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT : VK_ACCESS_2_NONE;
+				barrier.srcAccessMask = lastRenderPass->isComputePass ? VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT : VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+				barrier.dstAccessMask = renderPass->isComputePass ? VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT : VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
 			}
 
 			for (const auto& write : renderPass->resourceWrites)
@@ -209,7 +211,7 @@ namespace Volt
 				// If this is the first access, use the images layout
 				if (resourceAccesses[write].empty())
 				{
-					srcAccess = { VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,  (!node.resource.image.expired()) ? node.resource.image.lock()->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
+					srcAccess = { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_NONE,  (!node.resource.image.expired()) ? node.resource.image.lock()->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
 				}
 				else
 				{
@@ -260,7 +262,7 @@ namespace Volt
 				// If this is the first access, use the images layout
 				if (resourceAccesses[read].empty())
 				{
-					srcAccess = { VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,  (!node.resource.image.expired()) ? node.resource.image.lock()->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
+					srcAccess = { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_NONE,  (!node.resource.image.expired()) ? node.resource.image.lock()->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
 				}
 				else
 				{
@@ -305,6 +307,7 @@ namespace Volt
 		myCommandBufferCache.Reset();
 		
 		std::vector<std::future<void>> commandBufferFutures;
+		std::vector<Ref<FrameGraphRenderPassNodeBase>> passNodes;
 
 		for (const auto& renderPassNode : myRenderPassNodes)
 		{
@@ -312,6 +315,8 @@ namespace Volt
 			{
 				continue;
 			}
+
+			passNodes.emplace_back(renderPassNode);
 
 			Ref<CommandBuffer> secondaryCommandBuffer = myCommandBufferCache.GetOrCreateCommandBuffer(commandBuffer);
 			
@@ -361,9 +366,17 @@ namespace Volt
 			future.wait();
 		}
 
-		for (const auto& secondaryCmdBuffer : myCommandBufferCache.GetUsedCommandBuffers())
+		for (uint32_t passIndex = 0; const auto& secondaryCmdBuffer : myCommandBufferCache.GetUsedCommandBuffers())
 		{
+			const auto& pass = passNodes.at(passIndex);
+
+			Renderer::BeginSection(myPrimaryCommandBuffer.lock(), pass->name, { 1.f });
+
 			secondaryCmdBuffer->Submit();
+
+			Renderer::EndSection(myPrimaryCommandBuffer.lock());
+
+			passIndex++;
 		}
 
 		for (uint32_t i = 0; const auto& resource : myResourceNodes)
@@ -457,7 +470,7 @@ namespace Volt
 
 		Ref<FrameGraphRenderPassNode<Empty>> newNode = CreateRef<FrameGraphRenderPassNode<Empty>>();
 
-		newNode->executeFunction = [execFunc](const Empty& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
+		newNode->executeFunction = [execFunc](const Empty&, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			execFunc(resources, commandBuffer);
 		};

@@ -10,9 +10,18 @@ project "Amp"
 	pchheader "amppch.h"
 	pchsource "src/amppch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -38,7 +47,7 @@ project "Amp"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.GEM}",
+		"%{IncludeDir.glm}",
 		"%{IncludeDir.wwise}"
 	}
 
@@ -47,13 +56,10 @@ project "Amp"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"PX_PHYSX_STATIC_LIB"
-	}
+		"PX_PHYSX_STATIC_LIB",
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
+		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
+		"GLM_FORCE_LEFT_HANDED"
 	}
 
 	filter "files:vendor/**.cpp"

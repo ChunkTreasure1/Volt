@@ -68,5 +68,10 @@
         {
             InternalCalls.AnimationControllerComponent_DetachEntity(myEntity.Id, entity.Id);
         }
+
+        public void SetAnimationGraph(ulong handle)
+        {
+            InternalCalls.AnimationControllerComponent_SetController(myEntity.Id, handle);
+        }
     }
 }

@@ -18,12 +18,12 @@ namespace Volt
         public event OnHover OnHover;
         public event OnExitHover OnExitHover;
 
-        public Texture Handle;
-        public Texture Background;
+        public Texture Handle = null;
+        public Texture Background = null;
 
-        public Texture HighlightedTexture;
-        public Texture PressedTexture;
-        public Texture DisabledTexture;
+        public Texture HighlightedTexture = null;
+        public Texture PressedTexture = null;
+        public Texture DisabledTexture = null;
 
         public Vector2 BackgroundBounds = new Vector2(256, 16);
         public Vector2 HandleBounds = new Vector2(32, 32);
@@ -35,7 +35,7 @@ namespace Volt
         public float DragSpeed = 1000;
         public float MinValue = 0;
         public float MaxValue = 100;
-        public float Value = 0; 
+        public float Value = 0;
 
         private float minPos;
         private float maxPos;
@@ -107,10 +107,7 @@ namespace Volt
                 {
                     if (mouseDirr.x != 0)
                     {
-                        if (OnDrag != null)
-                        {
-                            OnDrag.Invoke();
-                        }
+                        OnDrag?.Invoke();
                     }
                     if (mouseDirr.x > 0 && HandlePos.x < maxPos)
                     {
@@ -120,9 +117,9 @@ namespace Volt
                             HandlePos.x = maxPos;
                         }
                     }
-                    else if (mouseDirr.x < 0 && HandlePos.x >  minPos)
+                    else if (mouseDirr.x < 0 && HandlePos.x > minPos)
                     {
-                        HandlePos.x += mouseDirr.x* DragSpeed * deltaTime;
+                        HandlePos.x += mouseDirr.x * DragSpeed * deltaTime;
                         if (HandlePos.x < minPos)
                         {
                             HandlePos.x = minPos;
@@ -147,7 +144,7 @@ namespace Volt
         {
             if (Background.IsValid())
             {
-                UIRenderer.DrawSprite(Background,entity.position, entity.scale.XY * BackgroundBounds,entity.rotation.z, Color.One.AsVector4());
+                UIRenderer.DrawSprite(Background, entity.position, entity.scale.XY * BackgroundBounds, entity.rotation.z, Color.One.AsVector4());
             }
             else
             {
@@ -191,10 +188,8 @@ namespace Volt
             {
                 currentTexture = Handle;
             }
-            if (OnExitHover != null)
-            {
-                OnExitHover.Invoke();
-            }
+
+            OnExitHover?.Invoke();
         }
         private void Click()
         {
@@ -207,10 +202,8 @@ namespace Volt
             {
                 currentTexture = Handle;
             }
-            if (OnClick != null)
-            {
-                OnClick.Invoke();
-            }
+
+            OnClick?.Invoke();
 
         }
         private void Release()
@@ -224,10 +217,8 @@ namespace Volt
             {
                 currentTexture = Handle;
             }
-            if (OnRelease != null)
-            {
-                OnRelease.Invoke();
-            }
+
+            OnRelease?.Invoke();
         }
     }
 }

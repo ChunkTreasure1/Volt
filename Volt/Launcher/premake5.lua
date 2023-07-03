@@ -5,15 +5,24 @@ project "Launcher"
 	location "."
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++latest"
+	cppdialect "C++20"
 	debugdir "../../Engine"
 
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -30,8 +39,9 @@ project "Launcher"
     defines
     {
         "GLFW_INCLUDE_NONE",
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0"
+
+		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
+		"GLM_FORCE_LEFT_HANDED"
     }
 
 	files
@@ -76,7 +86,7 @@ project "Launcher"
 		"%{IncludeDir.steam}",
 		"%{IncludeDir.discord}",
 
-		"%{IncludeDir.GEM}",
+		"%{IncludeDir.glm}",
 		"%{IncludeDir.ffmpeg}",
 
 		"%{IncludeDir.detour}",
@@ -100,12 +110,6 @@ project "Launcher"
 
 		"ImGuiNodeEditor",
 
-		"Bcrypt.lib",
-
-		"Ws2_32.lib",
-		"Winmm.lib",
-		"Version.lib",
-
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",
 		"%{Library.fsbank}",
@@ -116,6 +120,8 @@ project "Launcher"
 		"%{Library.AkSoundEngine}",
 		"%{Library.AkStreamMgr}",
 		"%{Library.AkMusicEngine}",
+
+		"%{Library.AkRoomVerbFX}",
 
 		"%{Library.avcodec}",
 		"%{Library.avdevice}",
@@ -132,13 +138,7 @@ project "Launcher"
 		"%{Library.Vulkan}",
 		"%{Library.dxc}"
     }
-
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
-
+	
 	debugargs 
 	{
 		"../Project/Project.vtproj"
@@ -147,53 +147,72 @@ project "Launcher"
 	filter "system:windows"
 		systemversion "latest"
 
-		filter "configurations:Debug"
-			defines { "VT_DEBUG" }
-			runtime "Debug"
-			symbols "on"
-			optimize "off"
+		defines
+		{
+			"NOMINMAX",
+			"_HAS_STD_BYTE=0",
+		}
 
-			links
-			{
-				"%{Library.ShaderC_Debug}",
-				"%{Library.ShaderC_Utils_Debug}",
-				"%{Library.SPIRV_Cross_Debug}",
-				"%{Library.SPIRV_Cross_GLSL_Debug}",
-				"%{Library.SPIRV_Tools_Debug}",
+		links
+		{
+			"crypt32.lib",
+			"Bcrypt.lib",
+		
+			"Winmm.lib",
+			"Version.lib"
+		}
 
-				"%{Library.VulkanUtils}"
-			}
+	filter "configurations:Debug"
+		defines { "VT_DEBUG" }
+		runtime "Debug"
+		symbols "on"
+		optimize "off"
 
-		filter "configurations:Release"
-			defines { "VT_RELEASE", "NDEBUG" }
-			runtime "Release"
-			optimize "on"
-			symbols "on"
+		links
+		{
+			"%{Library.ShaderC_Debug}",
+			"%{Library.ShaderC_Utils_Debug}",
+			"%{Library.SPIRV_Cross_Debug}",
+			"%{Library.SPIRV_Cross_GLSL_Debug}",
+			"%{Library.SPIRV_Tools_Debug}",
 
-			links
-			{
-				"%{Library.ShaderC_Release}",
-				"%{Library.ShaderC_Utils_Release}",
-				"%{Library.SPIRV_Cross_Release}",
-				"%{Library.SPIRV_Cross_GLSL_Release}",
-			}
+			"%{Library.VulkanUtils}"
+		}
 
-		filter "configurations:Dist"
-			defines { "VT_DIST", "NDEBUG" }
-			runtime "Release"
-			optimize "on"
-			symbols "on"
-			kind "WindowedApp"
+	filter "configurations:Release"
+		defines { "VT_RELEASE", "NDEBUG" }
+		runtime "Release"
+		symbols "on"
+		optimize "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
-            links
-			{
-				"%{Library.ShaderC_Release}",
-				"%{Library.ShaderC_Utils_Release}",
-				"%{Library.SPIRV_Cross_Release}",
-				"%{Library.SPIRV_Cross_GLSL_Release}",
-			}
+		links
+		{
+			"%{Library.ShaderC_Release}",
+			"%{Library.ShaderC_Utils_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}",
+		}
 
-			postbuildcommands
-			{
-				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/Launcher.exe" "../../Engine/"'
-			}
+	filter "configurations:Dist"
+		defines { "VT_DIST", "NDEBUG" }
+		runtime "Release"
+		symbols "on"
+		optimize "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+		kind "WindowedApp"
+
+        links
+		{
+			"%{Library.ShaderC_Release}",
+			"%{Library.ShaderC_Utils_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}",
+		}
+
+		postbuildcommands
+		{
+			'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Launcher/Launcher.exe" "../../Engine/"'
+		}

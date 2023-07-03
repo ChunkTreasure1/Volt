@@ -14,6 +14,8 @@ namespace Volt
         public float MaxWidth = 100f;
 
         public bool IsCentered = false;
+        public bool IsRightAligned = false;
+        public bool IsVerticalCentered = false;
 
         private Vector2 TextScale;
 
@@ -24,25 +26,37 @@ namespace Volt
 
         private void OnCreate()
         {
-            TextScale = TextSize * entity.scale.XY;
-            if (IsCentered)
-            {
-                TextOffset = new Vector3((TextString.Count() * (TextScale.x / 2)) / 2, (TextScale.y / 2), TextOffset.z);
-                TextOffset.x *= -1;
-                TextOffset.y *= -1;
-                Log.Info("TextOffSet:" + TextOffset.x.ToString() + "," + TextOffset.y.ToString());
-            }
         }
 
         private void OnRenderUI()
         {
-            Vector3 tempOffset = TextOffset;
+            TextScale = TextSize * entity.scale.XY;
+
+            Vector2 tempOffset = Vector2.Zero;
             if (IsCentered && Font != null && Font.IsValid())
             {
-                tempOffset -= new Vector3(Font.GetStringWidth(TextString, TextScale, MaxWidth) / 2f, 0f, 0f);
+                tempOffset += new Vector2(Font.GetStringWidth(TextString, TextScale, MaxWidth) / 2f, 0f);
+            }
+            else if (IsRightAligned && Font != null && Font.IsValid())
+            {
+                tempOffset += new Vector2(Font.GetStringWidth(TextString, TextScale, MaxWidth), 0f);
             }
 
-            UIRenderer.DrawString(TextString, Font, entity.position + tempOffset, TextScale, entity.rotation.z, MaxWidth, TextColor.AsVector4());
+            if (IsVerticalCentered)
+            {
+                tempOffset += new Vector2(0f, Font.GetStringHeight(TextString, TextScale, MaxWidth) / 2f);
+            }
+
+            UIRenderer.DrawString(TextString, Font, entity.position + TextOffset, TextScale, entity.rotation.z, MaxWidth, TextColor.AsVector4(), tempOffset);
+        }
+        public float GetStringWidth()
+        {
+            return Font.GetStringWidth(TextString, TextScale, MaxWidth);
+        }
+
+        public float GetStringHeight()
+        {
+            return Font.GetStringHeight(TextString, TextScale, MaxWidth);
         }
     }
 }

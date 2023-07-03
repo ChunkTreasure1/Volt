@@ -2068,6 +2068,11 @@ void _glfwSetWindowDecoratedWin32(_GLFWwindow* window, GLFWbool enabled)
 	updateWindowStyles(window);
 }
 
+void _glfwSetWindowTitlebarWin32(_GLFWwindow* window, GLFWbool enabled)
+{
+	updateWindowStyles(window);
+}
+
 void _glfwSetWindowFloatingWin32(_GLFWwindow* window, GLFWbool enabled)
 {
 	const HWND after = enabled ? HWND_TOPMOST : HWND_NOTOPMOST;

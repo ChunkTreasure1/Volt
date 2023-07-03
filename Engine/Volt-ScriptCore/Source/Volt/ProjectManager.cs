@@ -13,5 +13,15 @@ namespace Volt
         {
             return InternalCalls.Project_GetDirectory();
         }
+
+        public static string GetProjectName()
+        {
+            return InternalCalls.Project_GetProjectName();
+        }
+
+        public static string GetCompanyName()
+        {
+            return InternalCalls.Project_GetCompanyName();
+        }
     }
 }

@@ -84,7 +84,7 @@ void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
 	fileOp.pFrom = wstr.c_str();
 	fileOp.pTo = NULL;
 	fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_SILENT;
-	int32_t result = SHFileOperation(&fileOp);
+	SHFileOperation(&fileOp);
 }
 
 bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
@@ -134,7 +134,7 @@ std::filesystem::path FileSystem::OpenFileDialogue(const std::vector<FileFilter>
 
 	NFD::UniquePath outPath;
 	nfdresult_t result = NFD::OpenDialog(outPath, filterItems.data(), static_cast<nfdfiltersize_t>(filterItems.size()), absolutePath.string().c_str());
-	
+
 	switch (result)
 	{
 		case NFD_OKAY:
@@ -251,6 +251,8 @@ std::string FileSystem::GetEnvVariable(const std::string& key)
 			delete[] data;
 			return result;
 		}
+		
+		delete[] data;
 	}
 
 	return std::string{};

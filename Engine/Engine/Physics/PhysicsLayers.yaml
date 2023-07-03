@@ -9,7 +9,7 @@ PhysicsLayers:
     name: Player
   - layerId: 2
     bitValue: 4
-    collidesWith: 319
+    collidesWith: 63
     name: Enemy
   - layerId: 3
     bitValue: 8
@@ -33,5 +33,5 @@ PhysicsLayers:
     name: EnemyBodyPart
   - layerId: 8
     bitValue: 256
-    collidesWith: 142
+    collidesWith: 138
     name: PenetrableFence

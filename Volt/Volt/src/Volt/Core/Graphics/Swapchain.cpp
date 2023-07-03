@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "Swapchain.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -12,26 +12,26 @@
 
 namespace Volt
 {
-	SwapchainVolt::SwapchainVolt(GLFWwindow* window)
+	Swapchain::Swapchain(GLFWwindow* window)
 	{
-		VT_VK_CHECK(glfwCreateWindowSurface(GraphicsContextVolt::Get().GetInstance(), window, nullptr, &mySurface));
+		VT_VK_CHECK(glfwCreateWindowSurface(GraphicsContext::Get().GetInstance(), window, nullptr, &mySurface));
 
-		auto physDevice = GraphicsContextVolt::GetPhysicalDevice();
+		auto physDevice = GraphicsContext::GetPhysicalDevice();
 
 		const auto& queueIndices = physDevice->GetQueueFamilies();
 
 		VkBool32 supportsPresentation;
-		vkGetPhysicalDeviceSurfaceSupportKHR(GraphicsContextVolt::GetPhysicalDevice()->GetHandle(), queueIndices.graphicsFamilyQueueIndex, mySurface, &supportsPresentation);
+		vkGetPhysicalDeviceSurfaceSupportKHR(GraphicsContext::GetPhysicalDevice()->GetHandle(), queueIndices.graphicsFamilyQueueIndex, mySurface, &supportsPresentation);
 		VT_CORE_ASSERT(supportsPresentation == VK_TRUE, "No queue with presentation support found!");
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		myDevice = device->GetHandle();
-		myInstance = GraphicsContextVolt::Get().GetInstance();
+		myInstance = GraphicsContext::Get().GetInstance();
 
 		Invalidate(myWidth, myHeight, true);
 	}
 	
-	SwapchainVolt::~SwapchainVolt()
+	Swapchain::~Swapchain()
 	{
 		Release();
 
@@ -39,7 +39,7 @@ namespace Volt
 		myDevice = nullptr;
 	}
 
-	void SwapchainVolt::Release()
+	void Swapchain::Release()
 	{
 		if (!mySwapchain)
 		{
@@ -73,10 +73,10 @@ namespace Volt
 		vkDestroySurfaceKHR(myInstance, mySurface, nullptr);
 	}
 
-	void SwapchainVolt::BeginFrame()
+	void Swapchain::BeginFrame()
 	{
 		VT_PROFILE_FUNCTION();
-		auto device = GraphicsContextVolt::GetDevice()->GetHandle();
+		auto device = GraphicsContext::GetDevice()->GetHandle();
 
 		auto& frameData = myFrameInFlightData.at(myCurrentFrame);
 
@@ -97,7 +97,7 @@ namespace Volt
 		VulkanAllocator::SetFrameIndex(myCurrentFrame);
 	}
 
-	void SwapchainVolt::Present()
+	void Swapchain::Present()
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -121,7 +121,7 @@ namespace Volt
 			const VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			submitInfo.pWaitDstStageMask = &waitStage;
 
-			VT_VK_CHECK(vkQueueSubmit(GraphicsContextVolt::GetDevice()->GetGraphicsQueue(), 1, &submitInfo, frameData.fence));
+			GraphicsContext::GetDevice()->FlushCommandBuffer(submitInfo, frameData.fence, QueueType::Graphics);
 		}
 
 		// Present to screen
@@ -139,7 +139,7 @@ namespace Volt
 			presentInfo.pImageIndices = &myCurrentImage;
 
 			OPTICK_GPU_FLIP(&mySwapchain);
-			VkResult presentResult = vkQueuePresentKHR(GraphicsContextVolt::GetDevice()->GetGraphicsQueue(), &presentInfo);
+			VkResult presentResult = GraphicsContext::GetDevice()->QueuePresent(presentInfo, QueueType::Graphics);
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{
 				Resize(myWidth, myHeight, myVSyncEnabled);
@@ -153,7 +153,7 @@ namespace Volt
 		myCurrentFrame = (myCurrentFrame + 1) % myMaxFramesInFlight;
 	}
 
-	void SwapchainVolt::Resize(uint32_t width, uint32_t height, bool useVSync)
+	void Swapchain::Resize(uint32_t width, uint32_t height, bool useVSync)
 	{
 		if (!mySwapchain)
 		{
@@ -166,19 +166,19 @@ namespace Volt
 
 		QuerySwapchainCapabilities();
 
-		GraphicsContextVolt::GetDevice()->WaitForIdle();
+		GraphicsContext::GetDevice()->WaitForIdle();
 
 		CreateSwapchain(width, height, useVSync);
 		CreateImageViews();
 		CreateFramebuffers();
 	}
 
-	Ref<SwapchainVolt> SwapchainVolt::Create(GLFWwindow* window)
+	Ref<Swapchain> Swapchain::Create(GLFWwindow* window)
 	{
-		return CreateRef<SwapchainVolt>(window);
+		return CreateRef<Swapchain>(window);
 	}
 
-	void SwapchainVolt::Invalidate(uint32_t width, uint32_t height, bool useVSync)
+	void Swapchain::Invalidate(uint32_t width, uint32_t height, bool useVSync)
 	{
 		myWidth = width;
 		myWidth = height;
@@ -194,9 +194,9 @@ namespace Volt
 		CreateCommandBuffers();
 	}
 
-	void SwapchainVolt::QuerySwapchainCapabilities()
+	void Swapchain::QuerySwapchainCapabilities()
 	{
-		auto physDevice = GraphicsContextVolt::GetPhysicalDevice();
+		auto physDevice = GraphicsContext::GetPhysicalDevice();
 		
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevice->GetHandle(), mySurface, &myCapabilities.capabilities);
 
@@ -219,7 +219,7 @@ namespace Volt
 		}
 	}
 
-	VkSurfaceFormatKHR SwapchainVolt::ChooseSwapchainFormat()
+	VkSurfaceFormatKHR Swapchain::ChooseSwapchainFormat()
 	{
 		for (const auto& format : myCapabilities.formats)
 		{
@@ -232,10 +232,15 @@ namespace Volt
 		return myCapabilities.formats.front();
 	}
 
-	VkPresentModeKHR SwapchainVolt::ChooseSwapchainPresentMode()
+	VkPresentModeKHR Swapchain::ChooseSwapchainPresentMode(bool useVSync)
 	{
 		for (const auto& presentMode : myCapabilities.presentModes)
 		{
+			if (useVSync && presentMode == VK_PRESENT_MODE_FIFO_KHR)
+			{
+				return presentMode;
+			}
+
 			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
 				return presentMode;
@@ -246,10 +251,10 @@ namespace Volt
 
 	}
 
-	void SwapchainVolt::CreateSwapchain(uint32_t width, uint32_t height, bool useVSync)
+	void Swapchain::CreateSwapchain(uint32_t width, uint32_t height, bool useVSync)
 	{
 		const VkSurfaceFormatKHR surfaceFormat = ChooseSwapchainFormat();
-		const VkPresentModeKHR presentMode = ChooseSwapchainPresentMode();
+		const VkPresentModeKHR presentMode = ChooseSwapchainPresentMode(useVSync);
 
 		myImageCount = myCapabilities.capabilities.minImageCount + 1;
 		if (myCapabilities.capabilities.maxImageCount > 0 && myImageCount > myCapabilities.capabilities.maxImageCount)
@@ -279,7 +284,7 @@ namespace Volt
 		swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		swapchainCreateInfo.oldSwapchain = oldSwapchain;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		VT_VK_CHECK(vkCreateSwapchainKHR(device->GetHandle(), &swapchainCreateInfo, nullptr, &mySwapchain));
 
 		if (oldSwapchain != VK_NULL_HANDLE)
@@ -310,7 +315,7 @@ namespace Volt
 		mySwapchainFormat = surfaceFormat.format;
 	}
 
-	void SwapchainVolt::CreateImageViews()
+	void Swapchain::CreateImageViews()
 	{
 		VkImageViewCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -329,11 +334,11 @@ namespace Volt
 		for (auto& imageData : myImageData)
 		{
 			createInfo.image = imageData.image;
-			VT_VK_CHECK(vkCreateImageView(GraphicsContextVolt::GetDevice()->GetHandle(), &createInfo, nullptr, &imageData.imageView));
+			VT_VK_CHECK(vkCreateImageView(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &imageData.imageView));
 		}
 	}
 
-	void SwapchainVolt::CreateRenderPass()
+	void Swapchain::CreateRenderPass()
 	{
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = mySwapchainFormat;
@@ -372,10 +377,10 @@ namespace Volt
 		createInfo.dependencyCount = 1;
 		createInfo.pDependencies = &subpassDepend;
 
-		VT_VK_CHECK(vkCreateRenderPass(GraphicsContextVolt::GetDevice()->GetHandle(), &createInfo, nullptr, &myRenderPass));
+		VT_VK_CHECK(vkCreateRenderPass(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &myRenderPass));
 	}
 
-	void SwapchainVolt::CreateFramebuffers()
+	void Swapchain::CreateFramebuffers()
 	{
 		VkFramebufferCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -388,17 +393,17 @@ namespace Volt
 		for (auto& imageData : myImageData)
 		{
 			createInfo.pAttachments = &imageData.imageView;
-			VT_VK_CHECK(vkCreateFramebuffer(GraphicsContextVolt::GetDevice()->GetHandle(), &createInfo, nullptr, &imageData.framebuffer));
+			VT_VK_CHECK(vkCreateFramebuffer(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &imageData.framebuffer));
 		}
 	}
 
-	void SwapchainVolt::CreateSyncObjects()
+	void Swapchain::CreateSyncObjects()
 	{
 		VkFenceCreateInfo fenceInfo{};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		auto device = GraphicsContextVolt::GetDevice()->GetHandle();
+		auto device = GraphicsContext::GetDevice()->GetHandle();
 
 		myFrameInFlightData.resize(myMaxFramesInFlight);
 
@@ -417,9 +422,9 @@ namespace Volt
 		}
 	}
 
-	void SwapchainVolt::CreateCommandPools()
+	void Swapchain::CreateCommandPools()
 	{
-		const auto queueIndices = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies();
+		const auto queueIndices = GraphicsContext::GetPhysicalDevice()->GetQueueFamilies();
 
 		VkCommandPoolCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -428,11 +433,11 @@ namespace Volt
 
 		for (auto& frameData : myFrameInFlightData)
 		{
-			VT_VK_CHECK(vkCreateCommandPool(GraphicsContextVolt::GetDevice()->GetHandle(), &createInfo, nullptr, &frameData.commandPool));
+			VT_VK_CHECK(vkCreateCommandPool(GraphicsContext::GetDevice()->GetHandle(), &createInfo, nullptr, &frameData.commandPool));
 		}
 	}
 
-	void SwapchainVolt::CreateCommandBuffers()
+	void Swapchain::CreateCommandBuffers()
 	{
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -442,7 +447,7 @@ namespace Volt
 		for (auto& frameData : myFrameInFlightData)
 		{
 			allocInfo.commandPool = frameData.commandPool;
-			VT_VK_CHECK(vkAllocateCommandBuffers(GraphicsContextVolt::GetDevice()->GetHandle(), &allocInfo, &frameData.commandBuffer));
+			VT_VK_CHECK(vkAllocateCommandBuffers(GraphicsContext::GetDevice()->GetHandle(), &allocInfo, &frameData.commandBuffer));
 		}
 	}
 }

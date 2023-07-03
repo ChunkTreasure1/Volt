@@ -158,19 +158,19 @@ namespace Volt
 				case ShaderUniformType::Bool: return constant.scalar_i8();
 
 				case ShaderUniformType::UInt: return constant.scalar();
-				case ShaderUniformType::UInt2: return gem::vec2ui{ constant.scalar(0), constant.scalar(1) };
-				case ShaderUniformType::UInt3: return gem::vec3ui{ constant.scalar(0), constant.scalar(1), constant.scalar(2) };
-				case ShaderUniformType::UInt4: return gem::vec4ui{ constant.scalar(0), constant.scalar(1), constant.scalar(2), constant.scalar(3) };
+				case ShaderUniformType::UInt2: return glm::uvec2{ constant.scalar(0), constant.scalar(1) };
+				case ShaderUniformType::UInt3: return glm::uvec3{ constant.scalar(0), constant.scalar(1), constant.scalar(2) };
+				case ShaderUniformType::UInt4: return glm::uvec4{ constant.scalar(0), constant.scalar(1), constant.scalar(2), constant.scalar(3) };
 
 				case ShaderUniformType::Int: return constant.scalar_i32();
-				case ShaderUniformType::Int2: return gem::vec2i{ constant.scalar_i32(0), constant.scalar_i32(1) };
-				case ShaderUniformType::Int3: return gem::vec3i{ constant.scalar_i32(0), constant.scalar_i32(1), constant.scalar_i32(2) };
-				case ShaderUniformType::Int4: return gem::vec4i{ constant.scalar_i32(0), constant.scalar_i32(1), constant.scalar_i32(2), constant.scalar_i32(3) };
+				case ShaderUniformType::Int2: return glm::ivec2{ constant.scalar_i32(0), constant.scalar_i32(1) };
+				case ShaderUniformType::Int3: return glm::ivec3{ constant.scalar_i32(0), constant.scalar_i32(1), constant.scalar_i32(2) };
+				case ShaderUniformType::Int4: return glm::ivec4{ constant.scalar_i32(0), constant.scalar_i32(1), constant.scalar_i32(2), constant.scalar_i32(3) };
 
 				case ShaderUniformType::Float: return constant.scalar_f32();
-				case ShaderUniformType::Float2: return gem::vec2{ constant.scalar_f32(0), constant.scalar_f32(1) };
-				case ShaderUniformType::Float3: return gem::vec3{ constant.scalar_f32(0), constant.scalar_f32(1), constant.scalar_f32(2) };
-				case ShaderUniformType::Float4: return gem::vec4{ constant.scalar_f32(0), constant.scalar_f32(1), constant.scalar_f32(2), constant.scalar_f32(3) };
+				case ShaderUniformType::Float2: return glm::vec2{ constant.scalar_f32(0), constant.scalar_f32(1) };
+				case ShaderUniformType::Float3: return glm::vec3{ constant.scalar_f32(0), constant.scalar_f32(1), constant.scalar_f32(2) };
+				case ShaderUniformType::Float4: return glm::vec4{ constant.scalar_f32(0), constant.scalar_f32(1), constant.scalar_f32(2), constant.scalar_f32(3) };
 			}
 
 			return 0;
@@ -298,19 +298,19 @@ namespace Volt
 				case ShaderUniformType::Bool: newBuffer.SetValue(constant.name, std::any_cast<int8_t>(constant.defaultValue)); break;
 
 				case ShaderUniformType::UInt: newBuffer.SetValue(constant.name, std::any_cast<uint32_t>(constant.defaultValue)); break;
-				case ShaderUniformType::UInt2: newBuffer.SetValue(constant.name, std::any_cast<gem::vec2ui>(constant.defaultValue)); break;
-				case ShaderUniformType::UInt3: newBuffer.SetValue(constant.name, std::any_cast<gem::vec3ui>(constant.defaultValue)); break;
-				case ShaderUniformType::UInt4: newBuffer.SetValue(constant.name, std::any_cast<gem::vec4ui>(constant.defaultValue)); break;
+				case ShaderUniformType::UInt2: newBuffer.SetValue(constant.name, std::any_cast<glm::uvec2>(constant.defaultValue)); break;
+				case ShaderUniformType::UInt3: newBuffer.SetValue(constant.name, std::any_cast<glm::uvec3>(constant.defaultValue)); break;
+				case ShaderUniformType::UInt4: newBuffer.SetValue(constant.name, std::any_cast<glm::uvec4>(constant.defaultValue)); break;
 
 				case ShaderUniformType::Int: newBuffer.SetValue(constant.name, std::any_cast<int32_t>(constant.defaultValue)); break;
-				case ShaderUniformType::Int2: newBuffer.SetValue(constant.name, std::any_cast<gem::vec2i>(constant.defaultValue)); break;
-				case ShaderUniformType::Int3: newBuffer.SetValue(constant.name, std::any_cast<gem::vec3i>(constant.defaultValue)); break;
-				case ShaderUniformType::Int4: newBuffer.SetValue(constant.name, std::any_cast<gem::vec4i>(constant.defaultValue)); break;
+				case ShaderUniformType::Int2: newBuffer.SetValue(constant.name, std::any_cast<glm::ivec2>(constant.defaultValue)); break;
+				case ShaderUniformType::Int3: newBuffer.SetValue(constant.name, std::any_cast<glm::ivec3>(constant.defaultValue)); break;
+				case ShaderUniformType::Int4: newBuffer.SetValue(constant.name, std::any_cast<glm::ivec4>(constant.defaultValue)); break;
 
 				case ShaderUniformType::Float: newBuffer.SetValue(constant.name, std::any_cast<float>(constant.defaultValue)); break;
-				case ShaderUniformType::Float2: newBuffer.SetValue(constant.name, std::any_cast<gem::vec2>(constant.defaultValue)); break;
-				case ShaderUniformType::Float3: newBuffer.SetValue(constant.name, std::any_cast<gem::vec3>(constant.defaultValue)); break;
-				case ShaderUniformType::Float4: newBuffer.SetValue(constant.name, std::any_cast<gem::vec4>(constant.defaultValue)); break;
+				case ShaderUniformType::Float2: newBuffer.SetValue(constant.name, std::any_cast<glm::vec2>(constant.defaultValue)); break;
+				case ShaderUniformType::Float3: newBuffer.SetValue(constant.name, std::any_cast<glm::vec3>(constant.defaultValue)); break;
+				case ShaderUniformType::Float4: newBuffer.SetValue(constant.name, std::any_cast<glm::vec4>(constant.defaultValue)); break;
 			}
 		}
 
@@ -870,14 +870,6 @@ namespace Volt
 			myResources.vertexLayout = { inputElements };
 		}
 
-		if (stage == VK_SHADER_STAGE_FRAGMENT_BIT)
-		{
-			for (const auto& output : resources.stage_outputs)
-			{
-
-			}
-		}
-
 #ifdef VT_SHADER_PRINT
 		VT_CORE_INFO("		Uniform Buffers: {0}", myPerStageUBOCount[stage].count);
 		VT_CORE_INFO("		Dynamic Uniform Buffers: {0}", myPerStageDynamicUBOCount[stage].count);
@@ -917,30 +909,31 @@ namespace Volt
 			info.bindingCount = (uint32_t)bindings.size();
 			info.pBindings = bindings.data();
 
+			std::vector<VkDescriptorBindingFlags> bindingFlags{};
+
 			VkDescriptorSetLayoutBindingFlagsCreateInfo extendedInfo{};
+			extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+			extendedInfo.bindingCount = info.bindingCount;
+
 			for (const auto& binding : bindings)
 			{
+				auto& flags = bindingFlags.emplace_back();
+				flags = 0;
+
 				if (Utility::IsBindlessDescriptorBinding(binding) && set == 0)
 				{
 					info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-					extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-					extendedInfo.bindingCount = 1;
-					extendedInfo.pBindingFlags = &bindlessFlags;
-
-					info.pNext = &extendedInfo;
-					break;
+					flags = bindlessFlags;
 				}
 				else if (set == Sets::MATERIAL)
 				{
 					info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-					extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-					extendedInfo.bindingCount = 1;
-					extendedInfo.pBindingFlags = &materialFlags;
-
-					info.pNext = &extendedInfo;
-					break;
+					flags = materialFlags;
 				}
 			}
+
+			extendedInfo.pBindingFlags = bindingFlags.data();
+			info.pNext = &extendedInfo;
 
 			VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myResources.nullPaddedDescriptorSetLayouts.emplace_back()));
 			myResources.descriptorSetLayouts.emplace_back(myResources.nullPaddedDescriptorSetLayouts.back());

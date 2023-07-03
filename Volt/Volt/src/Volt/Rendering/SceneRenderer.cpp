@@ -17,8 +17,8 @@
 
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Graphics/Swapchain.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
 
 #include "Volt/Components/Components.h"
 #include "Volt/Components/LightComponents.h"
@@ -33,6 +33,7 @@
 
 #include "Volt/Rendering/Buffer/VertexBuffer.h"
 #include "Volt/Rendering/Buffer/VertexBufferSet.h"
+#include "Volt/Rendering/Buffer/IndexBuffer.h"
 
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Image3D.h"
@@ -47,7 +48,10 @@
 #include "Volt/Rendering/GlobalDescriptorSet.h"
 #include "Volt/Rendering/Texture/TextureTable.h"
 #include "Volt/Rendering/MaterialTable.h"
+#include "Volt/Rendering/MeshTable.h"
 #include "Volt/Rendering/Shape.h"
+
+#include "Volt/Rendering/Shader/ShaderUtility.h"
 
 #include "Volt/Rendering/UIRenderer.h"
 #include "Volt/Rendering/DebugRenderer.h"
@@ -64,9 +68,11 @@
 #include "Volt/Rendering/RenderTechniques/VolumetricFogTechnique.h"
 #include "Volt/Rendering/RenderTechniques/SSRTechnique.h"
 
+#include "Volt/Asset/Text/MSDFData.h"
+
 #include "Volt/Particles/ParticleSystem.h"
 
-#include "Volt/Math/MatrixUtilities.h"
+#include "Volt/Math/Math.h"
 
 #include "Volt/Utility/ImageUtility.h"
 #include "Volt/Utility/ShadowMappingUtility.h"
@@ -105,10 +111,11 @@ namespace Volt
 	{
 		myScene = mySpecification.scene;
 		myOriginalSize = mySpecification.initialResolution;
-		myScaledSize = (gem::vec2ui)((gem::vec2)mySpecification.initialResolution * mySettings.renderScale);
+		myScaledSize = (glm::uvec2)((glm::vec2)mySpecification.initialResolution * mySettings.renderScale);
 		myRenderSize = myScaledSize;
 
 		myTimestamps.resize(Renderer::GetFramesInFlightCount());
+		myResizeLightCullingBuffers = std::vector<bool>(Renderer::GetFramesInFlightCount(), false);
 
 		CreateBuffers();
 		CreateGlobalDescriptorSets();
@@ -117,6 +124,7 @@ namespace Volt
 
 		CreateLineData();
 		CreateBillboardData();
+		CreateTextData();
 
 		if (mySettings.enableRayTracing)
 		{
@@ -126,13 +134,12 @@ namespace Volt
 			myRayTracedSceneRenderer = CreateScope<RayTracedSceneRenderer>(spec);
 		}
 
-		myRenderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		myIndirectPasses.reserve(100);
 	}
 
 	SceneRenderer::~SceneRenderer()
 	{
-		GraphicsContextVolt::GetDevice()->WaitForIdle();
+		GraphicsContext::GetDevice()->WaitForIdle();
 
 		myShaderStorageBufferSet = nullptr;
 		myUniformBufferSet = nullptr;
@@ -152,8 +159,6 @@ namespace Volt
 			myBillboardData.vertexBuffer = nullptr;
 			myBillboardData.renderPipeline = nullptr;
 		}
-
-		myRenderThreadPool.Shutdown();
 
 		myTransientResourceSystem.Reset();
 		myTransientResourceSystem.Clear();
@@ -189,11 +194,11 @@ namespace Volt
 	void SceneRenderer::Resize(uint32_t width, uint32_t height)
 	{
 		myShouldResize = true;
-		myOriginalSize = gem::vec2ui{ width, height };
-		myScaledSize = (gem::vec2ui)gem::max(gem::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, gem::vec2{ 1.f });
+		myOriginalSize = glm::uvec2{ width, height };
+		myScaledSize = (glm::uvec2)glm::max(glm::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, glm::vec2{ 1.f });
 	}
 
-	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, const gem::mat4& transform)
+	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -210,7 +215,7 @@ namespace Volt
 		}
 	}
 
-	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const gem::mat4& transform)
+	void SceneRenderer::SubmitOutlineMesh(Ref<Mesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -241,8 +246,41 @@ namespace Volt
 
 	void SceneRenderer::ApplySettings()
 	{
-		myScaledSize = (gem::vec2ui)gem::max(gem::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, gem::vec2{ 1.f });
+		GraphicsContext::GetDevice()->WaitForIdle();
+
+		myScaledSize = (glm::uvec2)glm::max(glm::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, glm::vec2{ 1.f });
 		myShouldResize = true;
+
+		myGTAOMainPassPipeline->GetSpecializationConstantBuffer().SetValue("u_quality", (uint32_t)mySettings.aoQuality);
+		myGTAOMainPassPipeline->Invalidate();
+	}
+
+	void SceneRenderer::UpdateSettings(const SceneRendererSettings& settings)
+	{
+		mySettings.shadowResolution = settings.shadowResolution;
+		mySettings.antiAliasing = settings.antiAliasing;
+		mySettings.aoQuality = settings.aoQuality;
+		mySettings.renderScale = settings.renderScale;
+
+		mySettings.enableShadows = settings.enableShadows;
+		mySettings.enableAO = settings.enableAO;
+		mySettings.enableBloom = settings.enableBloom;
+		mySettings.enableAntiAliasing = settings.enableAntiAliasing;
+		mySettings.enableVolumetricFog = settings.enableVolumetricFog;
+	}
+
+	void SceneRenderer::SetRenderMode(RenderMode renderingMode)
+	{
+		if (myCurrentRenderMode == renderingMode)
+		{
+			return;
+		}
+
+		GraphicsContext::GetDevice()->WaitForIdle();
+
+		myCurrentRenderMode = renderingMode;
+		myDeferredShadingPipeline->GetSpecializationConstantBuffer().SetValue("u_renderMode", (uint32_t)myCurrentRenderMode);
+		myDeferredShadingPipeline->Invalidate();
 	}
 
 	void SceneRenderer::UpdateRayTracingScene()
@@ -261,7 +299,7 @@ namespace Volt
 		return myStatistics;
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, const std::vector<gem::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, float timeSinceCreation, float randomValue, uint32_t id)
 	{
 		for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
 		{
@@ -276,12 +314,13 @@ namespace Volt
 			cmd.timeSinceCreation = timeSinceCreation;
 			cmd.randomValue = randomValue;
 
+			i++;
 		}
 
 		GetCPUData().animationBoneCount += (uint32_t)boneTransforms.size();
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const gem::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, float timeSinceCreation, float randomValue, uint32_t id)
 	{
 		for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
 		{
@@ -294,6 +333,8 @@ namespace Volt
 			cmd.id = id;
 			cmd.timeSinceCreation = timeSinceCreation;
 			cmd.randomValue = randomValue;
+
+			i++;
 		}
 	}
 
@@ -469,10 +510,18 @@ namespace Volt
 				myPointLightShadowPipeline = RenderPipeline::Create(spec);
 			}
 
-			myDeferredShadingPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("DeferredShading"), framesInFlight, true);
+			// Deferred
+			{
+				myGBufferPipeline = Utility::CreateRenderPipeline(ShaderRegistry::GetShader("Illum"), { ImageFormat::RGBA, ImageFormat::RGBA16F, ImageFormat::RGBA16F, ImageFormat::DEPTH32F }, "Deferred");
+
+				Ref<Shader> shadingShader = ShaderRegistry::GetShader("DeferredShading");
+				ShaderDataBuffer renderModeBuffer = shadingShader->CreateSpecialiazationConstantsBuffer(ShaderStage::Compute);
+				renderModeBuffer.SetValue("u_renderMode", 0);
+
+				myDeferredShadingPipeline = ComputePipeline::Create(shadingShader, framesInFlight, true, renderModeBuffer);
+			}
 
 			myPreDepthPipeline = Utility::CreateRenderPipeline(ShaderRegistry::GetShader("PreDepth"), { ImageFormat::RGBA16F, ImageFormat::DEPTH32F }, "Pre Depth", CompareOperator::GreaterEqual);
-			myGBufferPipeline = Utility::CreateRenderPipeline(ShaderRegistry::GetShader("Illum"), { ImageFormat::RGBA, ImageFormat::RGBA16F, ImageFormat::RGBA16F, ImageFormat::DEPTH32F }, "Deferred");
 			myIDPipeline = Utility::CreateRenderPipeline(ShaderRegistry::GetShader("ID"), { ImageFormat::R32UI, ImageFormat::DEPTH32F }, "ID");
 			myOutlineGeometryPipeline = Utility::CreateRenderPipeline(ShaderRegistry::GetShader("OutlineGeometry"), { ImageFormat::RGBA16F, ImageFormat::DEPTH32F }, "Outline Geometry");
 
@@ -487,8 +536,16 @@ namespace Volt
 			myBloomUpsamplePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("BloomUpsample"), framesInFlight, true);
 			myBloomCompositePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("BloomComposite"), framesInFlight);
 
-			myGTAOPrefilterPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("GTAODepthPrefilter"), framesInFlight, true);
-			myGTAOMainPassPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("GTAOMainPass"), framesInFlight, true);
+			// GTAO
+			{
+				myGTAOPrefilterPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("GTAODepthPrefilter"), framesInFlight, true);
+
+				Ref<Shader> mainPassShader = ShaderRegistry::GetShader("GTAOMainPass");
+				ShaderDataBuffer qualityBuffer = mainPassShader->CreateSpecialiazationConstantsBuffer(ShaderStage::Compute);
+				qualityBuffer.SetValue("u_quality", (uint32_t)mySettings.aoQuality);
+
+				myGTAOMainPassPipeline = ComputePipeline::Create(mainPassShader, framesInFlight, true, qualityBuffer);
+			}
 
 			myVolumetricFogInjectPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("VolumetricFog_InjectLight"), framesInFlight, true);
 			myVolumetricFogRayMarchPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("VolumetricFog_RayMarch"), framesInFlight, true);
@@ -510,8 +567,7 @@ namespace Volt
 			myFXAAPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("FXAA"), framesInFlight, true);
 			myAACompositePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("AAComposite"), framesInFlight, false);
 
-			mySSRPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("SSR"), framesInFlight, true);
-			mySSRCompositePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("SSRComposite"), framesInFlight, true);
+			myLODSelectionPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("LODSelection"), framesInFlight, true);
 		}
 
 		// Materials
@@ -525,6 +581,28 @@ namespace Volt
 				spec.cullMode = CullMode::Back;
 
 				myTransparentCompositeMaterial = Material::Create(spec);
+			}
+
+			// SSR
+			{
+				RenderPipelineSpecification spec{};
+				spec.shader = ShaderRegistry::GetShader("SSR");
+				spec.framebufferAttachments = { { ImageFormat::RGBA16F } };
+				spec.name = "SSR";
+				spec.cullMode = CullMode::Back;
+
+				mySSRMaterial = Material::Create(spec);
+			}
+
+			// SSR Composite
+			{
+				RenderPipelineSpecification spec{};
+				spec.shader = ShaderRegistry::GetShader("SSRComposite");
+				spec.framebufferAttachments = { { ImageFormat::RGBA16F } };
+				spec.name = "SSR Composite";
+				spec.cullMode = CullMode::Back;
+
+				mySSRCompositeMaterial = Material::Create(spec);
 			}
 
 			// Grid
@@ -549,12 +627,12 @@ namespace Volt
 
 				RenderPipelineSpecification spec{};
 				spec.shader = ShaderRegistry::GetShader("Decal");
-				spec.framebufferAttachments = 
-				{ 
-					ImageFormat::RGBA, 
-					ImageFormat::RGBA16F, 
-					ImageFormat::RGBA16F, 
-					ImageFormat::DEPTH32F 
+				spec.framebufferAttachments =
+				{
+					ImageFormat::RGBA,
+					ImageFormat::RGBA16F,
+					ImageFormat::RGBA16F,
+					ImageFormat::DEPTH32F
 				};
 
 				spec.name = "Decal";
@@ -632,10 +710,10 @@ namespace Volt
 
 		myShaderStorageBufferSet = ShaderStorageBufferSet::Create(maxFramesInFlight);
 
-		myShaderStorageBufferSet->Add<IndirectGPUCommand>(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, START_OBJECT_COUNT, MemoryUsage::CPUToGPU | MemoryUsage::Indirect);
+		myShaderStorageBufferSet->Add<IndirectGPUCommand>(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, START_OBJECT_COUNT, MemoryUsage::CPUToGPU | MemoryUsage::Indirect);
 		myShaderStorageBufferSet->Add<ObjectData>(Sets::RENDERER_BUFFERS, Bindings::OBJECT_DATA, START_OBJECT_COUNT, MemoryUsage::CPUToGPU);
 
-		myShaderStorageBufferSet->Add<gem::mat4>(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, MAX_ANIMATION_BONES, MemoryUsage::CPUToGPU);
+		myShaderStorageBufferSet->Add<glm::mat4>(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, 8096, MemoryUsage::CPUToGPU);
 
 		myShaderStorageBufferSet->Add<PointLight>(Sets::RENDERER_BUFFERS, Bindings::POINT_LIGHTS, START_LIGHT_COUNT, MemoryUsage::CPUToGPU);
 		myShaderStorageBufferSet->Add<SpotLight>(Sets::RENDERER_BUFFERS, Bindings::SPOT_LIGHTS, START_LIGHT_COUNT, MemoryUsage::CPUToGPU);
@@ -643,12 +721,22 @@ namespace Volt
 		myShaderStorageBufferSet->Add<RectangleLight>(Sets::RENDERER_BUFFERS, Bindings::RECTANGLE_LIGHTS, START_LIGHT_COUNT, MemoryUsage::CPUToGPU);
 
 		myShaderStorageBufferSet->Add<ParticleRenderingInfo>(Sets::RENDERER_BUFFERS, Bindings::PARTICLE_INFO, START_PARTICLE_COUNT, MemoryUsage::CPUToGPU);
-		myShaderStorageBufferSet->Add<gem::vec4>(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, START_VERTEX_COLOR_COUNT, MemoryUsage::CPUToGPU);
+		myShaderStorageBufferSet->Add<uint32_t>(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, START_VERTEX_COLOR_COUNT, MemoryUsage::CPUToGPU);
 
-		const uint32_t workGroupsX = (myScaledSize.x + 16 - 1) / 16;
-		const uint32_t workGroupsY = (myScaledSize.y + 16 - 1) / 16;
-		myShaderStorageBufferSet->Add<int32_t>(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, MAX_POINT_LIGHTS * workGroupsX * workGroupsY);
-		myShaderStorageBufferSet->Add<int32_t>(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_SPOT_LIGHTS, MAX_SPOT_LIGHTS * workGroupsX * workGroupsY);
+		// Light culling
+		{
+			constexpr uint32_t TILE_SIZE = 16;
+
+			glm::uvec2 size = myRenderSize;
+			size.x += TILE_SIZE - myRenderSize.x % TILE_SIZE;
+			size.y += TILE_SIZE - myRenderSize.y % TILE_SIZE;
+
+			myLightCullingWorkGroups = size / TILE_SIZE;
+
+			myShaderStorageBufferSet->Add<int32_t>(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, MAX_POINT_LIGHTS * myLightCullingWorkGroups.x * myLightCullingWorkGroups.y);
+			myShaderStorageBufferSet->Add<int32_t>(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_SPOT_LIGHTS, MAX_SPOT_LIGHTS * myLightCullingWorkGroups.x * myLightCullingWorkGroups.y);
+		}
+
 	}
 
 	void SceneRenderer::CreateLineData()
@@ -691,6 +779,58 @@ namespace Volt
 		myBillboardData.renderPipeline = RenderPipeline::Create(pipelineSpec);
 	}
 
+	void SceneRenderer::CreateTextData()
+	{
+		auto& textData = myTextData;
+
+		// Create pipeline
+		{
+			RenderPipelineSpecification spec{};
+			spec.name = "Text";
+			spec.shader = ShaderRegistry::GetShader("Text");
+			spec.depthMode = DepthMode::ReadWrite;
+			spec.cullMode = CullMode::Back;
+
+			spec.framebufferAttachments =
+			{
+				{ ImageFormat::RGBA16F, { 1.f }, TextureBlend::Alpha },
+				{ ImageFormat::DEPTH32F }
+			};
+
+			spec.vertexLayout = TextVertex::GetVertexLayout();
+			spec.depthCompareOperator = CompareOperator::GreaterEqual;
+
+			textData.renderPipeline = RenderPipeline::Create(spec);
+		}
+
+		textData.vertexBufferBase = new TextVertex[TextData::MAX_INDICES];
+		textData.vertexBufferPtr = textData.vertexBufferBase;
+
+		textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES, true);
+
+		// Index buffer
+		{
+			uint32_t* indices = new uint32_t[TextData::MAX_INDICES];
+			uint32_t offset = 0;
+
+			for (uint32_t indice = 0; indice < TextData::MAX_INDICES; indice += 6)
+			{
+				indices[indice + 0] = offset + 0;
+				indices[indice + 1] = offset + 3;
+				indices[indice + 2] = offset + 2;
+
+				indices[indice + 3] = offset + 2;
+				indices[indice + 4] = offset + 1;
+				indices[indice + 5] = offset + 0;
+
+				offset += 4;
+			}
+
+			textData.indexBuffer = IndexBuffer::Create(indices, TextData::MAX_INDICES);
+			delete[] indices;
+		}
+	}
+
 	void SceneRenderer::CreateGlobalDescriptorSets()
 	{
 		myGlobalDescriptorSets = GlobalDescriptorSetManager::CreateFullCopy();
@@ -703,7 +843,7 @@ namespace Volt
 			auto rendererBufferDescriptor = myGlobalDescriptorSets[Sets::RENDERER_BUFFERS];
 			rendererBufferDescriptor->GetOrAllocateDescriptorSet(i);
 
-			UpdateGlobalDescriptorSet(rendererBufferDescriptor, Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, i, myShaderStorageBufferSet);
+			UpdateGlobalDescriptorSet(rendererBufferDescriptor, Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, i, myShaderStorageBufferSet);
 
 			UpdateGlobalDescriptorSet(rendererBufferDescriptor, Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, i, myShaderStorageBufferSet);
 			UpdateGlobalDescriptorSet(rendererBufferDescriptor, Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, i, myShaderStorageBufferSet);
@@ -750,15 +890,26 @@ namespace Volt
 
 			camBuffer.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
 
-			camBuffer.inverseProj = gem::inverse(camBuffer.proj);
-			camBuffer.inverseView = gem::inverse(camBuffer.view);
-			camBuffer.nonReversedProj = gem::perspective(gem::radians(camera->GetFieldOfView()), camera->GetAspectRatio(), camera->GetNearPlane(), camera->GetFarPlane());
-			camBuffer.inverseNonReverseViewProj = gem::inverse(camBuffer.nonReversedProj * camera->GetView());
+			camBuffer.inverseProj = glm::inverse(camBuffer.proj);
+			camBuffer.inverseView = glm::inverse(camBuffer.view);
+			camBuffer.nonReversedProj = glm::perspective(glm::radians(camera->GetFieldOfView()), camera->GetAspectRatio(), camera->GetNearPlane(), camera->GetFarPlane());
+			camBuffer.inverseNonReverseViewProj = glm::inverse(camBuffer.nonReversedProj * camera->GetView());
 
 			const auto pos = camera->GetPosition();
-			camBuffer.position = gem::vec4(pos.x, pos.y, pos.z, 0.f);
+			camBuffer.position = glm::vec4(pos.x, pos.y, pos.z, 0.f);
 			camBuffer.nearPlane = camera->GetNearPlane();
 			camBuffer.farPlane = camera->GetFarPlane();
+
+			const float* P = glm::value_ptr(camBuffer.proj);
+			const glm::vec4 projInfoPerspective = {
+					 2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
+					 2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
+					-(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
+					-(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1],  // B/N
+			};
+
+			camBuffer.NDCToViewMul = { projInfoPerspective[0], projInfoPerspective[1] };
+			camBuffer.NDCToViewAdd = { projInfoPerspective[2], projInfoPerspective[3] };
 
 			myUniformBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::CAMERA_BUFFER, currentIndex)->SetData(&camBuffer, sizeof(CameraData));
 		}
@@ -771,7 +922,7 @@ namespace Volt
 		// Update Renderer Data
 		{
 			RendererGPUData data{};
-			data.screenTilesCountX = (myRenderSize.x + 16 - 1) / 16;
+			data.screenTilesCountX = myLightCullingWorkGroups.x;
 			data.enableAO = static_cast<uint32_t>(mySettings.enableAO);
 
 			myUniformBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::RENDERER_DATA, currentIndex)->SetData(&data, sizeof(RendererGPUData));
@@ -798,17 +949,17 @@ namespace Volt
 			auto lightEntity = Entity{ id, scenePtr.get() };
 
 			DirectionalLight light{};
-			light.colorIntensity = gem::vec4(dirLightComp.color.x, dirLightComp.color.y, dirLightComp.color.z, dirLightComp.intensity);
+			light.colorIntensity = glm::vec4(dirLightComp.color.x, dirLightComp.color.y, dirLightComp.color.z, dirLightComp.intensity);
 
-			const gem::vec3 dir = gem::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
-			light.direction = gem::vec4(dir.x, dir.y, dir.z, 1.f);
+			const glm::vec3 dir = glm::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
+			light.direction = glm::vec4(dir.x, dir.y, dir.z, 1.f);
 			light.castShadows = static_cast<uint32_t>(dirLightComp.castShadows);
 			light.softShadows = static_cast<uint32_t>(dirLightComp.softShadows);
 			light.lightSize = dirLightComp.lightSize;
 
 			if (dirLightComp.castShadows)
 			{
-				const std::vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10.f, camera->GetFarPlane() / 2.f };
+				const std::vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10 };
 				const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, light.direction, cascades);
 
 				for (size_t i = 0; i < lightMatrices.size(); i++)
@@ -843,23 +994,23 @@ namespace Volt
 			const auto position = lightEntity.GetPosition();
 
 			auto& pointLight = GetCPUData().pointLights.emplace_back();
-			pointLight.color = pointLightComp.color;
+			pointLight.color = glm::vec4{ pointLightComp.color, 1.f };
 			pointLight.falloff = pointLightComp.falloff;
 			pointLight.intensity = pointLightComp.intensity;
 			pointLight.radius = pointLightComp.radius;
 			pointLight.castShadows = (uint32_t)pointLightComp.castShadows;
-			pointLight.position = position;
+			pointLight.position = glm::vec4{ position, 1.f };
 
 			if (pointLightComp.castShadows)
 			{
-				const gem::mat4 projection = gem::perspective(gem::radians(90.f), 1.f, 1.f, pointLightComp.radius);
+				const glm::mat4 projection = glm::perspective(glm::radians(90.f), 1.f, 1.f, pointLightComp.radius);
 
-				pointLight.viewProjectionMatrices[0] = projection * gem::lookAtLH(position, position + gem::vec3{ 1.f, 0.f, 0.f }, gem::vec3{ 0.f, 1.f, 0.f });
-				pointLight.viewProjectionMatrices[1] = projection * gem::lookAtLH(position, position + gem::vec3{ -1.f, 0.f, 0.f }, gem::vec3{ 0.f, 1.f, 0.f });
-				pointLight.viewProjectionMatrices[2] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, 1.f, 0.f }, gem::vec3{ 0.f, 0.f, -1.f });
-				pointLight.viewProjectionMatrices[3] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, -1.f, 0.f }, gem::vec3{ 0.f, 0.f, 1.f });
-				pointLight.viewProjectionMatrices[4] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, 0.f, 1.f }, gem::vec3{ 0.f, 1.f, 0.f });
-				pointLight.viewProjectionMatrices[5] = projection * gem::lookAtLH(position, position + gem::vec3{ 0.f, 0.f, -1.f }, gem::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[0] = projection * glm::lookAtLH(position, position + glm::vec3{ 1.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[1] = projection * glm::lookAtLH(position, position + glm::vec3{ -1.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[2] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, 1.f, 0.f }, glm::vec3{ 0.f, 0.f, -1.f });
+				pointLight.viewProjectionMatrices[3] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, -1.f, 0.f }, glm::vec3{ 0.f, 0.f, 1.f });
+				pointLight.viewProjectionMatrices[4] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, 0.f, 1.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				pointLight.viewProjectionMatrices[5] = projection * glm::lookAtLH(position, position + glm::vec3{ 0.f, 0.f, -1.f }, glm::vec3{ 0.f, 1.f, 0.f });
 			}
 		});
 
@@ -879,12 +1030,13 @@ namespace Volt
 			spotLight.angleAttenuation = spotLightComp.angleAttenuation;
 			spotLight.direction = lightEntity.GetForward() * -1.f;
 			spotLight.range = spotLightComp.range;
-			spotLight.angle = gem::radians(spotLightComp.angle);
+			spotLight.angle = glm::radians(spotLightComp.angle);
 			spotLight.castShadows = (uint32_t)spotLightComp.castShadows;
 
 			if (spotLight.castShadows)
 			{
-				spotLight.viewProjection = gem::perspective(spotLight.angle, 1.f, 0.1f, spotLight.range) * gem::lookAt(lightEntity.GetPosition(), lightEntity.GetPosition() + lightEntity.GetForward(), { 0.f, 1.f, 0.f });
+				spotLight.projection = glm::perspective(spotLight.angle, 1.f, 0.1f, spotLight.range);
+				spotLight.viewProjection = spotLight.projection * glm::lookAt(lightEntity.GetPosition(), lightEntity.GetPosition() + lightEntity.GetForward(), { 0.f, 1.f, 0.f });
 			}
 
 			spotLight.position = lightEntity.GetPosition();
@@ -896,16 +1048,16 @@ namespace Volt
 
 			std::sort(data.pointLights.begin(), data.pointLights.end(), [&](const auto& lhs, const auto& rhs)
 			{
-				const float distL = gem::distance2(gem::vec3{ lhs.position }, camera->GetPosition());
-				const float distR = gem::distance2(gem::vec3{ rhs.position }, camera->GetPosition());
+				const float distL = glm::distance2(glm::vec3{ lhs.position }, camera->GetPosition());
+				const float distR = glm::distance2(glm::vec3{ rhs.position }, camera->GetPosition());
 
 				return distL < distR;
 			});
 
 			std::sort(data.spotLights.begin(), data.spotLights.end(), [&](const auto& lhs, const auto& rhs)
 			{
-				const float distL = gem::distance2(gem::vec3{ lhs.position }, camera->GetPosition());
-				const float distR = gem::distance2(gem::vec3{ rhs.position }, camera->GetPosition());
+				const float distL = glm::distance2(glm::vec3{ lhs.position }, camera->GetPosition());
+				const float distR = glm::distance2(glm::vec3{ rhs.position }, camera->GetPosition());
 
 				return distL < distR;
 			});
@@ -959,9 +1111,9 @@ namespace Volt
 			}
 
 			auto lightEntity = Entity{ id, scenePtr.get() };
-			const gem::vec3 dir = gem::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f });
-			const gem::vec3 left = gem::rotate(lightEntity.GetRotation(), { -1.f, 0.f, 0.f });
-			const gem::vec3 up = gem::rotate(lightEntity.GetRotation(), { 0.f, 1.f, 0.f });
+			const glm::vec3 dir = glm::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f });
+			const glm::vec3 left = glm::rotate(lightEntity.GetRotation(), { -1.f, 0.f, 0.f });
+			const glm::vec3 up = glm::rotate(lightEntity.GetRotation(), { 0.f, 1.f, 0.f });
 
 			const auto scale = lightEntity.GetScale();
 
@@ -1030,7 +1182,7 @@ namespace Volt
 			newCmd.transform = entity.GetTransform();
 			newCmd.randomValue = dataComp.randomValue;
 			newCmd.timeSinceCreation = dataComp.timeSinceCreation;
-		}); 
+		});
 
 		registry.ForEach<PostProcessingStackComponent>([&](Wire::EntityId id, const PostProcessingStackComponent& comp)
 		{
@@ -1059,6 +1211,26 @@ namespace Volt
 			myVolumetricFogSettings.globalDensity = comp.globalDensity;
 		});
 
+		registry.ForEach<TextRendererComponent>([&](Wire::EntityId id, const TextRendererComponent& comp)
+		{
+			Ref<Font> fontAsset = AssetManager::GetAsset<Font>(comp.fontHandle);
+			if (!fontAsset || !fontAsset->IsValid())
+			{
+				return;
+			}
+
+			Entity entity{ id, scenePtr.get() };
+
+			TextCommand textCmd{};
+			textCmd.text = comp.text;
+			textCmd.font = fontAsset;
+			textCmd.transform = entity.GetTransform();
+			textCmd.maxWidth = comp.maxWidth;
+			textCmd.color = comp.color;
+
+			SubmitString(textCmd);
+		});
+
 		if (mySettings.enableDebugRenderer)
 		{
 			DebugRenderer::Execute(GetCPUData());
@@ -1076,7 +1248,7 @@ namespace Volt
 		const auto& meshComponentView = (myShouldHideMeshes) ? std::vector<Wire::EntityId>() : registry.GetSingleComponentView<MeshComponent>();
 		data.submitCommands.reserve(meshComponentView.size());
 
-		const uint32_t hardwareConcurrency = std::thread::hardware_concurrency();
+		const uint32_t hardwareConcurrency = std::thread::hardware_concurrency() * 2;
 		const uint32_t threadCount = std::max(std::min(static_cast<uint32_t>(meshComponentView.size()), hardwareConcurrency), 1u);
 		const uint32_t meshesPerThread = static_cast<uint32_t>(meshComponentView.size()) / threadCount;
 
@@ -1109,27 +1281,24 @@ namespace Volt
 				return;
 			}
 
-			auto mesh = AssetManager::QueueAsset<Mesh>(meshComp.handle);
+			Ref<Mesh> mesh = AssetManager::QueueAsset<Mesh>(meshComp.handle);
 			if (!mesh || !mesh->IsValid())
 			{
 				return;
 			}
 
-			Ref<Material> material;
+			AssetHandle materialHandle = Asset::Null();
 			if (meshComp.overrideMaterial != Asset::Null())
 			{
-				auto overrideMat = AssetManager::QueueAsset<Material>(meshComp.overrideMaterial);
-				if (overrideMat && overrideMat->IsValid())
-				{
-					material = overrideMat;
-				}
+				materialHandle = meshComp.overrideMaterial;
 			}
 			else
 			{
-				material = mesh->GetMaterial();
+				materialHandle = mesh->GetMaterial()->handle;
 			}
 
-			const gem::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+			glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+
 			auto& submitCommands = perThreadSubmitCommands.at(threadIndex);
 
 			const bool hasVertexPaintedComponent = entity.HasComponent<VertexPaintedComponent>();
@@ -1141,7 +1310,8 @@ namespace Volt
 				auto& cmd = submitCommands.emplace_back();
 				cmd.mesh = mesh;
 
-				if (material)
+				Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+				if (material && material->IsValid())
 				{
 					cmd.material = (meshComp.subMaterialIndex != -1) ? material->TryGetSubMaterialAt(meshComp.subMaterialIndex) : material->TryGetSubMaterialAt(subMesh.materialIndex);
 				}
@@ -1159,17 +1329,16 @@ namespace Volt
 
 				if (hasVertexPaintedComponent)
 				{
-					cmd.vertexColors = entity.GetComponent<VertexPaintedComponent>().vertecies;
+					cmd.vertexColors = entity.GetComponent<VertexPaintedComponent>().vertexColors;
+					totalVertexColorCount += static_cast<uint32_t>(entity.GetComponent<VertexPaintedComponent>().vertexColors.size());
 				}
-			}
 
-			if (hasVertexPaintedComponent)
-			{
-				totalVertexColorCount += static_cast<uint32_t>(entity.GetComponent<VertexPaintedComponent>().vertecies.size());
+				i++;
 			}
 		};
 
 		std::vector<std::future<void>> threadFutures;
+		auto& threadPool = Application::GetThreadPool();
 
 		for (uint32_t i = 0; i < threadCount; i++)
 		{
@@ -1181,7 +1350,7 @@ namespace Volt
 				meshCount = static_cast<uint32_t>(meshComponentView.size()) - startIndex;
 			}
 
-			threadFutures.emplace_back(std::async(std::launch::async, [=]()
+			threadFutures.emplace_back(threadPool.SubmitTask([=]()
 			{
 				for (uint32_t j = 0; j < meshCount; j++)
 				{
@@ -1246,6 +1415,15 @@ namespace Volt
 				}
 
 				auto skin = character->GetSkin();
+				if (animComp.overrideSkin != Asset::Null())
+				{
+					Ref<Mesh> overrideSkin = AssetManager::GetAsset<Mesh>(animComp.overrideSkin);
+					if (overrideSkin && overrideSkin->IsValid())
+					{
+						skin = overrideSkin;
+					}
+				}
+
 				if (!skin || !skin->IsValid())
 				{
 					return;
@@ -1263,7 +1441,7 @@ namespace Volt
 
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
-				const gem::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
 				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, id);
 			}
 			else
@@ -1300,7 +1478,7 @@ namespace Volt
 					}
 				}
 
-				const gem::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
 				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, id);
 			}
 		});
@@ -1325,7 +1503,7 @@ namespace Volt
 			}
 
 			Volt::Entity ent{ id, scenePtr.get() };
-			std::vector<gem::mat4> anim{};
+			std::vector<glm::mat4> anim{};
 
 			if (charComp.selectedFrame != -1)
 			{
@@ -1346,11 +1524,11 @@ namespace Volt
 						continue;
 					}
 
-					const gem::mat4 offsetTransform = gem::translate({ 1.f }, attachment.positionOffset) * gem::mat4_cast(attachment.rotationOffset);
+					const glm::mat4 offsetTransform = glm::translate({ 1.f }, attachment.positionOffset) * glm::mat4_cast(attachment.rotationOffset);
 
-					gem::vec3 t, s;
-					gem::quat q;
-					gem::decompose(anim[attachment.jointIndex] * offsetTransform * gem::inverse(character->GetSkeleton()->GetInverseBindPose().at(attachment.jointIndex)), t, q, s);
+					glm::vec3 t, s;
+					glm::quat q;
+					Math::Decompose(anim[attachment.jointIndex] * offsetTransform * glm::inverse(character->GetSkeleton()->GetInverseBindPose().at(attachment.jointIndex)), t, q, s);
 
 					for (auto attachedEntity : attachedEntities)
 					{
@@ -1374,7 +1552,13 @@ namespace Volt
 		for (const auto& [entityId, storage] : particleStorage)
 		{
 			const auto preset = AssetManager::GetAsset<ParticlePreset>(storage.preset);
+			if (!preset || !preset->IsValid())
+			{
+				continue;
+			}
+
 			const auto material = AssetManager::GetAsset<Material>(preset->material);
+
 			Entity entity{ entityId, scenePtr.get() };
 
 			if (preset->type == ParticlePreset::eType::PARTICLE)
@@ -1426,7 +1610,7 @@ namespace Volt
 				for (int32_t i = 0; i < storage.numberOfAliveParticles; i++)
 				{
 					const auto& particle = storage.particles.at(i);
-					const auto particleTransform = gem::translate(gem::mat4(1.f), particle.position) * gem::mat4_cast(gem::quat(particle.rotation)) * gem::scale(gem::mat4(1.f), particle.size);
+					const auto particleTransform = glm::translate(glm::mat4(1.f), particle.position) * glm::mat4_cast(glm::quat(particle.rotation)) * glm::scale(glm::mat4(1.f), particle.size);
 
 					if (material && material->IsValid())
 					{
@@ -1441,6 +1625,202 @@ namespace Volt
 		}
 	}
 
+	void SceneRenderer::DispatchText(Ref<CommandBuffer> cmdBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& textData = myTextData;
+
+		if (textData.indexCount == 0)
+		{
+			return;
+		}
+
+		const uint32_t currentIndex = cmdBuffer->GetCurrentIndex();
+		auto vertexBuffer = textData.vertexBuffer->Get(currentIndex);
+
+		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
+		vertexBuffer->SetDataMapped(cmdBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
+
+		const glm::mat4 viewProjection = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
+		Renderer::DrawIndexedVertexBuffer(cmdBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
+	}
+
+	inline static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
+	{
+		for (int32_t line : aLines)
+		{
+			if (line == aIndex)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void SceneRenderer::SubmitString(const TextCommand& cmd)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto& textData = myTextData;
+
+		std::u32string utf32string = Utils::To_UTF32(cmd.text);
+		Ref<Texture2D> fontAtlas = cmd.font->GetAtlas();
+
+		if (!fontAtlas)
+		{
+			return;
+		}
+
+		uint32_t textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(fontAtlas->GetImage());
+		if (textureIndex == 0)
+		{
+			textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(fontAtlas->GetImage());
+		}
+
+		auto& fontGeom = cmd.font->GetMSDFData()->fontGeometry;
+		const auto& metrics = fontGeom.getMetrics();
+
+		std::vector<int32_t> nextLines;
+
+		// Find new lines
+		{
+			double x = 0.0;
+			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			double y = -fsScale * metrics.ascenderY;
+
+			int32_t lastSpace = -1;
+
+			for (int32_t i = 0; i < utf32string.size(); i++)
+			{
+				char32_t character = utf32string[i];
+				if (character == '\n')
+				{
+					x = 0.0;
+					y -= fsScale * metrics.lineHeight;
+					continue;
+				}
+
+				auto glyph = fontGeom.getGlyph(character);
+				if (!glyph)
+				{
+					glyph = fontGeom.getGlyph('?');
+				}
+
+				if (!glyph)
+				{
+					continue;
+				}
+
+				if (character != ' ')
+				{
+					// Calculate geometry
+					double pl, pb, pr, pt;
+					glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+					glm::vec2 quadMin((float)pl, (float)pb);
+					glm::vec2 quadMax((float)pl, (float)pb);
+
+					quadMin *= (float)fsScale;
+					quadMax *= (float)fsScale;
+					quadMin += glm::vec2((float)x, (float)y);
+					quadMax += glm::vec2((float)x, (float)y);
+
+					if (quadMax.x > cmd.maxWidth && lastSpace != -1)
+					{
+						i = lastSpace;
+						nextLines.emplace_back(lastSpace);
+						lastSpace = -1;
+						x = 0.0;
+						y -= fsScale * metrics.lineHeight;
+					}
+				}
+				else
+				{
+					lastSpace = i;
+				}
+
+				double advance = glyph->getAdvance();
+				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+				x += fsScale * advance;
+			}
+		}
+
+		// Setup vertices
+		{
+			double x = 0.0;
+			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+			double y = 0.0;
+
+			for (int32_t i = 0; i < utf32string.size(); i++)
+			{
+				char32_t character = utf32string[i];
+				if (character == '\n' || NextLine(i, nextLines))
+				{
+					x = 0.0;
+					y -= fsScale * metrics.lineHeight;
+					continue;
+				}
+
+				auto glyph = fontGeom.getGlyph(character);
+
+				if (!glyph)
+				{
+					glyph = fontGeom.getGlyph('?');
+				}
+
+				if (!glyph)
+				{
+					continue;
+				}
+
+				double l, b, r, t;
+				glyph->getQuadAtlasBounds(l, b, r, t);
+
+				double pl, pb, pr, pt;
+				glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+				pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+				pl += x, pb += y, pr += x, pt += y;
+
+				double texelWidth = 1.0 / fontAtlas->GetWidth();
+				double texelHeight = 1.0 / fontAtlas->GetHeight();
+
+				l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+
+				textData.vertexBufferPtr->position = cmd.transform * glm::vec4{ (float)pl, (float)pb, 0.f, 1.f };
+				textData.vertexBufferPtr->color = cmd.color;
+				textData.vertexBufferPtr->texCoords = { (float)l, (float)b };
+				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+				textData.vertexBufferPtr++;
+
+				textData.vertexBufferPtr->position = cmd.transform * glm::vec4{ (float)pr, (float)pb, 0.f, 1.f };
+				textData.vertexBufferPtr->color = cmd.color;
+				textData.vertexBufferPtr->texCoords = { (float)r, (float)b };
+				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+				textData.vertexBufferPtr++;
+
+				textData.vertexBufferPtr->position = cmd.transform * glm::vec4{ (float)pr, (float)pt, 0.f, 1.f };
+				textData.vertexBufferPtr->color = cmd.color;
+				textData.vertexBufferPtr->texCoords = { (float)r, (float)t };
+				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+				textData.vertexBufferPtr++;
+
+				textData.vertexBufferPtr->position = cmd.transform * glm::vec4{ (float)pl, (float)pt, 0.f, 1.f };
+				textData.vertexBufferPtr->color = cmd.color;
+				textData.vertexBufferPtr->texCoords = { (float)l, (float)t };
+				textData.vertexBufferPtr->textureIndex = (uint32_t)textureIndex;
+				textData.vertexBufferPtr++;
+
+				textData.indexCount += 6;
+
+				double advance = glyph->getAdvance();
+				fontGeom.getAdvance(advance, character, utf32string[i + 1]);
+				x += fsScale * advance;
+			}
+		}
+	}
+
 	void SceneRenderer::ResizeBuffersIfNeeded()
 	{
 		const auto& data = GetGPUData();
@@ -1448,7 +1828,7 @@ namespace Volt
 
 		///// Objects /////
 		{
-			auto argsSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex);
+			auto argsSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex);
 			auto objectSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::OBJECT_DATA, currentIndex);
 			auto animSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, currentIndex);
 			auto colorSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, currentIndex);
@@ -1456,7 +1836,7 @@ namespace Volt
 			if (argsSSBO->GetElementCount() < data.submitCommands.size())
 			{
 				argsSSBO->ResizeWithElementCount((uint32_t)data.submitCommands.size());
-				UpdateGlobalDescriptorSet(myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS), Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex, myShaderStorageBufferSet);
+				UpdateGlobalDescriptorSet(myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS), Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex, myShaderStorageBufferSet);
 			}
 
 			if (objectSSBO->GetElementCount() < data.submitCommands.size())
@@ -1536,6 +1916,20 @@ namespace Volt
 			{
 				particleSSBO->ResizeWithElementCount((uint32_t)data.particleCount);
 				UpdateGlobalDescriptorSet(myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS), Sets::RENDERER_BUFFERS, Bindings::PARTICLE_INFO, currentIndex, myShaderStorageBufferSet);
+			}
+
+			if (myResizeLightCullingBuffers.at(currentIndex))
+			{
+				myResizeLightCullingBuffers[currentIndex] = false;
+
+				auto visiblePointLightsSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, currentIndex);
+				auto visibleSpotLightsSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_SPOT_LIGHTS, currentIndex);
+
+				visiblePointLightsSSBO->ResizeWithElementCount(MAX_POINT_LIGHTS * myLightCullingWorkGroups.x * myLightCullingWorkGroups.y);
+				UpdateGlobalDescriptorSet(myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS), Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, currentIndex, myShaderStorageBufferSet);
+
+				visibleSpotLightsSSBO->ResizeWithElementCount(MAX_SPOT_LIGHTS * myLightCullingWorkGroups.x * myLightCullingWorkGroups.y);
+				UpdateGlobalDescriptorSet(myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS), Sets::RENDERER_BUFFERS, Bindings::VISIBLE_SPOT_LIGHTS, currentIndex, myShaderStorageBufferSet);
 			}
 		}
 	}
@@ -1675,15 +2069,12 @@ namespace Volt
 			return;
 		}
 
-		const auto& submitCommands = data.submitCommands;
-		const auto& batchCommands = data.indirectBatches;
-
 		const uint32_t currentIndex = myCommandBuffer->GetCurrentIndex();
 
 		// Fill indirect commands
 		{
-			auto argsSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex);
-			auto* drawCommands = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex)->Map<IndirectGPUCommand>();
+			auto argsSSBO = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex);
+			auto* drawCommands = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex)->Map<IndirectGPUCommand>();
 
 			for (size_t i = 0; i < data.submitCommands.size(); i++)
 			{
@@ -1698,7 +2089,7 @@ namespace Volt
 				drawCommands[i].objectId = (uint32_t)i;
 			}
 
-			myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::INDIRECT_ARGS, currentIndex)->Unmap();
+			myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex)->Unmap();
 		}
 	}
 
@@ -1718,13 +2109,13 @@ namespace Volt
 			uint32_t currentBoneOffset = 0;
 
 			auto ssbo = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::ANIMATION_DATA, currentIndex);
-			gem::mat4* animationData = ssbo->Map<gem::mat4>();
+			glm::mat4* animationData = ssbo->Map<glm::mat4>();
 
 			for (uint32_t i = 0; const auto & cmd : data.submitCommands)
 			{
 				if (!cmd.boneTransforms.empty())
 				{
-					memcpy_s(&animationData[currentBoneOffset], ssbo->GetElementCount() * sizeof(gem::mat4), cmd.boneTransforms.data(), sizeof(gem::mat4) * cmd.boneTransforms.size());
+					memcpy_s(&animationData[currentBoneOffset], ssbo->GetElementCount() * sizeof(glm::mat4), cmd.boneTransforms.data(), sizeof(glm::mat4) * cmd.boneTransforms.size());
 
 					boneOffsets[i] = currentBoneOffset;
 					currentBoneOffset += (uint32_t)cmd.boneTransforms.size();
@@ -1743,13 +2134,13 @@ namespace Volt
 			uint32_t currentColorOffset = 0;
 
 			auto ssbo = myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::PAINTED_VERTEX_COLORS, currentIndex);
-			gem::vec4* colorData = ssbo->Map<gem::vec4>();
+			uint32_t* colorData = ssbo->Map<uint32_t>();
 
 			for (uint32_t i = 0; const auto & cmd : data.submitCommands)
 			{
 				if (!cmd.vertexColors.empty())
 				{
-					memcpy_s(&colorData[currentColorOffset], ssbo->GetElementCount() * sizeof(gem::vec4), cmd.vertexColors.data(), sizeof(gem::vec4) * cmd.vertexColors.size());
+					memcpy_s(&colorData[currentColorOffset], ssbo->GetElementCount() * sizeof(uint32_t), cmd.vertexColors.data(), sizeof(uint32_t) * cmd.vertexColors.size());
 
 					colorOffsets[i] = currentColorOffset;
 					currentColorOffset += static_cast<uint32_t>(cmd.vertexColors.size());
@@ -1772,6 +2163,7 @@ namespace Volt
 			{
 				objectDatas[i].transform = cmd.transform;
 				objectDatas[i].materialIndex = Renderer::GetBindlessData().materialTable->GetIndexFromMaterial(cmd.material.get());
+				objectDatas[i].meshIndex = Renderer::GetBindlessData().meshTable->GetMeshIndex(cmd.mesh.get(), cmd.subMeshIndex);
 				objectDatas[i].isAnimated = !cmd.boneTransforms.empty();
 				objectDatas[i].id = cmd.id;
 				objectDatas[i].timeSinceCreation = cmd.timeSinceCreation;
@@ -1786,11 +2178,15 @@ namespace Volt
 				{
 					objectDatas[i].colorOffset = static_cast<int32_t>(colorOffsets.at(i));
 				}
+				else
+				{
+					objectDatas[i].colorOffset = -1;
+				}
 
 				Volt::BoundingSphere boundingSphere = cmd.mesh->GetBoundingSphere();
-				const gem::vec3 globalScale = { gem::length(cmd.transform[0]), gem::length(cmd.transform[1]), gem::length(cmd.transform[2]) };
-				float maxScale = gem::max(gem::max(globalScale.x, globalScale.y), globalScale.z);
-				const gem::vec3 globalCenter = cmd.transform * gem::vec4(boundingSphere.center, 1.f);
+				const glm::vec3 globalScale = { glm::length(cmd.transform[0]), glm::length(cmd.transform[1]), glm::length(cmd.transform[2]) };
+				float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
+				const glm::vec3 globalCenter = cmd.transform * glm::vec4(boundingSphere.center, 1.f);
 
 				if (!cmd.boneTransforms.empty())
 				{
@@ -1881,7 +2277,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pBufferInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1897,7 +2293,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pBufferInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1918,7 +2314,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pImageInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1934,7 +2330,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pImageInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1955,7 +2351,7 @@ namespace Volt
 		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
 		writeDescriptor.pImageInfo = descriptorInfos.data();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
@@ -1971,7 +2367,7 @@ namespace Volt
 			VT_PROFILE_SCOPE("Sort Systems");
 			std::sort(data.particleBatches.begin(), data.particleBatches.end(), [&](const auto& lhs, const auto& rhs)
 			{
-				return gem::distance2(camPos, lhs.emitterPosition) < gem::distance2(camPos, lhs.emitterPosition);
+				return glm::distance2(camPos, lhs.emitterPosition) < glm::distance2(camPos, lhs.emitterPosition);
 			});
 		}
 
@@ -1982,7 +2378,7 @@ namespace Volt
 			{
 				std::sort(std::execution::par, batch.particles.begin(), batch.particles.end(), [&](const auto& lhs, const auto& rhs)
 				{
-					return gem::distance2(camPos, lhs.position) > gem::distance2(camPos, rhs.position);
+					return glm::distance2(camPos, lhs.position) > glm::distance2(camPos, rhs.position);
 				});
 			}
 		}
@@ -2025,13 +2421,18 @@ namespace Volt
 
 			// Resize light culling buffer
 			{
-				const uint32_t workGroupsX = (myRenderSize.x + 16 - 1) / 16;
-				const uint32_t workGroupsY = (myRenderSize.y + 16 - 1) / 16;
-				myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, myCommandBuffer->GetCurrentIndex())->ResizeWithElementCount(MAX_POINT_LIGHTS * workGroupsX * workGroupsY);
-				UpdateGlobalDescriptorSet(myGlobalDescriptorSets[Sets::RENDERER_BUFFERS], Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, myCommandBuffer->GetCurrentIndex(), myShaderStorageBufferSet);
+				constexpr uint32_t TILE_SIZE = 16;
 
-				myShaderStorageBufferSet->Get(Sets::RENDERER_BUFFERS, Bindings::VISIBLE_SPOT_LIGHTS, myCommandBuffer->GetCurrentIndex())->ResizeWithElementCount(MAX_SPOT_LIGHTS * workGroupsX * workGroupsY);
-				UpdateGlobalDescriptorSet(myGlobalDescriptorSets[Sets::RENDERER_BUFFERS], Sets::RENDERER_BUFFERS, Bindings::VISIBLE_SPOT_LIGHTS, myCommandBuffer->GetCurrentIndex(), myShaderStorageBufferSet);
+				glm::uvec2 size = myRenderSize;
+				size.x += TILE_SIZE - myRenderSize.x % TILE_SIZE;
+				size.y += TILE_SIZE - myRenderSize.y % TILE_SIZE;
+
+				myLightCullingWorkGroups = size / TILE_SIZE;
+
+				for (auto&& value : myResizeLightCullingBuffers)
+				{
+					value = true;
+				}
 			}
 
 			myTransientResourceSystem.Reset();
@@ -2076,9 +2477,10 @@ namespace Volt
 			UpdateBuffers(myCurrentCamera);
 		}
 
-		Renderer::Begin(myCommandBuffer);
+		//PerformLODSelection(myCommandBuffer);
 
-		FrameGraph frameGraph{ myTransientResourceSystem, myCommandBuffer, myCommandBufferCache, myRenderThreadPool };
+		Renderer::Begin(myCommandBuffer);
+		FrameGraph frameGraph{ myTransientResourceSystem, myCommandBuffer, myCommandBufferCache, Application::GetRenderThreadPool() };
 		AddPreDepthPass(frameGraph);
 
 		const uint64_t frameIndex = (mySettings.enableAntiAliasing && mySettings.antiAliasing == AntiAliasingSetting::TAA) ? myFrameIndex % 256 : 0;
@@ -2123,84 +2525,92 @@ namespace Volt
 		fogTechnique.AddRayMarchPass(frameGraph, myVolumetricFogRayMarchPipeline, myVolumetricFogRayMarchImage);
 
 		AddDeferredShadingPass(frameGraph);
-		AddForwardOpaquePass(frameGraph);
 
-		AddForwardSSSPass(frameGraph);
-		AddSSSBlurPass(frameGraph);
-		AddSSSCompositePass(frameGraph);
-
-		AddForwardTransparentPass(frameGraph);
-		AddTransparentCompositePass(frameGraph);
-
-		if (!GetGPUData().particleBatches.empty())
+		if (myCurrentRenderMode == RenderMode::Default)
 		{
-			AddParticlesPass(frameGraph);
-		}
+			AddForwardOpaquePass(frameGraph);
 
-		if (myBillboardData.vertexCount > 0)
-		{
-			AddBillboardPass(frameGraph);
-		}
+			//AddForwardSSSPass(frameGraph);
+			//AddSSSBlurPass(frameGraph);
+			//AddSSSCompositePass(frameGraph);
 
-		AddLuminosityPass(frameGraph);
+			AddForwardTransparentPass(frameGraph);
+			AddTransparentCompositePass(frameGraph);
 
-		if (mySettings.enableBloom)
-		{
-			BloomTechnique bloomTechnique{ myRenderSize };
-			bloomTechnique.AddBloomDownsamplePass(frameGraph, myBloomDownsamplePipeline);
-			bloomTechnique.AddBloomUpsamplePass(frameGraph, myBloomUpsamplePipeline);
-			bloomTechnique.AddBloomCompositePass(frameGraph, myBloomCompositePipeline);
-		}
-
-		if (GetGPUData().postProcessingStack && mySettings.enablePostProcessing)
-		{
-			AddPostProcessingStackPasses(frameGraph);
-		}
-
-		if (mySettings.enableOutline)
-		{
-			OutlineTechnique outlineTechnique{ myRenderSize, myGlobalDescriptorSets };
-			outlineTechnique.AddOutlineGeometryPass(frameGraph, myOutlineGeometryPipeline, GetGPUData().outlineCommands);
-			outlineTechnique.AddJumpFloodInitPass(frameGraph, myOutlineJumpFloodInitMaterial);
-			outlineTechnique.AddJumpFloodPass(frameGraph, myOutlineJumpFloodPassMaterial);
-			outlineTechnique.AddOutlineCompositePass(frameGraph, myOutlineCompositePipeline);
-		}
-
-		if (mySettings.enableAntiAliasing)
-		{
-			switch (mySettings.antiAliasing)
+			if (!GetGPUData().particleBatches.empty())
 			{
-				case AntiAliasingSetting::FXAA:
+				AddParticlesPass(frameGraph);
+			}
+
+			if (myBillboardData.vertexCount > 0)
+			{
+				AddBillboardPass(frameGraph);
+			}
+
+			//SSRTechnique ssrTechnique{ myGlobalDescriptorSets, myRenderSize };
+			//ssrTechnique.AddSSRPass(frameGraph, mySSRMaterial);
+			//ssrTechnique.AddSSRCompositePass(frameGraph, mySSRCompositeMaterial);
+
+			AddLuminosityPass(frameGraph);
+
+			if (mySettings.enableBloom)
+			{
+				BloomTechnique bloomTechnique{ myRenderSize };
+				bloomTechnique.AddBloomDownsamplePass(frameGraph, myBloomDownsamplePipeline);
+				bloomTechnique.AddBloomUpsamplePass(frameGraph, myBloomUpsamplePipeline);
+				bloomTechnique.AddBloomCompositePass(frameGraph, myBloomCompositePipeline);
+			}
+
+			if (GetGPUData().postProcessingStack && mySettings.enablePostProcessing)
+			{
+				AddPostProcessingStackPasses(frameGraph);
+			}
+
+			if (mySettings.enableOutline)
+			{
+				OutlineTechnique outlineTechnique{ myRenderSize, myGlobalDescriptorSets };
+				outlineTechnique.AddOutlineGeometryPass(frameGraph, myOutlineGeometryPipeline, GetGPUData().outlineCommands);
+				outlineTechnique.AddJumpFloodInitPass(frameGraph, myOutlineJumpFloodInitMaterial);
+				outlineTechnique.AddJumpFloodPass(frameGraph, myOutlineJumpFloodPassMaterial);
+				outlineTechnique.AddOutlineCompositePass(frameGraph, myOutlineCompositePipeline);
+			}
+
+			if (mySettings.enableAntiAliasing)
+			{
+				switch (mySettings.antiAliasing)
 				{
-					FXAATechnique fxaaTechnique{ myRenderSize };
-					fxaaTechnique.AddFXAAPass(frameGraph, myFXAAPipeline);
-					fxaaTechnique.AddFXAAApplyPass(frameGraph, myAACompositePipeline);
+					case AntiAliasingSetting::FXAA:
+					{
+						FXAATechnique fxaaTechnique{ myRenderSize };
+						fxaaTechnique.AddFXAAPass(frameGraph, myFXAAPipeline);
+						fxaaTechnique.AddFXAAApplyPass(frameGraph, myAACompositePipeline);
 
-					break;
-				}
+						break;
+					}
 
-				case AntiAliasingSetting::TAA:
-				{
-					gem::mat4 viewProj = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
-					gem::mat4 reprojectionMatrix = myPreviousViewProjection * gem::inverse(viewProj);
-					myPreviousViewProjection = viewProj;
+					case AntiAliasingSetting::TAA:
+					{
+						glm::mat4 viewProj = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
+						glm::mat4 reprojectionMatrix = myPreviousViewProjection * glm::inverse(viewProj);
+						myPreviousViewProjection = viewProj;
 
-					gem::vec2 jitterDelta = myPreviousJitter - myCurrentCamera->GetSubpixelOffset();
+						glm::vec2 jitterDelta = myPreviousJitter - myCurrentCamera->GetSubpixelOffset();
 
-					TAATechnique taaTechnique{ myCurrentCamera, reprojectionMatrix, myRenderSize, myFrameIndex, jitterDelta };
-					taaTechnique.AddGenerateMotionVectorsPass(frameGraph, myGenerateMotionVectorsPipeline, myGlobalDescriptorSets[Sets::RENDERER_BUFFERS], frameGraph.GetBlackboard().Get<PreDepthData>().preDepth);
-					taaTechnique.AddTAAPass(frameGraph, myTAAPipeline, myHistoryColor, frameGraph.GetBlackboard().Get<PreDepthData>().preDepth);
-					taaTechnique.AddTAAApplyPass(frameGraph, myAACompositePipeline);
+						TAATechnique taaTechnique{ myCurrentCamera, reprojectionMatrix, myRenderSize, myFrameIndex, jitterDelta };
+						taaTechnique.AddGenerateMotionVectorsPass(frameGraph, myGenerateMotionVectorsPipeline, myGlobalDescriptorSets[Sets::RENDERER_BUFFERS], frameGraph.GetBlackboard().Get<PreDepthData>().preDepth);
+						taaTechnique.AddTAAPass(frameGraph, myTAAPipeline, myHistoryColor, frameGraph.GetBlackboard().Get<PreDepthData>().preDepth);
+						taaTechnique.AddTAAApplyPass(frameGraph, myAACompositePipeline);
 
-					AddCopyHistoryPass(frameGraph);
+						AddCopyHistoryPass(frameGraph);
 
-					break;
+						break;
+					}
 				}
 			}
-		}
 
-		AddACESPass(frameGraph);
-		AddGammaCorrectionPass(frameGraph);
+			AddACESPass(frameGraph);
+			AddGammaCorrectionPass(frameGraph);
+		}
 
 		if (mySettings.enableGrid)
 		{
@@ -2225,6 +2635,12 @@ namespace Volt
 		}
 
 		myCommandBuffer->End();
+
+		// Reset text
+		{
+			myTextData.vertexBufferPtr = myTextData.vertexBufferBase;
+			myTextData.indexCount = 0;
+		}
 
 		myFrameIndex++;
 	}
@@ -2339,6 +2755,7 @@ namespace Volt
 
 			IndirectPassParams indirectParams{};
 			indirectParams.materialFlags = MaterialFlag::CastShadows;
+			indirectParams.cullMode = DrawCullMode::CameraFrustum;
 
 			const auto& indirectPass = GetOrCreateIndirectPass(commandBuffer, indirectParams);
 
@@ -2368,10 +2785,9 @@ namespace Volt
 				lightIndex++;
 			}
 		},
-			[=, &batches = GetGPUData().indirectBatches](const SpotLightShadowData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
+			[=, &batches = GetGPUData().indirectBatches, &spotLights = GetGPUData().spotLights](const SpotLightShadowData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Spot Light Shadow");
-			Renderer::BeginSection(commandBuffer, "Spot Light Shadows", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(50, 168, 105);
@@ -2388,11 +2804,14 @@ namespace Volt
 				renderingInfo.width = SPOTLIGHT_SHADOW_SIZE;
 				renderingInfo.height = SPOTLIGHT_SHADOW_SIZE;
 
+				const SpotLight& spotLight = spotLights.at(index);
+
 				PushConstantDrawData pushcConstantData{ &data.spotLightIndices.at(index), sizeof(uint32_t) };
 
 				IndirectPassParams indirectParams{};
 				indirectParams.materialFlags = MaterialFlag::CastShadows;
-				indirectParams.cullMode = DrawCullMode::None;
+				indirectParams.cullMode = DrawCullMode::Frustum;
+				indirectParams.projection = spotLight.projection;
 
 				const auto& indirectPass = GetOrCreateIndirectPass(commandBuffer, indirectParams);
 
@@ -2403,7 +2822,6 @@ namespace Volt
 				index++;
 			}
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -2462,8 +2880,8 @@ namespace Volt
 
 			//	const auto& pointLight = GetGPUData().pointLights.at(data.pointLightIndices.at(index));
 
-			//	const gem::vec3 max = { pointLight.position.x + pointLight.radius, pointLight.position.y + pointLight.radius, pointLight.position.z + pointLight.radius };
-			//	const gem::vec3 min = { pointLight.position.x - pointLight.radius, pointLight.position.y - pointLight.radius, pointLight.position.z - pointLight.radius };
+			//	const glm::vec3 max = { pointLight.position.x + pointLight.radius, pointLight.position.y + pointLight.radius, pointLight.position.z + pointLight.radius };
+			//	const glm::vec3 min = { pointLight.position.x - pointLight.radius, pointLight.position.y - pointLight.radius, pointLight.position.z - pointLight.radius };
 
 			//	IndirectPassParams params;
 			//	params.cullMode = DrawCullMode::AABB;
@@ -2654,7 +3072,6 @@ namespace Volt
 		[=, &batches = GetGPUData().indirectBatches](const IDData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("ID");
-			Renderer::BeginSection(commandBuffer, "ID", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(45, 53, 110);
@@ -2676,7 +3093,6 @@ namespace Volt
 			Renderer::DrawIndirectBatches(commandBuffer, indirectPass, myGlobalDescriptorSets, batches);
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -2693,7 +3109,6 @@ namespace Volt
 			[=, &batches = GetGPUData().indirectBatches](const PreDepthData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Pre Depth");
-			Renderer::BeginSection(commandBuffer, "Pre Depth", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(45, 53, 110);
@@ -2718,7 +3133,6 @@ namespace Volt
 			Renderer::DrawIndirectBatches(commandBuffer, indirectPass, myGlobalDescriptorSets, batches);
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -2759,15 +3173,11 @@ namespace Volt
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 			const auto outputImage = resources.GetImageResource(data.skybox);
 
-			Renderer::BeginSection(commandBuffer, "Preetham Sky", TO_NORMALIZEDRGB(52, 235, 225));
-
 			myPreethamPipeline->Clear(currentIndex);
 			myPreethamPipeline->SetImage(outputImage.image.lock(), 0, 0, ImageAccess::Write);
 			myPreethamPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			myPreethamPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushData, sizeof(PreethamData));
 			myPreethamPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), cubeMapSize / groupSize, cubeMapSize / groupSize, 6, currentIndex);
-
-			Renderer::EndSection(commandBuffer);
 
 			myPreethamPipeline->ClearAllResources();
 			EndTimestamp();
@@ -2856,7 +3266,6 @@ namespace Volt
 		[=, &batches = GetGPUData().indirectBatches](const GBufferData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("GBuffer Pass");
-			Renderer::BeginSection(commandBuffer, "GBuffer Pass", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(45, 53, 110);
@@ -2883,15 +3292,12 @@ namespace Volt
 			Renderer::DrawIndirectBatches(commandBuffer, indirectPass, myGlobalDescriptorSets, batches);
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
 
 	void SceneRenderer::AddDeferredShadingPass(FrameGraph& frameGraph)
 	{
-		const uint32_t framesInFlight = Renderer::GetFramesInFlightCount();
-
 		const auto& gbufferData = frameGraph.GetBlackboard().Get<GBufferData>();
 		const auto& skyboxData = frameGraph.GetBlackboard().Get<SkyboxData>();
 		const auto& dirShadowData = frameGraph.GetBlackboard().Get<DirectionalShadowData>();
@@ -2970,8 +3376,6 @@ namespace Volt
 
 			const auto& targetResource = resources.GetImageResource(skyboxData.outputImage);
 
-			Renderer::BeginSection(commandBuffer, "Deferred Shading", TO_NORMALIZEDRGB(115, 200, 237));
-
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			shadingPipeline->SetImage(albedoResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
@@ -3000,7 +3404,6 @@ namespace Volt
 			Renderer::DispatchComputePipeline(commandBuffer, shadingPipeline, dispatchX, dispatchY, 1);
 
 			shadingPipeline->ClearAllResources();
-			Renderer::EndSection(commandBuffer);
 
 			EndTimestamp();
 		});
@@ -3022,7 +3425,6 @@ namespace Volt
 		[=, &commands = GetGPUData().decalCommands](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Decal Pass");
-			Renderer::BeginSection(commandBuffer, "Decal Pass", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(45, 53, 110);
@@ -3059,7 +3461,6 @@ namespace Volt
 
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3129,7 +3530,6 @@ namespace Volt
 		[=, &batches = GetGPUData().indirectBatches](const ForwardData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Forward Pass");
-			Renderer::BeginSection(commandBuffer, "Forward Opaque Pass", { 1.f });
 
 			const uint32_t index = commandBuffer->GetCurrentIndex();
 
@@ -3190,9 +3590,13 @@ namespace Volt
 				myLineData.vertexBufferPtr = myLineData.vertexBufferBase;
 			}
 
+			// Text
+			{
+				DispatchText(commandBuffer);
+			}
+
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3264,7 +3668,6 @@ namespace Volt
 			[=, &batches = GetGPUData().indirectBatches](const ForwardSSSData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Forward SSS Pass");
-			Renderer::BeginSection(commandBuffer, "Forward SSS Pass", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);
@@ -3293,7 +3696,6 @@ namespace Volt
 			Renderer::DrawIndirectBatches(commandBuffer, indirectPass, myGlobalDescriptorSets, batches);
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3318,14 +3720,13 @@ namespace Volt
 		[=](const SSSBlurData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("SSS Blur Pass");
-			Renderer::BeginSection(commandBuffer, "SSS Blur Pass", TO_NORMALIZEDRGB(6, 71, 24));
 
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			struct PushConstants
 			{
-				gem::vec2 texelSize;
-				gem::vec2 dir;
+				glm::vec2 texelSize;
+				glm::vec2 dir;
 				float sssWidth;
 			} pushConstants;
 
@@ -3335,7 +3736,14 @@ namespace Volt
 			constexpr float sssWidth = 10.f;
 
 			pushConstants.dir = { 1.f, 0.f };
-			pushConstants.sssWidth = sssWidth * 1.f / std::tanf(gem::radians(myCurrentCamera->GetFieldOfView()) * 0.05f) * static_cast<float>(myRenderSize.x) / static_cast<float>(myRenderSize.y);
+			pushConstants.sssWidth = sssWidth * 1.f / std::tanf(glm::radians(myCurrentCamera->GetFieldOfView()) * 0.05f) * static_cast<float>(myRenderSize.x) / static_cast<float>(myRenderSize.y);
+
+			VkImageSubresourceRange subresourceRange{};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.layerCount = 1;
+			subresourceRange.levelCount = 1;
 
 			// Blur 0
 			{
@@ -3343,7 +3751,12 @@ namespace Volt
 				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 				const auto& outputBlurImage = resources.GetImageResource(data.blurOne);
 
-				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+				auto diffuseImage = diffuseInputImage.image.lock();
+				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), diffuseImage->GetHandle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
+
+				diffuseImage->TransitionToLayout(commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
 				mySSSBlurPipeline[0]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
 
@@ -3381,7 +3794,10 @@ namespace Volt
 				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 				const auto& outputBlurImage = resources.GetImageResource(data.blurTwo);
 
-				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+				auto outputImage = outputBlurImage.image.lock();
+				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), outputImage->GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, subresourceRange);
+
+				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
 				mySSSBlurPipeline[1]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
 
@@ -3397,7 +3813,6 @@ namespace Volt
 				Renderer::DispatchComputePipeline(commandBuffer, mySSSBlurPipeline[1], dispatchX, dispatchY, 1);
 			}
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3420,12 +3835,9 @@ namespace Volt
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("SSS Composite Pass");
-			Renderer::BeginSection(commandBuffer, "SSS Composite Pass", TO_NORMALIZEDRGB(6, 71, 24));
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& sssBlurResource = resources.GetImageResource(blurData.blurTwo);
-
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			mySSSCompositePipeline->SetImage(sssBlurResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
 			mySSSCompositePipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
@@ -3437,7 +3849,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, mySSSCompositePipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3509,7 +3920,6 @@ namespace Volt
 		[=, &batches = GetGPUData().indirectBatches](const ForwardTransparentData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Forward Transparent Pass");
-			Renderer::BeginSection(commandBuffer, "Forward Transparent Pass", { 1.f });
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);
@@ -3537,7 +3947,6 @@ namespace Volt
 			Renderer::DrawIndirectBatches(commandBuffer, indirectPass, myGlobalDescriptorSets, batches);
 			Renderer::EndFrameGraphPass(commandBuffer);
 
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3678,12 +4087,9 @@ namespace Volt
 		[=](const LuminosityData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Luminosity Pass");
-			Renderer::BeginSection(commandBuffer, "Luminosity Pass", TO_NORMALIZEDRGB(6, 71, 24));
 
 			const auto& srcColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& targetResource = resources.GetImageResource(data.luminosityImage);
-
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			myLuminosityPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			myLuminosityPipeline->SetImage(srcColorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
@@ -3695,7 +4101,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myLuminosityPipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 
 			myLuminosityPipeline->ClearAllResources();
 			EndTimestamp();
@@ -3728,12 +4133,9 @@ namespace Volt
 			[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 			{
 				BeginTimestamp(name);
-				Renderer::BeginSection(commandBuffer, name, TO_NORMALIZEDRGB(6, 71, 24));
 
 				const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 				postMaterial->Render(commandBuffer, outputImageResource.image.lock());
-
-				Renderer::EndSection(commandBuffer);
 				EndTimestamp();
 			});
 		}
@@ -3755,11 +4157,8 @@ namespace Volt
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("ACES Pass");
-			Renderer::BeginSection(commandBuffer, "ACES Pass", TO_NORMALIZEDRGB(6, 71, 24));
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
-
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			myACESPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			myACESPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
@@ -3770,7 +4169,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myACESPipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3791,11 +4189,8 @@ namespace Volt
 		[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			BeginTimestamp("Gamma Correction Pass");
-			Renderer::BeginSection(commandBuffer, "Gamma Correction Pass", TO_NORMALIZEDRGB(6, 71, 24));
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
-
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
 			myGammaCorrectionPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			myGammaCorrectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
@@ -3806,7 +4201,6 @@ namespace Volt
 			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myGammaCorrectionPipeline, dispatchX, dispatchY, 1);
-			Renderer::EndSection(commandBuffer);
 			EndTimestamp();
 		});
 	}
@@ -3826,7 +4220,6 @@ namespace Volt
 
 		pass.clearCountBufferPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
-		constexpr uint32_t threadCount = 256;
 		const uint32_t dispatchCount = std::max(1u, (uint32_t)(GetGPUData().submitCommands.size() / 256) + 1u);
 		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
@@ -3855,24 +4248,37 @@ namespace Volt
 			uint32_t drawCallCount;
 			uint32_t materialFlags;
 			uint32_t cullMode;
-			uint32_t padding;
+			uint32_t enableLodSelection;
 
-			gem::vec4 aabbMin = 0.f;
-			gem::vec4 aabbMax = 0.f;
+			glm::vec4 aabbMin = 0.f;
+			glm::vec4 aabbMax = 0.f;
+
 		} indirectCullData{};
 
 		indirectCullData.drawCallCount = (uint32_t)GetGPUData().submitCommands.size();
 
-		const auto& projection = myCurrentCamera->GetProjection();
-		const gem::mat4 projTranspose = gem::transpose(projection);
+		const auto projection = params.cullMode == DrawCullMode::Frustum ? params.projection : myCurrentCamera->GetProjection();
+		const glm::mat4 projTranspose = glm::transpose(projection);
 
 		indirectCullData.P00 = projection[0][0];
 		indirectCullData.P11 = projection[1][1];
-		indirectCullData.zNear = myCurrentCamera->GetNearPlane();
-		indirectCullData.zFar = myCurrentCamera->GetFarPlane();
 
-		const gem::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
-		const gem::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+
+		if (params.cullMode == DrawCullMode::Frustum)
+		{
+			const auto row4 = projection[3];
+
+			indirectCullData.zNear = row4.z / (row4.w - 1.f);
+			indirectCullData.zFar = row4.z / (row4.w + 1.f);
+		}
+		else
+		{
+			indirectCullData.zNear = myCurrentCamera->GetNearPlane();
+			indirectCullData.zFar = myCurrentCamera->GetFarPlane();
+		}
+
+		const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+		const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
 
 		indirectCullData.frustum0 = frustumX.x;
 		indirectCullData.frustum1 = frustumX.z;
@@ -3881,8 +4287,8 @@ namespace Volt
 
 		indirectCullData.materialFlags = static_cast<uint32_t>(params.materialFlags);
 		indirectCullData.cullMode = static_cast<uint32_t>(params.cullMode);
-		indirectCullData.aabbMin = params.aabbMin;
-		indirectCullData.aabbMax = params.aabbMax;
+		indirectCullData.aabbMin = glm::vec4{ params.aabbMin, 0.f };
+		indirectCullData.aabbMax = glm::vec4{ params.aabbMax, 0.f };
 
 		{
 			BufferBarrierInfo barrierInfo{};
@@ -3909,7 +4315,6 @@ namespace Volt
 		pass.indirectCullPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 		pass.indirectCullPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &indirectCullData, sizeof(CullData));
 
-		constexpr uint32_t threadCount = 256;
 		const uint32_t dispatchCount = std::max(1u, (uint32_t)(GetGPUData().submitCommands.size() / 256) + 1u);
 		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
@@ -3920,6 +4325,49 @@ namespace Volt
 
 		pass.indirectCullPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), dispatchCount, 1, 1, currentIndex);
 		pass.indirectCullPipeline->InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), currentIndex);
+	}
+
+	void SceneRenderer::PerformLODSelection(Ref<CommandBuffer> commandBuffer)
+	{
+		VT_PROFILE_FUNCTION();
+
+		struct SelectionData
+		{
+			uint32_t drawCallCount = 0;
+			glm::vec3 cameraPosition = 0.f;
+
+			float lodBase = 0.f;
+			float lodStep = 0.f;
+		} selectionData;
+
+		selectionData.lodBase = 10.f;
+		selectionData.lodStep = 1.5f;
+		selectionData.drawCallCount = (uint32_t)GetGPUData().submitCommands.size();
+		selectionData.cameraPosition = myCurrentCamera->GetPosition();
+
+		{
+			BufferBarrierInfo barrierInfo{};
+			barrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+
+			barrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrierInfo.dstAccessMask = VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT | VK_ACCESS_2_SHADER_READ_BIT;
+
+			myLODSelectionPipeline->InsertStorageBufferBarrier(myShaderStorageBufferSet, Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, barrierInfo);
+		}
+
+		myLODSelectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
+		myLODSelectionPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &selectionData, sizeof(SelectionData));
+
+		const uint32_t dispatchCount = std::max(1u, (uint32_t)(GetGPUData().submitCommands.size() / 256) + 1u);
+		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
+
+		myLODSelectionPipeline->Clear(currentIndex);
+		myLODSelectionPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(currentIndex), Sets::RENDERER_BUFFERS);
+		myLODSelectionPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), Renderer::GetBindlessData().globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(Application::Get().GetWindow().GetSwapchain().GetCurrentFrame()), Sets::MAINBUFFERS);
+
+		myLODSelectionPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), dispatchCount, 1, 1, currentIndex);
+		myLODSelectionPipeline->InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), currentIndex);
 	}
 
 	void SceneRenderer::AddLightCullPass(FrameGraph& frameGraph)
@@ -3940,13 +4388,13 @@ namespace Volt
 		{
 			struct LightCullData
 			{
-				gem::vec2ui	targetSize;
-				gem::vec2 depthUnpackConsts;
+				glm::uvec2	targetSize;
+				glm::vec2 depthUnpackConsts;
 			} cullData;
 
 			cullData.targetSize = myRenderSize;
 
-			const auto projectionMatrix = gem::perspective(gem::radians(myCurrentCamera->GetFieldOfView()), myCurrentCamera->GetAspectRatio(), myCurrentCamera->GetNearPlane(), myCurrentCamera->GetFarPlane());
+			const auto projectionMatrix = glm::perspective(glm::radians(myCurrentCamera->GetFieldOfView()), myCurrentCamera->GetAspectRatio(), myCurrentCamera->GetNearPlane(), myCurrentCamera->GetFarPlane());
 
 			float depthLinearizeMul = (-projectionMatrix[3][2]);
 			float depthLinearizeAdd = (projectionMatrix[2][2]);
@@ -3959,12 +4407,7 @@ namespace Volt
 
 			cullData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
 
-			const uint32_t workGroupsX = (myRenderSize.x + 16 - 1) / 16;
-			const uint32_t workGroupsY = (myRenderSize.y + 16 - 1) / 16;
-			const gem::vec2ui numWorkGroups = { workGroupsX, workGroupsY };
-
 			BeginTimestamp("Cull Lights");
-			Renderer::BeginSection(commandBuffer, "Cull Lights", TO_NORMALIZEDRGB(239, 222, 107));
 
 			const auto& depthResource = resources.GetImageResource(preDepthData.preDepth);
 
@@ -3985,8 +4428,7 @@ namespace Volt
 				myLightCullPipeline->InsertStorageBufferBarrier(myShaderStorageBufferSet, Sets::RENDERER_BUFFERS, Bindings::VISIBLE_POINT_LIGHTS, barrierInfo);
 			}
 
-			Renderer::DispatchComputePipeline(commandBuffer, myLightCullPipeline, numWorkGroups.x, numWorkGroups.y, 1);
-			Renderer::EndSection(commandBuffer);
+			Renderer::DispatchComputePipeline(commandBuffer, myLightCullPipeline, myLightCullingWorkGroups.x, myLightCullingWorkGroups.y, 1);
 			EndTimestamp();
 		});
 	}
@@ -4060,10 +4502,10 @@ namespace Volt
 
 		auto scenePtr = myScene.lock();
 
-		const auto halfSize = myScaledSize / 2;
+		const auto halfSize = myScaledSize / 2u;
 
 		UIRenderer::Begin(myOutputImage);
-		UIRenderer::SetProjection(gem::orthoLH(-(float)halfSize.x, (float)halfSize.x, -(float)halfSize.y, (float)halfSize.y, 0.1f, 100.f));
+		UIRenderer::SetProjection(glm::ortho(-(float)halfSize.x, (float)halfSize.x, -(float)halfSize.y, (float)halfSize.y, 0.1f, 100.f));
 		UIRenderer::SetView({ 1.f });
 
 		scenePtr->GetRegistry().ForEachSafe<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
@@ -4079,6 +4521,7 @@ namespace Volt
 			}
 		});
 
+		UIRenderer::DispatchSprites();
 		UIRenderer::DispatchText();
 		UIRenderer::End();
 	}

@@ -30,31 +30,26 @@ namespace Nexus
 		return true;
 	}
 
-	void UDPSocket::SendTo(const std::string& in_address, unsigned short in_port, const char* buffer, int len, int flags)
+	bool UDPSocket::SendTo(const std::string& in_address, unsigned short in_port, const char* buffer, int len, int flags)
 	{
 		sockaddr_in add;
 		add.sin_family = AF_INET;
 		add.sin_port = htons(in_port);
 		inet_pton(AF_INET, in_address.c_str(), &add.sin_addr);
 
-		int ret = sendto(m_sWin, buffer, len, flags, reinterpret_cast<SOCKADDR*>(&add), sizeof(add));
-
-		if (ret < 0)
-		{
-			SocketError();
-			return;
-		}
+		return SendTo(add, buffer, len, flags);
 	}
 
-	void UDPSocket::SendTo(sockaddr_in& in_address, const char* buffer, int len, int flags)
+	bool UDPSocket::SendTo(sockaddr_in& in_address, const char* buffer, int len, int flags)
 	{
 		int ret = sendto(m_sWin, buffer, len, flags, reinterpret_cast<SOCKADDR*>(&in_address), sizeof(in_address));
 
 		if (ret < 0)
 		{
 			SocketError();
-			return;
+			return false;
 		}
+		return true;
 	}
 
 	sockaddr_in UDPSocket::RecvFrom(char* out_buffer, int& out_size, int len, int flags)
@@ -64,7 +59,15 @@ namespace Nexus
 		int ret = recvfrom(m_sWin, out_buffer, len, flags, reinterpret_cast<SOCKADDR*>(&from), &addrLenght);
 		out_size = ret;
 
-		if (ret < 0)
+		if (WSA::Session::LastError() == WSAEWOULDBLOCK)
+		{
+			//SocketError();
+		}/*
+		else if (WSA::Session::LastError() == 10054)
+		{
+
+		}*/
+		else if (ret < 0)
 		{
 			SocketError();
 			return from;
@@ -75,7 +78,7 @@ namespace Nexus
 		return from;
 	}
 
-	void UDPSocket::Bind(unsigned short in_port)
+	void UDPSocket::Bind(unsigned short& in_port)
 	{
 		sockaddr_in add;
 		add.sin_family = AF_INET;
@@ -87,6 +90,34 @@ namespace Nexus
 			SocketError(true);
 			return;
 		}
+
+		// port
+		struct sockaddr_in sin;
+		int addrlen = sizeof(sin);
+		if (getsockname(m_sWin, (struct sockaddr*)&sin, &addrlen)
+			|| sin.sin_family != AF_INET
+			|| addrlen != sizeof(sin))
+		{
+			SocketError(false);
+			in_port = 0;
+			Close();
+			return;
+		}
+		in_port = ntohs(sin.sin_port);
+
+		BOOL bNewBehavior = FALSE;
+		DWORD dwBytesReturned = 0;
+		WSAIoctl(m_sWin, _WSAIOW(IOC_VENDOR, 12), &bNewBehavior, sizeof bNewBehavior, NULL, 0, &dwBytesReturned, NULL, NULL);
+
+		// non-blocking
+		/*unsigned long nonblocking = 1;
+		if (ioctlsocket(m_sWin, FIONBIO, &nonblocking))
+		{
+			SocketError(false);
+			in_port = 0;
+			Close();
+			return;
+		}*/
 	}
 
 	void UDPSocket::Close()
@@ -107,7 +138,8 @@ namespace Nexus
 		}
 		else
 		{
-			//LogError("Socket error");
+			LogError("Socket error: " + std::to_string(WSA::Session::LastError()));
+			return;
 		}
 	}
 }

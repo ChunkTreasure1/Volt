@@ -28,21 +28,27 @@ namespace Volt
 	{
 	}
 
-	void NetClient::MissingEntity(Nexus::TYPE::REP_ID repId)
+	void NetClient::MissingEntity(Nexus::TYPE::REP_ID)
 	{
 
 	}
 
-	void NetClient::Update()
+	void NetClient::BackendUpdate()
 	{
 		HandleIncomming();
-
 		for (auto& repId : m_registry.GetAllType(Nexus::TYPE::eReplicatedType::VARIABLE))
 		{
-			auto repVariable = reinterpret_pointer_cast<RepVariable>(m_registry.Get(repId));
-			if (repVariable->GetField().netData.replicatedCondition != eRepCondition::CONTINUOUS) continue;
-			auto variablePacket = SerializeVariablePacket(*(RepVariable*)m_registry.Get(repId).get(), repId);
+			auto& repVariable = *reinterpret_pointer_cast<RepVariable>(m_registry.Get(repId));
+			if (repVariable.GetOwner() != m_id) continue;
+			if (repVariable.GetField().netData.replicatedCondition != eRepCondition::CONTINUOUS) continue;
+			auto variablePacket = SerializeVariablePacket(repVariable, repId);
 			Transmit(variablePacket);
+
+			//AddPacketToIncomming(variablePacket);
+			/*for (const auto& connection : m_connectionRegistry.GetClientIDs())
+			{
+				m_relay.Transmit(variablePacket, connection.second);
+			}*/
 		}
 		for (auto& repId : m_registry.GetAllType(Nexus::TYPE::eReplicatedType::ENTITY))
 		{
@@ -55,18 +61,31 @@ namespace Volt
 			auto pawnComp = entity.GetComponent<NetActorComponent>();
 			if (pawnComp.condition != eRepCondition::CONTINUOUS) continue;
 
-			if (pawnComp.updateTransform)
+			if (pawnComp.updateTransformPos || pawnComp.updateTransformRot || pawnComp.updateTransformScale)
 			{
-				auto transformPacket = SerializeTransformPacket(entity.GetId(), repId);
+				auto transformPacket = SerializeTransformPacket(entity.GetId(), repId, pawnComp.updateTransformPos, pawnComp.updateTransformRot, pawnComp.updateTransformScale);
 				Transmit(transformPacket);
 				//m_relay.Transmit(transformPacket, Nexus::CreateSockAddr(m_serverAdress, m_serverPort));
 			}
+		}
+
+		if (m_requestReload)
+		{
+			Nexus::Packet reloadRequest;
+			reloadRequest << m_sceneInstanceId;
+			Transmit(reloadRequest);
+			m_requestReload = false;
 		}
 	}
 
 	void NetClient::Transmit(const Nexus::Packet& in_packet)
 	{
 		auto p = in_packet;
+		if (m_id == 1 && p.id != Nexus::ePacketID::CONNECT)
+		{
+			onLoadedQueue.push(p);
+			return;
+		}
 		p.ownerID = m_id;
 		m_relay.Transmit(p, Nexus::CreateSockAddr(m_serverAdress, m_serverPort));
 	}
@@ -84,14 +103,51 @@ namespace Volt
 	void NetClient::OnConnectionConfirmed()
 	{
 		m_id = m_currentPacket.second.ownerID;
-
-		OnCreateEntity();
 		LogTrace("Connection to server confirmed, CLIENT_ID is: " + std::to_string(m_id));
+		while (!onLoadedQueue.empty())
+		{
+			auto p = onLoadedQueue.front();
+			p.ownerID = m_id;
+			m_relay.Transmit(p, Nexus::CreateSockAddr(m_serverAdress, m_serverPort));
+			onLoadedQueue.pop();
+		}
 	}
 
 	void NetClient::OnDisconnect()
 	{
+		auto packet = m_currentPacket.second;
 
+		if (packet.ownerID == 0)
+		{
+			m_packetQueueIn.clear();
+			Application::Get().GetNetHandler().Stop();
+			Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
+			Volt::OnSceneTransitionEvent loadEvent{ handle };
+			Volt::Application::Get().OnEvent(loadEvent);
+			return;
+		}
+
+		for (auto repId : m_registry.GetAllOwner(packet.ownerID))
+		{
+			if (m_registry.Get(repId)->GetType() == Nexus::TYPE::eReplicatedType::ENTITY)
+			{
+				auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
+				Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
+			}
+			m_registry.Unregister(repId);
+		}
+
+		//LogTrace("User: " + m_connectionRegistry.GetAlias(packet.ownerID) + " has disconnected");
+		//m_connectionRegistry.RemoveConnection(packet.ownerID);
+	}
+
+	void NetClient::OnDisconnectConfirmed()
+	{
+		Application::Get().GetNetHandler().Stop();
+		Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
+		Volt::OnSceneTransitionEvent loadEvent{ handle };
+		Volt::Application::Get().OnEvent(loadEvent);
+		return;
 	}
 
 	void NetClient::OnUpdate()
@@ -101,6 +157,23 @@ namespace Volt
 		{
 			ApplyComponentData(repData, m_registry);
 		}
+	}
+
+	void NetClient::OnReloadDenied()
+	{
+		// request again in x time
+		m_requestReload = true;
+
+	}
+
+	void NetClient::OnReloadConfirmed()
+	{
+		// reload scene
+		m_requestReload = false;
+		AssetHandle handle = 0;
+		m_currentPacket.second >> handle;
+		Volt::OnSceneTransitionEvent loadEvent{ handle };
+		Volt::Application::Get().OnEvent(loadEvent);
 	}
 
 	void NetClient::OnCreateEntity()
@@ -140,6 +213,12 @@ namespace Volt
 		// clean reg
 		// clean scene
 		// errors
+	}
+
+	void NetClient::OnConstructRegistry()
+	{
+		// set netscene instance id
+		m_currentPacket.second >> m_sceneInstanceId;
 	}
 
 	void NetClient::OnMoveUpdate()

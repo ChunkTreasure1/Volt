@@ -84,7 +84,7 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("InvokeOnFixedUpdate");
 
-				myEntityScene->GetRegistry().ForEach<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
+				myEntityScene->GetRegistry().ForEach<MonoScriptComponent, TransformComponent>([&](Wire::EntityId, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
 				{
 					if (!transComp.visible)
 					{
@@ -280,11 +280,11 @@ namespace Volt
 		myControllerActors.erase(it);
 	}
 
-	bool PhysicsScene::Raycast(const gem::vec3& origin, const gem::vec3& direction, float maxDistance, RaycastHit* outHit)
+	bool PhysicsScene::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit)
 	{
 		physx::PxRaycastBuffer hitInfo{};
 
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), maxDistance, hitInfo);
+		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
 
 		if (result)
 		{
@@ -298,7 +298,7 @@ namespace Volt
 		return result;
 	}
 
-	bool PhysicsScene::Raycast(const gem::vec3& origin, const gem::vec3& direction, float maxDistance, RaycastHit* outHit, uint32_t layerMask)
+	bool PhysicsScene::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, uint32_t layerMask)
 	{
 		physx::PxFilterData data{};
 		data.word0 = layerMask;
@@ -308,7 +308,7 @@ namespace Volt
 		qFilterData.data = data;
 
 		physx::PxRaycastBuffer hitInfo{};
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
+		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
 
 		if (result)
 		{
@@ -322,14 +322,14 @@ namespace Volt
 		return result;
 	}
 
-	bool PhysicsScene::Linecast(const gem::vec3& origin, const gem::vec3& destination, RaycastHit* outHit)
+	bool PhysicsScene::Linecast(const glm::vec3& origin, const glm::vec3& destination, RaycastHit* outHit)
 	{
 		physx::PxRaycastBuffer hitInfo{};
 
-		gem::vec3 direction = destination - origin;
-		float distance = gem::distance(destination, origin);
+		glm::vec3 direction = destination - origin;
+		float distance = glm::distance(destination, origin);
 
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), distance, hitInfo);
+		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), distance, hitInfo);
 
 		if (result)
 		{
@@ -343,7 +343,7 @@ namespace Volt
 		return result;
 	}
 
-	bool PhysicsScene::Linecast(const gem::vec3& origin, const gem::vec3& destination, RaycastHit* outHit, uint32_t layerMask)
+	bool PhysicsScene::Linecast(const glm::vec3& origin, const glm::vec3& destination, RaycastHit* outHit, uint32_t layerMask)
 	{
 		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
 
@@ -355,9 +355,9 @@ namespace Volt
 		qFilterData.data = data;
 
 		physx::PxRaycastBuffer hitInfo{};
-		gem::vec3 direction = destination - origin;
-		float distance = gem::distance(destination, origin);
-		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(gem::normalize(direction)), distance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
+		glm::vec3 direction = destination - origin;
+		float distance = glm::distance(destination, origin);
+		bool result = myPhysXScene->raycast(PhysXUtilities::ToPhysXVector(origin), PhysXUtilities::ToPhysXVector(glm::normalize(direction)), distance, hitInfo, physx::PxHitFlag::eDEFAULT, qFilterData);
 
 		if (result)
 		{
@@ -371,7 +371,7 @@ namespace Volt
 		return result;
 	}
 
-	bool PhysicsScene::OverlapBox(const gem::vec3& origin, const gem::vec3& halfSize, std::vector<Entity>& hitList, uint32_t layerMask)
+	bool PhysicsScene::OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::vector<Entity>& hitList, uint32_t layerMask)
 	{
 		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
 
@@ -389,11 +389,11 @@ namespace Volt
 		bool hit = OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count, qFilterData);
 		if (!buffer.empty())
 		{
-			for (auto& hit : buffer)
+			for (auto& overlap : buffer)
 			{
-				if (hit.actor != nullptr)
+				if (overlap.actor != nullptr)
 				{
-					auto actor = (PhysicsActorBase*)hit.actor->userData;
+					auto actor = (PhysicsActorBase*)overlap.actor->userData;
 					if (actor)
 					{
 						tempEnts.push_back(actor->GetEntity());
@@ -407,7 +407,7 @@ namespace Volt
 		return hit;
 	}
 
-	bool PhysicsScene::OverlapCapsule(const gem::vec3& origin, float radius, float halfHeight, std::vector<Entity>& hitList, uint32_t layerMask)
+	bool PhysicsScene::OverlapCapsule(const glm::vec3& origin, float radius, float halfHeight, std::vector<Entity>& hitList, uint32_t layerMask)
 	{
 		const auto& layer = PhysicsLayerManager::GetLayer(layerMask);
 
@@ -422,7 +422,7 @@ namespace Volt
 		std::vector<Entity> tempEnts;
 		uint32_t count;
 
-		bool hit = OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count, qFilterData);
+		bool hasHit = OverlapGeometry(origin, physx::PxCapsuleGeometry(radius, halfHeight), buffer, count, qFilterData);
 		if (!buffer.empty())
 		{
 			for (auto& hit : buffer)
@@ -439,10 +439,10 @@ namespace Volt
 		}
 
 		hitList = tempEnts;
-		return hit;
+		return hasHit;
 	}
 
-	bool PhysicsScene::OverlapSphere(const gem::vec3& origin, float radius, std::vector<Entity>& hitList, uint32_t layerMask)
+	bool PhysicsScene::OverlapSphere(const glm::vec3& origin, float radius, std::vector<Entity>& hitList, uint32_t layerMask)
 	{
 		physx::PxFilterData data{};
 		data.word0 = layerMask;
@@ -455,7 +455,7 @@ namespace Volt
 		std::vector<Entity> tempEnts;
 		uint32_t count;
 
-		bool hit = OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count, qFilterData);
+		bool hasHit = OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count, qFilterData);
 		if (!buffer.empty())
 		{
 			for (auto& hit : buffer)
@@ -472,7 +472,7 @@ namespace Volt
 		}
 
 		hitList = tempEnts;
-		return hit;
+		return hasHit;
 	}
 
 	void PhysicsScene::CreateRegions()
@@ -528,7 +528,7 @@ namespace Volt
 			return;
 		}
 
-		myNumSubSteps = gem::min(static_cast<uint32_t>(myAccumulator / mySubStepSize), myMaxSubSteps);
+		myNumSubSteps = glm::min(static_cast<uint32_t>(myAccumulator / mySubStepSize), myMaxSubSteps);
 		myAccumulator -= (float)myNumSubSteps * mySubStepSize;
 	}
 
@@ -554,10 +554,10 @@ namespace Volt
 		myPhysXScene = nullptr;
 	}
 
-	bool PhysicsScene::OverlapGeometry(const gem::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData)
+	bool PhysicsScene::OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<physx::PxOverlapHit, MAX_OVERLAP_COLLIDERS>& buffer, uint32_t& count, const physx::PxQueryFilterData& filterData)
 	{
 		physx::PxOverlapBuffer buf(buffer.data(), MAX_OVERLAP_COLLIDERS);
-		physx::PxTransform pose = PhysXUtilities::ToPhysXTransform(gem::translate(gem::mat4(1.0f), origin));
+		physx::PxTransform pose = PhysXUtilities::ToPhysXTransform(glm::translate(glm::mat4(1.0f), origin));
 
 		bool result = myPhysXScene->overlap(geometry, pose, buf, filterData);
 		if (result)

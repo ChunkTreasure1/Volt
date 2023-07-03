@@ -1,4 +1,6 @@
-Handle: 10414502906572959398
-Path: Engine/Meshes/Primitives/SM_Cone.fbx
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5244042238809914408
+  filePath: Engine/Meshes/Primitives/SM_Cone.fbx
+  type: 2
+  Dependencies:
+    []

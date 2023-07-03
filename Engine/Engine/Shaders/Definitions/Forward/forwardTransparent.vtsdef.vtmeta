@@ -1,4 +1,7 @@
-Handle: 1324918783367404059
-Path: Engine/Shaders/Definitions/Forward/forwardTransparent.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 16674184740405411005
+  filePath: Engine/Shaders/Definitions/Forward/forwardTransparent.vtsdef
+  type: 64
+  Dependencies:
+    - 13639218079433149575
+    - 5811929941841461120

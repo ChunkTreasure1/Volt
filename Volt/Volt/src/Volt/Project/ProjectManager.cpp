@@ -83,6 +83,7 @@ namespace Volt
 		YAML::Node rootProjectNode = root["Project"];
 
 		VT_DESERIALIZE_PROPERTY(Name, myCurrentProject->name, rootProjectNode, std::string("None"));
+		VT_DESERIALIZE_PROPERTY(CompanyName, myCurrentProject->companyName, rootProjectNode, std::string("None"));
 		VT_DESERIALIZE_PROPERTY(AssetsPath, myCurrentProject->assetsDirectory, rootProjectNode, std::filesystem::path("Assets"));
 		VT_DESERIALIZE_PROPERTY(AudioBanksPath, myCurrentProject->audioBanksDirectory, rootProjectNode, std::filesystem::path("Audio/Banks"));
 		VT_DESERIALIZE_PROPERTY(IconPath, myCurrentProject->iconPath, rootProjectNode, std::filesystem::path(""));

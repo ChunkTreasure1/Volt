@@ -1,4 +1,6 @@
-Handle: 8019296265266294323
-Path: Engine/Shaders/Source/HLSL/PostProcessing/AA/TAA_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 9471477371087207398
+  filePath: Engine/Shaders/Source/HLSL/PostProcessing/AA/TAA_cs.hlsl
+  type: 128
+  Dependencies:
+    []

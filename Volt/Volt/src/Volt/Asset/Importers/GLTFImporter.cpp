@@ -69,28 +69,28 @@ namespace Volt
 		return mesh;
 	}
 
-	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node* parent, Ref<Mesh> outMesh)
+	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node*, Ref<Mesh> outMesh)
 	{
 		GLTF::Node node{};
 
 		if (inputNode.translation.size() == 3)
 		{
 			double dubScale[3] = { inputNode.translation[0], inputNode.translation[1], inputNode.translation[2] };
-			node.transform = gem::translate(gem::mat4(1.f), gem::vec3(static_cast<float>(dubScale[0]), static_cast<float>(dubScale[1]), static_cast<float>(dubScale[2])));
+			node.transform = glm::translate(glm::mat4(1.f), glm::vec3(static_cast<float>(dubScale[0]), static_cast<float>(dubScale[1]), static_cast<float>(dubScale[2])));
 		}
 
 		if (inputNode.scale.size() == 3)
 		{
 			double dubScale[3] = { inputNode.scale[0], inputNode.scale[1], inputNode.scale[2] };
-			node.transform = node.transform * gem::scale(gem::mat4(1.f), gem::vec3(static_cast<float>(dubScale[0]), static_cast<float>(dubScale[1]), static_cast<float>(dubScale[2])));
+			node.transform = node.transform * glm::scale(glm::mat4(1.f), glm::vec3(static_cast<float>(dubScale[0]), static_cast<float>(dubScale[1]), static_cast<float>(dubScale[2])));
 		}
 
 		if (inputNode.rotation.size() == 3)
 		{
 			double dubRotation[3] = { inputNode.rotation[0], inputNode.rotation[1], inputNode.rotation[2] };
-			node.transform = node.transform * gem::rotate(gem::mat4(1.f), static_cast<float>(dubRotation[0]), gem::vec3(1.f, 0.f, 0.f));
-			node.transform = node.transform * gem::rotate(gem::mat4(1.f), static_cast<float>(dubRotation[1]), gem::vec3(0.f, 1.f, 0.f));
-			node.transform = node.transform * gem::rotate(gem::mat4(1.f), static_cast<float>(dubRotation[2]), gem::vec3(0.f, 0.f, 1.f));
+			node.transform = node.transform * glm::rotate(glm::mat4(1.f), static_cast<float>(dubRotation[0]), glm::vec3(1.f, 0.f, 0.f));
+			node.transform = node.transform * glm::rotate(glm::mat4(1.f), static_cast<float>(dubRotation[1]), glm::vec3(0.f, 1.f, 0.f));
+			node.transform = node.transform * glm::rotate(glm::mat4(1.f), static_cast<float>(dubRotation[2]), glm::vec3(0.f, 0.f, 1.f));
 		}
 
 		for (int i : inputNode.children)
@@ -153,15 +153,15 @@ namespace Volt
 					for (size_t v = 0; v < vertexCount; v++)
 					{
 						Vertex vert{};
-						vert.position = positionBuffer ? *(gem::vec3*)&positionBuffer[v * 3] : gem::vec3();
-						vert.normal = gem::normalize(normalBuffer ? *(gem::vec3*)&normalBuffer[v * 3] : gem::vec3(0.f, 1.f, 0.f));
-						vert.texCoords = texCoordsBuffer ? *(gem::vec2*)&texCoordsBuffer[v * 2] : gem::vec2();
+						vert.position = positionBuffer ? *(glm::vec3*)&positionBuffer[v * 3] : glm::vec3();
+						vert.normal = glm::normalize(normalBuffer ? *(glm::vec3*)&normalBuffer[v * 3] : glm::vec3(0.f, 1.f, 0.f));
+						vert.texCoords = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
 
 						vert.texCoords.y = 1.f - vert.texCoords.y;
 
-						gem::vec4 tangent = tangentBuffer ? *(gem::vec4*)&tangentBuffer[v * 4] : gem::vec4();
+						glm::vec4 tangent = tangentBuffer ? *(glm::vec4*)&tangentBuffer[v * 4] : glm::vec4();
 
-						vert.tangent = gem::vec3(tangent.x, tangent.y, tangent.z);
+						vert.tangent = glm::vec3(tangent.x, tangent.y, tangent.z);
 
 						outMesh->myVertices.emplace_back(vert);
 					}

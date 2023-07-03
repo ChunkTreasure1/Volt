@@ -4,6 +4,8 @@
 #include <Volt/Scene/SceneManager.h>
 #include <Volt/Core/Graphics/Swapchain.h>
 
+#include <Volt/Events/SettingsEvent.h>
+
 #include <Volt/Asset/AssetManager.h>
 
 #include <Volt/Rendering/SceneRenderer.h>
@@ -15,6 +17,8 @@
 
 #include <Volt/Core/Application.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
+
+#include <Volt/Input/KeyCodes.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -41,14 +45,14 @@ void GameLayer::OnAttach()
 
 		spec.initialResolution = { Volt::Application::Get().GetWindow().GetWidth(), Volt::Application::Get().GetWindow().GetHeight() };
 
-		
+
 		Volt::SceneRendererSettings settings{}; //= LoadGraphicSettings();
 		settings.enableUI = true;
 		settings.enablePostProcessing = true;
 		settings.enableVolumetricFog = true;
 
 		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
-		
+
 		myScene->SetRenderSize(spec.initialResolution.x, spec.initialResolution.y);
 	}
 }
@@ -75,11 +79,37 @@ void GameLayer::OnEvent(Volt::Event& e)
 	dispatcher.Dispatch<Volt::OnSceneLoadedEvent>(VT_BIND_EVENT_FN(GameLayer::OnSceneLoaded));
 	dispatcher.Dispatch<Volt::OnGameStateChangedEvent>(VT_BIND_EVENT_FN(GameLayer::OnGameStateChanged));
 
+	dispatcher.Dispatch<Volt::OnRenderScaleChangedEvent>([&](Volt::OnRenderScaleChangedEvent& e)
+	{
+		mySceneRenderer->GetSettings().renderScale = e.GetRenderScale();
+		mySceneRenderer->ApplySettings();
+
+		return true;
+	});
+
+	dispatcher.Dispatch<Volt::KeyPressedEvent>([&](Volt::KeyPressedEvent& e) 
+	{
+		if (e.GetKeyCode() == VT_KEY_F6)
+		{
+			Volt::RenderMode renderMode = mySceneRenderer->GetCurrentRenderMode();
+			(*(uint32_t*)&renderMode)++;
+
+			if (renderMode == Volt::RenderMode::COUNT)
+			{
+				renderMode = Volt::RenderMode::Default;
+			}
+
+			mySceneRenderer->SetRenderMode(renderMode);
+		}
+
+		return false;
+	});
+
 	myScene->OnEvent(e);
 }
 
 void GameLayer::LoadStartScene()
-{ 
+{
 	Volt::SceneManager::SetActiveScene(myScene);
 
 	Volt::OnSceneLoadedEvent loadEvent{ myScene };
@@ -96,32 +126,14 @@ void GameLayer::LoadStartScene()
 
 bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
-	if (!isPaused && !myIsLoadingScene)
+	if (!isPaused)
 	{
 		myScene->Update(e.GetTimestep());
 	}
 
 	if (myShouldLoadNewScene)
 	{
-		TransitionToNewScene();
-	}
-
-	if (myIsLoadingScene && Volt::Scene::IsSceneFullyLoaded(myScene->path))
-	{
-		myIsLoadingScene = false;
-
-		Volt::SceneManager::SetActiveScene(myScene);
-
-		Volt::OnSceneLoadedEvent loadEvent{ myScene };
-		Volt::Application::Get().OnEvent(loadEvent);
-
-		myScene->OnRuntimeStart();
-
-		Volt::OnScenePlayEvent playEvent{};
-		Volt::Application::Get().OnEvent(playEvent);
-
-		Volt::ViewportResizeEvent resizeEvent{ 0, 0, myLastWidth, myLastHeight };
-		myScene->OnEvent(resizeEvent);
+		TrySceneTransition();
 	}
 
 	return false;
@@ -129,15 +141,12 @@ bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	if (!myIsLoadingScene)
-	{
-		mySceneRenderer->OnRenderRuntime();
-	}
+	mySceneRenderer->OnRenderRuntime();
 
 	auto& swapchain = Volt::Application::Get().GetWindow().GetSwapchain();
 
-	const gem::vec2ui srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
-	const gem::vec2ui dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
+	const glm::uvec2 srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
+	const glm::uvec2 dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -197,7 +206,9 @@ bool GameLayer::OnWindowResizeEvent(Volt::WindowResizeEvent& e)
 
 bool GameLayer::OnSceneTransition(Volt::OnSceneTransitionEvent& e)
 {
-	myStoredScene = Volt::AssetManager::GetAsset<Volt::Scene>(e.GetHandle());
+	myStoredScene = Volt::AssetManager::QueueAsset<Volt::Scene>(e.GetHandle());
+	Volt::Scene::PreloadSceneAssets(Volt::AssetManager::GetFilePathFromAssetHandle(myStoredScene->handle));
+
 	myShouldLoadNewScene = true;
 
 	return true;
@@ -213,47 +224,6 @@ bool GameLayer::OnGameStateChanged(Volt::OnGameStateChangedEvent& e)
 {
 	isPaused = e.GetState();
 	return false;
-}
-
-void GameLayer::TransitionToNewScene()
-{
-	myScene->OnRuntimeEnd();
-
-	Volt::AssetManager::Get().Unload(myScene->handle);
-
-	if (myScene == myStoredScene)
-	{
-		auto sceneHandle = myStoredScene->handle;
-		myStoredScene = nullptr;
-		myScene = nullptr;
-
-		myScene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
-	}
-	else
-	{
-		myScene = myStoredScene;
-	}
-
-	myLastWidth = mySceneRenderer->GetFinalImage()->GetWidth();
-	myLastHeight = mySceneRenderer->GetFinalImage()->GetHeight();
-
-	// Scene Renderer
-	{
-		Volt::SceneRendererSpecification spec{};
-		spec.debugName = "Main Renderer";
-		spec.scene = myScene;
-		spec.initialResolution = { myLastWidth, myLastHeight };
-		//spec.renderToSwapchain = true;
-
-		Volt::SceneRendererSettings settings = mySceneRenderer->GetSettings();
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
-	}
-
-	myScene->SetRenderSize(myLastWidth, myLastHeight);
-
-	Volt::Scene::PreloadSceneAssets(myScene->path);
-	myIsLoadingScene = true;
-	myShouldLoadNewScene = false;
 }
 
 Volt::SceneRendererSettings GameLayer::LoadGraphicSettings()
@@ -288,4 +258,68 @@ Volt::SceneRendererSettings GameLayer::LoadGraphicSettings()
 		settings.renderScale = root["RenderScale"].as<float>();
 	}
 	return settings;
+}
+
+void GameLayer::TrySceneTransition()
+{
+	myStoredScene = Volt::AssetManager::QueueAsset<Volt::Scene>(myStoredScene->handle);
+
+	if (!myStoredScene->IsValid())
+	{
+		return;
+	}
+
+	if (!Volt::Scene::IsSceneFullyLoaded(Volt::AssetManager::GetFilePathFromAssetHandle(myStoredScene->handle)))
+	{
+		return;
+	}
+
+	myShouldLoadNewScene = false;
+
+	myScene->OnRuntimeEnd();
+
+	Volt::AssetManager::Get().Unload(myScene->handle);
+
+	if (myScene == myStoredScene)
+	{
+		auto sceneHandle = myStoredScene->handle;
+		myScene = nullptr;
+
+		myScene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
+	}
+	else
+	{
+		myScene = myStoredScene;
+	}
+
+	myStoredScene = nullptr;
+
+	myLastWidth = mySceneRenderer->GetOriginalSize().x;
+	myLastHeight = mySceneRenderer->GetOriginalSize().y;
+
+	// Scene Renderer
+	{
+		Volt::SceneRendererSpecification spec{};
+		spec.debugName = "Main Renderer";
+		spec.scene = myScene;
+		spec.initialResolution = { myLastWidth, myLastHeight };
+
+		Volt::SceneRendererSettings settings = mySceneRenderer->GetSettings();
+		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+	}
+
+	myScene->SetRenderSize(myLastWidth, myLastHeight);
+
+	Volt::SceneManager::SetActiveScene(myScene);
+
+	Volt::OnSceneLoadedEvent loadEvent{ myScene };
+	Volt::Application::Get().OnEvent(loadEvent);
+
+	myScene->OnRuntimeStart();
+
+	Volt::OnScenePlayEvent playEvent{};
+	Volt::Application::Get().OnEvent(playEvent);
+
+	Volt::ViewportResizeEvent resizeEvent{ 0, 0, myLastWidth, myLastHeight };
+	myScene->OnEvent(resizeEvent);
 }

@@ -25,17 +25,17 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Start Timer"; }
-		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void StartTimer()
 		{
-			const auto id = TimerManager::AddTimer(GetInput<float>(1), [&]()
+			const auto timerId = TimerManager::AddTimer(GetInput<float>(1), [&]()
 			{
 				ActivateOutput(1);
 			});
 
-			SetOutputData(2, id);
+			SetOutputData(2, timerId);
 			ActivateOutput(0);
 		}
 	};
@@ -58,14 +58,14 @@ namespace GraphKey
 		}
 
 		inline const std::string GetName() override { return "Stop Timer"; }
-		inline const gem::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
+		inline const glm::vec4 GetColor() override { return { 0.f, 0.f, 1.f, 1.f }; }
 
 	private:
 		inline void StopTimer()
 		{
-			const auto id = GetInput<Volt::UUID>(1);
+			const auto timerId = GetInput<Volt::UUID>(1);
 
-			TimerManager::StopTimer(id);
+			TimerManager::StopTimer(timerId);
 			ActivateOutput(0);
 		}
 	};

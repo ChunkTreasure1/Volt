@@ -32,7 +32,7 @@ void EngineStatisticsPanel::UpdateMainContent()
 	{
 		UI::Header("Time");
 
-		const auto timeInfo = myScene->IsPlaying() ? myGameSceneRenderer->GetTimestamps() : mySceneRenderer->GetTimestamps();
+		const auto timeInfo = (myScene->IsPlaying() && myGameSceneRenderer) ? myGameSceneRenderer->GetTimestamps() : mySceneRenderer->GetTimestamps();
 		for (const auto& timestamp : timeInfo)
 		{
 			ImGui::TextUnformatted(std::format("{}: {:.2f} ms", timestamp.label, timestamp.time).c_str());
@@ -42,8 +42,8 @@ void EngineStatisticsPanel::UpdateMainContent()
 
 		UI::Header("Statistics");
 
-		const auto& stats = myScene->IsPlaying() ? myGameSceneRenderer->GetStatistics() : mySceneRenderer->GetStatistics();
-		const auto& pipelineStats = myScene->IsPlaying() ? myGameSceneRenderer->GetStatistics().pipelineStatistics : mySceneRenderer->GetStatistics().pipelineStatistics;
+		const auto& stats = (myScene->IsPlaying() && myGameSceneRenderer) ? myGameSceneRenderer->GetStatistics() : mySceneRenderer->GetStatistics();
+		const auto& pipelineStats = (myScene->IsPlaying() && myGameSceneRenderer) ? myGameSceneRenderer->GetStatistics().pipelineStatistics : mySceneRenderer->GetStatistics().pipelineStatistics;
 
 		ImGui::Text("Input Assembly Vertices: %d", pipelineStats.inputAssemblyVertices);
 		ImGui::Text("Input Assembly Primitives: %d", pipelineStats.inputAssemblyPrimitives);

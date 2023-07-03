@@ -22,6 +22,8 @@
 #include "Volt/Scene/SceneManager.h"
 #include "Volt/Components/Components.h"
 
+#include "Volt/Utility/StringUtility.h"
+
 #include <Wire/Entity.h>
 
 #include <mono/jit/jit.h>
@@ -31,6 +33,7 @@
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/threads.h>
 #include <mono/metadata/mono-gc.h>
+#include <mono/utils/mono-logger.h>
 
 namespace Volt
 {
@@ -68,12 +71,11 @@ namespace Volt
 	};
 
 	static Scope<ScriptEngineData> s_monoData;
-
+	
 	namespace Utility
 	{
 		inline static MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
 		{
-			uint32_t fileSize = 0;
 			Buffer buffer = Buffer::ReadFromFile(assemblyPath);
 
 			MonoImageOpenStatus status;
@@ -273,7 +275,7 @@ namespace Volt
 		s_monoData->monoEnums.clear();
 
 		MonoImage* image = mono_assembly_get_image(assembly);
-		MonoClass* scriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -292,7 +294,7 @@ namespace Volt
 				continue;
 			}
 
-			if (monoClass == scriptClass)
+			if (monoClass == monoScriptClass)
 			{
 				continue;
 			}
@@ -331,7 +333,7 @@ namespace Volt
 				}
 			}
 
-			Ref<MonoScriptClass> scriptClass = CreateRef<MonoScriptClass>(image, namespaceStr, name);
+			Ref<MonoScriptClass> scriptClass = CreateRef<MonoScriptClass>(image, namespaceStr, name, true);
 
 			if (scriptClass->IsSubclassOf(s_monoData->coreScriptClass))
 			{
@@ -348,7 +350,7 @@ namespace Volt
 	void MonoScriptEngine::LoadAndCreateMonoClasses(MonoAssembly* assembly)
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
-		MonoClass* scriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -367,7 +369,7 @@ namespace Volt
 				continue;
 			}
 
-			if (monoClass == scriptClass)
+			if (monoClass == monoScriptClass)
 			{
 				continue;
 			}
@@ -415,10 +417,17 @@ namespace Volt
 		{
 			mySceneInstance = CreateRef<MonoCoreInstance>(s_monoData->coreClasses.at("Volt.Scene"));
 		}
+
+		mono_assembly_setrootdir("Scripts/mono/lib");
+		mono_set_assemblies_path("Scripts/mono/lib");
 	}
 
 	void MonoScriptEngine::OnRuntimeEnd()
 	{
+		mono_assembly_setrootdir("Scripts/mono/lib");
+		mono_set_assemblies_path("Scripts/mono/lib");
+
+		//MonoScriptGlue::SteamAPI_Clean();
 		DoDestroyQueue();
 
 		myIsRunning = false;
@@ -572,8 +581,6 @@ namespace Volt
 
 	void MonoScriptEngine::OnUpdateInstance(UUID instanceId, float deltaTime)
 	{
-		VT_PROFILE_FUNCTION();
-
 		if (s_monoData->scriptInstances.contains(instanceId))
 		{
 			s_monoData->scriptInstances.at(instanceId)->InvokeOnUpdate(deltaTime);
@@ -816,10 +823,10 @@ namespace Volt
 					case MonoFieldType::Float: fieldInst->SetValue(instance->GetField<float>(name), sizeof(float), fieldInst->field.type); break;
 					case MonoFieldType::Double: fieldInst->SetValue(instance->GetField<double>(name), sizeof(double), fieldInst->field.type); break;
 
-					case MonoFieldType::Vector2: fieldInst->SetValue(instance->GetField<gem::vec2>(name), sizeof(gem::vec2), fieldInst->field.type); break;
-					case MonoFieldType::Vector3: fieldInst->SetValue(instance->GetField<gem::vec3>(name), sizeof(gem::vec3), fieldInst->field.type); break;
-					case MonoFieldType::Vector4: fieldInst->SetValue(instance->GetField<gem::vec4>(name), sizeof(gem::vec4), fieldInst->field.type); break;
-					case MonoFieldType::Quaternion: fieldInst->SetValue(instance->GetField<gem::vec4>(name), sizeof(gem::vec4), fieldInst->field.type); break;
+					case MonoFieldType::Vector2: fieldInst->SetValue(instance->GetField<glm::vec2>(name), sizeof(glm::vec2), fieldInst->field.type); break;
+					case MonoFieldType::Vector3: fieldInst->SetValue(instance->GetField<glm::vec3>(name), sizeof(glm::vec3), fieldInst->field.type); break;
+					case MonoFieldType::Vector4: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
+					case MonoFieldType::Quaternion: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
 					case MonoFieldType::Entity: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
 
 					case MonoFieldType::Animation:
@@ -830,9 +837,10 @@ namespace Volt
 					case MonoFieldType::Material:
 					case MonoFieldType::Texture:
 					case MonoFieldType::PostProcessingMaterial:
+					case MonoFieldType::Video:
+					case MonoFieldType::AnimationGraph:
 					case MonoFieldType::Asset: fieldInst->SetValue(instance->GetField<AssetHandle>(name), sizeof(AssetHandle), fieldInst->field.type); break;
-
-					case MonoFieldType::Color: fieldInst->SetValue(instance->GetField<gem::vec4>(name), sizeof(gem::vec4), fieldInst->field.type); break;
+					case MonoFieldType::Color: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
 					case MonoFieldType::Enum: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
 				}
 			}
@@ -849,6 +857,18 @@ namespace Volt
 
 		MonoObject* exception = nullptr;
 		mono_runtime_invoke(method, instance, args, &exception);
+
+		if (exception)
+		{
+			auto exceptionInfo = Utility::GetExceptionInfo(exception);
+			VT_CORE_ERROR("{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.typeName, exceptionInfo.message, exceptionInfo.source, exceptionInfo.stackTrace);
+		}
+	}
+
+	void MonoScriptEngine::CallStaticMethod(MonoMethod* method, void** args /*= nullptr*/)
+	{
+		MonoObject* exception = nullptr;
+		mono_runtime_invoke(method, nullptr, args, &exception);
 
 		if (exception)
 		{
@@ -882,6 +902,8 @@ namespace Volt
 	{
 		mono_assembly_setrootdir("Scripts/mono/lib");
 		mono_set_assemblies_path("Scripts/mono/lib");
+
+		//mono_trace_set_level_string("warning");
 
 		if (!Application::Get().IsRuntime())
 		{
@@ -958,7 +980,7 @@ namespace Volt
 		const MonoTableInfo* tableInfo = mono_image_get_table_info(image, MONO_TABLE_ASSEMBLYREF);
 		int32_t rows = mono_table_info_get_rows(tableInfo);
 
-		std::vector<std::string> names;
+		std::vector<std::string> names = { "System.Configuration", "Mono.Security", "System.Xml", "System.Net" };
 		for (int32_t i = 0; i < rows; i++)
 		{
 			uint32_t colos[MONO_ASSEMBLYREF_SIZE];
@@ -977,12 +999,12 @@ namespace Volt
 
 		for (const auto& name : assemblyNames)
 		{
-			if (name.contains("Volt-ScriptCore"))
+			if (Utils::StringContains(name, "Volt-ScriptCore"))
 			{
 				continue;
 			}
 
-			if (name.contains("mscorlib"))
+			if (Utils::StringContains(name, "mscorlib"))
 			{
 				continue;
 			}

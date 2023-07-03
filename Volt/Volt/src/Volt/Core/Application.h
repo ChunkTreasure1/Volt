@@ -10,7 +10,9 @@
 #include "Volt/Core/Threading/ThreadPool.h"
 
 #include "Volt/Core/Layer/LayerStack.h"
+
 #include "Volt/Events/ApplicationEvent.h"
+#include "Volt/Events/KeyEvent.h"
 
 #include <string>
 
@@ -66,6 +68,7 @@ namespace Volt
 		inline Window& GetWindow() const { return *myWindow; }
 		inline static Application& Get() { return *myInstance; }
 		inline static ThreadPool& GetThreadPool() { return Get().myThreadPool; }
+		inline static ThreadPool& GetRenderThreadPool() { return Get().myRenderThreadPool; }
 
 		inline const bool IsRuntime() const { return myInfo.isRuntime; }
 		inline const ApplicationInfo& GetInfo() const { return myInfo; }
@@ -77,12 +80,17 @@ namespace Volt
 
 		NetHandler& GetNetHandler() { return *myNetHandler; }
 		AI::NavigationSystem& GetNavigationSystem() { return *myNavigationSystem; }
+		SteamImplementation& GetSteam() { return *mySteamImplementation; }
 
 	private:
+		bool OnAppUpdateEvent(AppUpdateEvent& e);
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 		bool OnViewportResizeEvent(ViewportResizeEvent& e);
+		bool OnKeyPressedEvent(KeyPressedEvent& e);
 
+		void SetupWindowPreferences(WindowProperties& windowProperties);
+		
 		bool myIsRunning = false;
 		bool myIsMinimized = false;
 		bool myHasSentMouseMovedEvent = false;
@@ -107,6 +115,7 @@ namespace Volt
 		Scope<SteamImplementation> mySteamImplementation;
 
 		ThreadPool myThreadPool;
+		ThreadPool myRenderThreadPool;
 	};
 
 	static Application* CreateApplication(const std::filesystem::path& appPath);

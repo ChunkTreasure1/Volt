@@ -138,5 +138,6 @@ namespace Volt
 
 		bool isCubeMap = false;
 		bool generateMips = true;
+		bool mappable = false;
 	};
 }

@@ -108,7 +108,7 @@ namespace Volt
 	
 	void TextureTable::SetDirty(bool state)
 	{
-		for (const auto& val : myIsDirty)
+		for (auto&& val : myIsDirty)
 		{
 			val = state;
 		}

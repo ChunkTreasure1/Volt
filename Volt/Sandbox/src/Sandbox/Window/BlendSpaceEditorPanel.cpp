@@ -90,7 +90,7 @@ void BlendSpaceEditorPanel::UpdateProperties()
 		ImGui::EndPopup();
 	}
 
-	auto& animations = const_cast<std::vector<std::pair<gem::vec2, Volt::AssetHandle>>&>(myCurrentBlendSpace->GetAnimations());
+	auto& animations = const_cast<std::vector<std::pair<glm::vec2, Volt::AssetHandle>>&>(myCurrentBlendSpace->GetAnimations());
 
 	if (UI::BeginProperties("animationValues"))
 	{
@@ -102,7 +102,7 @@ void BlendSpaceEditorPanel::UpdateProperties()
 
 			if (animAsset && animAsset->IsValid())
 			{
-				animName = animAsset->path.stem().string();
+				animName = animAsset->assetName;
 			}
 			UI::Property(animName, value);
 		}

@@ -1,4 +1,7 @@
-Handle: 14155223049156841487
-Path: Engine/Shaders/Definitions/Forward/forward.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 12128052130511988899
+  filePath: Engine/Shaders/Definitions/Forward/forward.vtsdef
+  type: 64
+  Dependencies:
+    - 13639218079433149575
+    - 16466623238050363380

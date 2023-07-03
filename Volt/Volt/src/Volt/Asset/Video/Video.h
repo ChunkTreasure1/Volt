@@ -20,7 +20,7 @@ extern "C"
 namespace Volt
 {
 	class Image2D;
-	enum class VideoStatus
+	enum class VideoStatus : uint32_t
 	{
 		Stopped,
 		Playing,

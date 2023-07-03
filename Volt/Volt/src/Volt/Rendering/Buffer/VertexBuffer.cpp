@@ -95,7 +95,7 @@ namespace Volt
 		}
 	}
 
-	void VertexBuffer::SetDataMapped(VkCommandBuffer commandBuffer, const void* data, uint32_t size)
+	void VertexBuffer::SetDataMapped(VkCommandBuffer, const void* data, uint32_t size)
 	{
 		VulkanAllocator allocator{};
 		void* mapped = allocator.MapMemory<void>(myBufferAllocation);
@@ -137,8 +137,8 @@ namespace Volt
 	{
 		auto device = GraphicsContextVolt::GetDevice();
 
-		VkBuffer stagingBuffer;
-		VmaAllocation stagingAllocation;
+		VkBuffer stagingBuffer = nullptr;
+		VmaAllocation stagingAllocation = nullptr;
 		VkDeviceSize bufferSize = size;
 		VulkanAllocator allocator{ "VertexBuffer - Create" };
 

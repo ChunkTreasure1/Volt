@@ -133,11 +133,11 @@ namespace Volt
 		Release();
 	}
 
-	void RenderPipeline::Invalidate(const std::map<ShaderStage, ShaderDataBuffer>& specializationConstants)
+	void RenderPipeline::Invalidate(const std::map<ShaderStage, ShaderDataBuffer>& definedConstants)
 	{
-		if (!specializationConstants.empty())
+		if (!definedConstants.empty())
 		{
-			mySpecializationConstantsBuffers = specializationConstants;
+			mySpecializationConstantsBuffers = definedConstants;
 		}
 
 		Release();
@@ -558,10 +558,10 @@ namespace Volt
 
 		if (!mySpecification.instanceLayout.GetElements().empty())
 		{
-			VkVertexInputBindingDescription& bindingDesc = myVertexBindingDescriptions.emplace_back();
-			bindingDesc.binding = 1;
-			bindingDesc.stride = mySpecification.instanceLayout.GetStride();
-			bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+			VkVertexInputBindingDescription& inputBindingDesc = myVertexBindingDescriptions.emplace_back();
+			inputBindingDesc.binding = 1;
+			inputBindingDesc.stride = mySpecification.instanceLayout.GetStride();
+			inputBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
 			for (const auto& element : mySpecification.instanceLayout.GetElements())
 			{

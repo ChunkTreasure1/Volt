@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace Volt
 {
@@ -10,6 +11,8 @@ namespace Volt
         public float y;
         public float z;
         public float w;
+
+        public static Quaternion Identity = new Quaternion(1, 0, 0, 0);
 
         public Quaternion(float w, float y, float z, float x)
         {
@@ -87,6 +90,17 @@ namespace Volt
         public static bool operator ==(Quaternion left, Quaternion right) => left.Equals(right);
         public static bool operator !=(Quaternion left, Quaternion right) => !(left == right);
 
+        [SecuritySafeCritical]
+        public unsafe byte[] GetBytes()
+        {
+            byte[] bytes = new byte[sizeof(Quaternion)];
+            fixed (byte* ptr = bytes)
+            {
+                *(Quaternion*)ptr = this;
+            }
+
+            return bytes;
+        }
         public float Length
         {
             get
@@ -115,6 +129,43 @@ namespace Volt
             get
             {
                 return conjugate / Dot(this, this);
+            }
+        }
+
+        public float Roll()
+        {
+            return Mathf.Atan2(2f * (x * y + w * z), w * w + x * x - y * y - z * z);
+        }
+
+        public float Pitch()
+        {
+            float pY = 2f * (y * z + w * x);
+            float pX = w * w - x * x - y * y + z * z;
+
+            if (x <= Mathf.Epsilon && y <= Mathf.Epsilon)
+            { 
+                return 2f * Mathf.Atan2(x, w);
+            }
+
+            return Mathf.Atan2(pY, pX);
+        }
+
+        public float Yaw()
+        {
+            return Mathf.Asin(Mathf.Clamp(-2f * (x * z - w * y), -1f, 1f));
+        }
+
+        public Vector3 EulerAngles()
+        {   
+            return new Vector3(Pitch(), Yaw(), Roll());
+        }
+
+        public Vector3 eulerAngles
+        {
+            get => new Vector3(Pitch(), Yaw(), Roll());
+            set
+            {
+                this = new Quaternion(value);
             }
         }
 

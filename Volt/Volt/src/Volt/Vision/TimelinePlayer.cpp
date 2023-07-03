@@ -57,7 +57,7 @@ void Volt::TimelinePlayer::StartTimeline(const TimelinePreset timelinePreset, Sc
 	}
 
 	myCurrentKeyAndTime.clear();
-	myCurrentKeyAndTime.resize(myTimelinePreset.myTracks.size(), { 0,0 });
+	myCurrentKeyAndTime.resize(myTimelinePreset.myTracks.size(), { 0, 0.f });
 }
 
 void Volt::TimelinePlayer::StopTimeline()
@@ -120,18 +120,18 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 					const auto& VCamComp = trackEntity.GetComponent<Volt::VisionCameraComponent>();
 					if (VCamComp.followId == Wire::NullID)
 					{
-						trackEntity.SetPosition(gem::lerp(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
+						trackEntity.SetPosition(glm::mix(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
 					}
 
 					if (VCamComp.lookAtId == Wire::NullID)
 					{
-						trackEntity.SetRotation(gem::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
+						trackEntity.SetRotation(glm::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
 					}
 				}
 				else
 				{
-					trackEntity.SetPosition(gem::lerp(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
-					trackEntity.SetRotation(gem::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
+					trackEntity.SetPosition(glm::mix(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
+					trackEntity.SetRotation(glm::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
 				}
 
 			}
@@ -183,7 +183,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 	}
 
 	myCurrentPlaybackTime += deltaTime;
-	const float timelineMaxLengthTime = myTimelinePreset.maxLength / 30;
+	const float timelineMaxLengthTime = myTimelinePreset.maxLength / 30.f;
 	if (myCurrentPlaybackTime >= timelineMaxLengthTime)
 	{
 		Loop();
@@ -238,8 +238,8 @@ void Volt::TimelinePlayer::GetPreviewOnTime(TimelinePreset& timelinePreset, cons
 
 				//Update Entity Transforms
 				{
-					trackEntity.SetPosition(gem::lerp(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
-					trackEntity.SetRotation(gem::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
+					trackEntity.SetPosition(glm::mix(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
+					trackEntity.SetRotation(glm::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
 				}
 			}
 		}

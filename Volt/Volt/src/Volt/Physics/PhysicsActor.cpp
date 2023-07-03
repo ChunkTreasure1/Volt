@@ -101,7 +101,7 @@ namespace Volt
 		myLayerId = layerId;
 	}
 
-	void PhysicsActor::SetKinematicTarget(const gem::vec3& position, const gem::quat& rotation)
+	void PhysicsActor::SetKinematicTarget(const glm::vec3& position, const glm::quat& rotation)
 	{
 		if (!IsKinematic())
 		{
@@ -114,7 +114,7 @@ namespace Volt
 		actor->setKinematicTarget(PhysXUtilities::ToPhysXTransform(position, rotation));
 	}
 
-	void PhysicsActor::SetLinearVelocity(const gem::vec3& velocity)
+	void PhysicsActor::SetLinearVelocity(const glm::vec3& velocity)
 	{
 		if (!IsDynamic() || IsKinematic())
 		{
@@ -128,7 +128,7 @@ namespace Volt
 		actor->setLinearVelocity(PhysXUtilities::ToPhysXVector(velocity));
 	}
 
-	void PhysicsActor::SetAngularVelocity(const gem::vec3& velocity)
+	void PhysicsActor::SetAngularVelocity(const glm::vec3& velocity)
 	{
 		if (!IsDynamic())
 		{
@@ -175,12 +175,12 @@ namespace Volt
 		return !IsDynamic() ? myRigidBodyData.mass : myRigidActor->is<physx::PxRigidDynamic>()->getMass();
 	}
 
-	const gem::vec3 PhysicsActor::GetLinearVelocity() const
+	const glm::vec3 PhysicsActor::GetLinearVelocity() const
 	{
 		if (!IsDynamic())
 		{
 			VT_CORE_WARN("Trying to get velocity of non-dynamic PhysicsActor");
-			return gem::vec3(0.f);
+			return glm::vec3(0.f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
@@ -189,12 +189,12 @@ namespace Volt
 		return PhysXUtilities::FromPhysXVector(actor->getLinearVelocity());
 	}
 
-	const gem::vec3 PhysicsActor::GetAngularVelocity() const
+	const glm::vec3 PhysicsActor::GetAngularVelocity() const
 	{
 		if (!IsDynamic())
 		{
 			VT_CORE_WARN("Trying to get velocity of non-dynamic PhysicsActor");
-			return gem::vec3(0.f);
+			return glm::vec3(0.f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
@@ -231,12 +231,12 @@ namespace Volt
 		return actor->getMaxAngularVelocity();
 	}
 
-	const gem::vec3 PhysicsActor::GetKinematicTargetPosition() const
+	const glm::vec3 PhysicsActor::GetKinematicTargetPosition() const
 	{
 		if (!IsKinematic())
 		{
 			VT_CORE_WARN("Trying to set kinematic target for a non-kinematic actor.");
-			return gem::vec3(0.0f, 0.0f, 0.0f);
+			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
@@ -246,12 +246,12 @@ namespace Volt
 		return PhysXUtilities::FromPhysXVector(target.p);
 	}
 
-	const gem::quat PhysicsActor::GetKinematicTargetRotation() const
+	const glm::quat PhysicsActor::GetKinematicTargetRotation() const
 	{
 		if (!IsKinematic())
 		{
 			VT_CORE_WARN("Trying to set kinematic target for a non-kinematic actor.");
-			return gem::vec3(0.0f, 0.0f, 0.0f);
+			return glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 
 		physx::PxRigidDynamic* actor = myRigidActor->is<physx::PxRigidDynamic>();
@@ -261,7 +261,7 @@ namespace Volt
 		return PhysXUtilities::FromPhysXQuat(target.q);
 	}
 
-	void PhysicsActor::SetPosition(const gem::vec3& position, bool autoWake, bool synchronize)
+	void PhysicsActor::SetPosition(const glm::vec3& position, bool autoWake, bool synchronize)
 	{
 		physx::PxTransform transform = myRigidActor->getGlobalPose();
 		transform.p = PhysXUtilities::ToPhysXVector(position);
@@ -279,7 +279,7 @@ namespace Volt
 		}
 	}
 
-	void PhysicsActor::SetRotation(const gem::quat& rotation, bool autoWake, bool synchronize)
+	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autoWake, bool synchronize)
 	{
 		physx::PxTransform transform = myRigidActor->getGlobalPose();
 		transform.q = PhysXUtilities::ToPhysXQuat(rotation);
@@ -309,7 +309,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	void PhysicsActor::AddForce(const gem::vec3& aForce, ForceMode aForceMode)
+	void PhysicsActor::AddForce(const glm::vec3& aForce, ForceMode aForceMode)
 	{
 		if (!IsDynamic())
 		{
@@ -322,7 +322,7 @@ namespace Volt
 		actor->addForce(PhysXUtilities::ToPhysXVector(aForce), (physx::PxForceMode::Enum)aForceMode);
 	}
 
-	void PhysicsActor::AddTorque(const gem::vec3& torque, ForceMode aForceMode)
+	void PhysicsActor::AddTorque(const glm::vec3& torque, ForceMode aForceMode)
 	{
 		if (!IsDynamic())
 		{
@@ -409,7 +409,7 @@ namespace Volt
 			myLockFlags &= ~(uint32_t)flag;
 		}
 
-		myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)myLockFlags);
+		myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(myLockFlags)));
 
 		if (forceAwake)
 		{
@@ -423,14 +423,14 @@ namespace Volt
 
 		if (IsDynamic())
 		{
-			myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)myLockFlags);
+			myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(myLockFlags)));
 		}
 	}
 
 	void PhysicsActor::CreateRigidActor()
 	{
 		auto& sdk = PhysXInternal::GetPhysXSDK();
-		gem::mat4 transform = { 1 };
+		glm::mat4 transform = { 1 };
 		if (myEntity.HasComponent<Volt::TransformComponent>())
 		{
 			transform = myEntity.GetTransform();

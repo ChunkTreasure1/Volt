@@ -27,7 +27,11 @@ namespace Volt
 		OnScenePlay, OnSceneStop, OnSceneLoaded, OnSceneTransition, OnRespawn, OnGameStateChanged, OnPlayGame,
 
 		// GraphKey
-		OnCollisionEnter, OnCollisionExit, OnTriggerEnter, OnTriggerExit
+		OnCollisionEnter, OnCollisionExit, OnTriggerEnter, OnTriggerExit,
+
+		// Settings
+		OnRenderScaleChanged,
+		OnRendererSettingsChanged
 	};
 
 	enum EventCategory
@@ -40,6 +44,7 @@ namespace Volt
 		EventCategoryMouseButton = BIT(4),
 		EventCategoryGame = BIT(5),
 		EventCategoryGraphKey = BIT(6),
+		EventCategorySettings = BIT(7),
 
 		EventCategoryAnyInput = EventCategoryInput | EventCategoryMouse | EventCategoryMouseButton
 	};

@@ -3,8 +3,8 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
-#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
-#include <Volt/Core/Graphics/GraphicsContextVolt.h>
+#include <Volt/Core/Graphics/GraphicsDevice.h>
+#include <Volt/Core/Graphics/GraphicsContext.h>
 
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -26,7 +26,7 @@ PreviewRenderer::PreviewRenderer()
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 
 	myEntity = myPreviewScene->CreateEntity();
@@ -58,75 +58,93 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 	auto itemPtr = assetItem.lock();
 	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(itemPtr->handle);
+
+	const bool assetWasLoaded = Volt::AssetManager::Get().IsLoaded(itemPtr->handle);
+
 	switch (assetType)
 	{
 		case Volt::AssetType::Mesh:
-			RenderMeshPreview(assetItem);
+			if(!RenderMeshPreview(assetItem))
+			{
+				return;
+			}
 			break;
 
 		case Volt::AssetType::Material:
-			RenderMaterialPreview(assetItem);
+			if (!RenderMaterialPreview(assetItem))
+			{
+				return;
+			}
 			break;
 
 		default:
 			return;
 	}
 
-	Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
+	Volt::GraphicsContext::GetDevice()->WaitForIdle();
 
 	Volt::ImageSpecification spec{};
 	spec = myPreviewRenderer->GetFinalImage()->GetSpecification();
 
 	itemPtr->previewImage = Volt::Image2D::Create(spec);
 
-	auto commandBuffer = Volt::GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
+	auto commandBuffer = Volt::GraphicsContext::GetDevice()->GetSingleUseCommandBuffer(true);
 	itemPtr->previewImage->CopyFromImage(commandBuffer, myPreviewRenderer->GetFinalImage());
-	Volt::GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
-}
+	Volt::GraphicsContext::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
 
-void PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
-{
-	auto itemPtr = assetItem.lock();
-
-	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(itemPtr->handle);
-	if (!mesh || !mesh->IsValid())
-	{
-		return;
-	}
-
-	const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(itemPtr->handle);
-	myEntity.GetComponent<Volt::MeshComponent>().handle = itemPtr->handle;
-	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
-
-	const gem::vec3 rotation = { gem::radians(30.f), gem::radians(135.f), 0.f };
-	myCamera->SetRotation(rotation);
-
-	const gem::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 2.f;
-	myCamera->SetPosition(position);
-
-	myPreviewRenderer->OnRenderEditor(myCamera);
-
-	if (wasLoaded)
+	if (!assetWasLoaded)
 	{
 		Volt::AssetManager::Get().Unload(itemPtr->handle);
 	}
 }
 
-void PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem)
+bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
 	auto itemPtr = assetItem.lock();
 
-	Ref<Volt::Material> material = Volt::AssetManager::GetAsset<Volt::Material>(itemPtr->handle);
-	if (!material || !material->IsValid())
+	Ref<Volt::Mesh> mesh = Volt::AssetManager::QueueAsset<Volt::Mesh>(itemPtr->handle);
+	if (!mesh || !mesh->IsValid())
 	{
-		return;
+		return false;
 	}
 
-	myEntity.GetComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+	myEntity.GetComponent<Volt::MeshComponent>().handle = itemPtr->handle;
+	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
+
+	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
+	myCamera->SetRotation(rotation);
+
+	const glm::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 2.f;
+	myCamera->SetPosition(position);
+
+	myPreviewRenderer->OnRenderEditor(myCamera);
+
+	return true;
+}
+
+bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem)
+{
+	auto itemPtr = assetItem.lock();
+
+	Ref<Volt::Material> material = Volt::AssetManager::QueueAsset<Volt::Material>(itemPtr->handle);
+	if (!material || !material->IsValid())
+	{
+		return false;
+	}
+
+	auto meshAsset = Volt::AssetManager::QueueAsset<Volt::Mesh>(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+	if (!meshAsset || !meshAsset->IsValid())
+	{
+		return false;
+	}
+
+	myEntity.GetComponent<Volt::MeshComponent>().handle = meshAsset->handle;
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = material->handle;
 
 	myCamera->SetPosition({ 0.f, 0.f, -150.f });
 	myCamera->SetRotation(0.f);
 
 	myPreviewRenderer->OnRenderEditor(myCamera);
+
+	return true;
 }

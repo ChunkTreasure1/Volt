@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "HLSLIncluder.h"
 
+#include <wrl.h>
+
 namespace Volt
 {
 	HRESULT HLSLIncluder::LoadSource(LPCWSTR pFilename, IDxcBlob** ppIncludeSource)

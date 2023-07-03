@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "ComputePipeline.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
 
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Image2D.h"
@@ -27,6 +27,13 @@ namespace Volt
 	{
 		Invalidate();
 
+		Renderer::AddShaderDependency(computeShader, this);
+	}
+
+	ComputePipeline::ComputePipeline(Ref<Shader> computeShader, uint32_t count, bool useGlobalDescriptors, const ShaderDataBuffer& specializationConstants)
+		: myShader(computeShader), myCount(count), myUseGlobalDescriptors(useGlobalDescriptors), myIsPermutation(true), mySpecializationConstantsBuffer(specializationConstants)
+	{
+		Invalidate();
 		Renderer::AddShaderDependency(computeShader, this);
 	}
 
@@ -58,14 +65,14 @@ namespace Volt
 
 	void ComputePipeline::Clear(uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 		vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
 	}
 
 	void ComputePipeline::Execute(uint32_t groupX, uint32_t groupY, uint32_t groupZ, const void* pushConstantData, const size_t pushConstantSize, uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(myCount, QueueTypeVolt::Compute);
+		auto device = GraphicsContext::GetDevice();
+		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(myCount, QueueType::Compute);
 		vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
 
 		AllocateDescriptorSets(index);
@@ -88,7 +95,7 @@ namespace Volt
 
 	void ComputePipeline::InsertBarriers(VkCommandBuffer commandBuffer, uint32_t index)
 	{
-		if (myImageBarriers.at(index).empty() && myBufferBarriers.at(index).empty())
+		if (myImageBarriers.at(index).empty() && myBufferBarriers.at(index).empty() && myExecutionBarriers.at(index).empty())
 		{
 			return;
 		}
@@ -105,7 +112,7 @@ namespace Volt
 		info.pMemoryBarriers = executionBarriers.data();
 		info.bufferMemoryBarrierCount = (uint32_t)bufferBarriers.size();
 		info.pBufferMemoryBarriers = bufferBarriers.data();
-		info.imageMemoryBarrierCount = 0; (uint32_t)imageBarriers.size();
+		info.imageMemoryBarrierCount = (uint32_t)imageBarriers.size();
 		info.pImageMemoryBarriers = imageBarriers.data();
 
 		vkCmdPipelineBarrier2(commandBuffer, &info);
@@ -120,7 +127,31 @@ namespace Volt
 	{
 		Release();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		// Transfer pipeline generation data
+		{
+			auto oldGenerationData = mySpecializationConstantsBuffer;
+			mySpecializationConstantsBuffer = {};
+			if (myShader->GetResources().specializationConstantBuffers.contains(VK_SHADER_STAGE_COMPUTE_BIT))
+			{
+				auto newBuffer = myShader->CreateSpecialiazationConstantsBuffer(ShaderStage::Compute);
+
+					const auto& oldMembers = oldGenerationData.GetMembers();
+
+					for (const auto& [name, uniform] : newBuffer.GetMembers())
+					{
+						if (oldMembers.contains(name) && oldMembers.at(name).size == uniform.size)
+						{
+							newBuffer.SetValue(name, oldGenerationData.GetValueRaw(name, oldMembers.at(name).size), oldMembers.at(name).size);
+						}
+					}
+
+					oldGenerationData.Release();
+
+				mySpecializationConstantsBuffer = newBuffer;
+			}
+		}
+
+		auto device = GraphicsContext::GetDevice();
 		auto resources = myShader->GetResources();
 
 		// Find global descriptor sets
@@ -148,11 +179,44 @@ namespace Volt
 
 		VT_VK_CHECK(vkCreatePipelineLayout(device->GetHandle(), &layoutInfo, nullptr, &myPipelineLayout));
 
+		auto computeStage = myShader->GetStageInfos().at(0);
+
+		std::vector<VkSpecializationInfo> specConstInfos{};
+		std::vector<std::vector<VkSpecializationMapEntry>> specConstEntries{};
+
+		const auto specializationConstants = myShader->GetResources().specializationConstants;
+
+		if (myIsPermutation)
+		{
+			specConstInfos.reserve(1);
+			if (specializationConstants.contains(computeStage.stage))
+			{
+				const auto& specConsts = specializationConstants.at(computeStage.stage);
+				auto& buffer = mySpecializationConstantsBuffer;
+
+				VkSpecializationInfo& specConstInfo = specConstInfos.emplace_back();
+				specConstInfo.mapEntryCount = buffer.GetMemberCount();
+				specConstInfo.dataSize = buffer.GetSize();
+				specConstInfo.pData = buffer.GetData();
+
+				auto& entries = specConstEntries.emplace_back();
+
+				entries.reserve(specConsts.size());
+				for (const auto& [constantId, constantData] : specConsts)
+				{
+					entries.emplace_back(constantData.constantInfo);
+				}
+
+				specConstInfo.pMapEntries = entries.data();
+				computeStage.pSpecializationInfo = &specConstInfo;
+			}
+		}
+
 		VkComputePipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
 		pipelineInfo.layout = myPipelineLayout;
 		pipelineInfo.flags = 0;
-		pipelineInfo.stage = myShader->GetStageInfos().at(0);
+		pipelineInfo.stage = computeStage;
 
 		VkPipelineCacheCreateInfo pipelineCacheInfo{};
 		pipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
@@ -172,6 +236,17 @@ namespace Volt
 		myImage3DResources.clear();
 		myUniformBufferResources.clear();
 		myStorageBufferResources.clear();
+
+		myBufferBarriers.clear();
+		myImageBarriers.clear();
+		myExecutionBarriers.clear();
+
+		myBufferBarriers.resize(myCount);
+		myImageBarriers.resize(myCount);
+		myExecutionBarriers.resize(myCount);
+
+		myImageBarrierIndexMap.clear();
+		myBufferBarrierIndexMap.clear();
 	}
 
 	void ComputePipeline::SetUniformBuffer(Ref<UniformBufferSet> uniformBufferSet, uint32_t set, uint32_t binding)
@@ -181,10 +256,10 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t index = mySetBindingWriteDescriptorMap.at(set).at(binding);
+		const uint32_t writeIndex = mySetBindingWriteDescriptorMap.at(set).at(binding);
 
-		if (myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
-			myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+		if (myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
+			myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		{
 			VT_CORE_ERROR("[ComputePipeline] Trying to set uniform buffer to descriptor set of non uniform buffer type!");
 			return;
@@ -207,10 +282,10 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t index = mySetBindingWriteDescriptorMap.at(set).at(binding);
+		const uint32_t writeIndex = mySetBindingWriteDescriptorMap.at(set).at(binding);
 
-		if (myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER &&
-			myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)
+		if (myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER &&
+			myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)
 		{
 			VT_CORE_ERROR("[ComputePipeline] Trying to set storage buffer to descriptor set of non storage buffer type!");
 			return;
@@ -267,7 +342,7 @@ namespace Volt
 			}
 		}
 
-		auto setInfoFunc = [=](VkDescriptorImageInfo& info, Ref<Image2D> image, uint32_t set, uint32_t binding)
+		auto setInfoFunc = [=](VkDescriptorImageInfo& info, Ref<Image2D> image, uint32_t, uint32_t)
 		{
 			info.imageLayout = imageLayout;
 
@@ -303,7 +378,7 @@ namespace Volt
 		myImage2DResources[set][binding] = { image, imageLayout, imageAccess };
 	}
 
-	void ComputePipeline::SetImage(Ref<Image2D> image, uint32_t set, uint32_t binding, uint32_t mip, uint32_t arrayElement, ImageAccess imageAccess)
+	void ComputePipeline::SetImage(Ref<Image2D>, uint32_t, uint32_t, uint32_t, uint32_t, ImageAccess)
 	{
 
 	}
@@ -594,6 +669,11 @@ namespace Volt
 		return CreateRef<ComputePipeline>(computeShader, count, useGlobalDescriptors);
 	}
 
+	Ref<ComputePipeline> ComputePipeline::Create(Ref<Shader> computeShader, uint32_t count, bool useGlobalDescriptors, const ShaderDataBuffer& specializationConstants)
+	{
+		return CreateRef<ComputePipeline>(computeShader, count, useGlobalDescriptors, specializationConstants);
+	}
+
 	void ComputePipeline::Release()
 	{
 		if (!myPipeline)
@@ -603,7 +683,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([pipelineLayout = myPipelineLayout, pipelineCache = myPipelineCache, pipeline = myPipeline, descriptorPools = myDescriptorPools]()
 		{
-			auto device = GraphicsContextVolt::GetDevice();
+			auto device = GraphicsContext::GetDevice();
 			for (const auto& descriptorPool : descriptorPools)
 			{
 				vkDestroyDescriptorPool(device->GetHandle(), descriptorPool, nullptr);
@@ -624,10 +704,10 @@ namespace Volt
 
 	void ComputePipeline::SetupFromShader()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		const auto& resources = myShader->GetResources();
+		auto device = GraphicsContext::GetDevice();
+		const auto& shaderResources = myShader->GetResources();
 
-		myShaderResources = { myCount, resources };
+		myShaderResources = { myCount, shaderResources };
 		myDescriptorSets.resize(myCount);
 		myWriteDescriptors.resize(myCount);
 		myBufferBarriers.resize(myCount);
@@ -690,14 +770,20 @@ namespace Volt
 	{
 		const auto& resources = myShader->GetResources();
 
+		auto poolSizes = resources.descriptorPoolSizes;
+		for (auto& poolSize : poolSizes)
+		{
+			poolSize.descriptorCount *= 10;
+		}
+
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.flags = 0;
 		poolInfo.maxSets = 100;
-		poolInfo.poolSizeCount = (uint32_t)resources.descriptorPoolSizes.size();
-		poolInfo.pPoolSizes = resources.descriptorPoolSizes.data();
+		poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
+		poolInfo.pPoolSizes = poolSizes.data();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		for (uint32_t i = 0; i < myCount; i++)
 		{
@@ -707,7 +793,7 @@ namespace Volt
 
 	void ComputePipeline::AllocateDescriptorSets(uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		auto& resources = myShaderResources.at(index);
 		auto& descriptorSets = myDescriptorSets.at(index);
@@ -720,7 +806,7 @@ namespace Volt
 
 	void ComputePipeline::UpdateDescriptorSets(VkCommandBuffer commandBuffer, uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
 
 		if (myWriteDescriptors.at(index).empty())
 		{
@@ -751,8 +837,7 @@ namespace Volt
 			return;
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		auto& resources = myShaderResources.at(index);
+		auto device = GraphicsContext::GetDevice();
 		auto& descriptorSets = myDescriptorSets.at(index);
 		descriptorSets.clear();
 

@@ -13,16 +13,16 @@
 
 namespace Volt
 {
-	bool AnimationGraphImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool AnimationGraphImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<AnimationGraphAsset>();
 		Ref<AnimationGraphAsset> animGraph = std::reinterpret_pointer_cast<AnimationGraphAsset>(asset);
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -30,7 +30,7 @@ namespace Volt
 		std::ifstream input(filePath, std::ios::binary | std::ios::in);
 		if (!input.is_open())
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -47,7 +47,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML with error {1}! Please correct it!", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML with error {1}! Please correct it!", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -74,12 +74,10 @@ namespace Volt
 				GraphKey::Graph::Deserialize(animGraph, graphSaveNode);
 			}
 		}
-
-		animGraph->path = path;
 		return true;
 	}
 
-	void AnimationGraphImporter::Save(const Ref<Asset>& asset) const
+	void AnimationGraphImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		const Ref<AnimationGraphAsset> animGraph = std::reinterpret_pointer_cast<AnimationGraphAsset>(asset);
 
@@ -95,17 +93,8 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
-	}
-
-	void AnimationGraphImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
-	{
-	}
-
-	bool AnimationGraphImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
 	}
 }

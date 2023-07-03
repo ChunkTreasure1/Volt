@@ -63,7 +63,9 @@ namespace Volt
 		Font,
 		Material,
 		Texture,
-		PostProcessingMaterial
+		PostProcessingMaterial,
+		Video,
+		AnimationGraph
 	};
 
 	enum class FieldAccessibility : uint8_t
@@ -111,7 +113,7 @@ namespace Volt
 		}
 
 		template<>
-		void SetValue(const std::string& value, const size_t size, const MonoFieldType& type)
+		void SetValue(const std::string& value, const size_t, const MonoFieldType& type)
 		{
 			data.Allocate(value.size() + 1);
 			data.Copy(value.c_str(), value.size() + 1);
@@ -123,13 +125,15 @@ namespace Volt
 	{
 	public:
 		MonoScriptClass() = default;
-		MonoScriptClass(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className);
+		MonoScriptClass(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className, bool isEngineScript = false);
 
 		MonoMethod* GetMethod(const std::string& name, int32_t paramCount);
 
 		inline MonoClass* GetClass() const { return myMonoClass; }
 		inline std::string GetNamespace() const { return myNamespace; }
 		inline std::string GetClassName() const { return myClassName; }
+		inline const bool IsEngineScript() const { return myIsEngineScript; }
+		
 		inline const std::unordered_map<std::string, MonoScriptField>& GetFields() const { return myFields; }
 
 		bool IsSubclassOf(Ref<MonoScriptClass> parent);
@@ -152,6 +156,8 @@ namespace Volt
 		MonoClass* myMonoClass = nullptr;
 		std::unordered_map<std::string, MonoMethod*> myMethodCache;
 		std::unordered_map<std::string, MonoScriptField> myFields;
+
+		bool myIsEngineScript = false;
 
 		uint32_t myHandle;
 	};

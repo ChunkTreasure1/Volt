@@ -37,3 +37,7 @@ Volt/scripts/data/premake5.exe
 
 Volt/Volt/vendor/efsw/lib
 Volt/Volt/vendor/efsw/obj
+
+*.scor
+*.gbl
+*.incl

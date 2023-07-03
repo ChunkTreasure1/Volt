@@ -38,7 +38,7 @@ namespace Volt
 		bool NavigationSystem::OnAppUpdateEvent(Volt::AppUpdateEvent& e)
 		{
 			VT_PROFILE_FUNCTION()
-			if (myNavMesh && myActiveScene->IsPlaying())
+			if (myNavMesh && myActiveScene && myActiveScene->IsPlaying())
 			{
 				auto& crowd = myNavMesh->GetCrowd();
 
@@ -72,6 +72,7 @@ namespace Volt
 					for (auto entityId : agentEntities)
 					{
 						auto entity = Volt::Entity(entityId, myActiveScene.get());
+						crowd->SetAgentPosition(entity, entity.GetPosition());
 
 						if (!crowd->GetAgentMap().contains(entityId))
 						{
@@ -112,19 +113,21 @@ namespace Volt
 
 		bool NavigationSystem::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 		{
-			myActiveScene = e.GetScene();
-			if (myActiveScene->path.empty() && myActiveScene->GetName() != "New Scene") { return false; }
+			//#TODO_Ivar: Reimplement
 
-			auto scenePath = myActiveScene->path;
-			scenePath.replace_extension(".vtnavmesh");
+			//myActiveScene = e.GetScene();
+			//if (myActiveScene->path.empty() && myActiveScene->GetName() != "New Scene") { return false; }
 
-			SetVTNavMesh(Volt::AssetManager::Get().GetAsset<Volt::AI::NavMesh>(scenePath));
+			//auto scenePath = myActiveScene->path;
+			//scenePath.replace_extension(".vtnavmesh");
 
-			if (myActiveScene->IsPlaying())
-			{
-				ClearAgents();
-				InitAgents();
-			}
+			//SetVTNavMesh(Volt::AssetManager::Get().GetAsset<Volt::AI::NavMesh>(scenePath));
+
+			//if (myActiveScene->IsPlaying())
+			//{
+			//	ClearAgents();
+			//	InitAgents();
+			//}
 			return false;
 		}
 
@@ -144,7 +147,7 @@ namespace Volt
 			if (myEntityIdToTargetPosMap.contains(entity.GetId())) { return; }
 			auto& crowd = myNavMesh->GetCrowd();
 
-			myEntityIdToTargetPosMap[entity.GetId()] = *(gem::vec3*)&crowd->GetAgent(entity.GetId())->targetPos;
+			myEntityIdToTargetPosMap[entity.GetId()] = *(glm::vec3*)&crowd->GetAgent(entity.GetId())->targetPos;
 			crowd->ResetAgentTarget(entity);
 
 			SyncDetourPosition(entity, deltaTime);
@@ -179,8 +182,8 @@ namespace Volt
 
 					if (actorController)
 					{
-						actorController->SetFootPosition(*(gem::vec3*)&agent->npos);
-						//actorController->Move(*(gem::vec3*)&agent->vel * deltaTime);
+						//actorController->SetFootPosition(*(glm::vec3*)&agent->npos);
+						actorController->Move(*(glm::vec3*)&agent->vel * deltaTime);
 					}
 					else
 					{
@@ -190,7 +193,7 @@ namespace Volt
 			}
 			else
 			{
-				entity.SetPosition(*(gem::vec3*)&agent->npos);
+				entity.SetPosition(*(glm::vec3*)&agent->npos);
 			}
 		}
 

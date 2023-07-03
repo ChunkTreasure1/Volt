@@ -12,9 +12,11 @@ namespace Volt
 	void Input::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<AppUpdateEvent>([&](AppUpdateEvent& updateEvent)
+		dispatcher.Dispatch<AppUpdateEvent>([&](AppUpdateEvent&)
 		{
 			memset(myKeyStates.data(), 0, sizeof(KeyState) * myKeyStates.size());
+
+			myScrollOffset = 0.f;
 
 			return false;
 		});
@@ -45,6 +47,12 @@ namespace Volt
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& keyEvent)
 		{
 			myKeyStates[keyEvent.GetMouseButton()] = KeyState::Released;
+			return false;
+		});
+
+		dispatcher.Dispatch<MouseScrolledEvent>([&](MouseScrolledEvent& scrollEvent) 
+		{
+			myScrollOffset = scrollEvent.GetYOffset();
 			return false;
 		});
 	}
@@ -252,6 +260,11 @@ namespace Volt
 		return { (float)xPos + wx, (float)yPos + wy };
 	}
 	
+	float Input::GetScrollOffset()
+	{
+		return myScrollOffset;
+	}
+
 	void Input::ShowCursor(bool state)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -263,12 +276,12 @@ namespace Volt
 		myDisableInput = state;
 	}
 
-	const gem::vec2& Input::GetViewportMousePosition()
+	const glm::vec2& Input::GetViewportMousePosition()
 	{
 		return myViewportMousePos;
 	}
 
-	void Input::SetViewportMousePosition(const gem::vec2& viewportPos)
+	void Input::SetViewportMousePosition(const glm::vec2& viewportPos)
 	{
 		myViewportMousePos = viewportPos;
 	}

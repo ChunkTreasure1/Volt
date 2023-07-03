@@ -21,7 +21,7 @@ namespace Volt
 	private:
 		Random() = delete;
 
-		inline static std::random_device myDevice;
-		inline static std::mt19937 myEngine{ myDevice() };
+		inline thread_local static std::random_device myDevice;
+		inline thread_local static std::mt19937 myEngine{ myDevice() };
 	};
 }

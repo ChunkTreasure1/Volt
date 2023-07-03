@@ -17,5 +17,10 @@ namespace Volt
         {
             return InternalCalls.Window_GetHeight();
         }
+
+        public static void SetCursor(string path)
+        {
+            InternalCalls.Window_SetCursor(path);
+        }
     }
 }

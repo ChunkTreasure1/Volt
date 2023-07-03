@@ -1,4 +1,6 @@
-Handle: 12494240199536800760
-Path: Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4386556364066057097
+  filePath: Engine/Shaders/Source/HLSL/Shadows/PointLightShadowParaboloid_ps.hlsl
+  type: 128
+  Dependencies:
+    []

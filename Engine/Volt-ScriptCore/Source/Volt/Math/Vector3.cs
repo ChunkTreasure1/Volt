@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace Volt
 {
@@ -50,6 +51,18 @@ namespace Volt
             x = vector.x;
             y = vector.y;
             z = vector.z;
+        }
+
+        [SecuritySafeCritical]
+        public unsafe byte[] GetBytes()
+        {
+            byte[] bytes = new byte[sizeof(Vector3)];
+            fixed (byte* ptr = bytes)
+            {
+                *(Vector3*)ptr = this;
+            }
+
+            return bytes; 
         }
 
         public void Clamp(Vector3 min, Vector3 max)

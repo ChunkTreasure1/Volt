@@ -1,4 +1,6 @@
-Handle: 15404051793129725207
-Path: Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 16466623238050363380
+  filePath: Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl
+  type: 128
+  Dependencies:
+    []

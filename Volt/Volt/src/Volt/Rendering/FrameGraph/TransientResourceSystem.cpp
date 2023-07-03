@@ -6,8 +6,8 @@
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Core/Profiling.h"
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
+#include "Volt/Core/Graphics/GraphicsContext.h"
+#include "Volt/Core/Graphics/GraphicsDevice.h"
 
 #include "Volt/Utility/ImageUtility.h"
 
@@ -20,7 +20,7 @@ namespace Volt
 
 	TransientResourceSystem::TransientResourceSystem()
 	{
-		myImagePool = CreateRef<GPUImageMemoryPool>(384 * 1024 * 1024, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		//myImagePool = CreateRef<GPUImageMemoryPool>(384 * 1024 * 1024, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 	}
 
 	TransientResourceSystem::~TransientResourceSystem()
@@ -32,42 +32,42 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
-		for (const auto& [hash, imageDatas] : myCachedImageResources)
-		{
-			for (const auto& imageData : imageDatas)
-			{
-				Renderer::SubmitResourceChange([imageData]()
-				{
-					auto device = GraphicsContextVolt::GetDevice();
+		auto device = GraphicsContext::GetDevice();
+		//for (const auto& [hash, imageDatas] : myCachedImageResources)
+		//{
+		//	for (const auto& imageData : imageDatas)
+		//	{
+		//		Renderer::SubmitResourceChange([imageData]()
+		//		{
+		//			auto device = GraphicsContext::GetDevice();
 
-					{
-						VT_PROFILE_SCOPE("Destroy Image Views");
-						for (auto& [mip, view] : imageData.image->myImageViews)
-						{
-							vkDestroyImageView(device->GetHandle(), view, nullptr);
-						}
+		//			{
+		//				VT_PROFILE_SCOPE("Destroy Image Views");
+		//				for (auto& [mip, view] : imageData.image->myImageViews)
+		//				{
+		//					vkDestroyImageView(device->GetHandle(), view, nullptr);
+		//				}
 
-						for (auto& [mip, view] : imageData.image->myArrayImageViews)
-						{
-							vkDestroyImageView(device->GetHandle(), view, nullptr);
-						}
-					}
+		//				for (auto& [mip, view] : imageData.image->myArrayImageViews)
+		//				{
+		//					vkDestroyImageView(device->GetHandle(), view, nullptr);
+		//				}
+		//			}
 
-					{
-						VT_PROFILE_SCOPE("Destroy Image");
-						vkDestroyImage(device->GetHandle(), imageData.image->myImage, nullptr);
-					}
-				});
+		//			{
+		//				VT_PROFILE_SCOPE("Destroy Image");
+		//				vkDestroyImage(device->GetHandle(), imageData.image->myImage, nullptr);
+		//			}
+		//		});
 
-				{
-					VT_PROFILE_SCOPE("Destroy allocations");
-					VulkanAllocator allocator{};
-					allocator.Free(imageData.image->myAllocation);
-				}
-			}
+		//		{
+		//			VT_PROFILE_SCOPE("Destroy allocations");
+		//			VulkanAllocator allocator{};
+		//			allocator.Free(imageData.image->myAllocation);
+		//		}
+		//	}
 
-		}
+		//}
 
 		myCachedImageResources.clear();
 	}
@@ -117,7 +117,7 @@ namespace Volt
 		imageSpecification.mips = textureSpecification.mips;
 		imageSpecification.generateMips = false;
 
-		Ref<Image2D> image = Image2D::Create(imageSpecification, myImagePool->GetPool());
+		Ref<Image2D> image = Image2D::Create(imageSpecification, false);
 		myImageResources[resourceHandle] = { image, textureSpecification };
 
 		if (imageSpecification.mips > 1)

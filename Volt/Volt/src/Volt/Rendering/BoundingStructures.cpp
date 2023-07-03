@@ -3,7 +3,7 @@
 
 namespace Volt
 {
-	BoundingSphere::BoundingSphere(const gem::vec3& aCenter, float aRadius)
+	BoundingSphere::BoundingSphere(const glm::vec3& aCenter, float aRadius)
 		: center(aCenter), radius(aRadius)
 	{
 	}
@@ -14,10 +14,10 @@ namespace Volt
 
 		return distance > -radius;
 	}
-	const bool BoundingSphere::IsInFrusum(const Frustum& frustum, const gem::mat4& transform) const
+	const bool BoundingSphere::IsInFrusum(const Frustum& frustum, const glm::mat4& transform) const
 	{
-		const gem::vec3 globalScale = { gem::length(transform[0]), gem::length(transform[1]), gem::length(transform[2]) };
-		const gem::vec3 globalCenter = transform * gem::vec4(center, 1.f);
+		const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
+		const glm::vec3 globalCenter = transform * glm::vec4(center, 1.f);
 
 		const float maxScale = std::max(std::max(globalScale.x, globalScale.y), globalScale.z);
 
@@ -33,16 +33,16 @@ namespace Volt
 		return (l && r && f && n && t && b);
 	}
 
-	BoundingBox::BoundingBox(const gem::vec3& aMax, const gem::vec3& aMin)
+	BoundingBox::BoundingBox(const glm::vec3& aMax, const glm::vec3& aMin)
 		: max(aMax), min(aMin)
 	{
 	}
 
-	const bool BoundingBox::IsOnOrForwardPlane(const FrustumPlane& plane)
+	const bool BoundingBox::IsOnOrForwardPlane(const FrustumPlane&)
 	{
 		return false;
 	}
-	const bool BoundingBox::IsInFrusum(const Frustum& frustum, const gem::mat4& transform) const
+	const bool BoundingBox::IsInFrusum(const Frustum&, const glm::mat4&) const
 	{
 		return false;
 	}

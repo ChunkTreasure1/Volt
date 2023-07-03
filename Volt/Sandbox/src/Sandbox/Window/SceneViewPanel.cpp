@@ -28,7 +28,7 @@
 
 namespace Utility
 {
-	inline static void SetRowColor(const gem::vec4& color)
+	inline static void SetRowColor(const glm::vec4& color)
 	{
 		for (int32_t i = 0; i < ImGui::TableGetColumnCount(); i++)
 		{
@@ -203,9 +203,11 @@ void SceneViewPanel::UpdateMainContent()
 						const std::string checkoutId = "Checkout##" + std::to_string(layer.id);
 						if (ImGui::MenuItem(checkoutId.c_str()))
 						{
-							if (!myScene->path.empty())
+							const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myScene->handle);
+
+							if (!metadata.filePath.empty())
 							{
-								std::filesystem::path layerPath = myScene->path.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
+								std::filesystem::path layerPath = metadata.filePath.parent_path() / "Layers" / ("layer_" + std::to_string(layer.id) + ".vtlayer");
 								const auto path = Volt::ProjectManager::GetDirectory() / layerPath;
 
 								if (FileSystem::Exists(path))
@@ -441,7 +443,7 @@ void SceneViewPanel::UpdateMainContent()
 					meshComp.handle = mesh->handle;
 				}
 
-				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 
 				break;
 			}
@@ -457,7 +459,7 @@ void SceneViewPanel::UpdateMainContent()
 					particleEmitter.preset = preset->handle;
 				}
 
-				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetPathFromAssetHandle(handle).stem().string();
+				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 
 				break;
 			}
@@ -566,8 +568,6 @@ bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter)
 {
-	VT_PROFILE_FUNCTION();
-
 	bool entityDeleted = false;
 
 	auto& registry = myScene->GetRegistry();
@@ -587,14 +587,15 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		entityName = registry.GetComponent<Volt::TagComponent>(entity).tag;
 	}
 
-	constexpr uint32_t maxSearchDepth = 10;
 	const bool hasMatchingParent = SearchRecursivelyParent(entity, filter, 10);
 	const bool hasMatchingChild = SearchRecursively(entity, filter, 10);
 	const bool matchesQuery = MatchesQuery(entityName, filter);
 	const bool hasId = std::to_string(entity) == filter;
+	const bool hasComponent = HasComponent(entity, filter);
+	const bool hasScript = HasScript(entity, filter);
 	const bool isVisionCamera = registry.HasComponent<Volt::VisionCameraComponent>(entity);
 
-	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent)
+	if (!matchesQuery && !hasId && !hasMatchingChild && !hasMatchingParent && !hasComponent && !hasScript)
 	{
 		return;
 	}
@@ -604,7 +605,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		entityName = VT_ICON_FA_CAMERA + std::string(" ") + entityName;
 	}
 
-	const float edgeOffset = 4.f;
 	const float rowHeight = 17.f;
 
 	auto* window = ImGui::GetCurrentWindow();
@@ -685,7 +685,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	};
 
 	const bool descendantSelected = isAnyDescendantSelected(entity, isAnyDescendantSelected);
-	const gem::vec4 selectedColor = myIsFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
+	const glm::vec4 selectedColor = myIsFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
 
 	if (isRowHovered)
 	{
@@ -712,7 +712,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		Utility::SetRowColor(EditorTheme::ItemChildActive);
 	}
 
-	gem::vec2 offset = { 25.f, 6.f };
+	glm::vec2 offset = { 25.f, 6.f };
 	if (parentId == Wire::NullID)
 	{
 		offset.x -= 20.f;
@@ -829,7 +829,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		{
 			std::vector<Wire::EntityId> selectedEntities = SelectionManager::GetSelectedEntities();
 
-			constexpr uint32_t maxEntNames = 5;
 			for (uint32_t i = 0; const auto & id : selectedEntities)
 			{
 				if (i >= 5)
@@ -897,7 +896,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 				if (ImGui::MenuItem(menuId.c_str()))
 				{
-					const auto prefabPath = Volt::AssetManager::Get().GetPathFromAssetHandle(prefabComp.prefabAsset);
+					const auto prefabPath = Volt::AssetManager::Get().GetFilePathFromAssetHandle(prefabComp.prefabAsset);
 					if (!FileSystem::IsWriteable(prefabPath))
 					{
 						UI::Notify(NotificationType::Error, "Unable to override prefab!", std::format("The prefab file {0} is not writeable!", prefabPath.string()));
@@ -948,12 +947,14 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 
 				if (!hasValidLink && isRoot)
 				{
-					auto listOfPrefabsPaths = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
+					const auto listOfPrefabs = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
 
-					for (const auto& p : listOfPrefabsPaths)
+					for (const auto& p : listOfPrefabs)
 					{
-						auto ext = p.filename().extension();
-						if (p.filename() == std::format("{0}{1}", registry.GetComponent<Volt::TagComponent>(entity).tag, ext.string()))
+						const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(p);
+
+						auto ext = metadata.filePath.extension();
+						if (metadata.filePath.filename() == std::format("{0}{1}", registry.GetComponent<Volt::TagComponent>(entity).tag, ext.string()))
 						{
 							auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(p);
 							if (prefab)
@@ -1115,9 +1116,7 @@ void SceneViewPanel::CreatePrefabAndSetupEntities(Wire::EntityId entity)
 
 	std::string path = "Assets/Prefabs/" + tagComp.tag + ".vtprefab";
 	path.erase(std::remove_if(path.begin(), path.end(), ::isspace), path.end());
-
-	prefab->path = path;
-	Volt::AssetManager::Get().SaveAsset(prefab);
+	Volt::AssetManager::Get().SaveAssetAs(prefab, path);
 }
 
 bool SceneViewPanel::SearchRecursively(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth)
@@ -1210,7 +1209,7 @@ bool SceneViewPanel::MatchesQuery(const std::string& text, const std::string& fi
 
 	for (const auto& q : queries)
 	{
-		if (lowerText.contains(q))
+		if (Utils::StringContains(lowerText, q))
 		{
 			return true;
 		}
@@ -1235,7 +1234,7 @@ bool SceneViewPanel::HasComponent(Wire::EntityId id, const std::string& filter)
 
 	for (const auto& [name, info] : Wire::ComponentRegistry::ComponentGUIDs())
 	{
-		if (Utils::ToLower(name).contains(Utils::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
+		if (Utils::StringContains(Utils::ToLower(name), Utils::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
 		{
 			return true;
 		}
@@ -1261,7 +1260,7 @@ bool SceneViewPanel::HasScript(Wire::EntityId id, const std::string& filter)
 	{
 		for (const auto& name : myScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(id).scriptNames)
 		{
-			if (Utils::ToLower(name).contains(Utils::ToLower(scriptSearchString)))
+			if (Utils::StringContains(Utils::ToLower(name), Utils::ToLower(scriptSearchString)))
 			{
 				return true;
 			}
@@ -1298,7 +1297,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 					ent.SetTag("New Cube");
 
 					SelectionManager::DeselectAll();
@@ -1309,7 +1308,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
 					ent.SetTag("New Capsule");
 
 					SelectionManager::DeselectAll();
@@ -1320,7 +1319,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cone.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtmesh");
 					ent.SetTag("New Cone");
 
 					SelectionManager::DeselectAll();
@@ -1331,7 +1330,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
 					ent.SetTag("New Cylinder");
 
 					SelectionManager::DeselectAll();
@@ -1342,7 +1341,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 					ent.SetTag("New Sphere");
 
 					SelectionManager::DeselectAll();
@@ -1353,7 +1352,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				{
 					auto ent = myScene->CreateEntity();
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Plane.vtmesh");
+					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtmesh");
 					ent.SetTag("New Plane");
 
 					SelectionManager::DeselectAll();
@@ -1368,7 +1367,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem("Decal"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::DecalComponent>();
+					ent.AddComponent<Volt::DecalComponent>();
 					ent.SetTag("New Decal");
 
 					SelectionManager::DeselectAll();
@@ -1510,6 +1509,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			registry.ForEach<Volt::NetActorComponent>([&](Wire::EntityId id, Volt::NetActorComponent& dataComp)
 			{
 				dataComp.repId = Nexus::RandRepID();
+				dataComp.clientId = 0;
 			});
 			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");
 		}
@@ -1522,7 +1522,7 @@ void SceneViewPanel::CorrectMissingPrefabs()
 {
 	auto& registry = myScene->GetRegistry();
 
-	auto listOfPrefabsPaths = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
+	auto listOfPrefabs = Volt::AssetManager::GetAllAssetsOfType<Volt::Prefab>();
 
 	for (auto id : registry.GetComponentView<Volt::PrefabComponent>())
 	{
@@ -1541,9 +1541,11 @@ void SceneViewPanel::CorrectMissingPrefabs()
 
 			if (isRoot && !hasValidLink)
 			{
-				for (const auto& p : listOfPrefabsPaths)
+				for (const auto& p : listOfPrefabs)
 				{
-					auto prefabName = p.stem();
+					const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(p);
+
+					auto prefabName = metadata.filePath.stem();
 					if (prefabName == registry.GetComponent<Volt::TagComponent>(id).tag)
 					{
 						auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(p);

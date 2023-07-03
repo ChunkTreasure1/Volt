@@ -31,9 +31,9 @@ namespace Volt
 		virtual Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path& path) = 0;
 		virtual Ref<Animation> ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton) = 0;
 
-		virtual void ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path) {};
-		virtual void ExportSkeletonImpl(std::vector<Ref<Skeleton>> assets, const std::filesystem::path& path) {};
-		virtual void ExportAnimationImpl(std::vector<Ref<Animation>> assets, const std::filesystem::path& path) {};
+		virtual void ExportMeshImpl(std::vector<Ref<Mesh>>, const std::filesystem::path&) {};
+		virtual void ExportSkeletonImpl(std::vector<Ref<Skeleton>>, const std::filesystem::path&) {};
+		virtual void ExportAnimationImpl(std::vector<Ref<Animation>>, const std::filesystem::path&) {};
 
 	private:
 		enum class MeshFormat

@@ -63,7 +63,7 @@ namespace Amp
 		return WWiseEngine::Get().RemoveAllObjects();
 	}
 
-	bool WwiseAudioManager::SetObjectPosition(uint32_t aObjID, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+	bool WwiseAudioManager::SetObjectPosition(uint32_t aObjID, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 	{
 		AkTransform transform;
 		transform.SetPosition({ aPosition.x, aPosition.y, aPosition.z });
@@ -81,7 +81,7 @@ namespace Amp
 		return Amp::WWiseEngine::Get().PlayOneShotEvent(eventName, transform);
 	}
 
-	bool WwiseAudioManager::PlayOneShotEvent(const char* eventName, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+	bool WwiseAudioManager::PlayOneShotEvent(const char* eventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 	{
 		AkTransform transform;
 		transform.SetPosition({ aPosition.x, aPosition.y, aPosition.z });
@@ -122,6 +122,16 @@ namespace Amp
 		return Amp::WWiseEngine::Get().ExecuteEventAction(AK::SoundEngine::AkActionOnEventType_Resume, aPlayingID);
 	}
 
+	void WwiseAudioManager::StopAllEvents()
+	{
+		Amp::WWiseEngine::Get().StopAllEvents();
+	}
+
+	void WwiseAudioManager::StopAllEvents(uint32_t aObjID)
+	{
+		Amp::WWiseEngine::Get().StopAllEvents(aObjID);
+	}
+
 	bool WwiseAudioManager::SetState(const char* aStateGroup, const char* aState)
 	{
 		return Amp::WWiseEngine::Get().SetState(aStateGroup, aState);
@@ -130,6 +140,11 @@ namespace Amp
 	bool WwiseAudioManager::SetSwitch(const char* aSwitchGroup, const char* aState, uint64_t AkGameObjectID)
 	{
 		return Amp::WWiseEngine::Get().SetSwitch(aSwitchGroup, aState, AkGameObjectID);
+	}
+
+	bool WwiseAudioManager::SetRTPC(const char* aParameterName, float avalue)
+	{
+		return Amp::WWiseEngine::Get().SetGlobalParameter(aParameterName, avalue);
 	}
 
 	bool WwiseAudioManager::SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID)
@@ -195,7 +210,7 @@ namespace Amp
 		return Amp::WWiseEngine::Get().UnregisterListener();
 	}
 
-	bool WwiseAudioManager::SetListenerPosition(const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp)
+	bool WwiseAudioManager::SetListenerPosition(const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
 	{
 		AkTransform transform;
 		transform.SetPosition({ aPosition.x, aPosition.y, aPosition.z });

@@ -23,9 +23,9 @@ namespace Volt
 			}
 		}
 
-		std::vector<gem::vec3> DtNavMesh::FindPath(gem::vec3 start, gem::vec3 end, gem::vec3 polySearchDistance)
+		std::vector<glm::vec3> DtNavMesh::FindPath(glm::vec3 start, glm::vec3 end, glm::vec3 polySearchDistance)
 		{
-			std::vector<gem::vec3> resultPath;
+			std::vector<glm::vec3> resultPath;
 
 			if (!myNavMesh || !myNavMeshQuery) { return resultPath; }
 
@@ -43,10 +43,10 @@ namespace Volt
 			//dtFilter.setAreaCost(POLYAREA_GRASS, 2.0f);
 			//dtFilter.setAreaCost(POLYAREA_JUMP, 1.5f);
 
-			gem::vec3 halfExtents = polySearchDistance;
+			glm::vec3 halfExtents = polySearchDistance;
 
 			dtPolyRef startPoly;
-			gem::vec3 startPoint;
+			glm::vec3 startPoint;
 
 			status = myNavMeshQuery->findNearestPoly((const float*)&start, (const float*)&halfExtents, &dtFilter, &startPoly, (float*)&startPoint);
 
@@ -57,7 +57,7 @@ namespace Volt
 			}
 
 			dtPolyRef endPoly;
-			gem::vec3 endPoint;
+			glm::vec3 endPoint;
 
 			status = myNavMeshQuery->findNearestPoly((const float*)&end, (const float*)&halfExtents, &dtFilter, &endPoly, (float*)&endPoint);
 
@@ -80,7 +80,7 @@ namespace Volt
 				return resultPath;
 			}
 
-			std::vector<gem::vec3> straightPathPositions;
+			std::vector<glm::vec3> straightPathPositions;
 			uint32_t straightPathSize = 0;
 
 			straightPathPositions.resize(MAX_PATH_SIZE);
@@ -94,7 +94,7 @@ namespace Volt
 			}
 
 			resultPath.resize(straightPathSize);
-			memcpy_s(resultPath.data(), sizeof(gem::vec3) * straightPathSize, straightPathPositions.data(), sizeof(gem::vec3) * straightPathSize);
+			memcpy_s(resultPath.data(), sizeof(glm::vec3) * straightPathSize, straightPathPositions.data(), sizeof(glm::vec3) * straightPathSize);
 			return resultPath;
 		}
 	}

@@ -21,6 +21,10 @@ namespace Volt
             else if (obj.GetType() == typeof(bool)) { return BitConverter.GetBytes((bool)obj); }
             else if (obj.GetType() == typeof(uint)) { return BitConverter.GetBytes((uint)obj); }
             else if (obj.GetType() == typeof(byte)) { return BitConverter.GetBytes((byte)obj); }
+            else if (obj.GetType() == typeof(Vector2)) { return ((Vector2)obj).GetBytes(); }
+            else if (obj.GetType() == typeof(Vector3)) { return ((Vector3)obj).GetBytes(); }
+            else if (obj.GetType() == typeof(Vector4)) { return ((Vector4)obj).GetBytes(); }
+            else if (obj.GetType() == typeof(Quaternion)) { return ((Quaternion)obj).GetBytes(); }
 
             return null;
         }

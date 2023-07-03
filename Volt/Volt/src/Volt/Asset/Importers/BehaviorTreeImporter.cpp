@@ -12,16 +12,16 @@ using namespace Volt::BehaviorTree;
 
 namespace Volt
 {
-	bool BehaviorTreeImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool BehaviorTreeImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Volt::BehaviorTree::Tree>();
 		Ref<Volt::BehaviorTree::Tree> behaviorTree = std::reinterpret_pointer_cast<Volt::BehaviorTree::Tree>(asset);
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		if (!std::filesystem::exists(filePath)) [[unlikely]]
+		if (!std::filesystem::exists(filePath))
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -29,7 +29,7 @@ namespace Volt
 		std::ifstream input(filePath, std::ios::binary | std::ios::in);
 		if (!input.is_open())
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -45,7 +45,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ASSERT("{0} conains invalid YAML! Please correct it! Error: {1}", path, e.what());
+			VT_CORE_ASSERT("{0} conains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -109,7 +109,7 @@ namespace Volt
 		return true;
 	}
 
-	void BehaviorTreeImporter::Save(const Ref<Asset>& asset) const
+	void BehaviorTreeImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<BehaviorTree::Tree> tree = std::reinterpret_pointer_cast<BehaviorTree::Tree>(asset);
 		Volt::UUID rootID = tree->GetRoot();
@@ -198,18 +198,8 @@ namespace Volt
 		}
 		out << YAML::EndMap;
 
-		std::ofstream fout(AssetManager::GetContextPath(asset->path) / asset->path);
+		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
 		fout << out.c_str();
 		fout.close();
-	}
-
-	void BehaviorTreeImporter::SaveBinary(uint8_t* buffer, const Ref<Asset>& asset) const
-	{
-
-	}
-
-	bool BehaviorTreeImporter::LoadBinary(const uint8_t* buffer, const AssetPacker::AssetHeader& header, Ref<Asset>& asset) const
-	{
-		return false;
 	}
 }

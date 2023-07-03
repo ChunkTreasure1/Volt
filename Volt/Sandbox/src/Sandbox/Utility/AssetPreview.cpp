@@ -37,7 +37,7 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 	myEntity = myScene->CreateEntity();
 	myEntity.AddComponent<Volt::MeshComponent>();
 
-	myAssetHandle = Volt::AssetManager::Get().GetAssetHandleFromPath(path);
+	myAssetHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
 }
 
 void AssetPreview::Render()
@@ -48,10 +48,10 @@ void AssetPreview::Render()
 
 	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myAssetHandle);
 
-	const gem::vec3 rotation = { gem::radians(30.f), gem::radians(135.f), 0.f };
+	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
 	myCamera->SetRotation(rotation);
 
-	const gem::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 1.5f;
+	const glm::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 1.5f;
 
 	myCamera->SetPosition(position);
 	mySceneRenderer->OnRenderEditor(myCamera);

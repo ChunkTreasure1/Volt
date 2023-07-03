@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GEM/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -16,7 +16,7 @@ namespace Volt
 	{
 		float filterRadius;
 		float strength;
-		gem::vec2 padding;
+		glm::vec2 padding;
 	};
 
 	struct HBAOData
@@ -26,34 +26,34 @@ namespace Volt
 		float multiplier;
 		float powExponent;
 
-		gem::vec4 float2Offsets[16];
-		gem::vec4 jitters[16];
-		gem::vec4 perspectiveInfo;
+		glm::vec4 float2Offsets[16];
+		glm::vec4 jitters[16];
+		glm::vec4 perspectiveInfo;
 
-		gem::vec2 inverseQuarterSize;
+		glm::vec2 inverseQuarterSize;
 		float radiusToScreen;
 		float NdotVBias;
 
-		gem::vec2 invResDirection;
+		glm::vec2 invResDirection;
 		float sharpness;
 		float padding;
 	};
 
 	struct VoxelSceneData
 	{
-		gem::vec3 center = { 0.f, 0.f, 0.f };
+		glm::vec3 center = { 0.f, 0.f, 0.f };
 		float voxelSize = 20.f;
 
 		uint32_t resolution = 256;
 		uint32_t padding[3];
 
-		gem::mat4 debugTransform;
+		glm::mat4 debugTransform;
 	};
 
 	struct AutoExposureData
 	{
-		gem::vec4ui size;
-		gem::vec4 luminanceTime;
+		glm::uvec4 size;
+		glm::vec4 luminanceTime;
 	};
 
 	struct SkyboxData
@@ -61,12 +61,12 @@ namespace Volt
 		float textureLod = 0.f;
 		float intensity = 1.f;
 
-		gem::vec2 padding;
+		glm::vec2 padding;
 	};
 
 	struct PreDepthData
 	{
-		gem::mat4 lastFrameViewProjection = { 1.f };
+		glm::mat4 lastFrameViewProjection = { 1.f };
 	};
 
 	struct SceneRendererData

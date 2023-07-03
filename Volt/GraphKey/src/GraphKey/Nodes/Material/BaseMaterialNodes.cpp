@@ -7,12 +7,12 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig<gem::vec4>("Base Color", AttributeDirection::Input),
+			AttributeConfig<glm::vec4>("Base Color", AttributeDirection::Input),
 			AttributeConfig<float>("Metallic", AttributeDirection::Input),
 			AttributeConfig<float>("Roughness", AttributeDirection::Input),
-			AttributeConfig<gem::vec3>("Emissive Color", AttributeDirection::Input),
-			AttributeConfig<gem::vec3>("Normal", AttributeDirection::Input),
-			AttributeConfig<gem::vec3>("World Position Offset", AttributeDirection::Input),
+			AttributeConfig<glm::vec3>("Emissive Color", AttributeDirection::Input),
+			AttributeConfig<glm::vec3>("Normal", AttributeDirection::Input),
+			AttributeConfig<glm::vec3>("World Position Offset", AttributeDirection::Input),
 		};
 	}
 
@@ -32,17 +32,17 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig<gem::vec2>("UVs", AttributeDirection::Input),
+			AttributeConfig<glm::vec2>("UVs", AttributeDirection::Input),
 		};
 
 		outputs =
 		{
-			AttributeConfig<gem::vec3>("RGB", AttributeDirection::Output),
+			AttributeConfig<glm::vec3>("RGB", AttributeDirection::Output),
 			AttributeConfig<float>("R", AttributeDirection::Output),
 			AttributeConfig<float>("G", AttributeDirection::Output),
 			AttributeConfig<float>("B", AttributeDirection::Output),
 			AttributeConfig<float>("A", AttributeDirection::Output),
-			AttributeConfig<gem::vec4>("RGBA", AttributeDirection::Output)
+			AttributeConfig<glm::vec4>("RGBA", AttributeDirection::Output)
 		};
 	}
 

@@ -5,6 +5,7 @@
 #include "Volt/Asset/Prefab.h"
 
 #include "Volt/Input/Input.h"
+#include "Volt/Input/KeyCodes.h"
 
 #include "Volt/Core/Window.h"
 #include "Volt/Core/Graphics/GraphicsContextVolt.h"
@@ -27,6 +28,7 @@
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Project/ProjectManager.h"
+#include "Volt/Project/SessionPreferences.h"
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Physics/Physics.h"
@@ -67,6 +69,7 @@ namespace Volt
 		Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
 
 		ProjectManager::SetupProject(myInfo.projectPath);
+		SessionPreferences::Initialize();
 
 		WindowProperties windowProperties{};
 		windowProperties.width = info.width;
@@ -76,6 +79,8 @@ namespace Volt
 		windowProperties.windowMode = info.windowMode;
 		windowProperties.iconPath = info.iconPath;
 		windowProperties.cursorPath = info.cursorPath;
+
+		SetupWindowPreferences(windowProperties);
 
 		if (myInfo.isRuntime)
 		{
@@ -89,7 +94,8 @@ namespace Volt
 
 		FileSystem::Initialize();
 
-		myThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
+		myThreadPool.Initialize(std::thread::hardware_concurrency());
+		myRenderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		myAssetManager = CreateScope<AssetManager>();
 
 		Renderer::Initialize();
@@ -120,34 +126,6 @@ namespace Volt
 					}
 				}
 			}
-
-
-			////Load Audio Settings
-			//std::filesystem::path path = info.projectPath.parent_path() / "Assets/Settings/GameSettings.yaml";
-			//std::ifstream file(path);
-			//std::stringstream sstream;
-			//sstream << file.rdbuf();
-
-			//YAML::Node root = YAML::Load(sstream.str());
-
-			//if (root["MasterVolume"])
-			//{
-			//	float masterVol = root["MasterVolume"].as<float>();
-			//	Amp::AudioManager::SetMasterVolume(masterVol);
-			//}
-			//if (root["SFXVolume"])
-			//{
-			//	float sfxVol = root["SFXVolume"].as<float>();
-			//	Amp::AudioManager::SetMixerVolume("bus:/SFX", sfxVol);
-			//}
-			//if (root["MusicVolume"])
-			//{
-			//	float musicVol = root["MusicVolume"].as<float>();
-			//	Amp::AudioManager::SetMixerVolume("bus:/Music", musicVol);
-			//}
-
-			//file.close();
-
 		}
 
 		if (info.enableImGui)
@@ -198,6 +176,7 @@ namespace Volt
 
 		myAssetManager = nullptr;
 		myThreadPool.Shutdown();
+		myRenderThreadPool.Shutdown();
 
 		Renderer::FlushResourceQueues();
 
@@ -291,9 +270,12 @@ namespace Volt
 		}
 
 		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<AppUpdateEvent>(VT_BIND_EVENT_FN(Application::OnAppUpdateEvent));
 		dispatcher.Dispatch<WindowCloseEvent>(VT_BIND_EVENT_FN(Application::OnWindowCloseEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(VT_BIND_EVENT_FN(Application::OnWindowResizeEvent));
 		dispatcher.Dispatch<ViewportResizeEvent>(VT_BIND_EVENT_FN(Application::OnViewportResizeEvent));
+		dispatcher.Dispatch<KeyPressedEvent>(VT_BIND_EVENT_FN(Application::OnKeyPressedEvent));
+
 		myNetHandler->OnEvent(event);
 
 		if (myNavigationSystem)
@@ -322,6 +304,15 @@ namespace Volt
 		myLayerStack.PopLayer(layer);
 	}
 
+	bool Application::OnAppUpdateEvent(AppUpdateEvent&)
+	{
+		if (mySteamImplementation)
+		{
+			mySteamImplementation->Update();
+		}
+		return false;
+	}
+
 	bool Application::OnWindowCloseEvent(WindowCloseEvent&)
 	{
 		myIsRunning = false;
@@ -347,5 +338,28 @@ namespace Volt
 	{
 		myWindow->SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
+	}
+
+	bool Application::OnKeyPressedEvent(KeyPressedEvent&)
+	{
+		return false;
+	}
+
+	void Application::SetupWindowPreferences(WindowProperties& windowProperties)
+	{
+		if (SessionPreferences::HasKey("WINDOW_WIDTH"))
+		{
+			windowProperties.width = static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_WIDTH"));
+		}
+
+		if (SessionPreferences::HasKey("WINDOW_HEIGHT"))
+		{
+			windowProperties.height = static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_HEIGHT"));
+		}
+
+		if (SessionPreferences::HasKey("WINDOW_MODE"))
+		{
+			windowProperties.windowMode = (WindowMode)static_cast<uint32_t>(SessionPreferences::GetInt("WINDOW_MODE"));
+		}
 	}
 }

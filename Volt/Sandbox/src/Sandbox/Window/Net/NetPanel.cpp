@@ -145,14 +145,16 @@ void NetPanel::DrawDebug()
 		// row 1
 		if (ImGui::Button("Host##NetPanelHostBtn", { regionAvail.x * 0.5f, 0 }))
 		{
-			netHandler.StartServer(m_netSettings.hostingPort);
+			netHandler.SetForcedPort(m_netSettings.hostingPort);
+			netHandler.StartServer();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Connect##NetPanelConnectBtn", { regionAvail.x * 0.5f, 0 }))
 		{
 			if (!m_netSettings.independentConnection)
 			{
-				netHandler.StartServer(m_netSettings.hostingPort);
+				netHandler.SetForcedPort(m_netSettings.hostingPort);
+				netHandler.StartServer();
 				//netHandler.m_backend->Start();
 				//netHandler.m_backend->StoreServerData(m_netSettings.connectAddress, m_netSettings.hostingPort);
 
@@ -307,7 +309,7 @@ void NetPanel::DrawVirtualPacketConstructor()
 
 		if (UI::BeginProperties("NetPanelConnectProperties"))
 		{
-			UI::Property("Rep ID", m_RPCPacketSettings.repId);
+			//UI::Property("Rep ID", m_RPCPacketSettings.repId);
 			UI::Property("Project", m_RPCPacketSettings.monoProject);
 			UI::Property("Class", m_RPCPacketSettings.monoClass);
 			UI::Property("Method", m_RPCPacketSettings.monoMethod);
@@ -331,7 +333,7 @@ void NetPanel::DrawVirtualPacketConstructor()
 		}
 		if (UI::BeginProperties("NetPanelConnectProperties"))
 		{
-			UI::Property("Rep ID", m_eventSetting.repId);
+			//UI::Property("Rep ID", m_eventSetting.repId);
 			static int addEvent = 0;
 			auto& enumData = Wire::ComponentRegistry::EnumData();
 			if (enumData.find("eNetEvent") != enumData.end())

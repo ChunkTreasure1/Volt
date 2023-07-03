@@ -54,13 +54,16 @@ struct GizmoCommand : EditorCommand
 {
 	struct GizmoData
 	{
-		gem::vec3* positionAdress;
-		gem::quat* rotationAdress;
-		gem::vec3* scaleAdress;
+		glm::vec3* positionAdress;
+		glm::quat* rotationAdress;
+		glm::vec3* scaleAdress;
 
-		gem::vec3 previousPositionValue;
-		gem::quat previousRotationValue;
-		gem::vec3 previousScaleValue;
+		glm::vec3 previousPositionValue;
+		glm::quat previousRotationValue;
+		glm::vec3 previousScaleValue;
+
+		Weak<Volt::Scene> scene;
+		Wire::EntityId id;
 	};
 
 	GizmoCommand(GizmoData aGizmoData)
@@ -69,7 +72,7 @@ struct GizmoCommand : EditorCommand
 		myScaleAdress(aGizmoData.scaleAdress),
 		myPreviousPositionValue(aGizmoData.previousPositionValue),
 		myPreviousRotationValue(aGizmoData.previousRotationValue),
-		myPreviousScaleValue(aGizmoData.previousScaleValue)
+		myPreviousScaleValue(aGizmoData.previousScaleValue), myID(aGizmoData.id), myScene(aGizmoData.scene)
 	{
 	}
 	void Execute() override {}
@@ -84,6 +87,8 @@ struct GizmoCommand : EditorCommand
 
 		data.previousRotationValue = *myRotationAdress;
 		data.previousScaleValue = *myScaleAdress;
+		data.id = myID;
+		data.scene = myScene;
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::GetInstance().PushRedo(command);
@@ -91,6 +96,11 @@ struct GizmoCommand : EditorCommand
 		*myPositionAdress = myPreviousPositionValue;
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
+
+		if (!myScene.expired())
+		{
+			myScene.lock()->InvalidateEntityTransform(myID);
+		}
 	}
 
 	void Redo() override
@@ -102,6 +112,8 @@ struct GizmoCommand : EditorCommand
 		data.previousPositionValue = *myPositionAdress;
 		data.previousRotationValue = *myRotationAdress;
 		data.previousScaleValue = *myScaleAdress;
+		data.id = myID;
+		data.scene = myScene;
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::GetInstance().PushUndo(command, true);
@@ -109,15 +121,23 @@ struct GizmoCommand : EditorCommand
 		*myPositionAdress = myPreviousPositionValue;
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
+	
+		if (!myScene.expired())
+		{
+			myScene.lock()->InvalidateEntityTransform(myID);
+		}
 	}
 
 private:
-	gem::vec3* myPositionAdress;
-	gem::quat* myRotationAdress;
-	gem::vec3* myScaleAdress;
-	const gem::vec3 myPreviousPositionValue;
-	const gem::quat myPreviousRotationValue;
-	const gem::vec3 myPreviousScaleValue;
+	glm::vec3* myPositionAdress;
+	glm::quat* myRotationAdress;
+	glm::vec3* myScaleAdress;
+	const glm::vec3 myPreviousPositionValue;
+	const glm::quat myPreviousRotationValue;
+	const glm::vec3 myPreviousScaleValue;
+
+	Wire::EntityId myID;
+	Weak<Volt::Scene> myScene;
 };
 
 struct MultiGizmoCommand : EditorCommand
@@ -146,6 +166,8 @@ struct MultiGizmoCommand : EditorCommand
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
+
+			scenePtr->InvalidateEntityTransform(id);
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
@@ -169,6 +191,8 @@ struct MultiGizmoCommand : EditorCommand
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
+
+			scenePtr->InvalidateEntityTransform(id);
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);

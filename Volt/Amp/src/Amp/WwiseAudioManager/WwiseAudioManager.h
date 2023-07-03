@@ -18,19 +18,24 @@ namespace Amp
 		static bool CreateAudioObject(uint32_t aObjID, const char* aObjName);
 		static bool DeleteAudioObject(uint32_t aObjID);
 		static bool ClearAllObjects();
-		static bool SetObjectPosition(uint32_t aObjID, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp);
+		static bool SetObjectPosition(uint32_t aObjID, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp);
 
 		//EVENT
 		static bool PlayOneShotEvent(const char* eventName);
-		static bool PlayOneShotEvent(const char* eventName, const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp);
+		static bool PlayOneShotEvent(const char* eventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp);
 		static bool PlayEvent(const char* eventName, uint32_t aObjID, uint32_t& aPlayingID);
 		static bool StopEvent(uint32_t aPlayingID);
 		static bool PauseEvent(uint32_t aPlayingID);
 		static bool ResumeEvent(uint32_t aPlayingID);
 
+		static void StopAllEvents();
+		static void StopAllEvents(uint32_t aObjID);
+		
 		//GAME SYNCS
 		static bool SetState(const char* aStateGroup, const char* aState);
 		static bool SetSwitch(const char* aSwitchGroup, const char* aState, uint64_t AkGameObjectID);
+
+		static bool SetRTPC(const char* aParameterName, float avalue);
 
 		static bool SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID);
 		static bool SetParameter(const char* aParameterName, float avalue, uint64_t AkGameObjectID, int32_t aOvertime);
@@ -41,7 +46,7 @@ namespace Amp
 		//LISTENERS
 		static bool RegisterListener(uint32_t aEntityID, const char* aEntityName, bool isDefault);
 		static bool UnregisterListener();
-		static bool SetListenerPosition(const gem::vec3& aPosition, const gem::vec3& aForward, const gem::vec3& aUp);
+		static bool SetListenerPosition(const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp);
 
 	private:
 

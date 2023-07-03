@@ -32,6 +32,11 @@ namespace Volt
 		if (colliderComp.isConvex)
 		{
 			Ref<Mesh> srcMesh = AssetManager::GetAsset<Mesh>(colliderComp.colliderMesh);
+			if (!srcMesh || !srcMesh->IsValid())
+			{
+				return CookingResult::Failure;
+			}
+
 			std::vector<MeshColliderData> colliderData;
 
 			// Cook the mesh
@@ -56,7 +61,7 @@ namespace Volt
 				MeshColliderCacheData cachedData;
 				cachedData.colliderData = colliderData;
 
-				const std::string colliderName = srcMesh->path.stem().string() + std::to_string(srcMesh->handle) + "Convex";
+				const std::string colliderName = std::to_string(srcMesh->handle) + "Convex";
 				MeshColliderCache::SaveToFile(colliderName, cachedData);
 			}
 
@@ -74,6 +79,11 @@ namespace Volt
 		else
 		{
 			Ref<Mesh> srcMesh = AssetManager::GetAsset<Mesh>(colliderComp.colliderMesh);
+			if (!srcMesh || !srcMesh->IsValid())
+			{
+				return CookingResult::Failure;
+			}
+
 			std::vector<MeshColliderData> colliderData;
 
 			// Cook the mesh
@@ -99,7 +109,7 @@ namespace Volt
 				MeshColliderCacheData cachedData;
 				cachedData.colliderData = colliderData;
 
-				const std::string colliderName = srcMesh->path.stem().string() + std::to_string(srcMesh->handle) + "Triangle";
+				const std::string colliderName = std::to_string(srcMesh->handle) + "Triangle";
 				MeshColliderCache::SaveToFile(colliderName, cachedData);
 			}
 

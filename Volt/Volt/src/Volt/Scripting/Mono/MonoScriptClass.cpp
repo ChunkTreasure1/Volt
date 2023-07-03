@@ -8,8 +8,8 @@
 
 namespace Volt
 {
-	MonoScriptClass::MonoScriptClass(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className)
-		: myClassName(className), myNamespace(classNamespace)
+	MonoScriptClass::MonoScriptClass(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className, bool isEngineScript)
+		: myClassName(className), myNamespace(classNamespace), myIsEngineScript(isEngineScript)
 	{
 		myMonoClass = mono_class_from_name(assemblyImage, classNamespace.c_str(), className.c_str());
 		FindAndCacheFields();
@@ -37,13 +37,10 @@ namespace Volt
 	{
 		return mono_class_is_subclass_of(myMonoClass, parent->myMonoClass, false);
 	}
-
-	void MonoScriptClass::FindAndCacheFields()
+	VT_OPTIMIZE_OFF
+		void MonoScriptClass::FindAndCacheFields()
 	{
-		const int32_t fieldCount = mono_class_num_fields(myMonoClass);
-
 		void* iterator = nullptr;
-
 		while (MonoClassField* field = mono_class_get_fields(myMonoClass, &iterator))
 		{
 			const auto accessibility = MonoScriptUtils::GetFieldAccessabilityLevel(field);
@@ -113,8 +110,9 @@ namespace Volt
 
 		FindAndCacheSubClassFields(myMonoClass);
 	}
+	VT_OPTIMIZE_ON
 
-	void MonoScriptClass::FindAndCacheSubClassFields(MonoClass* klass)
+		void MonoScriptClass::FindAndCacheSubClassFields(MonoClass* klass)
 	{
 		auto parent = mono_class_get_parent(klass);
 		if (!parent) { return; }
@@ -280,6 +278,18 @@ namespace Volt
 		{
 			return MonoFieldType::PostProcessingMaterial;
 		}
+		else if (str == "Volt.Video")
+		{
+			return MonoFieldType::Video;
+		}
+		else if (str == "Volt.AnimationGraph")
+		{
+			return MonoFieldType::AnimationGraph;
+		}
+		else if (str == "Volt.Quaternion")
+		{
+			return MonoFieldType::Quaternion;
+		}
 
 		// Check if it's an enum
 		for (const auto& [typeName, monoEnum] : MonoScriptEngine::GetRegisteredEnums())
@@ -371,6 +381,8 @@ namespace Volt
 			case MonoFieldType::Material:
 			case MonoFieldType::Texture:
 			case MonoFieldType::PostProcessingMaterial:
+			case MonoFieldType::Video:
+			case MonoFieldType::AnimationGraph:
 			case MonoFieldType::Asset:
 			{
 				return true;

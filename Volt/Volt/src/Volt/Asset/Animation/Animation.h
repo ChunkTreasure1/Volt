@@ -2,7 +2,7 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include <gem/gem.h>
+#include <glm/glm.hpp>
 
 namespace Volt
 {
@@ -12,9 +12,9 @@ namespace Volt
 	public:
 		struct TRS
 		{
-			gem::vec3 position = { 0.f };
-			gem::quat rotation = { 1.f, 0.f, 0.f, 0.f };
-			gem::vec3 scale = { 1.f };
+			glm::vec3 position = { 0.f };
+			glm::quat rotation = { 1.f, 0.f, 0.f, 0.f };
+			glm::vec3 scale = { 1.f };
 		};
 
 		struct Pose
@@ -22,8 +22,8 @@ namespace Volt
 			std::vector<TRS> localTRS;
 		};
 
-		const std::vector<gem::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
-		const std::vector<gem::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
+		const std::vector<glm::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
+		const std::vector<glm::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
 
 		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
 		const bool IsAtEnd(float startTime, float speed);
@@ -33,6 +33,7 @@ namespace Volt
 
 		inline const float GetDuration() const { return myDuration; }
 		inline const size_t GetFrameCount() const { return myFrames.size(); }
+		inline const uint32_t GetFramesPerSecond() const { return myFramesPerSecond; }
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 		AssetType GetType() override { return GetStaticType(); };
@@ -45,7 +46,6 @@ namespace Volt
 			float deltaTime = 0.f;
 		};
 
-		static const gem::mat4 BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const gem::mat4& parentTransform, const size_t jointIndex, const float blendFactor);
 		static const PoseData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
 
 		friend class FbxImporter;

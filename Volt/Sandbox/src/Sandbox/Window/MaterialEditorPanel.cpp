@@ -40,7 +40,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto entity = myPreviewScene->CreateEntity();
 		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 		myPreviewEntity = entity;
 	}
 
@@ -49,7 +49,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
 
@@ -99,7 +99,7 @@ void MaterialEditorPanel::OnOpen()
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
 		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
-		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromPath("Engine/Textures/HDRIs/defaultHDRI.hdr");
+		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
 
@@ -133,10 +133,10 @@ void MaterialEditorPanel::UpdateToolbar()
 		{
 			if (mySelectedMaterial)
 			{
-				if (FileSystem::IsWriteable(mySelectedMaterial->path))
+				if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(mySelectedMaterial->handle)))
 				{
 					Volt::AssetManager::Get().SaveAsset(mySelectedMaterial);
-					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->path.string()));
+					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->assetName));
 				}
 				else
 				{
@@ -237,14 +237,13 @@ void MaterialEditorPanel::UpdateProperties()
 			int32_t selectedShader = 0;
 			const std::string shaderName = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName();
 
-			auto it = std::find(shaderNames.begin(), shaderNames.end(), shaderName);
-			if (it != shaderNames.end())
+			if (auto namesIt = std::find(shaderNames.begin(), shaderNames.end(), shaderName); namesIt != shaderNames.end())
 			{
-				selectedShader = (int32_t)std::distance(shaderNames.begin(), it);
+				selectedShader = (int32_t)std::distance(shaderNames.begin(), namesIt);
 			}
 
 			bool changed = false;
-			
+
 			UI::PushId();
 			if (UI::BeginProperties("Shader"))
 			{
@@ -296,7 +295,6 @@ void MaterialEditorPanel::UpdateProperties()
 					"Decal"
 				};
 
-				auto flags = mySelectedSubMaterial->GetFlags();
 				int32_t selected = 0;
 				Volt::MaterialFlag currentType = Volt::MaterialFlag::All;
 
@@ -515,18 +513,17 @@ void MaterialEditorPanel::UpdateProperties()
 					}
 				}
 
-				for (const auto& [shaderName, editorName] : textureDefinitions)
+				for (const auto& [textureShaderName, editorName] : textureDefinitions)
 				{
-					auto it = textures.find(shaderName);
-					if (it == textures.end())
+					if (!textures.contains(textureShaderName))
 					{
 						continue;
 					}
 
 					Volt::AssetHandle textureHandle = Volt::Asset::Null();
-					if (it->second)
+					if (textures.at(textureShaderName))
 					{
-						textureHandle = it->second->handle;
+						textureHandle = textures.at(textureShaderName)->handle;
 					}
 
 					if (EditorUtils::Property(editorName, textureHandle, Volt::AssetType::Texture))
@@ -535,11 +532,11 @@ void MaterialEditorPanel::UpdateProperties()
 
 						if (newTex && newTex->IsValid())
 						{
-							mySelectedSubMaterial->SetTexture(shaderName, newTex);
+							mySelectedSubMaterial->SetTexture(textureShaderName, newTex);
 						}
 						else
 						{
-							mySelectedSubMaterial->SetTexture(shaderName, Volt::Renderer::GetDefaultData().whiteTexture);
+							mySelectedSubMaterial->SetTexture(textureShaderName, Volt::Renderer::GetDefaultData().whiteTexture);
 						}
 					}
 				}
@@ -570,19 +567,19 @@ void MaterialEditorPanel::UpdateProperties()
 						{
 							case Volt::ShaderUniformType::Bool: UI::Property(name, materialSpecializationParams.GetValue<bool>(name)); break;
 							case Volt::ShaderUniformType::UInt:  UI::Property(name, materialSpecializationParams.GetValue<uint32_t>(name)); break;
-							case Volt::ShaderUniformType::UInt2: UI::Property(name, materialSpecializationParams.GetValue<gem::vec2ui>(name)); break;
-							case Volt::ShaderUniformType::UInt3: UI::Property(name, materialSpecializationParams.GetValue<gem::vec3ui>(name)); break;
-							case Volt::ShaderUniformType::UInt4: UI::Property(name, materialSpecializationParams.GetValue<gem::vec4ui>(name)); break;
+							case Volt::ShaderUniformType::UInt2: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec2>(name)); break;
+							case Volt::ShaderUniformType::UInt3: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec3>(name)); break;
+							case Volt::ShaderUniformType::UInt4: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec4>(name)); break;
 
 							case Volt::ShaderUniformType::Int: UI::Property(name, materialSpecializationParams.GetValue<int32_t>(name)); break;
-							case Volt::ShaderUniformType::Int2: UI::Property(name, materialSpecializationParams.GetValue<gem::vec2i>(name)); break;
-							case Volt::ShaderUniformType::Int3: UI::Property(name, materialSpecializationParams.GetValue<gem::vec3i>(name)); break;
-							case Volt::ShaderUniformType::Int4: UI::Property(name, materialSpecializationParams.GetValue<gem::vec4i>(name)); break;
+							case Volt::ShaderUniformType::Int2: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec2>(name)); break;
+							case Volt::ShaderUniformType::Int3: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec3>(name)); break;
+							case Volt::ShaderUniformType::Int4: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec4>(name)); break;
 
 							case Volt::ShaderUniformType::Float: UI::Property(name, materialSpecializationParams.GetValue<float>(name)); break;
-							case Volt::ShaderUniformType::Float2: UI::Property(name, materialSpecializationParams.GetValue<gem::vec2>(name)); break;
-							case Volt::ShaderUniformType::Float3: UI::Property(name, materialSpecializationParams.GetValue<gem::vec3>(name)); break;
-							case Volt::ShaderUniformType::Float4: UI::Property(name, materialSpecializationParams.GetValue<gem::vec4>(name)); break;
+							case Volt::ShaderUniformType::Float2: UI::Property(name, materialSpecializationParams.GetValue<glm::vec2>(name)); break;
+							case Volt::ShaderUniformType::Float3: UI::Property(name, materialSpecializationParams.GetValue<glm::vec3>(name)); break;
+							case Volt::ShaderUniformType::Float4: UI::Property(name, materialSpecializationParams.GetValue<glm::vec4>(name)); break;
 						}
 					}
 
@@ -615,19 +612,19 @@ void MaterialEditorPanel::UpdateProperties()
 								{
 									case Volt::ShaderUniformType::Bool: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<bool>(name)); break;
 									case Volt::ShaderUniformType::UInt: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<uint32_t>(name)); break;
-									case Volt::ShaderUniformType::UInt2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec2ui>(name)); break;
-									case Volt::ShaderUniformType::UInt3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec3ui>(name)); break;
-									case Volt::ShaderUniformType::UInt4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec4ui>(name)); break;
+									case Volt::ShaderUniformType::UInt2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec2>(name)); break;
+									case Volt::ShaderUniformType::UInt3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec3>(name)); break;
+									case Volt::ShaderUniformType::UInt4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec4>(name)); break;
 
 									case Volt::ShaderUniformType::Int: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<int32_t>(name)); break;
-									case Volt::ShaderUniformType::Int2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec2i>(name)); break;
-									case Volt::ShaderUniformType::Int3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec3i>(name)); break;
-									case Volt::ShaderUniformType::Int4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec4i>(name)); break;
+									case Volt::ShaderUniformType::Int2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec2>(name)); break;
+									case Volt::ShaderUniformType::Int3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec3>(name)); break;
+									case Volt::ShaderUniformType::Int4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec4>(name)); break;
 
 									case Volt::ShaderUniformType::Float: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<float>(name)); break;
-									case Volt::ShaderUniformType::Float2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec2>(name)); break;
-									case Volt::ShaderUniformType::Float3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec3>(name)); break;
-									case Volt::ShaderUniformType::Float4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<gem::vec4>(name)); break;
+									case Volt::ShaderUniformType::Float2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec2>(name)); break;
+									case Volt::ShaderUniformType::Float3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec3>(name)); break;
+									case Volt::ShaderUniformType::Float4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec4>(name)); break;
 								}
 							}
 
@@ -676,7 +673,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 		{
 			static float padding = 16.f;
 
-			const float thumbnailSize = 85.f;
+			constexpr float thumbnailSize = 85.f;
 			float cellSize = thumbnailSize + padding;
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			int32_t columnCount = (int32_t)(panelWidth / cellSize);
@@ -695,7 +692,6 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			{
 				ImGui::PushID(std::string(material->GetName() + "##" + std::to_string(index)).c_str());
 
-				constexpr float thumbnailSize = 85.f;
 				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemPos();
@@ -803,18 +799,23 @@ void MaterialEditorPanel::UpdateMaterials()
 		{
 			for (auto& material : materials)
 			{
-				if (myHasSearchQuery && !Utils::ToLower(material.stem().string()).contains(Utils::ToLower(mySearchQuery)))
+				const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(material);
+				const std::string materialName = metadata.filePath.stem().string();
+				if (myHasSearchQuery)
 				{
-					continue;
+					if (!Utils::StringContains(Utils::ToLower(materialName), Utils::ToLower(mySearchQuery)))
+					{
+						continue;
+					}
 				}
 
 				bool selected = false;
 				if (mySelectedMaterial)
 				{
-					selected = material == mySelectedMaterial->path;
+					selected = material == mySelectedMaterial->handle;
 				}
 
-				if (ImGui::Selectable(material.stem().string().c_str(), &selected))
+				if (ImGui::Selectable(materialName.c_str(), &selected))
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);

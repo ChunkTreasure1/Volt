@@ -1,4 +1,6 @@
-Handle: 6935054609352359196
-Path: Engine/Shaders/Source/HLSL/Environment/VolumetricFog/VolumetricFog_InjectLight_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6724677954297314653
+  filePath: Engine/Shaders/Source/HLSL/Environment/VolumetricFog/VolumetricFog_InjectLight_cs.hlsl
+  type: 128
+  Dependencies:
+    []

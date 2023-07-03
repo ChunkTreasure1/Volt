@@ -1,4 +1,7 @@
-Handle: 15575898581692197650
-Path: Engine/Shaders/Definitions/PostProcessing/SSR/ssr.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 283354255240521671
+  filePath: Engine/Shaders/Definitions/PostProcessing/SSR/ssr.vtsdef
+  type: 64
+  Dependencies:
+    - 11128913418919180319
+    - 7568016120944877380

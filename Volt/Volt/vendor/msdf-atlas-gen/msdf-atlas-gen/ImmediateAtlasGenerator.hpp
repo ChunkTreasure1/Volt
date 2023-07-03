@@ -60,13 +60,13 @@ void ImmediateAtlasGenerator<T, N, GEN_FN, AtlasStorage>::resize(int width, int 
 }
 
 template <typename T, int N, GeneratorFunction<T, N> GEN_FN, class AtlasStorage>
-void ImmediateAtlasGenerator<T, N, GEN_FN, AtlasStorage>::setAttributes(const GeneratorAttributes &attributes) {
-    this->attributes = attributes;
+void ImmediateAtlasGenerator<T, N, GEN_FN, AtlasStorage>::setAttributes(const GeneratorAttributes &attrs) {
+    this->attributes = attrs;
 }
 
 template <typename T, int N, GeneratorFunction<T, N> GEN_FN, class AtlasStorage>
-void ImmediateAtlasGenerator<T, N, GEN_FN, AtlasStorage>::setThreadCount(int threadCount) {
-    this->threadCount = threadCount;
+void ImmediateAtlasGenerator<T, N, GEN_FN, AtlasStorage>::setThreadCount(int thrdCound) {
+    this->threadCount = thrdCound;
 }
 
 template <typename T, int N, GeneratorFunction<T, N> GEN_FN, class AtlasStorage>

@@ -244,5 +244,10 @@
         {
             InternalCalls.Input_ShowCursor(state);
         }
+
+        public static float GetScrollOffset()
+        {
+            return InternalCalls.Input_GetScrollOffset();
+        }
     }
 }

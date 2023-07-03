@@ -23,7 +23,6 @@ namespace Volt
 	{
 		inline const std::pair<float, std::string> GetClosestUnitSize(const uint64_t bytes)
 		{
-			constexpr uint64_t BYTE = 1;
 			constexpr uint64_t KILOBYTE = 1024;
 			constexpr uint64_t MEGABYTE = 1024 * 1024;
 			constexpr uint64_t GIGABYTE = 1024 * 1024 * 1024;
@@ -143,7 +142,7 @@ namespace Volt
 		return allocation;
 	}
 
-	VmaAllocation VulkanAllocator::AllocateImageInPool(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaPool pool, std::string_view name)
+	VmaAllocation VulkanAllocator::AllocateImageInPool(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage, VkImage& outImage, VmaPool pool, std::string_view name)
 	{
 		VT_PROFILE_FUNCTION();
 
