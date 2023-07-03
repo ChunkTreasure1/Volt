@@ -232,10 +232,15 @@ namespace Volt
 		return myCapabilities.formats.front();
 	}
 
-	VkPresentModeKHR Swapchain::ChooseSwapchainPresentMode()
+	VkPresentModeKHR Swapchain::ChooseSwapchainPresentMode(bool useVSync)
 	{
 		for (const auto& presentMode : myCapabilities.presentModes)
 		{
+			if (useVSync && presentMode == VK_PRESENT_MODE_FIFO_KHR)
+			{
+				return presentMode;
+			}
+
 			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
 				return presentMode;
@@ -249,7 +254,7 @@ namespace Volt
 	void Swapchain::CreateSwapchain(uint32_t width, uint32_t height, bool useVSync)
 	{
 		const VkSurfaceFormatKHR surfaceFormat = ChooseSwapchainFormat();
-		const VkPresentModeKHR presentMode = ChooseSwapchainPresentMode();
+		const VkPresentModeKHR presentMode = ChooseSwapchainPresentMode(useVSync);
 
 		myImageCount = myCapabilities.capabilities.minImageCount + 1;
 		if (myCapabilities.capabilities.maxImageCount > 0 && myImageCount > myCapabilities.capabilities.maxImageCount)

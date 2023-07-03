@@ -1,10 +1,15 @@
 #pragma once
 
-#include <dxc/dxcapi.h>
 #include <Windows.h>
 
 #include <unordered_set>
 #include <filesystem>
+
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <wrl.h>
+
+#include <dxc/dxcapi.h>
 
 namespace Volt
 {

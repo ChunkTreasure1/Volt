@@ -30,12 +30,12 @@ namespace GraphKey
 	private:
 		inline void StartTimer()
 		{
-			const auto id = TimerManager::AddTimer(GetInput<float>(1), [&]()
+			const auto timerId = TimerManager::AddTimer(GetInput<float>(1), [&]()
 			{
 				ActivateOutput(1);
 			});
 
-			SetOutputData(2, id);
+			SetOutputData(2, timerId);
 			ActivateOutput(0);
 		}
 	};
@@ -63,9 +63,9 @@ namespace GraphKey
 	private:
 		inline void StopTimer()
 		{
-			const auto id = GetInput<Volt::UUID>(1);
+			const auto timerId = GetInput<Volt::UUID>(1);
 
-			TimerManager::StopTimer(id);
+			TimerManager::StopTimer(timerId);
 			ActivateOutput(0);
 		}
 	};

@@ -95,7 +95,7 @@ namespace Volt
 
 	const uint32_t MeshTable::GetMeshIndex(Mesh* mesh, const uint32_t subMeshIndex)
 	{
-		const size_t hash = GetHash(mesh, subMeshIndex);
+		//const size_t hash = GetHash(mesh, subMeshIndex);
 		return 0; /*myMeshMap.at(hash);*/
 	}
 
@@ -116,7 +116,7 @@ namespace Volt
 
 	void MeshTable::SetDirty(bool state)
 	{
-		for (const auto& val : myIsDirty)
+		for (auto&& val : myIsDirty)
 		{
 			val = state;
 		}

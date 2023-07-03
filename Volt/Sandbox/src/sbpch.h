@@ -18,6 +18,3 @@
 
 #include <glm/glm.hpp>
 #include <Volt/Log/Log.h>
-
-#include <imgui.h>
-#include <imgui_internal.h>

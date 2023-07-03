@@ -152,7 +152,6 @@ void NetContractPanel::DrawCalls(Ref<Volt::NetContract> in_contract)
 	{
 		for (auto& e : in_contract->calls)
 		{
-			auto& enumData = Wire::ComponentRegistry::EnumData();
 			if (enumData.find("eNetEvent") == enumData.end()) continue;
 			if (enumData.at("eNetEvent").size() > (uint8_t)e.first)
 			{

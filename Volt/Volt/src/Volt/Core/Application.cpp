@@ -298,7 +298,7 @@ namespace Volt
 		myLayerStack.PopLayer(layer);
 	}
 
-	bool Application::OnAppUpdateEvent(AppUpdateEvent& e)
+	bool Application::OnAppUpdateEvent(AppUpdateEvent&)
 	{
 		if (mySteamImplementation)
 		{
@@ -334,7 +334,7 @@ namespace Volt
 		return false;
 	}
 
-	bool Application::OnKeyPressedEvent(KeyPressedEvent& e)
+	bool Application::OnKeyPressedEvent(KeyPressedEvent&)
 	{
 		return false;
 	}

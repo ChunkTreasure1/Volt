@@ -640,11 +640,11 @@ void Sandbox::SaveScene()
 			if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(myRuntimeScene->handle)))
 			{
 				Volt::AssetManager::Get().SaveAsset(myRuntimeScene);
-				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->name));
+				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->assetName));
 			}
 			else
 			{
-				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->name));
+				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->assetName));
 			}
 		}
 		else
@@ -1125,7 +1125,7 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 	act.SetDetails("Working on:");
 	act.SetState(scene->GetName().c_str());
 	act.GetParty().GetSize().SetCurrentSize(myRuntimeScene->GetActiveLayer() + 1);
-	act.GetParty().GetSize().SetMaxSize(myRuntimeScene->GetLayers().size());
+	act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(myRuntimeScene->GetLayers().size()));
 	act.GetTimestamps().SetStart(std::time(nullptr));
 
 	Volt::DiscordSDK::UpdateRichPresence();

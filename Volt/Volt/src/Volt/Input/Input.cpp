@@ -12,7 +12,7 @@ namespace Volt
 	void Input::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<AppUpdateEvent>([&](AppUpdateEvent& updateEvent)
+		dispatcher.Dispatch<AppUpdateEvent>([&](AppUpdateEvent&)
 		{
 			memset(myKeyStates.data(), 0, sizeof(KeyState) * myKeyStates.size());
 

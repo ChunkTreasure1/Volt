@@ -6,6 +6,8 @@
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/EditorLibrary.h"
+#include "Sandbox/Utility/Theme.h"
+
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
@@ -64,7 +66,7 @@ void Sandbox::UpdateDockSpace()
 	ImGui::PopStyleVar(2);
 
 	{
-		UI::ScopedColor windowBorder(ImGuiCol_Border, IM_COL32(50, 50, 50, 255));
+		UI::ScopedColor windowBorder(ImGuiCol_Border, EditorTheme::ToNormalizedRGB(50.f, 50.f, 50.f, 255.f));
 		// Draw window border if the window is not maximized
 		if (!isMaximized)
 			RenderWindowOuterBorders(ImGui::GetCurrentWindow());
@@ -254,7 +256,6 @@ bool Sandbox::UpdateWindowManualResize(ImGuiWindow* window, ImVec2& newSize, ImV
 	int border_held = -1;
 	ImU32 resize_grip_col[4] = {};
 	const int resize_grip_count = g.IO.ConfigWindowsResizeFromEdges ? 2 : 1; // Allow resize from lower-left if we have the mouse cursor feedback for it.
-	const float resize_grip_draw_size = IM_FLOOR(ImMax(g.FontSize * 1.10f, window->WindowRounding + 1.0f + g.FontSize * 0.2f));
 	window->ResizeBorderHeld = (signed char)border_held;
 
 	//const ImRect& visibility_rect;

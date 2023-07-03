@@ -33,14 +33,14 @@ namespace Volt
 
 		myMaterialData = myShader->CreateShaderBuffer();
 
-		for (const auto& [name, data] : myMaterialData.GetMembers())
+		for (const auto& [varName, data] : myMaterialData.GetMembers())
 		{
-			if (oldMaterialData.HasMember(name))
+			if (oldMaterialData.HasMember(varName))
 			{
-				const auto& oldMember = oldMaterialData.GetMember(name);
-				if (oldMember.type == myMaterialData.GetMember(name).type)
+				const auto& oldMember = oldMaterialData.GetMember(varName);
+				if (oldMember.type == myMaterialData.GetMember(varName).type)
 				{
-					myMaterialData.SetValue(name, oldMaterialData.GetValueRaw(name, oldMember.size), oldMember.size);
+					myMaterialData.SetValue(varName, oldMaterialData.GetValueRaw(varName, oldMember.size), oldMember.size);
 				}
 			}
 		}

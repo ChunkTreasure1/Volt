@@ -409,7 +409,7 @@ namespace Volt
 			myLockFlags &= ~(uint32_t)flag;
 		}
 
-		myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)myLockFlags);
+		myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(myLockFlags)));
 
 		if (forceAwake)
 		{
@@ -423,7 +423,7 @@ namespace Volt
 
 		if (IsDynamic())
 		{
-			myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)myLockFlags);
+			myRigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags(static_cast<physx::PxRigidDynamicLockFlags>(static_cast<uint8_t>(myLockFlags)));
 		}
 	}
 

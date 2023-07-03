@@ -82,7 +82,7 @@ namespace Volt
 
 	std::string NetContractContainer::GetMethod(Nexus::TYPE::REP_ID in_id, eNetEvent in_event)
 	{
-		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(static_cast<uint32_t>(in_id), SceneManager::GetActiveScene().lock().get());
 		if (!entity.HasComponent<PrefabComponent>()) return "";
 		return GetMethod(entity.GetComponent<PrefabComponent>().prefabAsset, in_event);
 	}

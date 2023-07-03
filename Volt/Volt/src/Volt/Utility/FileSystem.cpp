@@ -84,7 +84,7 @@ void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
 	fileOp.pFrom = wstr.c_str();
 	fileOp.pTo = NULL;
 	fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_SILENT;
-	int32_t result = SHFileOperation(&fileOp);
+	SHFileOperation(&fileOp);
 }
 
 bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)

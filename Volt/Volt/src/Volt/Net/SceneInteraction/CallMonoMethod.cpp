@@ -47,7 +47,7 @@ bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method,
 
 	auto args = GetMonoArguments(in_data);
 
-	auto monoMethod = monoClass->GetMethod(monoElements[2], args.size());
+	auto monoMethod = monoClass->GetMethod(monoElements[2], static_cast<int32_t>(args.size()));
 	if (!monoMethod)
 	{
 		VT_CORE_ERROR("monoMethod null");

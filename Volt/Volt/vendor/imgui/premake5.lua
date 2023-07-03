@@ -25,11 +25,7 @@ project "ImGui"
 		"imgui_bezier.h"
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
+	warnings "off"
 
 	filter "system:windows"
 		systemversion "latest"

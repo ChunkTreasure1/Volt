@@ -141,7 +141,6 @@ void EditorSettingsPanel::DrawVersionControl()
 		UI::PushId();
 		if (UI::BeginProperties())
 		{
-			int32_t currentStream = m_currentStream;
 			int32_t currentWorkspace = m_currentWorkspace;
 
 			if (UI::ComboProperty("Workspace", m_currentWorkspace, workspaces))

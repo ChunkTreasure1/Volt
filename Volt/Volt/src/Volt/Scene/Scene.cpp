@@ -269,8 +269,6 @@ namespace Volt
 
 		GraphKey::TimerManager::Update(aDeltaTime);
 
-		auto& threadPool = Application::GetThreadPool();
-
 		{
 			VT_PROFILE_SCOPE("Update entity time");
 
@@ -827,7 +825,7 @@ namespace Volt
 			// Skylight
 			{
 				auto ent = newScene->CreateEntity("Skylight");
-				auto& skyLight = ent.AddComponent<SkylightComponent>();
+				ent.AddComponent<SkylightComponent>();
 			}
 
 			// Camera
@@ -1241,7 +1239,7 @@ namespace Volt
 		auto& act = Volt::DiscordSDK::GetRichPresence();
 
 		act.GetParty().GetSize().SetCurrentSize(GetActiveLayer() + 1);
-		act.GetParty().GetSize().SetMaxSize(GetLayers().size());
+		act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(GetLayers().size()));
 
 		Volt::DiscordSDK::UpdateRichPresence();
 	}

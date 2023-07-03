@@ -50,7 +50,6 @@ Ref<Volt::RepData> DeserializePacketBody(Nexus::Packet& in_packet)
 		} break;
 		case Volt::eNetSerializerDescriptor::VARIABLE:
 		{
-			Nexus::TYPE::REP_ID repId;
 			Volt::RepVariableData variableData;
 			in_packet > variableData;
 			variableData.dataType = Volt::eNetSerializerDescriptor::VARIABLE;
@@ -135,7 +134,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 	return true;
 }
 
-Nexus::Packet ConstructErrorDescription(Ref<Volt::RepData> data, Volt::eNetErrorCode* code)
+Nexus::Packet ConstructErrorDescription(Ref<Volt::RepData>, Volt::eNetErrorCode*)
 {
 	return Nexus::Packet();
 }
@@ -500,7 +499,6 @@ void HandleComponent(Wire::EntityId in_id, const std::string& in_comp, bool in_k
 
 	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
 
-	auto& sceneRegistry = scenePtr->GetRegistry();
 	auto ent = Volt::Entity(in_id, scenePtr.get());
 	scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
 }

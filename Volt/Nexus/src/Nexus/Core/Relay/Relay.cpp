@@ -79,7 +79,6 @@ namespace Nexus
 		}
 		int i = 0;
 		i++;
-		int c = i;
 		//m_packetQueueOut.push_back({ in_sockAddr, in_packet });
 	}
 

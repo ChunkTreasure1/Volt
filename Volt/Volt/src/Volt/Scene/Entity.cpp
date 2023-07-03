@@ -160,7 +160,6 @@ namespace Volt
 			return;
 		}
 
-		bool lastLockedState = GetComponent<TransformComponent>().locked;
 		GetComponent<TransformComponent>().locked = state;
 
 		for (auto child : GetChilden())

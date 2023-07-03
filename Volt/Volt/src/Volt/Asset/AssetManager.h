@@ -175,7 +175,6 @@ namespace Volt
 		{
 			if (asset->GetType() != T::GetStaticType())
 			{
-				AssetType assetType = asset->GetType();
 				VT_CORE_CRITICAL("Type Mismatch!");
 			}
 		}
@@ -300,7 +299,7 @@ namespace Volt
 		metadata.type = T::GetStaticType();
 		metadata.isLoaded = true;
 
-		asset->name = metadata.filePath.stem().string();
+		asset->assetName = metadata.filePath.stem().string();
 
 		AssetManager::Get().m_assetRegistry.emplace(asset->handle, metadata);
 		AssetManager::Get().m_assetCache.emplace(asset->handle, asset);

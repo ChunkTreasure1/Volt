@@ -11,7 +11,7 @@ void Sequencer::UpdateMainContent()
 	if (ImGui::Button("Add Keyframe"))
 	{
 		KeyFrame keyFrame;
-		keyFrame.index = myKeyFrames.size();
+		keyFrame.index = static_cast<uint32_t>(myKeyFrames.size());
 		keyFrame.xPos = 10;
 		myKeyFrames.emplace_back(keyFrame);
 	}

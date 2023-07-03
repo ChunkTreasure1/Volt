@@ -16,7 +16,7 @@ namespace Volt
 			POLYAREA_JUMP
 		};
 
-		enum PolyFlags
+		enum PolyFlags : uint16_t
 		{
 			POLYFLAGS_WALK = 0x01,		// Ability to walk (ground, grass, road)
 			POLYFLAGS_SWIM = 0x02,		// Ability to swim (water).

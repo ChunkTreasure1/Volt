@@ -80,9 +80,7 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
 	{
-		auto& metaData = GetMetadataFromHandleMutable(asset);
 		const auto& dependencyMetaData = GetMetadataFromFilePath(dependency);
-
 		AddDependency(asset, dependencyMetaData.handle);
 	}
 
@@ -204,7 +202,7 @@ namespace Volt
 #endif	
 
 			asset->handle = metadata.handle;
-			asset->name = metadata.filePath.stem().string();
+			asset->assetName = metadata.filePath.stem().string();
 
 			metadata.isLoaded = true;
 		}
@@ -523,7 +521,7 @@ namespace Volt
 		const auto projDir = GetContextPath(filePath);
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
+			WriteLock cacheLock{ m_assetCacheMutex };
 			m_assetCache.erase(assetHandle);
 		}
 
@@ -552,7 +550,7 @@ namespace Volt
 		const auto projDir = GetContextPath(filePath);
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
+			WriteLock cacheLock{ m_assetCacheMutex };
 			m_assetCache.erase(metadata.handle);
 		}
 
@@ -748,7 +746,7 @@ namespace Volt
 		if (!pathSplit.empty())
 		{
 			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
-			if (lowerFirstPart.contains("engine") || lowerFirstPart.contains("editor"))
+			if (Utils::StringContains(lowerFirstPart, "engine") || Utils::StringContains(lowerFirstPart, "editor"))
 			{
 				return true;
 			}
@@ -1013,7 +1011,7 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-				asset->name = metadata.filePath.stem().string();
+				asset->assetName = metadata.filePath.stem().string();
 
 #ifndef VT_DIST
 				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);
@@ -1101,7 +1099,7 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-				asset->name = metadata.filePath.stem().string();
+				asset->assetName = metadata.filePath.stem().string();
 
 #ifndef VT_DIST
 				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);

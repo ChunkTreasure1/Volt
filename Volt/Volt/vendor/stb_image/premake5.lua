@@ -1,45 +1,40 @@
-project "Optick"
+project "stb"
 	kind "StaticLib"
 	language "C++"
+	staticruntime "off"
 	cppdialect "C++17"
-    staticruntime "off"
+	warnings "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
-		"src/**.h",
-		"src/**.cpp"
+		"**.cpp",
+		"**.h"
 	}
 
-	VULKAN_SDK = os.getenv("VULKAN_SDK")
 	includedirs
 	{
-		"%{VULKAN_SDK}/Include"
+		".",
+		"stb/"
 	}
-
-	defines
-	{
-		"_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS"
-	}
-
-	warnings "off"
 
 	filter "system:windows"
 		systemversion "latest"
 
+	filter "system:linux"
+		pic "On"
+		cppdialect "C++17"
+
 	filter "configurations:Debug"
 		runtime "Debug"
-        optimize "off"
 		symbols "on"
 
 	filter "configurations:Release"
 		runtime "Release"
 		optimize "on"
-        symbols "on"
 
-    filter "configurations:Dist"
-        runtime "Release"
-        optimize "on"
-        symbols "off"
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"

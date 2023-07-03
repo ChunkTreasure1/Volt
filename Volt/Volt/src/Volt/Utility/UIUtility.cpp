@@ -93,7 +93,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 	std::vector<std::string> result{};
 	for (const auto& [score, entry] : scores)
 	{
-		if (!Utils::ToLower(entry).contains(Utils::ToLower(query)))
+		if (!Utils::StringContains(Utils::ToLower(entry), Utils::ToLower(query)))
 		{
 			continue;
 		}
