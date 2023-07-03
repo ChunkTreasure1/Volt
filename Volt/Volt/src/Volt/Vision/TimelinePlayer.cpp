@@ -57,7 +57,7 @@ void Volt::TimelinePlayer::StartTimeline(const TimelinePreset timelinePreset, Sc
 	}
 
 	myCurrentKeyAndTime.clear();
-	myCurrentKeyAndTime.resize(myTimelinePreset.myTracks.size(), { 0,0 });
+	myCurrentKeyAndTime.resize(myTimelinePreset.myTracks.size(), { 0, 0.f });
 }
 
 void Volt::TimelinePlayer::StopTimeline()

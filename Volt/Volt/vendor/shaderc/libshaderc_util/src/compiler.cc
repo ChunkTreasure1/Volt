@@ -20,7 +20,7 @@
 #include <thread>
 #include <tuple>
 
-#include "glslang/SPIRV/GlslangToSpv.h"
+#include "SPIRV/GlslangToSpv.h"
 #include "libshaderc_util/format.h"
 #include "libshaderc_util/io_shaderc.h"
 #include "libshaderc_util/message.h"

@@ -36,6 +36,12 @@ project "Volt"
 		"src/**.cpp",
 		"src/**.hpp",
 
+		"%{IncludeDir.shaderc_glslc}/**.cc",
+		"%{IncludeDir.shaderc_glslc}/**.h",
+
+		"%{IncludeDir.shaderc_utils}/**.cc",
+		"%{IncludeDir.shaderc_utils}/**.h",
+
 		"%{IncludeDir.tinyddsloader}/**.h",
 		"%{IncludeDir.TinyGLTF}/**.h",
 	}
@@ -110,8 +116,7 @@ project "Volt"
 
 		"DirectXTK",
 		"stb",
-		"VulkanMemoryAllocator",
-		"shaderc"
+		"VulkanMemoryAllocator"
 	}
 
 	defines
