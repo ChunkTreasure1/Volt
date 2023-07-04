@@ -99,8 +99,10 @@ private:
 
 	Wire::EntityId myEntityToAddMesh = Wire::NullID;
 	std::filesystem::path myMeshToImport;
-	MeshImportData myMeshImportData;
 
 	Volt::AssetHandle mySceneToOpen = Volt::Asset::Null();
+
+	///// Modals /////
+	Volt::UUID m_meshImportModal = 0;
 };
 

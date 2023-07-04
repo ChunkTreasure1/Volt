@@ -429,10 +429,10 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 			UI::Property("Import Mesh", aImportData.importMesh);
 			if (aImportData.importMesh)
 			{
-				UI::Property("Create Materials", aImportData.createMaterials);
+				UI::Property("Create Material", aImportData.createMaterial);
 			}
 
-			if (!aImportData.createMaterials && aImportData.importMesh)
+			if (!aImportData.createMaterial && aImportData.importMesh)
 			{
 				EditorUtils::Property("Material", aImportData.externalMaterial, Volt::AssetType::Material);
 			}
@@ -459,7 +459,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 		if (ImGui::Button("Import"))
 		{
-			const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
+			const Volt::AssetHandle material = aImportData.createMaterial ? Volt::Asset::Null() : aImportData.externalMaterial;
 			bool succeded = false;
 
 			if (aImportData.importMesh)
@@ -467,7 +467,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(aMeshToImport);
 				if (importMesh && importMesh->IsValid())
 				{
-					if (!aImportData.createMaterials)
+					if (!aImportData.createMaterial)
 					{
 						const auto importedMaterial = importMesh->GetMaterial();
 						const auto materialToUse = Volt::AssetManager::GetAsset<Volt::Material>(aImportData.externalMaterial);
@@ -597,9 +597,9 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 		UI::PushId();
 		if (UI::BeginProperties("Settings"))
 		{
-			UI::Property("Create Materials", aImportData.createMaterials);
+			UI::Property("Create Materials", aImportData.createMaterial);
 
-			if (!aImportData.createMaterials)
+			if (!aImportData.createMaterial)
 			{
 				EditorUtils::Property("Material", aImportData.externalMaterial, Volt::AssetType::Material);
 			}
@@ -612,7 +612,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 		{
 			for (const auto& src : meshesToImport)
 			{
-				const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
+				const Volt::AssetHandle material = aImportData.createMaterial ? Volt::Asset::Null() : aImportData.externalMaterial;
 				const std::filesystem::path destinationPath = aImportData.destination / (src.stem().string() + ".vtmesh");
 
 				bool succeded = false;
@@ -620,7 +620,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(src);
 				if (importMesh && importMesh->IsValid())
 				{
-					if (!aImportData.createMaterials)
+					if (!aImportData.createMaterial)
 					{
 						const auto importedMaterial = importMesh->GetMaterial();
 						const auto materialToUse = Volt::AssetManager::GetAsset<Volt::Material>(aImportData.externalMaterial);

@@ -514,7 +514,7 @@ public:
 
 	static bool BeginProperties(const std::string& name = "", const ImVec2 size = { 0, 0 })
 	{
-		bool open = ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable, size);
+		bool open = ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable, size);
 
 		if (open)
 		{
@@ -739,6 +739,8 @@ public:
 
 		ImGui::GetCurrentWindow()->DrawList->AddLine(pos + windowPos + ImVec2{ textSize.x + padding, textSize.y / 2.f }, { pos.x + availWidth + windowPos.x, pos.y + 1.f + windowPos.y + textSize.y / 2.f }, IM_COL32(255, 255, 255, 255));
 	}
+
+	static void PropertyInfoString(const std::string& key, const std::string& info);
 
 	static bool PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue = 0.f, std::function<void(glm::vec3& value)> callback = nullptr)
 	{

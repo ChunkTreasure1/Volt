@@ -19,7 +19,7 @@ struct MeshImportData
 	std::filesystem::path destination;
 	Volt::AssetHandle externalMaterial;
 	Volt::AssetHandle targetSkeleton;
-	bool createMaterials = true;
+	bool createMaterial = true;
 	bool importMesh = true;
 	bool importSkeleton = false;
 	bool importAnimation = false;

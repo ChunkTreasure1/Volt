@@ -11,6 +11,24 @@ namespace TGA
 {
 	namespace FBX
 	{
+		struct FbxInformation
+		{
+			std::string fileVersion;
+			std::string fileCreator;
+			std::string fileCreatorApplication;
+			std::string fileUnits;
+			std::string fileAxisDirection;
+
+			bool hasSkeleton = false;
+			bool hasMesh = false;
+			bool hasAnimation = false;
+
+			inline const bool IsValid() const
+			{
+				return hasSkeleton || hasMesh || hasAnimation;
+			}
+		};
+
 		class Importer
 		{
 		public:
@@ -80,6 +98,8 @@ namespace TGA
 			 * @param shouldTriangulate If import should triangulate the NavMesh, this will result in more polygons.
 			 */
 			static bool LoadNavMeshA(const std::string& someFilePath, NavMesh& outNavMesh, bool shouldTriangulate = false);
+
+			static const FbxInformation GetFbxInformation(const std::string& filePath);
 
 			#ifdef UNICODE
 			// For compatibility

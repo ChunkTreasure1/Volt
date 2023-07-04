@@ -33,5 +33,6 @@ namespace EditorTheme
 	{
 		inline static const UI::Button RemoveButton = { { 0.8f, 0.1f, 0.15f, 1.f }, { 0.9f, 0.2f, 0.2f, 1.f }, { 0.8f, 0.1f, 0.15f, 1.f } };
 		inline static const UI::Button AddButton = { { 0.f, 0.78f, 0.25f, 1.f }, { 0.f, 0.98f, 0.31f, 1.f }, { 0.f, 0.78f, 0.25f, 1.f } };
+		inline static const UI::Button BlueButton = { ToNormalizedRGB(0.f, 112.f, 224.f), ToNormalizedRGB(0.f, 97.f, 224.f), ToNormalizedRGB(0.f, 60.f, 224.f) };
 	}
 }

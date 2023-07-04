@@ -158,3 +158,12 @@ bool UI::InputTextWithHint(const std::string& name, std::string& text, const std
 	std::string id = "##" + std::to_string(s_stackId++);
 	return ImGui::InputTextWithHintString(id.c_str(), hint.c_str(), &text, flags);
 }
+
+void UI::PropertyInfoString(const std::string& key, const std::string& info)
+{
+	ImGui::TableNextColumn();
+	ImGui::TextUnformatted(key.c_str());
+
+	ImGui::TableNextColumn();
+	ImGui::TextUnformatted(info.c_str());
+}

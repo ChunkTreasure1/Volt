@@ -11,6 +11,9 @@
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/Sandbox.h"
 
+#include "Sandbox/UISystems/ModalSystem.h"
+#include "Sandbox/Modals/MeshImportModal.h"
+
 #include "Sandbox/EditorCommandStack.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
@@ -45,6 +48,9 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	myIsOpen = true;
 	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myMidEvent = false;
+
+	auto& meshModal = ModalSystem::AddModal<MeshImportModal>("Import Mesh##viewport");
+	m_meshImportModal = meshModal.GetID();
 }
 
 void ViewportPanel::UpdateMainContent()
@@ -584,78 +590,78 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			// NOT WORKING YET
 			break;
 
-			auto& selected = SelectionManager::GetSelectedEntities();
+			//auto& selected = SelectionManager::GetSelectedEntities();
 
-			if (selected.empty()) { break; }
+			//if (selected.empty()) { break; }
 
-			auto& selectedTransformComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(selected[0]);
+			//auto& selectedTransformComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(selected[0]);
 
-			glm::vec3 currentPos = selectedTransformComp.position; // Get world instead of local
-			bool foundIntersect = false;
-			float bestHeight = FLT_MAX;
+			//glm::vec3 currentPos = selectedTransformComp.position; // Get world instead of local
+			//bool foundIntersect = false;
+			//float bestHeight = FLT_MAX;
 
-			auto meshEntities = myEditorScene->GetAllEntitiesWith<Volt::MeshComponent>();
+			//auto meshEntities = myEditorScene->GetAllEntitiesWith<Volt::MeshComponent>();
 
-			for (const auto& ent : meshEntities)
-			{
-				if (ent == selected[0]) { continue; }
+			//for (const auto& ent : meshEntities)
+			//{
+			//	if (ent == selected[0]) { continue; }
 
-				auto& transformcomp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
-				auto& meshcomp = myEditorScene->GetRegistry().GetComponent<Volt::MeshComponent>(ent);
-				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshcomp.handle);
+			//	auto& transformcomp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
+			//	auto& meshcomp = myEditorScene->GetRegistry().GetComponent<Volt::MeshComponent>(ent);
+			//	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshcomp.handle);
 
-				if (glm::distance(
-					glm::vec3(transformcomp.position.x, 0.f, transformcomp.position.z),
-					glm::vec3(currentPos.x / transformcomp.scale.x, 0.f, currentPos.z / transformcomp.scale.z)) > mesh->GetBoundingSphere().radius)
-				{
-					continue;
-				}
+			//	if (glm::distance(
+			//		glm::vec3(transformcomp.position.x, 0.f, transformcomp.position.z),
+			//		glm::vec3(currentPos.x / transformcomp.scale.x, 0.f, currentPos.z / transformcomp.scale.z)) > mesh->GetBoundingSphere().radius)
+			//	{
+			//		continue;
+			//	}
 
-				auto vList = mesh->GetVertices();
-				auto iList = mesh->GetIndices();
+			//	auto vList = mesh->GetVertices();
+			//	auto iList = mesh->GetIndices();
 
-				// Check submeshes
+			//	// Check submeshes
 
-				for (int i = 0; i < iList.size(); i += 3)
-				{
-					auto p1 = vList[iList[i]].position;
-					auto p2 = vList[iList[i + 1]].position;
-					auto p3 = vList[iList[i + 2]].position;
+			//	for (int i = 0; i < iList.size(); i += 3)
+			//	{
+			//		auto p1 = vList[iList[i]].position;
+			//		auto p2 = vList[iList[i + 1]].position;
+			//		auto p3 = vList[iList[i + 2]].position;
 
-					glm::vec3 intersectionPoint = { 0,0,0 };
+			//		glm::vec3 intersectionPoint = { 0,0,0 };
 
-					auto relativeScalePos = glm::vec3(
-						currentPos.x / transformcomp.scale.x,
-						currentPos.y,
-						currentPos.z / transformcomp.scale.z);
+			//		auto relativeScalePos = glm::vec3(
+			//			currentPos.x / transformcomp.scale.x,
+			//			currentPos.y,
+			//			currentPos.z / transformcomp.scale.z);
 
-					if (Volt::rayTriangleIntersection(relativeScalePos, glm::vec3(0.f, -1.f, 0.f), p1, p2, p3, intersectionPoint))
-					{
-						if (std::isnan(intersectionPoint.x) ||
-							std::isnan(intersectionPoint.y) ||
-							std::isnan(intersectionPoint.z) ||
-							std::isinf(intersectionPoint.x) ||
-							std::isinf(intersectionPoint.y) ||
-							std::isinf(intersectionPoint.z))
-						{
-							continue;
-						}
+			//		if (Volt::rayTriangleIntersection(relativeScalePos, glm::vec3(0.f, -1.f, 0.f), p1, p2, p3, intersectionPoint))
+			//		{
+			//			if (std::isnan(intersectionPoint.x) ||
+			//				std::isnan(intersectionPoint.y) ||
+			//				std::isnan(intersectionPoint.z) ||
+			//				std::isinf(intersectionPoint.x) ||
+			//				std::isinf(intersectionPoint.y) ||
+			//				std::isinf(intersectionPoint.z))
+			//			{
+			//				continue;
+			//			}
 
-						if (glm::abs(currentPos.y - bestHeight) > glm::abs(currentPos.y - intersectionPoint.y))
-						{
-							bestHeight = intersectionPoint.y;
-							foundIntersect = true;
-						}
-					}
-				}
-			}
+			//			if (glm::abs(currentPos.y - bestHeight) > glm::abs(currentPos.y - intersectionPoint.y))
+			//			{
+			//				bestHeight = intersectionPoint.y;
+			//				foundIntersect = true;
+			//			}
+			//		}
+			//	}
+			//}
 
-			if (foundIntersect)
-			{
-				selectedTransformComp.position.y = bestHeight;
-			}
+			//if (foundIntersect)
+			//{
+			//	selectedTransformComp.position.y = bestHeight;
+			//}
 
-			break;
+			//break;
 		}
 
 		case VT_KEY_BACKSPACE:
@@ -808,7 +814,7 @@ void ViewportPanel::CheckDragDrop()
 				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
 				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(resultHandle);
 				if (mesh)
-				{
+				{ 
 					meshComp.handle = mesh->handle;
 				}
 			}
@@ -816,10 +822,8 @@ void ViewportPanel::CheckDragDrop()
 			{
 				myEntityToAddMesh = newEntity.GetId();
 
-				myMeshImportData = {};
-				myMeshToImport = meshSourcePath;
-				myMeshImportData.destination = myMeshToImport.parent_path().string() + "\\" + myMeshToImport.stem().string() + ".vtmesh";
-				UI::OpenModal("Import Mesh##viewport");
+				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
+				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = meshSourcePath.stem().string();
@@ -1114,18 +1118,18 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 void ViewportPanel::UpdateModals()
 {
-	if (ImportState returnVal = EditorUtils::MeshImportModal("Import Mesh##viewport", myMeshImportData, myMeshToImport); returnVal == ImportState::Imported)
-	{
-		Volt::Entity tempEnt{ myEntityToAddMesh, myEditorScene.get() };
+	//if (ImportState returnVal = EditorUtils::MeshImportModal("Import Mesh##viewport", myMeshImportData, myMeshToImport); returnVal == ImportState::Imported)
+	//{
+	//	Volt::Entity tempEnt{ myEntityToAddMesh, myEditorScene.get() };
 
-		auto& meshComp = tempEnt.AddComponent<Volt::MeshComponent>();
-		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myMeshImportData.destination);
-		Volt::AssetManager::Get().SaveAsset(mesh);
-		if (mesh)
-		{
-			meshComp.handle = mesh->handle;
-		}
-	}
+	//	auto& meshComp = tempEnt.AddComponent<Volt::MeshComponent>();
+	//	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myMeshImportData.destination);
+	//	Volt::AssetManager::Get().SaveAsset(mesh);
+	//	if (mesh)
+	//	{
+	//		meshComp.handle = mesh->handle;
+	//	}
+	//}
 
 	if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenSceneViewport"); returnState != SaveReturnState::None)
 	{
