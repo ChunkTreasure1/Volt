@@ -93,7 +93,7 @@ void EditorSettingsPanel::DrawVersionControl()
 {
 	auto& versionControlSettings = m_editorSettings.versionControlSettings;
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties())
 	{
 		UI::Property("Host", versionControlSettings.server);
@@ -138,7 +138,7 @@ void EditorSettingsPanel::DrawVersionControl()
 			workspaces.emplace_back("Empty");
 		}
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties())
 		{
 			int32_t currentWorkspace = m_currentWorkspace;
@@ -164,33 +164,33 @@ void EditorSettingsPanel::DrawVersionControl()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::SameLine();
 	}
 
-	UI::PopId();
+	UI::PopID();
 }
 
 void EditorSettingsPanel::DrawExternalTools()
 {
 	auto& externalToolsSettings = m_editorSettings.externalToolsSettings;
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties())
 	{
 		UI::Property("External Script Editor", externalToolsSettings.customExternalScriptEditor);
 
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 }
 
 void EditorSettingsPanel::DrawStyleSettings()
 {
 	float currentWindowOpacity = Volt::Application::Get().GetWindow().GetOpacity();
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties())
 	{
 		if (UI::Property("Window Opacity", currentWindowOpacity, true, 0.f, 1.f))
@@ -199,19 +199,19 @@ void EditorSettingsPanel::DrawStyleSettings()
 		}
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 }
 
 void EditorSettingsPanel::DrawEditorSettings()
 {
 	auto& sceneSettings = m_editorSettings.sceneSettings;
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties())
 	{
 		UI::Property("Low Memory Usage", sceneSettings.lowMemoryUsage);
 
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 }

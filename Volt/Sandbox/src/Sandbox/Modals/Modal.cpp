@@ -3,6 +3,8 @@
 
 #include <Volt/Utility/UIUtility.h>
 
+#include "Sandbox/Utility/Theme.h"
+
 Modal::Modal(const std::string& strId)
 	: m_strId(strId)
 {
@@ -33,6 +35,15 @@ bool Modal::Update()
 
 		m_wasOpenLastFrame = true;
 	}
+
+	// Default modal style
+	UI::ScopedColor backgroundColorChild{ ImGuiCol_PopupBg, EditorTheme::ToNormalizedRGB(26.f, 26.f, 26.f) };
+	UI::ScopedColor frameColor{ ImGuiCol_Header, EditorTheme::ToNormalizedRGB(47.f, 47.f, 47.f) };
+	UI::ScopedColor frameColorActive{ ImGuiCol_FrameBgActive, EditorTheme::ToNormalizedRGB(47.f, 47.f, 47.f) };
+	UI::ScopedColor frameColorHovered{ ImGuiCol_FrameBgHovered, EditorTheme::ToNormalizedRGB(47.f, 47.f, 47.f) };
+
+	// Default button style
+	UI::ScopedButtonColor defaultButtonColor{ EditorTheme::Buttons::DefaultButton };
 
 	const bool modalOpen = UI::BeginModal(m_strId, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize);
 

@@ -244,7 +244,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 			bool changed = false;
 
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties("Shader"))
 			{
 				if (UI::ComboProperty("Shader", selectedShader, shaderNames))
@@ -366,12 +366,12 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			UI::Header("Properties");
 			auto& materialData = mySelectedSubMaterial->GetMaterialData();
 
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties("Material Data"))
 			{
 				changed |= UI::PropertyColor("Color", materialData.color);
@@ -383,7 +383,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			if (changed)
 			{
@@ -436,7 +436,7 @@ void MaterialEditorPanel::UpdateProperties()
 			UI::Header("Textures");
 			const auto& textureDefinitions = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetResources().shaderTextureDefinitions;
 
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties("Textures"))
 			{
 				const auto& textures = mySelectedSubMaterial->GetTextures();
@@ -543,7 +543,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			if (mySelectedSubMaterial->GetMaterialSpecializationData().IsValid())
 			{
@@ -551,7 +551,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::Header("Material Parameters");
 
-				UI::PushId();
+				UI::PushID();
 				if (UI::BeginProperties("materialParams"))
 				{
 					auto& materialSpecializationParams = mySelectedSubMaterial->GetMaterialSpecializationData();
@@ -585,7 +585,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 					UI::EndProperties();
 				}
-				UI::PopId();
+				UI::PopID();
 			}
 
 			auto& pipelineGenerationDatas = mySelectedSubMaterial->GetPipelineGenerationDatas();
@@ -596,13 +596,13 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::Header("Pipeline Generation");
 
-				UI::PushId();
+				UI::PushID();
 				for (auto& [stage, pipelineGenerationParams] : pipelineGenerationDatas)
 				{
 					if (pipelineGenerationParams.IsValid())
 					{
 						bool dataChanged = false;
-						const uint32_t id = UI::GetId();
+						const uint32_t id = UI::GetID();
 
 						if (UI::BeginProperties("pipelineGeneration" + std::to_string(id)))
 						{
@@ -637,7 +637,7 @@ void MaterialEditorPanel::UpdateProperties()
 						}
 					}
 				}
-				UI::PopId();
+				UI::PopID();
 			}
 		}
 	}

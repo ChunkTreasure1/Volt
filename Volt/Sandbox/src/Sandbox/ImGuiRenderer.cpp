@@ -760,7 +760,7 @@ void Sandbox::SaveSceneAsModal()
 
 	if (UI::BeginModal("Save As"))
 	{
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("saveSceneAs"))
 		{
 			UI::Property("Name", mySaveSceneData.name);
@@ -768,7 +768,7 @@ void Sandbox::SaveSceneAsModal()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::PushItemWidth(80.f);
 		if (ImGui::Button("Save"))
@@ -823,7 +823,7 @@ void Sandbox::BuildGameModal()
 
 	if (UI::BeginModal("Build", ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("buildData"))
 		{
 			UI::PropertyDirectory("Build Path", myBuildInfo.buildDirectory);
@@ -837,16 +837,16 @@ void Sandbox::BuildGameModal()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		if (ImGui::Button("Add Scene"))
 		{
 			myBuildInfo.sceneHandles.emplace_back();
 		}
 
-		UI::PushId();
+		UI::PushID();
 		ImGui::Checkbox("Compile C# ##buildmodal", &compileCS);
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::PushItemWidth(80.f);
 		if (ImGui::Button("Build"))

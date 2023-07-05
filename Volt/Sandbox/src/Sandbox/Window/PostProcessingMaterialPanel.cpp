@@ -52,7 +52,7 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 		selectedShader = (int32_t)std::distance(shaderNames.begin(), it);
 	}
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties("Shader"))
 	{
 		if (UI::ComboProperty("Shader", selectedShader, shaderNames))
@@ -65,11 +65,11 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 		}
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 
 	UI::Header("Textures");
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties("Textures"))
 	{
 		auto& textures = myCurrentMaterial->GetTexturesMutable();
@@ -98,7 +98,7 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 
 	if (myCurrentMaterial->GetMaterialData().IsValid())
 	{
@@ -106,7 +106,7 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 
 		UI::Header("Material Parameters");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("materialParams"))
 		{
 			auto& materialSpecializationParams = myCurrentMaterial->GetMaterialData();
@@ -135,7 +135,7 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 	}
 }
 

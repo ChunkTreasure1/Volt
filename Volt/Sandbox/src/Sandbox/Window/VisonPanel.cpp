@@ -76,11 +76,11 @@ void VisionPanel::UpdateCameraProperties()
 {
 	ImGui::Begin("Camera Properties", nullptr, ImGuiWindowFlags_NoTabBar);
 
-	UI::PushId();
+	UI::PushID();
 
 	if (mySelectedCamera == -1 || myVisionCams[mySelectedCamera].IsNull())
 	{
-		UI::PopId();
+		UI::PopID();
 		ImGui::End();
 		return;
 	}
@@ -235,7 +235,7 @@ void VisionPanel::UpdateCameraProperties()
 		}
 	}
 
-	UI::PopId();
+	UI::PopID();
 
 	ImGui::End();
 }

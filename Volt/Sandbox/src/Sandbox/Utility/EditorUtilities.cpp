@@ -59,7 +59,7 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 	}
 
 
-	std::string textId = "##" + std::to_string(UI::GetId());
+	std::string textId = "##" + std::to_string(UI::GetID());
 	ImGui::InputTextString(textId.c_str(), &assetFileName, ImGuiInputTextFlags_ReadOnly);
 	ImGui::PopItemWidth();
 
@@ -81,7 +81,7 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 
 	ImGui::SameLine();
 
-	std::string buttonId = "X##" + std::to_string(UI::GetId());
+	std::string buttonId = "X##" + std::to_string(UI::GetID());
 	if (ImGui::Button(buttonId.c_str(), { 24.5f, 24.5f }))
 	{
 		assetHandle = Volt::Asset::Null();
@@ -95,8 +95,8 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 	ImGui::SameLine();
 
 
-	std::string selectButtonId = "...##" + std::to_string(UI::GetId());
-	std::string popupId = "AssetsPopup##" + text + std::to_string(UI::GetId());
+	std::string selectButtonId = "...##" + std::to_string(UI::GetID());
+	std::string popupId = "AssetsPopup##" + text + std::to_string(UI::GetID());
 	const bool startState = s_assetBrowserPopupsOpen[popupId].state;
 
 	if (ImGui::Button(selectButtonId.c_str(), { 24.5f, 24.5f }))
@@ -151,7 +151,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 
 		ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().WindowPadding.x);
 
-		UI::PushId();
+		UI::PushID();
 
 		if (setAsActive)
 		{
@@ -170,7 +170,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 				outHasSearchQuery = false;
 			}
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::PopItemWidth();
 	}
@@ -410,7 +410,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 		ImGui::TextUnformatted("Settings");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Properties"))
 		{
 			UI::Property("Source", srcPath, true);
@@ -418,12 +418,12 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::Separator();
 		ImGui::TextUnformatted("Mesh");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Settings"))
 		{
 			UI::Property("Import Mesh", aImportData.importMesh);
@@ -455,7 +455,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		if (ImGui::Button("Import"))
 		{
@@ -582,19 +582,19 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 	{
 		ImGui::TextUnformatted("Settings");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Properties"))
 		{
 			UI::Property("Destination Directory", aImportData.destination);
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::Separator();
 		ImGui::TextUnformatted("Mesh");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Settings"))
 		{
 			UI::Property("Create Materials", aImportData.createMaterial);
@@ -606,7 +606,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		if (ImGui::Button("Import"))
 		{

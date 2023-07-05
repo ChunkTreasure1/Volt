@@ -141,7 +141,7 @@ void PropertiesPanel::UpdateMainContent()
 			inputText = "...";
 		}
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::InputText("Name", inputText))
 		{
 			for (auto& entity : SelectionManager::GetSelectedEntities())
@@ -152,12 +152,12 @@ void PropertiesPanel::UpdateMainContent()
 				}
 			}
 		}
-		UI::PopId();
+		UI::PopID();
 	}
 
 	// Transform
 	{
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Transform"))
 		{
 			auto& entity = SelectionManager::GetSelectedEntities().front();
@@ -250,7 +250,7 @@ void PropertiesPanel::UpdateMainContent()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 	}
 
 	// Visual Scripting
@@ -353,7 +353,7 @@ void PropertiesPanel::UpdateMainContent()
 
 				const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
 
-				UI::PushId();
+				UI::PushID();
 				if (!isExcluded && UI::BeginProperties(registryInfo.name))
 				{
 					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
@@ -452,7 +452,7 @@ void PropertiesPanel::UpdateMainContent()
 					}
 				}
 
-				UI::PopId();
+				UI::PopID();
 				UI::TreeNodePop();
 			}
 
@@ -522,7 +522,7 @@ void PropertiesPanel::UpdateMainContent()
 
 			if (open)
 			{
-				UI::PushId();
+				UI::PushID();
 				if (registryInfo.name != "ScriptComponent" && UI::BeginProperties(registryInfo.name))
 				{
 					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
@@ -757,7 +757,7 @@ void PropertiesPanel::UpdateMainContent()
 						//Volt::EnvironmentProbe::Generate(myCurrentScene, entity, myCurrentSceneRenderer);
 					}
 				}
-				UI::PopId();
+				UI::PopID();
 
 				UI::TreeNodePop();
 			}
@@ -1122,11 +1122,11 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const W
 
 	if (open)
 	{
-		UI::PushId();
+		UI::PushID();
 
 		DrawMonoProperties(registry, registryInfo, scriptEntry);
 
-		UI::PopId();
+		UI::PopID();
 		UI::TreeNodePop();
 	}
 
@@ -1522,7 +1522,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							UI::PopFont();
 						}
 
-						auto id = UI::GetId();
+						auto id = UI::GetID();
 						std::string strId = "##" + name + std::to_string(id);
 
 						if (ImGui::BeginPopupContextItem(strId.c_str(), ImGuiPopupFlags_MouseButtonRight))
@@ -1557,7 +1557,7 @@ void PropertiesPanel::DrawGraphKeyProperties(const Wire::EntityId id, Volt::Visu
 
 	if (open)
 	{
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("GraphKey"))
 		{
 			for (auto& var : comp.graph->GetBlackboard())
@@ -1567,7 +1567,7 @@ void PropertiesPanel::DrawGraphKeyProperties(const Wire::EntityId id, Volt::Visu
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 		UI::TreeNodePop();
 	}
 
