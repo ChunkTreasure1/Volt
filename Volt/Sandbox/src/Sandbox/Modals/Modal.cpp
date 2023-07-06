@@ -30,8 +30,11 @@ bool Modal::Update()
 {
 	if (!m_wasOpenLastFrame)
 	{
-		const auto viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->GetCenter());
+		//const auto viewport = ImGui::GetMainViewport();
+		//const auto windowSize = ImGui::GetWindowSize();
+
+		//const ImVec2 targetPos = viewport->GetCenter() - ImVec2{ windowSize.x / 2.f, windowSize.y / 2.f };
+		//ImGui::SetNextWindowPos(targetPos);
 
 		m_wasOpenLastFrame = true;
 	}

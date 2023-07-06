@@ -67,18 +67,13 @@ namespace Utility
 PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
 {
-	myIsOpen = true;
+	m_isOpen = true;
 	myMaxEventListSize = 20;
 	myLastValue = std::make_shared<PropertyEvent>();
 }
 
 void PropertiesPanel::UpdateMainContent()
 {
-	//if (myTitle.contains('#'))
-	//{
-	//	SelectionManager::SetSelectionKey(myId);
-	//}
-
 	if (myMidEvent == true)
 	{
 		if (ImGui::IsMouseReleased(0))
@@ -86,8 +81,6 @@ void PropertiesPanel::UpdateMainContent()
 			myMidEvent = false;
 		}
 	}
-
-	UI::ScopedStyleFloat rounding{ ImGuiStyleVar_FrameRounding, 2.f };
 
 	if (!SelectionManager::IsAnySelected())
 	{
@@ -318,7 +311,7 @@ void PropertiesPanel::UpdateMainContent()
 			}
 
 			bool removeComp = false;
-			bool open = UI::TreeNodeFramed(registryInfo.name, true, 2.f);
+			bool open = UI::CollapsingHeader(registryInfo.name);
 			float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 			float availRegion = ImGui::GetContentRegionAvail().x;
 
@@ -453,7 +446,6 @@ void PropertiesPanel::UpdateMainContent()
 				}
 
 				UI::PopID();
-				UI::TreeNodePop();
 			}
 
 			if (removeComp)
@@ -495,7 +487,7 @@ void PropertiesPanel::UpdateMainContent()
 			}
 
 			bool removeComp = false;
-			bool open = UI::TreeNodeFramed(registryInfo.name, true, 2.f);
+			bool open = UI::CollapsingHeader(registryInfo.name);
 			float buttonSize = 21.f + GImGui->Style.FramePadding.y;
 			float availRegion = ImGui::GetContentRegionAvail().x;
 
@@ -750,16 +742,7 @@ void PropertiesPanel::UpdateMainContent()
 					UI::EndProperties();
 				}
 
-				if (registryInfo.name == "EnvironmentProbeComponent")
-				{
-					if (ImGui::Button("Generate"))
-					{
-						//Volt::EnvironmentProbe::Generate(myCurrentScene, entity, myCurrentSceneRenderer);
-					}
-				}
 				UI::PopID();
-
-				UI::TreeNodePop();
 			}
 
 			if (removeComp)
@@ -811,14 +794,12 @@ void PropertiesPanel::UpdateMainContent()
 	AddComponentPopup();
 	AddMonoScriptPopup();
 	AcceptMonoDragDrop();
-
-	//SelectionManager::ResetSelectionKey();
 }
 
 void PropertiesPanel::AddComponentPopup()
 {
 	ImGui::SetNextWindowSize({ 250.f, 500.f });
-	if (UI::BeginPopup("AddComponent" + myId, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	if (UI::BeginPopup("AddComponent" + m_id, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 	{
 		const std::vector<std::string> skippedComponents = { "TagComponent", "PrefabComponent", "TransformComponent", "RelationshipComponent", "ScriptComponent", "MonoScriptComponent" };
 		std::vector<std::string> componentNames;
@@ -847,7 +828,7 @@ void PropertiesPanel::AddComponentPopup()
 		}
 
 		{
-			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
 
 			for (const auto& name : componentNames)
@@ -902,7 +883,7 @@ void PropertiesPanel::AddComponentPopup()
 void PropertiesPanel::AddMonoScriptPopup()
 {
 	ImGui::SetNextWindowSize({ 250.f, 500.f });
-	if (UI::BeginPopup("AddMonoScript" + myId))
+	if (UI::BeginPopup("AddMonoScript" + m_id))
 	{
 		const auto& scriptInfo = Volt::MonoScriptEngine::GetRegisteredClasses();
 
@@ -937,7 +918,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 		bool addedScript = false;
 
 		{
-			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
 
 			for (const auto& name : scriptNames)
@@ -1079,7 +1060,7 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const W
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
 	bool removeComp = false;
-	bool open = UI::TreeNodeFramed(scriptClassName + " Script", true, 2.f);
+	bool open = UI::CollapsingHeader(scriptClassName + " Script");
 	float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 	float availRegion = ImGui::GetContentRegionAvail().x;
 
@@ -1127,7 +1108,6 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const W
 		DrawMonoProperties(registry, registryInfo, scriptEntry);
 
 		UI::PopID();
-		UI::TreeNodePop();
 	}
 
 	if (removeComp)
@@ -1553,7 +1533,7 @@ void PropertiesPanel::DrawGraphKeyProperties(const Wire::EntityId id, Volt::Visu
 		return;
 	}
 
-	bool open = UI::TreeNodeFramed("Graph Key", true, 2.f);
+	bool open = UI::CollapsingHeader("Graph Key");
 
 	if (open)
 	{
@@ -1568,7 +1548,6 @@ void PropertiesPanel::DrawGraphKeyProperties(const Wire::EntityId id, Volt::Visu
 			UI::EndProperties();
 		}
 		UI::PopID();
-		UI::TreeNodePop();
 	}
 
 }

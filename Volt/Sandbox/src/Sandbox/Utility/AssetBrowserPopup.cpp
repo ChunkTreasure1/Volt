@@ -35,7 +35,7 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 			}
 		}
 
-		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
 			const std::vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);

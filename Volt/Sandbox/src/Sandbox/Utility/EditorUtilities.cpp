@@ -135,7 +135,7 @@ bool EditorUtils::AssetBrowserPopupField(const std::string& id, Volt::AssetHandl
 
 bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery, bool setAsActive)
 {
-	UI::ScopedColor childColor{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+	UI::ScopedColor childColor{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 	UI::ScopedStyleFloat rounding(ImGuiStyleVar_ChildRounding, 2.f);
 
 	constexpr float barHeight = 32.f;

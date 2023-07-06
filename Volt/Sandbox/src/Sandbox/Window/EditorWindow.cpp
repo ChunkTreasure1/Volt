@@ -2,63 +2,69 @@
 #include "EditorWindow.h"
 
 EditorWindow::EditorWindow(const std::string& title, bool dockSpace, std::string id)
-	: myTitle(title + id), myHasDockSpace(dockSpace), myId(id)
+	: m_title(title + id), m_hasDockspace(dockSpace), m_id(id)
 {
 }
 
 bool EditorWindow::Begin()
 {
-	if (!myIsOpen && myPreviousFrameOpen)
+	if (!m_isOpen && m_previousFrameOpen)
 	{
 		OnClose();
-		myPreviousFrameOpen = false;
+		m_previousFrameOpen = false;
 
 		return false;
 	}
 
-	if (!myIsOpen)
+	if (!m_isOpen)
 	{
 		return false;
 	}
 
-	if (myHasDockSpace)
+	if (m_hasDockspace)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	}
 
 	bool minSize = false;
-	if (myMinSize.x != -1.f || myMinSize.y != -1.f)
+	if (m_minSize.x != -1.f || m_minSize.y != -1.f)
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, myMinSize);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, m_minSize);
 		minSize = true;
 	}
 
-	myPreviousFrameOpen = myIsOpen;
-	ImGui::Begin(myTitle.c_str(), &myIsOpen, myWindowFlags);
+	if (m_isFullscreenImage)
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
+	}
+
+	m_previousFrameOpen = m_isOpen;
+	ImGui::Begin(m_title.c_str(), &m_isOpen, m_windowFlags);
 
 	if (minSize)
 	{
 		ImGui::PopStyleVar();
 	}
 
-	if (myHasDockSpace)
+	if (m_hasDockspace)
 	{
 		ImGui::PopStyleVar();
 
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			ImGuiID dockspace_id = ImGui::GetID(myTitle.c_str());
-			myMainDockId = ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
+			ImGuiID dockspace_id = ImGui::GetID(m_title.c_str());
+			m_mainDockID = ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_AutoHideTabBar);
 
-			myWindowClass.ClassId = dockspace_id;
-			myWindowClass.DockingAllowUnclassed = false;
+			m_windowClass.ClassId = dockspace_id;
+			m_windowClass.DockingAllowUnclassed = false;
 		}
 	}
 
-	myIsFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-	myIsHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-	myIsDocked = ImGui::IsWindowDocked();
+	m_isFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+	m_isHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+	m_isDockspace = ImGui::IsWindowDocked();
 
 	return true;
 }
@@ -66,28 +72,33 @@ bool EditorWindow::Begin()
 void EditorWindow::End()
 {
 	ImGui::End();
+
+	if (m_isFullscreenImage)
+	{
+		ImGui::PopStyleVar(2);
+	}
 }
 
 void EditorWindow::Open()
 {
-	myIsOpen = true;
+	m_isOpen = true;
 	OnOpen();
 }
 
 void EditorWindow::Close()
 {
-	myIsOpen = false;
+	m_isOpen = false;
 	OnClose();
 }
 
 void EditorWindow::SetMinWindowSize(ImVec2 minSize)
 {
-	myMinSize = minSize;
+	m_minSize = minSize;
 }
 
 void EditorWindow::Focus()
 {
-	auto window = ImGui::FindWindowByName(myTitle.c_str());
+	auto window = ImGui::FindWindowByName(m_title.c_str());
 	if (window)
 	{
 		ImGui::FocusWindow(window);
@@ -96,28 +107,28 @@ void EditorWindow::Focus()
 
 bool EditorWindow::IsDocked() const
 {
-	return myIsDocked;
+	return m_isDockspace;
 }
 
 void EditorWindow::ForceWindowDocked(ImGuiWindow* childWindow)
 {
-	if (myMainDockId == 0)
+	if (m_mainDockID == 0)
 	{
 		return;
 	}
 
 	if (childWindow->DockNode && childWindow->DockNode->ParentNode)
 	{
-		myDockIds[childWindow->ID] = childWindow->DockNode->ParentNode->ID;
+		m_dockIDs[childWindow->ID] = childWindow->DockNode->ParentNode->ID;
 	}
 
 	if (!childWindow->DockIsActive && !ImGui::IsAnyMouseDown() && !childWindow->DockNode && !childWindow->DockNodeIsVisible)
 	{
-		if (!myDockIds[childWindow->ID])
+		if (!m_dockIDs[childWindow->ID])
 		{
-			myDockIds[childWindow->ID] = myMainDockId;
+			m_dockIDs[childWindow->ID] = m_mainDockID;
 		}
 
-		ImGui::SetWindowDock(childWindow, myDockIds[childWindow->ID], ImGuiCond_Always);
+		ImGui::SetWindowDock(childWindow, m_dockIDs[childWindow->ID], ImGuiCond_Always);
 	}
 }

@@ -27,6 +27,8 @@ void MeshImportModal::Clear()
 
 void MeshImportModal::DrawModalContent()
 {
+	UI::ScopedStyleFloat indentSpacing{ ImGuiStyleVar_IndentSpacing, { 0.f }};
+
 	ImGui::Text("Importing %s", GetStringFromImportType(m_currentImportType).c_str());
 
 	if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
@@ -43,7 +45,7 @@ void MeshImportModal::DrawModalContent()
 
 	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (UI::BeginProperties("transformOptions"))
+		if (UI::BeginProperties("options"))
 		{
 			UI::PropertyAxisColor("Import Translation", m_importOptions.translation, 0.f);
 			UI::PropertyAxisColor("Import Rotation", m_importOptions.rotation, 0.f);

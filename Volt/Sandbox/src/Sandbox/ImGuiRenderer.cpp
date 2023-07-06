@@ -470,7 +470,7 @@ float Sandbox::DrawTitlebar()
 	const ImVec2 titlebarMax = { ImGui::GetCursorScreenPos().x + ImGui::GetWindowWidth() - windowPadding.y * 2.0f,
 								 ImGui::GetCursorScreenPos().y + titlebarHeight };
 	auto* drawList = ImGui::GetWindowDrawList();
-	drawList->AddRectFilled(titlebarMin, titlebarMax, ImColor(0.2f, 0.2f, 0.2f, 1.000f));
+	drawList->AddRectFilled(titlebarMin, titlebarMax, ImColor{ EditorTheme::DarkGreyBackground });
 
 	const float buttonSize = 13.f;
 	const float iconSize = 40.f;

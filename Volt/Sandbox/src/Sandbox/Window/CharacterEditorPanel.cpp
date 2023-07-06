@@ -31,7 +31,7 @@
 CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
-	myWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	m_windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	myScene = Volt::Scene::CreateDefaultScene("Character Editor", false);
@@ -278,7 +278,7 @@ void CharacterEditorPanel::UpdateViewport()
 	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
-	ImGui::SetNextWindowDockID(myMainDockId, ImGuiCond_Always);
+	ImGui::SetNextWindowDockID(m_mainDockID, ImGuiCond_Always);
 	ImGui::SetNextWindowClass(GetWindowClass());
 
 	ImGui::Begin("Viewport##charEdit");
@@ -881,7 +881,7 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 		{
 			auto& jointAttachments = const_cast<std::vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
 
-			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
 
 			for (const auto& name : jointNames)

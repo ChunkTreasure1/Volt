@@ -82,7 +82,7 @@ private:
 	const std::vector<float> m_snapScaleValues = { 0.01f, 0.1f, 0.25f, 0.5f, 1.f };
 
 	glm::vec2 myViewportMouseCoords;
-	bool myMidEvent;
+	bool m_midEvent;
 
 	bool myCreatedAssetOnDrag = false;
 	bool myIsInViewport = false;

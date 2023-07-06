@@ -57,8 +57,8 @@
 AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id)
 	: EditorWindow("Asset Browser" + id), myEditorScene(aScene)
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myIsOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_isOpen = true;
 
 	SetMinWindowSize({ 700.f, 300.f });
 
@@ -383,7 +383,7 @@ bool AssetBrowserPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 	{
 		case VT_KEY_DELETE:
 		{
-			if (myIsFocused && mySelectionManager->IsAnySelected())
+			if (m_isFocused && mySelectionManager->IsAnySelected())
 			{
 				myShouldDeleteSelected = true;
 			}

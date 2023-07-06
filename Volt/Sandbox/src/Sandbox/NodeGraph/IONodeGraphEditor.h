@@ -1051,7 +1051,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 			myActivateSearchWidget = false;
 		}
 
-		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 		ImGui::BeginChild("Scrollable", ImGui::GetContentRegionAvail());
 		{
 			for (const auto& [category, names] : nodeCategories)

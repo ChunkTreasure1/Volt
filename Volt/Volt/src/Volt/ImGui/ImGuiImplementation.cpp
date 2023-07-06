@@ -44,6 +44,11 @@ namespace Volt
 				VT_CORE_ASSERT(result == VK_SUCCESS, "");
 			}
 		}
+
+		inline static ImVec4 ToNormalizedRGB(float r, float g, float b, float a = 255.f)
+		{
+			return ImVec4{ r / 255.f, g / 255.f, b / 255.f, a / 255.f };
+		}
 	}
 
 	void MergeIconsWithLatestFont(float font_size)
@@ -140,10 +145,12 @@ namespace Volt
 			style.WindowRounding = 0.f;
 		}
 
+		const ImVec4 MAIN_BACKGROUND = Utility::ToNormalizedRGB(26.f, 26.f, 26.f);
+
 		style.Colors[ImGuiCol_Text] = ImVec4(1.000f, 1.000f, 1.000f, 1.000f);
 		style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.500f, 0.500f, 0.500f, 1.000f);
 
-		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.23f, 0.23f, 0.23f, 1.000f);
+		style.Colors[ImGuiCol_WindowBg] = MAIN_BACKGROUND;
 		style.Colors[ImGuiCol_ChildBg] = ImVec4(0.280f, 0.280f, 0.280f, 0.000f);
 		style.Colors[ImGuiCol_PopupBg] = ImVec4(0.313f, 0.313f, 0.313f, 1.000f);
 

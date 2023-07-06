@@ -13,7 +13,7 @@
 VisionPanel::VisionPanel(Ref<Volt::Scene>& aScene, EditorCameraController* aEditorCamera)
 	:EditorWindow("Vision", true), myCurrentScene(aScene), myEditorCamera(aEditorCamera)
 {
-	myWindowFlags = ImGuiWindowFlags_MenuBar;
+	m_windowFlags = ImGuiWindowFlags_MenuBar;
 }
 
 void VisionPanel::UpdateMainContent()

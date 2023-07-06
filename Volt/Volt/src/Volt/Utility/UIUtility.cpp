@@ -8,6 +8,9 @@
 #include <backends/imgui_impl_dx11.h>
 #include <backends/imgui_impl_vulkan.h>
 
+inline static constexpr float PROPERTY_ROW_HEIGHT = 17.f;
+inline static constexpr float PROPERTY_ROW_PADDING = 4.f;
+
 ImTextureID UI::GetTextureID(Ref<Volt::Texture2D> texture)
 {
 	ImTextureID id = ImGui_ImplVulkan_AddTexture(texture->GetImage()->GetSampler(), texture->GetImage()->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -97,7 +100,7 @@ bool UI::InputText(const std::string& name, std::string& text, ImGuiInputTextFla
 
 void UI::PushFont(FontType font)
 {
-	ImGui::PushFont(myFonts.at(font));
+	ImGui::PushFont(s_fonts.at(font));
 }
 
 void UI::PopFont()
@@ -213,10 +216,12 @@ void UI::RenderHighlightedBackground(const glm::vec4& color, float height)
 bool UI::IsPropertyRowHovered()
 {
 	const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
-	const ImVec2 rowAreaMax = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max;
+	const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + PROPERTY_ROW_HEIGHT + PROPERTY_ROW_PADDING * 2.f };
 
 	ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
 	const bool isRowHovered = ImGui::IsMouseHoveringRect(rowAreaMin, rowAreaMax, true);
+	ImGui::PopClipRect();
+
 	return isRowHovered;
 }
 
@@ -241,8 +246,18 @@ void UI::SetRowColor(const glm::vec4& color)
 	{
 		ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImColor{ color.x, color.y, color.z, color.w }, i);
 	}
+}
 
-	//ImGui::TableSetColumnIndex(0);
+void UI::BeginPropertyRow()
+{
+	auto* window = ImGui::GetCurrentWindow();
+	window->DC.CurrLineSize.y = PROPERTY_ROW_HEIGHT;
+
+	ImGui::TableNextRow(0, PROPERTY_ROW_HEIGHT);
+	ImGui::TableNextColumn();
+	window->DC.CurrLineTextBaseOffset = 3.f;
+
+	SetPropertyBackgroundColor();
 }
 
 bool UI::InputTextWithHint(const std::string& name, std::string& text, const std::string& hint, ImGuiInputTextFlags_ flags /* = ImGuiInputTextFlags_None */)
@@ -497,6 +512,18 @@ void UI::EndMenuBar()
 
 bool UI::BeginProperties(const std::string& name, const ImVec2 size)
 {
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+	ImGui::PushStyleColor(ImGuiCol_Border, { 49.f / 255.f, 49.f / 255.f, 49.f / 255.f, 1.f });
+
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
+	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
+	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
+
+	ImGui::PushStyleColor(ImGuiCol_Separator, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
+	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
+	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
+
 	bool open = ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable, size);
 
 	if (open)
@@ -511,15 +538,15 @@ bool UI::BeginProperties(const std::string& name, const ImVec2 size)
 void UI::EndProperties()
 {
 	ImGui::EndTable();
+	ImGui::PopStyleColor(7);
+	ImGui::PopStyleVar(2);
 }
 
 bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vector<const char*>& items, float width)
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 
@@ -690,9 +717,7 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 
@@ -726,6 +751,11 @@ void UI::TreeNodePop()
 	ImGui::TreePop();
 }
 
+bool UI::CollapsingHeader(const std::string& label, ImGuiTreeNodeFlags flags)
+{
+	return ImGui::CollapsingHeader(label.c_str(), flags);
+}
+
 bool UI::ImageButton(const std::string& id, ImTextureID textureId, const ImVec2& size, const ImVec4& bg_col, const ImVec4& tint_col)
 {
 	ImGuiContext& g = *GImGui;
@@ -746,9 +776,7 @@ bool UI::ImageButton(const std::string& id, ImTextureID textureId, const ImVec2&
 
 void UI::PropertyInfoString(const std::string& key, const std::string& info)
 {
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(key.c_str());
 
@@ -763,8 +791,8 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 	bool changed = false;
 
 	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
 	ImGui::TableNextColumn();
+	SetPropertyBackgroundColor();
 
 	ImGui::Text(text.c_str());
 
@@ -904,9 +932,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::Text(text.c_str());
 
@@ -989,9 +1015,7 @@ bool UI::Property(const std::string& text, bool& value, std::function<void(bool&
 {
 	bool changed = false;
 
-	ImGui::TableNextRow(0, 15.f);
-	ImGui::TableNextColumn();
-	SetPropertyBackgroundColor();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1015,9 +1039,7 @@ bool UI::Property(const std::string& text, int32_t& value, std::function<void(in
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1044,9 +1066,7 @@ bool UI::Property(const std::string& text, uint32_t& value, std::function<void(u
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1073,9 +1093,7 @@ bool UI::Property(const std::string& text, int16_t& value, std::function<void(in
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1102,9 +1120,7 @@ bool UI::Property(const std::string& text, uint16_t& value, std::function<void(u
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1131,9 +1147,7 @@ bool UI::Property(const std::string& text, int8_t& value, std::function<void(int
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1160,9 +1174,7 @@ bool UI::Property(const std::string& text, uint8_t& value, std::function<void(ui
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1189,9 +1201,7 @@ bool UI::Property(const std::string& text, double& value, std::function<void(dou
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1218,9 +1228,7 @@ bool UI::Property(const std::string& text, float& value, bool useMinMax, float m
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1266,9 +1274,7 @@ bool UI::Property(const std::string& text, glm::vec2& value, float min, float ma
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1295,9 +1301,7 @@ bool UI::Property(const std::string& text, glm::vec3& value, float min, float ma
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1324,9 +1328,7 @@ bool UI::Property(const std::string& text, glm::vec4& value, float min, float ma
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1353,9 +1355,7 @@ bool UI::Property(const std::string& text, glm::uvec2& value, uint32_t min, uint
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1382,9 +1382,7 @@ bool UI::Property(const std::string& text, glm::uvec3& value, uint32_t min, uint
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1411,9 +1409,7 @@ bool UI::Property(const std::string& text, glm::uvec4& value, uint32_t min, uint
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1440,9 +1436,7 @@ bool UI::Property(const std::string& text, glm::ivec2& value, uint32_t min, uint
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1469,9 +1463,7 @@ bool UI::Property(const std::string& text, glm::ivec3& value, uint32_t min, uint
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1498,9 +1490,7 @@ bool UI::Property(const std::string& text, glm::ivec4& value, uint32_t min, uint
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1527,9 +1517,7 @@ bool UI::PropertyDragFloat(const std::string& text, float& value, float incremen
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1566,9 +1554,7 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1590,9 +1576,7 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1672,9 +1656,7 @@ bool UI::Property(const std::string& text, const std::string& value, bool readOn
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1700,9 +1682,7 @@ bool UI::Property(const std::string& text, std::string& value, bool readOnly, st
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1724,9 +1704,7 @@ bool UI::Property(const std::string& text, std::string& value, bool readOnly, st
 
 bool UI::PropertyColor(const std::string& text, glm::vec4& value, std::function<void(glm::vec4& value)> callback, const std::string& toolTip)
 {
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1749,9 +1727,7 @@ bool UI::PropertyColor(const std::string& text, glm::vec4& value, std::function<
 
 bool UI::PropertyColor(const std::string& text, glm::vec3& value, std::function<void(glm::vec3& value)> callback, const std::string& toolTip)
 {
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1776,9 +1752,7 @@ bool UI::Property(const std::string& text, std::filesystem::path& path, std::fun
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 	
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1821,9 +1795,7 @@ bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path,
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1866,9 +1838,7 @@ bool UI::PropertyMultiline(const std::string& text, std::string& value, bool rea
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
@@ -1888,9 +1858,7 @@ bool UI::PropertyPassword(const std::string& text, std::string& value, bool read
 {
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	SetPropertyBackgroundColor();
-	ImGui::TableNextColumn();
+	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);

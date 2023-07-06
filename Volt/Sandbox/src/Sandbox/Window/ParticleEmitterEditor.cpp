@@ -18,7 +18,7 @@
 ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");

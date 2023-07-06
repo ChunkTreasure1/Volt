@@ -16,6 +16,8 @@
 
 #include "Sandbox/EditorCommandStack.h"
 
+#include "Sandbox/Utility/Theme.h"
+
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/ParticlePreset.h>
@@ -45,9 +47,10 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 	: EditorWindow("Viewport"), mySceneRenderer(sceneRenderer), myEditorCameraController(cameraController), myEditorScene(editorScene),
 	mySceneState(aSceneState), myAnimatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
 {
-	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myMidEvent = false;
+	m_isOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_midEvent = false;
+	m_isFullscreenImage = true;
 
 	auto& meshModal = ModalSystem::AddModal<MeshImportModal>("Import Mesh##viewport");
 	m_meshImportModal = meshModal.GetID();
@@ -55,10 +58,6 @@ ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::
 
 void ViewportPanel::UpdateMainContent()
 {
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.f, 0.f });
-	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.07f, 0.07f, 0.07f, 1.f });
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -230,7 +229,7 @@ void ViewportPanel::UpdateMainContent()
 			}
 		}
 
-		myEditorCameraController->SetIsControllable(myIsHovered && !isUsing);
+		myEditorCameraController->SetIsControllable(m_isHovered && !isUsing);
 	}
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{
@@ -262,7 +261,6 @@ void ViewportPanel::UpdateMainContent()
 	}
 
 	ImGui::PopStyleColor();
-	ImGui::PopStyleVar(4);
 
 	UpdateModals();
 	CheckDragDrop();
@@ -271,16 +269,13 @@ void ViewportPanel::UpdateMainContent()
 
 void ViewportPanel::UpdateContent()
 {
-	if (myMidEvent && ImGui::IsMouseReleased(0))
+	if (m_midEvent && ImGui::IsMouseReleased(0))
 	{
-		myMidEvent = false;
+		m_midEvent = false;
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 2.f));
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.f, 0.f));
-	UI::ScopedColor button(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-	UI::ScopedColor hovered(ImGuiCol_ButtonHovered, { 0.3f, 0.305f, 0.31f, 0.5f });
-	UI::ScopedColor active(ImGuiCol_ButtonActive, { 0.5f, 0.505f, 0.51f, 0.5f });
+	UI::ScopedButtonColor transparent{ EditorTheme::Buttons::TransparentButton };
+	UI::ScopedColor background{ ImGuiCol_WindowBg, EditorTheme::MiddleGreyBackground };
 
 	ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar);
 
@@ -494,7 +489,7 @@ void ViewportPanel::UpdateContent()
 		ImGui::EndPopup();
 	}
 
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(1);
 	ImGui::End();
 }
 
@@ -514,7 +509,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 	{
 		case VT_MOUSE_BUTTON_RIGHT:
 		{
-			if (myIsHovered)
+			if (m_isHovered)
 			{
 				ImGui::SetWindowFocus("Viewport");
 			}
@@ -527,7 +522,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!myIsHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!m_isHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -724,7 +719,7 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 {
 	if (e.GetMouseButton() == VT_MOUSE_BUTTON_LEFT && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && GlobalEditorStates::dragStartedInAssetBrowser)
 	{
-		if (myIsHovered)
+		if (m_isHovered)
 		{
 			SelectionManager::DeselectAll();
 			SelectionManager::Select(myCreatedEntity.GetId());
@@ -1019,7 +1014,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 	auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(firstEntity);
 	auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(firstEntity);
 
-	if (myMidEvent == false)
+	if (m_midEvent == false)
 	{
 		GizmoCommand::GizmoData data;
 		data.positionAdress = &transComp.position;
@@ -1033,7 +1028,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::PushUndo(command);
-		myMidEvent = true;
+		m_midEvent = true;
 	}
 
 	glm::mat4 averageTransform = avgTransform;
@@ -1078,7 +1073,7 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 		auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId);
 		auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(entId);
 
-		if (!myMidEvent)
+		if (!m_midEvent)
 		{
 			previousTransforms.emplace_back(entId, transComp);
 		}
@@ -1109,7 +1104,7 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 	if (!previousTransforms.empty())
 	{
-		myMidEvent = true;
+		m_midEvent = true;
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myEditorScene, previousTransforms);
 		EditorCommandStack::PushUndo(command);

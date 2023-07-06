@@ -12,7 +12,7 @@
 EditorSettingsPanel::EditorSettingsPanel(EditorSettings& settings)
 	: EditorWindow("Editor Settings"), m_editorSettings(settings)
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 }
 
 void EditorSettingsPanel::UpdateMainContent()

@@ -9,7 +9,7 @@
 ShaderEditorPanel::ShaderEditorPanel()
 	: EditorWindow("Shader Editor", true)
 {
-	myWindowFlags = ImGuiWindowFlags_NoDocking;
+	m_windowFlags = ImGuiWindowFlags_NoDocking;
 }
 
 void ShaderEditorPanel::UpdateMainContent()

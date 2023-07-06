@@ -177,7 +177,7 @@ public:
 	public:
 		inline ScopedFont(FontType font)
 		{
-			ImGui::PushFont(myFonts.at(font));
+			ImGui::PushFont(s_fonts.at(font));
 		}
 
 		inline ~ScopedFont()
@@ -215,6 +215,8 @@ public:
 	static bool TreeNodeFramed(const std::string& text, bool alwaysOpen = false, float rounding = 0.f);
 	static bool TreeNodeWidth(const std::string& text, float width, float rounding = 0.f, ImGuiTreeNodeFlags flags = 0);
 	static void TreeNodePop();
+
+	static bool CollapsingHeader(const std::string& label, ImGuiTreeNodeFlags flags = 0);
 
 	static void SameLine(float offsetX = 0.f, float spacing = -1.f);
 
@@ -355,7 +357,7 @@ public:
 
 	inline static void SetFont(FontType type, ImFont* font)
 	{
-		myFonts[type] = font;
+		s_fonts[type] = font;
 	}
 
 	static void PushFont(FontType font);
@@ -371,8 +373,10 @@ private:
 	static bool IsPropertyRowHovered();
 	static void SetPropertyBackgroundColor();
 	static void SetRowColor(const glm::vec4& color);
+	static void BeginPropertyRow();
 
 	inline static uint32_t s_contextId = 0;
 	inline static uint32_t s_stackId = 0;
-	inline static std::unordered_map<FontType, ImFont*> myFonts;
+	inline static std::unordered_map<FontType, ImFont*> s_fonts;
+
 };

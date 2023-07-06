@@ -16,7 +16,8 @@ namespace EditorTheme
 		return ImVec4{ color.x, color.y, color.z, color.w };
 	}
 
-	inline static const glm::vec4 DarkBackground = { 0.2f, 0.2f, 0.2f, 1.f };
+	inline static const glm::vec4 DarkGreyBackground = ToNormalizedRGB(26.f, 26.f, 26.f);
+	inline static const glm::vec4 MiddleGreyBackground = ToNormalizedRGB(36.f, 36.f, 36.f);
 	inline static const glm::vec4 MatchingTextBackground = ToNormalizedRGB(139.f, 194.f, 74.f);
 
 	inline static const glm::vec4 ItemHovered = { 0.35f, 0.35f, 0.35f, 1.f };
@@ -38,5 +39,6 @@ namespace EditorTheme
 		inline static const UI::Button AddButton = { { 0.f, 0.78f, 0.25f, 1.f }, { 0.f, 0.98f, 0.31f, 1.f }, { 0.f, 0.78f, 0.25f, 1.f } };
 		inline static const UI::Button BlueButton = { ToNormalizedRGB(0.f, 112.f, 224.f), ToNormalizedRGB(14.f, 134.f, 225.f), ToNormalizedRGB(0.f, 80.f, 160.f) };
 		inline static const UI::Button DefaultButton = { ToNormalizedRGB(56.f, 56.f, 56.f), ToNormalizedRGB(87.f, 87.f, 87.f), ToNormalizedRGB(47.f, 47.f, 47.f) };
+		inline static const UI::Button TransparentButton = { { 0.f, 0.f, 0.f, 0.f }, { 0.3f, 0.305f, 0.31f, 0.5f }, { 0.5f, 0.505f, 0.51f, 0.5f } };
 	}
 }
