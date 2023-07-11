@@ -1,9 +1,12 @@
 #include "sbpch.h"
 #include "EditorWindow.h"
 
+#include "Sandbox/Utility/Theme.h"
+
 EditorWindow::EditorWindow(const std::string& title, bool dockSpace, std::string id)
 	: m_title(title + id), m_hasDockspace(dockSpace), m_id(id)
 {
+	m_backgroundColor = EditorTheme::DarkGreyBackground;
 }
 
 bool EditorWindow::Begin()
@@ -39,6 +42,8 @@ bool EditorWindow::Begin()
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	}
 
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ m_backgroundColor.x, m_backgroundColor.y, m_backgroundColor.z, m_backgroundColor.w });
+
 	m_previousFrameOpen = m_isOpen;
 	ImGui::Begin(m_title.c_str(), &m_isOpen, m_windowFlags);
 
@@ -72,6 +77,8 @@ bool EditorWindow::Begin()
 void EditorWindow::End()
 {
 	ImGui::End();
+
+	ImGui::PopStyleColor();
 
 	if (m_isFullscreenImage)
 	{

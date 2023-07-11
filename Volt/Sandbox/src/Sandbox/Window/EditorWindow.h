@@ -55,6 +55,7 @@ protected:
 	ImGuiWindowFlags m_nodePanelFlags = 0;
 
 	ImVec2 m_minSize = { -1.f, -1.f };
+	glm::vec4 m_backgroundColor = 0.f;
 
 	bool m_isOpen = false;
 	bool m_isFocused = false;

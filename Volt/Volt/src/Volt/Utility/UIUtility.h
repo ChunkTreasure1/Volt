@@ -236,6 +236,9 @@ public:
 	static bool BeginMenuBar(ImRect barRect);
 	static void EndMenuBar();
 
+	static bool BeginListView(const std::string& strId);
+	static void EndListView();
+
 	static bool BeginProperties(const std::string& name = "", const ImVec2 size = { 0, 0 });
 	static void EndProperties();
 
@@ -371,9 +374,11 @@ public:
 
 private:
 	static bool IsPropertyRowHovered();
+	static bool IsPropertyColumnHovered(const uint32_t column);
 	static void SetPropertyBackgroundColor();
 	static void SetRowColor(const glm::vec4& color);
 	static void BeginPropertyRow();
+	static void EndPropertyRow();
 
 	inline static uint32_t s_contextId = 0;
 	inline static uint32_t s_stackId = 0;

@@ -11,6 +11,11 @@
 inline static constexpr float PROPERTY_ROW_HEIGHT = 17.f;
 inline static constexpr float PROPERTY_ROW_PADDING = 4.f;
 
+inline static glm::vec4 ToNormalizedRGB(float r, float g, float b, float a = 255.f)
+{
+	return { r / 255.f, g / 255.f, b / 255.f, a / 255.f };
+}
+
 ImTextureID UI::GetTextureID(Ref<Volt::Texture2D> texture)
 {
 	ImTextureID id = ImGui_ImplVulkan_AddTexture(texture->GetImage()->GetSampler(), texture->GetImage()->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -225,6 +230,18 @@ bool UI::IsPropertyRowHovered()
 	return isRowHovered;
 }
 
+bool UI::IsPropertyColumnHovered(const uint32_t column)
+{
+	const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), static_cast<int32_t>(column)).Min;
+	const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), static_cast<int32_t>(column)).Max.x, rowAreaMin.y + PROPERTY_ROW_HEIGHT + PROPERTY_ROW_PADDING * 2.f };
+
+	ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
+	const bool isColumnHovered = ImGui::IsMouseHoveringRect(rowAreaMin, rowAreaMax, true);
+	ImGui::PopClipRect();
+
+	return isColumnHovered;
+}
+
 void UI::SetPropertyBackgroundColor()
 {
 	static const glm::vec4 PropertyBackground = { 36.f / 255.f, 36.f / 255.f, 36.f / 255.f, 1.f };
@@ -258,6 +275,20 @@ void UI::BeginPropertyRow()
 	window->DC.CurrLineTextBaseOffset = 3.f;
 
 	SetPropertyBackgroundColor();
+
+	if (IsPropertyColumnHovered(1))
+	{
+		static const glm::vec4 PropertyItemHovered = { 1.f };
+		ImGui::PushStyleColor(ImGuiCol_Border, PropertyItemHovered);
+	}
+}
+
+void UI::EndPropertyRow()
+{
+	if (IsPropertyColumnHovered(1))
+	{
+		ImGui::PopStyleColor(1);
+	}
 }
 
 bool UI::InputTextWithHint(const std::string& name, std::string& text, const std::string& hint, ImGuiInputTextFlags_ flags /* = ImGuiInputTextFlags_None */)
@@ -510,24 +541,39 @@ void UI::EndMenuBar()
 	window->DC.MenuBarAppending = false;
 }
 
+bool UI::BeginListView(const std::string& strId)
+{
+	const glm::vec4 BACKGROUND = ToNormalizedRGB(26.f, 26.f, 26.f);
+
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, BACKGROUND);
+
+	bool open = ImGui::BeginChild(strId.c_str(), ImGui::GetContentRegionAvail());
+	return open;
+}
+
+void UI::EndListView()
+{
+	ImGui::PopStyleColor();
+}
+
 bool UI::BeginProperties(const std::string& name, const ImVec2 size)
 {
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-	ImGui::PushStyleColor(ImGuiCol_Border, { 49.f / 255.f, 49.f / 255.f, 49.f / 255.f, 1.f });
-
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
-	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
-	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
-
-	ImGui::PushStyleColor(ImGuiCol_Separator, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
-	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
-	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
-
 	bool open = ImGui::BeginTable(name.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_Resizable, size);
 
 	if (open)
 	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
+		ImGui::PushStyleColor(ImGuiCol_Border, { 49.f / 255.f, 49.f / 255.f, 49.f / 255.f, 1.f });
+
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, { 15.f / 255.f, 15.f / 255.f, 15.f / 255.f, 1.f });
+
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
+		ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
+		ImGui::PushStyleColor(ImGuiCol_SeparatorActive, { 26.f / 255.f, 26.f / 255.f, 26.f / 255.f, 1.f });
+
 		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 0.3f);
 		ImGui::TableSetupColumn("Properties", ImGuiTableColumnFlags_WidthStretch);
 	}
@@ -567,6 +613,8 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -743,6 +791,8 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -782,6 +832,8 @@ void UI::PropertyInfoString(const std::string& key, const std::string& info)
 
 	ImGui::TableNextColumn();
 	ImGui::TextUnformatted(info.c_str());
+
+	EndPropertyRow();
 }
 
 bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue, std::function<void(glm::vec3& value)> callback)
@@ -790,9 +842,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 
 	bool changed = false;
 
-	ImGui::TableNextRow();
-	ImGui::TableNextColumn();
-	SetPropertyBackgroundColor();
+	BeginPropertyRow();
 
 	ImGui::Text(text.c_str());
 
@@ -923,6 +973,8 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 	ImGui::PopItemWidth();
 	ImGui::PopStyleVar();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1008,6 +1060,8 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 	ImGui::PopItemWidth();
 	ImGui::PopStyleVar();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1031,6 +1085,8 @@ bool UI::Property(const std::string& text, bool& value, std::function<void(bool&
 			callback(value);
 		}
 	}
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1059,6 +1115,8 @@ bool UI::Property(const std::string& text, int32_t& value, std::function<void(in
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1085,6 +1143,8 @@ bool UI::Property(const std::string& text, uint32_t& value, std::function<void(u
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1113,6 +1173,8 @@ bool UI::Property(const std::string& text, int16_t& value, std::function<void(in
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1139,6 +1201,8 @@ bool UI::Property(const std::string& text, uint16_t& value, std::function<void(u
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1167,6 +1231,8 @@ bool UI::Property(const std::string& text, int8_t& value, std::function<void(int
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1194,6 +1260,8 @@ bool UI::Property(const std::string& text, uint8_t& value, std::function<void(ui
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1220,6 +1288,8 @@ bool UI::Property(const std::string& text, double& value, std::function<void(dou
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1267,6 +1337,8 @@ bool UI::Property(const std::string& text, float& value, bool useMinMax, float m
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1293,6 +1365,8 @@ bool UI::Property(const std::string& text, glm::vec2& value, float min, float ma
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1321,6 +1395,8 @@ bool UI::Property(const std::string& text, glm::vec3& value, float min, float ma
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1347,6 +1423,8 @@ bool UI::Property(const std::string& text, glm::vec4& value, float min, float ma
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1375,6 +1453,8 @@ bool UI::Property(const std::string& text, glm::uvec2& value, uint32_t min, uint
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1401,6 +1481,8 @@ bool UI::Property(const std::string& text, glm::uvec3& value, uint32_t min, uint
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1429,6 +1511,8 @@ bool UI::Property(const std::string& text, glm::uvec4& value, uint32_t min, uint
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1455,6 +1539,8 @@ bool UI::Property(const std::string& text, glm::ivec2& value, uint32_t min, uint
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1483,6 +1569,8 @@ bool UI::Property(const std::string& text, glm::ivec3& value, uint32_t min, uint
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1509,6 +1597,8 @@ bool UI::Property(const std::string& text, glm::ivec4& value, uint32_t min, uint
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1547,6 +1637,8 @@ bool UI::PropertyDragFloat(const std::string& text, float& value, float incremen
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1568,6 +1660,8 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1611,6 +1705,9 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 	}
 
 	ImGui::PopItemWidth();
+	
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1649,6 +1746,9 @@ bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const flo
 	}
 
 	ImGui::PopItemWidth();
+
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1675,6 +1775,8 @@ bool UI::Property(const std::string& text, const std::string& value, bool readOn
 
 	ImGui::PopItemWidth();
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1699,6 +1801,8 @@ bool UI::Property(const std::string& text, std::string& value, bool readOnly, st
 		}
 	}
 
+	EndPropertyRow();
+
 	return changed;
 }
 
@@ -1722,6 +1826,8 @@ bool UI::PropertyColor(const std::string& text, glm::vec4& value, std::function<
 		return true;
 	}
 
+	EndPropertyRow();
+
 	return false;
 }
 
@@ -1744,6 +1850,8 @@ bool UI::PropertyColor(const std::string& text, glm::vec3& value, std::function<
 		}
 		return true;
 	}
+
+	EndPropertyRow();
 
 	return false;
 }
@@ -1789,6 +1897,8 @@ bool UI::Property(const std::string& text, std::filesystem::path& path, std::fun
 		}
 	}
 
+	EndPropertyRow();
+
 	return changed;
 }
 bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path, std::function<void(std::filesystem::path& value)> callback, const std::string& toolTip)
@@ -1832,6 +1942,8 @@ bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path,
 		}
 	}
 
+	EndPropertyRow();
+
 	return changed;
 }
 bool UI::PropertyMultiline(const std::string& text, std::string& value, bool readOnly, const std::string& toolTip)
@@ -1850,6 +1962,8 @@ bool UI::PropertyMultiline(const std::string& text, std::string& value, bool rea
 	{
 		changed = true;
 	}
+
+	EndPropertyRow();
 
 	return changed;
 }
@@ -1874,6 +1988,8 @@ bool UI::PropertyPassword(const std::string& text, std::string& value, bool read
 			callback(value);
 		}
 	}
+
+	EndPropertyRow();
 
 	return changed;
 }
