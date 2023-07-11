@@ -78,7 +78,7 @@ namespace Volt
 
 	void TAATechnique::AddTAAPass(FrameGraph& frameGraph, Ref<ComputePipeline> pipeline, Ref<Image2D> colorHistory, FrameGraphResourceHandle srcDepthHandle)
 	{
-		const auto& motionVectorData = frameGraph.GetBlackboard().Get<MotionVectorData>();
+		//const auto& motionVectorData = frameGraph.GetBlackboard().Get<MotionVectorData>();
 		const auto& skyboxData = frameGraph.GetBlackboard().Get<SkyboxData>();
 
 		frameGraph.GetBlackboard().Add<TAAData>() = frameGraph.AddRenderPass<TAAData>("TAA Pass",

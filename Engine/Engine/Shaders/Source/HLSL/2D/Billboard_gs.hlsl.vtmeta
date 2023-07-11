@@ -1,4 +1,6 @@
-Handle: 14994718360218791465
-Path: Engine/Shaders/Source/HLSL/2D/Billboard_gs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 1678591042527684785
+  filePath: Engine/Shaders/Source/HLSL/2D/Billboard_gs.hlsl
+  type: 128
+  Dependencies:
+    []

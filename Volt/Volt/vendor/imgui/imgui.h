@@ -266,15 +266,28 @@ struct ImVec2
 };
 
 // ImVec4: 4D vector used to store clipping rectangles, colors etc. [Compile-time configurable type]
+
+#pragma warning( push )
+#pragma warning( disable : 4702)
+
 struct ImVec4
 {
-	float                                           x, y, z, w;
+	float x, y, z, w;
 	ImVec4() { x = y = z = w = 0.0f; }
-	ImVec4(float _x, float _y, float _z, float _w) { x = _x; y = _y; z = _z; w = _w; }
+	ImVec4(float _x, float _y, float _z, float _w)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+        w = _w;
+    }
 #ifdef IM_VEC4_CLASS_EXTRA
 	IM_VEC4_CLASS_EXTRA     // Define additional constructors and implicit cast operators in imconfig.h to convert back and forth between your math types and ImVec4.
 #endif
 };
+
+#pragma warning( pop ) 
+
 IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 //-----------------------------------------------------------------------------

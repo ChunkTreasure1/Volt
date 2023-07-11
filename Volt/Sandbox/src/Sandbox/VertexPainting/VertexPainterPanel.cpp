@@ -151,7 +151,6 @@ void VertexPainterPanel::PanelDraw()
 		ImVec4 viewColor = { 0,0,0,0 };
 		ImVec2 buttonSize = { 30,30 };
 
-		float padding = ImGui::GetStyle().FramePadding.y;
 		if (m_settings.isSelecting)
 		{
 			selectBgc = { 0.1f, 0.25f, 0.8f, 1.f };
@@ -615,7 +614,7 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 			entry.second = meshComp.overrideMaterial;
 			m_originalMaterials.insert(entry);
 
-			meshComp.overrideMaterial = Volt::AssetManager::GetAssetHandleFromPath("Editor/Materials/M_VisualizeVertexColors.vtmat");
+			meshComp.overrideMaterial = Volt::AssetManager::GetAssetHandleFromFilePath("Editor/Materials/M_VisualizeVertexColors.vtmat");
 		}
 		return;
 	}

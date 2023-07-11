@@ -256,10 +256,10 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t index = mySetBindingWriteDescriptorMap.at(set).at(binding);
+		const uint32_t writeIndex = mySetBindingWriteDescriptorMap.at(set).at(binding);
 
-		if (myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
-			myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+		if (myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
+			myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
 		{
 			VT_CORE_ERROR("[ComputePipeline] Trying to set uniform buffer to descriptor set of non uniform buffer type!");
 			return;
@@ -282,10 +282,10 @@ namespace Volt
 			return;
 		}
 
-		const uint32_t index = mySetBindingWriteDescriptorMap.at(set).at(binding);
+		const uint32_t writeIndex = mySetBindingWriteDescriptorMap.at(set).at(binding);
 
-		if (myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER &&
-			myWriteDescriptors.at(0).at(index).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)
+		if (myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER &&
+			myWriteDescriptors.at(0).at(writeIndex).descriptorType != VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC)
 		{
 			VT_CORE_ERROR("[ComputePipeline] Trying to set storage buffer to descriptor set of non storage buffer type!");
 			return;
@@ -342,7 +342,7 @@ namespace Volt
 			}
 		}
 
-		auto setInfoFunc = [=](VkDescriptorImageInfo& info, Ref<Image2D> image, uint32_t set, uint32_t binding)
+		auto setInfoFunc = [=](VkDescriptorImageInfo& info, Ref<Image2D> image, uint32_t, uint32_t)
 		{
 			info.imageLayout = imageLayout;
 
@@ -378,7 +378,7 @@ namespace Volt
 		myImage2DResources[set][binding] = { image, imageLayout, imageAccess };
 	}
 
-	void ComputePipeline::SetImage(Ref<Image2D> image, uint32_t set, uint32_t binding, uint32_t mip, uint32_t arrayElement, ImageAccess imageAccess)
+	void ComputePipeline::SetImage(Ref<Image2D>, uint32_t, uint32_t, uint32_t, uint32_t, ImageAccess)
 	{
 
 	}
@@ -705,9 +705,9 @@ namespace Volt
 	void ComputePipeline::SetupFromShader()
 	{
 		auto device = GraphicsContext::GetDevice();
-		const auto& resources = myShader->GetResources();
+		const auto& shaderResources = myShader->GetResources();
 
-		myShaderResources = { myCount, resources };
+		myShaderResources = { myCount, shaderResources };
 		myDescriptorSets.resize(myCount);
 		myWriteDescriptors.resize(myCount);
 		myBufferBarriers.resize(myCount);
@@ -838,7 +838,6 @@ namespace Volt
 		}
 
 		auto device = GraphicsContext::GetDevice();
-		auto& resources = myShaderResources.at(index);
 		auto& descriptorSets = myDescriptorSets.at(index);
 		descriptorSets.clear();
 

@@ -10,9 +10,18 @@ project "Amp"
 	pchheader "amppch.h"
 	pchsource "src/amppch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -50,7 +59,6 @@ project "Amp"
 		"PX_PHYSX_STATIC_LIB",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
 		"GLM_FORCE_LEFT_HANDED"
 	}
 

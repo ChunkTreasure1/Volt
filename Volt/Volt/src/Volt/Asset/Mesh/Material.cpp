@@ -41,10 +41,10 @@ namespace Volt
 		return mySubMaterials.at(index);
 	}
 
-	Ref<SubMaterial> Material::CreateSubMaterial(Ref<Shader> shader, const std::string& name)
+	Ref<SubMaterial> Material::CreateSubMaterial(Ref<Shader> shader, const std::string& subMaterialName)
 	{
 		const uint32_t index = (uint32_t)mySubMaterials.size();
-		auto material = mySubMaterials.emplace(index, SubMaterial::Create(name, index, shader));
+		auto material = mySubMaterials.emplace(index, SubMaterial::Create(subMaterialName, index, shader));
 
 		return mySubMaterials.at(index);
 	}

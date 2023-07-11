@@ -36,9 +36,11 @@ void AnimationGraphPanel::OpenAsset(Ref<Volt::Asset> asset)
 	myGraphDepth.clear();
 	myCurrentAsset = std::reinterpret_pointer_cast<Volt::AnimationGraphAsset>(asset);
 
+	const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(asset->handle);
+
 	auto& graphDepth = myGraphDepth.emplace_back();
 	graphDepth.editorType = EditorType::Graph;
-	graphDepth.name = (!asset->path.empty()) ? asset->path.stem().string() : "New Graph";
+	graphDepth.name = (!metadata.filePath.empty()) ? metadata.filePath.stem().string() : "New Graph";
 	graphDepth.graph = myCurrentAsset;
 
 	myOpenGraph = graphDepth.graph;
@@ -171,10 +173,12 @@ void AnimationGraphPanel::DrawMenuBar()
 					myCurrentAsset = Volt::AssetManager::GetAsset<Volt::AnimationGraphAsset>(path);
 					myOpenGraph = myCurrentAsset;
 
+					const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myCurrentAsset->handle);
+
 					myGraphDepth.clear();
 					auto& graphDepth = myGraphDepth.emplace_back();
 					graphDepth.editorType = EditorType::Graph;
-					graphDepth.name = (!myCurrentAsset->path.empty()) ? myCurrentAsset->path.stem().string() : "New Graph";
+					graphDepth.name = (!metadata.filePath.empty()) ? metadata.filePath.stem().string() : "New Graph";
 					graphDepth.graph = myCurrentAsset;
 
 					ReconstructGraph();
@@ -186,12 +190,22 @@ void AnimationGraphPanel::DrawMenuBar()
 				if (myOpenGraph)
 				{
 					Volt::AssetManager::Get().SaveAsset(myCurrentAsset);
-					UI::Notify(NotificationType::Success, "Saved character!", std::format("Character {0} successfully saved!", myCurrentAsset->path.stem().string()));
+					const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myCurrentAsset->handle);
+
+					UI::Notify(NotificationType::Success, "Saved character!", std::format("Character {0} successfully saved!", metadata.filePath.string()));
 				}
 			}
 
 			if (ImGui::MenuItem("Save As"))
 			{
+				if (myOpenGraph)
+				{
+					const std::filesystem::path targetPath = FileSystem::SaveFileDialogue({ { "Animated Character (*.vtchr)", "vtchr"} });
+					if (!targetPath.empty())
+					{
+						Volt::AssetManager::SaveAssetAs(myCurrentAsset, targetPath);
+					}
+				}
 			}
 
 			ImGui::EndMenu();

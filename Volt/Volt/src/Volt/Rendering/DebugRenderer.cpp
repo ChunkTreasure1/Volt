@@ -69,7 +69,7 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawSprite(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const glm::vec4& color)
+	void DebugRenderer::DrawSprite(const glm::vec3&, const glm::vec3&, const glm::vec3&, const glm::vec4&)
 	{
 		//s_debugRenderData->functionQueue.emplace_back([position, rotation, scale, color]()
 		//	{
@@ -78,7 +78,7 @@ namespace Volt
 		//	});
 	}
 
-	void DebugRenderer::DrawText(const std::string& text, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
+	void DebugRenderer::DrawText(const std::string&, const glm::vec3& , const glm::vec3&, const glm::vec3&)
 	{
 		//s_debugRenderData->functionQueue.emplace_back([text, position, rotation, scale]()
 		//	{
@@ -290,11 +290,11 @@ namespace Volt
 		});
 	}
 
-	void DebugRenderer::DrawSphere(const glm::vec3& position, const glm::vec3& scale, const glm::vec4& color)
+	void DebugRenderer::DrawSphere(const glm::vec3&, const glm::vec3&, const glm::vec4&)
 	{
 	}
 
-	void DebugRenderer::DrawCube(const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const glm::vec4& color)
+	void DebugRenderer::DrawCube(const glm::vec3&, const glm::vec3&, const glm::vec3&, const glm::vec4&)
 	{
 	}
 }

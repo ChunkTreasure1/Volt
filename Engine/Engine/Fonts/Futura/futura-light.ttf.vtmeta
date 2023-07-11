@@ -1,4 +1,6 @@
-Handle: 13202321034657651307
-Path: Engine/Fonts/Futura/futura-light.ttf
-Dependencies:
-  []
+Metadata:
+  assetHandle: 17909434744896227716
+  filePath: Engine/Fonts/Futura/futura-light.ttf
+  type: 4096
+  Dependencies:
+    []

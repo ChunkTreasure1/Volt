@@ -1,4 +1,6 @@
-Handle: 16771764183224340138
-Path: Engine/Fonts/Inter/Inter-Bold.ttf
-Dependencies:
-  []
+Metadata:
+  assetHandle: 13258626548520546858
+  filePath: Engine/Fonts/Inter/Inter-Bold.ttf
+  type: 4096
+  Dependencies:
+    []

@@ -179,7 +179,7 @@ namespace Volt
 		return animation;
 	}
 
-	void FbxImporter::ExportMeshImpl(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path)
+	void FbxImporter::ExportMeshImpl(std::vector<Ref<Mesh>>, const std::filesystem::path&)
 	{
 		//FbxManager* sdkManager = FbxManager::Create();
 		//FbxIOSettings* ioSettings = FbxIOSettings::Create(sdkManager, IOSROOT);

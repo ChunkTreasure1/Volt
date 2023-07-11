@@ -272,8 +272,6 @@ namespace Volt
 
 		GraphKey::TimerManager::Update(aDeltaTime);
 
-		auto& threadPool = Application::GetThreadPool();
-
 		{
 			VT_PROFILE_SCOPE("Update entity time");
 
@@ -814,7 +812,7 @@ namespace Volt
 			{
 				auto ent = newScene->CreateEntity("Cube");
 				auto& meshComp = ent.AddComponent<MeshComponent>();
-				meshComp.handle = AssetManager::GetAssetHandleFromPath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 			}
 
 			// Light
@@ -830,7 +828,7 @@ namespace Volt
 			// Skylight
 			{
 				auto ent = newScene->CreateEntity("Skylight");
-				auto& skyLight = ent.AddComponent<SkylightComponent>();
+				ent.AddComponent<SkylightComponent>();
 			}
 
 			// Camera
@@ -855,7 +853,6 @@ namespace Volt
 		otherScene->mySceneLayers = mySceneLayers;
 		otherScene->myActiveLayerIndex = myActiveLayerIndex;
 		otherScene->myLastLayerId = myLastLayerId;
-		otherScene->path = path;
 
 		auto& otherRegistry = otherScene->GetRegistry();
 
@@ -1363,7 +1360,7 @@ namespace Volt
 		auto& act = Volt::DiscordSDK::GetRichPresence();
 
 		act.GetParty().GetSize().SetCurrentSize(GetActiveLayer() + 1);
-		act.GetParty().GetSize().SetMaxSize(GetLayers().size());
+		act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(GetLayers().size()));
 
 		Volt::DiscordSDK::UpdateRichPresence();
 	}

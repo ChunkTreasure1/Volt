@@ -157,7 +157,7 @@ namespace Volt
 			Transmit(packet);
 			m_packetQueueIn.clear();
 			Application::Get().GetNetHandler().Stop();
-			Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromPath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
+			Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
 			Volt::OnSceneTransitionEvent loadEvent{ handle };
 			Volt::Application::Get().OnEvent(loadEvent);
 			return;

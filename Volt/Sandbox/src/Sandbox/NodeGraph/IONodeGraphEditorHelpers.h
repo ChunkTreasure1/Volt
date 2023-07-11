@@ -381,7 +381,7 @@ public:
 		const Ref<Volt::Asset> rawAsset = Volt::AssetManager::Get().GetAssetRaw(assetHandle);
 		if (rawAsset)
 		{
-			assetFileName = rawAsset->path.stem().string();
+			assetFileName = rawAsset->assetName;
 
 			if (supportedTypes != Volt::AssetType::None)
 			{

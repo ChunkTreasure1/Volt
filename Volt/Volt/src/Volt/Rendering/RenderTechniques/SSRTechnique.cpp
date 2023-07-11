@@ -42,7 +42,7 @@ namespace Volt
 			const auto& preDepthResource = resources.GetImageResource(preDepthData.preDepth);
 			const auto& viewNormalsResource = resources.GetImageResource(preDepthData.viewNormals);
 			const auto& colorResource = resources.GetImageResource(skyboxData.outputImage);
-			const auto& outputResource = resources.GetImageResource(data.output);
+			//const auto& outputResource = resources.GetImageResource(data.output);
 
 			FrameGraphRenderPassInfo renderPassInfo{};
 			renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);

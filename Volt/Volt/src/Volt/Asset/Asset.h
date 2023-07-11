@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include <cassert>
+#include <any>
 
 
 namespace Volt
@@ -153,15 +154,54 @@ namespace Volt
 			{ "Net Contract", AssetType::NetContract }
 		};
 
-		return assetNamesMap;
+	struct AssetMetadata
+	{
+		inline void SetValue(const std::string& key, const std::string& data)
+		{
+			properties[key] = data;
+		}
+
+		inline const std::string& GetValue(const std::string& key) const
+		{
+			if (!properties.contains(key))
+			{
+				return {};
+			}
+
+			return properties.at(key);
+		}
+
+		inline const bool IsValid() const { return handle != 0; }
+
+		AssetHandle handle = 0;
+		AssetType type = AssetType::None;
+
+		bool isLoaded = false;
+		bool isQueued = false;
+		bool isMemoryAsset = false;
+
+		std::filesystem::path filePath;
+		std::vector<AssetHandle> dependencies;
+		std::unordered_map<std::string, std::string> properties;
+	};
+  
+	inline static std::string GetAssetTypeName(AssetType aType)
+	{
+		for (auto& [name, type] : s_assetNamesMap)
+		{
+			if (type == aType)
+				return name;
+		}
+
+		return "Unknown";
 	}
-	
+
 	class Asset
 	{
 	public:
 		virtual ~Asset() = default;
 
-		inline bool IsValid() const { return ((flags & (uint16_t)AssetFlag::Missing) | (flags & (uint16_t)AssetFlag::Invalid) | (flags & (uint16_t)AssetFlag::Queued)) == 0; }
+		inline bool IsValid() const { return ((assetFlags & (uint16_t)AssetFlag::Missing) | (assetFlags & (uint16_t)AssetFlag::Invalid) | (assetFlags & (uint16_t)AssetFlag::Queued)) == 0; }
 
 		inline virtual bool operator==(const Asset& other)
 		{
@@ -173,16 +213,16 @@ namespace Volt
 			return !(*this == other);
 		}
 
-		inline bool IsFlagSet(AssetFlag flag) { return (flags & (uint16_t)flag) != 0; }
+		inline bool IsFlagSet(AssetFlag flag) { return (assetFlags & (uint16_t)flag) != 0; }
 		inline void SetFlag(AssetFlag flag, bool state)
 		{
 			if (state)
 			{
-				flags |= (uint16_t)flag;
+				assetFlags |= (uint16_t)flag;
 			}
 			else
 			{
-				flags &= ~(uint16_t)flag;
+				assetFlags &= ~(uint16_t)flag;
 			}
 		}
 
@@ -191,8 +231,8 @@ namespace Volt
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetType() { assert(false); return AssetType::None; }
 
-		uint16_t flags = (uint16_t)AssetFlag::None;
+		uint16_t assetFlags = (uint16_t)AssetFlag::None;
 		AssetHandle handle = {};
-		std::filesystem::path path;
+		std::string assetName;
 	};
 }

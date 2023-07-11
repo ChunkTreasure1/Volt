@@ -162,8 +162,6 @@ namespace Volt
 
 	void Mesh::Construct()
 	{
-		auto& bindlessData = Renderer::GetBindlessData();
-
 		auto extractedVertices = ExtractSubMeshVertices();
 		auto extractedIndices = ExtractSubMeshIndices();
 

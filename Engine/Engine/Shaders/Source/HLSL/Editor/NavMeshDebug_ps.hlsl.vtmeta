@@ -1,4 +1,6 @@
-Handle: 17770885465827561325
-Path: Engine/Shaders/Source/HLSL/Editor/NavMeshDebug_ps.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 3437710173954916273
+  filePath: Engine/Shaders/Source/HLSL/Editor/NavMeshDebug_ps.hlsl
+  type: 128
+  Dependencies:
+    []

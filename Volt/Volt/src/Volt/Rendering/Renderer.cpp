@@ -197,17 +197,10 @@ namespace Volt
 
 	void Renderer::Begin(Ref<CommandBuffer> commandBuffer)
 	{
-		VT_PROFILE_FUNCTION();
-
-		auto& bindlessData = GetBindlessData();
-
-		//bindlessData.combinedVertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
-		//bindlessData.combinedIndexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
 	}
 
 	void Renderer::End()
 	{
-		VT_PROFILE_FUNCTION();
 	}
 
 	void Renderer::BeginPass(Ref<CommandBuffer> commandBuffer, Ref<VulkanRenderPass> renderPass)
@@ -422,7 +415,6 @@ namespace Volt
 
 			const VkDeviceSize drawOffset = batches.at(i).first * sizeof(IndirectGPUCommand);
 			const VkDeviceSize countOffset = i * sizeof(uint32_t);
-			const uint32_t drawStride = sizeof(IndirectGPUCommand);
 
 			const Ref<ShaderStorageBuffer> currentIndirectBuffer = indirectPass.drawArgsStorageBuffer->Get(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, currentIndex);
 			const Ref<ShaderStorageBuffer> currentCountBuffer = indirectPass.drawCountIDStorageBuffer->Get(Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, currentIndex);
@@ -787,48 +779,47 @@ namespace Volt
 
 				device->FlushCommandBuffer(cmdBuffer);
 			}
+		}
 
-			// Irradiance
-			{
-				ImageSpecification imageSpec{};
-				imageSpec.format = ImageFormat::RGBA32F;
-				imageSpec.width = irradianceMapSize;
-				imageSpec.height = irradianceMapSize;
-				imageSpec.usage = ImageUsage::Storage;
-				imageSpec.layers = 6;
-				imageSpec.isCubeMap = true;
-				imageSpec.mips = Utility::CalculateMipCount(irradianceMapSize, irradianceMapSize);
+		// Irradiance
+		{
+			ImageSpecification imageSpec{};
+			imageSpec.format = ImageFormat::RGBA32F;
+			imageSpec.width = irradianceMapSize;
+			imageSpec.height = irradianceMapSize;
+			imageSpec.usage = ImageUsage::Storage;
+			imageSpec.layers = 6;
+			imageSpec.isCubeMap = true;
+			imageSpec.mips = Utility::CalculateMipCount(irradianceMapSize, irradianceMapSize);
 
-				irradianceMap = Image2D::Create(imageSpec);
+			irradianceMap = Image2D::Create(imageSpec);
 
-				Ref<ComputePipeline> irradiancePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentIrradiance"), 1, true);
-				constexpr uint32_t irradianceComputeSamples = 512;
+			Ref<ComputePipeline> irradiancePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentIrradiance"), 1, true);
 
-				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
-				environmentFiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-				irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
+			VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+			environmentFiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
 
-				irradiancePipeline->Bind(cmdBuffer);
-				irradiancePipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
+			irradiancePipeline->Bind(cmdBuffer);
+			irradiancePipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
 
-				irradiancePipeline->SetImage(irradianceMap, Sets::OTHER, 0, ImageAccess::Write);
-				irradiancePipeline->SetImage(environmentFiltered, Sets::OTHER, 1, ImageAccess::Read);
+			irradiancePipeline->SetImage(irradianceMap, Sets::OTHER, 0, ImageAccess::Write);
+			irradiancePipeline->SetImage(environmentFiltered, Sets::OTHER, 1, ImageAccess::Read);
 
-				ExecutionBarrierInfo barrierInfo{};
-				barrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-				barrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-				barrierInfo.dstAccessMask = 0;
-				barrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			ExecutionBarrierInfo barrierInfo{};
+			barrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			barrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrierInfo.dstAccessMask = 0;
+			barrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
 
-				irradiancePipeline->InsertExecutionBarrier(barrierInfo);
-				irradiancePipeline->Dispatch(cmdBuffer, irradianceMapSize / conversionThreadCount, irradianceMapSize / conversionThreadCount, 6);
-				irradiancePipeline->InsertBarriers(cmdBuffer);
+			irradiancePipeline->InsertExecutionBarrier(barrierInfo);
+			irradiancePipeline->Dispatch(cmdBuffer, irradianceMapSize / conversionThreadCount, irradianceMapSize / conversionThreadCount, 6);
+			irradiancePipeline->InsertBarriers(cmdBuffer);
 
-				irradianceMap->GenerateMips(false, cmdBuffer);
-				irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			irradianceMap->GenerateMips(false, cmdBuffer);
+			irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-				device->FlushCommandBuffer(cmdBuffer);
-			}
+			device->FlushCommandBuffer(cmdBuffer);
 		}
 
 		return { irradianceMap, environmentFiltered };

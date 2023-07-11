@@ -870,14 +870,6 @@ namespace Volt
 			myResources.vertexLayout = { inputElements };
 		}
 
-		if (stage == VK_SHADER_STAGE_FRAGMENT_BIT)
-		{
-			for (const auto& output : resources.stage_outputs)
-			{
-
-			}
-		}
-
 #ifdef VT_SHADER_PRINT
 		VT_CORE_INFO("		Uniform Buffers: {0}", myPerStageUBOCount[stage].count);
 		VT_CORE_INFO("		Dynamic Uniform Buffers: {0}", myPerStageDynamicUBOCount[stage].count);

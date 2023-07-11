@@ -1,4 +1,7 @@
-Handle: 878555678710023115
-Path: Engine/Shaders/Definitions/Editor/navMeshDebug.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 11344793791434321691
+  filePath: Engine/Shaders/Definitions/Editor/navMeshDebug.vtsdef
+  type: 64
+  Dependencies:
+    - 13639218079433149575
+    - 3437710173954916273

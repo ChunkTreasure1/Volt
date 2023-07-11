@@ -41,7 +41,7 @@ private:
 	void UpdateViewport();
 	void UpdateProperties();
 
-	void OpenParticleSystem(const std::filesystem::path& aPath);
+	void OpenParticleSystem(const Volt::AssetHandle handle);
 	void PlayParticles();
 		
 	bool DrawEditorPanel();

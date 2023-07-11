@@ -1,4 +1,6 @@
-Handle: 12064882103145513708
-Path: Engine/Shaders/Definitions/Compute/sssBlur.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 17114485686555562417
+  filePath: Engine/Shaders/Definitions/Compute/sssBlur.vtsdef
+  type: 64
+  Dependencies:
+    - 2371175449193359816

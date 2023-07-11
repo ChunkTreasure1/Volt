@@ -56,13 +56,15 @@ void NavigationPanel::Bake()
 
 		if (myNavigationSystem.GetVTNavMesh()->GetNavMesh() && !myBuildSettings.useTileCache)
 		{
-			auto outputPath = myScene->path;
+			const auto& sceneMeta = Volt::AssetManager::GetMetadataFromHandle(myScene->handle);
+
+			auto outputPath = sceneMeta.filePath;
 			outputPath.replace_extension(".vtnavmesh");
 
 			if (!outputPath.stem().empty())
 			{
-				myNavigationSystem.GetVTNavMesh()->path = outputPath;
-				Volt::AssetManager::Get().SaveAsset(myNavigationSystem.GetVTNavMesh());
+				myNavigationSystem.GetVTNavMesh();
+				Volt::AssetManager::Get().SaveAssetAs(myNavigationSystem.GetVTNavMesh(), outputPath);
 			}
 		}
 	}

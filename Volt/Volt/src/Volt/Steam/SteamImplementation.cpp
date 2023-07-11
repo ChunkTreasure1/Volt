@@ -109,7 +109,7 @@ namespace Volt
 			return;
 		}
 
-		bool storedStats = mySteamUserStats->StoreStats();
+		mySteamUserStats->StoreStats();
 	}
 
 	void SteamImplementation::RequestStats()
@@ -252,10 +252,10 @@ namespace Volt
 
 		if (callback->m_eResult == k_EResultInvalidParam)
 		{
-			UserStatsReceived_t callback;
-			callback.m_eResult = k_EResultOK;
-			callback.m_nGameID = myData.gameId.ToUint64();
-			OnUserStatsRecieved(&callback);
+			UserStatsReceived_t invalidParamCallback;
+			invalidParamCallback.m_eResult = k_EResultOK;
+			invalidParamCallback.m_nGameID = myData.gameId.ToUint64();
+			OnUserStatsRecieved(&invalidParamCallback);
 		}
 	}
 

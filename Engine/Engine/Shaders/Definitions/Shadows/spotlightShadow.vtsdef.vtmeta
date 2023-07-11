@@ -1,4 +1,6 @@
-Handle: 8788576803155929002
-Path: Engine/Shaders/Definitions/Shadows/spotlightShadow.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 1833472199985373591
+  filePath: Engine/Shaders/Definitions/Shadows/spotlightShadow.vtsdef
+  type: 64
+  Dependencies:
+    - 2432299985604488168

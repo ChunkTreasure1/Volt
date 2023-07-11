@@ -59,8 +59,6 @@ void GameViewPanel::UpdateMainContent()
 		Resize({ viewportSize.x, viewportSize.y });
 	}
 
-	auto& settings = UserSettingsManager::GetSettings();
-
 	if (mySceneRenderer)
 	{
 		ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), { myViewportSize.x, myViewportSize.y });

@@ -1,4 +1,6 @@
-Handle: 1051072268044624994
-Path: Engine/Meshes/Primitives/SM_Cone.vtmesh
-Dependencies:
-  []
+Metadata:
+  assetHandle: 10242065537839545921
+  filePath: Engine/Meshes/Primitives/SM_Cone.vtmesh
+  type: 1
+  Dependencies:
+    []

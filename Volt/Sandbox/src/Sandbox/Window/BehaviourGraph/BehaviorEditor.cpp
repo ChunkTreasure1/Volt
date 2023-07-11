@@ -538,7 +538,6 @@ OwnedPin BehaviorEditor::FindPin(ed::PinId id)
 void BehaviorEditor::DrawPanels()
 {
 	ImGui::SetNextWindowClass(GetWindowClass());
-	int uniqueId = 0;
 	const std::string id = "Nodes##" + myContext;
 	if (ImGui::Begin(id.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse))
 	{
@@ -569,7 +568,9 @@ void BehaviorEditor::DrawPanels()
 		}
 		if (ImGui::Button("SAVE"))
 		{
-			if (FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / myBehaviourTree->path))
+			const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myBehaviourTree->handle);
+
+			if (FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / metadata.filePath))
 			{
 				UI::Notify(NotificationType::Success, "BehaviorTree saved", "");
 				Volt::AssetManager::Get().SaveAsset(myBehaviourTree);

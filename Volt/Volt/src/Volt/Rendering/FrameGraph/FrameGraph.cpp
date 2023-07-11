@@ -470,7 +470,7 @@ namespace Volt
 
 		Ref<FrameGraphRenderPassNode<Empty>> newNode = CreateRef<FrameGraphRenderPassNode<Empty>>();
 
-		newNode->executeFunction = [execFunc](const Empty& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
+		newNode->executeFunction = [execFunc](const Empty&, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
 			execFunc(resources, commandBuffer);
 		};

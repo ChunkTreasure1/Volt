@@ -5,7 +5,7 @@
 #include <any>
 
 #define GK_REGISTER_TYPE(x, stringName, uiFunction) template<> struct GraphKey::TypeTraits<x> \
-	{ static const char* name; static bool registered; }; const char* GraphKey::TypeTraits<x>::name = #stringName; \
+	{ static const char* typeName; static bool registered; }; const char* GraphKey::TypeTraits<x>::typeName = #stringName; \
 	bool GraphKey::TypeTraits<x>::registered = GraphKey::TypeRegistry::Register<x>(std::type_index(typeid(x)), #stringName, uiFunction); 
 
 //#define GK_REGISTER_TYPE(x) template<> struct GraphKey::TypeTraits<x> \

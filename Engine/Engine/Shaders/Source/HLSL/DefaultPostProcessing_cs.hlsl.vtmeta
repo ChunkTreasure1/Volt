@@ -1,4 +1,6 @@
-Handle: 4802462217165710153
-Path: Engine/Shaders/Source/HLSL/DefaultPostProcessing_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4987027719511328861
+  filePath: Engine/Shaders/Source/HLSL/DefaultPostProcessing_cs.hlsl
+  type: 128
+  Dependencies:
+    []

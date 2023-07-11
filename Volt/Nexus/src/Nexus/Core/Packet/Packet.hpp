@@ -73,7 +73,6 @@ namespace Nexus
 				return packet;
 			}
 
-			size_t i = dataSize;
 			packet.body.resize(packetSize + dataSize);
 			packet.Append((uint8_t*)data.body.data(), dataSize);
 			return packet;

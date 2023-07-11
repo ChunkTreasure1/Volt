@@ -82,7 +82,7 @@ namespace Volt
 
 	std::string NetContractContainer::GetMethod(Nexus::TYPE::REP_ID in_id, eNetEvent in_event)
 	{
-		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(static_cast<uint32_t>(in_id), SceneManager::GetActiveScene().lock().get());
 		if (!entity.HasComponent<PrefabComponent>()) return "";
 		return GetMethod(entity.GetComponent<PrefabComponent>().prefabAsset, in_event);
 	}
@@ -90,8 +90,11 @@ namespace Volt
 	void NetContractContainer::AddContract(const AssetHandle& in_handle)
 	{
 		if (m_contracts.contains(in_handle)) return;
-		Ref<NetContract> contract = CreateRef<NetContract>();
-		contract->path = "Assets/Networking/Contracts/" + std::to_string(in_handle) + ".vtncon";
+
+		const std::filesystem::path contractDirectory = "Assets/Networking/Contracts";
+		const std::string filename = std::to_string(in_handle) + ".vtncon";
+
+		Ref<NetContract> contract = AssetManager::CreateAsset<NetContract>(contractDirectory, filename);
 		contract->prefab = in_handle;
 		m_contracts.insert({ in_handle, contract });
 	}
@@ -123,7 +126,7 @@ namespace Volt
 			{
 				if (!AssetManager::Get().ExistsInRegistry(relPath))
 				{
-					AssetManager::Get().AddToRegistry(relPath);
+					AssetManager::Get().AddAssetToRegistry(relPath);
 				}
 
 				Ref<NetContract> contract = AssetManager::GetAsset<NetContract>(relPath);

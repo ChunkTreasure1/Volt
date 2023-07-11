@@ -1,4 +1,6 @@
-Handle: 6392214058836793335
-Path: Engine/Textures/FogNoise/BlueNoise14.dds
-Dependencies:
-  []
+Metadata:
+  assetHandle: 14022880311139466670
+  filePath: Engine/Textures/FogNoise/BlueNoise14.dds
+  type: 16
+  Dependencies:
+    []

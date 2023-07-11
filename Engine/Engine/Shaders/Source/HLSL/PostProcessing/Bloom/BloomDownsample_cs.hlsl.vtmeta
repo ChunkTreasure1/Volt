@@ -1,4 +1,6 @@
-Handle: 17770287994077539389
-Path: Engine/Shaders/Source/HLSL/PostProcessing/Bloom/BloomDownsample_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 18079996369421442925
+  filePath: Engine/Shaders/Source/HLSL/PostProcessing/Bloom/BloomDownsample_cs.hlsl
+  type: 128
+  Dependencies:
+    []

@@ -3,6 +3,8 @@
 #include "Sandbox/Window/AssetBrowser/BrowserItems.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
+#include <imgui.h>
+
 namespace Volt
 {
 	class Image2D;
@@ -13,7 +15,7 @@ namespace AssetBrowser
 	class AssetItem : public Item
 	{
 	public:
-		AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, float& thumbnailSize, MeshImportData& meshImportData, AssetData& meshToImportData);
+		AssetItem(SelectionManager* selectionManager, const std::filesystem::path& path, MeshImportData& meshImportData, AssetData& meshToImportData);
 		~AssetItem() override = default;
 		bool Render() override;
 
@@ -25,16 +27,20 @@ namespace AssetBrowser
 		MeshImportData& meshImportData;
 		AssetData& meshToImportData;
 
-		bool isRenaming = false;
-		std::string currentRenamingName;
-
+	protected:
+		void PushID() override;
+		Ref<Volt::Image2D> GetIcon() const override;
+		ImVec4 GetBackgroundColor() const override;
+		std::string GetTypeName() const override;
+		
+		void SetDragDropPayload() override;
+		bool RenderRightClickPopup() override;
+		bool Rename(const std::string& aNewName) override;
+		void Open() override;
+		void DrawAdditionalHoverInfo() override;
 	private:
-		bool RenderRightClickPopup();
+		Volt::AssetHandle mySceneToOpen = Volt::Asset::Null();
 
-		float& myThumbnailSize;
-		bool myLastRenaming = false;
-
-		Ref<Volt::Image2D> GetIcon() const;
-		const ImVec4 GetBackgroundColorFromType(Volt::AssetType type);
+		const ImVec4 GetBackgroundColorFromType(Volt::AssetType type) const;
 	};
 }

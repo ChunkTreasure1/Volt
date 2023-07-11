@@ -29,11 +29,11 @@ namespace Volt
 		});
 	}
 
-	void AnimationSystem::OnRuntimeEnd(Wire::Registry& registry)
+	void AnimationSystem::OnRuntimeEnd(Wire::Registry&)
 	{
 	}
 
-	void AnimationSystem::Update(Wire::Registry& registry, float deltaTime)
+	void AnimationSystem::Update(Wire::Registry&, float)
 	{
 		//myRegistry.ForEach<AnimationControllerComponent>([](Wire::EntityId, AnimationControllerComponent& comp)
 		//	{

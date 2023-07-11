@@ -33,6 +33,7 @@ namespace Volt
 
 		inline const float GetDuration() const { return myDuration; }
 		inline const size_t GetFrameCount() const { return myFrames.size(); }
+		inline const uint32_t GetFramesPerSecond() const { return myFramesPerSecond; }
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 		AssetType GetType() override { return GetStaticType(); };
@@ -45,7 +46,6 @@ namespace Volt
 			float deltaTime = 0.f;
 		};
 
-		static const glm::mat4 BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const glm::mat4& parentTransform, const size_t jointIndex, const float blendFactor);
 		static const PoseData GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime);
 
 		friend class FbxImporter;

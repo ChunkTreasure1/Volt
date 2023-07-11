@@ -2069,9 +2069,6 @@ namespace Volt
 			return;
 		}
 
-		const auto& submitCommands = data.submitCommands;
-		const auto& batchCommands = data.indirectBatches;
-
 		const uint32_t currentIndex = myCommandBuffer->GetCurrentIndex();
 
 		// Fill indirect commands
@@ -2432,7 +2429,7 @@ namespace Volt
 
 				myLightCullingWorkGroups = size / TILE_SIZE;
 
-				for (const auto& value : myResizeLightCullingBuffers)
+				for (auto&& value : myResizeLightCullingBuffers)
 				{
 					value = true;
 				}
@@ -3301,8 +3298,6 @@ namespace Volt
 
 	void SceneRenderer::AddDeferredShadingPass(FrameGraph& frameGraph)
 	{
-		const uint32_t framesInFlight = Renderer::GetFramesInFlightCount();
-
 		const auto& gbufferData = frameGraph.GetBlackboard().Get<GBufferData>();
 		const auto& skyboxData = frameGraph.GetBlackboard().Get<SkyboxData>();
 		const auto& dirShadowData = frameGraph.GetBlackboard().Get<DirectionalShadowData>();
@@ -3844,8 +3839,6 @@ namespace Volt
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& sssBlurResource = resources.GetImageResource(blurData.blurTwo);
 
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
-
 			mySSSCompositePipeline->SetImage(sssBlurResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
 			mySSSCompositePipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
 			mySSSCompositePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
@@ -4098,8 +4091,6 @@ namespace Volt
 			const auto& srcColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& targetResource = resources.GetImageResource(data.luminosityImage);
 
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
-
 			myLuminosityPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			myLuminosityPipeline->SetImage(srcColorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
 			myLuminosityPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
@@ -4169,8 +4160,6 @@ namespace Volt
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
-
 			myACESPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			myACESPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
@@ -4203,8 +4192,6 @@ namespace Volt
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 
-			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
-
 			myGammaCorrectionPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
 			myGammaCorrectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
@@ -4233,7 +4220,6 @@ namespace Volt
 
 		pass.clearCountBufferPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
-		constexpr uint32_t threadCount = 256;
 		const uint32_t dispatchCount = std::max(1u, (uint32_t)(GetGPUData().submitCommands.size() / 256) + 1u);
 		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
@@ -4329,7 +4315,6 @@ namespace Volt
 		pass.indirectCullPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 		pass.indirectCullPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &indirectCullData, sizeof(CullData));
 
-		constexpr uint32_t threadCount = 256;
 		const uint32_t dispatchCount = std::max(1u, (uint32_t)(GetGPUData().submitCommands.size() / 256) + 1u);
 		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
@@ -4374,7 +4359,6 @@ namespace Volt
 		myLODSelectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 		myLODSelectionPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &selectionData, sizeof(SelectionData));
 
-		constexpr uint32_t threadCount = 256;
 		const uint32_t dispatchCount = std::max(1u, (uint32_t)(GetGPUData().submitCommands.size() / 256) + 1u);
 		const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 

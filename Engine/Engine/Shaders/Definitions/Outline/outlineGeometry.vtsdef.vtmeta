@@ -1,4 +1,7 @@
-Handle: 14867025960439755844
-Path: Engine/Shaders/Definitions/Outline/outlineGeometry.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 5860698011888876529
+  filePath: Engine/Shaders/Definitions/Outline/outlineGeometry.vtsdef
+  type: 64
+  Dependencies:
+    - 13352062233204208436
+    - 5725027122480814311

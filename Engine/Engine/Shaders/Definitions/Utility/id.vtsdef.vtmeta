@@ -1,4 +1,7 @@
-Handle: 9867983062000470255
-Path: Engine/Shaders/Definitions/Utility/id.vtsdef
-Dependencies:
-  []
+Metadata:
+  assetHandle: 12313293562235366242
+  filePath: Engine/Shaders/Definitions/Utility/id.vtsdef
+  type: 64
+  Dependencies:
+    - 4927946874922985744
+    - 18304475637752469466

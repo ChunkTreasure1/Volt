@@ -588,19 +588,18 @@ namespace Volt
 	{
 	}
 
-	bool SceneImporter::Load(const std::filesystem::path& path, Ref<Asset>& asset) const
+	bool SceneImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		VT_PROFILE_FUNCTION();
 
 		asset = CreateRef<Scene>();
 		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(asset);
 
-		const auto filePath = AssetManager::GetContextPath(path) / path;
-		scene->path = path;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath)) [[unlikely]]
 		{
-			VT_CORE_ERROR("File {0} not found!", path.string().c_str());
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
@@ -608,7 +607,7 @@ namespace Volt
 		std::ifstream file(filePath);
 		if (!file.is_open()) [[unlikely]]
 		{
-			VT_CORE_ERROR("Failed to open file {0}!", path.string().c_str());
+			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -629,7 +628,7 @@ namespace Volt
 		}
 		catch (std::exception& e)
 		{
-			VT_CORE_ERROR("{0} contains invalid YAML with error {1}! Please correct it!", path, e.what());
+			VT_CORE_ERROR("{0} contains invalid YAML with error {1}! Please correct it!", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
@@ -638,23 +637,23 @@ namespace Volt
 
 		VT_DESERIALIZE_PROPERTY(name, scene->myName, sceneNode, std::string("New Scene"));
 
-		LoadLayers(scene, folderPath);
+		LoadLayers(metadata, scene, folderPath);
 		scene->SortScene();
 		return true;
 	}
 
-	void SceneImporter::Save(const Ref<Asset>& asset) const
+	void SceneImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		VT_PROFILE_FUNCTION();
 		const Ref<Scene> scene = std::reinterpret_pointer_cast<Scene>(asset);
 
-		std::filesystem::path folderPath = AssetManager::GetContextPath(asset->path) / asset->path;
+		std::filesystem::path folderPath = AssetManager::GetFilesystemPath(metadata.filePath);
 		if (!std::filesystem::is_directory(folderPath))
 		{
 			folderPath = folderPath.parent_path();
 		}
 
-		std::filesystem::path scenePath = folderPath / (asset->path.stem().string() + ".vtscene");
+		std::filesystem::path scenePath = folderPath / (metadata.filePath.stem().string() + ".vtscene");
 		std::filesystem::path entitiesFolderPath = folderPath / "Entities";
 
 		if (!std::filesystem::exists(folderPath))
@@ -667,7 +666,7 @@ namespace Volt
 		out << YAML::Key << "Scene" << YAML::Value;
 		{
 			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(name, asset->path.stem(), out);
+			VT_SERIALIZE_PROPERTY(name, metadata.filePath.stem(), out);
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -677,10 +676,10 @@ namespace Volt
 		file << out.c_str();
 		file.close();
 
-		SaveLayers(scene, folderPath);
+		SaveLayers(metadata, scene, folderPath);
 	}
 
-	void SceneImporter::SaveLayers(const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
+	void SceneImporter::SaveLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
 	{
 		std::filesystem::path layerFolderPath = sceneDirectory / "Layers";
 		if (!std::filesystem::exists(layerFolderPath))
@@ -717,7 +716,7 @@ namespace Volt
 						continue;
 					}
 
-					SerializeEntityLayer(entity, scene->GetRegistry(), out, scene);
+					SerializeEntityLayer(entity, scene->GetRegistry(), out, metadata, scene);
 				}
 
 				out << YAML::EndSeq;
@@ -732,7 +731,7 @@ namespace Volt
 		}
 	}
 
-	void SceneImporter::LoadLayers(const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
+	void SceneImporter::LoadLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -784,7 +783,7 @@ namespace Volt
 			YAML::Node entitiesNode = layerNode["Entities"];
 			for (const auto& entityNode : entitiesNode)
 			{
-				DeserializeEntityLayer(registry, scene, entityNode);
+				DeserializeEntityLayer(registry, metadata, scene, entityNode);
 			}
 		};
 
@@ -833,7 +832,7 @@ namespace Volt
 			prefabComp.isDirty = false;
 		}
 
-		scene->myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, VisualScriptingComponent& comp)
+		scene->myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId, VisualScriptingComponent& comp)
 		{
 			if (comp.graph)
 			{
@@ -861,7 +860,7 @@ namespace Volt
 		});
 
 		// Remove all child that do not exist
-		scene->myRegistry.ForEach<RelationshipComponent>([&](Wire::EntityId id, RelationshipComponent& comp)
+		scene->myRegistry.ForEach<RelationshipComponent>([&](Wire::EntityId, RelationshipComponent& comp)
 		{
 			for (int32_t i = (int32_t)comp.Children.size() - 1; i > 0; i--)
 			{
@@ -946,15 +945,6 @@ namespace Volt
 		return false;
 	}
 
-	void SceneImporter::SaveBinary(uint8_t*, const Ref<Asset>&) const
-	{
-	}
-
-	bool SceneImporter::LoadBinary(const uint8_t*, const AssetPacker::AssetHeader&, Ref<Asset>&) const
-	{
-		return false;
-	}
-
 	void SceneImporter::SerializeMono(Wire::EntityId id, const MonoScriptFieldCache& scriptFieldCache, const Wire::Registry& registry, YAML::Emitter& out)
 	{
 		out << YAML::Key << "MonoScripts" << YAML::BeginSeq;
@@ -1018,7 +1008,7 @@ namespace Volt
 		out << YAML::EndSeq;
 	}
 
-	void SceneImporter::DeserializeMono(Wire::EntityId id, MonoScriptFieldCache& scriptFieldCache, const YAML::Node& node)
+	void SceneImporter::DeserializeMono(Wire::EntityId, MonoScriptFieldCache& scriptFieldCache, const YAML::Node& node)
 	{
 		for (const auto& n : node["MonoScripts"])
 		{
@@ -1121,7 +1111,7 @@ namespace Volt
 		}
 	}
 
-	void SceneImporter::SerializeEntityLayer(Wire::EntityId id, const Wire::Registry& registry, YAML::Emitter& out, const Ref<Scene>& scene) const
+	void SceneImporter::SerializeEntityLayer(Wire::EntityId id, const Wire::Registry& registry, YAML::Emitter& out, const AssetMetadata& metadata, const Ref<Scene>& scene) const
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value;
@@ -1195,7 +1185,7 @@ namespace Volt
 
 			if (registry.HasComponent<VertexPaintedComponent>(id))
 			{
-				std::filesystem::path vpPath = (ProjectManager::GetDirectory() / scene->path.parent_path() / "Layers" / ("ent_" + std::to_string(id) + ".entVp"));
+				std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string(id) + ".entVp"));
 				auto* vpComp = (VertexPaintedComponent*)registry.GetComponentPtr(VertexPaintedComponent::comp_guid, id);
 
 				if (std::filesystem::exists(vpPath))
@@ -1220,7 +1210,7 @@ namespace Volt
 		out << YAML::EndMap;
 	}
 
-	void SceneImporter::DeserializeEntityLayer(Wire::Registry& registry, Ref<Scene> scene, const YAML::Node& node) const
+	void SceneImporter::DeserializeEntityLayer(Wire::Registry& registry, const AssetMetadata& metadata, Ref<Scene> scene, const YAML::Node& node) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1373,7 +1363,7 @@ namespace Volt
 
 		if (registry.HasComponent<VertexPaintedComponent>(entityId))
 		{
-			std::filesystem::path vpPath = scene->path.parent_path();
+			std::filesystem::path vpPath = metadata.filePath.parent_path();
 			vpPath = ProjectManager::GetDirectory() / vpPath / "Layers" / ("ent_" + std::to_string(entityId) + ".entVp");
 
 			if (std::filesystem::exists(vpPath))

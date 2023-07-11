@@ -252,7 +252,7 @@ namespace ImGui
 		return is_open;
 	}
 
-	static bool TreeNodeWidth(const char* label, float width)
+	inline static bool TreeNodeWidth(const char* label, float width)
 	{
 		ImGuiWindow* window = GetCurrentWindow();
 		if (window->SkipItems)
@@ -260,7 +260,7 @@ namespace ImGui
 		return TreeNodeBehaviorWidth(window->GetID(label), 0, label, NULL, width);
 	}
 
-	static bool TreeNodeWidthEx(const char* label, float width, ImGuiTreeNodeFlags flags)
+	inline static bool TreeNodeWidthEx(const char* label, float width, ImGuiTreeNodeFlags flags)
 	{
 		ImGuiWindow* window = GetCurrentWindow();
 		if (window->SkipItems)
@@ -269,7 +269,7 @@ namespace ImGui
 	}
 
 	// Horizontal/vertical separating line
-	static void SeparatorWidthEx(float width, ImGuiSeparatorFlags flags)
+	inline static void SeparatorWidthEx(float width, ImGuiSeparatorFlags flags)
 	{
 		ImGuiWindow* window = GetCurrentWindow();
 		if (window->SkipItems)
@@ -328,7 +328,7 @@ namespace ImGui
 		}
 	}
 
-	static void SeparatorWidth(float width)
+	inline static void SeparatorWidth(float width)
 	{
 		ImGuiContext& g = *GImGui;
 		ImGuiWindow* window = g.CurrentWindow;

@@ -65,7 +65,7 @@ namespace GraphKey
 		newNode->myGraph = ownerGraph;
 		newNode->id = id;
 		newNode->editorState = editorState;
-		newNode->entity = entity;
+		newNode->nodeEntity = entity;
 
 		for (size_t i = 0; i < inputs.size(); i++)
 		{
@@ -84,15 +84,15 @@ namespace GraphKey
 		return newNode;
 	}
 	
-	const uint32_t Node::GetAttributeIndexFromID(const Volt::UUID id) const
+	const uint32_t Node::GetAttributeIndexFromID(const Volt::UUID attrId) const
 	{
-		auto itInputs = std::find_if(inputs.begin(), inputs.end(), [id](const auto& lhs) { return lhs.id == id; });
+		auto itInputs = std::find_if(inputs.begin(), inputs.end(), [attrId](const auto& lhs) { return lhs.id == attrId; });
 		if (itInputs != inputs.end())
 		{
 			return (uint32_t)std::distance(inputs.begin(), itInputs);
 		}
 
-		auto itOutputs = std::find_if(outputs.begin(), outputs.end(), [id](const auto& lhs) { return lhs.id == id; });
+		auto itOutputs = std::find_if(outputs.begin(), outputs.end(), [attrId](const auto& lhs) { return lhs.id == attrId; });
 		if (itOutputs != outputs.end())
 		{
 			return (uint32_t)std::distance(outputs.begin(), itOutputs);

@@ -159,7 +159,7 @@ void Volt::Vision::InitTransitionCam(const float& aBlendTime, const eBlendType b
 
 	if (blendType == Volt::eBlendType::None || aBlendTime == 0)
 	{
-		myTransitionCamera.GetComponent<Volt::CameraComponent>().priority = -1;
+		myTransitionCamera.GetComponent<Volt::CameraComponent>().priority = 0;
 	}
 	else
 	{

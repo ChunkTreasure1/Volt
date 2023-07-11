@@ -71,23 +71,23 @@ void ParticleEmitterEditor::UpdateMainContent()
 void ParticleEmitterEditor::OpenAsset(Ref<Volt::Asset> asset)
 {
 	int i = 0;
-	for (auto& a : Volt::AssetManager::Get().GetAssetRegistry())
+	for (const auto& [handle, metadata] : Volt::AssetManager::Get().GetAssetRegistry())
 	{
-		if (Volt::AssetManager::Get().GetAssetTypeFromHandle(a.second) == Volt::AssetType::ParticlePreset)
+		if (Volt::AssetManager::Get().GetAssetTypeFromHandle(handle) == Volt::AssetType::ParticlePreset)
 		{
 			i++;
-			if (asset->handle == a.second)
+			if (asset->handle == handle)
 			{
 				currentPresetSelected = i;
-				Volt::AssetManager::Get().ReloadAsset(a.second);
+				Volt::AssetManager::Get().ReloadAsset(handle);
 				break;
 			}
 		}
 	}
 
-	OpenParticleSystem(asset->path);
-}
 
+	OpenParticleSystem(asset->handle);
+}
 
 bool ParticleEmitterEditor::SavePreset(const std::filesystem::path& indata)
 {
@@ -96,7 +96,9 @@ bool ParticleEmitterEditor::SavePreset(const std::filesystem::path& indata)
 		UI::Notify(NotificationType::Error, "ParticlePreset save Failed", "Invalid preset");
 		return false;
 	}
-	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / myCurrentPreset->path))
+
+	const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myCurrentPreset->handle);
+	if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / metadata.filePath))
 	{
 		UI::Notify(NotificationType::Error, "ParticlePreset save Failed", "Make sure file is writable");
 		return false;
@@ -169,12 +171,12 @@ void ParticleEmitterEditor::UpdateProperties()
 	}
 }
 
-void ParticleEmitterEditor::OpenParticleSystem(const std::filesystem::path& aPath)
+void ParticleEmitterEditor::OpenParticleSystem(const Volt::AssetHandle handle)
 {
-	myCurrentPreset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(aPath);
+	myCurrentPreset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(handle);
 	if (!myCurrentPreset)
 		return;
-	
+
 	auto& emitterComp = myEmitterEntity.GetComponent<Volt::ParticleEmitterComponent>();
 	emitterComp.preset = myCurrentPreset->handle;
 	emitterComp.emissionTimer = myCurrentPreset->emittionTime;
@@ -211,23 +213,22 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 	UI::Header("Editor");
 	ImGui::Separator();
 	{
-		myPresets.clear();
-		myPresets.emplace_back("None");
-		for (auto& a : Volt::AssetManager::Get().GetAssetRegistry())
-		{
-			if (Volt::AssetManager::Get().GetAssetTypeFromHandle(a.second) == Volt::AssetType::ParticlePreset)
-			{
-				myPresets.emplace_back(a.first.string());
-			}
-		}
+		//#TODO_Ivar: Fix this mess
+		//myPresets.clear();
+		//myPresets.emplace_back("None");
+		//for (const auto& handle : Volt::AssetManager::GetAllAssetsOfType(Volt::AssetType::ParticlePreset))
+		//{
+		//	const auto& meta = Volt::AssetManager::GetMetadataFromHandle(handle);
+		//	myPresets.emplace_back(meta.filePath.string());
+		//}
 
-		if (UI::Combo("Emitter Preset", currentPresetSelected, myPresets, ImGui::GetContentRegionAvail().x - 103))
-		{
-			if (currentPresetSelected >= 0)
-			{
-				OpenParticleSystem(myPresets[currentPresetSelected]);
-			}
-		}
+		//if (UI::Combo("Emitter Preset", currentPresetSelected, myPresets, ImGui::GetContentRegionAvail().x - 103))
+		//{
+		//	if (currentPresetSelected >= 0)
+		//	{
+		//		OpenParticleSystem(myPresets[currentPresetSelected]);
+		//	}
+		//}
 
 		if (ImGui::Button("Play"))
 		{
@@ -237,8 +238,8 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 		ImGui::SameLine();
 		if (ImGui::Button("Reset"))
 		{
-			if (currentPresetSelected != 0)
-				OpenParticleSystem(myPresets[currentPresetSelected]);
+			//if (currentPresetSelected != 0)
+				//OpenParticleSystem(myPresets[currentPresetSelected]);
 		}
 		ImGui::SameLine();
 		ImGui::Dummy({ ((ImGui::GetContentRegionAvail().x - 84) > 0) ? (ImGui::GetContentRegionAvail().x - 84) : 0, 0 });
@@ -368,7 +369,7 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 						ImGui::PopItemWidth();
 					}
 
-					static glm::vec2 lifespan{ myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
+					static glm::vec2 lifespan{ myCurrentPreset->minLifeTime, myCurrentPreset->maxLifeTime };
 					lifespan = { myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
 
 					UI::Property("Particle Lifespan", lifespan, 0.f, 0.f, nullptr, "x = min life time, y = max life time");

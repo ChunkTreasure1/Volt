@@ -10,9 +10,18 @@ project "GraphKey"
 	pchheader "gkpch.h"
 	pchsource "src/gkpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
-		"4005"
+		"4005",
+		"4201",
+		"4100"
 	}
 
 	linkoptions 
@@ -55,13 +64,10 @@ project "GraphKey"
 
 	defines
 	{
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
 		"GLM_FORCE_LEFT_HANDED"
 	}
 
@@ -79,33 +85,43 @@ project "GraphKey"
 	filter "system:windows"
 		systemversion "latest"
 
-		filter "configurations:Debug"
-			defines 
-			{ 
-				"VT_DEBUG", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING"
-			}
-			runtime "Debug"
-			optimize "off"
-			symbols "on"
+		defines
+		{
+			"NOMINMAX",
+			"_HAS_STD_BYTE=0"
+		}
 
-		filter "configurations:Release"
-			defines 
-			{ 
-				"VT_RELEASE", 
-				"VT_ENABLE_ASSERTS",
-				"VT_ENABLE_VALIDATION",
-				"VT_ENABLE_PROFILING",
-				"NDEBUG"
-			}
-			runtime "Release"
-			optimize "on"
-			symbols "on"
+	filter "configurations:Debug"
+		defines 
+		{ 
+			"VT_DEBUG", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING"
+		}
+		runtime "Debug"
+		optimize "off"
+		symbols "on"
 
-		filter "configurations:Dist"
-			defines { "VT_DIST", "NDEBUG" }
-			runtime "Release"
-			optimize "on"
-			symbols "off"
+	filter "configurations:Release"
+		defines 
+		{ 
+			"VT_RELEASE", 
+			"VT_ENABLE_ASSERTS",
+			"VT_ENABLE_VALIDATION",
+			"VT_ENABLE_PROFILING",
+			"NDEBUG"
+		}
+		runtime "Release"
+		optimize "on"
+		symbols "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+
+	filter "configurations:Dist"
+		defines { "VT_DIST", "NDEBUG" }
+		runtime "Release"
+		optimize "on"
+		symbols "off"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }

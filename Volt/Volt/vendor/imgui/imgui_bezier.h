@@ -47,7 +47,8 @@ namespace ImGui
 
     float BezierValue(float dt01, float P[])
     {
-        enum { STEPS = 256 };
+        constexpr int32_t STEPS = 256;
+
         ImVec2 Q[4] = { {0, 0}, {P[0], P[1]}, {P[2], P[3]}, {1, 1} };
         ImVec2 results[STEPS + 1];
         bezier_table<STEPS>(Q, results);
@@ -57,13 +58,13 @@ namespace ImGui
     int EditorPopup(const char* label, float P[5])
     {
         // visuals
-        enum { SMOOTHNESS = 64 }; // curve smoothness: the higher number of segments, the smoother curve
-        enum { CURVE_WIDTH = 4 }; // main curved line width
-        enum { LINE_WIDTH = 1 }; // handlers: small lines width
-        enum { GRAB_RADIUS = 6 }; // handlers: circle radius
-        enum { GRAB_BORDER = 2 }; // handlers: circle border width
-        enum { AREA_CONSTRAINED = true }; // should grabbers be constrained to grid area?
-        enum { AREA_WIDTH = 128 }; // area width in pixels. 0 for adaptive size (will use max avail width)
+        constexpr int SMOOTHNESS = 64; // curve smoothness: the higher number of segments, the smoother curve
+        constexpr int CURVE_WIDTH = 4; // main curved line width
+        constexpr int LINE_WIDTH = 1; // handlers: small lines width
+        constexpr int GRAB_RADIUS = 6; // handlers: circle radius
+        constexpr int GRAB_BORDER = 2; // handlers: circle border width
+        constexpr bool AREA_CONSTRAINED = true; // should grabbers be constrained to grid area?
+        constexpr int AREA_WIDTH = 128; // area width in pixels. 0 for adaptive size (will use max avail width)
 
         // curve presets
         static struct { const char* name; float points[4]; } presets[] =
@@ -125,7 +126,7 @@ namespace ImGui
                 if (i == 1 || i == 9 || i == 17) ImGui::Separator();
                 if (ImGui::MenuItem(presets[i].name, NULL, P[4] == i))
                 {
-                    P[4] = i;
+                    P[4] = static_cast<float>(i);
                     reload = 1;
                 }
             }
@@ -147,7 +148,6 @@ namespace ImGui
         // bezier widget
 
         const ImGuiStyle& Style = GetStyle();
-        const ImGuiIO& IO = GetIO();
         ImDrawList* DrawList = GetWindowDrawList();
         ImGuiWindow* Window = GetCurrentWindow();
         if (Window->SkipItems)
@@ -174,14 +174,14 @@ namespace ImGui
         RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, Style.FrameRounding);
 
         // background grid
-        for (int i = 0; i <= Canvas.x; i += (Canvas.x / 4))
+        for (int i = 0; i <= Canvas.x; i += (static_cast<int>(Canvas.x) / 4))
         {
             DrawList->AddLine(
                 ImVec2(bb.Min.x + i, bb.Min.y),
                 ImVec2(bb.Min.x + i, bb.Max.y),
                 GetColorU32(ImGuiCol_TextDisabled));
         }
-        for (int i = 0; i <= Canvas.y; i += (Canvas.y / 4))
+        for (int i = 0; i <= Canvas.y; i += (static_cast<int>(Canvas.y) / 4))
         {
             DrawList->AddLine(
                 ImVec2(bb.Min.x, bb.Min.y + i),
@@ -216,7 +216,7 @@ namespace ImGui
                     float& px = (P[selected * 2 + 0] += GetIO().MouseDelta.x / Canvas.x);
                     float& py = (P[selected * 2 + 1] -= GetIO().MouseDelta.y / Canvas.y);
 
-                    if (AREA_CONSTRAINED)
+                    if constexpr (AREA_CONSTRAINED)
                     {
                         px = (px < 0 ? 0 : (px > 1 ? 1 : px));
                         py = (py < 0 ? 0 : (py > 1 ? 1 : py));

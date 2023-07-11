@@ -1,0 +1,6 @@
+Metadata:
+  assetHandle: 9129062023261513060
+  filePath: Engine/Shaders/Source/GLSL/Compute/LightCull_cs.glsl
+  type: 0
+  Dependencies:
+    []

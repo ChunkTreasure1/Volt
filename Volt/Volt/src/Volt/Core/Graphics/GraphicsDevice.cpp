@@ -330,12 +330,12 @@ namespace Volt
 
 		// Create main thread (faster to use) command pool
 		{
-			VkCommandPoolCreateInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			info.queueFamilyIndex = myQueueFamilies.graphicsFamilyQueueIndex;
-			info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			VkCommandPoolCreateInfo poolInfo{};
+			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			poolInfo.queueFamilyIndex = myQueueFamilies.graphicsFamilyQueueIndex;
+			poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-			VT_VK_CHECK(vkCreateCommandPool(myDevice, &info, nullptr, &myMainCommandPool));
+			VT_VK_CHECK(vkCreateCommandPool(myDevice, &poolInfo, nullptr, &myMainCommandPool));
 		}
 	}
 
@@ -564,7 +564,7 @@ namespace Volt
 
 		{
 			auto& mutex = myQueueMutexes[it->queueType];
-			std::unique_lock<std::mutex> lock{ mutex };
+			std::unique_lock<std::mutex> queueLock{ mutex };
 			VT_VK_CHECK(vkQueueSubmit(it->queue, 1, &submitInfo, fence));
 		}
 

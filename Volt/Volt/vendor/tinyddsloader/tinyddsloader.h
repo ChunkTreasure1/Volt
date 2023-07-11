@@ -812,29 +812,29 @@ Result DDSFile::Load(std::vector<uint8_t>&& dds) {
     }
 
     if (dxt10Header) {
-        auto dxt10Header = reinterpret_cast<const HeaderDXT10*>(
+        auto dxt10Header2 = reinterpret_cast<const HeaderDXT10*>(
             reinterpret_cast<const char*>(header) + sizeof(Header));
 
-        m_arraySize = dxt10Header->m_arraySize;
+        m_arraySize = dxt10Header2->m_arraySize;
         if (m_arraySize == 0) {
             return Result::ErrorInvalidData;
         }
 
-        switch (dxt10Header->m_format) {
+        switch (dxt10Header2->m_format) {
             case DXGIFormat::AI44:
             case DXGIFormat::IA44:
             case DXGIFormat::P8:
             case DXGIFormat::A8P8:
                 return Result::ErrorNotSupported;
             default:
-                if (GetBitsPerPixel(dxt10Header->m_format) == 0) {
+                if (GetBitsPerPixel(dxt10Header2->m_format) == 0) {
                     return Result::ErrorNotSupported;
                 }
         }
 
-        m_format = dxt10Header->m_format;
+        m_format = dxt10Header2->m_format;
 
-        switch (dxt10Header->m_resourceDimension) {
+        switch (dxt10Header2->m_resourceDimension) {
             case TextureDimension::Texture1D:
                 if ((header->m_flags & uint32_t(HeaderFlagBits::Height) &&
                      (m_height != 1))) {
@@ -843,7 +843,7 @@ Result DDSFile::Load(std::vector<uint8_t>&& dds) {
                 m_height = m_depth = 1;
                 break;
             case TextureDimension::Texture2D:
-                if (dxt10Header->m_miscFlag &
+                if (dxt10Header2->m_miscFlag &
                     uint32_t(DXT10MiscFlagBits::TextureCube)) {
                     m_arraySize *= 6;
                     m_isCubemap = true;
@@ -862,7 +862,7 @@ Result DDSFile::Load(std::vector<uint8_t>&& dds) {
                 return Result::ErrorNotSupported;
         }
 
-        m_texDim = dxt10Header->m_resourceDimension;
+        m_texDim = dxt10Header2->m_resourceDimension;
     } else {
         m_format = GetDXGIFormat(header->m_pixelFormat);
         if (m_format == DXGIFormat::Unknown) {

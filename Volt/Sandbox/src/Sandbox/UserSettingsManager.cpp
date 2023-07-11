@@ -108,6 +108,9 @@ void UserSettingsManager::LoadUserSettings()
 
 	YAML::Node Networknode = settingsNode["NetworkSettings"];
 	VT_DESERIALIZE_PROPERTY(enableNetworking, s_editorSettings.networkSettings.enableNetworking, Networknode, false);
+
+	YAML::Node AssetBrowserNode = settingsNode["AssetBrowserSettings"];
+	VT_DESERIALIZE_PROPERTY(thumbnailSize, s_editorSettings.assetBrowserSettings.thumbnailSize, AssetBrowserNode, 85.f);
 }
 
 void UserSettingsManager::SaveUserSettings()
@@ -198,6 +201,13 @@ void UserSettingsManager::SaveUserSettings()
 		{
 			out << YAML::BeginMap;
 			VT_SERIALIZE_PROPERTY(enableNetworking, s_editorSettings.networkSettings.enableNetworking, out);
+			out << YAML::EndMap;
+		}
+
+		out << YAML::Key << "AssetBrowserSettings" << YAML::Value;
+		{
+			out << YAML::BeginMap;
+			VT_SERIALIZE_PROPERTY(thumbnailSize, s_editorSettings.assetBrowserSettings.thumbnailSize, out);
 			out << YAML::EndMap;
 		}
 

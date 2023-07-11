@@ -394,8 +394,8 @@ class FileSys {
 	// Convenience wrappers for above
 
 	void		Chmod( Error *e ) { Chmod( perms, e ); }
-	void		Chmod( const char *perms, Error *e )
-			{ Chmod( Perm( perms ), e ); } 
+	void		Chmod( const char *inPerms, Error *e )
+			{ Chmod( Perm(inPerms), e ); }
 
 	char *		Name() { return Path()->Text(); }
 	void		Set( const char *name ) { Set( StrRef( name ) ); }

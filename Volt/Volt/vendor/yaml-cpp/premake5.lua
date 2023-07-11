@@ -20,11 +20,7 @@ project "YamlCPP"
 		"include"
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
+	warnings "off"
 
 	filter "system:windows"
 		systemversion "latest"

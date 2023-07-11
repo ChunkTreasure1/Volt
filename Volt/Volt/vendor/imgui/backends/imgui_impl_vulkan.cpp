@@ -1186,8 +1186,6 @@ ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_vie
         return bd->CachedDescriptorSets.at(hash);
     }
 
-    ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-
     VkDescriptorSetAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     alloc_info.descriptorSetCount = 1;

@@ -69,7 +69,7 @@ namespace Volt
 		return mesh;
 	}
 
-	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node* parent, Ref<Mesh> outMesh)
+	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node*, Ref<Mesh> outMesh)
 	{
 		GLTF::Node node{};
 

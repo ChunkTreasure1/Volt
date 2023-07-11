@@ -24,11 +24,7 @@ project "Optick"
 		"_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS"
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
+	warnings "off"
 
 	filter "system:windows"
 		systemversion "latest"

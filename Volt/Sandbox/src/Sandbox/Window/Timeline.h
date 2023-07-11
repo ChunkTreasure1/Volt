@@ -41,13 +41,13 @@ private:
 
 	bool CameraQuickshotKeyframe(Volt::KeyPressedEvent& e);
 	void AddKeyframe();
-	void AddClip(const uint32_t& entityId);
+	void AddClip(uint32_t entityId);
 
 	void PreviewTimeline();
 
-	void DrawEntityTracks(ImDrawList& drawlist, const int& trackIndex);
-	void DrawKeyframesOnTrack(const int& trackIndex);
-	void DrawClipsOnTrack(const int& trackIndex);
+	void DrawEntityTracks(ImDrawList& drawlist, int trackIndex);
+	void DrawKeyframesOnTrack(int trackIndex);
+	void DrawClipsOnTrack(int trackIndex);
 
 	void UpdateTimelineTracks();
 	void UpdateTimeLine();

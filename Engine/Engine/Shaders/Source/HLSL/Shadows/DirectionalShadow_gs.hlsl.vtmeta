@@ -1,4 +1,6 @@
-Handle: 13986298519943249308
-Path: Engine/Shaders/Source/HLSL/Shadows/DirectionalShadow_gs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6722378989310764320
+  filePath: Engine/Shaders/Source/HLSL/Shadows/DirectionalShadow_gs.hlsl
+  type: 128
+  Dependencies:
+    []

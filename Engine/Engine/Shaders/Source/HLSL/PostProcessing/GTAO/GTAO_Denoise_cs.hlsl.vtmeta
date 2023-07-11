@@ -1,4 +1,6 @@
-Handle: 9719994384319119217
-Path: Engine/Shaders/Source/HLSL/PostProcessing/GTAO/GTAO_Denoise_cs.hlsl
-Dependencies:
-  []
+Metadata:
+  assetHandle: 17726932713028362065
+  filePath: Engine/Shaders/Source/HLSL/PostProcessing/GTAO/GTAO_Denoise_cs.hlsl
+  type: 128
+  Dependencies:
+    []
