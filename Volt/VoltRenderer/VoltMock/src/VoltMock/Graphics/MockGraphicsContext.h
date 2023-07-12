@@ -8,6 +8,7 @@ namespace Volt
 		MockGraphicsContext(const GraphicsContextCreateInfo& createInfo);
 		~MockGraphicsContext() override = default;
 
-	private:
+	protected:
+		void* GetHandleImpl() override;
 	};
 }

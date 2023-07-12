@@ -1,0 +1,31 @@
+#pragma once
+
+#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
+
+struct VkPhysicalDevice_T;
+
+namespace Volt
+{
+	struct PhysicalDeviceQueueFamilyIndices
+	{
+		int32_t graphicsFamilyQueueIndex = -1;
+		int32_t computeFamilyQueueIndex = -1;
+		int32_t transferFamilyQueueIndex = -1;
+	};
+
+	class VulkanPhysicalGraphicsDevice final : public PhysicalGraphicsDevice
+	{
+	public:
+		VulkanPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo);
+		~VulkanPhysicalGraphicsDevice() override;
+
+	protected:
+		void* GetHandleImpl() override;
+
+	private:
+		VkPhysicalDevice_T* m_physicalDevice = nullptr;
+
+		PhysicalDeviceQueueFamilyIndices m_queueFamilyIndices{};
+		PhysicalDeviceCreateInfo m_createInfo{};
+	};
+}

@@ -221,11 +221,11 @@ namespace Volt
 				out_field.netData.boundFunction = data;
 				return true;
 
-				Buffer buffer{};
-				buffer.Resize(128);
-				mono_field_get_value(attributeObj, notifyField, buffer.As<void>());
-				out_field.netData.boundFunction = std::string(buffer.As<const char>());
-				buffer.Release();
+				//Buffer buffer{};
+				//buffer.Resize(128);
+				//mono_field_get_value(attributeObj, notifyField, buffer.As<void>());
+				//out_field.netData.boundFunction = std::string(buffer.As<const char>());
+				//buffer.Release();
 			}
 		}
 		return true;

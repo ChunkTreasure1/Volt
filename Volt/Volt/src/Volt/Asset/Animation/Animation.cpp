@@ -238,8 +238,6 @@ namespace Volt
 		}
 
 		return false;
-
-		return false;
 	}
 
 	const uint32_t Animation::GetFrameFromStartTime(float startTime, float speed)

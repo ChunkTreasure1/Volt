@@ -162,6 +162,8 @@ project "Volt"
 
 		defines
 		{
+			"VT_PLATFORM_WINDOWS",
+
 			"NOMINMAX",
 			"_HAS_STD_BYTE=0",
 			"_WINSOCKAPI_",

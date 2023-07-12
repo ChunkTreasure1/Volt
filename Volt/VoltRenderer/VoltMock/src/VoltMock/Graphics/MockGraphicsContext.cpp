@@ -9,4 +9,9 @@ namespace Volt
 
 		// WOW
 	}
+
+	void* MockGraphicsContext::GetHandleImpl()
+	{
+		return nullptr;
+	}
 }

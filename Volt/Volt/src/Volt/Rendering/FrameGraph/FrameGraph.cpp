@@ -160,9 +160,8 @@ namespace Volt
 					if (it != previousRenderPass->resourceWrites.end())
 					{
 						passUsesPreviousTexture = true;
+						break;
 					}
-
-					break;
 				}
 
 				for (const auto& read : renderPass->resourceReads)
@@ -172,9 +171,8 @@ namespace Volt
 					if (it != previousRenderPass->resourceWrites.end())
 					{
 						passUsesPreviousTexture = true;
+						break;
 					}
-
-					break;
 				}
 
 				if (passUsesPreviousTexture)
@@ -305,7 +303,7 @@ namespace Volt
 
 		auto commandBuffer = myPrimaryCommandBuffer.lock();
 		myCommandBufferCache.Reset();
-		
+
 		std::vector<std::future<void>> commandBufferFutures;
 		std::vector<Ref<FrameGraphRenderPassNodeBase>> passNodes;
 
@@ -319,8 +317,8 @@ namespace Volt
 			passNodes.emplace_back(renderPassNode);
 
 			Ref<CommandBuffer> secondaryCommandBuffer = myCommandBufferCache.GetOrCreateCommandBuffer(commandBuffer);
-			
-			auto future = myThreadPool.SubmitTask([&, cmdBuffer = secondaryCommandBuffer]() 
+
+			auto future = myThreadPool.SubmitTask([&, cmdBuffer = secondaryCommandBuffer]()
 			{
 				cmdBuffer->Begin();
 
@@ -366,7 +364,7 @@ namespace Volt
 			future.wait();
 		}
 
-		for (uint32_t passIndex = 0; const auto& secondaryCmdBuffer : myCommandBufferCache.GetUsedCommandBuffers())
+		for (uint32_t passIndex = 0; const auto & secondaryCmdBuffer : myCommandBufferCache.GetUsedCommandBuffers())
 		{
 			const auto& pass = passNodes.at(passIndex);
 
@@ -379,7 +377,7 @@ namespace Volt
 			passIndex++;
 		}
 
-		for (uint32_t i = 0; const auto& resource : myResourceNodes)
+		for (uint32_t i = 0; const auto & resource : myResourceNodes)
 		{
 			if (resource.resource.isExternal)
 			{
@@ -466,7 +464,8 @@ namespace Volt
 
 		static_assert(sizeof(execFunc) <= 512 && "Execution function must not be larger than 512 bytes!");
 		struct Empty
-		{};
+		{
+		};
 
 		Ref<FrameGraphRenderPassNode<Empty>> newNode = CreateRef<FrameGraphRenderPassNode<Empty>>();
 

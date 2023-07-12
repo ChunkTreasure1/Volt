@@ -5,6 +5,9 @@
 
 #include "VoltRHI/Graphics/DeviceQueue.h"
 
+#include <unordered_map>
+#include <mutex>
+
 namespace Volt
 {
 	class GraphicsDevice : public RHIInterface

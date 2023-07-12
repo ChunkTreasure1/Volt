@@ -18,7 +18,6 @@ namespace Volt
 
 	protected:
 		DeviceCapabilities m_capabilities;
-
 		PhysicalGraphicsDevice() = default;
 	};
 }

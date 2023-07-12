@@ -4,6 +4,7 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltMock/Graphics/MockPhysicalGraphicsDevice.h>
+#include <VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h>
 
 namespace Volt
 {
@@ -13,11 +14,11 @@ namespace Volt
 
 		switch (api)
 		{
-			case GraphicsAPI::Vulkan:
 			case GraphicsAPI::D3D12:
 			case GraphicsAPI::MoltenVk:
 				break;
 
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanPhysicalGraphicsDevice>(deviceInfo); break;
 			case GraphicsAPI::Mock: return CreateRefRHI<MockPhysicalGraphicsDevice>(deviceInfo); break;
 		}
 

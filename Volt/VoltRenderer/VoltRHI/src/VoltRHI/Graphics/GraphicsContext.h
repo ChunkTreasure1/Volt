@@ -1,14 +1,15 @@
 #pragma once
+
 #include "VoltRHI/Core/Core.h"
 #include "VoltRHI/Core/RHICommon.h"
-
+#include "VoltRHI/Core/RHIInterface.h"
 
 namespace Volt
 {
 	class GraphicsDevice;
 	class PhysicalGraphicsDevice;
 
-	class GraphicsContext
+	class GraphicsContext : public RHIInterface
 	{
 	public:
 		GraphicsContext()

@@ -22,13 +22,15 @@ namespace Volt
 	{
 		AMD,
 		NVIDIA,
-		Intel
+		Intel,
+
+		Unknown
 	};
 
 	enum class Severity
 	{
 		Trace,
-		Log,
+		Info,
 		Warning,
 		Error,
 	};

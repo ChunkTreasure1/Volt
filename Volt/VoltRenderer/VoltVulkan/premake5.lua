@@ -40,7 +40,10 @@ project "VoltVulkan"
 	includedirs
 	{
 		"src/",
-		"../VoltRHI/src"
+		"../VoltRHI/src",
+
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.VulkanSDK}"
 	}
 
 	defines
@@ -63,7 +66,11 @@ project "VoltVulkan"
 
 	filter "system:windows"
 		systemversion "latest"
-
+		defines 
+		{
+			"VT_PLATFORM_WINDOWS"
+		}
+		
 		filter "configurations:Debug"
 			defines 
 			{ 

@@ -1,0 +1,238 @@
+#include "vkpch.h"
+#include "VulkanGraphicsContext.h"
+
+#include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
+
+#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
+
+#include <vulkan/vulkan.h>
+#include <GLFW/glfw3.h>
+
+#include <array>
+
+namespace Volt
+{
+	namespace Utility
+	{
+		inline static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
+		{
+			auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+
+			if (func != nullptr)
+			{
+				return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+			}
+			else
+			{
+				return VK_ERROR_EXTENSION_NOT_PRESENT;
+			}
+		}
+
+		inline static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+		{
+			auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+
+			if (func != nullptr)
+			{
+				func(instance, debugMessenger, pAllocator);
+			}
+		}
+
+		inline static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
+		{
+			std::string message = pCallbackData->pMessage;
+			if (message.find("-06195") != std::string::npos)
+			{
+				return VK_FALSE;
+			}
+
+			switch (messageSeverity)
+			{
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+					GraphicsContext::Log(Severity::Trace, std::format("Validation layer: {0}", pCallbackData->pMessage));
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+					GraphicsContext::Log(Severity::Info, std::format("Validation layer: {0}", pCallbackData->pMessage));
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+					GraphicsContext::Log(Severity::Warning, std::format("Validation layer: {0}", pCallbackData->pMessage));
+					break;
+				case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+					GraphicsContext::Log(Severity::Error, std::format("Validation layer: {0}", pCallbackData->pMessage));
+					break;
+			}
+
+			return VK_FALSE;
+		}
+
+		inline static void PopulateDebugMessengerInfo(VkDebugUtilsMessengerCreateInfoEXT& outInfo)
+		{
+			outInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+
+			VkDebugUtilsMessageSeverityFlagsEXT severityFlags = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+
+#ifdef VT_DEBUG	
+			severityFlags |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+#endif
+
+			outInfo.messageSeverity = severityFlags;
+
+			outInfo.messageType =
+				VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+				VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+				VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+
+			outInfo.pfnUserCallback = VulkanDebugCallback;
+			outInfo.pUserData = nullptr;
+		}
+
+		inline static void PopulateValidationFeaturesInfo(VkValidationFeaturesEXT& outInfo, VkDebugUtilsMessengerCreateInfoEXT& debugInfo)
+		{
+			const std::vector<VkValidationFeatureEnableEXT> enabledValidationFeatures = { /*VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT, VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT */ };
+
+			outInfo.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+			outInfo.pNext = &debugInfo;
+			outInfo.disabledValidationFeatureCount = 0;
+			outInfo.pDisabledValidationFeatures = nullptr;
+			outInfo.enabledValidationFeatureCount = static_cast<uint32_t>(enabledValidationFeatures.size());
+			outInfo.pEnabledValidationFeatures = enabledValidationFeatures.data();
+		}
+	}
+
+	inline static constexpr std::array<const char*, 1> s_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+
+	VulkanGraphicsContext::VulkanGraphicsContext(const GraphicsContextCreateInfo& createInfo)
+		: m_createInfo(createInfo)
+	{
+		Initialize();
+	}
+
+	VulkanGraphicsContext::~VulkanGraphicsContext()
+	{
+		Shutdown();
+	}
+
+	void* VulkanGraphicsContext::GetHandleImpl()
+	{
+		return m_instance;
+	}
+
+	void VulkanGraphicsContext::Initialize()
+	{
+		CreateInstance();
+
+		m_physicalDevice = PhysicalGraphicsDevice::Create(m_createInfo.physicalDeviceInfo);
+		m_graphicsDevice = GraphicsDevice::Create(m_createInfo.graphicsDeviceInfo);
+	}
+
+	void VulkanGraphicsContext::Shutdown()
+	{
+		m_graphicsDevice = nullptr;
+		m_physicalDevice = nullptr;
+
+		vkDestroyInstance(m_instance, nullptr);
+	}
+
+	void VulkanGraphicsContext::CreateInstance()
+	{
+#ifdef VT_ENABLE_VALIDATION
+		const bool validationLayerSupported = CheckValidationLayerSupport();
+		if (!validationLayerSupported)
+		{
+			// Log	
+		}
+#endif
+
+		VkApplicationInfo appInfo{};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "Volt";
+		appInfo.pEngineName = "Volt";
+		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_3;
+
+		const auto requiredExtensions = GetRequiredExtensions();
+
+		VkInstanceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &appInfo;
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
+		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
+
+#ifdef VT_ENABLE_VALIDATION
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+		Utility::PopulateDebugMessengerInfo(debugCreateInfo);
+
+		VkValidationFeaturesEXT validationFeatures{};
+		Utility::PopulateValidationFeaturesInfo(validationFeatures, debugCreateInfo);
+
+		createInfo.pNext = &validationFeatures;
+		createInfo.enabledLayerCount = static_cast<uint32_t>(s_validationLayers.size());
+		createInfo.ppEnabledLayerNames = s_validationLayers.data();
+#else
+		createInfo.pNext = nullptr;
+		createInfo.enabledLayerCount = 0;
+		createInfo.ppEnabledLayerNames = nullptr;
+#endif
+		
+		VT_VK_CHECK(vkCreateInstance(&createInfo, nullptr, &m_instance));
+
+		if (!m_instance)
+		{
+			throw std::runtime_error("[GraphicsContext] This device does not support Vulkan!");
+			return;
+		}
+
+		FindVulkanFunctions(m_instance);
+	}
+
+	void VulkanGraphicsContext::InitializeDebugCallback()
+	{
+	}
+
+	const bool VulkanGraphicsContext::CheckValidationLayerSupport() const
+	{
+		uint32_t layerCount = 0;
+		VT_VK_CHECK(vkEnumerateInstanceLayerProperties(&layerCount, nullptr));
+
+		std::vector<VkLayerProperties> layerProperties{ layerCount };
+		VT_VK_CHECK(vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data()));
+
+		for (const char* layerName : s_validationLayers)
+		{
+			bool layerFound = false;
+			for (const auto& layer : layerProperties)
+			{
+				if (strcmp(layerName, layer.layerName) != 0)
+				{
+					layerFound = true;
+					break;
+				}
+			}
+
+			if (!layerFound)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	const std::vector<const char*> VulkanGraphicsContext::GetRequiredExtensions() const
+	{
+		uint32_t extensionCount = 0;
+		const char** extensions = nullptr;
+
+		extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+		std::vector<const char*> extensionsVector{ extensions, extensions + extensionCount };
+
+#ifdef VT_ENABLE_GPU_MARKERS
+		extensionsVector.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
+		return extensionsVector;
+	}
+}
