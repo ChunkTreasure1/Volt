@@ -999,12 +999,12 @@ namespace Volt
 
 		for (const auto& name : assemblyNames)
 		{
-			if (Utils::StringContains(name, "Volt-ScriptCore"))
+			if (::Utility::StringContains(name, "Volt-ScriptCore"))
 			{
 				continue;
 			}
 
-			if (Utils::StringContains(name, "mscorlib"))
+			if (::Utility::StringContains(name, "mscorlib"))
 			{
 				continue;
 			}

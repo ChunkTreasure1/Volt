@@ -41,11 +41,11 @@ namespace Volt
 		{
 			const auto valLowerCase = Utility::ToLower(val);
 
-			if (Utility::StringContains(valLowerCase, SPECIAL_TYPE_NAME))
+			if (Utility::StringContains(valLowerCase, std::string(SPECIAL_TYPE_NAME)))
 			{
 				ParseSpecialType(valLowerCase, propertyValues, outProperty);
 			}
-			else if (Utility::StringContains(valLowerCase, VISIBLE_NAME))
+			else if (Utility::StringContains(valLowerCase, std::string(VISIBLE_NAME)))
 			{
 				if (Utility::StringContains(valLowerCase, "true"))
 				{
@@ -56,7 +56,7 @@ namespace Volt
 					outProperty.visible = eV_False;
 				}
 			}
-			else if (Utility::StringContains(valLowerCase, SERIALIZABLE_NAME))
+			else if (Utility::StringContains(valLowerCase, std::string(SERIALIZABLE_NAME)))
 			{
 				if (Utility::StringContains(valLowerCase, "true"))
 				{
@@ -83,7 +83,7 @@ namespace Volt
 			{
 				std::string propValLower = Utility::ToLower(propVal);
 
-				if (Utility::StringContains(propValLower, ASSET_TYPE_NAME))
+				if (Utility::StringContains(propValLower, std::string(ASSET_TYPE_NAME)))
 				{
 					const std::string assetTypeVal = Utility::ToLower(FindValueInString(propVal, ASSET_TYPE_NAME));
 				

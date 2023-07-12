@@ -69,7 +69,7 @@ namespace Utility
 			return nullptr;
 		}
 
-		if (Utils::StringContains(Utils::ToLower(splitParam.at(0)), "set"))
+		if (Utility::StringContains(Utility::ToLower(splitParam.at(0)), "set"))
 		{
 			Ref<GraphKey::Node> node;
 			GK_CREATE_SET_PARAMETER_NODE(std::type_index(param.value.type()), param.id, node);
@@ -1068,12 +1068,12 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 
 					for (const auto& n : names)
 					{
-						const std::string lowerName = Utils::ToLower(n);
-						visible |= Utils::StringContains(lowerName, lowerQuery);
+						const std::string lowerName = Utility::ToLower(n);
+						visible |= Utility::StringContains(lowerName, lowerQuery);
 					}
 
-					const std::string lowerCategory = Utils::ToLower(category);
-					visible |= Utils::StringContains(lowerCategory, lowerQuery);
+					const std::string lowerCategory = Utility::ToLower(category);
+					visible |= Utility::StringContains(lowerCategory, lowerQuery);
 
 					return visible;
 				};
@@ -1162,7 +1162,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 					for (const auto& name : tempNames)
 					{
 						const bool nodeHasPin = nodeHasPinOfType(name);
-						const bool containsQuery = Utils::StringContains(Utils::ToLower(name), Utils::ToLower(query));
+						const bool containsQuery = Utility::StringContains(Utility::ToLower(name), Utility::ToLower(query));
 
 						UI::RenderMatchingTextBackground(query, name, EditorTheme::MatchingTextBackground);
 						if (containsQuery && nodeHasPin && ImGui::MenuItem(name.c_str()) && myOpenGraph)

@@ -135,7 +135,7 @@ namespace Volt
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyFilePath)
 	{
-		const std::string pathString = Utils::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
+		const std::string pathString = Utility::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
 		std::vector<AssetHandle> result{};
 
 		auto& instance = Get();
@@ -427,11 +427,11 @@ namespace Volt
 		std::vector<AssetHandle> filesToMove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::string sourceDirLower = Utils::ToLower(sourceDir.string());
+			const std::string sourceDirLower = Utility::ToLower(sourceDir.string());
 
 			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				const std::string filePathLower = Utils::ToLower(metaData.filePath.string());
+				const std::string filePathLower = Utility::ToLower(metaData.filePath.string());
 
 				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
@@ -447,7 +447,7 @@ namespace Volt
 				auto& metadata = GetMetadataFromHandleMutable(handle);
 
 				std::string newPath = metadata.filePath.string();
-				const size_t directoryStringLoc = Utils::ToLower(newPath).find(Utils::ToLower(sourceDir.string()));
+				const size_t directoryStringLoc = Utility::ToLower(newPath).find(Utility::ToLower(sourceDir.string()));
 
 				if (directoryStringLoc == std::string::npos)
 				{
@@ -662,11 +662,11 @@ namespace Volt
 		std::vector<AssetHandle> filesToRemove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::string sourceDirLower = Utils::ToLower(folderPath.string());
+			const std::string sourceDirLower = Utility::ToLower(folderPath.string());
 
 			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				const std::string filePathLower = Utils::ToLower(metaData.filePath.string());
+				const std::string filePathLower = Utility::ToLower(metaData.filePath.string());
 
 				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
@@ -745,8 +745,8 @@ namespace Volt
 		const auto pathSplit = Utility::SplitStringsByCharacter(path.string(), '/');
 		if (!pathSplit.empty())
 		{
-			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
-			if (Utils::StringContains(lowerFirstPart, "engine") || Utils::StringContains(lowerFirstPart, "editor"))
+			std::string lowerFirstPart = Utility::ToLower(pathSplit.front());
+			if (Utility::StringContains(lowerFirstPart, "engine") || Utility::StringContains(lowerFirstPart, "editor"))
 			{
 				return true;
 			}
@@ -793,7 +793,7 @@ namespace Volt
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		std::string ext = Utils::ToLower(extension);
+		std::string ext = Utility::ToLower(extension);
 		if (!s_assetExtensionsMap.contains(ext))
 		{
 			return AssetType::None;
@@ -1152,7 +1152,7 @@ namespace Volt
 
 	const std::filesystem::path AssetManager::GetCleanAssetFilePath(const std::filesystem::path& filePath)
 	{
-		auto pathClean = Utils::ReplaceCharacter(filePath.string(), '\\', '/');
+		auto pathClean = Utility::ReplaceCharacter(filePath.string(), '\\', '/');
 		return pathClean;
 	}
 

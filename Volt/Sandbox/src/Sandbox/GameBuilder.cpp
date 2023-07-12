@@ -447,7 +447,7 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 		{
 			const auto filePath = file.path().string();
 
-			if (!file.is_directory() && !Utils::StringContains(filePath, "HLSL"))
+			if (!file.is_directory() && !Utility::StringContains(filePath, "HLSL"))
 			{
 				result++;
 			}

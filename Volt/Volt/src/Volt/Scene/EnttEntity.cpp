@@ -50,7 +50,7 @@ namespace Volt
 		return scenePtr->GetWorldTransform(*this);
 	}
 
-	const glm::mat4& EnttEntity::GetLocalTransform() const
+	const glm::mat4 EnttEntity::GetLocalTransform() const
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetEnTTRegistry();
@@ -261,7 +261,9 @@ namespace Volt
 	
 	EnttEntity& EnttEntity::operator=(const EnttEntity& entity)
 	{
-		*this = entity;
+		m_scene = entity.m_scene;
+		m_id = entity.m_id;
+
 		return *this;
 	}
 

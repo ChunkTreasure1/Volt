@@ -117,42 +117,56 @@ namespace Volt
 		{ ".vtncon", AssetType::NetContract },
 	};
 
+	static std::unordered_map<std::string, AssetType> s_assetNamesMap =
+	{
+		{ "Mesh Source", AssetType::MeshSource },
+		{ "Mesh", AssetType::Mesh },
+		{ "NavMesh", AssetType::NavMesh },
+
+		{ "Skeleton", AssetType::Skeleton },
+		{ "Animation", AssetType::Animation },
+		{ "Animated Character", AssetType::AnimatedCharacter },
+		{ "Animation Graph", AssetType::AnimationGraph },
+
+		{ "Texture", AssetType::Texture },
+
+		{ "Shader", AssetType::Shader },
+		{ "Shader Source", AssetType::ShaderSource },
+
+		{ "Material Graph", AssetType::MaterialGraph },
+		{ "Material", AssetType::Material },
+		{ "Post Processing Material", AssetType::PostProcessingMaterial },
+		{ "Post Processing Stack", AssetType::PostProcessingStack },
+		{ "Physics Material", AssetType::PhysicsMaterial },
+
+		{ "Scene", AssetType::Scene },
+		{ "Prefab", AssetType::Prefab },
+		{ "Particle Preset", AssetType::ParticlePreset },
+		{ "Font", AssetType::Font },
+		{ "Video", AssetType::Video },
+
+		{ "Mono Script", AssetType::MonoScript },
+		{ "Behavior Graph", AssetType::BehaviorGraph},
+		{ "Blend Space", AssetType::BlendSpace },
+
+		{ "Net Contract", AssetType::NetContract }
+	};
+
 	inline static const std::unordered_map<std::string, AssetType>& GetAssetNames()
 	{
-		static std::unordered_map<std::string, AssetType> assetNamesMap =
+		return s_assetNamesMap;
+	}
+
+	inline static std::string GetAssetTypeName(AssetType aType)
+	{
+		for (auto& [name, type] : s_assetNamesMap)
 		{
-			{ "Mesh Source", AssetType::MeshSource },
-			{ "Mesh", AssetType::Mesh },
-			{ "NavMesh", AssetType::NavMesh },
+			if (type == aType)
+				return name;
+		}
 
-			{ "Skeleton", AssetType::Skeleton },
-			{ "Animation", AssetType::Animation },
-			{ "Animated Character", AssetType::AnimatedCharacter },
-			{ "Animation Graph", AssetType::AnimationGraph },
-
-			{ "Texture", AssetType::Texture },
-
-			{ "Shader", AssetType::Shader },
-			{ "Shader Source", AssetType::ShaderSource },
-
-			{ "Material Graph", AssetType::MaterialGraph },
-			{ "Material", AssetType::Material },
-			{ "Post Processing Material", AssetType::PostProcessingMaterial },
-			{ "Post Processing Stack", AssetType::PostProcessingStack },
-			{ "Physics Material", AssetType::PhysicsMaterial },
-
-			{ "Scene", AssetType::Scene },
-			{ "Prefab", AssetType::Prefab },
-			{ "Particle Preset", AssetType::ParticlePreset },
-			{ "Font", AssetType::Font },
-			{ "Video", AssetType::Video },
-
-			{ "Mono Script", AssetType::MonoScript },
-			{ "Behavior Graph", AssetType::BehaviorGraph},
-			{ "Blend Space", AssetType::BlendSpace },
-
-			{ "Net Contract", AssetType::NetContract }
-		};
+		return "Unknown";
+	}
 
 	struct AssetMetadata
 	{
@@ -184,17 +198,6 @@ namespace Volt
 		std::vector<AssetHandle> dependencies;
 		std::unordered_map<std::string, std::string> properties;
 	};
-  
-	inline static std::string GetAssetTypeName(AssetType aType)
-	{
-		for (auto& [name, type] : s_assetNamesMap)
-		{
-			if (type == aType)
-				return name;
-		}
-
-		return "Unknown";
-	}
 
 	class Asset
 	{

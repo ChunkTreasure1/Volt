@@ -4,6 +4,7 @@
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <stack>
 
 #include <string>
 
@@ -17,6 +18,8 @@
 #include <filesystem>
 
 #include <future>
+
+#include <ranges>
 
 #include <glm/glm.hpp>
 

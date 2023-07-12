@@ -48,6 +48,7 @@
 #include <Navigation/Core/NavigationSystem.h>
 
 #include <stack>
+#include <ranges>
 
 namespace Volt
 {

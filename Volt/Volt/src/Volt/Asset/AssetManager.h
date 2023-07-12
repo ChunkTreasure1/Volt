@@ -288,7 +288,7 @@ namespace Volt
 	inline Ref<T> AssetManager::CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args && ...args)
 	{
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
-		const std::filesystem::path filePath = Utils::ReplaceCharacter((targetDir / filename).string(), '\\', '/');
+		const std::filesystem::path filePath = ::Utility::ReplaceCharacter((targetDir / filename).string(), '\\', '/');
 
 		WriteLock lockCache{ Get().m_assetCacheMutex };
 		WriteLock lockRegistry{ Get().m_assetRegistryMutex };

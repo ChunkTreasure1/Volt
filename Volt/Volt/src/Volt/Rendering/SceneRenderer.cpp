@@ -342,27 +342,27 @@ namespace Volt
 	{
 		return;
 
-		const uint32_t currentIndex = myCommandBuffer->GetCurrentIndex();
-		auto& timestamps = myTimestamps.at(currentIndex);
+		//const uint32_t currentIndex = myCommandBuffer->GetCurrentIndex();
+		//auto& timestamps = myTimestamps.at(currentIndex);
 
-		auto& timestamp = timestamps.emplace_back();
-		timestamp.label = label;
-		timestamp.id = myCommandBuffer->BeginTimestamp();
+		//auto& timestamp = timestamps.emplace_back();
+		//timestamp.label = label;
+		//timestamp.id = myCommandBuffer->BeginTimestamp();
 	}
 
 	void SceneRenderer::EndTimestamp()
 	{
 		return;
 
-		const uint32_t currentIndex = myCommandBuffer->GetCurrentIndex();
-		auto& timestamps = myTimestamps.at(currentIndex);
+		//const uint32_t currentIndex = myCommandBuffer->GetCurrentIndex();
+		//auto& timestamps = myTimestamps.at(currentIndex);
 
-		if (timestamps.empty())
-		{
-			return;
-		}
+		//if (timestamps.empty())
+		//{
+		//	return;
+		//}
 
-		myCommandBuffer->EndTimestamp(timestamps.back().id);
+		//myCommandBuffer->EndTimestamp(timestamps.back().id);
 	}
 
 	void SceneRenderer::OnRender(Ref<Camera> camera)

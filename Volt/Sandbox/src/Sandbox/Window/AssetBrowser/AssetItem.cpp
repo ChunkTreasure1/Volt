@@ -177,8 +177,8 @@ namespace AssetBrowser
 		{
 			const auto fullPath = Volt::ProjectManager::GetAssetsDirectory() / std::filesystem::relative(path, "Assets\\");
 			const uintmax_t fileSize = std::filesystem::file_size(fullPath);
-			const std::string sizeStringWithMetricPrefix = Utils::ToStringWithMetricPrefixCharacterForBytes(fileSize);
-			const std::string sizeStringWithSeparator = Utils::ToStringWithThousandSeparator(fileSize);
+			const std::string sizeStringWithMetricPrefix = Utility::ToStringWithMetricPrefixCharacterForBytes(fileSize);
+			const std::string sizeStringWithSeparator = Utility::ToStringWithThousandSeparator(fileSize);
 
 			DrawHoverInfo("Size", sizeStringWithMetricPrefix + " (" + sizeStringWithSeparator +" bytes)");
 		}

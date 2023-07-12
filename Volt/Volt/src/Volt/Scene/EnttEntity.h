@@ -20,7 +20,7 @@ namespace Volt
 		void SetTag(std::string_view tag);
 
 		const glm::mat4 GetTransform() const;
-		const glm::mat4& GetLocalTransform() const;
+		const glm::mat4 GetLocalTransform() const;
 
 		const glm::vec3 GetForward() const;
 		const glm::vec3 GetRight() const;

@@ -446,7 +446,7 @@ Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::
 			const auto type = Volt::AssetManager::GetAssetTypeFromPath(entry);
 			const auto filename = entry.path().filename().string();
 
-			if (type != Volt::AssetType::None && !Utils::StringContains(filename, ".vtthumb.png"))
+			if (type != Volt::AssetType::None && !Utility::StringContains(filename, ".vtthumb.png"))
 			{
 				if (myAssetMask == Volt::AssetType::None || (myAssetMask & type) != Volt::AssetType::None)
 				{
