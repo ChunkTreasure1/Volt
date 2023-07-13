@@ -16,11 +16,11 @@ namespace Volt
 		VT_DELETE_COMMON_OPERATORS(GraphicsDevice);
 		~GraphicsDevice() override = default;
 
-		static Ref<GraphicsDevice> Create(const GraphicsDeviceCreateInfo& deviceInfo);
-
 		Ref<CommandBuffer> GetSingleUseCommandBuffer(QueueType queueType);
 		void ExecuteSingleUseCommandBuffer(Ref<CommandBuffer> commandBuffer);
 
+		static Ref<GraphicsDevice> Create(const GraphicsDeviceCreateInfo& deviceInfo);
+	
 	protected:
 		GraphicsDevice();
 

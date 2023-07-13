@@ -19,6 +19,8 @@ namespace Volt
 		VulkanPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo);
 		~VulkanPhysicalGraphicsDevice() override;
 
+		inline const PhysicalDeviceQueueFamilyIndices& GetQueueFamilies() const { return m_queueFamilyIndices; }
+
 	protected:
 		void* GetHandleImpl() override;
 

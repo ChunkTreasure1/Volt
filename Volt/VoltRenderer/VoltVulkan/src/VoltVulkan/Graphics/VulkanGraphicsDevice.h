@@ -17,5 +17,7 @@ namespace Volt
 
 	private:
 		VkDevice_T* m_device = nullptr;
+	
+		Weak<PhysicalGraphicsDevice> m_physicalDevice;
 	};
 }

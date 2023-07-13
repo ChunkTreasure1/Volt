@@ -3,6 +3,9 @@
 
 namespace Volt
 {
+	class PhysicalGraphicsDevice;
+	class GraphicsDevice;
+
 	enum class QueueType
 	{
 		Graphics,
@@ -55,6 +58,7 @@ namespace Volt
 
 	struct GraphicsDeviceCreateInfo
 	{
+		Ref<PhysicalGraphicsDevice> physicalDevice;
 	};
 
 	struct GraphicsContextCreateInfo
@@ -65,4 +69,9 @@ namespace Volt
 		LogHookInfo loghookInfo;
 	};
 
+	struct DeviceQueueCreateInfo
+	{
+		Ref<GraphicsDevice> graphicsDevice;
+		QueueType queueType;
+	};
 }
