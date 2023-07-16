@@ -1,8 +1,11 @@
 #include "vkpch.h"
 #include "VulkanGraphicsDevice.h"
 
+#include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
+
 #include "VoltVulkan/Common/VulkanCommon.h"	
+
 
 #include <vulkan/vulkan.h>
 
@@ -68,8 +71,8 @@ namespace Volt
 	VulkanGraphicsDevice::VulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo)
 		: m_physicalDevice(createInfo.physicalDevice)
 	{
-		Ref<VulkanPhysicalGraphicsDevice> physicalDevicePtr = m_physicalDevice.lock()->As<VulkanPhysicalGraphicsDevice>();
-		const auto& queueFamilies = physicalDevicePtr->GetQueueFamilies();
+		VulkanPhysicalGraphicsDevice& physicalDevicePtr = m_physicalDevice.lock()->AsRef<VulkanPhysicalGraphicsDevice>();
+		const auto& queueFamilies = physicalDevicePtr.GetQueueFamilies();
 
 		std::array<VkDeviceQueueCreateInfo, 3> deviceQueueInfos{};
 		constexpr std::array<float, 3> queuePriorities = { 1.f, 1.f, 1.f };
@@ -80,6 +83,7 @@ namespace Volt
 			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queueCreateInfo.pQueuePriorities = queuePriorities.data();
 			queueCreateInfo.queueFamilyIndex = queueFamilies.graphicsFamilyQueueIndex;
+			queueCreateInfo.queueCount = 1;
 		}
 
 		// Compute Queue
@@ -87,7 +91,8 @@ namespace Volt
 			auto& queueCreateInfo = deviceQueueInfos[1];
 			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queueCreateInfo.pQueuePriorities = queuePriorities.data();
-			queueCreateInfo.queueFamilyIndex = queueFamilies.graphicsFamilyQueueIndex;
+			queueCreateInfo.queueFamilyIndex = queueFamilies.computeFamilyQueueIndex;
+			queueCreateInfo.queueCount = 1;
 		}
 
 		// Transfer Queue
@@ -95,7 +100,8 @@ namespace Volt
 			auto& queueCreateInfo = deviceQueueInfos[2];
 			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queueCreateInfo.pQueuePriorities = queuePriorities.data();
-			queueCreateInfo.queueFamilyIndex = queueFamilies.graphicsFamilyQueueIndex;
+			queueCreateInfo.queueFamilyIndex = queueFamilies.transferFamilyQueueIndex;
+			queueCreateInfo.queueCount = 1;
 		}
 
 		// Create Device
@@ -122,12 +128,22 @@ namespace Volt
 
 			deviceInfo.pNext = &enabledFeatures.physicalDeviceFeatures;
 
-			VT_VK_CHECK(vkCreateDevice(physicalDevicePtr->GetHandle<VkPhysicalDevice>(), &deviceInfo, nullptr, &m_device));
+			VT_VK_CHECK(vkCreateDevice(physicalDevicePtr.GetHandle<VkPhysicalDevice>(), &deviceInfo, nullptr, &m_device));
 		}
+
+		m_deviceQueues[QueueType::Graphics] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
+		m_deviceQueues[QueueType::TransferCopy] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
+		m_deviceQueues[QueueType::Compute] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
 	}
 
 	VulkanGraphicsDevice::~VulkanGraphicsDevice()
 	{
+		vkDestroyDevice(m_device, nullptr);
+	}
+
+	inline Weak<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
+	{
+		return m_physicalDevice;
 	}
 
 	void* VulkanGraphicsDevice::GetHandleImpl()

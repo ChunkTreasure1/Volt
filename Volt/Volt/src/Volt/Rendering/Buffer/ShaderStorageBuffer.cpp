@@ -27,7 +27,7 @@ namespace Volt
 		auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
-		VulkanAllocator allocator{ "ShaderStorageBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Create" };
 
 		VkBufferCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -63,7 +63,7 @@ namespace Volt
 		auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
-		VulkanAllocator allocator{ "ShaderStorageBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Create" };
 
 		VkBufferCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -89,7 +89,7 @@ namespace Volt
 
 	void ShaderStorageBuffer::Unmap()
 	{
-		VulkanAllocator allocator;
+		VulkanAllocatorVolt allocator;
 		allocator.UnmapMemory(myAllocation);
 	}
 
@@ -107,7 +107,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
 		{
-			VulkanAllocator allocator{ "ShaderStorageBuffer - Destroy" };
+			VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Destroy" };
 			allocator.DestroyBuffer(buffer, allocation);
 		});
 

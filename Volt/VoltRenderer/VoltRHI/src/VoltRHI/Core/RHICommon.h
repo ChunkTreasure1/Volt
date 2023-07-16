@@ -71,7 +71,7 @@ namespace Volt
 
 	struct DeviceQueueCreateInfo
 	{
-		Ref<GraphicsDevice> graphicsDevice;
+		GraphicsDevice* graphicsDevice;
 		QueueType queueType;
 	};
 }

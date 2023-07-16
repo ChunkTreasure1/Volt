@@ -12,7 +12,7 @@ namespace Volt
 		: mySize(size)
 	{
 		const VkDeviceSize bufferSize = (VkDeviceSize)size;
-		VulkanAllocator allocator{ "GenericBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "GenericBuffer - Create" };
 
 		VkBufferCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -36,7 +36,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
 		{
-			VulkanAllocator allocator{};
+			VulkanAllocatorVolt allocator{};
 			allocator.DestroyBuffer(buffer, allocation);
 		});
 	}

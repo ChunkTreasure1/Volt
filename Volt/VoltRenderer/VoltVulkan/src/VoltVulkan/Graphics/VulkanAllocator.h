@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Volt/Core/Base.h"
+#include <VoltRHI/Core/Core.h>
 
 #include <vma/VulkanMemoryAllocator.h>
 
 namespace Volt
 {
-	class GraphicsDeviceVolt;
+	class VulkanGraphicsDevice;
+
 	class VulkanAllocator
 	{
 	public:
@@ -19,9 +20,6 @@ namespace Volt
 		VmaAllocation AllocateBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateFlags allocationFlags, VkBuffer& outBuffer, std::string_view name = "");
 		VmaAllocation AllocateImage(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkImage& outImage, std::string_view name = "");
 
-		VmaAllocation AllocateImageInPool(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaPool pool, std::string_view name = "");
-
-		void Free(VmaAllocation allocation);
 		void DestroyBuffer(VkBuffer buffer, VmaAllocation allocation);
 		void DestroyImage(VkImage image, VmaAllocation allocation);
 
@@ -29,23 +27,23 @@ namespace Volt
 		T* MapMemory(VmaAllocation allocation)
 		{
 			T* data = nullptr;
-			vmaMapMemory(VulkanAllocator::GetAllocator(), allocation, (void**)&data);
+			vmaMapMemory(VulkanAllocatorVolt::GetAllocator(), allocation, (void**)&data);
 			return data;
 		}
 
 		void UnmapMemory(VmaAllocation allocation);
 
-		static void Initialize(Ref<GraphicsDeviceVolt> graphicsDevice);
+		static void Initialize(Ref<VulkanGraphicsDevice> graphicsDevice);
 		static void Shutdown();
 		static void SetFrameIndex(const uint32_t index);
 
 		static VmaAllocator& GetAllocator();
-	private:
 
+	private:
 #ifdef VT_ENABLE_DEBUG_ALLOCATIONS
-		uint64_t myAllocatedBytes = 0;
-		uint64_t myFreedBytes = 0;
+		uint64_t m_allocatedBytes = 0;
+		uint64_t m_freedBytes = 0;
 #endif
-		std::string myTag;
+		std::string m_tag;
 	};
 }

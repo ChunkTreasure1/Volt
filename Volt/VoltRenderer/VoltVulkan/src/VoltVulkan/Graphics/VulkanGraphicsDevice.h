@@ -6,11 +6,15 @@ struct VkDevice_T;
 
 namespace Volt
 {
+	class VulkanPhysicalGraphicsDevice;
+
 	class VulkanGraphicsDevice final : public GraphicsDevice
 	{
 	public:
 		VulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo);
 		~VulkanGraphicsDevice() override;
+
+		inline Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
 
 	protected:
 		void* GetHandleImpl() override;
@@ -18,6 +22,6 @@ namespace Volt
 	private:
 		VkDevice_T* m_device = nullptr;
 	
-		Weak<PhysicalGraphicsDevice> m_physicalDevice;
+		Weak<VulkanPhysicalGraphicsDevice> m_physicalDevice;
 	};
 }

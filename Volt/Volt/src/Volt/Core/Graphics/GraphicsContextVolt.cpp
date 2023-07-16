@@ -5,7 +5,7 @@
 #include "Volt/Log/Log.h"
 
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-#include "Volt/Core/Graphics/VulkanAllocator.h"
+#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
@@ -145,12 +145,12 @@ namespace Volt
 
 		myDevice = GraphicsDeviceVolt::Create(info);
 
-		VulkanAllocator::Initialize(myDevice);
+		VulkanAllocatorVolt::Initialize(myDevice);
 	}
 
 	void GraphicsContextVolt::Shutdown()
 	{
-		VulkanAllocator::Shutdown();
+		VulkanAllocatorVolt::Shutdown();
 
 		myDevice = nullptr;
 		myPhysicalDevice = nullptr;

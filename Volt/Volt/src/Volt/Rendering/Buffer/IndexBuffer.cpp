@@ -31,7 +31,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myBufferAllocation]()
 		{
-			VulkanAllocator allocator{};
+			VulkanAllocatorVolt allocator{};
 			allocator.DestroyBuffer(buffer, allocation);
 		});
 
@@ -76,7 +76,7 @@ namespace Volt
 		VkBuffer stagingBuffer = nullptr;
 		VmaAllocation stagingAllocation = nullptr;
 		VkDeviceSize bufferSize = size;
-		VulkanAllocator allocator{ "IndexBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "IndexBuffer - Create" };
 
 		if (myBuffer != VK_NULL_HANDLE)
 		{

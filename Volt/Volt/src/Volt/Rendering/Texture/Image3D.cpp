@@ -31,7 +31,7 @@ namespace Volt
 
 		myImageData.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		VulkanAllocator allocator{ };
+		VulkanAllocatorVolt allocator{ };
 		auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -183,7 +183,7 @@ namespace Volt
 				vkDestroyImageView(device->GetHandle(), view, nullptr);
 			}
 
-			VulkanAllocator allocator{ "Image2D - Destroy" };
+			VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
 			allocator.DestroyImage(image, allocation);
 		});
 

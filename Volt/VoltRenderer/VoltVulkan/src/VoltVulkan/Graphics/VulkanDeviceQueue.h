@@ -12,6 +12,9 @@ namespace Volt
 		VulkanDeviceQueue(const DeviceQueueCreateInfo& createInfo);
 		~VulkanDeviceQueue() override;
 
+		void WaitForQueue() override;
+		void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) override;
+
 	protected:
 		void* GetHandleImpl() override;
 

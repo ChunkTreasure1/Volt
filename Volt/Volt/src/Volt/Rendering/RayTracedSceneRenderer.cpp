@@ -270,7 +270,7 @@ namespace Volt
 		bufferCreateInfo.size = buildSizeInfo.accelerationStructureSize;
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
 
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		result.allocation = allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_GPU_ONLY, result.buffer);
 
 		VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{};
@@ -296,7 +296,7 @@ namespace Volt
 	{
 		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		allocator.DestroyBuffer(accelerationStructure.buffer, accelerationStructure.allocation);
 		vulkanFunctions.vkDestroyAccelerationStructureKHR(GraphicsContextVolt::GetDevice()->GetHandle(), accelerationStructure.handle, nullptr);
 	}
@@ -310,7 +310,7 @@ namespace Volt
 		bufferCreateInfo.size = deviceSize;
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
 
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		scratchBuffer.allocation = allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_GPU_ONLY, scratchBuffer.handle);
 
 		VkBufferDeviceAddressInfo bufferDeviceAddressInfo{};
@@ -324,7 +324,7 @@ namespace Volt
 
 	void RayTracedSceneRenderer::DestroyScratchBuffer(ScratchBuffer scratchBuffer)
 	{
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		allocator.DestroyBuffer(scratchBuffer.handle, scratchBuffer.allocation);
 	}
 }

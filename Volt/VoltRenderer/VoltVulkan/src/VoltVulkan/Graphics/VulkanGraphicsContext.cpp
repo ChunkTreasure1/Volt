@@ -4,6 +4,8 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Common/VulkanFunctions.h"
 
+#include "VoltVulkan/Graphics/VulkanAllocator.h"
+
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
@@ -124,11 +126,18 @@ namespace Volt
 		CreateInstance();
 
 		m_physicalDevice = PhysicalGraphicsDevice::Create(m_createInfo.physicalDeviceInfo);
-		m_graphicsDevice = GraphicsDevice::Create(m_createInfo.graphicsDeviceInfo);
+		
+		GraphicsDeviceCreateInfo graphicsDeviceInfo{};
+		graphicsDeviceInfo.physicalDevice = m_physicalDevice;
+		m_graphicsDevice = GraphicsDevice::Create(graphicsDeviceInfo);
+	
+		VulkanAllocator::Initialize(std::reinterpret_pointer_cast<VulkanGraphicsDevice>(m_graphicsDevice));
 	}
 
 	void VulkanGraphicsContext::Shutdown()
 	{
+		VulkanAllocator::Shutdown();
+
 		m_graphicsDevice = nullptr;
 		m_physicalDevice = nullptr;
 

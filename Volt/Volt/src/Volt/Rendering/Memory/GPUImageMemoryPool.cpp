@@ -27,7 +27,7 @@ namespace Volt
 		sampleAllocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
 		uint32_t memTypeIndex = 0;
-		vmaFindMemoryTypeIndexForImageInfo(VulkanAllocator::GetAllocator(), &exampleImageCreateInfo, &sampleAllocCreateInfo, &memTypeIndex);
+		vmaFindMemoryTypeIndexForImageInfo(VulkanAllocatorVolt::GetAllocator(), &exampleImageCreateInfo, &sampleAllocCreateInfo, &memTypeIndex);
 
 		VmaPoolCreateInfo poolCreateInfo{};
 		poolCreateInfo.memoryTypeIndex = memTypeIndex;
@@ -35,11 +35,11 @@ namespace Volt
 		poolCreateInfo.maxBlockCount = 1;
 		poolCreateInfo.flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT;
 
-		VT_VK_CHECK(vmaCreatePool(VulkanAllocator::GetAllocator(), &poolCreateInfo, &myPool));
+		VT_VK_CHECK(vmaCreatePool(VulkanAllocatorVolt::GetAllocator(), &poolCreateInfo, &myPool));
 	}
 	
 	void GPUImageMemoryPool::Release()
 	{
-		vmaDestroyPool(VulkanAllocator::GetAllocator(), myPool);
+		vmaDestroyPool(VulkanAllocatorVolt::GetAllocator(), myPool);
 	}
 }

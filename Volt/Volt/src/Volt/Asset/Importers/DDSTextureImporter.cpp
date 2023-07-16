@@ -93,7 +93,7 @@ namespace Volt
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingAllocation;
 
-		VulkanAllocator allocator{ "Texture2D - Create" };
+		VulkanAllocatorVolt allocator{ "Texture2D - Create" };
 
 		// Create staging buffer
 		{

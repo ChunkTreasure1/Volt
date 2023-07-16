@@ -40,7 +40,7 @@ namespace Volt
 
 		std::string allocatorName = "Image2D - Create";
 
-		VulkanAllocator allocator{ allocatorName };
+		VulkanAllocatorVolt allocator{ allocatorName };
 		auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -277,13 +277,13 @@ namespace Volt
 
 			if (!usedCustomPool)
 			{
-				VulkanAllocator allocator{ "Image2D - Destroy" };
+				VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
 				allocator.DestroyImage(image, allocation);
 			}
 
 			if (mappingBuffer)
 			{
-				VulkanAllocator allocator{ "Image2D - Destroy" };
+				VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
 				allocator.DestroyBuffer(mappingBuffer, mappingAlloc);
 			}
 		});
@@ -547,7 +547,7 @@ namespace Volt
 
 	void Image2D::Unmap()
 	{
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		allocator.UnmapMemory(myMappingAllocation);
 
 		VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetCommandBuffer(true);
@@ -571,7 +571,7 @@ namespace Volt
 
 	Buffer Image2D::ReadPixelInternal(uint32_t x, uint32_t y, uint32_t size)
 	{
-		VulkanAllocator allocator{ "Image2D - Read Pixel" };
+		VulkanAllocatorVolt allocator{ "Image2D - Read Pixel" };
 
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingAllocation;
@@ -626,7 +626,7 @@ namespace Volt
 
 	Buffer Image2D::ReadPixelRangeInternal(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY, uint32_t size)
 	{
-		VulkanAllocator allocator{ "Image2D - Read Pixel" };
+		VulkanAllocatorVolt allocator{ "Image2D - Read Pixel" };
 
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingAllocation;
@@ -691,7 +691,7 @@ namespace Volt
 
 	void* Image2D::MapInternal()
 	{
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		return allocator.MapMemory<void>(myMappingAllocation);
 	}
 }

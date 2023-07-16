@@ -14,14 +14,15 @@ namespace Volt
 
 		virtual void BeginFrame() = 0;
 		virtual void Present() = 0;
-		virtual void Resize(const uint32_t width, const uint32_t height, bool useVSync);
+		virtual void Resize(const uint32_t width, const uint32_t height, bool useVSync) = 0;
+
+		VT_NODISCARD virtual const uint32_t GetCurrentFrame() const = 0;
+		VT_NODISCARD virtual const uint32_t GetWidth() const = 0;
+		VT_NODISCARD virtual const uint32_t GetHeight() const = 0;
 
 		static Ref<Swapchain> Create(GLFWwindow* window);
 
-		VT_NODISCARD uint32_t GetCurrentFrameIndex() const { return m_currentFrameIndex; }
-
 	protected:
 		Swapchain() = default;
-		uint32_t m_currentFrameIndex;
 	};
 }

@@ -2,7 +2,7 @@
 
 #include "Volt/Rendering/Texture/ImageCommon.h"
 
-#include "Volt/Core/Graphics/VulkanAllocator.h"
+#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 #include "Volt/Core/Buffer.h"
 
 #include <vulkan/vulkan.h>

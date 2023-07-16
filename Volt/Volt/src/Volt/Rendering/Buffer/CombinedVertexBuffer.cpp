@@ -42,7 +42,7 @@ namespace Volt
 
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingAllocation;
-		VulkanAllocator allocator{ "CombinedVertexBuffer - AppendVertices" };
+		VulkanAllocatorVolt allocator{ "CombinedVertexBuffer - AppendVertices" };
 
 		// Create Staging Buffer
 		{
@@ -103,7 +103,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
 		{
-			VulkanAllocator allocator{ "CombinedVertexBuffer - Destroy" };
+			VulkanAllocatorVolt allocator{ "CombinedVertexBuffer - Destroy" };
 			allocator.DestroyBuffer(buffer, allocation);
 		});
 
@@ -116,7 +116,7 @@ namespace Volt
 		auto device = GraphicsContextVolt::GetDevice();
 		device->WaitForIdle();
 
-		VulkanAllocator allocator{ };
+		VulkanAllocatorVolt allocator{ };
 
 		VmaAllocation newAlloc;
 		VkBuffer newBuffer;

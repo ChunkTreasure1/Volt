@@ -8,12 +8,15 @@ namespace Volt
 	public:
 		MockSwapchain(GLFWwindow* glfwWindow);
 
-		// Inherited via Swapchain
-		void* GetHandleImpl() override;
-
 		void BeginFrame() override;
-
 		void Present() override;
+		void Resize(const uint32_t width, const uint32_t height, bool useVSync) override;
 
+		const uint32_t GetCurrentFrame() const override;
+		const uint32_t GetWidth() const override;
+		const uint32_t GetHeight() const override;
+
+	protected:
+		void* GetHandleImpl() override;
 	};
 }

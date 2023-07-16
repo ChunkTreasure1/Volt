@@ -6,7 +6,7 @@
 
 #include "Volt/Core/Profiling.h"
 
-#include "Volt/Core/Graphics/VulkanAllocator.h"
+#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 
 #include <GLFW/glfw3.h>
 
@@ -94,7 +94,7 @@ namespace Volt
 
 		VT_VK_CHECK(vkResetFences(device, 1, &frameData.fence));
 		VT_VK_CHECK(vkResetCommandPool(device, frameData.commandPool, 0));
-		VulkanAllocator::SetFrameIndex(myCurrentFrame);
+		VulkanAllocatorVolt::SetFrameIndex(myCurrentFrame);
 	}
 
 	void SwapchainVolt::Present()
