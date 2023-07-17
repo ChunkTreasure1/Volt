@@ -16,7 +16,7 @@ namespace Volt
 
 		void WaitForIdle();
 
-		inline Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
+		Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
 
 	protected:
 		void* GetHandleImpl() override;

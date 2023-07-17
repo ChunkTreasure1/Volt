@@ -1,5 +1,6 @@
 #pragma once
 
+#include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 
 struct VkSwapchainKHR_T;
