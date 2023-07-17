@@ -30,7 +30,9 @@ namespace Volt
 			{
 				vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-				if (deviceProperties.apiVersion == VK_API_VERSION_1_3)
+				constexpr auto VERSION = VK_API_VERSION_1_3;
+
+				if (deviceProperties.apiVersion >= VERSION)
 				{
 					if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 					{
@@ -120,9 +122,10 @@ namespace Volt
 	VulkanPhysicalGraphicsDevice::VulkanPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo)
 		: m_createInfo(createInfo)
 	{
-		VkInstance vulkanInstance = GraphicsContext::Get().As<VulkanGraphicsContext>()->GetInstance();
+		VkInstance vulkanInstance = GraphicsContext::Get().AsRef<VulkanGraphicsContext>().GetInstance();
 
-		const auto [selectedDevice, deviceProperties] = Utility::FindBestSuitableDevice(vulkanInstance);
+		auto [selectedDevice, deviceProperties] = Utility::FindBestSuitableDevice(vulkanInstance);
+
 		m_physicalDevice = selectedDevice;
 
 		m_capabilities.gpuName = deviceProperties.deviceName;

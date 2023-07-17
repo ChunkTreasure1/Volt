@@ -19,4 +19,23 @@ namespace Volt
     void MockSwapchain::Present()
     {
     }
+	
+	void MockSwapchain::Resize(const uint32_t width, const uint32_t height, bool useVSync)
+	{
+	}
+
+	const uint32_t MockSwapchain::GetCurrentFrame() const
+	{
+		return 0;
+	}
+
+	const uint32_t MockSwapchain::GetWidth() const
+	{
+		return 0;
+	}
+
+	const uint32_t MockSwapchain::GetHeight() const
+	{
+		return 0;
+	}
 }

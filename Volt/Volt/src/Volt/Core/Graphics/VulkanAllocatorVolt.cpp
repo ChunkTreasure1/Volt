@@ -1,5 +1,5 @@
 #include "vtpch.h"
-#include "VulkanAllocator.h"
+#include "VulkanAllocatorVolt.h"
 
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Graphics/GraphicsContextVolt.h"
@@ -46,12 +46,12 @@ namespace Volt
 		}
 	}
 
-	VulkanAllocator::VulkanAllocator(const std::string& tag)
+	VulkanAllocatorVolt::VulkanAllocatorVolt(const std::string& tag)
 		: myTag(tag)
 	{
 	}
 
-	VulkanAllocator::~VulkanAllocator()
+	VulkanAllocatorVolt::~VulkanAllocatorVolt()
 	{
 #ifdef VT_ENABLE_DEBUG_ALLOCATIONS
 		//if ((myAllocatedBytes != 0 || myFreedBytes != 0) && !myTag.empty())
@@ -64,7 +64,7 @@ namespace Volt
 #endif
 	}
 
-	VmaAllocation VulkanAllocator::AllocateBuffer(VkBufferCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkBuffer& outBuffer, std::string_view name)
+	VmaAllocation VulkanAllocatorVolt::AllocateBuffer(VkBufferCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkBuffer& outBuffer, std::string_view name)
 	{
 		VmaAllocationCreateInfo allocCreateInfo{};
 		allocCreateInfo.usage = memoryUsage;
@@ -89,7 +89,7 @@ namespace Volt
 		return allocation;
 	}
 
-	VmaAllocation VulkanAllocator::AllocateBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateFlags allocationFlags, VkBuffer& outBuffer, std::string_view name)
+	VmaAllocation VulkanAllocatorVolt::AllocateBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateFlags allocationFlags, VkBuffer& outBuffer, std::string_view name)
 	{
 		VmaAllocationCreateInfo allocCreateInfo{};
 		allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -115,7 +115,7 @@ namespace Volt
 		return allocation;
 	}
 
-	VmaAllocation VulkanAllocator::AllocateImage(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkImage& outImage, std::string_view name)
+	VmaAllocation VulkanAllocatorVolt::AllocateImage(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage memoryUsage, VkImage& outImage, std::string_view name)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -142,7 +142,7 @@ namespace Volt
 		return allocation;
 	}
 
-	VmaAllocation VulkanAllocator::AllocateImageInPool(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage, VkImage& outImage, VmaPool pool, std::string_view name)
+	VmaAllocation VulkanAllocatorVolt::AllocateImageInPool(VkImageCreateInfo bufferCreateInfo, VmaMemoryUsage, VkImage& outImage, VmaPool pool, std::string_view name)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -170,7 +170,7 @@ namespace Volt
 		return allocation;
 	}
 
-	void VulkanAllocator::Free(VmaAllocation allocation)
+	void VulkanAllocatorVolt::Free(VmaAllocation allocation)
 	{
 		VT_CORE_ASSERT(allocation, "Unable to free null allocation!");
 
@@ -184,7 +184,7 @@ namespace Volt
 		vmaFreeMemory(s_allocatorData->allocator, allocation);
 	}
 
-	void VulkanAllocator::DestroyBuffer(VkBuffer buffer, VmaAllocation allocation)
+	void VulkanAllocatorVolt::DestroyBuffer(VkBuffer buffer, VmaAllocation allocation)
 	{
 		VT_CORE_ASSERT(buffer, "Unable to destroy null buffer!");
 		VT_CORE_ASSERT(allocation, "Unable to free null allocation!");
@@ -200,7 +200,7 @@ namespace Volt
 		vmaDestroyBuffer(s_allocatorData->allocator, buffer, allocation);
 	}
 
-	void VulkanAllocator::DestroyImage(VkImage image, VmaAllocation allocation)
+	void VulkanAllocatorVolt::DestroyImage(VkImage image, VmaAllocation allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -218,12 +218,12 @@ namespace Volt
 		vmaDestroyImage(s_allocatorData->allocator, image, allocation);
 	}
 
-	void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
+	void VulkanAllocatorVolt::UnmapMemory(VmaAllocation allocation)
 	{
 		vmaUnmapMemory(s_allocatorData->allocator, allocation);
 	}
 
-	void VulkanAllocator::Initialize(Ref<GraphicsDeviceVolt> graphicsDevice)
+	void VulkanAllocatorVolt::Initialize(Ref<GraphicsDeviceVolt> graphicsDevice)
 	{
 		s_allocatorData = new VulkanAllocatorData();
 
@@ -239,7 +239,7 @@ namespace Volt
 		VT_VK_CHECK(vmaCreateAllocator(&info, &s_allocatorData->allocator));
 	}
 
-	void VulkanAllocator::Shutdown()
+	void VulkanAllocatorVolt::Shutdown()
 	{
 		const size_t allocDiff = s_allocatorData->totalAllocatedBytes - s_allocatorData->totalFreedBytes;
 
@@ -255,12 +255,12 @@ namespace Volt
 		s_allocatorData = nullptr;
 	}
 
-	void VulkanAllocator::SetFrameIndex(const uint32_t index)
+	void VulkanAllocatorVolt::SetFrameIndex(const uint32_t index)
 	{
 		vmaSetCurrentFrameIndex(s_allocatorData->allocator, index);
 	}
 
-	VmaAllocator& VulkanAllocator::GetAllocator()
+	VmaAllocator& VulkanAllocatorVolt::GetAllocator()
 	{
 		return s_allocatorData->allocator;
 	}

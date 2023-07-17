@@ -8,6 +8,18 @@ namespace Volt
 	{
 	}
 
+	void MockCommandBuffer::Begin()
+	{
+	}
+
+	void MockCommandBuffer::End()
+	{
+	}
+
+	void MockCommandBuffer::Reset()
+	{
+	}
+
 	void MockCommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
 	{
 	}

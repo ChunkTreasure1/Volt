@@ -21,6 +21,12 @@ namespace Volt
 			return std::reinterpret_pointer_cast<T>(shared_from_this());
 		}
 
+		template<typename T>
+		constexpr T& AsRef()
+		{
+			return *reinterpret_cast<T*>(this);
+		}
+
 	protected:
 		RHIInterface() = default;
 

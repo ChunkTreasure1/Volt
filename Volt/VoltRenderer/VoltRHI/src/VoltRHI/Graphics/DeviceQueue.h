@@ -15,7 +15,11 @@ namespace Volt
 		virtual void WaitForQueue() = 0;
 		virtual void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) = 0;
 
+		static Ref<DeviceQueue> Create(const DeviceQueueCreateInfo& createInfo);
+
 	protected:
+		DeviceQueue() = default;
+
 		QueueType m_queueType = QueueType::Graphics;
 	};
 }

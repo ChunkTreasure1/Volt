@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Graphics/VulkanAllocator.h"
+#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 
 namespace Volt
 {

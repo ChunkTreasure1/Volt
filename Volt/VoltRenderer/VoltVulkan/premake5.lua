@@ -43,6 +43,8 @@ project "VoltVulkan"
 		"../VoltRHI/src",
 
 		"%{IncludeDir.GLFW}",
+
+		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}"
 	}
 

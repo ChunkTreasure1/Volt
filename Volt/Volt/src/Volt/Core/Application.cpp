@@ -64,9 +64,12 @@ namespace Volt
 			ProjectManager::SetupWorkingDirectory();
 		}
 
-		GraphicsContextCreateInfo cinfo{};
-		cinfo.graphicsApi = GraphicsAPI::Mock;
-		Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
+		{
+			GraphicsContextCreateInfo cinfo{};
+			cinfo.graphicsApi = GraphicsAPI::Vulkan;
+
+			Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
+		}
 
 		ProjectManager::SetupProject(myInfo.projectPath);
 		SessionPreferences::Initialize();

@@ -31,13 +31,13 @@ namespace Volt
 		{
 			if (buffer != VK_NULL_HANDLE)
 			{
-				VulkanAllocator allocator{ "VertexBuffer - Destroy" };
+				VulkanAllocatorVolt allocator{ "VertexBuffer - Destroy" };
 				allocator.DestroyBuffer(buffer, allocation);
 			}
 
 			if (stagingBuffer != VK_NULL_HANDLE)
 			{
-				VulkanAllocator allocator{ "VertexBuffer - Destroy" };
+				VulkanAllocatorVolt allocator{ "VertexBuffer - Destroy" };
 				allocator.DestroyBuffer(stagingBuffer, stagingAlloc);
 			}
 		});
@@ -62,7 +62,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 
 		if (!myStagingBuffer)
 		{
@@ -97,7 +97,7 @@ namespace Volt
 
 	void VertexBuffer::SetDataMapped(VkCommandBuffer, const void* data, uint32_t size)
 	{
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		void* mapped = allocator.MapMemory<void>(myBufferAllocation);
 		memcpy_s(mapped, mySize, data, size);
 		allocator.UnmapMemory(myBufferAllocation);
@@ -140,7 +140,7 @@ namespace Volt
 		VkBuffer stagingBuffer = nullptr;
 		VmaAllocation stagingAllocation = nullptr;
 		VkDeviceSize bufferSize = size;
-		VulkanAllocator allocator{ "VertexBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "VertexBuffer - Create" };
 
 		if (myBuffer != VK_NULL_HANDLE)
 		{

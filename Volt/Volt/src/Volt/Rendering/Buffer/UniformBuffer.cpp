@@ -13,7 +13,7 @@ namespace Volt
 		: mySize(size), myTotalSize(size)
 	{
 		const VkDeviceSize bufferSize = (VkDeviceSize)size;
-		VulkanAllocator allocator{ "UniformBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "UniformBuffer - Create" };
 
 		// Create buffer
 		{
@@ -48,7 +48,7 @@ namespace Volt
 		myTotalSize = alignedSize * elementCount;
 
 		const VkDeviceSize bufferSize = (uint64_t)myTotalSize;
-		VulkanAllocator allocator{ "UniformBuffer - Create" };
+		VulkanAllocatorVolt allocator{ "UniformBuffer - Create" };
 
 		// Create buffer
 		{
@@ -71,7 +71,7 @@ namespace Volt
 
 		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
 		{
-			VulkanAllocator allocator{};
+			VulkanAllocatorVolt allocator{};
 			allocator.DestroyBuffer(buffer, allocation);
 		});
 
@@ -81,7 +81,7 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(mySize >= size, "Unable to set data of larger size than buffer!");
 
-		VulkanAllocator allocator{ "UniformBuffer - SetData" };
+		VulkanAllocatorVolt allocator{ "UniformBuffer - SetData" };
 
 		void* bufferData = allocator.MapMemory<void*>(myAllocation);
 		memcpy_s(bufferData, mySize, data, size);
@@ -90,7 +90,7 @@ namespace Volt
 
 	void UniformBuffer::Unmap()
 	{
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		allocator.UnmapMemory(myAllocation);
 	}
 

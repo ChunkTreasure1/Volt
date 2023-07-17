@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Graphics/VulkanAllocator.h"
+#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 
 namespace Volt
 {
@@ -39,7 +39,7 @@ namespace Volt
 	template<typename T>
 	inline T* UniformBuffer::Map()
 	{
-		VulkanAllocator allocator{};
+		VulkanAllocatorVolt allocator{};
 		return allocator.MapMemory<T>(myAllocation);
 	}
 }
