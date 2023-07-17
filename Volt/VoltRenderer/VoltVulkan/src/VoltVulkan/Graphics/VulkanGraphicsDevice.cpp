@@ -141,6 +141,11 @@ namespace Volt
 		vkDestroyDevice(m_device, nullptr);
 	}
 
+	void VulkanGraphicsDevice::WaitForIdle()
+	{
+		vkDeviceWaitIdle(m_device);
+	}
+
 	inline Weak<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
 	{
 		return m_physicalDevice;

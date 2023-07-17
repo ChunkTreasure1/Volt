@@ -14,7 +14,7 @@ namespace Volt
 
 		virtual void BeginFrame() = 0;
 		virtual void Present() = 0;
-		virtual void Resize(const uint32_t width, const uint32_t height, bool useVSync) = 0;
+		virtual void Resize(const uint32_t width, const uint32_t height, bool enableVSync) = 0;
 
 		VT_NODISCARD virtual const uint32_t GetCurrentFrame() const = 0;
 		VT_NODISCARD virtual const uint32_t GetWidth() const = 0;
