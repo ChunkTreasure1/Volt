@@ -14,7 +14,9 @@ namespace Volt
 		VulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo);
 		~VulkanGraphicsDevice() override;
 
-		inline Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
+		void WaitForIdle();
+
+		Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
 
 	protected:
 		void* GetHandleImpl() override;

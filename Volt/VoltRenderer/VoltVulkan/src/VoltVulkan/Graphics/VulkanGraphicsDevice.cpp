@@ -69,8 +69,10 @@ namespace Volt
 	inline static const char* s_validationLayer = "VK_LAYER_KHRONOS_validation";
 
 	VulkanGraphicsDevice::VulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo)
-		: m_physicalDevice(createInfo.physicalDevice)
+		//: m_physicalDevice(createInfo.physicalDevice)
 	{
+		//m_physicalDevice = createInfo.physicalDevice.;
+
 		VulkanPhysicalGraphicsDevice& physicalDevicePtr = m_physicalDevice.lock()->AsRef<VulkanPhysicalGraphicsDevice>();
 		const auto& queueFamilies = physicalDevicePtr.GetQueueFamilies();
 
@@ -141,7 +143,12 @@ namespace Volt
 		vkDestroyDevice(m_device, nullptr);
 	}
 
-	inline Weak<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
+	void VulkanGraphicsDevice::WaitForIdle()
+	{
+		vkDeviceWaitIdle(m_device);
+	}
+
+	Weak<VulkanPhysicalGraphicsDevice> VulkanGraphicsDevice::GetPhysicalDevice() const
 	{
 		return m_physicalDevice;
 	}

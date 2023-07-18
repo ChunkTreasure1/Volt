@@ -1,5 +1,6 @@
 #pragma once
 
+#include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 
 struct VkSwapchainKHR_T;
@@ -22,19 +23,39 @@ namespace Volt
 	class VulkanSwapchain final : public Swapchain
 	{
 	public:
+		struct SurfaceFormat
+		{
+			Format format;
+			ColorSpace colorSpace;
+		};
+		
 		VulkanSwapchain(GLFWwindow* glfwWindow);
 		~VulkanSwapchain() override;
 
 		void BeginFrame() override;
 		void Present() override;
-		void Resize(const uint32_t width, const uint32_t height, bool useVSync) override;
+		void Resize(const uint32_t width, const uint32_t height, bool enableVSync) override;
 
 		const uint32_t GetCurrentFrame() const override;
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
 
-	private:
+	protected:
 		void* GetHandleImpl() override;
+	
+	private:
+		void Invalidate(const uint32_t width, const uint32_t height, bool enableVSync);
+		void Release();
+
+		void QuerySwapchainCapabilities();
+
+		void CreateSwapchain(const uint32_t width, const uint32_t height, bool enableVSync);
+		void CreateImageViews();
+		void CreateRenderPass();
+		void CreateFramebuffers();
+		void CreateSyncObjects();
+		void CreateCommandPools();
+		void CreateCommandBuffers();
 
 		inline constexpr static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -65,11 +86,27 @@ namespace Volt
 			VkFramebuffer_T* framebuffer = nullptr;
 		};
 
+		struct SwapchainCapabilities
+		{
+			uint32_t minImageCount = 0;
+			uint32_t maxImageCount = 0;
+
+			Extent2D minImageExtent{};
+			Extent2D maxImageExtent{};
+
+			std::vector<PresentMode> presentModes{};
+			std::vector<SurfaceFormat> surfaceFormats{};
+		};
+
+		SwapchainCapabilities m_capabilities{};
+
 		std::vector<PerFrameInFlightData> m_perFrameInFlightData{};
 		std::vector<PerImageData> m_perImageData{};
 
 		VkRenderPass_T* m_renderPass = nullptr;
 		VkSwapchainKHR_T* m_swapchain = nullptr;
 		VkSurfaceKHR_T* m_surface = nullptr;
+
+		Format m_swapchainFormat = Format::UNDEFINED;
 	};
 }

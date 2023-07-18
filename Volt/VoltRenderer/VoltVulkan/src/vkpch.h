@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <set>
 #include <array>
+#include <span>
 
 #include <string>
 
@@ -18,3 +19,5 @@
 #include <filesystem>
 
 #include <future>
+
+#include <cassert>

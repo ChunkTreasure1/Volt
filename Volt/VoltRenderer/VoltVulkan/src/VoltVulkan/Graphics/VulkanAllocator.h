@@ -27,7 +27,7 @@ namespace Volt
 		T* MapMemory(VmaAllocation allocation)
 		{
 			T* data = nullptr;
-			vmaMapMemory(VulkanAllocatorVolt::GetAllocator(), allocation, (void**)&data);
+			vmaMapMemory(VulkanAllocator::GetAllocator(), allocation, (void**)&data);
 			return data;
 		}
 
