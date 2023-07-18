@@ -2,11 +2,14 @@
 
 #include <wrl.h>
 #include <d3d12.h>
+#include <dxgi.h>
 #include <dxgi1_6.h>
+
 #include <string>
 #include <istream>
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
+#define VT_PLATFROM_WINDOWS
 
 namespace Volt
 {
@@ -17,30 +20,23 @@ namespace Volt
 	{
 	public:
 		DxException() = default;
-		DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber)
+		DxException(HRESULT hr, const std::string& functionName, const std::string& filename, int lineNumber)
 		{
 			ErrorCode = hr;
 			FunctionName = functionName;
 			Filename = filename;
 			LineNumber = lineNumber;
 		}
-		std::wstring ToWString()const
+		std::string ToString()const
 		{
 			auto errorStr = std::system_category().message(ErrorCode);
-			std::wstring errorWstr(errorStr.begin(), errorStr.end());
-			return L"Error: " + errorWstr + L" in Function: " + FunctionName + L" In file: " + Filename + L" at line: " + std::to_wstring(LineNumber);
+			return "Error: " + errorStr + " in Function: " + FunctionName + " In file: " + Filename + " at line: " + std::to_string(LineNumber);
 		}
 
-		std::string ToString()
-		{
-			const std::wstring wstr = ToWString();
-			
-			return {wstr.cbegin(), wstr.cend()};
-		}
 
 		HRESULT ErrorCode = S_OK;
-		std::wstring FunctionName;
-		std::wstring Filename;
+		std::string FunctionName;
+		std::string Filename;
 		int32_t LineNumber = -1;
 	};
 }
@@ -50,5 +46,4 @@ namespace Volt
 { \
 HRESULT hr__ = (x); \
 std::string str = __FILE__; \
-std::wstring wfn(str.begin(), str.end()); \
-if(FAILED(hr__)) {  ::Volt::DxException ex(hr__, L#x, wfn,__LINE__); ::Volt::GraphicsContext::Log("{}", ex.ToString()); } } \
+if(FAILED(hr__)) {  ::Volt::DxException ex(hr__, L#x, str,__LINE__); ::Volt::GraphicsContext::Log(::Volt::Severity::Error, ex.ToString()); } } \

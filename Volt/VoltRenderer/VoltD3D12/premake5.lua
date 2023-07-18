@@ -50,6 +50,12 @@ project "VoltD3D12"
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 	}
 
+	links
+	{
+		"d3d12.lib",
+		"DXGI.lib",
+	}
+
 	filter "files:vendor/**.cpp"
 		flags {"NoPCH"}
 		warnings "off"

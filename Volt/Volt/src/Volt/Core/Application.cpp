@@ -66,7 +66,7 @@ namespace Volt
 
 		{
 			GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = GraphicsAPI::Vulkan;
+			cinfo.graphicsApi = GraphicsAPI::D3D12;
 
 			Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
 		}

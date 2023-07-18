@@ -3,6 +3,7 @@
 
 #include <VoltMock/Graphics/MockGraphicsContext.h>
 #include <VoltVulkan/Graphics/VulkanGraphicsContext.h>
+#include <VoltD3D12/Graphics/D3D12GraphicsContext.h>
 
 namespace Volt
 {
@@ -11,7 +12,7 @@ namespace Volt
 		s_graphicsAPI = createInfo.graphicsApi;
 		switch (s_graphicsAPI)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12GraphicsContext>(createInfo); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanGraphicsContext>(createInfo); break;
