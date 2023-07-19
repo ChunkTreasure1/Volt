@@ -11,7 +11,7 @@ namespace Volt
 	{
 	public:
 		D3D12GraphicsDevice(const GraphicsDeviceCreateInfo& info);
-		~D3D12GraphicsDevice();
+		~D3D12GraphicsDevice() override;
 
 	protected:
 		void* GetHandleImpl() override;

@@ -14,7 +14,7 @@ namespace Volt
 
 	D3D12PhysicalGraphicsDevice::~D3D12PhysicalGraphicsDevice()
 	{
-		m_factory->Release();
+		VT_D3D12_DELETE(m_factory);
 	}
 
 	bool D3D12PhysicalGraphicsDevice::FindValidAdapter()

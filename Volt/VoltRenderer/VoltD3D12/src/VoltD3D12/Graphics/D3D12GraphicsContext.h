@@ -8,7 +8,7 @@ namespace Volt
 	{
 	public:
 		D3D12GraphicsContext(const GraphicsContextCreateInfo& info);
-		~D3D12GraphicsContext();
+		~D3D12GraphicsContext() override;
 
 
 

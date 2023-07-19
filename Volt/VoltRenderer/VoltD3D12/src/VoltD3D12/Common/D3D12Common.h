@@ -9,7 +9,6 @@
 #include <istream>
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
-#define VT_PLATFROM_WINDOWS
 
 namespace Volt
 {
@@ -42,8 +41,11 @@ namespace Volt
 }
 
 #define VT_D3D12_ID(x) IID_PPV_ARGS(x.GetAddressOf())
+
+#define VT_D3D12_DELETE(x) if(x) x->Release()
+
 #define VT_D3D12_CHECK(x) \
 { \
 HRESULT hr__ = (x); \
 std::string str = __FILE__; \
-if(FAILED(hr__)) {  ::Volt::DxException ex(hr__, L#x, str,__LINE__); ::Volt::GraphicsContext::Log(::Volt::Severity::Error, ex.ToString()); } } \
+if(FAILED(hr__)) {  DxException ex(hr__, #x, str,__LINE__); GraphicsContext::Log(Severity::Error, ex.ToString()); } } \

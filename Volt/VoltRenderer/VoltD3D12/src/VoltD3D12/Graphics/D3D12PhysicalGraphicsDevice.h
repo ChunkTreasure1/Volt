@@ -14,7 +14,7 @@ namespace Volt
 	{
 	public:
 		D3D12PhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& info);
-		~D3D12PhysicalGraphicsDevice();
+		~D3D12PhysicalGraphicsDevice() override;
 
 		[[nodiscard]] WinRef<IDXGIFactory4>& GetFactory() { return m_factory; }
 		[[nodiscard]] WinRef<IDXGIAdapter1>& GetAdapter() { return m_adapter; }
