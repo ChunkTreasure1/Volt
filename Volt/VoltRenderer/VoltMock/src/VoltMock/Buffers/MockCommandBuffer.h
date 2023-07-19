@@ -12,7 +12,8 @@ namespace Volt
 
 		void Begin() override;
 		void End() override;
-		void Reset() override;
+		void Execute() override;
+		void ExecuteAndWait() override;
 
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) override;
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) override;

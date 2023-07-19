@@ -28,22 +28,5 @@ namespace Volt
 
 	GraphicsDevice::GraphicsDevice()
 	{
-		m_deviceQueueMutexes[QueueType::Graphics];
-		m_deviceQueueMutexes[QueueType::Compute];
-		m_deviceQueueMutexes[QueueType::TransferCopy];
-	}
-
-	Ref<CommandBuffer> GraphicsDevice::GetSingleUseCommandBuffer(QueueType queueType)
-	{
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(1, queueType);
-		return commandBuffer;
-	}
-
-	void GraphicsDevice::ExecuteSingleUseCommandBuffer(Ref<CommandBuffer> commandBuffer)
-	{
-		const auto queueType = commandBuffer->GetQueueType();
-
-		std::scoped_lock lock{ m_deviceQueueMutexes[queueType] };
-		m_deviceQueues[queueType]->Execute({ commandBuffer });
 	}
 }

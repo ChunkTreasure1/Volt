@@ -16,15 +16,12 @@ namespace Volt
 		VT_DELETE_COMMON_OPERATORS(GraphicsDevice);
 		~GraphicsDevice() override = default;
 
-		Ref<CommandBuffer> GetSingleUseCommandBuffer(QueueType queueType);
-		void ExecuteSingleUseCommandBuffer(Ref<CommandBuffer> commandBuffer);
-
+		inline Ref<DeviceQueue> GetDeviceQueue(QueueType queueType) const { return m_deviceQueues.at(queueType); }
 		static Ref<GraphicsDevice> Create(const GraphicsDeviceCreateInfo& deviceInfo);
 	
 	protected:
 		GraphicsDevice();
 
 		std::unordered_map<QueueType, Ref<DeviceQueue>> m_deviceQueues;
-		std::unordered_map<QueueType, std::mutex> m_deviceQueueMutexes;
 	};
 }

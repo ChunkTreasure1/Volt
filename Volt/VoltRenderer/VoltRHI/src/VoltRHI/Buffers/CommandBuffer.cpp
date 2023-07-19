@@ -4,21 +4,39 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltMock/Buffers/MockCommandBuffer.h>
+#include <VoltVulkan/Buffers/VulkanCommandBuffer.h>
 
 namespace Volt
 {
-	Ref<CommandBuffer> CommandBuffer::Create(const uint32_t count, QueueType queueType)
+	Ref<CommandBuffer> CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
 		switch (api)
 		{
-			case GraphicsAPI::Vulkan:
 			case GraphicsAPI::D3D12:
 			case GraphicsAPI::MoltenVk:
 				break;
 
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanCommandBuffer>(count, queueType, swapchainTarget); break;
 			case GraphicsAPI::Mock: return CreateRefRHI<MockCommandBuffer>(count, queueType); break;
+		}
+
+		return nullptr;
+	}
+
+	Ref<CommandBuffer> CommandBuffer::Create()
+	{
+		const auto api = GraphicsContext::GetAPI();
+		
+		switch (api)
+		{
+			case GraphicsAPI::D3D12:
+			case GraphicsAPI::MoltenVk:
+				break;
+
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanCommandBuffer>(1, QueueType::Graphics, false); break;
+			case GraphicsAPI::Mock: return CreateRefRHI<MockCommandBuffer>(1, QueueType::Graphics); break;
 		}
 
 		return nullptr;

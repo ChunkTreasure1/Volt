@@ -80,25 +80,25 @@ namespace Volt
 
 		const float GetOpacity() const;
 
-		inline const uint32_t GetWidth() const { return myData.width; }
-		inline const uint32_t GetHeight() const { return myData.height; }
-		inline const uint32_t GetViewportWidth() const { return myViewportWidth; }
-		inline const uint32_t GetViewportHeight() const { return myViewportHeight; }
+		inline const uint32_t GetWidth() const { return m_data.width; }
+		inline const uint32_t GetHeight() const { return m_data.height; }
+		inline const uint32_t GetViewportWidth() const { return m_viewportWidth; }
+		inline const uint32_t GetViewportHeight() const { return m_viewportHeight; }
 
-		inline const bool IsVSync() const { return myData.vsync; }
-		inline const WindowMode GetWindowMode() const { return myData.windowMode; }
-		inline GLFWwindow* GetNativeWindow() const { return myWindow; }
-		inline HWND GetHWND() const { return myWindowHandle; }
+		inline const bool IsVSync() const { return m_data.vsync; }
+		inline const WindowMode GetWindowMode() const { return m_data.windowMode; }
+		inline GLFWwindow* GetNativeWindow() const { return m_window; }
+		inline HWND GetHWND() const { return m_windowHandle; }
 
-		inline const SwapchainVolt& GetSwapchain() const { return *mySwapchain; }
+		inline const SwapchainVolt& GetSwapchain() const { return *m_swapchain; }
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 
 	private:
-		GLFWwindow* myWindow = nullptr;
-		HWND myWindowHandle = nullptr;
-		bool myHasBeenInitialized = false;
-		bool myIsFullscreen = false;
+		GLFWwindow* m_window = nullptr;
+		HWND m_windowHandle = nullptr;
+		bool m_hasBeenInitialized = false;
+		bool m_isFullscreen = false;
 
 		struct WindowData
 		{
@@ -112,18 +112,18 @@ namespace Volt
 
 			EventCallbackFn eventCallback;
 
-		} myData;
+		} m_data;
 
-		Ref<GraphicsContextVolt> myGraphicsContext;
-		Ref<SwapchainVolt> mySwapchain;
+		Ref<GraphicsContextVolt> m_graphicsContext;
+		Ref<SwapchainVolt> m_swapchain;
 
-		glm::uvec2 myStartPosition = 0;
-		glm::uvec2 myStartSize = 0;
+		glm::uvec2 m_startPosition = 0;
+		glm::uvec2 m_startSize = 0;
 
-		uint32_t myViewportWidth = 0;
-		uint32_t myViewportHeight = 0;
+		uint32_t m_viewportWidth = 0;
+		uint32_t m_viewportHeight = 0;
 
-		WindowProperties myProperties;
-		std::unordered_map<std::filesystem::path, GLFWcursor*> myCursors;
+		WindowProperties m_properties;
+		std::unordered_map<std::filesystem::path, GLFWcursor*> m_cursors;
 	};
 }

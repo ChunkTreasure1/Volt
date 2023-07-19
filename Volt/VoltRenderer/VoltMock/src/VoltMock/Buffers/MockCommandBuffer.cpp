@@ -16,7 +16,11 @@ namespace Volt
 	{
 	}
 
-	void MockCommandBuffer::Reset()
+	void MockCommandBuffer::Execute()
+	{
+	}
+
+	void MockCommandBuffer::ExecuteAndWait()
 	{
 	}
 

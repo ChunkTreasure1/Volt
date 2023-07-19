@@ -48,6 +48,9 @@ project "VoltRHI"
 		"../VoltMock/src",
 		"../VoltD3D12/src",
 		"../VoltVulkan/src",
+
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.imgui_notify}"
 	}
 
 	defines

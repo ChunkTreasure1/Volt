@@ -50,7 +50,7 @@ namespace Volt
 		std::string version = "1.0";
 	};
 
-	class ImGuiImplementation;
+	class ImGuiImplementationVolt;
 	class SteamImplementation;
 	class AssetManager;
 	class Application
@@ -108,7 +108,7 @@ namespace Volt
 
 		Scope<AssetManager> myAssetManager;
 		Scope<Window> myWindow;
-		Scope<ImGuiImplementation> myImGuiImplementation;
+		Scope<ImGuiImplementationVolt> myImGuiImplementation;
 		Scope<NetHandler> myNetHandler;
 		Scope<AI::NavigationSystem> myNavigationSystem;
 

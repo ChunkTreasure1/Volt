@@ -83,7 +83,7 @@ namespace Volt
 		return userIniPath;
 	}
 
-	ImGuiImplementation::ImGuiImplementation()
+	ImGuiImplementationVolt::ImGuiImplementationVolt()
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -232,7 +232,7 @@ namespace Volt
 		InitializeVulkanData();
 	}
 
-	ImGuiImplementation::~ImGuiImplementation()
+	ImGuiImplementationVolt::~ImGuiImplementationVolt()
 	{
 		ReleaseVulkanData();
 		ImGui_ImplGlfw_Shutdown();
@@ -242,7 +242,7 @@ namespace Volt
 		ImGui::DestroyContext();
 	}
 
-	void ImGuiImplementation::Begin()
+	void ImGuiImplementationVolt::Begin()
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -251,7 +251,7 @@ namespace Volt
 		ImGui::NewFrame();
 	}
 
-	void ImGuiImplementation::End()
+	void ImGuiImplementationVolt::End()
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -367,12 +367,12 @@ namespace Volt
 
 	}
 
-	Scope<ImGuiImplementation> ImGuiImplementation::Create()
+	Scope<ImGuiImplementationVolt> ImGuiImplementationVolt::Create()
 	{
-		return CreateScope<ImGuiImplementation>();
+		return CreateScope<ImGuiImplementationVolt>();
 	}
 
-	void ImGuiImplementation::InitializeVulkanData()
+	void ImGuiImplementationVolt::InitializeVulkanData()
 	{
 		VkDescriptorPoolSize poolSizes[] =
 		{
@@ -434,7 +434,7 @@ namespace Volt
 		}
 	}
 
-	void ImGuiImplementation::ReleaseVulkanData()
+	void ImGuiImplementationVolt::ReleaseVulkanData()
 	{
 		vkDeviceWaitIdle(GraphicsContextVolt::GetDevice()->GetHandle());
 		vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), s_descriptorPool, nullptr);

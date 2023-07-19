@@ -29,6 +29,8 @@ namespace Volt
 			ColorSpace colorSpace;
 		};
 		
+		inline constexpr static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
+
 		VulkanSwapchain(GLFWwindow* glfwWindow);
 		~VulkanSwapchain() override;
 
@@ -39,6 +41,8 @@ namespace Volt
 		const uint32_t GetCurrentFrame() const override;
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
+
+		inline VkRenderPass_T* GetRenderPass() const { return m_renderPass; }
 
 	protected:
 		void* GetHandleImpl() override;
@@ -56,8 +60,6 @@ namespace Volt
 		void CreateSyncObjects();
 		void CreateCommandPools();
 		void CreateCommandBuffers();
-
-		inline constexpr static uint32_t MAX_FRAMES_IN_FLIGHT = 3;
 
 		uint32_t m_currentImage = 0;
 		uint32_t m_currentFrame = 0;

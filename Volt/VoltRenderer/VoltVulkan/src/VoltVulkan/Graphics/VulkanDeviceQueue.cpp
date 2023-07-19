@@ -1,8 +1,11 @@
 #include "vkpch.h"
 #include "VulkanDeviceQueue.h"
 
+#include "VoltVulkan/Common/VulkanCommon.h"
+
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
+#include "VoltVulkan/Buffers/VulkanCommandBuffer.h"
 
 #include <vulkan/vulkan.h>
 
@@ -10,9 +13,9 @@ namespace Volt
 {
 	VulkanDeviceQueue::VulkanDeviceQueue(const DeviceQueueCreateInfo& createInfo)
 	{
-		Ref<VulkanGraphicsDevice> graphicsDevice = createInfo.graphicsDevice->As<VulkanGraphicsDevice>();
-		
-		const auto physicalDevice = graphicsDevice->GetPhysicalDevice();
+		VulkanGraphicsDevice& graphicsDevice = createInfo.graphicsDevice->AsRef<VulkanGraphicsDevice>();
+
+		const auto physicalDevice = graphicsDevice.GetPhysicalDevice();
 		auto physicalDevicePtr = physicalDevice.lock();
 
 		const auto queueFamilies = physicalDevicePtr->GetQueueFamilies();
@@ -28,11 +31,12 @@ namespace Volt
 			default: queueFamily = 0;  break;
 		}
 
-		vkGetDeviceQueue(graphicsDevice->GetHandle<VkDevice>(), queueFamily, 0, &m_queue);
+		vkGetDeviceQueue(graphicsDevice.GetHandle<VkDevice>(), queueFamily, 0, &m_queue);
 	}
 
 	VulkanDeviceQueue::~VulkanDeviceQueue()
 	{
+		m_queue = nullptr;
 	}
 
 	void VulkanDeviceQueue::WaitForQueue()
@@ -40,8 +44,27 @@ namespace Volt
 		vkQueueWaitIdle(m_queue);
 	}
 
-	void VulkanDeviceQueue::Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer)
+	void VulkanDeviceQueue::Execute(const std::vector<Ref<CommandBuffer>>& commandBuffers)
 	{
+		std::vector<VkCommandBuffer> vulkanCommandBuffers;
+		VkFence waitFence = nullptr;
+
+		for (const auto& cmdBuffer : commandBuffers)
+		{
+			vulkanCommandBuffers.push_back(cmdBuffer->GetHandle<VkCommandBuffer>());
+		}
+
+		waitFence = commandBuffers.front()->AsRef<VulkanCommandBuffer>().GetCurrentFence();
+
+		VkSubmitInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		info.commandBufferCount = static_cast<uint32_t>(vulkanCommandBuffers.size());
+		info.pCommandBuffers = vulkanCommandBuffers.data();
+
+		{
+			std::scoped_lock lock{ m_executeMutex };
+			VT_VK_CHECK(vkQueueSubmit(m_queue, 1, &info, waitFence));
+		}
 	}
 
 	void* VulkanDeviceQueue::GetHandleImpl()

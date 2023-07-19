@@ -37,8 +37,6 @@
 
 #include "Volt/Utility/Noise.h"
 
-#include <VoltRHI/Graphics/GraphicsContext.h>
-
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
@@ -62,13 +60,6 @@ namespace Volt
 		if (!myInfo.isRuntime)
 		{
 			ProjectManager::SetupWorkingDirectory();
-		}
-
-		{
-			GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = GraphicsAPI::Vulkan;
-
-			Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
 		}
 
 		ProjectManager::SetupProject(myInfo.projectPath);
@@ -133,7 +124,7 @@ namespace Volt
 
 		if (info.enableImGui)
 		{
-			myImGuiImplementation = ImGuiImplementation::Create();
+			myImGuiImplementation = ImGuiImplementationVolt::Create();
 		}
 
 		if (info.netEnabled)

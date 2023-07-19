@@ -69,9 +69,8 @@ namespace Volt
 	inline static const char* s_validationLayer = "VK_LAYER_KHRONOS_validation";
 
 	VulkanGraphicsDevice::VulkanGraphicsDevice(const GraphicsDeviceCreateInfo& createInfo)
-		//: m_physicalDevice(createInfo.physicalDevice)
 	{
-		//m_physicalDevice = createInfo.physicalDevice.;
+		m_physicalDevice = std::reinterpret_pointer_cast<VulkanPhysicalGraphicsDevice>(createInfo.physicalDevice);
 
 		VulkanPhysicalGraphicsDevice& physicalDevicePtr = m_physicalDevice.lock()->AsRef<VulkanPhysicalGraphicsDevice>();
 		const auto& queueFamilies = physicalDevicePtr.GetQueueFamilies();

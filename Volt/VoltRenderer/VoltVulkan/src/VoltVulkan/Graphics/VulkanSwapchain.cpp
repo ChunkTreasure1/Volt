@@ -57,15 +57,15 @@ namespace Volt
 	VulkanSwapchain::VulkanSwapchain(GLFWwindow* glfwWindow)
 	{
 		auto vulkanContext = GraphicsContext::Get().As<VulkanGraphicsContext>();
-		auto vulkanPhysicalDevice = GraphicsContext::GetPhysicalDevice()->As<VulkanPhysicalGraphicsDevice>();
+		auto& vulkanPhysicalDevice = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>();
 
 		VkInstance instance = vulkanContext->GetHandle<VkInstance>();
 		VT_VK_CHECK(glfwCreateWindowSurface(instance, glfwWindow, nullptr, &m_surface));
 
-		const auto& queueFamilies = vulkanPhysicalDevice->GetQueueFamilies();
+		const auto& queueFamilies = vulkanPhysicalDevice.GetQueueFamilies();
 
 		VkBool32 supportsPresent = VK_FALSE;
-		VT_VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(vulkanPhysicalDevice->GetHandle<VkPhysicalDevice>(), queueFamilies.graphicsFamilyQueueIndex, m_surface, &supportsPresent));
+		VT_VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(vulkanPhysicalDevice.GetHandle<VkPhysicalDevice>(), queueFamilies.graphicsFamilyQueueIndex, m_surface, &supportsPresent));
 
 		assert(supportsPresent && "Device does not have present support!");
 
@@ -103,6 +103,7 @@ namespace Volt
 	void VulkanSwapchain::Present()
 	{
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
+		const auto deviceQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics);
 
 		// Queue Submit
 		{
@@ -120,8 +121,7 @@ namespace Volt
 			const VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			submitInfo.pWaitDstStageMask = &waitStage;
 
-			// #TODO: Implement
-			//GraphicsContextVolt::GetDevice()->FlushCommandBuffer(submitInfo, frameData.fence, QueueTypeVolt::Graphics);
+			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
 		}
 
 		// Present to screen
@@ -136,16 +136,16 @@ namespace Volt
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pImageIndices = &m_currentImage;
 
-			// #TODO: Implement
-			//VkResult presentResult = GraphicsContextVolt::GetDevice()->QueuePresent(presentInfo, QueueTypeVolt::Graphics);
-			//if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
-			//{
-			//	Resize(myWidth, myHeight, myVSyncEnabled);
-			//}
-			//else if (presentResult != VK_SUCCESS)
-			//{
-			//	throw std::runtime_error("Failed to present swapchain image!");
-			//}
+			 VkResult presentResult = vkQueuePresentKHR(deviceQueue->GetHandle<VkQueue>(), &presentInfo);
+
+			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
+			{
+				Resize(m_width, m_height, m_vSyncEnabled);
+			}
+			else if (presentResult != VK_SUCCESS)
+			{
+				throw std::runtime_error("Failed to present swapchain image!");
+			}
 		}
 
 		m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
@@ -319,7 +319,7 @@ namespace Volt
 			for (auto& imageData : m_perImageData)
 			{
 				vkDestroyImageView(device->GetHandle<VkDevice>(), imageData.imageView, nullptr);
-				vkDestroyImage(device->GetHandle<VkDevice>(), imageData.image, nullptr);
+				vkDestroyFramebuffer(device->GetHandle<VkDevice>(), imageData.framebuffer, nullptr);
 			}
 		}
 

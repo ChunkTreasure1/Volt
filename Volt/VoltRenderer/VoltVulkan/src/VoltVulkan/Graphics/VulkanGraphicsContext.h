@@ -35,8 +35,5 @@ namespace Volt
 		VkDebugUtilsMessengerEXT_T* m_debugMessenger = nullptr;
 
 		GraphicsContextCreateInfo m_createInfo{};
-
-		Ref<PhysicalGraphicsDevice> m_physicalDevice;
-		Ref<GraphicsDevice> m_graphicsDevice;
 	};
 }
