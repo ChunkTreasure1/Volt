@@ -24,7 +24,7 @@ namespace Volt
 		
 		static GraphicsContext& Get() { return *s_context; }
 
-		static Ref<GraphicsDevice> GetDevice() { return s_context->m_device; };
+		static Ref<GraphicsDevice> GetDevice() { return s_context->m_graphicsDevice; };
 		static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->m_physicalDevice; };
 
 		static Ref<GraphicsContext> Create(const GraphicsContextCreateInfo& createInfo);
@@ -34,7 +34,7 @@ namespace Volt
 		static void Log(Severity logSeverity, std::string_view message);
 
 	protected:
-		Ref<GraphicsDevice> m_device;
+		Ref<GraphicsDevice> m_graphicsDevice;
 		Ref<PhysicalGraphicsDevice> m_physicalDevice;
 		
 	private:

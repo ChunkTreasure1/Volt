@@ -8,16 +8,16 @@ struct GLFWwindow;
 
 namespace Volt
 {
-	class ImGuiImplementation
+	class ImGuiImplementationVolt
 	{
 	public:
-		ImGuiImplementation();
-		~ImGuiImplementation();
+		ImGuiImplementationVolt();
+		~ImGuiImplementationVolt();
 
 		void Begin();
 		void End();
 
-		static Scope<ImGuiImplementation> Create();
+		static Scope<ImGuiImplementationVolt> Create();
 
 	private:
 		void InitializeVulkanData();

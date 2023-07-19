@@ -28,7 +28,7 @@ namespace Volt
 		GraphicsDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.physicalDevice = m_physicalDevice;
 
-		m_device = GraphicsDevice::Create(deviceCreateInfo);
+		m_graphicsDevice = GraphicsDevice::Create(deviceCreateInfo);
 		
 	}
 

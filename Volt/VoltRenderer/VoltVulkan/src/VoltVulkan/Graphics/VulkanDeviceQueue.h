@@ -19,6 +19,8 @@ namespace Volt
 		void* GetHandleImpl() override;
 
 	private:
+		std::mutex m_executeMutex{};
+
 		VkQueue_T* m_queue = nullptr;
 	};
 }
