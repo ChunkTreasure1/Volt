@@ -9,16 +9,16 @@ namespace Volt
 	{
 		auto physicalDevice = info.physicalDevice->As<D3D12PhysicalGraphicsDevice>();
 
-		VT_D3D12_CHECK(D3D12CreateDevice(physicalDevice->GetAdapter().Get(), D3D_FEATURE_LEVEL_11_0, VT_D3D12_ID(m_device)));
+		VT_D3D12_CHECK(D3D12CreateDevice(physicalDevice->GetAdapter(), D3D_FEATURE_LEVEL_11_0, VT_D3D12_ID(m_device)));
 	}
 
 	D3D12GraphicsDevice::~D3D12GraphicsDevice()
 	{
-		m_device->Release();
+		VT_D3D12_DELETE(m_device);
 	}
 
 	void* D3D12GraphicsDevice::GetHandleImpl()
 	{
-		return m_device.Get();
+		return m_device;
 	}
 }

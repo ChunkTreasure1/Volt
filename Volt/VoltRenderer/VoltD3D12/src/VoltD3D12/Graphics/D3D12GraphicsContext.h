@@ -1,9 +1,11 @@
 #pragma once
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
+struct ID3D12InfoQueue;
+struct ID3D12Debug;
+
 namespace Volt
 {
-
 	class D3D12GraphicsContext final : public GraphicsContext
 	{
 	public:
@@ -19,6 +21,9 @@ namespace Volt
 		void Initalize(const GraphicsContextCreateInfo& info);
 		void Shutdown();
 
+		bool CreateAPIDebugging();
 
+		ID3D12InfoQueue* m_infoQueue;
+		ID3D12Debug* m_debug;
 	};
 }

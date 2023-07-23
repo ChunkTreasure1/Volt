@@ -13,7 +13,9 @@
 #define __D3DX12_H__
 
 #include "d3d12.h"
-
+#pragma warning (push)
+#pragma warning( disable : 6001 )
+#pragma warning( disable : 4324 )
 #if defined( __cplusplus )
 
 struct CD3DX12_DEFAULT {};
@@ -2092,6 +2094,7 @@ inline ID3D12CommandList* const* CommandListCast(t_CommandListType* const* pp)
 // To help enable root signature 1.1 features when they are available and not require maintaining
 // two code paths for building root signatures, this helper method reconstructs a 1.0 signature when
 // 1.1 is not supported.
+
 inline HRESULT D3DX12SerializeVersionedRootSignature(
 	_In_ const D3D12_VERSIONED_ROOT_SIGNATURE_DESC* pRootSignatureDesc,
 	D3D_ROOT_SIGNATURE_VERSION MaxVersion,
@@ -2190,6 +2193,8 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
 						{
 							if (desc_1_1.pParameters[n].ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
 							{
+								pParameters_1_0[n].DescriptorTable.pDescriptorRanges = {};
+
 								HeapFree(GetProcessHeap(), 0, reinterpret_cast<void*>(const_cast<D3D12_DESCRIPTOR_RANGE*>(pParameters_1_0[n].DescriptorTable.pDescriptorRanges)));
 							}
 						}
@@ -3501,3 +3506,4 @@ private:
 
 #endif //__D3DX12_H__
 
+#pragma warning (pop)

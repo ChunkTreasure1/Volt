@@ -7,8 +7,7 @@ namespace Volt
 	{
 		if (!FindValidAdapter())
 		{
-			int32_t crash = 3;
-			(void)crash;
+			VT_RHI_DEBUGBREAK();
 		}
 	}
 
@@ -21,12 +20,10 @@ namespace Volt
 	{
 		uint32_t adapterIndex = 0;
 		VT_D3D12_CHECK(CreateDXGIFactory1(VT_D3D12_ID(m_factory)));
-
-		while (m_factory->EnumAdapters1(adapterIndex, m_adapter.GetAddressOf()) != DXGI_ERROR_NOT_FOUND)
+		while (m_factory->EnumAdapters1(adapterIndex, &m_adapter) != DXGI_ERROR_NOT_FOUND)
 		{
 			DXGI_ADAPTER_DESC1 desc;
 			m_adapter->GetDesc1(&desc);
-
 			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
 			{
 				// we dont want a software device
@@ -34,7 +31,8 @@ namespace Volt
 				continue;
 			}
 
-			auto hr = D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr);
+			const auto hr = D3D12CreateDevice(m_adapter, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr);
+
 			if (SUCCEEDED(hr))
 			{
 				return true;
