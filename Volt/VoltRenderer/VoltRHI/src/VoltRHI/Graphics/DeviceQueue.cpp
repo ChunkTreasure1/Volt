@@ -5,6 +5,7 @@
 
 #include <VoltMock/Graphics/MockDeviceQueue.h>
 #include <VoltVulkan/Graphics/VulkanDeviceQueue.h>
+#include <VoltD3D12/Graphics/D3D12DeviceQueue.h>
 
 namespace Volt
 {
@@ -14,7 +15,7 @@ namespace Volt
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12DeviceQueue>(createInfo); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 

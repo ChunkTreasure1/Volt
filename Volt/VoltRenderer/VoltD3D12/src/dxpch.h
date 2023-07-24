@@ -59,6 +59,8 @@ namespace Volt
 	};
 }
 
+
+
 #define VT_D3D12_ID(x) IID_PPV_ARGS(&x)
 #define VT_D3D12_WRID(x) IID_PPV_ARGS(x.GetAddressOf())
 

@@ -2,9 +2,8 @@
 
 #include "VoltRHI/Graphics/DeviceQueue.h"
 
-struct ID3D12Fence;
-struct ID3D12CommandAllocator;
 struct ID3D12CommandQueue;
+struct ID3D12Fence;
 
 namespace Volt
 {
@@ -24,13 +23,10 @@ namespace Volt
 		void CreateCommandQueue(QueueType type);
 		void DestroyCommandQueue(QueueType type);
 
-		inline static std::unordered_map<QueueType, std::pair<ID3D12CommandQueue*, uint32_t>> s_commandQueues;
+		ID3D12CommandQueue* m_commandQueue;
 
-		ID3D12CommandAllocator* m_commandAllocator;
-
-		ID3D12Fence* m_fence;
-		size_t m_fenceValue;
-		size_t m_fenceStartValue;
-		void* m_windowsFenceHandle;
+		// this is tracked internally from the most recent fence.
+		ID3D12Fence* m_currentFence;
+		size_t m_currentFenceValue;
 	};
 }

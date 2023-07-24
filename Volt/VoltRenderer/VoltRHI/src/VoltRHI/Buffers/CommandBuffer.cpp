@@ -5,6 +5,7 @@
 
 #include <VoltMock/Buffers/MockCommandBuffer.h>
 #include <VoltVulkan/Buffers/VulkanCommandBuffer.h>
+#include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
 
 namespace Volt
 {
@@ -31,7 +32,7 @@ namespace Volt
 		
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12CommandBuffer>(1, QueueType::Graphics, false); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
