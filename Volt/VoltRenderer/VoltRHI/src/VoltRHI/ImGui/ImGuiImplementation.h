@@ -32,9 +32,10 @@ namespace Volt::RHI
 		virtual void BeginAPI() = 0;
 		virtual void EndAPI() = 0;
 
-		virtual void InitializeAPI() = 0;
-		virtual void ShutdownAPI() = 0;
+		virtual void InitializeAPI() {}
+		virtual void ShutdownAPI() {}
 
 	private:
+		void Initialize();
 	};
 }

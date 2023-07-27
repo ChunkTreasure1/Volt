@@ -43,12 +43,19 @@ namespace Volt::RHI
 		const uint32_t GetHeight() const override;
 
 		inline VkRenderPass_T* GetRenderPass() const { return m_renderPass; }
+		inline VkCommandBuffer_T* GetCommandBuffer(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandBuffer; }
+		inline VkCommandPool_T* GetCommandPool(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandPool; }
+
 		VkFramebuffer_T* GetCurrentFramebuffer() const;
+
+		[[nodiscard]] inline static VulkanSwapchain& Get() { return *s_instance; }
 
 	protected:
 		void* GetHandleImpl() override;
 	
 	private:
+		inline static VulkanSwapchain* s_instance = nullptr;
+
 		void Invalidate(const uint32_t width, const uint32_t height, bool enableVSync);
 		void Release();
 

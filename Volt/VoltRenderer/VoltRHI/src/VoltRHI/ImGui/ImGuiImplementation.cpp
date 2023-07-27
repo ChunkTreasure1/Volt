@@ -53,6 +53,10 @@ namespace Volt::RHI
 
 	ImGuiImplementation::ImGuiImplementation()
 	{
+	}
+
+	void ImGuiImplementation::Initialize()
+	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
@@ -236,6 +240,8 @@ namespace Volt::RHI
 	{
 		const auto api = GraphicsContext::GetAPI();
 
+		Ref<ImGuiImplementation> implementation;
+
 		switch (api)
 		{
 			case GraphicsAPI::D3D12:
@@ -243,9 +249,11 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 			
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImGuiImplementation>(createInfo);
+			case GraphicsAPI::Vulkan: implementation = CreateRefRHI<VulkanImGuiImplementation>(createInfo);
 		}
 
-		return nullptr;
+		implementation->Initialize();
+
+		return implementation;
 	}
 }

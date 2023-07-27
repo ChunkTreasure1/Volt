@@ -3,6 +3,7 @@
 
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
+#include "VoltVulkan/Graphics/VulkanSwapchain.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -113,7 +114,16 @@ namespace Volt::RHI
 
 		if (m_isSwapchainTarget)
 		{
-			assert(false);
+			auto& swapchain = VulkanSwapchain::Get();
+			m_commandBufferCount = VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
+			m_commandBuffers.resize(m_commandBufferCount);
+
+			for (uint32_t i = 0; i < m_commandBufferCount; i++)
+			{
+				m_commandBuffers[i].commandBuffer = swapchain.GetCommandBuffer(i);
+				m_commandBuffers[i].commandPool = swapchain.GetCommandPool(i);
+			}
+
 			return;
 		}
 		else

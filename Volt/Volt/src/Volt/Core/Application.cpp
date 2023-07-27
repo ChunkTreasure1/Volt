@@ -37,6 +37,8 @@
 
 #include "Volt/Utility/Noise.h"
 
+#include <VoltRHI/ImGui/ImGuiImplementation.h>
+
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
@@ -48,21 +50,21 @@
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)
-		: myFrameTimer(100)
+		: m_frameTimer(100)
 	{
-		VT_CORE_ASSERT(!myInstance, "Application already exists!");
-		myInstance = this;
+		VT_CORE_ASSERT(!m_instance, "Application already exists!");
+		m_instance = this;
 
-		myInfo = info;
+		m_info = info;
 		Log::Initialize();
 		Noise::Initialize();
 
-		if (!myInfo.isRuntime)
+		if (!m_info.isRuntime)
 		{
 			ProjectManager::SetupWorkingDirectory();
 		}
 
-		ProjectManager::SetupProject(myInfo.projectPath);
+		ProjectManager::SetupProject(m_info.projectPath);
 		SessionPreferences::Initialize();
 
 		WindowProperties windowProperties{};
@@ -76,21 +78,21 @@ namespace Volt
 
 		SetupWindowPreferences(windowProperties);
 
-		if (myInfo.isRuntime)
+		if (m_info.isRuntime)
 		{
 			windowProperties.title = ProjectManager::GetProject().name;
 			windowProperties.cursorPath = ProjectManager::GetProject().cursorPath;
 			windowProperties.iconPath = ProjectManager::GetProject().iconPath;
 		}
 
-		myWindow = Window::Create(windowProperties);
-		myWindow->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
+		m_window = Window::Create(windowProperties);
+		m_window->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 
 		FileSystem::Initialize();
 
-		myThreadPool.Initialize(std::thread::hardware_concurrency());
-		myRenderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
-		myAssetManager = CreateScope<AssetManager>();
+		m_threadPool.Initialize(std::thread::hardware_concurrency());
+		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
+		m_assetmanager = CreateScope<AssetManager>();
 
 		//Renderer::Initialize();
 		//ShaderRegistry::Initialize();
@@ -123,21 +125,25 @@ namespace Volt
 
 		if (info.enableImGui)
 		{
-			//myImGuiImplementation = ImGuiImplementationVolt::Create();
+			RHI::ImGuiCreateInfo createInfo{};
+			createInfo.swapchain = m_window->GetSwapchainPtr();
+			createInfo.window = m_window->GetNativeWindow();
+
+			m_imguiImplementation = RHI::ImGuiImplementation::Create(createInfo);
 		}
 
 		if (info.netEnabled)
 		{
-			myNetHandler = CreateScope<Volt::NetHandler>();
+			m_netHandler = CreateScope<Volt::NetHandler>();
 		}
 
-		myNavigationSystem = CreateScope<Volt::AI::NavigationSystem>();
+		m_navigationSystem = CreateScope<Volt::AI::NavigationSystem>();
 
 		// Extras
 
 		if (info.enableSteam)
 		{
-			mySteamImplementation = SteamImplementation::Create();
+			m_steamImplementation = SteamImplementation::Create();
 		}
 	}
 
@@ -145,12 +151,12 @@ namespace Volt
 	{
 		//GraphicsContextVolt::GetDevice()->WaitForIdle();
 
-		myNavigationSystem = nullptr;
-		myLayerStack.Clear();
-		myImGuiImplementation = nullptr;
+		m_navigationSystem = nullptr;
+		m_layerStack.Clear();
+		m_imguiImplementation = nullptr;
 		SceneManager::Shutdown();
 
-		myLayerStack.Clear();
+		m_layerStack.Clear();
 
 		Physics::SaveLayers();
 		Physics::Shutdown();
@@ -167,16 +173,16 @@ namespace Volt
 		//Amp::AudioManager::Shutdown();
 		Amp::WWiseEngine::Get().TermWwise();
 
-		myAssetManager = nullptr;
-		myThreadPool.Shutdown();
-		myRenderThreadPool.Shutdown();
+		m_assetmanager = nullptr;
+		m_threadPool.Shutdown();
+		m_renderThreadPool.Shutdown();
 
 		//Renderer::FlushResourceQueues();
 
 		FileSystem::Shutdown();
 
-		myWindow = nullptr;
-		myInstance = nullptr;
+		m_window = nullptr;
+		m_instance = nullptr;
 		Log::Shutdown();
 	}
 
@@ -184,24 +190,24 @@ namespace Volt
 	{
 		VT_PROFILE_THREAD("Main");
 
-		myIsRunning = true;
+		m_isRunning = true;
 
-		while (myIsRunning)
+		while (m_isRunning)
 		{
 			VT_PROFILE_FRAME("Frame");
 
-			myHasSentMouseMovedEvent = false;
+			m_hasSentMouseMovedEvent = false;
 
-			myWindow->BeginFrame();
+			m_window->BeginFrame();
 
 			float time = (float)glfwGetTime();
-			myCurrentDeltaTime = time - myLastTotalTime;
-			myLastTotalTime = time;
+			m_currentDeltaTime = time - m_lastTotalTime;
+			m_lastTotalTime = time;
 
 			{
 				VT_PROFILE_SCOPE("Application::Update");
 
-				AppUpdateEvent updateEvent(myCurrentDeltaTime * myTimeScale);
+				AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
 				OnEvent(updateEvent);
 				Amp::WWiseEngine::Get().Update();
 			}
@@ -217,7 +223,7 @@ namespace Volt
 			}
 
 
-			if (myInfo.enableImGui)
+			if (m_info.enableImGui)
 			{
 				VT_PROFILE_SCOPE("Application::ImGui");
 
@@ -229,10 +235,10 @@ namespace Volt
 				//myImGuiImplementation->End();
 			}
 
-			if (myInfo.netEnabled)
+			if (m_info.netEnabled)
 			{
 				VT_PROFILE_SCOPE("Application::Net");
-				myNetHandler->Update(myCurrentDeltaTime);
+				m_netHandler->Update(m_currentDeltaTime);
 			}
 
 			{
@@ -240,9 +246,9 @@ namespace Volt
 				DiscordSDK::Update();
 			}
 
-			myWindow->Present();
+			m_window->Present();
 
-			myFrameTimer.Accumulate();
+			m_frameTimer.Accumulate();
 		}
 	}
 
@@ -252,13 +258,13 @@ namespace Volt
 
 		if (event.GetEventType() == MouseMoved)
 		{
-			if (myHasSentMouseMovedEvent)
+			if (m_hasSentMouseMovedEvent)
 			{
 				return;
 			}
 			else
 			{
-				myHasSentMouseMovedEvent = true;
+				m_hasSentMouseMovedEvent = true;
 			}
 		}
 
@@ -269,14 +275,14 @@ namespace Volt
 		dispatcher.Dispatch<ViewportResizeEvent>(VT_BIND_EVENT_FN(Application::OnViewportResizeEvent));
 		dispatcher.Dispatch<KeyPressedEvent>(VT_BIND_EVENT_FN(Application::OnKeyPressedEvent));
 
-		myNetHandler->OnEvent(event);
+		m_netHandler->OnEvent(event);
 
-		if (myNavigationSystem)
+		if (m_navigationSystem)
 		{
-			myNavigationSystem->OnEvent(event);
+			m_navigationSystem->OnEvent(event);
 		}
 
-		for (auto layer : myLayerStack)
+		for (auto layer : m_layerStack)
 		{
 			layer->OnEvent(event);
 			if (event.handled)
@@ -289,26 +295,26 @@ namespace Volt
 
 	void Application::PushLayer(Layer* layer)
 	{
-		myLayerStack.PushLayer(layer);
+		m_layerStack.PushLayer(layer);
 	}
 
 	void Application::PopLayer(Layer* layer)
 	{
-		myLayerStack.PopLayer(layer);
+		m_layerStack.PopLayer(layer);
 	}
 
 	bool Application::OnAppUpdateEvent(AppUpdateEvent&)
 	{
-		if (mySteamImplementation)
+		if (m_steamImplementation)
 		{
-			mySteamImplementation->Update();
+			m_steamImplementation->Update();
 		}
 		return false;
 	}
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent&)
 	{
-		myIsRunning = false;
+		m_isRunning = false;
 		return false;
 	}
 
@@ -316,20 +322,20 @@ namespace Volt
 	{
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
-			myIsMinimized = true;
+			m_isMinimized = true;
 		}
 		else
 		{
-			myIsMinimized = false;
+			m_isMinimized = false;
 		}
 
-		myWindow->Resize(e.GetWidth(), e.GetHeight());
+		m_window->Resize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 
 	bool Application::OnViewportResizeEvent(ViewportResizeEvent& e)
 	{
-		myWindow->SetViewportSize(e.GetWidth(), e.GetHeight());
+		m_window->SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 

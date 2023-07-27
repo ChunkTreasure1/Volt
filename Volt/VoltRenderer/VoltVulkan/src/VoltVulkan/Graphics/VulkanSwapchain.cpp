@@ -70,10 +70,14 @@ namespace Volt::RHI
 		assert(supportsPresent && "Device does not have present support!");
 
 		Invalidate(m_width, m_height, m_vSyncEnabled);
+	
+		s_instance = this;
 	}
 
 	VulkanSwapchain::~VulkanSwapchain()
 	{
+		s_instance = nullptr;
+
 		Release();
 	}
 

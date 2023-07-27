@@ -50,6 +50,6 @@ namespace Volt::RHI
 		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;
 
-		const uint32_t m_commandBufferCount;
+		uint32_t m_commandBufferCount;
 	};
 }

@@ -94,6 +94,7 @@ namespace Volt
 		inline HWND GetHWND() const { return m_windowHandle; }
 
 		inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
+		inline const Weak <RHI::Swapchain> GetSwapchainPtr() const { return m_swapchain; }
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 

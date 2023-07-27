@@ -109,6 +109,7 @@ namespace Volt::RHI
 	void VulkanImGuiImplementation::InitializeAPI()
 	{
 		ImGui_ImplGlfw_InitForVulkan(m_windowPtr, true);
+		InitializeVulkanData();
 	}
 
 	void VulkanImGuiImplementation::ShutdownAPI()
