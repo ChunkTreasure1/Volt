@@ -4,7 +4,7 @@
 
 struct VkPhysicalDevice_T;
 
-namespace Volt
+namespace Volt::RHI
 {
 	struct PhysicalDeviceQueueFamilyIndices
 	{

@@ -310,7 +310,7 @@ namespace Volt
 
 		inline void TransitionImageLayout(VkImage image, VkImageLayout currentLayout, VkImageLayout targetLayout)
 		{
-			auto device = GraphicsContextVolt::GetDevice();
+			//auto device = GraphicsContextVolt::GetDevice();
 
 			VkImageSubresourceRange subresource{};
 			subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -319,63 +319,63 @@ namespace Volt
 			subresource.baseArrayLayer = 0;
 			subresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
-			auto commandBuffer = device->GetSingleUseCommandBuffer(true);
+			//auto commandBuffer = device->GetSingleUseCommandBuffer(true);
 
-			TransitionImageLayout(commandBuffer, image, currentLayout, targetLayout, subresource);
+			//TransitionImageLayout(commandBuffer, image, currentLayout, targetLayout, subresource);
 
-			device->FlushSingleUseCommandBuffer(commandBuffer);
+			//device->FlushSingleUseCommandBuffer(commandBuffer);
 		}
 
 		inline void TransitionImageFromTransferQueue(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
 		{
-			auto device = GraphicsContextVolt::GetDevice();
+			//auto device = GraphicsContextVolt::GetDevice();
 
-			VkImageSubresourceRange subresource{};
-			subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresource.baseMipLevel = 0;
-			subresource.levelCount = VK_REMAINING_MIP_LEVELS;
-			subresource.baseArrayLayer = 0;
-			subresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
+			//VkImageSubresourceRange subresource{};
+			//subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			//subresource.baseMipLevel = 0;
+			//subresource.levelCount = VK_REMAINING_MIP_LEVELS;
+			//subresource.baseArrayLayer = 0;
+			//subresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
-			// Release barrier
-			{
-				VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueTypeVolt::Transfer);
+			//// Release barrier
+			//{
+			//	VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true, QueueTypeVolt::Transfer);
 
-				VkImageMemoryBarrier imageMemoryBarrier = {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
-				imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
-				imageMemoryBarrier.oldLayout = oldLayout;
-				imageMemoryBarrier.newLayout = oldLayout;
-				imageMemoryBarrier.image = image;
-				imageMemoryBarrier.subresourceRange = subresource;
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				imageMemoryBarrier.dstAccessMask = 0;
+			//	VkImageMemoryBarrier imageMemoryBarrier = {};
+			//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			//	imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
+			//	imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
+			//	imageMemoryBarrier.oldLayout = oldLayout;
+			//	imageMemoryBarrier.newLayout = oldLayout;
+			//	imageMemoryBarrier.image = image;
+			//	imageMemoryBarrier.subresourceRange = subresource;
+			//	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			//	imageMemoryBarrier.dstAccessMask = 0;
 
-				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+			//	vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-				device->FlushSingleUseCommandBuffer(cmdBuffer);
-			}
+			//	device->FlushSingleUseCommandBuffer(cmdBuffer);
+			//}
 
-			// Aquire barrier
-			{
-				VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+			//// Aquire barrier
+			//{
+			//	VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
-				VkImageMemoryBarrier imageMemoryBarrier = {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
-				imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
-				imageMemoryBarrier.oldLayout = oldLayout;
-				imageMemoryBarrier.newLayout = newLayout;
-				imageMemoryBarrier.image = image;
-				imageMemoryBarrier.subresourceRange = subresource;
-				imageMemoryBarrier.srcAccessMask = 0;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			//	VkImageMemoryBarrier imageMemoryBarrier = {};
+			//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			//	imageMemoryBarrier.srcQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
+			//	imageMemoryBarrier.dstQueueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
+			//	imageMemoryBarrier.oldLayout = oldLayout;
+			//	imageMemoryBarrier.newLayout = newLayout;
+			//	imageMemoryBarrier.image = image;
+			//	imageMemoryBarrier.subresourceRange = subresource;
+			//	imageMemoryBarrier.srcAccessMask = 0;
+			//	imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+			//	vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 
-				device->FlushSingleUseCommandBuffer(cmdBuffer);
-			}
+			//	device->FlushSingleUseCommandBuffer(cmdBuffer);
+			//}
 		}
 
 		inline static std::vector<VkImageMemoryBarrier> GetImageBarriersFromImages(const std::vector<Ref<Image2D>>& images, VkAccessFlags srcAccessFlags, VkAccessFlags dstAccessFlags, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange subResourceRange)
@@ -422,16 +422,16 @@ namespace Volt
 
 		inline void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel = 0)
 		{
-			auto device = GraphicsContextVolt::GetDevice();
+			/*auto device = GraphicsContextVolt::GetDevice();
 
 			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 			CopyBufferToImage(cmdBuffer, buffer, image, width, height, mipLevel);
-			device->FlushSingleUseCommandBuffer(cmdBuffer);
+			device->FlushSingleUseCommandBuffer(cmdBuffer);*/
 		}
 
 		inline void GenerateMipMaps(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevels)
 		{
-			auto device = GraphicsContextVolt::GetDevice();
+			/*auto device = GraphicsContextVolt::GetDevice();
 			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
 			VkImageMemoryBarrier barrier{};
@@ -503,7 +503,7 @@ namespace Volt
 				0, nullptr,
 				1, &barrier);
 
-			device->FlushSingleUseCommandBuffer(cmdBuffer);
+			device->FlushSingleUseCommandBuffer(cmdBuffer);*/
 		}
 
 		inline void InsertImageMemoryBarrier(VkCommandBuffer commandBuffer, VkImage image, VkAccessFlags srcAccess, VkAccessFlags dstAccess, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageSubresourceRange subResourceRange)

@@ -1,7 +1,7 @@
 #pragma once
 #include "VoltRHI/Core/Core.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	class PhysicalGraphicsDevice;
 	class GraphicsDevice;
@@ -361,10 +361,34 @@ namespace Volt
 		uint32_t height = 0;
 	};
 
+	struct Offset2D
+	{
+		uint32_t x;
+		uint32_t y;
+	};
+
 	struct Extent3D
 	{
 		uint32_t width = 0;
 		uint32_t height = 0;
 		uint32_t depth = 0;
+	};
+
+	struct Rect2D
+	{
+		Extent2D extent;
+		Offset2D offset;
+	};
+
+	struct Viewport
+	{
+		float x;
+		float y;
+
+		float width;
+		float height;
+
+		float minDepth;
+		float maxDepth;
 	};
 }

@@ -37,10 +37,10 @@ namespace Volt
 	{
 		myHasEnded = false;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		const uint32_t index = GetCurrentIndex();
 
-		if (!mySwapchainTarget)
+		/*if (!mySwapchainTarget)
 		{
 			if (myLevel == CommandBufferLevel::Primary)
 			{
@@ -48,7 +48,7 @@ namespace Volt
 			}
 
 			VT_VK_CHECK(vkResetCommandPool(device->GetHandle(), myCommandPools.at(index), 0));
-		}
+		}*/
 
 		switch (myLevel)
 		{
@@ -97,7 +97,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		if (!mySwapchainTarget)
 		{
@@ -109,9 +109,9 @@ namespace Volt
 				info.commandBufferCount = 1;
 				info.pCommandBuffers = &myCommandBuffers.at(index);
 
-				VT_VK_CHECK(vkResetFences(device->GetHandle(), 1, &mySubmitFences.at(index)));
+				//VT_VK_CHECK(vkResetFences(device->GetHandle(), 1, &mySubmitFences.at(index)));
 
-				device->FlushCommandBuffer(info, mySubmitFences.at(index), myQueueType);
+				//device->FlushCommandBuffer(info, mySubmitFences.at(index), myQueueType);
 			}
 			else if (!myInheritedCommandBuffer.expired())
 			{
@@ -148,8 +148,8 @@ namespace Volt
 	{
 		if (myLevel == CommandBufferLevel::Primary)
 		{
-			const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myCurrentCommandPool;
-			return index;
+			//const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myCurrentCommandPool;
+			return 0;
 		}
 
 		auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
@@ -256,166 +256,166 @@ namespace Volt
 
 	void CommandBuffer::Invalidate()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		if (!mySwapchainTarget)
-		{
-			myCommandPools.resize(myCount);
-			myCommandBuffers.resize(myCount);
-			mySubmitFences.resize(myCount);
+		//if (!mySwapchainTarget)
+		//{
+		//	myCommandPools.resize(myCount);
+		//	myCommandBuffers.resize(myCount);
+		//	mySubmitFences.resize(myCount);
 
-			// Create Command Pools
-			for (uint32_t i = 0; i < myCount; i++)
-			{
-				VkCommandPoolCreateInfo poolInfo{};
-				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		//	// Create Command Pools
+		//	for (uint32_t i = 0; i < myCount; i++)
+		//	{
+		//		VkCommandPoolCreateInfo poolInfo{};
+		//		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 
-				uint32_t queueFamilyIndex = 0;
+		//		uint32_t queueFamilyIndex = 0;
 
-				switch (myQueueType)
-				{
-					case QueueTypeVolt::Graphics:
-						queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
-						break;
-					case QueueTypeVolt::Compute:
-						queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().computeFamilyQueueIndex;
-						break;
-					case QueueTypeVolt::Transfer:
-						queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
-						break;
-					default:
-						VT_CORE_ASSERT(false, "Invalid QueueType!");
-						break;
-				}
+		//		switch (myQueueType)
+		//		{
+		//			case QueueTypeVolt::Graphics:
+		//				queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().graphicsFamilyQueueIndex;
+		//				break;
+		//			case QueueTypeVolt::Compute:
+		//				queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().computeFamilyQueueIndex;
+		//				break;
+		//			case QueueTypeVolt::Transfer:
+		//				queueFamilyIndex = GraphicsContextVolt::GetPhysicalDevice()->GetQueueFamilies().transferFamilyQueueIndex;
+		//				break;
+		//			default:
+		//				VT_CORE_ASSERT(false, "Invalid QueueType!");
+		//				break;
+		//		}
 
-				poolInfo.queueFamilyIndex = queueFamilyIndex;
-				poolInfo.flags = 0;
+		//		poolInfo.queueFamilyIndex = queueFamilyIndex;
+		//		poolInfo.flags = 0;
 
-				VT_VK_CHECK(vkCreateCommandPool(device->GetHandle(), &poolInfo, nullptr, &myCommandPools.at(i)));
-			}
+		//		VT_VK_CHECK(vkCreateCommandPool(device->GetHandle(), &poolInfo, nullptr, &myCommandPools.at(i)));
+		//	}
 
-			// Create Command Buffers
-			for (uint32_t i = 0; i < myCount; i++)
-			{
-				VkCommandBufferAllocateInfo allocInfo{};
-				allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-				allocInfo.commandPool = myCommandPools.at(i);
-				allocInfo.level = myLevel == CommandBufferLevel::Primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-				allocInfo.commandBufferCount = 1;
+		//	// Create Command Buffers
+		//	for (uint32_t i = 0; i < myCount; i++)
+		//	{
+		//		VkCommandBufferAllocateInfo allocInfo{};
+		//		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		//		allocInfo.commandPool = myCommandPools.at(i);
+		//		allocInfo.level = myLevel == CommandBufferLevel::Primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+		//		allocInfo.commandBufferCount = 1;
 
-				VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle(), &allocInfo, &myCommandBuffers.at(i)));
-			}
+		//		VT_VK_CHECK(vkAllocateCommandBuffers(device->GetHandle(), &allocInfo, &myCommandBuffers.at(i)));
+		//	}
 
-			// Create fences
-			for (uint32_t i = 0; i < myCount; i++)
-			{
-				VkFenceCreateInfo info{};
-				info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-				info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-				VT_VK_CHECK(vkCreateFence(device->GetHandle(), &info, nullptr, &mySubmitFences.at(i)));
-			}
-		}
-		else
-		{
-			const auto& swapchain = Application::Get().GetWindow().GetSwapchain();
-			myCount = swapchain.GetMaxFramesInFlight();
-			myCommandPools.resize(myCount);
-			myCommandBuffers.resize(myCount);
+		//	// Create fences
+		//	for (uint32_t i = 0; i < myCount; i++)
+		//	{
+		//		VkFenceCreateInfo info{};
+		//		info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		//		info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		//		VT_VK_CHECK(vkCreateFence(device->GetHandle(), &info, nullptr, &mySubmitFences.at(i)));
+		//	}
+		//}
+		//else
+		//{
+		//	const auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+		//	myCount = swapchain.GetMaxFramesInFlight();
+		//	myCommandPools.resize(myCount);
+		//	myCommandBuffers.resize(myCount);
 
-			for (uint32_t i = 0; i < myCount; i++)
-			{
-				myCommandBuffers[i] = swapchain.GetCommandBuffer(i);
-				myCommandPools[i] = swapchain.GetCommandPool(i);
-			}
-		}
+		//	for (uint32_t i = 0; i < myCount; i++)
+		//	{
+		//		myCommandBuffers[i] = swapchain.GetCommandBuffer(i);
+		//		myCommandPools[i] = swapchain.GetCommandPool(i);
+		//	}
+		//}
 
-		myHasTimestampSupport = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsTimestamps;
-		if (myHasTimestampSupport)
-		{
-			CreateQueryPools();
-		}
+		//myHasTimestampSupport = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsTimestamps;
+		//if (myHasTimestampSupport)
+		//{
+		//	CreateQueryPools();
+		//}
 	}
 
 	void CommandBuffer::CreateQueryPools()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		myTimestampQueryCount = 2 + 2 * MAX_QUERIES;
+		//myTimestampQueryCount = 2 + 2 * MAX_QUERIES;
 
-		VkQueryPoolCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
-		info.pNext = nullptr;
-		info.queryType = VK_QUERY_TYPE_TIMESTAMP;
-		info.queryCount = myTimestampQueryCount;
+		//VkQueryPoolCreateInfo info{};
+		//info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+		//info.pNext = nullptr;
+		//info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+		//info.queryCount = myTimestampQueryCount;
 
-		myTimestampQueryPools.resize(myCount);
-		for (auto& pool : myTimestampQueryPools)
-		{
-			VT_VK_CHECK(vkCreateQueryPool(device->GetHandle(), &info, nullptr, &pool));
-		}
+		//myTimestampQueryPools.resize(myCount);
+		//for (auto& pool : myTimestampQueryPools)
+		//{
+		//	VT_VK_CHECK(vkCreateQueryPool(device->GetHandle(), &info, nullptr, &pool));
+		//}
 
-		myTimestampQueryResults.resize(myCount);
-		for (auto& results : myTimestampQueryResults)
-		{
-			results.resize(myTimestampQueryCount);
-		}
+		//myTimestampQueryResults.resize(myCount);
+		//for (auto& results : myTimestampQueryResults)
+		//{
+		//	results.resize(myTimestampQueryCount);
+		//}
 
-		myGPUExecutionTimes.resize(myCount);
-		for (auto& execTimes : myGPUExecutionTimes)
-		{
-			execTimes.resize(myTimestampQueryCount / 2);
-		}
+		//myGPUExecutionTimes.resize(myCount);
+		//for (auto& execTimes : myGPUExecutionTimes)
+		//{
+		//	execTimes.resize(myTimestampQueryCount / 2);
+		//}
 
-		///// Statistics
-		if (myQueueType == QueueTypeVolt::Graphics)
-		{
-			info.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS;
+		/////// Statistics
+		//if (myQueueType == QueueTypeVolt::Graphics)
+		//{
+		//	info.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS;
 
-			myPipelineQueryCount = 7;
-			info.queryCount = myPipelineQueryCount;
-			info.pipelineStatistics =
-				VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
-				VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
-				VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
-				VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
-				VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
-				VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
-				VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
+		//	myPipelineQueryCount = 7;
+		//	info.queryCount = myPipelineQueryCount;
+		//	info.pipelineStatistics =
+		//		VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
+		//		VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
+		//		VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
+		//		VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
+		//		VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
+		//		VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
+		//		VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
-			myPipelineStatisticsQueryPools.resize(myCount);
-			myPipelineStatisticsResults.resize(myCount);
-			for (auto& pool : myPipelineStatisticsQueryPools)
-			{
-				VT_VK_CHECK(vkCreateQueryPool(device->GetHandle(), &info, nullptr, &pool));
-			}
-		}
+		//	myPipelineStatisticsQueryPools.resize(myCount);
+		//	myPipelineStatisticsResults.resize(myCount);
+		//	for (auto& pool : myPipelineStatisticsQueryPools)
+		//	{
+		//		VT_VK_CHECK(vkCreateQueryPool(device->GetHandle(), &info, nullptr, &pool));
+		//	}
+		//}
 
 	}
 
 	void CommandBuffer::FetchTimestampResults()
 	{
-		if (!myHasTimestampSupport || myLastAvailableTimestampQuery == 0)
-		{
-			return;
-		}
+		//if (!myHasTimestampSupport || myLastAvailableTimestampQuery == 0)
+		//{
+		//	return;
+		//}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
 
-		vkGetQueryPoolResults(device->GetHandle(), myTimestampQueryPools.at(index), 0, myLastAvailableTimestampQuery, myLastAvailableTimestampQuery * sizeof(uint64_t), myTimestampQueryResults.at(index).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-		for (uint32_t i = 0; i < myLastAvailableTimestampQuery; i += 2)
-		{
-			const uint64_t startTime = myTimestampQueryResults.at(index).at(i);
-			const uint64_t endTime = myTimestampQueryResults.at(index).at(i + 1);
+		//vkGetQueryPoolResults(device->GetHandle(), myTimestampQueryPools.at(index), 0, myLastAvailableTimestampQuery, myLastAvailableTimestampQuery * sizeof(uint64_t), myTimestampQueryResults.at(index).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		//for (uint32_t i = 0; i < myLastAvailableTimestampQuery; i += 2)
+		//{
+		//	const uint64_t startTime = myTimestampQueryResults.at(index).at(i);
+		//	const uint64_t endTime = myTimestampQueryResults.at(index).at(i + 1);
 
-			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
-			myGPUExecutionTimes[index][i / 2] = nsTime * 0.000001f; // Convert to ms
-		}
+		//	const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
+		//	myGPUExecutionTimes[index][i / 2] = nsTime * 0.000001f; // Convert to ms
+		//}
 	}
 
 	void CommandBuffer::FetchPipelineStatistics()
 	{
-		if (!myHasTimestampSupport)
+		/*if (!myHasTimestampSupport)
 		{
 			return;
 		}
@@ -426,12 +426,12 @@ namespace Volt
 		if (myQueueType == QueueTypeVolt::Graphics)
 		{
 			vkGetQueryPoolResults(device->GetHandle(), myPipelineStatisticsQueryPools.at(index), 0, 1, sizeof(RenderPipelineStatistics), &myPipelineStatisticsResults.at(index), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-		}
+		}*/
 	}
 
 	void CommandBuffer::Release()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		/*auto device = GraphicsContextVolt::GetDevice();
 		if (!mySwapchainTarget)
 		{
 			device->WaitForIdle();
@@ -460,7 +460,7 @@ namespace Volt
 		for (auto& pool : myPipelineStatisticsQueryPools)
 		{
 			vkDestroyQueryPool(device->GetHandle(), pool, nullptr);
-		}
+		}*/
 	}
 
 	void CommandBuffer::BeginPrimary()

@@ -6,7 +6,7 @@ struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList1;
 
 
-namespace Volt
+namespace Volt::RHI
 {
 	struct D3D12FenceData
 	{
@@ -37,6 +37,9 @@ namespace Volt
 		void ExecuteAndWait() override;
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) override;
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) override;
+
+		void SetViewports(const std::vector<Viewport>& viewports) override;
+		void SetScissors(const std::vector<Rect2D>& scissors) override;
 
 		D3D12FenceData& GetFenceData();
 		D3D12CommandData& GetCommandData();

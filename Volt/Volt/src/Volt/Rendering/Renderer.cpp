@@ -98,11 +98,11 @@ namespace Volt
 
 	void Renderer::Initialize()
 	{
-		const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
+		//const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
 		s_rendererData = CreateScope<RendererData>();
-		s_rendererData->framesInFlightCount = framesInFlight;
+		//s_rendererData->framesInFlightCount = framesInFlight;
 
-		myResourceChangeQueues.resize(framesInFlight);
+		//myResourceChangeQueues.resize(framesInFlight);
 
 		GlobalDescriptorSetManager::Initialize();
 
@@ -110,10 +110,10 @@ namespace Volt
 		LoadVulkanFunctions();
 #endif
 
-		if (GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
-		{
-			LoadRayTracingFunctions();
-		}
+		//if (GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+		//{
+		//	LoadRayTracingFunctions();
+		//}
 
 		CreateBindlessData();
 		CreateDescriptorPools();
@@ -133,8 +133,8 @@ namespace Volt
 
 	void Renderer::Shutdown()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		device->WaitForIdle();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//device->WaitForIdle();
 
 		DestroyDescriptorPools();
 
@@ -157,17 +157,17 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
 		{
 			std::scoped_lock lock{ s_resourceQueueMutex };
-			myResourceChangeQueues.at(currentFrame).Flush();
+			//myResourceChangeQueues.at(currentFrame).Flush();
 		}
 
 		// Clear descriptor pool
 		{
-			vkResetDescriptorPool(device->GetHandle(), s_rendererData->perFrameDescriptorPools.at(currentFrame), 0);
+			//vkResetDescriptorPool(device->GetHandle(), s_rendererData->perFrameDescriptorPools.at(currentFrame), 0);
 		}
 	}
 
@@ -175,23 +175,23 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		//const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-		auto& bindlessData = GetBindlessData();
+		//auto& bindlessData = GetBindlessData();
 		
 		{
 			std::scoped_lock lock{ s_materialMutex };
-			bindlessData.materialTable->UpdateMaterialData(currentFrame);
+			//bindlessData.materialTable->UpdateMaterialData(currentFrame);
 		}
 
 		{
 			std::scoped_lock lock{ s_meshMutex };
-			bindlessData.meshTable->UpdateMeshData(currentFrame);
+			//bindlessData.meshTable->UpdateMeshData(currentFrame);
 		}
 
 		{
 			std::scoped_lock lock{ s_textureMutex };
-		bindlessData.textureTable->UpdateDescriptors(bindlessData.globalDescriptorSets.at(Sets::TEXTURES), currentFrame);
+		//bindlessData.textureTable->UpdateDescriptors(bindlessData.globalDescriptorSets.at(Sets::TEXTURES), currentFrame);
 		}
 	}
 
@@ -330,8 +330,8 @@ namespace Volt
 	{
 		std::scoped_lock lock{ s_resourceQueueMutex };
 
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
-		myResourceChangeQueues.at(currentFrame).Push(std::move(function));
+		//const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		//myResourceChangeQueues.at(currentFrame).Push(std::move(function));
 	}
 
 	void Renderer::DrawIndirectBatch(Ref<CommandBuffer> commandBuffer, Ref<ShaderStorageBuffer> indirectCommandBuffer, VkDeviceSize commandOffset, Ref<ShaderStorageBuffer> countBuffer, VkDeviceSize countOffset, const IndirectBatch& batch)
@@ -671,9 +671,9 @@ namespace Volt
 
 		constexpr uint32_t cubeMapSize = 1024;
 		constexpr uint32_t irradianceMapSize = 32;
-		constexpr uint32_t conversionThreadCount = 32;
+		//constexpr uint32_t conversionThreadCount = 32;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		Ref<Image2D> environmentUnfiltered;
 		Ref<Image2D> environmentFiltered;
@@ -693,13 +693,13 @@ namespace Volt
 
 			Ref<ComputePipeline> conversionPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EquirectangularToCubemap"), 1, true);
 
-			VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
-			environmentUnfiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
+			//VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+			//environmentUnfiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
 
-			conversionPipeline->Bind(cmdBuffer);
+			//conversionPipeline->Bind(cmdBuffer);
 			conversionPipeline->SetImage(environmentUnfiltered, Sets::OTHER, 0, ImageAccess::Write);
 			conversionPipeline->SetImage(texture->GetImage(), Sets::OTHER, 1, ImageAccess::Read);
-			conversionPipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
+			//conversionPipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
 
 			ExecutionBarrierInfo barrierInfo{};
 			barrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
@@ -709,10 +709,10 @@ namespace Volt
 
 			conversionPipeline->InsertExecutionBarrier(barrierInfo);
 
-			conversionPipeline->Dispatch(cmdBuffer, cubeMapSize / conversionThreadCount, cubeMapSize / conversionThreadCount, 6);
-			conversionPipeline->InsertBarriers(cmdBuffer);
+			//conversionPipeline->Dispatch(cmdBuffer, cubeMapSize / conversionThreadCount, cubeMapSize / conversionThreadCount, 6);
+			//conversionPipeline->InsertBarriers(cmdBuffer);
 
-			device->FlushCommandBuffer(cmdBuffer);
+			//device->FlushCommandBuffer(cmdBuffer);
 		}
 
 		// Filtered
@@ -734,9 +734,9 @@ namespace Volt
 			}
 
 			{
-				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+				/*VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
 				environmentFiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
-				device->FlushCommandBuffer(cmdBuffer);
+				device->FlushCommandBuffer(cmdBuffer);*/
 			}
 
 			Ref<ComputePipeline> filterPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentMipFilter"), 1, true);
@@ -744,14 +744,14 @@ namespace Volt
 			const float deltaRoughness = 1.f / glm::max((float)imageSpec.mips - 1.f, 1.f);
 			for (uint32_t i = 0, size = cubeMapSize; i < imageSpec.mips; i++, size /= 2)
 			{
-				const uint32_t numGroups = glm::max(1u, size / 32);
+				//const uint32_t numGroups = glm::max(1u, size / 32);
 
 				float roughness = i * deltaRoughness;
 				roughness = glm::max(roughness, 0.05f);
 
-				VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+				//VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
 
-				filterPipeline->Clear(0);
+				/*filterPipeline->Clear(0);
 				filterPipeline->Bind(cmdBuffer);
 				filterPipeline->BindDescriptorSet(cmdBuffer, GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(0), Sets::SAMPLERS);
 
@@ -777,7 +777,7 @@ namespace Volt
 				filterPipeline->Dispatch(cmdBuffer, numGroups, numGroups, 6);
 				filterPipeline->InsertBarriers(cmdBuffer);
 
-				device->FlushCommandBuffer(cmdBuffer);
+				device->FlushCommandBuffer(cmdBuffer);*/
 			}
 		}
 
@@ -796,7 +796,7 @@ namespace Volt
 
 			Ref<ComputePipeline> irradiancePipeline = ComputePipeline::Create(ShaderRegistry::GetShader("EnvironmentIrradiance"), 1, true);
 
-			VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
+			/*VkCommandBuffer cmdBuffer = device->GetCommandBuffer(true);
 			environmentFiltered->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 			irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_GENERAL);
 
@@ -819,7 +819,7 @@ namespace Volt
 			irradianceMap->GenerateMips(false, cmdBuffer);
 			irradianceMap->TransitionToLayout(cmdBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-			device->FlushCommandBuffer(cmdBuffer);
+			device->FlushCommandBuffer(cmdBuffer);*/
 		}
 
 		return { irradianceMap, environmentFiltered };
@@ -1020,8 +1020,8 @@ namespace Volt
 
 	VkDescriptorPool Renderer::GetCurrentDescriptorPool()
 	{
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
-		return s_rendererData->perFrameDescriptorPools.at(currentFrame);
+		//const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		return s_rendererData->perFrameDescriptorPools.at(0);
 	}
 
 	VkDescriptorPool Renderer::GetDescriptorPool(uint32_t index)
@@ -1032,29 +1032,29 @@ namespace Volt
 	VkDescriptorSet Renderer::AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		VT_PROFILE_FUNCTION();
-		auto device = GraphicsContextVolt::GetDevice();
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-		allocInfo.descriptorPool = s_rendererData->perFrameDescriptorPools.at(currentFrame);
+		//allocInfo.descriptorPool = s_rendererData->perFrameDescriptorPools.at(currentFrame);
 
-		VkDescriptorSet descriptorSet{};
-		VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &descriptorSet));
+		//VkDescriptorSet descriptorSet{};
+		//VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &descriptorSet));
 
-		return descriptorSet;
+		return nullptr;
 	}
 
 	VkDescriptorSet Renderer::AllocatePersistentDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		VT_PROFILE_FUNCTION();
-		auto device = GraphicsContextVolt::GetDevice();
-		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-		allocInfo.descriptorPool = s_rendererData->perFramePersistentDescriptorPools.at(currentFrame);
+		//allocInfo.descriptorPool = s_rendererData->perFramePersistentDescriptorPools.at(currentFrame);
 
-		VkDescriptorSet descriptorSet{};
-		VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &descriptorSet));
+		//VkDescriptorSet descriptorSet{};
+		//VT_VK_CHECK(vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, &descriptorSet));
 
-		return descriptorSet;
+		return nullptr;
 	}
 
 	void Renderer::CreateBindlessData()
@@ -1106,16 +1106,16 @@ namespace Volt
 		poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
 		poolInfo.pPoolSizes = poolSizes;
 
-		const uint32_t framesInFlightCount = GetFramesInFlightCount();
-		for (uint32_t i = 0; i < framesInFlightCount; i++)
-		{
-			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFrameDescriptorPools.emplace_back()));
-		}
+		//const uint32_t framesInFlightCount = GetFramesInFlightCount();
+		//for (uint32_t i = 0; i < framesInFlightCount; i++)
+		//{
+		//	VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFrameDescriptorPools.emplace_back()));
+		//}
 
-		for (uint32_t i = 0; i < framesInFlightCount; i++)
-		{
-			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFramePersistentDescriptorPools.emplace_back()));
-		}
+		//for (uint32_t i = 0; i < framesInFlightCount; i++)
+		//{
+		//	VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &s_rendererData->perFramePersistentDescriptorPools.emplace_back()));
+		//}
 	}
 
 	void Renderer::CreateGlobalDescriptorSets()
@@ -1205,30 +1205,30 @@ namespace Volt
 
 	void Renderer::LoadVulkanFunctions()
 	{
-		auto instance = GraphicsContextVolt::Get().GetInstance();
+		//auto instance = GraphicsContextVolt::Get().GetInstance();
 
-		s_rendererData->vulkanFunctions.cmdBeginDebugUtilsLabel = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdBeginDebugUtilsLabelEXT");
-		s_rendererData->vulkanFunctions.cmdEndDebugUtilsLabel = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdEndDebugUtilsLabelEXT");
+		//s_rendererData->vulkanFunctions.cmdBeginDebugUtilsLabel = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdBeginDebugUtilsLabelEXT");
+		//s_rendererData->vulkanFunctions.cmdEndDebugUtilsLabel = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(instance, "vkCmdEndDebugUtilsLabelEXT");
 	}
 
 	void Renderer::LoadRayTracingFunctions()
 	{
-		auto device = GraphicsContextVolt::GetDevice()->GetHandle();
+		//auto device = GraphicsContextVolt::GetDevice()->GetHandle();
 
-		s_rendererData->vulkanFunctions.vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkCmdBuildAccelerationStructuresKHR"));
-		s_rendererData->vulkanFunctions.vkBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkBuildAccelerationStructuresKHR"));
-		s_rendererData->vulkanFunctions.vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(vkGetDeviceProcAddr(device, "vkCreateAccelerationStructureKHR"));
-		s_rendererData->vulkanFunctions.vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(vkGetDeviceProcAddr(device, "vkDestroyAccelerationStructureKHR"));
-		s_rendererData->vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device, "vkGetAccelerationStructureBuildSizesKHR"));
-		s_rendererData->vulkanFunctions.vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device, "vkGetAccelerationStructureDeviceAddressKHR"));
-		s_rendererData->vulkanFunctions.vkCmdTraceRaysKHR = reinterpret_cast<PFN_vkCmdTraceRaysKHR>(vkGetDeviceProcAddr(device, "vkCmdTraceRaysKHR"));
-		s_rendererData->vulkanFunctions.vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device, "vkGetRayTracingShaderGroupHandlesKHR"));
-		s_rendererData->vulkanFunctions.vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device, "vkCreateRayTracingPipelinesKHR"));
+		//s_rendererData->vulkanFunctions.vkCmdBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkCmdBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkCmdBuildAccelerationStructuresKHR"));
+		//s_rendererData->vulkanFunctions.vkBuildAccelerationStructuresKHR = reinterpret_cast<PFN_vkBuildAccelerationStructuresKHR>(vkGetDeviceProcAddr(device, "vkBuildAccelerationStructuresKHR"));
+		//s_rendererData->vulkanFunctions.vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(vkGetDeviceProcAddr(device, "vkCreateAccelerationStructureKHR"));
+		//s_rendererData->vulkanFunctions.vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(vkGetDeviceProcAddr(device, "vkDestroyAccelerationStructureKHR"));
+		//s_rendererData->vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(vkGetDeviceProcAddr(device, "vkGetAccelerationStructureBuildSizesKHR"));
+		//s_rendererData->vulkanFunctions.vkGetAccelerationStructureDeviceAddressKHR = reinterpret_cast<PFN_vkGetAccelerationStructureDeviceAddressKHR>(vkGetDeviceProcAddr(device, "vkGetAccelerationStructureDeviceAddressKHR"));
+		//s_rendererData->vulkanFunctions.vkCmdTraceRaysKHR = reinterpret_cast<PFN_vkCmdTraceRaysKHR>(vkGetDeviceProcAddr(device, "vkCmdTraceRaysKHR"));
+		//s_rendererData->vulkanFunctions.vkGetRayTracingShaderGroupHandlesKHR = reinterpret_cast<PFN_vkGetRayTracingShaderGroupHandlesKHR>(vkGetDeviceProcAddr(device, "vkGetRayTracingShaderGroupHandlesKHR"));
+		//s_rendererData->vulkanFunctions.vkCreateRayTracingPipelinesKHR = reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vkGetDeviceProcAddr(device, "vkCreateRayTracingPipelinesKHR"));
 	}
 
 	void Renderer::DestroyDescriptorPools()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		/*auto device = GraphicsContextVolt::GetDevice();
 		device->WaitForIdle();
 
 		for (const auto& pool : s_rendererData->perFrameDescriptorPools)
@@ -1239,7 +1239,7 @@ namespace Volt
 		for (const auto& pool : s_rendererData->perFramePersistentDescriptorPools)
 		{
 			vkDestroyDescriptorPool(device->GetHandle(), pool, nullptr);
-		}
+		}*/
 
 		s_rendererData->perFrameDescriptorPools.clear();
 	}
@@ -1267,8 +1267,8 @@ namespace Volt
 			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			writeDescriptor.pBufferInfo = &bufferInfo;
 
-			auto device = GraphicsContextVolt::GetDevice();
-			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+			//auto device = GraphicsContextVolt::GetDevice();
+			//vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 		}
 	}
 
@@ -1295,8 +1295,8 @@ namespace Volt
 			writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			writeDescriptor.pBufferInfo = &bufferInfo;
 
-			auto device = GraphicsContextVolt::GetDevice();
-			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+	/*		auto device = GraphicsContextVolt::GetDevice();
+			vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);*/
 		}
 	}
 
@@ -1304,7 +1304,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
+	/*	auto device = GraphicsContextVolt::GetDevice();*/
 
 		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
 		{
@@ -1315,7 +1315,7 @@ namespace Volt
 				return;
 			}
 
-			vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+			//vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 		}
 	}
 
@@ -1345,10 +1345,10 @@ namespace Volt
 
 		if (renderPipeline->HasDescriptorSet(Sets::MAINBUFFERS))
 		{
-			const auto appIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+			//const auto appIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(appIndex);
-			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
+			//auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(appIndex);
+			//renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
 		}
 
 		if (renderPipeline->HasDescriptorSet(Sets::PBR_RESOURCES))
@@ -1384,10 +1384,10 @@ namespace Volt
 
 		if (renderPipeline->HasDescriptorSet(Sets::MAINBUFFERS))
 		{
-			const auto appIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+			//const auto appIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(appIndex);
-			renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
+			//auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(appIndex);
+			//renderPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::MAINBUFFERS);
 		}
 	}
 }

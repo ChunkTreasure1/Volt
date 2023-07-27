@@ -6,7 +6,7 @@
 #include "VoltD3D12/Graphics/D3D12DeviceQueue.h"
 #include <VoltD3D12/Graphics/D3D12GraphicsDevice.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	void D3D12FenceData::Wait()
 	{
@@ -29,13 +29,13 @@ namespace Volt
 		D3D12_COMMAND_LIST_TYPE d3d12Type = {};
 		switch (type)
 		{
-			case Volt::QueueType::Graphics:
+			case QueueType::Graphics:
 				d3d12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 				break;
-			case Volt::QueueType::Compute:
+			case QueueType::Compute:
 				d3d12Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 				break;
-			case Volt::QueueType::TransferCopy:
+			case QueueType::TransferCopy:
 				d3d12Type = D3D12_COMMAND_LIST_TYPE_COPY;
 				break;
 		}
@@ -100,6 +100,14 @@ namespace Volt
 		auto& commandData = GetCommandData();
 
 		commandData.commandList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	}
+
+	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
+	{
+	}
+
+	void D3D12CommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
+	{
 	}
 
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)

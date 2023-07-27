@@ -4,7 +4,7 @@
 
 struct GLFWwindow;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class Swapchain;
 
@@ -25,7 +25,7 @@ namespace Volt
 		void End();
 
 		static Ref<ImGuiImplementation> Create(const ImGuiCreateInfo& createInfo);
- 
+
 	protected:
 		ImGuiImplementation();
 

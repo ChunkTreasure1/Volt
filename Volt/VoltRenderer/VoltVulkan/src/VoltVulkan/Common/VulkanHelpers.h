@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	namespace Utility
 	{

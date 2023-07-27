@@ -200,7 +200,7 @@ namespace Volt
 
 	void SubMaterial::Invalidate()
 	{
-		const auto originalTextures = myTextures;
+		/*const auto originalTextures = myTextures;
 		myTextures.clear();
 
 		for (const auto& descriptorPool : myMaterialDescriptorPools)
@@ -223,7 +223,7 @@ namespace Volt
 		}
 
 		GenerateHash();
-		Renderer::UpdateMaterial(this);
+		Renderer::UpdateMaterial(this);*/
 	}
 
 	void SubMaterial::InvalidatePipeline()
@@ -271,95 +271,95 @@ namespace Volt
 
 	void SubMaterial::SetupMaterialFromPipeline()
 	{
-		const auto& resources = myPipeline->GetSpecification().shader->GetResources();
-		myMaterialWriteDescriptors = resources.materialWriteDescriptors;
+		//const auto& resources = myPipeline->GetSpecification().shader->GetResources();
+		//myMaterialWriteDescriptors = resources.materialWriteDescriptors;
 
-		// Transfer material data
-		{
-			auto oldMaterialData = myMaterialSpecializationData;
-			myMaterialSpecializationData = myPipeline->GetSpecification().shader->CreateShaderBuffer();
+		//// Transfer material data
+		//{
+		//	auto oldMaterialData = myMaterialSpecializationData;
+		//	myMaterialSpecializationData = myPipeline->GetSpecification().shader->CreateShaderBuffer();
 
-			const auto& oldMembers = oldMaterialData.GetMembers();
+		//	const auto& oldMembers = oldMaterialData.GetMembers();
 
-			for (const auto& [name, uniform] : myMaterialSpecializationData.GetMembers())
-			{
-				if (oldMembers.contains(name) && oldMembers.at(name).size == uniform.size)
-				{
-					myMaterialSpecializationData.SetValue(name, oldMaterialData.GetValueRaw(name, oldMembers.at(name).size), oldMembers.at(name).size);
-				}
-			}
+		//	for (const auto& [name, uniform] : myMaterialSpecializationData.GetMembers())
+		//	{
+		//		if (oldMembers.contains(name) && oldMembers.at(name).size == uniform.size)
+		//		{
+		//			myMaterialSpecializationData.SetValue(name, oldMaterialData.GetValueRaw(name, oldMembers.at(name).size), oldMembers.at(name).size);
+		//		}
+		//	}
 
-			oldMaterialData.Release();
-		}
+		//	oldMaterialData.Release();
+		//}
 
-		// Transfer pipeline generation data
-		{
-			auto oldGenerationData = myPipelineGenerationData;
-			myPipelineGenerationData.clear();
-			for (const auto& [stage, buffer] : resources.specializationConstantBuffers)
-			{
-				ShaderStage voltStage = (ShaderStage)stage;
+		//// Transfer pipeline generation data
+		//{
+		//	auto oldGenerationData = myPipelineGenerationData;
+		//	myPipelineGenerationData.clear();
+		//	for (const auto& [stage, buffer] : resources.specializationConstantBuffers)
+		//	{
+		//		ShaderStage voltStage = (ShaderStage)stage;
 
-				auto newBuffer = myPipeline->GetSpecification().shader->CreateSpecialiazationConstantsBuffer(voltStage);
+		//		auto newBuffer = myPipeline->GetSpecification().shader->CreateSpecialiazationConstantsBuffer(voltStage);
 
-				if (oldGenerationData.contains(voltStage))
-				{
-					const auto& oldMembers = oldGenerationData.at(voltStage).GetMembers();
+		//		if (oldGenerationData.contains(voltStage))
+		//		{
+		//			const auto& oldMembers = oldGenerationData.at(voltStage).GetMembers();
 
-					for (const auto& [name, uniform] : myPipelineGenerationData.at(voltStage).GetMembers())
-					{
-						if (oldMembers.contains(name) && oldMembers.at(name).size == uniform.size)
-						{
-							newBuffer.SetValue(name, oldGenerationData.at(voltStage).GetValueRaw(name, oldMembers.at(name).size), oldMembers.at(name).size);
-						}
-					}
+		//			for (const auto& [name, uniform] : myPipelineGenerationData.at(voltStage).GetMembers())
+		//			{
+		//				if (oldMembers.contains(name) && oldMembers.at(name).size == uniform.size)
+		//				{
+		//					newBuffer.SetValue(name, oldGenerationData.at(voltStage).GetValueRaw(name, oldMembers.at(name).size), oldMembers.at(name).size);
+		//				}
+		//			}
 
-					oldGenerationData.at(voltStage).Release();
-				}
+		//			oldGenerationData.at(voltStage).Release();
+		//		}
 
-				myPipelineGenerationData[voltStage] = newBuffer;
-			}
-		}
+		//		myPipelineGenerationData[voltStage] = newBuffer;
+		//	}
+		//}
 
-		// Add default
-		{
-			myTextures.emplace("albedo", Renderer::GetDefaultData().whiteTexture);
-			myTextures.emplace("normal", Renderer::GetDefaultData().whiteTexture);
-			myTextures.emplace("material", Renderer::GetDefaultData().whiteTexture);
-		}
+		//// Add default
+		//{
+		//	myTextures.emplace("albedo", Renderer::GetDefaultData().whiteTexture);
+		//	myTextures.emplace("normal", Renderer::GetDefaultData().whiteTexture);
+		//	myTextures.emplace("material", Renderer::GetDefaultData().whiteTexture);
+		//}
 
-		for (const auto& [shaderName, editorName] : resources.shaderTextureDefinitions)
-		{
-			myTextures.emplace(shaderName, Renderer::GetDefaultData().whiteTexture);
-		}
+		//for (const auto& [shaderName, editorName] : resources.shaderTextureDefinitions)
+		//{
+		//	myTextures.emplace(shaderName, Renderer::GetDefaultData().whiteTexture);
+		//}
 
-		if (!resources.materialWriteDescriptors.empty())
-		{
-			constexpr VkDescriptorPoolSize poolSizes[] =
-			{
-				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 10 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 10 },
-			};
+		//if (!resources.materialWriteDescriptors.empty())
+		//{
+		//	constexpr VkDescriptorPoolSize poolSizes[] =
+		//	{
+		//		{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 10 },
+		//		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 10 },
+		//	};
 
-			VkDescriptorPoolCreateInfo poolInfo{};
-			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-			poolInfo.maxSets = (uint32_t)resources.materialWriteDescriptors.size();
-			poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
-			poolInfo.pPoolSizes = poolSizes;
+		//	VkDescriptorPoolCreateInfo poolInfo{};
+		//	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		//	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+		//	poolInfo.maxSets = (uint32_t)resources.materialWriteDescriptors.size();
+		//	poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
+		//	poolInfo.pPoolSizes = poolSizes;
 
-			const uint32_t framesInFlight = Renderer::GetFramesInFlightCount();
+		//	const uint32_t framesInFlight = Renderer::GetFramesInFlightCount();
 
-			myMaterialDescriptorPools.resize(framesInFlight);
-			myMaterialDescriptorSets.resize(framesInFlight);
-			myDirtyDescriptorSets = std::vector<bool>(framesInFlight, false);
+		//	myMaterialDescriptorPools.resize(framesInFlight);
+		//	myMaterialDescriptorSets.resize(framesInFlight);
+		//	myDirtyDescriptorSets = std::vector<bool>(framesInFlight, false);
 
-			for (uint32_t i = 0; i < framesInFlight; i++)
-			{
-				VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &myMaterialDescriptorPools[i]));
-				myMaterialDescriptorSets[i] = myPipeline->GetSpecification().shader->AllocateDescriptorSet(Sets::MATERIAL, myMaterialDescriptorPools[i]);
-			}
-		}
+		//	for (uint32_t i = 0; i < framesInFlight; i++)
+		//	{
+		//		VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &poolInfo, nullptr, &myMaterialDescriptorPools[i]));
+		//		myMaterialDescriptorSets[i] = myPipeline->GetSpecification().shader->AllocateDescriptorSet(Sets::MATERIAL, myMaterialDescriptorPools[i]);
+		//	}
+		//}
 	}
 
 	void SubMaterial::InvalidateDescriptorSets()
@@ -374,7 +374,7 @@ namespace Volt
 
 	void SubMaterial::UpdateDescriptorSetsForRendering(Ref<CommandBuffer> commandBuffer)
 	{
-		VT_PROFILE_FUNCTION();
+		/*VT_PROFILE_FUNCTION();
 
 		if (myMaterialWriteDescriptors.empty())
 		{
@@ -398,7 +398,7 @@ namespace Volt
 
 			vkUpdateDescriptorSets(GraphicsContextVolt::GetDevice()->GetHandle(), (uint32_t)myMaterialWriteDescriptors.size(), myMaterialWriteDescriptors.data(), 0, nullptr);
 			myDirtyDescriptorSets.at(commandBuffer->GetCurrentIndex()) = false;
-		}
+		}*/
 	}
 
 	void SubMaterial::GenerateHash()
@@ -417,7 +417,7 @@ namespace Volt
 
 	void SubMaterial::Release()
 	{
-		myMaterialSpecializationData.Release();
+		/*myMaterialSpecializationData.Release();
 
 		for (auto& buffer : myPipelineGenerationData)
 		{
@@ -427,7 +427,7 @@ namespace Volt
 		for (const auto& descriptorPool : myMaterialDescriptorPools)
 		{
 			vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), descriptorPool, nullptr);
-		}
+		}*/
 	}
 
 	void SubMaterial::InvalidatePipeline(Ref<Shader> shader)

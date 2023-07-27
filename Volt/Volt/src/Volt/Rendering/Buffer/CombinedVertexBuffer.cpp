@@ -30,58 +30,60 @@ namespace Volt
 
 	const uint64_t CombinedVertexBuffer::AppendVertices(const void* data, const uint64_t count)
 	{
-		// If the buffer is too small, allocate at least enough or 1.25 times the size
-		if (myTotalBufferSize < myConsumedSize + myVertexSize * count)
-		{
-			const uint64_t newSize = glm::max(myConsumedSize + myVertexSize * count, (uint64_t)(myTotalBufferSize * 1.25));
-			Resize(newSize);
-		}
+		//// If the buffer is too small, allocate at least enough or 1.25 times the size
+		//if (myTotalBufferSize < myConsumedSize + myVertexSize * count)
+		//{
+		//	const uint64_t newSize = glm::max(myConsumedSize + myVertexSize * count, (uint64_t)(myTotalBufferSize * 1.25));
+		//	Resize(newSize);
+		//}
 
-		const uint64_t location = myCurrentVertexCount;
-		const uint64_t dataSize = myVertexSize * count;
+		//const uint64_t location = myCurrentVertexCount;
+		//const uint64_t dataSize = myVertexSize * count;
 
-		VkBuffer stagingBuffer;
-		VmaAllocation stagingAllocation;
-		VulkanAllocatorVolt allocator{ "CombinedVertexBuffer - AppendVertices" };
+		//VkBuffer stagingBuffer;
+		//VmaAllocation stagingAllocation;
+		//VulkanAllocatorVolt allocator{ "CombinedVertexBuffer - AppendVertices" };
 
-		// Create Staging Buffer
-		{
-			VkBufferCreateInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			info.size = dataSize;
-			info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		//// Create Staging Buffer
+		//{
+		//	VkBufferCreateInfo info{};
+		//	info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		//	info.size = dataSize;
+		//	info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		//	info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
-		}
+		//	stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
+		//}
 
-		// Copy data to staging buffer
-		{
-			void* stagingData = allocator.MapMemory<void>(stagingAllocation);
-			memcpy_s(stagingData, dataSize, data, dataSize);
-			allocator.UnmapMemory(stagingAllocation);
-		}
+		//// Copy data to staging buffer
+		//{
+		//	void* stagingData = allocator.MapMemory<void>(stagingAllocation);
+		//	memcpy_s(stagingData, dataSize, data, dataSize);
+		//	allocator.UnmapMemory(stagingAllocation);
+		//}
 
-		// Copy from staging buffer to GPU buffer
-		{
-			auto device = GraphicsContextVolt::GetDevice();
-			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+		//// Copy from staging buffer to GPU buffer
+		//{
+		//	auto device = GraphicsContextVolt::GetDevice();
+		//	VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
-			VkBufferCopy copyInfo{};
-			copyInfo.size = dataSize;
-			copyInfo.srcOffset = 0;
-			copyInfo.dstOffset = myConsumedSize;
+		//	VkBufferCopy copyInfo{};
+		//	copyInfo.size = dataSize;
+		//	copyInfo.srcOffset = 0;
+		//	copyInfo.dstOffset = myConsumedSize;
 
-			vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copyInfo);
-			device->FlushSingleUseCommandBuffer(cmdBuffer); // #TODO_Ivar: Switch to using transfer queue
-		}
+		//	vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copyInfo);
+		//	device->FlushSingleUseCommandBuffer(cmdBuffer); // #TODO_Ivar: Switch to using transfer queue
+		//}
 
-		allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
+		//allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
 
-		myConsumedSize += dataSize;
-		myCurrentVertexCount += count;
+		//myConsumedSize += dataSize;
+		//myCurrentVertexCount += count;
 
-		return location;
+		//return location;
+
+		return 0;
 	}
 
 	Ref<CombinedVertexBuffer> CombinedVertexBuffer::Create(const uint64_t vertexSize, const uint64_t maxVertexCount)
@@ -113,8 +115,8 @@ namespace Volt
 
 	void CombinedVertexBuffer::Resize(uint64_t newSize)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		device->WaitForIdle();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//device->WaitForIdle();
 
 		VulkanAllocatorVolt allocator{ };
 
@@ -135,15 +137,15 @@ namespace Volt
 		// Copy old data into new buffer
 		if (myBuffer)
 		{
-			auto commandBuffer = device->GetSingleUseCommandBuffer(true);
-			
-			VkBufferCopy copyInfo{};
-			copyInfo.size = myTotalBufferSize;
-			copyInfo.srcOffset = 0;
-			copyInfo.dstOffset = 0;
+			//auto commandBuffer = device->GetSingleUseCommandBuffer(true);
+			//
+			//VkBufferCopy copyInfo{};
+			//copyInfo.size = myTotalBufferSize;
+			//copyInfo.srcOffset = 0;
+			//copyInfo.dstOffset = 0;
 
-			vkCmdCopyBuffer(commandBuffer, myBuffer, newBuffer, 1, &copyInfo);
-			device->FlushSingleUseCommandBuffer(commandBuffer);
+			//vkCmdCopyBuffer(commandBuffer, myBuffer, newBuffer, 1, &copyInfo);
+			//device->FlushSingleUseCommandBuffer(commandBuffer);
 		}
 
 		Release();

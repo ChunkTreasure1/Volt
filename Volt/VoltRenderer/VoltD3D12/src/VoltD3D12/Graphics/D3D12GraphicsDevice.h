@@ -4,7 +4,7 @@
 
 struct ID3D12Device2;
 
-namespace Volt
+namespace Volt::RHI
 {
 	struct GraphicsDeviceCreateInfo;
 

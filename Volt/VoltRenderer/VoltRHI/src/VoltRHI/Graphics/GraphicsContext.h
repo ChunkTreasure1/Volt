@@ -4,7 +4,7 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Core/RHIInterface.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	class GraphicsDevice;
 	class PhysicalGraphicsDevice;
@@ -21,14 +21,14 @@ namespace Volt
 		{
 			s_context = nullptr;
 		};
-		
-		static GraphicsContext& Get() { return *s_context; }
 
-		static Ref<GraphicsDevice> GetDevice() { return s_context->m_graphicsDevice; };
-		static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->m_physicalDevice; };
+		[[nodiscard]] static GraphicsContext& Get() { return *s_context; }
+
+		[[nodiscard]] static Ref<GraphicsDevice> GetDevice() { return s_context->m_graphicsDevice; };
+		[[nodiscard]] static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->m_physicalDevice; };
 
 		static Ref<GraphicsContext> Create(const GraphicsContextCreateInfo& createInfo);
-
+		
 		static VT_NODISCARD GraphicsAPI GetAPI() { return s_graphicsAPI; }
 
 		static void Log(Severity logSeverity, std::string_view message);
@@ -36,7 +36,7 @@ namespace Volt
 	protected:
 		Ref<GraphicsDevice> m_graphicsDevice;
 		Ref<PhysicalGraphicsDevice> m_physicalDevice;
-		
+
 	private:
 		inline static GraphicsContext* s_context;
 		inline static GraphicsAPI s_graphicsAPI;

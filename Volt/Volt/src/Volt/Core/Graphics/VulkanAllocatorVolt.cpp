@@ -233,7 +233,7 @@ namespace Volt
 		info.vulkanApiVersion = VK_API_VERSION_1_3;
 		info.physicalDevice = physDevicePtr->GetHandle();
 		info.device = graphicsDevice->GetHandle();
-		info.instance = GraphicsContextVolt::Get().GetInstance();
+		//info.instance = GraphicsContextVolt::Get().GetInstance();
 		info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
 		VT_VK_CHECK(vmaCreateAllocator(&info, &s_allocatorData->allocator));

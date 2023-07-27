@@ -72,27 +72,27 @@ namespace Volt
 			info.pNext = &extendedInfo;
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myDescriptorSetLayout));
+		//auto device = GraphicsContextVolt::GetDevice();
+		//VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myDescriptorSetLayout));
 
-		CreateDescriptorPools();
-		myDescriptorSets.resize(mySpecification.descriptorSetCount);
+		//CreateDescriptorPools();
+		//myDescriptorSets.resize(mySpecification.descriptorSetCount);
 	}
 
 	GlobalDescriptorSet::~GlobalDescriptorSet()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		/*auto device = GraphicsContextVolt::GetDevice();
 		vkDestroyDescriptorSetLayout(device->GetHandle(), myDescriptorSetLayout, nullptr);
 
 		for (const auto& pool : myDescriptorPools)
 		{
 			vkDestroyDescriptorPool(device->GetHandle(), pool, nullptr);
-		}
+		}*/
 	}
 
 	VkDescriptorSet GlobalDescriptorSet::GetOrAllocateDescriptorSet(uint32_t index)
 	{
-		std::scoped_lock lock{ myAllocateDescriptorSetMutex };
+		/*std::scoped_lock lock{ myAllocateDescriptorSetMutex };
 
 		if (myDescriptorSets.at(index))
 		{
@@ -126,7 +126,9 @@ namespace Volt
 			writeDescriptors.at(index).dstSet = myDescriptorSets.at(index);
 		}
 
-		return myDescriptorSets.at(index);
+		return myDescriptorSets.at(index);*/
+
+		return nullptr;
 	}
 
 	VkWriteDescriptorSet GlobalDescriptorSet::GetWriteDescriptor(uint32_t index, uint32_t binding, uint32_t)
@@ -141,34 +143,34 @@ namespace Volt
 
 	void GlobalDescriptorSet::CreateDescriptorPools()
 	{
-		std::vector<VkDescriptorPoolSize> poolSizes{};
+		//std::vector<VkDescriptorPoolSize> poolSizes{};
 
-		for (const auto& [type, count] : myPoolSizes)
-		{
-			poolSizes.emplace_back(type, count.count);
+		//for (const auto& [type, count] : myPoolSizes)
+		//{
+		//	poolSizes.emplace_back(type, count.count);
 
-			myMaxTotalDescriptorSets += count.count;
-		}
+		//	myMaxTotalDescriptorSets += count.count;
+		//}
 
-		VkDescriptorPoolCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		//VkDescriptorPoolCreateInfo info{};
+		//info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 
-		if (mySpecification.updateAfterBind)
-		{
-			info.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		}
-		else
-		{
-			info.flags = 0;
-		}
+		//if (mySpecification.updateAfterBind)
+		//{
+		//	info.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+		//}
+		//else
+		//{
+		//	info.flags = 0;
+		//}
 
-		info.maxSets = myMaxTotalDescriptorSets;
-		info.poolSizeCount = (uint32_t)poolSizes.size();
-		info.pPoolSizes = poolSizes.data();
+		//info.maxSets = myMaxTotalDescriptorSets;
+		//info.poolSizeCount = (uint32_t)poolSizes.size();
+		//info.pPoolSizes = poolSizes.data();
 
-		for (uint32_t i = 0; i < mySpecification.descriptorSetCount; i++)
-		{
-			VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &info, nullptr, &myDescriptorPools.emplace_back()));
-		}
+		//for (uint32_t i = 0; i < mySpecification.descriptorSetCount; i++)
+		//{
+		//	VT_VK_CHECK(vkCreateDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), &info, nullptr, &myDescriptorPools.emplace_back()));
+		//}
 	}
 }

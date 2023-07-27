@@ -32,7 +32,7 @@ namespace Volt
 		myImageData.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 		VulkanAllocatorVolt allocator{ };
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 		usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -124,7 +124,7 @@ namespace Volt
 		viewInfo.subresourceRange.layerCount = mySpecification.layers;
 		viewInfo.image = myImage;
 
-		VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &myImageViews[0]));
+		//VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &myImageViews[0]));
 
 		// Transition to correct layout
 		VkImageLayout targetLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -157,9 +157,9 @@ namespace Volt
 			}
 		}
 
-		auto commandBuffer = device->GetSingleUseCommandBuffer(true);
-		TransitionToLayout(commandBuffer, targetLayout);
-		device->FlushSingleUseCommandBuffer(commandBuffer);
+		//auto commandBuffer = device->GetSingleUseCommandBuffer(true);
+		//TransitionToLayout(commandBuffer, targetLayout);
+		//device->FlushSingleUseCommandBuffer(commandBuffer);
 
 		myDescriptorInfo.imageLayout = myImageData.layout;
 		myDescriptorInfo.imageView = myImageViews.at(0);
@@ -175,17 +175,17 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([imageViews = myImageViews, image = myImage, allocation = myAllocation]()
-		{
-			auto device = GraphicsContextVolt::GetDevice();
-			for (auto& [mip, view] : imageViews)
-			{
-				vkDestroyImageView(device->GetHandle(), view, nullptr);
-			}
+		//Renderer::SubmitResourceChange([imageViews = myImageViews, image = myImage, allocation = myAllocation]()
+		//{
+		//	auto device = GraphicsContextVolt::GetDevice();
+		//	for (auto& [mip, view] : imageViews)
+		//	{
+		//		vkDestroyImageView(device->GetHandle(), view, nullptr);
+		//	}
 
-			VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
-			allocator.DestroyImage(image, allocation);
-		});
+		//	VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
+		//	allocator.DestroyImage(image, allocation);
+		//});
 
 		myImageViews.clear();
 		myImage = nullptr;
@@ -249,8 +249,8 @@ namespace Volt
 		info.subresourceRange.levelCount = 1;
 		info.image = myImage;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myImageViews[mip]));
+		//auto device = GraphicsContextVolt::GetDevice();
+		//VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myImageViews[mip]));
 
 		return myImageViews.at(mip);
 	}
@@ -268,7 +268,7 @@ namespace Volt
 
 	void Image3D::SetName(const std::string& name)
 	{
-		GraphicsContextVolt::SetImageName(myImage, name);
+		//GraphicsContextVolt::SetImageName(myImage, name);
 	}
 
 	Ref<Image3D> Image3D::Create(const ImageSpecification& specification, const void* data)

@@ -6,7 +6,7 @@
 #include <VoltMock/Graphics/MockSwapchain.h>
 #include <VoltVulkan/Graphics/VulkanSwapchain.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	Ref<Swapchain> Swapchain::Create(GLFWwindow* window)
 	{

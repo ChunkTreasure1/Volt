@@ -148,7 +148,7 @@ namespace Volt
 		}
 
 		auto resources = mySpecification.shader->GetResources();
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		// Pipeline Layout
 		{
@@ -170,7 +170,7 @@ namespace Volt
 			info.pPushConstantRanges = &resources.pushConstantRange;
 
 			VT_CORE_ASSERT(resources.pushConstantRange.size <= 128, "Push constant range must be less or equal to 128 bytes to support all platforms!");
-			VT_VK_CHECK(vkCreatePipelineLayout(device->GetHandle(), &info, nullptr, &myPipelineLayout));
+			//VT_VK_CHECK(vkCreatePipelineLayout(device->GetHandle(), &info, nullptr, &myPipelineLayout));
 		}
 
 		// Pipeline
@@ -465,7 +465,7 @@ namespace Volt
 			pipelineInfo.subpass = 0;
 			pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-			VT_VK_CHECK(vkCreateGraphicsPipelines(device->GetHandle(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &myPipeline));
+			//VT_VK_CHECK(vkCreateGraphicsPipelines(device->GetHandle(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &myPipeline));
 
 			GenerateHash();
 		}
@@ -521,15 +521,15 @@ namespace Volt
 
 	void RenderPipeline::Release()
 	{
-		Renderer::SubmitResourceChange([pipeline = myPipeline, pipelineLayout = myPipelineLayout]()
-		{
-			if (pipeline != VK_NULL_HANDLE)
-			{
-				auto device = GraphicsContextVolt::GetDevice();
-				vkDestroyPipelineLayout(device->GetHandle(), pipelineLayout, nullptr);
-				vkDestroyPipeline(device->GetHandle(), pipeline, nullptr);
-			}
-		});
+		//Renderer::SubmitResourceChange([pipeline = myPipeline, pipelineLayout = myPipelineLayout]()
+		//{
+		//	if (pipeline != VK_NULL_HANDLE)
+		//	{
+		//		auto device = GraphicsContextVolt::GetDevice();
+		//		vkDestroyPipelineLayout(device->GetHandle(), pipelineLayout, nullptr);
+		//		vkDestroyPipeline(device->GetHandle(), pipeline, nullptr);
+		//	}
+		//});
 	}
 
 	void RenderPipeline::CreateVertexLayout()

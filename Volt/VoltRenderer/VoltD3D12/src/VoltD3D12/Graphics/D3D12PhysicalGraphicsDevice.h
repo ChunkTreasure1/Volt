@@ -5,7 +5,7 @@
 struct IDXGIFactory4;
 struct IDXGIAdapter1;
 
-namespace Volt
+namespace Volt::RHI
 {
 	struct PhysicalDeviceCreateInfo;
 

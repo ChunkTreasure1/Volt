@@ -81,16 +81,16 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 			return;
 	}
 
-	Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
+	//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 	Volt::ImageSpecification spec{};
 	spec = myPreviewRenderer->GetFinalImage()->GetSpecification();
 
 	itemPtr->previewImage = Volt::Image2D::Create(spec);
 
-	auto commandBuffer = Volt::GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
-	itemPtr->previewImage->CopyFromImage(commandBuffer, myPreviewRenderer->GetFinalImage());
-	Volt::GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
+	//auto commandBuffer = Volt::GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
+	//itemPtr->previewImage->CopyFromImage(commandBuffer, myPreviewRenderer->GetFinalImage());
+	//Volt::GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
 
 	if (!assetWasLoaded)
 	{

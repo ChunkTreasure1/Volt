@@ -4,20 +4,20 @@
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 #include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	D3D12_COMMAND_LIST_TYPE GetD3D12QueueType(QueueType type)
 	{
 		D3D12_COMMAND_LIST_TYPE d3d12Type = {};
 		switch (type)
 		{
-		case Volt::QueueType::Graphics:
+		case QueueType::Graphics:
 			d3d12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 			break;
-		case Volt::QueueType::Compute:
+		case QueueType::Compute:
 			d3d12Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 			break;
-		case Volt::QueueType::TransferCopy:
+		case QueueType::TransferCopy:
 			d3d12Type = D3D12_COMMAND_LIST_TYPE_COPY;
 			break;
 		}

@@ -266,64 +266,64 @@ namespace Volt
 		//Rendering
 		ImGui::Render();
 
-		auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+		//auto& swapchain = Application::Get().GetWindow().GetSwapchain();
 		
-		VkCommandBuffer drawCmdBuffer;
-		VkCommandBuffer secondaryCmdBuffer;
+		//VkCommandBuffer drawCmdBuffer;
+		//VkCommandBuffer secondaryCmdBuffer;
 
 		const uint32_t width = Application::Get().GetWindow().GetWidth();
 		const uint32_t height = Application::Get().GetWindow().GetHeight();
 
-		// Begin Command Buffer
-		{
-			uint32_t frameIndex = swapchain.GetCurrentFrame();
+		//// Begin Command Buffer
+		//{
+		//	uint32_t frameIndex = swapchain.GetCurrentFrame();
 
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.pNext = nullptr;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		//	VkCommandBufferBeginInfo beginInfo{};
+		//	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		//	beginInfo.pNext = nullptr;
+		//	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-			drawCmdBuffer = swapchain.GetCommandBuffer(frameIndex);
-			secondaryCmdBuffer = s_imguiCommandBuffers.at(frameIndex);
+		//	drawCmdBuffer = swapchain.GetCommandBuffer(frameIndex);
+		//	secondaryCmdBuffer = s_imguiCommandBuffers.at(frameIndex);
 
-			VT_VK_CHECK(vkBeginCommandBuffer(drawCmdBuffer, &beginInfo));
-		}
+		//	VT_VK_CHECK(vkBeginCommandBuffer(drawCmdBuffer, &beginInfo));
+		//}
 
-		// Begin Render Pass
-		{
-			VkClearValue clearValues[2];
-			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.f } };
-			clearValues[1].depthStencil = { 1.f, 0 };
+		//// Begin Render Pass
+		//{
+		//	VkClearValue clearValues[2];
+		//	clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.f } };
+		//	clearValues[1].depthStencil = { 1.f, 0 };
 
-			VkRenderPassBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			beginInfo.pNext = nullptr;
-			beginInfo.renderPass = swapchain.GetRenderPass();
-			beginInfo.renderArea.offset.x = 0;
-			beginInfo.renderArea.offset.y = 0;
-			beginInfo.renderArea.extent.width = width;
-			beginInfo.renderArea.extent.height = height;
-			beginInfo.clearValueCount = 2;
-			beginInfo.pClearValues = clearValues;
-			beginInfo.framebuffer = swapchain.GetCurrentFramebuffer();
+		//	VkRenderPassBeginInfo beginInfo{};
+		//	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		//	beginInfo.pNext = nullptr;
+		//	beginInfo.renderPass = swapchain.GetRenderPass();
+		//	beginInfo.renderArea.offset.x = 0;
+		//	beginInfo.renderArea.offset.y = 0;
+		//	beginInfo.renderArea.extent.width = width;
+		//	beginInfo.renderArea.extent.height = height;
+		//	beginInfo.clearValueCount = 2;
+		//	beginInfo.pClearValues = clearValues;
+		//	beginInfo.framebuffer = swapchain.GetCurrentFramebuffer();
 
-			vkCmdBeginRenderPass(drawCmdBuffer, &beginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-		}
+		//	vkCmdBeginRenderPass(drawCmdBuffer, &beginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+		//}
 
-		// Begin Secondary Command Buffer
-		{
-			VkCommandBufferInheritanceInfo inheritInfo{};
-			inheritInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-			inheritInfo.renderPass = swapchain.GetRenderPass();
-			inheritInfo.framebuffer = swapchain.GetCurrentFramebuffer();
+		//// Begin Secondary Command Buffer
+		//{
+		//	VkCommandBufferInheritanceInfo inheritInfo{};
+		//	inheritInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		//	inheritInfo.renderPass = swapchain.GetRenderPass();
+		//	inheritInfo.framebuffer = swapchain.GetCurrentFramebuffer();
 
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-			beginInfo.pInheritanceInfo = &inheritInfo;
+		//	VkCommandBufferBeginInfo beginInfo{};
+		//	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		//	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		//	beginInfo.pInheritanceInfo = &inheritInfo;
 
-			VT_VK_CHECK(vkBeginCommandBuffer(secondaryCmdBuffer, &beginInfo));
-		}
+		//	VT_VK_CHECK(vkBeginCommandBuffer(secondaryCmdBuffer, &beginInfo));
+		//}
 
 		// Viewport
 		{
@@ -335,7 +335,7 @@ namespace Volt
 			viewport.minDepth = 0.f;
 			viewport.maxDepth = 1.f;
 
-			vkCmdSetViewport(secondaryCmdBuffer, 0, 1, &viewport);
+			//vkCmdSetViewport(secondaryCmdBuffer, 0, 1, &viewport);
 		}
 
 		// Scissor
@@ -346,18 +346,18 @@ namespace Volt
 			scissor.offset.x = 0;
 			scissor.offset.y = 0;
 
-			vkCmdSetScissor(secondaryCmdBuffer, 0, 1, &scissor);
+			//vkCmdSetScissor(secondaryCmdBuffer, 0, 1, &scissor);
 		}
 
-		ImDrawData* drawData = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(drawData, secondaryCmdBuffer);
+		//ImDrawData* drawData = ImGui::GetDrawData();
+		//ImGui_ImplVulkan_RenderDrawData(drawData, secondaryCmdBuffer);
 
-		VT_VK_CHECK(vkEndCommandBuffer(secondaryCmdBuffer));
+		//VT_VK_CHECK(vkEndCommandBuffer(secondaryCmdBuffer));
 
-		vkCmdExecuteCommands(drawCmdBuffer, 1, &secondaryCmdBuffer);
-		vkCmdEndRenderPass(drawCmdBuffer);
+		//vkCmdExecuteCommands(drawCmdBuffer, 1, &secondaryCmdBuffer);
+		//vkCmdEndRenderPass(drawCmdBuffer);
 
-		VT_VK_CHECK(vkEndCommandBuffer(drawCmdBuffer));
+		//VT_VK_CHECK(vkEndCommandBuffer(drawCmdBuffer));
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -396,48 +396,48 @@ namespace Volt
 		poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
 		poolInfo.pPoolSizes = poolSizes;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		const auto& swapchain = Application::Get().GetWindow().GetSwapchain();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const auto& swapchain = Application::Get().GetWindow().GetSwapchain();
 
-		const uint32_t framesInFlight = swapchain.GetMaxFramesInFlight();
+		////const uint32_t framesInFlight = swapchain.GetMaxFramesInFlight();
 
-		VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle(), &poolInfo, nullptr, &s_descriptorPool));
+		//VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle(), &poolInfo, nullptr, &s_descriptorPool));
 
-		ImGui_ImplVulkan_InitInfo initInfo{};
-		initInfo.Instance = GraphicsContextVolt::Get().GetInstance();
-		initInfo.PhysicalDevice = GraphicsContextVolt::GetPhysicalDevice()->GetHandle();
-		initInfo.Device = GraphicsContextVolt::GetDevice()->GetHandle();
-		initInfo.Queue = device->GetGraphicsQueue();
+		//ImGui_ImplVulkan_InitInfo initInfo{};
+		//initInfo.Instance = GraphicsContextVolt::Get().GetInstance();
+		//initInfo.PhysicalDevice = GraphicsContextVolt::GetPhysicalDevice()->GetHandle();
+		//initInfo.Device = GraphicsContextVolt::GetDevice()->GetHandle();
+		//initInfo.Queue = device->GetGraphicsQueue();
 
-		initInfo.DescriptorPool = s_descriptorPool;
-		initInfo.MinImageCount = framesInFlight;
-		initInfo.ImageCount = framesInFlight;
-		initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-		initInfo.CheckVkResultFn = Utility::CheckImGuiVulkanResults;
+		//initInfo.DescriptorPool = s_descriptorPool;
+		//initInfo.MinImageCount = framesInFlight;
+		//initInfo.ImageCount = framesInFlight;
+		//initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		//initInfo.CheckVkResultFn = Utility::CheckImGuiVulkanResults;
 
-		ImGui_ImplVulkan_Init(&initInfo, swapchain.GetRenderPass());
+		//ImGui_ImplVulkan_Init(&initInfo, swapchain.GetRenderPass());
 
 		// Create font
 		{
-			VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
-			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-			device->FlushCommandBuffer(commandBuffer);
+			//VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
+			//ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+			//device->FlushCommandBuffer(commandBuffer);
 		}
 
-		vkDeviceWaitIdle(device->GetHandle());
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
+		//vkDeviceWaitIdle(device->GetHandle());
+		//ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-		s_imguiCommandBuffers.resize(framesInFlight);
-		for (auto& cmdBuffer : s_imguiCommandBuffers)
-		{
-			cmdBuffer = device->CreateSecondaryCommandBuffer();
-		}
+		//s_imguiCommandBuffers.resize(framesInFlight);
+		//for (auto& cmdBuffer : s_imguiCommandBuffers)
+		//{
+		//	cmdBuffer = device->CreateSecondaryCommandBuffer();
+		//}
 	}
 
 	void ImGuiImplementationVolt::ReleaseVulkanData()
 	{
-		vkDeviceWaitIdle(GraphicsContextVolt::GetDevice()->GetHandle());
-		vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), s_descriptorPool, nullptr);
-		ImGui_ImplVulkan_Shutdown();
+		//vkDeviceWaitIdle(GraphicsContextVolt::GetDevice()->GetHandle());
+		//vkDestroyDescriptorPool(GraphicsContextVolt::GetDevice()->GetHandle(), s_descriptorPool, nullptr);
+		//ImGui_ImplVulkan_Shutdown();
 	}
 }

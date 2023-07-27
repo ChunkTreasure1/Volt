@@ -108,7 +108,7 @@ namespace Volt
 
 	void UIRenderer::Initialize()
 	{
-		const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
+		//const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
 		s_uiRendererData = CreateScope<UIRendererData>();
 		s_uiRendererData->currentView = { 1.f };
 
@@ -127,7 +127,7 @@ namespace Volt
 			s_uiRendererData->depthImage = Image2D::Create(spec);
 		}
 
-		s_uiRendererData->commandBuffer = CommandBuffer::Create(framesInFlight);
+		//s_uiRendererData->commandBuffer = CommandBuffer::Create(framesInFlight);
 	}
 
 	void UIRenderer::Shutdown()
@@ -521,19 +521,19 @@ namespace Volt
 			subMat->SetValue("vertexOffset", cmd.offset);
 			subMat->PushMaterialData(s_uiRendererData->commandBuffer);
 
-			const uint32_t currentIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+			//const uint32_t currentIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
-			if (subMat->GetPipeline()->HasDescriptorSet(Sets::SAMPLERS))
-			{
-				auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
-				subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
-			}
+			//if (subMat->GetPipeline()->HasDescriptorSet(Sets::SAMPLERS))
+			//{
+			//	auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
+			//	subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::SAMPLERS);
+			//}
 
-			if (subMat->GetPipeline()->HasDescriptorSet(Sets::TEXTURES))
-			{
-				auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
-				subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
-			}
+			//if (subMat->GetPipeline()->HasDescriptorSet(Sets::TEXTURES))
+			//{
+			//	auto descriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::TEXTURES]->GetOrAllocateDescriptorSet(currentIndex);
+			//	subMat->GetPipeline()->BindDescriptorSet(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), descriptorSet, Sets::TEXTURES);
+			//}
 
 			vkCmdDrawIndexed(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), 6, 1, 0, 0, 0);
 		}

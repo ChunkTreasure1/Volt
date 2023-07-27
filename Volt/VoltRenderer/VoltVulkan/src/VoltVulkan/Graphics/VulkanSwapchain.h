@@ -18,7 +18,7 @@ struct VkFramebuffer_T;
 
 struct GLFWwindow;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class VulkanSwapchain final : public Swapchain
 	{
@@ -43,6 +43,7 @@ namespace Volt
 		const uint32_t GetHeight() const override;
 
 		inline VkRenderPass_T* GetRenderPass() const { return m_renderPass; }
+		VkFramebuffer_T* GetCurrentFramebuffer() const;
 
 	protected:
 		void* GetHandleImpl() override;

@@ -50,12 +50,12 @@ namespace Volt
 
 	void VertexBuffer::SetData(const void* data, uint32_t size)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
-		
-		SetData(cmdBuffer, data, size);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+		//
+		//SetData(cmdBuffer, data, size);
 
-		device->FlushSingleUseCommandBuffer(cmdBuffer);
+		//device->FlushSingleUseCommandBuffer(cmdBuffer);
 	}
 
 	void VertexBuffer::SetData(VkCommandBuffer commandBuffer, const void* data, uint32_t size)
@@ -113,14 +113,16 @@ namespace Volt
 
 	const uint64_t VertexBuffer::GetDeviceAddress() const
 	{
-		VkBufferDeviceAddressInfo bufferAddr{};
-		bufferAddr.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-		bufferAddr.pNext = nullptr;
-		bufferAddr.buffer = myBuffer;
+		//VkBufferDeviceAddressInfo bufferAddr{};
+		//bufferAddr.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+		//bufferAddr.pNext = nullptr;
+		//bufferAddr.buffer = myBuffer;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
+		//return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
+
+		return 0;
 	}
 
 	Ref<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t size, bool mapped)
@@ -135,68 +137,68 @@ namespace Volt
 
 	void VertexBuffer::Invalidate(const void* data, uint32_t size)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		VkBuffer stagingBuffer = nullptr;
-		VmaAllocation stagingAllocation = nullptr;
-		VkDeviceSize bufferSize = size;
-		VulkanAllocatorVolt allocator{ "VertexBuffer - Create" };
+		//VkBuffer stagingBuffer = nullptr;
+		//VmaAllocation stagingAllocation = nullptr;
+		//VkDeviceSize bufferSize = size;
+		//VulkanAllocatorVolt allocator{ "VertexBuffer - Create" };
 
-		if (myBuffer != VK_NULL_HANDLE)
-		{
-			allocator.DestroyBuffer(myBuffer, myBufferAllocation);
-			myBuffer = nullptr;
-			myBufferAllocation = nullptr;
-		}
+		//if (myBuffer != VK_NULL_HANDLE)
+		//{
+		//	allocator.DestroyBuffer(myBuffer, myBufferAllocation);
+		//	myBuffer = nullptr;
+		//	myBufferAllocation = nullptr;
+		//}
 
-		if (data != nullptr)
-		{
-			// Create staging buffer
-			{
-				VkBufferCreateInfo bufferInfo{};
-				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInfo.size = bufferSize;
-				bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		//if (data != nullptr)
+		//{
+		//	// Create staging buffer
+		//	{
+		//		VkBufferCreateInfo bufferInfo{};
+		//		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		//		bufferInfo.size = bufferSize;
+		//		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		//		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-				stagingAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
-			}
+		//		stagingAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+		//	}
 
-			// Copy to staging buffer
-			{
-				void* buffData = allocator.MapMemory<void>(stagingAllocation);
-				memcpy_s(buffData, size, data, size);
-				allocator.UnmapMemory(stagingAllocation);
-			}
-		}
+		//	// Copy to staging buffer
+		//	{
+		//		void* buffData = allocator.MapMemory<void>(stagingAllocation);
+		//		memcpy_s(buffData, size, data, size);
+		//		allocator.UnmapMemory(stagingAllocation);
+		//	}
+		//}
 
-		// Create GPU buffer
-		{
-			VkBufferCreateInfo bufferInfo{};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = bufferSize;
-			bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		//// Create GPU buffer
+		//{
+		//	VkBufferCreateInfo bufferInfo{};
+		//	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		//	bufferInfo.size = bufferSize;
+		//	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+		//	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			myBufferAllocation = allocator.AllocateBuffer(bufferInfo, myMappable ? VMA_MEMORY_USAGE_CPU_TO_GPU : VMA_MEMORY_USAGE_GPU_ONLY, myBuffer);
-		}
+		//	myBufferAllocation = allocator.AllocateBuffer(bufferInfo, myMappable ? VMA_MEMORY_USAGE_CPU_TO_GPU : VMA_MEMORY_USAGE_GPU_ONLY, myBuffer);
+		//}
 
-		if (data != nullptr)
-		{
-			// Copy from staging buffer to GPU buffer
-			{
-				VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+		//if (data != nullptr)
+		//{
+		//	// Copy from staging buffer to GPU buffer
+		//	{
+		//		VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
-				VkBufferCopy copy{};
-				copy.srcOffset = 0;
-				copy.dstOffset = 0;
-				copy.size = bufferSize;
+		//		VkBufferCopy copy{};
+		//		copy.srcOffset = 0;
+		//		copy.dstOffset = 0;
+		//		copy.size = bufferSize;
 
-				vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copy);
-				device->FlushSingleUseCommandBuffer(cmdBuffer);
-			}
+		//		vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copy);
+		//		device->FlushSingleUseCommandBuffer(cmdBuffer);
+		//	}
 
-			allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
-		}
+		//	allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
+		//}
 	}
 }

@@ -5,7 +5,7 @@
 #include <VoltVulkan/Graphics/VulkanGraphicsContext.h>
 #include <VoltD3D12/Graphics/D3D12GraphicsContext.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	Ref<GraphicsContext> GraphicsContext::Create(const GraphicsContextCreateInfo& createInfo)
 	{

@@ -48,9 +48,9 @@ namespace Volt
 		bufferAddr.pNext = nullptr;
 		bufferAddr.buffer = myBuffer;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
+		return /*vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr)*/ 0;
 	}
 
 	Ref<GenericBuffer> GenericBuffer::Create(VkBufferUsageFlags bufferUsage, uint32_t size, const void* data)

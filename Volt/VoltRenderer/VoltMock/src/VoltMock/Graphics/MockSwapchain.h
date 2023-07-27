@@ -1,7 +1,7 @@
 #pragma once
 #include "VoltRHI/Graphics/Swapchain.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	class MockSwapchain final : public Swapchain
 	{

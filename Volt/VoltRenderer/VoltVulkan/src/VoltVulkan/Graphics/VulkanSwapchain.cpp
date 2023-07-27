@@ -12,7 +12,7 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	namespace Utility
 	{
@@ -184,6 +184,12 @@ namespace Volt
 	const uint32_t VulkanSwapchain::GetHeight() const
 	{
 		return m_height;
+	}
+
+	VkFramebuffer_T* VulkanSwapchain::GetCurrentFramebuffer() const
+	{
+		const auto& data = m_perImageData.at(GetCurrentFrame());
+		return data.framebuffer;
 	}
 
 	void* VulkanSwapchain::GetHandleImpl()

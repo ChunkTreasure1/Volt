@@ -7,7 +7,7 @@
 #include <VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h>
 #include <VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	Ref<PhysicalGraphicsDevice> PhysicalGraphicsDevice::Create(const PhysicalDeviceCreateInfo& deviceInfo)
 	{

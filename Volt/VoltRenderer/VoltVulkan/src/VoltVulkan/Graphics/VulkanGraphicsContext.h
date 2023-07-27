@@ -8,7 +8,7 @@ struct VkDebugUtilsMessengerEXT_T;
 class PhysicalGraphicsDevice;
 class GraphicsDevice;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class VulkanGraphicsContext final : public GraphicsContext
 	{

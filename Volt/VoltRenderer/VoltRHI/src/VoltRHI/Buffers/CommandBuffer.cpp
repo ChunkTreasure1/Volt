@@ -7,7 +7,7 @@
 #include <VoltVulkan/Buffers/VulkanCommandBuffer.h>
 #include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	Ref<CommandBuffer> CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{

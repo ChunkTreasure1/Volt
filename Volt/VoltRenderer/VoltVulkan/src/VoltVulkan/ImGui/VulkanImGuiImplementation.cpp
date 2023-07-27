@@ -13,7 +13,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	static Ref<CommandBuffer> s_commandBuffer;
 	static VkDescriptorPool s_descriptorPool;
@@ -50,27 +50,59 @@ namespace Volt
 	{
 		s_commandBuffer->Begin();
 
-		//VkCommandBuffer currentCommandBuffer = s_commandBuffer->GetHandle<VkCommandBuffer>();
+		VkCommandBuffer currentCommandBuffer = s_commandBuffer->GetHandle<VkCommandBuffer>();
+
+		auto swapchainPtr = m_swapchain.lock()->As<VulkanSwapchain>();
 
 		// Begin render pass
 		{
-			//VkClearValue clearValues[2];
-			//clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.f } };
-			//clearValues[1].depthStencil = { 1.f, 0 };
+			VkClearValue clearValues[2];
+			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.f } };
+			clearValues[1].depthStencil = { 1.f, 0 };
 
-			//VkRenderPassBeginInfo beginInfo{};
-			//beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			//beginInfo.pNext = nullptr;
-			//beginInfo.renderPass = m_swapchain.GetRenderPass();
-			//beginInfo.renderArea.offset.x = 0;
-			//beginInfo.renderArea.offset.y = 0;
-			//beginInfo.renderArea.extent.width = width;
-			//beginInfo.renderArea.extent.height = height;
-			//beginInfo.clearValueCount = 2;
-			//beginInfo.pClearValues = clearValues;
-			//beginInfo.framebuffer = swapchain.GetCurrentFramebuffer();
+			VkRenderPassBeginInfo beginInfo{};
+			beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			beginInfo.pNext = nullptr;
+			beginInfo.renderPass = swapchainPtr->GetRenderPass();
+			beginInfo.renderArea.offset.x = 0;
+			beginInfo.renderArea.offset.y = 0;
+			beginInfo.renderArea.extent.width = swapchainPtr->GetWidth();
+			beginInfo.renderArea.extent.height = swapchainPtr->GetHeight();
+			beginInfo.clearValueCount = 2;
+			beginInfo.pClearValues = clearValues;
+			beginInfo.framebuffer = swapchainPtr->GetCurrentFramebuffer();
 
-			//vkCmdBeginRenderPass(drawCmdBuffer, &beginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+			vkCmdBeginRenderPass(currentCommandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+		}
+
+		Viewport viewport{};
+		viewport.x = 0.f;
+		viewport.y = static_cast<float>(swapchainPtr->GetHeight());
+		viewport.width = static_cast<float>(swapchainPtr->GetWidth());
+		viewport.height = -static_cast<float>(swapchainPtr->GetHeight());
+		viewport.minDepth = 0.f;
+		viewport.maxDepth = 1.f;
+
+		s_commandBuffer->SetViewports({ viewport });
+
+		Rect2D scissor{};
+		scissor.extent.width = swapchainPtr->GetWidth();
+		scissor.extent.height = swapchainPtr->GetHeight();
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+
+		s_commandBuffer->SetScissors({ scissor });
+
+		ImDrawData* drawData = ImGui::GetDrawData();
+		ImGui_ImplVulkan_RenderDrawData(drawData, currentCommandBuffer);
+
+		vkCmdEndRenderPass(currentCommandBuffer);
+		s_commandBuffer->End();
+
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
 		}
 	}
 

@@ -31,7 +31,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		//for (const auto& [hash, imageDatas] : myCachedImageResources)
 		//{
 		//	for (const auto& imageData : imageDatas)

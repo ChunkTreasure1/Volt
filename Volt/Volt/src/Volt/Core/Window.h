@@ -13,6 +13,12 @@ struct GLFWcursor;
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class GraphicsContext;
+		class Swapchain;
+	}
+
 	enum class WindowMode : uint32_t
 	{
 		Windowed = 0,
@@ -35,9 +41,6 @@ namespace Volt
 		std::filesystem::path iconPath;
 		std::filesystem::path cursorPath;
 	};
-
-	class GraphicsContextVolt;
-	class SwapchainVolt;
 
 	class Window
 	{
@@ -90,7 +93,7 @@ namespace Volt
 		inline GLFWwindow* GetNativeWindow() const { return m_window; }
 		inline HWND GetHWND() const { return m_windowHandle; }
 
-		inline const SwapchainVolt& GetSwapchain() const { return *m_swapchain; }
+		inline const RHI::Swapchain& GetSwapchain() const { return *m_swapchain; }
 
 		static Scope<Window> Create(const WindowProperties& aProperties = WindowProperties());
 
@@ -114,8 +117,8 @@ namespace Volt
 
 		} m_data;
 
-		Ref<GraphicsContextVolt> m_graphicsContext;
-		Ref<SwapchainVolt> m_swapchain;
+		Ref<RHI::GraphicsContext> m_graphicsContext;
+		Ref<RHI::Swapchain> m_swapchain;
 
 		glm::uvec2 m_startPosition = 0;
 		glm::uvec2 m_startSize = 0;

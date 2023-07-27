@@ -12,7 +12,7 @@
 #include <tahoma.h>
 #include "FontAwesome.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	//void MergeIconsWithLatestFont(float font_size)
 	//{

@@ -44,8 +44,6 @@
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <VoltRHI/Core/RHICommon.h>
-#include <VoltRHI/Graphics/GraphicsContext.h>
 
 namespace Volt
 {
@@ -62,13 +60,6 @@ namespace Volt
 		if (!myInfo.isRuntime)
 		{
 			ProjectManager::SetupWorkingDirectory();
-		}
-
-		{
-			GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = GraphicsAPI::D3D12;
-
-			Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
 		}
 
 		ProjectManager::SetupProject(myInfo.projectPath);
@@ -101,15 +92,14 @@ namespace Volt
 		myRenderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		myAssetManager = CreateScope<AssetManager>();
 
-		Renderer::Initialize();
-		ShaderRegistry::Initialize();
-		Renderer::LateInitialize();
+		//Renderer::Initialize();
+		//ShaderRegistry::Initialize();
+		//Renderer::LateInitialize();
 
-		UIRenderer::Initialize();
-		DebugRenderer::Initialize();
+		//UIRenderer::Initialize();
+		//DebugRenderer::Initialize();
 
 		MonoScriptEngine::Initialize();
-		Prefab::PreloadAllPrefabs();
 
 		Physics::LoadSettings();
 		Physics::Initialize();
@@ -133,7 +123,7 @@ namespace Volt
 
 		if (info.enableImGui)
 		{
-			myImGuiImplementation = ImGuiImplementationVolt::Create();
+			//myImGuiImplementation = ImGuiImplementationVolt::Create();
 		}
 
 		if (info.netEnabled)
@@ -153,7 +143,7 @@ namespace Volt
 
 	Application::~Application()
 	{
-		GraphicsContextVolt::GetDevice()->WaitForIdle();
+		//GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 		myNavigationSystem = nullptr;
 		myLayerStack.Clear();
@@ -168,11 +158,11 @@ namespace Volt
 
 		MonoScriptEngine::Shutdown();
 
-		DebugRenderer::Shutdown();
-		UIRenderer::Shutdown();
+		//DebugRenderer::Shutdown();
+		//UIRenderer::Shutdown();
 
-		ShaderRegistry::Shutdown();
-		Renderer::Shutdown();
+		//ShaderRegistry::Shutdown();
+		//Renderer::Shutdown();
 
 		//Amp::AudioManager::Shutdown();
 		Amp::WWiseEngine::Get().TermWwise();
@@ -181,7 +171,7 @@ namespace Volt
 		myThreadPool.Shutdown();
 		myRenderThreadPool.Shutdown();
 
-		Renderer::FlushResourceQueues();
+		//Renderer::FlushResourceQueues();
 
 		FileSystem::Shutdown();
 
@@ -219,8 +209,8 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("Application::Render");
 
-				Renderer::Flush();
-				Renderer::UpdateDescriptors();
+				//Renderer::Flush();
+				//Renderer::UpdateDescriptors();
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
@@ -231,12 +221,12 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("Application::ImGui");
 
-				myImGuiImplementation->Begin();
+				//myImGuiImplementation->Begin();
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
 
-				myImGuiImplementation->End();
+				//myImGuiImplementation->End();
 			}
 
 			if (myInfo.netEnabled)

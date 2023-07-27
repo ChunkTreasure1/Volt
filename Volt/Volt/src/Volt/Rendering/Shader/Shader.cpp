@@ -264,10 +264,10 @@ namespace Volt
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &myResources.nullPaddedDescriptorSetLayouts.at(set);
 
-		VkDescriptorSet descriptorSet;
-		VT_VK_CHECK(vkAllocateDescriptorSets(GraphicsContextVolt::GetDevice()->GetHandle(), &allocInfo, &descriptorSet));
+		//VkDescriptorSet descriptorSet;
+		//VT_VK_CHECK(vkAllocateDescriptorSets(GraphicsContextVolt::GetDevice()->GetHandle(), &allocInfo, &descriptorSet));
 
-		return descriptorSet;
+		return nullptr;
 	}
 
 	const ShaderDataBuffer Shader::CreateShaderBuffer()
@@ -358,17 +358,17 @@ namespace Volt
 
 	void Shader::Release()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		for (const auto& stage : myPipelineShaderStageInfos)
-		{
-			vkDestroyShaderModule(device->GetHandle(), stage.module, nullptr);
-		}
+		//for (const auto& stage : myPipelineShaderStageInfos)
+		//{
+		//	vkDestroyShaderModule(device->GetHandle(), stage.module, nullptr);
+		//}
 
-		for (const auto& descriptorSetLayout : myResources.nullPaddedDescriptorSetLayouts)
-		{
-			vkDestroyDescriptorSetLayout(device->GetHandle(), descriptorSetLayout, nullptr);
-		}
+		//for (const auto& descriptorSetLayout : myResources.nullPaddedDescriptorSetLayouts)
+		//{
+		//	vkDestroyDescriptorSetLayout(device->GetHandle(), descriptorSetLayout, nullptr);
+		//}
 
 		myPipelineShaderStageInfos.clear();
 
@@ -448,7 +448,7 @@ namespace Volt
 
 	void Shader::LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		myPipelineShaderStageInfos.clear();
 		myShaderGroupInfos.clear();
 
@@ -460,7 +460,7 @@ namespace Volt
 			moduleInfo.pCode = data.data();
 
 			VkShaderModule shaderModule{};
-			VT_VK_CHECK(vkCreateShaderModule(device->GetHandle(), &moduleInfo, nullptr, &shaderModule));
+			//VT_VK_CHECK(vkCreateShaderModule(device->GetHandle(), &moduleInfo, nullptr, &shaderModule));
 
 			VkPipelineShaderStageCreateInfo& shaderStage = myPipelineShaderStageInfos.emplace_back();
 			shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -523,7 +523,7 @@ namespace Volt
 
 	void Shader::ReflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& data)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		VT_CORE_INFO("	Reflecting stage {0}", Utility::StageToString(stage).c_str());
 		spirv_cross::Compiler compiler(data);
@@ -574,13 +574,13 @@ namespace Volt
 
 				if (isDynamic)
 				{
-					const uint64_t minUBOAlignment = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
+					//const uint64_t minUBOAlignment = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
 					uint32_t dynamicAlignment = (uint32_t)size;
 
-					if (minUBOAlignment > 0)
-					{
-						dynamicAlignment = (uint32_t)Utility::GetAlignedSize((uint64_t)dynamicAlignment, minUBOAlignment);
-					}
+					//if (minUBOAlignment > 0)
+					//{
+					//	dynamicAlignment = (uint32_t)Utility::GetAlignedSize((uint64_t)dynamicAlignment, minUBOAlignment);
+					//}
 
 					uniformBuffer.isDynamic = true;
 					uniformBuffer.info.range = dynamicAlignment;
@@ -883,7 +883,7 @@ namespace Volt
 
 	void Shader::CreateDescriptorSetLayouts()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		constexpr VkDescriptorBindingFlags bindlessFlags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 		constexpr VkDescriptorBindingFlags materialFlags = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 
@@ -899,7 +899,7 @@ namespace Volt
 				info.bindingCount = 0;
 				info.pBindings = nullptr;
 
-				VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myResources.nullPaddedDescriptorSetLayouts.emplace_back()));
+				//VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myResources.nullPaddedDescriptorSetLayouts.emplace_back()));
 				lastSet++;
 			}
 
@@ -935,7 +935,7 @@ namespace Volt
 			extendedInfo.pBindingFlags = bindingFlags.data();
 			info.pNext = &extendedInfo;
 
-			VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myResources.nullPaddedDescriptorSetLayouts.emplace_back()));
+			//VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle(), &info, nullptr, &myResources.nullPaddedDescriptorSetLayouts.emplace_back()));
 			myResources.descriptorSetLayouts.emplace_back(myResources.nullPaddedDescriptorSetLayouts.back());
 			lastSet = set;
 		}
@@ -949,7 +949,7 @@ namespace Volt
 
 	void Shader::CalculateDescriptorPoolSizes()
 	{
-		const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
+		//const uint32_t framesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
 
 		uint32_t uboCount = 0;
 		uint32_t dynamicUBOCount = 0;
@@ -967,40 +967,40 @@ namespace Volt
 		std::for_each(myPerStageSeperateImageCount.begin(), myPerStageSeperateImageCount.end(), [&](auto pair) { seperateImageCount += pair.second.count; });
 		std::for_each(myPerStageSamplerCount.begin(), myPerStageSamplerCount.end(), [&](auto pair) { seperateSamplerCount += pair.second.count; });
 
-		if (uboCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uboCount * framesInFlight);
-		}
+		//if (uboCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uboCount * framesInFlight);
+		//}
 
-		if (dynamicUBOCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, dynamicUBOCount * framesInFlight);
-		}
+		//if (dynamicUBOCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, dynamicUBOCount * framesInFlight);
+		//}
 
-		if (ssboCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, ssboCount * framesInFlight);
-		}
+		//if (ssboCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, ssboCount * framesInFlight);
+		//}
 
-		if (storageImageCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, storageImageCount * framesInFlight);
-		}
+		//if (storageImageCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, storageImageCount * framesInFlight);
+		//}
 
-		if (imageCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount * framesInFlight);
-		}
+		//if (imageCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, imageCount * framesInFlight);
+		//}
 
-		if (seperateImageCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, seperateImageCount * framesInFlight);
-		}
+		//if (seperateImageCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, seperateImageCount * framesInFlight);
+		//}
 
-		if (seperateSamplerCount > 0)
-		{
-			myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLER, seperateSamplerCount * framesInFlight);
-		}
+		//if (seperateSamplerCount > 0)
+		//{
+		//	myResources.descriptorPoolSizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLER, seperateSamplerCount * framesInFlight);
+		//}
 	}
 
 	///// Shader Uniform /////
