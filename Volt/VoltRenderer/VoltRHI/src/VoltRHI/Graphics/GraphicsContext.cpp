@@ -7,9 +7,21 @@
 
 namespace Volt::RHI
 {
+	GraphicsContext::GraphicsContext()
+	{
+		s_context = this;
+	}
+
+	GraphicsContext::~GraphicsContext()
+	{
+		s_context = nullptr;
+	}
+
 	Ref<GraphicsContext> GraphicsContext::Create(const GraphicsContextCreateInfo& createInfo)
 	{
 		s_graphicsAPI = createInfo.graphicsApi;
+		s_logHook = createInfo.loghookInfo;
+
 		switch (s_graphicsAPI)
 		{
 			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12GraphicsContext>(createInfo); break;
@@ -24,14 +36,11 @@ namespace Volt::RHI
 
 	void GraphicsContext::Log(Severity logSeverity, std::string_view message)
 	{
-		if (!s_logHook.enabled)
+		if (!s_logHook.enabled || !s_logHook.logCallback)
 		{
 			return;
 		}
 
-		if (s_logHook.logCallback)
-		{
-			s_logHook.logCallback(logSeverity, message);
-		}
+		s_logHook.logCallback(logSeverity, message);
 	}
 }

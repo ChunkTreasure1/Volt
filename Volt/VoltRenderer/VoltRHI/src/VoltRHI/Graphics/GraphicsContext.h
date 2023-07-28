@@ -12,15 +12,8 @@ namespace Volt::RHI
 	class GraphicsContext : public RHIInterface
 	{
 	public:
-		GraphicsContext()
-		{
-			s_context = this;
-		};
-
-		virtual ~GraphicsContext()
-		{
-			s_context = nullptr;
-		};
+		GraphicsContext();
+		virtual ~GraphicsContext();
 
 		[[nodiscard]] static GraphicsContext& Get() { return *s_context; }
 

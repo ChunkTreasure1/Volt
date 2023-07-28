@@ -141,6 +141,13 @@ namespace Volt::RHI
 		m_graphicsDevice = nullptr;
 		m_physicalDevice = nullptr;
 
+#ifdef VT_ENABLE_VALIDATION
+		if (m_debugMessenger)
+		{
+			Utility::DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+		}
+#endif
+
 		vkDestroyInstance(m_instance, nullptr);
 	}
 
@@ -150,7 +157,7 @@ namespace Volt::RHI
 		const bool validationLayerSupported = CheckValidationLayerSupport();
 		if (!validationLayerSupported)
 		{
-			// Log	
+			GraphicsContext::Log(Severity::Error, "[GraphicsContext] Validation layers requested but not supported!");
 		}
 #endif
 
@@ -193,6 +200,10 @@ namespace Volt::RHI
 			throw std::runtime_error("[GraphicsContext] This device does not support Vulkan!");
 			return;
 		}
+
+#ifdef VT_ENABLE_VALIDATION
+		VT_VK_CHECK(Utility::CreateDebugUtilsMessengerEXT(m_instance, &debugCreateInfo, nullptr, &m_debugMessenger));
+#endif
 
 		FindVulkanFunctions(m_instance);
 	}

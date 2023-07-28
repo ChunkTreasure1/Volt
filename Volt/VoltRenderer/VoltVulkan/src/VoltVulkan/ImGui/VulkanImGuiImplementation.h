@@ -10,7 +10,7 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo);
-		~VulkanImGuiImplementation() override = default;
+		~VulkanImGuiImplementation() override;
 
 	protected:
 		void BeginAPI() override;

@@ -227,12 +227,14 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("Application::ImGui");
 
-				//myImGuiImplementation->Begin();
+				m_imguiImplementation->Begin();
+
+				ImGui::ShowDemoWindow();
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
 
-				//myImGuiImplementation->End();
+				m_imguiImplementation->End();
 			}
 
 			if (m_info.netEnabled)

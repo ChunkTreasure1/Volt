@@ -40,6 +40,11 @@ namespace Volt::RHI
 	{
 	}
 
+	VulkanImGuiImplementation::~VulkanImGuiImplementation()
+	{
+		ShutdownAPI();
+	}
+
 	void VulkanImGuiImplementation::BeginAPI()
 	{
 		ImGui_ImplVulkan_NewFrame();
@@ -72,7 +77,7 @@ namespace Volt::RHI
 			beginInfo.pClearValues = clearValues;
 			beginInfo.framebuffer = swapchainPtr->GetCurrentFramebuffer();
 
-			vkCmdBeginRenderPass(currentCommandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+			vkCmdBeginRenderPass(currentCommandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		}
 
 		Viewport viewport{};
@@ -98,12 +103,6 @@ namespace Volt::RHI
 
 		vkCmdEndRenderPass(currentCommandBuffer);
 		s_commandBuffer->End();
-
-		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
 	}
 
 	void VulkanImGuiImplementation::InitializeAPI()
@@ -114,6 +113,7 @@ namespace Volt::RHI
 
 	void VulkanImGuiImplementation::ShutdownAPI()
 	{
+		ReleaseVulkanData();
 		ImGui_ImplGlfw_Shutdown();
 	}
 
@@ -178,7 +178,7 @@ namespace Volt::RHI
 	void VulkanImGuiImplementation::ReleaseVulkanData()
 	{
 		auto device = GraphicsContext::GetDevice()->As<VulkanGraphicsDevice>();
-		device->WaitForIdle();
+		s_commandBuffer = nullptr;
 
 		vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), s_descriptorPool, nullptr);
 		ImGui_ImplVulkan_Shutdown();
