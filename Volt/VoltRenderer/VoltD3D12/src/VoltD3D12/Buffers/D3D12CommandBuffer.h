@@ -48,6 +48,6 @@ namespace Volt
 		
 		std::vector<std::pair<D3D12CommandData, D3D12FenceData>> m_perInternalBufferData;
 		uint32_t m_currentCommandBufferIndex = 0;
-
+		bool m_isSwapchainTarget = false;
 	};
 }

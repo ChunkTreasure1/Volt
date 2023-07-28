@@ -61,6 +61,11 @@ namespace Volt
 		IncrementIndex();
 		auto& commandData = GetCommandData();
 
+		if (!m_isSwapchainTarget)
+		{
+			GetFenceData().Wait();
+		}
+
 		commandData.commandList->Reset(commandData.commandAllocator, nullptr);
 	}
 
@@ -104,6 +109,7 @@ namespace Volt
 
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
+		m_isSwapchainTarget = swapchainTarget;
 		m_queueType = queueType;
 		m_perInternalBufferData.resize(count);
 
