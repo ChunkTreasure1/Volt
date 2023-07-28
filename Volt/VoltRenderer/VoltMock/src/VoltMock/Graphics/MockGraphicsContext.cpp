@@ -1,7 +1,7 @@
 #include "mkpch.h"
 #include "MockGraphicsContext.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	MockGraphicsContext::MockGraphicsContext(const GraphicsContextCreateInfo& createInfo)
 	{

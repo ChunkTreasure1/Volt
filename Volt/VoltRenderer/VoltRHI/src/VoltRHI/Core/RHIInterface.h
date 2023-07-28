@@ -1,7 +1,8 @@
 #pragma once
 
 #include "VoltRHI/Core/Core.h"
-namespace Volt
+
+namespace Volt::RHI
 {
 	class RHIInterface : public std::enable_shared_from_this<RHIInterface>
 	{

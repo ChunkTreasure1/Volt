@@ -3,7 +3,7 @@
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	class CommandBuffer;
 

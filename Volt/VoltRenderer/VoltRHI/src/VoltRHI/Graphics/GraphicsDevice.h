@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <mutex>
 
-namespace Volt
+namespace Volt::RHI
 {
 	class GraphicsDevice : public RHIInterface
 	{

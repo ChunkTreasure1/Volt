@@ -1,7 +1,7 @@
 #include "mkpch.h"
 #include "MockCommandBuffer.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	MockCommandBuffer::MockCommandBuffer(const uint32_t count, QueueType queueType)
 		: CommandBuffer(queueType)
@@ -29,6 +29,14 @@ namespace Volt
 	}
 
 	void MockCommandBuffer::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
+	{
+	}
+
+	void MockCommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
+	{
+	}
+
+	void MockCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 	}
 	

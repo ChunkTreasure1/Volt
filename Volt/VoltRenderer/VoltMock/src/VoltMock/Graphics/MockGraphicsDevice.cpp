@@ -1,7 +1,7 @@
 #include "mkpch.h"
 #include "MockGraphicsDevice.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	MockGraphicsDevice::MockGraphicsDevice(const GraphicsDeviceCreateInfo& deviceInfo)
 	{

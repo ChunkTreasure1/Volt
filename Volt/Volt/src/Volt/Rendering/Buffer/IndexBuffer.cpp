@@ -54,9 +54,9 @@ namespace Volt
 		bufferAddr.pNext = nullptr;
 		bufferAddr.buffer = myBuffer;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		return vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr);
+		return /*vkGetBufferDeviceAddress(device->GetHandle(), &bufferAddr)*/ 0;
 	}
 
 	Ref<IndexBuffer> IndexBuffer::Create(const std::vector<uint32_t>& indices, uint32_t count)
@@ -71,7 +71,7 @@ namespace Volt
 
 	void IndexBuffer::SetData(const void* data, uint32_t size)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		VkBuffer stagingBuffer = nullptr;
 		VmaAllocation stagingAllocation = nullptr;
@@ -121,15 +121,15 @@ namespace Volt
 		{
 			// Copy from staging buffer to GPU buffer
 			{
-				VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+				//VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
 				VkBufferCopy copy{};
 				copy.srcOffset = 0;
 				copy.dstOffset = 0;
 				copy.size = bufferSize;
 
-				vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copy);
-				device->FlushSingleUseCommandBuffer(cmdBuffer);
+				//vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copy);
+				//device->FlushSingleUseCommandBuffer(cmdBuffer);
 			}
 
 			allocator.DestroyBuffer(stagingBuffer, stagingAllocation);

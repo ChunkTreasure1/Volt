@@ -1,6 +1,7 @@
 #pragma once
 #include "VoltRHI/Graphics/GraphicsContext.h"
-namespace Volt
+
+namespace Volt::RHI
 {
 	class MockGraphicsContext final : public GraphicsContext
 	{

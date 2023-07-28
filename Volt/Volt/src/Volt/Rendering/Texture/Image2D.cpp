@@ -41,7 +41,7 @@ namespace Volt
 		std::string allocatorName = "Image2D - Create";
 
 		VulkanAllocatorVolt allocator{ allocatorName };
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
 		usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -197,12 +197,12 @@ namespace Volt
 		viewInfo.subresourceRange.layerCount = mySpecification.layers;
 		viewInfo.image = myImage;
 
-		VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &myImageViews[0]));
+		//VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &myImageViews[0]));
 
 		if (mySpecification.isCubeMap)
 		{
 			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-			VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &myArrayImageViews[0]));
+			//VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &viewInfo, nullptr, &myArrayImageViews[0]));
 		}
 
 		if (mySpecification.generateMips && mySpecification.mips > 1)
@@ -243,9 +243,9 @@ namespace Volt
 				}
 			}
 
-			auto commandBuffer = device->GetSingleUseCommandBuffer(true);
-			TransitionToLayout(commandBuffer, targetLayout);
-			device->FlushSingleUseCommandBuffer(commandBuffer);
+			//auto commandBuffer = device->GetSingleUseCommandBuffer(true);
+			//TransitionToLayout(commandBuffer, targetLayout);
+			//device->FlushSingleUseCommandBuffer(commandBuffer);
 		}
 
 		myDescriptorInfo.imageLayout = myImageData.layout;
@@ -262,31 +262,31 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([imageViews = myImageViews, arrayViews = myArrayImageViews, image = myImage, allocation = myAllocation, usedCustomPool = myAllocatedWithCustomPool, mappingAlloc = myMappingAllocation, mappingBuffer = myMappingBuffer]()
-		{
-			auto device = GraphicsContextVolt::GetDevice();
-			for (auto& [mip, view] : imageViews)
-			{
-				vkDestroyImageView(device->GetHandle(), view, nullptr);
-			}
+		//Renderer::SubmitResourceChange([imageViews = myImageViews, arrayViews = myArrayImageViews, image = myImage, allocation = myAllocation, usedCustomPool = myAllocatedWithCustomPool, mappingAlloc = myMappingAllocation, mappingBuffer = myMappingBuffer]()
+		//{
+		//	auto device = GraphicsContextVolt::GetDevice();
+		//	for (auto& [mip, view] : imageViews)
+		//	{
+		//		vkDestroyImageView(device->GetHandle(), view, nullptr);
+		//	}
 
-			for (auto& [mip, view] : arrayViews)
-			{
-				vkDestroyImageView(device->GetHandle(), view, nullptr);
-			}
+		//	for (auto& [mip, view] : arrayViews)
+		//	{
+		//		vkDestroyImageView(device->GetHandle(), view, nullptr);
+		//	}
 
-			if (!usedCustomPool)
-			{
-				VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
-				allocator.DestroyImage(image, allocation);
-			}
+		//	if (!usedCustomPool)
+		//	{
+		//		VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
+		//		allocator.DestroyImage(image, allocation);
+		//	}
 
-			if (mappingBuffer)
-			{
-				VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
-				allocator.DestroyBuffer(mappingBuffer, mappingAlloc);
-			}
-		});
+		//	if (mappingBuffer)
+		//	{
+		//		VulkanAllocatorVolt allocator{ "Image2D - Destroy" };
+		//		allocator.DestroyBuffer(mappingBuffer, mappingAlloc);
+		//	}
+		//});
 
 		myImageViews.clear();
 		myImage = nullptr;
@@ -322,12 +322,12 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		VkCommandBuffer cmdBuffer = nullptr;
 
 		if (!commandBuffer)
 		{
-			cmdBuffer = device->GetSingleUseCommandBuffer(true);
+			//cmdBuffer = device->GetSingleUseCommandBuffer(true);
 		}
 		else
 		{
@@ -423,7 +423,7 @@ namespace Volt
 
 		if (!commandBuffer)
 		{
-			device->FlushSingleUseCommandBuffer(cmdBuffer);
+			//device->FlushSingleUseCommandBuffer(cmdBuffer);
 		}
 
 		myHasGeneratedMips = true;
@@ -517,14 +517,14 @@ namespace Volt
 		info.subresourceRange.levelCount = 1;
 		info.image = myImage;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myImageViews[mip]));
+		//auto device = GraphicsContextVolt::GetDevice();
+		//VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myImageViews[mip]));
 
-		if (mySpecification.isCubeMap)
-		{
-			info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-			VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myArrayImageViews[mip]));
-		}
+		//if (mySpecification.isCubeMap)
+		//{
+		//	info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		//	VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myArrayImageViews[mip]));
+		//}
 
 		return myImageViews.at(mip);
 	}
@@ -542,7 +542,7 @@ namespace Volt
 
 	void Image2D::SetName(const std::string& name)
 	{
-		GraphicsContextVolt::SetImageName(myImage, name);
+		//GraphicsContextVolt::SetImageName(myImage, name);
 	}
 
 	void Image2D::Unmap()
@@ -550,13 +550,13 @@ namespace Volt
 		VulkanAllocatorVolt allocator{};
 		allocator.UnmapMemory(myMappingAllocation);
 
-		VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetCommandBuffer(true);
+		//VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetCommandBuffer(true);
 
-		Utility::TransitionImageLayout(commandBuffer, myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		Utility::CopyBufferToImage(commandBuffer, myMappingBuffer, myImage, mySpecification.width, mySpecification.height);
-		Utility::TransitionImageLayout(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, myImageData.layout);
+		//Utility::TransitionImageLayout(commandBuffer, myImage, myImageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		//Utility::CopyBufferToImage(commandBuffer, myMappingBuffer, myImage, mySpecification.width, mySpecification.height);
+		//Utility::TransitionImageLayout(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, myImageData.layout);
 
-		GraphicsContextVolt::GetDevice()->FlushCommandBuffer(commandBuffer);
+		//GraphicsContextVolt::GetDevice()->FlushCommandBuffer(commandBuffer);
 	}
 
 	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data)
@@ -585,10 +585,10 @@ namespace Volt
 
 		stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 
-		VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
+		//VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
 
-		auto originalLayout = myImageData.layout;
-		TransitionToLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		//auto originalLayout = myImageData.layout;
+		//TransitionToLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 		VkImageSubresourceLayers subResourceLayers{};
 		subResourceLayers.aspectMask = Utility::IsDepthFormat(mySpecification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -606,10 +606,10 @@ namespace Volt
 		region.imageOffset.z = 0;
 		region.imageExtent = { mySpecification.width, mySpecification.height, 1 };
 
-		vkCmdCopyImageToBuffer(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
-		TransitionToLayout(commandBuffer, originalLayout);
+		//vkCmdCopyImageToBuffer(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+		//TransitionToLayout(commandBuffer, originalLayout);
 
-		GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
+		//GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
 
 		uint8_t* mappedMemory = allocator.MapMemory<uint8_t>(stagingAllocation);
 
@@ -640,10 +640,10 @@ namespace Volt
 
 		stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 
-		VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
+		//VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
 
-		auto originalLayout = myImageData.layout;
-		TransitionToLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		//auto originalLayout = myImageData.layout;
+		//TransitionToLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 		VkImageSubresourceLayers subResourceLayers{};
 		subResourceLayers.aspectMask = Utility::IsDepthFormat(mySpecification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -661,10 +661,10 @@ namespace Volt
 		region.imageOffset.z = 0;
 		region.imageExtent = { mySpecification.width, mySpecification.height, 1 };
 
-		vkCmdCopyImageToBuffer(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
-		TransitionToLayout(commandBuffer, originalLayout);
+		//vkCmdCopyImageToBuffer(commandBuffer, myImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer, 1, &region);
+		//TransitionToLayout(commandBuffer, originalLayout);
 
-		GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
+		//GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
 
 		uint8_t* mappedMemory = allocator.MapMemory<uint8_t>(stagingAllocation);
 

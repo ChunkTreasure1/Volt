@@ -14,7 +14,7 @@
 
 #include <array>
 
-namespace Volt
+namespace Volt::RHI
 {
 	namespace Utility
 	{

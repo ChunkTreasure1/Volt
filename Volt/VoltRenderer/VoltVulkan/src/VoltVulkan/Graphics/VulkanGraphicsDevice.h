@@ -4,7 +4,7 @@
 
 struct VkDevice_T;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class VulkanPhysicalGraphicsDevice;
 

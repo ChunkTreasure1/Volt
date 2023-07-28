@@ -79,8 +79,8 @@ namespace Volt
 			return;
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 	}
 
 	const std::vector<VkWriteDescriptorSet> TextureTable::GetWriteDescriptors(VkDescriptorSet targetSet, uint32_t binding)

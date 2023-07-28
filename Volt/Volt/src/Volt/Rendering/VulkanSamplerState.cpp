@@ -37,8 +37,8 @@ namespace Volt
 			info.pNext = &reductionInfo;
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		VT_VK_CHECK(vkCreateSampler(device->GetHandle(), &info, nullptr, &mySamplerState));
+		//auto device = GraphicsContextVolt::GetDevice();
+		//VT_VK_CHECK(vkCreateSampler(device->GetHandle(), &info, nullptr, &mySamplerState));
 
 		myDescriptorInfo.sampler = mySamplerState;
 		myDescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -47,8 +47,8 @@ namespace Volt
 
 	VulkanSamplerState::~VulkanSamplerState()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		vkDestroySampler(device->GetHandle(), mySamplerState, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkDestroySampler(device->GetHandle(), mySamplerState, nullptr);
 	}
 
 	Ref<VulkanSamplerState> VulkanSamplerState::Create(TextureFilter minFilter, TextureFilter magFilter, TextureFilter mipMode, TextureWrap wrapMode, CompareOperator compareOp, AnisotopyLevel anisoLevel, bool reduce)

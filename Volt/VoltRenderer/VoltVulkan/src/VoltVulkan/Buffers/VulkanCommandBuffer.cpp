@@ -3,13 +3,14 @@
 
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
+#include "VoltVulkan/Graphics/VulkanSwapchain.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <vulkan/vulkan.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget)
 		: CommandBuffer(queueType), m_commandBufferCount(count), m_isSwapchainTarget(swapchainTarget)
@@ -58,13 +59,13 @@ namespace Volt
 	void VulkanCommandBuffer::Execute()
 	{
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ std::reinterpret_pointer_cast<VulkanCommandBuffer>(shared_from_this()) });
+		device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
 	{
 		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ std::reinterpret_pointer_cast<VulkanCommandBuffer>(shared_from_this()) });
+		device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
 	
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
@@ -80,6 +81,18 @@ namespace Volt
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdDrawIndexed(m_commandBuffers.at(index).commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	}
+
+	void VulkanCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
+	}
+
+	void VulkanCommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdSetScissor(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(scissors.size()), reinterpret_cast<const VkRect2D*>(scissors.data()));
 	}
 
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const
@@ -101,7 +114,16 @@ namespace Volt
 
 		if (m_isSwapchainTarget)
 		{
-			assert(false);
+			auto& swapchain = VulkanSwapchain::Get();
+			m_commandBufferCount = VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
+			m_commandBuffers.resize(m_commandBufferCount);
+
+			for (uint32_t i = 0; i < m_commandBufferCount; i++)
+			{
+				m_commandBuffers[i].commandBuffer = swapchain.GetCommandBuffer(i);
+				m_commandBuffers[i].commandPool = swapchain.GetCommandPool(i);
+			}
+
 			return;
 		}
 		else

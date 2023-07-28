@@ -685,7 +685,7 @@ void Sandbox::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("Recompile all shaders"))
 			{
-				Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
+				//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 				for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
 				{

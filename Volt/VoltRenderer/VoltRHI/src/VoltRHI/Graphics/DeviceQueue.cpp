@@ -7,7 +7,7 @@
 #include <VoltVulkan/Graphics/VulkanDeviceQueue.h>
 #include <VoltD3D12/Graphics/D3D12DeviceQueue.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	Ref<DeviceQueue> DeviceQueue::Create(const DeviceQueueCreateInfo& createInfo)
 	{

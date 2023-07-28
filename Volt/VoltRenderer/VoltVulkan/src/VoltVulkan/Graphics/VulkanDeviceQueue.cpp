@@ -9,7 +9,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	VulkanDeviceQueue::VulkanDeviceQueue(const DeviceQueueCreateInfo& createInfo)
 	{

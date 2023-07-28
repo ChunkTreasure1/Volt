@@ -1,7 +1,7 @@
 #include "dxpch.h"
 #include "D3D12PhysicalGraphicsDevice.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	D3D12PhysicalGraphicsDevice::D3D12PhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& info)
 	{

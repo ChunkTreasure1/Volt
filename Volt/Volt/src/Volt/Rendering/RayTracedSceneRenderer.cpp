@@ -99,8 +99,8 @@ namespace Volt
 
 	AccelerationStructure RayTracedSceneRenderer::BuildBottomLevelAccelerationStructure(Ref<Mesh> mesh)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
 		VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
@@ -108,7 +108,7 @@ namespace Volt
 		vertexBufferDeviceAddress.deviceAddress = mesh->GetVertexBuffer()->GetDeviceAddress();
 		indexBufferDeviceAddress.deviceAddress = mesh->GetIndexBuffer()->GetDeviceAddress();
 
-		const uint32_t triangleCount = static_cast<uint32_t>(mesh->GetIndices().size()) / 3;
+		//const uint32_t triangleCount = static_cast<uint32_t>(mesh->GetIndices().size()) / 3;
 		const uint32_t vertexCount = static_cast<uint32_t>(mesh->GetVertices().size());
 
 		VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
@@ -137,7 +137,7 @@ namespace Volt
 			accBuildGeomInfo.geometryCount = (uint32_t)mesh->GetSubMeshes().size();
 			accBuildGeomInfo.pGeometries = &accelerationStructureGeometry;
 
-			vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR(device->GetHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accBuildGeomInfo, &triangleCount, &buildSizesInfo);
+			//vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR(device->GetHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accBuildGeomInfo, &triangleCount, &buildSizesInfo);
 		}
 
 		AccelerationStructure accelerationStructure = CreateAccelerationStructure(VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, buildSizesInfo);
@@ -163,11 +163,11 @@ namespace Volt
 			rangeInfo.transformOffset = 0;
 		}
 
-		const VkAccelerationStructureBuildRangeInfoKHR* accInfos = accelerationStructureBuildRangeInfos.data();
+		//const VkAccelerationStructureBuildRangeInfoKHR* accInfos = accelerationStructureBuildRangeInfos.data();
 
-		VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
-		vulkanFunctions.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &geomBuildInfo, &accInfos);
-		device->FlushCommandBuffer(commandBuffer);
+		//VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
+		//vulkanFunctions.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &geomBuildInfo, &accInfos);
+		//device->FlushCommandBuffer(commandBuffer);
 
 		DestroyScratchBuffer(scratchBuffer);
 
@@ -176,8 +176,8 @@ namespace Volt
 
 	AccelerationStructure RayTracedSceneRenderer::BuildTopLevelAccelerationStructure(Wire::EntityId id)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
 		auto scenePtr = myScene.lock();
 
@@ -219,7 +219,7 @@ namespace Volt
 		buildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
 
 		{
-			uint32_t primitiveCount = 1;
+			//uint32_t primitiveCount = 1;
 
 			VkAccelerationStructureBuildGeometryInfoKHR accBuildGeomInfo{};
 			accBuildGeomInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
@@ -228,7 +228,7 @@ namespace Volt
 			accBuildGeomInfo.geometryCount = 1;
 			accBuildGeomInfo.pGeometries = &accStructureGeom;
 
-			vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR(device->GetHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accBuildGeomInfo, &primitiveCount, &buildSizesInfo);
+			//vulkanFunctions.vkGetAccelerationStructureBuildSizesKHR(device->GetHandle(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accBuildGeomInfo, &primitiveCount, &buildSizesInfo);
 		}
 
 		AccelerationStructure accelerationStructure = CreateAccelerationStructure(VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR, buildSizesInfo);
@@ -252,9 +252,9 @@ namespace Volt
 
 		std::array<VkAccelerationStructureBuildRangeInfoKHR*, 1> ranges = { &buildRange };
 
-		VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
-		vulkanFunctions.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &geomBuildInfo, ranges.data());
-		device->FlushCommandBuffer(commandBuffer);
+		//VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
+		//vulkanFunctions.vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &geomBuildInfo, ranges.data());
+		//device->FlushCommandBuffer(commandBuffer);
 
 		DestroyScratchBuffer(scratchBuffer);
 
@@ -279,26 +279,26 @@ namespace Volt
 		accelerationStructureCreateInfo.size = buildSizeInfo.accelerationStructureSize;
 		accelerationStructureCreateInfo.type = type;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
-		vulkanFunctions.vkCreateAccelerationStructureKHR(device->GetHandle(), &accelerationStructureCreateInfo, nullptr, &result.handle);
+		//vulkanFunctions.vkCreateAccelerationStructureKHR(device->GetHandle(), &accelerationStructureCreateInfo, nullptr, &result.handle);
 
 		VkAccelerationStructureDeviceAddressInfoKHR addrInfo{};
 		addrInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
 		addrInfo.accelerationStructure = result.handle;
 
-		result.deviceAddress = vulkanFunctions.vkGetAccelerationStructureDeviceAddressKHR(device->GetHandle(), &addrInfo);
+		//result.deviceAddress = vulkanFunctions.vkGetAccelerationStructureDeviceAddressKHR(device->GetHandle(), &addrInfo);
 		return result;
 	}
 
 	void RayTracedSceneRenderer::DestroyAccelerationStructure(AccelerationStructure accelerationStructure)
 	{
-		const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
+		//const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
 		VulkanAllocatorVolt allocator{};
 		allocator.DestroyBuffer(accelerationStructure.buffer, accelerationStructure.allocation);
-		vulkanFunctions.vkDestroyAccelerationStructureKHR(GraphicsContextVolt::GetDevice()->GetHandle(), accelerationStructure.handle, nullptr);
+		//vulkanFunctions.vkDestroyAccelerationStructureKHR(GraphicsContextVolt::GetDevice()->GetHandle(), accelerationStructure.handle, nullptr);
 	}
 
 	ScratchBuffer RayTracedSceneRenderer::CreateScratchBuffer(VkDeviceSize deviceSize)
@@ -317,8 +317,8 @@ namespace Volt
 		bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
 		bufferDeviceAddressInfo.buffer = scratchBuffer.handle;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		scratchBuffer.deviceAddress = vkGetBufferDeviceAddress(device->GetHandle(), &bufferDeviceAddressInfo);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//scratchBuffer.deviceAddress = vkGetBufferDeviceAddress(device->GetHandle(), &bufferDeviceAddressInfo);
 		return scratchBuffer;
 	}
 

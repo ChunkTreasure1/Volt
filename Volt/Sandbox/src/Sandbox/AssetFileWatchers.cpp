@@ -58,7 +58,7 @@ void Sandbox::CreateModifiedWatch()
 
 				case Volt::AssetType::ShaderSource:
 				{
-					Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
+					//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 					
 					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::GetRelativePath(newPath));
 					for (const auto& asset : assets)

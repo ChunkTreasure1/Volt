@@ -36,13 +36,13 @@ namespace Volt
 	{
 		myIsDynamic = true;
 
-		const uint64_t minUBOAlignment = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
+		//const uint64_t minUBOAlignment = GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().minUBOOffsetAlignment;
 		uint32_t alignedSize = sizePerElement;
 
-		if (minUBOAlignment > 0)
-		{
-			alignedSize = (uint32_t)Utility::GetAlignedSize((uint64_t)alignedSize, minUBOAlignment);
-		}
+		//if (minUBOAlignment > 0)
+		//{
+		//	alignedSize = (uint32_t)Utility::GetAlignedSize((uint64_t)alignedSize, minUBOAlignment);
+		//}
 
 		mySize = alignedSize;
 		myTotalSize = alignedSize * elementCount;

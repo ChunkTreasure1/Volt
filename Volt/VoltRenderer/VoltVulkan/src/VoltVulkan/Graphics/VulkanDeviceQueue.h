@@ -4,7 +4,7 @@
 
 struct VkQueue_T;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class VulkanDeviceQueue final : public DeviceQueue
 	{

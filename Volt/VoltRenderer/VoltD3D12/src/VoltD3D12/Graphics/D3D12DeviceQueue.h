@@ -5,7 +5,7 @@
 struct ID3D12CommandQueue;
 struct ID3D12Fence;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class D3D12DeviceQueue final : public DeviceQueue
 	{

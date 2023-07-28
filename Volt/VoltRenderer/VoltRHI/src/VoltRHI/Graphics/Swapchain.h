@@ -4,7 +4,7 @@
 
 struct GLFWwindow;
 
-namespace Volt
+namespace Volt::RHI
 {
 	class Swapchain : public RHIInterface
 	{

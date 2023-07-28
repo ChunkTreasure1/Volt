@@ -1,6 +1,7 @@
 #pragma once
 #include "VoltRHI/Graphics/PhysicalGraphicsDevice.h"
-namespace Volt
+
+namespace Volt::RHI
 {
 	class MockPhysicalGraphicsDevice final : public PhysicalGraphicsDevice
 	{

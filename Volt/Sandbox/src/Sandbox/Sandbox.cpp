@@ -286,10 +286,10 @@ void Sandbox::SetupNewSceneData()
 			settings.enableUI = lowMemory;
 			settings.enableVolumetricFog = true;
 
-			if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
-			{
-				settings.enableRayTracing = true;
-			}
+			//if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+			//{
+			//	settings.enableRayTracing = true;
+			//}
 
 			gameSettings.enableIDRendering = false;
 			gameSettings.enableOutline = false;

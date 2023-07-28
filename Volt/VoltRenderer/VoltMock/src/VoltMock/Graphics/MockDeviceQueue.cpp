@@ -1,7 +1,7 @@
 #include "mkpch.h"
 #include "MockDeviceQueue.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	MockDeviceQueue::MockDeviceQueue(const DeviceQueueCreateInfo& createInfo)
 	{

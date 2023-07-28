@@ -6,7 +6,7 @@
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	namespace Utility
 	{

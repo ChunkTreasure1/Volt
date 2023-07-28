@@ -3,7 +3,7 @@
 
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	D3D12GraphicsDevice::D3D12GraphicsDevice(const GraphicsDeviceCreateInfo& info)
 	{

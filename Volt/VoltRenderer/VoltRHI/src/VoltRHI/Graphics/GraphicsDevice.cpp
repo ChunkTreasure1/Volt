@@ -8,7 +8,7 @@
 #include <VoltVulkan/Graphics/VulkanGraphicsDevice.h>
 #include <VoltD3D12/Graphics/D3D12GraphicsDevice.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	Ref<GraphicsDevice> GraphicsDevice::Create(const GraphicsDeviceCreateInfo& deviceInfo)
 	{

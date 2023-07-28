@@ -143,17 +143,17 @@ bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	mySceneRenderer->OnRenderRuntime();
 
-	auto& swapchain = Volt::Application::Get().GetWindow().GetSwapchain();
+	//auto& swapchain = Volt::Application::Get().GetWindow().GetSwapchain();
 
 	const glm::uvec2 srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
-	const glm::uvec2 dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
+	//const glm::uvec2 dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.pNext = nullptr;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	VT_VK_CHECK(vkBeginCommandBuffer(swapchain.GetCurrentCommandBuffer(), &beginInfo));
+	//VT_VK_CHECK(vkBeginCommandBuffer(swapchain.GetCurrentCommandBuffer(), &beginInfo));
 
 	VkImageBlit blitRegion{};
 	blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -170,7 +170,7 @@ bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	blitRegion.srcOffsets[1] = { (int32_t)srcSize.x, (int32_t)srcSize.y, 1 };
 
 	blitRegion.dstOffsets[0] = { 0, 0, 0 };
-	blitRegion.dstOffsets[1] = { (int32_t)dstSize.x, (int32_t)dstSize.y, 1 };
+	//blitRegion.dstOffsets[1] = { (int32_t)dstSize.x, (int32_t)dstSize.y, 1 };
 
 	VkImageSubresourceRange subResourceRange{};
 	subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -179,14 +179,14 @@ bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	subResourceRange.layerCount = 1;
 	subResourceRange.levelCount = 1;
 
-	mySceneRenderer->GetFinalImage()->TransitionToLayout(swapchain.GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	Volt::Utility::TransitionImageLayout(swapchain.GetCurrentCommandBuffer(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subResourceRange);
+	//mySceneRenderer->GetFinalImage()->TransitionToLayout(swapchain.GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	//Volt::Utility::TransitionImageLayout(swapchain.GetCurrentCommandBuffer(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subResourceRange);
 
-	vkCmdBlitImage(swapchain.GetCurrentCommandBuffer(), mySceneRenderer->GetFinalImage()->GetHandle(), mySceneRenderer->GetFinalImage()->GetLayout(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_NEAREST);
+	//vkCmdBlitImage(swapchain.GetCurrentCommandBuffer(), mySceneRenderer->GetFinalImage()->GetHandle(), mySceneRenderer->GetFinalImage()->GetLayout(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_NEAREST);
 
-	Volt::Utility::TransitionImageLayout(swapchain.GetCurrentCommandBuffer(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, subResourceRange);
+	//Volt::Utility::TransitionImageLayout(swapchain.GetCurrentCommandBuffer(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, subResourceRange);
 
-	vkEndCommandBuffer(swapchain.GetCurrentCommandBuffer());
+	//vkEndCommandBuffer(swapchain.GetCurrentCommandBuffer());
 
 	return false;
 }

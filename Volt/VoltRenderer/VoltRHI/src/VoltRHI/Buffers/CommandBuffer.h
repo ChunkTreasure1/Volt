@@ -3,7 +3,7 @@
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
-namespace Volt
+namespace Volt::RHI
 {
 	class CommandBuffer : public RHIInterface
 	{
@@ -18,6 +18,9 @@ namespace Volt
 
 		virtual void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 		virtual void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) = 0;
+
+		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
+		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 

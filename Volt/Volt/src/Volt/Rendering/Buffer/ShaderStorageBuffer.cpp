@@ -24,7 +24,7 @@ namespace Volt
 
 		mySize = newSize;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
 		VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Create" };
@@ -60,7 +60,7 @@ namespace Volt
 		myCurrentElementCount = newElementCount;
 		mySize = newSize;
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
 		VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Create" };

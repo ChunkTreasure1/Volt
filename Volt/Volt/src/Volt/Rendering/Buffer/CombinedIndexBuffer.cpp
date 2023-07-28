@@ -61,16 +61,16 @@ namespace Volt
 
 		// Copy from staging buffer to GPU buffer
 		{
-			auto device = GraphicsContextVolt::GetDevice();
-			VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
+			//auto device = GraphicsContextVolt::GetDevice();
+			//VkCommandBuffer cmdBuffer = device->GetSingleUseCommandBuffer(true);
 
 			VkBufferCopy copy{};
 			copy.srcOffset = 0;
 			copy.dstOffset = myConsumedSize;
 			copy.size = dataSize;
 
-			vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copy);
-			device->FlushSingleUseCommandBuffer(cmdBuffer);
+			//vkCmdCopyBuffer(cmdBuffer, stagingBuffer, myBuffer, 1, &copy);
+			//device->FlushSingleUseCommandBuffer(cmdBuffer);
 		}
 
 		allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
@@ -109,8 +109,8 @@ namespace Volt
 
 	void CombinedIndexBuffer::Resize(uint64_t newSize)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		device->WaitForIdle();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//device->WaitForIdle();
 
 		VulkanAllocatorVolt allocator{};
 
@@ -131,15 +131,15 @@ namespace Volt
 		// Copy old data into new buffer
 		if (myBuffer)
 		{
-			auto commandBuffer = device->GetSingleUseCommandBuffer(true);
+			//auto commandBuffer = device->GetSingleUseCommandBuffer(true);
 
-			VkBufferCopy copyInfo{};
-			copyInfo.size = myTotalBufferSize;
-			copyInfo.srcOffset = 0;
-			copyInfo.dstOffset = 0;
+			//VkBufferCopy copyInfo{};
+			//copyInfo.size = myTotalBufferSize;
+			//copyInfo.srcOffset = 0;
+			//copyInfo.dstOffset = 0;
 
-			vkCmdCopyBuffer(commandBuffer, myBuffer, newBuffer, 1, &copyInfo);
-			device->FlushSingleUseCommandBuffer(commandBuffer);
+			//vkCmdCopyBuffer(commandBuffer, myBuffer, newBuffer, 1, &copyInfo);
+			//device->FlushSingleUseCommandBuffer(commandBuffer);
 		}
 
 		Release();

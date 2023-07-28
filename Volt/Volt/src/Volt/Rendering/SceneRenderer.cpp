@@ -139,7 +139,7 @@ namespace Volt
 
 	SceneRenderer::~SceneRenderer()
 	{
-		GraphicsContextVolt::GetDevice()->WaitForIdle();
+		//GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 		myShaderStorageBufferSet = nullptr;
 		myUniformBufferSet = nullptr;
@@ -246,7 +246,7 @@ namespace Volt
 
 	void SceneRenderer::ApplySettings()
 	{
-		GraphicsContextVolt::GetDevice()->WaitForIdle();
+		//GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 		myScaledSize = (glm::uvec2)glm::max(glm::vec2((float)myOriginalSize.x, (float)myOriginalSize.y) * mySettings.renderScale, glm::vec2{ 1.f });
 		myShouldResize = true;
@@ -276,7 +276,7 @@ namespace Volt
 			return;
 		}
 
-		GraphicsContextVolt::GetDevice()->WaitForIdle();
+		//GraphicsContextVolt::GetDevice()->WaitForIdle();
 
 		myCurrentRenderMode = renderingMode;
 		myDeferredShadingPipeline->GetSpecializationConstantBuffer().SetValue("u_renderMode", (uint32_t)myCurrentRenderMode);
@@ -694,10 +694,10 @@ namespace Volt
 
 	void SceneRenderer::CreateBuffers()
 	{
-		const uint32_t maxFramesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
-		myCommandBuffer = CommandBuffer::Create(maxFramesInFlight, false);
+		//const uint32_t maxFramesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
+		//myCommandBuffer = CommandBuffer::Create(maxFramesInFlight, false);
 
-		myUniformBufferSet = UniformBufferSet::Create(maxFramesInFlight);
+		//myUniformBufferSet = UniformBufferSet::Create(maxFramesInFlight);
 		myUniformBufferSet->Add<CameraData>(Sets::RENDERER_BUFFERS, Bindings::CAMERA_BUFFER);
 		myUniformBufferSet->Add<DirectionalLight>(Sets::RENDERER_BUFFERS, Bindings::DIRECTIONAL_LIGHT);
 		myUniformBufferSet->Add<SceneData>(Sets::RENDERER_BUFFERS, Bindings::SCENE_DATA);
@@ -708,7 +708,7 @@ namespace Volt
 		constexpr uint32_t START_PARTICLE_COUNT = 1;
 		constexpr uint32_t START_VERTEX_COLOR_COUNT = 1;
 
-		myShaderStorageBufferSet = ShaderStorageBufferSet::Create(maxFramesInFlight);
+		//myShaderStorageBufferSet = ShaderStorageBufferSet::Create(maxFramesInFlight);
 
 		myShaderStorageBufferSet->Add<IndirectGPUCommand>(Sets::RENDERER_BUFFERS, Bindings::MAIN_INDIRECT_ARGS, START_OBJECT_COUNT, MemoryUsage::CPUToGPU | MemoryUsage::Indirect);
 		myShaderStorageBufferSet->Add<ObjectData>(Sets::RENDERER_BUFFERS, Bindings::OBJECT_DATA, START_OBJECT_COUNT, MemoryUsage::CPUToGPU);
@@ -2267,34 +2267,34 @@ namespace Volt
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Ref<UniformBufferSet> uniformBufferSet)
 	{
-		auto uniformBuffer = uniformBufferSet->Get(set, binding, index);
+		//auto uniformBuffer = uniformBufferSet->Get(set, binding, index);
 
-		VkDescriptorBufferInfo descriptorInfo{};
-		descriptorInfo.buffer = uniformBuffer->GetHandle();
-		descriptorInfo.offset = 0;
-		descriptorInfo.range = uniformBuffer->GetSize();
+		//VkDescriptorBufferInfo descriptorInfo{};
+		//descriptorInfo.buffer = uniformBuffer->GetHandle();
+		//descriptorInfo.offset = 0;
+		//descriptorInfo.range = uniformBuffer->GetSize();
 
-		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
-		writeDescriptor.pBufferInfo = &descriptorInfo;
+		//auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
+		//writeDescriptor.pBufferInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Ref<ShaderStorageBufferSet> storageBufferSet)
 	{
-		auto storageBuffer = storageBufferSet->Get(set, binding, index);
+		//auto storageBuffer = storageBufferSet->Get(set, binding, index);
 
-		VkDescriptorBufferInfo descriptorInfo{};
-		descriptorInfo.buffer = storageBuffer->GetHandle();
-		descriptorInfo.offset = 0;
-		descriptorInfo.range = storageBuffer->GetSize();
+		//VkDescriptorBufferInfo descriptorInfo{};
+		//descriptorInfo.buffer = storageBuffer->GetHandle();
+		//descriptorInfo.offset = 0;
+		//descriptorInfo.range = storageBuffer->GetSize();
 
-		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
-		writeDescriptor.pBufferInfo = &descriptorInfo;
+		//auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
+		//writeDescriptor.pBufferInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image)
@@ -2304,55 +2304,55 @@ namespace Volt
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image, VkImageLayout targetLayout)
 	{
-		auto imagePtr = image.lock();
+		//auto imagePtr = image.lock();
 
-		VkDescriptorImageInfo descriptorInfo{};
-		descriptorInfo.imageLayout = targetLayout;
-		descriptorInfo.imageView = imagePtr->GetView();
-		descriptorInfo.sampler = nullptr;
+		//VkDescriptorImageInfo descriptorInfo{};
+		//descriptorInfo.imageLayout = targetLayout;
+		//descriptorInfo.imageView = imagePtr->GetView();
+		//descriptorInfo.sampler = nullptr;
 
-		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
-		writeDescriptor.pImageInfo = &descriptorInfo;
+		//auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
+		//writeDescriptor.pImageInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image3D> image)
 	{
-		auto imagePtr = image.lock();
+		//auto imagePtr = image.lock();
 
-		VkDescriptorImageInfo descriptorInfo{};
-		descriptorInfo.imageLayout = imagePtr->GetLayout();
-		descriptorInfo.imageView = imagePtr->GetView();
-		descriptorInfo.sampler = nullptr;
+		//VkDescriptorImageInfo descriptorInfo{};
+		//descriptorInfo.imageLayout = imagePtr->GetLayout();
+		//descriptorInfo.imageView = imagePtr->GetView();
+		//descriptorInfo.sampler = nullptr;
 
-		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
-		writeDescriptor.pImageInfo = &descriptorInfo;
+		//auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
+		//writeDescriptor.pImageInfo = &descriptorInfo;
 
-		auto device = GraphicsContextVolt::GetDevice();
-		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, std::vector<Weak<Image2D>> images, VkImageLayout targetLayout)
 	{
-		std::vector<VkDescriptorImageInfo> descriptorInfos{};
+		//std::vector<VkDescriptorImageInfo> descriptorInfos{};
 
-		for (const auto& image : images)
-		{
-			auto imagePtr = image.lock();
-			auto& descriptorInfo = descriptorInfos.emplace_back();
+		//for (const auto& image : images)
+		//{
+		//	auto imagePtr = image.lock();
+		//	auto& descriptorInfo = descriptorInfos.emplace_back();
 
-			descriptorInfo.imageLayout = targetLayout;
-			descriptorInfo.imageView = imagePtr->GetView();
-			descriptorInfo.sampler = nullptr;
-		}
+		//	descriptorInfo.imageLayout = targetLayout;
+		//	descriptorInfo.imageView = imagePtr->GetView();
+		//	descriptorInfo.sampler = nullptr;
+		//}
 
-		auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
-		writeDescriptor.pImageInfo = descriptorInfos.data();
+		//auto writeDescriptor = globalDescriptorSet->GetWriteDescriptor(index, binding);
+		//writeDescriptor.pImageInfo = descriptorInfos.data();
 
-		auto device = GraphicsContextVolt::GetDevice();
-		vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkUpdateDescriptorSets(device->GetHandle(), 1, &writeDescriptor, 0, nullptr);
 	}
 
 	void SceneRenderer::SortAndUploadParticleData(Ref<Camera> camera)
@@ -2687,27 +2687,27 @@ namespace Volt
 		}
 		auto& newPass = myIndirectPasses.at(passIndex);
 
-		const uint32_t maxFramesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
+		//const uint32_t maxFramesInFlight = Application::Get().GetWindow().GetSwapchain().GetMaxFramesInFlight();
 
-		Ref<ShaderStorageBufferSet> countStorageBufferSet = ShaderStorageBufferSet::Create(maxFramesInFlight);
-		countStorageBufferSet->Add<uint32_t>(Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, std::max(static_cast<uint32_t>(GetGPUData().indirectBatches.size()), 1u), MemoryUsage::Indirect);
-		countStorageBufferSet->Add<uint32_t>(Sets::DRAW_BUFFERS, Bindings::DRAW_TO_OBJECT_ID, std::max(static_cast<uint32_t>(GetGPUData().submitCommands.size()), 1u), MemoryUsage::Indirect);
+		//Ref<ShaderStorageBufferSet> countStorageBufferSet = ShaderStorageBufferSet::Create(maxFramesInFlight);
+		//countStorageBufferSet->Add<uint32_t>(Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, std::max(static_cast<uint32_t>(GetGPUData().indirectBatches.size()), 1u), MemoryUsage::Indirect);
+		//countStorageBufferSet->Add<uint32_t>(Sets::DRAW_BUFFERS, Bindings::DRAW_TO_OBJECT_ID, std::max(static_cast<uint32_t>(GetGPUData().submitCommands.size()), 1u), MemoryUsage::Indirect);
 
-		newPass.drawArgsStorageBuffer = myShaderStorageBufferSet;
-		newPass.drawCountIDStorageBuffer = countStorageBufferSet;
-		newPass.drawBuffersSet = GlobalDescriptorSetManager::CreateCopyOfType(Sets::DRAW_BUFFERS);
+		//newPass.drawArgsStorageBuffer = myShaderStorageBufferSet;
+		//newPass.drawCountIDStorageBuffer = countStorageBufferSet;
+		//newPass.drawBuffersSet = GlobalDescriptorSetManager::CreateCopyOfType(Sets::DRAW_BUFFERS);
 
-		const uint32_t framesInFlight = Renderer::GetFramesInFlightCount();
+		//const uint32_t framesInFlight = Renderer::GetFramesInFlightCount();
 
-		newPass.indirectCullPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("IndirectCull"), framesInFlight, true);
-		newPass.clearCountBufferPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("ClearCountBuffer"), framesInFlight, true);
+		//newPass.indirectCullPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("IndirectCull"), framesInFlight, true);
+		//newPass.clearCountBufferPipeline = ComputePipeline::Create(ShaderRegistry::GetShader("ClearCountBuffer"), framesInFlight, true);
 
-		for (uint32_t i = 0; i < maxFramesInFlight; i++)
-		{
-			newPass.drawBuffersSet->GetOrAllocateDescriptorSet(i);
-			UpdateGlobalDescriptorSet(newPass.drawBuffersSet, Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, i, newPass.drawCountIDStorageBuffer);
-			UpdateGlobalDescriptorSet(newPass.drawBuffersSet, Sets::DRAW_BUFFERS, Bindings::DRAW_TO_OBJECT_ID, i, newPass.drawCountIDStorageBuffer);
-		}
+		//for (uint32_t i = 0; i < maxFramesInFlight; i++)
+		//{
+		//	newPass.drawBuffersSet->GetOrAllocateDescriptorSet(i);
+		//	UpdateGlobalDescriptorSet(newPass.drawBuffersSet, Sets::DRAW_BUFFERS, Bindings::INDIRECT_COUNTS, i, newPass.drawCountIDStorageBuffer);
+		//	UpdateGlobalDescriptorSet(newPass.drawBuffersSet, Sets::DRAW_BUFFERS, Bindings::DRAW_TO_OBJECT_ID, i, newPass.drawCountIDStorageBuffer);
+		//}
 
 		ClearCountBuffer(newPass, commandBuffer);
 		CullRenderCommands(newPass, params, commandBuffer);
@@ -4364,7 +4364,7 @@ namespace Volt
 
 		myLODSelectionPipeline->Clear(currentIndex);
 		myLODSelectionPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(currentIndex), Sets::RENDERER_BUFFERS);
-		myLODSelectionPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), Renderer::GetBindlessData().globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(Application::Get().GetWindow().GetSwapchain().GetCurrentFrame()), Sets::MAINBUFFERS);
+		//myLODSelectionPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), Renderer::GetBindlessData().globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(Application::Get().GetWindow().GetSwapchain().GetCurrentFrame()), Sets::MAINBUFFERS);
 
 		myLODSelectionPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), dispatchCount, 1, 1, currentIndex);
 		myLODSelectionPipeline->InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), currentIndex);

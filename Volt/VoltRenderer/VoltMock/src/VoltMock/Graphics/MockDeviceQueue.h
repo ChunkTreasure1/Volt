@@ -1,6 +1,7 @@
 #pragma once
 #include "VoltRHI/Graphics/DeviceQueue.h"
-namespace Volt
+
+namespace Volt::RHI
 {
 	class MockDeviceQueue final : public DeviceQueue
 	{

@@ -13,8 +13,8 @@ public:
 	SandboxApp(const Volt::ApplicationInfo& appInfo)
 		: Volt::Application(appInfo)
 	{
-		Sandbox* sandbox = new Sandbox();
-		PushLayer(sandbox);
+		//Sandbox* sandbox = new Sandbox();
+		//PushLayer(sandbox);
 	}
 };
 

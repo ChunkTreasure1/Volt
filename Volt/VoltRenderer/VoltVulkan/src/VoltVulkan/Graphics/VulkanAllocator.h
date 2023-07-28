@@ -4,7 +4,7 @@
 
 #include <vma/VulkanMemoryAllocator.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	class VulkanGraphicsDevice;
 

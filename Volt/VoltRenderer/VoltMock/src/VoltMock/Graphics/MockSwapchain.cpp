@@ -1,7 +1,7 @@
 #include "mkpch.h"
 #include "MockSwapchain.h"
 
-namespace Volt
+namespace Volt::RHI
 {
     MockSwapchain::MockSwapchain(GLFWwindow* glfwWindow)
     {

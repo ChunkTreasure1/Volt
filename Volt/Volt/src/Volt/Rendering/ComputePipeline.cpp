@@ -65,32 +65,32 @@ namespace Volt
 
 	void ComputePipeline::Clear(uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
 	}
 
 	void ComputePipeline::Execute(uint32_t groupX, uint32_t groupY, uint32_t groupZ, const void* pushConstantData, const size_t pushConstantSize, uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
-		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(myCount, QueueTypeVolt::Compute);
-		vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
+		//auto device = GraphicsContextVolt::GetDevice();
+		//Ref<CommandBuffer> commandBuffer = CommandBuffer::Create(myCount, QueueTypeVolt::Compute);
+		//vkResetDescriptorPool(device->GetHandle(), myDescriptorPools.at(index), 0);
 
-		AllocateDescriptorSets(index);
+		//AllocateDescriptorSets(index);
 
-		commandBuffer->Begin();
+		//commandBuffer->Begin();
 
-		UpdateDescriptorSets(commandBuffer->GetCurrentCommandBuffer(), index);
+		//UpdateDescriptorSets(commandBuffer->GetCurrentCommandBuffer(), index);
 
-		if (pushConstantData)
-		{
-			PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData, pushConstantSize);
-		}
+		//if (pushConstantData)
+		//{
+		//	PushConstants(commandBuffer->GetCurrentCommandBuffer(), pushConstantData, pushConstantSize);
+		//}
 
-		vkCmdBindPipeline(commandBuffer->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, myPipeline);
-		vkCmdDispatch(commandBuffer->GetCurrentCommandBuffer(), groupX, groupY, groupZ);
-		InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), index);
-		commandBuffer->End();
-		commandBuffer->Submit();
+		//vkCmdBindPipeline(commandBuffer->GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, myPipeline);
+		//vkCmdDispatch(commandBuffer->GetCurrentCommandBuffer(), groupX, groupY, groupZ);
+		//InsertBarriers(commandBuffer->GetCurrentCommandBuffer(), index);
+		//commandBuffer->End();
+		//commandBuffer->Submit();
 	}
 
 	void ComputePipeline::InsertBarriers(VkCommandBuffer commandBuffer, uint32_t index)
@@ -151,83 +151,83 @@ namespace Volt
 			}
 		}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		auto resources = myShader->GetResources();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//auto resources = myShader->GetResources();
 
-		// Find global descriptor sets
-		if (myUseGlobalDescriptors)
-		{
-			for (uint32_t set = 0; set < (uint32_t)resources.nullPaddedDescriptorSetLayouts.size(); set++)
-			{
-				if (GlobalDescriptorSetManager::HasDescriptorSet(set))
-				{
-					resources.nullPaddedDescriptorSetLayouts[set] = GlobalDescriptorSetManager::GetDescriptorSet(set)->GetDescriptorSetLayout();
-				}
-				else if (resources.descriptorSetBindings.contains(set))
-				{
-					myNonGlobalDescriptorSets.emplace_back(set);
-				}
-			}
-		}
+		//// Find global descriptor sets
+		//if (myUseGlobalDescriptors)
+		//{
+		//	for (uint32_t set = 0; set < (uint32_t)resources.nullPaddedDescriptorSetLayouts.size(); set++)
+		//	{
+		//		if (GlobalDescriptorSetManager::HasDescriptorSet(set))
+		//		{
+		//			resources.nullPaddedDescriptorSetLayouts[set] = GlobalDescriptorSetManager::GetDescriptorSet(set)->GetDescriptorSetLayout();
+		//		}
+		//		else if (resources.descriptorSetBindings.contains(set))
+		//		{
+		//			myNonGlobalDescriptorSets.emplace_back(set);
+		//		}
+		//	}
+		//}
 
-		VkPipelineLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		layoutInfo.setLayoutCount = (uint32_t)resources.nullPaddedDescriptorSetLayouts.size();
-		layoutInfo.pSetLayouts = resources.nullPaddedDescriptorSetLayouts.data();
-		layoutInfo.pushConstantRangeCount = resources.pushConstantRange.size > 0 ? 1 : 0;
-		layoutInfo.pPushConstantRanges = &resources.pushConstantRange;
+		//VkPipelineLayoutCreateInfo layoutInfo{};
+		//layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		//layoutInfo.setLayoutCount = (uint32_t)resources.nullPaddedDescriptorSetLayouts.size();
+		//layoutInfo.pSetLayouts = resources.nullPaddedDescriptorSetLayouts.data();
+		//layoutInfo.pushConstantRangeCount = resources.pushConstantRange.size > 0 ? 1 : 0;
+		//layoutInfo.pPushConstantRanges = &resources.pushConstantRange;
 
-		VT_VK_CHECK(vkCreatePipelineLayout(device->GetHandle(), &layoutInfo, nullptr, &myPipelineLayout));
+		//VT_VK_CHECK(vkCreatePipelineLayout(device->GetHandle(), &layoutInfo, nullptr, &myPipelineLayout));
 
-		auto computeStage = myShader->GetStageInfos().at(0);
+		//auto computeStage = myShader->GetStageInfos().at(0);
 
-		std::vector<VkSpecializationInfo> specConstInfos{};
-		std::vector<std::vector<VkSpecializationMapEntry>> specConstEntries{};
+		//std::vector<VkSpecializationInfo> specConstInfos{};
+		//std::vector<std::vector<VkSpecializationMapEntry>> specConstEntries{};
 
-		const auto specializationConstants = myShader->GetResources().specializationConstants;
+		//const auto specializationConstants = myShader->GetResources().specializationConstants;
 
-		if (myIsPermutation)
-		{
-			specConstInfos.reserve(1);
-			if (specializationConstants.contains(computeStage.stage))
-			{
-				const auto& specConsts = specializationConstants.at(computeStage.stage);
-				auto& buffer = mySpecializationConstantsBuffer;
+		//if (myIsPermutation)
+		//{
+		//	specConstInfos.reserve(1);
+		//	if (specializationConstants.contains(computeStage.stage))
+		//	{
+		//		const auto& specConsts = specializationConstants.at(computeStage.stage);
+		//		auto& buffer = mySpecializationConstantsBuffer;
 
-				VkSpecializationInfo& specConstInfo = specConstInfos.emplace_back();
-				specConstInfo.mapEntryCount = buffer.GetMemberCount();
-				specConstInfo.dataSize = buffer.GetSize();
-				specConstInfo.pData = buffer.GetData();
+		//		VkSpecializationInfo& specConstInfo = specConstInfos.emplace_back();
+		//		specConstInfo.mapEntryCount = buffer.GetMemberCount();
+		//		specConstInfo.dataSize = buffer.GetSize();
+		//		specConstInfo.pData = buffer.GetData();
 
-				auto& entries = specConstEntries.emplace_back();
+		//		auto& entries = specConstEntries.emplace_back();
 
-				entries.reserve(specConsts.size());
-				for (const auto& [constantId, constantData] : specConsts)
-				{
-					entries.emplace_back(constantData.constantInfo);
-				}
+		//		entries.reserve(specConsts.size());
+		//		for (const auto& [constantId, constantData] : specConsts)
+		//		{
+		//			entries.emplace_back(constantData.constantInfo);
+		//		}
 
-				specConstInfo.pMapEntries = entries.data();
-				computeStage.pSpecializationInfo = &specConstInfo;
-			}
-		}
+		//		specConstInfo.pMapEntries = entries.data();
+		//		computeStage.pSpecializationInfo = &specConstInfo;
+		//	}
+		//}
 
-		VkComputePipelineCreateInfo pipelineInfo{};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-		pipelineInfo.layout = myPipelineLayout;
-		pipelineInfo.flags = 0;
-		pipelineInfo.stage = computeStage;
+		//VkComputePipelineCreateInfo pipelineInfo{};
+		//pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		//pipelineInfo.layout = myPipelineLayout;
+		//pipelineInfo.flags = 0;
+		//pipelineInfo.stage = computeStage;
 
-		VkPipelineCacheCreateInfo pipelineCacheInfo{};
-		pipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		//VkPipelineCacheCreateInfo pipelineCacheInfo{};
+		//pipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
-		VT_VK_CHECK(vkCreatePipelineCache(device->GetHandle(), &pipelineCacheInfo, nullptr, &myPipelineCache));
-		VT_VK_CHECK(vkCreateComputePipelines(device->GetHandle(), myPipelineCache, 1, &pipelineInfo, nullptr, &myPipeline));
+		//VT_VK_CHECK(vkCreatePipelineCache(device->GetHandle(), &pipelineCacheInfo, nullptr, &myPipelineCache));
+		//VT_VK_CHECK(vkCreateComputePipelines(device->GetHandle(), myPipelineCache, 1, &pipelineInfo, nullptr, &myPipeline));
 
-		CreateDescriptorPools();
-		SetupFromShader();
+		//CreateDescriptorPools();
+		//SetupFromShader();
 
-		ResetAfterInvalidate();
+		//ResetAfterInvalidate();
 	}
 
 	void ComputePipeline::ClearAllResources()
@@ -681,7 +681,7 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([pipelineLayout = myPipelineLayout, pipelineCache = myPipelineCache, pipeline = myPipeline, descriptorPools = myDescriptorPools]()
+	/*	Renderer::SubmitResourceChange([pipelineLayout = myPipelineLayout, pipelineCache = myPipelineCache, pipeline = myPipeline, descriptorPools = myDescriptorPools]()
 		{
 			auto device = GraphicsContextVolt::GetDevice();
 			for (const auto& descriptorPool : descriptorPools)
@@ -692,7 +692,7 @@ namespace Volt
 			vkDestroyPipelineCache(device->GetHandle(), pipelineCache, nullptr);
 			vkDestroyPipeline(device->GetHandle(), pipeline, nullptr);
 			vkDestroyPipelineLayout(device->GetHandle(), pipelineLayout, nullptr);
-		});
+		});*/
 
 		myDescriptorPools.clear();
 		myDescriptorSets.clear();
@@ -704,7 +704,7 @@ namespace Volt
 
 	void ComputePipeline::SetupFromShader()
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 		const auto& shaderResources = myShader->GetResources();
 
 		myShaderResources = { myCount, shaderResources };
@@ -783,17 +783,17 @@ namespace Volt
 		poolInfo.poolSizeCount = (uint32_t)poolSizes.size();
 		poolInfo.pPoolSizes = poolSizes.data();
 
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		for (uint32_t i = 0; i < myCount; i++)
-		{
-			VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle(), &poolInfo, nullptr, &myDescriptorPools.emplace_back()));
-		}
+		//for (uint32_t i = 0; i < myCount; i++)
+		//{
+		//	VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle(), &poolInfo, nullptr, &myDescriptorPools.emplace_back()));
+		//}
 	}
 
 	void ComputePipeline::AllocateDescriptorSets(uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		/*auto device = GraphicsContextVolt::GetDevice();
 
 		auto& resources = myShaderResources.at(index);
 		auto& descriptorSets = myDescriptorSets.at(index);
@@ -801,51 +801,51 @@ namespace Volt
 
 		VkDescriptorSetAllocateInfo allocInfo = resources.descriptorSetAllocateInfo;
 		allocInfo.descriptorPool = myDescriptorPools.at(index);
-		vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, descriptorSets.data());
+		vkAllocateDescriptorSets(device->GetHandle(), &allocInfo, descriptorSets.data());*/
 	}
 
 	void ComputePipeline::UpdateDescriptorSets(VkCommandBuffer commandBuffer, uint32_t index)
 	{
-		auto device = GraphicsContextVolt::GetDevice();
+		//auto device = GraphicsContextVolt::GetDevice();
 
-		if (myWriteDescriptors.at(index).empty())
-		{
-			return;
-		}
+		//if (myWriteDescriptors.at(index).empty())
+		//{
+		//	return;
+		//}
 
-		for (uint32_t currentSetIndex = 0, i = 0; i < (uint32_t)myWriteDescriptorSetMapping.size(); i++)
-		{
-			if (i > 0 && myWriteDescriptorSetMapping.at(i) != myWriteDescriptorSetMapping.at(i - 1))
-			{
-				currentSetIndex++;
-			}
+		//for (uint32_t currentSetIndex = 0, i = 0; i < (uint32_t)myWriteDescriptorSetMapping.size(); i++)
+		//{
+		//	if (i > 0 && myWriteDescriptorSetMapping.at(i) != myWriteDescriptorSetMapping.at(i - 1))
+		//	{
+		//		currentSetIndex++;
+		//	}
 
-			auto set = myDescriptorSets.at(index).at(currentSetIndex);
-			myWriteDescriptors.at(index).at(i).dstSet = set;
-		}
+		//	auto set = myDescriptorSets.at(index).at(currentSetIndex);
+		//	myWriteDescriptors.at(index).at(i).dstSet = set;
+		//}
 
-		vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)myWriteDescriptors.at(index).size(), myWriteDescriptors.at(index).data(), 0, nullptr);
+		//vkUpdateDescriptorSets(device->GetHandle(), (uint32_t)myWriteDescriptors.at(index).size(), myWriteDescriptors.at(index).data(), 0, nullptr);
 
-		// We use myWriteDescriptorSetMapping.at(0) because this will indirectly be the first existing set
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, myPipelineLayout, myWriteDescriptorSetMapping.at(0), (uint32_t)myDescriptorSets.at(index).size(), myDescriptorSets.at(index).data(), 0, nullptr);
+		//// We use myWriteDescriptorSetMapping.at(0) because this will indirectly be the first existing set
+		//vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, myPipelineLayout, myWriteDescriptorSetMapping.at(0), (uint32_t)myDescriptorSets.at(index).size(), myDescriptorSets.at(index).data(), 0, nullptr);
 	}
 
 	void ComputePipeline::AllocateNonGlobalDescriptorSets(uint32_t index)
 	{
-		if (myNonGlobalDescriptorSets.empty())
-		{
-			return;
-		}
+		//if (myNonGlobalDescriptorSets.empty())
+		//{
+		//	return;
+		//}
 
-		auto device = GraphicsContextVolt::GetDevice();
-		auto& descriptorSets = myDescriptorSets.at(index);
-		descriptorSets.clear();
+		//auto device = GraphicsContextVolt::GetDevice();
+		//auto& descriptorSets = myDescriptorSets.at(index);
+		//descriptorSets.clear();
 
-		for (const auto& set : myNonGlobalDescriptorSets)
-		{
-			VkDescriptorSet descriptorSet = myShader->AllocateDescriptorSet(set, myDescriptorPools.at(index));
-			descriptorSets.emplace_back(descriptorSet);
-		}
+		//for (const auto& set : myNonGlobalDescriptorSets)
+		//{
+		//	VkDescriptorSet descriptorSet = myShader->AllocateDescriptorSet(set, myDescriptorPools.at(index));
+		//	descriptorSets.emplace_back(descriptorSet);
+		//}
 	}
 
 	void ComputePipeline::ResetAfterInvalidate()

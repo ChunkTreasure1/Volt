@@ -29,20 +29,20 @@ namespace Volt
 		VT_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
-	inline static void RHILogCallback(Severity severity, std::string_view msg)
+	inline static void RHILogCallback(RHI::Severity severity, std::string_view msg)
 	{
 		switch (severity)
 		{
-			case Severity::Trace:
+			case RHI::Severity::Trace:
 				VT_CORE_TRACE(msg);
 				break;
-			case Severity::Info:
+			case RHI::Severity::Info:
 				VT_CORE_INFO(msg);
 				break;
-			case Severity::Warning:
+			case RHI::Severity::Warning:
 				VT_CORE_WARN(msg);
 				break;
-			case Severity::Error:
+			case RHI::Severity::Error:
 				VT_CORE_ERROR(msg);
 				break;
 		}
@@ -107,7 +107,7 @@ namespace Volt
 		glfwSetErrorCallback(GLFWErrorCallback);
 		glfwWindowHint(GLFW_SAMPLES, 0);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
+		//glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 		GLFWmonitor* primaryMonitor = nullptr;
@@ -157,20 +157,16 @@ namespace Volt
 
 		if (!m_hasBeenInitialized)
 		{
-			LogHookInfo logHook{};
+			RHI::LogHookInfo logHook{};
 			logHook.enabled = true;
 			logHook.logCallback = RHILogCallback;
 
-			GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = GraphicsAPI::Vulkan;
+			RHI::GraphicsContextCreateInfo cinfo{};
+			cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
 			cinfo.loghookInfo = logHook;
 
-			Ref<GraphicsContext> context = GraphicsContext::Create(cinfo);
-			Ref<Swapchain> swapchain = Swapchain::Create(m_window);
-			swapchain->Resize(m_data.width, m_data.height, m_data.vsync);
-
-			m_graphicsContext = GraphicsContextVolt::Create();
-			m_swapchain = SwapchainVolt::Create(m_window);
+			m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
+			m_swapchain = RHI::Swapchain::Create(m_window);
 			m_swapchain->Resize(m_data.width, m_data.height, m_data.vsync);
 			m_hasBeenInitialized = true;
 		}
