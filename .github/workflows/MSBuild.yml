@@ -1,6 +1,8 @@
 name: MSBuild
 
-on: [pull-request]
+on:
+  pull_request:
+    types: [review_requested]
 
 env:
   # Path to the solution file relative to the root of the project.
