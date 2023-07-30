@@ -7,6 +7,24 @@
 #define VT_INLINE __forceinline
 #define VT_DELETE_COMMON_OPERATORS(X) X(const X&) = delete; X& operator=(const X&) = delete; X(X&&) = delete; X& operator=(X&&) = delete
 
+///// Helper Defines /////
+#define VT_SETUP_ENUM_CLASS_OPERATORS(enumClass) \
+inline enumClass operator|(enumClass aLhs, enumClass aRhs) \
+{																						\
+	return (enumClass)((std::underlying_type<enumClass>::type)aLhs | (std::underlying_type<enumClass>::type)aRhs); \
+}\
+\
+inline enumClass operator&(enumClass aLhs, enumClass aRhs) \
+{ \
+	return (enumClass)((std::underlying_type<enumClass>::type)aLhs & (std::underlying_type<enumClass>::type)aRhs); \
+} \
+\
+inline enumClass operator~(enumClass aLhs) \
+{ \
+	return (enumClass)(~(std::underlying_type<enumClass>::type)aLhs); \
+}\
+//////////////////////////
+
 #ifdef VT_PLATFORM_WINDOWS
 #define VT_RHI_DEBUGBREAK() __debugbreak();
 #else
