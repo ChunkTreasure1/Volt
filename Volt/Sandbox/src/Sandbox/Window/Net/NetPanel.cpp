@@ -9,7 +9,8 @@
 
 #include "Volt/Net/Serialization/NetSerialization.h"
 
-#include <Nexus/Winsock/AddressHelpers.hpp>
+#include <Nexus/Core/Session.h>
+#include <Nexus/Core/Address.h>
 #include <Volt/Net/Client/NetClient.h>
 
 NetPanel::NetPanel()
@@ -67,11 +68,11 @@ void NetPanel::DrawStats()
 	}
 	ImGui::Separator();
 
-	if (Nexus::WSA::Session::IsValid())		ImGui::TextColored(ImColor(0, 255, 0), "Valid WSA Session");
+	if (Nexus::Session::IsValid())		ImGui::TextColored(ImColor(0, 255, 0), "Valid WSA Session");
 	else									ImGui::TextColored(ImColor(255, 0, 0), "Invalid WSA Session");
 	ImGui::Separator();
 
-	if (!Nexus::WSA::Session::IsValid()) return;
+	if (!Nexus::Session::IsValid()) return;
 
 	if (ImGui::BeginTable("##NetPanelStatTable", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_SizingStretchProp))
 	{
@@ -161,7 +162,7 @@ void NetPanel::DrawDebug()
 				Nexus::Packet connectionPacket;
 				connectionPacket.id = Nexus::ePacketID::CONNECT;
 				connectionPacket << std::string("Host Client");
-				netHandler.m_backend->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", netHandler.m_backend->GetRelay().GetBoundPort()),connectionPacket });
+				netHandler.m_backend->GetIncommingPacketQueue().push_back({ Nexus::Address::ConstructAddress("127.0.0.1", netHandler.m_backend->GetRelay().GetBoundPort()),connectionPacket });
 			}
 			else
 			{
@@ -309,7 +310,7 @@ void NetPanel::DrawVirtualPacketConstructor()
 
 		if (UI::BeginProperties("NetPanelConnectProperties"))
 		{
-			//UI::Property("Rep ID", m_RPCPacketSettings.repId);
+			UI::Property("Rep ID", m_RPCPacketSettings.repId);
 			UI::Property("Project", m_RPCPacketSettings.monoProject);
 			UI::Property("Class", m_RPCPacketSettings.monoClass);
 			UI::Property("Method", m_RPCPacketSettings.monoMethod);
@@ -333,7 +334,7 @@ void NetPanel::DrawVirtualPacketConstructor()
 		}
 		if (UI::BeginProperties("NetPanelConnectProperties"))
 		{
-			//UI::Property("Rep ID", m_eventSetting.repId);
+			UI::Property("Rep ID", m_eventSetting.repId);
 			static int addEvent = 0;
 			auto& enumData = Wire::ComponentRegistry::EnumData();
 			if (enumData.find("eNetEvent") != enumData.end())

@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <glm/glm.hpp>
+//#include <GEM/gem.h>
 
 #include <yaml-cpp/yaml.h>
 

@@ -530,7 +530,7 @@ namespace Volt
 		if (targetRegistry.HasComponent<NetActorComponent>(aTargetEntity))
 		{
 			auto& srcComp = targetRegistry.GetComponent<NetActorComponent>(aTargetEntity);
-			srcComp.repId = Nexus::RandRepID();
+			srcComp.repId = Nexus::TYPE::RandRepID();
 		}
 
 		if (myRegistry.HasComponent<CharacterControllerComponent>(prefabEntity))

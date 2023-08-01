@@ -1,6 +1,6 @@
 #pragma once
 #include <Nexus/Interface/NetManager/NetManager.h>
-#include <Nexus/Winsock/ConnectionManager.h>
+#include <Nexus/Interface/Connection/ConnectionRegistry.h>
 
 namespace Volt
 {

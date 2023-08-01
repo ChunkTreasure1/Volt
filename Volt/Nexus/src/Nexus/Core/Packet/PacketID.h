@@ -28,6 +28,8 @@ namespace Nexus
 		RPC,
 		CHAT_MESSAGE,
 
+		NOTIFY_CONFIRMED,
+
 		// depricated
 		MOVE,
 

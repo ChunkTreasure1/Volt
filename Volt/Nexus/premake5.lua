@@ -10,18 +10,9 @@ project "Nexus"
 	pchheader "nexuspch.h"
 	pchsource "src/nexuspch.cpp"
 
-	warnings "Extra"
-
-	flags
-	{
-		"FatalWarnings"
-	}
-
 	disablewarnings
 	{
-		"4005",
-		"4201",
-		"4100"
+		"4005"
 	}
 
 	linkoptions 
@@ -47,16 +38,28 @@ project "Nexus"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.GEM}"
 	}
 
 	defines
 	{
+		"NOMINMAX",
+		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
+		"_WINSOCKAPI_",
+		"_WINSOCK_DEPRECATED_NO_WARNINGS"
+	}
 
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
+	links 
+	{
+		"Ws2_32.lib"
+	}
+
+	configmap
+	{
+		["GameOnlyDebug"] = "Dist",
+		["SandboxOnlyDebug"] = "Dist"
 	}
 
 	filter "files:vendor/**.cpp"
@@ -73,51 +76,33 @@ project "Nexus"
 	filter "system:windows"
 		systemversion "latest"
 
-		defines
-		{
-			"_WINSOCKAPI_",
-			"_WINSOCK_DEPRECATED_NO_WARNINGS",
+		filter "configurations:Debug"
+			defines 
+			{ 
+				"VT_DEBUG", 
+				"VT_ENABLE_ASSERTS",
+				"VT_ENABLE_VALIDATION",
+				"VT_ENABLE_PROFILING"
+			}
+			runtime "Debug"
+			optimize "off"
+			symbols "on"
 
-			"NOMINMAX",
-			"_HAS_STD_BYTE=0"
-		}
-		
-		links 
-		{
-			"Ws2_32.lib"
-		}
+		filter "configurations:Release"
+			defines 
+			{ 
+				"VT_RELEASE", 
+				"VT_ENABLE_ASSERTS",
+				"VT_ENABLE_VALIDATION",
+				"VT_ENABLE_PROFILING",
+				"NDEBUG"
+			}
+			runtime "Release"
+			optimize "on"
+			symbols "on"
 
-	filter "configurations:Debug"
-		defines 
-		{ 
-			"VT_DEBUG", 
-			"VT_ENABLE_ASSERTS",
-			"VT_ENABLE_VALIDATION",
-			"VT_ENABLE_PROFILING"
-		}
-		runtime "Debug"
-		optimize "off"
-		symbols "on"
-
-	filter "configurations:Release"
-		defines 
-		{ 
-			"VT_RELEASE", 
-			"VT_ENABLE_ASSERTS",
-			"VT_ENABLE_VALIDATION",
-			"VT_ENABLE_PROFILING",
-			"NDEBUG"
-		}
-		runtime "Release"
-		optimize "on"
-		symbols "on"
-		vectorextensions "AVX2"
-		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
-
-	filter "configurations:Dist"
-		defines { "VT_DIST", "NDEBUG" }
-		runtime "Release"
-		optimize "on"
-		symbols "off"
-		vectorextensions "AVX2"
-		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+		filter "configurations:Dist"
+			defines { "VT_DIST", "NDEBUG" }
+			runtime "Release"
+			optimize "on"
+			symbols "off"

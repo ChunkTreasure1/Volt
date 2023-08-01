@@ -71,9 +71,10 @@ void NetContractPanel::DrawPanel()
 
 void NetContractPanel::DrawActions()
 {
-	if (ImGui::Button("Save"))
+    // #nexus_todo: fix asset-> path stuff
+	/*if (ImGui::Button("Save"))
 	{
-		if (!FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(m_handle)))
+		if (!FileSystem::IsWriteable(Volt::ProjectManager::GetDirectory() / Volt::NetContractContainer::GetContract(m_handle)->path))
 		{
 			UI::Notify(NotificationType::Error, "NetContract save Failed", "Make sure file is writable");
 		}
@@ -81,9 +82,9 @@ void NetContractPanel::DrawActions()
 		{
 			UI::Notify(NotificationType::Success, "NetContract Saved ", "");
 			auto contract = Volt::NetContractContainer::GetContract(m_handle);
-			if (!std::filesystem::exists(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts"))
+			if (!std::filesystem::exists(Volt::AssetManager::GetContextPath(contract->path) / "Assets/Networking/Contracts"))
 			{
-				std::filesystem::create_directory(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts");
+				std::filesystem::create_directory(Volt::AssetManager::GetContextPath(contract->path) / "Assets/Networking/Contracts");
 			}
 			Volt::AssetManager::Get().SaveAsset(contract);
 		}
@@ -91,7 +92,7 @@ void NetContractPanel::DrawActions()
 		{
 			UI::Notify(NotificationType::Error, "NetContract save Failed", "Invalid preset");
 		}
-	}
+	}*/
 	ImGui::SameLine();
 	if (ImGui::Button("Refresh"))
 	{
@@ -152,6 +153,7 @@ void NetContractPanel::DrawCalls(Ref<Volt::NetContract> in_contract)
 	{
 		for (auto& e : in_contract->calls)
 		{
+			auto& enumData = Wire::ComponentRegistry::EnumData();
 			if (enumData.find("eNetEvent") == enumData.end()) continue;
 			if (enumData.at("eNetEvent").size() > (uint8_t)e.first)
 			{

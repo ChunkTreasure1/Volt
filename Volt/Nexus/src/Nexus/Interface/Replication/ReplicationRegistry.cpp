@@ -75,8 +75,8 @@ namespace Nexus
 	}
 	TYPE::REP_ID ReplicationRegisty::GetNewId()
 	{
-		TYPE::REP_ID id = Nexus::RandRepID();
-		while (IdExist(id)) id = Nexus::RandRepID();
+		TYPE::REP_ID id = Nexus::TYPE::RandRepID();
+		while (IdExist(id)) id = Nexus::TYPE::RandRepID();
 		return id;
 	}
 }

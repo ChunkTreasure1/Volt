@@ -1,9 +1,9 @@
 #pragma once
 #include "Sandbox/Window/EditorWindow.h"
 
-#include <Nexus/Core/Defines.h>
+#include <Nexus/DEFAULT.h>
 #include <Nexus/Core/Packet/PacketID.h>
-#include <Nexus/Core/Packet/Packet.hpp>
+#include <Nexus/Core/Packet/Packet.h>
 
 #include <Volt/Net/Event/NetEventContainer.h>
 

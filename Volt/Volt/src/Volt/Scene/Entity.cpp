@@ -810,7 +810,7 @@ namespace Volt
 
 		if (aRegistry.HasComponent<NetActorComponent>(newEnt))
 		{
-			aRegistry.GetComponent<NetActorComponent>(newEnt).repId = Nexus::RandRepID();
+			aRegistry.GetComponent<NetActorComponent>(newEnt).repId = Nexus::TYPE::RandRepID();
 		}
 
 		if (aRegistry.HasComponent<RelationshipComponent>(aSrcEntity))

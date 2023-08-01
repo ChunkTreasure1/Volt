@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include <Nexus/Utility/Types.h>
+#include <Nexus/Core/Types/Types.h>
 #include <Wire/Serialization.h>
 #include <stdint.h>
 

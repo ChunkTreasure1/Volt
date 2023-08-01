@@ -1,8 +1,9 @@
 #pragma once
+#include "Nexus/API/API.h"
 #include "Nexus/Core/Relay/Relay.h"
-#include "Nexus/Core/Packet/Packet.hpp"
 #include "Nexus/Interface/Replication/ReplicationRegistry.h"
-#include "Nexus/Winsock/ConnectionManager.h"
+#include "Nexus/Interface/Connection/ConnectionRegistry.h"
+#include "Nexus/Core/Types/Types.h"
 
 namespace Volt
 {
@@ -25,10 +26,10 @@ namespace Nexus
 		void HandleTick(float deltaTime);
 		virtual void Transmit(const Nexus::Packet& in_packet) = 0;
 
-		Relay& GetRelay() { return m_relay; }
-		ReplicationRegisty& GetRegistry() { return m_registry; }
-		tsdeque<std::pair<sockaddr_in, Packet>>& GetIncommingPacketQueue() { return m_packetQueueIn; }
-		Nexus::ConnectionManager& GetConnectionRegistry() { return m_connectionRegistry; }
+		Nexus::Relay& GetRelay() { return m_relay; }
+		Nexus::ReplicationRegisty& GetRegistry() { return m_registry; }
+		tsdeque<std::pair<Nexus::Address, Nexus::Packet>>& GetIncommingPacketQueue() { return m_packetQueueIn; }
+		Nexus::ConnectionRegistry& GetConnectionRegistry() { return m_connectionRegistry; }
 		const Nexus::TYPE::CLIENT_ID& GetClientId() { return m_id; }
 
 		void AddPacketToIncomming(const Packet& in_packet);
@@ -42,10 +43,10 @@ namespace Nexus
 		void HandleIncomming();
 		virtual void BackendUpdate() = 0;
 
-		ReplicationRegisty m_registry;
-		Nexus::ConnectionManager m_connectionRegistry;
-		tsdeque<std::pair<sockaddr_in, Packet>> m_packetQueueIn;
-		Relay m_relay;
+		Nexus::ReplicationRegisty m_registry;
+		Nexus::ConnectionRegistry m_connectionRegistry;
+		tsdeque<std::pair<Nexus::Address, Nexus::Packet>> m_packetQueueIn;
+		Nexus::Relay m_relay;
 
 		Nexus::TYPE::CLIENT_ID m_id = 1;
 		TYPE::NETSCENE_INSTANCE_ID m_sceneInstanceId = 0;
@@ -54,7 +55,6 @@ namespace Nexus
 		virtual void OnConnect() = 0;
 		virtual void OnConnectionConfirmed() {};
 		virtual void OnDisconnect() = 0;
-		virtual void OnDisconnectConfirmed() {};
 
 		// Scene
 		virtual void OnReload() {};
@@ -81,6 +81,6 @@ namespace Nexus
 		virtual void OnPing() = 0;
 		virtual void OnBadPacket() = 0;
 
-		std::pair<sockaddr_in, Nexus::Packet> m_currentPacket;
+		std::pair<Nexus::Address, Nexus::Packet> m_currentPacket;
 	};
 }

@@ -11,9 +11,9 @@ namespace Volt
 			: Replicated(Nexus::TYPE::eReplicatedType::ENTITY, in_ownerId), m_entityId(in_entityId), m_prefabHandle(in_handle), m_preplaced(preplaced)
 		{
 		}
-		const Wire::EntityId GetEntityId() const { return m_entityId; }
-		const Volt::AssetHandle GetHandle() const { return m_prefabHandle; }
-		const bool GetPreplaced() const { return m_preplaced; }
+		Wire::EntityId GetEntityId() { return m_entityId; }
+		Volt::AssetHandle GetHandle() { return m_prefabHandle; }
+		const bool GetPreplaced() { return m_preplaced; }
 
 	private:
 		const Volt::AssetHandle m_prefabHandle;

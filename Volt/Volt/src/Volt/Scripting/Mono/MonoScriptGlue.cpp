@@ -58,7 +58,7 @@
 #include "Volt/Net/Client/NetClient.h"
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 #include <Nexus/Interface/NetManager/NetManager.h>
-#include <Nexus/Winsock/AddressHelpers.hpp>
+//#include <Nexus/Winsock/AddressHelpers.hpp>
 
 namespace Volt
 {
@@ -4935,7 +4935,7 @@ namespace Volt
 #pragma endregion Animation
 
 #pragma region Net
-	inline static Nexus::TYPE::REP_ID NetActorComponent_GetRepId(uint32_t id)
+	inline static uint16_t NetActorComponent_GetRepId(uint32_t id)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		auto entity = Entity(id, scene);
@@ -4945,10 +4945,10 @@ namespace Volt
 			entity = entity.GetParent();
 		}
 		auto netId = entity.GetComponent<NetActorComponent>().repId;
-		return (Nexus::TYPE::REP_ID)netId;
+		return (uint16_t)netId;
 	}
 
-	inline static void NetEvent_TriggerEventFromNetId(Nexus::TYPE::REP_ID id, eNetEvent netEvent, MonoArray* data)
+	inline static void NetEvent_TriggerEventFromNetId(uint16_t id, eNetEvent netEvent, MonoArray* data)
 	{
 		std::vector<uint8_t> byteVec;
 		byteVec.resize(mono_array_length(data));
@@ -4972,7 +4972,7 @@ namespace Volt
 		NetEvent_TriggerEventFromNetId(NetActorComponent_GetRepId(id), netEvent, data);
 	}
 
-	inline static void NetScene_DestroyFromNetId(Nexus::TYPE::REP_ID repId)
+	inline static void NetScene_DestroyFromNetId(uint16_t repId)
 	{
 		auto& handler = Application::Get().GetNetHandler();
 		auto& backend = handler.GetBackend();
@@ -5034,7 +5034,7 @@ namespace Volt
 		backend->Transmit(packet);
 	}
 
-	inline static void Net_NotifyFromNetId(Nexus::TYPE::REP_ID repId, MonoString* fieldName)
+	inline static void Net_NotifyFromNetId(uint16_t repId, MonoString* fieldName)
 	{
 		if (!fieldName) return;
 		const std::string str = MonoScriptUtils::GetStringFromMonoString(fieldName);
@@ -5044,6 +5044,7 @@ namespace Volt
 		auto& backend = handler.GetBackend();
 		if (!backend) { return; }
 
+		//auto clientId = backend->GetClientId();
 		auto varId = backend->GetRegistry().GetLinked(repId, str);
 		auto repVar = backend->GetRegistry().GetAs<RepVariable>(varId);
 		if (!repVar) return;
@@ -5055,7 +5056,6 @@ namespace Volt
 			backend->AddPacketToIncomming(packet);
 			return;
 		}
-		backend->AddPacketToIncomming(packet);
 		backend->Transmit(packet);
 	}
 
@@ -5087,17 +5087,13 @@ namespace Volt
 	inline static void Net_Connect(MonoString* ip, unsigned short port)
 	{
 		auto& netHandler = Application::Get().GetNetHandler();
-		if (!netHandler.GetBackend())
-		{
-			// 
-			return;
-		}
+		if (!netHandler.GetBackend()) return;
 		if (netHandler.IsHost())
 		{
 			Nexus::Packet connectionPacket;
 			connectionPacket.id = Nexus::ePacketID::CONNECT;
 			connectionPacket << std::string("Host Client");
-			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),connectionPacket });
+			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::Address::ConstructAddress("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),connectionPacket });
 			return;
 		}
 
@@ -5105,7 +5101,7 @@ namespace Volt
 		const std::string formattedIp = MonoScriptUtils::GetStringFromMonoString(ip);
 		if (formattedIp.empty()) return;
 
-		//netHandler.StartClient();
+		netHandler.StartClient();
 		// #nexus_todo: failsafe ip
 		((Volt::NetClient*)(netHandler.GetBackend().get()))->StoreServerData(formattedIp, port);
 		Nexus::Packet connectionPacket;
@@ -5118,17 +5114,7 @@ namespace Volt
 	{
 		auto& netHandler = Application::Get().GetNetHandler();
 		if (!netHandler.GetBackend()) return;
-
-		Nexus::Packet packet;
-		packet.id = Nexus::ePacketID::DISCONNECT;
-		packet.ownerID = netHandler.GetBackend()->GetClientId();
-
-		if (netHandler.IsHost())
-		{
-			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),packet });
-			return;
-		}
-		netHandler.GetBackend()->Transmit(packet);
+		// #nexus_todo: disconnect
 	}
 
 	inline static void Net_SceneLoad()
@@ -5145,7 +5131,7 @@ namespace Volt
 		{
 			Nexus::Packet connectionPacket;
 			connectionPacket.id = Nexus::ePacketID::CONSTRUCT_REGISTRY;
-			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),connectionPacket });
+			netHandler.GetBackend()->GetIncommingPacketQueue().push_back({ Nexus::Address::ConstructAddress("127.0.0.1", netHandler.GetBackend()->GetRelay().GetBoundPort()),connectionPacket });
 			return;
 		}
 
@@ -5174,19 +5160,6 @@ namespace Volt
 		auto& backend = Volt::Application::Get().GetNetHandler().GetBackend();
 		if (!backend) return 0;
 		return backend->GetRelay().GetBoundPort();
-	}
-
-	void MonoScriptGlue::Net_OnConnectCallback()
-	{
-		auto klass = MonoScriptClass(MonoScriptEngine::GetCoreAssembly().assemblyImage, "Volt", "Net");
-
-		auto method = klass.GetMethod("OnConnectCallback", 0);
-		if (!method)
-		{
-			return;
-		}
-
-		MonoScriptEngine::CallStaticMethod(method, nullptr);
 	}
 #pragma endregion Net
 

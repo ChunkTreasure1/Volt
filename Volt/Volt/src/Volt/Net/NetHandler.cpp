@@ -4,7 +4,8 @@
 #include "Client/NetClient.h"
 #include "Volt/Net/SceneInteraction/NetContract.h"
 #include "Volt/Net/Serialization/NetSerialization.h"
-#include <Nexus/Winsock/AddressHelpers.hpp>
+#include <Nexus/Core/Address.h>
+#include <Nexus/Core/Session.h>
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include <Nexus/Interface/Replication/ReplicationRegistry.h>
 
@@ -30,7 +31,7 @@ namespace Volt
 		Nexus::Packet connectionPacket;
 		connectionPacket.id = Nexus::ePacketID::CONNECT;
 		connectionPacket << std::string("Host Client");
-		m_backend->GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", m_backend->GetRelay().GetBoundPort()),connectionPacket });
+		m_backend->GetIncommingPacketQueue().push_back({ Nexus::Address::ConstructAddress("127.0.0.1", m_backend->GetRelay().GetBoundPort()),connectionPacket });
 	}
 
 	NetHandler::~NetHandler()
@@ -67,7 +68,7 @@ namespace Volt
 	{
 		if (!m_backend) return;
 		m_backend->Shutdown();
-		Nexus::WSA::Session::Clean();
+		Nexus::Session::Clean();
 		m_netSceneLoaded = false;
 	}
 
@@ -153,7 +154,7 @@ namespace Volt
 
 				RecursiveHandleMono(repEnt->GetEntityId(), id, beginId, &m_backend->m_registry, false);
 			}
-			m_backend->m_sceneInstanceId = Nexus::RandSceneInstanceID();
+			m_backend->m_sceneInstanceId = Nexus::TYPE::RandSceneInstanceID();
 			m_handleTick = true;
 		}
 	}
@@ -170,7 +171,7 @@ namespace Volt
 			m_backend->Shutdown();
 		m_isHost = false;
 		m_backend = CreateScope<NetClient>();
-		Nexus::WSA::Session::Start();
+		Nexus::Session::Start();
 		m_backend->Start(m_forcedPort);
 	}
 
@@ -180,7 +181,7 @@ namespace Volt
 			m_backend->Shutdown();
 		m_isHost = true;
 		m_backend = CreateScope<NetServer>();
-		Nexus::WSA::Session::Start();
+		Nexus::Session::Start();
 		m_backend->Start(m_forcedPort);
 	}
 }

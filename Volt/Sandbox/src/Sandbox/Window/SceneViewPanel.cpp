@@ -1503,16 +1503,18 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			UI::Notify(NotificationType::Error, "Din mamma", "Din pappa");
 		}
 
+
 		if (ImGui::MenuItem("Net go brrr"))
 		{
 			auto& registry = myScene->GetRegistry();
 			registry.ForEach<Volt::NetActorComponent>([&](Wire::EntityId id, Volt::NetActorComponent& dataComp)
 			{
-				dataComp.repId = Nexus::RandRepID();
+				dataComp.repId = Nexus::TYPE::RandRepID();
 				dataComp.clientId = 0;
 			});
 			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");
 		}
+
 		ImGui::EndPopup();
 	}
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Nexus/Core/Packet/Packet.hpp>
-#include <Nexus/Utility/Types.h>
+#include <Nexus/Core/Packet/Packet.h>
+#include <Nexus/Core/Types/Types.h>
 #include "Nexus/Interface/Replication/ReplicationRegistry.h"
 //#include "Volt/Net/SceneInteraction/NetPrefabInstantiation.h"
 
@@ -46,10 +46,6 @@ namespace Volt
 	struct RepTransformComponentData : public RepData
 	{
 		TransformComponent transform;
-		int setPos = 1;
-		int setRot = 1;
-		int setScale = 1;
-
 	};
 
 	struct RepRPCData : public RepData
@@ -135,7 +131,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 #pragma region Transform
 Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepTransformComponentData& transform);
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepTransformComponentData& transform);
-Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId, int  pos = 1, int  rot = 1, int  scale = 1);
+Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId);
 Volt::RepTransformComponentData CreateTransformComponentData(Nexus::TYPE::REP_ID in_repId, const Volt::TransformComponent& component);
 #pragma endregion
 

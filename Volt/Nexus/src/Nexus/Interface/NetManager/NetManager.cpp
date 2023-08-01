@@ -1,6 +1,8 @@
 #include "nexuspch.h"
 #include "NetManager.h"
-#include "Nexus/Winsock/AddressHelpers.hpp"
+#include "Nexus/Core/Session.h"
+#include "Nexus/Core/Address.h"
+
 
 namespace Nexus
 {
@@ -17,8 +19,8 @@ namespace Nexus
 
 	void NetManager::Start(uint16_t in_port)
 	{
-		WSA::Session::Start();
-		if (WSA::Session::IsValid())
+		Nexus::Session::Start();
+		if (Nexus::Session::IsValid())
 		{
 			// #KITE_INTERFACE_TODO: Log/Assert
 		}
@@ -32,12 +34,12 @@ namespace Nexus
 		// #KITE_INTERFACE_TODO: Disconnect all clients
 		m_relay.StopBackend();
 		GetRegistry().Clear();
-		WSA::Session::Start();
+		Nexus::Session::Start();
 	}
 
 	void NetManager::AddPacketToIncomming(const Packet& in_packet)
 	{
-		GetIncommingPacketQueue().push_back({ Nexus::CreateSockAddr("127.0.0.1", GetRelay().GetBoundPort()), in_packet });
+		GetIncommingPacketQueue().push_back({ Nexus::Address(Nexus::Address::ConstructDescription("127.0.0.1", GetRelay().GetBoundPort())), in_packet });
 	}
 
 	void NetManager::HandleTick(float deltaTime)
@@ -63,7 +65,6 @@ namespace Nexus
 				case Nexus::ePacketID::CONNECT:OnConnect(); break;
 				case Nexus::ePacketID::CONNECTION_CONFIRMED:OnConnectionConfirmed(); break;
 				case Nexus::ePacketID::DISCONNECT:OnDisconnect(); break;
-				case Nexus::ePacketID::DISCONNECTION_CONFIRMED:OnDisconnectConfirmed(); break;
 				case Nexus::ePacketID::UPDATE:OnUpdate(); break;
 
 				case Nexus::ePacketID::RELOAD:OnReload(); break;
@@ -87,4 +88,4 @@ namespace Nexus
 			}
 		}
 	}
-}	
+}

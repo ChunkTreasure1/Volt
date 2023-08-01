@@ -1,8 +1,8 @@
 #include "vtpch.h"
 #include "NetServer.h"
 
-#include <Nexus/Utility/Types.h>
-#include <Nexus/Winsock/AddressHelpers.hpp>
+#include <Nexus/Core/Types/Types.h>
+#include <Nexus/Core/Address.h>
 
 #include <Volt/Scene/SceneManager.h>
 #include <Volt/Scene/Entity.h>
@@ -21,8 +21,6 @@
 #include "Volt/Net/Event/NetEventContainer.h"
 #include "Volt/Core/Application.h"
 
-#include <Volt/Scripting/Mono/MonoScriptGlue.h>
-
 namespace Volt
 {
 	NetServer::NetServer()
@@ -34,22 +32,16 @@ namespace Volt
 	{
 	}
 
-#pragma optimize("", off)
 	void NetServer::BackendUpdate()
 	{
 		HandleIncomming();
 
 		for (auto& repId : m_registry.GetAllType(Nexus::TYPE::eReplicatedType::VARIABLE))
 		{
-			auto& repVariable = *reinterpret_pointer_cast<RepVariable>(m_registry.Get(repId));
-			if (repVariable.GetField().netData.replicatedCondition != eRepCondition::CONTINUOUS) continue;
+			auto repVariable = reinterpret_pointer_cast<RepVariable>(m_registry.Get(repId));
+			if (repVariable->GetField().netData.replicatedCondition != eRepCondition::CONTINUOUS) continue;
 			auto variablePacket = SerializeVariablePacket(*(RepVariable*)m_registry.Get(repId).get(), repId);
-			for (const auto& connection : m_connectionRegistry.GetClientIDs())
-			{
-				if (connection.first == repVariable.GetOwner()) continue;
-				if (connection.first == m_id) continue;
-				m_relay.Transmit(variablePacket, connection.second);
-			}
+			Transmit(variablePacket);
 			//AddPacketToIncomming(variablePacket);
 			/*for (const auto& connection : m_connectionRegistry.GetClientIDs())
 			{
@@ -60,20 +52,19 @@ namespace Volt
 		for (auto& repId : m_registry.GetAllType(Nexus::TYPE::eReplicatedType::ENTITY))
 		{
 			auto ptr = m_registry.Get(repId);
-			const auto& repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
+			auto repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
 			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
 			if (entity.IsNull()) continue;
 
 			const auto& pawnComp = entity.GetComponent<NetActorComponent>();
 			if (pawnComp.condition != eRepCondition::CONTINUOUS) continue;
 
-			if (pawnComp.updateTransformPos || pawnComp.updateTransformRot || pawnComp.updateTransformScale)
+			if (pawnComp.updateTransform)
 			{
-				auto transformPacket = SerializeTransformPacket(entity.GetId(), repId, pawnComp.updateTransformPos, pawnComp.updateTransformRot, pawnComp.updateTransformScale);
+				auto transformPacket = SerializeTransformPacket(entity.GetId(), repId);
 				for (const auto& connection : m_connectionRegistry.GetClientIDs())
 				{
 					if (connection.first == repEntity.GetOwner()) continue;
-					if (connection.first == m_id) continue;
 					m_relay.Transmit(transformPacket, connection.second);
 				}
 			}
@@ -88,13 +79,13 @@ namespace Volt
 			m_reload = false;
 		}
 	}
-#pragma optimize("", on)
+
 	void NetServer::Transmit(const Nexus::Packet& in_packet)
 	{
+		auto host = Application::Get().GetNetHandler().GetBackend()->GetClientId();
 		for (const auto& connection : m_connectionRegistry.GetClientIDs())
 		{
-			if (connection.first == m_id) continue;
-			if (connection.first == in_packet.ownerID) continue;
+			if (connection.first == host) continue;
 			m_relay.Transmit(in_packet, connection.second);
 		}
 	}
@@ -133,8 +124,6 @@ namespace Volt
 		m_connectionRegistry.UpdateAlias(newClientID, str);
 		LogTrace("User: " + m_connectionRegistry.GetAlias(newClientID) + " has joined");
 
-		MonoScriptGlue::Net_OnConnectCallback();
-
 		Nexus::Packet confirmationPacket;
 		confirmationPacket.ownerID = newClientID;
 		confirmationPacket.id = Nexus::ePacketID::CONNECTION_CONFIRMED;
@@ -150,33 +139,15 @@ namespace Volt
 	void NetServer::OnDisconnect()
 	{
 		auto packet = m_currentPacket.second;
-		LogTrace("User: " + m_connectionRegistry.GetAlias(packet.ownerID) + " has disconnected");
-
-		if (packet.ownerID == 0)
-		{
-			Transmit(packet);
-			m_packetQueueIn.clear();
-			Application::Get().GetNetHandler().Stop();
-			Volt::AssetHandle handle = Volt::AssetManager::Get().GetAssetHandleFromFilePath("Assets/Scenes/Levels/SC_LVL_MainMenu/SC_LVL_MainMenu.vtscene");
-			Volt::OnSceneTransitionEvent loadEvent{ handle };
-			Volt::Application::Get().OnEvent(loadEvent);
-			return;
-		}
 
 		for (auto repId : m_registry.GetAllOwner(packet.ownerID))
 		{
-			if (m_registry.Get(repId)->GetType() == Nexus::TYPE::eReplicatedType::ENTITY)
-			{
-				auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
-				Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
-			}
+			auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
+			Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
 			m_registry.Unregister(repId);
 		}
 
-		Transmit(packet);
-		packet.id = Nexus::ePacketID::DISCONNECTION_CONFIRMED;
-		m_relay.Transmit(packet, m_connectionRegistry.GetSockAddr(packet.ownerID));
-
+		LogTrace("User: " + m_connectionRegistry.GetAlias(packet.ownerID) + " has disconnected");
 		m_connectionRegistry.RemoveConnection(packet.ownerID);
 	}
 
@@ -187,8 +158,7 @@ namespace Volt
 		{
 			ApplyComponentData(repData, m_registry);
 		}
-		packet.ownerID = 0;
-		Transmit(m_currentPacket.second);
+		Transmit(*&m_currentPacket.second);
 	}
 
 	void NetServer::OnReload()
@@ -259,8 +229,8 @@ namespace Volt
 	{
 		auto newClientID = m_currentPacket.second.ownerID;
 
-		Nexus::TYPE::REP_ID registerEntityId = Nexus::RandRepID();
-		while (m_registry.IdExist(registerEntityId)) registerEntityId = Nexus::RandRepID();
+		Nexus::TYPE::REP_ID registerEntityId = Nexus::TYPE::RandRepID();
+		while (m_registry.IdExist(registerEntityId)) registerEntityId = Nexus::TYPE::RandRepID();
 
 		auto gameMode = SceneManager::GetActiveScene().lock()->GetAllEntitiesWith<GameModeComponent>();
 		if (gameMode.size() != 1)
@@ -379,7 +349,7 @@ namespace Volt
 
 	void NetServer::OnBadPacket()
 	{
-		std::string ip = Nexus::GetIp(m_currentPacket.first);
+		std::string ip = m_currentPacket.first.IPV4();
 		// Check if IP exists in alias map
 		LogError("Bad Packet Recieved on Server from IP: " + ip);
 	}

@@ -3,7 +3,7 @@
 #include "Wire/Entity.h"
 
 #include <Nexus/Core/Packet/PacketID.h>
-#include <Nexus/Utility/Types.h>
+#include <Nexus/Core/Types/Types.h>
 
 #include "Volt/Net/Event/NetEvent.h"
 

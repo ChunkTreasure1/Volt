@@ -17,8 +17,6 @@
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Physics/Physics.h"
 
-#include <stdint.h>
-#include <Volt/Core/Buffer.h>
 template<typename T>
 Ref<T> GetGenericRepData(Nexus::Packet& in_packet, Volt::eNetSerializerDescriptor in_type)
 {
@@ -50,9 +48,11 @@ Ref<Volt::RepData> DeserializePacketBody(Nexus::Packet& in_packet)
 		} break;
 		case Volt::eNetSerializerDescriptor::VARIABLE:
 		{
+			//Nexus::TYPE::REP_ID repId;
 			Volt::RepVariableData variableData;
 			in_packet > variableData;
 			variableData.dataType = Volt::eNetSerializerDescriptor::VARIABLE;
+			float testdata = variableData.data->As<float>();
 			return CreateRef<Volt::RepVariableData>(variableData);
 		} break;
 		/*
@@ -113,10 +113,10 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 				}
 				else*/
 				//{
+				sceneEnt.SetPosition(transformData->transform.position);
 				//}
-				if (transformData->setPos != 0) sceneEnt.SetPosition(transformData->transform.position);
-				if (transformData->setRot != 0) sceneEnt.SetRotation(transformData->transform.rotation);
-				if (transformData->setScale != 0) sceneEnt.SetScale(transformData->transform.scale);
+				sceneEnt.SetRotation(transformData->transform.rotation);
+				sceneEnt.SetScale(transformData->transform.scale);
 				return true;
 			}
 			*out_error = Volt::eNetErrorCode::MISSING_COMPONENT;
@@ -134,13 +134,12 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 	return true;
 }
 
-Nexus::Packet ConstructErrorDescription(Ref<Volt::RepData>, Volt::eNetErrorCode*)
+Nexus::Packet ConstructErrorDescription(Ref<Volt::RepData> data, Volt::eNetErrorCode* code)
 {
 	return Nexus::Packet();
 }
 
 
-VT_OPTIMIZE_OFF
 #pragma region Variable
 Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::REP_ID repId)
 {
@@ -205,12 +204,6 @@ Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::
 		case Volt::MonoFieldType::Double:
 		{
 			double data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Quaternion:
-		{
-			glm::quat data;
 			variable.GetValue(data);
 			varData = Volt::RepVariableData(data, fieldType);
 		}break;
@@ -292,9 +285,9 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 			packet >> data;
 			varData.data = CreateRef<Volt::VariableData>(data);
 		}break;
-		case Volt::MonoFieldType::Quaternion:
+		case Volt::MonoFieldType::Double:
 		{
-			glm::quat data = { 0,0,0,0 };
+			double data;
 			packet >> data;
 			varData.data = CreateRef<Volt::VariableData>(data);
 		}break;
@@ -302,7 +295,6 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 	}
 	return packet;
 }
-VT_OPTIMIZE_ON
 
 Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 {
@@ -333,21 +325,16 @@ Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 #pragma endregion
 
 #pragma region Transform
-Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId, int pos, int rot, int scale)
+Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId)
 {
 	Volt::Entity entity = Volt::Entity(in_entityId, Volt::SceneManager::GetActiveScene().lock().get());
 	Volt::RepTransformComponentData entTransform;
 	entTransform.repId = in_repId;
-	entTransform.setPos = pos;
-	entTransform.setRot = rot;
-	entTransform.setScale = scale;
 
-	Volt::TransformComponent comp = entity.GetComponent<Volt::TransformComponent>();
-	/*
+	Volt::TransformComponent comp;
 	comp.position = entity.GetPosition();
 	comp.rotation = entity.GetRotation();
 	comp.scale = entity.GetScale();
-	*/
 	entTransform.transform = comp;
 
 	Nexus::Packet transformPacket;
@@ -368,7 +355,6 @@ Volt::RepTransformComponentData CreateTransformComponentData(Nexus::TYPE::REP_ID
 Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepTransformComponentData& transform)
 {
 	packet << transform.repId;
-	packet << transform.setPos << transform.setRot << transform.setScale;
 
 	packet << transform.transform.position.x;
 	packet << transform.transform.position.y;
@@ -390,7 +376,6 @@ Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepTransformComponen
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepTransformComponentData& transform)
 {
-
 	packet >> transform.transform.scale.z;
 	packet >> transform.transform.scale.y;
 	packet >> transform.transform.scale.x;
@@ -404,7 +389,6 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepTransformComponentData&
 	packet >> transform.transform.position.y;
 	packet >> transform.transform.position.x;
 
-	packet >> transform.setScale >> transform.setRot >> transform.setPos;
 	packet >> transform.repId;
 
 	return packet;
@@ -499,6 +483,7 @@ void HandleComponent(Wire::EntityId in_id, const std::string& in_comp, bool in_k
 
 	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
 
+	auto& sceneRegistry = scenePtr->GetRegistry();
 	auto ent = Volt::Entity(in_id, scenePtr.get());
 	scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
 }
@@ -575,7 +560,7 @@ void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus:
 			{
 				if (!sinstance) continue;
 				if (field.netData.replicatedCondition == Volt::eRepCondition::OFF) continue;
-				auto repVariable = Volt::RepVariable(name, owner, repEnt->GetOwner(), sinstance, field, repEnt->GetEntityId());
+				auto repVariable = Volt::RepVariable(name, owner, 0, sinstance, field, repEnt->GetEntityId());
 				varId++;
 				registry->Register(varId, repVariable);
 				registry->Link(owner, { name, varId });

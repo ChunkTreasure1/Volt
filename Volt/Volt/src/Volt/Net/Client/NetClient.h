@@ -26,7 +26,6 @@ namespace Volt
 		void OnConnect() override;
 		void OnConnectionConfirmed() override;
 		void OnDisconnect() override;
-		void OnDisconnectConfirmed() override;
 		void OnUpdate() override;
 
 		void OnReloadDenied() override;
