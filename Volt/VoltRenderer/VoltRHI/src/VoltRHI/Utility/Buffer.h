@@ -24,7 +24,7 @@ namespace Volt::RHI
 		inline T* As(size_t offset = 0) const;
 
 	private:
-		std::unique_ptr<uint8_t> m_data;
+		uint8_t* m_data = nullptr;
 		size_t m_size = 0;
 	};
 

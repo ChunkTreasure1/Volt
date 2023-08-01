@@ -23,6 +23,8 @@ inline enumClass operator~(enumClass aLhs) \
 { \
 	return (enumClass)(~(std::underlying_type<enumClass>::type)aLhs); \
 }\
+
+#define BIT(X) (1 << (X))
 //////////////////////////
 
 #ifdef VT_PLATFORM_WINDOWS

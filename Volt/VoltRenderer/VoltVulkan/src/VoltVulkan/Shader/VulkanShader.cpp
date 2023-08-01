@@ -1,13 +1,19 @@
 #include "vkpch.h"
 #include "VulkanShader.h"
 
+#include "VoltVulkan/Common/VulkanCommon.h"
+
 #include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Shader/ShaderUtility.h>
+#include <VoltRHI/Shader/ShaderCompiler.h>
+
+#include <vulkan/vulkan.h>
 
 namespace Volt::RHI
 {
 	VulkanShader::VulkanShader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)
-		: Shader(name, sourceFiles)
+		: m_name(name), m_sourceFiles(sourceFiles)
 	{
 		if (sourceFiles.empty())
 		{
@@ -30,17 +36,33 @@ namespace Volt::RHI
 		m_shaderSources.clear();
 		LoadShaderFromFiles();
 
-		std::unordered_map<ShaderStage, std::vector<uint32_t>> shaderData;
-		if (!CompileOrGetBinary(shaderData, forceCompile))
+		if (!CompileOrGetBinary(forceCompile))
 		{
 			return false;
 		}
 
 		Release();
-		LoadAndCreateShaders(shaderData);
-		ReflectAllStages(shaderData);
+		LoadAndCreateShaders(m_shaderData);
+		ReflectAllStages(m_shaderData);
+
+		m_shaderData.clear(); // Unnecessary to store old shader binary
 
 		return true;
+	}
+
+	std::string_view VulkanShader::GetName() const
+	{
+		return m_name;
+	}
+
+	const ShaderResources& VulkanShader::GetResources() const
+	{
+		return m_resources;
+	}
+
+	const std::vector<std::filesystem::path>& VulkanShader::GetSourceFiles() const
+	{
+		return m_sourceFiles;
 	}
 
 	void* VulkanShader::GetHandleImpl()
@@ -66,23 +88,54 @@ namespace Volt::RHI
 				continue;
 			}
 
-			m_shaderSources[stage] = source;
+			m_shaderSources[stage].source = source;
+			m_shaderSources[stage].filepath = path;
 		}
 	}
 
 	void VulkanShader::Release()
 	{
+		auto device = GraphicsContext::GetDevice();
+
+		for (const auto& [stage, data] : m_pipelineStageInfo)
+		{
+			vkDestroyShaderModule(device->GetHandle<VkDevice>(), data.shaderModule, nullptr);
+		}
+
+		for (const auto& descriptorSetLayout : m_descriptorSetLayouts)
+		{
+			vkDestroyDescriptorSetLayout(device->GetHandle<VkDevice>(), descriptorSetLayout, nullptr);
+		}
+
+		m_descriptorSetLayouts.clear();
+		m_pipelineStageInfo.clear();
+
 		m_resources = {};
 	}
 
-	const bool VulkanShader::CompileOrGetBinary(std::unordered_map<ShaderStage, std::vector<uint32_t>>& outShaderData, bool forceCompile)
+	const bool VulkanShader::CompileOrGetBinary(bool forceCompile)
 	{
-		return false;
+		ShaderCompiler::Specification compileSpec{};
+		compileSpec.forceCompile = forceCompile;
+
+		ShaderCompiler::CompilationResult result = ShaderCompiler::TryCompile(compileSpec, *this);
+		return result == ShaderCompiler::CompilationResult::Success;
 	}
 
 	void VulkanShader::LoadAndCreateShaders(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)
 	{
+		auto device = GraphicsContext::GetDevice();
 
+		for (const auto& [stage, stageData] : shaderData)
+		{
+			VkShaderModuleCreateInfo moduleInfo{};
+			moduleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+			moduleInfo.codeSize = stageData.size() * sizeof(uint32_t);
+			moduleInfo.pCode = stageData.data();
+
+			auto& data = m_pipelineStageInfo[stage];
+			VT_VK_CHECK(vkCreateShaderModule(device->GetHandle<VkDevice>(), &moduleInfo, nullptr, &data.shaderModule));
+		}
 	}
 
 	void VulkanShader::ReflectAllStages(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)

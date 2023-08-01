@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VoltRHI/Core/RHICommon.h"
+#include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <filesystem>
 #include <fstream>
@@ -9,16 +10,26 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		inline std::filesystem::path GetShaderCacheDirectory()
+		inline static std::filesystem::path GetShaderCacheSubDirectory()
 		{
-			return { "Engine/Shaders/Cache/" };
+			const auto api = GraphicsContext::GetAPI();
+			std::filesystem::path subDir;
+
+			switch (api)
+			{
+				case GraphicsAPI::Vulkan: subDir = "Vulkan"; break;
+				case GraphicsAPI::D3D12: subDir = "DX12"; break;
+				case GraphicsAPI::MoltenVk: subDir = "MoltenVK"; break;
+			}
+
+			return { subDir };
 		}
 
 		inline void CreateCacheDirectoryIfNeeded()
 		{
-			if (!std::filesystem::exists(GetShaderCacheDirectory()))
+			if (!std::filesystem::exists(GetShaderCacheSubDirectory()))
 			{
-				std::filesystem::create_directories(GetShaderCacheDirectory());
+				std::filesystem::create_directories(GetShaderCacheSubDirectory());
 			}
 		}
 
@@ -78,6 +89,56 @@ namespace Volt::RHI
 			}
 
 			return ShaderStage::None;
+		}
+
+		inline static const wchar_t* HLSLShaderProfile(const ShaderStage stage)
+		{
+			switch (stage)
+			{
+				case ShaderStage::Vertex:		return L"vs_6_5";
+				case ShaderStage::Pixel:		return L"ps_6_5";
+				case ShaderStage::Hull:			return L"hs_6_5";
+				case ShaderStage::Domain:		return L"hs_6_5";
+				case ShaderStage::Geometry:		return L"gs_6_5";
+				case ShaderStage::Compute:		return L"cs_6_5";
+					
+				case ShaderStage::RayGen:		return L"lib_6_5";
+				case ShaderStage::Miss:			return L"lib_6_5";
+				case ShaderStage::ClosestHit:   return L"lib_6_5";
+				case ShaderStage::AnyHit:		return L"lib_6_5";
+				case ShaderStage::Intersection: return L"lib_6_5";
+			
+				case ShaderStage::Task:			return L"ms_6_5";
+				case ShaderStage::Mesh:			return L"as_6_5";
+			}
+
+			assert(false);
+			return L"";
+		}
+
+		inline static std::string GetShaderStageCachedFileExtension(const ShaderStage stage)
+		{
+			switch (stage)
+			{
+				case ShaderStage::Vertex:		return ".vertex.cached";
+				case ShaderStage::Pixel:		return ".fragment.cached";
+				case ShaderStage::Hull:			return "tessControl.cached";
+				case ShaderStage::Domain:		return "tessEvaluation.cached";
+				case ShaderStage::Geometry:		return ".geometry.cached";
+				case ShaderStage::Compute:		return ".compute.cached";
+
+				case ShaderStage::RayGen:		return "raygen.cached";
+				case ShaderStage::Miss:			return "raymiss.cached";
+				case ShaderStage::ClosestHit:	return "raychit.cached";
+				case ShaderStage::AnyHit:		return "rayahit.cached";
+				case ShaderStage::Intersection:	return "rayinter.cached";
+
+				case ShaderStage::Task:			return "task,cached";
+				case ShaderStage::Mesh:			return "mesh.cached";
+			}
+			
+			assert(false);
+			return "";
 		}
 
 		inline std::string ReadStringFromFile(const std::filesystem::path& path)

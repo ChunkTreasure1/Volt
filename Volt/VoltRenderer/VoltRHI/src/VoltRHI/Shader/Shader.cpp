@@ -27,8 +27,4 @@ namespace Volt::RHI
 
 		return nullptr;
 	}
-
-	Shader::Shader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles)
-		: m_name(name), m_sourceFiles(sourceFiles)
-	{}
 }

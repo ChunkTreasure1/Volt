@@ -35,6 +35,7 @@ namespace Volt::RHI
 	struct ShaderUniform
 	{
 		ShaderUniform(ShaderUniformType type, size_t size, size_t offset);
+		ShaderUniform() = default;
 		~ShaderUniform() = default;
 
 		size_t size = 0;
@@ -76,20 +77,15 @@ namespace Volt::RHI
 	{
 	public:
 		virtual const bool Reload(bool forceCompile) = 0;
-	
-		inline std::string_view GetName() const { return m_name; }
-		inline const ShaderResources& GetResources() const { return m_resources; }
-		inline const std::vector<std::filesystem::path>& GetSourceFiles() const { return m_sourceFiles; }
+		virtual std::string_view GetName() const = 0;
+		virtual const ShaderResources& GetResources() const = 0;
+		virtual const std::vector<std::filesystem::path>& GetSourceFiles() const = 0;
 
 		static Ref<Shader> Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile = false);
 
 	protected:
-		Shader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles);
-		virtual ~Shader() {}
+		Shader() = default;
+		virtual ~Shader() = default;
 
-		std::string_view m_name;
-		std::vector<std::filesystem::path> m_sourceFiles;
-
-		ShaderResources m_resources;
 	};
 }
