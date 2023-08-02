@@ -24,6 +24,7 @@ namespace Volt
 
 	void AnimationStateMachine::Update(float deltaTime)
 	{
+		// if no state is active, check if the entry state has any transitions and choose the first one
 		if (myCurrentState == -1)
 		{
 			for (const auto& state : myStates)
@@ -213,8 +214,10 @@ namespace Volt
 			startState->transitions.emplace_back(transition->id);
 			endState->transitions.emplace_back(transition->id);
 		}
-
+		
 		transition->transitionGraph = CreateRef<AnimationTransitionGraph>();
+		transition->transitionGraph->SetStateMachine(this);
+		transition->transitionGraph->SetTransitionID(transition->id);
 		transition->transitionGraph->AddNode(GraphKey::Registry::Create("TransitionOutputNode"));
 		myTransitions.emplace_back(transition);
 	}
@@ -222,9 +225,9 @@ namespace Volt
 	void AnimationStateMachine::RemoveState(const UUID id)
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [&id](const auto& lhs)
-			{
-				return lhs->id == id;
-			});
+		{
+			return lhs->id == id;
+		});
 
 		if (it == myStates.end())
 		{
@@ -243,9 +246,9 @@ namespace Volt
 	void AnimationStateMachine::RemoveTransition(const UUID id)
 	{
 		auto it = std::find_if(myTransitions.begin(), myTransitions.end(), [&id](const auto& lhs)
-			{
-				return lhs->id == id;
-			});
+		{
+			return lhs->id == id;
+		});
 
 		if (it == myTransitions.end())
 		{
@@ -348,11 +351,13 @@ namespace Volt
 			newTransition->id = transition->id;
 			newTransition->fromState = transition->fromState;
 			newTransition->toState = transition->toState;
+			
 			newTransition->blendTime = transition->blendTime;
-			newTransition->hasExitTime = transition->hasExitTime;
 			newTransition->shouldBlend = transition->shouldBlend;
 
 			newTransition->transitionGraph = CreateRef<AnimationTransitionGraph>();
+			newTransition->transitionGraph->SetStateMachine(this);
+			newTransition->transitionGraph->SetTransitionID(newTransition->id);
 			newTransition->transitionGraph->SetEntity(entity);
 			GraphKey::Graph::Copy(transition->transitionGraph, newTransition->transitionGraph);
 
@@ -383,46 +388,54 @@ namespace Volt
 			return false;
 		}
 
-		bool canTransition = transition->hasExitTime ? false : true;
+		bool canTransition = true;/*transition->hasExitTime ? false : true;*/
 
-		if (transition->hasExitTime)
-		{
-			const auto playerNodes = currentState->stateGraph->GetNodesOfType("SequencePlayerNode");
+		//if (transition->hasExitTime)
+		//{
+		//	const auto playerNodes = currentState->stateGraph->GetNodesOfType("SequencePlayerNode");
 
-			if (!playerNodes.empty())
-			{
-				Ref<Animation> longestAnimation;
-				Ref<GraphKey::SequencePlayerNode> longestPlayer;
-				float longestAnimationTime = std::numeric_limits<float>::lowest();
-				for (const auto& player : playerNodes)
-				{
-					auto playerNodeType = std::reinterpret_pointer_cast<GraphKey::SequencePlayerNode>(player);
-					auto anim = playerNodeType->GetAnimation();
-					if (!anim || !anim->IsValid())
-					{
-						continue;
-					}
+		//	if (!playerNodes.empty())
+		//	{
+		//		Ref<Animation> longestAnimation;
+		//		Ref<GraphKey::SequencePlayerNode> longestPlayer;
+		//		float longestAnimationTime = std::numeric_limits<float>::lowest();
+		//		for (const auto& player : playerNodes)
+		//		{
+		//			auto playerNodeType = std::reinterpret_pointer_cast<GraphKey::SequencePlayerNode>(player);
+		//			float speed = 1.f;
+		//			for (auto& input : playerNodeType->inputs)
+		//			{
+		//				if (input.name == "Speed")
+		//				{
+		//					speed = std::any_cast<float>(input.data);
+		//				}
+		//			}
+		//			auto anim = playerNodeType->GetAnimation();
+		//			if (!anim || !anim->IsValid())
+		//			{
+		//				continue;
+		//			}
+		//			const auto duration = (anim->GetDuration() * speed);
+		//			if (duration > longestAnimationTime)
+		//			{
+		//				longestAnimationTime = anim->GetDuration() * speed;
+		//				longestAnimation = anim;
+		//				longestPlayer = playerNodeType;
+		//			}
+		//		}
 
-					if (anim->GetDuration() > longestAnimationTime)
-					{
-						longestAnimationTime = anim->GetDuration();
-						longestAnimation = anim;
-						longestPlayer = playerNodeType;
-					}
-				}
+		//		if (longestPlayer)
+		//		{
+		//			const float animSpeed = longestPlayer->GetInput<float>(2);
+		//			const float endTime = longestAnimationTime * transition->exitStartValue;
 
-				if (longestPlayer)
-				{
-					const float animSpeed = longestPlayer->GetInput<float>(2);
-					const float endTime = longestPlayer->GetAnimation()->GetDuration() * transition->exitStartValue;
-
-					if (longestAnimation->IsAtEnd(currentState->startTime, animSpeed)/* || longestAnimation->HasPassedTime(currentState->startTime, animSpeed, endTime)*/)
-					{
-						canTransition = true;
-					}
-				}
-			}
-		}
+		//			if (longestAnimation->IsAtEnd(currentState->startTime, animSpeed)/* || longestAnimation->HasPassedTime(currentState->startTime, animSpeed, endTime)*/)
+		//			{
+		//				canTransition = true;
+		//			}
+		//		}
+		//	}
+		//}
 
 		auto transitionOutputNode = std::reinterpret_pointer_cast<GraphKey::TransitionOutputNode>(nodes.front());
 		const bool result = transitionOutputNode->Evaluate();

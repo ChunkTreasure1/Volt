@@ -15,14 +15,14 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig("A", AttributeDirection::Input),
-			AttributeConfig("B", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("A", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("B", AttributeDirection::Input),
 			AttributeConfigDefault("Alpha", AttributeDirection::Input, 0.f)
 		};
 
 		outputs =
 		{
-			AttributeConfig("Result", AttributeDirection::Output, GK_BIND_FUNCTION(CrossfadeNode::TryApplyCrossfade))
+			AttributeConfigAnimationPose<AnimationOutputData>("Result", AttributeDirection::Output, GK_BIND_FUNCTION(CrossfadeNode::TryApplyCrossfade))
 		};
 	}
 
@@ -59,14 +59,14 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig("Base Pose", AttributeDirection::Input),
-			AttributeConfig("Additive Pose", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("Base Pose", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("Additive Pose", AttributeDirection::Input),
 			AttributeConfigDefault("Alpha", AttributeDirection::Input, 0.f)
 		};
 
 		outputs =
 		{
-			AttributeConfig("Result", AttributeDirection::Output, GK_BIND_FUNCTION(AdditiveNode::TryApplyAdditive))
+			AttributeConfigAnimationPose<AnimationOutputData>("Result", AttributeDirection::Output, GK_BIND_FUNCTION(AdditiveNode::TryApplyAdditive))
 		};
 	}
 
@@ -121,7 +121,7 @@ namespace GraphKey
 
 		outputs =
 		{
-			AttributeConfig("Result", AttributeDirection::Output, GK_BIND_FUNCTION(BlendSpaceNode::Sample))
+			AttributeConfigAnimationPose<AnimationOutputData>("Result", AttributeDirection::Output, GK_BIND_FUNCTION(BlendSpaceNode::Sample))
 		};
 	}
 
@@ -351,14 +351,14 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig("Base Pose", AttributeDirection::Input),
-			AttributeConfig("Blend Pose", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("Base Pose", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("Blend Pose", AttributeDirection::Input),
 			AttributeConfigDefault("Alpha", AttributeDirection::Input, 0.f)
 		};
 
 		outputs =
 		{
-			AttributeConfig("Result", AttributeDirection::Output, GK_BIND_FUNCTION(LayeredBlendPerBoneNode::TryApplyLayeredBlendPerBone))
+			AttributeConfigAnimationPose<AnimationOutputData>("Result", AttributeDirection::Output, GK_BIND_FUNCTION(LayeredBlendPerBoneNode::TryApplyLayeredBlendPerBone))
 		};
 	}
 
@@ -499,14 +499,14 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig("Pose", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("Pose", AttributeDirection::Input),
 			AttributeConfigDefault("Bone Name", AttributeDirection::Input, std::string("")),
 			AttributeConfigDefault("Rotation", AttributeDirection::Input, glm::vec3{ 0.f })
 		};
 
 		outputs =
 		{
-			AttributeConfig("Result", AttributeDirection::Output, GK_BIND_FUNCTION(RotateBoneNode::RotateBone))
+			AttributeConfigAnimationPose<AnimationOutputData>("Result", AttributeDirection::Output, GK_BIND_FUNCTION(RotateBoneNode::RotateBone))
 		};
 	}
 

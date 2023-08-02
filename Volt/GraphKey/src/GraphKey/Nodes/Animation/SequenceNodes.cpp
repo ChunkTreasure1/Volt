@@ -31,7 +31,7 @@ namespace GraphKey
 
 		outputs =
 		{
-			AttributeConfig("Output", AttributeDirection::Output, GK_BIND_FUNCTION(SequencePlayerNode::TrySampleAnimation))
+			AttributeConfigAnimationPose<AnimationOutputData>("Output", AttributeDirection::Output, GK_BIND_FUNCTION(SequencePlayerNode::TrySampleAnimation))
 		};
 	}
 

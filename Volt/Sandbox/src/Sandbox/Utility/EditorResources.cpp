@@ -80,6 +80,9 @@ void EditorResources::Initialize()
 		myEditorIcons[EditorIcon::Swap] = TryLoadIcon("Editor/Textures/Icons/icon_swap.dds");
 		myEditorIcons[EditorIcon::Remove] = TryLoadIcon("Editor/Textures/Icons/icon_remove.dds");
 
+		myEditorIcons[EditorIcon::GraphPinAnimationPose] = TryLoadIcon("Editor/Textures/Icons/icon_graph_pin_anim_pose.dds");
+		myEditorIcons[EditorIcon::GraphPinAnimationPoseFilled] = TryLoadIcon("Editor/Textures/Icons/icon_graph_pin_anim_pose_filled.dds");
+
 		myEditorIcons[EditorIcon::Volt] = TryLoadIcon("Editor/Textures/Icons/icon_volt.dds");
 	}
 

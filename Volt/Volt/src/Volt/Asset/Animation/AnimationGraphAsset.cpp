@@ -2,6 +2,7 @@
 #include "AnimationGraphAsset.h"
 
 #include <GraphKey/Nodes/Animation/StateMachineNodes.h>
+#include <GraphKey/Nodes/Animation/SequenceNodes.h>
 
 namespace Volt
 {
@@ -12,6 +13,20 @@ namespace Volt
 		GraphKey::Graph::Copy(shared_from_this(), newGraph);
 
 		return newGraph;
+	}
+
+	AssetHandle AnimationGraphAsset::GetRelevantAnimationHandle()
+	{
+		auto sequencePlayerNodes = GetNodesOfType("Sequence Player");
+		
+		if (sequencePlayerNodes.size() == 0)
+			return Asset::Null();
+
+		//TODO: Update this to check for all the relevant nodes
+		//TODO: Update this to have a relevancy order 
+		auto sequencePlayerNode = std::dynamic_pointer_cast<GraphKey::SequencePlayerNode>(sequencePlayerNodes[0]);
+		
+		return sequencePlayerNode->GetAnimation()->handle;
 	}
 
 	void AnimationGraphAsset::SetSkeletonHandle(AssetHandle aSkeletonHandle)

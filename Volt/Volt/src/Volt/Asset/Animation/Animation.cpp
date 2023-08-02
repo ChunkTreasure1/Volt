@@ -180,7 +180,7 @@ namespace Volt
 		const Pose& nextFrame = myFrames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
-
+		
 		if (currentFrame.localTRS.size() < joints.size())
 		{
 			return result;

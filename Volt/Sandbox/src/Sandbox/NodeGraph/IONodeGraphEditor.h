@@ -1505,6 +1505,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawPinIcon(const Graph
 	{
 		case GraphKey::AttributeType::Flow: iconType = IconType::Flow;   break;
 		case GraphKey::AttributeType::Type: iconType = IconType::Circle;   break;
+		case GraphKey::AttributeType::AnimationPose: iconType = IconType::AnimationPose;   break;
 
 		default:
 			return;

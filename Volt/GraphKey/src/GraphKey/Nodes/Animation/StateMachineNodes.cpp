@@ -16,7 +16,7 @@ namespace GraphKey
 	{
 		outputs =
 		{
-			AttributeConfig("Output", AttributeDirection::Output, GK_BIND_FUNCTION(StateMachineNode::SampleStateMachine))
+			AttributeConfigAnimationPose<AnimationOutputData>("Output", AttributeDirection::Output, GK_BIND_FUNCTION(StateMachineNode::SampleStateMachine))
 		};
 
 	}
@@ -96,7 +96,6 @@ namespace GraphKey
 				VT_SERIALIZE_PROPERTY(id, transition->id, out);
 				VT_SERIALIZE_PROPERTY(fromState, transition->fromState, out);
 				VT_SERIALIZE_PROPERTY(toState, transition->toState, out);
-				VT_SERIALIZE_PROPERTY(hasExitTime, transition->hasExitTime, out);
 				VT_SERIALIZE_PROPERTY(shouldBlend, transition->shouldBlend, out);
 				VT_SERIALIZE_PROPERTY(blendTime, transition->blendTime, out);
 
@@ -174,14 +173,16 @@ namespace GraphKey
 			auto newTransition = myStateMachine->CreateTransition(transitionId);
 			newTransition->fromState = transitionFromState;
 			newTransition->toState = transitionToState;
-
-			VT_DESERIALIZE_PROPERTY(hasExitTime, newTransition->hasExitTime, transitionNode, false);
+			
 			VT_DESERIALIZE_PROPERTY(shouldBlend, newTransition->shouldBlend, transitionNode, false);
 			VT_DESERIALIZE_PROPERTY(blendTime, newTransition->blendTime, transitionNode, 1.f);
 
 			if (transitionNode["Graph"])
 			{
 				newTransition->transitionGraph = CreateRef<Volt::AnimationTransitionGraph>();
+				newTransition->transitionGraph->SetStateMachine(myStateMachine.get());
+				newTransition->transitionGraph->SetTransitionID(transitionId);
+				
 				Graph::Deserialize(std::reinterpret_pointer_cast<Graph>(newTransition->transitionGraph), transitionNode["Graph"]);
 			}
 		}

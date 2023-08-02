@@ -1,4 +1,7 @@
-Handle: 15479924379188462583
-Path: Assets/Player Test/player_sprint_anim.vtanim
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6771955893741976960
+  filePath: Assets/Player Test/player_sprint_anim.vtanim
+  type: 4
+  Dependencies:
+    []
+  ? Properties

@@ -419,11 +419,11 @@ Layer:
               - type: 16
                 vectorType: 13
                 name: Animation Graph
-                data: 6090874269170405106
+                data: 4734108098716078210
               - type: 16
                 vectorType: 13
                 name: Material
-                data: 0
+                data: 10717049606619290080
               - type: 16
                 vectorType: 13
                 name: Override Skin
@@ -476,11 +476,11 @@ Layer:
               - type: 16
                 vectorType: 13
                 name: Mesh
-                data: 2266006686789750075
+                data: 15314435918099419685
               - type: 16
                 vectorType: 13
                 name: Material
-                data: 0
+                data: 10717049606619290080
           - guid: [5428802467633469958, 3006162545260469436]
             properties:
               - type: 21
@@ -492,16 +492,16 @@ Layer:
                 vectorType: 16
                 name: ScriptIds
                 data:
-                  - value: 17153352387063866732
+                  - value: 2236035842924872221
         MonoScripts:
           - ScriptEntry:
               name: Project.Player
-              id: 17153352387063866732
+              id: 2236035842924872221
               properties:
                 - type: 7
                   name: acceleration
                   enumName: ""
-                  data: 10
+                  data: 15
                 - type: 7
                   name: runSpeed
                   enumName: ""
@@ -513,7 +513,7 @@ Layer:
                 - type: 7
                   name: deceleration
                   enumName: ""
-                  data: 800
+                  data: 30
                 - type: 7
                   name: jumpForce
                   enumName: ""
@@ -758,6 +758,88 @@ Layer:
                 vectorType: 13
                 name: Mesh
                 data: 10149696181569838305
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 0
+    - Entity:
+        id: 3811384406
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: playerCharacter_sk
+          - guid: [4626977537440075682, 8666096866538760379]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Animation Graph
+                data: 9824459651317056180
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 0
+              - type: 16
+                vectorType: 13
+                name: Override Skin
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Apply Root Motion
+                data: false
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [131.705002, 0, -3.02999997]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 15314435918099419685
               - type: 16
                 vectorType: 13
                 name: Material

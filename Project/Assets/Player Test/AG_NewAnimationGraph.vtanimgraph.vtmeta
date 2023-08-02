@@ -1,4 +1,7 @@
-Handle: 2896570904865207590
-Path: Assets/Player Test/AG_NewAnimationGraph.vtanimgraph
-Dependencies:
-  []
+Metadata:
+  assetHandle: 4734108098716078210
+  filePath: Assets/Player Test/AG_NewAnimationGraph.vtanimgraph
+  type: 131072
+  Dependencies:
+    []
+  ? Properties

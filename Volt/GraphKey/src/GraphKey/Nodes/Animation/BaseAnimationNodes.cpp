@@ -12,7 +12,7 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfig("Result", AttributeDirection::Input)
+			AttributeConfigAnimationPose<AnimationOutputData>("Result", AttributeDirection::Input)
 		};
 	}
 

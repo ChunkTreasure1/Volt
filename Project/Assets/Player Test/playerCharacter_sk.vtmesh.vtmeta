@@ -1,4 +1,7 @@
-Handle: 9098645144163709913
-Path: Assets/Player Test/playerCharacter_sk.vtmesh
-Dependencies:
-  []
+Metadata:
+  assetHandle: 15314435918099419685
+  filePath: Assets/Player Test/playerCharacter_sk.vtmesh
+  type: 1
+  Dependencies:
+    []
+  ? Properties

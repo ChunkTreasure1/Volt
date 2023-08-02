@@ -895,12 +895,6 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 		UI::PushId();
 		if (UI::BeginProperties("transitionProperties"))
 		{
-			UI::Property("Has Exit Time", transition->hasExitTime);
-			if (transition->hasExitTime)
-			{
-				UI::Property("Blend Start Time", transition->exitStartValue);
-			}
-
 			UI::Property("Should Blend", transition->shouldBlend);
 
 			if (transition->shouldBlend)

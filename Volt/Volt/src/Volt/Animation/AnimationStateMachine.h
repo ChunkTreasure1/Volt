@@ -25,10 +25,7 @@ namespace Volt
 		UUID fromState;
 		UUID toState;
 
-		bool hasExitTime = false;
 		bool shouldBlend = true;
-		float exitStartValue = 1.f;
-
 		float blendTime = 1.f;
 
 		Ref<AnimationTransitionGraph> transitionGraph;

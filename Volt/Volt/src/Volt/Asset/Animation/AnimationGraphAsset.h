@@ -2,6 +2,11 @@
 
 #include <GraphKey/Graph.h>
 
+namespace GraphKey
+{
+	struct Node;
+}
+
 namespace Volt
 {
 	class AnimationGraphAsset : public GraphKey::Graph
@@ -33,8 +38,10 @@ namespace Volt
 		AssetType GetType() override { return GetStaticType(); };
 
 		Ref<AnimationGraphAsset> CreateCopy(Wire::EntityId entity = 0);
+		
 
 	private:
+		Ref<GraphKey::Node> GetRelevantAnimationNode();
 		friend class AnimationGraphImporter;
 
 		AssetHandle mySkeletonHandle = Asset::Null();

@@ -1,4 +1,7 @@
-Handle: 16802240511195054919
-Path: Assets/Player Test/playerIdle_anim.vtanim
-Dependencies:
-  []
+Metadata:
+  assetHandle: 6258146775014869030
+  filePath: Assets/Player Test/playerIdle_anim.vtanim
+  type: 4
+  Dependencies:
+    []
+  ? Properties
