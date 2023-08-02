@@ -24,7 +24,11 @@ namespace Volt::RHI
 		
 		static VT_NODISCARD GraphicsAPI GetAPI() { return s_graphicsAPI; }
 
-		static void Log(Severity logSeverity, std::string_view message);
+		template<typename... Args>
+		static void Log(Severity logSeverity, std::string_view message, Args&&... args);
+
+		template<typename... Args>
+		static void LogTagged(Severity logSeverity, std::string_view tag, std::string_view message, Args&&... args);
 
 	protected:
 		Ref<GraphicsDevice> m_graphicsDevice;
@@ -35,4 +39,26 @@ namespace Volt::RHI
 		inline static GraphicsAPI s_graphicsAPI;
 		inline static LogHookInfo s_logHook;
 	};
+
+	template<typename ...Args>
+	inline void GraphicsContext::Log(Severity logSeverity, std::string_view message, Args && ...args)
+	{
+		if (!s_logHook.enabled || !s_logHook.logCallback)
+		{
+			return;
+		}
+
+		s_logHook.logCallback(logSeverity, std::vformat(message, std::make_format_args(args...)));
+	}
+
+	template<typename... Args>
+	inline void GraphicsContext::LogTagged(Severity logSeverity, std::string_view tag, std::string_view message, Args&&... args)
+	{
+		if (!s_logHook.enabled || !s_logHook.logCallback)
+		{
+			return;
+		}
+
+		s_logHook.logCallback(logSeverity, std::format("{0}: {1}", tag, std::vformat(message, std::make_format_args(args...))));
+	}
 }

@@ -3,6 +3,14 @@
 
 namespace Volt::RHI
 {
+	Buffer::Buffer(const Buffer& buffer)
+	{
+		Release();
+
+		Resize(buffer.m_size);
+		SetData(buffer.GetData(), buffer.GetSize());
+	}
+
 	Buffer::Buffer(size_t size)
 		: m_size(size)
 	{
@@ -53,5 +61,15 @@ namespace Volt::RHI
 	const size_t Buffer::GetSize() const
 	{
 		return m_size;
+	}
+
+	Buffer& Buffer::operator=(const Buffer& buffer)
+	{
+		Release();
+
+		Resize(buffer.m_size);
+		SetData(buffer.GetData(), buffer.GetSize());
+
+		return *this;
 	}
 }

@@ -56,6 +56,7 @@ namespace Volt
 	namespace RHI
 	{
 		class ImGuiImplementation;
+		class ShaderCompiler;
 	}
 
 	class Application
@@ -112,6 +113,7 @@ namespace Volt
 		MultiTimer m_frameTimer;
 
 		Ref<RHI::ImGuiImplementation> m_imguiImplementation;
+		Ref<RHI::ShaderCompiler> m_shaderCompiler;
 		
 		Scope<AssetManager> m_assetmanager;
 		Scope<Window> m_window;

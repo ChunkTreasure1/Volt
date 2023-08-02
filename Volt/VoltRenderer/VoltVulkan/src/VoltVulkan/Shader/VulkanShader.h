@@ -29,6 +29,7 @@ namespace Volt::RHI
 		std::string_view GetName() const override;
 		const ShaderResources& GetResources() const override;
 		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
+		ShaderDataBuffer GetConstantsBuffer() const override;
 
 	protected:
 		void* GetHandleImpl() override;

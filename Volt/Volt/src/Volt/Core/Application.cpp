@@ -39,6 +39,10 @@
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 
+///////////////// TEMPORARY //////////////////
+#include <VoltRHI/Shader/ShaderCompiler.h>
+//////////////////////////////////////////////
+
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
@@ -93,6 +97,23 @@ namespace Volt
 		m_threadPool.Initialize(std::thread::hardware_concurrency());
 		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
+
+		///// TEMPORARY /////
+		{
+			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
+			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
+			shaderCompilerInfo.includeDirectories =
+			{
+				"Engine/Shaders/Source/Includes",
+				"Engine/Shaders/Source/HLSL",
+				"Engine/Shaders/Source/HLSL/Includes",
+				ProjectManager::GetAssetsDirectory()
+			};
+
+
+			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
+		}
+		/////////////////////
 
 		//Renderer::Initialize();
 		//ShaderRegistry::Initialize();

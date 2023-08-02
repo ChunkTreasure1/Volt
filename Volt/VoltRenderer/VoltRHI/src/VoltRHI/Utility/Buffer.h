@@ -8,6 +8,8 @@ namespace Volt::RHI
 	{
 	public:
 		Buffer() = default;
+		Buffer(const Buffer& buffer);
+
 		Buffer(size_t size);
 		Buffer(const void* data, size_t size);
 		~Buffer();
@@ -19,6 +21,8 @@ namespace Volt::RHI
 		[[nodiscard]] const bool IsValid() const;
 		[[nodiscard]] const size_t GetSize() const;
 		[[nodiscard]] void* GetData() const;
+
+		Buffer& operator=(const Buffer& buffer);
 
 		template<typename T>
 		inline T* As(size_t offset = 0) const;

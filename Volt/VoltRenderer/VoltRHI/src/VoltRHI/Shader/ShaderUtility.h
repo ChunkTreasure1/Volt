@@ -1,6 +1,5 @@
 #pragma once
 
-#include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <filesystem>
@@ -133,12 +132,35 @@ namespace Volt::RHI
 				case ShaderStage::AnyHit:		return "rayahit.cached";
 				case ShaderStage::Intersection:	return "rayinter.cached";
 
-				case ShaderStage::Task:			return "task,cached";
+				case ShaderStage::Task:			return "task.cached";
 				case ShaderStage::Mesh:			return "mesh.cached";
 			}
 			
 			assert(false);
 			return "";
+		}
+
+		inline std::string StageToString(ShaderStage stage)
+		{
+			switch (stage)
+			{
+				case ShaderStage::Vertex: return "Vertex";
+				case ShaderStage::Hull: return "Hull";
+				case ShaderStage::Domain: return "Domain";
+				case ShaderStage::Geometry: return "Geometry";
+				case ShaderStage::Pixel: return "Fragment";
+				case ShaderStage::Compute: return "Compute";
+				
+				case ShaderStage::RayGen: return "Ray Generation";
+				case ShaderStage::Miss: return "Miss";
+				case ShaderStage::ClosestHit: return "Close Hit";
+				case ShaderStage::AnyHit: return "Any Hit";
+			
+				case ShaderStage::Mesh: return "Mesh";
+				case ShaderStage::Task: return "Task";
+			}
+
+			return "Unsupported";
 		}
 
 		inline std::string ReadStringFromFile(const std::filesystem::path& path)

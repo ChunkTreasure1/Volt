@@ -33,14 +33,4 @@ namespace Volt::RHI
 
 		return nullptr;
 	}
-
-	void GraphicsContext::Log(Severity logSeverity, std::string_view message)
-	{
-		if (!s_logHook.enabled || !s_logHook.logCallback)
-		{
-			return;
-		}
-
-		s_logHook.logCallback(logSeverity, message);
-	}
 }

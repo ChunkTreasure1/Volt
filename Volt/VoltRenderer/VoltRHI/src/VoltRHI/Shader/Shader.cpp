@@ -12,6 +12,16 @@ namespace Volt::RHI
 		m_uniforms[name] = { type, size, offset };
 	}
 
+	void ShaderDataBuffer::SetSize(const size_t size)
+	{
+		m_size = size;
+	}
+
+	void ShaderDataBuffer::Allocate()
+	{
+		m_buffer.Resize(m_size);
+	}
+
 	Ref<Shader> Shader::Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)
 	{
 		const auto api = GraphicsContext::GetAPI();

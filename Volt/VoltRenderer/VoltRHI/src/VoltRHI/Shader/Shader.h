@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VoltRHI/Core/RHIInterface.h"
+#include "VoltRHI/Core/RHICommon.h"
 
 #include "VoltRHI/Utility/Buffer.h"
 
@@ -47,6 +48,8 @@ namespace Volt::RHI
 	{
 	public:
 		void AddMember(std::string_view name, ShaderUniformType type, size_t size, size_t offset);
+		void SetSize(const size_t size);
+		void Allocate();
 
 		[[nodiscard]] inline const bool HasMember(std::string_view memberName) const { return !m_uniforms.contains(memberName); }
 		[[nodiscard]] inline const bool IsValid() const { return !m_uniforms.empty(); }
@@ -58,19 +61,32 @@ namespace Volt::RHI
 		std::unordered_map<std::string_view, ShaderUniform>::iterator begin() { return m_uniforms.begin(); }
 		std::unordered_map<std::string_view, ShaderUniform>::iterator end() { return m_uniforms.end(); }
 
+		template<typename T>
+		T& GetMemberData(std::string_view memberName);
+
 	private:
 		std::unordered_map<std::string_view, ShaderUniform> m_uniforms;
 		Buffer m_buffer{};
 		size_t m_size = 0;
 	};
 
+	struct ShaderConstantData
+	{
+		uint32_t size = 0;
+		uint32_t offset = 0;
+		ShaderStage	stageFlags = ShaderStage::None;
+	};
+
 	struct ShaderResources
 	{
-		std::map<uint32_t, std::set<uint32_t>> uniformBuffers;
-		std::map<uint32_t, std::set<uint32_t>> shaderStorageBuffers;
+		std::map<uint32_t, std::set<uint32_t>> constantBuffers;
+		std::map<uint32_t, std::set<uint32_t>> storageBuffers;
 		std::map<uint32_t, std::set<uint32_t>> storageImages;
 		std::map<uint32_t, std::set<uint32_t>> images;
 		std::map<uint32_t, std::set<uint32_t>> samplers;
+
+		ShaderConstantData constants{};
+		ShaderDataBuffer constantsBuffer{};
 	};
 
 	class Shader : public RHIInterface
@@ -80,6 +96,7 @@ namespace Volt::RHI
 		virtual std::string_view GetName() const = 0;
 		virtual const ShaderResources& GetResources() const = 0;
 		virtual const std::vector<std::filesystem::path>& GetSourceFiles() const = 0;
+		virtual ShaderDataBuffer GetConstantsBuffer() const = 0;
 
 		static Ref<Shader> Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile = false);
 
@@ -88,4 +105,10 @@ namespace Volt::RHI
 		virtual ~Shader() = default;
 
 	};
+
+	template<typename T>
+	T& ShaderDataBuffer::GetMemberData(std::string_view memberName)
+	{
+		return m_uniforms.at(memberName);
+	}
 }
