@@ -228,6 +228,12 @@ namespace Volt::RHI
 
 		// Cache shader
 		{
+			// Create the required directories if they do not exits
+			if (!std::filesystem::exists(cachedPath.parent_path()))
+			{
+				std::filesystem::create_directories(cachedPath.parent_path());
+			}
+
 			std::ofstream output{ cachedPath, std::ios::binary | std::ios::out };
 			if (!output.is_open())
 			{

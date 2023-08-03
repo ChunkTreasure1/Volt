@@ -232,6 +232,8 @@ namespace Volt::RHI
 			}
 
 			m_resources.constantBuffers[set].emplace(binding);
+
+			m_perStageUBOCount[stage].count++;
 		}
 
 		for (const auto& ssbo : resources.storage_buffers)
@@ -245,6 +247,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 
 			m_resources.storageBuffers[set].emplace(binding);
+			m_perStageSSBOCount[stage].count++;
 		}
 
 		for (const auto& image : resources.storage_images)
@@ -253,6 +256,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
 			
 			m_resources.storageImages[set].emplace(binding);
+			m_perStageStorageImageCount[stage].count++;
 		}
 
 		for (const auto& image : resources.separate_images)
@@ -261,6 +265,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
 
 			m_resources.images[set].emplace(binding);
+			m_perStageImageCount[stage].count++;
 		}
 
 		for (const auto& sampler : resources.separate_samplers)
@@ -269,6 +274,7 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
 
 			m_resources.images[set].emplace(binding);
+			m_perStageSamplerCount[stage].count++;
 		}
 
 		for (const auto& pushConstant : resources.push_constant_buffers)
@@ -295,5 +301,11 @@ namespace Volt::RHI
 				i++;
 			}
 		}
+
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Uniform Buffers: {0}", m_perStageUBOCount[stage].count);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Shader Storage Buffers: {0}", m_perStageSSBOCount[stage].count);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Images: {0}", m_perStageStorageImageCount[stage].count);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Images: {0}", m_perStageImageCount[stage].count);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Samplers: {0}", m_perStageSamplerCount[stage].count);
 	}
 }

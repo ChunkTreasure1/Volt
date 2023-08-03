@@ -37,6 +37,11 @@ namespace Volt::RHI
 	private:
 		friend class VulkanShaderCompiler;
 
+		struct TypeCount
+		{
+			uint32_t count = 0;
+		};
+
 		void LoadShaderFromFiles();
 		void Release();
 
@@ -48,6 +53,12 @@ namespace Volt::RHI
 		std::unordered_map<ShaderStage, SourceData> m_shaderSources;
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_shaderData;
 		std::unordered_map<ShaderStage, PipelineStageInfo> m_pipelineStageInfo;
+
+		std::unordered_map<ShaderStage, TypeCount> m_perStageUBOCount;
+		std::unordered_map<ShaderStage, TypeCount> m_perStageSSBOCount;
+		std::unordered_map<ShaderStage, TypeCount> m_perStageStorageImageCount;
+		std::unordered_map<ShaderStage, TypeCount> m_perStageImageCount;
+		std::unordered_map<ShaderStage, TypeCount> m_perStageSamplerCount;
 
 		std::vector<VkDescriptorSetLayout_T*> m_descriptorSetLayouts;
 

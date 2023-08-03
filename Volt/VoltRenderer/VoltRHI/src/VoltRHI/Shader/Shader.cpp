@@ -7,6 +7,11 @@
 
 namespace Volt::RHI
 {
+	ShaderUniform::ShaderUniform(const ShaderUniformType type, const size_t size, const size_t offset)
+		: type(type), size(size), offset(offset)
+	{
+	}
+
 	void ShaderDataBuffer::AddMember(std::string_view name, ShaderUniformType type, size_t size, size_t offset)
 	{
 		m_uniforms[name] = { type, size, offset };

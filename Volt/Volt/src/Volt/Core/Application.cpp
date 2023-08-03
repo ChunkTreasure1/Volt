@@ -41,6 +41,7 @@
 
 ///////////////// TEMPORARY //////////////////
 #include <VoltRHI/Shader/ShaderCompiler.h>
+#include <VoltRHI/Shader/Shader.h>
 //////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
@@ -102,6 +103,7 @@ namespace Volt
 		{
 			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
 			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
+			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
 			shaderCompilerInfo.includeDirectories =
 			{
 				"Engine/Shaders/Source/Includes",
@@ -112,6 +114,8 @@ namespace Volt
 
 
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
+
+			Ref<RHI::Shader> shader = RHI::Shader::Create("default", { ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Default_vs.hlsl", ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Default_ps.hlsl" }, true);
 		}
 		/////////////////////
 
