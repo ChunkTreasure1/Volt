@@ -62,6 +62,7 @@ namespace Nexus
 			return false;
 		}
 
+
 		// make the buffer zero terminated
 		out_buffer[ret] = 0;
 		return true;
