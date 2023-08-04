@@ -23,4 +23,12 @@
 #pragma region Manual configuration
 #define NXS_PROTOCOL NXS_PROTOCOL_UDP
 #define NXS_MODULES NXS_MODULE_ALL
+
+#define NXS_TYPE_RPC_ID uint16_t
+#define NXS_TYPE_REP_ID uint16_t
+#define NXS_TYPE_SUB_ID uint16_t
+#define NXS_TYPE_INSTANCE uint64_t
+#define NXS_TYPE_CLIENT_ID uint16_t
+#define NXS_TYPE_NOTIFY_ID uint64_t
+
 #pragma endregion

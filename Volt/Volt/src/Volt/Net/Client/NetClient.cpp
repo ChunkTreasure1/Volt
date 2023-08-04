@@ -65,7 +65,7 @@ namespace Volt
 		if (m_requestReload)
 		{
 			Nexus::Packet reloadRequest;
-			reloadRequest << m_sceneInstanceId;
+			reloadRequest << m_instanceId;
 			Transmit(reloadRequest);
 			m_requestReload = false;
 		}
@@ -79,7 +79,7 @@ namespace Volt
 			onLoadedQueue.push(p);
 			return;
 		}
-		p.ownerID = m_id;
+		p.senderId = m_id;
 		m_relay.Transmit(p, Nexus::Address::ConstructAddress(m_serverAdress, m_serverPort));
 	}
 
@@ -95,12 +95,12 @@ namespace Volt
 
 	void NetClient::OnConnectionConfirmed()
 	{
-		m_id = m_currentPacket.second.ownerID;
+		m_id = m_currentPacket.second.senderId;
 		LogTrace("Connection to server confirmed, CLIENT_ID is: " + std::to_string(m_id));
 		while (!onLoadedQueue.empty())
 		{
 			auto p = onLoadedQueue.front();
-			p.ownerID = m_id;
+			p.senderId = m_id;
 			m_relay.Transmit(p, Nexus::Address::ConstructAddress(m_serverAdress, m_serverPort));
 			onLoadedQueue.pop();
 		}
@@ -179,7 +179,7 @@ namespace Volt
 	void NetClient::OnConstructRegistry()
 	{
 		// set netscene instance id
-		m_currentPacket.second >> m_sceneInstanceId;
+		m_currentPacket.second >> m_instanceId;
 	}
 
 	void NetClient::OnMoveUpdate()

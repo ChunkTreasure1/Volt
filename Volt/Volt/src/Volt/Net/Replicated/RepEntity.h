@@ -1,5 +1,5 @@
 #pragma once
-#include <Nexus/Interface/Replication/Replicated.h>
+#include <Nexus/Replication/Replicated.h>
 #include "Volt/Scene/Entity.h"
 
 namespace Volt

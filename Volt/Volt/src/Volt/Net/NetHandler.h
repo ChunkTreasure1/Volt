@@ -5,7 +5,7 @@
 
 namespace Nexus
 {
-	class NetManager;
+	class Manager;
 }
 
 namespace Volt
@@ -31,7 +31,7 @@ namespace Volt
 		bool IsRunning();
 		eNetErrorCode* GetErrorPtr();
 		NetEventContainer& GetEventContainer();
-		Scope<Nexus::NetManager>& GetBackend();
+		Scope<Nexus::Manager>& GetBackend();
 
 		bool IsOwner(Nexus::TYPE::REP_ID in_object);
 		bool IsHost();
@@ -46,7 +46,7 @@ namespace Volt
 
 	private:
 		friend class NetPanel;
-		Scope<Nexus::NetManager> m_backend;
+		Scope<Nexus::Manager> m_backend;
 		NetEventContainer m_eventContainer;
 		eNetErrorCode* m_lastUnhandledNetError = nullptr;
 

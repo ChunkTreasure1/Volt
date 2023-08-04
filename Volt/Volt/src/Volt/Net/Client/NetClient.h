@@ -1,9 +1,9 @@
 #pragma once
-#include <Nexus/Interface/NetManager/NetManager.h>
+#include <Nexus/Manager/Manager.h>
 #include <queue>
 namespace Volt
 {
-	class NetClient : public Nexus::NetManager
+	class NetClient : public Nexus::Manager
 	{
 	public:
 		NetClient();

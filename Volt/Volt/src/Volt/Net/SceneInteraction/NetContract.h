@@ -2,8 +2,8 @@
 #include "Volt/Asset/Asset.h"
 #include "Wire/Entity.h"
 
-#include <Nexus/Core/Packet/PacketID.h>
-#include <Nexus/Core/Types/Types.h>
+#include <Nexus/Packet/PacketID.h>
+#include <Nexus/Core/Types.h>
 
 #include "Volt/Net/Event/NetEvent.h"
 

@@ -57,7 +57,7 @@
 
 #include "Volt/Net/Client/NetClient.h"
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
-#include <Nexus/Interface/NetManager/NetManager.h>
+#include <Nexus/Manager/Manager.h>
 //#include <Nexus/Winsock/AddressHelpers.hpp>
 
 namespace Volt
@@ -4983,7 +4983,7 @@ namespace Volt
 		}
 
 		Nexus::Packet packet;
-		packet.ownerID = handler.GetBackend()->GetClientId();
+		packet.senderId = handler.GetBackend()->GetClientId();
 		packet.id = Nexus::ePacketID::REMOVE_ENTITY;
 		packet << repId;
 
@@ -5021,7 +5021,7 @@ namespace Volt
 		auto transformData = CreateTransformComponentData(0, temp);
 
 		Nexus::Packet packet;
-		packet.ownerID = clientId;
+		packet.senderId = clientId;
 		packet.id = Nexus::ePacketID::CREATE_ENTITY;
 		packet < transformData < prefabData;
 

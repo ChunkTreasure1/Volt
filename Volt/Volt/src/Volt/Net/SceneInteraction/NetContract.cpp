@@ -11,7 +11,7 @@
 #include "Volt/Net/SceneInteraction/CallMonoMethod.h"
 #include "Volt/Core/Application.h"
 #include "Volt/Net/NetHandler.h"
-#include "Nexus/Interface/NetManager/NetManager.h"
+#include "Nexus/Manager/Manager.h"
 #include "Volt/Net/Replicated/RepEntity.h"
 
 #include "Volt/Asset/AssetManager.h"

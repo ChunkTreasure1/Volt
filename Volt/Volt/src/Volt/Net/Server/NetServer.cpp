@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "NetServer.h"
 
-#include <Nexus/Core/Types/Types.h>
+#include <Nexus/Core/Types.h>
 #include <Nexus/Core/Address.h>
 
 #include <Volt/Scene/SceneManager.h>
@@ -94,7 +94,7 @@ namespace Volt
 	{
 		m_connectionRegistry.Clear();
 		GetRegistry().Clear();
-		NetManager::Shutdown();
+		Manager::Shutdown();
 	}
 	void NetServer::Init()
 	{
@@ -125,7 +125,7 @@ namespace Volt
 		LogTrace("User: " + m_connectionRegistry.GetAlias(newClientID) + " has joined");
 
 		Nexus::Packet confirmationPacket;
-		confirmationPacket.ownerID = newClientID;
+		confirmationPacket.senderId = newClientID;
 		confirmationPacket.id = Nexus::ePacketID::CONNECTION_CONFIRMED;
 		m_relay.Transmit(confirmationPacket, m_connectionRegistry.GetSockAddr(newClientID));
 	}
@@ -133,22 +133,22 @@ namespace Volt
 
 	void NetServer::OnConnectionConfirmed()
 	{
-		m_id = m_currentPacket.second.ownerID;
+		m_id = m_currentPacket.second.senderId;
 	}
 
 	void NetServer::OnDisconnect()
 	{
 		auto packet = m_currentPacket.second;
 
-		for (auto repId : m_registry.GetAllOwner(packet.ownerID))
+		for (auto repId : m_registry.GetAllOwner(packet.senderId))
 		{
 			auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
 			Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
 			m_registry.Unregister(repId);
 		}
 
-		LogTrace("User: " + m_connectionRegistry.GetAlias(packet.ownerID) + " has disconnected");
-		m_connectionRegistry.RemoveConnection(packet.ownerID);
+		LogTrace("User: " + m_connectionRegistry.GetAlias(packet.senderId) + " has disconnected");
+		m_connectionRegistry.RemoveConnection(packet.senderId);
 	}
 
 	void NetServer::OnUpdate()
@@ -163,10 +163,10 @@ namespace Volt
 
 	void NetServer::OnReload()
 	{
-		Nexus::TYPE::NETSCENE_INSTANCE_ID sceneId;
+		Nexus::TYPE::INSTANCE_ID sceneId;
 		m_currentPacket.second >> sceneId;
 		// valiade world id
-		if (sceneId != m_sceneInstanceId)
+		if (sceneId != m_instanceId)
 		{
 			Nexus::Packet confirmedPacket;
 			confirmedPacket.id = Nexus::ePacketID::RELOAD_CONFIRMED;
@@ -188,7 +188,7 @@ namespace Volt
 		ConstructPrefab(prefabData, m_registry);
 
 		Nexus::Packet newPacket;
-		newPacket.ownerID = packet.ownerID;
+		newPacket.senderId = packet.senderId;
 		newPacket.id = packet.id;
 		for (auto comp : prefabData.componentData)
 		{
@@ -220,17 +220,17 @@ namespace Volt
 		scenePtr->RemoveEntity(Entity(repEnt->GetEntityId(), scenePtr.get()));
 
 		auto tPack = m_currentPacket.second;
-		tPack.ownerID = 0;
+		tPack.senderId = 0;
 		Transmit(tPack);
 		// errors
 	}
 
 	void NetServer::OnConstructRegistry()
 	{
-		auto newClientID = m_currentPacket.second.ownerID;
+		auto newClientID = m_currentPacket.second.senderId;
 
-		Nexus::TYPE::REP_ID registerEntityId = Nexus::TYPE::RandRepID();
-		while (m_registry.IdExist(registerEntityId)) registerEntityId = Nexus::TYPE::RandRepID();
+		Nexus::TYPE::REP_ID registerEntityId = Nexus::Random<Nexus::TYPE::REP_ID>();
+		while (m_registry.IdExist(registerEntityId)) registerEntityId = Nexus::Random<Nexus::TYPE::REP_ID>();
 
 		auto gameMode = SceneManager::GetActiveScene().lock()->GetAllEntitiesWith<GameModeComponent>();
 		if (gameMode.size() != 1)
@@ -254,15 +254,15 @@ namespace Volt
 
 		// spawn player
 		Nexus::Packet spawnPlayer;
-		spawnPlayer.ownerID = newClientID;
+		spawnPlayer.senderId = newClientID;
 		spawnPlayer.id = Nexus::ePacketID::CREATE_ENTITY;
 		spawnPlayer < spawnPointData < prefabData;
 		m_relay.Transmit(spawnPlayer, m_connectionRegistry.GetSockAddr(newClientID));
 
 		Nexus::Packet instanceId;
-		instanceId.ownerID = newClientID;
+		instanceId.senderId = newClientID;
 		instanceId.id = Nexus::ePacketID::CONSTRUCT_REGISTRY;
-		instanceId << m_sceneInstanceId;
+		instanceId << m_instanceId;
 		m_relay.Transmit(instanceId, m_connectionRegistry.GetSockAddr(newClientID));
 
 		// Sync registry on new connection
@@ -284,7 +284,7 @@ namespace Volt
 		}
 
 		Nexus::Packet entCreationPacket;
-		entCreationPacket.ownerID = 0;
+		entCreationPacket.senderId = 0;
 		entCreationPacket.id = Nexus::ePacketID::CREATE_ENTITY;
 		entCreationPacket < prefabData;
 
@@ -334,7 +334,7 @@ namespace Volt
 
 		for (const auto& client : m_connectionRegistry.GetClientIDs())
 		{
-			if (m_connectionRegistry.GetSockAddr(packet.ownerID) != client.second)
+			if (m_connectionRegistry.GetSockAddr(packet.senderId) != client.second)
 			{
 				m_relay.Transmit(packet, client.second);
 			}
@@ -344,7 +344,7 @@ namespace Volt
 	void NetServer::OnPing()
 	{
 		auto packet = m_currentPacket.second;
-		m_relay.Transmit(packet, m_connectionRegistry.GetSockAddr(packet.ownerID));
+		m_relay.Transmit(packet, m_connectionRegistry.GetSockAddr(packet.senderId));
 	}
 
 	void NetServer::OnBadPacket()

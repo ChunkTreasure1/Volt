@@ -1,5 +1,5 @@
 #pragma once
-#include "Nexus/Core/Types/Types.h"
+#include "Nexus/Core/Types.h"
 
 namespace Nexus
 {
@@ -7,7 +7,7 @@ namespace Nexus
 	{
 	public:
 		Replicated() {}
-		Replicated(TYPE::eReplicatedType in_type, TYPE::CLIENT_ID owner) : m_type(in_type), m_ownerId(owner) {}
+		Replicated(TYPE::eReplicatedType _type, TYPE::CLIENT_ID owner) : m_type(_type), m_ownerId(owner) {}
 		TYPE::eReplicatedType GetType() { return m_type; }
 		TYPE::CLIENT_ID GetOwner() { return m_ownerId; }
 	private:

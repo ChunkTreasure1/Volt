@@ -1,5 +1,5 @@
 #pragma once
-#include <Nexus/Interface/Replication/Replicated.h>
+#include <Nexus/Replication/Replicated.h>
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
@@ -19,13 +19,13 @@ namespace Volt
 	class RepVariable : public Nexus::Replicated
 	{
 	public:
-		RepVariable(const std::string& in_variableName, Nexus::TYPE::REP_ID in_repOwner, Nexus::TYPE::CLIENT_ID in_ownerId, Ref<MonoScriptInstance> in_scriptInstance, MonoScriptField in_field, Wire::EntityId in_entityId)
-			: Replicated(Nexus::TYPE::eReplicatedType::VARIABLE, in_ownerId)
-			, m_varName(in_variableName)
-			, m_repOwner(in_repOwner)
-			, m_scriptInstance(in_scriptInstance)
-			, m_field(in_field)
-			, m_entityId(in_entityId)
+		RepVariable(const std::string& variableName, Nexus::TYPE::REP_ID repOwner, Nexus::TYPE::CLIENT_ID ownerId, Ref<MonoScriptInstance> scriptInstance, MonoScriptField field, Wire::EntityId entityId)
+			: Replicated(Nexus::TYPE::eReplicatedType::VARIABLE, ownerId)
+			, m_varName(variableName)
+			, m_repOwner(repOwner)
+			, m_scriptInstance(scriptInstance)
+			, m_field(field)
+			, m_entityId(entityId)
 		{
 			//auto monoClass = m_scriptInstance.lock()->GetClass();
 			//MonoScriptEngine::NetFieldSetup(monoClass.get(), m_field);

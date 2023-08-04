@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Nexus/Core/Packet/Packet.h>
-#include <Nexus/Core/Types/Types.h>
-#include "Nexus/Interface/Replication/ReplicationRegistry.h"
+#include <Nexus/Packet/Packet.h>
+#include <Nexus/Core/Types.h>
+#include "Nexus/Replication/ReplicationRegistry.h"
 //#include "Volt/Net/SceneInteraction/NetPrefabInstantiation.h"
 
 #include <Volt/Components/Components.h>

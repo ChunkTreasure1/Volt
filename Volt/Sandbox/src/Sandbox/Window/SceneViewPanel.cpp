@@ -1509,7 +1509,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			auto& registry = myScene->GetRegistry();
 			registry.ForEach<Volt::NetActorComponent>([&](Wire::EntityId id, Volt::NetActorComponent& dataComp)
 			{
-				dataComp.repId = Nexus::TYPE::RandRepID();
+				dataComp.repId = Nexus::Random<Nexus::TYPE::REP_ID>();
 				dataComp.clientId = 0;
 			});
 			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");

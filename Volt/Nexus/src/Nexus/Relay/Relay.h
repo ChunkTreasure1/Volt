@@ -3,19 +3,19 @@
 #include "Nexus/Utility/tsdeque.h"
 #include "Nexus/Core/Socket.h"
 #include "Nexus/Core/Address.h"
-#include "Nexus/Core/Packet/Packet.h"
+#include "Nexus/Packet/Packet.h"
 #include "Guarantor.h"
 namespace Nexus
 {
 	class Relay
 	{
 	public:
-		Relay(tsdeque<std::pair<Nexus::Address, Nexus::Packet>>& in_packetQueue);
+		Relay(tsdeque<std::pair<Nexus::Address, Nexus::Packet>>& _packetQueue);
 		~Relay();
 
-		void Transmit(Nexus::Packet in_packet, Nexus::Address in_sockAddr);
+		void Transmit(Nexus::Packet _packet, Nexus::Address _sockAddr);
 
-		void InitSocket(unsigned short in_port);
+		void InitSocket(unsigned short _port);
 		void StartBackend();
 		void StopBackend();
 

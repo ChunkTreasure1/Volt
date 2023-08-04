@@ -2,8 +2,8 @@
 #include "Sandbox/Window/EditorWindow.h"
 
 #include <Nexus/DEFAULT.h>
-#include <Nexus/Core/Packet/PacketID.h>
-#include <Nexus/Core/Packet/Packet.h>
+#include <Nexus/Packet/PacketID.h>
+#include <Nexus/Packet/Packet.h>
 
 #include <Volt/Net/Event/NetEventContainer.h>
 

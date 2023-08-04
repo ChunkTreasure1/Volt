@@ -1,23 +1,23 @@
 #include "nexuspch.h"
-#include "NetManager.h"
+#include "Manager.h"
 #include "Nexus/Core/Session.h"
 #include "Nexus/Core/Address.h"
 
 
 namespace Nexus
 {
-	NetManager::NetManager()
+	Manager::Manager()
 		: m_relay(m_packetQueueIn)
 	{
 
 	}
 
-	NetManager::~NetManager()
+	Manager::~Manager()
 	{
 		m_relay.StopBackend();
 	}
 
-	void NetManager::Start(uint16_t in_port)
+	void Manager::Start(uint16_t _port)
 	{
 		Nexus::Session::Start();
 		if (Nexus::Session::IsValid())
@@ -25,11 +25,11 @@ namespace Nexus
 			// #KITE_INTERFACE_TODO: Log/Assert
 		}
 
-		m_relay.InitSocket(in_port);
+		m_relay.InitSocket(_port);
 		m_relay.StartBackend();
 	}
 
-	void NetManager::Shutdown()
+	void Manager::Shutdown()
 	{
 		// #KITE_INTERFACE_TODO: Disconnect all clients
 		m_relay.StopBackend();
@@ -37,12 +37,12 @@ namespace Nexus
 		Nexus::Session::Start();
 	}
 
-	void NetManager::AddPacketToIncomming(const Packet& in_packet)
+	void Manager::AddPacketToIncomming(const Packet& _packet)
 	{
-		GetIncommingPacketQueue().push_back({ Nexus::Address(Nexus::Address::ConstructDescription("127.0.0.1", GetRelay().GetBoundPort())), in_packet });
+		GetIncommingPacketQueue().push_back({ Nexus::Address(Nexus::Address::ConstructDescription("127.0.0.1", GetRelay().GetBoundPort())), _packet });
 	}
 
-	void NetManager::HandleTick(float deltaTime)
+	void Manager::HandleTick(float deltaTime)
 	{
 		m_timer += deltaTime;
 		if (m_timer > TICK_LEN)
@@ -52,7 +52,7 @@ namespace Nexus
 		}
 	}
 
-	void NetManager::HandleIncomming()
+	void Manager::HandleIncomming()
 	{
 		// #nexus_todo: validate WSA
 

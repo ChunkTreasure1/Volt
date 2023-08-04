@@ -1,9 +1,9 @@
 #pragma once
 #include "Nexus/API/API.h"
-#include "Nexus/Core/Relay/Relay.h"
-#include "Nexus/Interface/Replication/ReplicationRegistry.h"
-#include "Nexus/Interface/Connection/ConnectionRegistry.h"
-#include "Nexus/Core/Types/Types.h"
+#include "Nexus/Relay/Relay.h"
+#include "Nexus/Replication/ReplicationRegistry.h"
+#include "Nexus/Connection/ConnectionRegistry.h"
+#include "Nexus/Core/Types.h"
 
 namespace Volt
 {
@@ -12,27 +12,29 @@ namespace Volt
 
 namespace Nexus
 {
-	class NetManager
+	class Manager
 	{
 	public:
-		NetManager();
-		~NetManager();
+		Manager();
+		~Manager();
 
-		void Start(uint16_t in_port = 0);
+		void Start(uint16_t _port = 0);
 		void Shutdown();
 
 		virtual void Init() = 0;
 
 		void HandleTick(float deltaTime);
-		virtual void Transmit(const Nexus::Packet& in_packet) = 0;
+		virtual void Transmit(const Nexus::Packet& _packet) = 0;
 
 		Nexus::Relay& GetRelay() { return m_relay; }
 		Nexus::ReplicationRegisty& GetRegistry() { return m_registry; }
 		tsdeque<std::pair<Nexus::Address, Nexus::Packet>>& GetIncommingPacketQueue() { return m_packetQueueIn; }
+		// #nexus_depricated: here
 		Nexus::ConnectionRegistry& GetConnectionRegistry() { return m_connectionRegistry; }
+		Nexus::ConnectionRegistry& Connections() { return m_connectionRegistry; }
 		const Nexus::TYPE::CLIENT_ID& GetClientId() { return m_id; }
 
-		void AddPacketToIncomming(const Packet& in_packet);
+		void AddPacketToIncomming(const Packet& _packet);
 
 		virtual void Reload() = 0;
 
@@ -49,7 +51,7 @@ namespace Nexus
 		Nexus::Relay m_relay;
 
 		Nexus::TYPE::CLIENT_ID m_id = 1;
-		TYPE::NETSCENE_INSTANCE_ID m_sceneInstanceId = 0;
+		TYPE::INSTANCE_ID m_instanceId = 0;
 
 		// Connect
 		virtual void OnConnect() = 0;

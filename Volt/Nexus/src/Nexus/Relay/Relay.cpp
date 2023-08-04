@@ -4,8 +4,8 @@
 
 namespace Nexus
 {
-	Relay::Relay(tsdeque<std::pair<Nexus::Address, Packet>>& in_packetQueue)
-		: ex_packetQueueIn(in_packetQueue), m_guarantor(m_packetQueueOut, m_isRunning)
+	Relay::Relay(tsdeque<std::pair<Nexus::Address, Packet>>& _packetQueue)
+		: ex_packetQueueIn(_packetQueue), m_guarantor(m_packetQueueOut, m_isRunning)
 	{
 
 	}
@@ -15,7 +15,7 @@ namespace Nexus
 		StopBackend();
 	}
 
-	void Relay::InitSocket(unsigned short in_port)
+	void Relay::InitSocket(unsigned short _port)
 	{
 		if (m_isRunning)
 		{
@@ -24,8 +24,8 @@ namespace Nexus
 		}
 
 		m_socket.Init();
-		m_socket.Bind(in_port);
-		m_boundPort = in_port;
+		m_socket.Bind(_port);
+		m_boundPort = _port;
 	}
 
 	void Relay::StartBackend()
@@ -76,10 +76,10 @@ namespace Nexus
 		ex_packetQueueIn.clear();
 	}
 
-	void Relay::Transmit(Packet in_packet, Nexus::Address in_sockAddr)
+	void Relay::Transmit(Packet _packet, Nexus::Address _sockAddr)
 	{
-		in_packet.notifyId = m_guarantor.Add(in_sockAddr, in_packet);
-		m_packetQueueOut.push_back({ in_sockAddr, in_packet });
+		_packet.notifyId = m_guarantor.Add(_sockAddr, _packet);
+		m_packetQueueOut.push_back({ _sockAddr, _packet });
 	}
 
 	void Relay::HandleOutgoing()

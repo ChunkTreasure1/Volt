@@ -1,7 +1,7 @@
 #pragma once
 
 #define PACKET_SIZE 512
-#define TICK_LEN 1/30
+#define TICK_LEN 1/60
 
 #define DEFAULT_PORT 27018
 #define LOCAL_HOST "127.0.0.1"

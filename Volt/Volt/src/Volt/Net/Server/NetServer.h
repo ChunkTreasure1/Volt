@@ -1,10 +1,10 @@
 #pragma once
-#include <Nexus/Interface/NetManager/NetManager.h>
-#include <Nexus/Interface/Connection/ConnectionRegistry.h>
+#include <Nexus/Manager/Manager.h>
+#include <Nexus/Connection/ConnectionRegistry.h>
 
 namespace Volt
 {
-	class NetServer : public Nexus::NetManager
+	class NetServer : public Nexus::Manager
 	{
 	public:
 		NetServer();

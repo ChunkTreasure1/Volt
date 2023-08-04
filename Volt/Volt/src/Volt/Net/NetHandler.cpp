@@ -7,7 +7,7 @@
 #include <Nexus/Core/Address.h>
 #include <Nexus/Core/Session.h>
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
-#include <Nexus/Interface/Replication/ReplicationRegistry.h>
+#include <Nexus/Replication/ReplicationRegistry.h>
 
 #include "Volt/Scene/SceneManager.h"
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
@@ -93,7 +93,7 @@ namespace Volt
 		return m_eventContainer;
 	}
 
-	Scope<Nexus::NetManager>& NetHandler::GetBackend()
+	Scope<Nexus::Manager>& NetHandler::GetBackend()
 	{
 		return m_backend;
 	}
@@ -154,7 +154,7 @@ namespace Volt
 
 				RecursiveHandleMono(repEnt->GetEntityId(), id, beginId, &m_backend->m_registry, false);
 			}
-			m_backend->m_sceneInstanceId = Nexus::TYPE::RandSceneInstanceID();
+			m_backend->m_instanceId = Nexus::Random<Nexus::TYPE::INSTANCE_ID>();
 			m_handleTick = true;
 		}
 	}

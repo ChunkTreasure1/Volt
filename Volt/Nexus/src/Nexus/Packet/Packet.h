@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include "Nexus/DEFAULT.h"
-#include "Nexus/Core/Types/Types.h"
+#include "Nexus/Core/Types.h"
 
 #include "Nexus/Utility/Log/Log.h"
 
@@ -11,7 +11,7 @@ namespace Nexus
 	// #nexus_todo: failsafe unloading functions
 	struct Packet
 	{
-		TYPE::CLIENT_ID ownerID = 0;
+		TYPE::CLIENT_ID senderId = 0;
 		TYPE::NOTIFY_ID notifyId = 0;
 		ePacketID id = ePacketID::NIL;
 		std::vector<TYPE::BYTE> body;
@@ -23,7 +23,7 @@ namespace Nexus
 		{
 			std::vector<char> rVec;
 			rVec.resize(Size());
-			memcpy(rVec.data(), &ownerID, sizeof(ePacketID));
+			memcpy(rVec.data(), &senderId, sizeof(ePacketID));
 			memcpy(rVec.data() + sizeof(TYPE::CLIENT_ID), &id, sizeof(ePacketID));
 			memcpy(rVec.data() + sizeof(ePacketID) + sizeof(TYPE::CLIENT_ID), body.data(), body.size());
 			return rVec;
@@ -140,9 +140,9 @@ namespace Nexus
 		auto bodySize = in_len - idSize - clientIdSize - notifySize;
 
 		Packet constructed;
-		memcpy_s(&constructed.ownerID, clientIdSize, &in_buffer[0], clientIdSize);
+		memcpy_s(&constructed.senderId, clientIdSize, &in_buffer[0], clientIdSize);
 		memcpy_s(&constructed.notifyId, notifySize, &in_buffer[clientIdSize], notifySize);
-		memcpy_s(&constructed.id, idSize, &in_buffer[clientIdSize+notifySize], idSize);
+		memcpy_s(&constructed.id, idSize, &in_buffer[clientIdSize + notifySize], idSize);
 
 		if (bodySize <= 0 || bodySize >= PACKET_SIZE) return constructed;
 
@@ -151,4 +151,5 @@ namespace Nexus
 		memcpy_s(constructed.body.data(), bodySize, &in_buffer[clientIdSize + idSize], bodySize);
 		return constructed;
 	}
+
 }

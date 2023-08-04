@@ -508,7 +508,7 @@ namespace Volt
 						{
 							continue;
 						}
-						
+
 						auto& fromEntityFields = scrScriptFieldCache.GetCache().at(scriptComp->scriptIds[i]);
 						auto& toEntityFields = targetScriptFieldCache.GetCache()[otherComponent->scriptIds[i]];
 
@@ -810,7 +810,7 @@ namespace Volt
 
 		if (aRegistry.HasComponent<NetActorComponent>(newEnt))
 		{
-			aRegistry.GetComponent<NetActorComponent>(newEnt).repId = Nexus::TYPE::RandRepID();
+			aRegistry.GetComponent<NetActorComponent>(newEnt).repId = Nexus::Random<Nexus::TYPE::REP_ID>();
 		}
 
 		if (aRegistry.HasComponent<RelationshipComponent>(aSrcEntity))

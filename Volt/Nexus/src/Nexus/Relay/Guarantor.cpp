@@ -1,10 +1,11 @@
 #include "nexuspch.h"
 #include "Guarantor.h"
+#include "Nexus/Utility/Random/Random.h"
 
 namespace Nexus
 {
-	Guarantor::Guarantor(tsdeque<std::pair<Address, Packet>>& in_q, std::atomic<bool>& running)
-		: ex_outQue(in_q), ex_isRunning(running)
+	Guarantor::Guarantor(tsdeque<std::pair<Address, Packet>>& _q, std::atomic<bool>& running)
+		: ex_outQue(_q), ex_isRunning(running)
 	{
 	}
 
@@ -32,17 +33,17 @@ namespace Nexus
 		m_droppedPacketCount = 0;
 	}
 
-	TYPE::NOTIFY_ID Guarantor::Add(const Address& in_address, const Packet& in_packet)
+	TYPE::NOTIFY_ID Guarantor::Add(const Address& _address, const Packet& _packet)
 	{
 		// ts
-		if (in_packet.notifyId == 0) return 0;
-		if (in_packet.id == ePacketID::NOTIFY_CONFIRMED) return in_packet.notifyId;
+		if (_packet.notifyId == 0) return 0;
+		if (_packet.id == ePacketID::NOTIFY_CONFIRMED) return _packet.notifyId;
 
-		TYPE::NOTIFY_ID newId = TYPE::RandNotifyID();
-		while (!m_map.contains(newId)) newId = TYPE::RandNotifyID();
+		TYPE::NOTIFY_ID newId = Random<TYPE::NOTIFY_ID>();
+		while (!m_map.contains(newId)) newId = Random<TYPE::NOTIFY_ID>();
 		GuaranteeData data;
-		data.target = in_address;
-		data.packet = in_packet;
+		data.target = _address;
+		data.packet = _packet;
 		data.packet.notifyId = newId;
 		data.time = 0;
 		data.tries = 0;
@@ -51,13 +52,13 @@ namespace Nexus
 		return newId;
 	}
 
-	bool Guarantor::Handle(const Packet& in_packet, const Nexus::Address& in_address)
+	bool Guarantor::Handle(const Packet& _packet, const Nexus::Address& _address)
 	{
 		// ts
-		TYPE::NOTIFY_ID notId = in_packet.notifyId;
+		TYPE::NOTIFY_ID notId = _packet.notifyId;
 
 		if (notId == 0) return true;
-		if (in_packet.id == ePacketID::NOTIFY_CONFIRMED)
+		if (_packet.id == ePacketID::NOTIFY_CONFIRMED)
 		{
 			if (!m_map.contains(notId)) return false;
 			m_map.erase(notId);
@@ -67,7 +68,7 @@ namespace Nexus
 		Nexus::Packet confirmationPacket;
 		confirmationPacket.notifyId = notId;
 		confirmationPacket.id = ePacketID::NOTIFY_CONFIRMED;
-		std::pair<Nexus::Address, Nexus::Packet> entry{ in_address, confirmationPacket };
+		std::pair<Nexus::Address, Nexus::Packet> entry{ _address, confirmationPacket };
 		ex_outQue.push_back(entry);
 
 		if (m_handled.contains(notId))

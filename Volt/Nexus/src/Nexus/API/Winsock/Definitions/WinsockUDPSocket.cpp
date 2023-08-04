@@ -9,7 +9,6 @@ namespace Nexus
 {
 	Socket::Socket()
 	{
-
 	}
 
 	Socket::~Socket()
@@ -33,9 +32,9 @@ namespace Nexus
 		return true;
 	}
 
-	bool Socket::Send(Address& in_address, const char* buffer, int len, int flags)
+	bool Socket::Send(Address& _address, const char* _buffer, int _len, int _flags)
 	{
-		int ret = sendto(m_socket, buffer, len, flags, reinterpret_cast<SOCKADDR*>(in_address.GetDescriptionPtr()), sizeof(in_address.GetDescription()));
+		int ret = sendto(m_socket, _buffer, _len, _flags, reinterpret_cast<SOCKADDR*>(_address.GetDescriptionPtr()), sizeof(_address.GetDescription()));
 
 		if (ret < 0)
 		{
@@ -46,10 +45,10 @@ namespace Nexus
 		return true;
 	}
 
-	bool Socket::Recieve(Address& out_addr, char* out_buffer, int& out_size, int len, int flags)
+	bool Socket::Recieve(Address& out_addr, char* out_buffer, int& out_size, int _len, int _flags)
 	{
-		int addrLenght = len;
-		int ret = recvfrom(m_socket, out_buffer, len, flags, reinterpret_cast<SOCKADDR*>(out_addr.GetDescriptionPtr()), &addrLenght);
+		int addrLenght = _len;
+		int ret = recvfrom(m_socket, out_buffer, _len, _flags, reinterpret_cast<SOCKADDR*>(out_addr.GetDescriptionPtr()), &addrLenght);
 		out_size = ret;
 
 		if (Nexus::Session::LastError() == WSAEWOULDBLOCK)
@@ -68,12 +67,12 @@ namespace Nexus
 		return true;
 	}
 
-	void Socket::Bind(unsigned short& in_port)
+	void Socket::Bind(unsigned short& _port)
 	{
 		sockaddr_in add;
 		add.sin_family = AF_INET;
 		add.sin_addr.s_addr = htonl(INADDR_ANY);
-		add.sin_port = htons(in_port);
+		add.sin_port = htons(_port);
 
 		if (m_result << bind(m_socket, reinterpret_cast<SOCKADDR*>(&add), sizeof(add)))
 		{
@@ -89,11 +88,11 @@ namespace Nexus
 			|| addrlen != sizeof(sin))
 		{
 			SocketError();
-			in_port = 0;
+			_port = 0;
 			Close();
 			return;
 		}
-		in_port = ntohs(sin.sin_port);
+		_port = ntohs(sin.sin_port);
 
 #if NXS_PROTOCOL == NXS_PROTOCOL_UDP_NONBLOCKING
 		unsigned long nonblocking = 1;

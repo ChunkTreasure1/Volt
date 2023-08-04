@@ -4,20 +4,20 @@
 
 namespace Nexus
 {
-	Address::Address(std::string ipv4, unsigned short port) 
-		: m_address(ConstructDescription(ipv4, port))
+	Address::Address(std::string _ipv4, unsigned short _port) 
+		: m_address(ConstructDescription(_ipv4, _port))
 	{
 	}
-	Address::Address(Address& desc) : m_address(desc.m_address)
+	Address::Address(Address& _desc) : m_address(_desc.m_address)
 	{
 
 	}
 
-	Address::Address(const Address& desc) : m_address(desc.m_address)
+	Address::Address(const Address& _desc) : m_address(_desc.m_address)
 	{
 	}
 
-	Address::Address(const NXS_API_UTYPE_ADDRDESC& desc) : m_address(desc)
+	Address::Address(const NXS_API_UTYPE_ADDRDESC& _desc) : m_address(_desc)
 	{
 	}
 
@@ -27,8 +27,13 @@ namespace Nexus
 
 	std::string Address::String()
 	{
-
+		if(m_flag != eAddressFlag::NIL)
 		return std::string();
+	}
+
+	eAddressFlag Address::Flag()
+	{
+		return m_flag;
 	}
 
 	unsigned short Address::Port()
@@ -45,23 +50,28 @@ namespace Nexus
 		return s;
 	}
 
-	bool operator==(Address one, Address two)
+	bool operator==(Address _one, Address _two)
 	{
 		return false;
 	}
 
-	NXS_API_UTYPE_ADDRDESC Address::ConstructDescription(std::string ipv4, unsigned short port)
+	NXS_API_UTYPE_ADDRDESC Address::ConstructDescription(std::string _ipv4, unsigned short _port)
 	{
 		NXS_API_UTYPE_ADDRDESC sAddr;
 		sAddr.sin_family = AF_INET;
-		sAddr.sin_port = htons(port);
-		inet_pton(AF_INET, ipv4.c_str(), &sAddr.sin_addr);
+		sAddr.sin_port = htons(_port);
+		inet_pton(AF_INET, _ipv4.c_str(), &sAddr.sin_addr);
 		return sAddr;
 	}
 
-	Address Address::ConstructAddress(std::string ipv4, unsigned short port)
+	Address Address::ConstructAddress(std::string _ipv4, unsigned short _port)
 	{
-		return Address(ConstructDescription(ipv4, port));
+		return Address(ConstructDescription(_ipv4, _port));
+	}
+
+	Address Address::ConstructNilAddress()
+	{
+		return Address();
 	}
 }
 #endif
