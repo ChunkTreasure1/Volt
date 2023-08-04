@@ -115,7 +115,7 @@ namespace Volt
 
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
 
-			Ref<RHI::Shader> shader = RHI::Shader::Create("default", { ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Default_vs.hlsl", ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Default_ps.hlsl" }, true);
+			Ref<RHI::Shader> shader = RHI::Shader::Create("default", { ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl", ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl" }, true);
 		}
 		/////////////////////
 

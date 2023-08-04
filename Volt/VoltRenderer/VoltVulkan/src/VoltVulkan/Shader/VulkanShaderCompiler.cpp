@@ -6,6 +6,7 @@
 
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Shader/ShaderPreProcessor.h>
 
 #ifdef _WIN32
 #include <wrl.h>
@@ -170,6 +171,17 @@ namespace Volt::RHI
 		if (shaderStage == ShaderStage::Vertex || shaderStage == ShaderStage::Hull || shaderStage == ShaderStage::Geometry)
 		{
 			arguments.emplace_back(L"-fvk-invert-y");
+		}
+
+		// Pre processing
+		{
+			PreProcessorData processingData{};
+			processingData.shaderSource = processedSource;
+			processingData.shaderStage = shaderStage;
+
+			PreProcessorResult result{};
+			ShaderPreProcessor::PreProcessShaderSource(processingData, result);
+			vulkanShader.m_resources.outputFormats = result.outputFormats;
 		}
 
 		IDxcBlobEncoding* sourcePtr = nullptr;

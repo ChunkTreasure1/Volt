@@ -87,6 +87,8 @@ namespace Volt::RHI
 
 		ShaderConstantData constants{};
 		ShaderDataBuffer constantsBuffer{};
+	
+		std::vector<Format> outputFormats;
 	};
 
 	class Shader : public RHIInterface

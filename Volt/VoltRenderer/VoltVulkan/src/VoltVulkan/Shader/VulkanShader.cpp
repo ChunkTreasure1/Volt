@@ -135,8 +135,8 @@ namespace Volt::RHI
 		for (const auto& path : m_sourceFiles)
 		{
 			const ShaderStage stage = Utility::GetShaderStageFromFilename(path.filename().string());
-			const std::string source = Utility::ReadStringFromFile(path);
-	
+			std::string source = Utility::ReadStringFromFile(path);
+
 			if (source.empty())
 			{
 				continue;
@@ -254,7 +254,7 @@ namespace Volt::RHI
 		{
 			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
-			
+
 			m_resources.storageImages[set].emplace(binding);
 			m_perStageStorageImageCount[stage].count++;
 		}
@@ -288,7 +288,7 @@ namespace Volt::RHI
 			m_resources.constants.offset = 0;
 			m_resources.constants.stageFlags = m_resources.constants.stageFlags | stage;
 
-			for (uint32_t i = 0; const auto& member : bufferType.member_types)
+			for (uint32_t i = 0; const auto & member : bufferType.member_types)
 			{
 				const auto& memberType = compiler.get_type(member);
 				const size_t memberSize = compiler.get_declared_struct_member_size(bufferType, i);
