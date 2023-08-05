@@ -27,7 +27,10 @@ namespace Volt::RHI
 		{
 			return static_cast<VkColorSpaceKHR>(colorSpace);
 		}
-
-
+		
+		inline static constexpr VkShaderStageFlagBits VoltToVulkanShaderStage(ShaderStage stage)
+		{
+			return static_cast<VkShaderStageFlagBits>(stage);
+		}
 	}
 }

@@ -58,17 +58,23 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::Execute()
 	{
-		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
+		if (!m_isSwapchainTarget)
+		{
+			auto device = GraphicsContext::GetDevice();
+			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
+		}
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
 	{
-		auto device = GraphicsContext::GetDevice();
-		device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
-	
-		const uint32_t index = GetCurrentCommandBufferIndex();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
+		if (!m_isSwapchainTarget)
+		{
+			auto device = GraphicsContext::GetDevice();
+			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
+
+			const uint32_t index = GetCurrentCommandBufferIndex();
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
+		}
 	}
 
 	void VulkanCommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
@@ -183,12 +189,10 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::Release()
 	{
+		auto device = GraphicsContext::GetDevice();
 		if (!m_isSwapchainTarget)
 		{
-			auto device = GraphicsContext::GetDevice();
-
 			std::vector<VkFence> fences{};
-
 			for (const auto& cmdBuffer : m_commandBuffers)
 			{
 				fences.emplace_back(cmdBuffer.fence);
@@ -201,6 +205,16 @@ namespace Volt::RHI
 				vkDestroyFence(device->GetHandle<VkDevice>(), cmdBuffer.fence, nullptr);
 				vkDestroyCommandPool(device->GetHandle<VkDevice>(), cmdBuffer.commandPool, nullptr);
 			}
+		}
+		else
+		{
+			std::vector<VkFence> fences{};
+			for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+			{
+				fences.push_back(VulkanSwapchain::Get().GetFence(i));
+			}
+
+			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 		}
 
 		m_commandBuffers.clear();

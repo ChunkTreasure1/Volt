@@ -140,7 +140,7 @@ namespace Volt::RHI
 			presentInfo.waitSemaphoreCount = 1;
 			presentInfo.pImageIndices = &m_currentImage;
 
-			 VkResult presentResult = vkQueuePresentKHR(deviceQueue->GetHandle<VkQueue>(), &presentInfo);
+			VkResult presentResult = vkQueuePresentKHR(deviceQueue->GetHandle<VkQueue>(), &presentInfo);
 
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{

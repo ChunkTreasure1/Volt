@@ -39,6 +39,11 @@
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 
+///////////////// TEMPORARY //////////////////
+#include <VoltRHI/Shader/ShaderCompiler.h>
+#include <VoltRHI/Shader/Shader.h>
+//////////////////////////////////////////////
+
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
@@ -93,6 +98,26 @@ namespace Volt
 		m_threadPool.Initialize(std::thread::hardware_concurrency());
 		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
+
+		///// TEMPORARY /////
+		{
+			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
+			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
+			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
+			shaderCompilerInfo.includeDirectories =
+			{
+				"Engine/Shaders/Source/Includes",
+				"Engine/Shaders/Source/HLSL",
+				"Engine/Shaders/Source/HLSL/Includes",
+				ProjectManager::GetAssetsDirectory()
+			};
+
+
+			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
+
+			Ref<RHI::Shader> shader = RHI::Shader::Create("default", { ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl", ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl" }, true);
+		}
+		/////////////////////
 
 		//Renderer::Initialize();
 		//ShaderRegistry::Initialize();
@@ -227,12 +252,14 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("Application::ImGui");
 
-				//myImGuiImplementation->Begin();
+				m_imguiImplementation->Begin();
+
+				ImGui::ShowDemoWindow();
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
 
-				//myImGuiImplementation->End();
+				m_imguiImplementation->End();
 			}
 
 			if (m_info.netEnabled)

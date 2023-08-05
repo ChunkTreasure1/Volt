@@ -318,6 +318,31 @@ namespace Volt::RHI
 		DISPLAY_NATIVE_AMD = 1000213000,
 	};
 
+	enum class ShaderStage : uint32_t
+	{
+		None = 0,
+		Vertex = 0x00000001,
+		Pixel = 0x00000010,
+		Hull = 0x00000002,
+		Domain = 0x00000004,
+		Geometry = 0x00000008,
+		Compute = 0x00000020,
+
+		RayGen = 0x00000100,
+		AnyHit = 0x00000200,
+		ClosestHit = 0x00000400,
+		Miss = 0x00000800,
+		Intersection = 0x00001000,
+
+		Task = 0x00000040,
+		Mesh = 0x00000080,
+
+		All = Vertex | Pixel | Hull | Domain | Geometry | Compute,
+		Common = Vertex | Pixel | Geometry | Compute
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(ShaderStage);
+
 	// --- structures --- \\
 
 	struct LogHookInfo
