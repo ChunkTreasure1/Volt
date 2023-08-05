@@ -4,8 +4,12 @@
 #include <backends/imgui_impl_dx12.h>
 #include <backends/imgui_impl_win32.h>
 
-namespace Volt
+namespace Volt::RHI
 {
+	D3D12ImGuiImplementation::D3D12ImGuiImplementation(const ImGuiCreateInfo& createInfo)
+	{
+	}
+
 	void D3D12ImGuiImplementation::BeginAPI()
 	{
 	}
