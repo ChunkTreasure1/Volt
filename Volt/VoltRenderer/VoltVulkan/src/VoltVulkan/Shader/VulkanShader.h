@@ -28,8 +28,8 @@ namespace Volt::RHI
 		const bool Reload(bool forceCompile) override;
 		std::string_view GetName() const override;
 		const ShaderResources& GetResources() const override;
-		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
 		ShaderDataBuffer GetConstantsBuffer() const override;
+		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
 
 	protected:
 		void* GetHandleImpl() override;
@@ -63,7 +63,7 @@ namespace Volt::RHI
 		std::vector<VkDescriptorSetLayout_T*> m_descriptorSetLayouts;
 
 		std::string_view m_name;
-		std::vector<std::filesystem::path> m_sourceFiles;
 		ShaderResources m_resources;
+		std::vector<std::filesystem::path> m_sourceFiles;
 	};
 }

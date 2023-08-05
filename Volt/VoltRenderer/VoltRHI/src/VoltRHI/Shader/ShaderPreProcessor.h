@@ -1,13 +1,16 @@
 #pragma once
 
 #include "VoltRHI/Core/RHICommon.h"
+#include "VoltRHI/Shader/BufferLayout.h"
 
 namespace Volt::RHI
 {
 	struct PreProcessorResult
 	{
 		std::string preProcessedResult;
+	
 		std::vector<Format> outputFormats;
+		BufferLayout vertexLayout;
 	};
 
 	struct PreProcessorData
@@ -25,8 +28,13 @@ namespace Volt::RHI
 
 	private:
 		static bool PreProcessPixelSource(const PreProcessorData& data, PreProcessorResult& outResult);
+		static bool PreProcessVertexSource(const PreProcessorData& data, PreProcessorResult& outResult);
+
 		static Format FindDefaultFormatFromString(std::string_view str);
 		static Format FindFormatFromLayoutQualifier(const std::string& str);
+
+		static ElementType FindDefaultElementTypeFromString(std::string_view str);
+		static ElementType FindElementTypeFromTag(std::string_view tagStr);
 
 		static void ErasePreProcessData(PreProcessorResult& outResult);
 

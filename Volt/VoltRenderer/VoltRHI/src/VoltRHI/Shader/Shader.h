@@ -5,6 +5,8 @@
 
 #include "VoltRHI/Utility/Buffer.h"
 
+#include "VoltRHI/Shader/BufferLayout.h"
+
 #include <vector>
 #include <filesystem>
 
@@ -87,6 +89,7 @@ namespace Volt::RHI
 
 		ShaderConstantData constants{};
 		ShaderDataBuffer constantsBuffer{};
+		BufferLayout vertexLayout{};
 	
 		std::vector<Format> outputFormats;
 	};

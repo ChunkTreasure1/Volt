@@ -63,6 +63,72 @@ namespace Volt::RHI
 
 			return ShaderUniformType::Invalid;
 		}
+
+		inline static const ElementType GetBufferElementTypeFromSPIRV(const spirv_cross::SPIRType& type)
+		{
+			if (type.columns == 4)
+			{
+				switch (type.basetype)
+				{
+					case spirv_cross::SPIRType::Float: return ElementType::Float4x4;
+				}
+			}
+			else if (type.columns == 3)
+			{
+				switch (type.basetype)
+				{
+					case spirv_cross::SPIRType::Float: return ElementType::Float3x3;
+				}
+			}
+			else
+			{
+				switch (type.basetype)
+				{
+					case spirv_cross::SPIRType::Boolean: return ElementType::Bool;
+					case spirv_cross::SPIRType::UInt:
+					{
+						if (type.vecsize == 1) return ElementType::UInt;
+						if (type.vecsize == 2) return ElementType::UInt2;
+						if (type.vecsize == 3) return ElementType::UInt3;
+						if (type.vecsize == 4) return ElementType::UInt4;
+
+						break;
+					}
+
+					case spirv_cross::SPIRType::Int:
+					{
+						if (type.vecsize == 1) return ElementType::Int;
+						if (type.vecsize == 2) return ElementType::Int2;
+						if (type.vecsize == 3) return ElementType::Int3;
+						if (type.vecsize == 4) return ElementType::Int4;
+
+						break;
+					}
+
+					case spirv_cross::SPIRType::Float:
+					{
+						if (type.vecsize == 1) return ElementType::Float;
+						if (type.vecsize == 2) return ElementType::Float2;
+						if (type.vecsize == 3) return ElementType::Float3;
+						if (type.vecsize == 4) return ElementType::Float4;
+
+						break;
+					}
+
+					case spirv_cross::SPIRType::Half:
+					{
+						if (type.vecsize == 1) return ElementType::Half;
+						if (type.vecsize == 2) return ElementType::Half2;
+						if (type.vecsize == 3) return ElementType::Half3;
+						if (type.vecsize == 4) return ElementType::Half4;
+
+						break;
+					}
+				}
+			}
+
+			return ElementType::Float;
+		}
 	}
 
 	VulkanShader::VulkanShader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)
@@ -94,7 +160,14 @@ namespace Volt::RHI
 			return false;
 		}
 
+		auto vertexLayout = m_resources.vertexLayout;
+		auto outputFormats = m_resources.outputFormats;
+
 		Release();
+
+		m_resources.outputFormats = outputFormats;
+		m_resources.vertexLayout = vertexLayout;
+
 		LoadAndCreateShaders(m_shaderData);
 		ReflectAllStages(m_shaderData);
 
@@ -307,5 +380,16 @@ namespace Volt::RHI
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Images: {0}", m_perStageStorageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Images: {0}", m_perStageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Samplers: {0}", m_perStageSamplerCount[stage].count);
+
+		if (stage == ShaderStage::Vertex)
+		{
+			GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Vertex Layout:");
+
+			for (const auto& element : m_resources.vertexLayout.GetElements())
+			{
+				GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "				{0}: {1}", element.name, BufferLayout::GetNameFromElementType(element.type));
+			}
+		}
+
 	}
 }
