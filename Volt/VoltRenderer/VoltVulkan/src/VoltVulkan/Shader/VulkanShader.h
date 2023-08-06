@@ -31,6 +31,10 @@ namespace Volt::RHI
 		ShaderDataBuffer GetConstantsBuffer() const override;
 		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
 
+		inline const std::vector<VkDescriptorSetLayout_T*>& GetDescriptorSetLayouts() const { return m_descriptorSetLayouts; }
+		inline const std::vector<VkDescriptorSetLayout_T*>& GetPaddedDescriptorSetLayouts() const { return m_nullPaddedDescriptorSetLayouts; }
+		inline const std::unordered_map<ShaderStage, PipelineStageInfo>& GetPipelineStageInfos() const { return m_pipelineStageInfo; }
+
 	protected:
 		void* GetHandleImpl() override;
 
@@ -50,6 +54,8 @@ namespace Volt::RHI
 		void ReflectAllStages(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData);
 		void ReflectStage(ShaderStage stage, const std::vector<uint32_t>& data);
 
+		void CreateDescriptorSetLayouts();
+
 		std::unordered_map<ShaderStage, SourceData> m_shaderSources;
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_shaderData;
 		std::unordered_map<ShaderStage, PipelineStageInfo> m_pipelineStageInfo;
@@ -61,6 +67,7 @@ namespace Volt::RHI
 		std::unordered_map<ShaderStage, TypeCount> m_perStageSamplerCount;
 
 		std::vector<VkDescriptorSetLayout_T*> m_descriptorSetLayouts;
+		std::vector<VkDescriptorSetLayout_T*> m_nullPaddedDescriptorSetLayouts;
 
 		std::string_view m_name;
 		ShaderResources m_resources;

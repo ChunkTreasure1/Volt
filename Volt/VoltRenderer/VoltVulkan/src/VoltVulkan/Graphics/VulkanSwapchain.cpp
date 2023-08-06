@@ -7,6 +7,7 @@
 #include "VoltVulkan/Graphics/VulkanGraphicsContext.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
+#include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
 
 #include <vulkan/vulkan.h>

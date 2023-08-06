@@ -15,7 +15,7 @@ namespace Volt::RHI
 		CullMode cullMode = CullMode::Back;
 		FillMode fillMode = FillMode::Solid;
 		DepthMode depthMode = DepthMode::ReadWrite;
-		CompareOperator compareOperator = CompareOperator::GreaterEqual;
+		CompareOperator depthCompareOperator = CompareOperator::GreaterEqual;
 
 		std::string name;
 	};
@@ -23,7 +23,7 @@ namespace Volt::RHI
 	class RenderPipeline : public RHIInterface
 	{
 	public:
-		void Invalidate();
+		virtual void Invalidate() = 0;
 
 		static Ref<RenderPipeline> Create(const RenderPipelineCreateInfo& createInfo);
 

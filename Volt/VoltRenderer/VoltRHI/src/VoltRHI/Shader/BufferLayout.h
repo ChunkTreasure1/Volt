@@ -217,7 +217,7 @@ namespace Volt::RHI
 		}
 
 		inline const uint32_t GetStride() const { return myStride; }
-		inline std::vector<BufferElement>& GetElements() { return myElements; }
+		inline const std::vector<BufferElement>& GetElements() const { return myElements; }
 		inline const bool IsValid() const { return !myElements.empty(); }
 
 	private:

@@ -3,13 +3,13 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Core/RHIInterface.h"
 
-#include "VoltRHI/Graphics/DeviceQueue.h"
-
 #include <unordered_map>
 #include <mutex>
 
 namespace Volt::RHI
 {
+	class DeviceQueue;
+
 	class GraphicsDevice : public RHIInterface
 	{
 	public:
