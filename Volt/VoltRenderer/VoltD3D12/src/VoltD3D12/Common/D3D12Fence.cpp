@@ -36,6 +36,10 @@ namespace Volt::RHI
 
 	void D3D12Fence::Wait()
 	{
+		if (m_fenceStartValue == m_fenceValue)
+		{
+			return;
+		}
 
 		const size_t previousFenceValue = m_fenceValue - 1;
 

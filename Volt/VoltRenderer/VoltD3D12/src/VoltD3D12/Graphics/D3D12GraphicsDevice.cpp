@@ -19,6 +19,10 @@ namespace Volt::RHI
 
 	D3D12GraphicsDevice::~D3D12GraphicsDevice()
 	{
+		m_deviceQueues[QueueType::Graphics].reset();
+		m_deviceQueues[QueueType::TransferCopy].reset();
+		m_deviceQueues[QueueType::Compute].reset();
+
 		VT_D3D12_DELETE(m_device);
 	}
 

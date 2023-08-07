@@ -74,6 +74,7 @@ namespace Volt::RHI
 	{
 		if (m_currentFence)
 		{
+			m_commandQueue->Signal(m_currentFence, m_currentFenceValue);
 			m_commandQueue->Wait(m_currentFence, m_currentFenceValue);
 		}
 	}

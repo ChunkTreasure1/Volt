@@ -10,7 +10,7 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12ImGuiImplementation(const ImGuiCreateInfo& createInfo);
-
+		~D3D12ImGuiImplementation() override;
 		void BeginAPI() override;
 		void EndAPI() override;
 		void InitializeAPI() override;
