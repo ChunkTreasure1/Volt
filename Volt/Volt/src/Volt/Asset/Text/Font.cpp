@@ -189,6 +189,7 @@ namespace Volt
 		} font;
 
 		bool success = font.Load(fontInput.filename);
+		success;
 		VT_CORE_ASSERT(success, "Font did not load correctly!");
 
 		if (fontInput.scale <= 0.f)
