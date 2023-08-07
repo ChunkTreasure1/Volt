@@ -182,9 +182,7 @@ namespace Volt::RHI
 
 	void VulkanAllocator::Shutdown()
 	{
-		const size_t allocDiff = s_allocatorData->totalAllocatedBytes - s_allocatorData->totalFreedBytes;
-
-		assert(allocDiff == 0 && "Some data has not been freed! This will cause a memory leak!");
+		assert(s_allocatorData->totalAllocatedBytes - s_allocatorData->totalFreedBytes == 0 && "Some data has not been freed! This will cause a memory leak!");
 		assert(s_allocatorData->allocator && "Unable to delete allocator as it does not exist!");
 
 		vmaDestroyAllocator(s_allocatorData->allocator);

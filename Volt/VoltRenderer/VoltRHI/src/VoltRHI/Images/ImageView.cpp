@@ -3,6 +3,8 @@
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
+#include <VoltVulkan/Images/VulkanImageView.h>
+
 namespace Volt::RHI
 {
 	Ref<ImageView> ImageView::Create(const ImageViewSpecification specification)
@@ -16,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			//case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImage2D>(specification, data); break;
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImageView>(specification); break;
 		}
 
 		return nullptr;

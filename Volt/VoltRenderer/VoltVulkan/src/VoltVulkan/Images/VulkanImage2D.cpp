@@ -124,6 +124,41 @@ namespace Volt::RHI
 			// #TODO_Ivar: Implement initializing using data
 		}
 
+		// Transition to correct Layout
+		{
+			VkImageLayout targetLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+			switch (m_specification.usage)
+			{
+				case ImageUsage::Texture: targetLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
+				case ImageUsage::Storage: targetLayout = VK_IMAGE_LAYOUT_GENERAL; break;
+				
+				case ImageUsage::AttachmentStorage:
+				case ImageUsage::Attachment:
+				{
+					if (Utility::IsDepthFormat(m_specification.format))
+					{
+						if (Utility::IsStencilFormat(m_specification.format))
+						{
+							targetLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+						}
+						else
+						{
+							targetLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+						}
+					}
+					else
+					{
+						targetLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					}
+
+					break;
+				}
+			}
+
+			TransitionToLayout(Utility::ToVoltLayout(targetLayout));
+		}
+
 		if (m_specification.generateMips && m_specification.mips > 1)
 		{
 			GenerateMips();
@@ -233,20 +268,10 @@ namespace Volt::RHI
 			}
 		}
 
-		VkImageSubresourceRange imageRange{};
-		imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		imageRange.baseArrayLayer = 0;
-		imageRange.baseMipLevel = 0;
-		imageRange.layerCount = m_specification.layers;
-		imageRange.levelCount = m_specification.mips;
-
-		const VkImageLayout targetLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		barrier.newLayout = targetLayout;
+		barrier.newLayout = Utility::ToVulkanLayout(m_currentImageLayout);
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
 		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
@@ -258,7 +283,6 @@ namespace Volt::RHI
 		commandBuffer->End();
 		commandBuffer->Execute();
 
-		m_currentImageLayout = Utility::ToVoltLayout(targetLayout);
 		m_hasGeneratedMips = true;
 	}
 
@@ -325,5 +349,42 @@ namespace Volt::RHI
 	void* VulkanImage2D::GetHandleImpl()
 	{
 		return m_image;
+	}
+
+	void VulkanImage2D::TransitionToLayout(ImageLayout targetLayout)
+	{
+		if (m_currentImageLayout == targetLayout)
+		{
+			return;
+		}
+
+		VkImageAspectFlags aspectFlags = Utility::IsDepthFormat(m_specification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (Utility::IsStencilFormat(m_specification.format))
+		{
+			aspectFlags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = m_image;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.oldLayout = Utility::ToVulkanLayout(m_currentImageLayout);
+		barrier.newLayout = Utility::ToVulkanLayout(targetLayout);
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.baseMipLevel = 0;
+
+		Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+
+		commandBuffer->Begin();
+		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	
+		commandBuffer->End();
+		commandBuffer->Execute();
 	}
 }

@@ -139,6 +139,7 @@ namespace Volt::RHI
 		}
 
 		VkRenderingInfo vkRenderingInfo{};
+		vkRenderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
 		vkRenderingInfo.renderArea = { renderingInfo.renderArea.offset.x, renderingInfo.renderArea.offset.y, renderingInfo.renderArea.extent.width, renderingInfo.renderArea.extent.height };
 		vkRenderingInfo.layerCount = renderingInfo.layerCount;
 		vkRenderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentInfo.size());

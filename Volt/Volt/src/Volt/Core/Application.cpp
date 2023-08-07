@@ -43,6 +43,10 @@
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Pipelines/RenderPipeline.h>
+
+#include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/ImageView.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
 //////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
@@ -55,6 +59,11 @@
 
 namespace Volt
 {
+	static Ref<RHI::CommandBuffer> s_commandBuffer;
+	static Ref<RHI::Image2D> s_renderTarget;
+	static Ref<RHI::Shader> s_shader;
+	static Ref<RHI::RenderPipeline> s_renderPipeline;
+
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
@@ -113,15 +122,29 @@ namespace Volt
 				ProjectManager::GetAssetsDirectory()
 			};
 
-
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
 
-			Ref<RHI::Shader> shader = RHI::Shader::Create("default", { ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl", ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl" }, true);
+			s_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
+			s_shader = RHI::Shader::Create("SimpleTriangle", 
+				{ 
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTriangle_vs.hlsl", 
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTriangle_ps.hlsl"
+				}, true);
 			
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = shader;
+			pipelineInfo.shader = s_shader;
+			s_renderPipeline = RHI::RenderPipeline::Create(pipelineInfo);
 
-			Ref<RHI::RenderPipeline> pipeline = RHI::RenderPipeline::Create(pipelineInfo);
+			// Render target
+			{
+				RHI::ImageSpecification imageSpec{};
+				imageSpec.width = 400;
+				imageSpec.height = 400;
+				imageSpec.usage = RHI::ImageUsage::Attachment;
+				imageSpec.generateMips = false;
+
+				s_renderTarget = RHI::Image2D::Create(imageSpec);
+			}
 		}
 		/////////////////////
 
@@ -251,8 +274,38 @@ namespace Volt
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
-			}
 
+				s_commandBuffer->Begin();
+
+				RHI::Rect2D scissor = { 0, 0, 400, 400 };
+				RHI::Viewport viewport{};
+				viewport.width = 400.f;
+				viewport.height = 400.f;
+				viewport.x = 0.f;
+				viewport.y = 0.f;
+				viewport.minDepth = 0.f;
+				viewport.maxDepth = 1.f;
+
+				s_commandBuffer->SetViewports({ viewport });
+				s_commandBuffer->SetScissors({ scissor });
+				
+				RHI::AttachmentInfo attInfo{};
+				attInfo.view = s_renderTarget->GetView();
+				attInfo.clearColor = { 1.f, 0.f, 1.f, 1.f };
+				attInfo.clearMode = RHI::ClearMode::Clear;
+
+				RHI::RenderingInfo renderingInfo{};
+				renderingInfo.colorAttachments = { attInfo };
+				renderingInfo.renderArea = scissor;
+
+				s_commandBuffer->BeginRendering(renderingInfo);
+				s_commandBuffer->BindPipeline(s_renderPipeline);
+				s_commandBuffer->Draw(3, 1, 0, 0);
+
+				s_commandBuffer->EndRendering();
+				s_commandBuffer->End();
+				s_commandBuffer->Execute();
+			}
 
 			if (m_info.enableImGui)
 			{

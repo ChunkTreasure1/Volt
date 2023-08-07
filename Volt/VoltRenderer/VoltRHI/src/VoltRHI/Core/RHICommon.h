@@ -510,8 +510,8 @@ namespace Volt::RHI
 
 	struct Rect2D
 	{
-		Extent2D extent;
 		Offset2D offset;
+		Extent2D extent;
 	};
 
 	struct Viewport
