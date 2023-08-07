@@ -30,7 +30,7 @@ Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 	info.projectPath = appPath;
 	info.useVSync = false;
 	info.enableSteam = true;
-
+	info.enableImGui = true;
 	SandboxApp* app;
 	Create(app, info);
 

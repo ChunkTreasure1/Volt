@@ -43,10 +43,10 @@ namespace Volt::RHI
 
 	enum class PresentMode : uint32_t
 	{
-		Immediate = 0,
-		Mailbox = 1,
-		FIFO = 2,
-		FIFORelaxed = 3
+		Immediate = 0, // duh
+		Mailbox = 1, // 
+		FIFO = 2, // V-sync
+		FIFORelaxed = 3 // V-sync if slow dont
 	};
 
 	enum class Format : uint32_t

@@ -2,6 +2,7 @@
 #include "D3D12GraphicsDevice.h"
 
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
+#include "VoltD3D12/Graphics/D3D12DeviceQueue.h"
 
 namespace Volt::RHI
 {
@@ -10,6 +11,10 @@ namespace Volt::RHI
 		auto physicalDevice = info.physicalDevice->As<D3D12PhysicalGraphicsDevice>();
 
 		VT_D3D12_CHECK(D3D12CreateDevice(physicalDevice->GetAdapter(), D3D_FEATURE_LEVEL_11_0, VT_D3D12_ID(m_device)));
+
+		m_deviceQueues[QueueType::Graphics] = CreateRefRHI<D3D12DeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
+		m_deviceQueues[QueueType::TransferCopy] = CreateRefRHI<D3D12DeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
+		m_deviceQueues[QueueType::Compute] = CreateRefRHI<D3D12DeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
 	}
 
 	D3D12GraphicsDevice::~D3D12GraphicsDevice()

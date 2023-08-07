@@ -15,7 +15,7 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12CommandBuffer>(count, queueType, swapchainTarget); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 

@@ -8,40 +8,6 @@
 
 namespace Volt::RHI
 {
-	void D3D12FenceData::Wait()
-	{
-		if (fenceValue == fenceStartValue)
-		{
-			return;
-		}
-
-		const size_t previousFenceValue = fenceValue - 1;
-
-		if (fence->GetCompletedValue() < previousFenceValue)
-		{
-			fence->SetEventOnCompletion(previousFenceValue, windowsFenceHandle);
-			WaitForSingleObject(windowsFenceHandle, INFINITE);
-		}
-	}
-
-	D3D12_COMMAND_LIST_TYPE GetD3D12QueueType(QueueType type)
-	{
-		D3D12_COMMAND_LIST_TYPE d3d12Type = {};
-		switch (type)
-		{
-			case QueueType::Graphics:
-				d3d12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-				break;
-			case QueueType::Compute:
-				d3d12Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-				break;
-			case QueueType::TransferCopy:
-				d3d12Type = D3D12_COMMAND_LIST_TYPE_COPY;
-				break;
-		}
-		return d3d12Type;
-	}
-
 	D3D12CommandBuffer::D3D12CommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget) : CommandBuffer(queueType)
 	{
 		Create(count, queueType, swapchainTarget);
@@ -60,6 +26,11 @@ namespace Volt::RHI
 	{
 		IncrementIndex();
 		auto& commandData = GetCommandData();
+
+		if (!m_isSwapchainTarget)
+		{
+			GetFenceData().Wait();
+		}
 
 		commandData.commandList->Reset(commandData.commandAllocator, nullptr);
 	}
@@ -125,6 +96,7 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
+		m_isSwapchainTarget = swapchainTarget;
 		m_queueType = queueType;
 		m_perInternalBufferData.resize(count);
 
@@ -162,15 +134,30 @@ namespace Volt::RHI
 
 			commandData.commandList->Close();
 
-			VT_D3D12_CHECK(d3d12device->CreateFence(0, D3D12_FENCE_FLAG_SHARED, VT_D3D12_ID(fenceData.fence)));
+			std::wstring name;
+			name = L"CommandList - TYPE [";
 
-			fenceData.windowsFenceHandle = CreateEventEx(nullptr, nullptr, false, EVENT_ALL_ACCESS);
+			switch (m_queueType)
+			{
+				case Volt::RHI::QueueType::Graphics:
+					name += L"Graphics";
+					break;
+				case Volt::RHI::QueueType::Compute:
+					name += L"Compute";
+					break;
+				case Volt::RHI::QueueType::TransferCopy:
+					name += L"TransferCopy";
+					break;
+				default:
+					break;
+			}
 
-			//Niklas: we offset the fence values so that we dont accidentally wait on the wrong queue.
-			fenceData.fenceStartValue = static_cast<size_t>(d3d12QueueType) << 56;
-			fenceData.fenceValue = fenceData.fenceStartValue;
+			name += L"] - Flight ID [" + std::to_wstring(i) + L"]";
 
-			fenceData.fence->Signal(fenceData.fenceValue);
+			commandData.commandList->SetName(name.c_str());
+
+			fenceData.Create(queueType);
+			fenceData.Signal();
 		}
 	}
 
@@ -179,7 +166,7 @@ namespace Volt::RHI
 		m_currentCommandBufferIndex = (m_currentCommandBufferIndex + 1) % static_cast<uint32_t>(m_perInternalBufferData.size());
 	}
 
-	D3D12FenceData& D3D12CommandBuffer::GetFenceData()
+	D3D12Fence& D3D12CommandBuffer::GetFenceData()
 	{
 		return m_perInternalBufferData[m_currentCommandBufferIndex].second;
 	}

@@ -40,7 +40,10 @@ project "VoltD3D12"
 	includedirs
 	{
 		"src/",
-		"../VoltRHI/src"
+		"../VoltRHI/src",
+
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.ImGui}",
 	}
 
 	defines
