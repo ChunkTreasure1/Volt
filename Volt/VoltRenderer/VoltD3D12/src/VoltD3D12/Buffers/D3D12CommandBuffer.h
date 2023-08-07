@@ -38,7 +38,7 @@ namespace Volt::RHI
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
 
-		D3D12FenceData& GetFenceData();
+		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
 
 	private:
