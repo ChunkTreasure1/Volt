@@ -8,15 +8,19 @@ namespace Volt::RHI
 	class D3D12DescriptorHeapManager
 	{
 	public:
+		D3D12DescriptorHeapManager();
 
-		static void CreateNewRTVHandle(CD3DX12_CPU_DESCRIPTOR_HANDLE& handle);
-		static void CreateNewDSVHandle(CD3DX12_CPU_DESCRIPTOR_HANDLE& handle);
+		static uint32_t CreateNewRTVHandle(CD3DX12_CPU_DESCRIPTOR_HANDLE& handle);
+
+		//REMEMBER, THIS ID NEEDS TO BE VALID ID FROM THIS CLASS INORDER TO WORK! IF ID IS CREATED EXTERNALLY FROM THIS CLASS THERE WILL BE UNEXPECTED CRASHES!!!
+		static void CreateRTVHandleFromID(CD3DX12_CPU_DESCRIPTOR_HANDLE& handle, const uint32_t id);
+
+		static uint32_t CreateNewDSVHandle(CD3DX12_CPU_DESCRIPTOR_HANDLE& handle);
 
 		FORCEINLINE [[nodiscard]] static uint32_t GetRTVSize() { return s_Instance->m_RTVDescriptorSize; }
 		FORCEINLINE [[nodiscard]] static ID3D12DescriptorHeap* GetRTVHeap() { return s_Instance->m_RTVDescriptorHeap; }
 
 	private:
-		D3D12DescriptorHeapManager();
 
 		static void Validate();
 

@@ -3503,7 +3503,7 @@ private:
 #endif // #ifndef D3DX12_NO_STATE_OBJECT_HELPERS
 
 #endif // defined( __cplusplus )
+#pragma warning (pop)
 
 #endif //__D3DX12_H__
 
-#pragma warning (pop)

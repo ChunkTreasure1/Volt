@@ -6,29 +6,12 @@
 
 namespace Volt::RHI
 {
-	D3D12_COMMAND_LIST_TYPE GetD3D12QueueType(QueueType type)
-	{
-		D3D12_COMMAND_LIST_TYPE d3d12Type = {};
-		switch (type)
-		{
-		case QueueType::Graphics:
-			d3d12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-			break;
-		case QueueType::Compute:
-			d3d12Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-			break;
-		case QueueType::TransferCopy:
-			d3d12Type = D3D12_COMMAND_LIST_TYPE_COPY;
-			break;
-		}
-		return d3d12Type;
-	}
-
 	D3D12DeviceQueue::D3D12DeviceQueue(const DeviceQueueCreateInfo& createInfo)
 	{
 		m_queueType = createInfo.queueType;
-
-
+		m_device = reinterpret_cast<D3D12GraphicsDevice*>(createInfo.graphicsDevice);
+		m_currentFence = nullptr;
+		m_currentFenceValue = 0;
 		CreateCommandQueue(createInfo.queueType);
 	}
 
@@ -43,13 +26,13 @@ namespace Volt::RHI
 
 	void* D3D12DeviceQueue::GetHandleImpl()
 	{
-		return nullptr;
+		return m_commandQueue;
 	}
 
 	void D3D12DeviceQueue::CreateCommandQueue(QueueType type)
 	{
 		auto d3d12QueueType = GetD3D12QueueType(type);
-		auto d3d12GraphicsDevice = GraphicsContext::GetDevice()->As<D3D12GraphicsDevice>();
+		auto d3d12GraphicsDevice = m_device;
 		auto d3d12Device = d3d12GraphicsDevice->GetHandle<ID3D12Device2*>();
 
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -58,6 +41,27 @@ namespace Volt::RHI
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
 		VT_D3D12_CHECK(d3d12Device->CreateCommandQueue(&queueDesc, VT_D3D12_ID(m_commandQueue)));
+
+		std::wstring name;
+
+		name = L"CommandQueue - TYPE [";
+		switch (type)
+		{
+			case Volt::RHI::QueueType::Graphics:
+				name += L"Graphics";
+				break;
+			case Volt::RHI::QueueType::Compute:
+				name += L"Compute";
+				break;
+			case Volt::RHI::QueueType::TransferCopy:
+				name += L"TransferCopy";
+				break;
+			default:
+				break;
+		}
+		name += L"]";
+
+		m_commandQueue->SetName(name.c_str());
 
 	}
 
@@ -72,6 +76,16 @@ namespace Volt::RHI
 		{
 			m_commandQueue->Wait(m_currentFence, m_currentFenceValue);
 		}
+	}
+
+	void D3D12DeviceQueue::Wait(D3D12Fence& fence)
+	{
+		m_commandQueue->Wait(fence.Get(), fence.Value());
+	}
+
+	void D3D12DeviceQueue::Signal(D3D12Fence& fence, const size_t customID)
+	{
+		m_commandQueue->Signal(fence.Get(), customID);
 	}
 
 	void D3D12DeviceQueue::Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer)
@@ -94,8 +108,8 @@ namespace Volt::RHI
 
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
 
-		m_commandQueue->Signal(currentFenceData.fence, currentFenceData.fenceValue++);
-		m_currentFence = currentFenceData.fence;
-		m_currentFenceValue = currentFenceData.fenceValue;
+		m_commandQueue->Signal(currentFenceData.Get(), currentFenceData.Value()++);
+		m_currentFence = currentFenceData.Get();
+		m_currentFenceValue = currentFenceData.Value();
 	}
 }

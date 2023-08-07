@@ -30,6 +30,7 @@
 #include <istream>
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
+#include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt
 {
@@ -57,6 +58,27 @@ namespace Volt
 		std::string Filename;
 		int32_t LineNumber = -1;
 	};
+
+	namespace RHI
+	{
+		inline D3D12_COMMAND_LIST_TYPE GetD3D12QueueType(QueueType type)
+		{
+			D3D12_COMMAND_LIST_TYPE d3d12Type = {};
+			switch (type)
+			{
+				case QueueType::Graphics:
+					d3d12Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+					break;
+				case QueueType::Compute:
+					d3d12Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+					break;
+				case QueueType::TransferCopy:
+					d3d12Type = D3D12_COMMAND_LIST_TYPE_COPY;
+					break;
+			}
+			return d3d12Type;
+		}
+	}
 }
 
 
@@ -64,7 +86,7 @@ namespace Volt
 #define VT_D3D12_ID(x) IID_PPV_ARGS(&x)
 #define VT_D3D12_WRID(x) IID_PPV_ARGS(x.GetAddressOf())
 
-#define VT_D3D12_DELETE(x) if(x) x->Release()
+#define VT_D3D12_DELETE(x) if(x){ x->Release(); } 
 
 #define VT_D3D12_CHECK(x) \
 { \

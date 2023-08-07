@@ -5,6 +5,7 @@
 
 #include <VoltMock/Graphics/MockSwapchain.h>
 #include <VoltVulkan/Graphics/VulkanSwapchain.h>
+#include <VoltD3D12/Graphics/D3D12Swapchain.h>
 
 namespace Volt::RHI
 {
@@ -14,7 +15,7 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12Swapchain>(window); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
