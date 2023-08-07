@@ -27,11 +27,9 @@ namespace Volt::RHI
 		IncrementIndex();
 		auto& commandData = GetCommandData();
 
-		if (!m_isSwapchainTarget)
-		{
-			GetFenceData().Wait();
-		}
+		GetFenceData().Wait();
 
+		commandData.commandAllocator->Reset();
 		commandData.commandList->Reset(commandData.commandAllocator, nullptr);
 	}
 

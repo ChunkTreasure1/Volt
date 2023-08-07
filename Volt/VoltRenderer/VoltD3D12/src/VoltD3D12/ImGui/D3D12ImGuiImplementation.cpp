@@ -19,6 +19,12 @@ namespace Volt::RHI
 		m_info = createInfo;
 	}
 
+	D3D12ImGuiImplementation::~D3D12ImGuiImplementation()
+	{
+		VT_D3D12_DELETE(m_imguiDescriptorHeap);
+		ShutdownAPI();
+	}
+
 	void D3D12ImGuiImplementation::BeginAPI()
 	{
 		ImGui_ImplDX12_NewFrame();
@@ -80,5 +86,6 @@ m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 	void D3D12ImGuiImplementation::ShutdownAPI()
 	{
+		ImGui_ImplDX12_Shutdown();
 	}
 }

@@ -14,7 +14,7 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12DeviceQueue(const DeviceQueueCreateInfo& createInfo);
-		~D3D12DeviceQueue();
+		~D3D12DeviceQueue() override;
 
 		void WaitForQueue() override;
 		void Wait(D3D12Fence& fence);

@@ -27,12 +27,12 @@ namespace Volt::RHI
 	D3D12Swapchain::~D3D12Swapchain()
 	{
 		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
-		for (auto& fence : m_fences)
-		{
-			fence.Increment();
-			d3d12Queue->Signal(fence, fence.Value());
-			fence.Wait();
-		}
+		//for (auto& fence : m_fences)
+		//{
+		//	fence.Increment();
+		//	d3d12Queue->Signal(fence, fence.Value());
+		//	fence.Wait();
+		//}
 		CleanUp();
 		for (auto& target : m_renderTargets)
 		{
@@ -48,15 +48,18 @@ namespace Volt::RHI
 	}
 	void D3D12Swapchain::BeginFrame()
 	{
-		m_fences[m_currentImageIndex].Wait();
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
+		m_fences[m_currentImageIndex].Wait();
 	}
 
 	void D3D12Swapchain::Present()
 	{
 		m_swapchain->Present(static_cast<UINT>(m_enableVsync), 0);
+		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
 		m_fences[m_currentImageIndex].Signal();
 		m_fences[m_currentImageIndex].Increment();
+		d3d12Queue->Signal(m_fences[m_currentImageIndex], m_fences[m_currentImageIndex].Value());
+
 	}
 
 	void D3D12Swapchain::Resize(const uint32_t width, const uint32_t height, bool enableVSync)
@@ -79,7 +82,7 @@ namespace Volt::RHI
 			VT_D3D12_DELETE(target.resource);
 		}
 
-		VT_D3D12_CHECK(m_swapchain->ResizeBuffers(MaxSwapchainImages, m_width, m_height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+		VT_D3D12_CHECK(m_swapchain->ResizeBuffers(MaxSwapchainImages, m_width, m_height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
 
 		for (size_t i = 0; i < MaxSwapchainImages; i++)
 		{
@@ -90,8 +93,7 @@ namespace Volt::RHI
 
 			if (m_renderTargets[i].hasID)
 			{
-				m_renderTargets[i].id = D3D12DescriptorHeapManager::CreateNewRTVHandle(*m_renderTargets[i].view);
-				m_renderTargets[i].hasID = true;
+				D3D12DescriptorHeapManager::CreateRTVHandleFromID(*m_renderTargets[i].view, m_renderTargets[i].id);
 			}
 
 			auto d3d12Device = GraphicsContext::GetDevice()->As<D3D12GraphicsDevice>();
@@ -149,6 +151,7 @@ namespace Volt::RHI
 		scDesc.OutputWindow = glfwGetWin32Window(m_windowHandle);
 		scDesc.Windowed = true;
 		scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		scDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain> tranferSwapchain = nullptr;
 
