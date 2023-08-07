@@ -21,6 +21,11 @@ namespace Volt::RHI
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
 		void SetViewports(const std::vector<Viewport>& viewports) override;
 
+		void BindPipeline(Ref<RenderPipeline> pipeline) override;
+		
+		void BeginRendering(const RenderingInfo& renderingInfo) override;
+		void EndRendering() override;
+
 	protected:
 		void* GetHandleImpl() override;
 	};

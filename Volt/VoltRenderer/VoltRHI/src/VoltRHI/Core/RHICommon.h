@@ -1,10 +1,13 @@
 #pragma once
 #include "VoltRHI/Core/Core.h"
 
+#include <array>
+
 namespace Volt::RHI
 {
 	class PhysicalGraphicsDevice;
 	class GraphicsDevice;
+	class ImageView;
 
 	enum class QueueType
 	{
@@ -386,6 +389,69 @@ namespace Volt::RHI
 		Always
 	};
 
+	enum class ImageUsage : uint32_t
+	{
+		None = 0,
+		Texture,
+		Attachment,
+		AttachmentStorage,
+		Storage
+	};
+
+	enum class TextureWrap : uint32_t
+	{
+		None = 0,
+		Clamp,
+		Repeat
+	};
+
+	enum class TextureFilter : uint32_t
+	{
+		None = 0,
+		Linear,
+		Nearest,
+		Anisotopy
+	};
+
+	enum class AnisotopyLevel : uint32_t
+	{
+		None = 0,
+		X2 = 2,
+		X4 = 4,
+		X8 = 8,
+		X16 = 16
+	};
+
+	enum class MemoryUsage : uint32_t
+	{
+		None = 0,
+		Indirect,
+		CPUToGPU,
+		GPUOnly
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(MemoryUsage);
+
+	enum class ImageViewType : uint32_t
+	{
+		View1D = 0,
+		View2D,
+		View3D,
+
+		View1DArray,
+		View2DArray,
+		
+		ViewCube,
+		ViewCubeArray
+	};
+
+	enum class ClearMode
+	{
+		Clear = 0,
+		Load,
+		DontCare
+	};
+
 	// --- structures --- \\
 
 	struct LogHookInfo
@@ -431,8 +497,8 @@ namespace Volt::RHI
 
 	struct Offset2D
 	{
-		uint32_t x;
-		uint32_t y;
+		int32_t x;
+		int32_t y;
 	};
 
 	struct Extent3D
@@ -458,5 +524,22 @@ namespace Volt::RHI
 
 		float minDepth;
 		float maxDepth;
+	};
+
+	struct AttachmentInfo
+	{
+		Weak<ImageView> view;
+
+		ClearMode clearMode;
+		std::array<float, 4> clearColor{ 0.f, 0.f, 0.f, 1.f };
+	};
+
+	struct RenderingInfo
+	{
+		std::vector<AttachmentInfo> colorAttachments{};
+		AttachmentInfo depthAttachmentInfo{};
+
+		Rect2D renderArea{};
+		uint32_t layerCount = 1;
 	};
 }

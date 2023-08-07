@@ -7,7 +7,7 @@ struct VkPipeline_T;
 
 namespace Volt::RHI
 {
-	class VulkanRenderPipeline : public RenderPipeline
+	class VulkanRenderPipeline final : public RenderPipeline
 	{
 	public:
 		VulkanRenderPipeline(const RenderPipelineCreateInfo& createInfo);

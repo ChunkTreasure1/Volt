@@ -6,7 +6,7 @@ struct GLFWwindow;
 
 namespace Volt::RHI
 {
-	class VulkanImGuiImplementation : public ImGuiImplementation
+	class VulkanImGuiImplementation final : public ImGuiImplementation
 	{
 	public:
 		VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo);

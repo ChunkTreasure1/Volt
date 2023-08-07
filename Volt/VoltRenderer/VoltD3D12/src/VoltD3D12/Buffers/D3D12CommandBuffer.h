@@ -33,6 +33,11 @@ namespace Volt::RHI
 		void SetViewports(const std::vector<Viewport>& viewports) override;
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
 
+		void BindPipeline(Ref<RenderPipeline> pipeline) override;
+
+		void BeginRendering(const RenderingInfo& renderingInfo) override;
+		void EndRendering() override;
+
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
 

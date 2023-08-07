@@ -8,7 +8,7 @@ struct VkDescriptorSetLayout_T;
 
 namespace Volt::RHI
 {
-	class VulkanShader : public Shader
+	class VulkanShader final : public Shader
 	{
 	public:
 		struct SourceData
