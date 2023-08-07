@@ -5,6 +5,8 @@
 
 #include "VoltRHI/Utility/Buffer.h"
 
+#include "VoltRHI/Shader/BufferLayout.h"
+
 #include <vector>
 #include <filesystem>
 
@@ -77,16 +79,47 @@ namespace Volt::RHI
 		ShaderStage	stageFlags = ShaderStage::None;
 	};
 
+	// Representation of shader types
+	struct ShaderConstantBuffer
+	{
+		ShaderStage usageStages;
+	};
+
+	struct ShaderStorageBuffer
+	{
+		ShaderStage usageStages;
+		uint32_t arraySize = 1;
+	};
+
+	struct ShaderStorageImage
+	{
+		ShaderStage usageStages;
+		uint32_t arraySize = 1;
+	};
+
+	struct ShaderImage
+	{
+		ShaderStage usageStages;
+		uint32_t arraySize = 1;
+	};
+
+	struct ShaderSampler
+	{
+		ShaderStage usageStages;
+	};
+	/////////////////////////////////
+
 	struct ShaderResources
 	{
-		std::map<uint32_t, std::set<uint32_t>> constantBuffers;
-		std::map<uint32_t, std::set<uint32_t>> storageBuffers;
-		std::map<uint32_t, std::set<uint32_t>> storageImages;
-		std::map<uint32_t, std::set<uint32_t>> images;
-		std::map<uint32_t, std::set<uint32_t>> samplers;
+		std::map<uint32_t, std::map<uint32_t, ShaderConstantBuffer>> constantBuffers;
+		std::map<uint32_t, std::map<uint32_t, ShaderStorageBuffer>> storageBuffers;
+		std::map<uint32_t, std::map<uint32_t, ShaderStorageImage>> storageImages;
+		std::map<uint32_t, std::map<uint32_t, ShaderImage>> images;
+		std::map<uint32_t, std::map<uint32_t, ShaderSampler>> samplers;
 
 		ShaderConstantData constants{};
 		ShaderDataBuffer constantsBuffer{};
+		BufferLayout vertexLayout{};
 	
 		std::vector<Format> outputFormats;
 	};

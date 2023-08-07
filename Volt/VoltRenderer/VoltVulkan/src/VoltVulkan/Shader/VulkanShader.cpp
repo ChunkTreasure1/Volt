@@ -63,6 +63,72 @@ namespace Volt::RHI
 
 			return ShaderUniformType::Invalid;
 		}
+
+		inline static const ElementType GetBufferElementTypeFromSPIRV(const spirv_cross::SPIRType& type)
+		{
+			if (type.columns == 4)
+			{
+				switch (type.basetype)
+				{
+					case spirv_cross::SPIRType::Float: return ElementType::Float4x4;
+				}
+			}
+			else if (type.columns == 3)
+			{
+				switch (type.basetype)
+				{
+					case spirv_cross::SPIRType::Float: return ElementType::Float3x3;
+				}
+			}
+			else
+			{
+				switch (type.basetype)
+				{
+					case spirv_cross::SPIRType::Boolean: return ElementType::Bool;
+					case spirv_cross::SPIRType::UInt:
+					{
+						if (type.vecsize == 1) return ElementType::UInt;
+						if (type.vecsize == 2) return ElementType::UInt2;
+						if (type.vecsize == 3) return ElementType::UInt3;
+						if (type.vecsize == 4) return ElementType::UInt4;
+
+						break;
+					}
+
+					case spirv_cross::SPIRType::Int:
+					{
+						if (type.vecsize == 1) return ElementType::Int;
+						if (type.vecsize == 2) return ElementType::Int2;
+						if (type.vecsize == 3) return ElementType::Int3;
+						if (type.vecsize == 4) return ElementType::Int4;
+
+						break;
+					}
+
+					case spirv_cross::SPIRType::Float:
+					{
+						if (type.vecsize == 1) return ElementType::Float;
+						if (type.vecsize == 2) return ElementType::Float2;
+						if (type.vecsize == 3) return ElementType::Float3;
+						if (type.vecsize == 4) return ElementType::Float4;
+
+						break;
+					}
+
+					case spirv_cross::SPIRType::Half:
+					{
+						if (type.vecsize == 1) return ElementType::Half;
+						if (type.vecsize == 2) return ElementType::Half2;
+						if (type.vecsize == 3) return ElementType::Half3;
+						if (type.vecsize == 4) return ElementType::Half4;
+
+						break;
+					}
+				}
+			}
+
+			return ElementType::Float;
+		}
 	}
 
 	VulkanShader::VulkanShader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)
@@ -94,7 +160,14 @@ namespace Volt::RHI
 			return false;
 		}
 
+		auto vertexLayout = m_resources.vertexLayout;
+		auto outputFormats = m_resources.outputFormats;
+
 		Release();
+
+		m_resources.outputFormats = outputFormats;
+		m_resources.vertexLayout = vertexLayout;
+
 		LoadAndCreateShaders(m_shaderData);
 		ReflectAllStages(m_shaderData);
 
@@ -162,11 +235,12 @@ namespace Volt::RHI
 			vkDestroyShaderModule(device->GetHandle<VkDevice>(), data.shaderModule, nullptr);
 		}
 
-		for (const auto& descriptorSetLayout : m_descriptorSetLayouts)
+		for (const auto& descriptorSetLayout : m_nullPaddedDescriptorSetLayouts)
 		{
 			vkDestroyDescriptorSetLayout(device->GetHandle<VkDevice>(), descriptorSetLayout, nullptr);
 		}
 
+		m_nullPaddedDescriptorSetLayouts.clear();
 		m_descriptorSetLayouts.clear();
 		m_pipelineStageInfo.clear();
 
@@ -205,6 +279,8 @@ namespace Volt::RHI
 		{
 			ReflectStage(stage, data);
 		}
+
+		CreateDescriptorSetLayouts();
 	}
 
 	void VulkanShader::ReflectStage(ShaderStage stage, const std::vector<uint32_t>& data)
@@ -231,7 +307,8 @@ namespace Volt::RHI
 				continue;
 			}
 
-			m_resources.constantBuffers[set].emplace(binding);
+			auto& buffer = m_resources.constantBuffers[set][binding];
+			buffer.usageStages = buffer.usageStages | stage;
 
 			m_perStageUBOCount[stage].count++;
 		}
@@ -246,7 +323,11 @@ namespace Volt::RHI
 			const uint32_t binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 
-			m_resources.storageBuffers[set].emplace(binding);
+			auto& buffer = m_resources.storageBuffers[set][binding];
+			buffer.usageStages = buffer.usageStages | stage;
+
+			//#TODO_Ivar: Add array count
+
 			m_perStageSSBOCount[stage].count++;
 		}
 
@@ -254,8 +335,18 @@ namespace Volt::RHI
 		{
 			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
+			const auto& imageType = compiler.get_type(image.type_id);
 
-			m_resources.storageImages[set].emplace(binding);
+			const bool firstEntry = !m_resources.storageImages[set].contains(binding);
+
+			auto& shaderImage = m_resources.storageImages[set][binding];
+			shaderImage.usageStages = shaderImage.usageStages | stage;
+
+			if (firstEntry && !imageType.array.empty())
+			{
+				shaderImage.arraySize = imageType.array[0];
+			}
+
 			m_perStageStorageImageCount[stage].count++;
 		}
 
@@ -263,8 +354,18 @@ namespace Volt::RHI
 		{
 			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
+			const auto& imageType = compiler.get_type(image.type_id);
 
-			m_resources.images[set].emplace(binding);
+			const bool firstEntry = !m_resources.images[set].contains(binding);
+
+			auto& shaderImage = m_resources.images[set][binding];
+			shaderImage.usageStages = shaderImage.usageStages | stage;
+
+			if (firstEntry && !imageType.array.empty())
+			{
+				shaderImage.arraySize = imageType.array[0];
+			}
+
 			m_perStageImageCount[stage].count++;
 		}
 
@@ -273,7 +374,8 @@ namespace Volt::RHI
 			const uint32_t binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
 
-			m_resources.images[set].emplace(binding);
+			auto& shaderSampler = m_resources.samplers[set][binding];
+			shaderSampler.usageStages = shaderSampler.usageStages | stage;
 			m_perStageSamplerCount[stage].count++;
 		}
 
@@ -307,5 +409,112 @@ namespace Volt::RHI
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Images: {0}", m_perStageStorageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Images: {0}", m_perStageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Samplers: {0}", m_perStageSamplerCount[stage].count);
+
+		if (stage == ShaderStage::Vertex)
+		{
+			GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Vertex Layout:");
+
+			for (const auto& element : m_resources.vertexLayout.GetElements())
+			{
+				GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "				{0}: {1}", element.name, BufferLayout::GetNameFromElementType(element.type));
+			}
+		}
+
+	}
+
+	void VulkanShader::CreateDescriptorSetLayouts()
+	{
+		std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> descriptorSetBindings{};
+
+		for (const auto& [set, bindings] : m_resources.constantBuffers)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
+				descriptorBinding.binding = binding;
+				descriptorBinding.descriptorCount = 1;
+				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
+			}
+		}
+
+		for (const auto& [set, bindings] : m_resources.storageBuffers)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
+				descriptorBinding.binding = binding;
+				descriptorBinding.descriptorCount = data.arraySize;
+				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
+			}
+		}
+
+		for (const auto& [set, bindings] : m_resources.storageImages)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
+				descriptorBinding.binding = binding;
+				descriptorBinding.descriptorCount = data.arraySize;
+				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
+			}
+		}
+
+		for (const auto& [set, bindings] : m_resources.images)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
+				descriptorBinding.binding = binding;
+				descriptorBinding.descriptorCount = data.arraySize;
+				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
+			}
+		}
+
+		for (const auto& [set, bindings] : m_resources.samplers)
+		{
+			for (const auto& [binding, data] : bindings)
+			{
+				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
+				descriptorBinding.binding = binding;
+				descriptorBinding.descriptorCount = 1;
+				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
+			}
+		}
+
+		auto device = GraphicsContext::GetDevice();
+
+		int32_t lastSet = -1;
+		for (const auto& [set, bindings] : descriptorSetBindings)
+		{
+			while (static_cast<int32_t>(set) > lastSet + 1)
+			{
+				VkDescriptorSetLayoutCreateInfo info{};
+				info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				info.pNext = nullptr;
+				info.bindingCount = 0;
+				info.pBindings = nullptr;
+
+				VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle<VkDevice>(), &info, nullptr, &m_nullPaddedDescriptorSetLayouts.emplace_back()));
+				lastSet++;
+			}
+
+			VkDescriptorSetLayoutCreateInfo info{};
+			info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			info.pNext = nullptr;
+			info.bindingCount = static_cast<uint32_t>(bindings.size());
+			info.pBindings = bindings.data();
+
+			//#TODO_Ivar: Implement bindless flags support
+
+			VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle<VkDevice>(), &info, nullptr, &m_nullPaddedDescriptorSetLayouts.emplace_back()));
+			m_descriptorSetLayouts.emplace_back(m_nullPaddedDescriptorSetLayouts.back());
+
+			lastSet = set;
+		}
 	}
 }

@@ -9,6 +9,7 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
+#include <VoltRHI/Graphics/DeviceQueue.h>
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>

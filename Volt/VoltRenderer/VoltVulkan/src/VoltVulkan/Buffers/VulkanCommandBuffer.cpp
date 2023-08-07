@@ -7,6 +7,7 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Graphics/DeviceQueue.h>
 
 #include <vulkan/vulkan.h>
 

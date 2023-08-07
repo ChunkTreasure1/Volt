@@ -180,8 +180,21 @@ namespace Volt::RHI
 			processingData.shaderStage = shaderStage;
 
 			PreProcessorResult result{};
-			ShaderPreProcessor::PreProcessShaderSource(processingData, result);
-			vulkanShader.m_resources.outputFormats = result.outputFormats;
+			if (!ShaderPreProcessor::PreProcessShaderSource(processingData, result))
+			{
+				return CompilationResult::PreprocessFailed;
+			}
+
+			if (shaderStage == ShaderStage::Pixel)
+			{
+				vulkanShader.m_resources.outputFormats = result.outputFormats;
+			}
+			else if (shaderStage == ShaderStage::Vertex)
+			{
+				vulkanShader.m_resources.vertexLayout = result.vertexLayout;
+			}
+
+			processedSource = result.preProcessedResult;
 		}
 
 		IDxcBlobEncoding* sourcePtr = nullptr;

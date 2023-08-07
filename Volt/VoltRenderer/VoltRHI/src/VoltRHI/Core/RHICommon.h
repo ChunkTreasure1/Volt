@@ -343,6 +343,49 @@ namespace Volt::RHI
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ShaderStage);
 
+	enum class Topology : uint32_t
+	{
+		TriangleList = 0,
+		LineList,
+		TriangleStrip,
+		PatchList,
+		PointList
+	};
+
+	enum class CullMode : uint32_t
+	{
+		Front = 0,
+		Back,
+		FrontAndBack,
+		None
+	};
+
+	enum class FillMode : uint32_t
+	{
+		Solid,
+		Wireframe
+	};
+
+	enum class DepthMode : uint32_t
+	{
+		Read = 0,
+		Write,
+		ReadWrite,
+		None
+	};
+
+	enum class CompareOperator : uint32_t
+	{
+		None = 0,
+		Never,
+		Less,
+		Equal,
+		LessEqual,
+		Greater,
+		GreaterEqual,
+		Always
+	};
+
 	// --- structures --- \\
 
 	struct LogHookInfo

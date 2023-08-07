@@ -42,6 +42,7 @@
 ///////////////// TEMPORARY //////////////////
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Shader/Shader.h>
+#include <VoltRHI/Pipelines/RenderPipeline.h>
 //////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
@@ -116,6 +117,11 @@ namespace Volt
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
 
 			Ref<RHI::Shader> shader = RHI::Shader::Create("default", { ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_vs.hlsl", ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Forward/ForwardPBR_ps.hlsl" }, true);
+			
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = shader;
+
+			Ref<RHI::RenderPipeline> pipeline = RHI::RenderPipeline::Create(pipelineInfo);
 		}
 		/////////////////////
 

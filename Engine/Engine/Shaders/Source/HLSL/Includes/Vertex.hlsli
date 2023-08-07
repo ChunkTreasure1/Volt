@@ -146,15 +146,14 @@ float3 decode_tangent(float3 normal, float diamond_tangent)
 
 struct DefaultVertexInput
 {
-    STAGE_VARIABLE(float3, position, POSITION, 0);
+    float3 position : POSITION;
+    [[vt::byte4]] uint4 normal : NORMAL;
+    float tangent : TANGENT;
     
-    STAGE_VARIABLE(uint4, normal, NORMAL, 1);
-    STAGE_VARIABLE(float, tangent, TANGENT, 2);
+    half2 texCoords : TEXCOORDS;
     
-    STAGE_VARIABLE(half2, texCoords, TEXCOORDS, 3);
-    
-    STAGE_VARIABLE(uint4, influences, INFLUENCES, 4);
-    STAGE_VARIABLE(half4, weights, WEIGHTS, 5);
+    [[vt::ushort4]] uint4 influences : INFLUENCES;
+    half4 weights : WEIGHTS;
     
     uint vertexId : SV_VertexID;
     
