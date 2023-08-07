@@ -57,6 +57,7 @@ namespace Volt::RHI
 	
 	VulkanRenderPipeline::~VulkanRenderPipeline()
 	{
+		Release();
 	}
 	
 	void VulkanRenderPipeline::Invalidate()
@@ -255,5 +256,17 @@ namespace Volt::RHI
 
 	void VulkanRenderPipeline::Release()
 	{
+		// #TODO_Ivar: Move to release queue
+		if (m_pipeline == nullptr)
+		{
+			return;
+		}
+
+		auto device = GraphicsContext::GetDevice();
+		vkDestroyPipelineLayout(device->GetHandle<VkDevice>(), m_pipelineLayout, nullptr);
+		vkDestroyPipeline(device->GetHandle<VkDevice>(), m_pipeline, nullptr);
+
+		m_pipelineLayout = nullptr;
+		m_pipeline = nullptr;
 	}
 }

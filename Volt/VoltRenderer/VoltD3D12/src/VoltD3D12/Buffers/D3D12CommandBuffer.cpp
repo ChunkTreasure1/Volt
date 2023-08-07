@@ -110,6 +110,19 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
+	{
+
+	}
+
+	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
+	{
+	}
+
+	void D3D12CommandBuffer::EndRendering()
+	{
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_queueType = queueType;

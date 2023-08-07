@@ -5,6 +5,9 @@
 
 namespace Volt::RHI
 {
+	class RenderPipeline;
+	class ImageView;
+
 	class CommandBuffer : public RHIInterface
 	{
 	public:
@@ -21,6 +24,11 @@ namespace Volt::RHI
 
 		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
 		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;
+
+		virtual void BindPipeline(Ref<RenderPipeline> pipeline) = 0;
+
+		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
+		virtual void EndRendering() = 0;
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 

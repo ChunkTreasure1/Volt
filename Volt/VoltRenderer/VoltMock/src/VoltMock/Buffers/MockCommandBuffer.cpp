@@ -39,6 +39,18 @@ namespace Volt::RHI
 	void MockCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 	}
+
+	void MockCommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
+	{
+	}
+
+	void MockCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
+	{
+	}
+
+	void MockCommandBuffer::EndRendering()
+	{
+	}
 	
 	void* MockCommandBuffer::GetHandleImpl()
 	{

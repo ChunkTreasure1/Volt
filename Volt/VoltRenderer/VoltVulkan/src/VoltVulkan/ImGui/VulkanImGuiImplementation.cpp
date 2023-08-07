@@ -150,7 +150,7 @@ namespace Volt::RHI
 
 		ImGui_ImplVulkan_InitInfo initInfo{};
 		initInfo.Instance = GraphicsContext::Get().GetHandle<VkInstance>();
-		initInfo.PhysicalDevice = GraphicsContext::Get().GetPhysicalDevice()->GetHandle<VkPhysicalDevice>();
+		initInfo.PhysicalDevice = GraphicsContext::GetPhysicalDevice()->GetHandle<VkPhysicalDevice>();
 		initInfo.Device = device->GetHandle<VkDevice>();
 		initInfo.Queue = device->GetDeviceQueue(QueueType::Graphics)->GetHandle<VkQueue>();
 

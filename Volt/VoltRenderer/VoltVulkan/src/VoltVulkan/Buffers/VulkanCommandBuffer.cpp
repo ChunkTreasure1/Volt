@@ -4,10 +4,14 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
+#include "VoltVulkan/Common/VulkanHelpers.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
+#include <VoltRHI/Pipelines/RenderPipeline.h>
+
+#include <VoltRHI/Images/ImageView.h>
 
 #include <vulkan/vulkan.h>
 
@@ -100,6 +104,64 @@ namespace Volt::RHI
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdSetScissor(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(scissors.size()), reinterpret_cast<const VkRect2D*>(scissors.data()));
+	}
+
+	void VulkanCommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdBindPipeline(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetHandle<VkPipeline>());
+	}
+
+	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
+	{
+		std::vector<VkRenderingAttachmentInfo> colorAttachmentInfo{};
+		VkRenderingAttachmentInfo depthAttachmentInfo{};
+
+		for (const auto& colorAtt : renderingInfo.colorAttachments)
+		{
+			auto& newInfo = colorAttachmentInfo.emplace_back();
+			newInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			newInfo.imageView = colorAtt.view.lock()->GetHandle<VkImageView>();
+			newInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			newInfo.loadOp = Utility::VoltToVulkanLoadOp(colorAtt.clearMode);
+			newInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			newInfo.clearValue = { colorAtt.clearColor[0], colorAtt.clearColor[1], colorAtt.clearColor[2], colorAtt.clearColor[3] };
+		}
+
+		if (!renderingInfo.depthAttachmentInfo.view.expired())
+		{
+			depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			depthAttachmentInfo.imageView = renderingInfo.depthAttachmentInfo.view.lock()->GetHandle<VkImageView>();
+			depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			depthAttachmentInfo.loadOp = Utility::VoltToVulkanLoadOp(renderingInfo.depthAttachmentInfo.clearMode);
+			depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			depthAttachmentInfo.clearValue.depthStencil = { renderingInfo.depthAttachmentInfo.clearColor[0], static_cast<uint32_t>(renderingInfo.depthAttachmentInfo.clearColor[1]) };
+		}
+
+		VkRenderingInfo vkRenderingInfo{};
+		vkRenderingInfo.renderArea = { renderingInfo.renderArea.offset.x, renderingInfo.renderArea.offset.y, renderingInfo.renderArea.extent.width, renderingInfo.renderArea.extent.height };
+		vkRenderingInfo.layerCount = renderingInfo.layerCount;
+		vkRenderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentInfo.size());
+		vkRenderingInfo.pColorAttachments = colorAttachmentInfo.data();
+		vkRenderingInfo.pStencilAttachment = nullptr;
+
+		if (!renderingInfo.depthAttachmentInfo.view.expired())
+		{
+			vkRenderingInfo.pDepthAttachment = &depthAttachmentInfo;
+		}
+		else
+		{
+			vkRenderingInfo.pDepthAttachment = nullptr;
+		}
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdBeginRendering(m_commandBuffers.at(index).commandBuffer, &vkRenderingInfo);
+	}
+
+	void VulkanCommandBuffer::EndRendering()
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdEndRendering(m_commandBuffers.at(index).commandBuffer);
 	}
 
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const

@@ -10,7 +10,7 @@ struct VkFence_T;
 
 namespace Volt::RHI
 {
-	class VulkanCommandBuffer : public CommandBuffer
+	class VulkanCommandBuffer final : public CommandBuffer
 	{
 	public:
 		VulkanCommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget);
@@ -26,6 +26,11 @@ namespace Volt::RHI
 
 		void SetViewports(const std::vector<Viewport>& viewports) override;
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
+
+		void BindPipeline(Ref<RenderPipeline> pipeline) override;
+
+		void BeginRendering(const RenderingInfo& renderingInfo) override;
+		void EndRendering() override;
 
 		VkFence_T* GetCurrentFence() const;
 

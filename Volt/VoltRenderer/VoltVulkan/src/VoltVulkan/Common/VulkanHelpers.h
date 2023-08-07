@@ -136,5 +136,33 @@ namespace Volt::RHI
 			assert(false && "Compare operator not supported!");
 			return VK_COMPARE_OP_LESS;
 		}
+
+		inline VkImageViewType VoltToVulkanViewType(ImageViewType viewType)
+		{
+			switch (viewType)
+			{
+				case ImageViewType::View1D: return VK_IMAGE_VIEW_TYPE_1D;
+				case ImageViewType::View2D: return VK_IMAGE_VIEW_TYPE_2D;
+				case ImageViewType::View3D: return VK_IMAGE_VIEW_TYPE_3D;
+				case ImageViewType::View1DArray: return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+				case ImageViewType::View2DArray: return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+				case ImageViewType::ViewCube: return VK_IMAGE_VIEW_TYPE_CUBE;
+				case ImageViewType::ViewCubeArray: return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+			}
+
+			return VK_IMAGE_VIEW_TYPE_2D;
+		}
+
+		inline VkAttachmentLoadOp VoltToVulkanLoadOp(ClearMode clearMode)
+		{
+			switch (clearMode)
+			{
+				case ClearMode::Clear: return VK_ATTACHMENT_LOAD_OP_CLEAR;
+				case ClearMode::Load: return VK_ATTACHMENT_LOAD_OP_LOAD;
+				case ClearMode::DontCare: return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			}
+
+			return VK_ATTACHMENT_LOAD_OP_LOAD;
+		}
 	}
 }
