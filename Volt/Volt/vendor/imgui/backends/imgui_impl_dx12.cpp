@@ -924,6 +924,7 @@ static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
         desc.NodeMask = 1;
 
         HRESULT hr = bd->pd3dDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&vd->RtvDescHeap));
+        hr;
         IM_ASSERT(hr == S_OK);
 
         SIZE_T rtv_descriptor_size = bd->pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);

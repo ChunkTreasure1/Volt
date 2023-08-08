@@ -142,6 +142,9 @@ namespace Volt::RHI
 	bool ShaderPreProcessor::PreProcessPixelSource(const PreProcessorData& data, PreProcessorResult& outResult)
 	{
 		const auto& entryPoint = data.entryPoint;
+		outResult.preProcessedResult = data.shaderSource;
+		ErasePreProcessData(outResult);
+
 		std::string processedSource = data.shaderSource;
 
 		const size_t entryPointLocation = processedSource.find(entryPoint);
@@ -242,15 +245,15 @@ namespace Volt::RHI
 			currentSemicolon = structBracketSubStr.find_first_of(';');
 		}
 
-		outResult.preProcessedResult = data.shaderSource;
-		ErasePreProcessData(outResult);
-
  		return true;
 	}
 
 	bool ShaderPreProcessor::PreProcessVertexSource(const PreProcessorData& data, PreProcessorResult& outResult)
 	{
 		const auto& entryPoint = data.entryPoint;
+		outResult.preProcessedResult = data.shaderSource;
+		ErasePreProcessData(outResult);
+
 		std::string processedSource = data.shaderSource;
 
 		const size_t entryPointLocation = processedSource.find(entryPoint);
@@ -327,8 +330,6 @@ namespace Volt::RHI
 		}
 
 		outResult.vertexLayout = inputElements;
-		outResult.preProcessedResult = data.shaderSource;
-		ErasePreProcessData(outResult);
 
 		return true;
 	}

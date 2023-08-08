@@ -30,6 +30,8 @@ namespace Volt::RHI
 		void* GetHandleImpl() override;
 
 	private:
+		void TransitionToLayout(ImageLayout targetLayout);
+
 		ImageSpecification m_specification;
 
 		VmaAllocation_T* m_allocation = nullptr;

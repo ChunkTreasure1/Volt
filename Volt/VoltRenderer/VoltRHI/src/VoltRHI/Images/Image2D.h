@@ -24,7 +24,7 @@ namespace Volt::RHI
 		std::string debugName;
 
 		bool isCubeMap = false;
-		bool generateMips = true;
+		bool generateMips = false;
 	};
 
 	class ImageView;
