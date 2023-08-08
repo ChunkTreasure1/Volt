@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "Hash": "Vlb3msOdKziPNOKT8gcp8GWxKLI+ewdpGs2NDeyeS7k=",
+  "Source": "NexusWeb",
+  "BasePath": "_content/NexusWeb",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "NexusWeb\\wwwroot",
+      "Source": "NexusWeb",
+      "ContentRoot": "E:\\dev\\Volt\\Volt\\NexusWeb\\wwwroot\\",
+      "BasePath": "_content/NexusWeb",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "E:\\dev\\Volt\\Volt\\NexusWeb\\wwwroot\\css\\site.css",
+      "SourceId": "NexusWeb",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\dev\\Volt\\Volt\\NexusWeb\\wwwroot\\",
+      "BasePath": "_content/NexusWeb",
+      "RelativePath": "css/site.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\site.css"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+is_global = true
+build_property.TargetFramework = net7.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = NexusWeb
+build_property.RootNamespace = NexusWeb
+build_property.ProjectDir = E:\dev\Volt\Volt\NexusWeb\
+build_property.RazorLangVersion = 7.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = E:\dev\Volt\Volt\NexusWeb
+build_property._RazorSourceGeneratorDebug = 
+
+[E:/dev/Volt/Volt/NexusWeb/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/dev/Volt/Volt/NexusWeb/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/dev/Volt/Volt/NexusWeb/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/dev/Volt/Volt/NexusWeb/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/dev/Volt/Volt/NexusWeb/Pages/_Host.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0hvc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 

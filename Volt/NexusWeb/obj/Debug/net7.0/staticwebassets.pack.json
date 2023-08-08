@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "E:\\dev\\Volt\\Volt\\NexusWeb\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.NexusWeb.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.build.NexusWeb.props",
+      "PackagePath": "build\\NexusWeb.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.buildMultiTargeting.NexusWeb.props",
+      "PackagePath": "buildMultiTargeting\\NexusWeb.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.buildTransitive.NexusWeb.props",
+      "PackagePath": "buildTransitive\\NexusWeb.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
