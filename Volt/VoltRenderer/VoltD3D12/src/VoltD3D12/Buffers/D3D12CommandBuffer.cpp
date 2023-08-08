@@ -26,7 +26,6 @@ namespace Volt::RHI
 	{
 		IncrementIndex();
 		auto& commandData = GetCommandData();
-
 		GetFenceData().Wait();
 
 		commandData.commandAllocator->Reset();

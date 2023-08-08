@@ -109,7 +109,8 @@ namespace Volt::RHI
 
 		m_commandQueue->ExecuteCommandLists(static_cast<UINT>(cmdLists.size()), cmdLists.data());
 
-		m_commandQueue->Signal(currentFenceData.Get(), currentFenceData.Value()++);
+		m_commandQueue->Signal(currentFenceData.Get(), currentFenceData.Value());
+		currentFenceData.Increment();
 		m_currentFence = currentFenceData.Get();
 		m_currentFenceValue = currentFenceData.Value();
 	}

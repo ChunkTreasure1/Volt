@@ -27,12 +27,12 @@ namespace Volt::RHI
 	D3D12Swapchain::~D3D12Swapchain()
 	{
 		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
-		//for (auto& fence : m_fences)
-		//{
-		//	fence.Increment();
-		//	d3d12Queue->Signal(fence, fence.Value());
-		//	fence.Wait();
-		//}
+		for (auto& fence : m_fences)
+		{
+			fence.Increment();
+			d3d12Queue->Signal(fence, fence.Value());
+			fence.Wait();
+		}
 		CleanUp();
 		for (auto& target : m_renderTargets)
 		{
@@ -49,16 +49,18 @@ namespace Volt::RHI
 	void D3D12Swapchain::BeginFrame()
 	{
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
-		m_fences[m_currentImageIndex].Wait();
+		m_fences[(m_currentImageIndex + 1) % 3].Wait();
+		GraphicsContext::Log(Severity::Info, "Waiting on frame = {}", m_currentImageIndex);
+
 	}
 
 	void D3D12Swapchain::Present()
 	{
-		m_swapchain->Present(static_cast<UINT>(m_enableVsync), 0);
+		m_swapchain->Present(m_enableVsync, DXGI_PRESENT_ALLOW_TEARING);
 		auto d3d12Queue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics)->As<D3D12DeviceQueue>();
+		d3d12Queue->Signal(m_fences[m_currentImageIndex], m_fences[m_currentImageIndex].Value());
 		m_fences[m_currentImageIndex].Signal();
 		m_fences[m_currentImageIndex].Increment();
-		d3d12Queue->Signal(m_fences[m_currentImageIndex], m_fences[m_currentImageIndex].Value());
 
 	}
 
