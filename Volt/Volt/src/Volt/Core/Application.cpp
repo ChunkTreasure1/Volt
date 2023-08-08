@@ -318,6 +318,14 @@ namespace Volt
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
 
+				if (ImGui::Begin("Test"))
+				{
+					ImTextureID texId = m_imguiImplementation->GetTextureID(s_renderTarget);
+					ImGui::Image(texId, ImGui::GetContentRegionAvail());
+
+					ImGui::End();
+				}
+
 				m_imguiImplementation->End();
 			}
 

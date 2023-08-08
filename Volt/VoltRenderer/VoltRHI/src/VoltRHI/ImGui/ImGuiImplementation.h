@@ -4,9 +4,13 @@
 
 struct GLFWwindow;
 
+typedef void* ImTextureID;
+
 namespace Volt::RHI
 {
 	class Swapchain;
+	class Texture2D;
+	class Image2D;
 
 	struct ImGuiCreateInfo
 	{
@@ -23,6 +27,9 @@ namespace Volt::RHI
 
 		void Begin();
 		void End();
+
+		virtual ImTextureID GetTextureID(Ref<Texture2D> texture) const = 0;
+		virtual ImTextureID GetTextureID(Ref<Image2D> image) const = 0;
 
 		static Ref<ImGuiImplementation> Create(const ImGuiCreateInfo& createInfo);
 

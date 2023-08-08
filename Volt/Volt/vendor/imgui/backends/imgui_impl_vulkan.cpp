@@ -121,6 +121,9 @@ struct ImGui_ImplVulkan_Data
     VkShaderModule              ShaderModuleVert = nullptr;
     VkShaderModule              ShaderModuleFrag = nullptr;
 
+    std::vector<VkDescriptorPool> DescriptorPools;
+    uint32_t CurrentFrame = 0;
+
     // Font data
     VkSampler                   FontSampler = nullptr;
     VkSampler                   IconSampler = nullptr;
@@ -1025,6 +1028,36 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         check_vk_result(err);
     }
 
+    if (bd->DescriptorPools.empty())
+    {
+        constexpr VkDescriptorPoolSize poolSizes[] =
+        {
+            { VK_DESCRIPTOR_TYPE_SAMPLER, 10000 },
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+        };
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = 0;
+        poolInfo.maxSets = 10000;
+        poolInfo.poolSizeCount = (uint32_t)ARRAYSIZE(poolSizes);
+        poolInfo.pPoolSizes = poolSizes;
+
+        for (uint32_t d = 0; d < bd->VulkanInitInfo.ImageCount; d++)
+        {
+            vkCreateDescriptorPool(bd->VulkanInitInfo.Device, &poolInfo, nullptr, &bd->DescriptorPools.emplace_back());
+        }
+    }
+
     ImGui_ImplVulkan_CreatePipeline(v->Device, v->Allocator, v->PipelineCache, bd->RenderPass, v->MSAASamples, &bd->Pipeline, bd->Subpass);
 
     return true;
@@ -1053,6 +1086,11 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->Device, v->Allocator);
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
+    for (const auto& pool : bd->DescriptorPools)
+    {
+        vkDestroyDescriptorPool(v->Device, pool, nullptr);
+    }
+
     if (bd->ShaderModuleVert) { vkDestroyShaderModule(v->Device, bd->ShaderModuleVert, v->Allocator); bd->ShaderModuleVert = VK_NULL_HANDLE; }
     if (bd->ShaderModuleFrag) { vkDestroyShaderModule(v->Device, bd->ShaderModuleFrag, v->Allocator); bd->ShaderModuleFrag = VK_NULL_HANDLE; }
     if (bd->FontView) { vkDestroyImageView(v->Device, bd->FontView, v->Allocator); bd->FontView = VK_NULL_HANDLE; }
@@ -1063,6 +1101,7 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     if (bd->DescriptorSetLayout) { vkDestroyDescriptorSetLayout(v->Device, bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
     if (bd->PipelineLayout) { vkDestroyPipelineLayout(v->Device, bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
     if (bd->Pipeline) { vkDestroyPipeline(v->Device, bd->Pipeline, v->Allocator); bd->Pipeline = VK_NULL_HANDLE; }
+
 }
 
 bool    ImGui_ImplVulkan_LoadFunctions(PFN_vkVoidFunction(*loader_func)(const char* function_name, void* user_data), void* user_data)
@@ -1153,6 +1192,9 @@ void ImGui_ImplVulkan_NewFrame()
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     IM_ASSERT(bd != NULL && "Did you call ImGui_ImplVulkan_Init()?");
 
+    bd->CurrentFrame = (bd->CurrentFrame + 1) % bd->VulkanInitInfo.ImageCount;
+    vkResetDescriptorPool(bd->VulkanInitInfo.Device, bd->DescriptorPools.at(bd->CurrentFrame), 0);
+
     bd->CachedDescriptorSets.clear();
 }
 
@@ -1190,8 +1232,11 @@ ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_vie
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     alloc_info.descriptorSetCount = 1;
     alloc_info.pSetLayouts = &bd->DescriptorSetLayout;
+    alloc_info.descriptorPool = bd->DescriptorPools.at(bd->CurrentFrame);
 
-    VkDescriptorSet descriptor_set = Volt::Renderer::AllocateDescriptorSet(alloc_info);
+    VkDescriptorSet descriptor_set = nullptr;
+    vkAllocateDescriptorSets(bd->VulkanInitInfo.Device, &alloc_info, &descriptor_set);
+
     ImGui_ImplVulkan_UpdateTextureInfo(descriptor_set, bd->IconSampler, image_view, image_layout);
 
     bd->CachedDescriptorSets.emplace(hash, descriptor_set);
