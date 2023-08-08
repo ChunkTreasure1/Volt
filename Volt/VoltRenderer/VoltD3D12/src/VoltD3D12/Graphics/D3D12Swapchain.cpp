@@ -49,7 +49,7 @@ namespace Volt::RHI
 	void D3D12Swapchain::BeginFrame()
 	{
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
-		m_fences[(m_currentImageIndex + 1) % 3].Wait();
+		m_fences[m_currentImageIndex].Wait();
 		GraphicsContext::Log(Severity::Info, "Waiting on frame = {}", m_currentImageIndex);
 
 	}
@@ -150,10 +150,10 @@ namespace Volt::RHI
 		scDesc.SampleDesc = sDesc;
 		scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		scDesc.BufferCount = MaxSwapchainImages;
-		scDesc.OutputWindow = glfwGetWin32Window(m_windowHandle);
+		scDesc.OutputWindow = glfwGetWin32Window(m_windowHandle); 
 		scDesc.Windowed = true;
 		scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		scDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+		scDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING | DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain> tranferSwapchain = nullptr;
 

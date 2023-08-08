@@ -72,15 +72,17 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
+		GetCommandData().commandList->RSSetViewports(viewports.size(), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
 	}
 
 	void D3D12CommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
 	{
+		GetCommandData().commandList->RSSetScissorRects(scissors.size(), reinterpret_cast<const D3D12_RECT*>(scissors.data()));
 	}
 
 	void D3D12CommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
 	{
-
+		
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
