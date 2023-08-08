@@ -54,6 +54,7 @@ namespace Volt::RHI
 
 	ImGuiImplementation::ImGuiImplementation()
 	{
+		s_instance = this;
 	}
 
 	void ImGuiImplementation::Initialize()
@@ -208,6 +209,8 @@ namespace Volt::RHI
 		const std::filesystem::path iniPath = GetOrCreateIniPath();
 		ImGui::SaveIniSettingsToDisk(iniPath.string().c_str());
 		ImGui::DestroyContext();
+
+		s_instance = nullptr;
 	}
 
 	void ImGuiImplementation::Begin()
@@ -256,5 +259,10 @@ namespace Volt::RHI
 		implementation->Initialize();
 
 		return implementation;
+	}
+
+	ImGuiImplementation& ImGuiImplementation::Get()
+	{
+		return *s_instance;
 	}
 }

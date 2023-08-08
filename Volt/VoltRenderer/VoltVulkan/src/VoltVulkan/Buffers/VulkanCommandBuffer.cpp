@@ -2,14 +2,19 @@
 #include "VulkanCommandBuffer.h"
 
 #include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Common/VulkanHelpers.h"
+
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
-#include "VoltVulkan/Common/VulkanHelpers.h"
+
+#include "VoltVulkan/Pipelines/VulkanRenderPipeline.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
+
+#include <VoltRHI/Buffers/IndexBuffer.h>
+#include <VoltRHI/Buffers/VertexBuffer.h>
 
 #include <VoltRHI/Images/ImageView.h>
 
@@ -108,8 +113,39 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
 	{
+		if (pipeline == nullptr)
+		{
+			m_currentRenderPipeline = nullptr;
+			return;
+		}
+
+		m_currentRenderPipeline = pipeline;
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdBindPipeline(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetHandle<VkPipeline>());
+	}
+
+	void VulkanCommandBuffer::BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	{
+		std::vector<VkBuffer> vkBuffers{ vertexBuffers.size() };
+		std::vector<VkDeviceSize> offsets{};
+
+		for (uint32_t i = 0; i < vertexBuffers.size(); i++)
+		{
+			vkBuffers[i] = vertexBuffers[i]->GetHandle<VkBuffer>();
+			offsets.emplace_back(0);
+		}
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdBindVertexBuffers(m_commandBuffers.at(index).commandBuffer, firstBinding, static_cast<uint32_t>(vkBuffers.size()), vkBuffers.data(), offsets.data());
+	}
+
+	void VulkanCommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		constexpr VkDeviceSize offset = 0;
+		vkCmdBindIndexBuffer(m_commandBuffers.at(index).commandBuffer, indexBuffer->GetHandle<VkBuffer>(), offset, VK_INDEX_TYPE_UINT32);
 	}
 
 	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -163,6 +199,19 @@ namespace Volt::RHI
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		vkCmdEndRendering(m_commandBuffers.at(index).commandBuffer);
+	}
+
+	void VulkanCommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
+	{
+#ifndef VT_DIST
+		if (!m_currentRenderPipeline)
+		{
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanCommandBuffer]", "Unable to push constants as no pipeline is currently bound!");
+		}
+#endif
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdPushConstants(m_commandBuffers.at(index).commandBuffer, m_currentRenderPipeline->AsRef<VulkanRenderPipeline>().GetPipelineLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS, offset, size, data);
 	}
 
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const

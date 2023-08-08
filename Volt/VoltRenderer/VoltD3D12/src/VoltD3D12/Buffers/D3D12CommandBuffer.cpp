@@ -85,11 +85,23 @@ namespace Volt::RHI
 		
 	}
 
+	void D3D12CommandBuffer::BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	{
+	}
+
+	void D3D12CommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{
+	}
+
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
 	}
 
 	void D3D12CommandBuffer::EndRendering()
+	{
+	}
+
+	void D3D12CommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
 	{
 	}
 

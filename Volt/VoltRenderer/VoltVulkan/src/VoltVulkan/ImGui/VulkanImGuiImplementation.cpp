@@ -49,12 +49,6 @@ namespace Volt::RHI
 		ShutdownAPI();
 	}
 
-	ImTextureID VulkanImGuiImplementation::GetTextureID(Ref<Texture2D> image) const
-	{
-		//ImTextureID id = ImGui_ImplVulkan_AddTexture(nullptr, texture->GetImage()->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		return ImTextureID();
-	}
-
 	ImTextureID VulkanImGuiImplementation::GetTextureID(Ref<Image2D> image) const
 	{
 		ImTextureID id = ImGui_ImplVulkan_AddTexture(nullptr, image->GetView()->GetHandle<VkImageView>(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

@@ -13,7 +13,6 @@
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Core/Layer/Layer.h"
-#include "Volt/ImGui/ImGuiImplementation.h"
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/Rendering/UIRenderer.h"
@@ -47,6 +46,9 @@
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
+
+#include <VoltRHI/Buffers/VertexBuffer.h>
+#include <VoltRHI/Buffers/IndexBuffer.h>
 //////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
@@ -64,6 +66,9 @@ namespace Volt
 	static Ref<RHI::Shader> s_shader;
 	static Ref<RHI::RenderPipeline> s_renderPipeline;
 
+	static Ref<RHI::VertexBuffer> s_vertexBuffer;
+	static Ref<RHI::IndexBuffer> s_indexBuffer;
+		 
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
@@ -127,14 +132,14 @@ namespace Volt
 			s_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
 			s_shader = RHI::Shader::Create("SimpleTriangle", 
 				{ 
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTriangle_vs.hlsl", 
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTriangle_ps.hlsl"
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleQuad_vs.hlsl", 
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleQuad_ps.hlsl"
 				}, true);
 			
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = s_shader;
 			s_renderPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-
+			 
 			// Render target
 			{
 				RHI::ImageSpecification imageSpec{};
@@ -144,6 +149,51 @@ namespace Volt
 				imageSpec.generateMips = false;
 
 				s_renderTarget = RHI::Image2D::Create(imageSpec);
+			}
+
+			// Create quad buffers
+			{
+				// Vertex buffer
+				{
+					constexpr uint32_t VERTEX_COUNT = 4;
+
+					SpriteVertex* tempVertPtr = new SpriteVertex[VERTEX_COUNT];
+					tempVertPtr[0].position = { -0.5f, -0.5f, 0.f, 1.f };
+					tempVertPtr[1].position = { 0.5f, -0.5f, 0.f, 1.f };
+					tempVertPtr[2].position = { 0.5f,  0.5f, 0.f, 1.f };
+					tempVertPtr[3].position = { -0.5f,  0.5f, 0.f, 1.f };
+
+					tempVertPtr[0].texCoords = { 0.f, 1.f };
+					tempVertPtr[1].texCoords = { 1.f, 1.f };
+					tempVertPtr[2].texCoords = { 1.f, 0.f };
+					tempVertPtr[3].texCoords = { 0.f, 0.f };
+
+					tempVertPtr[0].color = { 1.f };
+					tempVertPtr[1].color = { 1.f };
+					tempVertPtr[2].color = { 1.f };
+					tempVertPtr[3].color = { 1.f };
+
+					s_vertexBuffer = RHI::VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * VERTEX_COUNT);
+					delete[] tempVertPtr;
+				}
+
+				// Index Buffer
+				{
+					constexpr uint32_t INDEX_COUNT = 6;
+
+					uint32_t* tempIndexPtr = new uint32_t[INDEX_COUNT];
+
+					tempIndexPtr[0] = 0;
+					tempIndexPtr[1] = 3;
+					tempIndexPtr[2] = 2;
+
+					tempIndexPtr[3] = 2;
+					tempIndexPtr[4] = 1;
+					tempIndexPtr[5] = 0;
+
+					s_indexBuffer = RHI::IndexBuffer::Create(tempIndexPtr, INDEX_COUNT);
+					delete[] tempIndexPtr;
+				}
 			}
 		}
 		/////////////////////
@@ -291,7 +341,7 @@ namespace Volt
 				
 				RHI::AttachmentInfo attInfo{};
 				attInfo.view = s_renderTarget->GetView();
-				attInfo.clearColor = { 1.f, 0.f, 1.f, 1.f };
+				attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
 				attInfo.clearMode = RHI::ClearMode::Clear;
 
 				RHI::RenderingInfo renderingInfo{};
@@ -299,8 +349,12 @@ namespace Volt
 				renderingInfo.renderArea = scissor;
 
 				s_commandBuffer->BeginRendering(renderingInfo);
+
 				s_commandBuffer->BindPipeline(s_renderPipeline);
-				s_commandBuffer->Draw(3, 1, 0, 0);
+				s_commandBuffer->BindIndexBuffer(s_indexBuffer);
+				s_commandBuffer->BindVertexBuffers({ s_vertexBuffer }, 0);
+
+				s_commandBuffer->DrawIndexed(6, 1, 0, 0, 0);
 
 				s_commandBuffer->EndRendering();
 				s_commandBuffer->End();

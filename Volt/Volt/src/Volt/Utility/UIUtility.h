@@ -13,7 +13,6 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/Components.h"
-#include "Volt/ImGui/ImGuiImplementation.h"
 
 #include <glm/glm.hpp>
 
@@ -21,6 +20,12 @@
 #include <imgui_internal.h>
 #include <imgui_stdlib.h>
 #include <imgui_notify.h>
+
+namespace Volt::RHI
+{
+	class Texture2D;
+	class Image2D;
+}
 
 namespace Volt
 {
@@ -188,9 +193,10 @@ public:
 	private:
 	};
 
+	static ImTextureID GetTextureID(Ref<Volt::RHI::Image2D> texture);
+
 	static ImTextureID GetTextureID(Ref<Volt::Texture2D> texture);
 	static ImTextureID GetTextureID(Ref<Volt::Image2D> texture);
-	static ImTextureID GetTextureID(Volt::Texture2D* texture);
 
 	static void Header(const std::string& text);
 

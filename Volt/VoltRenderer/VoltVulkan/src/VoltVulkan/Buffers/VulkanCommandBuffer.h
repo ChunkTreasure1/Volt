@@ -28,9 +28,13 @@ namespace Volt::RHI
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
 
 		void BindPipeline(Ref<RenderPipeline> pipeline) override;
+		void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
+		void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
+
+		void PushConstants(const void* data, const uint32_t size, const uint32_t offset) override;
 
 		VkFence_T* GetCurrentFence() const;
 
@@ -55,6 +59,9 @@ namespace Volt::RHI
 		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;
 
-		uint32_t m_commandBufferCount;
+		uint32_t m_commandBufferCount = 0;
+
+		// Internal state
+		Ref<RenderPipeline> m_currentRenderPipeline;
 	};
 }

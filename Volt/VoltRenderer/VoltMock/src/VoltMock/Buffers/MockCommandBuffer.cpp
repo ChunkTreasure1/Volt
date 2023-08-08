@@ -44,11 +44,23 @@ namespace Volt::RHI
 	{
 	}
 
+	void MockCommandBuffer::BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	{
+	}
+
+	void MockCommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{
+	}
+
 	void MockCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
 	}
 
 	void MockCommandBuffer::EndRendering()
+	{
+	}
+
+	void MockCommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
 	{
 	}
 	

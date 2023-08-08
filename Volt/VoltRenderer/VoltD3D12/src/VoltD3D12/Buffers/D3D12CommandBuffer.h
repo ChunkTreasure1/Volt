@@ -34,9 +34,13 @@ namespace Volt::RHI
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
 
 		void BindPipeline(Ref<RenderPipeline> pipeline) override;
+		void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
+		void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
+		
+		void PushConstants(const void* data, const uint32_t size, const uint32_t offset) override;
 
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();

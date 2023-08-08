@@ -30,8 +30,6 @@
 
 #include <Volt/Animation/BlendSpace.h>
 
-#include <Volt/ImGui/ImGuiImplementation.h>
-
 #include <Volt/Components/Components.h>
 #include <Volt/Scene/Scene.h>
 #include <Volt/Project/ProjectManager.h>

@@ -327,7 +327,7 @@ void ViewportPanel::UpdateContent()
 	ImGui::SameLine();
 
 	Ref<Volt::Texture2D> physicsIcon = myAnimatedPhysicsIcon.GetCurrentFrame();
-	static Volt::Texture2D* physicsId = physicsIcon.get();
+	static Ref<Volt::Texture2D> physicsId = physicsIcon;
 
 	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { buttonSize, buttonSize }))
 	{

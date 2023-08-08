@@ -17,7 +17,6 @@ namespace Volt::RHI
 		void ShutdownAPI() override;
 
 		ImTextureID GetTextureID(Ref<Image2D> image) const override;
-		ImTextureID GetTextureID(Ref<Texture2D> image) const override;
 
 	protected:
 	private:

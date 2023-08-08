@@ -1,12 +1,18 @@
+
 #pragma once
 
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
+#include <span>
+
 namespace Volt::RHI
 {
 	class RenderPipeline;
 	class ImageView;
+
+	class VertexBuffer;
+	class IndexBuffer;
 
 	class CommandBuffer : public RHIInterface
 	{
@@ -26,9 +32,13 @@ namespace Volt::RHI
 		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;
 
 		virtual void BindPipeline(Ref<RenderPipeline> pipeline) = 0;
+		virtual void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) = 0;
+		virtual void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
 		virtual void EndRendering() = 0;
+
+		virtual void PushConstants(const void* data, const uint32_t size, const uint32_t offset) = 0;
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 

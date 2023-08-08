@@ -1,3 +1,4 @@
+#include "VertexBuffer.h"
 #include "vtpch.h"
 #include "VertexBuffer.h"
 
