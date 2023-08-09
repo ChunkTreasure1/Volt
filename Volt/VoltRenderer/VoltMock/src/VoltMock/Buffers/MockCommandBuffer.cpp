@@ -52,6 +52,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void MockCommandBuffer::BindDescriptorTable(Ref<DescriptorTable> descriptorTable)
+	{
+	}
+
 	void MockCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
 	}

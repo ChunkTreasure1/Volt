@@ -116,6 +116,7 @@ namespace Volt::RHI
 		std::map<uint32_t, std::map<uint32_t, ShaderStorageImage>> storageImages;
 		std::map<uint32_t, std::map<uint32_t, ShaderImage>> images;
 		std::map<uint32_t, std::map<uint32_t, ShaderSampler>> samplers;
+		std::set<uint32_t> usedSets{};
 
 		ShaderConstantData constants{};
 		ShaderDataBuffer constantsBuffer{};

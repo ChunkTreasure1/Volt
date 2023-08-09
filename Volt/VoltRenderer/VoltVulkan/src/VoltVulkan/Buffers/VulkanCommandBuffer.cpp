@@ -9,6 +9,8 @@
 
 #include "VoltVulkan/Pipelines/VulkanRenderPipeline.h"
 
+#include "VoltVulkan/Descriptors/VulkanDescriptorTable.h"
+
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
@@ -146,6 +148,20 @@ namespace Volt::RHI
 
 		constexpr VkDeviceSize offset = 0;
 		vkCmdBindIndexBuffer(m_commandBuffers.at(index).commandBuffer, indexBuffer->GetHandle<VkBuffer>(), offset, VK_INDEX_TYPE_UINT32);
+	}
+
+	void VulkanCommandBuffer::BindDescriptorTable(Ref<DescriptorTable> descriptorTable)
+	{
+		VulkanDescriptorTable& vulkanDescriptorTable = descriptorTable->AsRef<VulkanDescriptorTable>();
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		vulkanDescriptorTable.Update(index);
+
+		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
+		for (const auto& [set, sets] : vulkanDescriptorTable.GetDescriptorSets())
+		{
+			vkCmdBindDescriptorSets(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentRenderPipeline->AsRef<VulkanRenderPipeline>().GetPipelineLayout(), set, 1, &sets.at(index), 0, nullptr);
+		}
 	}
 
 	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)

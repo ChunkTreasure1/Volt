@@ -93,6 +93,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::BindDescriptorTable(Ref<DescriptorTable> descriptorTable)
+	{
+	}
+
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
 	}

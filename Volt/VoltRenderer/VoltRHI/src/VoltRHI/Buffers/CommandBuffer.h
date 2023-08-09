@@ -14,6 +14,8 @@ namespace Volt::RHI
 	class VertexBuffer;
 	class IndexBuffer;
 
+	class DescriptorTable;
+
 	class CommandBuffer : public RHIInterface
 	{
 	public:
@@ -34,6 +36,7 @@ namespace Volt::RHI
 		virtual void BindPipeline(Ref<RenderPipeline> pipeline) = 0;
 		virtual void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) = 0;
 		virtual void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) = 0;
+		virtual void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;
 		virtual void EndRendering() = 0;

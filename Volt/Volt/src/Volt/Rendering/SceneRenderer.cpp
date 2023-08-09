@@ -2306,7 +2306,7 @@ namespace Volt
 	{
 		//auto imagePtr = image.lock();
 
-		//VkDescriptorImageInfo descriptorInfo{};
+		VkDescriptorImageInfo descriptorInfo{};
 		//descriptorInfo.imageLayout = targetLayout;
 		//descriptorInfo.imageView = imagePtr->GetView();
 		//descriptorInfo.sampler = nullptr;

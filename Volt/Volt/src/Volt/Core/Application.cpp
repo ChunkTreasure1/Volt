@@ -49,6 +49,8 @@
 
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
+
+#include <VoltRHI/Descriptors/DescriptorTable.h>
 //////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
@@ -62,13 +64,17 @@
 namespace Volt
 {
 	static Ref<RHI::CommandBuffer> s_commandBuffer;
-	static Ref<RHI::Image2D> s_renderTarget;
 	static Ref<RHI::Shader> s_shader;
 	static Ref<RHI::RenderPipeline> s_renderPipeline;
 
+	static Ref<RHI::Image2D> s_renderTarget;
+	static Ref<RHI::Image2D> s_image;
+
 	static Ref<RHI::VertexBuffer> s_vertexBuffer;
 	static Ref<RHI::IndexBuffer> s_indexBuffer;
-		 
+
+	static Ref<RHI::DescriptorTable> s_descriptorTable;
+
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
@@ -130,16 +136,35 @@ namespace Volt
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
 
 			s_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
-			s_shader = RHI::Shader::Create("SimpleTriangle", 
-				{ 
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleQuad_vs.hlsl", 
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleQuad_ps.hlsl"
+			s_shader = RHI::Shader::Create("SimpleTriangle",
+				{
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTexturedQuad_vs.hlsl",
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTexturedQuad_ps.hlsl"
 				}, true);
-			
+
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = s_shader;
 			s_renderPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-			 
+
+			// Image
+			{
+				RHI::ImageSpecification imageSpec{};
+				imageSpec.width = 512;
+				imageSpec.height = 512;
+				imageSpec.usage = RHI::ImageUsage::Texture;
+				imageSpec.generateMips = false;
+
+				s_image = RHI::Image2D::Create(imageSpec);
+			}
+
+			// Descriptor table
+			{
+				RHI::DescriptorTableSpecification descriptorTableSpec{};
+				descriptorTableSpec.shader = s_shader;
+				s_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
+				s_descriptorTable->SetImageView(0, 0, s_image->GetView());
+			}
+
 			// Render target
 			{
 				RHI::ImageSpecification imageSpec{};
@@ -338,7 +363,7 @@ namespace Volt
 
 				s_commandBuffer->SetViewports({ viewport });
 				s_commandBuffer->SetScissors({ scissor });
-				
+
 				RHI::AttachmentInfo attInfo{};
 				attInfo.view = s_renderTarget->GetView();
 				attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
@@ -353,6 +378,8 @@ namespace Volt
 				s_commandBuffer->BindPipeline(s_renderPipeline);
 				s_commandBuffer->BindIndexBuffer(s_indexBuffer);
 				s_commandBuffer->BindVertexBuffers({ s_vertexBuffer }, 0);
+
+				s_commandBuffer->BindDescriptorTable(s_descriptorTable);
 
 				s_commandBuffer->DrawIndexed(6, 1, 0, 0, 0);
 

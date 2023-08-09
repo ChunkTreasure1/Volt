@@ -2,6 +2,7 @@
 #include "VulkanShader.h"
 
 #include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Graphics/VulkanSwapchain.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -281,6 +282,7 @@ namespace Volt::RHI
 		}
 
 		CreateDescriptorSetLayouts();
+		CalculateDescriptorPoolSizes();
 	}
 
 	void VulkanShader::ReflectStage(ShaderStage stage, const std::vector<uint32_t>& data)
@@ -311,6 +313,7 @@ namespace Volt::RHI
 			buffer.usageStages = buffer.usageStages | stage;
 
 			m_perStageUBOCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& ssbo : resources.storage_buffers)
@@ -329,6 +332,7 @@ namespace Volt::RHI
 			//#TODO_Ivar: Add array count
 
 			m_perStageSSBOCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& image : resources.storage_images)
@@ -348,6 +352,7 @@ namespace Volt::RHI
 			}
 
 			m_perStageStorageImageCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& image : resources.separate_images)
@@ -367,6 +372,7 @@ namespace Volt::RHI
 			}
 
 			m_perStageImageCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& sampler : resources.separate_samplers)
@@ -377,6 +383,7 @@ namespace Volt::RHI
 			auto& shaderSampler = m_resources.samplers[set][binding];
 			shaderSampler.usageStages = shaderSampler.usageStages | stage;
 			m_perStageSamplerCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& pushConstant : resources.push_constant_buffers)
@@ -515,6 +522,46 @@ namespace Volt::RHI
 			m_descriptorSetLayouts.emplace_back(m_nullPaddedDescriptorSetLayouts.back());
 
 			lastSet = set;
+		}
+	}
+
+	void VulkanShader::CalculateDescriptorPoolSizes()
+	{
+		uint32_t uboCount = 0;
+		uint32_t ssboCount = 0;
+		uint32_t storageImageCount = 0;
+		uint32_t imageCount = 0;
+		uint32_t seperateSamplerCount = 0;
+
+		std::for_each(m_perStageUBOCount.begin(), m_perStageUBOCount.end(), [&](auto pair) { uboCount += pair.second.count; });
+		std::for_each(m_perStageSSBOCount.begin(), m_perStageSSBOCount.end(), [&](auto pair) { ssboCount += pair.second.count; });
+		std::for_each(m_perStageStorageImageCount.begin(), m_perStageStorageImageCount.end(), [&](auto pair) { storageImageCount += pair.second.count; });
+		std::for_each(m_perStageImageCount.begin(), m_perStageImageCount.end(), [&](auto pair) { imageCount += pair.second.count; });
+		std::for_each(m_perStageSamplerCount.begin(), m_perStageSamplerCount.end(), [&](auto pair) { seperateSamplerCount += pair.second.count; });
+
+		if (uboCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER), uboCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (ssboCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER), ssboCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (storageImageCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE), storageImageCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (imageCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE), imageCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (seperateSamplerCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLER), seperateSamplerCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 		}
 	}
 }

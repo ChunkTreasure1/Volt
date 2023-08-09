@@ -30,6 +30,7 @@ namespace Volt::RHI
 		void BindPipeline(Ref<RenderPipeline> pipeline) override;
 		void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
+		void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;

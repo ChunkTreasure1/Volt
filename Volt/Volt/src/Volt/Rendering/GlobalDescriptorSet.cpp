@@ -7,7 +7,6 @@
 #include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
-
 #include "Volt/Rendering/Renderer.h"
 
 namespace Volt
