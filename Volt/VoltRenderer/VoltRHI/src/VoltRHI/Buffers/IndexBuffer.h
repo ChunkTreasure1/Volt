@@ -1,11 +1,11 @@
 #pragma once
 
-#include "VoltRHI/Core/RHIInterface.h"
+#include "VoltRHI/Core/RHIResource.h"
 #include <span>
 
 namespace Volt::RHI
 {
-	class IndexBuffer : public RHIInterface
+	class IndexBuffer : public RHIResource
 	{
 	public:
 		virtual const uint32_t GetCount() const = 0;

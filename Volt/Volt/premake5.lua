@@ -119,7 +119,6 @@ project "Volt"
 		"stb",
 		"VulkanMemoryAllocator",
 		"VoltRHI",
-		"VoltMock",
 		"VoltVulkan",
 		"VoltD3D12"
 	}

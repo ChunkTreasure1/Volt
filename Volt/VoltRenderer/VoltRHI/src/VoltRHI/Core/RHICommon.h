@@ -8,7 +8,7 @@ namespace Volt::RHI
 	class PhysicalGraphicsDevice;
 	class GraphicsDevice;
 	class ImageView;
-	class Image2D;
+	class RHIResource;
 
 	enum class QueueType
 	{
@@ -453,6 +453,17 @@ namespace Volt::RHI
 		DontCare
 	};
 
+	enum class ResourceType
+	{
+		Image2D = 0,
+		Image3D,
+
+		IndexBuffer,
+		VertexBuffer,
+		ConstantBuffer,
+		StorageBuffer
+	};
+
 	enum class ResourceBarrierType
 	{
 		Buffer,
@@ -488,6 +499,9 @@ namespace Volt::RHI
 	{
 		DeviceVendor deviceVendor;
 		std::string_view gpuName;
+
+		bool timestampSupport;
+		float timestampPeriod = 0.f;
 	};
 
 	struct GraphicsDeviceCreateInfo
@@ -565,10 +579,9 @@ namespace Volt::RHI
 
 	struct ResourceBarrierInfo
 	{
-		ResourceBarrierType type;
 		ResourceState oldState;
 		ResourceState newState;
 
-		Ref<Image2D> image;
+		Ref<RHIResource> resource;
 	};
 }

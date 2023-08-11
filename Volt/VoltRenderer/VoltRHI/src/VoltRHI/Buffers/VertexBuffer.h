@@ -1,10 +1,10 @@
 #pragma once
 
-#include "VoltRHI/Core/RHIInterface.h"
+#include "VoltRHI/Core/RHIResource.h"
 
 namespace Volt::RHI
 {
-	class VertexBuffer : public RHIInterface
+	class VertexBuffer : public RHIResource
 	{
 	public:
 		virtual void SetData(const void* data, uint32_t size) = 0;

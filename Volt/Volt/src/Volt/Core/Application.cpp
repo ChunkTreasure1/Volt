@@ -371,10 +371,9 @@ namespace Volt
 				// Render target barrier
 				{
 					RHI::ResourceBarrierInfo barrier{};
-					barrier.type = RHI::ResourceBarrierType::Image;
 					barrier.oldState = RHI::ResourceState::PixelShaderRead;
 					barrier.newState = RHI::ResourceState::RenderTarget;
-					barrier.image = s_renderTarget;
+					barrier.resource = s_renderTarget;
 
 					s_commandBuffer->ResourceBarrier({ barrier });
 				}
@@ -408,10 +407,9 @@ namespace Volt
 				// Shader Read barrier
 				{
 					RHI::ResourceBarrierInfo barrier{};
-					barrier.type = RHI::ResourceBarrierType::Image;
 					barrier.oldState = RHI::ResourceState::RenderTarget;
 					barrier.newState = RHI::ResourceState::PixelShaderRead;
-					barrier.image = s_renderTarget;
+					barrier.resource = s_renderTarget;
 
 					s_commandBuffer->ResourceBarrier({ barrier });
 				}
@@ -426,8 +424,6 @@ namespace Volt
 
 				m_imguiImplementation->Begin();
 
-				ImGui::ShowDemoWindow();
-
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
 
@@ -435,6 +431,13 @@ namespace Volt
 				{
 					ImTextureID texId = m_imguiImplementation->GetTextureID(s_renderTarget);
 					ImGui::Image(texId, ImGui::GetContentRegionAvail());
+
+					ImGui::End();
+				}
+
+				if (ImGui::Begin("Performance"))
+				{
+					ImGui::Text("GPU Time: %f ms", s_commandBuffer->GetExecutionTime(0));
 
 					ImGui::End();
 				}

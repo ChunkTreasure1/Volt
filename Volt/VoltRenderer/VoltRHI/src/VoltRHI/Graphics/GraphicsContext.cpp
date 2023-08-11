@@ -1,7 +1,6 @@
 #include "rhipch.h"
 #include "GraphicsContext.h"
 
-#include <VoltMock/Graphics/MockGraphicsContext.h>
 #include <VoltVulkan/Graphics/VulkanGraphicsContext.h>
 #include <VoltD3D12/Graphics/D3D12GraphicsContext.h>
 
@@ -28,7 +27,6 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanGraphicsContext>(createInfo); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockGraphicsContext>(createInfo); break;
 		}
 
 		return nullptr;

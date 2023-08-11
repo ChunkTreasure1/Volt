@@ -44,6 +44,10 @@ namespace Volt::RHI
 
 		virtual void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) = 0;
 
+		virtual const uint32_t BeginTimestamp() = 0;
+		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
+		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
+
 		inline const QueueType GetQueueType() const { return m_queueType; }
 
 		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics, bool swapchainTarget = false);

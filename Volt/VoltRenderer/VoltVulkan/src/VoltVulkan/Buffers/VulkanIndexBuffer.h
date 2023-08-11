@@ -15,6 +15,7 @@ namespace Volt::RHI
 		~VulkanIndexBuffer() override;
 
 		const uint32_t GetCount() const override;
+		inline constexpr ResourceType GetType() const override { return ResourceType::IndexBuffer; }
 
 	protected:
 		void* GetHandleImpl() override;

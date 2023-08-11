@@ -113,6 +113,20 @@ namespace Volt::RHI
 	{
 	}
 
+	const uint32_t D3D12CommandBuffer::BeginTimestamp()
+	{
+		return 0;
+	}
+
+	void D3D12CommandBuffer::EndTimestamp(uint32_t timestampIndex)
+	{
+	}
+
+	const float D3D12CommandBuffer::GetExecutionTime(uint32_t timestampIndex) const
+	{
+		return 0.0f;
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_isSwapchainTarget = swapchainTarget;

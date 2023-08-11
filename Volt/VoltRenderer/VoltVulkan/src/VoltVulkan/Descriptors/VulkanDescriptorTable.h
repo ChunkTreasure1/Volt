@@ -46,7 +46,8 @@ namespace Volt::RHI
 		VulkanDescriptorTable(const DescriptorTableSpecification& specification);
 		~VulkanDescriptorTable() override;
 
-		void SetImageView(uint32_t set, uint32_t binding, Ref<ImageView> image) override;
+		void SetImageView(uint32_t set, uint32_t binding, Ref<ImageView> imageView) override;
+		void SetBufferView(uint32_t set, uint32_t binding, Ref<BufferView> bufferView) override;
 
 		void Update(const uint32_t index);
 
@@ -58,8 +59,10 @@ namespace Volt::RHI
 	private:
 		void Invalidate();
 		void Release();
+
 		void BuildWriteDescriptors();
-	
+		void InitializeInfoStructs();
+
 		Weak<Shader> m_shader;
 		uint32_t m_maxTotalDescriptorCount = 0;
 

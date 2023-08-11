@@ -130,6 +130,8 @@ namespace Volt::RHI
 
 		m_capabilities.gpuName = deviceProperties.deviceName;
 		m_capabilities.deviceVendor = Utility::VulkanVendorIDToVendor(deviceProperties.vendorID);
+		m_capabilities.timestampSupport = deviceProperties.limits.timestampComputeAndGraphics;
+		m_capabilities.timestampPeriod = deviceProperties.limits.timestampPeriod;
 
 		m_queueFamilyIndices = Utility::FindQueueFamilyIndices(selectedDevice);
 	}

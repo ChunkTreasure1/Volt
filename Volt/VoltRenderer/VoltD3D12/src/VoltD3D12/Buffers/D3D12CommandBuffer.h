@@ -45,6 +45,10 @@ namespace Volt::RHI
 
 		void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) override;
 
+		const uint32_t BeginTimestamp() override;
+		void EndTimestamp(uint32_t timestampIndex) override;
+		const float GetExecutionTime(uint32_t timestampIndex) const override;
+
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
 

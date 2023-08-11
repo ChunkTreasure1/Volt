@@ -3,7 +3,6 @@
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
-#include <VoltMock/Buffers/MockCommandBuffer.h>
 #include <VoltVulkan/Buffers/VulkanCommandBuffer.h>
 #include <VoltD3D12/Buffers/D3D12CommandBuffer.h>
 
@@ -20,7 +19,6 @@ namespace Volt::RHI
 				break;
 
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanCommandBuffer>(count, queueType, swapchainTarget); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockCommandBuffer>(count, queueType); break;
 		}
 
 		return nullptr;
@@ -37,7 +35,6 @@ namespace Volt::RHI
 				break;
 
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanCommandBuffer>(1, QueueType::Graphics, false); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockCommandBuffer>(1, QueueType::Graphics); break;
 		}
 
 		return nullptr;

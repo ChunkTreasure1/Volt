@@ -298,9 +298,12 @@ namespace Volt::RHI
 				continue;
 			}
 
+			const auto& bufferType = compiler.get_type(ubo.base_type_id);
+
+			const size_t size = compiler.get_declared_struct_size(bufferType);
 			const uint32_t binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
-			const std::string name = compiler.get_name(ubo.id);
+			const std::string& name = compiler.get_name(ubo.id);
 
 			if (name == "$Globals")
 			{
@@ -310,6 +313,7 @@ namespace Volt::RHI
 
 			auto& buffer = m_resources.constantBuffers[set][binding];
 			buffer.usageStages = buffer.usageStages | stage;
+			buffer.size = size;
 
 			m_perStageUBOCount[stage].count++;
 			m_resources.usedSets.emplace(set);
@@ -322,11 +326,15 @@ namespace Volt::RHI
 				continue;
 			}
 
+			const auto& bufferType = compiler.get_type(ssbo.base_type_id);
+
+			const size_t size = compiler.get_declared_struct_size(bufferType);
 			const uint32_t binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 
 			auto& buffer = m_resources.storageBuffers[set][binding];
 			buffer.usageStages = buffer.usageStages | stage;
+			buffer.size = size;
 
 			//#TODO_Ivar: Add array count
 

@@ -3,7 +3,6 @@
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
-#include <VoltMock/Graphics/MockPhysicalGraphicsDevice.h>
 #include <VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h>
 #include <VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h>
 
@@ -20,7 +19,6 @@ namespace Volt::RHI
 				break;
 
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanPhysicalGraphicsDevice>(deviceInfo); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockPhysicalGraphicsDevice>(deviceInfo); break;
 		}
 
 		return nullptr;

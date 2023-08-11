@@ -1,7 +1,6 @@
 #pragma once
 
-#include "VoltRHI/Core/RHIInterface.h"
-#include "VoltRHI/Core/RHICommon.h"
+#include "VoltRHI/Core/RHIResource.h"
 
 namespace Volt::RHI
 {
@@ -28,7 +27,7 @@ namespace Volt::RHI
 	};
 
 	class ImageView;
-	class Image2D : public RHIInterface
+	class Image2D : public RHIResource
 	{
 	public:
 		virtual void Invalidate(const uint32_t width, const uint32_t height, const void* data = nullptr) = 0;

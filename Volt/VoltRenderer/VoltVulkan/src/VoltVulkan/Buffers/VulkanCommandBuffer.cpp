@@ -114,6 +114,7 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+		const uint32_t lastIndex = m_currentCommandBufferIndex;
 		m_currentCommandBufferIndex = (m_currentCommandBufferIndex + 1) % m_commandBufferCount;
 
 		auto device = GraphicsContext::GetDevice();
@@ -135,6 +136,15 @@ namespace Volt::RHI
 
 			VT_VK_CHECK(vkBeginCommandBuffer(currentCommandBuffer.commandBuffer, &beginInfo));
 		}
+
+		if (m_hasTimestampSupport)
+		{
+			vkCmdResetQueryPool(currentCommandBuffer.commandBuffer, m_timestampQueryPools.at(index), 0, m_timestampQueryCount);
+			vkCmdWriteTimestamp2(currentCommandBuffer.commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPools.at(index), 0);
+
+			m_timestampCounts[lastIndex] = m_nextAvailableTimestampQuery;
+			m_nextAvailableTimestampQuery = 2;
+		}
 	}
 
 	void VulkanCommandBuffer::End()
@@ -142,6 +152,12 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		
+		if (m_hasTimestampSupport)
+		{
+			vkCmdWriteTimestamp2(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPools.at(index), 1);
+		}
+
 		VT_VK_CHECK(vkEndCommandBuffer(m_commandBuffers.at(index).commandBuffer));
 	}
 
@@ -154,6 +170,8 @@ namespace Volt::RHI
 			auto device = GraphicsContext::GetDevice();
 			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
 		}
+
+		FetchTimestampResults();
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
@@ -168,6 +186,8 @@ namespace Volt::RHI
 			const uint32_t index = GetCurrentCommandBufferIndex();
 			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
 		}
+
+		FetchTimestampResults();
 	}
 
 	void VulkanCommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
@@ -350,13 +370,15 @@ namespace Volt::RHI
 
 		for (const auto& resourceBarrier : resourceBarriers)
 		{
-			if (resourceBarrier.type == ResourceBarrierType::Image)
+			auto resourcePtr = resourceBarrier.resource;
+
+			if (resourcePtr->GetType() == ResourceType::Image2D)
 			{
 				auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
 				auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
 				const auto dstLayout = Utility::GetDstLayoutFromResourceState(resourceBarrier.newState);
 
-				auto& vkImage = resourceBarrier.image->AsRef<VulkanImage2D>();
+				auto& vkImage = resourceBarrier.resource->AsRef<VulkanImage2D>();
 
 				auto& barrier = imageBarriers.emplace_back();
 				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -378,7 +400,7 @@ namespace Volt::RHI
 
 				vkImage.m_currentImageLayout = static_cast<uint32_t>(dstLayout);
 			}
-			else if (resourceBarrier.type == ResourceBarrierType::Buffer)
+			else if (resourcePtr->GetType() == ResourceType::StorageBuffer)
 			{
 
 			}
@@ -399,6 +421,50 @@ namespace Volt::RHI
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 
 		vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &info);
+	}
+
+	const uint32_t VulkanCommandBuffer::BeginTimestamp()
+	{
+		if (!m_hasTimestampSupport)
+		{
+			return 0;
+		}
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		const uint32_t queryId = m_nextAvailableTimestampQuery;
+		m_nextAvailableTimestampQuery += 2;
+
+		vkCmdWriteTimestamp2(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPools.at(index), queryId);
+		return queryId;
+	}
+
+	void VulkanCommandBuffer::EndTimestamp(uint32_t timestampIndex)
+	{
+		if (!m_hasTimestampSupport)
+		{
+			return;
+		}
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdWriteTimestamp2(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPools.at(index), timestampIndex + 1);
+	}
+
+	const float VulkanCommandBuffer::GetExecutionTime(uint32_t timestampIndex) const
+	{
+		if (!m_hasTimestampSupport)
+		{
+			return 0.f;
+		}
+
+		const uint32_t currentIndex = GetCurrentCommandBufferIndex();
+		const uint32_t timestampsIndex = (currentIndex + 1) % m_commandBufferCount;
+
+		if (timestampIndex == UINT32_MAX || timestampIndex / 2 >= m_timestampCounts.at(timestampsIndex) / 2)
+		{
+			return 0.f;
+		}
+
+		return m_executionTimes.at(timestampsIndex).at(timestampIndex / 2);
 	}
 
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const
@@ -485,6 +551,12 @@ namespace Volt::RHI
 				VT_VK_CHECK(vkCreateFence(device->GetHandle<VkDevice>(), &info, nullptr, &m_commandBuffers[i].fence));
 			}
 		}
+
+		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampSupport;
+		if (m_hasTimestampSupport)
+		{
+			CreateQueryPools();
+		}
 	}
 
 	void VulkanCommandBuffer::Release()
@@ -517,7 +589,74 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 		}
 
+		for (const auto& pool : m_timestampQueryPools)
+		{
+			vkDestroyQueryPool(device->GetHandle<VkDevice>(), pool, nullptr);
+		}
+
 		m_commandBuffers.clear();
+	}
+
+	void VulkanCommandBuffer::CreateQueryPools()
+	{
+		auto device = GraphicsContext::GetDevice();
+
+		m_timestampQueryCount = 2 + 2 * MAX_QUERIES;
+
+		VkQueryPoolCreateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+		info.pNext = nullptr;
+		info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+		info.queryCount = m_timestampQueryCount;
+
+		m_timestampQueryPools.resize(m_commandBufferCount);
+		for (auto& pool : m_timestampQueryPools)
+		{
+			VT_VK_CHECK(vkCreateQueryPool(device->GetHandle<VkDevice>(), &info, nullptr, &pool));
+		}
+		
+		m_timestampCounts = std::vector<uint32_t>(3, 0u);
+		m_timestampQueryResults.resize(m_commandBufferCount);
+		m_executionTimes.resize(m_commandBufferCount);
+
+		for (auto& results : m_timestampQueryResults)
+		{
+			results.resize(m_timestampQueryCount);
+		}
+
+		for (auto& execTimes : m_executionTimes)
+		{
+			execTimes.resize(m_timestampQueryCount / 2);
+		}
+	}
+
+	void VulkanCommandBuffer::FetchTimestampResults()
+	{
+		if (!m_hasTimestampSupport)
+		{
+			return;
+		}
+
+		const uint32_t currentIndex = GetCurrentCommandBufferIndex();
+		const uint32_t timestampsIndex = (currentIndex + 1) % m_commandBufferCount;
+	
+		if (m_timestampCounts.at(timestampsIndex) == 0)
+		{
+			return;
+		}
+
+		auto device = GraphicsContext::GetDevice();
+
+		vkGetQueryPoolResults(device->GetHandle<VkDevice>(), m_timestampQueryPools.at(timestampsIndex), 0, m_timestampCounts.at(timestampsIndex), m_timestampCounts.at(timestampsIndex) * sizeof(uint64_t), m_timestampQueryResults.at(timestampsIndex).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		
+		for (uint32_t i = 0; i < m_timestampCounts.at(timestampsIndex); i += 2)
+		{
+			const uint64_t startTime = m_timestampQueryResults.at(timestampsIndex).at(i);
+			const uint64_t endTime = m_timestampQueryResults.at(timestampsIndex).at(i + 1);
+		
+			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
+			m_executionTimes.at(timestampsIndex)[i / 2] = nsTime * 0.000001f; // Convert to ms
+		}
 	}
 
 	const uint32_t VulkanCommandBuffer::GetCurrentCommandBufferIndex() const

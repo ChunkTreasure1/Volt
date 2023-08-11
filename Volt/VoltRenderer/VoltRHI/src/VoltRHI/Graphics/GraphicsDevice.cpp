@@ -4,7 +4,6 @@
 #include "VoltRHI/Buffers/CommandBuffer.h"
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
-#include <VoltMock/Graphics/MockGraphicsDevice.h>
 #include <VoltVulkan/Graphics/VulkanGraphicsDevice.h>
 #include <VoltD3D12/Graphics/D3D12GraphicsDevice.h>
 
@@ -21,7 +20,6 @@ namespace Volt::RHI
 				break;
 
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanGraphicsDevice>(deviceInfo); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockGraphicsDevice>(deviceInfo); break;
 		}
 
 		return nullptr;

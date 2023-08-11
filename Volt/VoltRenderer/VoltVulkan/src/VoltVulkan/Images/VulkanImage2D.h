@@ -10,8 +10,8 @@ namespace Volt::RHI
 	class VulkanImage2D final : public Image2D
 	{
 	public:
-		typedef uint32_t ImageLayout;
-		typedef uint32_t ImageAspect;
+		using ImageLayout = uint32_t;
+		using ImageAspect = uint32_t;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
 		~VulkanImage2D() override;
@@ -26,6 +26,8 @@ namespace Volt::RHI
 		const uint32_t GetHeight() const override;
 		const Format GetFormat() const override;
 		const uint32_t CalculateMipCount() const override;
+
+		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
 
 	protected:
 		void* GetHandleImpl() override;

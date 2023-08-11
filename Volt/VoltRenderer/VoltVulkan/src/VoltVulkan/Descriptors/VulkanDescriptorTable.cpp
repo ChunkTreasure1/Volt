@@ -9,6 +9,8 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
+#include <VoltRHI/Buffers/BufferView.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -40,6 +42,17 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanDescriptorTable::SetBufferView(uint32_t set, uint32_t binding, Ref<BufferView> bufferView)
+	{
+		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			auto& description = m_bufferInfos[set][binding].at(i);
+			description.buffer = bufferView->GetHandle<VkBuffer>();
+
+			m_writeDescriptors.at(i).at(m_writeDescriptorsMapping.at(set).at(binding)).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+		}
+	}
+
 	void VulkanDescriptorTable::Update(const uint32_t index)
 	{
 		if (!m_isDirty[index])
@@ -65,6 +78,8 @@ namespace Volt::RHI
 		Release();
 		m_isDirty = std::vector<bool>(3, true);
 		m_maxTotalDescriptorCount = 0;
+		m_imageInfos.clear();
+		m_bufferInfos.clear();
 
 		Ref<VulkanShader> vulkanShader = m_shader.lock()->As<VulkanShader>();
 		const auto& shaderPoolSizes = vulkanShader->GetDescriptorPoolSizes();
@@ -106,7 +121,7 @@ namespace Volt::RHI
 		for (const auto& set : usedSets)
 		{
 			m_descriptorSets[set].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
-			
+
 			for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 			{
 				allocInfo.descriptorPool = m_descriptorPools.at(i);
@@ -117,6 +132,7 @@ namespace Volt::RHI
 		}
 
 		BuildWriteDescriptors();
+		InitializeInfoStructs();
 	}
 
 	void VulkanDescriptorTable::Release()
@@ -221,6 +237,45 @@ namespace Volt::RHI
 					writeDescriptor.dstSet = m_descriptorSets[set][i];
 
 					m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
+				}
+			}
+		}
+	}
+
+	void VulkanDescriptorTable::InitializeInfoStructs()
+	{
+		const auto& resources = m_shader.lock()->GetResources();
+
+		for (const auto& [set, bindings] : resources.constantBuffers)
+		{
+			for (const auto& [binding, info] : bindings)
+			{
+				if (!m_bufferInfos[set].contains(binding))
+				{
+					m_bufferInfos[set][binding].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+				}
+
+				for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+				{
+					m_bufferInfos[set][binding][i].offset = 0;
+					m_bufferInfos[set][binding][i].range = info.size;
+				}
+			}
+		}
+
+		for (const auto& [set, bindings] : resources.storageBuffers)
+		{
+			for (const auto& [binding, info] : bindings)
+			{
+				if (!m_bufferInfos[set].contains(binding))
+				{
+					m_bufferInfos[set][binding].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+				}
+
+				for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+				{
+					m_bufferInfos[set][binding][i].offset = 0;
+					m_bufferInfos[set][binding][i].range = info.size;
 				}
 			}
 		}

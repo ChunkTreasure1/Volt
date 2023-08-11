@@ -8,6 +8,8 @@ struct VkCommandBuffer_T;
 struct VkCommandPool_T;
 struct VkFence_T;
 
+struct VkQueryPool_T;
+
 namespace Volt::RHI
 {
 	class VulkanCommandBuffer final : public CommandBuffer
@@ -39,14 +41,23 @@ namespace Volt::RHI
 
 		void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) override;
 
+		const uint32_t BeginTimestamp() override;
+		void EndTimestamp(uint32_t timestampIndex) override;
+		const float GetExecutionTime(uint32_t timestampIndex) const override;
+
 		VkFence_T* GetCurrentFence() const;
 
 	protected:
 		void* GetHandleImpl() override;
 
 	private:
+		inline static constexpr uint32_t MAX_QUERIES = 64;
+
 		void Invalidate();
 		void Release();
+
+		void CreateQueryPools();
+		void FetchTimestampResults();
 
 		const uint32_t GetCurrentCommandBufferIndex() const;
 
@@ -61,8 +72,19 @@ namespace Volt::RHI
 
 		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;
+		bool m_hasTimestampSupport = false;
 
 		uint32_t m_commandBufferCount = 0;
+
+		// Queries
+		uint32_t m_timestampQueryCount = 0;
+		uint32_t m_nextAvailableTimestampQuery = 2; // The two first are command buffer total
+		uint32_t m_lastAvailableTimestampQuery = 0;
+
+		std::vector<VkQueryPool_T*> m_timestampQueryPools;
+		std::vector<uint32_t> m_timestampCounts;
+		std::vector<std::vector<uint64_t>> m_timestampQueryResults;
+		std::vector<std::vector<float>> m_executionTimes;
 
 		// Internal state
 		Ref<RenderPipeline> m_currentRenderPipeline;
