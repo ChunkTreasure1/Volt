@@ -425,10 +425,9 @@ namespace Volt::RHI
 
 	enum class MemoryUsage : uint32_t
 	{
-		None = 0,
-		Indirect,
+		Default = 0,
 		CPUToGPU,
-		GPUOnly
+		Indirect
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(MemoryUsage);

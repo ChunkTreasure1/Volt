@@ -6,7 +6,7 @@
 
 namespace Volt::RHI
 {
-	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
+	inline PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
 
 	inline static void FindVulkanFunctions(VkInstance instance)
 	{

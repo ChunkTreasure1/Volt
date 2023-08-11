@@ -3,6 +3,8 @@
 #include "VoltRHI/Core/RHIInterface.h"
 #include "VoltRHI/Core/RHICommon.h"
 
+#include <string_view>
+
 namespace Volt::RHI
 {
 	class RHIResource : public RHIInterface
@@ -12,6 +14,7 @@ namespace Volt::RHI
 		VT_DELETE_COMMON_OPERATORS(RHIResource);
 
 		virtual constexpr ResourceType GetType() const = 0;
+		virtual void SetName(std::string_view name) = 0;
 
 	protected:
 		RHIResource() = default;

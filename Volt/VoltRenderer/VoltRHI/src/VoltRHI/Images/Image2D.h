@@ -17,7 +17,7 @@ namespace Volt::RHI
 		TextureWrap wrap = TextureWrap::Repeat;
 		TextureFilter filter = TextureFilter::Linear;
 
-		MemoryUsage memoryUsage = MemoryUsage::GPUOnly;
+		MemoryUsage memoryUsage = MemoryUsage::Default;
 
 		AnisotopyLevel anisoLevel = AnisotopyLevel::None;
 		std::string debugName;

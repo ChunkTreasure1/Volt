@@ -2,8 +2,12 @@
 #include "VulkanVertexBuffer.h"
 
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
+
+#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 
 namespace Volt::RHI
 {
@@ -31,6 +35,18 @@ namespace Volt::RHI
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size)
 	{
 		// #TODO_Ivar: Implement
+	}
+
+	void VulkanVertexBuffer::SetName(std::string_view name)
+	{
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+		nameInfo.objectHandle = (uint64_t)m_buffer;
+		nameInfo.pObjectName = name.data();
+
+		auto device = GraphicsContext::GetDevice();
+		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
 	void* VulkanVertexBuffer::GetHandleImpl()

@@ -19,6 +19,7 @@ namespace Volt::RHI
 		void Unmap() override;
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::ConstantBuffer; }
+		void SetName(std::string_view name) override;
 
 	protected:
 		void* MapInternal() override;

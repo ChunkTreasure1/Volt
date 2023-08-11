@@ -28,6 +28,7 @@ namespace Volt::RHI
 		const uint32_t CalculateMipCount() const override;
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
+		void SetName(std::string_view name) override;
 
 	protected:
 		void* GetHandleImpl() override;

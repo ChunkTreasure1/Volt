@@ -49,6 +49,7 @@
 
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
+#include <VoltRHI/Buffers/ConstantBuffer.h>
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 //////////////////////////////////////////////
@@ -74,6 +75,7 @@ namespace Volt
 	static Ref<RHI::IndexBuffer> s_indexBuffer;
 
 	static Ref<RHI::DescriptorTable> s_descriptorTable;
+	static Ref<RHI::ConstantBuffer> s_constantBuffer;
 
 	static Ref<Mesh> s_mesh;
 
@@ -140,8 +142,8 @@ namespace Volt
 			s_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
 			s_shader = RHI::Shader::Create("SimpleTriangle",
 				{
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleMesh_vs.hlsl",
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleMesh_ps.hlsl"
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/ConstantBufferMesh_vs.hlsl",
+					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/ConstantBufferMesh_ps.hlsl"
 				}, true);
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
@@ -159,12 +161,22 @@ namespace Volt
 				s_image = RHI::Image2D::Create(imageSpec);
 			}
 
+			// Constant buffer
+			{
+				const glm::mat4 projection = glm::perspective(glm::radians(60.f), 16.f / 9.f, 1000.f, 0.1f);
+				const glm::mat4 view = glm::lookAt(glm::vec3{ 0.f, 0.f, -200.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+
+				glm::mat4 arr[2] = { projection, view };
+
+				s_constantBuffer = RHI::ConstantBuffer::Create(sizeof(glm::mat4) * 2, arr);
+			}
+
 			// Descriptor table
 			{
 				RHI::DescriptorTableSpecification descriptorTableSpec{};
 				descriptorTableSpec.shader = s_shader;
 				s_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
-				//s_descriptorTable->SetImageView(0, 0, s_image->GetView());
+				s_descriptorTable->SetBufferView(0, 0, s_constantBuffer->GetView());
 			}
 
 			// Render target
@@ -393,13 +405,14 @@ namespace Volt
 				s_commandBuffer->BindIndexBuffer(s_mesh->GetIndexBuffer());
 				s_commandBuffer->BindVertexBuffers({ s_mesh->GetVertexBuffer() }, 0);
 
-				//s_commandBuffer->BindDescriptorTable(s_descriptorTable);
+				s_commandBuffer->BindDescriptorTable(s_descriptorTable);
 
-				glm::mat4 mvp = glm::perspective(glm::radians(60.f), 16.f / 9.f, 1000.f, 0.1f) * glm::lookAt(glm::vec3{ 0.f, 0.f, -200.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+				glm::mat4 transform = glm::mat4{ 1.f };
 				auto constantsBuffer = s_shader->GetConstantsBuffer();
-				constantsBuffer.SetMemberData("mvp", mvp);
+				constantsBuffer.SetMemberData("transform", transform);
 
 				s_commandBuffer->PushConstants(constantsBuffer.GetBuffer(), static_cast<uint32_t>(constantsBuffer.GetSize()), 0);
+
 				s_commandBuffer->DrawIndexed(s_mesh->GetSubMeshes().at(0).indexCount, 1, 0, 0, 0);
 
 				s_commandBuffer->EndRendering();

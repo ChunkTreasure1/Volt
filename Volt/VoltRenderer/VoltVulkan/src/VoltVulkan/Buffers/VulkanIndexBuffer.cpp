@@ -2,8 +2,12 @@
 #include "VulkanIndexBuffer.h"
 
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
+
+#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 
 namespace Volt::RHI
 {
@@ -38,6 +42,18 @@ namespace Volt::RHI
 	const uint32_t VulkanIndexBuffer::GetCount() const
 	{
 		return m_count;
+	}
+
+	void VulkanIndexBuffer::SetName(std::string_view name)
+	{
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+		nameInfo.objectHandle = (uint64_t)m_buffer;
+		nameInfo.pObjectName = name.data();
+
+		auto device = GraphicsContext::GetDevice();
+		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
 	void* VulkanIndexBuffer::GetHandleImpl()

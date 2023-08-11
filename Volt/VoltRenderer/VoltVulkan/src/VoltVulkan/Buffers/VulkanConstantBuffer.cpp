@@ -2,8 +2,12 @@
 #include "VulkanConstantBuffer.h"
 
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Buffers/BufferView.h>
+
+#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 
 namespace Volt::RHI
 {
@@ -66,6 +70,18 @@ namespace Volt::RHI
 	{
 		VulkanAllocator allocator{};
 		allocator.UnmapMemory(m_allocation);
+	}
+
+	void VulkanConstantBuffer::SetName(std::string_view name)
+	{
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+		nameInfo.objectHandle = (uint64_t)m_buffer;
+		nameInfo.pObjectName = name.data();
+
+		auto device = GraphicsContext::GetDevice();
+		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
 	void* VulkanConstantBuffer::MapInternal()

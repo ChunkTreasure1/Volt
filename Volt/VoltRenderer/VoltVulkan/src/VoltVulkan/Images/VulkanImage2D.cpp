@@ -2,12 +2,16 @@
 #include "VulkanImage2D.h"
 
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
+
 #include <VoltRHI/Images/ImageUtility.h>
 #include <VoltRHI/Images/ImageView.h>
+
 #include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 
 namespace Volt::RHI
 {
@@ -113,7 +117,7 @@ namespace Volt::RHI
 			case MemoryUsage::CPUToGPU:
 				memUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 				break;
-			case MemoryUsage::GPUOnly:
+			case MemoryUsage::Default:
 				memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 				break;
 		}
@@ -346,6 +350,18 @@ namespace Volt::RHI
 	const uint32_t VulkanImage2D::CalculateMipCount() const
 	{
 		return Utility::CalculateMipCount(m_specification.width, m_specification.height);
+	}
+
+	void VulkanImage2D::SetName(std::string_view name)
+	{
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+		nameInfo.objectHandle = (uint64_t)m_image;
+		nameInfo.pObjectName = name.data();
+
+		auto device = GraphicsContext::GetDevice();
+		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
 	void* VulkanImage2D::GetHandleImpl()

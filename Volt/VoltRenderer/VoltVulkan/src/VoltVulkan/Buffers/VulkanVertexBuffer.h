@@ -15,6 +15,7 @@ namespace Volt::RHI
 
 		void SetData(const void* data, uint32_t size) override;
 		inline constexpr ResourceType GetType() const override { return ResourceType::VertexBuffer; }
+		void SetName(std::string_view name) override;
 
 	protected:
 		void* GetHandleImpl() override;
