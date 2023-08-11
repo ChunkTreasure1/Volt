@@ -85,6 +85,8 @@ namespace Volt::RHI
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
 
+		m_imageAspect = static_cast<uint32_t>(aspectMask);
+
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

@@ -11,6 +11,7 @@ namespace Volt::RHI
 	{
 	public:
 		typedef uint32_t ImageLayout;
+		typedef uint32_t ImageAspect;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
 		~VulkanImage2D() override;
@@ -30,6 +31,8 @@ namespace Volt::RHI
 		void* GetHandleImpl() override;
 
 	private:
+		friend class VulkanCommandBuffer;
+
 		void TransitionToLayout(ImageLayout targetLayout);
 
 		ImageSpecification m_specification;
@@ -40,6 +43,8 @@ namespace Volt::RHI
 		bool m_hasGeneratedMips = false;
 
 		ImageLayout m_currentImageLayout = 0;
+		ImageAspect m_imageAspect = 0;
+
 		std::map<int32_t, std::map<int32_t, Ref<ImageView>>> m_imageViews; // Layer -> Mip -> View
 	};
 }

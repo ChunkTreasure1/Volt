@@ -11,6 +11,8 @@
 
 #include "VoltVulkan/Descriptors/VulkanDescriptorTable.h"
 
+#include "VoltVulkan/Images/VulkanImage2D.h"
+
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
@@ -20,10 +22,81 @@
 
 #include <VoltRHI/Images/ImageView.h>
 
+#include <VoltRHI/Shader/Shader.h>
+
 #include <vulkan/vulkan.h>
+#include <VoltRHI/Core/Profiling.h>
 
 namespace Volt::RHI
 {
+	namespace Utility
+	{
+		std::pair<VkPipelineStageFlags2, VkAccessFlags2> GetSrcInfoFromResourceState(const ResourceState resourceState)
+		{
+			switch (resourceState)
+			{
+				case ResourceState::RenderTarget:
+				{
+					return { VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT };
+					break;
+				}
+
+				case ResourceState::Present:
+				{
+					return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
+					break;
+				}
+
+				case ResourceState::PixelShaderRead:
+				{
+					return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
+					break;
+				}
+			}
+
+			return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
+		}
+
+		std::pair<VkPipelineStageFlags2, VkAccessFlags2> GetDstInfoFromResourceState(const ResourceState resourceState)
+		{
+			switch (resourceState)
+			{
+				case ResourceState::RenderTarget:
+				{
+					return { VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT };
+					break;
+				}
+
+				case ResourceState::Present:
+				{
+					return { VK_PIPELINE_STAGE_2_NONE , 0 };
+					break;
+				}
+
+				case ResourceState::PixelShaderRead:
+				{
+					return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
+					break;
+				}
+			}
+
+			return { VK_PIPELINE_STAGE_2_NONE, 0 };
+		}
+
+		const VkImageLayout GetDstLayoutFromResourceState(const ResourceState resourceState)
+		{
+			switch (resourceState)
+			{
+				case ResourceState::RenderTarget: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				case ResourceState::Present: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				case ResourceState::PixelShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case ResourceState::NonPixelShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			}
+
+			return VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+	}
+
 	VulkanCommandBuffer::VulkanCommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget)
 		: CommandBuffer(queueType), m_commandBufferCount(count), m_isSwapchainTarget(swapchainTarget)
 	{
@@ -39,6 +112,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::Begin()
 	{
+		VT_PROFILE_FUNCTION();
+
 		m_currentCommandBufferIndex = (m_currentCommandBufferIndex + 1) % m_commandBufferCount;
 
 		auto device = GraphicsContext::GetDevice();
@@ -64,12 +139,16 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::End()
 	{
+		VT_PROFILE_FUNCTION();
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_VK_CHECK(vkEndCommandBuffer(m_commandBuffers.at(index).commandBuffer));
 	}
 
 	void VulkanCommandBuffer::Execute()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!m_isSwapchainTarget)
 		{
 			auto device = GraphicsContext::GetDevice();
@@ -79,6 +158,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::ExecuteAndWait()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!m_isSwapchainTarget)
 		{
 			auto device = GraphicsContext::GetDevice();
@@ -92,24 +173,34 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+		VT_PROFILE_GPU_EVENT("Draw");
+
 		vkCmdDraw(m_commandBuffers.at(index).commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 
 	void VulkanCommandBuffer::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+		VT_PROFILE_GPU_EVENT("DrawIndexed");
+
 		vkCmdDrawIndexed(m_commandBuffers.at(index).commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
 	void VulkanCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
+
 		vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
 	}
 
 	void VulkanCommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
 		vkCmdSetScissor(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(scissors.size()), reinterpret_cast<const VkRect2D*>(scissors.data()));
 	}
 
@@ -124,6 +215,8 @@ namespace Volt::RHI
 		m_currentRenderPipeline = pipeline;
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
+
 		vkCmdBindPipeline(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetHandle<VkPipeline>());
 	}
 
@@ -139,12 +232,15 @@ namespace Volt::RHI
 		}
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
 		vkCmdBindVertexBuffers(m_commandBuffers.at(index).commandBuffer, firstBinding, static_cast<uint32_t>(vkBuffers.size()), vkBuffers.data(), offsets.data());
 	}
 
 	void VulkanCommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
 
 		constexpr VkDeviceSize offset = 0;
 		vkCmdBindIndexBuffer(m_commandBuffers.at(index).commandBuffer, indexBuffer->GetHandle<VkBuffer>(), offset, VK_INDEX_TYPE_UINT32);
@@ -152,8 +248,11 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::BindDescriptorTable(Ref<DescriptorTable> descriptorTable)
 	{
+		VT_PROFILE_FUNCTION();
+
 		VulkanDescriptorTable& vulkanDescriptorTable = descriptorTable->AsRef<VulkanDescriptorTable>();
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
 
 		vulkanDescriptorTable.Update(index);
 
@@ -166,6 +265,8 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::vector<VkRenderingAttachmentInfo> colorAttachmentInfo{};
 		VkRenderingAttachmentInfo depthAttachmentInfo{};
 
@@ -208,12 +309,18 @@ namespace Volt::RHI
 		}
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
 		vkCmdBeginRendering(m_commandBuffers.at(index).commandBuffer, &vkRenderingInfo);
 	}
 
 	void VulkanCommandBuffer::EndRendering()
 	{
+		VT_PROFILE_FUNCTION();
+
 		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
 		vkCmdEndRendering(m_commandBuffers.at(index).commandBuffer);
 	}
 
@@ -227,7 +334,71 @@ namespace Volt::RHI
 #endif
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
-		vkCmdPushConstants(m_commandBuffers.at(index).commandBuffer, m_currentRenderPipeline->AsRef<VulkanRenderPipeline>().GetPipelineLayout(), VK_PIPELINE_BIND_POINT_GRAPHICS, offset, size, data);
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
+		auto& vkPipeline = m_currentRenderPipeline->AsRef<VulkanRenderPipeline>();
+
+		vkCmdPushConstants(m_commandBuffers.at(index).commandBuffer, vkPipeline.GetPipelineLayout(), static_cast<VkPipelineStageFlags2>(vkPipeline.GetShader()->GetResources().constants.stageFlags), offset, size, data);
+	}
+
+	void VulkanCommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
+	{
+		VT_PROFILE_FUNCTION();
+
+		std::vector<VkImageMemoryBarrier2> imageBarriers{};
+		std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
+
+		for (const auto& resourceBarrier : resourceBarriers)
+		{
+			if (resourceBarrier.type == ResourceBarrierType::Image)
+			{
+				auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
+				auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
+				const auto dstLayout = Utility::GetDstLayoutFromResourceState(resourceBarrier.newState);
+
+				auto& vkImage = resourceBarrier.image->AsRef<VulkanImage2D>();
+
+				auto& barrier = imageBarriers.emplace_back();
+				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+				barrier.pNext = nullptr;
+				barrier.srcStageMask = srcStage;
+				barrier.srcAccessMask = srcAccess;
+				barrier.dstStageMask = dstStage;
+				barrier.dstAccessMask = dstAccess;
+				barrier.newLayout = dstLayout;
+				barrier.oldLayout = static_cast<VkImageLayout>(vkImage.m_currentImageLayout);
+				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.m_imageAspect);
+				barrier.subresourceRange.baseArrayLayer = 0;
+				barrier.subresourceRange.baseMipLevel = 0;
+				barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+				barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+				barrier.image = vkImage.GetHandle<VkImage>();
+
+				vkImage.m_currentImageLayout = static_cast<uint32_t>(dstLayout);
+			}
+			else if (resourceBarrier.type == ResourceBarrierType::Buffer)
+			{
+
+			}
+		}
+
+		VkDependencyInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+		info.pNext = nullptr;
+		info.dependencyFlags = 0;
+		info.memoryBarrierCount = 0;
+		info.pMemoryBarriers = nullptr;
+		info.bufferMemoryBarrierCount = static_cast<uint32_t>(bufferBarriers.size());
+		info.pBufferMemoryBarriers = bufferBarriers.data();
+		info.imageMemoryBarrierCount = static_cast<uint32_t>(imageBarriers.size());
+		info.pImageMemoryBarriers = imageBarriers.data();
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
+		vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &info);
 	}
 
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const

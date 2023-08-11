@@ -88,7 +88,7 @@ namespace Volt
 				{
 					Ref<Volt::Mesh> mesh = CreateRef<Volt::Mesh>(*asset);
 
-					for (auto& vert : mesh->myVertices)
+					for (auto& vert : mesh->m_vertices)
 					{
 						auto v4 = glm::vec4(vert.position, 1.f);
 						vert.position = transform.GetTransform() * v4;

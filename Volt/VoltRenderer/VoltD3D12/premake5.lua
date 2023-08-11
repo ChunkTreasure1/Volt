@@ -44,6 +44,7 @@ project "VoltD3D12"
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.Optick}",
 	}
 
 	defines

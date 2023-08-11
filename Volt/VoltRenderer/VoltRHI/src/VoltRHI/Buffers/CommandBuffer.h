@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "VoltRHI/Core/RHIInterface.h"
@@ -42,6 +41,8 @@ namespace Volt::RHI
 		virtual void EndRendering() = 0;
 
 		virtual void PushConstants(const void* data, const uint32_t size, const uint32_t offset) = 0;
+
+		virtual void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) = 0;
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 

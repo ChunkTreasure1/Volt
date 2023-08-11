@@ -50,7 +50,8 @@ project "VoltRHI"
 		"../VoltVulkan/src",
 
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.imgui_notify}"
+		"%{IncludeDir.imgui_notify}",
+		"%{IncludeDir.Optick}",
 	}
 
 	defines

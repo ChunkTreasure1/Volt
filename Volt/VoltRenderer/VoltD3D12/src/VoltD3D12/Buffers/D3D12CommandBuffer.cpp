@@ -109,6 +109,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
+	{
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_isSwapchainTarget = swapchainTarget;

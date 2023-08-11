@@ -31,9 +31,7 @@
 #include "Volt/Rendering/Buffer/UniformBufferSet.h"
 #include "Volt/Rendering/Buffer/UniformBuffer.h"
 
-#include "Volt/Rendering/Buffer/VertexBuffer.h"
 #include "Volt/Rendering/Buffer/VertexBufferSet.h"
-#include "Volt/Rendering/Buffer/IndexBuffer.h"
 
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Image3D.h"
@@ -78,6 +76,8 @@
 #include "Volt/Utility/ShadowMappingUtility.h"
 #include "Volt/Utility/Noise.h"
 #include "Volt/Platform/ThreadUtility.h"
+
+#include <VoltRHI/Buffers/IndexBuffer.h>
 
 namespace Volt
 {
@@ -806,7 +806,7 @@ namespace Volt
 		textData.vertexBufferBase = new TextVertex[TextData::MAX_INDICES];
 		textData.vertexBufferPtr = textData.vertexBufferBase;
 
-		textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES, true);
+		textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES);
 
 		// Index buffer
 		{
@@ -826,7 +826,7 @@ namespace Volt
 				offset += 4;
 			}
 
-			textData.indexBuffer = IndexBuffer::Create(indices, TextData::MAX_INDICES);
+			textData.indexBuffer = RHI::IndexBuffer::Create(indices, TextData::MAX_INDICES);
 			delete[] indices;
 		}
 	}
@@ -1639,11 +1639,11 @@ namespace Volt
 		const uint32_t currentIndex = cmdBuffer->GetCurrentIndex();
 		auto vertexBuffer = textData.vertexBuffer->Get(currentIndex);
 
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
-		vertexBuffer->SetDataMapped(cmdBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
+		//uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
+		//vertexBuffer->SetDataMapped(cmdBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
 
-		const glm::mat4 viewProjection = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
-		Renderer::DrawIndexedVertexBuffer(cmdBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
+		//const glm::mat4 viewProjection = myCurrentCamera->GetProjection() * myCurrentCamera->GetView();
+		//Renderer::DrawIndexedVertexBuffer(cmdBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
 	}
 
 	inline static bool NextLine(int32_t aIndex, const std::vector<int32_t>& aLines)
@@ -2029,7 +2029,7 @@ namespace Volt
 
 		if (myLineData.vertexCount > 0)
 		{
-			myLineData.vertexBuffer->Get(myCommandBuffer->GetCurrentIndex())->SetData(myCommandBuffer->GetCurrentCommandBuffer(), myLineData.vertexBufferBase, sizeof(LineVertex) * myLineData.vertexCount);
+			//myLineData.vertexBuffer->Get(myCommandBuffer->GetCurrentIndex())->SetData(myCommandBuffer->GetCurrentCommandBuffer(), myLineData.vertexBufferBase, sizeof(LineVertex) * myLineData.vertexCount);
 		}
 	}
 
@@ -2055,7 +2055,7 @@ namespace Volt
 
 		if (myBillboardData.vertexCount > 0)
 		{
-			myBillboardData.vertexBuffer->Get(myCommandBuffer->GetCurrentIndex())->SetData(myCommandBuffer->GetCurrentCommandBuffer(), myBillboardData.vertexBufferBase, sizeof(BillboardVertex) * myBillboardData.vertexCount);
+			//myBillboardData.vertexBuffer->Get(myCommandBuffer->GetCurrentIndex())->SetData(myCommandBuffer->GetCurrentCommandBuffer(), myBillboardData.vertexBufferBase, sizeof(BillboardVertex) * myBillboardData.vertexCount);
 		}
 	}
 
@@ -2081,8 +2081,8 @@ namespace Volt
 				auto& cmd = data.submitCommands.at(i);
 
 				drawCommands[i].command.indexCount = cmd.subMesh.indexCount;
-				drawCommands[i].command.firstIndex = cmd.subMesh.indexStartOffset + cmd.mesh->GetIndexStartOffset();
-				drawCommands[i].command.vertexOffset = cmd.subMesh.vertexStartOffset + cmd.mesh->GetVertexStartOffset();
+				drawCommands[i].command.firstIndex = cmd.subMesh.indexStartOffset;
+				drawCommands[i].command.vertexOffset = cmd.subMesh.vertexStartOffset;
 				drawCommands[i].command.firstInstance = data.indirectBatches.at(cmd.batchId).first;
 				drawCommands[i].command.instanceCount = 1;
 				drawCommands[i].batchId = cmd.batchId;
@@ -3585,7 +3585,7 @@ namespace Volt
 			// Lines
 			if (myLineData.vertexCount > 0)
 			{
-				Renderer::DrawVertexBuffer(commandBuffer, myLineData.vertexCount, myLineData.vertexBuffer->Get(index), myLineData.renderPipeline, myGlobalDescriptorSets);
+				//Renderer::DrawVertexBuffer(commandBuffer, myLineData.vertexCount, myLineData.vertexBuffer->Get(index), myLineData.renderPipeline, myGlobalDescriptorSets);
 				myLineData.vertexCount = 0;
 				myLineData.vertexBufferPtr = myLineData.vertexBufferBase;
 			}
@@ -4055,7 +4055,7 @@ namespace Volt
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 
-			Renderer::DrawVertexBuffer(commandBuffer, myBillboardData.vertexCount, myBillboardData.vertexBuffer->Get(commandBuffer->GetCurrentIndex()), myBillboardData.renderPipeline, myGlobalDescriptorSets);
+			//Renderer::DrawVertexBuffer(commandBuffer, myBillboardData.vertexCount, myBillboardData.vertexBuffer->Get(commandBuffer->GetCurrentIndex()), myBillboardData.renderPipeline, myGlobalDescriptorSets);
 			myBillboardData.vertexBufferPtr = myBillboardData.vertexBufferBase;
 			myBillboardData.vertexCount = 0;
 

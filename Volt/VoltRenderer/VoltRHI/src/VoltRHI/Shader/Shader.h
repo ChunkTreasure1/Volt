@@ -49,26 +49,28 @@ namespace Volt::RHI
 	class ShaderDataBuffer
 	{
 	public:
-		void AddMember(std::string_view name, ShaderUniformType type, size_t size, size_t offset);
+		void AddMember(const std::string& name, ShaderUniformType type, size_t size, size_t offset);
 		void SetSize(const size_t size);
-		void Allocate();
 
-		[[nodiscard]] inline const bool HasMember(std::string_view memberName) const { return !m_uniforms.contains(memberName); }
+		[[nodiscard]] inline const bool HasMember(const std::string& memberName) const { return !m_uniforms.contains(memberName); }
 		[[nodiscard]] inline const bool IsValid() const { return !m_uniforms.empty(); }
 
-		[[nodiscard]] inline const ShaderUniform& GetMember(std::string_view memberName) const { return m_uniforms.at(memberName); }
+		[[nodiscard]] inline const ShaderUniform& GetMember(const std::string& memberName) const { return m_uniforms.at(memberName); }
 		[[nodiscard]] inline const size_t GetSize() const { return m_size; }
-		[[nodiscard]] inline const Buffer& GetBuffer() const { return m_buffer; }
+		[[nodiscard]] inline const uint8_t* GetBuffer() const { return m_data; }
 
-		std::unordered_map<std::string_view, ShaderUniform>::iterator begin() { return m_uniforms.begin(); }
-		std::unordered_map<std::string_view, ShaderUniform>::iterator end() { return m_uniforms.end(); }
+		std::unordered_map<std::string, ShaderUniform>::iterator begin() { return m_uniforms.begin(); }
+		std::unordered_map<std::string, ShaderUniform>::iterator end() { return m_uniforms.end(); }
 
 		template<typename T>
-		T& GetMemberData(std::string_view memberName);
+		T& GetMemberData(const std::string& memberName);
+
+		template<typename T>
+		void SetMemberData(const std::string& memberName, const T& value);
 
 	private:
-		std::unordered_map<std::string_view, ShaderUniform> m_uniforms;
-		Buffer m_buffer{};
+		std::unordered_map<std::string, ShaderUniform> m_uniforms;
+		uint8_t m_data[128]; // Max push constant size for all platforms are 128 bytes
 		size_t m_size = 0;
 	};
 
@@ -143,8 +145,14 @@ namespace Volt::RHI
 	};
 
 	template<typename T>
-	T& ShaderDataBuffer::GetMemberData(std::string_view memberName)
+	T& ShaderDataBuffer::GetMemberData(const std::string& memberName)
 	{
-		return m_uniforms.at(memberName);
+		return *reinterpret_cast<T*>(&m_data[m_uniforms.at(memberName).offset]);
+	}
+
+	template<typename T>
+	void ShaderDataBuffer::SetMemberData(const std::string& memberName, const T& value)
+	{
+		*reinterpret_cast<T*>(&m_data[m_uniforms.at(memberName).offset]) = value;
 	}
 }

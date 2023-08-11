@@ -28,9 +28,6 @@
 #include "Volt/Rendering/Buffer/ShaderStorageBuffer.h"
 #include "Volt/Rendering/Buffer/ShaderStorageBufferSet.h"
 
-#include "Volt/Rendering/Buffer/IndexBuffer.h"
-#include "Volt/Rendering/Buffer/VertexBuffer.h"
-
 #include "Volt/Rendering/Texture/TextureTable.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Texture/Image2D.h"
@@ -407,8 +404,8 @@ namespace Volt
 
 			if (!lastMesh || batches[i].mesh != lastMesh)
 			{
-				batches[i].mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
-				batches[i].mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+				//batches[i].mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+				//batches[i].mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 				lastMesh = batches[i].mesh;
 			}
@@ -443,8 +440,8 @@ namespace Volt
 			SetupPipelineForRendering(commandBuffer, overridePipeline, globalDescriptorSet);
 		}
 
-		mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
-		mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 		for (const auto& subMesh : mesh->GetSubMeshes())
 		{
@@ -456,7 +453,7 @@ namespace Volt
 				SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
 			}
 
-			vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset + mesh->GetIndexStartOffset(), subMesh.vertexStartOffset + mesh->GetVertexStartOffset(), 0);
+			vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset, subMesh.vertexStartOffset, 0);
 		}
 	}
 
@@ -480,8 +477,8 @@ namespace Volt
 			SetupPipelineForRendering(commandBuffer, overridePipeline, globalDescriptorSet);
 		}
 
-		mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
-		mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 		for (const auto& subMesh : mesh->GetSubMeshes())
 		{
@@ -493,7 +490,7 @@ namespace Volt
 				SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
 			}
 
-			vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset + mesh->GetIndexStartOffset(), subMesh.vertexStartOffset + mesh->GetVertexStartOffset(), 0);
+			vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset, subMesh.vertexStartOffset, 0);
 		}
 	}
 
@@ -527,10 +524,10 @@ namespace Volt
 			SetupPipelineForRendering(commandBuffer, material->GetPipeline(), globalDescriptorSet);
 		}
 
-		mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
-		mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//mesh->GetVertexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//mesh->GetIndexBuffer()->Bind(commandBuffer->GetCurrentCommandBuffer());
 
-		vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset + mesh->GetIndexStartOffset(), subMesh.vertexStartOffset + mesh->GetVertexStartOffset(), 0);
+		vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), subMesh.indexCount, 1, subMesh.indexStartOffset, subMesh.vertexStartOffset, 0);
 	}
 
 	void Renderer::DrawParticleBatches(Ref<CommandBuffer> commandBuffer, Ref<ShaderStorageBufferSet> storageBufferSet, const GlobalDescriptorMap& globalDescriptorSet, const std::vector<ParticleBatch>& batches)
@@ -584,7 +581,7 @@ namespace Volt
 		pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 		SetupPipelineForRendering(commandBuffer, pipeline, globalDescriptorSet);
 
-		vertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//vertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 		vkCmdDraw(commandBuffer->GetCurrentCommandBuffer(), count, 1, 0, 0);
 	}
@@ -600,8 +597,8 @@ namespace Volt
 
 		SetupPipelineForRendering(commandBuffer, pipeline);
 
-		vertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
-		indexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//vertexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
+		//indexBuffer->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 		vkCmdDrawIndexed(commandBuffer->GetCurrentCommandBuffer(), indexCount, 1, 0, 0, 0);
 	}

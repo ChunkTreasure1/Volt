@@ -28,7 +28,7 @@ namespace Volt
 		AssetHandle matHandle = materialHandle;
 		if (matHandle == Asset::Null())
 		{
-			matHandle = mesh->myMaterial->handle;
+			matHandle = mesh->m_material->handle;
 		}
 
 		/*
@@ -62,34 +62,34 @@ namespace Volt
 
 		BinarySerializer serializer{ Volt::ProjectManager::GetDirectory() / destination, CalculateMeshSize(mesh) };
 
-		const uint32_t submeshCount = (uint32_t)mesh->mySubMeshes.size();
-		const uint32_t vertexCount = (uint32_t)mesh->myVertices.size();
-		const uint32_t indexCount = (uint32_t)mesh->myIndices.size();
+		const uint32_t submeshCount = (uint32_t)mesh->m_subMeshes.size();
+		const uint32_t vertexCount = (uint32_t)mesh->m_vertices.size();
+		const uint32_t indexCount = (uint32_t)mesh->m_indices.size();
 
-		const glm::vec3 boundingCenter = mesh->myBoundingSphere.center;
-		const float boundingRadius = mesh->myBoundingSphere.radius;
+		const glm::vec3 boundingCenter = mesh->m_boundingSphere.center;
+		const float boundingRadius = mesh->m_boundingSphere.radius;
 
 		serializer.Serialize<uint32_t>(submeshCount);
 		serializer.Serialize<AssetHandle>(matHandle);
 
 		serializer.Serialize<uint32_t>(vertexCount);
-		serializer.Serialize(mesh->myVertices.data(), sizeof(Vertex) * vertexCount);
+		serializer.Serialize(mesh->m_vertices.data(), sizeof(Vertex) * vertexCount);
 
 		serializer.Serialize<uint32_t>(indexCount);
-		serializer.Serialize(mesh->myIndices.data(), sizeof(uint32_t) * indexCount);
+		serializer.Serialize(mesh->m_indices.data(), sizeof(uint32_t) * indexCount);
 
 		serializer.Serialize<glm::vec3>(boundingCenter);
 		serializer.Serialize<float>(boundingRadius);
 
 		serializer.Serialize<uint32_t>(submeshCount);
 
-		for (const auto& subMesh : mesh->mySubMeshes)
+		for (const auto& subMesh : mesh->m_subMeshes)
 		{
 			serializer.Serialize<uint32_t>((uint32_t)subMesh.name.size());
 			serializer.Serialize<std::string>(subMesh.name);
 		}
 
-		for (const auto& subMesh : mesh->mySubMeshes)
+		for (const auto& subMesh : mesh->m_subMeshes)
 		{
 			serializer.Serialize<uint32_t>(subMesh.materialIndex);
 			serializer.Serialize<uint32_t>(subMesh.vertexCount);
@@ -111,9 +111,9 @@ namespace Volt
 		size += sizeof(AssetHandle); // Material handle
 
 		size += sizeof(uint32_t); // Vertex count
-		size += sizeof(Vertex) * mesh->myVertices.size(); // Vertices
+		size += sizeof(Vertex) * mesh->m_vertices.size(); // Vertices
 		size += sizeof(uint32_t); // Index count
-		size += sizeof(uint32_t) * mesh->myIndices.size(); // Indices
+		size += sizeof(uint32_t) * mesh->m_indices.size(); // Indices
 
 		size += sizeof(glm::vec3); // Bounding sphere center
 		size += sizeof(float); // Bounding sphere radius
@@ -121,14 +121,14 @@ namespace Volt
 		// Sub mesh names
 		size += sizeof(uint32_t); // Name count
 
-		for (const auto& subMesh : mesh->mySubMeshes)
+		for (const auto& subMesh : mesh->m_subMeshes)
 		{
 			size += sizeof(uint32_t); // Name size
 			size += subMesh.name.size();
 		}
 
 		// Sub meshes
-		for (const auto& subMesh : mesh->mySubMeshes)
+		for (const auto& subMesh : mesh->m_subMeshes)
 		{
 			subMesh;
 
@@ -148,7 +148,7 @@ namespace Volt
 		const auto materialPath = destination.parent_path().string() + "\\";
 		const auto filename = destination.stem().string() + ".vtmat";
 
-		mesh->myMaterial = AssetManager::CreateAsset<Material>(materialPath, filename, *mesh->myMaterial);
-		AssetManager::Get().SaveAsset(mesh->myMaterial);
+		mesh->m_material = AssetManager::CreateAsset<Material>(materialPath, filename, *mesh->m_material);
+		AssetManager::Get().SaveAsset(mesh->m_material);
 	}
 }

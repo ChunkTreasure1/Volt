@@ -67,6 +67,10 @@ namespace Volt::RHI
 	void MockCommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
 	{
 	}
+
+	void MockCommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
+	{
+	}
 	
 	void* MockCommandBuffer::GetHandleImpl()
 	{

@@ -13,6 +13,8 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
+#include <VoltRHI/Core/Profiling.h>
+
 namespace Volt::RHI
 {
 	namespace Utility
@@ -128,6 +130,9 @@ namespace Volt::RHI
 
 			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
 		}
+
+		VT_PROFILE_GPU_FLIP(m_swapchain);
+		VT_PROFILE_CATEGORY("Present", Optick::Category::Wait);
 
 		// Present to screen
 		{

@@ -80,7 +80,7 @@ namespace Volt::RHI
 			VkPushConstantRange pushConstantRange{};
 			pushConstantRange.size = shaderResources.constants.size;
 			pushConstantRange.offset = shaderResources.constants.offset;
-			pushConstantRange.stageFlags = static_cast<VkShaderStageFlags>(shaderResources.constants.stageFlags);
+			pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; //static_cast<VkShaderStageFlags>(shaderResources.constants.stageFlags);
 
 			assert(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
 

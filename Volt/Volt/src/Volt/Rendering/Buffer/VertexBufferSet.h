@@ -6,18 +6,22 @@
 
 namespace Volt
 {
-	class VertexBuffer;
+	namespace RHI
+	{
+		class VertexBuffer;
+	}
+
 	class VertexBufferSet
 	{
 	public:
-		VertexBufferSet(uint32_t count, const void* data, uint32_t size, bool mappable);
+		VertexBufferSet(uint32_t count, const void* data, uint32_t size);
 		~VertexBufferSet();
 
-		inline const Ref<VertexBuffer> Get(uint32_t index) const { return myVertexBuffers.at(index); }
+		inline const Ref<RHI::VertexBuffer> Get(uint32_t index) const { return m_vertexBuffers.at(index); }
 
-		static Ref<VertexBufferSet> Create(uint32_t count, const void* data, uint32_t size, bool mappable = false);
+		static Ref<VertexBufferSet> Create(uint32_t count, const void* data, uint32_t size);
 
 	private:
-		std::vector<Ref<VertexBuffer>> myVertexBuffers;
+		std::vector<Ref<RHI::VertexBuffer>> m_vertexBuffers;
 	};
 }

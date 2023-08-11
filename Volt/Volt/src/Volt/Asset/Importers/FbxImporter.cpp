@@ -42,14 +42,14 @@ namespace Volt
 		}
 
 		Ref<Mesh> mesh = CreateRef<Mesh>();
-		mesh->myMaterial = CreateRef<Material>();
-		mesh->myMaterial->myName = path.stem().string() + "_mat";
+		mesh->m_material = CreateRef<Material>();
+		mesh->m_material->myName = path.stem().string() + "_mat";
 
 		for (const auto& element : tgaMesh.Elements)
 		{
-			auto& newSubMesh = mesh->mySubMeshes.emplace_back();
-			newSubMesh.vertexStartOffset = static_cast<uint32_t>(mesh->myVertices.size());
-			newSubMesh.indexStartOffset = static_cast<uint32_t>(mesh->myIndices.size());
+			auto& newSubMesh = mesh->m_subMeshes.emplace_back();
+			newSubMesh.vertexStartOffset = static_cast<uint32_t>(mesh->m_vertices.size());
+			newSubMesh.indexStartOffset = static_cast<uint32_t>(mesh->m_indices.size());
 			newSubMesh.vertexCount = static_cast<uint32_t>(element.Vertices.size());
 			newSubMesh.indexCount = static_cast<uint32_t>(element.Indices.size());
 			newSubMesh.materialIndex = element.MaterialIndex;
@@ -66,7 +66,7 @@ namespace Volt
 
 			for (const auto& tgaVertex : element.Vertices)
 			{
-				auto& newVertex = mesh->myVertices.emplace_back();
+				auto& newVertex = mesh->m_vertices.emplace_back();
 				newVertex.position = *reinterpret_cast<const glm::vec4*>(tgaVertex.Position);
 				newVertex.normal = *reinterpret_cast<const glm::vec3*>(tgaVertex.Normal);
 				newVertex.tangent = *reinterpret_cast<const glm::vec3*>(tgaVertex.Tangent);
@@ -75,24 +75,24 @@ namespace Volt
 				newVertex.weights = *reinterpret_cast<const glm::vec4*>(tgaVertex.BoneWeights);
 			}
 
-			mesh->myIndices.insert(mesh->myIndices.end(), element.Indices.begin(), element.Indices.end());
+			mesh->m_indices.insert(mesh->m_indices.end(), element.Indices.begin(), element.Indices.end());
 		}
 
 		if (tgaMesh.Materials.empty())
 		{
-			mesh->myMaterial->CreateSubMaterial(ShaderRegistry::GetShader("Illum"));
+			mesh->m_material->CreateSubMaterial(ShaderRegistry::GetShader("Illum"));
 		}
 		else
 		{
 			for (const auto& material : tgaMesh.Materials)
 			{
-				mesh->myMaterial->CreateSubMaterial(ShaderRegistry::GetShader("Illum"), material.MaterialName);
+				mesh->m_material->CreateSubMaterial(ShaderRegistry::GetShader("Illum"), material.MaterialName);
 			}
 		}
 
-		mesh->myBoundingBox = BoundingBox{ *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Max), *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Min) };
-		mesh->myBoundingSphere.center = { tgaMesh.BoxSphereBounds.Center[0], tgaMesh.BoxSphereBounds.Center[1], tgaMesh.BoxSphereBounds.Center[2] };
-		mesh->myBoundingSphere.radius = tgaMesh.BoxSphereBounds.Radius;
+		mesh->m_boundingBox = BoundingBox{ *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Max), *reinterpret_cast<const glm::vec3*>(tgaMesh.BoxBounds.Min) };
+		mesh->m_boundingSphere.center = { tgaMesh.BoxSphereBounds.Center[0], tgaMesh.BoxSphereBounds.Center[1], tgaMesh.BoxSphereBounds.Center[2] };
+		mesh->m_boundingSphere.radius = tgaMesh.BoxSphereBounds.Radius;
 
 		TGA::FBX::Importer::UninitImporter();
 

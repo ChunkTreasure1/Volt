@@ -56,7 +56,7 @@
 // D3D12
 #if !defined(OPTICK_ENABLE_GPU_D3D12)
 #if defined(_MSC_VER)
-#define OPTICK_ENABLE_GPU_D3D12 (OPTICK_ENABLE_GPU /*&& 0*/)
+//#define OPTICK_ENABLE_GPU_D3D12 (OPTICK_ENABLE_GPU /*&& 0*/)
 #else
 #define OPTICK_ENABLE_GPU_D3D12 (0)
 #endif
@@ -65,7 +65,7 @@
 // VULKAN
 #if !defined(OPTICK_ENABLE_GPU_VULKAN)
 #if defined(_MSC_VER)
-//#define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
+#define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
 #else
 #define OPTICK_ENABLE_GPU_VULKAN (0)
 #endif

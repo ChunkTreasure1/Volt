@@ -31,6 +31,8 @@ namespace Volt::RHI
 
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset) override;
 
+		void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) override;
+
 	protected:
 		void* GetHandleImpl() override;
 	};

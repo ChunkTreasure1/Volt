@@ -195,7 +195,6 @@ namespace Volt::RHI
 	ShaderDataBuffer VulkanShader::GetConstantsBuffer() const
 	{
 		ShaderDataBuffer dataBuffer = m_resources.constantsBuffer;
-		dataBuffer.Allocate();
 		return dataBuffer;
 	}
 

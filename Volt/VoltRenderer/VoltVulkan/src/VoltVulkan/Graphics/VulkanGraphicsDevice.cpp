@@ -6,8 +6,8 @@
 
 #include "VoltVulkan/Common/VulkanCommon.h"	
 
-
 #include <vulkan/vulkan.h>
+#include <optick.h>
 
 namespace Volt::RHI
 {
@@ -29,7 +29,7 @@ namespace Volt::RHI
 			result.vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
 			result.vulkan11Features.pNext = nullptr;
 			result.vulkan11Features.shaderDrawParameters = VK_TRUE;
-		
+
 			result.vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 			result.vulkan12Features.pNext = &result.vulkan11Features;
 			result.vulkan12Features.drawIndirectCount = VK_TRUE;
@@ -135,6 +135,18 @@ namespace Volt::RHI
 		m_deviceQueues[QueueType::Graphics] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
 		m_deviceQueues[QueueType::TransferCopy] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
 		m_deviceQueues[QueueType::Compute] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
+
+#ifdef VT_ENABLE_GPU_PROFILING
+		{
+			VkPhysicalDevice physicalDevice = m_physicalDevice.lock()->GetHandle<VkPhysicalDevice>();
+			VkQueue graphicsQueue = m_deviceQueues[QueueType::Graphics]->GetHandle<VkQueue>();
+
+			uint32_t graphicsFamily = static_cast<uint32_t>(queueFamilies.graphicsFamilyQueueIndex);
+
+			OPTICK_GPU_INIT_VULKAN(&m_device, &physicalDevice, &graphicsQueue, &graphicsFamily, 1, nullptr);
+		}
+#endif
+
 	}
 
 	VulkanGraphicsDevice::~VulkanGraphicsDevice()

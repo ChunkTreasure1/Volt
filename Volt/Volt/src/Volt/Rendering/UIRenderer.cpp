@@ -12,9 +12,7 @@
 
 #include "Volt/Rendering/Renderer.h"
 
-#include "Volt/Rendering/Buffer/VertexBuffer.h"
 #include "Volt/Rendering/Buffer/VertexBufferSet.h"
-#include "Volt/Rendering/Buffer/IndexBuffer.h"
 
 #include "Volt/Rendering/CommandBuffer.h"
 #include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
@@ -23,7 +21,12 @@
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/TextureTable.h"
 
+#include "Volt/Rendering/Vertex.h"
+
 #include "Volt/Utility/StringUtility.h"
+
+#include <VoltRHI/Buffers/IndexBuffer.h>
+#include <VoltRHI/Buffers/VertexBuffer.h>
 
 namespace Volt
 {
@@ -39,8 +42,8 @@ namespace Volt
 
 	struct QuadData
 	{
-		Ref<VertexBuffer> vertexBuffer;
-		Ref<IndexBuffer> indexBuffer;
+		Ref<RHI::VertexBuffer> vertexBuffer;
+		Ref<RHI::IndexBuffer> indexBuffer;
 		Ref<Material> quadMaterial;
 	};
 
@@ -63,7 +66,7 @@ namespace Volt
 		inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
 
 		Ref<VertexBufferSet> vertexBuffer;
-		Ref<IndexBuffer> indexBuffer;
+		Ref<RHI::IndexBuffer> indexBuffer;
 		Ref<RenderPipeline> renderPipeline;
 
 		glm::vec4 vertices[4];
@@ -184,8 +187,8 @@ namespace Volt
 
 		vkCmdBeginRendering(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), &renderingInfo);
 
-		s_uiRendererData->quadData.vertexBuffer->Bind(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
-		s_uiRendererData->quadData.indexBuffer->Bind(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
+		//s_uiRendererData->quadData.vertexBuffer->Bind(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
+		//s_uiRendererData->quadData.indexBuffer->Bind(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
 	}
 
 	void UIRenderer::End()
@@ -472,11 +475,11 @@ namespace Volt
 		const uint32_t currentIndex = s_uiRendererData->commandBuffer->GetCurrentIndex();
 		auto vertexBuffer = textData.vertexBuffer->Get(currentIndex);
 
-		uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
-		vertexBuffer->SetDataMapped(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
+		//uint32_t dataSize = static_cast<uint32_t>(reinterpret_cast<uint8_t*>(textData.vertexBufferPtr) - reinterpret_cast<uint8_t*>(textData.vertexBufferBase));
+		//vertexBuffer->SetDataMapped(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), textData.vertexBufferBase, dataSize);
 
-		const glm::mat4 viewProjection = s_uiRendererData->currentProjection * s_uiRendererData->currentView;
-		Renderer::DrawIndexedVertexBuffer(s_uiRendererData->commandBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
+		//const glm::mat4 viewProjection = s_uiRendererData->currentProjection * s_uiRendererData->currentView;
+		//Renderer::DrawIndexedVertexBuffer(s_uiRendererData->commandBuffer, textData.indexCount, vertexBuffer, textData.indexBuffer, textData.renderPipeline, &viewProjection, sizeof(glm::mat4));
 	}
 
 	void UIRenderer::DispatchSprites()
@@ -612,7 +615,7 @@ namespace Volt
 			tempVertPtr[2].color = { 1.f };
 			tempVertPtr[3].color = { 1.f };
 
-			s_uiRendererData->quadData.vertexBuffer = VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * VERTEX_COUNT);
+			s_uiRendererData->quadData.vertexBuffer = RHI::VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * VERTEX_COUNT);
 			delete[] tempVertPtr;
 		}
 
@@ -630,7 +633,7 @@ namespace Volt
 			tempIndexPtr[4] = 1;
 			tempIndexPtr[5] = 0;
 
-			s_uiRendererData->quadData.indexBuffer = IndexBuffer::Create(tempIndexPtr, INDEX_COUNT);
+			s_uiRendererData->quadData.indexBuffer = RHI::IndexBuffer::Create(tempIndexPtr, INDEX_COUNT);
 			delete[] tempIndexPtr;
 		}
 	}
@@ -662,7 +665,7 @@ namespace Volt
 		textData.vertexBufferBase = new TextVertex[TextData::MAX_INDICES];
 		textData.vertexBufferPtr = textData.vertexBufferBase;
 
-		textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES, true);
+		textData.vertexBuffer = VertexBufferSet::Create(Renderer::GetFramesInFlightCount(), textData.vertexBufferBase, sizeof(TextVertex) * TextData::MAX_VERTICES);
 
 		// Index buffer
 		{
@@ -682,7 +685,7 @@ namespace Volt
 				offset += 4;
 			}
 
-			textData.indexBuffer = IndexBuffer::Create(indices, TextData::MAX_INDICES);
+			textData.indexBuffer = RHI::IndexBuffer::Create(indices, TextData::MAX_INDICES);
 			delete[] indices;
 		}
 	}

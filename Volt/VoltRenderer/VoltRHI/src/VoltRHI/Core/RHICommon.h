@@ -8,6 +8,7 @@ namespace Volt::RHI
 	class PhysicalGraphicsDevice;
 	class GraphicsDevice;
 	class ImageView;
+	class Image2D;
 
 	enum class QueueType
 	{
@@ -452,6 +453,25 @@ namespace Volt::RHI
 		DontCare
 	};
 
+	enum class ResourceBarrierType
+	{
+		Buffer,
+		Image
+	};
+
+	enum class ResourceState
+	{
+		RenderTarget = BIT(0),
+		DepthWrite = BIT(1),
+		DepthRead = BIT(2),
+		Present = BIT(3),
+
+		PixelShaderRead = BIT(4),
+		NonPixelShaderRead = BIT(5)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(ResourceState);
+
 	// --- structures --- \\
 
 	struct LogHookInfo
@@ -541,5 +561,14 @@ namespace Volt::RHI
 
 		Rect2D renderArea{};
 		uint32_t layerCount = 1;
+	};
+
+	struct ResourceBarrierInfo
+	{
+		ResourceBarrierType type;
+		ResourceState oldState;
+		ResourceState newState;
+
+		Ref<Image2D> image;
 	};
 }
