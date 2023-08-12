@@ -36,8 +36,8 @@ Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 	info.isRuntime = true;
 	info.projectPath = appPath;
 	info.enableSteam = true;
+	info.useVSync = false;
 
-	LauncherApp::LoadWindowSettings(info);
 	return new LauncherApp(info);
 }
 
