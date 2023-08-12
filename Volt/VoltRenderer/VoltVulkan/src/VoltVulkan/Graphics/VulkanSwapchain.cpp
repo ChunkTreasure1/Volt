@@ -10,10 +10,10 @@
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
 
+#include <VoltRHI/Core/Profiling.h>
+
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
-
-#include <VoltRHI/Core/Profiling.h>
 
 namespace Volt::RHI
 {
@@ -86,6 +86,8 @@ namespace Volt::RHI
 
 	void VulkanSwapchain::BeginFrame()
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto device = GraphicsContext::GetDevice();
 
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
@@ -109,6 +111,8 @@ namespace Volt::RHI
 
 	void VulkanSwapchain::Present()
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 		const auto deviceQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics);
 

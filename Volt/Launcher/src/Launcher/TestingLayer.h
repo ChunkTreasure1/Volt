@@ -16,6 +16,8 @@ namespace Volt::RHI
 
 	class DescriptorTable;
 	class ConstantBuffer;
+
+	class StorageBuffer;
 }
 
 namespace Volt
@@ -45,6 +47,9 @@ private:
 	Ref<Volt::RHI::Image2D> m_renderTarget;
 	Ref<Volt::RHI::DescriptorTable> m_descriptorTable;
 	Ref<Volt::RHI::ConstantBuffer> m_constantBuffer;
+
+	Ref<Volt::RHI::StorageBuffer> m_indirectCommandsBuffer;
+	Ref<Volt::RHI::StorageBuffer> m_transformsBuffer;
 
 	Ref<Volt::Mesh> m_mesh;
 };

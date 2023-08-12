@@ -25,6 +25,7 @@ namespace Volt::RHI
 
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) override;
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) override;
+		void DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
 
 		void SetViewports(const std::vector<Viewport>& viewports) override;
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
@@ -46,6 +47,7 @@ namespace Volt::RHI
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
 		void CopyImageToBackBuffer(Ref<Image2D> srcImage) override;
+		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 
 		VkFence_T* GetCurrentFence() const;
 

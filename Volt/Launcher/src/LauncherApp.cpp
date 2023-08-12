@@ -26,7 +26,7 @@ private:
 Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 {
 	Volt::ApplicationInfo info{};
-	info.enableImGui = false;
+	info.enableImGui = true;
 	info.width = 1600;
 	info.height = 900;
 	info.windowMode = WindowMode::Windowed;

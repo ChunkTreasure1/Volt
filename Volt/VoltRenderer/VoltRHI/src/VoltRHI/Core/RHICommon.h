@@ -584,4 +584,13 @@ namespace Volt::RHI
 
 		Ref<RHIResource> resource;
 	};
+
+	struct IndirectIndexedCommand
+	{
+		uint32_t indexCount;
+		uint32_t instanceCount;
+		uint32_t firstIndex;
+		int32_t vertexOffset;
+		uint32_t firstInstance;
+	};
 }

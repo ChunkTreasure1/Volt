@@ -2,6 +2,7 @@
 #include "VulkanStorageBuffer.h"
 
 #include "VoltVulkan/Graphics/VulkanAllocator.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>

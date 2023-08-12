@@ -70,6 +70,10 @@ namespace Volt::RHI
 		commandData.commandList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
+	void D3D12CommandBuffer::DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+	}
+
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 		GetCommandData().commandList->RSSetViewports(static_cast<uint32_t>(viewports.size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
@@ -128,6 +132,10 @@ namespace Volt::RHI
 	}
 
 	void D3D12CommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage)
+	{
+	}
+
+	void D3D12CommandBuffer::ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor)
 	{
 	}
 

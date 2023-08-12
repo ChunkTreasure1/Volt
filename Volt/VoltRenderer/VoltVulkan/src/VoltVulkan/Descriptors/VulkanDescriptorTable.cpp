@@ -5,11 +5,11 @@
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
 #include "VoltVulkan/Shader/VulkanShader.h"
 #include "VoltVulkan/Images/VulkanImageView.h"
+#include "VoltVulkan/Buffers/VulkanBufferView.h"
+#include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
-
-#include <VoltRHI/Buffers/BufferView.h>
 
 #include <vulkan/vulkan.h>
 
@@ -44,10 +44,20 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::SetBufferView(uint32_t set, uint32_t binding, Ref<BufferView> bufferView)
 	{
+		VulkanBufferView& vkBufferView = bufferView->AsRef<VulkanBufferView>();
+		auto resource = vkBufferView.GetResource();
+
+		const auto type = resource->GetType();
+
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			auto& description = m_bufferInfos[set][binding].at(i);
 			description.buffer = bufferView->GetHandle<VkBuffer>();
+
+			if (type == ResourceType::StorageBuffer)
+			{
+				description.range = resource->AsRef<VulkanStorageBuffer>().GetByteSize();
+			}
 
 			m_writeDescriptors.at(i).at(m_writeDescriptorsMapping.at(set).at(binding)).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
 		}

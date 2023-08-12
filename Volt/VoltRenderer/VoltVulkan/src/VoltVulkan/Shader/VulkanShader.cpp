@@ -419,7 +419,7 @@ namespace Volt::RHI
 		}
 
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Uniform Buffers: {0}", m_perStageUBOCount[stage].count);
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Shader Storage Buffers: {0}", m_perStageSSBOCount[stage].count);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Buffers: {0}", m_perStageSSBOCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Images: {0}", m_perStageStorageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Images: {0}", m_perStageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Samplers: {0}", m_perStageSamplerCount[stage].count);

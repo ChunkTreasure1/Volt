@@ -16,6 +16,7 @@ namespace Volt::RHI
 	class DescriptorTable;
 
 	class Image2D;
+	class StorageBuffer;
 
 	class CommandBuffer : public RHIInterface
 	{
@@ -30,6 +31,7 @@ namespace Volt::RHI
 
 		virtual void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 		virtual void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) = 0;
+		virtual void DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) = 0;
 
 		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
 		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;
@@ -51,6 +53,7 @@ namespace Volt::RHI
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
 
 		virtual void CopyImageToBackBuffer(Ref<Image2D> srcImage) = 0;
+		virtual void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) = 0;
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 
