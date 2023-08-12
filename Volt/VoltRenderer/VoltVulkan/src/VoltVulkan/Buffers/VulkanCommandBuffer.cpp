@@ -152,7 +152,7 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
-		
+
 		if (m_hasTimestampSupport)
 		{
 			vkCmdWriteTimestamp2(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPools.at(index), 1);
@@ -213,7 +213,7 @@ namespace Volt::RHI
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
 
-		vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
+			vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
 	}
 
 	void VulkanCommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
@@ -237,7 +237,7 @@ namespace Volt::RHI
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
 
-		vkCmdBindPipeline(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetHandle<VkPipeline>());
+			vkCmdBindPipeline(m_commandBuffers.at(index).commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetHandle<VkPipeline>());
 	}
 
 	void VulkanCommandBuffer::BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
@@ -262,7 +262,7 @@ namespace Volt::RHI
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
 
-		constexpr VkDeviceSize offset = 0;
+			constexpr VkDeviceSize offset = 0;
 		vkCmdBindIndexBuffer(m_commandBuffers.at(index).commandBuffer, indexBuffer->GetHandle<VkBuffer>(), offset, VK_INDEX_TYPE_UINT32);
 	}
 
@@ -274,7 +274,7 @@ namespace Volt::RHI
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
 
-		vulkanDescriptorTable.Update(index);
+			vulkanDescriptorTable.Update(index);
 
 		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
 		for (const auto& [set, sets] : vulkanDescriptorTable.GetDescriptorSets())
@@ -467,6 +467,132 @@ namespace Volt::RHI
 		return m_executionTimes.at(timestampsIndex).at(timestampIndex / 2);
 	}
 
+	void VulkanCommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage)
+	{
+		VulkanImage2D& vkImage = srcImage->AsRef<VulkanImage2D>();
+		VulkanSwapchain& swapchain = VulkanSwapchain::Get();
+
+		VkImageBlit blitRegion{};
+		blitRegion.srcSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+		blitRegion.srcSubresource.baseArrayLayer = 0;
+		blitRegion.srcSubresource.layerCount = 1;
+		blitRegion.srcSubresource.mipLevel = 0;
+
+		blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blitRegion.dstSubresource.baseArrayLayer = 0;
+		blitRegion.dstSubresource.layerCount = 1;
+		blitRegion.dstSubresource.mipLevel = 0;
+
+		blitRegion.srcOffsets[0] = { 0, 0, 0 };
+		blitRegion.srcOffsets[1] = { static_cast<int32_t>(vkImage.GetWidth()), static_cast<int32_t>(vkImage.GetHeight()), 1 };
+
+		blitRegion.dstOffsets[0] = { 0, 0, 0 };
+		blitRegion.dstOffsets[1] = { static_cast<int32_t>(swapchain.GetWidth()), static_cast<int32_t>(swapchain.GetHeight()), 1 };
+
+		VkImageSubresourceRange range{};
+		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		range.baseArrayLayer = 0;
+		range.baseMipLevel = 0;
+		range.layerCount = 1;
+		range.levelCount = 1;
+
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		// First Transition
+		{
+			VkImageMemoryBarrier2 srcImageBarrier{};
+			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			srcImageBarrier.pNext = nullptr;
+			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			srcImageBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			srcImageBarrier.oldLayout = static_cast<VkImageLayout>(vkImage.GetCurrentLayout());
+			srcImageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.subresourceRange = range;
+			srcImageBarrier.image = vkImage.GetHandle<VkImage>();
+
+			VkImageMemoryBarrier2 dstImageBarrier{};
+			dstImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			dstImageBarrier.pNext = nullptr;
+			dstImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
+			dstImageBarrier.srcAccessMask = 0;
+			dstImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			dstImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			dstImageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			dstImageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstImageBarrier.subresourceRange = range;
+			dstImageBarrier.image = swapchain.GetCurrentImage();
+
+			const VkImageMemoryBarrier2 barriers[2] = { srcImageBarrier, dstImageBarrier };
+
+			VkDependencyInfo depInfo{};
+			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+			depInfo.pNext = nullptr;
+			depInfo.dependencyFlags = 0;
+			depInfo.memoryBarrierCount = 0;
+			depInfo.pMemoryBarriers = nullptr;
+			depInfo.bufferMemoryBarrierCount = 0;
+			depInfo.pBufferMemoryBarriers = nullptr;
+			depInfo.imageMemoryBarrierCount = 2;
+			depInfo.pImageMemoryBarriers = barriers;
+
+			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
+		}
+
+		vkCmdBlitImage(m_commandBuffers.at(index).commandBuffer, vkImage.GetHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitRegion, VK_FILTER_NEAREST);
+	
+		// Second Transition
+		{
+			VkImageMemoryBarrier2 srcImageBarrier{};
+			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			srcImageBarrier.pNext = nullptr;
+			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcImageBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			srcImageBarrier.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+			srcImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			srcImageBarrier.newLayout = static_cast<VkImageLayout>(vkImage.GetCurrentLayout());
+			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.subresourceRange = range;
+			srcImageBarrier.image = vkImage.GetHandle<VkImage>();
+
+			VkImageMemoryBarrier2 dstImageBarrier{};
+			dstImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			dstImageBarrier.pNext = nullptr;
+			dstImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			dstImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			dstImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			dstImageBarrier.dstAccessMask = 0;
+			dstImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			dstImageBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstImageBarrier.subresourceRange = range;
+			dstImageBarrier.image = swapchain.GetCurrentImage();
+
+			const VkImageMemoryBarrier2 barriers[2] = { srcImageBarrier, dstImageBarrier };
+
+			VkDependencyInfo depInfo{};
+			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+			depInfo.pNext = nullptr;
+			depInfo.dependencyFlags = 0;
+			depInfo.memoryBarrierCount = 0;
+			depInfo.pMemoryBarriers = nullptr;
+			depInfo.bufferMemoryBarrierCount = 0;
+			depInfo.pBufferMemoryBarriers = nullptr;
+			depInfo.imageMemoryBarrierCount = 2;
+			depInfo.pImageMemoryBarriers = barriers;
+
+			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
+		}
+	}
+
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const
 	{
 		return m_commandBuffers.at(m_currentCommandBufferIndex).fence;
@@ -614,7 +740,7 @@ namespace Volt::RHI
 		{
 			VT_VK_CHECK(vkCreateQueryPool(device->GetHandle<VkDevice>(), &info, nullptr, &pool));
 		}
-		
+
 		m_timestampCounts = std::vector<uint32_t>(3, 0u);
 		m_timestampQueryResults.resize(m_commandBufferCount);
 		m_executionTimes.resize(m_commandBufferCount);
@@ -639,7 +765,7 @@ namespace Volt::RHI
 
 		const uint32_t currentIndex = GetCurrentCommandBufferIndex();
 		const uint32_t timestampsIndex = (currentIndex + 1) % m_commandBufferCount;
-	
+
 		if (m_timestampCounts.at(timestampsIndex) == 0)
 		{
 			return;
@@ -648,12 +774,12 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 
 		vkGetQueryPoolResults(device->GetHandle<VkDevice>(), m_timestampQueryPools.at(timestampsIndex), 0, m_timestampCounts.at(timestampsIndex), m_timestampCounts.at(timestampsIndex) * sizeof(uint64_t), m_timestampQueryResults.at(timestampsIndex).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-		
+
 		for (uint32_t i = 0; i < m_timestampCounts.at(timestampsIndex); i += 2)
 		{
 			const uint64_t startTime = m_timestampQueryResults.at(timestampsIndex).at(i);
 			const uint64_t endTime = m_timestampQueryResults.at(timestampsIndex).at(i + 1);
-		
+
 			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
 			m_executionTimes.at(timestampsIndex)[i / 2] = nsTime * 0.000001f; // Convert to ms
 		}

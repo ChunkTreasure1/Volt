@@ -5,11 +5,12 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Buffers/BufferView.h>
 
 namespace Volt::RHI
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, MemoryUsage bufferUsage)
-		: m_byteSize(count * elementSize), m_size(count), m_memoryUsage(bufferUsage)
+		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_memoryUsage(bufferUsage)
 	{
 		ResizeByteSize(elementSize * count);
 	}
@@ -35,7 +36,7 @@ namespace Volt::RHI
 		info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (m_memoryUsage == MemoryUsage::Indirect)
+		if ((m_memoryUsage & MemoryUsage::Indirect) != MemoryUsage::Default)
 		{
 			info.usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 			info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -43,7 +44,7 @@ namespace Volt::RHI
 
 		VmaAllocationCreateFlags createFlags = 0;
 
-		if (m_memoryUsage == MemoryUsage::CPUToGPU)
+		if ((m_memoryUsage & MemoryUsage::CPUToGPU) != MemoryUsage::Default)
 		{
 			createFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 		}
@@ -53,6 +54,34 @@ namespace Volt::RHI
 	
 	void VulkanStorageBuffer::Resize(const uint32_t size)
 	{
+		Release();
+
+		const VkDeviceSize newSize = size * m_elementSize;
+
+		m_size = size;
+		m_byteSize = newSize;
+
+		VkBufferCreateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		info.size = newSize;
+		info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if ((m_memoryUsage & MemoryUsage::Indirect) != MemoryUsage::Default)
+		{
+			info.usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+			info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		}
+
+		VmaMemoryUsage usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+		if ((m_memoryUsage & MemoryUsage::CPUToGPU) != MemoryUsage::Default)
+		{
+			usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		}
+
+		VulkanAllocator allocator{};
+		m_allocation = allocator.AllocateBuffer(info, usage, m_buffer);
 	}
 	
 	const size_t VulkanStorageBuffer::GetByteSize() const
@@ -67,11 +96,17 @@ namespace Volt::RHI
 	
 	void VulkanStorageBuffer::Unmap()
 	{
+		VulkanAllocator allocator{};
+		allocator.UnmapMemory(m_allocation);
 	}
 
 	Ref<BufferView> VulkanStorageBuffer::GetView()
 	{
-		return Ref<BufferView>();
+		BufferViewSpecification spec{};
+		spec.bufferResource = As<StorageBuffer>();
+
+		Ref<BufferView> bufferView = BufferView::Create(spec);
+		return bufferView;
 	}
 
 	void VulkanStorageBuffer::SetName(std::string_view name)
@@ -88,11 +123,27 @@ namespace Volt::RHI
 	
 	void* VulkanStorageBuffer::GetHandleImpl()
 	{
-		return nullptr;
+		return m_buffer;
 	}
 	
 	void* VulkanStorageBuffer::MapInternal()
 	{
-		return nullptr;
+		VulkanAllocator allocator{};
+		return allocator.MapMemory<void*>(m_allocation);
+	}
+
+	void VulkanStorageBuffer::Release()
+	{
+		if (!m_buffer)
+		{
+			return;
+		}
+
+		// #TODO_Ivar: Move to destruction queue
+		VulkanAllocator allocator{};
+		allocator.DestroyBuffer(m_buffer, m_allocation);
+
+		m_buffer = nullptr;
+		m_allocation = nullptr;
 	}
 }

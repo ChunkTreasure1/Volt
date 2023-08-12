@@ -9,6 +9,8 @@
 
 #include <vector>
 #include <filesystem>
+#include <map>
+#include <set>
 
 namespace Volt::RHI
 {

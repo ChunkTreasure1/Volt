@@ -49,6 +49,8 @@ namespace Volt::RHI
 		void EndTimestamp(uint32_t timestampIndex) override;
 		const float GetExecutionTime(uint32_t timestampIndex) const override;
 
+		void CopyImageToBackBuffer(Ref<Image2D> srcImage) override;
+
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
 

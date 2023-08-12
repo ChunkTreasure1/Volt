@@ -127,6 +127,10 @@ namespace Volt::RHI
 		return 0.0f;
 	}
 
+	void D3D12CommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage)
+	{
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_isSwapchainTarget = swapchainTarget;

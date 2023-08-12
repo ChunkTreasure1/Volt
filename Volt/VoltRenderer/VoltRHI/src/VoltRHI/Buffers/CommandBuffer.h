@@ -15,6 +15,8 @@ namespace Volt::RHI
 
 	class DescriptorTable;
 
+	class Image2D;
+
 	class CommandBuffer : public RHIInterface
 	{
 	public:
@@ -47,6 +49,8 @@ namespace Volt::RHI
 		virtual const uint32_t BeginTimestamp() = 0;
 		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;
+
+		virtual void CopyImageToBackBuffer(Ref<Image2D> srcImage) = 0;
 
 		inline const QueueType GetQueueType() const { return m_queueType; }
 

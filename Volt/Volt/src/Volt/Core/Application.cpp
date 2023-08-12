@@ -37,22 +37,7 @@
 #include "Volt/Utility/Noise.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
-
-///////////////// TEMPORARY //////////////////
 #include <VoltRHI/Shader/ShaderCompiler.h>
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/ImageView.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-
-#include <VoltRHI/Buffers/VertexBuffer.h>
-#include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/ConstantBuffer.h>
-
-#include <VoltRHI/Descriptors/DescriptorTable.h>
-//////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
@@ -64,18 +49,18 @@
 
 namespace Volt
 {
-	static Ref<RHI::CommandBuffer> s_commandBuffer;
-	static Ref<RHI::Shader> s_shader;
-	static Ref<RHI::RenderPipeline> s_renderPipeline;
+	//static Ref<RHI::CommandBuffer> s_commandBuffer;
+	//static Ref<RHI::Shader> s_shader;
+	//static Ref<RHI::RenderPipeline> s_renderPipeline;
 
-	static Ref<RHI::Image2D> s_renderTarget;
-	static Ref<RHI::Image2D> s_image;
+	//static Ref<RHI::Image2D> s_renderTarget;
+	//static Ref<RHI::Image2D> s_image;
 
-	static Ref<RHI::VertexBuffer> s_vertexBuffer;
-	static Ref<RHI::IndexBuffer> s_indexBuffer;
+	//static Ref<RHI::VertexBuffer> s_vertexBuffer;
+	//static Ref<RHI::IndexBuffer> s_indexBuffer;
 
-	static Ref<RHI::DescriptorTable> s_descriptorTable;
-	static Ref<RHI::ConstantBuffer> s_constantBuffer;
+	//static Ref<RHI::DescriptorTable> s_descriptorTable;
+	//static Ref<RHI::ConstantBuffer> s_constantBuffer;
 
 	static Ref<Mesh> s_mesh;
 
@@ -124,7 +109,6 @@ namespace Volt
 		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
 
-		///// TEMPORARY /////
 		{
 			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
 			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
@@ -138,106 +122,7 @@ namespace Volt
 			};
 
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
-
-			s_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
-			s_shader = RHI::Shader::Create("SimpleTriangle",
-				{
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/ConstantBufferMesh_vs.hlsl",
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/ConstantBufferMesh_ps.hlsl"
-				}, true);
-
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = s_shader;
-			s_renderPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-
-			// Image
-			{
-				RHI::ImageSpecification imageSpec{};
-				imageSpec.width = 512;
-				imageSpec.height = 512;
-				imageSpec.usage = RHI::ImageUsage::Texture;
-				imageSpec.generateMips = false;
-
-				s_image = RHI::Image2D::Create(imageSpec);
-			}
-
-			// Constant buffer
-			{
-				const glm::mat4 projection = glm::perspective(glm::radians(60.f), 16.f / 9.f, 1000.f, 0.1f);
-				const glm::mat4 view = glm::lookAt(glm::vec3{ 0.f, 0.f, -200.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
-
-				glm::mat4 arr[2] = { projection, view };
-
-				s_constantBuffer = RHI::ConstantBuffer::Create(sizeof(glm::mat4) * 2, arr);
-			}
-
-			// Descriptor table
-			{
-				RHI::DescriptorTableSpecification descriptorTableSpec{};
-				descriptorTableSpec.shader = s_shader;
-				s_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
-				s_descriptorTable->SetBufferView(0, 0, s_constantBuffer->GetView());
-			}
-
-			// Render target
-			{
-				RHI::ImageSpecification imageSpec{};
-				imageSpec.width = 400;
-				imageSpec.height = 400;
-				imageSpec.usage = RHI::ImageUsage::Attachment;
-				imageSpec.generateMips = false;
-
-				s_renderTarget = RHI::Image2D::Create(imageSpec);
-			}
-
-			// Create quad buffers
-			{
-				// Vertex buffer
-				{
-					constexpr uint32_t VERTEX_COUNT = 4;
-
-					SpriteVertex* tempVertPtr = new SpriteVertex[VERTEX_COUNT];
-					tempVertPtr[0].position = { -0.5f, -0.5f, 0.f, 1.f };
-					tempVertPtr[1].position = { 0.5f, -0.5f, 0.f, 1.f };
-					tempVertPtr[2].position = { 0.5f,  0.5f, 0.f, 1.f };
-					tempVertPtr[3].position = { -0.5f,  0.5f, 0.f, 1.f };
-
-					tempVertPtr[0].texCoords = { 0.f, 1.f };
-					tempVertPtr[1].texCoords = { 1.f, 1.f };
-					tempVertPtr[2].texCoords = { 1.f, 0.f };
-					tempVertPtr[3].texCoords = { 0.f, 0.f };
-
-					tempVertPtr[0].color = { 1.f };
-					tempVertPtr[1].color = { 1.f };
-					tempVertPtr[2].color = { 1.f };
-					tempVertPtr[3].color = { 1.f };
-
-					s_vertexBuffer = RHI::VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * VERTEX_COUNT);
-					delete[] tempVertPtr;
-				}
-
-				// Index Buffer
-				{
-					constexpr uint32_t INDEX_COUNT = 6;
-
-					uint32_t* tempIndexPtr = new uint32_t[INDEX_COUNT];
-
-					tempIndexPtr[0] = 0;
-					tempIndexPtr[1] = 3;
-					tempIndexPtr[2] = 2;
-
-					tempIndexPtr[3] = 2;
-					tempIndexPtr[4] = 1;
-					tempIndexPtr[5] = 0;
-
-					s_indexBuffer = RHI::IndexBuffer::Create(tempIndexPtr, INDEX_COUNT);
-					delete[] tempIndexPtr;
-				}
-			}
-
-			s_mesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 		}
-		/////////////////////
 
 		//Renderer::Initialize();
 		//ShaderRegistry::Initialize();
@@ -365,70 +250,6 @@ namespace Volt
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
-
-				s_commandBuffer->Begin();
-
-				RHI::Rect2D scissor = { 0, 0, 400, 400 };
-				RHI::Viewport viewport{};
-				viewport.width = 400.f;
-				viewport.height = 400.f;
-				viewport.x = 0.f;
-				viewport.y = 0.f;
-				viewport.minDepth = 0.f;
-				viewport.maxDepth = 1.f;
-
-				s_commandBuffer->SetViewports({ viewport });
-				s_commandBuffer->SetScissors({ scissor });
-
-				// Render target barrier
-				{
-					RHI::ResourceBarrierInfo barrier{};
-					barrier.oldState = RHI::ResourceState::PixelShaderRead;
-					barrier.newState = RHI::ResourceState::RenderTarget;
-					barrier.resource = s_renderTarget;
-
-					s_commandBuffer->ResourceBarrier({ barrier });
-				}
-
-				RHI::AttachmentInfo attInfo{};
-				attInfo.view = s_renderTarget->GetView();
-				attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
-				attInfo.clearMode = RHI::ClearMode::Clear;
-
-				RHI::RenderingInfo renderingInfo{};
-				renderingInfo.colorAttachments = { attInfo };
-				renderingInfo.renderArea = scissor;
-
-				s_commandBuffer->BeginRendering(renderingInfo);
-
-				s_commandBuffer->BindPipeline(s_renderPipeline);
-				s_commandBuffer->BindIndexBuffer(s_mesh->GetIndexBuffer());
-				s_commandBuffer->BindVertexBuffers({ s_mesh->GetVertexBuffer() }, 0);
-
-				s_commandBuffer->BindDescriptorTable(s_descriptorTable);
-
-				glm::mat4 transform = glm::mat4{ 1.f };
-				auto constantsBuffer = s_shader->GetConstantsBuffer();
-				constantsBuffer.SetMemberData("transform", transform);
-
-				s_commandBuffer->PushConstants(constantsBuffer.GetBuffer(), static_cast<uint32_t>(constantsBuffer.GetSize()), 0);
-
-				s_commandBuffer->DrawIndexed(s_mesh->GetSubMeshes().at(0).indexCount, 1, 0, 0, 0);
-
-				s_commandBuffer->EndRendering();
-
-				// Shader Read barrier
-				{
-					RHI::ResourceBarrierInfo barrier{};
-					barrier.oldState = RHI::ResourceState::RenderTarget;
-					barrier.newState = RHI::ResourceState::PixelShaderRead;
-					barrier.resource = s_renderTarget;
-
-					s_commandBuffer->ResourceBarrier({ barrier });
-				}
-
-				s_commandBuffer->End();
-				s_commandBuffer->Execute();
 			}
 
 			if (m_info.enableImGui)
@@ -439,21 +260,6 @@ namespace Volt
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
-
-				if (ImGui::Begin("Test"))
-				{
-					ImTextureID texId = m_imguiImplementation->GetTextureID(s_renderTarget);
-					ImGui::Image(texId, ImGui::GetContentRegionAvail());
-
-					ImGui::End();
-				}
-
-				if (ImGui::Begin("Performance"))
-				{
-					ImGui::Text("GPU Time: %f ms", s_commandBuffer->GetExecutionTime(0));
-
-					ImGui::End();
-				}
 
 				m_imguiImplementation->End();
 			}

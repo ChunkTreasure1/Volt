@@ -2,6 +2,7 @@
 #include "VoltRHI/Core/Core.h"
 
 #include <array>
+#include <functional>
 
 namespace Volt::RHI
 {

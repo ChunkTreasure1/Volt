@@ -33,6 +33,7 @@ namespace Volt::RHI
 	private:
 		void Release();
 
+		size_t m_elementSize = 0;
 		size_t m_byteSize = 0;
 		uint32_t m_size = 0;
 
