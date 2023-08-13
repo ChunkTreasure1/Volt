@@ -18,6 +18,7 @@ namespace Volt::RHI
 		virtual const uint32_t GetSize() const = 0;
 
 		virtual void Unmap() = 0;
+		virtual void SetData(const void* data, const size_t size) = 0;
 
 		virtual Ref<BufferView> GetView() = 0;
 

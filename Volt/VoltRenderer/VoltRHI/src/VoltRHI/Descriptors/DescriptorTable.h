@@ -16,8 +16,8 @@ namespace Volt::RHI
 	class DescriptorTable : public RHIInterface
 	{
 	public:
-		virtual void SetImageView(uint32_t set, uint32_t binding, Ref<ImageView> imageView) = 0;
-		virtual void SetBufferView(uint32_t set, uint32_t binding, Ref<BufferView> bufferView) = 0;
+		virtual void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
+		virtual void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 
 		static Ref<DescriptorTable> Create(const DescriptorTableSpecification& specification);
 

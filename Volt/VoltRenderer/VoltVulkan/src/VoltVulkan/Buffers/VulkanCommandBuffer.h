@@ -49,6 +49,8 @@ namespace Volt::RHI
 		void CopyImageToBackBuffer(Ref<Image2D> srcImage) override;
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 
+		void CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size) override;
+
 		VkFence_T* GetCurrentFence() const;
 
 	protected:

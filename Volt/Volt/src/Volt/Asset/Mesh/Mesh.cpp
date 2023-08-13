@@ -7,6 +7,7 @@
 
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
+#include <VoltRHI/Buffers/StorageBuffer.h>
 
 #include <meshoptimizer/meshoptimizer.h>
 
@@ -227,6 +228,10 @@ namespace Volt
 		m_vertexBuffer = RHI::VertexBuffer::Create(encodedVertices.data(), uint32_t(encodedVertices.size() * sizeof(EncodedVertex)));
 		m_indexBuffer = RHI::IndexBuffer::Create(m_indices.data(), uint32_t(m_indices.size()));
 
+		const auto vertexPositions = GetVertexPositions();
+		m_vertexPositionsBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3));
+		m_vertexPositionsBuffer->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
+
 		for (auto& subMesh : m_subMeshes)
 		{
 			glm::vec3 t, r, s;
@@ -356,6 +361,19 @@ namespace Volt
 			{
 				indices.emplace_back(m_indices.at(i + subMesh.indexStartOffset));
 			}
+		}
+
+		return result;
+	}
+
+	const std::vector<glm::vec3> Mesh::GetVertexPositions()
+	{
+		std::vector<glm::vec3> result{};
+		result.reserve(m_vertices.size());
+
+		for (const auto& vertex : m_vertices)
+		{
+			result.emplace_back(vertex.position);
 		}
 
 		return result;

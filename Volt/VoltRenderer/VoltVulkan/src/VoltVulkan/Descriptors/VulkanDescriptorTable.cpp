@@ -27,31 +27,47 @@ namespace Volt::RHI
 		Release();
 	}
 
-	void VulkanDescriptorTable::SetImageView(uint32_t set, uint32_t binding, Ref<ImageView> imageView)
+	void VulkanDescriptorTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
-		m_imageInfos[set][binding].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		m_imageInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			auto& description = m_imageInfos[set][binding].at(i);
+			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
 			description.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // #TODO_Ivar: set to correct layout
 			description.imageView = imageView->GetHandle<VkImageView>();
 			description.sampler = nullptr;
 
-			m_writeDescriptors.at(i).at(m_writeDescriptorsMapping.at(set).at(binding)).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+			// Mapping for write descriptor does not exist
+			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
+			{
+				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
+				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
+				writeDescriptorCopy.dstArrayElement = arrayIndex;
+				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+
+				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
+			}
+			else
+			{
+				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
+				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+			}
 		}
 	}
 
-	void VulkanDescriptorTable::SetBufferView(uint32_t set, uint32_t binding, Ref<BufferView> bufferView)
+	void VulkanDescriptorTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		VulkanBufferView& vkBufferView = bufferView->AsRef<VulkanBufferView>();
 		auto resource = vkBufferView.GetResource();
 
+		m_bufferInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 		const auto type = resource->GetType();
 
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			auto& description = m_bufferInfos[set][binding].at(i);
+			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
 			description.buffer = bufferView->GetHandle<VkBuffer>();
 
 			if (type == ResourceType::StorageBuffer)
@@ -59,7 +75,22 @@ namespace Volt::RHI
 				description.range = resource->AsRef<VulkanStorageBuffer>().GetByteSize();
 			}
 
-			m_writeDescriptors.at(i).at(m_writeDescriptorsMapping.at(set).at(binding)).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+			// Mapping for write descriptor does not exist
+			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
+			{
+				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
+				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
+				writeDescriptorCopy.dstArrayElement = arrayIndex;
+				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+
+ 				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
+			}
+			else
+			{
+				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
+				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+			}
 		}
 	}
 
@@ -70,7 +101,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		const auto& writeDescriptors = m_writeDescriptors.at(index);
+		const auto& writeDescriptors = m_activeWriteDescriptors.at(index);
 
 		auto device = GraphicsContext::GetDevice();
 		const VkWriteDescriptorSet* writeDescriptorsPtr = reinterpret_cast<const VkWriteDescriptorSet*>(writeDescriptors.data());
@@ -108,7 +139,7 @@ namespace Volt::RHI
 
 		VkDescriptorPoolCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		info.flags = 0;
+		info.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		info.maxSets = m_maxTotalDescriptorCount;
 		info.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		info.pPoolSizes = poolSizes.data();
@@ -164,6 +195,7 @@ namespace Volt::RHI
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			m_writeDescriptors.emplace_back();
+			m_activeWriteDescriptors.emplace_back();
 
 			for (const auto& [set, bindings] : resources.constantBuffers)
 			{
@@ -178,7 +210,7 @@ namespace Volt::RHI
 					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 					writeDescriptor.dstSet = m_descriptorSets[set][i];
 
-					m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
+					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
 				}
 			}
 
@@ -189,13 +221,13 @@ namespace Volt::RHI
 					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
 					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
 					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = data.arraySize;
+					writeDescriptor.descriptorCount = 1;
 					writeDescriptor.dstArrayElement = 0;
 					writeDescriptor.dstBinding = binding;
 					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 					writeDescriptor.dstSet = m_descriptorSets[set][i];
 
-					m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
+					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
 				}
 			}
 
@@ -206,13 +238,13 @@ namespace Volt::RHI
 					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
 					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
 					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = data.arraySize;
+					writeDescriptor.descriptorCount = 1;
 					writeDescriptor.dstArrayElement = 0;
 					writeDescriptor.dstBinding = binding;
 					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 					writeDescriptor.dstSet = m_descriptorSets[set][i];
 
-					m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
+					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
 				}
 			}
 
@@ -223,13 +255,13 @@ namespace Volt::RHI
 					auto& writeDescriptor = m_writeDescriptors[i].emplace_back();
 					writeDescriptor.sType = static_cast<VkStructureType>(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
 					writeDescriptor.pNext = nullptr;
-					writeDescriptor.descriptorCount = data.arraySize;
+					writeDescriptor.descriptorCount = 1;
 					writeDescriptor.dstArrayElement = 0;
 					writeDescriptor.dstBinding = binding;
 					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
 					writeDescriptor.dstSet = m_descriptorSets[set][i];
 
-					m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
+					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
 				}
 			}
 
@@ -246,7 +278,7 @@ namespace Volt::RHI
 					writeDescriptor.descriptorType = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLER);
 					writeDescriptor.dstSet = m_descriptorSets[set][i];
 
-					m_writeDescriptorsMapping[set][binding] = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
+					m_writeDescriptorsMapping[set][binding].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.at(i).size() - 1);
 				}
 			}
 		}
@@ -262,13 +294,13 @@ namespace Volt::RHI
 			{
 				if (!m_bufferInfos[set].contains(binding))
 				{
-					m_bufferInfos[set][binding].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+					m_bufferInfos[set][binding][0].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 				}
 
 				for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 				{
-					m_bufferInfos[set][binding][i].offset = 0;
-					m_bufferInfos[set][binding][i].range = info.size;
+					m_bufferInfos[set][binding][0][i].offset = 0;
+					m_bufferInfos[set][binding][0][i].range = info.size;
 				}
 			}
 		}
@@ -279,13 +311,13 @@ namespace Volt::RHI
 			{
 				if (!m_bufferInfos[set].contains(binding))
 				{
-					m_bufferInfos[set][binding].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+					m_bufferInfos[set][binding][0].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 				}
 
 				for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 				{
-					m_bufferInfos[set][binding][i].offset = 0;
-					m_bufferInfos[set][binding][i].range = info.size;
+					m_bufferInfos[set][binding][0][i].offset = 0;
+					m_bufferInfos[set][binding][0][i].range = info.size;
 				}
 			}
 		}

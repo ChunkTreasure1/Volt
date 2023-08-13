@@ -46,8 +46,8 @@ namespace Volt::RHI
 		VulkanDescriptorTable(const DescriptorTableSpecification& specification);
 		~VulkanDescriptorTable() override;
 
-		void SetImageView(uint32_t set, uint32_t binding, Ref<ImageView> imageView) override;
-		void SetBufferView(uint32_t set, uint32_t binding, Ref<BufferView> bufferView) override;
+		void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
+		void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;
 
 		void Update(const uint32_t index);
 
@@ -68,12 +68,15 @@ namespace Volt::RHI
 
 		std::map<uint32_t, std::vector<VkDescriptorSet_T*>> m_descriptorSets{};
 		std::vector<VkDescriptorPool_T*> m_descriptorPools;
+
 		std::vector<std::vector<WriteDescriptor>> m_writeDescriptors;
+		std::vector<std::vector<WriteDescriptor>> m_activeWriteDescriptors;
 
-		std::map<uint32_t, std::map<uint32_t, std::vector<DescriptorImageInfo>>> m_imageInfos;
-		std::map<uint32_t, std::map<uint32_t, std::vector<DescriptorBufferInfo>>> m_bufferInfos;
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, std::vector<DescriptorImageInfo>>>> m_imageInfos; // Set -> Binding -> Array Index -> Frames
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, std::vector<DescriptorBufferInfo>>>> m_bufferInfos; // Set -> Binding -> Array Index -> Frames
 
-		std::map<uint32_t, std::map<uint32_t, uint32_t>> m_writeDescriptorsMapping;
+		std::map<uint32_t, std::map<uint32_t, std::vector<uint32_t>>> m_writeDescriptorsMapping; // Set -> Binding -> Array Index -> Frames
+		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, std::vector<uint32_t>>>> m_activeWriteDescriptorsMapping; // Set -> Binding -> Array Index -> Frames
 
 		std::vector<bool> m_isDirty;
 	};

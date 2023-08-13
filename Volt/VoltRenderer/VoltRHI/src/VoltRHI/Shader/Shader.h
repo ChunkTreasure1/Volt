@@ -94,19 +94,19 @@ namespace Volt::RHI
 	{
 		ShaderStage usageStages;
 		size_t size = 0;
-		uint32_t arraySize = 1;
+		int32_t arraySize = 1; // -1 Means unsized array
 	};
 
 	struct ShaderStorageImage
 	{
 		ShaderStage usageStages;
-		uint32_t arraySize = 1;
+		int32_t arraySize = 1; // -1 Means unsized array
 	};
 
 	struct ShaderImage
 	{
 		ShaderStage usageStages;
-		uint32_t arraySize = 1;
+		int32_t arraySize = 1; // -1 Means unsized array
 	};
 
 	struct ShaderSampler

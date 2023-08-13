@@ -51,5 +51,8 @@ private:
 	Ref<Volt::RHI::StorageBuffer> m_indirectCommandsBuffer;
 	Ref<Volt::RHI::StorageBuffer> m_transformsBuffer;
 
-	Ref<Volt::Mesh> m_mesh;
+	Ref<Volt::Mesh> m_cubeMesh;
+	Ref<Volt::Mesh> m_sphereMesh;
+
+	uint32_t m_currentMesh = 0;
 };

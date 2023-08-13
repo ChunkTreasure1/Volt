@@ -13,4 +13,8 @@ namespace VulkanDefaults
 	constexpr uint32_t ShaderBRegisterOffset = 0;
 	constexpr uint32_t ShaderTRegisterOffset = 100;
 	constexpr uint32_t ShaderURegisterOffset = 200;
+
+	constexpr uint32_t STORAGE_BUFFER_BINDLESS_TABLE_SIZE = 1024;
+	constexpr uint32_t STORAGE_IMAGE_BINDLESS_TABLE_SIZE = 1024;
+	constexpr uint32_t IMAGE_BINDLESS_TABLE_SIZE = 1024;
 };

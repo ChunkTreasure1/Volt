@@ -30,7 +30,8 @@ using namespace Volt;
 
 void TestingLayer::OnAttach()
 {
-	m_mesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+	m_cubeMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+	m_sphereMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 
 #ifdef SWAPCHAIN_TARGET
 	m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, true);
@@ -40,8 +41,8 @@ void TestingLayer::OnAttach()
 
 	m_shader = RHI::Shader::Create("SimpleTriangle",
 	{
-		Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirect_vs.hlsl",
-		Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirect_ps.hlsl"
+		Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirectPulling_vs.hlsl",
+		Volt::ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/MeshIndirectPulling_ps.hlsl"
 	}, true);
 
 	RHI::RenderPipelineCreateInfo pipelineInfo{};
@@ -90,7 +91,7 @@ void TestingLayer::OnAttach()
 
 
 		auto indirectCommandsBuffer = m_indirectCommandsBuffer->Map<RHI::IndirectIndexedCommand>();
-		indirectCommandsBuffer[0].indexCount = m_mesh->GetSubMeshes().at(0).indexCount;
+		indirectCommandsBuffer[0].indexCount = m_cubeMesh->GetSubMeshes().at(0).indexCount;
 		indirectCommandsBuffer[0].instanceCount = 100 * 100 * 100;
 		indirectCommandsBuffer[0].firstIndex = 0;
 		indirectCommandsBuffer[0].vertexOffset = 0;
@@ -104,8 +105,12 @@ void TestingLayer::OnAttach()
 		RHI::DescriptorTableSpecification descriptorTableSpec{};
 		descriptorTableSpec.shader = m_shader;
 		m_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
-		m_descriptorTable->SetBufferView(0, 0, m_constantBuffer->GetView());
-		m_descriptorTable->SetBufferView(0, 1, m_transformsBuffer->GetView());
+		m_descriptorTable->SetBufferView(m_constantBuffer->GetView(), 0, 0);
+		m_descriptorTable->SetBufferView(m_transformsBuffer->GetView(), 0, 1);
+
+		m_descriptorTable->SetBufferView(m_cubeMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 0);
+		m_descriptorTable->SetBufferView(m_sphereMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 1);
+	
 	}
 }
 
@@ -163,10 +168,14 @@ bool TestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	m_commandBuffer->BeginRendering(renderingInfo);
 
 	m_commandBuffer->BindPipeline(m_renderPipeline);
-	m_commandBuffer->BindIndexBuffer(m_mesh->GetIndexBuffer());
-	m_commandBuffer->BindVertexBuffers({ m_mesh->GetVertexBuffer() }, 0);
+	m_commandBuffer->BindIndexBuffer(m_cubeMesh->GetIndexBuffer());
+	//m_commandBuffer->BindVertexBuffers({ m_mesh->GetVertexBuffer() }, 0);
 	m_commandBuffer->BindDescriptorTable(m_descriptorTable);
 
+	RHI::ShaderDataBuffer pushConstantBuffer = m_shader->GetConstantsBuffer();
+	pushConstantBuffer.SetMemberData("vertexBufferIndex", 0);
+
+	m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
 	m_commandBuffer->DrawIndexedIndirect(m_indirectCommandsBuffer, 0, 1, sizeof(RHI::IndirectIndexedCommand));
 
 	m_commandBuffer->EndRendering();

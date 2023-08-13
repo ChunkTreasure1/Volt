@@ -139,6 +139,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size)
+	{
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_isSwapchainTarget = swapchainTarget;

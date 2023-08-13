@@ -45,7 +45,7 @@ namespace Volt::RHI
 
 		struct Specification
 		{
-			OptimizationLevel optimizationLevel;
+			OptimizationLevel optimizationLevel = OptimizationLevel::Full;
 		
 			std::string entryPoint = "main";
 			bool forceCompile = false;

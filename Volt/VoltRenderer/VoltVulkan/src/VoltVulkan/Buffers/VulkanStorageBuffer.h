@@ -20,6 +20,7 @@ namespace Volt::RHI
 		const uint32_t GetSize() const override;
 
 		void Unmap() override;
+		void SetData(const void* data, const size_t size) override;
 
 		Ref<BufferView> GetView() override;
 
@@ -31,6 +32,7 @@ namespace Volt::RHI
 		void* MapInternal() override;
 
 	private:
+		void Invalidate(const size_t byteSize);
 		void Release();
 
 		size_t m_elementSize = 0;

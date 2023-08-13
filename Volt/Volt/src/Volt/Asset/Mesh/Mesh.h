@@ -14,6 +14,8 @@ namespace Volt
 	{
 		class VertexBuffer;
 		class IndexBuffer;
+
+		class StorageBuffer;
 	}
 
 	class Material;
@@ -48,6 +50,7 @@ namespace Volt
 
 		inline Ref<RHI::VertexBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
 		inline Ref<RHI::IndexBuffer> GetIndexBuffer() const { return m_indexBuffer; }
+		inline Ref<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -55,6 +58,8 @@ namespace Volt
 	private:
 		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
 		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
+
+		const std::vector<glm::vec3> GetVertexPositions();
 
 		friend class FbxImporter;
 		friend class MeshCompiler;
@@ -70,6 +75,8 @@ namespace Volt
 		Ref<Material> m_material;
 		Ref<RHI::VertexBuffer> m_vertexBuffer;
 		Ref<RHI::IndexBuffer> m_indexBuffer;
+
+		Ref<RHI::StorageBuffer> m_vertexPositionsBuffer;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;

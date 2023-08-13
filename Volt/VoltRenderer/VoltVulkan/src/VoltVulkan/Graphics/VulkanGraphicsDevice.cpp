@@ -36,11 +36,18 @@ namespace Volt::RHI
 			result.vulkan12Features.samplerFilterMinmax = VK_TRUE;
 			result.vulkan12Features.hostQueryReset = VK_TRUE;
 			result.vulkan12Features.runtimeDescriptorArray = VK_TRUE;
+
 			result.vulkan12Features.descriptorIndexing = VK_TRUE;
 			result.vulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
 			result.vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+			result.vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+			result.vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
 			result.vulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+			
 			result.vulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+			result.vulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+			result.vulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+
 			result.vulkan12Features.bufferDeviceAddress = VK_TRUE;
 
 			result.vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;

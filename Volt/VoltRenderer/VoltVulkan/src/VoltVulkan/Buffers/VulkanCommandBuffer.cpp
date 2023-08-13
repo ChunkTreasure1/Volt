@@ -697,6 +697,18 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanCommandBuffer::CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		VkBufferCopy copy{};
+		copy.srcOffset = srcOffset;
+		copy.dstOffset = dstOffset;
+		copy.size = size;
+
+		vkCmdCopyBuffer(m_commandBuffers.at(index).commandBuffer, srcResource->GetHandle<VkBuffer>(), dstResource->GetHandle<VkBuffer>(), 1, &copy);
+	}
+
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const
 	{
 		return m_commandBuffers.at(m_currentCommandBufferIndex).fence;

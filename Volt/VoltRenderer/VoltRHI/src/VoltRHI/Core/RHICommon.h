@@ -427,8 +427,9 @@ namespace Volt::RHI
 	enum class MemoryUsage : uint32_t
 	{
 		Default = 0,
-		CPUToGPU,
-		Indirect
+		CPUToGPU = BIT(0),
+		Indirect = BIT(1),
+		Staging = BIT(2)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(MemoryUsage);
@@ -472,13 +473,13 @@ namespace Volt::RHI
 
 	enum class ResourceState
 	{
-		RenderTarget = BIT(0),
-		DepthWrite = BIT(1),
-		DepthRead = BIT(2),
-		Present = BIT(3),
+		RenderTarget = 0,
+		DepthWrite = BIT(0),
+		DepthRead = BIT(1),
+		Present = BIT(2),
 
-		PixelShaderRead = BIT(4),
-		NonPixelShaderRead = BIT(5)
+		PixelShaderRead = BIT(3),
+		NonPixelShaderRead = BIT(4)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ResourceState);

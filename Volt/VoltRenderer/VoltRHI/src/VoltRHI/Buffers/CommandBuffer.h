@@ -55,6 +55,8 @@ namespace Volt::RHI
 		virtual void CopyImageToBackBuffer(Ref<Image2D> srcImage) = 0;
 		virtual void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) = 0;
 
+		virtual void CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size) = 0;
+
 		inline const QueueType GetQueueType() const { return m_queueType; }
 
 		static Ref<CommandBuffer> Create(const uint32_t count, QueueType queueType = QueueType::Graphics, bool swapchainTarget = false);

@@ -283,6 +283,12 @@ namespace Volt::RHI
 			}
 		}
 
+		// There are no vertex inputs
+		if (inputStruct.empty())
+		{
+			return true;
+		}
+
 		const size_t inputStructLoc = processedSource.find("struct " + inputStruct);
 		const size_t openBracketLoc = processedSource.find_first_of('{', inputStructLoc);
 		const size_t closeBracketLoc = processedSource.find("};", inputStructLoc);
