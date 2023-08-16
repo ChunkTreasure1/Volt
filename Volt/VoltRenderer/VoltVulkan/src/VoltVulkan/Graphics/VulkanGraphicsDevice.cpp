@@ -6,8 +6,8 @@
 
 #include "VoltVulkan/Common/VulkanCommon.h"	
 
-
 #include <vulkan/vulkan.h>
+#include <optick.h>
 
 namespace Volt::RHI
 {
@@ -29,18 +29,25 @@ namespace Volt::RHI
 			result.vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
 			result.vulkan11Features.pNext = nullptr;
 			result.vulkan11Features.shaderDrawParameters = VK_TRUE;
-		
+
 			result.vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 			result.vulkan12Features.pNext = &result.vulkan11Features;
 			result.vulkan12Features.drawIndirectCount = VK_TRUE;
 			result.vulkan12Features.samplerFilterMinmax = VK_TRUE;
 			result.vulkan12Features.hostQueryReset = VK_TRUE;
 			result.vulkan12Features.runtimeDescriptorArray = VK_TRUE;
+
 			result.vulkan12Features.descriptorIndexing = VK_TRUE;
 			result.vulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
 			result.vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+			result.vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+			result.vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
 			result.vulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+			
 			result.vulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+			result.vulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+			result.vulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+
 			result.vulkan12Features.bufferDeviceAddress = VK_TRUE;
 
 			result.vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -135,6 +142,18 @@ namespace Volt::RHI
 		m_deviceQueues[QueueType::Graphics] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
 		m_deviceQueues[QueueType::TransferCopy] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
 		m_deviceQueues[QueueType::Compute] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
+
+#ifdef VT_ENABLE_GPU_PROFILING
+		{
+			VkPhysicalDevice physicalDevice = m_physicalDevice.lock()->GetHandle<VkPhysicalDevice>();
+			VkQueue graphicsQueue = m_deviceQueues[QueueType::Graphics]->GetHandle<VkQueue>();
+
+			uint32_t graphicsFamily = static_cast<uint32_t>(queueFamilies.graphicsFamilyQueueIndex);
+
+			OPTICK_GPU_INIT_VULKAN(&m_device, &physicalDevice, &graphicsQueue, &graphicsFamily, 1, nullptr);
+		}
+#endif
+
 	}
 
 	VulkanGraphicsDevice::~VulkanGraphicsDevice()

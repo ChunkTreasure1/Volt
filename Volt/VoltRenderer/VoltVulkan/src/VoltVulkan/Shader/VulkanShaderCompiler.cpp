@@ -3,6 +3,7 @@
 
 #include "VoltVulkan/Shader/VulkanShader.h"
 #include "VoltVulkan/Shader/HLSLIncluder.h"
+#include "VoltVulkan/Common/VulkanCommon.h"
 
 #include <VoltRHI/Shader/ShaderUtility.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
@@ -152,6 +153,20 @@ namespace Volt::RHI
 			L"-fvk-support-nonzero-base-instance",
 			L"-HV",
 			L"2021",
+			//L"-fvk-t-shift", std::to_wstring(VulkanDefaults::ShaderTRegisterOffset), L"0",
+			//L"-fvk-u-shift", std::to_wstring(VulkanDefaults::ShaderURegisterOffset), L"0",
+
+			//L"-fvk-b-shift 100 1",
+			//L"-fvk-t-shift 200 1",
+			//L"-fvk-u-shift 300 1",
+
+			//L"-fvk-b-shift 100 2",
+			//L"-fvk-t-shift 200 2",
+			//L"-fvk-u-shift 300 2",
+
+			//L"-fvk-b-shift 100 3",
+			//L"-fvk-t-shift 200 3",
+			//L"-fvk-u-shift 300 3",
 
 			DXC_ARG_PACK_MATRIX_COLUMN_MAJOR
 		};

@@ -5,6 +5,8 @@
 #define BUILTIN_VARIABLE(builtInName, type, name) [[vk::builtin(builtInName)]] type name : name
 #define CONSTANT(type, name, defaultValue, loc) [[vk::constant_id(loc)]] const type name = defaultValue
 
+#define PUSH_CONSTANT(type, name) [[vk::push_constant]] type name
+
 //// Set Defines /////
 #define SPACE_TEXTURES space0
 #define SPACE_MAINBUFFERS space1

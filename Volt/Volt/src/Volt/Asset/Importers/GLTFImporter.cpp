@@ -47,13 +47,13 @@ namespace Volt
 		}
 
 		Ref<Mesh> mesh = CreateRef<Mesh>();
-		mesh->myMaterial = CreateRef<Material>();
-		mesh->myMaterial->myName = path.stem().string() + "_mat";
+		mesh->m_material = CreateRef<Material>();
+		mesh->m_material->myName = path.stem().string() + "_mat";
 
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			mesh->myMaterial->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderRegistry::GetShader("Illum"));
+			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderRegistry::GetShader("Illum"));
 			index++;
 		}
 
@@ -104,8 +104,8 @@ namespace Volt
 
 			for (const tinygltf::Primitive& gltfPrimitive : mesh.primitives)
 			{
-				uint32_t firstIndex = (uint32_t)outMesh->myIndices.size();
-				uint32_t firstVertex = (uint32_t)outMesh->myVertices.size();
+				uint32_t firstIndex = (uint32_t)outMesh->m_indices.size();
+				uint32_t firstVertex = (uint32_t)outMesh->m_vertices.size();
 				uint32_t indexCount = 0;
 				size_t vertexCount = 0;
 
@@ -163,7 +163,7 @@ namespace Volt
 
 						vert.tangent = glm::vec3(tangent.x, tangent.y, tangent.z);
 
-						outMesh->myVertices.emplace_back(vert);
+						outMesh->m_vertices.emplace_back(vert);
 					}
 				}
 
@@ -182,7 +182,7 @@ namespace Volt
 							const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh->m_indices.emplace_back(buf[index]);
 							}
 
 							break;
@@ -193,7 +193,7 @@ namespace Volt
 							const int16_t* buf = reinterpret_cast<const int16_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh->m_indices.emplace_back(buf[index]);
 							}
 							break;
 						}
@@ -203,7 +203,7 @@ namespace Volt
 							const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh->m_indices.emplace_back(buf[index]);
 							}
 							break;
 						}
@@ -213,7 +213,7 @@ namespace Volt
 							const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh->m_indices.emplace_back(buf[index]);
 							}
 							break;
 						}
@@ -224,7 +224,7 @@ namespace Volt
 					}
 				}
 
-				auto& subMesh = outMesh->mySubMeshes.emplace_back();
+				auto& subMesh = outMesh->m_subMeshes.emplace_back();
 				subMesh.indexCount = indexCount;
 				subMesh.vertexCount = (uint32_t)vertexCount;
 				subMesh.indexStartOffset = firstIndex;
@@ -233,9 +233,9 @@ namespace Volt
 				subMesh.transform = node.transform;
 				subMesh.GenerateHash();
 
-				if (!outMesh->myMaterial->mySubMaterials.contains(subMesh.materialIndex))
+				if (!outMesh->m_material->mySubMaterials.contains(subMesh.materialIndex))
 				{
-					outMesh->myMaterial->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderRegistry::GetShader("Deferred"));
+					outMesh->m_material->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderRegistry::GetShader("Deferred"));
 				}
 			}
 		}

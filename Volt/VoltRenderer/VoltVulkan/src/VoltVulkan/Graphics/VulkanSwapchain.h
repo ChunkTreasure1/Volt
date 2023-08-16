@@ -46,6 +46,7 @@ namespace Volt::RHI
 		inline VkCommandBuffer_T* GetCommandBuffer(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandBuffer; }
 		inline VkCommandPool_T* GetCommandPool(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandPool; }
 		inline VkFence_T* GetFence(const uint32_t index) const { return m_perFrameInFlightData.at(index).fence; }
+		inline VkImage_T* GetCurrentImage() const { return m_perImageData.at(m_currentImage).image; }
 
 		VkFramebuffer_T* GetCurrentFramebuffer() const;
 

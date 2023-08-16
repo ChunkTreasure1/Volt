@@ -17,3 +17,4 @@
 #include <filesystem>
 
 #include <future>
+#include <cassert>

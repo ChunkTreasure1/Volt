@@ -6,8 +6,6 @@
 #include "Volt/Core/Graphics/GraphicsContextVolt.h"
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
-#include "Volt/Rendering/Buffer/VertexBuffer.h"
-#include "Volt/Rendering/Buffer/IndexBuffer.h"
 #include "Volt/Rendering/Buffer/GenericBuffer.h"
 #include "Volt/Rendering/Renderer.h"
 
@@ -105,8 +103,8 @@ namespace Volt
 		VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
 		VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
 
-		vertexBufferDeviceAddress.deviceAddress = mesh->GetVertexBuffer()->GetDeviceAddress();
-		indexBufferDeviceAddress.deviceAddress = mesh->GetIndexBuffer()->GetDeviceAddress();
+		//vertexBufferDeviceAddress.deviceAddress = mesh->GetVertexBuffer()->GetDeviceAddress();
+		//indexBufferDeviceAddress.deviceAddress = mesh->GetIndexBuffer()->GetDeviceAddress();
 
 		//const uint32_t triangleCount = static_cast<uint32_t>(mesh->GetIndices().size()) / 3;
 		const uint32_t vertexCount = static_cast<uint32_t>(mesh->GetVertices().size());

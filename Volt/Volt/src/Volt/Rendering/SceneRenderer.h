@@ -18,6 +18,13 @@
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class IndexBuffer;
+	}
+
+	class VertexBufferSet;
+
 	class Mesh;
 	class Scene;
 	class Material;
@@ -32,8 +39,6 @@ namespace Volt
 	class RayTracedSceneRenderer;
 
 	class GlobalDescriptorSet;
-	class VertexBufferSet;
-	class IndexBuffer;
 
 	class PostProcessingStack;
 
@@ -262,7 +267,7 @@ namespace Volt
 			inline static constexpr uint32_t MAX_INDICES = MAX_QUADS * 6;
 
 			Ref<VertexBufferSet> vertexBuffer;
-			Ref<IndexBuffer> indexBuffer;
+			Ref<RHI::IndexBuffer> indexBuffer;
 			Ref<RenderPipeline> renderPipeline;
 
 			glm::vec4 vertices[4];

@@ -254,9 +254,9 @@ struct DefaultFullscreenTriangleVertex
 
 struct DefaultQuadVertex
 {
-    STAGE_VARIABLE(float4, position, POSITION, 0);
-    STAGE_VARIABLE(float4, color, COLOR, 1);
-    STAGE_VARIABLE(float2, texCoords, TEXCOORDS, 2);
+    float4 position : POSITION;
+    float4 color : COLOR;
+    float2 texCoords : TEXCOORDS;
 };
 
 struct DefaultParticleVertex

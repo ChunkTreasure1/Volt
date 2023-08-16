@@ -44,6 +44,7 @@ project "VoltD3D12"
 		"../VoltD3D12/vendor/dxc/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.Optick}",
 	}
 
 	defines

@@ -3,7 +3,6 @@
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
-#include <VoltMock/Graphics/MockSwapchain.h>
 #include <VoltVulkan/Graphics/VulkanSwapchain.h>
 #include <VoltD3D12/Graphics/D3D12Swapchain.h>
 
@@ -20,7 +19,6 @@ namespace Volt::RHI
 				break;
 
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanSwapchain>(window); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockSwapchain>(window); break;
 		}
 
 		return nullptr;

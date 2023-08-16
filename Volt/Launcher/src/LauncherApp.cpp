@@ -1,5 +1,5 @@
 #include "Launcher/GameLayer.h"
-#include "Launcher/FinalLayer.h"
+#include "Launcher/TestingLayer.h"
 
 #include <Volt/EntryPoint.h>
 #include <Volt/Core/Application.h>
@@ -15,10 +15,8 @@ public:
 	LauncherApp(const Volt::ApplicationInfo& appInfo)
 		: Volt::Application(appInfo)
 	{
-		GameLayer* game = new GameLayer();
-		PushLayer(game);
-
-		game->LoadStartScene();
+		TestingLayer* testing = new TestingLayer();
+		PushLayer(testing);
 	}
 
 	static void LoadWindowSettings(Volt::ApplicationInfo& info);
@@ -28,18 +26,18 @@ private:
 Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 {
 	Volt::ApplicationInfo info{};
-	info.enableImGui = false;
+	info.enableImGui = true;
 	info.width = 1600;
 	info.height = 900;
-	info.windowMode = WindowMode::Borderless;
+	info.windowMode = WindowMode::Windowed;
 	info.title = "Vipertrace";
 	info.cursorPath = "Assets/UI/Sprites/cursor.dds";
 	info.iconPath = "Assets/UI/Sprites/GUI/GUI_pebbles.dds";
 	info.isRuntime = true;
 	info.projectPath = appPath;
 	info.enableSteam = true;
+	info.useVSync = false;
 
-	LauncherApp::LoadWindowSettings(info);
 	return new LauncherApp(info);
 }
 

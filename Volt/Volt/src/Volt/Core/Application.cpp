@@ -13,7 +13,6 @@
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Core/Layer/Layer.h"
-#include "Volt/ImGui/ImGuiImplementation.h"
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/Rendering/UIRenderer.h"
@@ -38,16 +37,7 @@
 #include "Volt/Utility/Noise.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
-
-///////////////// TEMPORARY //////////////////
 #include <VoltRHI/Shader/ShaderCompiler.h>
-#include <VoltRHI/Shader/Shader.h>
-#include <VoltRHI/Pipelines/RenderPipeline.h>
-
-#include <VoltRHI/Images/Image2D.h>
-#include <VoltRHI/Images/ImageView.h>
-#include <VoltRHI/Buffers/CommandBuffer.h>
-//////////////////////////////////////////////
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
@@ -59,10 +49,20 @@
 
 namespace Volt
 {
-	static Ref<RHI::CommandBuffer> s_commandBuffer;
-	static Ref<RHI::Image2D> s_renderTarget;
-	static Ref<RHI::Shader> s_shader;
-	static Ref<RHI::RenderPipeline> s_renderPipeline;
+	//static Ref<RHI::CommandBuffer> s_commandBuffer;
+	//static Ref<RHI::Shader> s_shader;
+	//static Ref<RHI::RenderPipeline> s_renderPipeline;
+
+	//static Ref<RHI::Image2D> s_renderTarget;
+	//static Ref<RHI::Image2D> s_image;
+
+	//static Ref<RHI::VertexBuffer> s_vertexBuffer;
+	//static Ref<RHI::IndexBuffer> s_indexBuffer;
+
+	//static Ref<RHI::DescriptorTable> s_descriptorTable;
+	//static Ref<RHI::ConstantBuffer> s_constantBuffer;
+
+	static Ref<Mesh> s_mesh;
 
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
@@ -109,7 +109,6 @@ namespace Volt
 		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
 
-		///// TEMPORARY /////
 		{
 			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
 			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
@@ -123,30 +122,7 @@ namespace Volt
 			};
 
 			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
-
-			s_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics, false);
-			s_shader = RHI::Shader::Create("SimpleTriangle", 
-				{ 
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTriangle_vs.hlsl", 
-					ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/Testing/SimpleTriangle_ps.hlsl"
-				}, true);
-			
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = s_shader;
-			s_renderPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-
-			// Render target
-			{
-				RHI::ImageSpecification imageSpec{};
-				imageSpec.width = 400;
-				imageSpec.height = 400;
-				imageSpec.usage = RHI::ImageUsage::Attachment;
-				imageSpec.generateMips = false;
-
-				s_renderTarget = RHI::Image2D::Create(imageSpec);
-			}
 		}
-		/////////////////////
 
 		//Renderer::Initialize();
 		//ShaderRegistry::Initialize();
@@ -274,37 +250,6 @@ namespace Volt
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
-
-				s_commandBuffer->Begin();
-
-				RHI::Rect2D scissor = { 0, 0, 400, 400 };
-				RHI::Viewport viewport{};
-				viewport.width = 400.f;
-				viewport.height = 400.f;
-				viewport.x = 0.f;
-				viewport.y = 0.f;
-				viewport.minDepth = 0.f;
-				viewport.maxDepth = 1.f;
-
-				s_commandBuffer->SetViewports({ viewport });
-				s_commandBuffer->SetScissors({ scissor });
-				
-				RHI::AttachmentInfo attInfo{};
-				attInfo.view = s_renderTarget->GetView();
-				attInfo.clearColor = { 1.f, 0.f, 1.f, 1.f };
-				attInfo.clearMode = RHI::ClearMode::Clear;
-
-				RHI::RenderingInfo renderingInfo{};
-				renderingInfo.colorAttachments = { attInfo };
-				renderingInfo.renderArea = scissor;
-
-				s_commandBuffer->BeginRendering(renderingInfo);
-				s_commandBuffer->BindPipeline(s_renderPipeline);
-				s_commandBuffer->Draw(3, 1, 0, 0);
-
-				s_commandBuffer->EndRendering();
-				s_commandBuffer->End();
-				s_commandBuffer->Execute();
 			}
 
 			if (m_info.enableImGui)
@@ -312,8 +257,6 @@ namespace Volt
 				VT_PROFILE_SCOPE("Application::ImGui");
 
 				m_imguiImplementation->Begin();
-
-				ImGui::ShowDemoWindow();
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);

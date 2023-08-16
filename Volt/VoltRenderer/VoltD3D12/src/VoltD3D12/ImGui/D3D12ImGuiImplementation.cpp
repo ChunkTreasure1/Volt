@@ -88,4 +88,9 @@ m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	{
 		ImGui_ImplDX12_Shutdown();
 	}
+
+	ImTextureID D3D12ImGuiImplementation::GetTextureID(Ref<Image2D> image) const
+	{
+		return nullptr;
+	}
 }

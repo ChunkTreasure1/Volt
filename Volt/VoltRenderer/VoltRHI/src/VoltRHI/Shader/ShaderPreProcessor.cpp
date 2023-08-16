@@ -264,7 +264,7 @@ namespace Volt::RHI
 		}
 
 		// Find entry point parentheses
-		const size_t openParenthesesLoc = processedSource.find_first_of('(', entryPointLocation);
+		const size_t openParenthesesLoc = processedSource.find_first_of('(', entryPointLocation) + 1;
 		const size_t closeParenthesesLoc = processedSource.find_first_of(')', entryPointLocation);
 
 		const std::string parenthesesSubStr = processedSource.substr(openParenthesesLoc, closeParenthesesLoc - openParenthesesLoc);
@@ -281,6 +281,12 @@ namespace Volt::RHI
 				inputStruct = arg;
 				break;
 			}
+		}
+
+		// There are no vertex inputs
+		if (inputStruct.empty())
+		{
+			return true;
 		}
 
 		const size_t inputStructLoc = processedSource.find("struct " + inputStruct);

@@ -2,12 +2,14 @@
 #include "VoltRHI/Core/Core.h"
 
 #include <array>
+#include <functional>
 
 namespace Volt::RHI
 {
 	class PhysicalGraphicsDevice;
 	class GraphicsDevice;
 	class ImageView;
+	class RHIResource;
 
 	enum class QueueType
 	{
@@ -424,10 +426,10 @@ namespace Volt::RHI
 
 	enum class MemoryUsage : uint32_t
 	{
-		None = 0,
-		Indirect,
-		CPUToGPU,
-		GPUOnly
+		Default = 0,
+		CPUToGPU = BIT(0),
+		Indirect = BIT(1),
+		Staging = BIT(2)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(MemoryUsage);
@@ -452,6 +454,36 @@ namespace Volt::RHI
 		DontCare
 	};
 
+	enum class ResourceType
+	{
+		Image2D = 0,
+		Image3D,
+
+		IndexBuffer,
+		VertexBuffer,
+		ConstantBuffer,
+		StorageBuffer
+	};
+
+	enum class ResourceBarrierType
+	{
+		Buffer,
+		Image
+	};
+
+	enum class ResourceState
+	{
+		RenderTarget = 0,
+		DepthWrite = BIT(0),
+		DepthRead = BIT(1),
+		Present = BIT(2),
+
+		PixelShaderRead = BIT(3),
+		NonPixelShaderRead = BIT(4)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(ResourceState);
+
 	// --- structures --- \\
 
 	struct LogHookInfo
@@ -468,6 +500,9 @@ namespace Volt::RHI
 	{
 		DeviceVendor deviceVendor;
 		std::string_view gpuName;
+
+		bool timestampSupport;
+		float timestampPeriod = 0.f;
 	};
 
 	struct GraphicsDeviceCreateInfo
@@ -541,5 +576,22 @@ namespace Volt::RHI
 
 		Rect2D renderArea{};
 		uint32_t layerCount = 1;
+	};
+
+	struct ResourceBarrierInfo
+	{
+		ResourceState oldState;
+		ResourceState newState;
+
+		Ref<RHIResource> resource;
+	};
+
+	struct IndirectIndexedCommand
+	{
+		uint32_t indexCount;
+		uint32_t instanceCount;
+		uint32_t firstIndex;
+		int32_t vertexOffset;
+		uint32_t firstInstance;
 	};
 }

@@ -12,6 +12,8 @@ namespace Volt::RHI
 		VulkanImGuiImplementation(const ImGuiCreateInfo& createInfo);
 		~VulkanImGuiImplementation() override;
 
+		ImTextureID GetTextureID(Ref<Image2D> image) const override;
+
 	protected:
 		void BeginAPI() override;
 		void EndAPI() override;

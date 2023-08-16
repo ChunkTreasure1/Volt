@@ -64,6 +64,7 @@ project "Launcher"
 		"../GraphKey/src/",
 		"../Nexus/src",
 		"../Navigation/src/",
+		"../VoltRenderer/VoltRHI/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -97,7 +98,7 @@ project "Launcher"
 		"%{IncludeDir.fastlz}",
 
 		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.vma}"
+		"%{IncludeDir.vma}",
 	}
 
     links
@@ -151,6 +152,7 @@ project "Launcher"
 		{
 			"NOMINMAX",
 			"_HAS_STD_BYTE=0",
+			"VT_PLATFORM_WINDOWS"
 		}
 
 		links

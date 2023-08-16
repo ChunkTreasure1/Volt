@@ -10,9 +10,15 @@
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class VertexBuffer;
+		class IndexBuffer;
+
+		class StorageBuffer;
+	}
+
 	class Material;
-	class VertexBuffer;
-	class IndexBuffer;
 
 	class Mesh : public Asset
 	{
@@ -25,28 +31,26 @@ namespace Volt
 		void Construct();
 		const std::vector<EncodedVertex> GetEncodedVertices() const;
 
-		inline const std::vector<SubMesh>& GetSubMeshes() const { return mySubMeshes; }
-		inline std::vector<SubMesh>& GetSubMeshesMutable() { return mySubMeshes; }
-		inline const Ref<Material>& GetMaterial() const { return myMaterial; }
-		inline void SetMaterial(Ref<Material> material) { myMaterial = material; }
+		inline const std::vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
+		inline std::vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
+		inline const Ref<Material>& GetMaterial() const { return m_material; }
+		inline void SetMaterial(Ref<Material> material) { m_material = material; }
 
-		inline const size_t GetVertexCount() const { return myVertices.size(); }
-		inline const size_t GetIndexCount() const { return myIndices.size(); }
+		inline const size_t GetVertexCount() const { return m_vertices.size(); }
+		inline const size_t GetIndexCount() const { return m_indices.size(); }
 
-		inline const std::vector<Vertex>& GetVertices() { return myVertices; }
-		inline const std::vector<uint32_t>& GetIndices() { return myIndices; }
+		inline const std::vector<Vertex>& GetVertices() { return m_vertices; }
+		inline const std::vector<uint32_t>& GetIndices() { return m_indices; }
 
-		inline const BoundingSphere& GetBoundingSphere() const { return myBoundingSphere; }
-		inline const BoundingBox& GetBoundingBox() const { return myBoundingBox; }
-		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return myGPUMeshes; }
+		inline const BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
+		inline const BoundingBox& GetBoundingBox() const { return m_boundingBox; }
+		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
 
-		inline const uint32_t GetVertexStartOffset() const { return myVertexStartOffset; }
-		inline const uint32_t GetIndexStartOffset() const { return myIndexStartOffset; }
+		inline const std::map<uint32_t, BoundingSphere> GetSubMeshBoundingSpheres() const { return m_subMeshBoundingSpheres; }
 
-		inline const std::map<uint32_t, BoundingSphere> GetSubMeshBoundingSpheres() const { return mySubMeshBoundingSpheres; }
-
-		inline Ref<VertexBuffer> GetVertexBuffer() const { return myVertexBuffer; }
-		inline Ref<IndexBuffer> GetIndexBuffer() const { return myIndexBuffer; }
+		inline Ref<RHI::VertexBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
+		inline Ref<RHI::IndexBuffer> GetIndexBuffer() const { return m_indexBuffer; }
+		inline Ref<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -55,30 +59,31 @@ namespace Volt
 		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
 		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
 
+		const std::vector<glm::vec3> GetVertexPositions();
+
 		friend class FbxImporter;
 		friend class MeshCompiler;
 		friend class MeshExporterUtilities;
 		friend class VTMeshImporter;
 		friend class GLTFImporter;
 
-		std::vector<SubMesh> mySubMeshes;
+		std::vector<SubMesh> m_subMeshes;
 
-		std::vector<Vertex> myVertices;
-		std::vector<uint32_t> myIndices;
+		std::vector<Vertex> m_vertices;
+		std::vector<uint32_t> m_indices;
 
-		Ref<Material> myMaterial;
-		Ref<VertexBuffer> myVertexBuffer;
-		Ref<IndexBuffer> myIndexBuffer;
+		Ref<Material> m_material;
+		Ref<RHI::VertexBuffer> m_vertexBuffer;
+		Ref<RHI::IndexBuffer> m_indexBuffer;
 
-		BoundingSphere myBoundingSphere;
-		BoundingBox myBoundingBox;
+		Ref<RHI::StorageBuffer> m_vertexPositionsBuffer;
 
-		std::vector<GPUMesh> myGPUMeshes;
+		BoundingSphere m_boundingSphere;
+		BoundingBox m_boundingBox;
 
-		uint32_t myIndexStartOffset = 0;
-		uint32_t myVertexStartOffset = 0;
+		std::vector<GPUMesh> m_gpuMeshes;
 
-		glm::vec3 myAverageScale{ 1.f };
-		std::map<uint32_t, BoundingSphere> mySubMeshBoundingSpheres;
+		glm::vec3 m_averageScale{ 1.f };
+		std::map<uint32_t, BoundingSphere> m_subMeshBoundingSpheres;
 	};
 }

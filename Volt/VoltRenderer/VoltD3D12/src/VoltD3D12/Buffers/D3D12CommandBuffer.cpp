@@ -72,14 +72,18 @@ namespace Volt::RHI
 		commandData.commandList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
+	void D3D12CommandBuffer::DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+	}
+
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
-		GetCommandData().commandList->RSSetViewports(static_cast<UINT>(viewports.size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
+		GetCommandData().commandList->RSSetViewports(static_cast<uint32_t>(viewports.size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
 	}
 
 	void D3D12CommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
 	{
-		GetCommandData().commandList->RSSetScissorRects(static_cast<UINT>(scissors.size()), reinterpret_cast<const D3D12_RECT*>(scissors.data()));
+		GetCommandData().commandList->RSSetScissorRects(static_cast<uint32_t>(scissors.size()), reinterpret_cast<const D3D12_RECT*>(scissors.data()));
 	}
 
 	void D3D12CommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
@@ -100,6 +104,18 @@ namespace Volt::RHI
 		}
 
 		GetCommandData().commandList->IASetPrimitiveTopology(topologyType);
+	}
+
+	void D3D12CommandBuffer::BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	{
+	}
+
+	void D3D12CommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{
+	}
+
+	void D3D12CommandBuffer::BindDescriptorTable(Ref<DescriptorTable> descriptorTable)
+	{
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -144,6 +160,40 @@ namespace Volt::RHI
 	}
 
 	void D3D12CommandBuffer::EndRendering()
+	{
+	}
+
+	void D3D12CommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
+	{
+	}
+
+	void D3D12CommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
+	{
+	}
+
+	const uint32_t D3D12CommandBuffer::BeginTimestamp()
+	{
+		return 0;
+	}
+
+	void D3D12CommandBuffer::EndTimestamp(uint32_t timestampIndex)
+	{
+	}
+
+	const float D3D12CommandBuffer::GetExecutionTime(uint32_t timestampIndex) const
+	{
+		return 0.0f;
+	}
+
+	void D3D12CommandBuffer::CopyImageToBackBuffer(Ref<Image2D> srcImage)
+	{
+	}
+
+	void D3D12CommandBuffer::ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor)
+	{
+	}
+
+	void D3D12CommandBuffer::CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size)
 	{
 	}
 

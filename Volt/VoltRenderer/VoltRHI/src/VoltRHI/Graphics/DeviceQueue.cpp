@@ -3,7 +3,6 @@
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
-#include <VoltMock/Graphics/MockDeviceQueue.h>
 #include <VoltVulkan/Graphics/VulkanDeviceQueue.h>
 #include <VoltD3D12/Graphics/D3D12DeviceQueue.h>
 
@@ -20,7 +19,6 @@ namespace Volt::RHI
 				break;
 
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanDeviceQueue>(createInfo); break;
-			case GraphicsAPI::Mock: return CreateRefRHI<MockDeviceQueue>(createInfo); break;
 		}
 
 		return nullptr;

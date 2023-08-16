@@ -2,6 +2,7 @@
 #include "VulkanShader.h"
 
 #include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Graphics/VulkanSwapchain.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -194,7 +195,6 @@ namespace Volt::RHI
 	ShaderDataBuffer VulkanShader::GetConstantsBuffer() const
 	{
 		ShaderDataBuffer dataBuffer = m_resources.constantsBuffer;
-		dataBuffer.Allocate();
 		return dataBuffer;
 	}
 
@@ -281,6 +281,7 @@ namespace Volt::RHI
 		}
 
 		CreateDescriptorSetLayouts();
+		CalculateDescriptorPoolSizes();
 	}
 
 	void VulkanShader::ReflectStage(ShaderStage stage, const std::vector<uint32_t>& data)
@@ -297,9 +298,12 @@ namespace Volt::RHI
 				continue;
 			}
 
+			const auto& bufferType = compiler.get_type(ubo.base_type_id);
+
+			const size_t size = compiler.get_declared_struct_size(bufferType);
 			const uint32_t binding = compiler.get_decoration(ubo.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
-			const std::string name = compiler.get_name(ubo.id);
+			const std::string& name = compiler.get_name(ubo.id);
 
 			if (name == "$Globals")
 			{
@@ -309,26 +313,48 @@ namespace Volt::RHI
 
 			auto& buffer = m_resources.constantBuffers[set][binding];
 			buffer.usageStages = buffer.usageStages | stage;
+			buffer.size = size;
 
 			m_perStageUBOCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& ssbo : resources.storage_buffers)
 		{
-			if (compiler.get_active_buffer_ranges(ssbo.id).empty())
-			{
-				continue;
-			}
+			//if (compiler.get_active_buffer_ranges(ssbo.id).empty()) // #TODO_Ivar: Crashes for some reason when using buffer arrays
+			//{
+			//	continue;
+			//}
 
+			const auto& bufferBaseType = compiler.get_type(ssbo.base_type_id);
+			const auto& bufferType = compiler.get_type(ssbo.type_id);
+
+			const size_t size = compiler.get_declared_struct_size(bufferBaseType);
 			const uint32_t binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
 
+			const bool firstEntry = !m_resources.storageBuffers[set].contains(binding);
+
 			auto& buffer = m_resources.storageBuffers[set][binding];
 			buffer.usageStages = buffer.usageStages | stage;
+			buffer.size = size;
 
-			//#TODO_Ivar: Add array count
+			if (firstEntry && !bufferType.array.empty())
+			{
+				const int32_t arraySize = static_cast<int32_t>(bufferType.array[0]);
+
+				if (arraySize == 0)
+				{
+					buffer.arraySize = -1;
+				}
+				else
+				{
+					buffer.arraySize = arraySize;
+				}
+			}
 
 			m_perStageSSBOCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& image : resources.storage_images)
@@ -344,10 +370,20 @@ namespace Volt::RHI
 
 			if (firstEntry && !imageType.array.empty())
 			{
-				shaderImage.arraySize = imageType.array[0];
+				const int32_t arraySize = static_cast<int32_t>(imageType.array[0]);
+
+				if (arraySize == 0)
+				{
+					shaderImage.arraySize = -1;
+				}
+				else
+				{
+					shaderImage.arraySize = arraySize;
+				}
 			}
 
 			m_perStageStorageImageCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& image : resources.separate_images)
@@ -363,10 +399,20 @@ namespace Volt::RHI
 
 			if (firstEntry && !imageType.array.empty())
 			{
-				shaderImage.arraySize = imageType.array[0];
+				const int32_t arraySize = static_cast<int32_t>(imageType.array[0]);
+
+				if (arraySize == 0)
+				{
+					shaderImage.arraySize = -1;
+				}
+				else
+				{
+					shaderImage.arraySize = arraySize;
+				}
 			}
 
 			m_perStageImageCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& sampler : resources.separate_samplers)
@@ -377,6 +423,7 @@ namespace Volt::RHI
 			auto& shaderSampler = m_resources.samplers[set][binding];
 			shaderSampler.usageStages = shaderSampler.usageStages | stage;
 			m_perStageSamplerCount[stage].count++;
+			m_resources.usedSets.emplace(set);
 		}
 
 		for (const auto& pushConstant : resources.push_constant_buffers)
@@ -405,7 +452,7 @@ namespace Volt::RHI
 		}
 
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Uniform Buffers: {0}", m_perStageUBOCount[stage].count);
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Shader Storage Buffers: {0}", m_perStageSSBOCount[stage].count);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Buffers: {0}", m_perStageSSBOCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Storage Images: {0}", m_perStageStorageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Images: {0}", m_perStageImageCount[stage].count);
 		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "			Samplers: {0}", m_perStageSamplerCount[stage].count);
@@ -424,7 +471,13 @@ namespace Volt::RHI
 
 	void VulkanShader::CreateDescriptorSetLayouts()
 	{
+		struct DefaultValue
+		{
+			bool value = false;
+		};
+
 		std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> descriptorSetBindings{};
+		std::map<uint32_t, std::map<uint32_t, DefaultValue>> isBindlessMap{};
 
 		for (const auto& [set, bindings] : m_resources.constantBuffers)
 		{
@@ -444,7 +497,17 @@ namespace Volt::RHI
 			{
 				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
 				descriptorBinding.binding = binding;
-				descriptorBinding.descriptorCount = data.arraySize;
+
+				if (data.arraySize == -1)
+				{
+					descriptorBinding.descriptorCount = VulkanDefaults::STORAGE_BUFFER_BINDLESS_TABLE_SIZE;
+					isBindlessMap[set][binding].value = true;
+				}
+				else
+				{
+					descriptorBinding.descriptorCount = static_cast<uint32_t>(data.arraySize);
+				}
+
 				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
@@ -456,7 +519,17 @@ namespace Volt::RHI
 			{
 				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
 				descriptorBinding.binding = binding;
-				descriptorBinding.descriptorCount = data.arraySize;
+
+				if (data.arraySize == -1)
+				{
+					descriptorBinding.descriptorCount = VulkanDefaults::STORAGE_IMAGE_BINDLESS_TABLE_SIZE;
+					isBindlessMap[set][binding].value = true;
+				}
+				else
+				{
+					descriptorBinding.descriptorCount = static_cast<uint32_t>(data.arraySize);
+				}
+				
 				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
@@ -468,7 +541,17 @@ namespace Volt::RHI
 			{
 				auto& descriptorBinding = descriptorSetBindings[set].emplace_back();
 				descriptorBinding.binding = binding;
-				descriptorBinding.descriptorCount = data.arraySize;
+
+				if (data.arraySize == -1)
+				{
+					descriptorBinding.descriptorCount = VulkanDefaults::IMAGE_BINDLESS_TABLE_SIZE;
+					isBindlessMap[set][binding].value = true;
+				}
+				else
+				{
+					descriptorBinding.descriptorCount = static_cast<uint32_t>(data.arraySize);
+				}
+				
 				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
@@ -485,6 +568,8 @@ namespace Volt::RHI
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
 		}
+
+		constexpr VkDescriptorBindingFlags bindlessFlags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
 
 		auto device = GraphicsContext::GetDevice();
 
@@ -509,12 +594,71 @@ namespace Volt::RHI
 			info.bindingCount = static_cast<uint32_t>(bindings.size());
 			info.pBindings = bindings.data();
 
-			//#TODO_Ivar: Implement bindless flags support
+			std::vector<VkDescriptorBindingFlags> bindingFlags{};
+
+			VkDescriptorSetLayoutBindingFlagsCreateInfo extendedInfo{};
+			extendedInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+			extendedInfo.bindingCount = info.bindingCount;
+
+			for (const auto& binding : bindings)
+			{
+				auto& flags = bindingFlags.emplace_back();
+				flags = 0;
+
+				if (isBindlessMap[set][binding.binding].value)
+				{
+					info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+					flags = bindlessFlags;
+				}
+			}
+
+			extendedInfo.pBindingFlags = bindingFlags.data();
+			info.pNext = &extendedInfo;
 
 			VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle<VkDevice>(), &info, nullptr, &m_nullPaddedDescriptorSetLayouts.emplace_back()));
 			m_descriptorSetLayouts.emplace_back(m_nullPaddedDescriptorSetLayouts.back());
 
 			lastSet = set;
+		}
+	}
+
+	void VulkanShader::CalculateDescriptorPoolSizes()
+	{
+		uint32_t uboCount = 0;
+		uint32_t ssboCount = 0;
+		uint32_t storageImageCount = 0;
+		uint32_t imageCount = 0;
+		uint32_t seperateSamplerCount = 0;
+
+		std::for_each(m_perStageUBOCount.begin(), m_perStageUBOCount.end(), [&](auto pair) { uboCount += pair.second.count; });
+		std::for_each(m_perStageSSBOCount.begin(), m_perStageSSBOCount.end(), [&](auto pair) { ssboCount += pair.second.count; });
+		std::for_each(m_perStageStorageImageCount.begin(), m_perStageStorageImageCount.end(), [&](auto pair) { storageImageCount += pair.second.count; });
+		std::for_each(m_perStageImageCount.begin(), m_perStageImageCount.end(), [&](auto pair) { imageCount += pair.second.count; });
+		std::for_each(m_perStageSamplerCount.begin(), m_perStageSamplerCount.end(), [&](auto pair) { seperateSamplerCount += pair.second.count; });
+
+		if (uboCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER), uboCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (ssboCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER), ssboCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (storageImageCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE), storageImageCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (imageCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE), imageCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		}
+
+		if (seperateSamplerCount > 0)
+		{
+			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLER), seperateSamplerCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 		}
 	}
 }

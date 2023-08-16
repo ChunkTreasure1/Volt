@@ -44,9 +44,10 @@ project "VoltVulkan"
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.Optick}",
 
 		"%{IncludeDir.vma}",
-		"%{IncludeDir.VulkanSDK}"
+		"%{IncludeDir.VulkanSDK}",
 	}
 
 	defines
@@ -54,6 +55,7 @@ project "VoltVulkan"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+		"OPTICK_ENABLE_GPU_VULKAN"
 	}
 
 	filter "files:vendor/**.cpp"

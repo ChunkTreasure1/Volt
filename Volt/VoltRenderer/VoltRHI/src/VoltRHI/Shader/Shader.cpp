@@ -13,19 +13,15 @@ namespace Volt::RHI
 	{
 	}
 
-	void ShaderDataBuffer::AddMember(std::string_view name, ShaderUniformType type, size_t size, size_t offset)
+	void ShaderDataBuffer::AddMember(const std::string& name, ShaderUniformType type, size_t size, size_t offset)
 	{
 		m_uniforms[name] = { type, size, offset };
 	}
 
 	void ShaderDataBuffer::SetSize(const size_t size)
 	{
+		assert(size <= 128);
 		m_size = size;
-	}
-
-	void ShaderDataBuffer::Allocate()
-	{
-		m_buffer.Resize(m_size);
 	}
 
 	Ref<Shader> Shader::Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)

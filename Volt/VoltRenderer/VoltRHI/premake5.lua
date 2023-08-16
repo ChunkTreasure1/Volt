@@ -30,11 +30,6 @@ project "VoltRHI"
 		"/ignore:4099",
 	}
 
-	links
-	{
-		"VoltMock"
-	}
-
 	files
 	{
 		"src/**.h",
@@ -45,12 +40,12 @@ project "VoltRHI"
 	includedirs
 	{
 		"src/",
-		"../VoltMock/src",
 		"../VoltD3D12/src",
 		"../VoltVulkan/src",
 
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.imgui_notify}"
+		"%{IncludeDir.imgui_notify}",
+		"%{IncludeDir.Optick}",
 	}
 
 	defines

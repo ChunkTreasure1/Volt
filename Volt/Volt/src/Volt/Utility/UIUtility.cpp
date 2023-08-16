@@ -3,27 +3,23 @@
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Texture/Image2D.h"
-#include "Volt/ImGui/ImGuiImplementation.h"
 
-#include <backends/imgui_impl_dx11.h>
-#include <backends/imgui_impl_vulkan.h>
+#include <VoltRHI/ImGui/ImGuiImplementation.h>
 
 ImTextureID UI::GetTextureID(Ref<Volt::Texture2D> texture)
 {
-	ImTextureID id = ImGui_ImplVulkan_AddTexture(texture->GetImage()->GetSampler(), texture->GetImage()->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	return id;
+	//return Volt::RHI::ImGuiImplementation::Get().GetTextureID(texture);
+	return nullptr;
 }
 
 ImTextureID UI::GetTextureID(Ref<Volt::Image2D> texture)
 {
-	ImTextureID id = ImGui_ImplVulkan_AddTexture(texture->GetSampler(), texture->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	return id;
+	return nullptr;
 }
 
-ImTextureID UI::GetTextureID(Volt::Texture2D* texture)
+ImTextureID UI::GetTextureID(Ref<Volt::RHI::Image2D> texture)
 {
-	ImTextureID id = ImGui_ImplVulkan_AddTexture(texture->GetImage()->GetSampler(), texture->GetImage()->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	return id;
+	return Volt::RHI::ImGuiImplementation::Get().GetTextureID(texture);
 }
 
 void UI::Header(const std::string& text)

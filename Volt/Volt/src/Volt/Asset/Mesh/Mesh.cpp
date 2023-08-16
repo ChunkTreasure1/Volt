@@ -1,17 +1,16 @@
 #include "vtpch.h"
 #include "Mesh.h"
 
-#include "Volt/Rendering/Buffer/CombinedVertexBuffer.h"
-#include "Volt/Rendering/Buffer/CombinedIndexBuffer.h"
-
 #include "Volt/Rendering/Renderer.h"
-
-#include "Volt/Rendering/Buffer/VertexBuffer.h"
-#include "Volt/Rendering/Buffer/IndexBuffer.h"
 
 #include "Volt/Math/Math.h"
 
+#include <VoltRHI/Buffers/VertexBuffer.h>
+#include <VoltRHI/Buffers/IndexBuffer.h>
+#include <VoltRHI/Buffers/StorageBuffer.h>
+
 #include <meshoptimizer/meshoptimizer.h>
+
 
 namespace Volt
 {
@@ -121,10 +120,10 @@ namespace Volt
 
 	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial)
 	{
-		myVertices = aVertices;
-		myIndices = aIndices;
+		m_vertices = aVertices;
+		m_indices = aIndices;
 
-		myMaterial = aMaterial;
+		m_material = aMaterial;
 
 		SubMesh subMesh;
 		subMesh.indexCount = (uint32_t)aIndices.size();
@@ -135,18 +134,18 @@ namespace Volt
 
 		subMesh.GenerateHash();
 
-		mySubMeshes.push_back(subMesh);
+		m_subMeshes.push_back(subMesh);
 
 		Construct();
 	}
 
 	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial, const std::vector<SubMesh>& subMeshes)
 	{
-		myVertices = aVertices;
-		myIndices = aIndices;
+		m_vertices = aVertices;
+		m_indices = aIndices;
 
-		myMaterial = aMaterial;
-		mySubMeshes = subMeshes;
+		m_material = aMaterial;
+		m_subMeshes = subMeshes;
 
 		Construct();
 	}
@@ -179,27 +178,27 @@ namespace Volt
 
 		// Create LODs
 		{
-			myVertices.clear();
-			myIndices.clear();
+			m_vertices.clear();
+			m_indices.clear();
 
 			for (size_t i = 0; i < extractedVertices.size(); i++)
 			{
 				auto& currentVertices = extractedVertices.at(i);
 				auto& currentIndices = extractedIndices.at(i);
-				auto& gpuMesh = myGPUMeshes.emplace_back();
+				auto& gpuMesh = m_gpuMeshes.emplace_back();
 
 				std::vector<uint32_t> lodIndices = currentIndices;
 				std::vector<uint32_t> resultIndices;
 
-				auto& currentSubMesh = mySubMeshes.at(i);
+				auto& currentSubMesh = m_subMeshes.at(i);
 
-				currentSubMesh.indexStartOffset = uint32_t(myIndices.size());
+				currentSubMesh.indexStartOffset = uint32_t(m_indices.size());
 
 				while (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
 				{
 					GPUMeshLOD& lod = gpuMesh.lods[gpuMesh.lodCount++];
 
-					lod.indexOffset = uint32_t(myIndices.size() + resultIndices.size());
+					lod.indexOffset = uint32_t(m_indices.size() + resultIndices.size());
 					lod.indexCount = uint32_t(lodIndices.size());
 
 					resultIndices.insert(resultIndices.end(), lodIndices.begin(), lodIndices.end());
@@ -220,34 +219,35 @@ namespace Volt
 					}
 				}
 
-				myVertices.insert(myVertices.end(), currentVertices.begin(), currentVertices.end());
-				myIndices.insert(myIndices.end(), resultIndices.begin(), resultIndices.end());
+				m_vertices.insert(m_vertices.end(), currentVertices.begin(), currentVertices.end());
+				m_indices.insert(m_indices.end(), resultIndices.begin(), resultIndices.end());
 			}
 		}
 
 		const auto encodedVertices = GetEncodedVertices();
-		myVertexBuffer = VertexBuffer::Create(encodedVertices.data(), uint32_t(encodedVertices.size() * sizeof(EncodedVertex)));
-		myIndexBuffer = IndexBuffer::Create(myIndices.data(), uint32_t(myIndices.size()));
+		m_vertexBuffer = RHI::VertexBuffer::Create(encodedVertices.data(), uint32_t(encodedVertices.size() * sizeof(EncodedVertex)));
+		m_indexBuffer = RHI::IndexBuffer::Create(m_indices.data(), uint32_t(m_indices.size()));
 
-		myIndexStartOffset = 0; //(uint32_t)indexStartLocation;
-		myVertexStartOffset = 0; //(uint32_t)vertexStartLocation;
+		const auto vertexPositions = GetVertexPositions();
+		m_vertexPositionsBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3));
+		m_vertexPositionsBuffer->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
 
-		for (auto& subMesh : mySubMeshes)
+		for (auto& subMesh : m_subMeshes)
 		{
 			glm::vec3 t, r, s;
 			Math::Decompose(subMesh.transform, t, r, s);
 
-			myAverageScale += s;
+			m_averageScale += s;
 		}
 
-		myAverageScale /= (float)mySubMeshes.size();
+		m_averageScale /= (float)m_subMeshes.size();
 
 		glm::vec3 min = { FLT_MAX, FLT_MAX, FLT_MAX };
 		glm::vec3 max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
-		for (const auto& vertex : myVertices)
+		for (const auto& vertex : m_vertices)
 		{
-			const auto scaledPos = vertex.position * myAverageScale;
+			const auto scaledPos = vertex.position * m_averageScale;
 
 			if (glm::all(glm::lessThan(scaledPos, min)))
 			{
@@ -256,19 +256,19 @@ namespace Volt
 
 			if (glm::all(glm::greaterThan(scaledPos, max)))
 			{
-				max = scaledPos * myAverageScale;
+				max = scaledPos * m_averageScale;
 			}
 		}
 
-		myBoundingBox = BoundingBox{ max, min };
-		myBoundingSphere = GetBoundingSphereFromVertices(myVertices);
+		m_boundingBox = BoundingBox{ max, min };
+		m_boundingSphere = GetBoundingSphereFromVertices(m_vertices);
 
-		for (uint32_t i = 0; auto & subMesh : mySubMeshes)
+		for (uint32_t i = 0; auto & subMesh : m_subMeshes)
 		{
 			std::vector<Vertex> subMeshVertices;
-			subMeshVertices.insert(subMeshVertices.end(), std::next(myVertices.begin(), subMesh.vertexStartOffset), std::next(myVertices.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
+			subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertices.begin(), subMesh.vertexStartOffset), std::next(m_vertices.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
 
-			mySubMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
+			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
 			i++;
 		}
 
@@ -282,9 +282,9 @@ namespace Volt
 	const std::vector<EncodedVertex> Mesh::GetEncodedVertices() const
 	{
 		std::vector<EncodedVertex> result{};
-		result.reserve(myVertices.size());
+		result.reserve(m_vertices.size());
 
-		for (const auto& vertex : myVertices)
+		for (const auto& vertex : m_vertices)
 		{
 			auto& encodedVertex = result.emplace_back();
 
@@ -337,13 +337,13 @@ namespace Volt
 	{
 		std::vector<std::vector<Vertex>> result{};
 
-		for (const auto& subMesh : mySubMeshes)
+		for (const auto& subMesh : m_subMeshes)
 		{
 			auto& vertices = result.emplace_back();
 
 			for (uint32_t i = 0; i < subMesh.vertexCount; i++)
 			{
-				vertices.emplace_back(myVertices.at(i + subMesh.vertexStartOffset));
+				vertices.emplace_back(m_vertices.at(i + subMesh.vertexStartOffset));
 			}
 		}
 
@@ -353,14 +353,27 @@ namespace Volt
 	{
 		std::vector<std::vector<uint32_t>> result{};
 
-		for (const auto& subMesh : mySubMeshes)
+		for (const auto& subMesh : m_subMeshes)
 		{
 			auto& indices = result.emplace_back();
 
 			for (uint32_t i = 0; i < subMesh.indexCount; i++)
 			{
-				indices.emplace_back(myIndices.at(i + subMesh.indexStartOffset));
+				indices.emplace_back(m_indices.at(i + subMesh.indexStartOffset));
 			}
+		}
+
+		return result;
+	}
+
+	const std::vector<glm::vec3> Mesh::GetVertexPositions()
+	{
+		std::vector<glm::vec3> result{};
+		result.reserve(m_vertices.size());
+
+		for (const auto& vertex : m_vertices)
+		{
+			result.emplace_back(vertex.position);
 		}
 
 		return result;

@@ -22,8 +22,6 @@
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 #include <Volt/Scripting/Mono/MonoEnum.h>
 
-#include <Volt/ImGui/ImGuiImplementation.h>
-
 #include <GraphKey/Graph.h>
 #include <Wire/Serialization.h>
 
