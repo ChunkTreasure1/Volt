@@ -22,7 +22,7 @@ namespace Volt::RHI
 	protected:
 		void* GetHandleImpl() override
 		{
-			return nullptr;
+			return m_adapter;
 		}
 
 	private:

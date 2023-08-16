@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <cassert>
 
 namespace Volt::RHI
 {

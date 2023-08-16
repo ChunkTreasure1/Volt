@@ -2,9 +2,11 @@
 #include "D3D12CommandBuffer.h"
 
 #include "VoltRHI/Graphics/GraphicsDevice.h"
-
 #include "VoltD3D12/Graphics/D3D12DeviceQueue.h"
-#include <VoltD3D12/Graphics/D3D12GraphicsDevice.h>
+#include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
+#include "VoltD3D12/Images/D3D12Image2D.h"
+#include "VoltD3D12/Images/D3D12ImageView.h"
+#include "VoltD3D12/Pipelines/D3D12RenderPipeline.h"
 
 namespace Volt::RHI
 {
@@ -72,21 +74,73 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
-		GetCommandData().commandList->RSSetViewports(viewports.size(), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
+		GetCommandData().commandList->RSSetViewports(static_cast<UINT>(viewports.size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));
 	}
 
 	void D3D12CommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
 	{
-		GetCommandData().commandList->RSSetScissorRects(scissors.size(), reinterpret_cast<const D3D12_RECT*>(scissors.data()));
+		GetCommandData().commandList->RSSetScissorRects(static_cast<UINT>(scissors.size()), reinterpret_cast<const D3D12_RECT*>(scissors.data()));
 	}
 
 	void D3D12CommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
 	{
-		
+		auto d3d12RenderPipline = pipeline->As<D3D12RenderPipeline>();
+		GetCommandData().commandList->SetGraphicsRootSignature(d3d12RenderPipline->GetRoot());
+		GetCommandData().commandList->SetPipelineState(d3d12RenderPipline->GetPSO());
+
+		D3D12_PRIMITIVE_TOPOLOGY topologyType = {};
+
+		switch (d3d12RenderPipline->GetTopology())
+		{
+			case Topology::LineList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_LINELIST; break;
+			case Topology::PatchList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED; break;
+			case Topology::TriangleList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+			case Topology::PointList: topologyType = D3D10_PRIMITIVE_TOPOLOGY_POINTLIST; break;
+			case Topology::TriangleStrip: topologyType = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
+		}
+
+		GetCommandData().commandList->IASetPrimitiveTopology(topologyType);
 	}
 
 	void D3D12CommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
 	{
+
+		auto& cmdData = GetCommandData();
+
+		std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> rtvViews;
+		rtvViews.reserve(renderingInfo.colorAttachments.size());
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE* dsvView = nullptr;
+
+		for (auto& attachment : renderingInfo.colorAttachments)
+		{
+			auto view = attachment.view.lock();
+			auto viewHandle = view->GetHandle<CD3DX12_CPU_DESCRIPTOR_HANDLE*>();
+			
+			if (attachment.clearMode == ClearMode::Clear)
+			{
+				cmdData.commandList->ClearRenderTargetView(*viewHandle, attachment.clearColor.data(), 0, nullptr);
+			}
+			rtvViews.emplace_back(*viewHandle);
+		}
+
+		if (renderingInfo.depthAttachmentInfo.view.lock())
+		{
+			auto view = renderingInfo.depthAttachmentInfo.view.lock();
+			auto viewHandle = view->GetHandle<CD3DX12_CPU_DESCRIPTOR_HANDLE*>();
+
+			if (renderingInfo.depthAttachmentInfo.clearMode == ClearMode::Clear)
+			{
+
+				cmdData.commandList->ClearDepthStencilView(*viewHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
+			}
+
+			dsvView = viewHandle;
+		}
+		
+		m_amountOfTargetsbound = static_cast<uint32_t>(rtvViews.size());
+
+		cmdData.commandList->OMSetRenderTargets(static_cast<UINT>(rtvViews.size()), rtvViews.data(), false, dsvView);
 	}
 
 	void D3D12CommandBuffer::EndRendering()

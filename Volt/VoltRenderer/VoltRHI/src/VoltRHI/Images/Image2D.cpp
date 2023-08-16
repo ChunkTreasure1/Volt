@@ -4,6 +4,7 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltVulkan/Images/VulkanImage2D.h>
+#include <VoltD3D12/Images/D3D12Image2D.h>
 
 namespace Volt::RHI
 {
@@ -13,7 +14,7 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12Image2D>(specification, data); break;
 			case GraphicsAPI::MoltenVk:
 			case GraphicsAPI::Mock:
 				break;

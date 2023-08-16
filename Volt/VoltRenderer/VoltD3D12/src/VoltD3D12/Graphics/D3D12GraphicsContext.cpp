@@ -3,6 +3,8 @@
 #include "VoltD3D12/Graphics/D3D12PhysicalGraphicsDevice.h"
 #include "VoltD3D12/Graphics/D3D12GraphicsDevice.h"
 
+#include "VoltD3D12/Common/D3D12Allocator.h"
+
 namespace Volt::RHI
 {
 	D3D12GraphicsContext::D3D12GraphicsContext(const GraphicsContextCreateInfo& info)
@@ -41,6 +43,8 @@ namespace Volt::RHI
 
 			m_infoQueue->SetBreakOnCategory(D3D12_MESSAGE_CATEGORY_CLEANUP, true);
 		}
+
+		D3d12Allocator::Initialize();
 	}
 
 	void D3D12GraphicsContext::Shutdown()

@@ -7,7 +7,6 @@ struct ID3D12Fence;
 struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList1;
 
-
 namespace Volt::RHI
 {
 	struct D3D12CommandData
@@ -46,6 +45,8 @@ namespace Volt::RHI
 
 		void IncrementIndex();
 		
+		uint32_t m_amountOfTargetsbound;
+
 		std::vector<std::pair<D3D12CommandData, D3D12Fence>> m_perInternalBufferData;
 		uint32_t m_currentCommandBufferIndex = 0;
 		bool m_isSwapchainTarget = false;

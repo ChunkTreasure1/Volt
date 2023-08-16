@@ -4,6 +4,7 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltVulkan/Shader/VulkanShaderCompiler.h>
+#include <VoltD3D12/Shader/D3D12ShaderCompiler.h>
 
 namespace Volt::RHI
 {
@@ -38,7 +39,7 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12ShaderCompiler>(createInfo); break;
 			case GraphicsAPI::Mock:
 			case GraphicsAPI::MoltenVk:
 				break;

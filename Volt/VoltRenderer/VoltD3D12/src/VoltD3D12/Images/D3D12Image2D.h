@@ -1,0 +1,27 @@
+#pragma once
+#include <VoltRHI/Images/Image2D.h>
+
+#include "VoltD3D12/Common/D3D12AllocatorForward.h"
+
+namespace Volt::RHI
+{
+	class D3D12Image2D final : public Image2D
+	{
+	public:
+		D3D12Image2D(const ImageSpecification& specification, const void* data = nullptr);
+
+		void* GetHandleImpl() override;
+		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
+		void Release() override;
+		void GenerateMips() override;
+		const Ref<ImageView> GetView(const int32_t mip, const int32_t layer) override;
+		const uint32_t GetWidth() const override;
+		const uint32_t GetHeight() const override;
+		const Format GetFormat() const override;
+		const uint32_t CalculateMipCount() const override;
+	private:
+		Ref<ImageView> m_view;
+		ImageSpecification m_specs;
+		AllocatedImage m_image;
+	};
+}

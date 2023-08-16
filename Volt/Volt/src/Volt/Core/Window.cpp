@@ -162,7 +162,7 @@ namespace Volt
 			logHook.logCallback = RHILogCallback;
 
 			RHI::GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
+			cinfo.graphicsApi = RHI::GraphicsAPI::D3D12;
 			cinfo.loghookInfo = logHook;
 
 			m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
