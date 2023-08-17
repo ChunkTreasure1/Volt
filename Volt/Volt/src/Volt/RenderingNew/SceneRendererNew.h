@@ -65,15 +65,16 @@ namespace Volt
 
 		Ref<RHI::StorageBuffer> m_indirectCommandsBuffer;
 		Ref<RHI::StorageBuffer> m_indirectCountsBuffer;
+		
 		Ref<RHI::StorageBuffer> m_drawToObjectIDBuffer;
-
-		Ref<RHI::StorageBuffer> m_transformsBuffer;
+		Ref<RHI::StorageBuffer> m_indirectDrawDataBuffer;
 
 		Ref<RHI::DescriptorTable> m_indirectSetupDescriptorTable;
 		Ref<RHI::DescriptorTable> m_indirectCountDescriptorTable;
 		Ref<RHI::DescriptorTable> m_descriptorTable;
 
 		std::vector<RenderObject> m_activeRenderObjects;
+		uint32_t m_currentActiveCommandCount = 0;
 
 		Weak<Scene> m_scene;
 	};

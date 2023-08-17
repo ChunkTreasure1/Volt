@@ -13,6 +13,8 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 
+#include "Volt/Math/Math.h"
+
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Pipelines/RenderPipeline.h>
@@ -30,6 +32,17 @@
 
 namespace Volt
 {
+	namespace Utility
+	{
+		const size_t HashMeshSubMesh(Ref<Mesh> mesh, const SubMesh& subMesh)
+		{
+			size_t result = std::hash<void*>()(mesh.get());
+			result = Math::HashCombine(result, subMesh.GetHash());
+
+			return result;
+		}
+	}
+
 	SceneRendererNew::SceneRendererNew(const SceneRendererSpecification& specification)
 		: m_scene(specification.scene)
 	{
@@ -37,8 +50,8 @@ namespace Volt
 
 		m_shader = RHI::Shader::Create("SimpleTriangle",
 		{
-			ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/IndirectNew/MeshIndirect_vs.hlsl",
-			ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/IndirectNew/MeshIndirect_ps.hlsl"
+			ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/Indirect/MeshIndirect_vs.hlsl",
+			ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/Indirect/MeshIndirect_ps.hlsl"
 		}, true);
 
 		RHI::RenderPipelineCreateInfo pipelineInfo{};
@@ -49,7 +62,7 @@ namespace Volt
 		{
 			m_clearIndirectCountsShader = RHI::Shader::Create("ClearIndirectCounts",
 			{
-				ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/IndirectNew/ClearCountBuffer_cs.hlsl",
+				ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/Indirect/ClearCountBuffer_cs.hlsl",
 			}, true);
 
 			m_clearIndirectCountsPipeline = RHI::ComputePipeline::Create(m_clearIndirectCountsShader);
@@ -59,7 +72,7 @@ namespace Volt
 		{
 			m_indirectSetupShader = RHI::Shader::Create("IndirectSetup",
 			{
-				ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/HLSL/IndirectNew/IndirectSetup_cs.hlsl",
+				ProjectManager::GetEngineDirectory() / "Engine/Shaders/Source/Indirect/IndirectSetup_cs.hlsl",
 			}, true);
 
 			m_indirectSetupPipeline = RHI::ComputePipeline::Create(m_indirectSetupShader);
@@ -83,10 +96,11 @@ namespace Volt
 
 		// Storage buffers
 		{
-			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectBatchNew), RHI::MemoryUsage::Indirect | RHI::MemoryUsage::CPUToGPU);
+			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), RHI::MemoryUsage::Indirect | RHI::MemoryUsage::CPUToGPU);
 			m_indirectCountsBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t), RHI::MemoryUsage::Indirect);
+			
 			m_drawToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
-			m_transformsBuffer = RHI::StorageBuffer::Create(1, sizeof(glm::mat4), RHI::MemoryUsage::CPUToGPU);
+			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), RHI::MemoryUsage::CPUToGPU);
 		}
 
 		// Descriptor table
@@ -94,9 +108,9 @@ namespace Volt
 			RHI::DescriptorTableSpecification descriptorTableSpec{};
 			descriptorTableSpec.shader = m_shader;
 			m_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
-			m_descriptorTable->SetBufferView(m_constantBuffer->GetView(), 0, 0);
-			m_descriptorTable->SetBufferView(m_transformsBuffer->GetView(), 0, 1);
-			m_descriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 2);
+			m_descriptorTable->SetBufferView(m_constantBuffer->GetView(), 5, 0);
+			m_descriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 0);
+			m_descriptorTable->SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
 		}
 
 		// Indirect setup descriptor table
@@ -186,11 +200,11 @@ namespace Volt
 			m_commandBuffer->BindPipeline(m_clearIndirectCountsPipeline);
 			m_commandBuffer->BindDescriptorTable(m_indirectCountDescriptorTable);
 			RHI::ShaderDataBuffer pushConstantBuffer = m_clearIndirectCountsShader->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_activeRenderObjects.size()));
+			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
 
 			m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
 
-			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_activeRenderObjects.size() / 256) + 1u);
+			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
 			m_commandBuffer->Dispatch(dispatchCount, 1, 1);
 		}
 
@@ -215,11 +229,11 @@ namespace Volt
 			m_commandBuffer->BindDescriptorTable(m_indirectSetupDescriptorTable);
 
 			RHI::ShaderDataBuffer pushConstantBuffer = m_indirectSetupShader->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_activeRenderObjects.size()));
+			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
 
 			m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
 
-			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_activeRenderObjects.size() / 256) + 1u);
+			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
 			m_commandBuffer->Dispatch(dispatchCount, 1, 1);
 		}
 
@@ -278,7 +292,7 @@ namespace Volt
 		m_commandBuffer->BindPipeline(m_renderPipeline);
 		m_commandBuffer->BindDescriptorTable(m_descriptorTable);
 
-		m_commandBuffer->DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, static_cast<uint32_t>(m_activeRenderObjects.size()), sizeof(IndirectBatchNew));
+		m_commandBuffer->DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, static_cast<uint32_t>(m_activeRenderObjects.size()), sizeof(IndirectGPUCommandNew));
 
 		m_commandBuffer->EndRendering();
 
@@ -302,10 +316,10 @@ namespace Volt
 
 		m_activeRenderObjects = m_scene.lock()->GetRenderScene()->GetObjects();
 
-		if (m_transformsBuffer->GetSize() < m_activeRenderObjects.size())
+		if (m_indirectDrawDataBuffer->GetSize() < m_activeRenderObjects.size())
 		{
-			m_transformsBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
-			m_descriptorTable->SetBufferView(m_transformsBuffer->GetView(), 0, 1);
+			m_indirectDrawDataBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
+			m_descriptorTable->SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
 		}
 
 		if (m_indirectCommandsBuffer->GetSize() < m_activeRenderObjects.size())
@@ -314,15 +328,13 @@ namespace Volt
 			m_indirectCountsBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
 			m_drawToObjectIDBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
 
-			m_indirectSetupDescriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 2);
-
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCommandsBuffer->GetView(), 0, 1);
 			m_indirectSetupDescriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 2);
 
 			m_indirectCountDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 		
-			m_descriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 2);
+			m_descriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 0);
 		}
 
 		std::sort(std::execution::par, m_activeRenderObjects.begin(), m_activeRenderObjects.end(), [](const auto& lhs, const auto& rhs)
@@ -350,48 +362,65 @@ namespace Volt
 			return false;
 		});
 
-		std::unordered_map<Mesh*, uint32_t> indexVertexBufferMap;
-		uint32_t currentIndexVertexBufferIndex = 0;
+		std::unordered_map<Mesh*, uint32_t> meshDataMap;
+		std::unordered_map<size_t, uint32_t> meshSubMeshIndexMap;
 
-		glm::mat4* transforms = m_transformsBuffer->Map<glm::mat4>();
-		auto indirectCommands = m_indirectCommandsBuffer->Map<IndirectBatchNew>();
+		uint32_t currentMeshIndex = 0;
 
-		for (uint32_t index = 0; auto & obj : m_activeRenderObjects)
+		IndirectDrawData* drawDataBuffer = m_indirectDrawDataBuffer->Map<IndirectDrawData>();
+		IndirectGPUCommandNew* indirectCommands = m_indirectCommandsBuffer->Map<IndirectGPUCommandNew>();
+
+		m_currentActiveCommandCount = 0;
+		for (uint32_t index = 0; const auto& obj : m_activeRenderObjects)
 		{
 			auto meshPtr = obj.mesh.get();
+			uint32_t meshIndex = 0;
 
-			if (indexVertexBufferMap.contains(meshPtr))
+			if (meshDataMap.contains(meshPtr))
 			{
-				obj.vertexBufferIndex = indexVertexBufferMap.at(meshPtr);
+				meshIndex = meshDataMap.at(meshPtr);
 			}
 			else
 			{
-				const uint32_t vertexBufferIndex = currentIndexVertexBufferIndex++;
-				obj.vertexBufferIndex = vertexBufferIndex;
+				meshIndex = currentMeshIndex++;
+				meshDataMap[meshPtr] = meshIndex;
 
-				indexVertexBufferMap[meshPtr] = vertexBufferIndex;
-				m_descriptorTable->SetBufferView(obj.mesh->GetVertexPositionsBuffer()->GetView(), 1, 0, vertexBufferIndex);
-				m_descriptorTable->SetBufferView(obj.mesh->GetIndexStorageBuffer()->GetView(), 4, 0, vertexBufferIndex);
+				m_descriptorTable->SetBufferView(obj.mesh->GetVertexPositionsBuffer()->GetView(), 1, 0, meshIndex);
+				m_descriptorTable->SetBufferView(obj.mesh->GetIndexStorageBuffer()->GetView(), 4, 0, meshIndex);
 			}
-
+			
 			Entity entity{ obj.entity, m_scene.lock().get() };
+
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
 
-			indirectCommands[index].command.vertexCount = subMesh.indexCount;
-			indirectCommands[index].command.instanceCount = 1;
-			indirectCommands[index].command.firstVertex = subMesh.indexStartOffset;
-			indirectCommands[index].command.firstInstance = 0;
-			indirectCommands[index].objectId = index;
-			indirectCommands[index].batchId = 0;
-			indirectCommands[index].vertexBufferIndex = obj.vertexBufferIndex;
+			const size_t meshSubMeshHash = Utility::HashMeshSubMesh(obj.mesh, subMesh);
+			if (meshSubMeshIndexMap.contains(meshSubMeshHash))
+			{
+				const uint32_t cmdIndex = meshSubMeshIndexMap.at(meshSubMeshHash);
+				indirectCommands[cmdIndex].command.instanceCount++;
+			}
+			else
+			{
+				meshSubMeshIndexMap[meshSubMeshHash] = m_currentActiveCommandCount;
 
-			transforms[index] = entity.GetTransform();
+				indirectCommands[m_currentActiveCommandCount].command.vertexCount = subMesh.indexCount;
+				indirectCommands[m_currentActiveCommandCount].command.instanceCount = 1;
+				indirectCommands[m_currentActiveCommandCount].command.firstVertex = subMesh.indexStartOffset;
+				indirectCommands[m_currentActiveCommandCount].command.firstInstance = 0;
+				indirectCommands[m_currentActiveCommandCount].objectId = index;
+				indirectCommands[m_currentActiveCommandCount].meshId = meshIndex;
+				m_currentActiveCommandCount++;
+			}
+
+			drawDataBuffer[index].meshId = meshIndex;
+			drawDataBuffer[index].vertexStartOffset = subMesh.vertexStartOffset;
+			drawDataBuffer[index].transform = entity.GetTransform();
 
 			index++;
 		}
 
+		m_indirectDrawDataBuffer->Unmap();
 		m_indirectCommandsBuffer->Unmap();
-		m_transformsBuffer->Unmap();
 
 		m_scene.lock()->GetRenderScene()->SetValid();
 	}

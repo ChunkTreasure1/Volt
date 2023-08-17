@@ -4,12 +4,20 @@
 
 namespace Volt
 {
-	struct IndirectBatchNew
+	struct IndirectGPUCommandNew
 	{
 		RHI::IndirectCommand command{};
 		uint32_t objectId{};
-		uint32_t batchId{};
-		uint32_t vertexBufferIndex{};
-		uint32_t padding{};
+		uint32_t meshId{};
+		uint32_t padding[2]{};
+	};
+
+	struct IndirectDrawData
+	{
+		glm::mat4 transform;
+		uint32_t meshId{};
+		uint32_t vertexStartOffset{};
+
+		uint32_t padding[2];
 	};
 }

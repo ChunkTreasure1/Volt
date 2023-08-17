@@ -13,6 +13,8 @@ namespace Volt
 
 		void GenerateHash();
 
+		inline const size_t GetHash() const { return m_hash; }
+
 		const bool operator==(const SubMesh& rhs) const;
 		const bool operator!=(const SubMesh& rhs) const;
 
