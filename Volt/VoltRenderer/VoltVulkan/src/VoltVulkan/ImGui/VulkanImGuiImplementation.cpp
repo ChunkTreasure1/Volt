@@ -55,6 +55,25 @@ namespace Volt::RHI
 		return id;
 	}
 
+	ImFont* VulkanImGuiImplementation::AddFont(const std::filesystem::path& fontPath, float pixelSize)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		ImFont* newFont = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), pixelSize);
+	
+		// Create font
+		{
+			Ref<CommandBuffer> commandBuffer = CommandBuffer::Create();
+			commandBuffer->Begin();
+			ImGui_ImplVulkan_CreateFontsTexture(commandBuffer->GetHandle<VkCommandBuffer>());
+			commandBuffer->End();
+			commandBuffer->ExecuteAndWait();
+
+			ImGui_ImplVulkan_DestroyFontUploadObjects();
+		}
+
+		return newFont;
+	}
+
 	void VulkanImGuiImplementation::BeginAPI()
 	{
 		ImGui_ImplVulkan_NewFrame();

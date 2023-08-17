@@ -5,6 +5,7 @@
 struct GLFWwindow;
 
 typedef void* ImTextureID;
+struct ImFont;
 
 namespace Volt::RHI
 {
@@ -27,7 +28,10 @@ namespace Volt::RHI
 		void Begin();
 		void End();
 
+		void SetDefaultFont(ImFont* font);
+
 		virtual ImTextureID GetTextureID(Ref<Image2D> image) const = 0;
+		virtual ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) = 0;
 
 		static Ref<ImGuiImplementation> Create(const ImGuiCreateInfo& createInfo);
 		static ImGuiImplementation& Get();
@@ -43,6 +47,7 @@ namespace Volt::RHI
 
 	private:
 		inline static ImGuiImplementation* s_instance = nullptr;
+		ImFont* m_defaultFont = nullptr;
 
 		void Initialize();
 	};

@@ -29,12 +29,12 @@ void UI::Header(const std::string& text)
 
 void UI::PushFont(FontType font)
 {
-	//ImGui::PushFont(myFonts.at(font));
+	ImGui::PushFont(myFonts.at(font));
 }
 
 void UI::PopFont()
 {
-	//ImGui::PopFont();
+	ImGui::PopFont();
 }
 
 int32_t UI::LevenshteinDistance(const std::string& str1, const std::string& str2)

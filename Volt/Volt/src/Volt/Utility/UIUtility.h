@@ -182,12 +182,12 @@ public:
 	public:
 		inline ScopedFont(FontType font)
 		{
-			//ImGui::PushFont(myFonts.at(font));
+			ImGui::PushFont(myFonts.at(font));
 		}
 
 		inline ~ScopedFont()
 		{
-			//ImGui::PopFont();
+			ImGui::PopFont();
 		}
 
 	private:

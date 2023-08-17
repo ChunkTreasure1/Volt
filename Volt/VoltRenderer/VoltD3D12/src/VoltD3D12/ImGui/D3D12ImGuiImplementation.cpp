@@ -93,4 +93,10 @@ m_imguiDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	{
 		return nullptr;
 	}
+
+	ImFont* D3D12ImGuiImplementation::AddFont(const std::filesystem::path& fontPath, float pixelSize)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		return io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), pixelSize);
+	}
 }

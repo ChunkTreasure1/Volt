@@ -131,11 +131,15 @@ namespace Volt
 		}
 
 		commandBuffer->CopyBufferToImage(stagingBuffer, image, width, height, 0);
+		commandBuffer->End();
+		commandBuffer->ExecuteAndWait();
 
 		// Set mip data
 		{
 			for (uint32_t i = 1; i < dds.GetMipCount(); i++)
 			{
+				commandBuffer->Begin();
+
 				auto mipData = dds.GetImageData(i);
 				const size_t mipSize = mipData->m_memSlicePitch;
 
@@ -147,9 +151,12 @@ namespace Volt
 				}
 
 				commandBuffer->CopyBufferToImage(stagingBuffer, image, mipData->m_width, mipData->m_height, i);
+				commandBuffer->End();
+				commandBuffer->ExecuteAndWait();
 			}
 		}
 
+		commandBuffer->Begin();
 		{
 			RHI::ResourceBarrierInfo barrier{};
 			barrier.oldState = RHI::ResourceState::TransferDst;

@@ -70,37 +70,6 @@ namespace Volt::RHI
 
 		ImFontConfig fontCfg;
 		fontCfg.FontDataOwnedByAtlas = true;
-		//UI::SetFont(FontType::Regular_16, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Regular.ttf", 16.f));
-		//MergeIconsWithLatestFont(16.f);
-
-		//UI::SetFont(FontType::Regular_17, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Regular.ttf", 17.f));
-		//MergeIconsWithLatestFont(17.f);
-
-		//UI::SetFont(FontType::Regular_20, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Regular.ttf", 20.f));
-		//MergeIconsWithLatestFont(20.f);
-
-		//UI::SetFont(FontType::Bold_17, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 17.f));
-		//MergeIconsWithLatestFont(17.f);
-
-		//UI::SetFont(FontType::Bold_16, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 16.f));
-		//MergeIconsWithLatestFont(16.f);
-
-		//UI::SetFont(FontType::Bold_90, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 90.f));
-		//MergeIconsWithLatestFont(90.f);
-
-		//UI::SetFont(FontType::Bold_20, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 20.f));
-		//MergeIconsWithLatestFont(20.f);
-
-		//UI::SetFont(FontType::Bold_12, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Bold.ttf", 12.f));
-		//MergeIconsWithLatestFont(12.f);
-
-		//UI::SetFont(FontType::Regular_12, io.Fonts->AddFontFromFileTTF("Engine/Fonts/Inter/inter-Regular.ttf", 12.f));
-		//MergeIconsWithLatestFont(12.f);
-
-		//fontCfg.FontDataOwnedByAtlas = false;
-		//io.Fonts->AddFontFromMemoryTTF((void*)tahoma, sizeof(tahoma), 17.f, &fontCfg);
-		//ImGui::MergeIconsWithLatestFont(17.f, false);
-
 		io.IniFilename = nullptr;
 
 		const std::filesystem::path iniPath = GetOrCreateIniPath();
@@ -217,6 +186,11 @@ namespace Volt::RHI
 	{
 		BeginAPI();
 		ImGui::NewFrame();
+
+		if (m_defaultFont)
+		{
+			ImGui::PushFont(m_defaultFont);
+		}
 	}
 
 	void ImGuiImplementation::End()
@@ -226,6 +200,11 @@ namespace Volt::RHI
 		//ImGui::RenderNotifications(); // <-- Here we render all notifications
 		ImGui::PopStyleVar(1); // Don't forget to Pop()
 		ImGui::PopStyleColor(1);
+
+		if (m_defaultFont)
+		{
+			ImGui::PopFont();
+		}
 
 		//Rendering
 		ImGui::Render();
@@ -238,6 +217,11 @@ namespace Volt::RHI
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
+	}
+
+	void ImGuiImplementation::SetDefaultFont(ImFont* font)
+	{
+		m_defaultFont = font;
 	}
 
 	Ref<ImGuiImplementation> ImGuiImplementation::Create(const ImGuiCreateInfo& createInfo)

@@ -13,6 +13,7 @@ namespace Volt::RHI
 		~VulkanImGuiImplementation() override;
 
 		ImTextureID GetTextureID(Ref<Image2D> image) const override;
+		ImFont* AddFont(const std::filesystem::path& fontPath, float pixelSize) override;
 
 	protected:
 		void BeginAPI() override;

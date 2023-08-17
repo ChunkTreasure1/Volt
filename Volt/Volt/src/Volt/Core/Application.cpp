@@ -31,6 +31,7 @@
 #include "Volt/Discord/DiscordSDK.h"
 
 #include "Volt/Utility/Noise.h"
+#include "Volt/Utility/UIUtility.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 
@@ -123,6 +124,20 @@ namespace Volt
 			createInfo.window = m_window->GetNativeWindow();
 
 			m_imguiImplementation = RHI::ImGuiImplementation::Create(createInfo);
+			auto defaultFont = m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-regular.ttf", 16.f);
+
+			UI::SetFont(FontType::Regular_12, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-regular.ttf", 12.f));
+			UI::SetFont(FontType::Regular_16, defaultFont);
+			UI::SetFont(FontType::Regular_17, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-regular.ttf", 17.f));
+			UI::SetFont(FontType::Regular_20, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-regular.ttf", 20.f));
+
+			UI::SetFont(FontType::Bold_12, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 12.f));
+			UI::SetFont(FontType::Bold_16, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 16.f));
+			UI::SetFont(FontType::Bold_17, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 17.f));
+			UI::SetFont(FontType::Bold_20, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 20.f));
+			UI::SetFont(FontType::Bold_90, m_imguiImplementation->AddFont("Engine/Fonts/Inter/inter-bold.ttf", 90.f));
+
+			m_imguiImplementation->SetDefaultFont(defaultFont);
 		}
 
 		if (info.netEnabled)
