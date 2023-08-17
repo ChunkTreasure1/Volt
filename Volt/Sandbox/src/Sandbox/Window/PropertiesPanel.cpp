@@ -62,7 +62,7 @@ namespace Utility
 	}
 }
 
-PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
+PropertiesPanel::PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRendererNew>& currentSceneRenderer, SceneState& sceneState, const std::string& id)
 	: EditorWindow("Properties", false, id), myCurrentScene(currentScene), myCurrentSceneRenderer(currentSceneRenderer), mySceneState(sceneState)
 {
 	myIsOpen = true;
@@ -875,13 +875,20 @@ void PropertiesPanel::AddComponentPopup()
 								auto& comp = myCurrentScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(ent);
 								if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
 								{
-									comp.scriptIds.emplace_back(Volt::UUID());
+									comp.scriptIds.emplace_back();
 									comp.scriptNames.emplace_back("");
 								}
 							}
 							else if (!myCurrentScene->GetRegistry().HasComponent(info.guid, ent))
 							{
-								myCurrentScene->GetRegistry().AddComponent(info.guid, ent);
+								if (info.guid == Volt::MeshComponent::comp_guid)
+								{
+									myCurrentScene->GetRegistry().AddComponent<Volt::MeshComponent>(ent, Volt::Entity{ ent, myCurrentScene.get() });
+								}
+								else
+								{
+									myCurrentScene->GetRegistry().AddComponent(info.guid, ent);
+								}
 							}
 						}
 

@@ -14,7 +14,7 @@ namespace Volt
 	class AnimatedCharacter;
 	class ComputePipeline;
 	class Scene;
-	class SceneRenderer;
+	class SceneRendererNew;
 	class Material;
 }
 
@@ -69,7 +69,7 @@ private:
 	void RecursiveRenderJoint(TempJoint& joint);
 
 	Ref<Volt::Scene> myScene;
-	Scope<Volt::SceneRenderer> mySceneRenderer;
+	Scope<Volt::SceneRendererNew> mySceneRenderer;
 
 	int32_t mySelectedAnimation = -1;
 	int32_t mySelectedKeyframe = -1;

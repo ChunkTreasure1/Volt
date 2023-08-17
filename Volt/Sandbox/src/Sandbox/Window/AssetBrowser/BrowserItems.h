@@ -25,7 +25,7 @@ namespace AssetBrowser
 		float GetThumbnailSize() const;
 
 		virtual void PushID() = 0;
-		virtual Ref<Volt::Image2D> GetIcon() const = 0;
+		virtual Ref<Volt::RHI::Image2D> GetIcon() const = 0;
 		virtual ImVec4 GetBackgroundColor() const = 0;
 		virtual std::string GetTypeName() const = 0;
 

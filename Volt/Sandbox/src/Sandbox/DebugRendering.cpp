@@ -17,7 +17,7 @@
 #include <Volt/Components/PhysicsComponents.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 #include <NavigationEditor/Builder/RecastBuilder.h>
@@ -43,13 +43,13 @@ void Sandbox::RenderSelection(Ref<Volt::Camera> camera)
 		}
 
 		auto& meshComp = registry.GetComponent<Volt::MeshComponent>(ent);
-		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle);
+		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle());
 		if (!mesh || !mesh->IsValid())
 		{
 			continue;
 		}
 
-		mySceneRenderer->SubmitOutlineMesh(mesh, myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ent, myRuntimeScene.get()}));
+		//mySceneRenderer->SubmitOutlineMesh(mesh, myRuntimeScene->GetWorldSpaceTransform(Volt::Entity{ent, myRuntimeScene.get()}));
 	}
 }
 
@@ -66,7 +66,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 	auto& registry = scene->GetRegistry();
 
-	Sandbox::Get().GetSceneRenderer()->SetHideStaticMeshes(settings.colliderViewMode == ColliderViewMode::AllHideMesh || settings.navMeshViewMode == NavMeshViewMode::Only);
+	//Sandbox::Get().GetSceneRenderer()->SetHideStaticMeshes(settings.colliderViewMode == ColliderViewMode::AllHideMesh || settings.navMeshViewMode == NavMeshViewMode::Only);
 
 	if (settings.showEntityGizmos)
 	{
@@ -183,12 +183,12 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		{
 			registry.ForEach<Volt::MeshComponent>([&](Wire::EntityId id, const Volt::MeshComponent& comp)
 			{
-				if (comp.handle == Volt::Asset::Null())
+				if (comp.GetHandle() == Volt::Asset::Null())
 				{
 					return;
 				}
 
-				const auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(comp.handle);
+				const auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(comp.GetHandle());
 				if (!mesh || !mesh->IsValid())
 				{
 					return;

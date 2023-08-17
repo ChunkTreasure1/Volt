@@ -12,6 +12,8 @@
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/DDSUtility.h"
 
+#include "Volt/RenderingNew/RendererNew.h"
+
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 
@@ -107,7 +109,7 @@ namespace Volt
 		glfwSetErrorCallback(GLFWErrorCallback);
 		glfwWindowHint(GLFW_SAMPLES, 0);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		//glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
+		glfwWindowHint(GLFW_TITLEBAR, Application::Get().GetInfo().isRuntime ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, false);
 
 		GLFWmonitor* primaryMonitor = nullptr;
@@ -161,9 +163,13 @@ namespace Volt
 			logHook.enabled = true;
 			logHook.logCallback = RHILogCallback;
 
+			RHI::ResourceManagementInfo resourceManagement{};
+			resourceManagement.resourceDeletionCallback = RendererNew::DestroyResource;
+
 			RHI::GraphicsContextCreateInfo cinfo{};
-			cinfo.graphicsApi = RHI::GraphicsAPI::D3D12;
+			cinfo.graphicsApi = RHI::GraphicsAPI::Vulkan;
 			cinfo.loghookInfo = logHook;
+			cinfo.resourceManagementInfo = resourceManagement;
 
 			m_graphicsContext = RHI::GraphicsContext::Create(cinfo);
 			m_swapchain = RHI::Swapchain::Create(m_window);
@@ -541,6 +547,11 @@ namespace Volt
 	const float Window::GetOpacity() const
 	{
 		return glfwGetWindowOpacity(m_window);
+	}
+
+	const float Window::GetTime() const
+	{
+		return static_cast<float>(glfwGetTime());
 	}
 
 	Scope<Window> Window::Create(const WindowProperties& aProperties)

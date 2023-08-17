@@ -2,35 +2,39 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include "Volt/Rendering/Texture/ImageCommon.h"
+#include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt
 {
-	class Image2D;
+	namespace RHI
+	{
+		class Image2D;
+	}
+
 	class Texture2D : public Asset
 	{
 	public:
-		Texture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data);
-		Texture2D(Ref<Image2D> image);
+		Texture2D(RHI::Format format, uint32_t width, uint32_t height, const void* data);
+		Texture2D(Ref<RHI::Image2D> image);
 		Texture2D() = default;
 		~Texture2D() override;
 
 		const uint32_t GetWidth() const;
 		const uint32_t GetHeight() const;
 
-		inline const Ref<Image2D> GetImage() const { return myImage; }
-		inline void SetImage(Ref<Image2D> image) { myImage = image; }
+		inline const Ref<RHI::Image2D> GetImage() const { return m_image; }
+		inline void SetImage(Ref<RHI::Image2D> image) { m_image = image; }
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		AssetType GetType() override { return GetStaticType(); }
 
-		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
-		static Ref<Texture2D> Create(Ref<Image2D> image);
+		static Ref<Texture2D> Create(RHI::Format format, uint32_t width, uint32_t height, const void* data = nullptr);
+		static Ref<Texture2D> Create(Ref<RHI::Image2D> image);
 
 	private:
 		friend class DDSTextureImporter;
 		friend class DefaultTextureImporter;
 
-		Ref<Image2D> myImage;
+		Ref<RHI::Image2D> m_image;
 	};
 }

@@ -29,6 +29,8 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		SetDirty(true);
+
 		m_imageInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
@@ -47,7 +49,7 @@ namespace Volt::RHI
 				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
 
 				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
 			}
 			else
 			{
@@ -59,6 +61,8 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		SetDirty(true);
+
 		VulkanBufferView& vkBufferView = bufferView->AsRef<VulkanBufferView>();
 		auto resource = vkBufferView.GetResource();
 
@@ -84,7 +88,7 @@ namespace Volt::RHI
 				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
 
  				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_writeDescriptors.size() - 1);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
 			}
 			else
 			{
@@ -101,6 +105,8 @@ namespace Volt::RHI
 			return;
 		}
 
+		m_isDirty[index] = false;
+
 		const auto& writeDescriptors = m_activeWriteDescriptors.at(index);
 
 		auto device = GraphicsContext::GetDevice();
@@ -112,6 +118,14 @@ namespace Volt::RHI
 	void* VulkanDescriptorTable::GetHandleImpl()
 	{
 		return nullptr;
+	}
+
+	void VulkanDescriptorTable::SetDirty(bool state)
+	{
+		for (auto dirty : m_isDirty)
+		{
+			dirty = state;
+		}
 	}
 
 	void VulkanDescriptorTable::Invalidate()

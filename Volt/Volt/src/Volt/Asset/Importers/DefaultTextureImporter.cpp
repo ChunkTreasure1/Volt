@@ -27,11 +27,11 @@ namespace Volt
 			data = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		}
 
-		ImageFormat format = ImageFormat::RGBA;
+		RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
 
 		if (isHDR)
 		{
-			format = ImageFormat::RGBA32F;
+			format = RHI::Format::R32G32B32A32_SFLOAT;
 		}
 
 		Ref<Texture2D> texture = CreateRef<Texture2D>(format, width, height, data);

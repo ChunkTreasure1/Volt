@@ -57,6 +57,8 @@ namespace Volt::RHI
 		void* GetHandleImpl() override;
 
 	private:
+		void SetDirty(bool state);
+
 		void Invalidate();
 		void Release();
 

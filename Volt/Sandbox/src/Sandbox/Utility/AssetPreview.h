@@ -5,9 +5,13 @@
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class Image2D;
+	}
+
 	class Scene;
-	class SceneRenderer;
-	class Image2D;
+	class SceneRendererNew;
 	class Camera;
 }
 
@@ -17,16 +21,16 @@ public:
 	AssetPreview(const std::filesystem::path& path);
 
 	void Render();
-	const Ref<Volt::Image2D> GetPreview() const;
-	inline const bool IsRendered() const { return myIsRendered; }
+	const Ref<Volt::RHI::Image2D> GetPreview() const;
+	inline const bool IsRendered() const { return m_isRenderered; }
 
 private:
-	Volt::AssetHandle myAssetHandle;
-	Volt::Entity myEntity;
+	Volt::AssetHandle m_assetHandle;
+	Volt::Entity m_entity;
 
-	bool myIsRendered = false;
+	bool m_isRenderered = false;
 
-	Ref<Volt::Camera> myCamera;
-	Ref<Volt::Scene> myScene;
-	Ref<Volt::SceneRenderer> mySceneRenderer;
+	Ref<Volt::Camera> m_camera;
+	Ref<Volt::Scene> m_scene;
+	Ref<Volt::SceneRendererNew> m_sceneRenderer;
 };

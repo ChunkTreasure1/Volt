@@ -15,11 +15,7 @@
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
 
-#include "Volt/Rendering/UIRenderer.h"
-#include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/DebugRenderer.h"
-#include "Volt/Rendering/Buffer/UniformBufferSet.h"
-#include "Volt/Rendering/Buffer/UniformBuffer.h"
+#include "Volt/RenderingNew/RendererNew.h"
 
 #include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
 
@@ -37,33 +33,14 @@
 #include "Volt/Utility/Noise.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
-#include <VoltRHI/Shader/ShaderCompiler.h>
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
 
-#include <GLFW/glfw3.h>
-#include <imgui.h>
-
 namespace Volt
 {
-	//static Ref<RHI::CommandBuffer> s_commandBuffer;
-	//static Ref<RHI::Shader> s_shader;
-	//static Ref<RHI::RenderPipeline> s_renderPipeline;
-
-	//static Ref<RHI::Image2D> s_renderTarget;
-	//static Ref<RHI::Image2D> s_image;
-
-	//static Ref<RHI::VertexBuffer> s_vertexBuffer;
-	//static Ref<RHI::IndexBuffer> s_indexBuffer;
-
-	//static Ref<RHI::DescriptorTable> s_descriptorTable;
-	//static Ref<RHI::ConstantBuffer> s_constantBuffer;
-
-	static Ref<Mesh> s_mesh;
-
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
@@ -104,25 +81,11 @@ namespace Volt
 		m_window->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 
 		FileSystem::Initialize();
+		RendererNew::Initialize();
 
 		m_threadPool.Initialize(std::thread::hardware_concurrency());
 		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
-
-		{
-			RHI::ShaderCompilerCreateInfo shaderCompilerInfo{};
-			shaderCompilerInfo.flags = RHI::ShaderCompilerFlags::WarningsAsErrors;
-			//shaderCompilerInfo.cacheDirectory = ProjectManager::GetEngineDirectory() / "Engine/Shaders/Cache";
-			shaderCompilerInfo.includeDirectories =
-			{
-				"Engine/Shaders/Source/Includes",
-				"Engine/Shaders/Source/HLSL",
-				"Engine/Shaders/Source/HLSL/Includes",
-				ProjectManager::GetAssetsDirectory()
-			};
-
-			m_shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
-		}
 
 		//Renderer::Initialize();
 		//ShaderRegistry::Initialize();
@@ -207,8 +170,7 @@ namespace Volt
 		m_threadPool.Shutdown();
 		m_renderThreadPool.Shutdown();
 
-		//Renderer::FlushResourceQueues();
-
+		RendererNew::Shutdown();
 		FileSystem::Shutdown();
 
 		m_window = nullptr;
@@ -230,7 +192,7 @@ namespace Volt
 
 			m_window->BeginFrame();
 
-			float time = (float)glfwGetTime();
+			float time = m_window->GetTime();
 			m_currentDeltaTime = time - m_lastTotalTime;
 			m_lastTotalTime = time;
 
@@ -245,8 +207,7 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("Application::Render");
 
-				//Renderer::Flush();
-				//Renderer::UpdateDescriptors();
+				RendererNew::Flush();
 
 				AppRenderEvent renderEvent;
 				OnEvent(renderEvent);
@@ -258,7 +219,6 @@ namespace Volt
 				VT_PROFILE_SCOPE("Application::ImGui");
 
 				m_imguiImplementation->Begin();
-				ImGui::ShowDemoWindow();
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);

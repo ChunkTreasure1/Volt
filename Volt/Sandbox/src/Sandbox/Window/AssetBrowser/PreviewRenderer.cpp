@@ -11,7 +11,7 @@
 
 #include <Volt/Scene/Scene.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/Texture/Image2D.h>
 
 #include <Volt/Components/LightComponents.h>
@@ -30,16 +30,16 @@ PreviewRenderer::PreviewRenderer()
 	}
 
 	myEntity = myPreviewScene->CreateEntity();
-	myEntity.AddComponent<Volt::MeshComponent>();
+	myEntity.AddComponent<Volt::MeshComponent>(myEntity);
 
 	Volt::SceneRendererSpecification spec{};
 	spec.initialResolution = { 256, 256 };
 	spec.scene = myPreviewScene;
 
-	Volt::SceneRendererSettings settings{};
-	settings.enableSkybox = false;
+	//Volt::SceneRendererSettings settings{};
+	//settings.enableSkybox = false;
 
-	myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+	myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 }
 
 PreviewRenderer::~PreviewRenderer()
@@ -83,10 +83,10 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 	//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
-	Volt::ImageSpecification spec{};
-	spec = myPreviewRenderer->GetFinalImage()->GetSpecification();
+	//Volt::ImageSpecification spec{};
+	//spec = myPreviewRenderer->GetFinalImage()->GetSpecification();
 
-	itemPtr->previewImage = Volt::Image2D::Create(spec);
+	//itemPtr->previewImage = Volt::Image2D::Create(spec);
 
 	//auto commandBuffer = Volt::GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
 	//itemPtr->previewImage->CopyFromImage(commandBuffer, myPreviewRenderer->GetFinalImage());
@@ -108,7 +108,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 		return false;
 	}
 
-	myEntity.GetComponent<Volt::MeshComponent>().handle = itemPtr->handle;
+	myEntity.GetComponent<Volt::MeshComponent>().SetMesh(itemPtr->handle);
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
@@ -117,7 +117,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 	const glm::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 2.f;
 	myCamera->SetPosition(position);
 
-	myPreviewRenderer->OnRenderEditor(myCamera);
+	//myPreviewRenderer->OnRenderEditor(myCamera);
 
 	return true;
 }
@@ -138,13 +138,13 @@ bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetI
 		return false;
 	}
 
-	myEntity.GetComponent<Volt::MeshComponent>().handle = meshAsset->handle;
+	myEntity.GetComponent<Volt::MeshComponent>().SetMesh(meshAsset->handle);
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = material->handle;
 
 	myCamera->SetPosition({ 0.f, 0.f, -150.f });
 	myCamera->SetRotation(0.f);
 
-	myPreviewRenderer->OnRenderEditor(myCamera);
+	//myPreviewRenderer->OnRenderEditor(myCamera);
 
 	return true;
 }

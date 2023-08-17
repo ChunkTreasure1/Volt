@@ -51,10 +51,10 @@ void EditorResources::Initialize()
 		myEditorIcons[EditorIcon::Visible] = TryLoadIcon("Editor/Textures/Icons/icon_visible.dds");
 
 		myEditorIcons[EditorIcon::EntityGizmo] = TryLoadIcon("Editor/Textures/Icons/icon_entityGizmo.dds");
-		Volt::Renderer::AddTexture(myEditorIcons[EditorIcon::EntityGizmo]->GetImage());
+		//Volt::Renderer::AddTexture(myEditorIcons[EditorIcon::EntityGizmo]->GetImage());
 
 		myEditorIcons[EditorIcon::LightGizmo] = TryLoadIcon("Editor/Textures/Icons/icon_lightGizmo.dds");
-		Volt::Renderer::AddTexture(myEditorIcons[EditorIcon::LightGizmo]->GetImage());
+		//Volt::Renderer::AddTexture(myEditorIcons[EditorIcon::LightGizmo]->GetImage());
 
 		myEditorIcons[EditorIcon::LocalSpace] = TryLoadIcon("Editor/Textures/Icons/icon_localSpace.dds");
 		myEditorIcons[EditorIcon::WorldSpace] = TryLoadIcon("Editor/Textures/Icons/icon_worldSpace.dds");

@@ -79,7 +79,7 @@ namespace Volt
 		generator.generate(aGlyphs.data(), (int32_t)aGlyphs.size());
 
 		auto bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
-		Ref<Texture2D> texture = Texture2D::Create(ImageFormat::RGBA32F, bitmap.width, bitmap.height, bitmap.pixels);
+		Ref<Texture2D> texture = Texture2D::Create(RHI::Format::R32G32B32A32_SFLOAT, bitmap.width, bitmap.height, bitmap.pixels);
 
 		// Cache
 		{
@@ -326,7 +326,7 @@ namespace Volt
 			if (data.IsValid())
 			{
 				Font::FontHeader header = *data.As<Font::FontHeader>();
-				texture = Texture2D::Create(ImageFormat::RGBA32F, header.width, header.height, data.As<void*>(sizeof(Font::FontHeader)));
+				texture = Texture2D::Create(RHI::Format::R32G32B32A32_SFLOAT, header.width, header.height, data.As<void*>(sizeof(Font::FontHeader)));
 
 				data.Release();
 			}

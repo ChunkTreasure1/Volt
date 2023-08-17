@@ -5,7 +5,7 @@
 
 #include <imgui.h>
 
-namespace Volt
+namespace Volt::RHI
 {
 	class Image2D;
 }
@@ -22,14 +22,14 @@ namespace AssetBrowser
 		Volt::AssetHandle handle = 0;
 		Volt::AssetType type = Volt::AssetType::None;
 
-		Ref<Volt::Image2D> previewImage;
+		Ref<Volt::RHI::Image2D> previewImage;
 
 		MeshImportData& meshImportData;
 		AssetData& meshToImportData;
 
 	protected:
 		void PushID() override;
-		Ref<Volt::Image2D> GetIcon() const override;
+		Ref<Volt::RHI::Image2D> GetIcon() const override;
 		ImVec4 GetBackgroundColor() const override;
 		std::string GetTypeName() const override;
 		

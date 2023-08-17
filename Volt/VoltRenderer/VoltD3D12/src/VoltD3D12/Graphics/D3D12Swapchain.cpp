@@ -116,6 +116,11 @@ namespace Volt::RHI
 		return m_height;
 	}
 
+	const uint32_t D3D12Swapchain::GetFramesInFlight() const
+	{
+		return MaxSwapchainImages;
+	}
+
 	void D3D12Swapchain::Build()
 	{
 		auto d3d12Device = GraphicsContext::GetDevice()->As<D3D12GraphicsDevice>();

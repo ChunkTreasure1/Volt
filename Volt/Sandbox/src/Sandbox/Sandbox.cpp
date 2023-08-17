@@ -62,10 +62,11 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/Input.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Image2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
 #include <Volt/Rendering/Renderer.h>
+
+#include <Volt/RenderingNew/SceneRendererNew.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -80,6 +81,8 @@
 #include <Volt/Discord/DiscordSDK.h>
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
+
+#include <VoltRHI/Images/Image2D.h>
 
 #include <imgui.h>
 
@@ -263,48 +266,43 @@ void Sandbox::SetupNewSceneData()
 		gameSpec.debugName = "Game Viewport";
 		gameSpec.scene = myRuntimeScene;
 
-		Volt::SceneRendererSettings settings{};
-		Volt::SceneRendererSettings gameSettings{};
-
 		if (mySceneRenderer)
 		{
 			spec.initialResolution = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
-			settings = mySceneRenderer->GetSettings();
 		}
 
 		if (myGameSceneRenderer)
 		{
 			gameSpec.initialResolution = { myGameSceneRenderer->GetFinalImage()->GetWidth(), myGameSceneRenderer->GetFinalImage()->GetHeight() };
-			gameSettings = myGameSceneRenderer->GetSettings();
 		}
 
-		{
-			settings.enableIDRendering = true;
-			settings.enableOutline = true;
-			settings.enableDebugRenderer = true;
-			settings.enableGrid = true;
-			settings.enableUI = lowMemory;
-			settings.enableVolumetricFog = true;
+		//{
+		//	settings.enableIDRendering = true;
+		//	settings.enableOutline = true;
+		//	settings.enableDebugRenderer = true;
+		//	settings.enableGrid = true;
+		//	settings.enableUI = lowMemory;
+		//	settings.enableVolumetricFog = true;
 
-			//if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
-			//{
-			//	settings.enableRayTracing = true;
-			//}
+		//	//if (Volt::GraphicsContextVolt::GetPhysicalDevice()->GetCapabilities().supportsRayTracing)
+		//	//{
+		//	//	settings.enableRayTracing = true;
+		//	//}
 
-			gameSettings.enableIDRendering = false;
-			gameSettings.enableOutline = false;
-			gameSettings.enableDebugRenderer = false;
-			gameSettings.enableGrid = false;
-			gameSettings.enableUI = true;
-			gameSettings.enablePostProcessing = true;
-			gameSettings.enableVolumetricFog = true;
-		}
+		//	gameSettings.enableIDRendering = false;
+		//	gameSettings.enableOutline = false;
+		//	gameSettings.enableDebugRenderer = false;
+		//	gameSettings.enableGrid = false;
+		//	gameSettings.enableUI = true;
+		//	gameSettings.enablePostProcessing = true;
+		//	gameSettings.enableVolumetricFog = true;
+		//}
 
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 
 		if (!lowMemory)
 		{
-			myGameSceneRenderer = CreateRef<Volt::SceneRenderer>(gameSpec, gameSettings);
+			myGameSceneRenderer = CreateRef<Volt::SceneRendererNew>(gameSpec);
 		}
 	}
 
@@ -382,8 +380,8 @@ void Sandbox::OnEvent(Volt::Event& e)
 			{
 				sceneRenderer = myGameSceneRenderer;
 			}
-			sceneRenderer->GetSettings().renderScale = e.GetRenderScale();
-			sceneRenderer->ApplySettings();
+			//sceneRenderer->GetSettings().renderScale = e.GetRenderScale();
+			//sceneRenderer->ApplySettings();
 		}
 
 		return true;
@@ -402,8 +400,8 @@ void Sandbox::OnEvent(Volt::Event& e)
 				sceneRenderer = myGameSceneRenderer;
 			}
 
-			sceneRenderer->UpdateSettings(e.GetSettings());
-			sceneRenderer->ApplySettings();
+			//sceneRenderer->UpdateSettings(e.GetSettings());
+			//sceneRenderer->ApplySettings();
 		}
 		return true;
 	});
@@ -894,7 +892,7 @@ bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 {
 	VT_PROFILE_FUNCTION();
 
-	mySceneRenderer->ClearOutlineCommands();
+	//mySceneRenderer->ClearOutlineCommands();
 
 	RenderSelection(myEditorCameraController->GetCamera());
 	RenderGizmos(myRuntimeScene, myEditorCameraController->GetCamera());
@@ -904,7 +902,7 @@ bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)
 		switch (mySceneState)
 		{
 			case SceneState::Play:
-				mySceneRenderer->OnRenderRuntime();
+				//mySceneRenderer->OnRenderRuntime();
 				break;
 			case SceneState::Edit:
 			case SceneState::Pause:

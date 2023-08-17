@@ -69,8 +69,8 @@ namespace Volt
 			pushConstants.density = mySettings.density;
 			pushConstants.globalDensity = mySettings.globalDensity;
 			pushConstants.globalColor = glm::vec4{ mySettings.globalColor, 1.f };
-			pushConstants.sizeMultiplier.x = static_cast<float>(myRenderSize.x) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_WIDTH);
-			pushConstants.sizeMultiplier.y = static_cast<float>(myRenderSize.y) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_HEIGHT);
+			//pushConstants.sizeMultiplier.x = static_cast<float>(myRenderSize.x) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_WIDTH);
+			//pushConstants.sizeMultiplier.y = static_cast<float>(myRenderSize.y) / static_cast<float>(SceneRenderer::VOLUMETRIC_FOG_HEIGHT);
 
 			const auto& outputInjectionResource = resources.GetImageResource(data.injectionImage);
 
@@ -86,15 +86,15 @@ namespace Volt
 				injectionPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorMap.at(Sets::PBR_RESOURCES)->GetOrAllocateDescriptorSet(currentIndex), Sets::PBR_RESOURCES);
 			}
 
-			constexpr uint32_t localSizeX = 16;
-			constexpr uint32_t localSizeY = 16;
-			constexpr uint32_t localSizeZ = 1;
+			//constexpr uint32_t localSizeX = 16;
+			//constexpr uint32_t localSizeY = 16;
+			//constexpr uint32_t localSizeZ = 1;
 
-			const uint32_t groupX = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_WIDTH / (float)localSizeX);
-			const uint32_t groupY = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_HEIGHT / (float)localSizeY);
-			const uint32_t groupZ = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_DEPTH / (float)localSizeZ);
+			//const uint32_t groupX = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_WIDTH / (float)localSizeX);
+			//const uint32_t groupY = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_HEIGHT / (float)localSizeY);
+			//const uint32_t groupZ = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_DEPTH / (float)localSizeZ);
 
-			Renderer::DispatchComputePipeline(commandBuffer, injectionPipeline, groupX, groupY, groupZ);
+			//Renderer::DispatchComputePipeline(commandBuffer, injectionPipeline, groupX, groupY, groupZ);
 		});
 	}
 
@@ -133,14 +133,14 @@ namespace Volt
 				rayMarchPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorMap.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(currentIndex), Sets::RENDERER_BUFFERS);
 			}
 
-			constexpr uint32_t localSizeX = 8;
-			constexpr uint32_t localSizeY = 8;
+			//constexpr uint32_t localSizeX = 8;
+			//constexpr uint32_t localSizeY = 8;
 
-			const uint32_t groupX = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_WIDTH / (float)localSizeX);
-			const uint32_t groupY = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_HEIGHT / (float)localSizeY);
-			const uint32_t groupZ = 1;
+			//const uint32_t groupX = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_WIDTH / (float)localSizeX);
+			//const uint32_t groupY = (uint32_t)std::ceil((float)SceneRenderer::VOLUMETRIC_FOG_HEIGHT / (float)localSizeY);
+			//const uint32_t groupZ = 1;
 
-			Renderer::DispatchComputePipeline(commandBuffer, rayMarchPipeline, groupX, groupY, groupZ);
+			//Renderer::DispatchComputePipeline(commandBuffer, rayMarchPipeline, groupX, groupY, groupZ);
 		});
 	}
 }

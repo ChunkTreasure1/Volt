@@ -249,7 +249,7 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		auto& newCmd = s_uiRendererData->spriteCommands.emplace_back();
-		newCmd.image = texture ? texture->GetImage() : nullptr;
+		//newCmd.image = texture ? texture->GetImage() : nullptr;
 		newCmd.position = position;
 		newCmd.scale = scale;
 		newCmd.rotation = rotation;
@@ -302,10 +302,10 @@ namespace Volt
 			return;
 		}
 
-		uint32_t textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(fontAtlas->GetImage());
+		uint32_t textureIndex = 0; // Renderer::GetBindlessData().textureTable->GetBindingFromTexture(fontAtlas->GetImage());
 		if (textureIndex == 0)
 		{
-			textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(fontAtlas->GetImage());
+			//textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(fontAtlas->GetImage());
 		}
 
 		auto& fontGeom = font->GetMSDFData()->fontGeometry;

@@ -10,7 +10,7 @@
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 	class Scene;
 	class Mesh;
 	class Material;
@@ -43,7 +43,7 @@ private:
 	void SaveCurrentMesh();
 
 	Ref<Volt::Scene> myScene;
-	Ref<Volt::SceneRenderer> mySceneRenderer;
+	Ref<Volt::SceneRendererNew> mySceneRenderer;
 
 	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
 	glm::vec2 myViewportSize = { 1280.f, 720.f };

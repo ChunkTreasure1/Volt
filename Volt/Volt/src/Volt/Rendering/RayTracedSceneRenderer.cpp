@@ -53,24 +53,24 @@ namespace Volt
 
 		scenePtr->GetRegistry().ForEach<MeshComponent>([&](Wire::EntityId, const MeshComponent& comp)
 		{
-			if (comp.handle == Asset::Null())
+			if (comp.GetHandle() == Asset::Null())
 			{
 				return;
 			}
 
-			if (myBLAS.meshToIndexMap.contains(comp.handle))
+			if (myBLAS.meshToIndexMap.contains(comp.GetHandle()))
 			{
 				return;
 			}
 
-			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(comp.handle);
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(comp.GetHandle());
 			if (!mesh || !mesh->IsValid())
 			{
 				return;
 			}
 
 			myBLAS.accelerationStructures.emplace_back(BuildBottomLevelAccelerationStructure(mesh));
-			myBLAS.meshToIndexMap.emplace(comp.handle, myBLAS.accelerationStructures.size() - 1);
+			myBLAS.meshToIndexMap.emplace(comp.GetHandle(), myBLAS.accelerationStructures.size() - 1);
 		});
 	}
 
@@ -86,7 +86,7 @@ namespace Volt
 		auto scenePtr = myScene.lock();
 		scenePtr->GetRegistry().ForEach<MeshComponent, TransformComponent>([&](Wire::EntityId id, const MeshComponent& meshComp, const TransformComponent& transComp)
 		{
-			if (meshComp.handle == Asset::Null() || !transComp.visible)
+			if (meshComp.GetHandle() == Asset::Null() || !transComp.visible)
 			{
 				return;
 			}
@@ -197,7 +197,7 @@ namespace Volt
 		instance.mask = 0xFF;
 		instance.instanceShaderBindingTableRecordOffset = 0;
 		instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-		instance.accelerationStructureReference = myBLAS.accelerationStructures.at(myBLAS.meshToIndexMap.at(meshComp.handle)).deviceAddress;
+		instance.accelerationStructureReference = myBLAS.accelerationStructures.at(myBLAS.meshToIndexMap.at(meshComp.GetHandle())).deviceAddress;
 
 		Ref<GenericBuffer> instanceBuffer = GenericBuffer::Create(VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR, sizeof(VkAccelerationStructureInstanceKHR), &instance);
 

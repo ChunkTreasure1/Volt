@@ -184,9 +184,9 @@ namespace AssetBrowser
 		}
 	}
 
-	Ref<Volt::Image2D> AssetItem::GetIcon() const
+	Ref<Volt::RHI::Image2D> AssetItem::GetIcon() const
 	{
-		Ref<Volt::Image2D> icon = previewImage ? previewImage : nullptr;
+		Ref<Volt::RHI::Image2D> icon = previewImage ? previewImage : nullptr;
 		if (!icon && EditorResources::GetAssetIcon(type))
 		{
 			icon = EditorResources::GetAssetIcon(type)->GetImage();

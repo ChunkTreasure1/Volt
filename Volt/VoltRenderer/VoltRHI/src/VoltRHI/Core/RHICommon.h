@@ -473,13 +473,20 @@ namespace Volt::RHI
 
 	enum class ResourceState
 	{
-		RenderTarget = 0,
-		DepthWrite = BIT(0),
-		DepthRead = BIT(1),
-		Present = BIT(2),
+		Undefined = 0,
+		RenderTarget = BIT(0),
+		DepthWrite = BIT(1),
+		DepthRead = BIT(2),
+		Present = BIT(3),
 
-		PixelShaderRead = BIT(3),
-		NonPixelShaderRead = BIT(4)
+		PixelShaderRead = BIT(4),
+		NonPixelShaderRead = BIT(5),
+
+		TransferSrc = BIT(6),
+		TransferDst = BIT(7),
+
+		IndirectArgument = BIT(8),
+		UnorderedAccess = BIT(9)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ResourceState);
@@ -490,6 +497,11 @@ namespace Volt::RHI
 	{
 		std::function<void(Severity, std::string_view)> logCallback;
 		bool enabled = false;
+	};
+
+	struct ResourceManagementInfo
+	{
+		std::function<void(std::function<void()>&&)> resourceDeletionCallback;
 	};
 
 	struct PhysicalDeviceCreateInfo
@@ -515,7 +527,9 @@ namespace Volt::RHI
 		GraphicsAPI graphicsApi;
 		PhysicalDeviceCreateInfo physicalDeviceInfo;
 		GraphicsDeviceCreateInfo graphicsDeviceInfo;
+
 		LogHookInfo loghookInfo;
+		ResourceManagementInfo resourceManagementInfo;
 	};
 
 	struct DeviceQueueCreateInfo
@@ -592,6 +606,14 @@ namespace Volt::RHI
 		uint32_t instanceCount;
 		uint32_t firstIndex;
 		int32_t vertexOffset;
+		uint32_t firstInstance;
+	};
+
+	struct IndirectCommand
+	{
+		uint32_t vertexCount;
+		uint32_t instanceCount;
+		uint32_t firstVertex;
 		uint32_t firstInstance;
 	};
 }

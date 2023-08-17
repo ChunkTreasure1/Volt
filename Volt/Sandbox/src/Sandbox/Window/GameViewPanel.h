@@ -17,7 +17,7 @@
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 	class Scene;
 }
 
@@ -25,7 +25,7 @@ class EditorCameraController;
 class GameViewPanel : public EditorWindow
 {
 public:
-	GameViewPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, SceneState& aSceneState);
+	GameViewPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, SceneState& aSceneState);
 
 	void UpdateMainContent() override;
 	void OnEvent(Volt::Event& e) override;
@@ -45,7 +45,7 @@ private:
 
 	void Resize(const glm::vec2& viewportSize);
 
-	Ref<Volt::SceneRenderer>& mySceneRenderer;
+	Ref<Volt::SceneRendererNew>& mySceneRenderer;
 	Ref<Volt::Scene>& myEditorScene;
 	SceneState& mySceneState;
 

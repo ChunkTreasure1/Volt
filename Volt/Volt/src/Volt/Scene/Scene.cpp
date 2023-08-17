@@ -29,6 +29,8 @@
 
 #include "Volt/Math/Math.h"
 
+#include "Volt/RenderingNew/RenderScene.h"
+
 #include "Volt/Rendering/RendererStructs.h"
 
 #include "Volt/Vision/Vision.h"
@@ -52,6 +54,7 @@ namespace Volt
 		: myName(name), myAnimationSystem(this)
 	{
 		myVisionSystem = CreateRef<Vision>(this);
+		m_renderScene = CreateRef<RenderScene>(this);
 
 		SetupComponentCreationFunctions();
 		SetupComponentDeletionFunctions();
@@ -63,6 +66,7 @@ namespace Volt
 		: myAnimationSystem(this)
 	{
 		myVisionSystem = CreateRef<Vision>(this);
+		m_renderScene = CreateRef<RenderScene>(this);
 
 		SetupComponentCreationFunctions();
 		SetupComponentDeletionFunctions();
@@ -302,7 +306,7 @@ namespace Volt
 			if (transComp.visible)
 			{
 				Entity entity = { id, this };
-				 
+
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 				cameraComp.camera->SetPosition(entity.GetPosition());
 				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
@@ -590,7 +594,7 @@ namespace Volt
 		}
 
 		const auto tqs = GetWorldSpaceTRS(entity);
-		const glm::mat4 transform = glm::translate(glm::mat4{1.f}, tqs.position)* glm::mat4_cast(tqs.rotation)* glm::scale(glm::mat4{ 1.f }, tqs.scale);
+		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, tqs.position) * glm::mat4_cast(tqs.rotation) * glm::scale(glm::mat4{ 1.f }, tqs.scale);
 
 		{
 			std::unique_lock lock{ myCachedEntityTransformMutex };
@@ -656,6 +660,8 @@ namespace Volt
 				myCachedEntityTransforms.erase(currentEntity);
 			}
 		}
+
+		m_renderScene->Invalidate();
 	}
 
 	Entity Scene::InstantiateSplitMesh(AssetHandle meshHandle)
@@ -675,8 +681,8 @@ namespace Volt
 			Entity childEntity = CreateEntity();
 			ParentEntity(parentEntity, childEntity);
 
-			auto& meshComponent = childEntity.AddComponent<MeshComponent>();
-			meshComponent.handle = mesh->handle;
+			auto& meshComponent = childEntity.AddComponent<MeshComponent>(childEntity);
+			meshComponent.SetMesh(mesh->handle);
 			//meshComponent.subMeshIndex = i;
 			i++;
 		}
@@ -808,8 +814,8 @@ namespace Volt
 			if (createDefaultMesh)
 			{
 				auto ent = newScene->CreateEntity("Cube");
-				auto& meshComp = ent.AddComponent<MeshComponent>();
-				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				auto& meshComp = ent.AddComponent<MeshComponent>(ent);
+				meshComp.SetMesh(AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
 			}
 
 			// Light
@@ -1028,8 +1034,6 @@ namespace Volt
 			AudioListenerComponent& comp = *static_cast<AudioListenerComponent*>(compPtr);
 			comp.OnCreate(id);
 		});
-
-
 	}
 	void Scene::SetupComponentDeletionFunctions()
 	{
@@ -1123,6 +1127,17 @@ namespace Volt
 					actor->RemoveCollider(ColliderType::TriangleMesh);
 				}
 			}
+		});
+
+		myRegistry.SetOnRemoveFunction<MeshComponent>([&](Wire::EntityId id, void* compPtr) 
+		{
+			MeshComponent& comp = *static_cast<MeshComponent*>(compPtr);
+			for (const auto& uuid : comp.renderObjectIds)
+			{
+				m_renderScene->Unregister(uuid);
+			}
+
+			comp.renderObjectIds.clear();
 		});
 	}
 

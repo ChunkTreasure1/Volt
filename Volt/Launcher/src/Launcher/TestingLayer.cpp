@@ -110,7 +110,6 @@ void TestingLayer::OnAttach()
 
 		m_descriptorTable->SetBufferView(m_cubeMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 0);
 		m_descriptorTable->SetBufferView(m_sphereMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 1);
-	
 	}
 }
 

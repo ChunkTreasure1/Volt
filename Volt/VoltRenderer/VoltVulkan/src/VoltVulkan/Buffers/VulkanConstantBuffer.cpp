@@ -38,9 +38,14 @@ namespace Volt::RHI
 			return;
 		}
 
-		// #TODO_Ivar: move to deletion queue
-		VulkanAllocator allocator{};
-		allocator.DestroyBuffer(m_buffer, m_allocation);
+		GraphicsContext::DestroyResource([buffer = m_buffer, allocation = m_allocation]() 
+		{
+			VulkanAllocator allocator{};
+			allocator.DestroyBuffer(buffer, allocation);
+		});
+
+		m_buffer = nullptr;
+		m_allocation = nullptr;
 	}
 
 	Ref<BufferView> VulkanConstantBuffer::GetView()

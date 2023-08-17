@@ -75,6 +75,7 @@ project "Sandbox"
 		"../Sandbox/src/",
 		"../Navigation/src/",
 		"../Nexus/src",
+		"../VoltRenderer/VoltRHI/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -185,6 +186,7 @@ project "Sandbox"
 		{
 			"NOMINMAX",
 			"_HAS_STD_BYTE=0",
+			"VT_PLATFORM_WINDOWS"
 		}
 
 		links

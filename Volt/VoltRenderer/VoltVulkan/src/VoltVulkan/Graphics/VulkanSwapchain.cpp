@@ -200,6 +200,11 @@ namespace Volt::RHI
 		return m_height;
 	}
 
+	const uint32_t VulkanSwapchain::GetFramesInFlight() const
+	{
+		return VulkanSwapchain::MAX_FRAMES_IN_FLIGHT;
+	}
+
 	VkFramebuffer_T* VulkanSwapchain::GetCurrentFramebuffer() const
 	{
 		const auto& data = m_perImageData.at(GetCurrentFrame());

@@ -75,23 +75,23 @@ namespace Volt
 
 		// This assumes that albedo is in slot 0, normal in slot 1 and material in slot 2
 
-		const auto& bindlessData = Renderer::GetBindlessData();
-		const auto& textures = materialPtr->GetTextures();
+		//const auto& bindlessData = Renderer::GetBindlessData();
+		//const auto& textures = materialPtr->GetTextures();
 		
-		if (textures.contains("albedo") && textures.at("albedo"))
-		{
-			gpuMat.albedoTexture = bindlessData.textureTable->GetBindingFromTexture(textures.at("albedo")->GetImage());
-		}
+		//if (textures.contains("albedo") && textures.at("albedo"))
+		//{
+		//	gpuMat.albedoTexture = bindlessData.textureTable->GetBindingFromTexture(textures.at("albedo")->GetImage());
+		//}
 
-		if (textures.contains("normal") && textures.at("normal"))
-		{
-			gpuMat.normalTexture = bindlessData.textureTable->GetBindingFromTexture(textures.at("normal")->GetImage());
-		}
+		//if (textures.contains("normal") && textures.at("normal"))
+		//{
+		//	gpuMat.normalTexture = bindlessData.textureTable->GetBindingFromTexture(textures.at("normal")->GetImage());
+		//}
 
-		if (textures.contains("material") && textures.at("material"))
-		{
-			gpuMat.materialTexture = bindlessData.textureTable->GetBindingFromTexture(textures.at("material")->GetImage());
-		}
+		//if (textures.contains("material") && textures.at("material"))
+		//{
+		//	gpuMat.materialTexture = bindlessData.textureTable->GetBindingFromTexture(textures.at("material")->GetImage());
+		//}
 
 		const auto& materialData = materialPtr->GetMaterialData();
 		gpuMat.color = materialData.color;

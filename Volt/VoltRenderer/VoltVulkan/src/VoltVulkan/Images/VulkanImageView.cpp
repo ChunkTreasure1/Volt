@@ -44,8 +44,13 @@ namespace Volt::RHI
 
 	VulkanImageView::~VulkanImageView()
 	{
-		auto device = GraphicsContext::GetDevice();
-		vkDestroyImageView(device->GetHandle<VkDevice>(), m_imageView, nullptr);
+		GraphicsContext::DestroyResource([imageView = m_imageView]()
+		{
+			auto device = GraphicsContext::GetDevice();
+			vkDestroyImageView(device->GetHandle<VkDevice>(), imageView, nullptr);
+		});
+
+		m_imageView = nullptr;
 	}
 
 	const Format VulkanImageView::GetFormat() const

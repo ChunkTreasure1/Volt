@@ -97,13 +97,25 @@ namespace Volt
 	}), ParticleEmitterComponent);
 
 	SERIALIZE_COMPONENT((struct MeshComponent
-	{
-		PROPERTY(Name = Mesh, SpecialType = Asset, AssetType = Mesh) AssetHandle handle = Asset::Null();
-		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle overrideMaterial = Asset::Null();
+	{ 
+		MeshComponent() = default;
+		MeshComponent(Entity entity)
+			: m_entity(entity)
+		{ }
 
+		PROPERTY(Name = Material, SpecialType = Asset, AssetType = Material) AssetHandle overrideMaterial = Asset::Null();
 		int32_t subMaterialIndex = -1;
+		std::vector<UUID> renderObjectIds;
+
+		void SetMesh(AssetHandle handle);
+		inline const AssetHandle GetHandle() const { return m_handle; }
 
 		CREATE_COMPONENT_GUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid)
+
+	private:
+		Entity m_entity{};
+		PROPERTY(Name = Mesh, SpecialType = Asset, AssetType = Mesh) AssetHandle m_handle = Asset::Null();
+
 	}), MeshComponent);
 
 	SERIALIZE_COMPONENT((struct DecalComponent

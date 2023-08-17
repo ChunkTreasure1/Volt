@@ -14,7 +14,7 @@
 #include <Volt/Rendering/Texture/Texture2D.h>
 
 #include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 
 #include <Volt/Components/Components.h>
 #include <Volt/Components/LightComponents.h>
@@ -45,7 +45,7 @@ void PrefabEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (asset && asset->IsValid() && asset->GetType() == Volt::AssetType::Mesh)
 	{
-		myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = asset->handle;
+		myPreviewEntity.GetComponent<Volt::MeshComponent>().SetMesh(asset->handle);
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
 		mySelectedSubMesh = 0;
 	}
@@ -67,10 +67,10 @@ void PrefabEditorPanel::OnOpen()
 		spec.debugName = "Prefab Editor";
 		spec.scene = myScene;
 
-		Volt::SceneRendererSettings settings{};
-		settings.enableGrid = true;
+		//Volt::SceneRendererSettings settings{};
+		//settings.enableGrid = true;
 
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 	}
 }
 
@@ -161,7 +161,7 @@ void PrefabEditorPanel::UpdateToolbar()
 		if (!prefabPath.empty() && FileSystem::Exists(prefabPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(prefabPath);
-			myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = myCurrentMesh->handle;
+			myPreviewEntity.GetComponent<Volt::MeshComponent>().SetMesh(myCurrentMesh->handle);
 			mySelectedSubMesh = 0;
 		}
 	}

@@ -136,7 +136,9 @@ namespace Volt::RHI
 				break;
 		}
 
-		return false;
+		outResult.preProcessedResult = data.shaderSource;
+
+		return true;
 	}
 
 	bool ShaderPreProcessor::PreProcessPixelSource(const PreProcessorData& data, PreProcessorResult& outResult)

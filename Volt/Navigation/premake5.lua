@@ -58,6 +58,7 @@ project "Navigation"
 		"src/",
 		"../Volt/src",
 		"../Nexus/src",
+		"../VoltRenderer/VoltRHI/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
@@ -122,6 +123,7 @@ project "Navigation"
 		defines
 		{
 			"NOMINMAX",
+			"VT_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"

@@ -14,7 +14,7 @@ namespace Volt
 		static void Initialize();
 		static void Shutdown();
 
-		static void Execute(SceneRenderer::PerThreadData& submitCommands);
+		//static void Execute(SceneRenderer::PerThreadData& submitCommands);
 
 		static void DrawBillboard(const glm::vec3& pos, const glm::vec3& size, const glm::vec4& color, uint32_t id = 0);
 		static void DrawBillboard(Ref<Texture2D> texture, const glm::vec3& pos, const glm::vec3& size, const glm::vec4& color, uint32_t id = 0);

@@ -1,10 +1,12 @@
 #include "vtpch.h"
 #include "DDSTextureImporter.h"
 
-#include "Volt/Rendering/Texture/ImageCommon.h"
-#include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Utility/ImageUtility.h"
+
+#include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <VoltRHI/Buffers/StorageBuffer.h>
 
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
@@ -29,41 +31,41 @@ namespace Volt
 			}
 		}
 
-		static ImageFormat DDSToLampImageFormat(tdl::DDSFile::DXGIFormat format)
+		static RHI::Format DDSToImageFormat(tdl::DDSFile::DXGIFormat format)
 		{
 			switch (format)
 			{
-				case tdl::DDSFile::DXGIFormat::R32G32B32A32_Float: return ImageFormat::RGBA32F;
-				case tdl::DDSFile::DXGIFormat::R16G16B16A16_Float: return ImageFormat::RGBA16F;
+				case tdl::DDSFile::DXGIFormat::R32G32B32A32_Float: return RHI::Format::R32G32B32A32_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R16G16B16A16_Float: return RHI::Format::R16G16B16A16_SFLOAT;
 
-				case tdl::DDSFile::DXGIFormat::R32G32_Float: return ImageFormat::RG32F;
-				case tdl::DDSFile::DXGIFormat::R16G16_Float: return ImageFormat::RG16F;
+				case tdl::DDSFile::DXGIFormat::R32G32_Float: return RHI::Format::R32G32_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R16G16_Float: return RHI::Format::R16G16_SFLOAT;
 
-				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm: return ImageFormat::RGBA;
-				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB: return ImageFormat::SRGB;
+				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm: return RHI::Format::R8G8B8A8_UNORM;
+				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB: return RHI::Format::R8G8B8A8_SRGB;
 
-				case tdl::DDSFile::DXGIFormat::R32_Float: return ImageFormat::R32F;
-				case tdl::DDSFile::DXGIFormat::R32_UInt: return ImageFormat::R32UI;
-				case tdl::DDSFile::DXGIFormat::R32_SInt: return ImageFormat::R32SI;
+				case tdl::DDSFile::DXGIFormat::R32_Float: return RHI::Format::R32_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R32_UInt: return RHI::Format::R32_UINT;
+				case tdl::DDSFile::DXGIFormat::R32_SInt: return RHI::Format::R32_SINT;
 
-				case tdl::DDSFile::DXGIFormat::BC1_UNorm: return ImageFormat::BC1;
-				case tdl::DDSFile::DXGIFormat::BC1_UNorm_SRGB: return ImageFormat::BC1SRGB;
+				case tdl::DDSFile::DXGIFormat::BC1_UNorm: return RHI::Format::BC1_RGB_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC1_UNorm_SRGB: return RHI::Format::BC1_RGB_SRGB_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC2_UNorm: return ImageFormat::BC2;
-				case tdl::DDSFile::DXGIFormat::BC2_UNorm_SRGB: return ImageFormat::BC2SRGB;
+				case tdl::DDSFile::DXGIFormat::BC2_UNorm: return RHI::Format::BC2_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC2_UNorm_SRGB: return RHI::Format::BC2_SRGB_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC3_UNorm: return ImageFormat::BC3;
-				case tdl::DDSFile::DXGIFormat::BC3_UNorm_SRGB: return ImageFormat::BC3SRGB;
+				case tdl::DDSFile::DXGIFormat::BC3_UNorm: return RHI::Format::BC3_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC3_UNorm_SRGB: return RHI::Format::BC3_SRGB_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC4_UNorm: return ImageFormat::BC4;
+				case tdl::DDSFile::DXGIFormat::BC4_UNorm: return RHI::Format::BC4_UNORM_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC5_UNorm: return ImageFormat::BC5;
+				case tdl::DDSFile::DXGIFormat::BC5_UNorm: return RHI::Format::BC5_UNORM_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC7_UNorm: return ImageFormat::BC7;
-				case tdl::DDSFile::DXGIFormat::BC7_UNorm_SRGB: return ImageFormat::BC7SRGB;
+				case tdl::DDSFile::DXGIFormat::BC7_UNorm: return RHI::Format::BC7_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC7_UNorm_SRGB: return RHI::Format::BC7_SRGB_BLOCK;
 			}
 
-			return ImageFormat::RGBA;
+			return RHI::Format::R8G8B8A8_UNORM;
 		}
 	}
 
@@ -84,95 +86,84 @@ namespace Volt
 
 		auto imageData = dds.GetImageData();
 
-		const VkDeviceSize size = imageData->m_memSlicePitch;
+		const size_t size = imageData->m_memSlicePitch;
 		const void* dataPtr = imageData->m_mem;
 
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
 
-		VkBuffer stagingBuffer;
-		VmaAllocation stagingAllocation;
-
-		VulkanAllocatorVolt allocator{ "Texture2D - Create" };
-
-		// Create staging buffer
-		{
-			VkBufferCreateInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			info.size = size;
-			info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
-		}
+		Ref<RHI::StorageBuffer> stagingBuffer = RHI::StorageBuffer::Create(1, 1, RHI::MemoryUsage::Staging);
+		stagingBuffer->ResizeByteSize(size);
 
 		// Map memory
 		{
-			void* bufferPtr = allocator.MapMemory<void>(stagingAllocation);
+			void* bufferPtr = stagingBuffer->Map<void>();;
 			memcpy_s(bufferPtr, size, dataPtr, size);
-			allocator.UnmapMemory(stagingAllocation);
+			stagingBuffer->Unmap();
 		}
 
-		Ref<Image2D> image;
+		Ref<RHI::Image2D> image;
+		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 
 		// Create image
 		{
-			ImageSpecification specification{};
-			specification.format = Utility::DDSToLampImageFormat(dds.GetFormat());
-			specification.usage = ImageUsage::Texture;
+			RHI::ImageSpecification specification{};
+			specification.format = Utility::DDSToImageFormat(dds.GetFormat());
+			specification.usage = RHI::ImageUsage::Texture;
 			specification.width = width;
 			specification.height = height;
 			specification.mips = dds.GetMipCount();
 			specification.generateMips = false;
 			specification.debugName = path.stem().string();
 
-			image = Image2D::Create(specification);
-
-			Utility::TransitionImageLayout(image->GetHandle(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-			Utility::CopyBufferToImage(stagingBuffer, image->GetHandle(), width, height);
+			image = RHI::Image2D::Create(specification);
 		}
 
-		allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
+		commandBuffer->Begin();
+
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.oldState = RHI::ResourceState::Undefined;
+			barrier.newState = RHI::ResourceState::TransferDst;
+			barrier.resource = image;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->CopyBufferToImage(stagingBuffer, image, width, height, 0);
 
 		// Set mip data
 		{
 			for (uint32_t i = 1; i < dds.GetMipCount(); i++)
 			{
-				VmaAllocation mipStagingAllocation;
-				VkBuffer mipStagingBuffer;
-
 				auto mipData = dds.GetImageData(i);
-				const VkDeviceSize mipSize = mipData->m_memSlicePitch;
-
-				// Create mip staging buffer
-				{
-					VkBufferCreateInfo info{};
-					info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-					info.size = mipSize;
-					info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-					info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-					mipStagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, mipStagingBuffer);
-				}
+				const size_t mipSize = mipData->m_memSlicePitch;
 
 				// Map mip memory
 				{
-					void* bufferPtr = allocator.MapMemory<void>(mipStagingAllocation);
+					void* bufferPtr = stagingBuffer->Map<void>();
 					memcpy_s(bufferPtr, mipSize, mipData->m_mem, mipSize);
-					allocator.UnmapMemory(mipStagingAllocation);
+					stagingBuffer->Unmap();
 				}
 
-				Utility::CopyBufferToImage(mipStagingBuffer, image->GetHandle(), mipData->m_width, mipData->m_height, i);
-				allocator.DestroyBuffer(mipStagingBuffer, mipStagingAllocation);
+				commandBuffer->CopyBufferToImage(stagingBuffer, image, mipData->m_width, mipData->m_height, i);
 			}
 		}
 
-		//Utility::TransitionImageFromTransferQueue(image->GetHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		Utility::TransitionImageLayout(image->GetHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		image->OverrideLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		{
+			RHI::ResourceBarrierInfo barrier{};
+			barrier.oldState = RHI::ResourceState::TransferDst;
+			barrier.newState = RHI::ResourceState::PixelShaderRead;
+			barrier.resource = image;
+
+			commandBuffer->ResourceBarrier({ barrier });
+		}
+
+		commandBuffer->End();
+		commandBuffer->Execute();
 
 		Ref<Texture2D> texture = CreateRef<Texture2D>();
-		texture->myImage = image;
+		texture->m_image = image;
 
 		return texture;
 	}

@@ -54,12 +54,12 @@ namespace Volt::RHI
 	{
 		Invalidate();
 	}
-	
+
 	VulkanRenderPipeline::~VulkanRenderPipeline()
 	{
 		Release();
 	}
-	
+
 	void VulkanRenderPipeline::Invalidate()
 	{
 		Release();
@@ -67,9 +67,9 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 		const auto& shaderResources = m_createInfo.shader->GetResources();
 		Ref<VulkanShader> vulkanShader = m_createInfo.shader->As<VulkanShader>();
-		
+
 		VertexAttributeData vertexAttrData{};
-		
+
 		if (shaderResources.vertexLayout.IsValid())
 		{
 			vertexAttrData = Utility::CreateVertexLayout(shaderResources.vertexLayout);
@@ -80,7 +80,7 @@ namespace Volt::RHI
 			VkPushConstantRange pushConstantRange{};
 			pushConstantRange.size = shaderResources.constants.size;
 			pushConstantRange.offset = shaderResources.constants.offset;
-			pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; //static_cast<VkShaderStageFlags>(shaderResources.constants.stageFlags);
+			pushConstantRange.stageFlags = static_cast<VkShaderStageFlags>(shaderResources.constants.stageFlags);
 
 			assert(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
 
@@ -92,7 +92,7 @@ namespace Volt::RHI
 			info.pSetLayouts = setLayouts.data();
 			info.pushConstantRangeCount = shaderResources.constants.size > 0 ? 1 : 0;
 			info.pPushConstantRanges = &pushConstantRange;
-			
+
 			VT_VK_CHECK(vkCreatePipelineLayout(device->GetHandle<VkDevice>(), &info, nullptr, &m_pipelineLayout));
 		}
 
@@ -153,7 +153,7 @@ namespace Volt::RHI
 				blendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 				blendAttachment.blendEnable = VK_FALSE;
 			}
-			
+
 			// #TODO_Ivar: Add blend attachments
 			blendInfo.attachmentCount = static_cast<uint32_t>(blendAttachments.size());
 			blendInfo.pAttachments = blendAttachments.data();
@@ -215,7 +215,7 @@ namespace Volt::RHI
 			// #TODO_Ivar: How are we supposed to find these?
 			//pipelineRenderingInfo.depthAttachmentFormat;
 			//pipelineRenderingInfo.stencilAttachmentFormat;
-		
+
 			std::vector<VkPipelineShaderStageCreateInfo> pipelineStageInfos{};
 
 			for (const auto& [stage, stageInfo] : vulkanShader->GetPipelineStageInfos())
@@ -244,7 +244,7 @@ namespace Volt::RHI
 			pipelineInfo.layout = m_pipelineLayout;
 			pipelineInfo.subpass = 0;
 			pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-		
+
 			VT_VK_CHECK(vkCreateGraphicsPipelines(device->GetHandle<VkDevice>(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline));
 		}
 	}
@@ -256,15 +256,17 @@ namespace Volt::RHI
 
 	void VulkanRenderPipeline::Release()
 	{
-		// #TODO_Ivar: Move to release queue
 		if (m_pipeline == nullptr)
 		{
 			return;
 		}
 
-		auto device = GraphicsContext::GetDevice();
-		vkDestroyPipelineLayout(device->GetHandle<VkDevice>(), m_pipelineLayout, nullptr);
-		vkDestroyPipeline(device->GetHandle<VkDevice>(), m_pipeline, nullptr);
+		GraphicsContext::DestroyResource([pipelineLayout = m_pipelineLayout, pipeline = m_pipeline]()
+		{
+			auto device = GraphicsContext::GetDevice();
+			vkDestroyPipelineLayout(device->GetHandle<VkDevice>(), pipelineLayout, nullptr);
+			vkDestroyPipeline(device->GetHandle<VkDevice>(), pipeline, nullptr);
+		});
 
 		m_pipelineLayout = nullptr;
 		m_pipeline = nullptr;

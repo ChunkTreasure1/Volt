@@ -87,7 +87,7 @@ namespace AssetBrowser
 		ImGui::PushID(path.string().c_str());
 	}
 
-	Ref<Volt::Image2D> DirectoryItem::GetIcon() const
+	Ref<Volt::RHI::Image2D> DirectoryItem::GetIcon() const
 	{
 		return EditorResources::GetEditorIcon(EditorIcon::Directory)->GetImage();
 	}

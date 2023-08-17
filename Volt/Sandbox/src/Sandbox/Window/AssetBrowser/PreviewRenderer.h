@@ -5,7 +5,7 @@
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 	class Scene;
 	class Camera;
 }
@@ -27,7 +27,7 @@ private:
 	bool RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem);
 	bool RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem);
 
-	Ref<Volt::SceneRenderer> myPreviewRenderer;
+	Ref<Volt::SceneRendererNew> myPreviewRenderer;
 	Ref<Volt::Scene> myPreviewScene;
 	Ref<Volt::Camera> myCamera;
 

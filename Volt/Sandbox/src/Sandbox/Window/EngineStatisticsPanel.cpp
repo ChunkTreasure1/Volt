@@ -6,12 +6,12 @@
 #include <Volt/Scripting/EnumGenerator.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/RenderPipeline/RenderPipeline.h>
 
 #include <Volt/Utility/UIUtility.h>
 
-EngineStatisticsPanel::EngineStatisticsPanel(Ref<Volt::Scene>& aScene, Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::SceneRenderer>& gameSceneRenderer)
+EngineStatisticsPanel::EngineStatisticsPanel(Ref<Volt::Scene>& aScene, Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::SceneRendererNew>& gameSceneRenderer)
 	: EditorWindow("Engine Statistics"), myScene(aScene), mySceneRenderer(sceneRenderer), myGameSceneRenderer(gameSceneRenderer)
 {
 }
@@ -32,7 +32,7 @@ void EngineStatisticsPanel::UpdateMainContent()
 	{
 		UI::Header("Time");
 
-		const auto timeInfo = (myScene->IsPlaying() && myGameSceneRenderer) ? myGameSceneRenderer->GetTimestamps() : mySceneRenderer->GetTimestamps();
+		/*const auto timeInfo = (myScene->IsPlaying() && myGameSceneRenderer) ? myGameSceneRenderer->GetTimestamps() : mySceneRenderer->GetTimestamps();
 		for (const auto& timestamp : timeInfo)
 		{
 			ImGui::TextUnformatted(std::format("{}: {:.2f} ms", timestamp.label, timestamp.time).c_str());
@@ -52,7 +52,7 @@ void EngineStatisticsPanel::UpdateMainContent()
 		ImGui::Text("Clipping Primitives: %d", pipelineStats.clippingPrimitives);
 		ImGui::Text("Pixel Shader Invocations: %d", pipelineStats.fragmentShaderInvocations);
 		ImGui::Text("Compute Shader Invocations: %d", pipelineStats.computeShaderInvocations);
-		ImGui::Text("Total Scene Triangle Count: %d", stats.triangleCount);
+		ImGui::Text("Total Scene Triangle Count: %d", stats.triangleCount); */
 	}
 
 	if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))

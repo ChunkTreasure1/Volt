@@ -41,6 +41,7 @@ namespace Volt::RHI
 		const uint32_t GetCurrentFrame() const override;
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
+		const uint32_t GetFramesInFlight() const override;
 
 		inline VkRenderPass_T* GetRenderPass() const { return m_renderPass; }
 		inline VkCommandBuffer_T* GetCommandBuffer(const uint32_t index) const { return m_perFrameInFlightData.at(index).commandBuffer; }

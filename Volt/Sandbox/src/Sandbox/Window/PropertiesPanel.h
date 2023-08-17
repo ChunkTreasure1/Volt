@@ -26,13 +26,13 @@ struct PropertyEvent
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 }
 
 class PropertiesPanel : public EditorWindow
 {
 public:
-	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRenderer>& currentSceneRenderer, SceneState& sceneState, const std::string& id);
+	PropertiesPanel(Ref<Volt::Scene>& currentScene, Ref<Volt::SceneRendererNew>& currentSceneRenderer, SceneState& sceneState, const std::string& id);
 	void UpdateMainContent() override;
 
 private:
@@ -45,7 +45,7 @@ private:
 	void DrawGraphKeyProperties(const Wire::EntityId id, Volt::VisualScriptingComponent& comp);
 
 	Ref<Volt::Scene>& myCurrentScene;
-	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;
+	Ref<Volt::SceneRendererNew>& myCurrentSceneRenderer;
 	SceneState& mySceneState;
 
 	std::string myComponentSearchQuery;

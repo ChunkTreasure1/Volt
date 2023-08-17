@@ -8,7 +8,7 @@
 
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/Texture/Image2D.h>
 
 #include <Volt/Utility/ImageUtility.h>
@@ -51,7 +51,7 @@ void GameLayer::OnAttach()
 		settings.enablePostProcessing = true;
 		settings.enableVolumetricFog = true;
 
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 
 		myScene->SetRenderSize(spec.initialResolution.x, spec.initialResolution.y);
 	}
@@ -81,8 +81,8 @@ void GameLayer::OnEvent(Volt::Event& e)
 
 	dispatcher.Dispatch<Volt::OnRenderScaleChangedEvent>([&](Volt::OnRenderScaleChangedEvent& e)
 	{
-		mySceneRenderer->GetSettings().renderScale = e.GetRenderScale();
-		mySceneRenderer->ApplySettings();
+		//mySceneRenderer->GetSettings().renderScale = e.GetRenderScale();
+		//mySceneRenderer->ApplySettings();
 
 		return true;
 	});
@@ -91,15 +91,15 @@ void GameLayer::OnEvent(Volt::Event& e)
 	{
 		if (e.GetKeyCode() == VT_KEY_F6)
 		{
-			Volt::RenderMode renderMode = mySceneRenderer->GetCurrentRenderMode();
-			(*(uint32_t*)&renderMode)++;
+			//Volt::RenderMode renderMode = mySceneRenderer->GetCurrentRenderMode();
+			//(*(uint32_t*)&renderMode)++;
 
-			if (renderMode == Volt::RenderMode::COUNT)
-			{
-				renderMode = Volt::RenderMode::Default;
-			}
+			//if (renderMode == Volt::RenderMode::COUNT)
+			//{
+			//	renderMode = Volt::RenderMode::Default;
+			//}
 
-			mySceneRenderer->SetRenderMode(renderMode);
+			//mySceneRenderer->SetRenderMode(renderMode);
 		}
 
 		return false;
@@ -141,43 +141,43 @@ bool GameLayer::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 bool GameLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 {
-	mySceneRenderer->OnRenderRuntime();
+	//mySceneRenderer->OnRenderRuntime();
 
 	//auto& swapchain = Volt::Application::Get().GetWindow().GetSwapchain();
 
-	const glm::uvec2 srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
-	//const glm::uvec2 dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
+	//const glm::uvec2 srcSize = { mySceneRenderer->GetFinalImage()->GetWidth(), mySceneRenderer->GetFinalImage()->GetHeight() };
+	////const glm::uvec2 dstSize = { swapchain.GetWidth(), swapchain.GetHeight() };
 
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.pNext = nullptr;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	//VkCommandBufferBeginInfo beginInfo{};
+	//beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	//beginInfo.pNext = nullptr;
+	//beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	//VT_VK_CHECK(vkBeginCommandBuffer(swapchain.GetCurrentCommandBuffer(), &beginInfo));
+	////VT_VK_CHECK(vkBeginCommandBuffer(swapchain.GetCurrentCommandBuffer(), &beginInfo));
 
-	VkImageBlit blitRegion{};
-	blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	blitRegion.srcSubresource.baseArrayLayer = 0;
-	blitRegion.srcSubresource.layerCount = 1;
-	blitRegion.srcSubresource.mipLevel = 0;
+	//VkImageBlit blitRegion{};
+	//blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//blitRegion.srcSubresource.baseArrayLayer = 0;
+	//blitRegion.srcSubresource.layerCount = 1;
+	//blitRegion.srcSubresource.mipLevel = 0;
 
-	blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	blitRegion.dstSubresource.baseArrayLayer = 0;
-	blitRegion.dstSubresource.layerCount = 1;
-	blitRegion.dstSubresource.mipLevel = 0;
+	//blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//blitRegion.dstSubresource.baseArrayLayer = 0;
+	//blitRegion.dstSubresource.layerCount = 1;
+	//blitRegion.dstSubresource.mipLevel = 0;
 
-	blitRegion.srcOffsets[0] = { 0, 0, 0 };
-	blitRegion.srcOffsets[1] = { (int32_t)srcSize.x, (int32_t)srcSize.y, 1 };
+	//blitRegion.srcOffsets[0] = { 0, 0, 0 };
+	//blitRegion.srcOffsets[1] = { (int32_t)srcSize.x, (int32_t)srcSize.y, 1 };
 
-	blitRegion.dstOffsets[0] = { 0, 0, 0 };
-	//blitRegion.dstOffsets[1] = { (int32_t)dstSize.x, (int32_t)dstSize.y, 1 };
+	//blitRegion.dstOffsets[0] = { 0, 0, 0 };
+	////blitRegion.dstOffsets[1] = { (int32_t)dstSize.x, (int32_t)dstSize.y, 1 };
 
-	VkImageSubresourceRange subResourceRange{};
-	subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subResourceRange.baseArrayLayer = 0;
-	subResourceRange.baseMipLevel = 0;
-	subResourceRange.layerCount = 1;
-	subResourceRange.levelCount = 1;
+	//VkImageSubresourceRange subResourceRange{};
+	//subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//subResourceRange.baseArrayLayer = 0;
+	//subResourceRange.baseMipLevel = 0;
+	//subResourceRange.layerCount = 1;
+	//subResourceRange.levelCount = 1;
 
 	//mySceneRenderer->GetFinalImage()->TransitionToLayout(swapchain.GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	//Volt::Utility::TransitionImageLayout(swapchain.GetCurrentCommandBuffer(), swapchain.GetCurrentImage(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subResourceRange);
@@ -294,8 +294,8 @@ void GameLayer::TrySceneTransition()
 
 	myStoredScene = nullptr;
 
-	myLastWidth = mySceneRenderer->GetOriginalSize().x;
-	myLastHeight = mySceneRenderer->GetOriginalSize().y;
+	//myLastWidth = mySceneRenderer->GetOriginalSize().x;
+	//myLastHeight = mySceneRenderer->GetOriginalSize().y;
 
 	// Scene Renderer
 	{
@@ -304,8 +304,8 @@ void GameLayer::TrySceneTransition()
 		spec.scene = myScene;
 		spec.initialResolution = { myLastWidth, myLastHeight };
 
-		Volt::SceneRendererSettings settings = mySceneRenderer->GetSettings();
-		mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+		//Volt::SceneRendererSettings settings = mySceneRenderer->GetSettings();
+		mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 	}
 
 	myScene->SetRenderSize(myLastWidth, myLastHeight);

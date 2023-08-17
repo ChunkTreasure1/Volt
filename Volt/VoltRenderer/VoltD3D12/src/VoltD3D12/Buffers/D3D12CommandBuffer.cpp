@@ -58,6 +58,14 @@ namespace Volt::RHI
 		commandData.commandAllocator->Reset();
 	}
 
+	void D3D12CommandBuffer::WaitForLastFence()
+	{
+	}
+
+	void D3D12CommandBuffer::WaitForFences()
+	{
+	}
+
 	void D3D12CommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
 	{
 		auto& commandData = GetCommandData();
@@ -73,6 +81,22 @@ namespace Volt::RHI
 	}
 
 	void D3D12CommandBuffer::DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+	}
+
+	void D3D12CommandBuffer::DrawIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+	}
+
+	void D3D12CommandBuffer::DrawIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
+	{
+	}
+
+	void D3D12CommandBuffer::DrawIndexedIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
+	{
+	}
+
+	void D3D12CommandBuffer::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 	}
 
@@ -104,6 +128,11 @@ namespace Volt::RHI
 		}
 
 		GetCommandData().commandList->IASetPrimitiveTopology(topologyType);
+	}
+
+	void D3D12CommandBuffer::BindPipeline(Ref<ComputePipeline> pipeline)
+	{
+
 	}
 
 	void D3D12CommandBuffer::BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
@@ -194,6 +223,10 @@ namespace Volt::RHI
 	}
 
 	void D3D12CommandBuffer::CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size)
+	{
+	}
+
+	void D3D12CommandBuffer::CopyBufferToImage(Ref<StorageBuffer> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
 	{
 	}
 

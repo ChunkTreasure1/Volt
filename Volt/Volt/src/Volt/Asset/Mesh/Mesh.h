@@ -51,6 +51,7 @@ namespace Volt
 		inline Ref<RHI::VertexBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
 		inline Ref<RHI::IndexBuffer> GetIndexBuffer() const { return m_indexBuffer; }
 		inline Ref<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
+		inline Ref<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexStorageBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -77,6 +78,7 @@ namespace Volt
 		Ref<RHI::IndexBuffer> m_indexBuffer;
 
 		Ref<RHI::StorageBuffer> m_vertexPositionsBuffer;
+		Ref<RHI::StorageBuffer> m_indexStorageBuffer;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;

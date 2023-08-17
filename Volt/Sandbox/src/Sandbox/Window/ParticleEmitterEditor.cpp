@@ -8,7 +8,7 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -22,7 +22,7 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
-	myReferenceModel.AddComponent<Volt::MeshComponent>();
+	myReferenceModel.AddComponent<Volt::MeshComponent>(myReferenceModel);
 
 	myLightEntity = Volt::Entity(myPreviewScene->GetAllEntitiesWith<Volt::DirectionalLightComponent>()[0], myPreviewScene.get());
 	auto& tempComp = myLightEntity.GetComponent<Volt::DirectionalLightComponent>();
@@ -42,10 +42,10 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 		spec.debugName = "Particle System Editor";
 		spec.scene = myPreviewScene;
 
-		Volt::SceneRendererSettings settings{};
-		settings.enableGrid = true;
+		//Volt::SceneRendererSettings settings{};
+		//settings.enableGrid = true;
 
-		myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec, settings);
+		myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 	}
 }
 
@@ -269,7 +269,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 					UI::PropertyAxisColor("Position", modelPos);
 					UI::PropertyAxisColor("Rotation", modelRot);
 					UI::PropertyAxisColor("Scale", modelScale);
-					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, Volt::AssetType::Mesh);
+					//EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().GetHandle(), Volt::AssetType::Mesh);
 					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().overrideMaterial, Volt::AssetType::Material);
 
 					myReferenceModel.SetPosition(modelPos);

@@ -4,15 +4,15 @@
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 }
 
 class RendererSettingsPanel : public EditorWindow
 {
 public:
-	RendererSettingsPanel(Ref<Volt::SceneRenderer>& sceneRenderer);
+	RendererSettingsPanel(Ref<Volt::SceneRendererNew>& sceneRenderer);
 	void UpdateMainContent() override;
 
 private:
-	Ref<Volt::SceneRenderer>& mySceneRenderer;
+	Ref<Volt::SceneRendererNew>& mySceneRenderer;
 };

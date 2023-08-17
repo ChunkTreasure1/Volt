@@ -18,7 +18,7 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
@@ -29,7 +29,7 @@
 
 #include "Sandbox/EditorCommandStack.h"
 
-GameViewPanel::GameViewPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, SceneState& aSceneState)
+GameViewPanel::GameViewPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, SceneState& aSceneState)
 	: EditorWindow(GAMEVIEWPANEL_TITLE), mySceneRenderer(sceneRenderer), myEditorScene(editorScene),
 	mySceneState(aSceneState)
 {
@@ -82,7 +82,7 @@ void GameViewPanel::OnOpen()
 	Volt::SceneRendererSpecification spec{};
 	spec.debugName = "Game Viewport";
 	spec.scene = myEditorScene;
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
+	mySceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 }
 
 void GameViewPanel::OnClose()

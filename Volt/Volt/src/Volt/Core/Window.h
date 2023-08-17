@@ -82,6 +82,7 @@ namespace Volt
 		const std::pair<float, float> GetPosition() const;
 
 		const float GetOpacity() const;
+		const float GetTime() const;
 
 		inline const uint32_t GetWidth() const { return m_data.width; }
 		inline const uint32_t GetHeight() const { return m_data.height; }

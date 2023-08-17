@@ -8,7 +8,7 @@
 #include <Volt/Animation/AnimationManager.h>
 
 #include <Volt/Rendering/VulkanFramebuffer.h>
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 
@@ -152,7 +152,7 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 		for (const auto& attachment : myCurrentCharacter->GetJointAttachments())
 		{
 			auto newEntity = myScene->CreateEntity();
-			newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+			newEntity.AddComponent<Volt::MeshComponent>(newEntity).SetMesh(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle);
 			newEntity.SetScale(0.2f);
 
 			myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[attachment.id].emplace_back(newEntity);
@@ -173,10 +173,10 @@ void CharacterEditorPanel::OnOpen()
 		spec.scene = myScene;
 		spec.debugName = "Character Editor";
 
-		Volt::SceneRendererSettings settings{};
-		settings.enableGrid = true;
+		//Volt::SceneRendererSettings settings{};
+		//settings.enableGrid = true;
 
-		mySceneRenderer = CreateScope<Volt::SceneRenderer>(spec, settings);
+		mySceneRenderer = CreateScope<Volt::SceneRendererNew>(spec);
 	}
 }
 
@@ -897,7 +897,7 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 					newAttachment.jointIndex = myCurrentCharacter->GetSkeleton()->GetJointIndexFromName(name);
 
 					auto newEntity = myScene->CreateEntity();
-					newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
+					newEntity.AddComponent<Volt::MeshComponent>(newEntity).SetMesh(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle);
 					newEntity.SetScale(0.2f);
 
 					myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[newAttachment.id].emplace_back(newEntity);

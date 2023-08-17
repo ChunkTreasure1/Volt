@@ -8,7 +8,7 @@
 #include <Volt/Components/Components.h>
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
 
@@ -16,13 +16,13 @@
 
 AssetPreview::AssetPreview(const std::filesystem::path& path)
 {
-	myCamera = CreateRef<Volt::Camera>(60.f, 1.f, 1.f, 100000.f);
+	m_camera = CreateRef<Volt::Camera>(60.f, 1.f, 1.f, 100000.f);
 
-	myScene = Volt::Scene::CreateDefaultScene("Asset Preview", false);
+	m_scene = Volt::Scene::CreateDefaultScene("Asset Preview", false);
 
-	auto entId = myScene->GetAllEntitiesWith<Volt::SkylightComponent>().front();
+	auto entId = m_scene->GetAllEntitiesWith<Volt::SkylightComponent>().front();
 
-	Volt::Entity skylightEnt{ entId, myScene.get() };
+	Volt::Entity skylightEnt{ entId, m_scene.get() };
 	auto& skylightComp = skylightEnt.GetComponent<Volt::SkylightComponent>();
 	skylightComp.environmentHandle = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/HDRIs/studio_small_08_4k.hdr")->handle;
 	skylightComp.lod = 2.f;
@@ -30,43 +30,43 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 	Volt::SceneRendererSpecification spec{};
 	spec.debugName = "Asset Preview";
 	spec.initialResolution = { 128, 128 };
-	spec.scene = myScene;
+	spec.scene = m_scene;
 
-	mySceneRenderer = CreateRef<Volt::SceneRenderer>(spec);
+	m_sceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 
-	myEntity = myScene->CreateEntity();
-	myEntity.AddComponent<Volt::MeshComponent>();
+	m_entity = m_scene->CreateEntity();
+	m_entity.AddComponent<Volt::MeshComponent>(m_entity);
 
-	myAssetHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
+	m_assetHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
 }
 
 void AssetPreview::Render()
 {
-	const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(myAssetHandle);
+	const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(m_assetHandle);
 
-	myEntity.GetComponent<Volt::MeshComponent>().handle = myAssetHandle;
+	m_entity.GetComponent<Volt::MeshComponent>().SetMesh(m_assetHandle);
 
-	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myAssetHandle);
+	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(m_assetHandle);
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
-	myCamera->SetRotation(rotation);
+	m_camera->SetRotation(rotation);
 
-	const glm::vec3 position = mesh->GetBoundingSphere().center - myCamera->GetForward() * mesh->GetBoundingSphere().radius * 1.5f;
+	const glm::vec3 position = mesh->GetBoundingSphere().center - m_camera->GetForward() * mesh->GetBoundingSphere().radius * 1.5f;
 
-	myCamera->SetPosition(position);
-	mySceneRenderer->OnRenderEditor(myCamera);
+	m_camera->SetPosition(position);
+	m_sceneRenderer->OnRenderEditor(m_camera);
 
 	if (!wasLoaded)
 	{
-		Volt::AssetManager::Get().Unload(myAssetHandle);
+		Volt::AssetManager::Get().Unload(m_assetHandle);
 	}
 
 
-	myIsRendered = true;
+	m_isRenderered = true;
 }
 
-const Ref<Volt::Image2D> AssetPreview::GetPreview() const
+const Ref<Volt::RHI::Image2D> AssetPreview::GetPreview() const
 {
-	return mySceneRenderer->GetFinalImage();
+	return m_sceneRenderer->GetFinalImage();
 }
 

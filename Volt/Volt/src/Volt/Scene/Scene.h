@@ -27,6 +27,8 @@ namespace Volt
 	class Event;
 	class Image2D;
 
+	class RenderScene;
+
 	struct SceneEnvironment
 	{
 		Ref<Image2D> irradianceMap;
@@ -101,6 +103,8 @@ namespace Volt
 
 		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return myMonoFieldCache; }
 		inline MonoScriptFieldCache& GetScriptFieldCache() { return myMonoFieldCache; }
+
+		inline Ref<RenderScene> GetRenderScene() const { return m_renderScene; }
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
@@ -188,6 +192,7 @@ namespace Volt
 		MonoScriptFieldCache myMonoFieldCache;
 
 		Ref<Vision> myVisionSystem; // Needs to be of ptr type because of include loop
+		Ref<RenderScene> m_renderScene;
 	};
 
 	template<typename T>

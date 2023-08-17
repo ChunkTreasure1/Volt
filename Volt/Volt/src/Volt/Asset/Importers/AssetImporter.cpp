@@ -51,7 +51,7 @@ namespace Volt
 
 		asset = mesh;
 
-		Renderer::AddTexture(std::reinterpret_pointer_cast<Texture2D>(asset)->GetImage());
+		//Renderer::AddTexture(std::reinterpret_pointer_cast<Texture2D>(asset)->GetImage());
 		return true;
 	}
 
@@ -264,172 +264,172 @@ namespace Volt
 			Ref<Shader> shader = ShaderRegistry::GetShader(shaderNameString);
 			if (!shader || !shader->IsValid())
 			{
-				shader = Renderer::GetDefaultData().defaultShader;
+				//shader = Renderer::GetDefaultData().defaultShader;
 				VT_CORE_ERROR("Shader {0} not found or invalid! Falling back to default!", shaderNameString);
 			}
 
 			Ref<SubMaterial> material = SubMaterial::Create(materialNameString, materialIndex, shader);
 
-			material->SetFlags((MaterialFlag)materialFlags);
-			if (!material->HasFlag(MaterialFlag::Opaque) && !material->HasFlag(MaterialFlag::Transparent) && !material->HasFlag(MaterialFlag::Deferred))
-			{
-				material->SetFlag(MaterialFlag::Deferred, true);
-			}
+			//material->SetFlags((MaterialFlag)materialFlags);
+			//if (!material->HasFlag(MaterialFlag::Opaque) && !material->HasFlag(MaterialFlag::Transparent) && !material->HasFlag(MaterialFlag::Deferred))
+			//{
+			//	material->SetFlag(MaterialFlag::Deferred, true);
+			//}
 
-			if (shaderNameString == "Illum" && material->HasFlag(MaterialFlag::Opaque))
-			{
-				material->SetFlag(MaterialFlag::Deferred, true);
-				material->SetFlag(MaterialFlag::Opaque, false);
-			}
+			//if (shaderNameString == "Illum" && material->HasFlag(MaterialFlag::Opaque))
+			//{
+			//	material->SetFlag(MaterialFlag::Deferred, true);
+			//	material->SetFlag(MaterialFlag::Opaque, false);
+			//}
 
-			// Get pipeline properties
-			{
-				Topology topology;
-				CullMode cullMode;
-				FillMode triangleFillMode;
-				DepthMode depthMode;
+			//// Get pipeline properties
+			//{
+			//	Topology topology;
+			//	CullMode cullMode;
+			//	FillMode triangleFillMode;
+			//	DepthMode depthMode;
 
-				VT_DESERIALIZE_PROPERTY(topology, *(uint32_t*)&topology, materialNode, (uint32_t)Topology::TriangleList);
-				VT_DESERIALIZE_PROPERTY(cullMode, *(uint32_t*)&cullMode, materialNode, (uint32_t)CullMode::Back);
-				VT_DESERIALIZE_PROPERTY(triangleFillMode, *(uint32_t*)&triangleFillMode, materialNode, (uint32_t)FillMode::Solid);
-				VT_DESERIALIZE_PROPERTY(depthMode, *(uint32_t*)&depthMode, materialNode, (uint32_t)DepthMode::ReadWrite);
+			//	VT_DESERIALIZE_PROPERTY(topology, *(uint32_t*)&topology, materialNode, (uint32_t)Topology::TriangleList);
+			//	VT_DESERIALIZE_PROPERTY(cullMode, *(uint32_t*)&cullMode, materialNode, (uint32_t)CullMode::Back);
+			//	VT_DESERIALIZE_PROPERTY(triangleFillMode, *(uint32_t*)&triangleFillMode, materialNode, (uint32_t)FillMode::Solid);
+			//	VT_DESERIALIZE_PROPERTY(depthMode, *(uint32_t*)&depthMode, materialNode, (uint32_t)DepthMode::ReadWrite);
 
-				material->myTopology = topology;
-				material->myCullMode = cullMode;
-				material->myTriangleFillMode = triangleFillMode;
-				material->myDepthMode = depthMode;
+			//	material->myTopology = topology;
+			//	material->myCullMode = cullMode;
+			//	material->myTriangleFillMode = triangleFillMode;
+			//	material->myDepthMode = depthMode;
 
-				material->InvalidatePipeline(shader);
-			}
+			//	material->InvalidatePipeline(shader);
+			//}
 
 
-			auto materialDataNode = materialNode["data"];
-			if (materialDataNode)
-			{
-				VT_DESERIALIZE_PROPERTY(color, material->myMaterialData.color, materialDataNode, glm::vec4(1.f));
-				VT_DESERIALIZE_PROPERTY(emissiveColor, material->myMaterialData.emissiveColor, materialDataNode, glm::vec3(1.f));
-				VT_DESERIALIZE_PROPERTY(emissiveStrength, material->myMaterialData.emissiveStrength, materialDataNode, 1.f);
-				VT_DESERIALIZE_PROPERTY(roughness, material->myMaterialData.roughness, materialDataNode, 0.5f);
-				VT_DESERIALIZE_PROPERTY(metalness, material->myMaterialData.metalness, materialDataNode, 0.f);
-				VT_DESERIALIZE_PROPERTY(normalStrength, material->myMaterialData.normalStrength, materialDataNode, 0.f);
-			}
+			//auto materialDataNode = materialNode["data"];
+			//if (materialDataNode)
+			//{
+			//	VT_DESERIALIZE_PROPERTY(color, material->myMaterialData.color, materialDataNode, glm::vec4(1.f));
+			//	VT_DESERIALIZE_PROPERTY(emissiveColor, material->myMaterialData.emissiveColor, materialDataNode, glm::vec3(1.f));
+			//	VT_DESERIALIZE_PROPERTY(emissiveStrength, material->myMaterialData.emissiveStrength, materialDataNode, 1.f);
+			//	VT_DESERIALIZE_PROPERTY(roughness, material->myMaterialData.roughness, materialDataNode, 0.5f);
+			//	VT_DESERIALIZE_PROPERTY(metalness, material->myMaterialData.metalness, materialDataNode, 0.f);
+			//	VT_DESERIALIZE_PROPERTY(normalStrength, material->myMaterialData.normalStrength, materialDataNode, 0.f);
+			//}
 
-			for (const auto& [shaderName, texture] : textures)
-			{
-				const auto& textureDefinitions = shader->GetResources().shaderTextureDefinitions;
+			//for (const auto& [shaderName, texture] : textures)
+			//{
+			//	const auto& textureDefinitions = shader->GetResources().shaderTextureDefinitions;
 
-				bool isDefault = shaderName == "albedo" || shaderName == "normal" || shaderName == "material";
+			//	bool isDefault = shaderName == "albedo" || shaderName == "normal" || shaderName == "material";
 
-				if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const auto& lhs)
-				{
-					return lhs.shaderName == shaderName;
+			//	if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const auto& lhs)
+			//	{
+			//		return lhs.shaderName == shaderName;
 
-				}); it != textureDefinitions.end() || isDefault)
-				{
-					material->SetTexture(shaderName, texture);
-				}
-			}
+			//	}); it != textureDefinitions.end() || isDefault)
+			//	{
+			//		material->SetTexture(shaderName, texture);
+			//	}
+			//}
 
-			YAML::Node specializationDataNode = materialNode["specializationData"];
-			if (specializationDataNode && material->GetMaterialSpecializationData().IsValid())
-			{
-				auto& materialData = material->GetMaterialSpecializationData();
+			//YAML::Node specializationDataNode = materialNode["specializationData"];
+			//if (specializationDataNode && material->GetMaterialSpecializationData().IsValid())
+			//{
+			//	auto& materialData = material->GetMaterialSpecializationData();
 
-				for (const auto& memberNode : specializationDataNode["members"])
-				{
-					std::string memberName;
-					VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
+			//	for (const auto& memberNode : specializationDataNode["members"])
+			//	{
+			//		std::string memberName;
+			//		VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
 
-					ShaderUniformType type;
-					VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
+			//		ShaderUniformType type;
+			//		VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
 
-					auto it = std::find_if(materialData.GetMembers().begin(), materialData.GetMembers().end(), [&](const auto& value)
-					{
-						return value.first == memberName && value.second.type == type;
-					});
+			//		auto it = std::find_if(materialData.GetMembers().begin(), materialData.GetMembers().end(), [&](const auto& value)
+			//		{
+			//			return value.first == memberName && value.second.type == type;
+			//		});
 
-					if (it != materialData.GetMembers().end())
-					{
-						switch (type)
-						{
-							case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), memberNode, false); break;
-							case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), memberNode, 0u); break;
-							case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-							case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-							case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+			//		if (it != materialData.GetMembers().end())
+			//		{
+			//			switch (type)
+			//			{
+			//				case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), memberNode, false); break;
+			//				case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), memberNode, 0u); break;
+			//				case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
+			//				case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
+			//				case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
 
-							case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), memberNode, 0); break;
-							case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-							case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-							case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+			//				case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), memberNode, 0); break;
+			//				case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
+			//				case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
+			//				case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
 
-							case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), memberNode, 0.f); break;
-							case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-							case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-							case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
-						}
-					}
-				}
-			}
+			//				case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), memberNode, 0.f); break;
+			//				case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
+			//				case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
+			//				case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+			//			}
+			//		}
+			//	}
+			//}
 
-			YAML::Node pipelineGenerationNode = materialNode["pipelineGenerationData"];
-			if (isPermutation && pipelineGenerationNode && !material->GetPipelineGenerationDatas().empty())
-			{
-				std::map<ShaderStage, ShaderDataBuffer>& generationData = material->GetPipelineGenerationDatas();
+			//YAML::Node pipelineGenerationNode = materialNode["pipelineGenerationData"];
+			//if (isPermutation && pipelineGenerationNode && !material->GetPipelineGenerationDatas().empty())
+			//{
+			//	std::map<ShaderStage, ShaderDataBuffer>& generationData = material->GetPipelineGenerationDatas();
 
-				for (const auto& generationDataNode : pipelineGenerationNode)
-				{
-					ShaderStage stage;
-					VT_DESERIALIZE_PROPERTY(stage, stage, generationDataNode, ShaderStage::None);
+			//	for (const auto& generationDataNode : pipelineGenerationNode)
+			//	{
+			//		ShaderStage stage;
+			//		VT_DESERIALIZE_PROPERTY(stage, stage, generationDataNode, ShaderStage::None);
 
-					if (!generationData.contains(stage))
-					{
-						continue;
-					}
+			//		if (!generationData.contains(stage))
+			//		{
+			//			continue;
+			//		}
 
-					for (const auto& memberNode : generationDataNode["members"])
-					{
-						std::string memberName;
-						VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
+			//		for (const auto& memberNode : generationDataNode["members"])
+			//		{
+			//			std::string memberName;
+			//			VT_DESERIALIZE_PROPERTY(name, memberName, memberNode, std::string(""));
 
-						ShaderUniformType type;
-						VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
+			//			ShaderUniformType type;
+			//			VT_DESERIALIZE_PROPERTY(type, type, memberNode, ShaderUniformType::Bool);
 
-						auto it = std::find_if(generationData.at(stage).GetMembers().begin(), generationData.at(stage).GetMembers().end(), [&](const auto& value)
-						{
-							return value.first == memberName && value.second.type == type;
-						});
+			//			auto it = std::find_if(generationData.at(stage).GetMembers().begin(), generationData.at(stage).GetMembers().end(), [&](const auto& value)
+			//			{
+			//				return value.first == memberName && value.second.type == type;
+			//			});
 
-						if (it != generationData.at(stage).GetMembers().end())
-						{
-							switch (type)
-							{
-								case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<bool>(memberName), memberNode, false); break;
-								case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<uint32_t>(memberName), memberNode, 0u); break;
-								case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
-								case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
-								case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
+			//			if (it != generationData.at(stage).GetMembers().end())
+			//			{
+			//				switch (type)
+			//				{
+			//					case Volt::ShaderUniformType::Bool: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<bool>(memberName), memberNode, false); break;
+			//					case Volt::ShaderUniformType::UInt: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<uint32_t>(memberName), memberNode, 0u); break;
+			//					case Volt::ShaderUniformType::UInt2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec2>(memberName), memberNode, glm::uvec2{ 0 }); break;
+			//					case Volt::ShaderUniformType::UInt3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec3>(memberName), memberNode, glm::uvec3{ 0 }); break;
+			//					case Volt::ShaderUniformType::UInt4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::uvec4>(memberName), memberNode, glm::uvec4{ 0 }); break;
 
-								case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<int32_t>(memberName), memberNode, 0); break;
-								case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
-								case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
-								case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
+			//					case Volt::ShaderUniformType::Int: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<int32_t>(memberName), memberNode, 0); break;
+			//					case Volt::ShaderUniformType::Int2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec2>(memberName), memberNode, glm::ivec2{ 0 }); break;
+			//					case Volt::ShaderUniformType::Int3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec3>(memberName), memberNode, glm::ivec3{ 0 }); break;
+			//					case Volt::ShaderUniformType::Int4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::ivec4>(memberName), memberNode, glm::ivec4{ 0 }); break;
 
-								case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<float>(memberName), memberNode, 0.f); break;
-								case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
-								case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
-								case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
-							}
-						}
-					}
-				}
+			//					case Volt::ShaderUniformType::Float: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<float>(memberName), memberNode, 0.f); break;
+			//					case Volt::ShaderUniformType::Float2: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec2>(memberName), memberNode, glm::vec2{ 0.f }); break;
+			//					case Volt::ShaderUniformType::Float3: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec3>(memberName), memberNode, glm::vec3{ 0.f }); break;
+			//					case Volt::ShaderUniformType::Float4: VT_DESERIALIZE_PROPERTY(data, generationData.at(stage).GetValue<glm::vec4>(memberName), memberNode, glm::vec4{ 0.f }); break;
+			//				}
+			//			}
+			//		}
+			//	}
 
-				material->RecompilePermutation();
-			}
+			//	material->RecompilePermutation();
+			//}
 
-			Renderer::UpdateMaterial(material.get());
+			//Renderer::UpdateMaterial(material.get());
 
-			materials.emplace(materialIndex, material);
+			//materials.emplace(materialIndex, material);
 		}
 
 		Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);

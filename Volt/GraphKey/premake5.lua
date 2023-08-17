@@ -43,6 +43,7 @@ project "GraphKey"
 		"../Volt/src/",
 		"../Amp/src/",
 		"../Nexus/src",
+		"../VoltRenderer/VoltRHI/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
@@ -87,7 +88,8 @@ project "GraphKey"
 		defines
 		{
 			"NOMINMAX",
-			"_HAS_STD_BYTE=0"
+			"_HAS_STD_BYTE=0",
+			"VT_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"

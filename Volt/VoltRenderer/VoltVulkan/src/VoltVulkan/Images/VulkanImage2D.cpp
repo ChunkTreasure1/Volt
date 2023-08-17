@@ -42,6 +42,7 @@ namespace Volt::RHI
 	void VulkanImage2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)
 	{
 		Release();
+		m_currentImageLayout = static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED);
 
 		m_specification.width = width;
 		m_specification.height = height;
@@ -178,11 +179,13 @@ namespace Volt::RHI
 			return;
 		}
 
-		// #TODO_Ivar: Move to deletion queue
 		m_imageViews.clear();
 
-		VulkanAllocator allocator{};
-		allocator.DestroyImage(m_image, m_allocation);
+		GraphicsContext::DestroyResource([image = m_image, allocation = m_allocation]() 
+		{
+			VulkanAllocator allocator{};
+			allocator.DestroyImage(image, allocation);
+		});
 
 		m_image = nullptr;
 		m_allocation = nullptr;

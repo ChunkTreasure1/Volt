@@ -26,7 +26,7 @@ struct GizmoEvent
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 	class Scene;
 }
 
@@ -34,7 +34,7 @@ class EditorCameraController;
 class ViewportPanel : public EditorWindow
 {
 public:
-	ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController, SceneState& aSceneState);
+	ViewportPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController, SceneState& aSceneState);
 
 	void UpdateMainContent() override;
 	void UpdateContent() override;
@@ -65,7 +65,7 @@ private:
 
 	glm::mat4 CalculateAverageTransform();
 
-	Ref<Volt::SceneRenderer>& mySceneRenderer;
+	Ref<Volt::SceneRendererNew>& mySceneRenderer;
 	Ref<Volt::Scene>& myEditorScene;
 
 	AnimatedIcon myAnimatedPhysicsIcon;

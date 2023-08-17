@@ -30,6 +30,8 @@ namespace Volt::RHI
 		template<typename... Args>
 		static void LogTagged(Severity logSeverity, std::string_view tag, std::string_view message, Args&&... args);
 
+		static void DestroyResource(std::function<void()>&& function);
+
 	protected:
 		Ref<GraphicsDevice> m_graphicsDevice;
 		Ref<PhysicalGraphicsDevice> m_physicalDevice;
@@ -38,6 +40,7 @@ namespace Volt::RHI
 		inline static GraphicsContext* s_context;
 		inline static GraphicsAPI s_graphicsAPI;
 		inline static LogHookInfo s_logHook;
+		inline static ResourceManagementInfo s_resourceManagementInfo;
 	};
 
 	template<typename ...Args>

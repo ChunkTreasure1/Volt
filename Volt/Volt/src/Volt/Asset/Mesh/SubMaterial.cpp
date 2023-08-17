@@ -50,41 +50,41 @@ namespace Volt
 	SubMaterial::SubMaterial(const std::string& aName, uint32_t aIndex, Ref<Shader> shader)
 		: myName(aName), myIndex(aIndex)
 	{
-		InvalidatePipeline(shader);
-		Invalidate();
+		//InvalidatePipeline(shader);
+		//Invalidate();
 
-		if (shader->GetName() == "IllumTransparent")
-		{
-			SetFlag(MaterialFlag::Opaque, false);
-			SetFlag(MaterialFlag::SSS, false);
-			SetFlag(MaterialFlag::Deferred, false);
-			SetFlag(MaterialFlag::Transparent, true);
-		}
-		else if (shader->GetName() == "IllumSSS")
-		{
-			SetFlag(MaterialFlag::Opaque, false);
-			SetFlag(MaterialFlag::Transparent, false);
-			SetFlag(MaterialFlag::Deferred, false);
-			SetFlag(MaterialFlag::SSS, true);
-		}
-		else if (shader->GetName() == "Illum")
-		{
-			SetFlag(MaterialFlag::Opaque, false);
-			SetFlag(MaterialFlag::Transparent, false);
-			SetFlag(MaterialFlag::SSS, false);
-			SetFlag(MaterialFlag::Deferred, true);
-		}
-		else if (shader->GetName() == "Decal")
-		{
-			SetFlag(MaterialFlag::Opaque, false);
-			SetFlag(MaterialFlag::Transparent, false);
-			SetFlag(MaterialFlag::SSS, false);
-			SetFlag(MaterialFlag::Deferred, false);
-			SetFlag(MaterialFlag::Decal, true);
-		}
+		//if (shader->GetName() == "IllumTransparent")
+		//{
+		//	SetFlag(MaterialFlag::Opaque, false);
+		//	SetFlag(MaterialFlag::SSS, false);
+		//	SetFlag(MaterialFlag::Deferred, false);
+		//	SetFlag(MaterialFlag::Transparent, true);
+		//}
+		//else if (shader->GetName() == "IllumSSS")
+		//{
+		//	SetFlag(MaterialFlag::Opaque, false);
+		//	SetFlag(MaterialFlag::Transparent, false);
+		//	SetFlag(MaterialFlag::Deferred, false);
+		//	SetFlag(MaterialFlag::SSS, true);
+		//}
+		//else if (shader->GetName() == "Illum")
+		//{
+		//	SetFlag(MaterialFlag::Opaque, false);
+		//	SetFlag(MaterialFlag::Transparent, false);
+		//	SetFlag(MaterialFlag::SSS, false);
+		//	SetFlag(MaterialFlag::Deferred, true);
+		//}
+		//else if (shader->GetName() == "Decal")
+		//{
+		//	SetFlag(MaterialFlag::Opaque, false);
+		//	SetFlag(MaterialFlag::Transparent, false);
+		//	SetFlag(MaterialFlag::SSS, false);
+		//	SetFlag(MaterialFlag::Deferred, false);
+		//	SetFlag(MaterialFlag::Decal, true);
+		//}
 
-		Renderer::AddMaterial(this);
-		Renderer::AddShaderDependency(shader, this);
+		//Renderer::AddMaterial(this);
+		//Renderer::AddShaderDependency(shader, this);
 	}
 
 	SubMaterial::SubMaterial(const std::string& aName, uint32_t aIndex, const RenderPipelineSpecification& specification)
@@ -99,10 +99,10 @@ namespace Volt
 
 	SubMaterial::~SubMaterial()
 	{
-		Release();
+		//Release();
 
-		Renderer::RemoveMaterial(this);
-		Renderer::RemoveShaderDependency(myPipeline->GetSpecification().shader, this);
+		//Renderer::RemoveMaterial(this);
+		//Renderer::RemoveShaderDependency(myPipeline->GetSpecification().shader, this);
 	}
 
 	void SubMaterial::Bind(Ref<CommandBuffer> commandBuffer)
@@ -123,7 +123,7 @@ namespace Volt
 			uint32_t textureIndex = 0;
 			if (texture)
 			{
-				textureIndex = Renderer::GetBindlessData().textureTable->GetBindingFromTexture(texture->GetImage());
+				textureIndex = 0;//Renderer::GetBindlessData().textureTable->GetBindingFromTexture(texture->GetImage());
 			}
 
 			if (myMaterialSpecializationData.HasMember(shaderName))

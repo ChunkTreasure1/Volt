@@ -15,7 +15,7 @@ namespace Volt
 		{
 			auto entity = Volt::Entity(entities[entIndex], scene.get());
 
-			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().handle);
+			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().GetHandle());
 
 			auto vertices = mesh->GetVertices();
 			auto indices = mesh->GetIndices();
@@ -80,7 +80,7 @@ namespace Volt
 		{
 			if (entities[entIndex].HasComponent<Volt::MeshComponent>())
 			{
-				auto handle = entities[entIndex].GetComponent<Volt::MeshComponent>().handle;
+				auto handle = entities[entIndex].GetComponent<Volt::MeshComponent>().GetHandle();
 				auto transform = entities[entIndex].GetComponent<Volt::TransformComponent>();
 				auto asset = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
 

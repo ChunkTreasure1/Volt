@@ -85,7 +85,7 @@ namespace Volt
 
 		for (const auto& [binding, textureInfo] : myTextures)
 		{
-			myPipeline->SetImage(textureInfo.texture->GetImage(), Sets::OTHER, binding, ImageAccess::Read);
+			//myPipeline->SetImage(textureInfo.texture->GetImage(), Sets::OTHER, binding, ImageAccess::Read);
 		}
 
 		myPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());

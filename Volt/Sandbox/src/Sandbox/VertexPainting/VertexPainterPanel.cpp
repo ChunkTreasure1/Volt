@@ -78,7 +78,7 @@ bool VertexPainterPanel::BrushUpdate()
 			if (!currentEntity.HasComponent<Volt::MeshComponent>()) continue;
 
 			auto meshComponent = currentEntity.GetComponent<Volt::MeshComponent>();
-			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComponent.handle);
+			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComponent.GetHandle());
 			//auto origin = ex_cameraController->GetCamera()->GetPosition() - currentEntity.GetPosition();
 			auto origin = ex_cameraController->GetCamera()->GetPosition();
 			auto localRayDir = rayDir;
@@ -374,7 +374,7 @@ void VertexPainterPanel::BillboardDraw()
 		if (paintedEnt.HasComponent<Volt::MeshComponent>())
 		{
 			auto meshComp = paintedEnt.GetComponent<Volt::MeshComponent>();
-			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle);
+			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle());
 
 			if (!mesh || !mesh->IsValid()) continue;
 			bool hasPainted = paintedEnt.HasComponent<Volt::VertexPaintedComponent>();
@@ -383,7 +383,7 @@ void VertexPainterPanel::BillboardDraw()
 			{
 				auto vpMeshHandle = paintedEnt.GetComponent<Volt::VertexPaintedComponent>().meshHandle;
 				auto vpasdjkghasdhjasjkld = paintedEnt.GetComponent<Volt::VertexPaintedComponent>();
-				if (meshComp.handle != vpMeshHandle)
+				if (meshComp.GetHandle() != vpMeshHandle)
 				{
 					paintedEnt.RemoveComponent<Volt::VertexPaintedComponent>();
 					continue;
@@ -518,7 +518,7 @@ bool VertexPainterPanel::AddPainted(Volt::Entity entity)
 	if (!entity.HasComponent<Volt::MeshComponent>()) return false;
 	if (entity.HasComponent<Volt::VertexPaintedComponent>()) return true;
 
-	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().handle);
+	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(entity.GetComponent<Volt::MeshComponent>().GetHandle());
 	auto& vpComp = entity.AddComponent<Volt::VertexPaintedComponent>();
 
 	vpComp.vertexColors = std::vector<uint32_t>(mesh->GetVertices().size(), Volt::Utility::PackUNormFloat4AsUInt({ 0.f, 0.f, 0.f, 1.f }));
@@ -541,11 +541,11 @@ void VertexPainterPanel::Paint(float color)
 		if (!paintedEnt.HasComponent<Volt::MeshComponent>()) continue;
 
 		auto meshComp = paintedEnt.GetComponent<Volt::MeshComponent>();
-		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle);
+		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle());
 
 		if (!mesh || !mesh->IsValid()) continue;
 
-		if (paintedEnt.HasComponent<Volt::VertexPaintedComponent>() && meshComp.handle != paintedEnt.GetComponent<Volt::VertexPaintedComponent>().meshHandle)
+		if (paintedEnt.HasComponent<Volt::VertexPaintedComponent>() && meshComp.GetHandle() != paintedEnt.GetComponent<Volt::VertexPaintedComponent>().meshHandle)
 		{
 			paintedEnt.RemoveComponent<Volt::VertexPaintedComponent>();
 		}

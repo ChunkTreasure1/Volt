@@ -14,7 +14,7 @@
 
 #include <Volt/Rendering/Texture/Texture2D.h>
 #include <Volt/Rendering/Camera/Camera.h>
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/Renderer.h>
 #include <Volt/Rendering/RenderPipeline/RenderPipeline.h>
@@ -39,8 +39,8 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	// Material sphere
 	{
 		auto entity = myPreviewScene->CreateEntity();
-		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
-		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>(entity);
+		comp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
 		myPreviewEntity = entity;
 	}
 
@@ -91,7 +91,7 @@ void MaterialEditorPanel::OnOpen()
 		spec.scene = myPreviewScene;
 		spec.initialResolution = { 1024 };
 
-		myPreviewRenderer = CreateRef<Volt::SceneRenderer>(spec);
+		myPreviewRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 	}
 
 	// Set HDRI
@@ -175,9 +175,9 @@ void MaterialEditorPanel::UpdateToolbar()
 					}
 					else
 					{
-						if (meshComp.handle != Volt::Asset::Null())
+						if (meshComp.GetHandle() != Volt::Asset::Null())
 						{
-							mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.handle)->GetMaterial();
+							mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle())->GetMaterial();
 							mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
 						}
 					}

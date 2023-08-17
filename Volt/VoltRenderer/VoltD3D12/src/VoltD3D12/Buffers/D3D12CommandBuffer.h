@@ -26,15 +26,24 @@ namespace Volt::RHI
 		void End() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
+		void WaitForLastFence() override;
+		void WaitForFences() override;
 
 		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) override;
 		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) override;
 		void DrawIndexedIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
+		void DrawIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
+		void DrawIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
+		void DrawIndexedIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) override;
+
+		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) override;
 
 		void SetViewports(const std::vector<Viewport>& viewports) override;
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
 
 		void BindPipeline(Ref<RenderPipeline> pipeline) override;
+		void BindPipeline(Ref<ComputePipeline> pipeline) override;
+
 		void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
 		void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) override;
@@ -54,6 +63,7 @@ namespace Volt::RHI
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 		
 		void CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size) override;
+		void CopyBufferToImage(Ref<StorageBuffer> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
 
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();

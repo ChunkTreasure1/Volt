@@ -16,10 +16,9 @@
 
 namespace Volt
 {
-	class SceneRenderer;
+	class SceneRendererNew;
 	class Scene;
 	class Mesh;
-	class Framebuffer;
 	class Material;
 	class Camera;
 	class Texture2D;
@@ -64,7 +63,7 @@ public:
 
 	inline static Sandbox& Get() { return *myInstance; }
 
-	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
+	Ref<Volt::SceneRendererNew>& GetSceneRenderer() { return mySceneRenderer; }
 
 	void NewScene();
 	void OpenScene();
@@ -131,12 +130,8 @@ private:
 
 	Ref<EditorCameraController> myEditorCameraController;
 
-	//Ref<Volt::SceneRenderer> mySceneRenderer;
-	//Ref<Volt::SceneRenderer> myGameSceneRenderer;
-	//Ref<Volt::Material> myGridMaterial;
-
-	Ref<Volt::SceneRenderer> mySceneRenderer;
-	Ref<Volt::SceneRenderer> myGameSceneRenderer;
+	Ref<Volt::SceneRendererNew> mySceneRenderer;
+	Ref<Volt::SceneRendererNew> myGameSceneRenderer;
 
 	///// File watcher /////
 	Ref<FileWatcher> myFileWatcher;

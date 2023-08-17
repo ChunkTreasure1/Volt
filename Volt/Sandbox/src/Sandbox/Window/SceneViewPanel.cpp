@@ -436,11 +436,11 @@ void SceneViewPanel::UpdateMainContent()
 			{
 				Volt::Entity newEntity = myScene->CreateEntity();
 
-				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
+				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>(newEntity);
 				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
 				if (mesh)
 				{
-					meshComp.handle = mesh->handle;
+					meshComp.SetMesh(mesh->handle);
 				}
 
 				newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
@@ -1296,8 +1296,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Cube"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>(ent);
+					meshComp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
 					ent.SetTag("New Cube");
 
 					SelectionManager::DeselectAll();
@@ -1307,8 +1307,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Capsule"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtmesh");
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>(ent);
+					meshComp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
 					ent.SetTag("New Capsule");
 
 					SelectionManager::DeselectAll();
@@ -1318,8 +1318,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Cone"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtmesh");
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>(ent);
+					meshComp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtmesh"));
 					ent.SetTag("New Cone");
 
 					SelectionManager::DeselectAll();
@@ -1329,8 +1329,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Cylinder"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh");
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>(ent);
+					meshComp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh"));
 					ent.SetTag("New Cylinder");
 
 					SelectionManager::DeselectAll();
@@ -1340,8 +1340,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Sphere"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>(ent);
+					meshComp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
 					ent.SetTag("New Sphere");
 
 					SelectionManager::DeselectAll();
@@ -1351,8 +1351,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem(VT_ICON_FA_CUBE " Plane"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
-					meshComp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtmesh");
+					auto& meshComp = ent.AddComponent<Volt::MeshComponent>(ent);
+					meshComp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtmesh"));
 					ent.SetTag("New Plane");
 
 					SelectionManager::DeselectAll();

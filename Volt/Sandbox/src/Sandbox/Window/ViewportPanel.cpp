@@ -23,7 +23,7 @@
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Input/MouseButtonCodes.h>
 
-#include <Volt/Rendering/SceneRenderer.h>
+#include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 #include <Volt/Rendering/Texture/Image2D.h>
@@ -37,7 +37,7 @@
 
 #include <Navigation/Core/NavigationSystem.h>
 
-ViewportPanel::ViewportPanel(Ref<Volt::SceneRenderer>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
+ViewportPanel::ViewportPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
 	SceneState& aSceneState)
 	: EditorWindow("Viewport"), mySceneRenderer(sceneRenderer), myEditorCameraController(cameraController), myEditorScene(editorScene),
 	mySceneState(aSceneState), myAnimatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
@@ -574,7 +574,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			if (!ctrlPressed)
 			{
 				UserSettingsManager::GetSettings().sceneSettings.gridEnabled = !UserSettingsManager::GetSettings().sceneSettings.gridEnabled;
-				mySceneRenderer->GetSettings().enableGrid = UserSettingsManager::GetSettings().sceneSettings.gridEnabled;
+				//mySceneRenderer->GetSettings().enableGrid = UserSettingsManager::GetSettings().sceneSettings.gridEnabled;
 			}
 			break;
 		}
@@ -773,11 +773,11 @@ void ViewportPanel::CheckDragDrop()
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
 			EditorCommandStack::GetInstance().PushUndo(command);
 
-			auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
+			auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>(newEntity);
 			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
 			if (mesh)
 			{
-				meshComp.handle = mesh->handle;
+				meshComp.SetMesh(mesh->handle);
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
@@ -805,11 +805,11 @@ void ViewportPanel::CheckDragDrop()
 					resultHandle = meshAsset->handle;
 				}
 
-				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
+				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>(newEntity);
 				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(resultHandle);
 				if (mesh)
 				{
-					meshComp.handle = mesh->handle;
+					meshComp.SetMesh(mesh->handle);
 				}
 			}
 			else
@@ -931,10 +931,10 @@ void ViewportPanel::HandleSingleSelect()
 
 	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 	{
-		const auto renderScale = mySceneRenderer->GetSettings().renderScale;
+		//const auto renderScale = mySceneRenderer->GetSettings().renderScale;
 
-		uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
-		const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
+		//uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(static_cast<uint32_t>(mouseX * renderScale), static_cast<uint32_t>(mouseY * renderScale));
+		/*const bool multiSelect = Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT);
 		const bool deselect = Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL);
 
 		if (!multiSelect && !deselect)
@@ -961,7 +961,7 @@ void ViewportPanel::HandleSingleSelect()
 				SelectionManager::Select(pixelData);
 				EditorLibrary::Get<SceneViewPanel>()->HighlightEntity(pixelData);
 			}
-		}
+		}*/
 	}
 }
 
@@ -973,18 +973,18 @@ void ViewportPanel::HandleMultiSelect()
 
 	drawList->AddRectFilled(myStartDragPos, ImGui::GetMousePos(), IM_COL32(97, 192, 255, 127));
 
-	const glm::vec2 startDragPos = GetViewportLocalPosition(myStartDragPos);
-	const glm::vec2 currentDragPos = GetViewportLocalPosition(ImGui::GetMousePos());
+	//const glm::vec2 startDragPos = GetViewportLocalPosition(myStartDragPos);
+	//const glm::vec2 currentDragPos = GetViewportLocalPosition(ImGui::GetMousePos());
 
-	int32_t minDragBoxX = (int32_t)glm::min(startDragPos.x, currentDragPos.x);
-	int32_t minDragBoxY = (int32_t)glm::min(startDragPos.y, currentDragPos.y);
+	//int32_t minDragBoxX = (int32_t)glm::min(startDragPos.x, currentDragPos.x);
+	//int32_t minDragBoxY = (int32_t)glm::min(startDragPos.y, currentDragPos.y);
 
-	int32_t maxDragBoxX = (int32_t)glm::max(startDragPos.x, currentDragPos.x);
-	int32_t maxDragBoxY = (int32_t)glm::max(startDragPos.y, currentDragPos.y);
+	//int32_t maxDragBoxX = (int32_t)glm::max(startDragPos.x, currentDragPos.x);
+	//int32_t maxDragBoxY = (int32_t)glm::max(startDragPos.y, currentDragPos.y);
 
-	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	//glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 
-	if (minDragBoxX >= 0 && minDragBoxY >= 0 && minDragBoxX < (int32_t)perspectiveSize.x && minDragBoxY < (int32_t)perspectiveSize.y &&
+	/*if (minDragBoxX >= 0 && minDragBoxY >= 0 && minDragBoxX < (int32_t)perspectiveSize.x && minDragBoxY < (int32_t)perspectiveSize.y &&
 		maxDragBoxX >= 0 && maxDragBoxY >= 0 && maxDragBoxX < (int32_t)perspectiveSize.x && maxDragBoxY < (int32_t)perspectiveSize.y)
 	{
 		auto renderScale = mySceneRenderer->GetSettings().renderScale;
@@ -1000,7 +1000,7 @@ void ViewportPanel::HandleMultiSelect()
 				SelectionManager::Select(d);
 			}
 		}
-	}
+	}*/
 }
 
 void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
@@ -1118,12 +1118,12 @@ void ViewportPanel::UpdateModals()
 	{
 		Volt::Entity tempEnt{ myEntityToAddMesh, myEditorScene.get() };
 
-		auto& meshComp = tempEnt.AddComponent<Volt::MeshComponent>();
+		auto& meshComp = tempEnt.AddComponent<Volt::MeshComponent>(tempEnt);
 		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myMeshImportData.destination);
 		Volt::AssetManager::Get().SaveAsset(mesh);
 		if (mesh)
 		{
-			meshComp.handle = mesh->handle;
+			meshComp.SetMesh(mesh->handle);
 		}
 	}
 
@@ -1158,12 +1158,12 @@ void ViewportPanel::HandleNonMeshDragDrop()
 					break;
 				}
 
-				glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+				//glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 
-				int32_t mouseX = (int32_t)myViewportMouseCoords.x;
-				int32_t mouseY = (int32_t)myViewportMouseCoords.y;
+				//int32_t mouseX = (int32_t)myViewportMouseCoords.x;
+				//int32_t mouseY = (int32_t)myViewportMouseCoords.y;
 
-				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
+				/*if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 				{
 					uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(mouseX, mouseY);
 
@@ -1172,7 +1172,7 @@ void ViewportPanel::HandleNonMeshDragDrop()
 						auto& meshComponent = myEditorScene->GetRegistry().GetComponent<Volt::MeshComponent>(pixelData);
 						meshComponent.overrideMaterial = material->handle;
 					}
-				}
+				}*/
 
 				break;
 			}
