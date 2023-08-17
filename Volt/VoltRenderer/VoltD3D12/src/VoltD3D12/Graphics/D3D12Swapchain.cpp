@@ -50,8 +50,6 @@ namespace Volt::RHI
 	{
 		m_currentImageIndex = m_swapchain->GetCurrentBackBufferIndex();
 		m_fences[m_currentImageIndex].Wait();
-		GraphicsContext::Log(Severity::Info, "Waiting on frame = {}", m_currentImageIndex);
-
 	}
 
 	void D3D12Swapchain::Present()

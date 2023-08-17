@@ -5,21 +5,24 @@
 
 #include "VoltRHI/Images/ImageUtility.h"
 
-#include "VoltRHI/Images/ImageView.h"
+#include "VoltD3D12/Images/D3D12ImageView.h"
 
 namespace Volt::RHI
 {
-	D3D12_RESOURCE_FLAGS GetFlagFromUsage(ImageUsage usage)
+	 D3D12_RESOURCE_FLAGS GetFlagFromUsage(ImageUsage usage)
 	{
 		switch (usage)
 		{
 			case Volt::RHI::ImageUsage::None: return D3D12_RESOURCE_FLAG_NONE;
+
 			case Volt::RHI::ImageUsage::Texture:
 				break;
-			case Volt::RHI::ImageUsage::Attachment:
-				return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+				
+			case Volt::RHI::ImageUsage::Attachment: return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
 			case Volt::RHI::ImageUsage::AttachmentStorage:
 				break;
+
 			case Volt::RHI::ImageUsage::Storage:
 				break;
 		}
@@ -35,15 +38,20 @@ namespace Volt::RHI
 		Invalidate(specification.width, specification.height, data);
 	}
 
+	D3D12Image2D::~D3D12Image2D()
+	{
+
+	}
+
 	void* D3D12Image2D::GetHandleImpl()
 	{
 		return &m_image;
 	}
+
 	void D3D12Image2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)
 	{
 		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
 		D3D12_RESOURCE_DESC desc = {};
-
 
 		desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		desc.Format = ConvertFormatToD3D12Format(m_specs.format);
@@ -124,5 +132,11 @@ namespace Volt::RHI
 	const uint32_t D3D12Image2D::CalculateMipCount() const
 	{
 		return Utility::CalculateMipCount(GetWidth(), GetHeight());
+	}
+
+	void D3D12Image2D::SetName(std::string_view name)
+	{
+		std::wstring wname(name.begin(), name.end());
+		m_image.texture->SetName(wname.c_str());
 	}
 }

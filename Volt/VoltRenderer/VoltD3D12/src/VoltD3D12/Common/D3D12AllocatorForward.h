@@ -5,7 +5,6 @@ struct ID3D12Resource;
 namespace D3D12MA
 {
 	struct Allocation;
-	struct ALLOCATION_DESC;
 }
 
 namespace Volt::RHI

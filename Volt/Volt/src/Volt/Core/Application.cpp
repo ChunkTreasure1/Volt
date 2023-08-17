@@ -252,11 +252,13 @@ namespace Volt
 				OnEvent(renderEvent);
 			}
 
+
 			if (m_info.enableImGui)
 			{
 				VT_PROFILE_SCOPE("Application::ImGui");
 
 				m_imguiImplementation->Begin();
+				ImGui::ShowDemoWindow();
 
 				AppImGuiUpdateEvent imguiEvent{};
 				OnEvent(imguiEvent);
