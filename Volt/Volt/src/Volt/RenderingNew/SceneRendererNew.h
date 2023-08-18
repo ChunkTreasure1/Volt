@@ -66,7 +66,8 @@ namespace Volt
 		Ref<RHI::StorageBuffer> m_indirectCommandsBuffer;
 		Ref<RHI::StorageBuffer> m_indirectCountsBuffer;
 		
-		Ref<RHI::StorageBuffer> m_drawToObjectIDBuffer;
+		Ref<RHI::StorageBuffer> m_drawToInstanceOffsetBuffer;
+		Ref<RHI::StorageBuffer> m_instanceOffsetToObjectIDBuffer;
 		Ref<RHI::StorageBuffer> m_indirectDrawDataBuffer;
 
 		Ref<RHI::DescriptorTable> m_indirectSetupDescriptorTable;

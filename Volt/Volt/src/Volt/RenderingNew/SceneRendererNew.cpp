@@ -97,9 +97,10 @@ namespace Volt
 		// Storage buffers
 		{
 			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), RHI::MemoryUsage::Indirect | RHI::MemoryUsage::CPUToGPU);
-			m_indirectCountsBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t), RHI::MemoryUsage::Indirect);
+			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), RHI::MemoryUsage::Indirect);
 			
-			m_drawToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
+			m_drawToInstanceOffsetBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
+			m_instanceOffsetToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
 			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), RHI::MemoryUsage::CPUToGPU);
 		}
 
@@ -109,8 +110,9 @@ namespace Volt
 			descriptorTableSpec.shader = m_shader;
 			m_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
 			m_descriptorTable->SetBufferView(m_constantBuffer->GetView(), 5, 0);
-			m_descriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 0);
+			m_descriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
 			m_descriptorTable->SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
+			m_descriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
 		}
 
 		// Indirect setup descriptor table
@@ -120,7 +122,8 @@ namespace Volt
 			m_indirectSetupDescriptorTable = RHI::DescriptorTable::Create(spec);
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCommandsBuffer->GetView(), 0, 1);
-			m_indirectSetupDescriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 2);
+			m_indirectSetupDescriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 2);
+			m_indirectSetupDescriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 3);
 		}
 
 		// Indirect setup descriptor table
@@ -218,9 +221,14 @@ namespace Volt
 			RHI::ResourceBarrierInfo barrier1{};
 			barrier1.oldState = RHI::ResourceState::NonPixelShaderRead;
 			barrier1.newState = RHI::ResourceState::UnorderedAccess;
-			barrier1.resource = m_drawToObjectIDBuffer;
+			barrier1.resource = m_drawToInstanceOffsetBuffer;
 
-			m_commandBuffer->ResourceBarrier({ barrier, barrier1 });
+			RHI::ResourceBarrierInfo barrier2{};
+			barrier2.oldState = RHI::ResourceState::NonPixelShaderRead;
+			barrier2.newState = RHI::ResourceState::UnorderedAccess;
+			barrier2.resource = m_instanceOffsetToObjectIDBuffer;
+
+			m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2 });
 		}
 
 		// Setup indirect
@@ -247,14 +255,19 @@ namespace Volt
 			RHI::ResourceBarrierInfo barrier1{};
 			barrier1.oldState = RHI::ResourceState::UnorderedAccess;
 			barrier1.newState = RHI::ResourceState::NonPixelShaderRead;
-			barrier1.resource = m_drawToObjectIDBuffer;
+			barrier1.resource = m_drawToInstanceOffsetBuffer;
 
 			RHI::ResourceBarrierInfo barrier2{};
 			barrier2.oldState = RHI::ResourceState::UnorderedAccess;
-			barrier2.newState = RHI::ResourceState::IndirectArgument;
-			barrier2.resource = m_indirectCommandsBuffer;
+			barrier2.newState = RHI::ResourceState::NonPixelShaderRead;
+			barrier2.resource = m_instanceOffsetToObjectIDBuffer;
 
-			m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2 });
+			RHI::ResourceBarrierInfo barrier3{};
+			barrier3.oldState = RHI::ResourceState::UnorderedAccess;
+			barrier3.newState = RHI::ResourceState::IndirectArgument;
+			barrier3.resource = m_indirectCommandsBuffer;
+
+			m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2, barrier3 });
 		}
 
 		RHI::Rect2D scissor = { 0, 0, m_width, m_height };
@@ -326,15 +339,18 @@ namespace Volt
 		{
 			m_indirectCommandsBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
 			m_indirectCountsBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
-			m_drawToObjectIDBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
+			m_instanceOffsetToObjectIDBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
+			m_drawToInstanceOffsetBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
 
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCommandsBuffer->GetView(), 0, 1);
-			m_indirectSetupDescriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 2);
+			m_indirectSetupDescriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 2);
+			m_indirectSetupDescriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 3);
 
 			m_indirectCountDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 		
-			m_descriptorTable->SetBufferView(m_drawToObjectIDBuffer->GetView(), 0, 0);
+			m_descriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
+			m_descriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
 		}
 
 		std::sort(std::execution::par, m_activeRenderObjects.begin(), m_activeRenderObjects.end(), [](const auto& lhs, const auto& rhs)

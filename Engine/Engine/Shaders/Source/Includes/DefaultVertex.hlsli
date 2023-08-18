@@ -12,8 +12,9 @@ ByteAddressBuffer u_indexBuffers[] : register(t0, space4);
 //////////////////////////
 
 ///// Draw buffers /////
-StructuredBuffer<uint> u_drawToObjectIDBuffer : register(t0, space0);
+StructuredBuffer<uint> u_drawToInstanceOffset : register(t0, space0);
 StructuredBuffer<IndirectDrawData> u_indirectDrawData : register(t1, space0);
+StructuredBuffer<uint> u_instanceOffsetToObjectID : register(t2, space0);
 ////////////////////////
 
 struct DefaultInput
@@ -24,7 +25,8 @@ struct DefaultInput
     
     uint GetObjectID()
     {
-        return u_drawToObjectIDBuffer[drawIndex + instanceId];
+        const uint instanceOffset = u_drawToInstanceOffset[drawIndex];
+        return u_instanceOffsetToObjectID[instanceOffset + instanceId];
     }
     
     const IndirectDrawData GetDrawData()

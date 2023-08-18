@@ -150,7 +150,7 @@ namespace Volt::RHI
 			Utility::HLSLShaderProfile(shaderStage),
 			L"-spirv",
 			L"-fspv-target-env=vulkan1.3",
-			L"-fvk-support-nonzero-base-instance",
+			//L"-fvk-support-nonzero-base-instance",
 			L"-HV",
 			L"2021",
 			L"__VULKAN__"
