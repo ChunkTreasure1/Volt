@@ -87,6 +87,9 @@ namespace Volt
 			spec.generateMips = false;
 
 			m_outputImage = RHI::Image2D::Create(spec);
+
+			spec.format = RHI::Format::D32_SFLOAT;
+			m_depthImage = RHI::Image2D::Create(spec);
 		}
 
 		// Constant buffer
@@ -169,6 +172,7 @@ namespace Volt
 		if (m_shouldResize)
 		{
 			m_outputImage->Invalidate(m_width, m_height);
+			m_depthImage->Invalidate(m_width, m_height);
 			m_shouldResize = false;
 		}
 
@@ -297,9 +301,15 @@ namespace Volt
 		attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
 		attInfo.clearMode = RHI::ClearMode::Clear;
 
+		RHI::AttachmentInfo depthInfo{};
+		depthInfo.view = m_depthImage->GetView();
+		depthInfo.clearColor = { 0.f, 1.f, 0.f, 0.f };
+		depthInfo.clearMode = RHI::ClearMode::Clear;
+
 		RHI::RenderingInfo renderingInfo{};
 		renderingInfo.colorAttachments = { attInfo };
 		renderingInfo.renderArea = scissor;
+		renderingInfo.depthAttachmentInfo = depthInfo;
 
 		m_commandBuffer->BeginRendering(renderingInfo);
 		m_commandBuffer->BindPipeline(m_renderPipeline);

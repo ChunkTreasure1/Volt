@@ -7,6 +7,7 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Images/ImageUtility.h>
 
 #include <vulkan/vulkan.h>
 
@@ -147,7 +148,10 @@ namespace Volt::RHI
 			std::vector<VkPipelineColorBlendAttachmentState> blendAttachments{};
 			for (const auto& outputFormat : shaderResources.outputFormats)
 			{
-				outputFormat;
+				if (Utility::IsDepthFormat(outputFormat) || Utility::IsStencilFormat(outputFormat))
+				{
+					continue;
+				}
 
 				VkPipelineColorBlendAttachmentState& blendAttachment = blendAttachments.emplace_back();
 				blendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -207,14 +211,32 @@ namespace Volt::RHI
 			dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 			dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
+			std::vector<Format> outputFormats{};
+			Format depthFormat = Format::UNDEFINED;
+			Format stencilFormat = Format::UNDEFINED;
+
+			for (const auto& format : shaderResources.outputFormats)
+			{
+				if (Utility::IsDepthFormat(format))
+				{
+					depthFormat = format;
+				}
+				else if (Utility::IsStencilFormat(format))
+				{
+					stencilFormat = format;
+				}
+				else
+				{
+					outputFormats.emplace_back(format);
+				}
+			}
+
 			VkPipelineRenderingCreateInfo pipelineRenderingInfo{};
 			pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-			pipelineRenderingInfo.colorAttachmentCount = static_cast<uint32_t>(shaderResources.outputFormats.size());
-			pipelineRenderingInfo.pColorAttachmentFormats = reinterpret_cast<const VkFormat*>(shaderResources.outputFormats.data());
-
-			// #TODO_Ivar: How are we supposed to find these?
-			//pipelineRenderingInfo.depthAttachmentFormat;
-			//pipelineRenderingInfo.stencilAttachmentFormat;
+			pipelineRenderingInfo.colorAttachmentCount = static_cast<uint32_t>(outputFormats.size());
+			pipelineRenderingInfo.pColorAttachmentFormats = reinterpret_cast<const VkFormat*>(outputFormats.data());
+			pipelineRenderingInfo.depthAttachmentFormat = static_cast<VkFormat>(depthFormat);
+			pipelineRenderingInfo.stencilAttachmentFormat = static_cast<VkFormat>(stencilFormat);
 
 			std::vector<VkPipelineShaderStageCreateInfo> pipelineStageInfos{};
 

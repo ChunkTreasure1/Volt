@@ -467,7 +467,7 @@ namespace Volt::RHI
 		{
 			depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 			depthAttachmentInfo.imageView = renderingInfo.depthAttachmentInfo.view.lock()->GetHandle<VkImageView>();
-			depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 			depthAttachmentInfo.loadOp = Utility::VoltToVulkanLoadOp(renderingInfo.depthAttachmentInfo.clearMode);
 			depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			depthAttachmentInfo.clearValue.depthStencil = { renderingInfo.depthAttachmentInfo.clearColor[0], static_cast<uint32_t>(renderingInfo.depthAttachmentInfo.clearColor[1]) };

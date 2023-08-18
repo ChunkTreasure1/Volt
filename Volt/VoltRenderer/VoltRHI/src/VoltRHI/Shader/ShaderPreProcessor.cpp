@@ -841,6 +841,28 @@ namespace Volt::RHI
 			return Format::A2B10G10R10_UINT_PACK32;
 		}
 
+		// Depth
+		if (tempStr == "d32f")
+		{
+			return Format::D32_SFLOAT;
+		}
+		else if (tempStr == "d16u")
+		{
+			return Format::D16_UNORM;
+		}
+		else if (tempStr == "d16us8")
+		{
+			return Format::D16_UNORM_S8_UINT;
+		}
+		else if (tempStr == "d24us8")
+		{
+			return Format::D24_UNORM_S8_UINT;
+		}
+		else if (tempStr == "d32us8")
+		{
+			return Format::D32_SFLOAT_S8_UINT;
+		}
+
 		return Format::UNDEFINED;
 	}
 }

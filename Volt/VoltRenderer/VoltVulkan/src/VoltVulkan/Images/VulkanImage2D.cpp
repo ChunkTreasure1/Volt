@@ -394,7 +394,7 @@ namespace Volt::RHI
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.oldLayout = Utility::ToVulkanLayout(m_currentImageLayout);
 		barrier.newLayout = Utility::ToVulkanLayout(targetLayout);
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.aspectMask = m_imageAspect;
 		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
 		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 		barrier.subresourceRange.baseArrayLayer = 0;
@@ -407,5 +407,7 @@ namespace Volt::RHI
 	
 		commandBuffer->End();
 		commandBuffer->Execute();
+
+		m_currentImageLayout = targetLayout;
 	}
 }

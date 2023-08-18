@@ -45,6 +45,7 @@ namespace Volt
 		void Invalidate();
 
 		Ref<RHI::Image2D> m_outputImage;
+		Ref<RHI::Image2D> m_depthImage;
 
 		bool m_shouldResize = false;
 
