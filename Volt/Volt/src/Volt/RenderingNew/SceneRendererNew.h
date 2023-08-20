@@ -12,7 +12,8 @@ namespace Volt
 		class RenderPipeline;
 		class ComputePipeline;
 
-		class ConstantBuffer;
+		class ConstantBufferSet;
+		class StorageBufferSet;
 		class StorageBuffer;
 
 		class DescriptorTable;
@@ -62,7 +63,8 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 
-		Ref<RHI::ConstantBuffer> m_constantBuffer;
+		Ref<RHI::ConstantBufferSet> m_constantBufferSet;
+		Ref<RHI::StorageBufferSet> m_storageBufferSet;
 
 		Ref<RHI::StorageBuffer> m_indirectCommandsBuffer;
 		Ref<RHI::StorageBuffer> m_indirectCountsBuffer;

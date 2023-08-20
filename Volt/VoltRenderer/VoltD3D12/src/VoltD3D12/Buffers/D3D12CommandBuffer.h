@@ -50,7 +50,7 @@ namespace Volt::RHI
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;
 		void EndRendering() override;
-		
+
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset) override;
 
 		void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) override;
@@ -61,9 +61,11 @@ namespace Volt::RHI
 
 		void CopyImageToBackBuffer(Ref<Image2D> srcImage) override;
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
-		
+
 		void CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size) override;
 		void CopyBufferToImage(Ref<StorageBuffer> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
+
+		const uint32_t GetCurrentIndex() const override;
 
 		D3D12Fence& GetFenceData();
 		D3D12CommandData& GetCommandData();
@@ -72,7 +74,7 @@ namespace Volt::RHI
 		void Create(const uint32_t count, QueueType queueType, bool swapchainTarget);
 
 		void IncrementIndex();
-		
+
 		uint32_t m_amountOfTargetsbound;
 
 		std::vector<std::pair<D3D12CommandData, D3D12Fence>> m_perInternalBufferData;

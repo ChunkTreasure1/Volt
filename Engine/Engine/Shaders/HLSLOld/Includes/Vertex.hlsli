@@ -27,7 +27,7 @@ float2 OctNormalEncode(float3 n)
     return result;
 }
 
-		// From https://www.jeremyong.com/graphics/2023/01/09/tangent-spaces-and-diamond-encoding/
+// From https://www.jeremyong.com/graphics/2023/01/09/tangent-spaces-and-diamond-encoding/
 float DiamondEncode(float2 p)
 {
 			// Project to the unit diamond, then to the x-axis.
@@ -48,8 +48,8 @@ float DiamondEncode(float2 p)
     return -pySign * 0.25f * x + 0.5f + pySign * 0.25f;
 }
 
-		// Given a normal and tangent vector, encode the tangent as a single float that can be
-		// subsequently quantized.
+// Given a normal and tangent vector, encode the tangent as a single float that can be
+// subsequently quantized.
 float EncodeTangent(float3 normal, float3 tangent)
 {
 			// First, find a canonical direction in the tangent plane

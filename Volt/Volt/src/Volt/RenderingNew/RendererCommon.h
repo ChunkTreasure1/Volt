@@ -20,4 +20,16 @@ namespace Volt
 
 		uint32_t padding[2];
 	};
+
+	///// Rendering Structures /////
+	struct CameraDataNew
+	{
+		glm::mat4 view;
+		glm::mat4 projection;
+
+		glm::mat4 inverseView;
+		glm::mat4 inverseProjection;
+
+		glm::vec4 position;
+	};
 }

@@ -11,6 +11,8 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
+#include <VoltRHI/Buffers/BufferViewSet.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -88,6 +90,47 @@ namespace Volt::RHI
 				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
 
  				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
+			}
+			else
+			{
+				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
+				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+			}
+		}
+	}
+
+	void VulkanDescriptorTable::SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	{
+		SetDirty(true);
+
+		const auto& views = bufferViewSet->GetViews();
+
+		VulkanBufferView& vkBufferView = views.front()->AsRef<VulkanBufferView>();
+		auto resource = vkBufferView.GetResource();
+
+		m_bufferInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		const auto type = resource->GetType();
+
+		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
+			description.buffer = views.at(i)->GetHandle<VkBuffer>();
+
+			if (type == ResourceType::StorageBuffer)
+			{
+				description.range = resource->AsRef<VulkanStorageBuffer>().GetByteSize();
+			}
+
+			// Mapping for write descriptor does not exist
+			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
+			{
+				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
+				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
+				writeDescriptorCopy.dstArrayElement = arrayIndex;
+				writeDescriptorCopy.pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+
+				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
 				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
 			}
 			else

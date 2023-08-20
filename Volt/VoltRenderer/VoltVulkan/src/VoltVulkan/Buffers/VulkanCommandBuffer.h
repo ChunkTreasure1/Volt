@@ -61,6 +61,8 @@ namespace Volt::RHI
 		void CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size) override;
 		void CopyBufferToImage(Ref<StorageBuffer> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
 
+		const uint32_t GetCurrentIndex() const override;
+
 		VkFence_T* GetCurrentFence() const;
 
 	protected:

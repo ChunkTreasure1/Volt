@@ -234,6 +234,21 @@ namespace Volt
 			m_vertexPositionsBuffer->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
 		}
 
+		// Vertex material data
+		{
+			const auto vertexMaterialData = GetVertexMaterialData();
+			m_vertexMaterialBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData));
+			m_vertexMaterialBuffer->SetData(vertexMaterialData.data(), vertexMaterialData.size() * sizeof(VertexMaterialData));
+		}
+
+
+		// Vertex animation data
+		{
+			const auto vertexAnimationData = GetVertexAnimationData();
+			m_vertexAnimationBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData));
+			m_vertexAnimationBuffer->SetData(vertexAnimationData.data(), vertexAnimationData.size() * sizeof(VertexAnimationData));
+		}
+
 		// Indices
 		{
 			m_indexStorageBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t));
@@ -382,6 +397,54 @@ namespace Volt
 		for (const auto& vertex : m_vertices)
 		{
 			result.emplace_back(vertex.position);
+		}
+
+		return result;
+	}
+
+	const std::vector<Mesh::VertexMaterialData> Mesh::GetVertexMaterialData()
+	{
+		std::vector<VertexMaterialData> result{};
+		result.reserve(m_vertices.size());
+
+		for (const auto& vertex : m_vertices)
+		{
+			auto& data = result.emplace_back();
+			
+			const auto octNormal = Utility::OctNormalEncode(vertex.normal);
+
+			data.normal.x = uint8_t(octNormal.x * 255);
+			data.normal.y = uint8_t(octNormal.y * 255);
+			data.tangent = Utility::EncodeTangent(vertex.normal, vertex.tangent);
+		}
+
+		return result;
+	}
+
+	const std::vector<Mesh::VertexAnimationData> Mesh::GetVertexAnimationData()
+	{
+		std::vector<VertexAnimationData> result{};
+		result.reserve(m_vertices.size());
+
+		for (const auto& vertex : m_vertices)
+		{
+			auto& data = result.emplace_back();
+			
+			// Influences
+			{
+				data.influences.x = static_cast<uint16_t>(vertex.influences.x);
+				data.influences.y = static_cast<uint16_t>(vertex.influences.y);
+				data.influences.z = static_cast<uint16_t>(vertex.influences.z);
+				data.influences.w = static_cast<uint16_t>(vertex.influences.w);
+			}
+
+			// Weights
+			{
+				data.weights[0] = static_cast<half_float::half>(vertex.weights.x);
+				data.weights[1] = static_cast<half_float::half>(vertex.weights.y);
+				data.weights[2] = static_cast<half_float::half>(vertex.weights.z);
+				data.weights[3] = static_cast<half_float::half>(vertex.weights.w);
+			}
 		}
 
 		return result;

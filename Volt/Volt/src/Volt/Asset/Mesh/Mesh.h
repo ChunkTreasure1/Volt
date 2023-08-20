@@ -50,23 +50,40 @@ namespace Volt
 
 		inline Ref<RHI::VertexBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
 		inline Ref<RHI::IndexBuffer> GetIndexBuffer() const { return m_indexBuffer; }
+
 		inline Ref<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
+		inline Ref<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
+		inline Ref<RHI::StorageBuffer> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
 		inline Ref<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexStorageBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
 
 	private:
-		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
-		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
-
-		const std::vector<glm::vec3> GetVertexPositions();
-
 		friend class FbxImporter;
 		friend class MeshCompiler;
 		friend class MeshExporterUtilities;
 		friend class VTMeshImporter;
 		friend class GLTFImporter;
+
+		struct VertexMaterialData
+		{
+			glm::vec<4, uint8_t> normal;
+			float tangent = 0.f;
+		};
+
+		struct VertexAnimationData
+		{
+			glm::vec<4, uint16_t> influences = 0;
+			half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
+		};
+
+		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
+		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
+
+		const std::vector<glm::vec3> GetVertexPositions();
+		const std::vector<VertexMaterialData> GetVertexMaterialData();
+		const std::vector<VertexAnimationData> GetVertexAnimationData();
 
 		std::vector<SubMesh> m_subMeshes;
 
@@ -78,6 +95,8 @@ namespace Volt
 		Ref<RHI::IndexBuffer> m_indexBuffer;
 
 		Ref<RHI::StorageBuffer> m_vertexPositionsBuffer;
+		Ref<RHI::StorageBuffer> m_vertexMaterialBuffer;
+		Ref<RHI::StorageBuffer> m_vertexAnimationBuffer;
 		Ref<RHI::StorageBuffer> m_indexStorageBuffer;
 
 		BoundingSphere m_boundingSphere;

@@ -230,6 +230,11 @@ namespace Volt::RHI
 	{
 	}
 
+	const uint32_t D3D12CommandBuffer::GetCurrentIndex() const
+	{
+		return m_currentCommandBufferIndex;
+	}
+
 	void D3D12CommandBuffer::Create(const uint32_t count, QueueType queueType, bool swapchainTarget)
 	{
 		m_isSwapchainTarget = swapchainTarget;

@@ -913,6 +913,11 @@ namespace Volt::RHI
 		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.m_currentImageLayout), 1, &region);
 	}
 
+	const uint32_t VulkanCommandBuffer::GetCurrentIndex() const
+	{
+		return m_currentCommandBufferIndex;
+	}
+
 	VkFence_T* VulkanCommandBuffer::GetCurrentFence() const
 	{
 		return m_commandBuffers.at(m_currentCommandBufferIndex).fence;
