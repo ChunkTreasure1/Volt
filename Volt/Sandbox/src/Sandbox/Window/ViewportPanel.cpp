@@ -1177,9 +1177,9 @@ glm::vec2 ViewportPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 
 glm::mat4 ViewportPanel::CalculateAverageTransform()
 {
-	glm::vec3 avgTranslation;
-	glm::quat avgRotation;
-	glm::vec3 avgScale;
+	glm::vec3 avgTranslation = 0.f;
+	glm::quat avgRotation = glm::identity<glm::quat>();
+	glm::vec3 avgScale = 0.f;
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
