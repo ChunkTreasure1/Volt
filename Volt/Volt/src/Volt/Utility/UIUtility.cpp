@@ -275,20 +275,129 @@ void UI::BeginPropertyRow()
 	window->DC.CurrLineTextBaseOffset = 3.f;
 
 	SetPropertyBackgroundColor();
-
-	if (IsPropertyColumnHovered(1))
-	{
-		static const glm::vec4 PropertyItemHovered = { 1.f };
-		ImGui::PushStyleColor(ImGuiCol_Border, PropertyItemHovered);
-	}
 }
 
 void UI::EndPropertyRow()
 {
-	if (IsPropertyColumnHovered(1))
+}
+
+bool UI::IsItemHovered(const float itemWidth)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+	const auto& style = ImGui::GetStyle();
+
+	const ImVec2 label_size = ImGui::CalcTextSize("TEST", NULL, true);
+	const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(itemWidth, label_size.y + style.FramePadding.y * 2.0f));
+
+	if (ImGui::IsMouseHoveringRect(frame_bb.Min, frame_bb.Max))
 	{
-		ImGui::PopStyleColor(1);
+		return true;
 	}
+
+	return false;
+}
+
+bool UI::DragScalarN(const std::string& id, ImGuiDataType dataType, void* data, int32_t components, float speed, const void* min, const void* max)
+{
+	static constexpr ImGuiDataTypeInfo GDataTypeInfo[] =
+	{
+		{ sizeof(char),             "S8",   "%d",   "%d"    },  // ImGuiDataType_S8
+		{ sizeof(unsigned char),    "U8",   "%u",   "%u"    },
+		{ sizeof(short),            "S16",  "%d",   "%d"    },  // ImGuiDataType_S16
+		{ sizeof(unsigned short),   "U16",  "%u",   "%u"    },
+		{ sizeof(int),              "S32",  "%d",   "%d"    },  // ImGuiDataType_S32
+		{ sizeof(unsigned int),     "U32",  "%u",   "%u"    },
+	#ifdef _MSC_VER
+		{ sizeof(ImS64),            "S64",  "%I64d","%I64d" },  // ImGuiDataType_S64
+		{ sizeof(ImU64),            "U64",  "%I64u","%I64u" },
+	#else
+		{ sizeof(ImS64),            "S64",  "%lld", "%lld"  },  // ImGuiDataType_S64
+		{ sizeof(ImU64),            "U64",  "%llu", "%llu"  },
+	#endif
+		{ sizeof(float),            "float", "%.3f","%f"    },  // ImGuiDataType_Float (float are promoted to double in va_arg)
+		{ sizeof(double),           "double","%f",  "%lf"   },  // ImGuiDataType_Double
+	};
+
+	bool changed = false;
+
+	ImGui::BeginGroup();
+	ImGui::PushID(id.c_str());
+	const float width = (ImGui::GetColumnWidth() / components) - ImGui::GetStyle().ItemInnerSpacing.x;
+	size_t type_size = GDataTypeInfo[dataType].Size;
+
+	for (int32_t i = 0; i < components; i++)
+	{
+		ImGui::PushID(i);
+
+		if (i > 0)
+		{
+			ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+		}
+
+		changed |= DrawItem(width, [&]()
+		{
+			return ImGui::DragScalar("", dataType, data, speed, min, max);
+		});
+
+		ImGui::PopID();
+		data = (void*)((char*)data + type_size);
+	}
+
+	ImGui::PopID();
+
+	ImGui::EndGroup();
+	return changed;
+}
+
+bool UI::DrawItem(std::function<bool()> itemFunc)
+{
+	const float itemWidth = ImGui::GetColumnWidth();
+
+	ImGui::PushItemWidth(itemWidth);
+
+	const bool itemHovered = IsItemHovered(itemWidth);
+
+	if (itemHovered)
+	{
+		static const glm::vec4 PropertyItemHovered = { 1.f };
+		ImGui::PushStyleColor(ImGuiCol_Border, PropertyItemHovered);
+	}
+
+	bool changed = itemFunc();
+
+	if (itemHovered)
+	{
+		ImGui::PopStyleColor();
+	}
+
+	ImGui::PopItemWidth();
+
+	return changed;
+}
+
+bool UI::DrawItem(const float itemWidth, std::function<bool()> itemFunc)
+{
+	ImGui::PushItemWidth(itemWidth);
+
+	const bool itemHovered = IsItemHovered(itemWidth);
+
+	if (itemHovered)
+	{
+		static const glm::vec4 PropertyItemHovered = { 1.f };
+		ImGui::PushStyleColor(ImGuiCol_Border, PropertyItemHovered);
+	}
+
+	bool changed = itemFunc();
+
+	if (itemHovered)
+	{
+		ImGui::PopStyleColor();
+	}
+
+	ImGui::PopItemWidth();
+
+	return changed;
 }
 
 bool UI::InputTextWithHint(const std::string& name, std::string& text, const std::string& hint, ImGuiInputTextFlags_ flags /* = ImGuiInputTextFlags_None */)
@@ -595,24 +704,13 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
-
 	ImGui::TableNextColumn();
 
-	if (width == 0.f)
-	{
-		ImGui::PushItemWidth(ImGui::GetColumnWidth());
-	}
-	else
-	{
-		ImGui::PushItemWidth(width);
-	}
 	std::string id = "##" + std::to_string(s_stackId++);
-	if (ImGui::Combo(id.c_str(), &currentItem, items.data(), (int32_t)items.size()))
+	changed = DrawItem((width == 0.f) ? ImGui::GetColumnWidth() : width, [&]()
 	{
-		changed = true;
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::Combo(id.c_str(), &currentItem, items.data(), (int32_t)items.size());
+	});
 
 	EndPropertyRow();
 
@@ -768,28 +866,17 @@ bool UI::ComboProperty(const std::string& text, int& currentItem, const std::vec
 	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
-
 	ImGui::TableNextColumn();
 
-	if (width == 0.f)
-	{
-		ImGui::PushItemWidth(ImGui::GetColumnWidth());
-	}
-	else
-	{
-		ImGui::PushItemWidth(width);
-	}
 	std::string id = "##" + std::to_string(s_stackId++);
 
 	std::vector<const char*> items;
 	std::for_each(strItems.begin(), strItems.end(), [&](const std::string& string) { items.emplace_back(string.c_str()); });
 
-	if (ImGui::Combo(id.c_str(), &currentItem, items.data(), (int32_t)items.size()))
+	changed = DrawItem((width == 0.f) ? ImGui::GetColumnWidth() : width, [&]() 
 	{
-		changed = true;
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::Combo(id.c_str(), &currentItem, items.data(), (int32_t)items.size());
+	});
 
 	EndPropertyRow();
 
@@ -836,7 +923,7 @@ void UI::PropertyInfoString(const std::string& key, const std::string& info)
 	EndPropertyRow();
 }
 
-bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue, std::function<void(glm::vec3& value)> callback)
+bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue)
 {
 	ScopedStyleFloat2 cellPad(ImGuiStyleVar_CellPadding, { 4.f, 0.f });
 
@@ -847,7 +934,8 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 	ImGui::Text(text.c_str());
 
 	ImGui::TableNextColumn();
-	ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+
+	const auto width = ImGui::CalcItemWidth() / 3;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
@@ -864,24 +952,16 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 		{
 			value.x = resetValue;
 			changed = true;
-			if (callback)
-			{
-				callback(value);
-			}
 		}
 	}
 
 	ImGui::SameLine();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	if (ImGui::DragFloat(id.c_str(), &value.x, 0.1f))
+	changed |= DrawItem(width, [&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return ImGui::DragFloat(id.c_str(), &value.x, 0.1f);
+	});
 
 	if (ImGui::IsItemHovered())
 	{
@@ -891,7 +971,6 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 		}
 	}
 
-	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
 	{
@@ -904,24 +983,16 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 		{
 			value.y = resetValue;
 			changed = true;
-			if (callback)
-			{
-				callback(value);
-			}
 		}
 	}
 
 	ImGui::SameLine();
 	id = "##" + std::to_string(s_stackId++);
 
-	if (ImGui::DragFloat(id.c_str(), &value.y, 0.1f))
+	changed |= DrawItem(width, [&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return ImGui::DragFloat(id.c_str(), &value.y, 0.1f);
+	});
 
 	if (ImGui::IsItemHovered())
 	{
@@ -931,7 +1002,6 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 		}
 	}
 
-	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
 	{
@@ -944,23 +1014,16 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 		{
 			value.z = resetValue;
 			changed = true;
-			if (callback)
-			{
-				callback(value);
-			}
 		}
 	}
 
 	ImGui::SameLine();
 	id = "##" + std::to_string(s_stackId++);
-	if (ImGui::DragFloat(id.c_str(), &value.z, 0.1f))
+
+	changed |= DrawItem(width, [&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return ImGui::DragFloat(id.c_str(), &value.z, 0.1f);
+	});
 
 	if (ImGui::IsItemHovered())
 	{
@@ -970,7 +1033,6 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec3& value, float rese
 		}
 	}
 
-	ImGui::PopItemWidth();
 	ImGui::PopStyleVar();
 
 	EndPropertyRow();
@@ -989,7 +1051,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 	ImGui::Text(text.c_str());
 
 	ImGui::TableNextColumn();
-	ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
+	const float width = ImGui::CalcItemWidth() / 2;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
@@ -1012,10 +1074,10 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 	ImGui::SameLine();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	if (ImGui::DragFloat(id.c_str(), &value.x, 0.1f))
+	changed |= DrawItem(width, [&]()
 	{
-		changed = true;
-	}
+		return ImGui::DragFloat(id.c_str(), &value.x, 0.1f);
+	});
 
 	if (ImGui::IsItemHovered())
 	{
@@ -1025,7 +1087,6 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 		}
 	}
 
-	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
 	{
@@ -1044,10 +1105,10 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 	ImGui::SameLine();
 	id = "##" + std::to_string(s_stackId++);
 
-	if (ImGui::DragFloat(id.c_str(), &value.y, 0.1f))
+	changed |= DrawItem(width, [&]()
 	{
-		changed = true;
-	}
+		return ImGui::DragFloat(id.c_str(), &value.y, 0.1f);
+	});
 
 	if (ImGui::IsItemHovered())
 	{
@@ -1057,7 +1118,6 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 		}
 	}
 
-	ImGui::PopItemWidth();
 	ImGui::PopStyleVar();
 
 	EndPropertyRow();
@@ -1065,7 +1125,7 @@ bool UI::PropertyAxisColor(const std::string& text, glm::vec2& value, float rese
 	return changed;
 }
 
-bool UI::Property(const std::string& text, bool& value, std::function<void(bool& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, bool& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1077,21 +1137,17 @@ bool UI::Property(const std::string& text, bool& value, std::function<void(bool&
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	if (ImGui::Checkbox(id.c_str(), &value))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return ImGui::Checkbox(id.c_str(), &value);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, int32_t& value, std::function<void(int32_t& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, int32_t& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1102,25 +1158,18 @@ bool UI::Property(const std::string& text, int32_t& value, std::function<void(in
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, (void*)&value, 1.f))
+	changed = DrawItem([&id, &value]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_S32, (void*)&value, 1.f);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, uint32_t& value, std::function<void(uint32_t& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, uint32_t& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1131,25 +1180,18 @@ bool UI::Property(const std::string& text, uint32_t& value, std::function<void(u
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_U32, (void*)&value, 1.f))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_U32, (void*)&value, 1.f);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, int16_t& value, std::function<void(int16_t& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, int16_t& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1160,25 +1202,18 @@ bool UI::Property(const std::string& text, int16_t& value, std::function<void(in
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_S16, (void*)&value, 1.f))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_S16, (void*)&value, 1.f);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, uint16_t& value, std::function<void(uint16_t& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, uint16_t& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1189,25 +1224,18 @@ bool UI::Property(const std::string& text, uint16_t& value, std::function<void(u
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_U16, (void*)&value, 1.f))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_U16, (void*)&value, 1.f);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, int8_t& value, std::function<void(int8_t& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, int8_t& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1218,25 +1246,39 @@ bool UI::Property(const std::string& text, int8_t& value, std::function<void(int
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_S8, (void*)&value, 1.f))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_S8, (void*)&value, 1.f);
+	});
 
-	ImGui::PopItemWidth();
+	EndPropertyRow();
+	return changed;
+}
+
+bool UI::Property(const std::string& text, uint8_t& value, const std::string& toolTip)
+{
+	bool changed = false;
+
+	BeginPropertyRow();
+
+	ImGui::TextUnformatted(text.c_str());
+	SimpleToolTip(toolTip);
+
+	ImGui::TableNextColumn();
+	std::string id = "##" + std::to_string(s_stackId++);
+
+	changed = DrawItem([&]()
+	{
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_U8, (void*)&value, 1.f);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, uint8_t& value, std::function<void(uint8_t& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, double& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1247,25 +1289,50 @@ bool UI::Property(const std::string& text, uint8_t& value, std::function<void(ui
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_U8, (void*)&value, 1.f))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return ImGui::DragScalar(id.c_str(), ImGuiDataType_Double, (void*)&value, 1.f);
+	});
 
-	ImGui::PopItemWidth();
+	EndPropertyRow();
+	return changed;
+}
+
+bool UI::Property(const std::string& text, float& value, float min, float max, const std::string& toolTip)
+{
+	bool changed = false;
+
+	BeginPropertyRow();
+
+	ImGui::TextUnformatted(text.c_str());
+	SimpleToolTip(toolTip);
+
+	ImGui::TableNextColumn();
+	std::string id = "##" + std::to_string(s_stackId++);
+
+	changed = DrawItem([&]()
+	{
+		bool c = false;
+
+		if (min != 0.f && max != 0.f)
+		{
+			c = ImGui::SliderFloat(id.c_str(), &value, min, max);
+		}
+		else
+		{
+			c = ImGui::DragFloat(id.c_str(), &value, 1.f);
+		}
+
+		return c;
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, double& value, std::function<void(double& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::vec2& value, float min, float max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1276,25 +1343,15 @@ bool UI::Property(const std::string& text, double& value, std::function<void(dou
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalar(id.c_str(), ImGuiDataType_Double, (void*)&value, 1.f))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 2, 1.f, &min, &max);
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, float& value, bool useMinMax, float min, float max, std::function<void(float& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::vec3& value, float min, float max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1305,44 +1362,15 @@ bool UI::Property(const std::string& text, float& value, bool useMinMax, float m
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (useMinMax)
-	{
-		changed = ImGui::SliderFloat(id.c_str(), &value, min, max);
-	}
-	else
-	{
-		changed = ImGui::DragFloat(id.c_str(), &value, 1.f, min, max);
-	}
-
-	if (changed)
-	{
-		if (value < min && useMinMax)
-		{
-			value = min;
-		}
-
-		if (value > max && useMinMax)
-		{
-			value = max;
-		}
-
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 3, 1.f, &min, &max);
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, glm::vec2& value, float min, float max, std::function<void(glm::vec2& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::vec4& value, float min, float max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1353,25 +1381,33 @@ bool UI::Property(const std::string& text, glm::vec2& value, float min, float ma
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragFloat2(id.c_str(), glm::value_ptr(value), 1.f, min, max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+	changed = DragScalarN(id.c_str(), ImGuiDataType_Float, glm::value_ptr(value), 4, 1.f, &min, &max);
+	EndPropertyRow();
 
-	ImGui::PopItemWidth();
+	return changed;
+}
+
+bool UI::Property(const std::string& text, glm::uvec2& value, uint32_t min, uint32_t max, const std::string& toolTip)
+{
+	bool changed = false;
+
+	BeginPropertyRow();
+
+	ImGui::TextUnformatted(text.c_str());
+	SimpleToolTip(toolTip);
+
+	ImGui::TableNextColumn();
+	std::string id = "##" + std::to_string(s_stackId++);
+
+	changed = DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 2, 1.f, &min, &max);
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, glm::vec3& value, float min, float max, std::function<void(glm::vec3& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::uvec3& value, uint32_t min, uint32_t max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1382,25 +1418,15 @@ bool UI::Property(const std::string& text, glm::vec3& value, float min, float ma
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragFloat3(id.c_str(), glm::value_ptr(value), 1.f, min, max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+	changed = DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 3, 1.f, &min, &max);
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, glm::vec4& value, float min, float max, std::function<void(glm::vec4& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::uvec4& value, uint32_t min, uint32_t max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1411,25 +1437,33 @@ bool UI::Property(const std::string& text, glm::vec4& value, float min, float ma
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragFloat4(id.c_str(), glm::value_ptr(value), 1.f, min, max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+	changed = DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 4, 1.f, &min, &max);
+	EndPropertyRow();
 
-	ImGui::PopItemWidth();
+	return changed;
+}
+
+bool UI::Property(const std::string& text, glm::ivec2& value, uint32_t min, uint32_t max, const std::string& toolTip)
+{
+	bool changed = false;
+
+	BeginPropertyRow();
+
+	ImGui::TextUnformatted(text.c_str());
+	SimpleToolTip(toolTip);
+
+	ImGui::TableNextColumn();
+	std::string id = "##" + std::to_string(s_stackId++);
+
+	changed = DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 2, 1.f, &min, &max);
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, glm::uvec2& value, uint32_t min, uint32_t max, std::function<void(glm::uvec2& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::ivec3& value, uint32_t min, uint32_t max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1440,25 +1474,14 @@ bool UI::Property(const std::string& text, glm::uvec2& value, uint32_t min, uint
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 2, 1.f, &min, &max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
-
+	changed = DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 3, 1.f, &min, &max);
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, glm::uvec3& value, uint32_t min, uint32_t max, std::function<void(glm::uvec3& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, glm::ivec4& value, uint32_t min, uint32_t max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1469,25 +1492,14 @@ bool UI::Property(const std::string& text, glm::uvec3& value, uint32_t min, uint
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 3, 1.f, &min, &max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
-
+	changed = DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 4, 1.f, &min, &max);
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, glm::uvec4& value, uint32_t min, uint32_t max, std::function<void(glm::uvec4& value)> callback, const std::string& toolTip)
+bool UI::PropertyDragFloat(const std::string& text, float& value, float increment, float min, float max, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1498,144 +1510,11 @@ bool UI::Property(const std::string& text, glm::uvec4& value, uint32_t min, uint
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_U32, glm::value_ptr(value), 4, 1.f, &min, &max))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
-
-	EndPropertyRow();
-
-	return changed;
-}
-
-bool UI::Property(const std::string& text, glm::ivec2& value, uint32_t min, uint32_t max, std::function<void(glm::ivec2& value)> callback, const std::string& toolTip)
-{
-	bool changed = false;
-
-	BeginPropertyRow();
-
-	ImGui::TextUnformatted(text.c_str());
-	SimpleToolTip(toolTip);
-
-	ImGui::TableNextColumn();
-	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
-
-	if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 2, 1.f, &min, &max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
-
-	EndPropertyRow();
-
-	return changed;
-}
-
-bool UI::Property(const std::string& text, glm::ivec3& value, uint32_t min, uint32_t max, std::function<void(glm::ivec3& value)> callback, const std::string& toolTip)
-{
-	bool changed = false;
-
-	BeginPropertyRow();
-
-	ImGui::TextUnformatted(text.c_str());
-	SimpleToolTip(toolTip);
-
-	ImGui::TableNextColumn();
-	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
-
-	if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 3, 1.f, &min, &max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
-
-	EndPropertyRow();
-
-	return changed;
-}
-
-bool UI::Property(const std::string& text, glm::ivec4& value, uint32_t min, uint32_t max, std::function<void(glm::ivec4& value)> callback, const std::string& toolTip)
-{
-	bool changed = false;
-
-	BeginPropertyRow();
-
-	ImGui::TextUnformatted(text.c_str());
-	SimpleToolTip(toolTip);
-
-	ImGui::TableNextColumn();
-	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
-
-	if (ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, glm::value_ptr(value), 4, 1.f, &min, &max))
-	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
-
-	EndPropertyRow();
-
-	return changed;
-}
-
-bool UI::PropertyDragFloat(const std::string& text, float& value, float increment, bool useMinMax, float min, float max, std::function<void(float& value)> callback, const std::string& toolTip)
-{
-	bool changed = false;
-
-	BeginPropertyRow();
-
-	ImGui::TextUnformatted(text.c_str());
-	SimpleToolTip(toolTip);
-
-	ImGui::TableNextColumn();
-	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
-
-	if (ImGui::DragFloat(id.c_str(), &value, increment, min, max))
-	{
-		if (value < min && useMinMax)
-		{
-			value = min;
-		}
-
-		if (value > max && useMinMax)
-		{
-			value = max;
-		}
-
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+		return ImGui::DragFloat(id.c_str(), &value, increment, min, max);
+	});
 
 	EndPropertyRow();
 
@@ -1650,23 +1529,19 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (InputText("", const_cast<std::string&>(value), readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-	}
-
-	ImGui::PopItemWidth();
+		return InputText("", const_cast<std::string&>(value), readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::EntityId& value, std::function<void(Wire::EntityId& value)> callback, const std::string& toolTip)
+bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::EntityId& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1677,7 +1552,6 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
 	Volt::Entity entity{ value, scene.get() };
 
@@ -1691,34 +1565,29 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 		entityName = "Null";
 	}
 
-	ImGui::InputTextString(id.c_str(), &entityName, ImGuiInputTextFlags_ReadOnly);
+	changed = DrawItem([&]()
+	{
+		return ImGui::InputTextString(id.c_str(), &entityName, ImGuiInputTextFlags_ReadOnly);
+	});
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
 		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
 		value = entityId;
 		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
 	}
 
-	ImGui::PopItemWidth();
-	
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, std::function<void(Wire::EntityId& value)> callback, const std::string& toolTip)
+bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, const std::string& toolTip)
 {
 	bool changed = false;
 
 	SimpleToolTip(toolTip);
-
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(width);
 
 	Volt::Entity entity{ value, scene.get() };
 
@@ -1732,27 +1601,24 @@ bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const flo
 		entityName = "Null";
 	}
 
-	ImGui::InputTextString(id.c_str(), &entityName, ImGuiInputTextFlags_ReadOnly);
+	changed = DrawItem(width, [&]()
+	{
+		return ImGui::InputTextString(id.c_str(), &entityName, ImGuiInputTextFlags_ReadOnly);
+	});
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
 		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
 		value = entityId;
 		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
 	}
-
-	ImGui::PopItemWidth();
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, const std::string& value, bool readOnly, std::function<void(const std::string& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, const std::string& value, bool readOnly, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1760,27 +1626,19 @@ bool UI::Property(const std::string& text, const std::string& value, bool readOn
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (InputText("", const_cast<std::string&>(value), readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
-
-	ImGui::PopItemWidth();
+		return InputText("", const_cast<std::string&>(value), readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::Property(const std::string& text, std::string& value, bool readOnly, std::function<void(std::string& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, std::string& value, bool readOnly, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1788,98 +1646,76 @@ bool UI::Property(const std::string& text, std::string& value, bool readOnly, st
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (InputText("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return InputText("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None);
+	});
 
 	EndPropertyRow();
-
 	return changed;
 }
 
-bool UI::PropertyColor(const std::string& text, glm::vec4& value, std::function<void(glm::vec4& value)> callback, const std::string& toolTip)
+bool UI::PropertyColor(const std::string& text, glm::vec4& value, const std::string& toolTip)
 {
 	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value)))
+	bool changed = DrawItem([&]()
 	{
-		if (callback)
-		{
-			callback(value);
-		}
-		return true;
-	}
+		return ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value));
+	});
 
 	EndPropertyRow();
-
-	return false;
+	return changed;
 }
 
-bool UI::PropertyColor(const std::string& text, glm::vec3& value, std::function<void(glm::vec3& value)> callback, const std::string& toolTip)
+bool UI::PropertyColor(const std::string& text, glm::vec3& value, const std::string& toolTip)
 {
 	BeginPropertyRow();
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value)))
+	bool changed = DrawItem([&]()
 	{
-		if (callback)
-		{
-			callback(value);
-		}
-		return true;
-	}
+		return ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value));
+	});
 
 	EndPropertyRow();
-
-	return false;
+	return changed;
 }
 
-bool UI::Property(const std::string& text, std::filesystem::path& path, std::function<void(std::filesystem::path& value)> callback, const std::string& toolTip)
+bool UI::Property(const std::string& text, std::filesystem::path& path, const std::string& toolTip)
 {
 	bool changed = false;
 
 	BeginPropertyRow();
-	
+
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
 
 	ImGui::TableNextColumn();
 	std::string sPath = path.string();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth() - ImGui::CalcTextSize("Open...").x - 20.f);
 
-	if (InputText("", sPath))
+	changed = DrawItem(ImGui::GetColumnWidth() - ImGui::CalcTextSize("Open...").x - 20.f, [&]()
 	{
-		path = std::filesystem::path(sPath);
-		changed = true;
-		if (callback)
+		if (InputText("", sPath))
 		{
-			callback(path);
+			path = std::filesystem::path(sPath);
+			return true;
 		}
-	}
 
-	ImGui::PopItemWidth();
+		return false;
+	});
+
 	ImGui::SameLine();
 
 	std::string buttonId = "Open...##" + std::to_string(s_stackId++);
@@ -1890,10 +1726,6 @@ bool UI::Property(const std::string& text, std::filesystem::path& path, std::fun
 		{
 			path = newPath;
 			changed = true;
-			if (callback)
-			{
-				callback(path);
-			}
 		}
 	}
 
@@ -1901,7 +1733,7 @@ bool UI::Property(const std::string& text, std::filesystem::path& path, std::fun
 
 	return changed;
 }
-bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path, std::function<void(std::filesystem::path& value)> callback, const std::string& toolTip)
+bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1909,22 +1741,20 @@ bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path,
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
 	std::string sPath = path.string();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth() - ImGui::CalcTextSize("Open...").x - 20.f);
 
-	if (InputText("", sPath))
+	changed = DrawItem(ImGui::GetColumnWidth() - ImGui::CalcTextSize("Open...").x - 20.f, [&]()
 	{
-		path = std::filesystem::path(sPath);
-		changed = true;
-		if (callback)
+		if (InputText("", sPath))
 		{
-			callback(path);
+			path = std::filesystem::path(sPath);
+			return true;
 		}
-	}
 
-	ImGui::PopItemWidth();
+		return false;
+	});
+
 	ImGui::SameLine();
 
 	std::string buttonId = "Open...##" + std::to_string(s_stackId++);
@@ -1935,10 +1765,6 @@ bool UI::PropertyDirectory(const std::string& text, std::filesystem::path& path,
 		{
 			path = newPath;
 			changed = true;
-			if (callback)
-			{
-				callback(path);
-			}
 		}
 	}
 
@@ -1954,21 +1780,19 @@ bool UI::PropertyMultiline(const std::string& text, std::string& value, bool rea
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (InputTextMultiline("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-	}
+		return InputTextMultiline("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None);
+	});
 
 	EndPropertyRow();
 
 	return changed;
 }
 
-bool UI::PropertyPassword(const std::string& text, std::string& value, bool readOnly, std::function<void(std::string& value)> callback, const std::string& toolTip)
+bool UI::PropertyPassword(const std::string& text, std::string& value, bool readOnly, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1976,20 +1800,13 @@ bool UI::PropertyPassword(const std::string& text, std::string& value, bool read
 
 	ImGui::TextUnformatted(text.c_str());
 	SimpleToolTip(toolTip);
-
 	ImGui::TableNextColumn();
-	ImGui::PushItemWidth(ImGui::GetColumnWidth());
 
-	if (InputText("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_Password))
+	changed = DrawItem([&]()
 	{
-		changed = true;
-		if (callback)
-		{
-			callback(value);
-		}
-	}
+		return InputText("", value, readOnly ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_Password);
+	});
 
 	EndPropertyRow();
-
 	return changed;
 }

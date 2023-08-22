@@ -56,7 +56,7 @@ void RendererSettingsPanel::UpdateMainContent()
 
 	if (UI::BeginProperties("Rendering-Other"))
 	{
-		changed |= UI::Property("Render Scale", settings.renderScale, true, 0.1f, 4.f);
+		changed |= UI::Property("Render Scale", settings.renderScale, 0.1f, 4.f);
 		changed |= UI::Property("Enable Bloom", settings.enableBloom);
 		changed |= UI::Property("Enable UI", settings.enableUI);
 		changed |= UI::Property("Enable Skybox", settings.enableSkybox);

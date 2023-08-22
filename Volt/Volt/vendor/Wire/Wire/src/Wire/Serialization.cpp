@@ -239,7 +239,7 @@ namespace Wire
 					}
 					else if (propertySpecialType == "folder")
 					{
-						propertyValues.type = PropertyType::Folder;
+						propertyValues.type = PropertyType::Directory;
 					}
 				}
 			}

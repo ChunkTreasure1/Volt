@@ -376,10 +376,10 @@ void MaterialEditorPanel::UpdateProperties()
 			{
 				changed |= UI::PropertyColor("Color", materialData.color);
 				changed |= UI::PropertyColor("Emissive Color", materialData.emissiveColor);
-				changed |= UI::Property("Emissive Strength", materialData.emissiveStrength, true, 0.f, 20.f);
-				changed |= UI::Property("Roughness", materialData.roughness, true, 0.f, 1.f);
-				changed |= UI::Property("Metalness", materialData.metalness, true, 0.f, 1.f);
-				changed |= UI::Property("Normal Strength", materialData.normalStrength, true, -1.f, 1.f);
+				changed |= UI::Property("Emissive Strength", materialData.emissiveStrength, 0.f, 20.f);
+				changed |= UI::Property("Roughness", materialData.roughness, 0.f, 1.f);
+				changed |= UI::Property("Metalness", materialData.metalness, 0.f, 1.f);
+				changed |= UI::Property("Normal Strength", materialData.normalStrength, -1.f, 1.f);
 
 				UI::EndProperties();
 			}

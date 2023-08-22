@@ -193,7 +193,7 @@ void EditorSettingsPanel::DrawStyleSettings()
 	UI::PushID();
 	if (UI::BeginProperties())
 	{
-		if (UI::Property("Window Opacity", currentWindowOpacity, true, 0.f, 1.f))
+		if (UI::Property("Window Opacity", currentWindowOpacity, 0.f, 1.f))
 		{
 			Volt::Application::Get().GetWindow().SetOpacity(currentWindowOpacity);
 		}

@@ -58,7 +58,7 @@ enum class ImportState
 class EditorUtils
 {
 public:
-	static bool Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None, std::function<void(Volt::AssetHandle& value)> callback = nullptr);
+	static bool Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None);
 	static bool AssetBrowserPopupField(const std::string& id, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType = Volt::AssetType::None);
 
 	static bool SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery, bool setAsActive = false);
@@ -81,7 +81,7 @@ public:
 	static std::filesystem::path GetThumbnailPathFromPath(const std::filesystem::path& path);
 
 private:
-	static bool AssetBrowserPopupInternal(const std::string& id, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType = Volt::AssetType::None, std::function<void(Volt::AssetHandle& value)> callback = nullptr);
+	static bool AssetBrowserPopupInternal(const std::string& id, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType = Volt::AssetType::None);
 	struct DefaultFalse
 	{
 		bool state = false;

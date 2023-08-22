@@ -13,8 +13,8 @@
 
 #include <imgui.h>
 
-AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
-	: myId(id), myWantedType(wantedType), myHandle(handle), myCallback(callback)
+AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle)
+	: myId(id), myWantedType(wantedType), myHandle(handle)
 {
 }
 
@@ -111,11 +111,6 @@ AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::A
 		{
 			myHandle = handle;
 			state = State::Changed;
-			if (myCallback)
-			{
-				myCallback(myHandle);
-			}
-
 			ImGui::CloseCurrentPopup();
 		}
 	}

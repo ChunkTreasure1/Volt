@@ -29,18 +29,15 @@
 
 #include <DirectXTex/DirectXTex.h>
 
-bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType /* = Volt::AssetType::None */, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
+bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType)
 {
 	bool changed = false;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.f, 0.f });
+	UI::BeginPropertyRow();
 
-	ImGui::TableNextColumn();
 	ImGui::TextUnformatted(text.c_str());
-
 	ImGui::TableNextColumn();
-
-	ImGui::PushItemWidth(ImGui::GetColumnWidth() - 2.f * 25.f);
 
 	std::string assetFileName = "Null";
 
@@ -58,10 +55,13 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 		}
 	}
 
-
 	std::string textId = "##" + std::to_string(UI::GetID());
-	ImGui::InputTextString(textId.c_str(), &assetFileName, ImGuiInputTextFlags_ReadOnly);
-	ImGui::PopItemWidth();
+
+	changed = UI::DrawItem(ImGui::GetColumnWidth() - 2.f * 25.f, [&]()
+	{
+		ImGui::InputTextString(textId.c_str(), &assetFileName, ImGuiInputTextFlags_ReadOnly);
+		return false;
+	});
 
 	if (auto ptr = UI::DragDropTarget("ASSET_BROWSER_ITEM"))
 	{
@@ -72,10 +72,6 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 		{
 			assetHandle = newHandle;
 			changed = true;
-			if (callback)
-			{
-				callback(assetHandle);
-			}
 		}
 	}
 
@@ -86,14 +82,9 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 	{
 		assetHandle = Volt::Asset::Null();
 		changed = true;
-		if (callback)
-		{
-			callback(assetHandle);
-		}
 	}
 
 	ImGui::SameLine();
-
 
 	std::string selectButtonId = "...##" + std::to_string(UI::GetID());
 	std::string popupId = "AssetsPopup##" + text + std::to_string(UI::GetID());
@@ -105,11 +96,12 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 		s_assetBrowserPopupsOpen[popupId].state = true;
 	}
 
-	if (AssetBrowserPopupInternal(popupId, assetHandle, startState, wantedType, callback))
+	if (AssetBrowserPopupInternal(popupId, assetHandle, startState, wantedType))
 	{
 		changed = true;
 	}
 
+	UI::EndPropertyRow();
 	ImGui::PopStyleVar();
 
 	return changed;
@@ -363,13 +355,13 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	return true;
 }
 
-bool EditorUtils::AssetBrowserPopupInternal(const std::string& popupId, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType, std::function<void(Volt::AssetHandle& value)> callback)
+bool EditorUtils::AssetBrowserPopupInternal(const std::string& popupId, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType)
 {
 	bool changed = false;
 
 	if (auto it = s_assetBrowserPopups.find(popupId); it == s_assetBrowserPopups.end() && s_assetBrowserPopupsOpen[popupId].state != startState)
 	{
-		s_assetBrowserPopups.emplace(popupId, CreateRef<AssetBrowserPopup>(popupId, wantedType, assetHandle, callback));
+		s_assetBrowserPopups.emplace(popupId, CreateRef<AssetBrowserPopup>(popupId, wantedType, assetHandle));
 	}
 
 	AssetBrowserPopup::State returnState = AssetBrowserPopup::State::Closed;

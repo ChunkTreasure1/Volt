@@ -263,48 +263,48 @@ public:
 	static void SmallSeparatorHeader(const std::string& text, float padding);
 
 	static void PropertyInfoString(const std::string& key, const std::string& info);
-	static bool PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue = 0.f, std::function<void(glm::vec3& value)> callback = nullptr);
+	static bool PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue = 0.f);
 	static bool PropertyAxisColor(const std::string& text, glm::vec2& value, float resetValue = 0.f);
 	
-	static bool PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::EntityId& value, std::function<void(Wire::EntityId& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, std::function<void(Wire::EntityId& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::EntityId& value, const std::string& toolTip = "");
+	static bool PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, const std::string& toolTip = "");
 
-	static bool PropertyDragFloat(const std::string& text, float& value, float increment, bool useMinMax = false, float min = 0.f, float max = 0.f, std::function<void(float& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool PropertyDragFloat(const std::string& text, float& value, float increment, float min = 0.f, float max = 0.f, const std::string& toolTip = "");
 	static bool PropertyTextBox(const std::string& text, const std::string& value, bool readOnly = false, const std::string& toolTip = "");
-	static bool PropertyPassword(const std::string& text, std::string& value, bool readOnly = false, std::function<void(std::string& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool PropertyPassword(const std::string& text, std::string& value, bool readOnly = false, const std::string& toolTip = "");
 	static bool PropertyMultiline(const std::string& text, std::string& value, bool readOnly = false, const std::string& toolTip = "");
-	static bool PropertyDirectory(const std::string& text, std::filesystem::path& path, std::function<void(std::filesystem::path& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool PropertyDirectory(const std::string& text, std::filesystem::path& path, const std::string& toolTip = "");
 
-	static bool PropertyColor(const std::string& text, glm::vec4& value, std::function<void(glm::vec4& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool PropertyColor(const std::string& text, glm::vec3& value, std::function<void(glm::vec3& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool PropertyColor(const std::string& text, glm::vec4& value, const std::string& toolTip = "");
+	static bool PropertyColor(const std::string& text, glm::vec3& value, const std::string& toolTip = "");
 
-	static bool Property(const std::string& text, bool& value, std::function<void(bool& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, bool& value, const std::string& toolTip = "");
 	
-	static bool Property(const std::string& text, int32_t& value, std::function<void(int32_t& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, uint32_t& value, std::function<void(uint32_t& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, int16_t& value, std::function<void(int16_t& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, uint16_t& value, std::function<void(uint16_t& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, int8_t& value, std::function<void(int8_t& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, uint8_t& value, std::function<void(uint8_t& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, int32_t& value, const std::string& toolTip = "");
+	static bool Property(const std::string& text, uint32_t& value, const std::string& toolTip = "");
+	static bool Property(const std::string& text, int16_t& value, const std::string& toolTip = "");
+	static bool Property(const std::string& text, uint16_t& value, const std::string& toolTip = "");
+	static bool Property(const std::string& text, int8_t& value, const std::string& toolTip = "");
+	static bool Property(const std::string& text, uint8_t& value, const std::string& toolTip = "");
 
-	static bool Property(const std::string& text, double& value, std::function<void(double& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, float& value, bool useMinMax = false, float min = 0.f, float max = 0.f, std::function<void(float& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, double& value, const std::string& toolTip = "");
+	static bool Property(const std::string& text, float& value, float min = 0.f, float max = 0.f, const std::string& toolTip = "");
 
-	static bool Property(const std::string& text, glm::vec2& value, float min = 0.f, float max = 0.f, std::function<void(glm::vec2& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, glm::vec3& value, float min = 0.f, float max = 0.f, std::function<void(glm::vec3& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, glm::vec4& value, float min = 0.f, float max = 0.f, std::function<void(glm::vec4& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::vec2& value, float min = 0.f, float max = 0.f, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::vec3& value, float min = 0.f, float max = 0.f, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::vec4& value, float min = 0.f, float max = 0.f, const std::string& toolTip = "");
 	
-	static bool Property(const std::string& text, glm::uvec2& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::uvec2& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, glm::uvec3& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::uvec3& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, glm::uvec4& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::uvec4& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::uvec2& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::uvec3& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::uvec4& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
 
-	static bool Property(const std::string& text, glm::ivec2& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::ivec2& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, glm::ivec3& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::ivec3& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, glm::ivec4& value, uint32_t min = 0, uint32_t max = 0, std::function<void(glm::ivec4& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::ivec2& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::ivec3& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
+	static bool Property(const std::string& text, glm::ivec4& value, uint32_t min = 0, uint32_t max = 0, const std::string& toolTip = "");
 
-	static bool Property(const std::string& text, const std::string& value, bool readOnly = false, std::function<void(const std::string& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, std::string& value, bool readOnly = false, std::function<void(std::string& value)> callback = nullptr, const std::string& toolTip = "");
-	static bool Property(const std::string& text, std::filesystem::path& path, std::function<void(std::filesystem::path& value)> callback = nullptr, const std::string& toolTip = "");
+	static bool Property(const std::string& text, const std::string& value, bool readOnly = false, const std::string& toolTip = "");
+	static bool Property(const std::string& text, std::string& value, bool readOnly = false, const std::string& toolTip = "");
+	static bool Property(const std::string& text, std::filesystem::path& path, const std::string& toolTip = "");
 
 	template<typename T>
 	static bool Property(const std::string& text, Ref<T>& asset, const std::string& toolTip = "")
@@ -372,13 +372,21 @@ public:
 	static void RenderMatchingTextBackground(const std::string& query, const std::string& text, const glm::vec4& color, const glm::uvec2& offset = 0u);
 	static void RenderHighlightedBackground(const glm::vec4& color, float height);
 
+	static void BeginPropertyRow();
+	static void EndPropertyRow();
+
+	static bool DrawItem(std::function<bool()> itemFunc);
+	static bool DrawItem(const float itemWidth, std::function<bool()> itemFunc);
+
 private:
 	static bool IsPropertyRowHovered();
 	static bool IsPropertyColumnHovered(const uint32_t column);
 	static void SetPropertyBackgroundColor();
 	static void SetRowColor(const glm::vec4& color);
-	static void BeginPropertyRow();
-	static void EndPropertyRow();
+
+	static bool IsItemHovered(const float itemWidth);
+
+	static bool DragScalarN(const std::string& id, ImGuiDataType dataType, void* data, int32_t components, float speed, const void* min, const void* max);
 
 	inline static uint32_t s_contextId = 0;
 	inline static uint32_t s_stackId = 0;
