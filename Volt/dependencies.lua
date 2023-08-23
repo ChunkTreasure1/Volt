@@ -104,7 +104,7 @@ Library["swscale"] = "%{LibraryDir.ffmpeg}/libswscale.lib"
 
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK_Debug}/VkLayer_utils.lib"
-Library["dxc"] = "%{LibraryDir.VulkanSDK}/dxcompiler.lib"
+Library["dxc"] = "%{wks.location}/Volt/vendor/dxc/dxcompiler.lib"
 
 Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK_Debug}/shaderc_sharedd.lib"
 Library["ShaderC_Utils_Debug"] = "%{LibraryDir.VulkanSDK_Debug}/shaderc_utild.lib"
