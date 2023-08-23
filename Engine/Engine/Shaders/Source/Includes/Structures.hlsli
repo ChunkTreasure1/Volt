@@ -34,4 +34,12 @@ struct CameraData
     float4 position;
 };
 
+struct DirectionalLight
+{
+    float4 direction;
+    
+    float3 color;
+    float intensity;
+};
+
 #endif

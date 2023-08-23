@@ -17,7 +17,10 @@ namespace Volt::RHI
 		virtual void Unmap() = 0;
 
 		template<typename T>
-		T* Map();
+		inline T* Map();
+
+		template<typename T>
+		inline void SetData(const T& data);
 
 		static Ref<ConstantBuffer> Create(const uint32_t size, const void* data = nullptr);
 
@@ -31,5 +34,11 @@ namespace Volt::RHI
 	inline T* ConstantBuffer::Map()
 	{
 		return reinterpret_cast<T*>(MapInternal());
+	}
+
+	template<typename T>
+	inline void ConstantBuffer::SetData(const T& data)
+	{
+		SetData(&data, sizeof(T));
 	}
 }

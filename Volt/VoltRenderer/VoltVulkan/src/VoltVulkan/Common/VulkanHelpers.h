@@ -164,5 +164,41 @@ namespace Volt::RHI
 
 			return VK_ATTACHMENT_LOAD_OP_LOAD;
 		}
+
+		inline VkFilter VoltToVulkanFilter(TextureFilter filter)
+		{
+			switch (filter)
+			{
+				case TextureFilter::None: break;
+				case TextureFilter::Linear: return VK_FILTER_LINEAR;
+				case TextureFilter::Nearest: return VK_FILTER_NEAREST;
+			}
+
+			return VK_FILTER_LINEAR;
+		}
+
+		inline VkSamplerAddressMode VoltToVulkanWrapMode(TextureWrap wrap)
+		{
+			switch (wrap)
+			{
+				case TextureWrap::None: break;
+				case TextureWrap::Clamp: return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+				case TextureWrap::Repeat: return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			}
+
+			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		}
+
+		inline VkSamplerMipmapMode VoltToVulkanMipMapMode(TextureFilter filter)
+		{
+			switch (filter)
+			{
+				case TextureFilter::None: break;
+				case TextureFilter::Linear: return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+				case TextureFilter::Nearest: return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+			}
+
+			return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		}
 	}
 }

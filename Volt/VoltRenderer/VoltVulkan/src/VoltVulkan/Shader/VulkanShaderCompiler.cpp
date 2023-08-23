@@ -153,7 +153,8 @@ namespace Volt::RHI
 			//L"-fvk-support-nonzero-base-instance",
 			L"-HV",
 			L"2021",
-			L"__VULKAN__"
+			L"-D",
+			L"__VULKAN__ "
 			//L"-fvk-t-shift", std::to_wstring(VulkanDefaults::ShaderTRegisterOffset), L"0",
 			//L"-fvk-u-shift", std::to_wstring(VulkanDefaults::ShaderURegisterOffset), L"0",
 

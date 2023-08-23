@@ -16,7 +16,11 @@
 
 #include "Volt/Math/Math.h"
 
+#include "Volt/Components/LightComponents.h"
+#include "Volt/Components/Components.h"
+
 #include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Shader/Shader.h>
 #include <VoltRHI/Pipelines/RenderPipeline.h>
 #include <VoltRHI/Pipelines/ComputePipeline.h>
@@ -33,6 +37,9 @@
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
+
+inline static constexpr uint32_t CAMERA_BUFFER_BINDING = 0;
+inline static constexpr uint32_t DIRECTIONAL_LIGHT_BINDING = 1;
 
 namespace Volt
 {
@@ -99,17 +106,29 @@ namespace Volt
 		// Constant buffer
 		{
 			m_constantBufferSet = RHI::ConstantBufferSet::Create(RendererNew::GetFramesInFlight());
-			m_constantBufferSet->Add<CameraDataNew>(5, 0);
+			m_constantBufferSet->Add<CameraDataNew>(5, CAMERA_BUFFER_BINDING);
+			m_constantBufferSet->Add<DirectionalLightData>(5, DIRECTIONAL_LIGHT_BINDING);
 		}
 
 		// Storage buffers
 		{
 			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), RHI::MemoryUsage::Indirect | RHI::MemoryUsage::CPUToGPU);
 			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), RHI::MemoryUsage::Indirect);
-			
+
 			m_drawToInstanceOffsetBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
 			m_instanceOffsetToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
 			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), RHI::MemoryUsage::CPUToGPU);
+		}
+
+		// Sampler state
+		{
+			RHI::SamplerStateCreateInfo info{};
+			info.minFilter = RHI::TextureFilter::Linear;
+			info.magFilter = RHI::TextureFilter::Linear;
+			info.mipFilter = RHI::TextureFilter::Linear;
+			info.wrapMode = RHI::TextureWrap::Repeat;
+
+			m_samplerState = RHI::SamplerState::Create(info);
 		}
 
 		// Descriptor table
@@ -117,10 +136,14 @@ namespace Volt
 			RHI::DescriptorTableSpecification descriptorTableSpec{};
 			descriptorTableSpec.shader = m_shader;
 			m_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
-			m_descriptorTable->SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, 0), 5, 0);
 			m_descriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
 			m_descriptorTable->SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
 			m_descriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
+
+			m_descriptorTable->SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, CAMERA_BUFFER_BINDING), 5, CAMERA_BUFFER_BINDING);
+			m_descriptorTable->SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, DIRECTIONAL_LIGHT_BINDING), 5, DIRECTIONAL_LIGHT_BINDING);
+		
+			m_descriptorTable->SetSamplerState(m_samplerState, 5, 3);
 		}
 
 		// Indirect setup descriptor table
@@ -181,20 +204,7 @@ namespace Volt
 			m_shouldResize = false;
 		}
 
-		// Update camera
-		{
-			auto cameraBuffer = m_constantBufferSet->Get(5, 0, m_commandBuffer->GetCurrentIndex());
-
-			CameraDataNew* cameraData = cameraBuffer->Map<CameraDataNew>();
-
-			cameraData->projection = camera->GetProjection();
-			cameraData->view = camera->GetView();
-			cameraData->inverseView = glm::inverse(camera->GetView());
-			cameraData->inverseProjection = glm::inverse(camera->GetProjection());
-			cameraData->position = glm::vec4(camera->GetPosition(), 1.f);
-
-			cameraBuffer->Unmap();
-		}
+		UpdateBuffers(camera);
 
 		m_commandBuffer->Begin();
 
@@ -424,7 +434,7 @@ namespace Volt
 		IndirectGPUCommandNew* indirectCommands = m_indirectCommandsBuffer->Map<IndirectGPUCommandNew>();
 
 		m_currentActiveCommandCount = 0;
-		for (uint32_t index = 0; const auto& obj : m_activeRenderObjects)
+		for (uint32_t index = 0; const auto & obj : m_activeRenderObjects)
 		{
 			auto meshPtr = obj.mesh.get();
 			uint32_t meshIndex = 0;
@@ -443,7 +453,7 @@ namespace Volt
 				//m_descriptorTable->SetBufferView(obj.mesh->GetVertexAnimationBuffer()->GetView(), 3, 0, meshIndex);
 				m_descriptorTable->SetBufferView(obj.mesh->GetIndexStorageBuffer()->GetView(), 4, 0, meshIndex);
 			}
-			
+
 			Entity entity{ obj.entity, m_scene.lock().get() };
 
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
@@ -478,5 +488,59 @@ namespace Volt
 		m_indirectCommandsBuffer->Unmap();
 
 		m_scene.lock()->GetRenderScene()->SetValid();
+	}
+
+	void SceneRendererNew::UpdateBuffers(Ref<Camera> camera)
+	{
+		UpdateCameraBuffer(camera);
+		UpdateLightBuffers();
+	}
+
+	void SceneRendererNew::UpdateCameraBuffer(Ref<Camera> camera)
+	{
+		if (!camera)
+		{
+			return;
+		}
+
+		auto cameraBuffer = m_constantBufferSet->Get(5, CAMERA_BUFFER_BINDING, m_commandBuffer->GetCurrentIndex());
+
+		CameraDataNew* cameraData = cameraBuffer->Map<CameraDataNew>();
+
+		cameraData->projection = camera->GetProjection();
+		cameraData->view = camera->GetView();
+		cameraData->inverseView = glm::inverse(camera->GetView());
+		cameraData->inverseProjection = glm::inverse(camera->GetProjection());
+		cameraData->position = glm::vec4(camera->GetPosition(), 1.f);
+
+		cameraBuffer->Unmap();
+	}
+
+	void SceneRendererNew::UpdateLightBuffers()
+	{
+		auto scenePtr = m_scene.lock();
+		auto& registry = scenePtr->GetRegistry();
+
+		// Directional Light
+		{
+			DirectionalLightData dirLightData{};
+
+			registry.ForEach<DirectionalLightComponent, TransformComponent>([&](Wire::EntityId id, const DirectionalLightComponent& lightComp, const TransformComponent& transComp)
+			{
+				if (!transComp.visible)
+				{
+					return;
+				}
+
+				Entity entity = { id, scenePtr.get() };
+
+				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 1.f, 0.f, 0.f }) * -1.f;
+				dirLightData.direction = glm::vec4{ dir.x, dir.y, dir.z, 0.f };
+				dirLightData.color = lightComp.color;
+				dirLightData.intensity = lightComp.intensity;
+			});
+
+			m_constantBufferSet->Get(5, DIRECTIONAL_LIGHT_BINDING, m_commandBuffer->GetCurrentIndex())->SetData<DirectionalLightData>(dirLightData);
+		}
 	}
 }

@@ -13,6 +13,8 @@
 
 #include <VoltRHI/Buffers/BufferViewSet.h>
 
+#include <VoltRHI/Images/SamplerState.h>
+
 #include <vulkan/vulkan.h>
 
 namespace Volt::RHI
@@ -31,8 +33,12 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
-		SetDirty(true);
+		if (!m_writeDescriptorsMapping[set].contains(binding))
+		{
+			return;
+		}
 
+		SetDirty(true);
 		m_imageInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
@@ -63,6 +69,11 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		if (!m_writeDescriptorsMapping[set].contains(binding))
+		{
+			return;
+		}
+
 		SetDirty(true);
 
 		VulkanBufferView& vkBufferView = bufferView->AsRef<VulkanBufferView>();
@@ -102,6 +113,11 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		if (!m_writeDescriptorsMapping[set].contains(binding))
+		{
+			return;
+		}
+
 		SetDirty(true);
 
 		const auto& views = bufferViewSet->GetViews();
@@ -137,6 +153,42 @@ namespace Volt::RHI
 			{
 				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
 				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pBufferInfo = reinterpret_cast<const VkDescriptorBufferInfo*>(&description);
+			}
+		}
+	}
+
+	void VulkanDescriptorTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	{
+		if (!m_writeDescriptorsMapping[set].contains(binding))
+		{
+			return;
+		}
+
+		SetDirty(true);
+		m_imageInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+
+		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
+			description.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			description.imageView = nullptr;
+			description.sampler = samplerState->GetHandle<VkSampler>();
+
+			// Mapping for write descriptor does not exist
+			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
+			{
+				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
+				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
+				writeDescriptorCopy.dstArrayElement = arrayIndex;
+				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
+
+				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
+			}
+			else
+			{
+				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
+				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
 			}
 		}
 	}

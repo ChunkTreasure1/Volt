@@ -32,4 +32,12 @@ namespace Volt
 
 		glm::vec4 position;
 	};
+
+	struct DirectionalLightData
+	{
+		glm::vec4 direction;
+
+		glm::vec3 color;
+		float intensity;
+	};
 }

@@ -16,6 +16,8 @@ namespace Volt
 		class StorageBufferSet;
 		class StorageBuffer;
 
+		class SamplerState;
+
 		class DescriptorTable;
 	}
 
@@ -45,6 +47,10 @@ namespace Volt
 		void OnRender(Ref<Camera> camera);
 		void Invalidate();
 
+		void UpdateBuffers(Ref<Camera> camera);
+		void UpdateCameraBuffer(Ref<Camera> camera);
+		void UpdateLightBuffers();
+
 		Ref<RHI::Image2D> m_outputImage;
 		Ref<RHI::Image2D> m_depthImage;
 
@@ -72,6 +78,8 @@ namespace Volt
 		Ref<RHI::StorageBuffer> m_drawToInstanceOffsetBuffer;
 		Ref<RHI::StorageBuffer> m_instanceOffsetToObjectIDBuffer;
 		Ref<RHI::StorageBuffer> m_indirectDrawDataBuffer;
+
+		Ref<RHI::SamplerState> m_samplerState;
 
 		Ref<RHI::DescriptorTable> m_indirectSetupDescriptorTable;
 		Ref<RHI::DescriptorTable> m_indirectCountDescriptorTable;
