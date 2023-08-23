@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoltLauncher", "VoltLauncher\VoltLauncher.csproj", "{B147967D-D375-4907-817F-F9E1C389FBF4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B147967D-D375-4907-817F-F9E1C389FBF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B147967D-D375-4907-817F-F9E1C389FBF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B147967D-D375-4907-817F-F9E1C389FBF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B147967D-D375-4907-817F-F9E1C389FBF4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C103B8A7-7222-4B83-AA99-43C9DEB47857}
+	EndGlobalSection
+EndGlobal

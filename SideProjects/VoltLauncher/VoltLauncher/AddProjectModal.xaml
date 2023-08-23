@@ -1,0 +1,130 @@
+﻿<Window x:Name="ModalWindow"
+        x:Class="VoltLauncher.AddProjectModal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VoltLauncher"
+        xmlns:viewModel="clr-namespace:VoltLauncher.MVVM.ViewModel"
+        mc:Ignorable="d"
+        Title="AddProjectModal" Height="200" Width="300"
+        WindowStyle="None"
+        WindowStartupLocation="CenterOwner" 
+        WindowState="Maximized"
+        Background="#33000000"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        AllowsTransparency="True">
+
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Background="#FFFFFF">
+        <Border Background="#212121">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="150"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Grid VerticalAlignment="Top" 
+                  Grid.ColumnSpan="2">
+
+                    <StackPanel Height="35" 
+                            WindowChrome.IsHitTestVisibleInChrome="True"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            Orientation="Horizontal">
+
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Name"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="20"
+                       Margin="-22,-50,0,0"/>
+
+                <TextBlock Text="Location"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="20"
+                       Margin="0,50,0,0"/>
+
+                <TextBox
+                     Width="120"
+                     Height="25"
+                     Grid.Column="1"
+                     HorizontalAlignment="Left"
+                     Margin="0,-45,0,0"
+                     Style="{StaticResource TextInput}" TextChanged="ProjectNameInput_TextChanged"/>
+
+
+
+                <StackPanel Grid.Column="1"
+                        Orientation="Horizontal">
+                    <TextBox Width="120"
+                     Height="25"
+                     VerticalContentAlignment="Center"
+                     HorizontalAlignment="Left"
+                     Grid.Column="1"
+                     Margin="0,50,0,0"
+                     Text="{Binding ProjectPath}"   
+                     Style="{StaticResource TextInput}"/>
+
+                    <Button Height="25"
+                        Width="30"
+                        Margin="-25,50,0,0"
+                        BorderThickness="0"
+                        Background="#4f4f4f"
+                        Content="..."
+                        Click="Button_Click_2"/>
+                </StackPanel>
+
+                <Button Grid.Row="1"
+                    Content="Cancel"
+                    Width="100"
+                    Height="30"
+                    HorizontalAlignment="Center"
+                    BorderThickness="0"
+                    FontSize="15"
+                    FontWeight="DemiBold"
+                    Foreground="White"
+                    Margin="10,0,0,10"
+                    Background="#4f4f4f" Click="Button_Click">
+
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button Grid.Row="1"
+                    Grid.Column="1"
+                    Content="Add"
+                    Width="100"
+                    Height="30"
+                    HorizontalAlignment="Center"
+                    BorderThickness="0"
+                    FontSize="15"
+                    FontWeight="DemiBold"
+                    Foreground="White"
+                    Background="#66abff"
+                    Margin="10,0,0,10"
+                    Click="Button_Click_1">
+
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
