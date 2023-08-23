@@ -59,7 +59,6 @@ project "VoltD3D12"
 	{
 		"d3d12.lib",
 		"DXGI.lib",
-		"../VoltD3D12/vendor/dxc/lib/dxcompiler.lib",	
 	}
 
 	filter "files:vendor/**.cpp"
