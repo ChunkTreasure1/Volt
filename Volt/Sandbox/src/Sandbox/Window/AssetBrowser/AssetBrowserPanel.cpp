@@ -57,8 +57,9 @@
 AssetBrowserPanel::AssetBrowserPanel(Ref<Volt::Scene>& aScene, const std::string& id)
 	: EditorWindow("Asset Browser" + id), myEditorScene(aScene)
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myIsOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_backgroundColor = EditorTheme::MiddleGreyBackground;
+	m_isOpen = true;
 
 	SetMinWindowSize({ 700.f, 300.f });
 
@@ -354,10 +355,10 @@ bool AssetBrowserPanel::OnDragDropEvent(Volt::WindowDragDropEvent& e)
 
 				const std::filesystem::path targetPath = relativePath / (tempName + path.extension().string());
 
-				const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromPath(targetPath);
+				const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromPath(targetPath);
 				if (type == Volt::AssetType::MeshSource)
 				{
-					myDragDroppedMeshes.emplace_back(Volt::AssetManager::Get().GetRelativePath(targetPath));
+					myDragDroppedMeshes.emplace_back(Volt::AssetManager::GetRelativePath(targetPath));
 					FileSystem::Copy(path, targetPath);
 				}
 				//else if (type == Volt::AssetType::Texture)
@@ -383,7 +384,7 @@ bool AssetBrowserPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 	{
 		case VT_KEY_DELETE:
 		{
-			if (myIsFocused && mySelectionManager->IsAnySelected())
+			if (m_isFocused && mySelectionManager->IsAnySelected())
 			{
 				myShouldDeleteSelected = true;
 			}
@@ -436,7 +437,7 @@ bool AssetBrowserPanel::OnRenderEvent(Volt::AppRenderEvent& e)
 
 Ref<AssetBrowser::DirectoryItem> AssetBrowserPanel::ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent)
 {
-	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::Get().GetRelativePath(path));
+	Ref<AssetBrowser::DirectoryItem> dirData = CreateRef<AssetBrowser::DirectoryItem>(mySelectionManager.get(), Volt::AssetManager::GetRelativePath(path));
 	dirData->parentDirectory = parent;
 
 	for (const auto& entry : std::filesystem::directory_iterator(path))
@@ -757,7 +758,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 			if (!item->isDirectory && item != dirData.get() && std::filesystem::exists(Volt::ProjectManager::GetDirectory() / item->path))
 			{
 				// Check for thumbnail PNG
-				if (Volt::AssetManager::Get().GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
+				if (Volt::AssetManager::GetAssetTypeFromPath(item->path) == Volt::AssetType::Texture)
 				{
 					const std::filesystem::path thumbnailPath = Volt::ProjectManager::GetDirectory() / item->path.parent_path() / (item->path.filename().string() + ".vtthumb.png");
 					if (FileSystem::Exists(thumbnailPath))
@@ -766,7 +767,7 @@ bool AssetBrowserPanel::RenderDirectory(const Ref<AssetBrowser::DirectoryItem> d
 					}
 				}
 
-				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromFilePath(item->path), dirData->path);
+				Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::GetAssetHandleFromFilePath(item->path), dirData->path);
 			}
 		}
 
@@ -1029,7 +1030,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 
 			for (const auto& item : selectedItems)
 			{
-				if (!item->isDirectory && Volt::AssetManager::Get().ExistsInRegistry(item->path))
+				if (!item->isDirectory && Volt::AssetManager::ExistsInRegistry(item->path))
 				{
 					const auto assetType = Volt::AssetManager::GetAssetTypeFromPath(item->path);
 					switch (assetType)
@@ -1205,7 +1206,7 @@ void AssetBrowserPanel::CreatePrefabAndSetupEntities(Wire::EntityId entity)
 	name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 
 	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, myEditorScene.get(), entity);
-	Volt::AssetManager::Get().SaveAsset(prefab);
+	Volt::AssetManager::SaveAsset(prefab);
 
 	SetupEntityAsPrefab(entity, prefab->handle);
 	Reload();
@@ -1291,7 +1292,7 @@ float AssetBrowserPanel::GetThumbnailSize()
 
 void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 {
-	const std::string extension = Volt::AssetManager::Get().GetExtensionFromAssetType(type);
+	const std::string extension = Volt::AssetManager::GetExtensionFromAssetType(type);
 	std::string originalName;
 	std::string tempName;
 	uint32_t i = 0;
@@ -1328,7 +1329,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
 			material->SetName(std::filesystem::path(tempName).stem().string());
 			material->CreateSubMaterial(Volt::ShaderRegistry::GetShader("Illum"));
-			Volt::AssetManager::Get().SaveAsset(material);
+			Volt::AssetManager::SaveAsset(material);
 
 			newAssetHandle = material->handle;
 			break;
@@ -1371,14 +1372,14 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 			Ref<Volt::Scene> scene = Volt::Scene::CreateDefaultScene("New Scene");
 			const std::filesystem::path targetFilePath = (Volt::AssetManager::GetRelativePath(myCurrentDirectory->path / tempName / (tempName + extension)));
-			Volt::AssetManager::Get().SaveAssetAs(scene, targetFilePath);
+			Volt::AssetManager::SaveAssetAs(scene, targetFilePath);
 			break;
 		}
 
 		case Volt::AssetType::BlendSpace:
 		{
 			Ref<Volt::BlendSpace> blendSpace = Volt::AssetManager::CreateAsset<Volt::BlendSpace>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
-			Volt::AssetManager::Get().SaveAsset(blendSpace);
+			Volt::AssetManager::SaveAsset(blendSpace);
 
 			newAssetHandle = blendSpace->handle;
 			break;
@@ -1387,7 +1388,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::ParticlePreset:
 		{
 			Ref<Volt::ParticlePreset> particlePreset = Volt::AssetManager::CreateAsset<Volt::ParticlePreset>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
-			Volt::AssetManager::Get().SaveAsset(particlePreset);
+			Volt::AssetManager::SaveAsset(particlePreset);
 
 			newAssetHandle = particlePreset->handle;
 			break;
@@ -1402,7 +1403,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::PostProcessingStack:
 		{
 			Ref<Volt::PostProcessingStack> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingStack>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
-			Volt::AssetManager::Get().SaveAsset(postStack);
+			Volt::AssetManager::SaveAsset(postStack);
 
 			newAssetHandle = postStack->handle;
 
@@ -1412,7 +1413,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::PostProcessingMaterial:
 		{
 			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
-			Volt::AssetManager::Get().SaveAsset(postStack);
+			Volt::AssetManager::SaveAsset(postStack);
 
 			newAssetHandle = postStack->handle;
 			break;

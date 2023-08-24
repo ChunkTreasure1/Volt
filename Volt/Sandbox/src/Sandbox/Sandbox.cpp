@@ -3,6 +3,8 @@
 
 #include "Sandbox/Camera/EditorCameraController.h"
 
+#include "Sandbox/UISystems/ModalSystem.h"
+
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/GameViewPanel.h"
@@ -816,6 +818,8 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	}
 
 	UpdateDockSpace();
+
+	ModalSystem::Update();
 
 	if (myShouldOpenSaveSceneAs)
 	{

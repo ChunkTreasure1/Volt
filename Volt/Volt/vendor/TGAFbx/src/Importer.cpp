@@ -11,6 +11,78 @@ namespace TGA
 {
 	namespace FBX
 	{
+		inline static const std::string GetStringFromSystemUnit(const fbxsdk::FbxSystemUnit& unit)
+		{
+			if (unit == fbxsdk::FbxSystemUnit::mm)
+			{
+				return "Millimeter";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::cm)
+			{
+				return "Centimeter";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::dm)
+			{
+				return "Decimeter";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::m)
+			{
+				return "Meter";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::km)
+			{
+				return "Kilometer";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::Inch)
+			{
+				return "Inch";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::Foot)
+			{
+				return "Foot";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::Mile)
+			{
+				return "Mile";
+			}
+			else if (unit == fbxsdk::FbxSystemUnit::Yard)
+			{
+				return "Yard";
+			}
+		}
+
+		inline static const std::string GetStringFromAxisSystem(const fbxsdk::FbxAxisSystem& axisSystem)
+		{
+			if (axisSystem == fbxsdk::FbxAxisSystem::eDirectX)
+			{
+				return "Direct X";
+			}
+			else if (axisSystem == fbxsdk::FbxAxisSystem::eOpenGL)
+			{
+				return "OpenGL";
+			}
+			else if (axisSystem == fbxsdk::FbxAxisSystem::eMayaZUp)
+			{
+				return "MayaZUp";
+			}
+			else if (axisSystem == fbxsdk::FbxAxisSystem::eMayaYUp)
+			{
+				return "MayaYUp";
+			}
+			else if (axisSystem == fbxsdk::FbxAxisSystem::eMax)
+			{
+				return "3DS Max";
+			}
+			else if (axisSystem == fbxsdk::FbxAxisSystem::eMotionBuilder)
+			{
+				return "MotionBuilder";
+			}
+			else if (axisSystem == fbxsdk::FbxAxisSystem::eLightwave)
+			{
+				return "Lightwave";
+			}
+		}
+
 		struct VertexDuplicateData;
 
 		// Represents the static data that the FBX SDK requires, for consecutive calls to functions in the Importer.
@@ -28,8 +100,8 @@ namespace TGA
 			FbxManager* fbxManager = nullptr;
 			FbxIOSettings* fbxIOSettings = nullptr;
 			FbxGeometryConverter* fbxConverter;
-			FbxAxisSystem fbxAxisSystem;
-			FbxImporter* fbxImporter = nullptr;
+			fbxsdk::FbxAxisSystem fbxAxisSystem;
+			fbxsdk::FbxImporter* fbxImporter = nullptr;
 
 			void Init()
 			{
@@ -43,7 +115,7 @@ namespace TGA
 
 					fbxImporter = FbxImporter::Create(fbxManager, "");
 					fbxConverter = new FbxGeometryConverter(fbxManager);
-					fbxAxisSystem = FbxAxisSystem::eDirectX;
+					fbxAxisSystem = fbxsdk::FbxAxisSystem::eDirectX;
 				}
 			}
 
@@ -645,6 +717,66 @@ namespace TGA
 			fbxImporter->Destroy();
 
 			return !StatusError;
+		}
+
+		const FbxInformation Importer::GetFbxInformation(const std::string& filePath)
+		{
+			if (!std::filesystem::exists(filePath))
+			{
+				return{};
+			}
+
+			fbxsdk::FbxImporter* fbxImporter = fbxsdk::FbxImporter::Create(FbxEnvironment::Get().fbxManager, "");
+
+
+			if (!fbxImporter)
+			{
+				const std::string errorMessage = "Failed to create the FBX Importer! Did you call InitImporter()?";
+				TGA_FBX_ERROR(errorMessage);
+			}
+
+			if (!fbxImporter->Initialize(filePath.c_str(), -1, FbxEnvironment::Get().fbxIOSettings) || !fbxImporter->IsFBX())
+			{
+				const FbxStatus& fbxStatus = fbxImporter->GetStatus();
+				const std::string errorMessage = "Failed to initialize the FBX Importer! Error was: " + std::string(fbxStatus.GetErrorString()) + ".";
+				TGA_FBX_ERROR(errorMessage);
+			}
+
+			fbxsdk::FbxScene* fbxScene = fbxsdk::FbxScene::Create(FbxEnvironment::Get().fbxManager, "The Scene");
+
+			if (!fbxImporter->Import(fbxScene))
+			{
+				return {};
+			}
+
+			FbxInformation result{};
+
+			const auto headerInfo = fbxImporter->GetFileHeaderInfo();
+
+			result.fileCreator = headerInfo->mCreator;
+			result.fileUnits = GetStringFromSystemUnit(fbxScene->GetGlobalSettings().GetSystemUnit());
+			result.fileAxisDirection = GetStringFromAxisSystem(fbxScene->GetGlobalSettings().GetAxisSystem());
+
+			std::string versionString = std::to_string(headerInfo->mFileVersion);
+			versionString.insert(versionString.begin() + 1, '.');
+			versionString.insert(versionString.begin() + 3, '.');
+			versionString.insert(versionString.begin() + 5, '.');
+
+			result.fileVersion = versionString;
+
+			std::vector<FbxNode*> sceneMeshNodes;
+			Internals::GatherMeshNodes(fbxScene->GetRootNode(), sceneMeshNodes);
+
+			Skeleton mdlSkeleton;
+			std::vector<Skeleton::Bone> skeletonEventBones;
+			std::vector<Skeleton::Socket> skeletonSockets;
+			const bool fbxHasBones = Internals::GatherSkeleton(fbxScene->GetRootNode(), mdlSkeleton, skeletonEventBones, skeletonSockets);
+
+			result.hasMesh = !sceneMeshNodes.empty();
+			result.hasSkeleton = fbxHasBones;
+			result.hasAnimation = fbxHasBones && fbxImporter->GetAnimStackCount() > 0;
+			
+			return result;
 		}
 
 		bool Importer::LoadAnimationW(const std::wstring& someFilePath, Animation& outAnimation)

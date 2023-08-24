@@ -1176,8 +1176,8 @@ namespace Volt
 
 			out << YAML::Key << "Dependencies" << YAML::Value << metadata.dependencies;
 
-			out << YAML::BeginMap;
 			out << YAML::Key << "Properties" << YAML::Value;
+			out << YAML::BeginMap;
 			for (const auto& [name, data] : metadata.properties)
 			{
 				out << YAML::Key << name << YAML::Value << data;

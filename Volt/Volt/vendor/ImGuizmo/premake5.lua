@@ -17,12 +17,6 @@ project "ImGuizmo"
 		"%{IncludeDir.ImGui}"
 	}
 
-	configmap
-	{
-		["GameOnlyDebug"] = "Dist",
-		["SandboxOnlyDebug"] = "Dist"
-	}
-	
 	filter "system:windows"
 		systemversion "latest"
 		cppdialect "C++17"

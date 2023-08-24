@@ -205,7 +205,7 @@ void NetPanel::DrawHost()
 {
 	if (UI::BeginProperties("NetPanelHostProperties"))
 	{
-		UI::Property("Host port", m_netSettings.hostingPort, nullptr, "Default port: " + std::to_string(DEFAULT_PORT));
+		UI::Property("Host port", m_netSettings.hostingPort, "Default port: " + std::to_string(DEFAULT_PORT));
 
 		UI::EndProperties();
 	}
@@ -219,8 +219,8 @@ void NetPanel::DrawConnect()
 	{
 		if (UI::BeginProperties("NetPanelConnectProperties"))
 		{
-			UI::Property("   IPv4", m_netSettings.connectAddress, !m_netSettings.independentConnection, nullptr, "IPv4 format\nDefault address: local host(" + std::string(LOCAL_HOST) + ")");
-			UI::Property("   Port", m_netSettings.connectPort, nullptr, "Default port: " + std::to_string(DEFAULT_PORT));
+			UI::Property("   IPv4", m_netSettings.connectAddress, !m_netSettings.independentConnection, "IPv4 format\nDefault address: local host(" + std::string(LOCAL_HOST) + ")");
+			UI::Property("   Port", m_netSettings.connectPort, "Default port: " + std::to_string(DEFAULT_PORT));
 			if (!m_netSettings.independentConnection) m_netSettings.connectPort = m_netSettings.hostingPort;
 
 			UI::EndProperties();

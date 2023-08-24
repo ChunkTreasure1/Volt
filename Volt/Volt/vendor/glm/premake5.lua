@@ -23,7 +23,6 @@ project "glm"
 	defines
 	{
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_SSE2",
 		"GLM_FORCE_LEFT_HANDED"
 	}
 
@@ -31,12 +30,12 @@ project "glm"
 		systemversion "latest"
 
 		filter "configurations:Debug"
-			defines { "VT_DEBUG", "VT_ENABLE_ASSERTS" }
-			runtime "Debug"
-			symbols "on"
+			defines { "VT_DIST", "NDEBUG" }
+			runtime "Release"
+			optimize "on"
 
 		filter "configurations:Release"
-			defines { "VT_RELEASE" }
+			defines { "VT_DIST", "NDEBUG" }
 			runtime "Release"
 			optimize "on"
 

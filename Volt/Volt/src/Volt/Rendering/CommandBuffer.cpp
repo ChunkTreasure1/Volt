@@ -176,7 +176,7 @@ namespace Volt
 	{
 		return 0;
 
-		if (!myHasTimestampSupport)
+		/*if (!myHasTimestampSupport)
 		{
 			return 0;
 		}
@@ -198,32 +198,32 @@ namespace Volt
 		cmdBufferPtr->myNextAvailableTimestampQuery += 2;
 
 		vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, cmdBufferPtr->myTimestampQueryPools.at(index), queryId);
-		return queryId;
+		return queryId;*/
 	}
 
 	void CommandBuffer::EndTimestamp(uint32_t timestampId)
 	{
 		return;
 
-		if (!myHasTimestampSupport)
-		{
-			return;
-		}
+		//if (!myHasTimestampSupport)
+		//{
+		//	return;
+		//}
 
-		CommandBuffer* cmdBufferPtr = nullptr;
+		//CommandBuffer* cmdBufferPtr = nullptr;
 
-		if (myLevel == CommandBufferLevel::Secondary)
-		{
-			auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
-			cmdBufferPtr = inheritedCmdBufferPtr.get();
-		}
-		else
-		{
-			cmdBufferPtr = this;
-		}
+		//if (myLevel == CommandBufferLevel::Secondary)
+		//{
+		//	auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		//	cmdBufferPtr = inheritedCmdBufferPtr.get();
+		//}
+		//else
+		//{
+		//	cmdBufferPtr = this;
+		//}
 
-		const uint32_t index = GetCurrentIndex();
-		vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, cmdBufferPtr->myTimestampQueryPools.at(index), timestampId + 1);
+		//const uint32_t index = GetCurrentIndex();
+		//vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, cmdBufferPtr->myTimestampQueryPools.at(index), timestampId + 1);
 	}
 
 	const float CommandBuffer::GetExecutionTime(uint32_t frameIndex, uint32_t queryId) const

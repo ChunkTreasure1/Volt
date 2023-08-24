@@ -28,8 +28,8 @@ const char* VKResultToString(int32_t result);
 #else
 
 #ifdef VT_DIST
-#define VT_OPTIMIZE_OFF
-#define VT_OPTIMIZE_ON
+#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
+#define VT_OPTIMIZE_ON __pragma(optimize("", on));
 #endif
 
 #ifdef VT_RELEASE
