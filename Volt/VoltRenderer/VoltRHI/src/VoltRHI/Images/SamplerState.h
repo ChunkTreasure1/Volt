@@ -13,7 +13,7 @@ namespace Volt::RHI
 		TextureWrap wrapMode;
 
 		CompareOperator compareOperator = CompareOperator::None;
-		AnisotopyLevel anisotopyLevel = AnisotopyLevel::None;
+		AnisotropyLevel anisotropyLevel = AnisotropyLevel::None;
 
 		float mipLodBias = 0.f;
 		float minLod = 0.f;

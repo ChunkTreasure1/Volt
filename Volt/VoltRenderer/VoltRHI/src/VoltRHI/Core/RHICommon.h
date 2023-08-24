@@ -415,7 +415,7 @@ namespace Volt::RHI
 		Anisotopy
 	};
 
-	enum class AnisotopyLevel : uint32_t
+	enum class AnisotropyLevel : uint32_t
 	{
 		None = 0,
 		X2 = 2,
@@ -515,6 +515,8 @@ namespace Volt::RHI
 
 		bool timestampSupport;
 		float timestampPeriod = 0.f;
+
+		float maxAnisotropyLevel = 1.f;
 	};
 
 	struct GraphicsDeviceCreateInfo

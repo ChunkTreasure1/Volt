@@ -14,6 +14,7 @@ namespace Volt
 	struct RendererData
 	{
 		Ref<RHI::ShaderCompiler> shaderCompiler;
+		Scope<SamplerLibrary> samplerLibrary;
 
 		std::vector<FunctionQueue> deletionQueue;
 	};
@@ -39,6 +40,11 @@ namespace Volt
 			};
 
 			s_rendererData->shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
+		}
+
+		// Create Sampler Library
+		{
+			s_rendererData->samplerLibrary = CreateScope<SamplerLibrary>();
 		}
 	}
 
@@ -67,5 +73,17 @@ namespace Volt
 	{
 		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 		s_rendererData->deletionQueue.at(currentFrame).Push(std::move(function));
+	}
+
+	Ref<RHI::SamplerState> RendererNew::GetSampler(SamplerType samplerType)
+	{
+		Ref<RHI::SamplerState> sampler = s_rendererData->samplerLibrary->Get(samplerType);
+		if (!sampler)
+		{
+			s_rendererData->samplerLibrary->Add(samplerType);
+			sampler = s_rendererData->samplerLibrary->Get(samplerType);
+		}
+
+		return sampler;
 	}
 }

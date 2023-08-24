@@ -19,7 +19,7 @@ namespace Volt::RHI
 
 		MemoryUsage memoryUsage = MemoryUsage::Default;
 
-		AnisotopyLevel anisoLevel = AnisotopyLevel::None;
+		AnisotropyLevel anisoLevel = AnisotropyLevel::None;
 		std::string debugName;
 
 		bool isCubeMap = false;

@@ -15,8 +15,8 @@ namespace Volt::RHI
 	{
 		VkSamplerCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		info.anisotropyEnable = createInfo.anisotopyLevel != AnisotopyLevel::None ? true : false;
-		info.maxAnisotropy = static_cast<float>(createInfo.anisotopyLevel);
+		info.anisotropyEnable = createInfo.anisotropyLevel != AnisotropyLevel::None ? true : false;
+		info.maxAnisotropy = static_cast<float>(createInfo.anisotropyLevel);
 
 		info.magFilter = Utility::VoltToVulkanFilter(createInfo.magFilter);
 		info.minFilter = Utility::VoltToVulkanFilter(createInfo.minFilter);

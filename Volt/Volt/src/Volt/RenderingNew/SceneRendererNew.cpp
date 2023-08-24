@@ -450,7 +450,7 @@ namespace Volt
 
 				m_descriptorTable->SetBufferView(obj.mesh->GetVertexPositionsBuffer()->GetView(), 1, 0, meshIndex);
 				m_descriptorTable->SetBufferView(obj.mesh->GetVertexMaterialBuffer()->GetView(), 2, 0, meshIndex);
-				//m_descriptorTable->SetBufferView(obj.mesh->GetVertexAnimationBuffer()->GetView(), 3, 0, meshIndex);
+				m_descriptorTable->SetBufferView(obj.mesh->GetVertexAnimationBuffer()->GetView(), 3, 0, meshIndex);
 				m_descriptorTable->SetBufferView(obj.mesh->GetIndexStorageBuffer()->GetView(), 4, 0, meshIndex);
 			}
 
@@ -534,7 +534,7 @@ namespace Volt
 
 				Entity entity = { id, scenePtr.get() };
 
-				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 1.f, 0.f, 0.f }) * -1.f;
+				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
 				dirLightData.direction = glm::vec4{ dir.x, dir.y, dir.z, 0.f };
 				dirLightData.color = lightComp.color;
 				dirLightData.intensity = lightComp.intensity;
