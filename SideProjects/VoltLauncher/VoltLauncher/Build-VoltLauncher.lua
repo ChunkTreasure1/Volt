@@ -6,7 +6,7 @@ project "VoltLauncher"
    staticruntime "off"
    debugdir "../App"
 
-   files { "src/**.h", "src/**.cpp" }
+   files { "src/**.h", "src/**.cpp", "src/**.c" }
 
    includedirs
    {
@@ -18,12 +18,20 @@ project "VoltLauncher"
 
       "%{IncludeDir.VulkanSDK}",
       "%{IncludeDir.glm}",
+      "%{IncludeDir.curl}"
    }
 
-    links
-    {
-        "Walnut"
-    }
+   links
+   {
+       "Walnut",
+       "%{Library.curl}",
+       "Normaliz.lib",
+       "Ws2_32.lib",
+       "Crypt32.lib",
+       "advapi32.lib",
+       "wldap32.lib",
+       "Shell32.lib"
+   }
 
    targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")

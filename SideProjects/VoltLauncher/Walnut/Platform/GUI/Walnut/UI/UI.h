@@ -6,6 +6,8 @@
 #include "imgui_internal.h"
 
 #include <memory>
+#include <filesystem>
+#include <functional>
 
 namespace Walnut::UI {
 
