@@ -43,7 +43,7 @@ namespace Volt
 
 			if (myCurrentProject->projectFilePath.empty())
 			{
-				throw std::runtime_error("Project File not found!");
+				VT_CORE_ERROR("[ProjectManager] Project File not found!");
 			}
 		}
 
