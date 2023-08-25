@@ -3,9 +3,9 @@
 namespace YAML {
 Directives::Directives() : version{true, 1, 2}, tags{} {}
 
-std::string Directives::TranslateTagHandle(
+const std::string Directives::TranslateTagHandle(
     const std::string& handle) const {
-  auto it = tags.find(handle);
+  std::map<std::string, std::string>::const_iterator it = tags.find(handle);
   if (it == tags.end()) {
     if (handle == "!!")
       return "tag:yaml.org,2002:";

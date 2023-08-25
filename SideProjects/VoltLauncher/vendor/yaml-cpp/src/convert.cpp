@@ -16,7 +16,11 @@ std::string tolower(const std::string& str) {
 
 template <typename T>
 bool IsEntirely(const std::string& str, T func) {
-  return std::all_of(str.begin(), str.end(), [=](char ch) { return func(ch); });
+  for (char ch : str)
+    if (!func(ch))
+      return false;
+
+  return true;
 }
 
 // IsFlexibleCase

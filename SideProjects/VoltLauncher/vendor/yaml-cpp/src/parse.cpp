@@ -51,7 +51,7 @@ std::vector<Node> LoadAll(std::istream& input) {
   std::vector<Node> docs;
 
   Parser parser(input);
-  while (true) {
+  while (1) {
     NodeBuilder builder;
     if (!parser.HandleNextDocument(builder)) {
       break;

@@ -1,43 +1,41 @@
 project "yaml-cpp"
+	location "."
 	kind "StaticLib"
 	language "C++"
+	cppdialect "C++20"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+	targetdir ("bin/" .. outputdir .."/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .."/%{prj.name}")
 
 	files
 	{
 		"src/**.h",
 		"src/**.cpp",
-		
-		"include/**.h"
+		"src/**.hpp",
 	}
 
 	includedirs
 	{
+		"src",
 		"include"
 	}
 
-	defines
-	{
-		"YAML_CPP_STATIC_DEFINE"
-	}
+	warnings "off"
 
 	filter "system:windows"
 		systemversion "latest"
-		cppdialect "C++17"
-		staticruntime "off"
 
-	filter "system:linux"
-		pic "On"
-		systemversion "latest"
-		cppdialect "C++17"
-		staticruntime "off"
+		filter "configurations:Debug"
+			defines { "VT_DEBUG", "VT_ENABLE_ASSERTS" }
+			runtime "Debug"
+			symbols "on"
 
-	filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
+		filter "configurations:Release"
+			defines { "VT_RELEASE" }
+			runtime "Release"
+			optimize "on"
 
-	filter "configurations:Release"
-		runtime "Release"
-		optimize "on"
+		filter "configurations:Dist"
+			defines { "VT_DIST", "NDEBUG" }
+			runtime "Release"
+			optimize "on"

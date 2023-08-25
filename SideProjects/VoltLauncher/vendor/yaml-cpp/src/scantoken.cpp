@@ -37,7 +37,7 @@ void Scanner::ScanDirective() {
     token.value += INPUT.get();
 
   // read parameters
-  while (true) {
+  while (1) {
     // first get rid of whitespace
     while (Exp::Blank().Matches(INPUT))
       INPUT.eat(1);

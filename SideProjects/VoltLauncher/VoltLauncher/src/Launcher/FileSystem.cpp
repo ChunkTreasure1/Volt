@@ -6,6 +6,8 @@
 #include <shlobj.h>
 #include <Lmcons.h>
 
+#include <nfd.hpp>
+
 bool FileSystem::HasEnvironmentVariable(const std::string& key)
 {
 	HKEY hKey;
@@ -118,22 +120,120 @@ bool FileSystem::SetRegistryValue(const std::string& key, const std::string& val
 	return true;
 }
 
-void FileSystem::StartProcess(const std::filesystem::path& processName)
+void FileSystem::StartProcess(const std::filesystem::path& processName, const std::wstring& commandLine)
 {
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
+	DWORD exitCode = 0;
+	SHELLEXECUTEINFO ShExecInfo = { 0 };
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = L"open";
+	ShExecInfo.lpFile = processName.c_str();
+	ShExecInfo.lpParameters = commandLine.c_str();
+	ShExecInfo.lpDirectory = processName.parent_path().c_str();
+	ShExecInfo.nShow = SW_SHOW;
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
+}
 
-	ZeroMemory(&si, sizeof(STARTUPINFO));
-	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
+{
+	const auto canonicalPath = std::filesystem::canonical(path);
 
-	si.cb = sizeof(STARTUPINFO);
+	if (!std::filesystem::exists(canonicalPath))
+	{
+		return;
+	}
 
-	CreateProcess(processName.wstring().c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+	std::wstring wstr = canonicalPath.wstring() + std::wstring(1, L'\0');
+
+	SHFILEOPSTRUCT fileOp;
+	fileOp.hwnd = NULL;
+	fileOp.wFunc = FO_DELETE;
+	fileOp.pFrom = wstr.c_str();
+	fileOp.pTo = NULL;
+	fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_SILENT;
+	SHFileOperation(&fileOp);
+}
+
+bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
+{
+	auto absolutePath = std::filesystem::canonical(aPath);
+	if (!std::filesystem::exists(absolutePath))
+	{
+		return false;
+	}
+
+	ShellExecute(nullptr, L"explorer", absolutePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	return true;
 }
 
 std::filesystem::path FileSystem::PickFolderDialogue()
 {
-	return std::filesystem::path();
+	const auto absolutePath = std::filesystem::absolute(std::filesystem::current_path());
+
+	NFD::UniquePath outPath;
+	nfdresult_t result = NFD::PickFolder(outPath, absolutePath.string().c_str());
+
+	switch (result)
+	{
+		case NFD_OKAY:
+		{
+			return outPath.get();
+		}
+	}
+
+	return "";
+}
+
+std::filesystem::path FileSystem::OpenFileDialogue(const std::vector<FileFilter>& filters)
+{
+	std::vector<nfdfilteritem_t> filterItems{};
+	for (const auto& filter : filters)
+	{
+		auto& item = filterItems.emplace_back();
+		item.name = filter.name.c_str();
+		item.spec = filter.extensions.c_str();
+	}
+
+	const auto absolutePath = std::filesystem::absolute(std::filesystem::current_path());
+
+	NFD::UniquePath outPath;
+	nfdresult_t result = NFD::OpenDialog(outPath, filterItems.data(), static_cast<nfdfiltersize_t>(filterItems.size()), absolutePath.string().c_str());
+
+	switch (result)
+	{
+		case NFD_OKAY:
+		{
+			return outPath.get();
+		}
+	}
+
+	return "";
+}
+
+std::filesystem::path FileSystem::SaveFileDialogue(const std::vector<FileFilter>& filters)
+{
+	std::vector<nfdfilteritem_t> filterItems{};
+	for (const auto& filter : filters)
+	{
+		auto& item = filterItems.emplace_back();
+		item.name = filter.name.c_str();
+		item.spec = filter.extensions.c_str();
+	}
+
+	const auto absolutePath = std::filesystem::absolute(std::filesystem::current_path());
+
+	NFD::UniquePath outPath;
+	nfdresult_t result = NFD::SaveDialog(outPath, filterItems.data(), static_cast<nfdfiltersize_t>(filterItems.size()), absolutePath.string().c_str());
+
+	switch (result)
+	{
+		case NFD_OKAY:
+		{
+			return outPath.get();
+		}
+	}
+
+	return "";
 }

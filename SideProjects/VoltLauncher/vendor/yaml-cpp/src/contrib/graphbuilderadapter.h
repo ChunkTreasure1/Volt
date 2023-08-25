@@ -13,6 +13,7 @@
 
 #include "yaml-cpp/anchor.h"
 #include "yaml-cpp/contrib/anchordict.h"
+#include "yaml-cpp/contrib/graphbuilder.h"
 #include "yaml-cpp/emitterstyle.h"
 #include "yaml-cpp/eventhandler.h"
 

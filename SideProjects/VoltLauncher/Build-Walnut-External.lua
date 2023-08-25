@@ -20,6 +20,7 @@ group "Dependencies"
    include "vendor/imgui"
    include "vendor/glfw"
    include "vendor/yaml-cpp"
+   include "vendor/nfd-extended"
 group ""
 
 group "Core"

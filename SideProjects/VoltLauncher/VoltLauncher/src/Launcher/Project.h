@@ -11,6 +11,7 @@ struct Project
 struct EngineInfo
 {
 	std::filesystem::path engineDirectory;
+	bool needsRepair = false;
 
 	inline const bool IsValid() const
 	{

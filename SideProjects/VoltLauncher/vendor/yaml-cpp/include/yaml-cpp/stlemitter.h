@@ -16,8 +16,8 @@ namespace YAML {
 template <typename Seq>
 inline Emitter& EmitSeq(Emitter& emitter, const Seq& seq) {
   emitter << BeginSeq;
-  for (const auto& v : seq)
-    emitter << v;
+  for (typename Seq::const_iterator it = seq.begin(); it != seq.end(); ++it)
+    emitter << *it;
   emitter << EndSeq;
   return emitter;
 }
@@ -39,9 +39,10 @@ inline Emitter& operator<<(Emitter& emitter, const std::set<T>& v) {
 
 template <typename K, typename V>
 inline Emitter& operator<<(Emitter& emitter, const std::map<K, V>& m) {
+  typedef typename std::map<K, V> map;
   emitter << BeginMap;
-  for (const auto& v : m)
-    emitter << Key << v.first << Value << v.second;
+  for (typename map::const_iterator it = m.begin(); it != m.end(); ++it)
+    emitter << Key << it->first << Value << it->second;
   emitter << EndMap;
   return emitter;
 }

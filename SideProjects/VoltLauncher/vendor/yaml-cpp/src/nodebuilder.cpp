@@ -92,7 +92,7 @@ void NodeBuilder::Push(detail::node& node) {
 
   m_stack.push_back(&node);
   if (needsKey)
-    m_keys.emplace_back(&node, false);
+    m_keys.push_back(PushedKey(&node, false));
 }
 
 void NodeBuilder::Pop() {

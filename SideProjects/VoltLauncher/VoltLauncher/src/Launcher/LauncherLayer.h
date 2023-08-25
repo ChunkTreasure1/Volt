@@ -3,6 +3,7 @@
 #include "Project.h"
 
 #include "Walnut/Application.h"
+#include "Walnut/Image.h"
 
 #include <future>
 
@@ -46,7 +47,15 @@ public:
 
 private:
 	void CreateNewProject(const CreateProjectData& newData);
+
+	void SerializeData();
+	void DeserializeData();
+
+	Project ReadProjectInfo(const std::filesystem::path& projectFilePath);
+	void WriteProjectInfo(const std::filesystem::path& projectFilePath, const Project& project);
 	
+	const bool IsProjectRegistered(const std::filesystem::path& projectFilePath);
+
 	bool m_aboutModalOpen = false;
 	bool m_newProjectModalOpen = false;
 
@@ -55,6 +64,10 @@ private:
 	std::atomic_bool m_isInstalling = false;
 
 	std::future<void> m_downloadFuture;
+
+	std::shared_ptr<Walnut::Image> m_playIcon;
+	std::shared_ptr<Walnut::Image> m_editIcon;
+	std::shared_ptr<Walnut::Image> m_dotsIcon;
 
 	Tab m_currentTab = Tab::Projects;
 	LauncherData m_data;

@@ -59,8 +59,6 @@ void EmitFromEvents::OnSequenceStart(const Mark&, const std::string& tag,
     default:
       break;
   }
-  // Restore the global settings to eliminate the override from node style
-  m_emitter.RestoreGlobalModifiedSettings();
   m_emitter << BeginSeq;
   m_stateStack.push(State::WaitingForSequenceEntry);
 }
@@ -85,8 +83,6 @@ void EmitFromEvents::OnMapStart(const Mark&, const std::string& tag,
     default:
       break;
   }
-  // Restore the global settings to eliminate the override from node style
-  m_emitter.RestoreGlobalModifiedSettings();
   m_emitter << BeginMap;
   m_stateStack.push(State::WaitingForKey);
 }

@@ -13,7 +13,7 @@ void NodeEvents::AliasManager::RegisterReference(const detail::node& node) {
 
 anchor_t NodeEvents::AliasManager::LookupAnchor(
     const detail::node& node) const {
-  auto it = m_anchorByIdentity.find(node.ref());
+  AnchorByIdentity::const_iterator it = m_anchorByIdentity.find(node.ref());
   if (it == m_anchorByIdentity.end())
     return 0;
   return it->second;
@@ -32,12 +32,13 @@ void NodeEvents::Setup(const detail::node& node) {
     return;
 
   if (node.type() == NodeType::Sequence) {
-    for (auto element : node)
-      Setup(*element);
+    for (detail::const_node_iterator it = node.begin(); it != node.end(); ++it)
+      Setup(**it);
   } else if (node.type() == NodeType::Map) {
-    for (auto element : node) {
-      Setup(*element.first);
-      Setup(*element.second);
+    for (detail::const_node_iterator it = node.begin(); it != node.end();
+         ++it) {
+      Setup(*it->first);
+      Setup(*it->second);
     }
   }
 }
@@ -76,15 +77,17 @@ void NodeEvents::Emit(const detail::node& node, EventHandler& handler,
       break;
     case NodeType::Sequence:
       handler.OnSequenceStart(Mark(), node.tag(), anchor, node.style());
-      for (auto element : node)
-        Emit(*element, handler, am);
+      for (detail::const_node_iterator it = node.begin(); it != node.end();
+           ++it)
+        Emit(**it, handler, am);
       handler.OnSequenceEnd();
       break;
     case NodeType::Map:
       handler.OnMapStart(Mark(), node.tag(), anchor, node.style());
-      for (auto element : node) {
-        Emit(*element.first, handler, am);
-        Emit(*element.second, handler, am);
+      for (detail::const_node_iterator it = node.begin(); it != node.end();
+           ++it) {
+        Emit(*it->first, handler, am);
+        Emit(*it->second, handler, am);
       }
       handler.OnMapEnd();
       break;
@@ -92,7 +95,7 @@ void NodeEvents::Emit(const detail::node& node, EventHandler& handler,
 }
 
 bool NodeEvents::IsAliased(const detail::node& node) const {
-  auto it = m_refCount.find(node.ref());
+  RefCount::const_iterator it = m_refCount.find(node.ref());
   return it != m_refCount.end() && it->second > 1;
 }
 }  // namespace YAML

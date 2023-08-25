@@ -42,7 +42,7 @@ inline Node::Node(const detail::iterator_value& rhs)
       m_pMemory(rhs.m_pMemory),
       m_pNode(rhs.m_pNode) {}
 
-inline Node::Node(const Node&) = default;
+inline Node::Node(const Node& rhs) = default;
 
 inline Node::Node(Zombie)
     : m_isValid(false), m_invalidKey{}, m_pMemory{}, m_pNode(nullptr) {}
@@ -110,8 +110,6 @@ struct as_if<std::string, S> {
   const Node& node;
 
   std::string operator()(const S& fallback) const {
-    if (node.Type() == NodeType::Null)
-      return "null";
     if (node.Type() != NodeType::Scalar)
       return fallback;
     return node.Scalar();
@@ -140,8 +138,6 @@ struct as_if<std::string, void> {
   const Node& node;
 
   std::string operator()() const {
-    if (node.Type() == NodeType::Null)
-      return "null";
     if (node.Type() != NodeType::Scalar)
       throw TypedBadConversion<std::string>(node.Mark());
     return node.Scalar();
@@ -315,6 +311,51 @@ inline void Node::push_back(const Node& rhs) {
   m_pMemory->merge(*rhs.m_pMemory);
 }
 
+// helpers for indexing
+namespace detail {
+template <typename T>
+struct to_value_t {
+  explicit to_value_t(const T& t_) : t(t_) {}
+  const T& t;
+  using return_type = const T &;
+
+  const T& operator()() const { return t; }
+};
+
+template <>
+struct to_value_t<const char*> {
+  explicit to_value_t(const char* t_) : t(t_) {}
+  const char* t;
+  using return_type = std::string;
+
+  const std::string operator()() const { return t; }
+};
+
+template <>
+struct to_value_t<char*> {
+  explicit to_value_t(char* t_) : t(t_) {}
+  const char* t;
+  using return_type = std::string;
+
+  const std::string operator()() const { return t; }
+};
+
+template <std::size_t N>
+struct to_value_t<char[N]> {
+  explicit to_value_t(const char* t_) : t(t_) {}
+  const char* t;
+  using return_type = std::string;
+
+  const std::string operator()() const { return t; }
+};
+
+// converts C-strings to std::strings so they can be copied
+template <typename T>
+inline typename to_value_t<T>::return_type to_value(const T& t) {
+  return to_value_t<T>(t)();
+}
+}  // namespace detail
+
 template<typename Key>
 std::string key_to_string(const Key& key) {
   return streamable_to_string<Key, is_streamable<std::stringstream, Key>::value>().impl(key);
@@ -324,8 +365,8 @@ std::string key_to_string(const Key& key) {
 template <typename Key>
 inline const Node Node::operator[](const Key& key) const {
   EnsureNodeExists();
-  detail::node* value =
-      static_cast<const detail::node&>(*m_pNode).get(key, m_pMemory);
+  detail::node* value = static_cast<const detail::node&>(*m_pNode).get(
+      detail::to_value(key), m_pMemory);
   if (!value) {
     return Node(ZombieNode, key_to_string(key));
   }
@@ -335,14 +376,14 @@ inline const Node Node::operator[](const Key& key) const {
 template <typename Key>
 inline Node Node::operator[](const Key& key) {
   EnsureNodeExists();
-  detail::node& value = m_pNode->get(key, m_pMemory);
+  detail::node& value = m_pNode->get(detail::to_value(key), m_pMemory);
   return Node(value, m_pMemory);
 }
 
 template <typename Key>
 inline bool Node::remove(const Key& key) {
   EnsureNodeExists();
-  return m_pNode->remove(key, m_pMemory);
+  return m_pNode->remove(detail::to_value(key), m_pMemory);
 }
 
 inline const Node Node::operator[](const Node& key) const {
@@ -375,7 +416,8 @@ inline bool Node::remove(const Node& key) {
 template <typename Key, typename Value>
 inline void Node::force_insert(const Key& key, const Value& value) {
   EnsureNodeExists();
-  m_pNode->force_insert(key, value, m_pMemory);
+  m_pNode->force_insert(detail::to_value(key), detail::to_value(value),
+                        m_pMemory);
 }
 
 // free functions

@@ -12,6 +12,8 @@ project "VoltLauncher"
    {
       "../vendor/imgui",
       "../vendor/glfw/include",
+      "../vendor/yaml-cpp/include",
+      "../vendor/NFD-Extended/src/include",
 
       "../Walnut/Source",
       "../Walnut/Platform/GUI",
@@ -24,6 +26,9 @@ project "VoltLauncher"
    links
    {
        "Walnut",
+       "yaml-cpp",
+       "NFD-Extended",
+       
        "%{Library.curl}",
        "Normaliz.lib",
        "Ws2_32.lib",

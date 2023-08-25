@@ -1,0 +1,7 @@
+Data:
+  engineDirectory: C:\Programming\Volt\Engine
+  Projects:
+    - name: My Project
+      path: C:\Users\xXRag\Documents\Volt Projects\My Project\Project.vtproj
+    - name: My Project2
+      path: C:\Users\xXRag\Documents\Volt Projects\My Project2\Project.vtproj
