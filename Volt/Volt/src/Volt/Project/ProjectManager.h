@@ -20,7 +20,6 @@ namespace Volt
 	class ProjectManager
 	{
 	public:
-		static void SetupWorkingDirectory();
 		static void SetupProject(const std::filesystem::path projectPath);
 
 		static const std::filesystem::path GetEngineScriptsDirectory();

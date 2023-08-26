@@ -54,16 +54,11 @@ namespace Volt
 		myInstance = this;
 
 		myInfo = info;
-		Log::Initialize();
 		Noise::Initialize();
-
-		if (!myInfo.isRuntime)
-		{
-			ProjectManager::SetupWorkingDirectory();
-		}
 
 		ProjectManager::SetupProject(myInfo.projectPath);
 		SessionPreferences::Initialize();
+		Log::Initialize();
 
 		WindowProperties windowProperties{};
 		windowProperties.width = info.width;
