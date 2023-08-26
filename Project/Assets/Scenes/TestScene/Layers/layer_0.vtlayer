@@ -1,0 +1,458 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 125922531
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Skylight
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5130770350572262273, 9533246575187293344]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Environment Map
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: LOD
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Turbidity
+                data: 2
+              - type: 7
+                vectorType: 13
+                name: Azimuth
+                data: 0
+              - type: 7
+                vectorType: 13
+                name: Inclination
+                data: 0
+              - type: 0
+                vectorType: 13
+                name: Show
+                data: true
+    - Entity:
+        id: 2274599077
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Directional Light
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.866025448, 0, 0, 0.49999997]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [4956947959302657279, 6431008363526150588]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Intensity
+                data: 1
+              - type: 17
+                vectorType: 13
+                name: Color
+                data: [1, 1, 1]
+              - type: 7
+                vectorType: 13
+                name: Light Size
+                data: 1
+              - type: 0
+                vectorType: 13
+                name: Soft Shadows
+                data: true
+              - type: 0
+                vectorType: 13
+                name: Cast Shadows
+                data: true
+    - Entity:
+        id: 2396630366
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Cube
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 0, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 1, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 10149696181569838305
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 0
+          - guid: [5428802467633469958, 3006162545260469436]
+            properties:
+              - type: 21
+                vectorType: 12
+                name: ScriptNames
+                data:
+                  - value: Project.TestPlayer
+              - type: 21
+                vectorType: 16
+                name: ScriptIds
+                data:
+                  - value: 1044772166109937624
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.TestPlayer
+              id: 1044772166109937624
+    - Entity:
+        id: 2563044154
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: Camera
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 547.286255, -707.115906]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0.234334081, 0, 0, 0.972156167]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [1, 0.999999702, 0.999999702]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5524573352483143404, 11007889460122951339]
+            properties:
+              - type: 7
+                vectorType: 13
+                name: Aperture
+                data: 16
+              - type: 7
+                vectorType: 13
+                name: Shutter Speed
+                data: 0.00999999978
+              - type: 7
+                vectorType: 13
+                name: ISO
+                data: 100
+              - type: 7
+                vectorType: 13
+                name: Field of View
+                data: 60
+              - type: 7
+                vectorType: 13
+                name: Near plane
+                data: 1
+              - type: 7
+                vectorType: 13
+                name: Far plane
+                data: 100000
+              - type: 2
+                vectorType: 13
+                name: Priority
+                data: 0
+    - Entity:
+        id: 3526083837
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: New Cube
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, -105.965195, 0]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [28.3263054, 1, 18.0467606]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 10149696181569838305
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 4375374330609413162
+    - Entity:
+        id: 4048368195
+        components:
+          - guid: [4738578920687929342, 8095123518747964547]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: GraphState
+                data: ""
+          - guid: [5177849256600380923, 13689713549658374275]
+            properties:
+              - type: 12
+                vectorType: 13
+                name: Tag
+                data: New Cube
+          - guid: [5152712443922219371, 10617432012782403218]
+            properties:
+              - type: 10
+                vectorType: 13
+                name: Position
+                data: [0, 81.0509033, 901.153564]
+              - type: 25
+                vectorType: 13
+                name: Rotation
+                data: [0, 0, 0, 1]
+              - type: 10
+                vectorType: 13
+                name: Scale
+                data: [28.3263054, 7.24339581, 1]
+              - type: 0
+                vectorType: 13
+                name: "Visible "
+                data: true
+              - type: 0
+                vectorType: 13
+                name: "Locked "
+                data: false
+          - guid: [5115013315947959062, 13305215203298195585]
+            properties:
+              - type: 2
+                vectorType: 13
+                name: "LayerId "
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            properties:
+              - type: 21
+                vectorType: 22
+                name: Children
+                data:
+                  []
+              - type: 22
+                vectorType: 13
+                name: Parent
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            properties:
+              - type: 16
+                vectorType: 13
+                name: Mesh
+                data: 10149696181569838305
+              - type: 16
+                vectorType: 13
+                name: Material
+                data: 4375374330609413162

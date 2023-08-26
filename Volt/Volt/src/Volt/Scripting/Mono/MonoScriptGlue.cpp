@@ -438,7 +438,7 @@ namespace Volt
 
 	inline static bool AssetManager_HasAsset(uint64_t handle)
 	{
-		if (Volt::AssetManager::Get().ExistsInRegistry(handle))
+		if (Volt::AssetManager::ExistsInRegistry(handle))
 		{
 			return true;
 		}
@@ -448,7 +448,7 @@ namespace Volt
 	inline static uint64_t AssetManager_GetAssetHandleFromPath(MonoString* string)
 	{
 		const std::string str = MonoScriptUtils::GetStringFromMonoString(string);
-		return Volt::AssetManager::Get().GetAssetHandleFromFilePath(str);
+		return Volt::AssetManager::GetAssetHandleFromFilePath(str);
 	}
 
 #pragma endregion
@@ -481,7 +481,7 @@ namespace Volt
 			return;
 		}
 
-		Volt::AssetManager::Get().SaveAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
+		Volt::AssetManager::SaveAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
 	}
 
 	inline static MonoArray* Scene_GetAllEntities()
@@ -2344,8 +2344,8 @@ namespace Volt
 
 		if (Application::Get().IsRuntime())
 		{
-			const auto [wx, wy] = Application::Get().GetWindow().GetPosition();
-			const auto [x, y] = Input::GetMousePosition();
+			auto [wx, wy] = Application::Get().GetWindow().GetPosition();
+			auto [x, y] = Input::GetMousePosition();
 			*position = { x - wx, y - wy };
 		}
 		else

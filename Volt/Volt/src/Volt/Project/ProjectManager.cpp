@@ -9,15 +9,6 @@
 
 namespace Volt
 {
-	void ProjectManager::SetupWorkingDirectory()
-	{
-		if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
-		{
-			const std::string pathEnv = FileSystem::GetEnvVariable("VOLT_PATH");
-			std::filesystem::current_path(pathEnv);
-		}
-	}
-
 	void ProjectManager::SetupProject(const std::filesystem::path projectPath)
 	{
 		myCurrentProject = CreateScope<Project>();
@@ -40,19 +31,11 @@ namespace Volt
 					break;
 				}
 			}
-
-			if (myCurrentProject->projectFilePath.empty())
-			{
-				VT_CORE_ERROR("[ProjectManager] Project File not found!");
-			}
 		}
 
 		LoadProjectInfo();
 
-		if (FileSystem::HasEnvironmentVariable("VOLT_PATH"))
-		{
-			myCurrentEngineDirectory = FileSystem::GetEnvVariable("VOLT_PATH");
-		}
+		myCurrentEngineDirectory = std::filesystem::current_path();
 	}
 
 	void ProjectManager::LoadProjectInfo()

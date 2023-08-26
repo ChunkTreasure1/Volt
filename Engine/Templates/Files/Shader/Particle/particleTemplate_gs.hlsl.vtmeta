@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 9946573887302553749
+  filePath: Templates/Files/Shader/Particle/particleTemplate_gs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}
