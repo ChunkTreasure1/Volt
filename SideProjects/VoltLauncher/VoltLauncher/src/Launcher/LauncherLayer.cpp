@@ -179,7 +179,7 @@ void LauncherLayer::OnAttach()
 			m_data.engineInfo.engineDirectory = engineDir;
 		}
 	}
-	else
+	else if (m_data.engineInfo.IsValid())
 	{
 		m_data.engineInfo.needsRepair = true;
 	}
@@ -475,59 +475,130 @@ void LauncherLayer::UI_DrawEnginesContent()
 
 	ImGui::SameLine(ImGui::GetContentRegionAvail().x - 200.f);
 
+	const bool installed = m_data.engineInfo.IsValid();
+
 	if (ImGui::Button("Locate"))
 	{
 	}
 
-	ImGui::SameLine();
-
-	if (ImGui::Button("Add"))
+	if (m_data.engineInfo.needsRepair)
 	{
-		const std::string url = "https://github.com/ChunkTreasure1/Volt/releases/download/v0.1.0/Volt.zip";
-		g_installProgress = 0.f;
-		m_isInstalling = true;
+		ImGui::SameLine();
 
-		m_downloadFuture = std::async(std::launch::async, [&, url]()
+		if (ImGui::Button("Repair"))
 		{
-			TCHAR pf[MAX_PATH];
-			SHGetSpecialFolderPath(0, pf, CSIDL_LOCAL_APPDATA, FALSE);
-
-			const std::filesystem::path targetDir = std::filesystem::path(pf) / "Programs" / "Volt" / "Engine";
-
-			Utility::DownloadFile(url, "Volt.zip", [](void*, double t, double d)
-			{
-				printf("Progress: %f", float(d / t));
-
-				return 0;
-			});
-
-			Utility::UnzipFile("Volt.zip", targetDir);
-			std::filesystem::remove("Volt.zip");
-
-			Utility::RunSetup(targetDir / "Volt");
-
-			m_data.engineInfo.engineDirectory = targetDir / "Volt";
-			m_isInstalling = false;
-		});
+			Utility::RunSetup(m_data.engineInfo.engineDirectory);
+			m_data.engineInfo.needsRepair = false;
+		}
 	}
 
-	if (ImGui::BeginChild("EngineChild", ImGui::GetContentRegionAvail()))
+	if (!installed)
 	{
-		Walnut::UI::ShiftCursorX(10.f);
+		ImGui::SameLine();
 
-		if (m_isInstalling)
+		if (ImGui::Button("Add"))
 		{
-			ImGui::Text("Installing...");
+			const std::string url = "https://github.com/ChunkTreasure1/Volt/releases/download/v0.1.0/Volt.zip";
+			g_installProgress = 0.f;
+			m_isInstalling = true;
 
-			Walnut::UI::ShiftCursorX(10.f);
-			ImGui::ProgressBar(g_installProgress, ImVec2{ 200.f, 20.f });
-		}
-		else
-		{
-			if (!m_data.engineInfo.IsValid())
+			m_downloadFuture = std::async(std::launch::async, [&, url]()
 			{
-				ImGui::TextUnformatted("No engine has been found!");
+				TCHAR pf[MAX_PATH];
+				SHGetSpecialFolderPath(0, pf, CSIDL_LOCAL_APPDATA, FALSE);
+
+				const std::filesystem::path targetDir = std::filesystem::path(pf) / "Programs" / "Volt" / "Engine";
+
+				Utility::DownloadFile(url, "Volt.zip", [](void*, double t, double d)
+				{
+					printf("Progress: %f", float(d / t));
+
+					return 0;
+				});
+
+				Utility::UnzipFile("Volt.zip", targetDir);
+				std::filesystem::remove("Volt.zip");
+
+				Utility::RunSetup(targetDir / "Volt");
+
+				m_data.engineInfo.engineDirectory = targetDir / "Volt";
+				m_isInstalling = false;
+			});
+		}
+	}
+
+	Walnut::UI::ShiftCursor(40.f, 20.f);
+
+	if ((m_isInstalling || installed) && ImGui::BeginChild("EngineChild", ImGui::GetContentRegionAvail()))
+	{
+		const float contentAreaWidth = ImGui::GetContentRegionAvail().x - 40.f;
+		const float contentAreaHeight = 70.f;
+
+		if (ImGui::BeginChild("Engine", ImVec2{ contentAreaWidth, contentAreaHeight }, true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+		{
+			Walnut::UI::ShiftCursorY(10.f);
+			ImGui::TextUnformatted("Volt");
+
+			if (m_isInstalling)
+			{
+				ImGui::SameLine();
+
+				Walnut::UI::ShiftCursorY(-5.f);
+				ImGui::ProgressBar(g_installProgress, ImVec2{ contentAreaWidth - 200.f, 30.f });
 			}
+
+			ImGui::SameLine(contentAreaWidth - 80.f);
+
+			Walnut::UI::ShiftCursorY(-10.f);
+
+			ImGui::ImageButton(m_dotsIcon->GetDescriptorSet(), { 32.f, 32.f });
+			if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonLeft))
+			{
+				Walnut::UI::ShiftCursorY(10.f);
+				{
+					Walnut::UI::ScopedStyle frameRounding{ ImGuiStyleVar_FrameRounding, 0.f };
+					Walnut::UI::ScopedStyle itemSpacing{ ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f } };
+					Walnut::UI::ScopedStyle borderSize{ ImGuiStyleVar_FrameBorderSize, 0.f };
+
+					{
+						Walnut::UI::ScopedColorStack buttonColor{ ImGuiCol_Button, ImVec4{ 0.f, 0.f, 0.f, 0.f }, ImGuiCol_ButtonHovered, ToNormalizedRGB(14.f, 134.f, 225.f), ImGuiCol_ButtonActive, ToNormalizedRGB(0.f, 80.f, 160.f) };
+
+						if (ImGui::Button("Reveal in explorer", ImVec2{ ImGui::GetContentRegionAvail().x, 30.f }))
+						{
+							FileSystem::ShowDirectoryInExplorer(m_data.engineInfo.engineDirectory);
+						}
+					}
+
+					ImGui::Separator();
+
+					{
+						Walnut::UI::ScopedColorStack buttonColor{ ImGuiCol_Button, ImVec4{ 0.f, 0.f, 0.f, 0.f }, ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.f }, ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.f } };
+
+						if (ImGui::Button("Remove", ImVec2{ ImGui::GetContentRegionAvail().x, 30.f }))
+						{
+							FileSystem::MoveToRecycleBin(m_data.engineInfo.engineDirectory);
+							m_data.engineInfo.engineDirectory = "";
+
+							SerializeData();
+						}
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (m_isInstalling)
+			{
+				Walnut::UI::ShiftCursorY(-10.f);
+			}
+			else
+			{
+				Walnut::UI::ShiftCursorY(-15.f);
+			}
+
+			ImGui::Text("Install Directory: %s", m_data.engineInfo.engineDirectory.string().c_str());
+
+			ImGui::EndChild();
 		}
 
 		ImGui::EndChild();
