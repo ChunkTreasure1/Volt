@@ -1,7 +1,8 @@
 Project:
     Name: Project
+    CompanyName: Default
     AssetsPath: Assets
     AudioBanksPath: Audio/Banks # Starts in the defined assets path
     IconPath: ""
     CursorPath: ""
-    StartScene: "Assets/Scenes/Levels/SC_LVL_LOGOS/SC_LVL_LOGOS.vtscene"
+    StartScene: ""

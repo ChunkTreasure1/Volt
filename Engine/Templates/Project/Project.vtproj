@@ -1,6 +1,8 @@
 Project:
     Name: Project
-    AssetRegistry: Assets/AssetRegistry.vtreg
+    CompanyName: Default
     AssetsPath: Assets
-    EnginePath: Engine
-    ShadersPath: Engine/Shaders
+    AudioBanksPath: Audio/Banks # Starts in the defined assets path
+    IconPath: ""
+    CursorPath: ""
+    StartScene: ""
