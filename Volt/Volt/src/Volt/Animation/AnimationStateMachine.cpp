@@ -38,6 +38,7 @@ namespace Volt
 						myCurrentState = myStartState;
 						auto startState = myStates.at(myStartState);
 						startState->startTime = AnimationManager::globalClock;
+						startState->stateGraph->SetStartTime(AnimationManager::globalClock);
 					}
 				}
 			}
@@ -356,7 +357,7 @@ namespace Volt
 			newTransition->shouldBlend = transition->shouldBlend;
 
 			newTransition->transitionGraph = CreateRef<AnimationTransitionGraph>();
-			newTransition->transitionGraph->SetStateMachine(this);
+			newTransition->transitionGraph->SetStateMachine(newStateMachine.get());
 			newTransition->transitionGraph->SetTransitionID(newTransition->id);
 			newTransition->transitionGraph->SetEntity(entity);
 			GraphKey::Graph::Copy(transition->transitionGraph, newTransition->transitionGraph);
@@ -516,5 +517,6 @@ namespace Volt
 
 		auto statePtr = myStates.at(myCurrentState);
 		statePtr->startTime = AnimationManager::globalClock;
+		statePtr->stateGraph->SetStartTime(AnimationManager::globalClock);
 	}
 }

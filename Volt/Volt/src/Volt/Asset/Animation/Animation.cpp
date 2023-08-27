@@ -253,6 +253,22 @@ namespace Volt
 		return currentFrameIndex;
 	}
 
+	const float Animation::GetNormalizedCurrentTimeFromStartTime(float startTime, float speed, bool looping)
+	{
+		const float localTime = AnimationManager::globalClock - startTime;
+		const float normalizedTime = localTime / (myDuration / speed);
+		
+		if (looping)
+		{
+			return fmodf(normalizedTime, 1.f);
+		}
+		else
+		{
+			return std::clamp(normalizedTime, 0.f, 1.f);
+		}
+		return 0.0f;
+	}
+
 	const Animation::PoseData Animation::GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime)
 	{
 		PoseData animData{};

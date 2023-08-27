@@ -15,14 +15,14 @@ namespace Volt
 		inline void SetState(const std::string& aState) { myGraphState = aState; }
 		inline const std::string& GetState() const { return myGraphState; }
 
-		inline void SetStateMachine(const AnimationStateMachine* aStateMachine) { myStateMachineWeak = aStateMachine; }
+		inline void SetStateMachine(AnimationStateMachine* aStateMachine) { myStateMachineWeak = aStateMachine; }
 		inline const AnimationStateMachine* GetStateMachine() const { return myStateMachineWeak; }
 
 		inline void SetTransitionID(const UUID& aId) { myTransitionID = aId; }
 		inline const UUID& GetTransitionID() const { return myTransitionID; }
 	private:
 		std::string myGraphState;
-		const AnimationStateMachine* myStateMachineWeak;
+		AnimationStateMachine* myStateMachineWeak;
 		UUID myTransitionID;
 	};
 }

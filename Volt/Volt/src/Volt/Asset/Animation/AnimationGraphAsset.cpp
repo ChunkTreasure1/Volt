@@ -15,18 +15,18 @@ namespace Volt
 		return newGraph;
 	}
 
-	AssetHandle AnimationGraphAsset::GetRelevantAnimationHandle()
+	Ref<GraphKey::Node> AnimationGraphAsset::GetRelevantAnimationNode()
 	{
-		auto sequencePlayerNodes = GetNodesOfType("Sequence Player");
-		
+		auto sequencePlayerNodes = GetNodesOfType("SequencePlayerNode");
+
 		if (sequencePlayerNodes.size() == 0)
-			return Asset::Null();
+			return Ref<GraphKey::Node>();
 
 		//TODO: Update this to check for all the relevant nodes
 		//TODO: Update this to have a relevancy order 
 		auto sequencePlayerNode = std::dynamic_pointer_cast<GraphKey::SequencePlayerNode>(sequencePlayerNodes[0]);
-		
-		return sequencePlayerNode->GetAnimation()->handle;
+
+		return sequencePlayerNode;
 	}
 
 	void AnimationGraphAsset::SetSkeletonHandle(AssetHandle aSkeletonHandle)

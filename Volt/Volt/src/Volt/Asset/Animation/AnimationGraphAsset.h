@@ -39,9 +39,9 @@ namespace Volt
 
 		Ref<AnimationGraphAsset> CreateCopy(Wire::EntityId entity = 0);
 		
+		Ref<GraphKey::Node> GetRelevantAnimationNode();
 
 	private:
-		Ref<GraphKey::Node> GetRelevantAnimationNode();
 		friend class AnimationGraphImporter;
 
 		AssetHandle mySkeletonHandle = Asset::Null();

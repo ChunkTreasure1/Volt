@@ -6,7 +6,7 @@
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
-#include <Volt/Asset/Animation/Skeleton.h>
+#include "Volt/Animation/AnimationManager.h"
 
 #include <Volt/Asset/AssetManager.h>
 
@@ -16,6 +16,8 @@
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Scripting/Mono/MonoScriptInstance.h>
+
+#include <Volt/Asset/Animation/Skeleton.h>
 
 namespace GraphKey
 {
@@ -46,6 +48,23 @@ namespace GraphKey
 		return GetInput<bool>(1);
 	}
 
+	float SequencePlayerNode::GetCurrentAnimationTime()
+	{
+		const Volt::AnimationGraphAsset* const animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
+		const float speed = GetInput<float>(2);
+		const bool looping = GetInput<bool>(1);
+		return GetAnimation()->GetNormalizedCurrentTimeFromStartTime(animGraph->GetStartTime(), speed, looping) * (GetAnimation()->GetDuration() / speed);
+	}
+
+	float SequencePlayerNode::GetCurrentAnimationTimeNormalized()
+	{
+		const Volt::AnimationGraphAsset* const animGraph = reinterpret_cast<Volt::AnimationGraphAsset*>(myGraph);
+		const float speed = GetInput<float>(2);
+		const bool looping = GetInput<bool>(1);
+		
+		return GetAnimation()->GetNormalizedCurrentTimeFromStartTime(animGraph->GetStartTime(), speed, looping);
+	}
+
 	void SequencePlayerNode::TrySampleAnimation()
 	{
 		const auto animHandle = GetInput<Volt::AssetHandle>(0);
@@ -72,6 +91,7 @@ namespace GraphKey
 		const bool shouldLoop = GetInput<bool>(1);
 		const float speed = GetInput<float>(2);
 		const bool applyRootMotion = GetInput<bool>(3);
+		const float localTime = Volt::AnimationManager::globalClock - animGraph->GetStartTime();
 
 		const uint32_t currentFrame = anim->GetFrameFromStartTime(animGraph->GetStartTime(), speed);
 		/* ANIMATION EVENT STUFF
