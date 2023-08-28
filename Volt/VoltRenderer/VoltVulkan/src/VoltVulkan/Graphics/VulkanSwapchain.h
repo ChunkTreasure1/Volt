@@ -79,6 +79,7 @@ namespace Volt::RHI
 		uint32_t m_height = 720;
 
 		bool m_vSyncEnabled = false;
+		bool m_swapchainNeedsRebuild = false;
 
 		uint32_t m_totalImageCount = 0;
 

@@ -73,7 +73,7 @@ namespace Volt::RHI
 		assert(supportsPresent && "Device does not have present support!");
 
 		Invalidate(m_width, m_height, m_vSyncEnabled);
-	
+
 		s_instance = this;
 	}
 
@@ -88,8 +88,15 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto device = GraphicsContext::GetDevice();
+		if (m_swapchainNeedsRebuild)
+		{
+			Resize(m_width, m_height, m_vSyncEnabled);
+			m_swapchainNeedsRebuild = false;
+		}
 
+		VulkanAllocator::SetFrameIndex(m_currentFrame);
+
+		auto device = GraphicsContext::GetDevice();
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 
 		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &frameData.fence, VK_TRUE, 1000000000));
@@ -97,7 +104,8 @@ namespace Volt::RHI
 		VkResult swapchainStatus = vkAcquireNextImageKHR(device->GetHandle<VkDevice>(), m_swapchain, 1000000000, frameData.presentSemaphore, nullptr, &m_currentImage);
 		if (swapchainStatus == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			Resize(m_width, m_height, m_vSyncEnabled);
+			m_swapchainNeedsRebuild = true;
+			return;
 		}
 		else if (swapchainStatus != VK_SUCCESS && swapchainStatus != VK_SUBOPTIMAL_KHR)
 		{
@@ -106,12 +114,16 @@ namespace Volt::RHI
 
 		VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &frameData.fence));
 		VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), frameData.commandPool, 0));
-		VulkanAllocator::SetFrameIndex(m_currentFrame);
 	}
 
 	void VulkanSwapchain::Present()
 	{
 		VT_PROFILE_FUNCTION();
+
+		if (m_swapchainNeedsRebuild)
+		{
+			return;
+		}
 
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 		const auto deviceQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics);
@@ -154,7 +166,8 @@ namespace Volt::RHI
 
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{
-				Resize(m_width, m_height, m_vSyncEnabled);
+				m_swapchainNeedsRebuild = true;
+				return;
 			}
 			else if (presentResult != VK_SUCCESS)
 			{
@@ -315,7 +328,7 @@ namespace Volt::RHI
 		// Make sure the requested size is within the capabilities of the swapchain
 		m_width = std::clamp(width, m_capabilities.minImageExtent.width, m_capabilities.maxImageExtent.width);
 		m_height = std::clamp(height, m_capabilities.minImageExtent.height, m_capabilities.maxImageExtent.height);
-	
+
 		VkSwapchainKHR oldSwapchain = m_swapchain;
 
 		VkSwapchainCreateInfoKHR swapchainCreateInfo{};
@@ -460,7 +473,7 @@ namespace Volt::RHI
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 		auto device = GraphicsContext::GetDevice();
-		
+
 		m_perFrameInFlightData.resize(MAX_FRAMES_IN_FLIGHT);
 
 		for (auto& frameData : m_perFrameInFlightData)
