@@ -194,6 +194,13 @@ protected:
 private:
 	const IncompatiblePinReason CanLinkPins(const Volt::UUID input, const Volt::UUID output);
 
+	void AddNode(Ref<GraphKey::Node> node);
+	void CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output) override;
+	void AddLink(GraphKey::Link link);
+
+	void RemoveLink(const Volt::UUID linkId) override;
+	void RemoveNode(const Volt::UUID nodeId) override;
+
 	void DrawGraphDataPanel();
 	void DrawNodeContextMenu();
 	void DrawPinContextMenu();
@@ -573,6 +580,53 @@ inline const IONodeGraphEditor<graphType, EditorBackend>::IncompatiblePinReason 
 }
 
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::AddNode(Ref<GraphKey::Node> node)
+{
+	std::vector<Volt::UUID> pins;
+	for (auto& i : node->inputs)
+	{
+		pins.emplace_back(i.id);
+	}
+
+	for (auto& o : node->outputs)
+	{
+		pins.emplace_back(o.id);
+	}
+
+	Editor::CreateNode(node->id, pins);
+	myOpenGraph->AddNode(node);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output)
+{
+	Editor::CreateLink(id, input, output);
+	myOpenGraph->CreateLink(id, input, output);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::AddLink(GraphKey::Link link)
+{
+	Editor::CreateLink(link.id, link.input, link.output);
+	myOpenGraph->AddLink(link);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::RemoveLink(const Volt::UUID linkId)
+{
+	Editor::RemoveLink(linkId);
+	myOpenGraph->RemoveLink(linkId);
+
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::RemoveNode(const Volt::UUID nodeId)
+{
+	Editor::RemoveNode(nodeId);
+	myOpenGraph->RemoveNode(nodeId);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
 inline void IONodeGraphEditor<TGraphType, EditorBackend>::ReconstructGraph()
 {
 	auto& backend = GetBackend();
@@ -673,31 +727,41 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 		}
 		else if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f))
 		{
-			if (myGraphType == GraphKey::GraphType::Animation && startAttr->type == GraphKey::AttributeType::Flow)
+			auto inputDirAttr = startAttr->direction == GraphKey::AttributeDirection::Input ? startAttr : endAttr;
+			std::vector<Volt::UUID> linksToRemove{};
+			if (!inputDirAttr->links.empty())
 			{
-				std::vector<Volt::UUID> linksToRemove{};
-
-				if (!startAttr->links.empty())
-				{
-					linksToRemove.insert(linksToRemove.end(), startAttr->links.begin(), startAttr->links.end());
-				}
-
-				if (!endAttr->links.empty())
-				{
-					linksToRemove.insert(linksToRemove.end(), endAttr->links.begin(), endAttr->links.end());
-				}
-
-				for (const auto& l : linksToRemove)
-				{
-					RemoveLink(l);
-					myOpenGraph->RemoveLink(l);
-				}
+				linksToRemove.insert(linksToRemove.end(), inputDirAttr->links.begin(), inputDirAttr->links.end());
 			}
 
-			myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
+			for (const auto& l : linksToRemove)
+			{
+				RemoveLink(l);
+			}
 
-			auto newLink = GetBackend().CreateLink(endPinId.Get(), startPinId.Get());
-			myOpenGraph->CreateLink(newLink.id, newLink.input, newLink.output);
+			//if (myGraphType == GraphKey::GraphType::Animation && startAttr->type == GraphKey::AttributeType::AnimationPose)
+			//{
+			//	std::vector<Volt::UUID> linksToRemove{};
+
+			//	if (!startAttr->links.empty())
+			//	{
+			//		linksToRemove.insert(linksToRemove.end(), startAttr->links.begin(), startAttr->links.end());
+			//	}
+
+			//	if (!endAttr->links.empty())
+			//	{
+			//		linksToRemove.insert(linksToRemove.end(), endAttr->links.begin(), endAttr->links.end());
+			//	}
+
+			//	for (const auto& l : linksToRemove)
+			//	{
+			//		RemoveLink(l);
+			//	}
+			//}
+
+			myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
+			const Volt::UUID id{};
+			CreateLink(id, startPinId.Get(), endPinId.Get());
 		}
 	}
 
@@ -835,7 +899,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 							}
 						}
 
-						linksToCopy.emplace_back(std::pair(std::pair{ inputAttribute, outputAttribute }, *link));
+						linksToCopy.emplace_back(std::pair(std::pair{ inputAttribute, outputAttribute }, * link));
 					}
 				}
 			}
@@ -876,26 +940,12 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 	for (const auto& n : myNodeCopies)
 	{
 		n->id = {};
-
-		std::vector<Volt::UUID> pins;
-		for (auto& i : n->inputs)
-		{
-			pins.emplace_back(i.id);
-		}
-
-		for (auto& o : n->outputs)
-		{
-			pins.emplace_back(o.id);
-		}
-
-		myOpenGraph->AddNode(n);
-		CreateNode(n->id, pins);
+		AddNode(n);
 	}
 
 	for (const auto& l : newLinks)
 	{
-		myOpenGraph->AddLink(l);
-		CreateLink(l.id, l.input, l.output);
+		AddLink(l);
 	}
 
 	myShouldMoveCopies = true;
@@ -1190,21 +1240,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 							}
 
 							myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
-							myOpenGraph->AddNode(node);
-
-							std::vector<Volt::UUID> pinIds{};
-
-							for (const auto& i : node->inputs)
-							{
-								pinIds.emplace_back(i.id);
-							}
-
-							for (const auto& o : node->outputs)
-							{
-								pinIds.emplace_back(o.id);
-							}
-
-							CreateNode(node->id, pinIds);
+							AddNode(node);
 						}
 					}
 
@@ -1330,7 +1366,6 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 
 							for (const auto& l : linksToRemove)
 							{
-								myOpenGraph->RemoveLink(l);
 								RemoveLink(l);
 							}
 						}
@@ -1343,7 +1378,6 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 									if (l.input == endId.Get())
 									{
 										RemoveLink(l.id);
-										myOpenGraph->RemoveLink(l.id);
 									}
 
 								}
@@ -1358,7 +1392,8 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 						}
 
 						myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
-						const auto id = myOpenGraph->CreateLink(startId.Get(), endId.Get());
+
+						const Volt::UUID id{};
 						CreateLink(id, startId.Get(), endId.Get());
 
 						break;

@@ -47,11 +47,11 @@ namespace NodeGraph
 		void UpdateMainContent() override;
 		void UpdateContent() override;
 
-		void CreateNode(const Volt::UUID id, const std::vector<Volt::UUID> pins);
-		void CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output);
+		virtual void CreateNode(const Volt::UUID id, const std::vector<Volt::UUID> pins);
+		virtual void CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output);
 
-		void RemoveLink(const Volt::UUID linkId);
-		void RemoveNode(const Volt::UUID nodeId);
+		virtual void RemoveLink(const Volt::UUID linkId);
+		virtual void RemoveNode(const Volt::UUID nodeId);
 
 		const std::vector<Volt::UUID> GetSelectedNodes();
 		const std::vector<Volt::UUID> GetSelectedLinks();
