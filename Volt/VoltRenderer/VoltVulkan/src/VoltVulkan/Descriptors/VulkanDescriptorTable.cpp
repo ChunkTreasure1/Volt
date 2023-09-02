@@ -19,7 +19,7 @@
 
 namespace Volt::RHI
 {
-	VulkanDescriptorTable::VulkanDescriptorTable(const DescriptorTableSpecification& specification)
+	VulkanDescriptorTable::VulkanDescriptorTable(const DescriptorTableCreateInfo& specification)
 	{
 		m_shader = specification.shader;
 

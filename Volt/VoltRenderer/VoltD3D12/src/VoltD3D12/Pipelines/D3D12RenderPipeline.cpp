@@ -11,6 +11,7 @@
 namespace Volt::RHI
 {
 	D3D12RenderPipeline::D3D12RenderPipeline(const RenderPipelineCreateInfo& createInfo)
+		: m_createInfo(createInfo)
 	{
 		m_topology = createInfo.topology;
 		Create(createInfo);
@@ -27,6 +28,11 @@ namespace Volt::RHI
 
 	void D3D12RenderPipeline::Invalidate()
 	{
+	}
+
+	Ref<Shader> D3D12RenderPipeline::GetShader() const
+	{
+		return m_createInfo.shader;
 	}
 
 	void D3D12RenderPipeline::Create(const RenderPipelineCreateInfo& createInfo)

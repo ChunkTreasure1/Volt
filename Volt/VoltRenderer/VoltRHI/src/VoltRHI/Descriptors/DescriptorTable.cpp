@@ -7,7 +7,7 @@
 
 namespace Volt::RHI
 {
-	Ref<DescriptorTable> DescriptorTable::Create(const DescriptorTableSpecification& specification)
+	Ref<DescriptorTable> DescriptorTable::Create(const DescriptorTableCreateInfo& specification)
 	{
 		const auto api = GraphicsContext::GetAPI();
 

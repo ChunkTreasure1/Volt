@@ -11,25 +11,25 @@ namespace Volt
 	{
 	}
 
-	Ref<RHI::Image2D> RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle)
+	Ref<RHI::Image2D> RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		return m_renderGraph.GetImage2D(resourceHandle);
 	}
 
-	Ref<RHI::StorageBuffer> RenderGraphPassResources::GetBuffer(const RenderGraphResourceHandle resourceHandle)
+	Ref<RHI::StorageBuffer> RenderGraphPassResources::GetBuffer(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		return m_renderGraph.GetBuffer(resourceHandle);
 	}
 
-	Ref<RHI::UniformBuffer> RenderGraphPassResources::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)
+	Ref<RHI::UniformBuffer> RenderGraphPassResources::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		return m_renderGraph.GetUniformBuffer(resourceHandle);
 	}
 
-	void RenderGraphPassResources::ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle)
+	void RenderGraphPassResources::ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const
 	{
 		const bool isRegisteredForAccess = m_pass.ReadsResource(resourceHandle) || m_pass.WritesResource(resourceHandle);
 		if (!isRegisteredForAccess)

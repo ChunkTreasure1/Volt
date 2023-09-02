@@ -379,7 +379,7 @@ namespace Volt
 		{
 			if (resource.resource.isExternal)
 			{
-				if (resource.lastUsage)
+				if (!resource.lastUsage)
 				{
 					continue;
 				}

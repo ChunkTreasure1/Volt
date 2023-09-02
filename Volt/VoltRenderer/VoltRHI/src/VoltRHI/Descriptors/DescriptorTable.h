@@ -11,7 +11,7 @@ namespace Volt::RHI
 
 	class SamplerState;
 
-	struct DescriptorTableSpecification
+	struct DescriptorTableCreateInfo
 	{
 		Ref<Shader> shader;
 	};
@@ -25,7 +25,7 @@ namespace Volt::RHI
 
 		virtual void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 
-		static Ref<DescriptorTable> Create(const DescriptorTableSpecification& specification);
+		static Ref<DescriptorTable> Create(const DescriptorTableCreateInfo& specification);
 
 	protected:
 		DescriptorTable() = default;

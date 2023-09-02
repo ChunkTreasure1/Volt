@@ -6,6 +6,8 @@
 
 #include <VoltRHI/Core/RHIResource.h>
 #include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 
 namespace Volt
 {
@@ -18,7 +20,7 @@ namespace Volt
 		m_allocatedResources.clear();
 	}
 
-	Ref<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
+	Weak<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		if (m_allocatedResources.contains(resourceHandle))
 		{
@@ -43,18 +45,34 @@ namespace Volt
 		return image;
 	}
 
-	Ref<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	Weak<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle)->As<RHI::StorageBuffer>();
 		}
 
-		return Ref<RHI::StorageBuffer>();
+		Ref<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.usage);
+		m_allocatedResources[resourceHandle] = buffer;
+
+		return buffer;
 	}
 
-	Ref<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
+	Weak<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
-		return Ref<RHI::UniformBuffer>();
+		if (m_allocatedResources.contains(resourceHandle))
+		{
+			return m_allocatedResources.at(resourceHandle)->As<RHI::UniformBuffer>();
+		}
+
+		Ref<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));
+		m_allocatedResources[resourceHandle] = buffer;
+
+		return buffer;
+	}
+
+	void TransientResourceSystem::AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource)
+	{
+		m_allocatedResources[resourceHandle] = resource;
 	}
 }

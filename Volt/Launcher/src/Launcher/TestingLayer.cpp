@@ -102,7 +102,7 @@ void TestingLayer::OnAttach()
 
 	// Descriptor table
 	{
-		RHI::DescriptorTableSpecification descriptorTableSpec{};
+		RHI::DescriptorTableCreateInfo descriptorTableSpec{};
 		descriptorTableSpec.shader = m_shader;
 		m_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
 		m_descriptorTable->SetBufferView(m_constantBuffer->GetView(), 0, 0);

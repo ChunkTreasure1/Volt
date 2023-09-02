@@ -24,6 +24,7 @@ namespace Volt::RHI
 	{
 	public:
 		virtual void Invalidate() = 0;
+		virtual Ref<Shader> GetShader() const = 0;
 
 		static Ref<RenderPipeline> Create(const RenderPipelineCreateInfo& createInfo);
 

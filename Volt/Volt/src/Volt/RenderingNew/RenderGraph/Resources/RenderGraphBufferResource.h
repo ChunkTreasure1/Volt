@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderGraphResourceHandle.h"
+#include "RenderGraphResource.h"
 
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -9,30 +9,28 @@ namespace Volt
 	struct RenderGraphBufferDesc
 	{
 		size_t size;
-		RHI::BufferUsage usage = RHI::BufferUsage::StorageBuffer;
+		RHI::BufferUsage usage = RHI::BufferUsage::None;
 	};
 
 	struct RenderGraphBuffer
 	{
-		RenderGraphBuffer(const size_t size, RHI::BufferUsage usage)
-		{
-			description.size = size;
-			description.usage = usage | RHI::BufferUsage::StorageBuffer;
-		}
-
 		RenderGraphBufferDesc description{};
 		RenderGraphResourceHandle resourceHandle{};
+
+		inline static constexpr ResourceType GetResourceType()
+		{
+			return ResourceType::Buffer;
+		}
 	};
 
 	struct RenderGraphUniformBuffer
 	{
-		RenderGraphUniformBuffer(const size_t size, RHI::BufferUsage usage)
-		{ 
-			description.size = size;
-			description.usage = usage | RHI::BufferUsage::UniformBuffer;
-		}
-
 		RenderGraphBufferDesc description{};
 		RenderGraphResourceHandle resourceHandle{};
+
+		inline static constexpr ResourceType GetResourceType()
+		{
+			return ResourceType::Buffer;
+		}
 	};
 }

@@ -76,6 +76,11 @@ namespace Volt::RHI
 		}
 	}
 
+	Ref<Shader> VulkanComputePipeline::GetShader() const
+	{
+		return m_shader;
+	}
+
 	void* VulkanComputePipeline::GetHandleImpl() const
 	{
 		return m_pipeline;

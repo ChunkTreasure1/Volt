@@ -136,7 +136,7 @@ namespace Volt
 
 		// Descriptor table
 		{
-			RHI::DescriptorTableSpecification descriptorTableSpec{};
+			RHI::DescriptorTableCreateInfo descriptorTableSpec{};
 			descriptorTableSpec.shader = m_shader;
 			m_descriptorTable = RHI::DescriptorTable::Create(descriptorTableSpec);
 			m_descriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
@@ -151,7 +151,7 @@ namespace Volt
 
 		// Indirect setup descriptor table
 		{
-			RHI::DescriptorTableSpecification spec{};
+			RHI::DescriptorTableCreateInfo spec{};
 			spec.shader = m_indirectSetupShader;
 			m_indirectSetupDescriptorTable = RHI::DescriptorTable::Create(spec);
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
@@ -162,7 +162,7 @@ namespace Volt
 
 		// Indirect setup descriptor table
 		{
-			RHI::DescriptorTableSpecification spec{};
+			RHI::DescriptorTableCreateInfo spec{};
 			spec.shader = m_clearIndirectCountsShader;
 			m_indirectCountDescriptorTable = RHI::DescriptorTable::Create(spec);
 			m_indirectCountDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
@@ -207,165 +207,281 @@ namespace Volt
 			m_shouldResize = false;
 		}
 
-		RenderGraph renderGraph{ m_commandBuffer };
-		
-		renderGraph.AddPass("Test Pass",
-		[](RenderGraph::Builder& builder)
-		{
-			//auto buffer = builder.CreateBuffer({ 32 });
-		},
-		[](const RenderGraphPassResources& resources)
-		{
-		});
-
 		UpdateBuffers(camera);
 
-		m_commandBuffer->Begin();
+		struct BufferData
+		{
+			RenderGraphResourceHandle indirectCommandsBuffer;
+			RenderGraphResourceHandle indirectCountsBuffer;
+
+			RenderGraphResourceHandle drawToInstanceOffsetBuffer;
+			RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
+		} bufferData;
+
+		struct ImageData
+		{
+			RenderGraphResourceHandle outputImage;
+			RenderGraphResourceHandle depthImage;
+		} imageData;
+
+		RenderGraph renderGraph{ m_commandBuffer };
+		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer);
+		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer);
+		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer);
+		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.AddExternalBuffer(m_instanceOffsetToObjectIDBuffer);
+
+		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
+		imageData.depthImage = renderGraph.AddExternalImage2D(m_depthImage);
+
+		renderGraph.AddPass("Clear counts buffers", 
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(bufferData.indirectCountsBuffer);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RHI::ShaderDataBuffer pushConstantBuffer = m_clearIndirectCountsShader->GetConstantsBuffer();
+			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
+			
+			const uint32_t dispatchCount = std::max(1u, static_cast<uint32_t>(m_currentActiveCommandCount / 256) + 1u);
+
+			context.BindPipeline(m_clearIndirectCountsPipeline);
+			context.SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
+			context.PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
+			context.Dispatch(dispatchCount, 1, 1);
+		});
+
+		renderGraph.AddPass("Setup Indirect Args",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(bufferData.indirectCommandsBuffer);
+			builder.WriteResource(bufferData.indirectCountsBuffer);
+			builder.WriteResource(bufferData.drawToInstanceOffsetBuffer);
+			builder.WriteResource(bufferData.instanceOffsetToObjectIDBuffer);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RHI::ShaderDataBuffer pushConstantBuffer = m_indirectSetupShader->GetConstantsBuffer();
+			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
+			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
+
+			context.BindPipeline(m_indirectSetupPipeline);
+
+			context.SetBufferView(resources.GetBuffer(bufferData.indirectCountsBuffer)->GetView(), 0, 0);
+			context.SetBufferView(resources.GetBuffer(bufferData.indirectCommandsBuffer)->GetView(), 0, 1);
+			context.SetBufferView(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer)->GetView(), 0, 2);
+			context.SetBufferView(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer)->GetView(), 0, 3);
+			
+			context.PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
+			context.Dispatch(dispatchCount, 1, 1);
+		});
+
+		renderGraph.AddResourceTransition(bufferData.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+		renderGraph.AddResourceTransition(bufferData.indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
+
+		renderGraph.AddPass("Draw Viewport",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.ReadResource(bufferData.drawToInstanceOffsetBuffer);
+			builder.ReadResource(bufferData.instanceOffsetToObjectIDBuffer);
+
+			builder.WriteResource(imageData.outputImage);
+			builder.WriteResource(imageData.depthImage);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RHI::Rect2D scissor = { 0, 0, m_width, m_height };
+			RHI::Viewport viewport{};
+			viewport.width = static_cast<float>(m_width);
+			viewport.height = static_cast<float>(m_height);
+			viewport.x = 0.f;
+			viewport.y = 0.f;
+			viewport.minDepth = 0.f;
+			viewport.maxDepth = 1.f;
+
+			RHI::AttachmentInfo attInfo{};
+			attInfo.view = resources.GetImage2D(imageData.outputImage)->GetView();
+			attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
+			attInfo.clearMode = RHI::ClearMode::Clear;
+
+			RHI::AttachmentInfo depthInfo{};
+			depthInfo.view = resources.GetImage2D(imageData.depthImage)->GetView();
+			depthInfo.clearColor = { 0.f, 1.f, 0.f, 0.f };
+			depthInfo.clearMode = RHI::ClearMode::Clear;
+
+			RHI::RenderingInfo renderingInfo{};
+			renderingInfo.colorAttachments = { attInfo };
+			renderingInfo.renderArea = scissor;
+			renderingInfo.depthAttachmentInfo = depthInfo;
+
+			RenderingInfo info{};
+			info.renderingInfo = renderingInfo;
+			info.scissor = scissor;
+			info.viewport = viewport;
+
+			const auto indirectCommands = resources.GetBuffer(bufferData.indirectCommandsBuffer);
+			const auto indirectCounts = resources.GetBuffer(bufferData.indirectCountsBuffer);
+
+			context.BeginRendering(info);
+			context.BindPipeline(m_renderPipeline);
+			context.SetDescriptorExternalTable(m_descriptorTable);
+			context.DrawIndirectCount(indirectCommands, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.EndRendering();
+		});
+
+		renderGraph.AddResourceTransition(imageData.outputImage, RHI::ResourceState::PixelShaderRead);
+		
+		renderGraph.Compile();
+		renderGraph.Execute();
+
+		//UpdateBuffers(camera);
+
+		//m_commandBuffer->Begin();
 
 		// Entry barriers
 		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::IndirectArgument;
-			barrier.newState = RHI::ResourceState::UnorderedAccess;
-			barrier.resource = m_indirectCountsBuffer;
+			//RHI::ResourceBarrierInfo barrier{};
+			//barrier.oldState = RHI::ResourceState::IndirectArgument;
+			//barrier.newState = RHI::ResourceState::UnorderedAccess;
+			//barrier.resource = m_indirectCountsBuffer;
 
-			RHI::ResourceBarrierInfo barrier1{};
-			barrier1.oldState = RHI::ResourceState::IndirectArgument;
-			barrier1.newState = RHI::ResourceState::UnorderedAccess;
-			barrier1.resource = m_indirectCommandsBuffer;
+			//RHI::ResourceBarrierInfo barrier1{};
+			//barrier1.oldState = RHI::ResourceState::IndirectArgument;
+			//barrier1.newState = RHI::ResourceState::UnorderedAccess;
+			//barrier1.resource = m_indirectCommandsBuffer;
 
-			m_commandBuffer->ResourceBarrier({ barrier, barrier1 });
+			//m_commandBuffer->ResourceBarrier({ barrier, barrier1 });
 		}
 
 		// Clear counts buffer
 		{
-			m_commandBuffer->BindPipeline(m_clearIndirectCountsPipeline);
-			m_commandBuffer->BindDescriptorTable(m_indirectCountDescriptorTable);
-			RHI::ShaderDataBuffer pushConstantBuffer = m_clearIndirectCountsShader->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
+			//m_commandBuffer->BindPipeline(m_clearIndirectCountsPipeline);
+			//m_commandBuffer->BindDescriptorTable(m_indirectCountDescriptorTable);
+			//RHI::ShaderDataBuffer pushConstantBuffer = m_clearIndirectCountsShader->GetConstantsBuffer();
+			//pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
 
-			m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
+			//m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
 
-			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
-			m_commandBuffer->Dispatch(dispatchCount, 1, 1);
+			//const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
+			//m_commandBuffer->Dispatch(dispatchCount, 1, 1);
 		}
 
 		// Middle barrier
 		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::UnorderedAccess;
-			barrier.newState = RHI::ResourceState::UnorderedAccess;
-			barrier.resource = m_indirectCountsBuffer;
+			//RHI::ResourceBarrierInfo barrier{};
+			//barrier.oldState = RHI::ResourceState::UnorderedAccess;
+			//barrier.newState = RHI::ResourceState::UnorderedAccess;
+			//barrier.resource = m_indirectCountsBuffer;
 
-			RHI::ResourceBarrierInfo barrier1{};
-			barrier1.oldState = RHI::ResourceState::NonPixelShaderRead;
-			barrier1.newState = RHI::ResourceState::UnorderedAccess;
-			barrier1.resource = m_drawToInstanceOffsetBuffer;
+			//RHI::ResourceBarrierInfo barrier1{};
+			//barrier1.oldState = RHI::ResourceState::NonPixelShaderRead;
+			//barrier1.newState = RHI::ResourceState::UnorderedAccess;
+			//barrier1.resource = m_drawToInstanceOffsetBuffer;
 
-			RHI::ResourceBarrierInfo barrier2{};
-			barrier2.oldState = RHI::ResourceState::NonPixelShaderRead;
-			barrier2.newState = RHI::ResourceState::UnorderedAccess;
-			barrier2.resource = m_instanceOffsetToObjectIDBuffer;
+			//RHI::ResourceBarrierInfo barrier2{};
+			//barrier2.oldState = RHI::ResourceState::NonPixelShaderRead;
+			//barrier2.newState = RHI::ResourceState::UnorderedAccess;
+			//barrier2.resource = m_instanceOffsetToObjectIDBuffer;
 
-			m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2 });
+			//m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2 });
 		}
 
 		// Setup indirect
 		{
-			m_commandBuffer->BindPipeline(m_indirectSetupPipeline);
-			m_commandBuffer->BindDescriptorTable(m_indirectSetupDescriptorTable);
+			//m_commandBuffer->BindPipeline(m_indirectSetupPipeline);
+			//m_commandBuffer->BindDescriptorTable(m_indirectSetupDescriptorTable);
 
-			RHI::ShaderDataBuffer pushConstantBuffer = m_indirectSetupShader->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
+			//RHI::ShaderDataBuffer pushConstantBuffer = m_indirectSetupShader->GetConstantsBuffer();
+			//pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
 
-			m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
+			//m_commandBuffer->PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()), 0);
 
-			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
-			m_commandBuffer->Dispatch(dispatchCount, 1, 1);
+			//const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
+			//m_commandBuffer->Dispatch(dispatchCount, 1, 1);
 		}
 
 		// Final barrier
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::UnorderedAccess;
-			barrier.newState = RHI::ResourceState::IndirectArgument;
-			barrier.resource = m_indirectCountsBuffer;
+		//{
+		//	RHI::ResourceBarrierInfo barrier{};
+		//	barrier.oldState = RHI::ResourceState::UnorderedAccess;
+		//	barrier.newState = RHI::ResourceState::IndirectArgument;
+		//	barrier.resource = m_indirectCountsBuffer;
 
-			RHI::ResourceBarrierInfo barrier1{};
-			barrier1.oldState = RHI::ResourceState::UnorderedAccess;
-			barrier1.newState = RHI::ResourceState::NonPixelShaderRead;
-			barrier1.resource = m_drawToInstanceOffsetBuffer;
+		//	RHI::ResourceBarrierInfo barrier1{};
+		//	barrier1.oldState = RHI::ResourceState::UnorderedAccess;
+		//	barrier1.newState = RHI::ResourceState::NonPixelShaderRead;
+		//	barrier1.resource = m_drawToInstanceOffsetBuffer;
 
-			RHI::ResourceBarrierInfo barrier2{};
-			barrier2.oldState = RHI::ResourceState::UnorderedAccess;
-			barrier2.newState = RHI::ResourceState::NonPixelShaderRead;
-			barrier2.resource = m_instanceOffsetToObjectIDBuffer;
+		//	RHI::ResourceBarrierInfo barrier2{};
+		//	barrier2.oldState = RHI::ResourceState::UnorderedAccess;
+		//	barrier2.newState = RHI::ResourceState::NonPixelShaderRead;
+		//	barrier2.resource = m_instanceOffsetToObjectIDBuffer;
 
-			RHI::ResourceBarrierInfo barrier3{};
-			barrier3.oldState = RHI::ResourceState::UnorderedAccess;
-			barrier3.newState = RHI::ResourceState::IndirectArgument;
-			barrier3.resource = m_indirectCommandsBuffer;
+		//	RHI::ResourceBarrierInfo barrier3{};
+		//	barrier3.oldState = RHI::ResourceState::UnorderedAccess;
+		//	barrier3.newState = RHI::ResourceState::IndirectArgument;
+		//	barrier3.resource = m_indirectCommandsBuffer;
 
-			m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2, barrier3 });
-		}
+		//	m_commandBuffer->ResourceBarrier({ barrier, barrier1, barrier2, barrier3 });
+		//}
 
-		RHI::Rect2D scissor = { 0, 0, m_width, m_height };
-		RHI::Viewport viewport{};
-		viewport.width = static_cast<float>(m_width);
-		viewport.height = static_cast<float>(m_height);
-		viewport.x = 0.f;
-		viewport.y = 0.f;
-		viewport.minDepth = 0.f;
-		viewport.maxDepth = 1.f;
+		//RHI::Rect2D scissor = { 0, 0, m_width, m_height };
+		//RHI::Viewport viewport{};
+		//viewport.width = static_cast<float>(m_width);
+		//viewport.height = static_cast<float>(m_height);
+		//viewport.x = 0.f;
+		//viewport.y = 0.f;
+		//viewport.minDepth = 0.f;
+		//viewport.maxDepth = 1.f;
 
-		m_commandBuffer->SetViewports({ viewport });
-		m_commandBuffer->SetScissors({ scissor });
+		//m_commandBuffer->SetViewports({ viewport });
+		//m_commandBuffer->SetScissors({ scissor });
 
-		// Render target barrier
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::PixelShaderRead;
-			barrier.newState = RHI::ResourceState::RenderTarget;
-			barrier.resource = m_outputImage;
+		//// Render target barrier
+		//{
+		//	RHI::ResourceBarrierInfo barrier{};
+		//	barrier.oldState = RHI::ResourceState::PixelShaderRead;
+		//	barrier.newState = RHI::ResourceState::RenderTarget;
+		//	barrier.resource = m_outputImage;
 
-			m_commandBuffer->ResourceBarrier({ barrier });
-		}
+		//	m_commandBuffer->ResourceBarrier({ barrier });
+		//}
 
-		RHI::AttachmentInfo attInfo{};
-		attInfo.view = m_outputImage->GetView();
-		attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
-		attInfo.clearMode = RHI::ClearMode::Clear;
+		//RHI::AttachmentInfo attInfo{};
+		//attInfo.view = m_outputImage->GetView();
+		//attInfo.clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
+		//attInfo.clearMode = RHI::ClearMode::Clear;
 
-		RHI::AttachmentInfo depthInfo{};
-		depthInfo.view = m_depthImage->GetView();
-		depthInfo.clearColor = { 0.f, 1.f, 0.f, 0.f };
-		depthInfo.clearMode = RHI::ClearMode::Clear;
+		//RHI::AttachmentInfo depthInfo{};
+		//depthInfo.view = m_depthImage->GetView();
+		//depthInfo.clearColor = { 0.f, 1.f, 0.f, 0.f };
+		//depthInfo.clearMode = RHI::ClearMode::Clear;
 
-		RHI::RenderingInfo renderingInfo{};
-		renderingInfo.colorAttachments = { attInfo };
-		renderingInfo.renderArea = scissor;
-		renderingInfo.depthAttachmentInfo = depthInfo;
+		//RHI::RenderingInfo renderingInfo{};
+		//renderingInfo.colorAttachments = { attInfo };
+		//renderingInfo.renderArea = scissor;
+		//renderingInfo.depthAttachmentInfo = depthInfo;
 
-		m_commandBuffer->BeginRendering(renderingInfo);
-		m_commandBuffer->BindPipeline(m_renderPipeline);
-		m_commandBuffer->BindDescriptorTable(m_descriptorTable);
+		//m_commandBuffer->BeginRendering(renderingInfo);
+		//m_commandBuffer->BindPipeline(m_renderPipeline);
+		//m_commandBuffer->BindDescriptorTable(m_descriptorTable);
 
-		m_commandBuffer->DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+		//m_commandBuffer->DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 
-		m_commandBuffer->EndRendering();
+		//m_commandBuffer->EndRendering();
 
-		// Shader read barrier
-		{
-			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::RenderTarget;
-			barrier.newState = RHI::ResourceState::PixelShaderRead;
-			barrier.resource = m_outputImage;
+		//// Shader read barrier
+		//{
+		//	RHI::ResourceBarrierInfo barrier{};
+		//	barrier.oldState = RHI::ResourceState::RenderTarget;
+		//	barrier.newState = RHI::ResourceState::PixelShaderRead;
+		//	barrier.resource = m_outputImage;
 
-			m_commandBuffer->ResourceBarrier({ barrier });
-		}
+		//	m_commandBuffer->ResourceBarrier({ barrier });
+		//}
 
-		m_commandBuffer->End();
-		m_commandBuffer->Execute();
+		//m_commandBuffer->End();
+		//m_commandBuffer->Execute();
 	}
 
 	void SceneRendererNew::Invalidate()

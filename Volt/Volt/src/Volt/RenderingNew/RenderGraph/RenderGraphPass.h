@@ -9,12 +9,13 @@
 namespace Volt
 {
 	class RenderGraph;
+	class RenderContext;
 
 	struct RenderGraphPassNodeBase
 	{
 		std::string_view name;
 		
-		uint32_t passIndex = 0;
+		uint32_t index = 0;
 		uint32_t refCount = 0;
 
 		bool isComputePass = false;
@@ -25,7 +26,7 @@ namespace Volt
 		std::vector<RenderGraphResourceHandle> resourceWrites;
 		std::vector<RenderGraphResourceHandle> resourceCreates;
 
-		virtual void Execute(RenderGraph& frameGraph) = 0;
+		virtual void Execute(RenderGraph& frameGraph, RenderContext& context) = 0;
 
 		const bool ReadsResource(RenderGraphResourceHandle handle) const;
 		const bool WritesResource(RenderGraphResourceHandle handle) const;
@@ -37,12 +38,12 @@ namespace Volt
 	struct RenderGraphPassNode : public RenderGraphPassNodeBase
 	{
 		T data{};
-		std::function<void(const T& data, const RenderGraphPassResources& resources)> executeFunction;
+		std::function<void(const T& data, RenderContext& context, const RenderGraphPassResources& resources)> executeFunction;
 
-		void Execute(RenderGraph& renderGraph) override
+		void Execute(RenderGraph& renderGraph, RenderContext& context) override
 		{
 			RenderGraphPassResources resources{ renderGraph, *this };
-			executeFunction(data, resources);
+			executeFunction(data, context, resources);
 		}
 	};
 }

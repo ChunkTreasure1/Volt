@@ -14,9 +14,9 @@ namespace Volt::RHI
 		~VulkanRenderPipeline() override;
 		
 		void Invalidate() override;
+		Ref<Shader> GetShader() const override;
 
 		inline VkPipelineLayout_T* GetPipelineLayout() const { return m_pipelineLayout; }
-		inline Ref<Shader> GetShader() const { return m_createInfo.shader; }
 
 	protected:
 		void* GetHandleImpl() const override;

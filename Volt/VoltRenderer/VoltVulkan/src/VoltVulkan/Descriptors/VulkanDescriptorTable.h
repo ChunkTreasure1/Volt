@@ -43,7 +43,7 @@ namespace Volt::RHI
 	class VulkanDescriptorTable : public DescriptorTable
 	{
 	public:
-		VulkanDescriptorTable(const DescriptorTableSpecification& specification);
+		VulkanDescriptorTable(const DescriptorTableCreateInfo& specification);
 		~VulkanDescriptorTable() override;
 
 		void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) override;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderGraphResourceHandle.h"
+#include "RenderGraphResource.h"
 
 #include <VoltRHI/Images/Image2D.h>
 
@@ -28,11 +28,21 @@ namespace Volt
 	{
 		RenderGraphImageDesc description{};
 		bool isExternal = false;
+
+		inline static constexpr ResourceType GetResourceType()
+		{
+			return ResourceType::Image;
+		}
 	};
 
 	struct RenderGraphTexture3D
 	{
 		RenderGraphImageDesc description{};
 		bool isExternal = false;
+
+		inline static constexpr ResourceType GetResourceType()
+		{
+			return ResourceType::Image;
+		}
 	};
 }
