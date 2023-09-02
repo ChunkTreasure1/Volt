@@ -42,7 +42,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void* D3D12Swapchain::GetHandleImpl()
+	void* D3D12Swapchain::GetHandleImpl() const
 	{
 		return nullptr;
 	}

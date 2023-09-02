@@ -21,7 +21,7 @@ namespace Volt::RHI
 		D3D12CommandBuffer(const uint32_t count, QueueType queueType, bool swapchainTarget);
 		~D3D12CommandBuffer() override;
 
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 		void Begin() override;
 		void End() override;
 		void Execute() override;

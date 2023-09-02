@@ -18,7 +18,7 @@ namespace Volt::RHI
 		CompilationResult TryCompileImpl(const Specification& specification, Shader& shader) override;
 		void AddMacroImpl(const std::string& macroName) override;
 		void RemoveMacroImpl(std::string_view macroName) override;
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		struct ShaderStageData

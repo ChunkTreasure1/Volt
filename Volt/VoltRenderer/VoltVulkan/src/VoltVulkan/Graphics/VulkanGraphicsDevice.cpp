@@ -79,7 +79,7 @@ namespace Volt::RHI
 	{
 		m_physicalDevice = std::reinterpret_pointer_cast<VulkanPhysicalGraphicsDevice>(createInfo.physicalDevice);
 
-		VulkanPhysicalGraphicsDevice& physicalDevicePtr = m_physicalDevice.lock()->AsRef<VulkanPhysicalGraphicsDevice>();
+		VulkanPhysicalGraphicsDevice& physicalDevicePtr = m_physicalDevice->AsRef<VulkanPhysicalGraphicsDevice>();
 		const auto& queueFamilies = physicalDevicePtr.GetQueueFamilies();
 
 		std::array<VkDeviceQueueCreateInfo, 3> deviceQueueInfos{};
@@ -171,7 +171,7 @@ namespace Volt::RHI
 		return m_physicalDevice;
 	}
 
-	void* VulkanGraphicsDevice::GetHandleImpl()
+	void* VulkanGraphicsDevice::GetHandleImpl() const
 	{
 		return m_device;
 	}

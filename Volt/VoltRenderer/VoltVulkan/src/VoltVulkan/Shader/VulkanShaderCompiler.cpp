@@ -377,7 +377,7 @@ namespace Volt::RHI
 		return !failed;
 	}
 
-	void* VulkanShaderCompiler::GetHandleImpl()
+	void* VulkanShaderCompiler::GetHandleImpl() const
 	{
 		return nullptr;
 	}

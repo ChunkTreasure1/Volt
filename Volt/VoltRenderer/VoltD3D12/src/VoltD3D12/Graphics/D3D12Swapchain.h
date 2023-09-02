@@ -29,7 +29,7 @@ namespace Volt::RHI
 		D3D12Swapchain(GLFWwindow* window);
 		~D3D12Swapchain() override;
 	
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 		void BeginFrame() override;
 		void Present() override;
 		void Resize(const uint32_t width, const uint32_t height, bool enableVSync) override;

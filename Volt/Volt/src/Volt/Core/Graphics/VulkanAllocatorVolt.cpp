@@ -227,7 +227,7 @@ namespace Volt
 	{
 		s_allocatorData = new VulkanAllocatorData();
 
-		auto physDevicePtr = graphicsDevice->GetPhysicalDevice().lock();
+		auto physDevicePtr = graphicsDevice->GetPhysicalDevice();
 
 		VmaAllocatorCreateInfo info{};
 		info.vulkanApiVersion = VK_API_VERSION_1_3;

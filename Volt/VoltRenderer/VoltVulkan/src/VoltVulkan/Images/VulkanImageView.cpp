@@ -16,7 +16,7 @@ namespace Volt::RHI
 	VulkanImageView::VulkanImageView(const ImageViewSpecification& specification)
 		: m_specification(specification)
 	{
-		auto image = specification.image.lock();
+		auto image = specification.image;
 		const auto format = image->GetFormat();
 
 		VkImageAspectFlags aspectMask = Utility::IsDepthFormat(format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
@@ -28,7 +28,7 @@ namespace Volt::RHI
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.viewType = Utility::VoltToVulkanViewType(specification.viewType);
-		viewInfo.format = Utility::VoltToVulkanFormat(specification.image.lock()->GetFormat());
+		viewInfo.format = Utility::VoltToVulkanFormat(specification.image->GetFormat());
 		viewInfo.flags = 0;
 		viewInfo.subresourceRange = {};
 		viewInfo.subresourceRange.aspectMask = aspectMask;
@@ -55,10 +55,10 @@ namespace Volt::RHI
 
 	const Format VulkanImageView::GetFormat() const
 	{
-		return m_specification.image.lock()->GetFormat();
+		return m_specification.image->GetFormat();
 	}
 
-	void* VulkanImageView::GetHandleImpl()
+	void* VulkanImageView::GetHandleImpl() const
 	{
 		return m_imageView;
 	}

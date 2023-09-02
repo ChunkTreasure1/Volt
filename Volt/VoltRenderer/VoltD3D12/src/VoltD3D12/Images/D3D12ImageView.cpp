@@ -16,7 +16,7 @@ namespace Volt::RHI
 	{
 		m_view = new CD3DX12_CPU_DESCRIPTOR_HANDLE;
 
-		auto image = specification.image.lock()->As<D3D12Image2D>();
+		auto image = specification.image->As<D3D12Image2D>();
 
 		auto allocImage = image->GetHandle<AllocatedImage*>();
 		auto device = GraphicsContext::GetDevice()->GetHandle<ID3D12Device2*>();
@@ -37,7 +37,7 @@ namespace Volt::RHI
 
 
 
-	void* D3D12ImageView::GetHandleImpl()
+	void* D3D12ImageView::GetHandleImpl() const
 	{
 		return m_view;
 	}

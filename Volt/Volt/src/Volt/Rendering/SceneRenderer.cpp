@@ -2299,12 +2299,12 @@
 //
 //	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image)
 //	{
-//		UpdateGlobalDescriptorSet(globalDescriptorSet, set, binding, index, image, image.lock()->GetLayout());
+//		UpdateGlobalDescriptorSet(globalDescriptorSet, set, binding, index, image, image->GetLayout());
 //	}
 //
 //	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image, VkImageLayout targetLayout)
 //	{
-//		//auto imagePtr = image.lock();
+//		//auto imagePtr = image;
 //
 //		VkDescriptorImageInfo descriptorInfo{};
 //		//descriptorInfo.imageLayout = targetLayout;
@@ -2320,7 +2320,7 @@
 //
 //	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image3D> image)
 //	{
-//		//auto imagePtr = image.lock();
+//		//auto imagePtr = image;
 //
 //		//VkDescriptorImageInfo descriptorInfo{};
 //		//descriptorInfo.imageLayout = imagePtr->GetLayout();
@@ -2340,7 +2340,7 @@
 //
 //		//for (const auto& image : images)
 //		//{
-//		//	auto imagePtr = image.lock();
+//		//	auto imagePtr = image;
 //		//	auto& descriptorInfo = descriptorInfos.emplace_back();
 //
 //		//	descriptorInfo.imageLayout = targetLayout;
@@ -3174,7 +3174,7 @@
 //			const auto outputImage = resources.GetImageResource(data.skybox);
 //
 //			myPreethamPipeline->Clear(currentIndex);
-//			myPreethamPipeline->SetImage(outputImage.image.lock(), 0, 0, ImageAccess::Write);
+//			myPreethamPipeline->SetImage(outputImage.image, 0, 0, ImageAccess::Write);
 //			myPreethamPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //			myPreethamPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushData, sizeof(PreethamData));
 //			myPreethamPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), cubeMapSize / groupSize, cubeMapSize / groupSize, 6, currentIndex);
@@ -3232,13 +3232,13 @@
 //			if (myEnvironmentSettings.radianceMap)
 //			{
 //				const auto& envResource = resources.GetImageResource(data.radianceImage);
-//				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, envResource.image.lock());
+//				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, envResource.image);
 //			}
 //			else
 //			{
 //				const auto& preethamSkyData = frameGraph.GetBlackboard().Get<PreethamSkyData>();
 //				const auto& preethamResource = resources.GetImageResource(preethamSkyData.skybox);
-//				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, preethamResource.image.lock());
+//				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, preethamResource.image);
 //			}
 //
 //			mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->SetValue("intensity", myEnvironmentSettings.intensity);
@@ -3378,11 +3378,11 @@
 //
 //			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 //
-//			shadingPipeline->SetImage(albedoResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-//			shadingPipeline->SetImage(materialEmissiveResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-//			shadingPipeline->SetImage(normalEmissiveResource.image.lock(), Sets::OTHER, 2, ImageAccess::Read);
-//			shadingPipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 3, ImageAccess::Read);
-//			shadingPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 4, ImageAccess::Write);
+//			shadingPipeline->SetImage(albedoResource.image, Sets::OTHER, 0, ImageAccess::Read);
+//			shadingPipeline->SetImage(materialEmissiveResource.image, Sets::OTHER, 1, ImageAccess::Read);
+//			shadingPipeline->SetImage(normalEmissiveResource.image, Sets::OTHER, 2, ImageAccess::Read);
+//			shadingPipeline->SetImage(depthResource.image, Sets::OTHER, 3, ImageAccess::Read);
+//			shadingPipeline->SetImage(targetResource.image, Sets::OTHER, 4, ImageAccess::Write);
 //
 //			shadingPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //			shadingPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets[Sets::RENDERER_BUFFERS]->GetOrAllocateDescriptorSet(currentIndex), Sets::RENDERER_BUFFERS);
@@ -3399,8 +3399,8 @@
 //
 //			constexpr uint32_t threadCount = 8;
 //
-//			const uint32_t dispatchX = std::max(1u, (targetResource.image.lock()->GetWidth() / threadCount) + 1);
-//			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
+//			const uint32_t dispatchX = std::max(1u, (targetResource.image->GetWidth() / threadCount) + 1);
+//			const uint32_t dispatchY = std::max(1u, (targetResource.image->GetHeight() / threadCount) + 1);
 //			Renderer::DispatchComputePipeline(commandBuffer, shadingPipeline, dispatchX, dispatchY, 1);
 //
 //			shadingPipeline->ClearAllResources();
@@ -3450,7 +3450,7 @@
 //
 //			for (const auto& decalCmd : commands)
 //			{
-//				decalCmd.material->GetSubMaterialAt(0)->Set(0, depthResource.image.lock());
+//				decalCmd.material->GetSubMaterialAt(0)->Set(0, depthResource.image);
 //				decalCmd.material->GetSubMaterialAt(0)->SetValue("targetSize", myRenderSize);
 //				decalCmd.material->GetSubMaterialAt(0)->SetValue("transform", decalCmd.transform);
 //				decalCmd.material->GetSubMaterialAt(0)->SetValue("materialIndex", Renderer::GetBindlessData().materialTable->GetIndexFromMaterial(decalCmd.material->TryGetSubMaterialAt(0).get()));
@@ -3751,14 +3751,14 @@
 //				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 //				const auto& outputBlurImage = resources.GetImageResource(data.blurOne);
 //
-//				auto diffuseImage = diffuseInputImage.image.lock();
+//				auto diffuseImage = diffuseInputImage.image;
 //				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), diffuseImage->GetHandle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
 //
 //				diffuseImage->TransitionToLayout(commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 //
-//				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-//				mySSSBlurPipeline[0]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-//				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+//				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image, Sets::OTHER, 0, ImageAccess::Read);
+//				mySSSBlurPipeline[0]->SetImage(depthInputImage.image, Sets::OTHER, 1, ImageAccess::Read);
+//				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image, Sets::OTHER, 2, ImageAccess::Write);
 //
 //				mySSSBlurPipeline[0]->Bind(commandBuffer->GetCurrentCommandBuffer());
 //				mySSSBlurPipeline[0]->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
@@ -3766,8 +3766,8 @@
 //
 //				constexpr uint32_t threadCount = 16;
 //
-//				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image.lock()->GetWidth() / threadCount) + 1);
-//				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image.lock()->GetHeight() / threadCount) + 1);
+//				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image->GetWidth() / threadCount) + 1);
+//				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image->GetHeight() / threadCount) + 1);
 //
 //				ImageBarrierInfo imageBarrier{};
 //				imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
@@ -3794,12 +3794,12 @@
 //				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 //				const auto& outputBlurImage = resources.GetImageResource(data.blurTwo);
 //
-//				auto outputImage = outputBlurImage.image.lock();
+//				auto outputImage = outputBlurImage.image;
 //				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), outputImage->GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, subresourceRange);
 //
-//				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-//				mySSSBlurPipeline[1]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-//				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+//				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image, Sets::OTHER, 0, ImageAccess::Read);
+//				mySSSBlurPipeline[1]->SetImage(depthInputImage.image, Sets::OTHER, 1, ImageAccess::Read);
+//				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image, Sets::OTHER, 2, ImageAccess::Write);
 //
 //				mySSSBlurPipeline[1]->Bind(commandBuffer->GetCurrentCommandBuffer());
 //				mySSSBlurPipeline[1]->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
@@ -3807,8 +3807,8 @@
 //
 //				constexpr uint32_t threadCount = 16;
 //
-//				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image.lock()->GetWidth() / threadCount) + 1);
-//				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image.lock()->GetHeight() / threadCount) + 1);
+//				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image->GetWidth() / threadCount) + 1);
+//				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image->GetHeight() / threadCount) + 1);
 //
 //				Renderer::DispatchComputePipeline(commandBuffer, mySSSBlurPipeline[1], dispatchX, dispatchY, 1);
 //			}
@@ -3839,14 +3839,14 @@
 //			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 //			const auto& sssBlurResource = resources.GetImageResource(blurData.blurTwo);
 //
-//			mySSSCompositePipeline->SetImage(sssBlurResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-//			mySSSCompositePipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
+//			mySSSCompositePipeline->SetImage(sssBlurResource.image, Sets::OTHER, 0, ImageAccess::Read);
+//			mySSSCompositePipeline->SetImage(outputImageResource.image, Sets::OTHER, 1, ImageAccess::Write);
 //			mySSSCompositePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //
 //			constexpr uint32_t threadCount = 16;
 //
-//			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-//			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+//			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+//			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 //
 //			Renderer::DispatchComputePipeline(commandBuffer, mySSSCompositePipeline, dispatchX, dispatchY, 1);
 //			EndTimestamp();
@@ -3984,8 +3984,8 @@
 //			const auto& accumResource = resources.GetImageResource(forwardTransparentData.accumulation);
 //			const auto& revealResource = resources.GetImageResource(forwardTransparentData.revealage);
 //
-//			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(0, accumResource.image.lock());
-//			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(1, revealResource.image.lock());
+//			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(0, accumResource.image);
+//			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(1, revealResource.image);
 //
 //			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 //			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, myTransparentCompositeMaterial, myGlobalDescriptorSets);
@@ -4091,14 +4091,14 @@
 //			const auto& srcColorResource = resources.GetImageResource(skyboxData.outputImage);
 //			const auto& targetResource = resources.GetImageResource(data.luminosityImage);
 //
-//			myLuminosityPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-//			myLuminosityPipeline->SetImage(srcColorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+//			myLuminosityPipeline->SetImage(targetResource.image, Sets::OTHER, 0, ImageAccess::Write);
+//			myLuminosityPipeline->SetImage(srcColorResource.image, Sets::OTHER, 1, ImageAccess::Read);
 //			myLuminosityPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //
 //			constexpr uint32_t threadCount = 8;
 //
-//			const uint32_t dispatchX = std::max(1u, (targetResource.image.lock()->GetWidth() / threadCount) + 1);
-//			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
+//			const uint32_t dispatchX = std::max(1u, (targetResource.image->GetWidth() / threadCount) + 1);
+//			const uint32_t dispatchY = std::max(1u, (targetResource.image->GetHeight() / threadCount) + 1);
 //
 //			Renderer::DispatchComputePipeline(commandBuffer, myLuminosityPipeline, dispatchX, dispatchY, 1);
 //
@@ -4135,7 +4135,7 @@
 //				BeginTimestamp(name);
 //
 //				const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
-//				postMaterial->Render(commandBuffer, outputImageResource.image.lock());
+//				postMaterial->Render(commandBuffer, outputImageResource.image);
 //				EndTimestamp();
 //			});
 //		}
@@ -4160,13 +4160,13 @@
 //
 //			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 //
-//			myACESPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+//			myACESPipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
 //			myACESPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //
 //			constexpr uint32_t threadCount = 8;
 //
-//			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-//			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+//			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+//			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 //
 //			Renderer::DispatchComputePipeline(commandBuffer, myACESPipeline, dispatchX, dispatchY, 1);
 //			EndTimestamp();
@@ -4192,13 +4192,13 @@
 //
 //			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 //
-//			myGammaCorrectionPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+//			myGammaCorrectionPipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
 //			myGammaCorrectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //
 //			constexpr uint32_t threadCount = 8;
 //
-//			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-//			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+//			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+//			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 //
 //			Renderer::DispatchComputePipeline(commandBuffer, myGammaCorrectionPipeline, dispatchX, dispatchY, 1);
 //			EndTimestamp();
@@ -4414,7 +4414,7 @@
 //			myLightCullPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 //			myLightCullPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &cullData, sizeof(LightCullData));
 //
-//			myLightCullPipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
+//			myLightCullPipeline->SetImage(depthResource.image, Sets::OTHER, 0, ImageAccess::Read);
 //			myLightCullPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(commandBuffer->GetCurrentIndex()), Sets::RENDERER_BUFFERS);
 //
 //			{
@@ -4491,8 +4491,8 @@
 //			const auto& colorHistoryResource = resources.GetImageResource(skyboxData.outputImage);
 //			const auto& motionVectorResource = resources.GetImageResource(motionVectorData.currentDepth);
 //
-//			myHistoryColor->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), colorHistoryResource.image.lock());
-//			myHistoryDepth->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), motionVectorResource.image.lock());
+//			myHistoryColor->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), colorHistoryResource.image);
+//			myHistoryDepth->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), motionVectorResource.image);
 //		});
 //	}
 //

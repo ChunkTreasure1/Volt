@@ -54,7 +54,7 @@ namespace Volt::RHI
 		[[nodiscard]] inline static VulkanSwapchain& Get() { return *s_instance; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 	
 	private:
 		inline static VulkanSwapchain* s_instance = nullptr;

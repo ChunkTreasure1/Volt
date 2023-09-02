@@ -19,7 +19,7 @@ namespace Volt::RHI
 		Weak<VulkanPhysicalGraphicsDevice> GetPhysicalDevice() const;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		VkDevice_T* m_device = nullptr;

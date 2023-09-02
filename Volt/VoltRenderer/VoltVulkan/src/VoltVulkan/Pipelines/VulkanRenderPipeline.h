@@ -19,7 +19,7 @@ namespace Volt::RHI
 		inline Ref<Shader> GetShader() const { return m_createInfo.shader; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		void Release();

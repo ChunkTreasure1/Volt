@@ -43,9 +43,9 @@ namespace Volt::RHI
 
 	}
 
-	void* D3D12Image2D::GetHandleImpl()
+	void* D3D12Image2D::GetHandleImpl() const 
 	{
-		return &m_image;
+		return const_cast<void*>(reinterpret_cast<const void*>(&m_image));
 	}
 
 	void D3D12Image2D::Invalidate(const uint32_t width, const uint32_t height, const void* data)

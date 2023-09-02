@@ -129,9 +129,9 @@ namespace Volt
 		if (in_event.GetEventType() == Volt::EventType::OnSceneLoaded)
 		{
 			m_backend->m_registry.Clear();
-			for (auto entId : SceneManager::GetActiveScene().lock().get()->GetAllEntitiesWith<NetActorComponent>())
+			for (auto entId : SceneManager::GetActiveScene()->GetAllEntitiesWith<NetActorComponent>())
 			{
-				auto sceneEnt = Entity(entId, SceneManager::GetActiveScene().lock().get());
+				auto sceneEnt = Entity(entId, SceneManager::GetActiveScene().Get());
 				auto netComp = sceneEnt.GetComponent<NetActorComponent>();
 				auto prefabComp = sceneEnt.GetComponent<PrefabComponent>();
 				auto repEnt = Volt::RepEntity(entId, netComp.clientId, prefabComp.prefabAsset, true);

@@ -9,6 +9,7 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		VulkanStorageBuffer(const size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 		~VulkanStorageBuffer() override;
 
 		void ResizeByteSize(const size_t byteSize) override;
@@ -26,7 +27,7 @@ namespace Volt::RHI
 		void SetName(std::string_view name) override;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 		void* MapInternal() override;
 
 	private:

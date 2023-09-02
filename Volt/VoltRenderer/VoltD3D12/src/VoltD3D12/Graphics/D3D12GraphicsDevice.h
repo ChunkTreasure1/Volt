@@ -17,7 +17,7 @@ namespace Volt::RHI
 
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		ID3D12Device2* m_device;

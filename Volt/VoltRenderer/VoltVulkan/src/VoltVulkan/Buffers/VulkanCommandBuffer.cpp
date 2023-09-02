@@ -368,11 +368,11 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::BindPipeline(Ref<RenderPipeline> pipeline)
 	{
-		m_currentComputePipeline.reset();
+		m_currentComputePipeline.Reset();
 
 		if (pipeline == nullptr)
 		{
-			m_currentRenderPipeline.reset();
+			m_currentRenderPipeline.Reset();
 			return;
 		}
 
@@ -386,11 +386,11 @@ namespace Volt::RHI
 
 	void VulkanCommandBuffer::BindPipeline(Ref<ComputePipeline> pipeline)
 	{
-		m_currentRenderPipeline.reset();
+		m_currentRenderPipeline.Reset();
 
 		if (pipeline == nullptr)
 		{
-			m_currentComputePipeline.reset();
+			m_currentComputePipeline.Reset();
 			return;
 		}
 
@@ -438,7 +438,7 @@ namespace Volt::RHI
 
 		vulkanDescriptorTable.Update(index);
 
-		VkPipelineBindPoint bindPoint = m_currentRenderPipeline.expired() ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
+		VkPipelineBindPoint bindPoint = m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
 
 		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
 		for (const auto& [set, sets] : vulkanDescriptorTable.GetDescriptorSets())
@@ -458,17 +458,17 @@ namespace Volt::RHI
 		{
 			auto& newInfo = colorAttachmentInfo.emplace_back();
 			newInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-			newInfo.imageView = colorAtt.view.lock()->GetHandle<VkImageView>();
+			newInfo.imageView = colorAtt.view->GetHandle<VkImageView>();
 			newInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 			newInfo.loadOp = Utility::VoltToVulkanLoadOp(colorAtt.clearMode);
 			newInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			newInfo.clearValue = { colorAtt.clearColor[0], colorAtt.clearColor[1], colorAtt.clearColor[2], colorAtt.clearColor[3] };
 		}
 
-		if (!renderingInfo.depthAttachmentInfo.view.expired())
+		if (!renderingInfo.depthAttachmentInfo.view)
 		{
 			depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-			depthAttachmentInfo.imageView = renderingInfo.depthAttachmentInfo.view.lock()->GetHandle<VkImageView>();
+			depthAttachmentInfo.imageView = renderingInfo.depthAttachmentInfo.view->GetHandle<VkImageView>();
 			depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 			depthAttachmentInfo.loadOp = Utility::VoltToVulkanLoadOp(renderingInfo.depthAttachmentInfo.clearMode);
 			depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -483,7 +483,7 @@ namespace Volt::RHI
 		vkRenderingInfo.pColorAttachments = colorAttachmentInfo.data();
 		vkRenderingInfo.pStencilAttachment = nullptr;
 
-		if (!renderingInfo.depthAttachmentInfo.view.expired())
+		if (!renderingInfo.depthAttachmentInfo.view)
 		{
 			vkRenderingInfo.pDepthAttachment = &depthAttachmentInfo;
 		}
@@ -511,7 +511,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
 	{
 #ifndef VT_DIST
-		if (m_currentRenderPipeline.expired() && m_currentComputePipeline.expired())
+		if (!m_currentRenderPipeline && !m_currentComputePipeline)
 		{
 			GraphicsContext::LogTagged(Severity::Error, "[VulkanCommandBuffer]", "Unable to push constants as no pipeline is currently bound!");
 		}
@@ -523,15 +523,15 @@ namespace Volt::RHI
 		VkPipelineLayout pipelineLayout = nullptr;
 		VkPipelineStageFlags stageFlags = 0;
 
-		if (!m_currentRenderPipeline.expired())
+		if (m_currentRenderPipeline)
 		{
-			auto& vkPipeline = m_currentRenderPipeline.lock()->AsRef<VulkanRenderPipeline>();
+			auto& vkPipeline = m_currentRenderPipeline->AsRef<VulkanRenderPipeline>();
 			pipelineLayout = vkPipeline.GetPipelineLayout();
 			stageFlags = static_cast<VkPipelineStageFlags>(vkPipeline.GetShader()->GetResources().constants.stageFlags);
 		}
 		else
 		{
-			auto& vkPipeline = m_currentComputePipeline.lock()->AsRef<VulkanComputePipeline>();
+			auto& vkPipeline = m_currentComputePipeline->AsRef<VulkanComputePipeline>();
 			pipelineLayout = vkPipeline.GetPipelineLayout();
 			stageFlags = static_cast<VkPipelineStageFlags>(vkPipeline.GetShader()->GetResources().constants.stageFlags);
 		}
@@ -925,7 +925,7 @@ namespace Volt::RHI
 		return m_commandBuffers.at(m_currentCommandBufferIndex).fence;
 	}
 
-	void* VulkanCommandBuffer::GetHandleImpl()
+	void* VulkanCommandBuffer::GetHandleImpl() const
 	{
 		return m_commandBuffers.at(m_currentCommandBufferIndex).commandBuffer;
 	}
@@ -1121,14 +1121,14 @@ namespace Volt::RHI
 	{
 		VkPipelineLayout pipelineLayout = nullptr;
 
-		if (!m_currentRenderPipeline.expired())
+		if (m_currentRenderPipeline)
 		{
-			auto& vkPipeline = m_currentRenderPipeline.lock()->AsRef<VulkanRenderPipeline>();
+			auto& vkPipeline = m_currentRenderPipeline->AsRef<VulkanRenderPipeline>();
 			pipelineLayout = vkPipeline.GetPipelineLayout();
 		}
 		else
 		{
-			auto& vkPipeline = m_currentComputePipeline.lock()->AsRef<VulkanComputePipeline>();
+			auto& vkPipeline = m_currentComputePipeline->AsRef<VulkanComputePipeline>();
 			pipelineLayout = vkPipeline.GetPipelineLayout();
 		}
 

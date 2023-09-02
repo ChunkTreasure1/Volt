@@ -75,14 +75,14 @@ namespace GraphKey
 
 		const uint32_t currentFrame = anim->GetFrameFromStartTime(animGraph->GetStartTime(), speed);
 		const int32_t animationIndex = character->GetAnimationIndexFromHandle(animHandle);
-		if (myGraph->GetEntity() != Wire::NullID && Volt::SceneManager::GetActiveScene().lock() && animationIndex != -1 && character->HasAnimationEvents((uint32_t)animationIndex))
+		if (myGraph->GetEntity() != Wire::NullID && Volt::SceneManager::GetActiveScene() && animationIndex != -1 && character->HasAnimationEvents((uint32_t)animationIndex))
 		{
 			const auto& animEvents = character->GetAnimationEvents((uint32_t)animationIndex);
 			for (const auto& event : animEvents)
 			{
 				if (event.frame == currentFrame && (int32_t)currentFrame != myLastFrame)
 				{
-					Volt::Entity entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+					Volt::Entity entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().Get() };
 					if (!entity)
 					{
 						continue;

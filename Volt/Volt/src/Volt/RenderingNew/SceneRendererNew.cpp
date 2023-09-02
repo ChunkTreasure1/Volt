@@ -195,7 +195,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (m_scene.lock()->GetRenderScene()->IsInvalid())
+		if (m_scene->GetRenderScene()->IsInvalid())
 		{
 			Invalidate();
 		}
@@ -372,8 +372,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = m_scene.lock();
-		auto renderScene = scenePtr->GetRenderScene();
+		auto renderScene = m_scene->GetRenderScene();
 
 		renderScene->PrepareForUpdate();
 		const uint32_t individualMeshCount = renderScene->GetIndividualMeshCount();
@@ -434,7 +433,7 @@ namespace Volt
 				m_descriptorTable->SetBufferView(obj.mesh->GetIndexStorageBuffer()->GetView(), 4, 0, meshIndex);
 			}
 
-			Entity entity{ obj.entity, m_scene.lock().get() };
+			Entity entity{ obj.entity, m_scene.Get() };
 
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
 
@@ -467,7 +466,7 @@ namespace Volt
 		m_indirectDrawDataBuffer->Unmap();
 		m_indirectCommandsBuffer->Unmap();
 
-		m_scene.lock()->GetRenderScene()->SetValid();
+		m_scene->GetRenderScene()->SetValid();
 	}
 
 	void SceneRendererNew::UpdateBuffers(Ref<Camera> camera)
@@ -498,8 +497,7 @@ namespace Volt
 
 	void SceneRendererNew::UpdateLightBuffers()
 	{
-		auto scenePtr = m_scene.lock();
-		auto& registry = scenePtr->GetRegistry();
+		auto& registry = m_scene->GetRegistry();
 
 		// Directional Light
 		{
@@ -512,7 +510,7 @@ namespace Volt
 					return;
 				}
 
-				Entity entity = { id, scenePtr.get() };
+				Entity entity = { id, m_scene.Get() };
 
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
 				dirLightData.direction = glm::vec4{ dir.x, dir.y, dir.z, 0.f };
@@ -528,10 +526,10 @@ namespace Volt
 	{
 		for (uint32_t index = 0; const auto & mesh : renderScene.GetIndividualMeshes())
 		{
-			m_descriptorTable->SetBufferView(mesh.lock()->GetVertexPositionsBuffer()->GetView(), 1, 0, index);
-			m_descriptorTable->SetBufferView(mesh.lock()->GetVertexMaterialBuffer()->GetView(), 2, 0, index);
-			m_descriptorTable->SetBufferView(mesh.lock()->GetVertexAnimationBuffer()->GetView(), 3, 0, index);
-			m_descriptorTable->SetBufferView(mesh.lock()->GetIndexStorageBuffer()->GetView(), 4, 0, index);
+			m_descriptorTable->SetBufferView(mesh->GetVertexPositionsBuffer()->GetView(), 1, 0, index);
+			m_descriptorTable->SetBufferView(mesh->GetVertexMaterialBuffer()->GetView(), 2, 0, index);
+			m_descriptorTable->SetBufferView(mesh->GetVertexAnimationBuffer()->GetView(), 3, 0, index);
+			m_descriptorTable->SetBufferView(mesh->GetIndexStorageBuffer()->GetView(), 4, 0, index);
 			index++;
 		}
 	}

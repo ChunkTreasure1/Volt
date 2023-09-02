@@ -17,6 +17,11 @@ namespace Volt::RHI
 	{
 		Invalidate(elementSize * count);
 	}
+
+	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	{
+		Invalidate(size);
+	}
 	
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
@@ -87,7 +92,7 @@ namespace Volt::RHI
 		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 	
-	void* VulkanStorageBuffer::GetHandleImpl()
+	void* VulkanStorageBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();
 	}

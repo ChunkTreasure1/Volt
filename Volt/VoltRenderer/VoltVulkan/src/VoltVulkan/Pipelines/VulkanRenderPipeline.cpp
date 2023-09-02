@@ -271,7 +271,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void* VulkanRenderPipeline::GetHandleImpl()
+	void* VulkanRenderPipeline::GetHandleImpl() const
 	{
 		return m_pipeline;
 	}

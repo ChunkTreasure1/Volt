@@ -92,7 +92,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 			auto netEnt = reinterpret_pointer_cast<Volt::RepEntity>(in_registry.Get(in_data->repId));
 			if (!netEnt) { *out_error = Volt::eNetErrorCode::MISSING_NET_ENTITY; return false; }
 
-			auto sceneEnt = Volt::Entity(netEnt->GetEntityId(), Volt::SceneManager::GetActiveScene().lock().get());
+			auto sceneEnt = Volt::Entity(netEnt->GetEntityId(), Volt::SceneManager::GetActiveScene().Get());
 			if (sceneEnt.IsNull()) { *out_error = Volt::eNetErrorCode::MISSING_SCENE_ENTITY; return false; }
 
 			if (sceneEnt.HasComponent<Volt::TransformComponent>())
@@ -335,7 +335,7 @@ Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 #pragma region Transform
 Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId, int pos, int rot, int scale)
 {
-	Volt::Entity entity = Volt::Entity(in_entityId, Volt::SceneManager::GetActiveScene().lock().get());
+	Volt::Entity entity = Volt::Entity(in_entityId, Volt::SceneManager::GetActiveScene().Get());
 	Volt::RepTransformComponentData entTransform;
 	entTransform.repId = in_repId;
 	entTransform.setPos = pos;
@@ -477,8 +477,8 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepRPCData& rpcData)
 void HandleScript(Wire::EntityId in_id, const std::string& id, bool in_keep)
 {
 	if (in_keep) return;
-	auto& sceneRegistry = Volt::SceneManager::GetActiveScene().lock()->GetRegistry();
-	auto ent = Volt::Entity(in_id, Volt::SceneManager::GetActiveScene().lock().get());
+	auto& sceneRegistry = Volt::SceneManager::GetActiveScene()->GetRegistry();
+	auto ent = Volt::Entity(in_id, Volt::SceneManager::GetActiveScene().Get());
 	auto& scriptComp = sceneRegistry.GetComponent<Volt::MonoScriptComponent>(in_id);
 
 	for (uint32_t i = 0; i < scriptComp.scriptIds.size(); ++i)
@@ -497,9 +497,9 @@ void HandleComponent(Wire::EntityId in_id, const std::string& in_comp, bool in_k
 {
 	if (in_keep) return;
 
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
+	auto scenePtr = Volt::SceneManager::GetActiveScene();
 
-	auto ent = Volt::Entity(in_id, scenePtr.get());
+	auto ent = Volt::Entity(in_id, scenePtr.Get());
 	scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
 }
 
@@ -507,9 +507,9 @@ void RecursiveOwnerShipControll(Wire::EntityId in_id, const Volt::RepPrefabData&
 {
 	auto contract = Volt::NetContractContainer::GetContract(data.handle);
 
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
+	auto scenePtr = Volt::SceneManager::GetActiveScene();
 
-	auto ent = Volt::Entity(in_id, scenePtr.get());
+	auto ent = Volt::Entity(in_id, scenePtr.Get());
 	const auto prefabData = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle);
 	const auto& prefabComponent = ent.GetComponent<Volt::PrefabComponent>();
 	auto prefabRegistry = prefabData->GetRegistry();
@@ -554,7 +554,7 @@ void RecursiveOwnerShipControll(Wire::EntityId in_id, const Volt::RepPrefabData&
 // #mmax: should be called on play :P
 void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry, bool manageInstances)
 {
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock().get();
+	auto scenePtr = Volt::SceneManager::GetActiveScene().Get();
 	auto repEnt = registry->GetAs<Volt::RepEntity>(owner);
 
 	Volt::MonoScriptEngine::GetOrCreateMonoEntity(entId);
@@ -594,15 +594,15 @@ void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus:
 
 bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty& registry)
 {
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
+	auto scenePtr = Volt::SceneManager::GetActiveScene();
 
 	if (auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle))
 	{
-		auto entId = prefab->Instantiate(scenePtr.get());
+		auto entId = prefab->Instantiate(scenePtr.Get());
 		std::string tagId = " :error";
-		if (Volt::Entity(entId, scenePtr.get()).HasComponent<Volt::NetActorComponent>())
+		if (Volt::Entity(entId, scenePtr.Get()).HasComponent<Volt::NetActorComponent>())
 		{
-			auto& netActorComp = Volt::Entity(entId, scenePtr.get()).GetComponent<Volt::NetActorComponent>();
+			auto& netActorComp = Volt::Entity(entId, scenePtr.Get()).GetComponent<Volt::NetActorComponent>();
 			netActorComp.repId = data.repId;
 			netActorComp.clientId = data.ownerId;
 			switch (netActorComp.condition)
@@ -613,7 +613,7 @@ bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty&
 				default:												break;
 			}
 		}
-		auto ent = Volt::Entity(entId, scenePtr.get());
+		auto ent = Volt::Entity(entId, scenePtr.Get());
 		registry.Register(data.repId, Volt::RepEntity(entId, data.ownerId, data.handle));
 		ent.GetComponent<Volt::TagComponent>().tag = ent.GetTag() + tagId + std::to_string(data.repId);
 

@@ -51,15 +51,14 @@ PreviewRenderer::~PreviewRenderer()
 
 void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
-	if (assetItem.expired())
+	if (assetItem)
 	{
 		return;
 	}
 
-	auto itemPtr = assetItem.lock();
-	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(itemPtr->handle);
+	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(assetItem->handle);
 
-	const bool assetWasLoaded = Volt::AssetManager::Get().IsLoaded(itemPtr->handle);
+	const bool assetWasLoaded = Volt::AssetManager::Get().IsLoaded(assetItem->handle);
 
 	switch (assetType)
 	{
@@ -94,21 +93,19 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 	if (!assetWasLoaded)
 	{
-		Volt::AssetManager::Get().Unload(itemPtr->handle);
+		Volt::AssetManager::Get().Unload(assetItem->handle);
 	}
 }
 
 bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
-	auto itemPtr = assetItem.lock();
-
-	Ref<Volt::Mesh> mesh = Volt::AssetManager::QueueAsset<Volt::Mesh>(itemPtr->handle);
+	Ref<Volt::Mesh> mesh = Volt::AssetManager::QueueAsset<Volt::Mesh>(assetItem->handle);
 	if (!mesh || !mesh->IsValid())
 	{
 		return false;
 	}
 
-	myEntity.GetComponent<Volt::MeshComponent>().SetMesh(itemPtr->handle);
+	myEntity.GetComponent<Volt::MeshComponent>().SetMesh(assetItem->handle);
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
@@ -124,9 +121,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
-	auto itemPtr = assetItem.lock();
-
-	Ref<Volt::Material> material = Volt::AssetManager::QueueAsset<Volt::Material>(itemPtr->handle);
+	Ref<Volt::Material> material = Volt::AssetManager::QueueAsset<Volt::Material>(assetItem->handle);
 	if (!material || !material->IsValid())
 	{
 		return false;

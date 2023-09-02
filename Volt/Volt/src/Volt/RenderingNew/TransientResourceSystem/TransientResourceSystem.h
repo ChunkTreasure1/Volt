@@ -11,6 +11,7 @@ namespace Volt
 		class Image2D;
 		class StorageBuffer;
 		class UniformBuffer;
+		class RHIResource;
 	}
 
 	struct RenderGraphImageDesc;
@@ -27,5 +28,7 @@ namespace Volt
 		Ref<RHI::StorageBuffer> AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 		Ref<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 	private:
+
+		std::unordered_map<RenderGraphResourceHandle, Ref<RHI::RHIResource>> m_allocatedResources;
 	};
 }

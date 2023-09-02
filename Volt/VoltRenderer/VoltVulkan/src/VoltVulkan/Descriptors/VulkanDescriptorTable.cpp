@@ -210,7 +210,7 @@ namespace Volt::RHI
 		vkUpdateDescriptorSets(device->GetHandle<VkDevice>(), static_cast<uint32_t>(writeDescriptors.size()), writeDescriptorsPtr, 0, nullptr);
 	}
 
-	void* VulkanDescriptorTable::GetHandleImpl()
+	void* VulkanDescriptorTable::GetHandleImpl() const
 	{
 		return nullptr;
 	}
@@ -231,7 +231,7 @@ namespace Volt::RHI
 		m_imageInfos.clear();
 		m_bufferInfos.clear();
 
-		Ref<VulkanShader> vulkanShader = m_shader.lock()->As<VulkanShader>();
+		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
 		const auto& shaderPoolSizes = vulkanShader->GetDescriptorPoolSizes();
 
 		std::vector<VkDescriptorPoolSize> poolSizes{};
@@ -299,7 +299,7 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::BuildWriteDescriptors()
 	{
-		const auto& resources = m_shader.lock()->GetResources();
+		const auto& resources = m_shader->GetResources();
 
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -395,7 +395,7 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::InitializeInfoStructs()
 	{
-		const auto& resources = m_shader.lock()->GetResources();
+		const auto& resources = m_shader->GetResources();
 
 		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{

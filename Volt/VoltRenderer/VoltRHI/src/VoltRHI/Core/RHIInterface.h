@@ -11,7 +11,7 @@ namespace Volt::RHI
 		VT_DELETE_COMMON_OPERATORS(RHIInterface);
 
 		template<typename T>
-		constexpr T GetHandle()
+		constexpr T GetHandle() const
 		{
 			return reinterpret_cast<T>(GetHandleImpl());
 		}
@@ -31,6 +31,6 @@ namespace Volt::RHI
 	protected:
 		RHIInterface() = default;
 
-		virtual void* GetHandleImpl() = 0;
+		virtual void* GetHandleImpl() const = 0;
 	};
 }

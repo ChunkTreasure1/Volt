@@ -19,7 +19,7 @@ namespace Volt::RHI
 		void DestroyImage(Ref<Allocation> allocation) override;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		VmaAllocator_T* m_allocator = nullptr;

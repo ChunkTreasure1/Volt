@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Volt/Core/Weak.h>
+
 #include <memory>
 #include <string>
 
@@ -63,6 +65,3 @@ constexpr Ref<T> CreateRefRHI(Args&& ... args)
 {
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }
-
-template<typename T>
-using Weak = std::weak_ptr<T>;

@@ -11,10 +11,10 @@ namespace Volt::RHI
 	public:
 		VulkanBufferView(const BufferViewSpecification& specification);
 		
-		Ref<RHIResource> GetResource() const { return m_buffer.lock(); }
+		Ref<RHIResource> GetResource() const { return m_buffer; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		Weak<RHIResource> m_buffer;

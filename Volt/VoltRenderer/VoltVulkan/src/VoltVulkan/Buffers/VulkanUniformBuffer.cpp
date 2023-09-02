@@ -88,7 +88,7 @@ namespace Volt::RHI
 		return m_allocation->Map<void>();
 	}
 
-	void* VulkanUniformBuffer::GetHandleImpl()
+	void* VulkanUniformBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();
 	}

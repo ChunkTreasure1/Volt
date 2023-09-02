@@ -270,7 +270,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void* VulkanAllocator::GetHandleImpl()
+	void* VulkanAllocator::GetHandleImpl() const
 	{
 		return m_allocator;
 	}

@@ -37,7 +37,7 @@ namespace Volt::RHI
 		inline const std::unordered_map<ShaderStage, PipelineStageInfo>& GetPipelineStageInfos() const { return m_pipelineStageInfo; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		friend class VulkanShaderCompiler;

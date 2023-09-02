@@ -15,7 +15,7 @@ namespace Volt::RHI
 		const Format GetFormat() const;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		ImageViewSpecification m_specification{};

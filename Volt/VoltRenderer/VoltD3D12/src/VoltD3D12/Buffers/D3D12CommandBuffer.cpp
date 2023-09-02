@@ -19,7 +19,7 @@ namespace Volt::RHI
 	{
 	}
 
-	void* D3D12CommandBuffer::GetHandleImpl()
+	void* D3D12CommandBuffer::GetHandleImpl() const
 	{
 		return nullptr;
 	}
@@ -159,7 +159,7 @@ namespace Volt::RHI
 
 		for (auto& attachment : renderingInfo.colorAttachments)
 		{
-			auto view = attachment.view.lock();
+			auto view = attachment.view;
 			auto viewHandle = view->GetHandle<CD3DX12_CPU_DESCRIPTOR_HANDLE*>();
 			
 			if (attachment.clearMode == ClearMode::Clear)
@@ -169,9 +169,9 @@ namespace Volt::RHI
 			rtvViews.emplace_back(*viewHandle);
 		}
 
-		if (renderingInfo.depthAttachmentInfo.view.lock())
+		if (renderingInfo.depthAttachmentInfo.view)
 		{
-			auto view = renderingInfo.depthAttachmentInfo.view.lock();
+			auto view = renderingInfo.depthAttachmentInfo.view;
 			auto viewHandle = view->GetHandle<CD3DX12_CPU_DESCRIPTOR_HANDLE*>();
 
 			if (renderingInfo.depthAttachmentInfo.clearMode == ClearMode::Clear)

@@ -57,7 +57,7 @@ namespace Volt::RHI
 		inline const std::map<uint32_t, std::vector<VkDescriptorSet_T*>>& GetDescriptorSets() const { return m_descriptorSets; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		void SetDirty(bool state);

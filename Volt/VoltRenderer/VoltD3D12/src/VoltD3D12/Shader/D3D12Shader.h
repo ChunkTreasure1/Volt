@@ -16,7 +16,7 @@ namespace Volt::RHI
 
 		std::vector<ShaderStage> GetStages();
 
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 		const bool Reload(bool forceCompile) override;
 		std::string_view GetName() const override;
 		const ShaderResources& GetResources() const override;

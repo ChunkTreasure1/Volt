@@ -66,7 +66,7 @@ namespace Volt::RHI
 		VkFence_T* GetCurrentFence() const;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		inline static constexpr uint32_t MAX_QUERIES = 64;

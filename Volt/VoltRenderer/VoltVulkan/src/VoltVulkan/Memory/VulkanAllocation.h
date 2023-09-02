@@ -22,7 +22,7 @@ namespace Volt::RHI
 	private:
 		friend class VulkanAllocator;
 
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 		VkImage_T* m_resource = nullptr;
 		VmaAllocation_T* m_allocation = nullptr;
@@ -42,7 +42,7 @@ namespace Volt::RHI
 	private:
 		friend class VulkanAllocator;
 		
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 		VkBuffer_T* m_resource = nullptr;
 		VmaAllocation_T* m_allocation = nullptr;

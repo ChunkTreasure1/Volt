@@ -49,9 +49,7 @@ namespace Volt
 		myBLAS.meshToIndexMap.clear();
 		myBLAS.accelerationStructures.clear();
 
-		auto scenePtr = myScene.lock();
-
-		scenePtr->GetRegistry().ForEach<MeshComponent>([&](Wire::EntityId, const MeshComponent& comp)
+		myScene->GetRegistry().ForEach<MeshComponent>([&](Wire::EntityId, const MeshComponent& comp)
 		{
 			if (comp.GetHandle() == Asset::Null())
 			{
@@ -83,8 +81,7 @@ namespace Volt
 
 		myTLAS.accelerationStructures.clear();
 
-		auto scenePtr = myScene.lock();
-		scenePtr->GetRegistry().ForEach<MeshComponent, TransformComponent>([&](Wire::EntityId id, const MeshComponent& meshComp, const TransformComponent& transComp)
+		myScene->GetRegistry().ForEach<MeshComponent, TransformComponent>([&](Wire::EntityId id, const MeshComponent& meshComp, const TransformComponent& transComp)
 		{
 			if (meshComp.GetHandle() == Asset::Null() || !transComp.visible)
 			{
@@ -177,9 +174,7 @@ namespace Volt
 		//auto device = GraphicsContextVolt::GetDevice();
 		//const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
-		auto scenePtr = myScene.lock();
-
-		Entity entity{ id, scenePtr.get() };
+		Entity entity{ id, myScene.Get() };
 		const auto& meshComp = entity.GetComponent<MeshComponent>();
 
 		const auto transMatrix = entity.GetTransform();

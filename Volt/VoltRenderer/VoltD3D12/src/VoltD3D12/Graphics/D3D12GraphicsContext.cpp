@@ -17,7 +17,7 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
-	void* D3D12GraphicsContext::GetHandleImpl()
+	void* D3D12GraphicsContext::GetHandleImpl() const
 	{
 		return nullptr;
 	}

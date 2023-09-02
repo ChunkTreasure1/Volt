@@ -113,10 +113,9 @@ namespace Volt
 
 				//device->FlushCommandBuffer(info, mySubmitFences.at(index), myQueueType);
 			}
-			else if (!myInheritedCommandBuffer.expired())
+			else if (myInheritedCommandBuffer)
 			{
-				auto cmdBufferPtr = myInheritedCommandBuffer.lock();
-				const uint32_t index = cmdBufferPtr->GetCurrentIndex();
+				const uint32_t index = myInheritedCommandBuffer->GetCurrentIndex();
 
 				auto currentCmdBuffer = myCommandBuffers.at(index);
 
@@ -126,7 +125,7 @@ namespace Volt
 					End();
 				}
 
-				vkCmdExecuteCommands(cmdBufferPtr->GetCurrentCommandBuffer(), 1, &currentCmdBuffer);
+				vkCmdExecuteCommands(myInheritedCommandBuffer->GetCurrentCommandBuffer(), 1, &currentCmdBuffer);
 			}
 		}
 
@@ -152,7 +151,7 @@ namespace Volt
 			return 0;
 		}
 
-		auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 		const uint32_t index = inheritedCmdBufferPtr->GetCurrentIndex();
 
 		return index;
@@ -165,7 +164,7 @@ namespace Volt
 			return myLastCommandPool;
 		}
 
-		auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 		const uint32_t index = inheritedCmdBufferPtr->GetLastIndex();
 
 		return index;

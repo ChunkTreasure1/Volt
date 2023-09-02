@@ -76,7 +76,7 @@ namespace Volt
 
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
-			injectionPipeline->SetImage(outputInjectionResource.image3D.lock(), Sets::OTHER, 0, ImageAccess::Write);
+			injectionPipeline->SetImage(outputInjectionResource.image3D, Sets::OTHER, 0, ImageAccess::Write);
 			injectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			injectionPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
 
@@ -123,8 +123,8 @@ namespace Volt
 
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
-			rayMarchPipeline->SetImage(outputRayMarchedResource.image3D.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			rayMarchPipeline->SetImage(injectionResource.image3D.lock(), Sets::OTHER, 1, ImageAccess::Write);
+			rayMarchPipeline->SetImage(outputRayMarchedResource.image3D, Sets::OTHER, 0, ImageAccess::Write);
+			rayMarchPipeline->SetImage(injectionResource.image3D, Sets::OTHER, 1, ImageAccess::Write);
 
 			rayMarchPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 

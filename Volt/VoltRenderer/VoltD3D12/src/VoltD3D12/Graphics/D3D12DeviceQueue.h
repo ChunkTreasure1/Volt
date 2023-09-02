@@ -26,7 +26,7 @@ namespace Volt::RHI
 		ID3D12CommandQueue** GetAddesss() { return &m_commandQueue; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		void CreateCommandQueue(QueueType type);

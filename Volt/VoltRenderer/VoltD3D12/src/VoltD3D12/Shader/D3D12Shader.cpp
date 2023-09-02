@@ -32,7 +32,7 @@ namespace Volt::RHI
 		return returnStage;
 	}
 
-	void* D3D12Shader::GetHandleImpl()
+	void* D3D12Shader::GetHandleImpl() const
 	{
 		return nullptr;
 	}

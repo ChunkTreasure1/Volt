@@ -26,7 +26,7 @@ namespace Volt::RHI
 		VT_D3D12_DELETE(m_device);
 	}
 
-	void* D3D12GraphicsDevice::GetHandleImpl()
+	void* D3D12GraphicsDevice::GetHandleImpl() const
 	{
 		return m_device;
 	}

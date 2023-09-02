@@ -16,7 +16,7 @@ namespace Volt::RHI
 		void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) override;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		std::mutex m_executeMutex{};

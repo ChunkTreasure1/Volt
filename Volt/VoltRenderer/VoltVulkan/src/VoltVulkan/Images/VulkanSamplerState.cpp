@@ -49,7 +49,7 @@ namespace Volt::RHI
 		m_sampler = nullptr;
 	}
 
-	void* VulkanSamplerState::GetHandleImpl()
+	void* VulkanSamplerState::GetHandleImpl() const
 	{
 		return m_sampler;
 	}

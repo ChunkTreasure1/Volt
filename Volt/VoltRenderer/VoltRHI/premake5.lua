@@ -42,6 +42,7 @@ project "VoltRHI"
 		"src/",
 		"../VoltD3D12/src",
 		"../VoltVulkan/src",
+		"../../Volt/src",
 
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",

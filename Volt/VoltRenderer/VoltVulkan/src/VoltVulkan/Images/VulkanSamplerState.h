@@ -13,7 +13,7 @@ namespace Volt::RHI
 		~VulkanSamplerState() override;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		VkSampler_T* m_sampler = nullptr;

@@ -14,8 +14,6 @@ namespace Volt::RHI
 
 		Format format = Format::R8G8B8A8_UNORM;
 		ImageUsage usage = ImageUsage::Texture;
-		TextureWrap wrap = TextureWrap::Repeat;
-		TextureFilter filter = TextureFilter::Linear;
 
 		MemoryUsage memoryUsage = MemoryUsage::GPU;
 

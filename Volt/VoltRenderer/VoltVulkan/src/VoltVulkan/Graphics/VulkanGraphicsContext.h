@@ -19,7 +19,7 @@ namespace Volt::RHI
 		inline VkInstance_T* GetInstance() const { return m_instance; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		void Initialize();

@@ -21,7 +21,7 @@ namespace Volt::RHI
 	{
 	}
 
-	void* D3D12ShaderCompiler::GetHandleImpl()
+	void* D3D12ShaderCompiler::GetHandleImpl() const
 	{
 		return nullptr;
 	}

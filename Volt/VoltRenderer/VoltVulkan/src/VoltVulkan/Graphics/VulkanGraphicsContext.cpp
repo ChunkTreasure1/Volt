@@ -115,7 +115,7 @@ namespace Volt::RHI
 		Shutdown();
 	}
 
-	void* VulkanGraphicsContext::GetHandleImpl()
+	void* VulkanGraphicsContext::GetHandleImpl() const
 	{
 		return m_instance;
 	}

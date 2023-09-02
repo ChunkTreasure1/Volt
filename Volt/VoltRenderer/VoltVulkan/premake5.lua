@@ -41,6 +41,7 @@ project "VoltVulkan"
 	{
 		"src/",
 		"../VoltRHI/src",
+		"../../Volt/src",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",

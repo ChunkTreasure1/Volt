@@ -24,7 +24,7 @@ namespace Volt::RHI
 		DestroyCommandQueue(m_queueType);
 	}
 
-	void* D3D12DeviceQueue::GetHandleImpl()
+	void* D3D12DeviceQueue::GetHandleImpl() const
 	{
 		return m_commandQueue;
 	}

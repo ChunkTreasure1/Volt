@@ -16,9 +16,8 @@ namespace Volt::RHI
 		VulkanGraphicsDevice& graphicsDevice = createInfo.graphicsDevice->AsRef<VulkanGraphicsDevice>();
 
 		const auto physicalDevice = graphicsDevice.GetPhysicalDevice();
-		auto physicalDevicePtr = physicalDevice.lock();
 
-		const auto queueFamilies = physicalDevicePtr->GetQueueFamilies();
+		const auto queueFamilies = physicalDevice->GetQueueFamilies();
 
 		uint32_t queueFamily = 0;
 
@@ -67,7 +66,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void* VulkanDeviceQueue::GetHandleImpl()
+	void* VulkanDeviceQueue::GetHandleImpl() const
 	{
 		return m_queue;
 	}

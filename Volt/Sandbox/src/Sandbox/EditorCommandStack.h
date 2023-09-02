@@ -97,9 +97,9 @@ struct GizmoCommand : EditorCommand
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
 
-		if (!myScene.expired())
+		if (!myScene)
 		{
-			myScene.lock()->InvalidateEntityTransform(myID);
+			myScene->InvalidateEntityTransform(myID);
 		}
 	}
 
@@ -122,9 +122,9 @@ struct GizmoCommand : EditorCommand
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
 	
-		if (!myScene.expired())
+		if (!myScene)
 		{
-			myScene.lock()->InvalidateEntityTransform(myID);
+			myScene->InvalidateEntityTransform(myID);
 		}
 	}
 
@@ -151,23 +151,22 @@ struct MultiGizmoCommand : EditorCommand
 
 	void Undo() override
 	{
-		if (myScene.expired())
+		if (myScene)
 		{
 			return;
 		}
 
-		auto scenePtr = myScene.lock();
 		std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity{ id, scenePtr.get() };
+			Volt::Entity entity{ id, myScene.Get() };
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
 
-			scenePtr->InvalidateEntityTransform(id);
+			myScene->InvalidateEntityTransform(id);
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
@@ -176,23 +175,22 @@ struct MultiGizmoCommand : EditorCommand
 
 	void Redo() override
 	{
-		if (myScene.expired())
+		if (myScene)
 		{
 			return;
 		}
 
-		auto scenePtr = myScene.lock();
 		std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity{ id, scenePtr.get() };
+			Volt::Entity entity{ id, myScene.Get() };
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
 
-			scenePtr->InvalidateEntityTransform(id);
+			myScene->InvalidateEntityTransform(id);
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);

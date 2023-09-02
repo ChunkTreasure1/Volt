@@ -21,7 +21,7 @@ namespace Volt::RHI
 
 	protected:
 		void* MapInternal() override;
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		uint32_t m_size = 0;

@@ -13,7 +13,7 @@ namespace Volt::RHI
 		~D3D12GraphicsContext() override;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		void Initalize(const GraphicsContextCreateInfo& info);

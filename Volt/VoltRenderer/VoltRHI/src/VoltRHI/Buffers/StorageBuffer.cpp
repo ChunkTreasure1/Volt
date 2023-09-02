@@ -23,4 +23,21 @@ namespace Volt::RHI
 
 		return nullptr;
 	}
+
+	Ref<StorageBuffer> StorageBuffer::Create(size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	{
+		const auto api = GraphicsContext::GetAPI();
+
+		switch (api)
+		{
+			case GraphicsAPI::D3D12:
+			case GraphicsAPI::Mock:
+			case GraphicsAPI::MoltenVk:
+				break;
+
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, bufferUsage, memoryUsage); break;
+		}
+
+		return nullptr;
+	}
 }

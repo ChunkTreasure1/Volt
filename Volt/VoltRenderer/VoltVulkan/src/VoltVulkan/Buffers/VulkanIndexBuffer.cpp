@@ -56,7 +56,7 @@ namespace Volt::RHI
 		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
-	void* VulkanIndexBuffer::GetHandleImpl()
+	void* VulkanIndexBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();
 	}

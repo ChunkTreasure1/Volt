@@ -17,7 +17,7 @@ namespace Volt::RHI
 		void SetName(std::string_view name) override;
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		void SetData(const void* data, const uint32_t size);

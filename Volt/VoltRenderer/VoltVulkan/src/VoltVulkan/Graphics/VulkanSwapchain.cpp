@@ -221,7 +221,7 @@ namespace Volt::RHI
 		return data.framebuffer;
 	}
 
-	void* VulkanSwapchain::GetHandleImpl()
+	void* VulkanSwapchain::GetHandleImpl() const
 	{
 		return m_swapchain;
 	}

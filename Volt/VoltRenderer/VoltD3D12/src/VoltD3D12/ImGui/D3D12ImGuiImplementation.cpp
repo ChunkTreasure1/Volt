@@ -37,7 +37,7 @@ namespace Volt::RHI
 		auto d3dCommandBuffer = s_commandBuffer->As<D3D12CommandBuffer>();
 		auto cmd = d3dCommandBuffer->GetCommandData().commandList;
 
-		auto swapchain = m_info.swapchain.lock()->As<D3D12Swapchain>();
+		auto swapchain = m_info.swapchain->As<D3D12Swapchain>();
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;

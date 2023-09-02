@@ -297,7 +297,7 @@ namespace Volt::RHI
 		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
-	void* VulkanImage2D::GetHandleImpl()
+	void* VulkanImage2D::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkImage>();
 	}

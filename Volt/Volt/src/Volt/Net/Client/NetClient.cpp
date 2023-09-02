@@ -54,7 +54,7 @@ namespace Volt
 		{
 			auto ptr = m_registry.Get(repId);
 			auto repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
-			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
+			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().Get());
 			if (entity.IsNull()) continue;
 			if (repEntity.GetOwner() != m_id) continue;
 
@@ -132,7 +132,7 @@ namespace Volt
 			if (m_registry.Get(repId)->GetType() == Nexus::TYPE::eReplicatedType::ENTITY)
 			{
 				auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
-				Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
+				Volt::SceneManager::GetActiveScene()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().Get()));
 			}
 			m_registry.Unregister(repId);
 		}
@@ -204,9 +204,7 @@ namespace Volt
 
 		m_registry.Unregister(repId);
 		auto scene = SceneManager::GetActiveScene();
-		auto scenePtr = scene.lock();
-
-		scenePtr->RemoveEntity(Entity(repEnt->GetEntityId(), scenePtr.get()));
+		scene->RemoveEntity(Entity(repEnt->GetEntityId(), scene.Get()));
 
 		// find Entity
 		// find connected variables
@@ -251,7 +249,7 @@ namespace Volt
 			return;
 		}
 
-		auto sceneEnt = Entity(netEnt->GetEntityId(), SceneManager::GetActiveScene().lock().get());
+		auto sceneEnt = Entity(netEnt->GetEntityId(), SceneManager::GetActiveScene().Get());
 		if (sceneEnt.IsNull())
 		{
 			VT_CORE_ERROR("scene entity is null in client RPC call");
@@ -270,7 +268,7 @@ namespace Volt
 			VT_CORE_ERROR("missing monoscriptComponent in client RPC call");
 			return;
 		}
-		auto scriptsVector = Entity(sceneEnt.GetId(), SceneManager::GetActiveScene().lock().get()).GetComponent<MonoScriptComponent>().scriptIds;
+		auto scriptsVector = Entity(sceneEnt.GetId(), SceneManager::GetActiveScene().Get()).GetComponent<MonoScriptComponent>().scriptIds;
 		Ref<MonoScriptInstance> scrInstance = nullptr;
 		for (auto scrID : scriptsVector)
 		{

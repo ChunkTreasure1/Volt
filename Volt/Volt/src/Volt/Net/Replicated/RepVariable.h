@@ -53,15 +53,15 @@ namespace Volt
 	inline bool RepVariable::SetValue(void* data)
 	{
 		// #nexus_todo: need to failsafe data type with typeid
-		if (m_scriptInstance.expired()) return false;
-		m_scriptInstance.lock()->SetField(m_varName, data);
+		if (!m_scriptInstance) return false;
+		m_scriptInstance->SetField(m_varName, data);
 		m_changed = true;
 
 		// call bound method
 		if (m_field.netData.boundFunction == "") return true;
-		auto monoClass = m_scriptInstance.lock()->GetClass();
+		auto monoClass = m_scriptInstance->GetClass();
 		std::string boundFunction = (monoClass->GetNamespace() + "." + monoClass->GetClassName() + "." + m_field.netData.boundFunction);
-		CallMonoMethod(Entity(m_entityId, SceneManager::GetActiveScene().lock().get()), boundFunction, std::vector<uint8_t>());
+		CallMonoMethod(Entity(m_entityId, SceneManager::GetActiveScene().Get()), boundFunction, std::vector<uint8_t>());
 
 		return true;
 	}
@@ -69,8 +69,8 @@ namespace Volt
 	template<typename T>
 	inline bool RepVariable::GetValue(T& data)
 	{
-		if (m_scriptInstance.expired()) return false;
-		data = m_scriptInstance.lock()->GetField<T>(m_varName);
+		if (!m_scriptInstance) return false;
+		data = m_scriptInstance->GetField<T>(m_varName);
 		return true;
 	}
 }

@@ -27,7 +27,7 @@ namespace Volt::RHI
 		return data;
 	}
 
-	void* VulkanImageAllocation::GetHandleImpl()
+	void* VulkanImageAllocation::GetHandleImpl() const
 	{
 		return m_allocation;
 	}
@@ -49,7 +49,7 @@ namespace Volt::RHI
 		return data;
 	}
 
-	void* VulkanBufferAllocation::GetHandleImpl()
+	void* VulkanBufferAllocation::GetHandleImpl() const
 	{
 		return m_allocation;
 	}

@@ -141,7 +141,7 @@ namespace Volt::RHI
 	{
 	}
 
-	void* VulkanPhysicalGraphicsDevice::GetHandleImpl()
+	void* VulkanPhysicalGraphicsDevice::GetHandleImpl() const
 	{
 		return m_physicalDevice;
 	}

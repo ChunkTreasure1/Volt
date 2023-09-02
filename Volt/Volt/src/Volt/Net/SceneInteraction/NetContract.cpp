@@ -20,7 +20,7 @@ namespace Volt
 {
 	void NetContractContainer::Execute(Wire::EntityId in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
 	{
-		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(in_id, SceneManager::GetActiveScene().Get());
 		if (!entity.HasComponent<PrefabComponent>())
 		{
 			VT_CORE_ERROR("Entity is not prefab in NetContractContainer::Execute");
@@ -68,21 +68,21 @@ namespace Volt
 
 	const Ref<NetContract> NetContractContainer::GetContract(Wire::EntityId in_id)
 	{
-		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(in_id, SceneManager::GetActiveScene().Get());
 		if (!entity.HasComponent<PrefabComponent>()) return m_contracts[AssetHandle(0)];
 		return GetContract(entity.GetComponent<PrefabComponent>().prefabAsset);
 	}
 
 	std::string NetContractContainer::GetMethod(Wire::EntityId in_id, eNetEvent in_event)
 	{
-		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(in_id, SceneManager::GetActiveScene().Get());
 		if (!entity.HasComponent<PrefabComponent>()) return "";
 		return GetMethod(entity.GetComponent<PrefabComponent>().prefabAsset, in_event);
 	}
 
 	std::string NetContractContainer::GetMethod(Nexus::TYPE::REP_ID in_id, eNetEvent in_event)
 	{
-		auto entity = Entity(static_cast<uint32_t>(in_id), SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(static_cast<uint32_t>(in_id), SceneManager::GetActiveScene().Get());
 		if (!entity.HasComponent<PrefabComponent>()) return "";
 		return GetMethod(entity.GetComponent<PrefabComponent>().prefabAsset, in_event);
 	}

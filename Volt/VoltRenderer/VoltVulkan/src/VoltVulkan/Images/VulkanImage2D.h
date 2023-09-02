@@ -35,7 +35,7 @@ namespace Volt::RHI
 		const ImageAspect GetImageAspect() const { return m_imageAspect; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		friend class VulkanCommandBuffer;

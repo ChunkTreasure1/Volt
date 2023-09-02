@@ -10,8 +10,8 @@ namespace Volt::RHI
 	{
 	}
 
-	void* VulkanBufferView::GetHandleImpl()
+	void* VulkanBufferView::GetHandleImpl() const
 	{
-		return m_buffer.lock()->GetHandle<void*>();
+		return m_buffer->GetHandle<void*>();
 	}
 }

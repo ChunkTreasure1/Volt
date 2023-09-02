@@ -11,7 +11,7 @@ namespace Volt::RHI
 		D3D12Image2D(const ImageSpecification& specification, const void* data);
 		~D3D12Image2D() override;
 
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
 		void Release() override;
 		void GenerateMips() override;

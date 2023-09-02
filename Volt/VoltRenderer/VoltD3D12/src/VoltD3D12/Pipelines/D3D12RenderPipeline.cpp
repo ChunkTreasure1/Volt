@@ -20,7 +20,7 @@ namespace Volt::RHI
 	{
 	}
 
-	void* D3D12RenderPipeline::GetHandleImpl()
+	void* D3D12RenderPipeline::GetHandleImpl() const
 	{
 		return nullptr;
 	}

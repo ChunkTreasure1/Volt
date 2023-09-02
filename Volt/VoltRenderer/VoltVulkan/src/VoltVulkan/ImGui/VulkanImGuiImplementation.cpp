@@ -86,7 +86,7 @@ namespace Volt::RHI
 
 		VkCommandBuffer currentCommandBuffer = s_commandBuffer->GetHandle<VkCommandBuffer>();
 
-		auto swapchainPtr = m_swapchain.lock()->As<VulkanSwapchain>();
+		auto swapchainPtr = m_swapchain->As<VulkanSwapchain>();
 
 		// Begin render pass
 		{
@@ -174,7 +174,7 @@ namespace Volt::RHI
 
 		VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &poolInfo, nullptr, &s_descriptorPool));
 
-		const auto vulkanSwapchain = m_swapchain.lock()->As<VulkanSwapchain>();
+		const auto vulkanSwapchain = m_swapchain->As<VulkanSwapchain>();
 
 		ImGui_ImplVulkan_InitInfo initInfo{};
 		initInfo.Instance = GraphicsContext::Get().GetHandle<VkInstance>();

@@ -141,24 +141,24 @@ namespace Volt
 
 	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle)
 	{
-		m_pass.lock()->resourceReads.emplace_back(handle);
+		m_pass->resourceReads.emplace_back(handle);
 	}
 
 	void RenderGraph::Builder::WriteResource(RenderGraphResourceHandle handle)
 	{
-		if (!m_pass.lock()->CreatesResource(handle))
+		if (!m_pass->CreatesResource(handle))
 		{
-			m_pass.lock()->resourceWrites.emplace_back(handle);
+			m_pass->resourceWrites.emplace_back(handle);
 		}
 	}
 
 	void RenderGraph::Builder::SetIsComputePass()
 	{
-		m_pass.lock()->isComputePass = true;
+		m_pass->isComputePass = true;
 	}
 
 	void RenderGraph::Builder::SetHasSideEffect()
 	{
-		m_pass.lock()->hasSideEffect = true;
+		m_pass->hasSideEffect = true;
 	}
 }

@@ -182,7 +182,7 @@ void VertexPainterPanel::PanelDraw()
 		{
 			for (const auto& _entId : SelectionManager::GetSelectedEntities())
 			{
-				auto ent = Volt::Entity(_entId, Volt::SceneManager::GetActiveScene().lock().get());
+				auto ent = Volt::Entity(_entId, Volt::SceneManager::GetActiveScene().Get());
 				if (!AddPainted(ent)) continue;
 				for (auto& vertex : ent.GetComponent<Volt::VertexPaintedComponent>().vertexColors)
 				{
@@ -213,7 +213,7 @@ void VertexPainterPanel::PanelDraw()
 			// Remove painted component
 			for (const auto& _entId : SelectionManager::GetSelectedEntities())
 			{
-				auto ent = Volt::Entity(_entId, Volt::SceneManager::GetActiveScene().lock().get());
+				auto ent = Volt::Entity(_entId, Volt::SceneManager::GetActiveScene().Get());
 				if (!ent.HasComponent<Volt::VertexPaintedComponent>()) continue;
 				ent.RemoveComponent<Volt::VertexPaintedComponent>();
 			}

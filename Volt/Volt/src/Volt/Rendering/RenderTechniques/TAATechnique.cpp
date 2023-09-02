@@ -58,10 +58,10 @@ namespace Volt
 			const auto& motionVectorResource = resources.GetImageResource(data.motionVectors);
 			const auto& currentDepthResource = resources.GetImageResource(data.currentDepth);
 
-			pipeline->SetImage(srcDepthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
+			pipeline->SetImage(srcDepthResource.image, Sets::OTHER, 0, ImageAccess::Read);
 
-			pipeline->SetImage(motionVectorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-			pipeline->SetImage(currentDepthResource.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+			pipeline->SetImage(motionVectorResource.image, Sets::OTHER, 1, ImageAccess::Read);
+			pipeline->SetImage(currentDepthResource.image, Sets::OTHER, 2, ImageAccess::Write);
 
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			pipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), rendererBuffersSet->GetOrAllocateDescriptorSet(commandBuffer->GetCurrentIndex()), Sets::RENDERER_BUFFERS);
@@ -111,11 +111,11 @@ namespace Volt
 			const auto& historyColorResource = resources.GetImageResource(data.historyColor);
 			const auto& resultResource = resources.GetImageResource(data.tempColor);
 
-			pipeline->SetImage(resultResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+			pipeline->SetImage(resultResource.image, Sets::OTHER, 0, ImageAccess::Write);
 
-			pipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-			pipeline->SetImage(currentColorResource.image.lock(), Sets::OTHER, 2, ImageAccess::Read);
-			pipeline->SetImage(historyColorResource.image.lock(), Sets::OTHER, 3, ImageAccess::Read);
+			pipeline->SetImage(depthResource.image, Sets::OTHER, 1, ImageAccess::Read);
+			pipeline->SetImage(currentColorResource.image, Sets::OTHER, 2, ImageAccess::Read);
+			pipeline->SetImage(historyColorResource.image, Sets::OTHER, 3, ImageAccess::Read);
 
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
@@ -153,8 +153,8 @@ namespace Volt
 			const auto& tempColorResource = resources.GetImageResource(taaMainData.tempColor);
 			const auto& resultResource = resources.GetImageResource(skyboxData.outputImage);
 
-			pipeline->SetImage(tempColorResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-			pipeline->SetImage(resultResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
+			pipeline->SetImage(tempColorResource.image, Sets::OTHER, 0, ImageAccess::Read);
+			pipeline->SetImage(resultResource.image, Sets::OTHER, 1, ImageAccess::Write);
 
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 

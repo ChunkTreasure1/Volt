@@ -16,7 +16,7 @@ namespace Volt::RHI
 		ID3D12PipelineState* GetPSO() { return m_pipelineStateObject; }
 		Topology GetTopology() { return m_topology; }
 
-		virtual void* GetHandleImpl() override;
+		virtual void* GetHandleImpl() const override;
 		virtual void Invalidate() override;
 	private:
 		ID3D12RootSignature* m_rootSignature;

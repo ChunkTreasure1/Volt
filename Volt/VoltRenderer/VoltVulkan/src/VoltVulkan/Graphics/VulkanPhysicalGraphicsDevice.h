@@ -22,7 +22,7 @@ namespace Volt::RHI
 		inline const PhysicalDeviceQueueFamilyIndices& GetQueueFamilies() const { return m_queueFamilyIndices; }
 
 	protected:
-		void* GetHandleImpl() override;
+		void* GetHandleImpl() const override;
 
 	private:
 		VkPhysicalDevice_T* m_physicalDevice = nullptr;

@@ -20,7 +20,7 @@ namespace Volt::RHI
 		[[nodiscard]] IDXGIAdapter1* GetAdapter() { return m_adapter; }
 
 	protected:
-		void* GetHandleImpl() override
+		void* GetHandleImpl() const override
 		{
 			return m_adapter;
 		}
