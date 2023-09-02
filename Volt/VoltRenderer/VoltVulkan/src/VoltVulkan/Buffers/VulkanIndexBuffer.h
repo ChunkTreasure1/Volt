@@ -2,11 +2,9 @@
 
 #include <VoltRHI/Buffers/IndexBuffer.h>
 
-struct VkBuffer_T;
-struct VmaAllocation_T;
-
 namespace Volt::RHI
 {
+	class Allocation;
 	class VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
@@ -24,8 +22,7 @@ namespace Volt::RHI
 	private:
 		void SetData(const void* data, const uint32_t size);
 
-		VkBuffer_T* m_buffer = nullptr;
-		VmaAllocation_T* m_allocation = nullptr;
+		Ref<Allocation> m_allocation;
 
 		uint32_t m_count = 0;
 	};

@@ -36,12 +36,6 @@ project "Volt"
 		"src/**.cpp",
 		"src/**.hpp",
 
-		"%{IncludeDir.shaderc_glslc}/**.cc",
-		"%{IncludeDir.shaderc_glslc}/**.h",
-
-		"%{IncludeDir.shaderc_utils}/**.cc",
-		"%{IncludeDir.shaderc_utils}/**.h",
-
 		"%{IncludeDir.tinyddsloader}/**.h",
 		"%{IncludeDir.TinyGLTF}/**.h",
 	}
@@ -96,8 +90,7 @@ project "Volt"
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.shaderc_glslc}",
-		"%{IncludeDir.shaderc_utils}"
+		"%{IncludeDir.cityhash}"
 	}
 
 	links
@@ -114,6 +107,7 @@ project "Volt"
 		"Nexus",
 		"NFD-Extended",
 		"TGAFBX",
+		"cityhash",
 
 		"DirectXTK",
 		"stb",

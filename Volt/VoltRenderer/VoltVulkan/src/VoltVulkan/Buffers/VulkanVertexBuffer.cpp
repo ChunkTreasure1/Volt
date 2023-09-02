@@ -1,13 +1,14 @@
 #include "vkpch.h"
 #include "VulkanVertexBuffer.h"
 
-#include "VoltVulkan/Graphics/VulkanAllocator.h"
 #include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+
+#include <VoltRHI/Memory/Allocation.h>
 
 namespace Volt::RHI
 {
@@ -18,18 +19,16 @@ namespace Volt::RHI
 
 	VulkanVertexBuffer::~VulkanVertexBuffer()
 	{
-		if (!m_buffer)
+		if (!m_allocation)
 		{
 			return;
 		}
 
-		GraphicsContext::DestroyResource([buffer = m_buffer, allocation = m_allocation]()
+		GraphicsContext::DestroyResource([allocation = m_allocation]()
 		{
-			VulkanAllocator allocator{};
-			allocator.DestroyBuffer(buffer, allocation);
+			GraphicsContext::GetAllocator().DestroyBuffer(allocation);
 		});
 
-		m_buffer = nullptr;
 		m_allocation = nullptr;
 	}
 
@@ -43,7 +42,7 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_buffer;
+		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
@@ -52,56 +51,45 @@ namespace Volt::RHI
 
 	void* VulkanVertexBuffer::GetHandleImpl()
 	{
-		return m_buffer;
+		return m_allocation->GetResourceHandle<VkBuffer>();
 	}
 
 	void VulkanVertexBuffer::Invalidate(const void* data, const uint32_t size)
 	{
-		VkBuffer stagingBuffer = nullptr;
-		VmaAllocation stagingAllocation = nullptr;
 		VkDeviceSize bufferSize = size;
-		VulkanAllocator allocator{};
+	
+		Ref<Allocation> stagingAllocation;
 
-		if (m_buffer != VK_NULL_HANDLE)
+		if (m_allocation)
 		{
-			allocator.DestroyBuffer(m_buffer, m_allocation);
-			m_buffer = nullptr;
+			GraphicsContext::DestroyResource([allocation = m_allocation]()
+			{
+				GraphicsContext::GetAllocator().DestroyBuffer(allocation);
+			});
+
 			m_allocation = nullptr;
 		}
 
+		auto& allocator = GraphicsContext::GetAllocator();
+
 		if (data != nullptr)
 		{
-			// Create staging buffer
-			{
-				VkBufferCreateInfo bufferInfo{};
-				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInfo.size = bufferSize;
-				bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-				stagingAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
-			}
+			stagingAllocation = allocator.CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPU);
 
 			// Copy to staging buffer
 			{
-				void* buffData = allocator.MapMemory<void>(stagingAllocation);
+				void* buffData = stagingAllocation->Map<void>();
 				memcpy_s(buffData, size, data, size);
-				allocator.UnmapMemory(stagingAllocation);
+				stagingAllocation->Unmap();
 			}
 		}
 
 		// Create GPU buffer
 		{
-			VkBufferCreateInfo bufferInfo{};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = bufferSize;
-			bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			m_allocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_buffer);
+			m_allocation = allocator.CreateBuffer(bufferSize, BufferUsage::VertexBuffer | BufferUsage::TransferDst);
 		}
 
-		if (data != nullptr)
+		if (data)
 		{
 			// Copy from staging buffer to GPU buffer
 			{
@@ -113,13 +101,13 @@ namespace Volt::RHI
 				copy.dstOffset = 0;
 				copy.size = bufferSize;
 
-				vkCmdCopyBuffer(cmdBuffer->GetHandle<VkCommandBuffer>(), stagingBuffer, m_buffer, 1, &copy);
+				vkCmdCopyBuffer(cmdBuffer->GetHandle<VkCommandBuffer>(), stagingAllocation->GetResourceHandle<VkBuffer>(), m_allocation->GetResourceHandle<VkBuffer>(), 1, &copy);
 
 				cmdBuffer->End();
 				cmdBuffer->Execute();
 			}
 
-			allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
+			allocator.DestroyBuffer(stagingAllocation);
 		}
 	}
 }

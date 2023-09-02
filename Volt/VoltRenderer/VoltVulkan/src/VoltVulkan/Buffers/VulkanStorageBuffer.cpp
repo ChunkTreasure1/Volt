@@ -1,7 +1,6 @@
 #include "vkpch.h"
 #include "VulkanStorageBuffer.h"
 
-#include "VoltVulkan/Graphics/VulkanAllocator.h"
 #include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
@@ -9,10 +8,12 @@
 #include <VoltRHI/Buffers/BufferView.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
+#include <VoltRHI/Memory/Allocation.h>
+
 namespace Volt::RHI
 {
-	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, MemoryUsage bufferUsage)
-		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_memoryUsage(bufferUsage)
+	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(elementSize * count);
 	}
@@ -45,23 +46,21 @@ namespace Volt::RHI
 	
 	void VulkanStorageBuffer::Unmap()
 	{
-		VulkanAllocator allocator{};
-		allocator.UnmapMemory(m_allocation);
+		m_allocation->Unmap();
 	}
 
 	void VulkanStorageBuffer::SetData(const void* data, const size_t size)
 	{
-		Ref<StorageBuffer> stagingBuffer = StorageBuffer::Create(1, 1, MemoryUsage::Staging);
-		stagingBuffer->ResizeByteSize(size);
+		Ref<Allocation> stagingAllocation = GraphicsContext::GetAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 
-		void* mappedPtr = stagingBuffer->Map<void>();
+		void* mappedPtr = stagingAllocation->Map<void>();
 		memcpy_s(mappedPtr, m_byteSize, data, size);
-		stagingBuffer->Unmap();
+		stagingAllocation->Unmap();
 
 		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
 
-		cmdBuffer->CopyBufferRegion(stagingBuffer, 0, As<VulkanStorageBuffer>(), 0, size);
+		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
 
 		cmdBuffer->End();
 		cmdBuffer->Execute();
@@ -81,7 +80,7 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_buffer;
+		nameInfo.objectHandle = (uint64_t)m_allocation->GetHandle<VkBuffer>();
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
@@ -90,13 +89,12 @@ namespace Volt::RHI
 	
 	void* VulkanStorageBuffer::GetHandleImpl()
 	{
-		return m_buffer;
+		return m_allocation->GetResourceHandle<VkBuffer>();
 	}
 	
 	void* VulkanStorageBuffer::MapInternal()
 	{
-		VulkanAllocator allocator{};
-		return allocator.MapMemory<void*>(m_allocation);
+		return m_allocation->Map<void>();
 	}
 
 	void VulkanStorageBuffer::Invalidate(const size_t byteSize)
@@ -105,45 +103,21 @@ namespace Volt::RHI
 		m_byteSize = byteSize;
 
 		const VkDeviceSize bufferSize = byteSize;
-		const bool isStagingBuffer = (m_memoryUsage & MemoryUsage::Staging) != MemoryUsage::Default;
-
-		VkBufferCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		info.size = bufferSize;
-		info.usage = isStagingBuffer ? VK_BUFFER_USAGE_TRANSFER_SRC_BIT : VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if ((m_memoryUsage & MemoryUsage::Indirect) != MemoryUsage::Default)
-		{
-			info.usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-			info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		}
-
-		VmaMemoryUsage usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-		if ((m_memoryUsage & MemoryUsage::CPUToGPU) != MemoryUsage::Default || isStagingBuffer)
-		{
-			usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-		}
-
-		VulkanAllocator allocator{};
-		m_allocation = allocator.AllocateBuffer(info, usage, m_buffer);
+		m_allocation = GraphicsContext::GetAllocator().CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
 	}
 
 	void VulkanStorageBuffer::Release()
 	{
-		if (!m_buffer)
+		if (!m_allocation)
 		{
 			return;
 		}
 
-		GraphicsContext::DestroyResource([buffer = m_buffer, allocation = m_allocation]() 
+		GraphicsContext::DestroyResource([allocation = m_allocation]() 
 		{
-			VulkanAllocator allocator{};
-			allocator.DestroyBuffer(buffer, allocation);
+			GraphicsContext::GetAllocator().DestroyBuffer(allocation);
 		});
 
-		m_buffer = nullptr;
 		m_allocation = nullptr;
 	}
 }

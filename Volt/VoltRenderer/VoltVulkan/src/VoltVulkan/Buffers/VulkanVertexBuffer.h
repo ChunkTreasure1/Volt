@@ -1,12 +1,10 @@
 #pragma once
 
-#include "VoltRHI/Buffers/VertexBuffer.h"
-
-struct VkBuffer_T;
-struct VmaAllocation_T;
+#include <VoltRHI/Buffers/VertexBuffer.h>
 
 namespace Volt::RHI
 {
+	class Allocation;
 	class VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
@@ -23,7 +21,6 @@ namespace Volt::RHI
 	private:
 		void Invalidate(const void* data, const uint32_t size);
 
-		VkBuffer_T* m_buffer = nullptr;
-		VmaAllocation_T* m_allocation = nullptr;
+		Ref<Allocation> m_allocation;
 	};
 }

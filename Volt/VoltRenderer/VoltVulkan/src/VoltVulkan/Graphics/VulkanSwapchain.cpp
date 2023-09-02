@@ -8,7 +8,6 @@
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
-#include "VoltVulkan/Graphics/VulkanAllocator.h"
 
 #include <VoltRHI/Core/Profiling.h>
 
@@ -93,8 +92,6 @@ namespace Volt::RHI
 			Resize(m_width, m_height, m_vSyncEnabled);
 			m_swapchainNeedsRebuild = false;
 		}
-
-		VulkanAllocator::SetFrameIndex(m_currentFrame);
 
 		auto device = GraphicsContext::GetDevice();
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);

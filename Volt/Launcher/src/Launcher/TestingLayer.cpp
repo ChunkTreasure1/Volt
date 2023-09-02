@@ -10,7 +10,7 @@
 
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
-#include <VoltRHI/Buffers/ConstantBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
@@ -68,13 +68,13 @@ void TestingLayer::OnAttach()
 
 		glm::mat4 arr[2] = { projection, view };
 
-		m_constantBuffer = RHI::ConstantBuffer::Create(sizeof(glm::mat4) * 2, arr);
+		m_constantBuffer = RHI::UniformBuffer::Create(sizeof(glm::mat4) * 2, arr);
 	}
 
 	// Storage buffers
 	{
-		m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(RHI::IndirectIndexedCommand), RHI::MemoryUsage::Indirect | RHI::MemoryUsage::CPUToGPU);
-		m_transformsBuffer = RHI::StorageBuffer::Create(100 * 100 * 100, sizeof(glm::mat4), RHI::MemoryUsage::CPUToGPU);
+		m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(RHI::IndirectIndexedCommand), RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
+		m_transformsBuffer = RHI::StorageBuffer::Create(100 * 100 * 100, sizeof(glm::mat4), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
 
 		glm::mat4* transforms = m_transformsBuffer->Map<glm::mat4>();
 		for (uint32_t x = 0; x < 100; x++)

@@ -19,6 +19,8 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
+#include <VoltRHI/Memory/Allocation.h>
+
 #include <VoltRHI/Buffers/IndexBuffer.h>
 #include <VoltRHI/Buffers/VertexBuffer.h>
 
@@ -878,7 +880,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanCommandBuffer::CopyBufferRegion(Ref<RHIResource> srcResource, const size_t srcOffset, Ref<RHIResource> dstResource, const size_t dstOffset, const size_t size)
+	void VulkanCommandBuffer::CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 
@@ -887,10 +889,10 @@ namespace Volt::RHI
 		copy.dstOffset = dstOffset;
 		copy.size = size;
 
-		vkCmdCopyBuffer(m_commandBuffers.at(index).commandBuffer, srcResource->GetHandle<VkBuffer>(), dstResource->GetHandle<VkBuffer>(), 1, &copy);
+		vkCmdCopyBuffer(m_commandBuffers.at(index).commandBuffer, srcResource->GetResourceHandle<VkBuffer>(), dstResource->GetResourceHandle<VkBuffer>(), 1, &copy);
 	}
 
-	void VulkanCommandBuffer::CopyBufferToImage(Ref<StorageBuffer> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
+	void VulkanCommandBuffer::CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 
@@ -910,7 +912,7 @@ namespace Volt::RHI
 		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = { width, height, 1 };
 
-		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.m_currentImageLayout), 1, &region);
+		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.m_currentImageLayout), 1, &region);
 	}
 
 	const uint32_t VulkanCommandBuffer::GetCurrentIndex() const

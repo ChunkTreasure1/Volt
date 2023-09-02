@@ -311,7 +311,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			auto& buffer = m_resources.constantBuffers[set][binding];
+			auto& buffer = m_resources.uniformBuffers[set][binding];
 			buffer.usageStages = buffer.usageStages | stage;
 			buffer.size = size;
 
@@ -479,7 +479,7 @@ namespace Volt::RHI
 		std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> descriptorSetBindings{};
 		std::map<uint32_t, std::map<uint32_t, DefaultValue>> isBindlessMap{};
 
-		for (const auto& [set, bindings] : m_resources.constantBuffers)
+		for (const auto& [set, bindings] : m_resources.uniformBuffers)
 		{
 			for (const auto& [binding, data] : bindings)
 			{

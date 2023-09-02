@@ -22,19 +22,19 @@ namespace Volt::RHI
 		Ref<BufferViewSet> GetBufferViewSet(uint32_t set, uint32_t binding) const;
 
 		template<typename T>
-		void Add(uint32_t set, uint32_t binding, uint32_t elementCount = 1, MemoryUsage memoryUsage = MemoryUsage::Default);
+		void Add(uint32_t set, uint32_t binding, uint32_t elementCount = 1, BufferUsage memoryUsage = BufferUsage::Device);
 
 		static Ref<StorageBufferSet> Create(uint32_t bufferCount);
 
 	private:
-		Ref<StorageBuffer> AddInternal(const uint32_t size, uint32_t elementCount, MemoryUsage memoryUsage);
+		Ref<StorageBuffer> AddInternal(const uint32_t size, uint32_t elementCount, BufferUsage memoryUsage);
 
 		uint32_t m_count = 0;
 		std::map<uint32_t, std::map<uint32_t, std::vector<Ref<StorageBuffer>>>> m_storageBuffers;
 	};
 
 	template<typename T>
-	inline void StorageBufferSet::Add(uint32_t set, uint32_t binding, uint32_t elementCount, MemoryUsage memoryUsage)
+	inline void StorageBufferSet::Add(uint32_t set, uint32_t binding, uint32_t elementCount, BufferUsage memoryUsage)
 	{
 		for (uint32_t i = 0; i < m_count; i++)
 		{

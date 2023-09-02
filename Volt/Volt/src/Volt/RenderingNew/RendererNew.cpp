@@ -15,6 +15,7 @@ namespace Volt
 	{
 		Ref<RHI::ShaderCompiler> shaderCompiler;
 		Scope<SamplerLibrary> samplerLibrary;
+		//Scope<GPUMeshTable> meshTable;
 
 		std::vector<FunctionQueue> deletionQueue;
 	};
@@ -45,6 +46,11 @@ namespace Volt
 		// Create Sampler Library
 		{
 			s_rendererData->samplerLibrary = CreateScope<SamplerLibrary>();
+		}
+
+		// GPU Managers
+		{
+			//s_rendererData->meshTable = CreateScope<GPUMeshTable>();
 		}
 	}
 

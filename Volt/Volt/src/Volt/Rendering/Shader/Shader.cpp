@@ -10,7 +10,6 @@
 #include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 
 #include "Volt/Rendering/Shader/ShaderUtility.h"
-#include "Volt/Rendering/Shader/ShaderCompiler.h"
 
 #include <spirv_cross/spirv_glsl.hpp>
 #include <spirv-tools/libspirv.h>
@@ -421,11 +420,6 @@ namespace Volt
 				}
 			}
 
-			if (data.empty())
-			{
-				return ShaderCompiler::TryCompile(outShaderData, myShaderFiles);
-			}
-
 			// Check if we should recompile (shader files are out of date)
 			{
 				if (std::filesystem::exists(cachedPath) && std::filesystem::exists(currentStagePath))
@@ -436,7 +430,6 @@ namespace Volt
 					if (cachedWriteTime < sourceWriteTime)
 					{
 						VT_CORE_TRACE("Compiling shader {0} because it was out of date!", myName);
-						return ShaderCompiler::TryCompile(outShaderData, myShaderFiles);
 					}
 				}
 

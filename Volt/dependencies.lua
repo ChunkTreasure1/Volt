@@ -36,6 +36,7 @@ IncludeDir["steam"] = "%{wks.location}/Volt/vendor/steam/include"
 IncludeDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/include"
 IncludeDir["NFDExtended"] = "%{wks.location}/Volt/vendor/nfd-extended/src/include"
 IncludeDir["TGAFbx"] = "%{wks.location}/Volt/vendor/TGAFbx/src"
+IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
 IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"

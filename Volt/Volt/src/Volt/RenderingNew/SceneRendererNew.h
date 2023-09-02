@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Volt/RenderingNew/RenderObject.h"
-
 namespace Volt
 {
 	namespace RHI
@@ -12,7 +10,7 @@ namespace Volt
 		class RenderPipeline;
 		class ComputePipeline;
 
-		class ConstantBufferSet;
+		class UniformBufferSet;
 		class StorageBufferSet;
 		class StorageBuffer;
 
@@ -23,6 +21,7 @@ namespace Volt
 
 	class Camera;
 	class Scene;
+	class RenderScene;
 
 	struct SceneRendererSpecification
 	{
@@ -51,6 +50,8 @@ namespace Volt
 		void UpdateCameraBuffer(Ref<Camera> camera);
 		void UpdateLightBuffers();
 
+		void UpdateDescriptorTable(RenderScene& renderScene);
+
 		Ref<RHI::Image2D> m_outputImage;
 		Ref<RHI::Image2D> m_depthImage;
 
@@ -69,7 +70,7 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 
-		Ref<RHI::ConstantBufferSet> m_constantBufferSet;
+		Ref<RHI::UniformBufferSet> m_constantBufferSet;
 		Ref<RHI::StorageBufferSet> m_storageBufferSet;
 
 		Ref<RHI::StorageBuffer> m_indirectCommandsBuffer;
@@ -85,7 +86,6 @@ namespace Volt
 		Ref<RHI::DescriptorTable> m_indirectCountDescriptorTable;
 		Ref<RHI::DescriptorTable> m_descriptorTable;
 
-		std::vector<RenderObject> m_activeRenderObjects;
 		uint32_t m_currentActiveCommandCount = 0;
 
 		Weak<Scene> m_scene;

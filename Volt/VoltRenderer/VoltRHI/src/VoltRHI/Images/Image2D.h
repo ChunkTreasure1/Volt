@@ -8,7 +8,7 @@ namespace Volt::RHI
 	{
 		uint32_t width = 1;
 		uint32_t height = 1;
-		uint32_t depth = 0;
+		uint32_t depth = 1;
 		uint32_t layers = 1;
 		uint32_t mips = 1;
 
@@ -17,7 +17,7 @@ namespace Volt::RHI
 		TextureWrap wrap = TextureWrap::Repeat;
 		TextureFilter filter = TextureFilter::Linear;
 
-		MemoryUsage memoryUsage = MemoryUsage::Default;
+		MemoryUsage memoryUsage = MemoryUsage::GPU;
 
 		AnisotropyLevel anisoLevel = AnisotropyLevel::None;
 		std::string debugName;

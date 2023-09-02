@@ -9,6 +9,7 @@ namespace Volt
 		class SamplerState;
 	}
 
+	class Mesh;
 	class RendererNew
 	{
 	public:

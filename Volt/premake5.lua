@@ -45,7 +45,7 @@ include "Volt/vendor/TGAFbx"
 include "Volt/vendor/DirectXTK"
 include "Volt/vendor/stb_image"
 include "Volt/vendor/vma"
--- include "Volt/vendor/shaderc"
+include "Volt/vendor/cityhash"
 
 group "Core"
 include "Amp"

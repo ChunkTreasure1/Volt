@@ -5,7 +5,7 @@
 #include "Volt/Core/Profiling.h"
 
 #include "Volt/Rendering/CommandBuffer.h"
-#include "Volt/Rendering/FrameGraph/TransientResourceSystem.h"
+#include "Volt/Rendering/FrameGraph/TransientResourceSystemOld.h"
 #include "Volt/Rendering/FrameGraph/CommandBufferCache.h"
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Image3D.h"
@@ -38,7 +38,7 @@ namespace Volt
 		}
 	}
 
-	FrameGraph::FrameGraph(TransientResourceSystem& transientResourceSystem, Weak<CommandBuffer> primaryCommandBuffer, CommandBufferCache& commandBufferCache, ThreadPool& threadPool)
+	FrameGraph::FrameGraph(TransientResourceSystemOld& transientResourceSystem, Weak<CommandBuffer> primaryCommandBuffer, CommandBufferCache& commandBufferCache, ThreadPool& threadPool)
 		: myTransientResourceSystem(transientResourceSystem), myPrimaryCommandBuffer(primaryCommandBuffer), myCommandBufferCache(commandBufferCache), myThreadPool(threadPool)
 	{
 	}

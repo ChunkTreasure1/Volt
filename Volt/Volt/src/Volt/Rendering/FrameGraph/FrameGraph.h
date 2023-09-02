@@ -13,7 +13,7 @@ namespace Volt
 	class FrameGraphRenderPassResources;
 	class FrameGraphResourceRegistry;
 
-	class TransientResourceSystem;
+	class TransientResourceSystemOld;
 	class CommandBufferCache;
 	class Image3D;
 	class ThreadPool;
@@ -41,7 +41,7 @@ namespace Volt
 			Weak<FrameGraphRenderPassNodeBase> myRenderPass;
 		};
 
-		FrameGraph(TransientResourceSystem& transientResourceSystem, Weak<CommandBuffer> primaryCommandBuffer, CommandBufferCache& commandBufferCache, ThreadPool& threadPool);
+		FrameGraph(TransientResourceSystemOld& transientResourceSystem, Weak<CommandBuffer> primaryCommandBuffer, CommandBufferCache& commandBufferCache, ThreadPool& threadPool);
 		~FrameGraph();
 
 		void Compile();
@@ -74,7 +74,7 @@ namespace Volt
 		std::vector<std::vector<std::pair<FrameGraphResourceHandle, FrameGraphResourceAccess>>> myResourceAccesses;
 
 		FrameGraphBlackboard myBlackboard;
-		TransientResourceSystem& myTransientResourceSystem;
+		TransientResourceSystemOld& myTransientResourceSystem;
 		CommandBufferCache& myCommandBufferCache;
 		ThreadPool& myThreadPool;
 		Weak<CommandBuffer> myPrimaryCommandBuffer;

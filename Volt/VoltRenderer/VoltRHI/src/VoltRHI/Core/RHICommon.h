@@ -424,12 +424,28 @@ namespace Volt::RHI
 		X16 = 16
 	};
 
+	enum class BufferUsage : uint32_t
+	{
+		None = 0,
+		TransferSrc = BIT(0),
+		TransferDst = BIT(1),
+		UniformBuffer = BIT(2),
+		StorageBuffer = BIT(3),
+		IndexBuffer = BIT(4),
+		VertexBuffer = BIT(5),
+		IndirectBuffer = BIT(6)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(BufferUsage);
+
 	enum class MemoryUsage : uint32_t
 	{
-		Default = 0,
-		CPUToGPU = BIT(0),
-		Indirect = BIT(1),
-		Staging = BIT(2)
+		None = 0,
+		GPU = BIT(0),
+		CPU = BIT(1),
+		CPUToGPU = BIT(2),
+		GPUToCPU = BIT(3),
+		Dedicated = BIT(4)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(MemoryUsage);

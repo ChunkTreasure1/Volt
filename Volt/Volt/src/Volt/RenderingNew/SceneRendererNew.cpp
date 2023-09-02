@@ -6,6 +6,9 @@
 #include "Volt/RenderingNew/RendererCommon.h"
 #include "Volt/RenderingNew/RendererNew.h"
 
+#include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
+#include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
+
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Core/Profiling.h"
 
@@ -26,10 +29,10 @@
 #include <VoltRHI/Pipelines/ComputePipeline.h>
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Buffers/ConstantBuffer.h>
+#include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
-#include <VoltRHI/Buffers/ConstantBufferSet.h>
+#include <VoltRHI/Buffers/UniformBufferSet.h>
 #include <VoltRHI/Buffers/StorageBufferSet.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
@@ -105,19 +108,19 @@ namespace Volt
 
 		// Constant buffer
 		{
-			m_constantBufferSet = RHI::ConstantBufferSet::Create(RendererNew::GetFramesInFlight());
+			m_constantBufferSet = RHI::UniformBufferSet::Create(RendererNew::GetFramesInFlight());
 			m_constantBufferSet->Add<CameraDataNew>(5, CAMERA_BUFFER_BINDING);
 			m_constantBufferSet->Add<DirectionalLightData>(5, DIRECTIONAL_LIGHT_BINDING);
 		}
 
 		// Storage buffers
 		{
-			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), RHI::MemoryUsage::Indirect | RHI::MemoryUsage::CPUToGPU);
-			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), RHI::MemoryUsage::Indirect);
+			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
+			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), RHI::BufferUsage::IndirectBuffer);
 
 			m_drawToInstanceOffsetBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
 			m_instanceOffsetToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
-			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), RHI::MemoryUsage::CPUToGPU);
+			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
 		}
 
 		// Sampler state
@@ -142,7 +145,7 @@ namespace Volt
 
 			m_descriptorTable->SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, CAMERA_BUFFER_BINDING), 5, CAMERA_BUFFER_BINDING);
 			m_descriptorTable->SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, DIRECTIONAL_LIGHT_BINDING), 5, DIRECTIONAL_LIGHT_BINDING);
-		
+
 			m_descriptorTable->SetSamplerState(m_samplerState, 5, 3);
 		}
 
@@ -203,6 +206,17 @@ namespace Volt
 			m_depthImage->Invalidate(m_width, m_height);
 			m_shouldResize = false;
 		}
+
+		RenderGraph renderGraph{ m_commandBuffer };
+		
+		renderGraph.AddPass("Test Pass",
+		[](RenderGraph::Builder& builder)
+		{
+			//auto buffer = builder.CreateBuffer({ 32 });
+		},
+		[](const RenderGraphPassResources& resources)
+		{
+		});
 
 		UpdateBuffers(camera);
 
@@ -358,65 +372,29 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		m_activeRenderObjects = m_scene.lock()->GetRenderScene()->GetObjects();
+		auto scenePtr = m_scene.lock();
+		auto renderScene = scenePtr->GetRenderScene();
 
-		std::sort(std::execution::par, m_activeRenderObjects.begin(), m_activeRenderObjects.end(), [](const auto& lhs, const auto& rhs)
+		renderScene->PrepareForUpdate();
+		const uint32_t individualMeshCount = renderScene->GetIndividualMeshCount();
+		const uint32_t renderObjectCount = renderScene->GetRenderObjectCount();
+
+		if (m_indirectCommandsBuffer->GetSize() < individualMeshCount)
 		{
-			if (lhs.mesh < rhs.mesh)
-			{
-				return true;
-			}
-
-			if (lhs.mesh > rhs.mesh)
-			{
-				return false;
-			}
-
-			if (lhs.subMeshIndex < rhs.subMeshIndex)
-			{
-				return true;
-			}
-
-			if (lhs.subMeshIndex > rhs.subMeshIndex)
-			{
-				return false;
-			}
-
-			return false;
-		});
-
-		uint32_t meshCount = 0;
-		for (size_t i = 0; i < m_activeRenderObjects.size(); i++)
-		{
-			if (i == 0)
-			{
-				meshCount++;
-			}
-			else
-			{
-				if (m_activeRenderObjects[i].mesh != m_activeRenderObjects[i - 1].mesh)
-				{
-					meshCount += static_cast<uint32_t>(m_activeRenderObjects[i].mesh->GetSubMeshes().size());
-				}
-			}
-		}
-
-		if (m_indirectCommandsBuffer->GetSize() < meshCount)
-		{
-			m_indirectCommandsBuffer->Resize(meshCount);
+			m_indirectCommandsBuffer->Resize(individualMeshCount);
 			m_indirectSetupDescriptorTable->SetBufferView(m_indirectCommandsBuffer->GetView(), 0, 1);
 		}
 
-		if (m_indirectDrawDataBuffer->GetSize() < m_activeRenderObjects.size())
+		if (m_indirectDrawDataBuffer->GetSize() < renderObjectCount)
 		{
-			m_indirectDrawDataBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
+			m_indirectDrawDataBuffer->Resize(renderObjectCount);
 			m_descriptorTable->SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
 		}
 
-		if (m_instanceOffsetToObjectIDBuffer->GetSize() < m_activeRenderObjects.size())
+		if (m_instanceOffsetToObjectIDBuffer->GetSize() < renderObjectCount)
 		{
-			m_instanceOffsetToObjectIDBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
-			m_drawToInstanceOffsetBuffer->Resize(static_cast<uint32_t>(m_activeRenderObjects.size()));
+			m_instanceOffsetToObjectIDBuffer->Resize(renderObjectCount);
+			m_drawToInstanceOffsetBuffer->Resize(renderObjectCount);
 
 			m_indirectSetupDescriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 2);
 			m_indirectSetupDescriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 3);
@@ -424,6 +402,8 @@ namespace Volt
 			m_descriptorTable->SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
 			m_descriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
 		}
+
+		UpdateDescriptorTable(*renderScene);
 
 		uint32_t currentMeshIndex = 0;
 
@@ -434,7 +414,7 @@ namespace Volt
 		IndirectGPUCommandNew* indirectCommands = m_indirectCommandsBuffer->Map<IndirectGPUCommandNew>();
 
 		m_currentActiveCommandCount = 0;
-		for (uint32_t index = 0; const auto & obj : m_activeRenderObjects)
+		for (uint32_t index = 0; const auto & obj : *renderScene)
 		{
 			auto meshPtr = obj.mesh.get();
 			uint32_t meshIndex = 0;
@@ -541,6 +521,18 @@ namespace Volt
 			});
 
 			m_constantBufferSet->Get(5, DIRECTIONAL_LIGHT_BINDING, m_commandBuffer->GetCurrentIndex())->SetData<DirectionalLightData>(dirLightData);
+		}
+	}
+
+	void SceneRendererNew::UpdateDescriptorTable(RenderScene& renderScene)
+	{
+		for (uint32_t index = 0; const auto & mesh : renderScene.GetIndividualMeshes())
+		{
+			m_descriptorTable->SetBufferView(mesh.lock()->GetVertexPositionsBuffer()->GetView(), 1, 0, index);
+			m_descriptorTable->SetBufferView(mesh.lock()->GetVertexMaterialBuffer()->GetView(), 2, 0, index);
+			m_descriptorTable->SetBufferView(mesh.lock()->GetVertexAnimationBuffer()->GetView(), 3, 0, index);
+			m_descriptorTable->SetBufferView(mesh.lock()->GetIndexStorageBuffer()->GetView(), 4, 0, index);
+			index++;
 		}
 	}
 }

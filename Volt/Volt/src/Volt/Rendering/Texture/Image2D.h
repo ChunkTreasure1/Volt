@@ -63,7 +63,7 @@ namespace Volt
 		static Ref<Image2D> Create(const ImageSpecification& specification, bool transitionTolayout);
 
 	private:
-		friend class TransientResourceSystem;
+		friend class TransientResourceSystemOld;
 
 		Buffer ReadPixelInternal(uint32_t x, uint32_t y, uint32_t size);
 		Buffer ReadPixelRangeInternal(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY, uint32_t size);

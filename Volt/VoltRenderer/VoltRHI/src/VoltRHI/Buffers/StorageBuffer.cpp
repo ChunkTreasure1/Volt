@@ -7,7 +7,7 @@
 
 namespace Volt::RHI
 {
-	Ref<StorageBuffer> StorageBuffer::Create(uint32_t count, size_t elementSize, MemoryUsage bufferUsage)
+	Ref<StorageBuffer> StorageBuffer::Create(uint32_t count, size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(count, elementSize, bufferUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(count, elementSize, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;

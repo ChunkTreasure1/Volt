@@ -6,7 +6,9 @@
 
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Graphics/GraphicsContext.h>
+
+#include <VoltRHI/Memory/Allocation.h>
 
 #define TINYDDSLOADER_IMPLEMENTATION
 #include <tinyddsloader.h>
@@ -92,8 +94,7 @@ namespace Volt
 		const uint32_t width = imageData->m_width;
 		const uint32_t height = imageData->m_height;
 
-		Ref<RHI::StorageBuffer> stagingBuffer = RHI::StorageBuffer::Create(1, 1, RHI::MemoryUsage::Staging);
-		stagingBuffer->ResizeByteSize(size);
+		Ref<RHI::Allocation> stagingBuffer = RHI::GraphicsContext::GetAllocator().CreateBuffer(size, RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::CPU);
 
 		// Map memory
 		{

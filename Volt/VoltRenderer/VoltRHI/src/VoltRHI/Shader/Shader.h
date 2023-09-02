@@ -117,7 +117,7 @@ namespace Volt::RHI
 
 	struct ShaderResources
 	{
-		std::map<uint32_t, std::map<uint32_t, ShaderConstantBuffer>> constantBuffers;
+		std::map<uint32_t, std::map<uint32_t, ShaderConstantBuffer>> uniformBuffers;
 		std::map<uint32_t, std::map<uint32_t, ShaderStorageBuffer>> storageBuffers;
 		std::map<uint32_t, std::map<uint32_t, ShaderStorageImage>> storageImages;
 		std::map<uint32_t, std::map<uint32_t, ShaderImage>> images;

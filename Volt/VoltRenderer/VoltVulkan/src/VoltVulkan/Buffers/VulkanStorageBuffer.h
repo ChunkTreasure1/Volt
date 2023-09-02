@@ -2,15 +2,13 @@
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
-struct VkBuffer_T;
-struct VmaAllocation_T;
-
 namespace Volt::RHI
 {
+	class Allocation;
 	class VulkanStorageBuffer : public StorageBuffer
 	{
 	public:
-		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, MemoryUsage bufferUsage);
+		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 		~VulkanStorageBuffer() override;
 
 		void ResizeByteSize(const size_t byteSize) override;
@@ -39,9 +37,9 @@ namespace Volt::RHI
 		size_t m_byteSize = 0;
 		uint32_t m_size = 0;
 
-		VkBuffer_T* m_buffer = nullptr;
-		VmaAllocation_T* m_allocation = nullptr;
+		Ref<Allocation> m_allocation;
 
-		MemoryUsage m_memoryUsage = MemoryUsage::Default;
+		BufferUsage m_bufferUsage = BufferUsage::StorageBuffer;
+		MemoryUsage m_memoryUsage = MemoryUsage::GPU;
 	};
 }

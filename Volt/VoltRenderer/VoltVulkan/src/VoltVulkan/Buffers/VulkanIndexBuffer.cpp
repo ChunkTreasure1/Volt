@@ -1,13 +1,14 @@
 #include "vkpch.h"
 #include "VulkanIndexBuffer.h"
 
-#include "VoltVulkan/Graphics/VulkanAllocator.h"
 #include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+
+#include <VoltRHI/Memory/Allocation.h>
 
 namespace Volt::RHI
 {
@@ -25,18 +26,16 @@ namespace Volt::RHI
 
 	VulkanIndexBuffer::~VulkanIndexBuffer()
 	{
-		if (!m_buffer)
+		if (!m_allocation)
 		{
 			return;
 		}
 
-		GraphicsContext::DestroyResource([buffer = m_buffer, allocation = m_allocation]() 
+		GraphicsContext::DestroyResource([allocation = m_allocation]() 
 		{
-			VulkanAllocator allocator{};
-			allocator.DestroyBuffer(buffer, allocation);
+			GraphicsContext::GetAllocator().DestroyBuffer(allocation);
 		});
 
-		m_buffer = nullptr;
 		m_allocation = nullptr;
 	}
 
@@ -50,7 +49,7 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_buffer;
+		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
@@ -59,57 +58,45 @@ namespace Volt::RHI
 
 	void* VulkanIndexBuffer::GetHandleImpl()
 	{
-		return m_buffer;
+		return m_allocation->GetResourceHandle<VkBuffer>();
 	}
 
 	void VulkanIndexBuffer::SetData(const void* data, const uint32_t size)
 	{
-		VkBuffer stagingBuffer = nullptr;
-		VmaAllocation stagingAllocation = nullptr;
-
 		VkDeviceSize bufferSize = size;
-		VulkanAllocator allocator{};
 
-		if (m_buffer != nullptr)
+		Ref<Allocation> stagingAllocation;
+
+		if (m_allocation)
 		{
-			allocator.DestroyBuffer(m_buffer, m_allocation);
-			m_buffer = nullptr;
+			GraphicsContext::DestroyResource([allocation = m_allocation]() 
+			{
+				GraphicsContext::GetAllocator().DestroyBuffer(allocation);
+			});
+
 			m_allocation = nullptr;
 		}
 
-		if (data != nullptr)
-		{
-			// Create staging buffer
-			{
-				VkBufferCreateInfo info{};
-				info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				info.size = bufferSize;
-				info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-				info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		auto& allocator = GraphicsContext::GetAllocator();
 
-				stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
-			}
+		if (data)
+		{
+			stagingAllocation = allocator.CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPU);
 
 			// Copy to staging buffer
 			{
-				void* buffData = allocator.MapMemory<void>(stagingAllocation);
+				void* buffData = stagingAllocation->Map<void>();
 				memcpy_s(buffData, size, data, size);
-				allocator.UnmapMemory(stagingAllocation);
+				stagingAllocation->Unmap();
 			}
 		}
 
 		// Create GPU buffer
 		{
-			VkBufferCreateInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			info.size = bufferSize;
-			info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			m_allocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_GPU_ONLY, m_buffer);
+			m_allocation = allocator.CreateBuffer(bufferSize, BufferUsage::IndexBuffer | BufferUsage::TransferDst);
 		}
 
-		if (data != nullptr)
+		if (data)
 		{
 			// Copy from staging buffer to GPU buffer
 			{
@@ -121,13 +108,13 @@ namespace Volt::RHI
 				copy.dstOffset = 0;
 				copy.size = bufferSize;
 
-				vkCmdCopyBuffer(cmdBuffer->GetHandle<VkCommandBuffer>(), stagingBuffer, m_buffer, 1, &copy);
+				vkCmdCopyBuffer(cmdBuffer->GetHandle<VkCommandBuffer>(), stagingAllocation->GetResourceHandle<VkBuffer>(), m_allocation->GetResourceHandle<VkBuffer>(), 1, &copy);
 
 				cmdBuffer->End();
 				cmdBuffer->Execute();
 			}
 
-			allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
+			allocator.DestroyBuffer(stagingAllocation);
 		}
 	}
 }

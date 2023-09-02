@@ -1,7 +1,6 @@
 #include "vkpch.h"
 #include "VulkanImage2D.h"
 
-#include "VoltVulkan/Graphics/VulkanAllocator.h"
 #include "VoltVulkan/Common/VulkanFunctions.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
 
@@ -12,6 +11,8 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Memory/Allocator.h>
+#include <VoltRHI/Memory/Allocation.h>
 
 namespace Volt::RHI
 {
@@ -47,43 +48,6 @@ namespace Volt::RHI
 		m_specification.width = width;
 		m_specification.height = height;
 
-		VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
-		if (m_specification.usage == ImageUsage::Attachment)
-		{
-			usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-			if (Utility::IsDepthFormat(m_specification.format))
-			{
-				usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			}
-			else
-			{
-				usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			}
-		}
-		else if (m_specification.usage == ImageUsage::AttachmentStorage)
-		{
-			usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-			if (Utility::IsDepthFormat(m_specification.format))
-			{
-				usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			}
-			else
-			{
-				usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			}
-		}
-		else if (m_specification.usage == ImageUsage::Texture)
-		{
-			usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		}
-		else if (m_specification.usage == ImageUsage::Storage)
-		{
-			usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-		}
-
 		VkImageAspectFlags aspectMask = Utility::IsDepthFormat(m_specification.format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		if (Utility::IsStencilFormat(m_specification.format))
 		{
@@ -92,39 +56,7 @@ namespace Volt::RHI
 
 		m_imageAspect = static_cast<uint32_t>(aspectMask);
 
-		VkImageCreateInfo imageInfo{};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.usage = usageFlags;
-		imageInfo.extent.width = m_specification.width;
-		imageInfo.extent.height = m_specification.height;
-		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = m_specification.mips;
-		imageInfo.arrayLayers = m_specification.layers;
-		imageInfo.format = Utility::VoltToVulkanFormat(m_specification.format);
-		imageInfo.flags = 0;
-
-		if (m_specification.isCubeMap)
-		{
-			imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-		}
-
-		VmaMemoryUsage memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-		switch (m_specification.memoryUsage)
-		{
-			case MemoryUsage::CPUToGPU:
-				memUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-				break;
-			case MemoryUsage::Default:
-				memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-				break;
-		}
-
-		VulkanAllocator allocator{};
-		m_allocation = allocator.AllocateImage(imageInfo, memUsage, m_image, m_specification.debugName);
+		m_allocation = GraphicsContext::GetAllocator().CreateImage(m_specification, m_specification.memoryUsage);
 
 		if (data)
 		{
@@ -174,20 +106,18 @@ namespace Volt::RHI
 
 	void VulkanImage2D::Release()
 	{
-		if (!m_image)
+		if (!m_allocation)
 		{
 			return;
 		}
 
 		m_imageViews.clear();
 
-		GraphicsContext::DestroyResource([image = m_image, allocation = m_allocation]() 
+		GraphicsContext::DestroyResource([allocation = m_allocation]() 
 		{
-			VulkanAllocator allocator{};
-			allocator.DestroyImage(image, allocation);
+			GraphicsContext::GetAllocator().DestroyImage(allocation);
 		});
 
-		m_image = nullptr;
 		m_allocation = nullptr;
 	}
 
@@ -206,7 +136,7 @@ namespace Volt::RHI
 		// Transition to DST OPTIMAL
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.image = m_image;
+		barrier.image = m_allocation->GetResourceHandle<VkImage>();
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.srcAccessMask = 0;
@@ -262,7 +192,7 @@ namespace Volt::RHI
 					imageBlit.dstOffsets[0] = { 0, 0, 0 };
 					imageBlit.dstOffsets[1] = { int32_t(m_specification.width >> i), int32_t(m_specification.height >> i), 1 };
 
-					vkCmdBlitImage(vkCmdBuffer, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
+					vkCmdBlitImage(vkCmdBuffer, m_allocation->GetResourceHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_allocation->GetResourceHandle<VkImage>(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit, VK_FILTER_LINEAR);
 				}
 
 				// Transfer last mip back
@@ -360,7 +290,7 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
-		nameInfo.objectHandle = (uint64_t)m_image;
+		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkImage>();
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
@@ -369,7 +299,7 @@ namespace Volt::RHI
 
 	void* VulkanImage2D::GetHandleImpl()
 	{
-		return m_image;
+		return m_allocation->GetResourceHandle<VkImage>();
 	}
 
 	void VulkanImage2D::TransitionToLayout(ImageLayout targetLayout)
@@ -387,7 +317,7 @@ namespace Volt::RHI
 
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.image = m_image;
+		barrier.image = m_allocation->GetResourceHandle<VkImage>();
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.srcAccessMask = 0;

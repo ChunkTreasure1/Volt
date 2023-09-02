@@ -34,7 +34,6 @@
 #include "Volt/Rendering/Texture/Image3D.h"
 
 #include "Volt/Rendering/MaterialTable.h"
-#include "Volt/Rendering/MeshTable.h"
 #include "Volt/Rendering/SamplerStateSet.h"
 
 #include "Volt/Rendering/GlobalDescriptorSetManager.h"
@@ -978,23 +977,6 @@ namespace Volt
 		s_rendererData->bindlessData.materialTable->UpdateMaterial(material);
 	}
 
-	const uint32_t Renderer::AddMesh(Mesh* mesh, const uint32_t subMeshIndex)
-	{
-		std::scoped_lock lock{ s_meshMutex };
-		return s_rendererData->bindlessData.meshTable->AddMesh(mesh, subMeshIndex);
-	}
-
-	void Renderer::RemoveMesh(Mesh* mesh, const uint32_t subMeshIndex)
-	{
-		if (!s_rendererData)
-		{
-			return;
-		}
-
-		std::scoped_lock lock{ s_meshMutex };
-		s_rendererData->bindlessData.meshTable->RemoveMesh(mesh, subMeshIndex);
-	}
-
 	Renderer::BindlessData& Renderer::GetBindlessData()
 	{
 		return s_rendererData->bindlessData;
@@ -1061,7 +1043,6 @@ namespace Volt
 		//data.combinedIndexBuffer = CombinedIndexBuffer::Create(BindlessData::START_INDEX_COUNT);
 		data.textureTable = TextureTable::Create();
 		data.materialTable = MaterialTable::Create();
-		data.meshTable = MeshTable::Create();
 		data.samplerStateSet = SamplerStateSet::Create(GetFramesInFlightCount());
 
 		data.samplerStateSet->Add(Sets::SAMPLERS, Bindings::SAMPLER_LINEAR, TextureFilter::Linear, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::Repeat, CompareOperator::None);
@@ -1276,12 +1257,9 @@ namespace Volt
 		for (uint32_t i = 0; i < GetFramesInFlightCount(); i++)
 		{
 			auto descriptorSet = s_rendererData->bindlessData.globalDescriptorSets[Sets::MAINBUFFERS]->GetOrAllocateDescriptorSet(i);
-			const auto buffer = s_rendererData->bindlessData.meshTable->GetStorageBuffer(i);
 
 			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = buffer->GetHandle();
 			bufferInfo.offset = 0;
-			bufferInfo.range = buffer->GetSize();
 
 			VkWriteDescriptorSet writeDescriptor{};
 			writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

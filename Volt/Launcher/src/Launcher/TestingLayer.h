@@ -15,7 +15,7 @@ namespace Volt::RHI
 	class IndexBuffer;
 
 	class DescriptorTable;
-	class ConstantBuffer;
+	class UniformBuffer;
 
 	class StorageBuffer;
 }
@@ -46,7 +46,7 @@ private:
 
 	Ref<Volt::RHI::Image2D> m_renderTarget;
 	Ref<Volt::RHI::DescriptorTable> m_descriptorTable;
-	Ref<Volt::RHI::ConstantBuffer> m_constantBuffer;
+	Ref<Volt::RHI::UniformBuffer> m_constantBuffer;
 
 	Ref<Volt::RHI::StorageBuffer> m_indirectCommandsBuffer;
 	Ref<Volt::RHI::StorageBuffer> m_transformsBuffer;

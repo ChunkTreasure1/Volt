@@ -4,6 +4,8 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Core/RHIInterface.h"
 
+#include "VoltRHI/Memory/Allocator.h"
+
 namespace Volt::RHI
 {
 	class GraphicsDevice;
@@ -19,6 +21,7 @@ namespace Volt::RHI
 
 		[[nodiscard]] static Ref<GraphicsDevice> GetDevice() { return s_context->m_graphicsDevice; };
 		[[nodiscard]] static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->m_physicalDevice; };
+		[[nodiscard]] static Allocator& GetAllocator() { return *s_context->m_allocator; };
 
 		static Ref<GraphicsContext> Create(const GraphicsContextCreateInfo& createInfo);
 		
@@ -35,6 +38,7 @@ namespace Volt::RHI
 	protected:
 		Ref<GraphicsDevice> m_graphicsDevice;
 		Ref<PhysicalGraphicsDevice> m_physicalDevice;
+		Scope<Allocator> m_allocator;
 
 	private:
 		inline static GraphicsContext* s_context;

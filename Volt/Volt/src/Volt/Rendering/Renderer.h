@@ -160,9 +160,6 @@ namespace Volt
 		static void RemoveMaterial(SubMaterial* material);
 		static void UpdateMaterial(SubMaterial* material);
 
-		static const uint32_t AddMesh(Mesh* mesh, const uint32_t subMeshIndex);
-		static void RemoveMesh(Mesh* mesh, const uint32_t subMeshIndex);
-
 		static BindlessData& GetBindlessData();
 		static DefaultData& GetDefaultData();
 		static const VulkanFunctions& GetVulkanFunctions();

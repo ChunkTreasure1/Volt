@@ -7,6 +7,7 @@ struct VmaAllocation_T;
 
 namespace Volt::RHI
 {
+	class Allocation;
 	class VulkanImage2D final : public Image2D
 	{
 	public:
@@ -43,8 +44,7 @@ namespace Volt::RHI
 
 		ImageSpecification m_specification;
 
-		VmaAllocation_T* m_allocation = nullptr;
-		VkImage_T* m_image = nullptr;
+		Ref<Allocation> m_allocation;
 
 		bool m_hasGeneratedMips = false;
 

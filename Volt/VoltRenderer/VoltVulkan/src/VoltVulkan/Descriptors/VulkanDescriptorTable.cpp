@@ -306,7 +306,7 @@ namespace Volt::RHI
 			m_writeDescriptors.emplace_back();
 			m_activeWriteDescriptors.emplace_back();
 
-			for (const auto& [set, bindings] : resources.constantBuffers)
+			for (const auto& [set, bindings] : resources.uniformBuffers)
 			{
 				for (const auto& [binding, data] : bindings)
 				{
@@ -397,7 +397,7 @@ namespace Volt::RHI
 	{
 		const auto& resources = m_shader.lock()->GetResources();
 
-		for (const auto& [set, bindings] : resources.constantBuffers)
+		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{
 			for (const auto& [binding, info] : bindings)
 			{
