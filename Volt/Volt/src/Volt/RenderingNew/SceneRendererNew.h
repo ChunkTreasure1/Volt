@@ -17,6 +17,8 @@ namespace Volt
 		class SamplerState;
 
 		class DescriptorTable;
+
+		class MemoryPool;
 	}
 
 	class Camera;
@@ -85,6 +87,8 @@ namespace Volt
 		Ref<RHI::DescriptorTable> m_indirectSetupDescriptorTable;
 		Ref<RHI::DescriptorTable> m_indirectCountDescriptorTable;
 		Ref<RHI::DescriptorTable> m_descriptorTable;
+
+		Ref<RHI::MemoryPool> m_memoryPool;
 
 		uint32_t m_currentActiveCommandCount = 0;
 

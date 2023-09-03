@@ -40,6 +40,8 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
+#include <VoltRHI/Memory/MemoryPool.h>
+
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
 inline static constexpr uint32_t CAMERA_BUFFER_BINDING = 0;
@@ -168,6 +170,8 @@ namespace Volt
 			m_indirectCountDescriptorTable = RHI::DescriptorTable::Create(spec);
 			m_indirectCountDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 		}
+
+		m_memoryPool = RHI::MemoryPool::Create(RHI::MemoryUsage::GPU);
 	}
 
 	SceneRendererNew::~SceneRendererNew()
@@ -225,7 +229,7 @@ namespace Volt
 			RenderGraphResourceHandle depthImage;
 		} imageData;
 
-		RenderGraph renderGraph{ m_commandBuffer };
+		RenderGraph renderGraph{ m_commandBuffer, m_memoryPool };
 		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer);
 		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer);
 		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer);

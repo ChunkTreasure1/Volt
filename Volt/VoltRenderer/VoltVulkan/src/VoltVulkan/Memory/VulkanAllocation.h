@@ -20,7 +20,7 @@ namespace Volt::RHI
 		void* MapInternal() override;
 
 	private:
-		friend class VulkanAllocator;
+		friend class VulkanDefaultAllocator;
 
 		void* GetHandleImpl() const override;
 
@@ -40,7 +40,7 @@ namespace Volt::RHI
 		void* MapInternal() override;
 
 	private:
-		friend class VulkanAllocator;
+		friend class VulkanDefaultAllocator;
 		
 		void* GetHandleImpl() const override;
 

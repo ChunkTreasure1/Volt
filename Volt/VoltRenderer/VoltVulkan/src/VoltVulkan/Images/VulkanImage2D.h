@@ -15,6 +15,7 @@ namespace Volt::RHI
 		using ImageAspect = uint32_t;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
+		VulkanImage2D(const ImageSpecification& specification, Ref<MemoryPool> pool);
 		~VulkanImage2D() override;
 
 		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
@@ -45,8 +46,10 @@ namespace Volt::RHI
 		ImageSpecification m_specification;
 
 		Ref<Allocation> m_allocation;
+		Weak<MemoryPool> m_pool;
 
 		bool m_hasGeneratedMips = false;
+		bool m_allocatedUsingPool = false;
 
 		ImageLayout m_currentImageLayout = 0;
 		ImageAspect m_imageAspect = 0;

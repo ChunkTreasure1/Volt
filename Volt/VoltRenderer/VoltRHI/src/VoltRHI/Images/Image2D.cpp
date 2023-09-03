@@ -24,4 +24,21 @@ namespace Volt::RHI
 
 		return nullptr;
 	}
+
+	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, Ref<MemoryPool> pool)
+	{
+		const auto api = GraphicsContext::GetAPI();
+
+		switch (api)
+		{
+			case GraphicsAPI::D3D12:
+			case GraphicsAPI::MoltenVk:
+			case GraphicsAPI::Mock:
+				break;
+
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImage2D>(specification, pool); break;
+		}
+
+		return nullptr;
+	}
 }

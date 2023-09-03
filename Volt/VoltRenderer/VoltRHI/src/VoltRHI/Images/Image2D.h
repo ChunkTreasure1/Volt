@@ -27,6 +27,8 @@ namespace Volt::RHI
 	};
 
 	class ImageView;
+	class MemoryPool;
+
 	class Image2D : public RHIResource
 	{
 	public:
@@ -42,6 +44,7 @@ namespace Volt::RHI
 		virtual const uint32_t CalculateMipCount() const = 0;
 
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
+		static Ref<Image2D> Create(const ImageSpecification& specification, Ref<MemoryPool> pool);
 
 	protected:
 		Image2D() = default;

@@ -1,5 +1,5 @@
 #include "vkpch.h"
-#include "VulkanAllocator.h"
+#include "VulkanDefaultAllocator.h"
 
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
@@ -11,6 +11,7 @@
 #include <VoltRHI/Images/ImageUtility.h>
 
 #include <VoltRHI/Core/Profiling.h>
+#include <VoltRHI/Memory/MemoryPool.h>
 
 #include <vma/VulkanMemoryAllocator.h>
 
@@ -103,19 +104,19 @@ namespace Volt::RHI
 		}
 	}
 
-	VulkanAllocator::VulkanAllocator()
+	VulkanDefaultAllocator::VulkanDefaultAllocator()
 	{
 		VmaAllocatorCreateInfo info{};
 		info.vulkanApiVersion = VK_API_VERSION_1_3;
 		info.physicalDevice = GraphicsContext::GetPhysicalDevice()->GetHandle<VkPhysicalDevice>();
 		info.device = GraphicsContext::GetDevice()->GetHandle<VkDevice>();
 		info.instance = GraphicsContext::Get().GetHandle<VkInstance>();
-		info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT | VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+		info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
 		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator));
 	}
 
-	VulkanAllocator::~VulkanAllocator()
+	VulkanDefaultAllocator::~VulkanDefaultAllocator()
 	{
 		for (const auto& alloc : m_activeImageAllocations)
 		{
@@ -130,7 +131,7 @@ namespace Volt::RHI
 		vmaDestroyAllocator(m_allocator);
 	}
 
-	Ref<Allocation> VulkanAllocator::CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage)
+	Ref<Allocation> VulkanDefaultAllocator::CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -183,7 +184,7 @@ namespace Volt::RHI
 		return allocation;
 	}
 
-	Ref<Allocation> VulkanAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
+	Ref<Allocation> VulkanDefaultAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -252,7 +253,77 @@ namespace Volt::RHI
 		return allocation;
 	}
 
-	void VulkanAllocator::DestroyBuffer(Ref<Allocation> allocation)
+	Ref<Allocation> VulkanDefaultAllocator::CreateImage(const ImageSpecification& imageSpecification, Ref<MemoryPool> pool, MemoryUsage memoryUsage)
+	{
+		VT_PROFILE_FUNCTION();
+
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = imageSpecification.depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
+		imageInfo.usage = Utility::GetVkImageUsageFlags(imageSpecification.usage, imageSpecification.format);
+		imageInfo.extent.width = imageSpecification.width;
+		imageInfo.extent.height = imageSpecification.height;
+		imageInfo.extent.depth = imageSpecification.depth;
+		imageInfo.mipLevels = imageSpecification.mips;
+		imageInfo.arrayLayers = imageSpecification.layers;
+		imageInfo.format = Utility::VoltToVulkanFormat(imageSpecification.format);
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.flags = 0;
+
+		if (imageSpecification.isCubeMap && imageSpecification.layers > 1)
+		{
+			imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+		}
+		else if (imageSpecification.layers > 1)
+		{
+			imageInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+		}
+
+		VmaMemoryUsage usageFlags = VMA_MEMORY_USAGE_AUTO;
+		VmaAllocationCreateFlags createFlags = 0;
+
+		if ((memoryUsage & MemoryUsage::CPU) != MemoryUsage::None)
+		{
+			usageFlags = VMA_MEMORY_USAGE_CPU_ONLY;
+			createFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+		}
+		else if ((memoryUsage & MemoryUsage::CPUToGPU) != MemoryUsage::None)
+		{
+			createFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+		}
+		else if ((memoryUsage & MemoryUsage::GPUToCPU) != MemoryUsage::None)
+		{
+			createFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+		}
+
+		if ((memoryUsage & MemoryUsage::Dedicated) != MemoryUsage::None)
+		{
+			createFlags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+		}
+
+		VmaAllocationCreateInfo allocCreateInfo{};
+		allocCreateInfo.usage = usageFlags;
+		allocCreateInfo.flags = createFlags;
+		allocCreateInfo.priority = 1.f;
+		allocCreateInfo.pool = pool->GetHandle<VmaPool>();
+
+		VmaAllocationInfo allocInfo{};
+
+		Ref<VulkanImageAllocation> allocation = CreateRefRHI<VulkanImageAllocation>();
+		VT_VK_CHECK(vmaCreateImage(m_allocator, &imageInfo, &allocCreateInfo, &allocation->m_resource, &allocation->m_allocation, &allocInfo));
+
+		if (!imageSpecification.debugName.empty())
+		{
+			vmaSetAllocationName(m_allocator, allocation->m_allocation, imageSpecification.debugName.c_str());
+		}
+
+		m_activeImageAllocations.push_back(allocation);
+		return allocation;
+	}
+
+	void VulkanDefaultAllocator::DestroyBuffer(Ref<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -266,7 +337,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void VulkanAllocator::DestroyImage(Ref<Allocation> allocation)
+	void VulkanDefaultAllocator::DestroyImage(Ref<Allocation> allocation)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -280,7 +351,7 @@ namespace Volt::RHI
 		}
 	}
 
-	void* VulkanAllocator::GetHandleImpl() const
+	void* VulkanDefaultAllocator::GetHandleImpl() const
 	{
 		return m_allocator;
 	}

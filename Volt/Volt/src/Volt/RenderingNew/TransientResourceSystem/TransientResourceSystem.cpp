@@ -20,6 +20,11 @@ namespace Volt
 		m_allocatedResources.clear();
 	}
 
+	void TransientResourceSystem::SetPool(Ref<RHI::MemoryPool> pool)
+	{
+		m_pool = pool;
+	}
+
 	Weak<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
 		if (m_allocatedResources.contains(resourceHandle))
@@ -40,9 +45,7 @@ namespace Volt
 		imageSpec.isCubeMap = imageDesc.isCubeMap;
 		imageSpec.initializeImage = false;
 
-		imageSpec.memoryUsage = RHI::MemoryUsage::Dedicated;
-
-		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec);
+		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, m_pool);
 		m_allocatedResources[resourceHandle] = image;
 
 		return image;

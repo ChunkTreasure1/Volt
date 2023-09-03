@@ -17,6 +17,8 @@ project "VulkanMemoryAllocator"
 	includedirs
 	{
 		".",
+		"../../../VoltRenderer/VoltRHI/src",
+		"%{IncludeDir.Optick}",
 		"%{IncludeDir.VulkanSDK}",
 	}
 

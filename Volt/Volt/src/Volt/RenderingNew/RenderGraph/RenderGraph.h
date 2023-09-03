@@ -22,6 +22,7 @@ namespace Volt
 		class Image2D;
 		class StorageBuffer;
 		class UniformBuffer;
+		class MemoryPool;
 	}
 
 	class RenderGraphPassResources;
@@ -34,7 +35,7 @@ namespace Volt
 	class RenderGraph
 	{
 	public:
-		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer);
+		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer, Ref<RHI::MemoryPool> pool);
 
 		class Builder
 		{
@@ -100,6 +101,7 @@ namespace Volt
 		RenderGraphResourceHandle m_resourceIndex = 0;
 
 		Weak<RHI::CommandBuffer> m_commandBuffer;
+
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;
 	};

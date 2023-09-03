@@ -35,6 +35,12 @@ namespace Volt::RHI
 		Invalidate(specification.width, specification.height, data);
 	}
 
+	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, Ref<MemoryPool> pool)
+		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingPool(true), m_pool(pool)
+	{
+		Invalidate(specification.width, specification.height, nullptr);
+	}
+
 	VulkanImage2D::~VulkanImage2D()
 	{
 		Release();
@@ -56,7 +62,14 @@ namespace Volt::RHI
 
 		m_imageAspect = static_cast<uint32_t>(aspectMask);
 
-		m_allocation = GraphicsContext::GetAllocator().CreateImage(m_specification, m_specification.memoryUsage);
+		if (m_allocatedUsingPool)
+		{
+			m_allocation = GraphicsContext::GetAllocator().CreateImage(m_specification, m_pool, m_specification.memoryUsage);
+		}
+		else
+		{
+			m_allocation = GraphicsContext::GetAllocator().CreateImage(m_specification, m_specification.memoryUsage);
+		}
 
 		if (data)
 		{
@@ -72,7 +85,7 @@ namespace Volt::RHI
 			{
 				case ImageUsage::Texture: targetLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; break;
 				case ImageUsage::Storage: targetLayout = VK_IMAGE_LAYOUT_GENERAL; break;
-				
+
 				case ImageUsage::AttachmentStorage:
 				case ImageUsage::Attachment:
 				{
@@ -114,7 +127,7 @@ namespace Volt::RHI
 
 		m_imageViews.clear();
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]() 
+		GraphicsContext::DestroyResource([allocation = m_allocation]()
 		{
 			GraphicsContext::GetAllocator().DestroyImage(allocation);
 		});
@@ -335,7 +348,7 @@ namespace Volt::RHI
 
 		commandBuffer->Begin();
 		vkCmdPipelineBarrier(commandBuffer->GetHandle<VkCommandBuffer>(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	
+
 		commandBuffer->End();
 		commandBuffer->Execute();
 

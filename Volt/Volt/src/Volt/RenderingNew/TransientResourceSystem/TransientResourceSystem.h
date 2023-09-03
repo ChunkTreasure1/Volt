@@ -12,6 +12,7 @@ namespace Volt
 		class StorageBuffer;
 		class UniformBuffer;
 		class RHIResource;
+		class MemoryPool;
 	}
 
 	struct RenderGraphImageDesc;
@@ -23,6 +24,8 @@ namespace Volt
 		TransientResourceSystem();
 		~TransientResourceSystem();
 
+		void SetPool(Ref<RHI::MemoryPool> pool);
+
 		Weak<RHI::Image2D> AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
 		//Ref<RHI::Image3D> AquireImage3D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc);
 		Weak<RHI::StorageBuffer> AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
@@ -32,6 +35,7 @@ namespace Volt
 
 	private:
 
+		Ref<RHI::MemoryPool> m_pool;
 		std::unordered_map<RenderGraphResourceHandle, Ref<RHI::RHIResource>> m_allocatedResources;
 	};
 }
