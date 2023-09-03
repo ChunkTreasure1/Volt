@@ -85,10 +85,12 @@ namespace Volt
 		RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-		Ref<RHI::Image2D> GetImage2D(const RenderGraphResourceHandle resourceHandle);
+		Weak<RHI::Image2D> GetImage2D(const RenderGraphResourceHandle resourceHandle);
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
-		Ref<RHI::StorageBuffer> GetBuffer(const RenderGraphResourceHandle resourceHandle);
-		Ref<RHI::UniformBuffer> GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
+		Weak<RHI::StorageBuffer> GetBuffer(const RenderGraphResourceHandle resourceHandle);
+		Weak<RHI::UniformBuffer> GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
+
+		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
 		std::vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;

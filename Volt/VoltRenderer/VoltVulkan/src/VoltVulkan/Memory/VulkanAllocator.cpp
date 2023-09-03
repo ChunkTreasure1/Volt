@@ -10,6 +10,8 @@
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 #include <VoltRHI/Images/ImageUtility.h>
 
+#include <VoltRHI/Core/Profiling.h>
+
 #include <vma/VulkanMemoryAllocator.h>
 
 namespace Volt::RHI
@@ -130,6 +132,8 @@ namespace Volt::RHI
 
 	Ref<Allocation> VulkanAllocator::CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
+		VT_PROFILE_FUNCTION();
+
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.pNext = nullptr;
@@ -181,6 +185,8 @@ namespace Volt::RHI
 
 	Ref<Allocation> VulkanAllocator::CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage)
 	{
+		VT_PROFILE_FUNCTION();
+
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.imageType = imageSpecification.depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
@@ -248,6 +254,8 @@ namespace Volt::RHI
 
 	void VulkanAllocator::DestroyBuffer(Ref<Allocation> allocation)
 	{
+		VT_PROFILE_FUNCTION();
+
 		Ref<VulkanBufferAllocation> bufferAlloc = allocation->As<VulkanBufferAllocation>();
 		vmaDestroyBuffer(m_allocator, bufferAlloc->m_resource, bufferAlloc->m_allocation);
 
@@ -260,6 +268,8 @@ namespace Volt::RHI
 
 	void VulkanAllocator::DestroyImage(Ref<Allocation> allocation)
 	{
+		VT_PROFILE_FUNCTION();
+
 		Ref<VulkanImageAllocation> imageAlloc = allocation->As<VulkanImageAllocation>();
 		vmaDestroyImage(m_allocator, imageAlloc->m_resource, imageAlloc->m_allocation);
 

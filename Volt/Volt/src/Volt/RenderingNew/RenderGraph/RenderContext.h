@@ -29,6 +29,7 @@ namespace Volt
 	{
 	public:
 		RenderContext(Ref<RHI::CommandBuffer> commandBuffer);
+		~RenderContext();
 
 		void BeginRendering(const RenderingInfo& renderingInfo);
 		void EndRendering();
@@ -36,10 +37,10 @@ namespace Volt
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 
-		void BindPipeline(Ref<RHI::RenderPipeline> pipeline);
-		void BindPipeline(Ref<RHI::ComputePipeline> pipeline);
+		void BindPipeline(Ref<RHI::RenderPipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable = nullptr);
+		void BindPipeline(Ref<RHI::ComputePipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable = nullptr);
 
-		void SetDescriptorExternalTable(Ref<RHI::DescriptorTable> descriptorTable);
+		void SetExternalDescriptorTable(Ref<RHI::DescriptorTable> descriptorTable);
 
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset = 0);
 

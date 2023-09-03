@@ -8,6 +8,7 @@
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
+#include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Core/Profiling.h"
@@ -237,6 +238,7 @@ namespace Volt
 		[&](RenderGraph::Builder& builder)
 		{
 			builder.WriteResource(bufferData.indirectCountsBuffer);
+			builder.SetHasSideEffect();
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -258,6 +260,8 @@ namespace Volt
 			builder.WriteResource(bufferData.indirectCountsBuffer);
 			builder.WriteResource(bufferData.drawToInstanceOffsetBuffer);
 			builder.WriteResource(bufferData.instanceOffsetToObjectIDBuffer);
+	
+			builder.SetHasSideEffect();
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -276,6 +280,28 @@ namespace Volt
 			context.Dispatch(dispatchCount, 1, 1);
 		});
 
+		RenderGraphResourceHandle testHandle = 0;
+
+		renderGraph.AddPass("Test Pass",
+		[&](RenderGraph::Builder& builder)
+		{
+			RenderGraphImageDesc desc{};
+			desc.width = 1920;
+			desc.height = 1080;
+			desc.format = RHI::Format::R32G32B32A32_SFLOAT;
+			desc.usage = RHI::ImageUsage::AttachmentStorage;
+
+			testHandle = builder.CreateImage2D(desc);
+
+			builder.WriteResource(testHandle);
+
+			builder.SetHasSideEffect();
+		},
+		[&](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			auto image = resources.GetImage2D(testHandle);
+		});
+
 		renderGraph.AddResourceTransition(bufferData.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
 		renderGraph.AddResourceTransition(bufferData.indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
 
@@ -287,6 +313,8 @@ namespace Volt
 
 			builder.WriteResource(imageData.outputImage);
 			builder.WriteResource(imageData.depthImage);
+
+			builder.SetHasSideEffect();
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -319,13 +347,9 @@ namespace Volt
 			info.scissor = scissor;
 			info.viewport = viewport;
 
-			const auto indirectCommands = resources.GetBuffer(bufferData.indirectCommandsBuffer);
-			const auto indirectCounts = resources.GetBuffer(bufferData.indirectCountsBuffer);
-
 			context.BeginRendering(info);
-			context.BindPipeline(m_renderPipeline);
-			context.SetDescriptorExternalTable(m_descriptorTable);
-			context.DrawIndirectCount(indirectCommands, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.BindPipeline(m_renderPipeline, m_descriptorTable);
+			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 			context.EndRendering();
 		});
 

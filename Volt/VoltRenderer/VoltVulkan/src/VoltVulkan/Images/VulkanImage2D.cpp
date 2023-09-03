@@ -64,6 +64,7 @@ namespace Volt::RHI
 		}
 
 		// Transition to correct Layout
+		if (m_specification.initializeImage)
 		{
 			VkImageLayout targetLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 

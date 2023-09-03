@@ -38,6 +38,9 @@ namespace Volt
 		imageSpec.usage = imageDesc.usage;
 		imageSpec.debugName = imageDesc.name;
 		imageSpec.isCubeMap = imageDesc.isCubeMap;
+		imageSpec.initializeImage = false;
+
+		imageSpec.memoryUsage = RHI::MemoryUsage::Dedicated;
 
 		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec);
 		m_allocatedResources[resourceHandle] = image;

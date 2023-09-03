@@ -15,7 +15,7 @@ namespace Volt
 	struct RenderGraphBuffer
 	{
 		RenderGraphBufferDesc description{};
-		RenderGraphResourceHandle resourceHandle{};
+		bool isExternal = false;
 
 		inline static constexpr ResourceType GetResourceType()
 		{
@@ -26,11 +26,11 @@ namespace Volt
 	struct RenderGraphUniformBuffer
 	{
 		RenderGraphBufferDesc description{};
-		RenderGraphResourceHandle resourceHandle{};
+		bool isExternal = false;
 
 		inline static constexpr ResourceType GetResourceType()
 		{
-			return ResourceType::Buffer;
+			return ResourceType::UniformBuffer;
 		}
 	};
 }

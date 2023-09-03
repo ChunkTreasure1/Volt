@@ -22,6 +22,8 @@ namespace Volt::RHI
 
 		bool isCubeMap = false;
 		bool generateMips = false;
+
+		bool initializeImage = true;
 	};
 
 	class ImageView;

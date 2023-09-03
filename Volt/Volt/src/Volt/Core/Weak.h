@@ -22,13 +22,21 @@ public:
 	T* operator->() const;
 	T& operator*() const;
 
-	T* Get();
+	[[nodiscard]] T* Get();
 	void Reset();
-	
+
+	template<typename U>
+	[[nodiscard]] Weak<U> As();
+
 	Weak<T>& operator=(const Weak<T>& other);
 
-	operator bool() const { return !m_weakPtr.expired(); }
-	operator std::shared_ptr<T>() const { return m_weakPtr.lock(); }
+	template<typename U>
+	Weak<T>& operator=(const Weak<U>& other);
+
+	inline operator bool() const { return !m_weakPtr.expired(); }
+	inline operator std::shared_ptr<T>() const { return m_weakPtr.lock(); }
+
+	[[nodiscard]] inline std::shared_ptr<T> GetSharedPtr() const { return m_weakPtr.lock(); }
 
 private:
 	std::weak_ptr<T> m_weakPtr;
@@ -51,6 +59,16 @@ template<typename U>
 inline Weak<T>::Weak(std::shared_ptr<U> sharedPtr)
 	: m_weakPtr(std::reinterpret_pointer_cast<T>(sharedPtr))
 {
+}
+
+template<typename T>
+template<typename U>
+inline Weak<U> Weak<T>::As()
+{
+	Weak<U> weak{};
+	weak.m_weakPtr = std::reinterpret_pointer_cast<U>(m_weakPtr.lock());
+
+	return weak;
 }
 
 template<typename T>
@@ -100,5 +118,13 @@ template<typename T>
 inline Weak<T>& Weak<T>::operator=(const Weak<T>& other)
 {
 	m_weakPtr = other.m_weakPtr;
+	return *this;
+}
+
+template<typename T>
+template<typename U>
+inline Weak<T>& Weak<T>::operator=(const Weak<U>& other)
+{
+	m_weakPtr = std::reinterpret_pointer_cast<T>(other.GetSharedPtr());
 	return *this;
 }

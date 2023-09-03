@@ -14,6 +14,7 @@
 #include <VoltRHI/Buffers/BufferViewSet.h>
 
 #include <VoltRHI/Images/SamplerState.h>
+#include <VoltRHI/Core/Profiling.h>
 
 #include <vulkan/vulkan.h>
 
@@ -226,6 +227,7 @@ namespace Volt::RHI
 	void VulkanDescriptorTable::Invalidate()
 	{
 		Release();
+
 		m_isDirty = std::vector<bool>(3, true);
 		m_maxTotalDescriptorCount = 0;
 		m_imageInfos.clear();
@@ -287,12 +289,20 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::Release()
 	{
-		auto device = GraphicsContext::GetDevice();
-
-		for (const auto& pool : m_descriptorPools)
+		if (m_descriptorPools.empty())
 		{
-			vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), pool, nullptr);
+			return;
 		}
+
+		GraphicsContext::DestroyResource([descriptorPools = m_descriptorPools]() 
+		{
+			auto device = GraphicsContext::GetDevice();
+
+			for (const auto& pool : descriptorPools)
+			{
+				vkDestroyDescriptorPool(device->GetHandle<VkDevice>(), pool, nullptr);
+			}
+		});
 
 		m_descriptorPools.clear();
 	}

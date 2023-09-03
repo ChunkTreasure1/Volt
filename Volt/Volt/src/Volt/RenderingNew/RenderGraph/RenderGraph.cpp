@@ -5,6 +5,8 @@
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 
+#include "Volt/Core/Profiling.h"
+
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
 namespace Volt
@@ -16,6 +18,8 @@ namespace Volt
 
 	void RenderGraph::Compile()
 	{
+		VT_PROFILE_FUNCTION();
+
 		///// Calculate Ref Count //////
 		for (auto& pass : m_passNodes)
 		{
@@ -102,7 +106,11 @@ namespace Volt
 
 		resultAccesses.resize(m_passNodes.size());
 		passAccesses.resize(m_passNodes.size());
-		m_resourceTransitions.resize(m_passNodes.size());
+
+		if (m_resourceTransitions.size() < m_passNodes.size())
+		{
+			m_resourceTransitions.resize(m_passNodes.size());
+		}
 
 		///// Create resource barriers /////
 		for (const auto& pass : m_passNodes)
@@ -125,7 +133,7 @@ namespace Volt
 				}
 
 				auto resourceNode = m_resourceNodes.at(resource);
-				if (resourceNode->GetResourceType() == ResourceType::Image)
+				if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
 				{
 					if (pass->isComputePass)
 					{
@@ -169,7 +177,7 @@ namespace Volt
 				}
 
 				auto resourceNode = m_resourceNodes.at(resource);
-				if (resourceNode->GetResourceType() == ResourceType::Image)
+				if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
 				{
 					if (pass->isComputePass)
 					{
@@ -200,14 +208,18 @@ namespace Volt
 			}
 		}
 
-		for (uint32_t passIndex = 0; auto& passTransitions : m_resourceTransitions)
+		for (uint32_t passIndex = 0; auto & passTransitions : m_resourceTransitions)
 		{
 			if (!passTransitions.empty())
 			{
-				for (const auto& access : resultAccesses[passIndex])
+				if (resultAccesses.size() > static_cast<size_t>(passIndex))
 				{
-					passTransitions.emplace_back(access);
+					for (const auto& access : resultAccesses[passIndex])
+					{
+						passTransitions.emplace_back(access);
+					}
 				}
+
 			}
 			else
 			{
@@ -220,6 +232,8 @@ namespace Volt
 
 	void RenderGraph::Execute()
 	{
+		VT_PROFILE_FUNCTION();
+		
 		m_commandBuffer->Begin();
 
 		for (const auto& passNode : m_passNodes)
@@ -231,19 +245,40 @@ namespace Volt
 
 			if (!m_resourceTransitions.at(passNode->index).empty())
 			{
-				std::vector<RHI::ResourceBarrierInfo> barrierInfo{};
+				std::vector<RHI::ResourceBarrierInfo> barrierInfos{};
 
 				for (const auto& transition : m_resourceTransitions.at(passNode->index))
 				{
-					auto& barrier = barrierInfo.emplace_back();
+					auto& barrier = barrierInfos.emplace_back();
 					barrier.oldState = transition.oldState;
 					barrier.newState = transition.newState;
+					barrier.resource = GetResourceRaw(transition.resourceHandle);
 				}
+
+				m_commandBuffer->ResourceBarrier(barrierInfos);
 			}
 
 			{
+				VT_PROFILE_SCOPE(passNode->name.data());
+
 				passNode->Execute(*this, m_renderContext);
 			}
+		}
+
+		// Add the barriers specified after last pass
+		if (m_resourceTransitions.size() > m_passIndex)
+		{
+			std::vector<RHI::ResourceBarrierInfo> barrierInfos{};
+
+			for (const auto& transition : m_resourceTransitions.at(m_passIndex))
+			{
+				auto& barrier = barrierInfos.emplace_back();
+				barrier.oldState = transition.oldState;
+				barrier.newState = transition.newState;
+				barrier.resource = GetResourceRaw(transition.resourceHandle);
+			}
+
+			m_commandBuffer->ResourceBarrier(barrierInfos);
 		}
 
 		m_commandBuffer->End();
@@ -255,6 +290,7 @@ namespace Volt
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphTexture2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture2D>>();
 		node->handle = resourceHandle;
+		node->resourceInfo.isExternal = true;
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, image);
@@ -267,10 +303,11 @@ namespace Volt
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
 		node->handle = resourceHandle;
+		node->resourceInfo.isExternal = true;
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
-	
+
 		return resourceHandle;
 	}
 
@@ -279,6 +316,7 @@ namespace Volt
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
 		node->handle = resourceHandle;
+		node->resourceInfo.isExternal = true;
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
@@ -338,7 +376,7 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	Ref<RHI::Image2D> RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
+	Weak<RHI::Image2D> RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphTexture2D>>().resourceInfo;
@@ -346,7 +384,7 @@ namespace Volt
 		return m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 	}
 
-	Ref<RHI::StorageBuffer> RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
+	Weak<RHI::StorageBuffer> RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
@@ -354,12 +392,51 @@ namespace Volt
 		return m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
 	}
 
-	Ref<RHI::UniformBuffer> RenderGraph::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)
+	Weak<RHI::UniformBuffer> RenderGraph::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
 		return m_transientResourceSystem.AquireUniformBuffer(resourceHandle, bufferDesc.description);
+	}
+
+	Weak<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
+	{
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+
+		Weak<RHI::RHIResource> result{};
+
+		switch (resourceNode->GetResourceType())
+		{
+			case ResourceType::Image2D:
+			{
+				const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphTexture2D>>().resourceInfo;
+				result = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
+
+				break;
+			}
+
+			case ResourceType::Image3D:
+				break;
+
+			case ResourceType::Buffer:
+			{
+				const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
+				result = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
+
+				break;
+			}
+
+			case ResourceType::UniformBuffer:
+			{
+				const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphUniformBuffer>>().resourceInfo;
+				result = m_transientResourceSystem.AquireUniformBuffer(resourceHandle, bufferDesc.description);
+
+				break;
+			}
+		}
+
+		return result;
 	}
 
 	RenderGraph::Builder::Builder(RenderGraph& renderGraph, Ref<RenderGraphPassNodeBase> pass)

@@ -18,8 +18,10 @@ namespace Volt
 
 	enum class ResourceType
 	{
-		Image,
-		Buffer
+		Image2D,
+		Image3D,
+		Buffer,
+		UniformBuffer
 	};
 
 	struct RenderGraphResourceNodeBase

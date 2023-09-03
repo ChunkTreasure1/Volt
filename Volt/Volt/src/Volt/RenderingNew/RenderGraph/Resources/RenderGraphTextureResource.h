@@ -31,7 +31,7 @@ namespace Volt
 
 		inline static constexpr ResourceType GetResourceType()
 		{
-			return ResourceType::Image;
+			return ResourceType::Image2D;
 		}
 	};
 
@@ -42,7 +42,7 @@ namespace Volt
 
 		inline static constexpr ResourceType GetResourceType()
 		{
-			return ResourceType::Image;
+			return ResourceType::Image3D;
 		}
 	};
 }
