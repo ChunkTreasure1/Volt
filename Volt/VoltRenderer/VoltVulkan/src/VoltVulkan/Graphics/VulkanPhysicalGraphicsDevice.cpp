@@ -135,14 +135,56 @@ namespace Volt::RHI
 		m_capabilities.maxAnisotropyLevel = deviceProperties.limits.maxSamplerAnisotropy;
 
 		m_queueFamilyIndices = Utility::FindQueueFamilyIndices(selectedDevice);
+
+		FindMemoryProperties();
 	}
 
 	VulkanPhysicalGraphicsDevice::~VulkanPhysicalGraphicsDevice()
 	{
 	}
 
+	const int32_t VulkanPhysicalGraphicsDevice::GetMemoryTypeIndex(const uint32_t reqMemoryTypeBits, const uint32_t requiredPropertyFlags)
+	{
+		for (const auto& memoryType : m_deviceMemoryProperties.memoryTypes)
+		{
+			const uint32_t memTypeBits = (1 << memoryType.index);
+			const bool isRequiredMemoryType = reqMemoryTypeBits & memTypeBits;
+		
+			const VkMemoryPropertyFlags properties = static_cast<VkMemoryPropertyFlags>(memoryType.propertyFlags);
+			const bool hasRequiredProperties = (properties & requiredPropertyFlags) == requiredPropertyFlags;
+
+			if (isRequiredMemoryType && hasRequiredProperties)
+			{
+				return static_cast<int32_t>(memoryType.index);
+			}
+		}
+
+		return -1;
+	}
+
 	void* VulkanPhysicalGraphicsDevice::GetHandleImpl() const
 	{
 		return m_physicalDevice;
+	}
+
+	void VulkanPhysicalGraphicsDevice::FindMemoryProperties()
+	{
+		VkPhysicalDeviceMemoryProperties memoryProperties{};
+		vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
+
+		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+		{
+			auto& memType = m_deviceMemoryProperties.memoryTypes.emplace_back();
+			memType.heapIndex = memoryProperties.memoryTypes[i].heapIndex;
+			memType.propertyFlags = memoryProperties.memoryTypes[i].propertyFlags;
+			memType.index = i;
+		}
+
+		for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; i++)
+		{
+			auto& memHeap = m_deviceMemoryProperties.memoryHeaps.emplace_back();
+			memHeap.flags = memoryProperties.memoryHeaps[i].flags;
+			memHeap.size = memoryProperties.memoryHeaps[i].size;
+		}
 	}
 }

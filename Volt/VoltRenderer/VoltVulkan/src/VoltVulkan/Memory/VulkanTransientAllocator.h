@@ -4,11 +4,11 @@
 
 namespace Volt::RHI
 {
-	class VulkanLinearAllocator : public LinearAllocator
+	class VulkanTransientAllocator : public TransientAllocator
 	{
 	public:
-		VulkanLinearAllocator();
-		~VulkanLinearAllocator() override;
+		VulkanTransientAllocator();
+		~VulkanTransientAllocator() override;
 
 		Ref<Allocation> CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage) override;
 
@@ -22,6 +22,8 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+
+
 		uint64_t m_pageSize = 0;
 		uint64_t m_memoryBlockMinSize = 0;
 

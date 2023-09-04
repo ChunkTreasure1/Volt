@@ -39,14 +39,14 @@ namespace Volt::RHI
 		DefaultAllocator() = default;
 	};
 
-	class LinearAllocator : Allocator
+	class TransientAllocator : Allocator
 	{
 	public:
-		virtual ~LinearAllocator() override = default;
+		virtual ~TransientAllocator() override = default;
 
-		static Scope<LinearAllocator> Create();
+		static Scope<TransientAllocator> Create();
 
 	protected:
-		LinearAllocator() = default;
+		TransientAllocator() = default;
 	};
 }

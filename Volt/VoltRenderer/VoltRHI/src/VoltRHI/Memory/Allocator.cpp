@@ -7,7 +7,7 @@
 
 namespace Volt::RHI
 {
-	Scope<LinearAllocator> LinearAllocator::Create()
+	Scope<TransientAllocator> TransientAllocator::Create()
 	{
 		const auto api = GraphicsContext::GetAPI();
 
