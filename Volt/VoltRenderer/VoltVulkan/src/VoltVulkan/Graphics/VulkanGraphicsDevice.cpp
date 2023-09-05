@@ -153,7 +153,6 @@ namespace Volt::RHI
 			OPTICK_GPU_INIT_VULKAN(&m_device, &physicalDevice, &graphicsQueue, &graphicsFamily, 1, nullptr);
 		}
 #endif
-
 	}
 
 	VulkanGraphicsDevice::~VulkanGraphicsDevice()

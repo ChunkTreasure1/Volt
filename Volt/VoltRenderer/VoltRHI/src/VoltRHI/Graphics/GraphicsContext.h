@@ -10,12 +10,15 @@ namespace Volt::RHI
 {
 	class GraphicsDevice;
 	class PhysicalGraphicsDevice;
+	class TransientHeap;
 
 	class GraphicsContext : public RHIInterface
 	{
 	public:
 		GraphicsContext();
 		virtual ~GraphicsContext();
+
+		virtual const std::vector<Ref<TransientHeap>>& GetTransientHeaps() const = 0;
 
 		[[nodiscard]] static GraphicsContext& Get() { return *s_context; }
 

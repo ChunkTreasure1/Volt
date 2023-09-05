@@ -4,6 +4,8 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Common/VulkanFunctions.h"
 
+#include "VoltVulkan/Memory/VulkanTransientHeap.h"
+
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Memory/Allocator.h>
@@ -130,11 +132,14 @@ namespace Volt::RHI
 		graphicsDeviceInfo.physicalDevice = m_physicalDevice;
 		m_graphicsDevice = GraphicsDevice::Create(graphicsDeviceInfo);
 	
-		m_allocator = Allocator::Create();
+		m_allocator = DefaultAllocator::Create();
+
+		CreateTransientHeaps();
 	}
 
 	void VulkanGraphicsContext::Shutdown()
 	{
+		m_transientHeaps.clear();
 		m_allocator = nullptr;
 
 		m_graphicsDevice = nullptr;
@@ -205,6 +210,30 @@ namespace Volt::RHI
 #endif
 
 		FindVulkanFunctions(m_instance);
+	}
+
+	const std::vector<Ref<TransientHeap>>& VulkanGraphicsContext::GetTransientHeaps() const
+	{
+		return m_transientHeaps;
+	}
+
+	void VulkanGraphicsContext::CreateTransientHeaps()
+	{
+		// Buffer heap
+		{
+			TransientHeapCreateInfo info{};
+			info.pageSize = 128 * 1024 * 1024;
+			info.flags = TransientHeapFlags::AllowBuffers;
+			m_transientHeaps.push_back(CreateRefRHI<VulkanTransientHeap>(info));
+		}
+
+		// Image heap
+		{
+			TransientHeapCreateInfo info{};
+			info.pageSize = 128 * 1024 * 1024;
+			info.flags = TransientHeapFlags::AllowTextures;
+			m_transientHeaps.push_back(CreateRefRHI<VulkanTransientHeap>(info));
+		}
 	}
 
 	void VulkanGraphicsContext::InitializeDebugCallback()

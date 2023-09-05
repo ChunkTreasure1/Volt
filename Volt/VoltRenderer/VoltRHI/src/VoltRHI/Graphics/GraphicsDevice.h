@@ -9,6 +9,7 @@
 namespace Volt::RHI
 {
 	class DeviceQueue;
+	class TransientHeap;
 
 	class GraphicsDevice : public RHIInterface
 	{

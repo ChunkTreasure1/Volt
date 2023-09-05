@@ -4,6 +4,13 @@
 
 namespace Volt::RHI
 {
+	struct AllocationBlock
+	{
+		uint64_t size = 0;
+		uint64_t offset = 0;
+		uint32_t pageId = 0;
+	};
+
 	class Allocation : public RHIInterface
 	{
 	public:
@@ -24,6 +31,15 @@ namespace Volt::RHI
 		virtual void* MapInternal() = 0;
 
 		Allocation() = default;
+	};
+
+	class TransientAllocation : public Allocation
+	{
+	public:
+		virtual ~TransientAllocation() override = default;
+
+	protected:
+		TransientAllocation() = default;
 	};
 
 	template<typename T>

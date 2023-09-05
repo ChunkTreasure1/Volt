@@ -14,8 +14,6 @@ namespace Volt::RHI
 		D3D12GraphicsDevice(const GraphicsDeviceCreateInfo& info);
 		~D3D12GraphicsDevice() override;
 
-
-
 	protected:
 		void* GetHandleImpl() const override;
 

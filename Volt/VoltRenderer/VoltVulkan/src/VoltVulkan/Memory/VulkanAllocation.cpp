@@ -3,6 +3,7 @@
 
 #include <VoltVulkan/Common/VulkanCommon.h>
 
+#include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Memory/Allocator.h>
 
@@ -52,5 +53,57 @@ namespace Volt::RHI
 	void* VulkanBufferAllocation::GetHandleImpl() const
 	{
 		return m_allocation;
+	}
+
+	void VulkanTransientBufferAllocation::Unmap()
+	{
+		auto device = GraphicsContext::GetDevice();
+		vkUnmapMemory(device->GetHandle<VkDevice>(), m_memoryHandle);
+	}
+	
+	void* VulkanTransientBufferAllocation::GetResourceHandleInternal() const
+	{
+		return m_resource;
+	}
+	
+	void* VulkanTransientBufferAllocation::MapInternal()
+	{
+		auto device = GraphicsContext::GetDevice();
+
+		void* mappedMemory = nullptr;
+		VT_VK_CHECK(vkMapMemory(device->GetHandle<VkDevice>(), m_memoryHandle, m_allocationBlock.offset, m_allocationBlock.size, 0, &mappedMemory));
+
+		return mappedMemory;
+	}
+	
+	void* VulkanTransientBufferAllocation::GetHandleImpl() const
+	{
+		return m_memoryHandle;
+	}
+	
+	void VulkanTransientImageAllocation::Unmap()
+	{
+		auto device = GraphicsContext::GetDevice();
+		vkUnmapMemory(device->GetHandle<VkDevice>(), m_memoryHandle);
+	}
+	
+	void* VulkanTransientImageAllocation::GetResourceHandleInternal() const
+	{
+		return m_resource;
+	}
+	
+	void* VulkanTransientImageAllocation::MapInternal()
+	{
+		auto device = GraphicsContext::GetDevice();
+
+		void* mappedMemory = nullptr;
+		VT_VK_CHECK(vkMapMemory(device->GetHandle<VkDevice>(), m_memoryHandle, m_allocationBlock.offset, m_allocationBlock.size, 0, &mappedMemory));
+
+		return mappedMemory;
+	}
+	
+	void* VulkanTransientImageAllocation::GetHandleImpl() const
+	{
+		return m_memoryHandle;
 	}
 }

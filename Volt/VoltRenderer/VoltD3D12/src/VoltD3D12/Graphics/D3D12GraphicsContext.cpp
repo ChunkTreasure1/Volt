@@ -52,6 +52,12 @@ namespace Volt::RHI
 		VT_D3D12_DELETE(m_debug);
 	}
 
+	const std::vector<Ref<TransientHeap>>& D3D12GraphicsContext::GetTransientHeaps() const
+	{
+		static std::vector<Ref<TransientHeap>> heaps;
+		return heaps;
+	}
+
 	bool D3D12GraphicsContext::CreateAPIDebugging()
 	{
 		

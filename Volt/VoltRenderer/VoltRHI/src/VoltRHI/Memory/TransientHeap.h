@@ -29,7 +29,7 @@ namespace Volt::RHI
 
 	struct TransientHeapCreateInfo
 	{
-		uint64_t size = 0;
+		uint64_t pageSize = 0;
 		uint32_t alignment = 0;
 		TransientHeapFlags flags = TransientHeapFlags::AllowAll;
 	};
@@ -37,8 +37,9 @@ namespace Volt::RHI
 	class TransientHeap : public RHIInterface
 	{
 	public:
-		~TransientHeap() override = default;
 		virtual Ref<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) = 0;
+		virtual void ForfeitBuffer(Ref<Allocation> allocation) = 0;
+
 		virtual const bool IsAllocationSupported(const uint64_t size, TransientHeapFlags heapFlags) const = 0;
 
 		static Ref<TransientHeap> Create(const TransientHeapCreateInfo& createInfo);

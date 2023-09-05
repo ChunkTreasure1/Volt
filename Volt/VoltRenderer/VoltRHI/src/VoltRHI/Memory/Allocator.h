@@ -28,7 +28,7 @@ namespace Volt::RHI
 		Allocator() = default;
 	};
 
-	class DefaultAllocator : Allocator
+	class DefaultAllocator : public Allocator
 	{
 	public:
 		virtual ~DefaultAllocator() override = default;
@@ -39,7 +39,7 @@ namespace Volt::RHI
 		DefaultAllocator() = default;
 	};
 
-	class TransientAllocator : Allocator
+	class TransientAllocator : public Allocator
 	{
 	public:
 		virtual ~TransientAllocator() override = default;

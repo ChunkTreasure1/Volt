@@ -41,6 +41,7 @@
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
 #include <VoltRHI/Memory/MemoryPool.h>
+#include <VoltRHI/Memory/TransientHeap.h>
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
@@ -210,6 +211,18 @@ namespace Volt
 			m_outputImage->Invalidate(m_width, m_height);
 			m_depthImage->Invalidate(m_width, m_height);
 			m_shouldResize = false;
+		}
+
+		std::vector<Ref<RHI::Allocation>> allocations;
+
+		for (uint32_t i = 0; i < 10; i++)
+		{
+			allocations.emplace_back(RHI::GraphicsContext::Get().GetTransientHeaps().at(0)->CreateBuffer({ 512000, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU }));
+		}
+
+		for (uint32_t i = 0; i < 10; i++)
+		{
+			RHI::GraphicsContext::Get().GetTransientHeaps().at(0)->ForfeitBuffer(allocations.at(i));
 		}
 
 		UpdateBuffers(camera);

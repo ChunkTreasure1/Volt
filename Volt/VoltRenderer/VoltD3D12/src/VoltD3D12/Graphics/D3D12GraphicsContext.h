@@ -12,6 +12,8 @@ namespace Volt::RHI
 		D3D12GraphicsContext(const GraphicsContextCreateInfo& info);
 		~D3D12GraphicsContext() override;
 
+		const std::vector<Ref<TransientHeap>>& GetTransientHeaps() const override;
+
 	protected:
 		void* GetHandleImpl() const override;
 
