@@ -73,10 +73,42 @@ namespace Volt::RHI
 		Ref<VulkanTransientBufferAllocation> bufferAlloc = CreateRefRHI<VulkanTransientBufferAllocation>();
 		bufferAlloc->m_memoryHandle = page.handle;
 		bufferAlloc->m_resource = buffer;
-
 		bufferAlloc->m_allocationBlock = blockAlloc;
+		bufferAlloc->m_heapId = m_heapId;
 
 		return bufferAlloc;
+	}
+
+	Ref<Allocation> VulkanTransientHeap::CreateImage(const TransientImageCreateInfo& createInfo)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto device = GraphicsContext::GetDevice();
+		const auto& imageSpecification = createInfo.imageSpecification;
+
+		const VkImageCreateInfo imageInfo = Utility::GetVkImageCreateInfo(imageSpecification);
+
+		auto [pageIndex, blockAlloc] = FindNextAvailableBlock(createInfo.size);
+
+		if (blockAlloc.size == 0)
+		{
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientHeap]", "Unable to find available allocation block for buffer allocation of size {0}!", createInfo.size);
+			return nullptr;
+		}
+
+		const auto& page = m_pageAllocations.at(pageIndex);
+		
+		VkImage image;
+		vkCreateImage(device->GetHandle<VkDevice>(), &imageInfo, nullptr, &image);
+		vkBindImageMemory(device->GetHandle<VkDevice>(), image, page.handle, blockAlloc.offset);
+
+		Ref<VulkanTransientImageAllocation> imageAlloc = CreateRefRHI<VulkanTransientImageAllocation>();
+		imageAlloc->m_memoryHandle = page.handle;
+		imageAlloc->m_resource = image;
+		imageAlloc->m_allocationBlock = blockAlloc;
+		imageAlloc->m_heapId = m_heapId;
+
+		return imageAlloc;
 	}
 
 	void VulkanTransientHeap::ForfeitBuffer(Ref<Allocation> allocation)
@@ -94,6 +126,24 @@ namespace Volt::RHI
 		vkDestroyBuffer(device->GetHandle<VkDevice>(), bufferAlloc->m_resource, nullptr);
 	
 		AllocationBlock allocBlock = bufferAlloc->m_allocationBlock;
+		ForfeitAllocationBlock(allocBlock);
+	}
+
+	void VulkanTransientHeap::ForfeitImage(Ref<Allocation> allocation)
+	{
+		VT_PROFILE_FUNCTION();
+
+		Ref<VulkanTransientImageAllocation> imageAlloc = std::reinterpret_pointer_cast<VulkanTransientImageAllocation>(allocation);
+		if (!imageAlloc)
+		{
+			return;
+		}
+
+		auto device = GraphicsContext::GetDevice();
+
+		vkDestroyImage(device->GetHandle<VkDevice>(), imageAlloc->m_resource, nullptr);
+
+		AllocationBlock allocBlock = imageAlloc->m_allocationBlock;
 		ForfeitAllocationBlock(allocBlock);
 	}
 

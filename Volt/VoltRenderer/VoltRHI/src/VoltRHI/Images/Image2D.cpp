@@ -14,29 +14,29 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12Image2D>(specification, data); break;
 			case GraphicsAPI::MoltenVk:
 			case GraphicsAPI::Mock:
 				break;
 
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12Image2D>(specification, data); break;
 			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImage2D>(specification, data); break;
 		}
 
 		return nullptr;
 	}
 
-	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, Ref<MemoryPool> pool)
+	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12:
 			case GraphicsAPI::MoltenVk:
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImage2D>(specification, pool); break;
+			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12Image2D>(specification, customAllocator, data); break;
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanImage2D>(specification, customAllocator, data); break;
 		}
 
 		return nullptr;

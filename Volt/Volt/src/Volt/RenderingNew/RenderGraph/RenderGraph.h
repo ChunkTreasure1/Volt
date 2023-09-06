@@ -35,7 +35,7 @@ namespace Volt
 	class RenderGraph
 	{
 	public:
-		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer, Ref<RHI::MemoryPool> pool);
+		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer);
 
 		class Builder
 		{

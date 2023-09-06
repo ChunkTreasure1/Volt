@@ -1,13 +1,16 @@
 #include "vtpch.h"
 #include "TransientResourceSystem.h"
 
+#include "Volt/Core/Profiling.h"
+
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 
 #include <VoltRHI/Core/RHIResource.h>
-#include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Buffers/UniformBuffer.h>
+#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Images/Image2D.h>
 
 namespace Volt
 {
@@ -20,13 +23,10 @@ namespace Volt
 		m_allocatedResources.clear();
 	}
 
-	void TransientResourceSystem::SetPool(Ref<RHI::MemoryPool> pool)
-	{
-		m_pool = pool;
-	}
-
 	Weak<RHI::Image2D> TransientResourceSystem::AquireImage2D(RenderGraphResourceHandle resourceHandle, const RenderGraphImageDesc& imageDesc)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle)->As<RHI::Image2D>();
@@ -45,7 +45,7 @@ namespace Volt
 		imageSpec.isCubeMap = imageDesc.isCubeMap;
 		imageSpec.initializeImage = false;
 
-		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, m_pool);
+		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, RHI::GraphicsContext::GetTransientAllocator());
 		m_allocatedResources[resourceHandle] = image;
 
 		return image;
@@ -53,6 +53,8 @@ namespace Volt
 
 	Weak<RHI::StorageBuffer> TransientResourceSystem::AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle)->As<RHI::StorageBuffer>();
@@ -66,6 +68,8 @@ namespace Volt
 
 	Weak<RHI::UniformBuffer> TransientResourceSystem::AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (m_allocatedResources.contains(resourceHandle))
 		{
 			return m_allocatedResources.at(resourceHandle)->As<RHI::UniformBuffer>();

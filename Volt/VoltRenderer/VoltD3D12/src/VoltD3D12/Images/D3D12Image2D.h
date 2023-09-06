@@ -9,6 +9,8 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12Image2D(const ImageSpecification& specification, const void* data);
+		D3D12Image2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
+
 		~D3D12Image2D() override;
 
 		void* GetHandleImpl() const override;

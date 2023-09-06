@@ -2,6 +2,8 @@
 
 #include "VoltRHI/Core/RHIInterface.h"
 
+#include <Volt/Core/UUID.h>
+
 namespace Volt::RHI
 {
 	struct AllocationBlock
@@ -23,6 +25,7 @@ namespace Volt::RHI
 		constexpr T* Map();
 
 		virtual void Unmap() = 0;
+		virtual const UUID GetHeapID() const = 0;
 
 	protected:
 		friend class Allocator;

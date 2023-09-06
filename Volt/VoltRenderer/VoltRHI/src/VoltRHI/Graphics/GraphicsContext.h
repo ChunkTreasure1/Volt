@@ -10,7 +10,6 @@ namespace Volt::RHI
 {
 	class GraphicsDevice;
 	class PhysicalGraphicsDevice;
-	class TransientHeap;
 
 	class GraphicsContext : public RHIInterface
 	{
@@ -18,13 +17,12 @@ namespace Volt::RHI
 		GraphicsContext();
 		virtual ~GraphicsContext();
 
-		virtual const std::vector<Ref<TransientHeap>>& GetTransientHeaps() const = 0;
-
 		[[nodiscard]] static GraphicsContext& Get() { return *s_context; }
 
 		[[nodiscard]] static Ref<GraphicsDevice> GetDevice() { return s_context->m_graphicsDevice; };
 		[[nodiscard]] static Ref<PhysicalGraphicsDevice> GetPhysicalDevice() { return s_context->m_physicalDevice; };
-		[[nodiscard]] static Allocator& GetAllocator() { return *s_context->m_allocator; };
+		[[nodiscard]] static Allocator& GetDefaultAllocator() { return *s_context->m_defaultAllocator; };
+		[[nodiscard]] static Ref<Allocator> GetTransientAllocator() { return s_context->m_transientAllocator; }
 
 		static Ref<GraphicsContext> Create(const GraphicsContextCreateInfo& createInfo);
 		
@@ -41,7 +39,9 @@ namespace Volt::RHI
 	protected:
 		Ref<GraphicsDevice> m_graphicsDevice;
 		Ref<PhysicalGraphicsDevice> m_physicalDevice;
-		Scope<Allocator> m_allocator;
+
+		Scope<Allocator> m_defaultAllocator;
+		Ref<Allocator> m_transientAllocator;
 
 	private:
 		inline static GraphicsContext* s_context;

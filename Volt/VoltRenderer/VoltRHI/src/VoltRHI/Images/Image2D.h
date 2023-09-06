@@ -4,30 +4,8 @@
 
 namespace Volt::RHI
 {
-	struct ImageSpecification
-	{
-		uint32_t width = 1;
-		uint32_t height = 1;
-		uint32_t depth = 1;
-		uint32_t layers = 1;
-		uint32_t mips = 1;
-
-		Format format = Format::R8G8B8A8_UNORM;
-		ImageUsage usage = ImageUsage::Texture;
-
-		MemoryUsage memoryUsage = MemoryUsage::GPU;
-
-		AnisotropyLevel anisoLevel = AnisotropyLevel::None;
-		std::string debugName;
-
-		bool isCubeMap = false;
-		bool generateMips = false;
-
-		bool initializeImage = true;
-	};
-
 	class ImageView;
-	class MemoryPool;
+	class Allocator;
 
 	class Image2D : public RHIResource
 	{
@@ -44,7 +22,7 @@ namespace Volt::RHI
 		virtual const uint32_t CalculateMipCount() const = 0;
 
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
-		static Ref<Image2D> Create(const ImageSpecification& specification, Ref<MemoryPool> pool);
+		static Ref<Image2D> Create(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data = nullptr);
 
 	protected:
 		Image2D() = default;

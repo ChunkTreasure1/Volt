@@ -15,6 +15,7 @@ namespace Volt::RHI
 		~VulkanImageAllocation() override = default;
 
 		void Unmap() override;
+		inline const UUID GetHeapID() const override { return 0; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -35,6 +36,7 @@ namespace Volt::RHI
 		~VulkanBufferAllocation() override = default;
 
 		void Unmap() override;
+		inline const UUID GetHeapID() const override { return 0; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -42,7 +44,7 @@ namespace Volt::RHI
 
 	private:
 		friend class VulkanDefaultAllocator;
-		
+
 		void* GetHandleImpl() const override;
 
 		VkBuffer_T* m_resource = nullptr;
@@ -53,8 +55,9 @@ namespace Volt::RHI
 	{
 	public:
 		~VulkanTransientBufferAllocation() override = default;
-	
+
 		void Unmap() override;
+		inline const UUID GetHeapID() const override { return m_heapId; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -69,6 +72,7 @@ namespace Volt::RHI
 		VkDeviceMemory_T* m_memoryHandle = nullptr;
 
 		AllocationBlock m_allocationBlock{};
+		UUID m_heapId = 0;
 	};
 
 	class VulkanTransientImageAllocation : public Allocation
@@ -77,6 +81,7 @@ namespace Volt::RHI
 		~VulkanTransientImageAllocation() override = default;
 
 		void Unmap() override;
+		inline const UUID GetHeapID() const override { return m_heapId; }
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -91,5 +96,6 @@ namespace Volt::RHI
 		VkDeviceMemory_T* m_memoryHandle = nullptr;
 
 		AllocationBlock m_allocationBlock{};
+		UUID m_heapId = 0;
 	};
 }

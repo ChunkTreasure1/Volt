@@ -8,14 +8,12 @@
 #include "Volt/Core/Profiling.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
-#include <VoltRHI/Memory/MemoryPool.h>
 
 namespace Volt
 {
-	RenderGraph::RenderGraph(Ref<RHI::CommandBuffer> commandBuffer, Ref<RHI::MemoryPool> memoryPool)
+	RenderGraph::RenderGraph(Ref<RHI::CommandBuffer> commandBuffer)
 		: m_commandBuffer(commandBuffer), m_renderContext(commandBuffer)
 	{
-		m_transientResourceSystem.SetPool(memoryPool);
 	}
 
 	void RenderGraph::Compile()

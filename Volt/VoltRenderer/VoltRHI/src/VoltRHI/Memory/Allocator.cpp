@@ -4,10 +4,11 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltVulkan/Memory/VulkanDefaultAllocator.h>
+#include <VoltVulkan/Memory/VulkanTransientAllocator.h>
 
 namespace Volt::RHI
 {
-	Scope<TransientAllocator> TransientAllocator::Create()
+	Ref<TransientAllocator> TransientAllocator::Create()
 	{
 		const auto api = GraphicsContext::GetAPI();
 
@@ -18,7 +19,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			//case GraphicsAPI::Vulkan: return CreateScopeRHI<VulkanAllocator>(); break;
+			case GraphicsAPI::Vulkan: return CreateScopeRHI<VulkanTransientAllocator>(); break;
 		}
 
 		return nullptr;

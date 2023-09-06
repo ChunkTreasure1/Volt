@@ -38,6 +38,10 @@ namespace Volt::RHI
 		Invalidate(specification.width, specification.height, data);
 	}
 
+	D3D12Image2D::D3D12Image2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
+	{
+	}
+
 	D3D12Image2D::~D3D12Image2D()
 	{
 

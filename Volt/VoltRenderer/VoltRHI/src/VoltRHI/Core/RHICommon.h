@@ -520,6 +520,13 @@ namespace Volt::RHI
 		std::function<void(std::function<void()>&&)> resourceDeletionCallback;
 	};
 
+	struct MemoryRequirement
+	{
+		uint64_t size = 0;
+		uint64_t alignment = 0;
+		uint32_t memoryTypeBits = 0;
+	};
+
 	struct PhysicalDeviceCreateInfo
 	{
 	};
@@ -554,6 +561,28 @@ namespace Volt::RHI
 	{
 		GraphicsDevice* graphicsDevice;
 		QueueType queueType;
+	};
+
+	struct ImageSpecification
+	{
+		uint32_t width = 1;
+		uint32_t height = 1;
+		uint32_t depth = 1;
+		uint32_t layers = 1;
+		uint32_t mips = 1;
+
+		Format format = Format::R8G8B8A8_UNORM;
+		ImageUsage usage = ImageUsage::Texture;
+
+		MemoryUsage memoryUsage = MemoryUsage::GPU;
+
+		AnisotropyLevel anisoLevel = AnisotropyLevel::None;
+		std::string debugName;
+
+		bool isCubeMap = false;
+		bool generateMips = false;
+
+		bool initializeImage = true;
 	};
 
 	struct Extent2D

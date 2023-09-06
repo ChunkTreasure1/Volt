@@ -26,7 +26,7 @@ namespace Volt::RHI
 
 		GraphicsContext::DestroyResource([allocation = m_allocation]()
 		{
-			GraphicsContext::GetAllocator().DestroyBuffer(allocation);
+			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;
@@ -64,13 +64,13 @@ namespace Volt::RHI
 		{
 			GraphicsContext::DestroyResource([allocation = m_allocation]()
 			{
-				GraphicsContext::GetAllocator().DestroyBuffer(allocation);
+				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 			});
 
 			m_allocation = nullptr;
 		}
 
-		auto& allocator = GraphicsContext::GetAllocator();
+		auto& allocator = GraphicsContext::GetDefaultAllocator();
 
 		if (data != nullptr)
 		{

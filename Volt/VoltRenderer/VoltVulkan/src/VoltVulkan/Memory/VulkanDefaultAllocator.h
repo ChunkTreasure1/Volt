@@ -13,9 +13,7 @@ namespace Volt::RHI
 		~VulkanDefaultAllocator() override;
 
 		Ref<Allocation> CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage) override;
-
 		Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage) override;
-		Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, Ref<MemoryPool> pool, MemoryUsage memoryUsage) override;
 
 		void DestroyBuffer(Ref<Allocation> allocation) override;
 		void DestroyImage(Ref<Allocation> allocation) override;

@@ -8,6 +8,8 @@
 
 namespace Volt::RHI
 {
+	struct ImageSpecification;
+
 	namespace Utility
 	{
 		inline static constexpr VkFormat VoltToVulkanFormat(Format format)
@@ -285,5 +287,9 @@ namespace Volt::RHI
 
 			return result;
 		}
+
+		const VkImageCreateInfo GetVkImageCreateInfo(const ImageSpecification& specification);
+		const MemoryRequirement GetImageRequirement(const VkImageCreateInfo& imageCreateInfo);
+
 	}
 }

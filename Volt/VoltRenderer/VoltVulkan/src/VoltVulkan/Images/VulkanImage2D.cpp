@@ -35,10 +35,10 @@ namespace Volt::RHI
 		Invalidate(specification.width, specification.height, data);
 	}
 
-	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, Ref<MemoryPool> pool)
-		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingPool(true), m_pool(pool)
+	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
+		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
 	{
-		Invalidate(specification.width, specification.height, nullptr);
+		Invalidate(specification.width, specification.height, data);
 	}
 
 	VulkanImage2D::~VulkanImage2D()
@@ -62,13 +62,13 @@ namespace Volt::RHI
 
 		m_imageAspect = static_cast<uint32_t>(aspectMask);
 
-		if (m_allocatedUsingPool)
+		if (m_allocatedUsingCustomAllocator)
 		{
-			m_allocation = GraphicsContext::GetAllocator().CreateImage(m_specification, m_pool, m_specification.memoryUsage);
+			m_allocation = m_customAllocator->CreateImage(m_specification, m_specification.memoryUsage);
 		}
 		else
 		{
-			m_allocation = GraphicsContext::GetAllocator().CreateImage(m_specification, m_specification.memoryUsage);
+			m_allocation = GraphicsContext::GetDefaultAllocator().CreateImage(m_specification, m_specification.memoryUsage);
 		}
 
 		if (data)
@@ -127,9 +127,16 @@ namespace Volt::RHI
 
 		m_imageViews.clear();
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]()
+		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
-			GraphicsContext::GetAllocator().DestroyImage(allocation);
+			if (allocatedUsingCustomAllocator)
+			{
+				customAllocator->DestroyImage(allocation);
+			}
+			else
+			{
+				GraphicsContext::GetDefaultAllocator().DestroyImage(allocation);
+			}
 		});
 
 		m_allocation = nullptr;

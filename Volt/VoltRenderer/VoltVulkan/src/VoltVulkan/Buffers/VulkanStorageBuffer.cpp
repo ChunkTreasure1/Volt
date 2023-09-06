@@ -56,7 +56,7 @@ namespace Volt::RHI
 
 	void VulkanStorageBuffer::SetData(const void* data, const size_t size)
 	{
-		Ref<Allocation> stagingAllocation = GraphicsContext::GetAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		Ref<Allocation> stagingAllocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 
 		void* mappedPtr = stagingAllocation->Map<void>();
 		memcpy_s(mappedPtr, m_byteSize, data, size);
@@ -108,7 +108,7 @@ namespace Volt::RHI
 		m_byteSize = byteSize;
 
 		const VkDeviceSize bufferSize = byteSize;
-		m_allocation = GraphicsContext::GetAllocator().CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
+		m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
 	}
 
 	void VulkanStorageBuffer::Release()
@@ -120,7 +120,7 @@ namespace Volt::RHI
 
 		GraphicsContext::DestroyResource([allocation = m_allocation]() 
 		{
-			GraphicsContext::GetAllocator().DestroyBuffer(allocation);
+			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;

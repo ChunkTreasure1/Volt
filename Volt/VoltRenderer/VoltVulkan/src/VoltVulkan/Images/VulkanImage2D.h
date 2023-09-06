@@ -2,12 +2,11 @@
 
 #include <VoltRHI/Images/Image2D.h>
 
-struct VkImage_T;
-struct VmaAllocation_T;
-
 namespace Volt::RHI
 {
 	class Allocation;
+	class Allocator;
+
 	class VulkanImage2D final : public Image2D
 	{
 	public:
@@ -15,7 +14,7 @@ namespace Volt::RHI
 		using ImageAspect = uint32_t;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
-		VulkanImage2D(const ImageSpecification& specification, Ref<MemoryPool> pool);
+		VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
 		~VulkanImage2D() override;
 
 		void Invalidate(const uint32_t width, const uint32_t height, const void* data) override;
@@ -46,10 +45,10 @@ namespace Volt::RHI
 		ImageSpecification m_specification;
 
 		Ref<Allocation> m_allocation;
-		Weak<MemoryPool> m_pool;
+		Weak<Allocator> m_customAllocator;
 
 		bool m_hasGeneratedMips = false;
-		bool m_allocatedUsingPool = false;
+		bool m_allocatedUsingCustomAllocator = false;
 
 		ImageLayout m_currentImageLayout = 0;
 		ImageAspect m_imageAspect = 0;

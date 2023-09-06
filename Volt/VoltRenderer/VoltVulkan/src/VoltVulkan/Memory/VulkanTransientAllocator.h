@@ -4,16 +4,16 @@
 
 namespace Volt::RHI
 {
+	class TransientHeap;
+
 	class VulkanTransientAllocator : public TransientAllocator
 	{
 	public:
 		VulkanTransientAllocator();
 		~VulkanTransientAllocator() override;
 
-		Ref<Allocation> CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage) override;
-
+		Ref<Allocation> CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage) override;
 		Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage) override;
-		Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, Ref<MemoryPool> pool, MemoryUsage memoryUsage) override;
 
 		void DestroyBuffer(Ref<Allocation> allocation) override;
 		void DestroyImage(Ref<Allocation> allocation) override;
@@ -22,10 +22,13 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		void CreateDefaultHeaps();
 
+		// There are called if their parent heap has been destroyed for some reason
+		void DestroyOrphanBuffer(Ref<Allocation> allocation);
+		void DestroyOrphanImage(Ref<Allocation> allocation);
 
-		uint64_t m_pageSize = 0;
-		uint64_t m_memoryBlockMinSize = 0;
-
+		std::vector<Ref<TransientHeap>> m_bufferHeaps;
+		std::vector<Ref<TransientHeap>> m_imageHeaps;
 	};
 }

@@ -40,9 +40,6 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
 
-#include <VoltRHI/Memory/MemoryPool.h>
-#include <VoltRHI/Memory/TransientHeap.h>
-
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
 inline static constexpr uint32_t CAMERA_BUFFER_BINDING = 0;
@@ -171,8 +168,6 @@ namespace Volt
 			m_indirectCountDescriptorTable = RHI::DescriptorTable::Create(spec);
 			m_indirectCountDescriptorTable->SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
 		}
-
-		m_memoryPool = RHI::MemoryPool::Create(RHI::MemoryUsage::GPU);
 	}
 
 	SceneRendererNew::~SceneRendererNew()
@@ -213,18 +208,6 @@ namespace Volt
 			m_shouldResize = false;
 		}
 
-		std::vector<Ref<RHI::Allocation>> allocations;
-
-		for (uint32_t i = 0; i < 10; i++)
-		{
-			allocations.emplace_back(RHI::GraphicsContext::Get().GetTransientHeaps().at(0)->CreateBuffer({ 512000, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU }));
-		}
-
-		for (uint32_t i = 0; i < 10; i++)
-		{
-			RHI::GraphicsContext::Get().GetTransientHeaps().at(0)->ForfeitBuffer(allocations.at(i));
-		}
-
 		UpdateBuffers(camera);
 
 		struct BufferData
@@ -242,7 +225,7 @@ namespace Volt
 			RenderGraphResourceHandle depthImage;
 		} imageData;
 
-		RenderGraph renderGraph{ m_commandBuffer, m_memoryPool };
+		RenderGraph renderGraph{ m_commandBuffer };
 		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer);
 		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer);
 		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer);

@@ -16,10 +16,8 @@ namespace Volt::RHI
 	public:
 		virtual ~Allocator() = default;
 
-		virtual Ref<Allocation> CreateBuffer(const size_t size, BufferUsage usage, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
-
+		virtual Ref<Allocation> CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
 		virtual Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
-		virtual Ref<Allocation> CreateImage(const ImageSpecification& imageSpecification, Ref<MemoryPool> pool, MemoryUsage memoryUsage = MemoryUsage::GPU) = 0;
 
 		virtual void DestroyBuffer(Ref<Allocation> allocation) = 0;
 		virtual void DestroyImage(Ref<Allocation> allocation) = 0;
@@ -44,7 +42,7 @@ namespace Volt::RHI
 	public:
 		virtual ~TransientAllocator() override = default;
 
-		static Scope<TransientAllocator> Create();
+		static Ref<TransientAllocator> Create();
 
 	protected:
 		TransientAllocator() = default;

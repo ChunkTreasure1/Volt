@@ -4,6 +4,8 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Core/RHIInterface.h"
 
+#include <Volt/Core/UUID.h>
+
 namespace Volt::RHI
 {
 	class Allocation;
@@ -34,16 +36,28 @@ namespace Volt::RHI
 		TransientHeapFlags flags = TransientHeapFlags::AllowAll;
 	};
 
+	struct TransientImageCreateInfo
+	{
+		ImageSpecification imageSpecification;
+		uint64_t size = 0;
+	};
+
 	class TransientHeap : public RHIInterface
 	{
 	public:
 		virtual Ref<Allocation> CreateBuffer(const TransientBufferCreateInfo& createInfo) = 0;
+		virtual Ref<Allocation> CreateImage(const TransientImageCreateInfo& createInfo) = 0;
+
 		virtual void ForfeitBuffer(Ref<Allocation> allocation) = 0;
+		virtual void ForfeitImage(Ref<Allocation> allocation) = 0;
 
 		virtual const bool IsAllocationSupported(const uint64_t size, TransientHeapFlags heapFlags) const = 0;
 
+		inline const UUID GetHeapID() const { return m_heapId; }
+
 		static Ref<TransientHeap> Create(const TransientHeapCreateInfo& createInfo);
 
-	private:
+	protected:
+		UUID m_heapId{};
 	};
 }

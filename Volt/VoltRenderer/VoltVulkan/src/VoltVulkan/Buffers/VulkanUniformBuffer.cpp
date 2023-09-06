@@ -23,7 +23,7 @@ namespace Volt::RHI
 		info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		m_allocation = GraphicsContext::GetAllocator().CreateBuffer(bufferSize, BufferUsage::UniformBuffer, MemoryUsage::CPUToGPU);
+		m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::UniformBuffer, MemoryUsage::CPUToGPU);
 
 		if (data)
 		{
@@ -40,7 +40,7 @@ namespace Volt::RHI
 
 		GraphicsContext::DestroyResource([allocation = m_allocation]() 
 		{
-			GraphicsContext::GetAllocator().DestroyBuffer(allocation);
+			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
 		});
 
 		m_allocation = nullptr;
