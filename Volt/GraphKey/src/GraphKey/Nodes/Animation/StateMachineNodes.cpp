@@ -69,8 +69,8 @@ namespace GraphKey
 					VT_SERIALIZE_PROPERTY(editorState, state->editorState, out);
 
 					VT_SERIALIZE_PROPERTY(id, state->id, out);
-					VT_SERIALIZE_PROPERTY(pinId, state->pinId, out);
-					VT_SERIALIZE_PROPERTY(pinId2, state->pinId2, out);
+					VT_SERIALIZE_PROPERTY(pinId, state->topPinId, out);
+					VT_SERIALIZE_PROPERTY(pinId2, state->bottomPinId, out);
 
 					out << YAML::Key << "Transitions" << YAML::BeginSeq;
 					for (const auto& transition : state->transitions)
@@ -142,8 +142,8 @@ namespace GraphKey
 			auto newState = myStateMachine->CreateState(stateName, stateIsEntry, stateId);
 
 			VT_DESERIALIZE_PROPERTY(editorState, newState->editorState, stateNode, std::string(""));
-			VT_DESERIALIZE_PROPERTY(pinId, newState->pinId, stateNode, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(pinId2, newState->pinId2, stateNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(pinId, newState->topPinId, stateNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(pinId2, newState->bottomPinId, stateNode, Volt::UUID(0));
 			VT_DESERIALIZE_PROPERTY(isAny, newState->isAny, stateNode, false);
 
 			for (const auto& transitionNode : stateNode["Transitions"])

@@ -367,11 +367,11 @@ void AnimationGraphPanel::DrawLinks()
 
 			if (fromPos.y < toPos.y)
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId2), ed::PinId(toState->pinId), offset, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->bottomPinId), ed::PinId(toState->topPinId), offset, ax::NodeEditor::ArrowLocation::End);
 			}
 			else
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId), ed::PinId(toState->pinId2), offset, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->topPinId), ed::PinId(toState->bottomPinId), offset, ax::NodeEditor::ArrowLocation::End);
 			}
 		}
 
@@ -390,11 +390,11 @@ void AnimationGraphPanel::DrawLinks()
 
 			if (fromPos.y < toPos.y)
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId2), ed::PinId(toState->pinId), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->bottomPinId), ed::PinId(toState->topPinId), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
 			}
 			else
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId), ed::PinId(toState->pinId2), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->topPinId), ed::PinId(toState->bottomPinId), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
 			}
 		}
 	}
@@ -612,7 +612,7 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 			ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
 			ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
 
-			ed::BeginPin(ed::PinId(state->pinId), ed::PinKind::Input);
+			ed::BeginPin(ed::PinId(state->topPinId), ed::PinKind::Input);
 			ed::PinPivotRect(inputsRect.GetTL(), inputsRect.GetBR());
 			ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
 			ed::EndPin();
@@ -650,7 +650,7 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 			ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.f);
 			ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
 			ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
-			ed::BeginPin(ed::PinId(state->pinId2), ed::PinKind::Output);
+			ed::BeginPin(ed::PinId(state->bottomPinId), ed::PinKind::Output);
 			ed::PinPivotRect(outputsRect.GetTL(), outputsRect.GetBR());
 			ed::PinRect(outputsRect.GetTL(), outputsRect.GetBR());
 			ed::EndPin();

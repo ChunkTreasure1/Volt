@@ -18,8 +18,7 @@ namespace Volt
 	AnimationStateMachine::AnimationStateMachine(const std::string& name, AssetHandle aSkeletonHandle)
 		: myName(name), mySkeletonHandle(aSkeletonHandle)
 	{
-		AddState("Entry", true);
-		AddState("Any", false, true);
+		AddState("Entry", StateMachineStateType::EntryState);
 	}
 
 	void AnimationStateMachine::Update(float deltaTime)
@@ -29,14 +28,14 @@ namespace Volt
 		{
 			for (const auto& state : myStates)
 			{
-				if (state->isEntry && !state->transitions.empty())
+				if (state->stateType == StateMachineStateType::EntryState && !state->transitions.empty())
 				{
 					auto transition = GetTransitionById(state->transitions.front());
 					if (transition)
 					{
 						SetStartState(transition->toState);
 						myCurrentState = myStartState;
-						auto startState = myStates.at(myStartState);
+						auto startState = std::reinterpret_pointer_cast<AnimationState>(myStates.at(myStartState));
 						startState->startTime = AnimationManager::globalClock;
 						startState->stateGraph->SetStartTime(AnimationManager::globalClock);
 					}
@@ -55,7 +54,7 @@ namespace Volt
 		}
 
 		// Check any state for transitions
-		for (const auto& state : myStates)
+		/*for (const auto& state : myStates)
 		{
 			if (state->isAny)
 			{
@@ -75,7 +74,7 @@ namespace Volt
 				}
 				break;
 			}
-		}
+		}*/
 
 		const auto& currState = myStates.at(myCurrentState);
 
@@ -99,9 +98,9 @@ namespace Volt
 	{
 		for (const auto& state : myStates)
 		{
-			if (state->stateGraph)
+			if (state->stateType == StateMachineStateType::AnimationState)
 			{
-				state->stateGraph->OnEvent(e);
+				AsAnimationState(state)->stateGraph->OnEvent(e);
 			}
 		}
 
@@ -119,9 +118,9 @@ namespace Volt
 		mySkeletonHandle = aSkeletonHandle;
 		for (const auto& state : myStates)
 		{
-			if (state->stateGraph)
+			if (state->stateType == StateMachineStateType::AnimationState)
 			{
-				state->stateGraph->SetSkeletonHandle(aSkeletonHandle);
+				AsAnimationState(state)->stateGraph->SetSkeletonHandle(aSkeletonHandle);
 			}
 		}
 	}
@@ -141,7 +140,7 @@ namespace Volt
 			return {};
 		}
 
-		const auto& currState = myStates.at(myCurrentState);
+		const auto& currState = GetAnimationState(myCurrentState);
 		const auto nodes = currState->stateGraph->GetNodesOfType("OutputPoseNode");
 		if (nodes.empty())
 		{
@@ -171,27 +170,6 @@ namespace Volt
 		return sample;
 	}
 
-	void AnimationStateMachine::AddState(const std::string& name, bool isEntry, bool isAny)
-	{
-		auto state = CreateRef<AnimationState>(name, isEntry, isAny);
-		if (!isEntry && !isAny)
-		{
-			state->stateGraph = CreateRef<AnimationGraphAsset>(mySkeletonHandle);
-			state->stateGraph->AddNode(GraphKey::Registry::Create("OutputPoseNode"));
-		}
-
-		myStates.emplace_back(state);
-	}
-
-	Ref<AnimationState> AnimationStateMachine::CreateState(const std::string& name, bool isEntry, const UUID id)
-	{
-		auto state = CreateRef<AnimationState>(name, isEntry, false);
-		state->id = id;
-
-		myStates.emplace_back(state);
-		return state;
-	}
-
 	Ref<AnimationTransition> AnimationStateMachine::CreateTransition(Volt::UUID id)
 	{
 		auto transition = CreateRef<AnimationTransition>();
@@ -199,6 +177,48 @@ namespace Volt
 
 		myTransitions.emplace_back(transition);
 		return transition;
+	}
+
+	void AnimationStateMachine::AddState(const std::string& name, StateMachineStateType aStateType, const UUID id)
+	{
+		switch (aStateType)
+		{
+			case StateMachineStateType::AnimationState:
+			{
+				auto animationState = CreateRef<AnimationState>(name);
+				animationState->stateGraph = CreateRef<AnimationGraphAsset>(mySkeletonHandle);
+				animationState->stateGraph->AddNode(GraphKey::Registry::Create("OutputPoseNode"));
+				myStates.emplace_back(animationState);
+				break;
+			}
+
+			case StateMachineStateType::AliasState:
+			{
+				auto aliasState = CreateRef<AnimationAliasState>(name);
+				myStates.emplace_back(aliasState);
+				break;
+			}
+
+			case StateMachineStateType::EntryState:
+			{
+				bool alreadyHasEntry = false;
+				for (auto& state : myStates)
+				{
+					if (state->stateType == StateMachineStateType::EntryState)
+					{
+						alreadyHasEntry = true;
+						break;
+					}
+				}
+
+				if (!alreadyHasEntry)
+				{
+					auto state = CreateRef<AnimationState>("Entry", aStateType);
+					myStates.emplace_back(state);
+				}
+				break;
+			}
+		}
 	}
 
 	void AnimationStateMachine::AddTransition(const UUID startStateId, const UUID endStateId)
@@ -215,7 +235,7 @@ namespace Volt
 			startState->transitions.emplace_back(transition->id);
 			endState->transitions.emplace_back(transition->id);
 		}
-		
+
 		transition->transitionGraph = CreateRef<AnimationTransitionGraph>();
 		transition->transitionGraph->SetStateMachine(this);
 		transition->transitionGraph->SetTransitionID(transition->id);
@@ -235,7 +255,7 @@ namespace Volt
 			return;
 		}
 
-		Ref<AnimationState> node = *it;
+		Ref<StateMachineState> node = *it;
 		for (const auto& t : node->transitions)
 		{
 			RemoveTransition(t);
@@ -277,7 +297,7 @@ namespace Volt
 		}
 	}
 
-	AnimationState* AnimationStateMachine::GetStateById(const UUID stateId) const
+	StateMachineState* AnimationStateMachine::GetStateById(const UUID stateId) const
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [stateId](const auto& lhs) { return lhs->id == stateId; });
 		if (it != myStates.end())
@@ -301,7 +321,7 @@ namespace Volt
 
 	AnimationState* AnimationStateMachine::GetStateFromPin(const UUID pinId) const
 	{
-		auto it = std::find_if(myStates.begin(), myStates.end(), [pinId](const auto& lhs) { return lhs->pinId == pinId || lhs->pinId2 == pinId; });
+		auto it = std::find_if(myStates.begin(), myStates.end(), [pinId](const auto& lhs) { return lhs->topPinId == pinId || lhs->bottomPinId == pinId; });
 		if (it != myStates.end())
 		{
 			return (*it).get();
@@ -335,8 +355,8 @@ namespace Volt
 			Ref<AnimationState> newState = CreateRef<AnimationState>(state->name, state->isEntry, state->isAny);
 			newState->transitions = state->transitions;
 			newState->id = state->id;
-			newState->pinId = state->pinId;
-			newState->pinId2 = state->pinId2;
+			newState->topPinId = state->topPinId;
+			newState->bottomPinId = state->bottomPinId;
 			if (state->stateGraph)
 			{
 				newState->stateGraph = state->stateGraph->CreateCopy(entity);
@@ -352,7 +372,7 @@ namespace Volt
 			newTransition->id = transition->id;
 			newTransition->fromState = transition->fromState;
 			newTransition->toState = transition->toState;
-			
+
 			newTransition->blendTime = transition->blendTime;
 			newTransition->shouldBlend = transition->shouldBlend;
 
@@ -498,6 +518,30 @@ namespace Volt
 		auto outputPoseNode = std::reinterpret_pointer_cast<GraphKey::OutputPoseNode>(nodes.at(0));
 		const auto sample = outputPoseNode->Sample(false, state->startTime);
 		return sample;
+	}
+
+	Ref<AnimationState> AnimationStateMachine::GetAnimationState(uint32_t aIndex)
+	{
+		auto state = myStates.at(aIndex);
+		if (state->stateType == StateMachineStateType::AnimationState) [[likely]]
+		{
+			return std::reinterpret_pointer_cast<AnimationState>(state);
+		}
+		else [[unlikely]]
+		{
+			VT_CORE_ERROR("Tried to get AnimationState from an index that does not contain an Animation state");
+			return Ref<AnimationState>();
+		}
+	}
+
+	Ref<AnimationState> AnimationStateMachine::AsAnimationState(Ref<StateMachineState> aState)
+	{
+		if (aState->stateType != StateMachineStateType::AnimationState) [[unlikely]]
+		{
+			VT_CORE_ERROR("Tried to convert a StateMachineState to AnimationState that doesnt have that type");
+			return Ref<AnimationState>();
+		}
+		return std::reinterpret_pointer_cast<AnimationState>(aState);
 	}
 
 	void AnimationStateMachine::SetNextState(const UUID targetStateId, const UUID transitionId)
