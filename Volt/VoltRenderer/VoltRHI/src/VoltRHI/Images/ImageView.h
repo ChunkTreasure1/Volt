@@ -24,6 +24,8 @@ namespace Volt::RHI
 	public:
 		static Ref<ImageView> Create(const ImageViewSpecification specification);
 
+		virtual const ImageAspect GetImageAspect() const = 0;
+
 	protected:
 		ImageView() = default;
 		~ImageView() override = default;

@@ -288,6 +288,50 @@ namespace Volt::RHI
 			return result;
 		}
 
+		inline static VkImageAspectFlags GetVkImageAspect(ImageAspect imageAspect)
+		{
+			VkImageAspectFlags result = 0;
+
+			if ((imageAspect & ImageAspect::Color) != ImageAspect::None)
+			{
+				result |= VK_IMAGE_ASPECT_COLOR_BIT;
+			}
+
+			if ((imageAspect & ImageAspect::Depth) != ImageAspect::None)
+			{
+				result |= VK_IMAGE_ASPECT_DEPTH_BIT;
+			}
+
+			if ((imageAspect & ImageAspect::Stencil) != ImageAspect::None)
+			{
+				result |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+
+			return result;
+		}
+
+		inline static ImageAspect GetVoltImageAspect(VkImageAspectFlags imageAspect)
+		{
+			ImageAspect result = ImageAspect::None;
+
+			if ((imageAspect & VK_IMAGE_ASPECT_COLOR_BIT) != 0)
+			{
+				result |= ImageAspect::Color;
+			}
+
+			if ((imageAspect & VK_IMAGE_ASPECT_DEPTH_BIT) != 0)
+			{
+				result |= ImageAspect::Depth;
+			}
+
+			if ((imageAspect & VK_IMAGE_ASPECT_STENCIL_BIT) != 0)
+			{
+				result |= ImageAspect::Stencil;
+			}
+
+			return result;
+		}
+
 		const VkImageCreateInfo GetVkImageCreateInfo(const ImageSpecification& specification);
 		const MemoryRequirement GetImageRequirement(const VkImageCreateInfo& imageCreateInfo);
 

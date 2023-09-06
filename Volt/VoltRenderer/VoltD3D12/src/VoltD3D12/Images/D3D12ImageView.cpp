@@ -35,10 +35,13 @@ namespace Volt::RHI
 		}
 	}
 
-
-
 	void* D3D12ImageView::GetHandleImpl() const
 	{
 		return m_view;
+	}
+
+	const ImageAspect D3D12ImageView::GetImageAspect() const
+	{
+		return ImageAspect();
 	}
 }

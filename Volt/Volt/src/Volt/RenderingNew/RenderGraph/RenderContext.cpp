@@ -11,6 +11,8 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
+#include <VoltRHI/Images/ImageView.h>
+
 namespace Volt
 {
 	RenderContext::RenderContext(Ref<RHI::CommandBuffer> commandBuffer)
@@ -36,6 +38,50 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		m_commandBuffer->EndRendering();
+	}
+
+	const RenderingInfo RenderContext::CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments)
+	{
+		RHI::Rect2D scissor = { 0, 0, width, height };
+		RHI::Viewport viewport{};
+		viewport.width = static_cast<float>(width);
+		viewport.height = static_cast<float>(height);
+		viewport.x = 0.f;
+		viewport.y = 0.f;
+		viewport.minDepth = 0.f;
+		viewport.maxDepth = 1.f;
+
+		std::vector<RHI::AttachmentInfo> colorAttachments;
+		RHI::AttachmentInfo depthAttachment{};
+
+		for (const auto& view : attachments)
+		{
+			if ((view->GetImageAspect() & RHI::ImageAspect::Color) != RHI::ImageAspect::None)
+			{
+				auto& attachment = colorAttachments.emplace_back();
+				attachment.clearMode = RHI::ClearMode::Clear;
+				attachment.clearColor = { 0.f, 0.f, 0.f, 1.f };
+				attachment.view = view;
+			}
+			else
+			{
+				depthAttachment.clearMode = RHI::ClearMode::Clear;
+				depthAttachment.clearColor = { 0.f };
+				depthAttachment.view = view;
+			}
+		}
+
+		RHI::RenderingInfo renderingInfo{};
+		renderingInfo.colorAttachments = colorAttachments;
+		renderingInfo.depthAttachmentInfo = depthAttachment;
+		renderingInfo.renderArea = scissor;
+
+		RenderingInfo result{};
+		result.renderingInfo = renderingInfo;
+		result.scissor = scissor;
+		result.viewport = viewport;
+
+		return result;
 	}
 
 	void RenderContext::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)

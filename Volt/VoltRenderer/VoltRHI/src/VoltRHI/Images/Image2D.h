@@ -15,6 +15,7 @@ namespace Volt::RHI
 		virtual void GenerateMips() = 0;
 
 		virtual const Ref<ImageView> GetView(const int32_t mip = -1, const int32_t layer = -1) = 0;
+		virtual const ImageAspect GetImageAspect() const = 0;
 
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;

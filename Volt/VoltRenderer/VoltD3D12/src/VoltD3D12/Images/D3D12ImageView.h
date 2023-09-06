@@ -11,6 +11,8 @@ namespace Volt::RHI
 		D3D12ImageView(const ImageViewSpecification specification);
 		void* GetHandleImpl() const override;
 
+		const ImageAspect GetImageAspect() const override;
+
 	private:
 		ImageViewSpecification m_specs;
 		size_t m_viewID;

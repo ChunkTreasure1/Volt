@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
+#include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -16,6 +17,7 @@ namespace Volt
 		class DescriptorTable;
 
 		class BufferView;
+		class ImageView;
 	}
 
 	struct RenderingInfo
@@ -33,6 +35,8 @@ namespace Volt
 
 		void BeginRendering(const RenderingInfo& renderingInfo);
 		void EndRendering();
+
+		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments);
 
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);

@@ -463,6 +463,16 @@ namespace Volt::RHI
 		ViewCubeArray
 	};
 
+	enum class ImageAspect : uint32_t
+	{
+		None = 0,
+		Color = BIT(0),
+		Depth = BIT(1),
+		Stencil = BIT(2)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(ImageAspect);
+
 	enum class ClearMode
 	{
 		Clear = 0,

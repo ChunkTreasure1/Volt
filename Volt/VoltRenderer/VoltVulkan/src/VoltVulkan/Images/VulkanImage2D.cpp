@@ -60,7 +60,7 @@ namespace Volt::RHI
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
 
-		m_imageAspect = static_cast<uint32_t>(aspectMask);
+		m_imageAspect = Utility::GetVoltImageAspect(aspectMask);
 
 		if (m_allocatedUsingCustomAllocator)
 		{
@@ -345,7 +345,7 @@ namespace Volt::RHI
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.oldLayout = Utility::ToVulkanLayout(m_currentImageLayout);
 		barrier.newLayout = Utility::ToVulkanLayout(targetLayout);
-		barrier.subresourceRange.aspectMask = m_imageAspect;
+		barrier.subresourceRange.aspectMask = Utility::GetVkImageAspect(m_imageAspect);
 		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
 		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 		barrier.subresourceRange.baseArrayLayer = 0;

@@ -58,6 +58,11 @@ namespace Volt::RHI
 		return m_specification.image->GetFormat();
 	}
 
+	const ImageAspect VulkanImageView::GetImageAspect() const
+	{
+		return m_specification.image->GetImageAspect();
+	}
+
 	void* VulkanImageView::GetHandleImpl() const
 	{
 		return m_imageView;

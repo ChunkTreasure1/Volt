@@ -11,7 +11,6 @@ namespace Volt::RHI
 	{
 	public:
 		using ImageLayout = uint32_t;
-		using ImageAspect = uint32_t;
 
 		VulkanImage2D(const ImageSpecification& specification, const void* data);
 		VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data);
@@ -32,7 +31,7 @@ namespace Volt::RHI
 		void SetName(std::string_view name) override;
 
 		const ImageLayout GetCurrentLayout() const { return m_currentImageLayout; }
-		const ImageAspect GetImageAspect() const { return m_imageAspect; }
+		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }
 
 	protected:
 		void* GetHandleImpl() const override;
@@ -51,7 +50,7 @@ namespace Volt::RHI
 		bool m_allocatedUsingCustomAllocator = false;
 
 		ImageLayout m_currentImageLayout = 0;
-		ImageAspect m_imageAspect = 0;
+		ImageAspect m_imageAspect = ImageAspect::None;
 
 		std::map<int32_t, std::map<int32_t, Ref<ImageView>>> m_imageViews; // Layer -> Mip -> View
 	};
