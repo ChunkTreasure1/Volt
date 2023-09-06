@@ -218,7 +218,17 @@ namespace Volt::RHI
 			blocksToMerge.erase(blocksToMerge.begin() + i);
 		}
 
-		pageAllocation.availableBlocks.emplace_back(finalSize, finalOffset, 0);
+		uint64_t finalEndOffset = finalOffset + finalSize;
+		if (finalEndOffset == pageAllocation.tail)
+		{
+			pageAllocation.tail = finalOffset;
+		}
+		else
+		{
+			pageAllocation.availableBlocks.emplace_back(finalSize, finalOffset, 0);
+		}
+	
+		pageAllocation.usedSize -= allocBlock.size;
 	}
 
 	void VulkanTransientHeap::InitializeAsBufferHeap()
