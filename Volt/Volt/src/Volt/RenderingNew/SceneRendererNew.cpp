@@ -278,8 +278,6 @@ namespace Volt
 			context.Dispatch(dispatchCount, 1, 1);
 		});
 
-		RenderGraphResourceHandle testHandle = 0;
-
 		renderGraph.AddPass("Test Pass", [&](RenderGraph::Builder& builder)
 		{
 			RenderGraphImageDesc desc{};
@@ -288,15 +286,10 @@ namespace Volt
 			desc.format = RHI::Format::R32G32B32A32_SFLOAT;
 			desc.usage = RHI::ImageUsage::AttachmentStorage;
 
-			testHandle = builder.CreateImage2D(desc);
-
-			builder.WriteResource(testHandle);
-
-			builder.SetHasSideEffect();
 		},
-		[&](RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			auto image = resources.GetImage2D(testHandle);
+			//auto image = resources.GetImage2D(testHandle);
 		});
 
 		renderGraph.AddResourceTransition(bufferData.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);

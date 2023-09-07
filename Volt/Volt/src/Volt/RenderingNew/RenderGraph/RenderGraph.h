@@ -80,6 +80,9 @@ namespace Volt
 	private:
 		friend class RenderGraphPassResources;
 		friend class Builder;
+		friend class RenderGraphExecutionThread;
+
+		void ExecuteInternal();
 
 		RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
 		RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);

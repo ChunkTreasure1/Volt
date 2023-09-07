@@ -34,6 +34,8 @@ namespace Volt::RHI
 		template<typename... Args>
 		static void LogTagged(Severity logSeverity, std::string_view tag, std::string_view message, Args&&... args);
 
+		static void LogUnformatted(Severity logSeverity, std::string_view message);
+
 		static void DestroyResource(std::function<void()>&& function);
 
 	protected:

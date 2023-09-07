@@ -16,6 +16,7 @@
 #include "Volt/Steam/SteamImplementation.h"
 
 #include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 
 #include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
 
@@ -252,6 +253,7 @@ namespace Volt
 				DiscordSDK::Update();
 			}
 
+			//RenderGraphExecutionThread::WaitForFinishedExecution();
 			m_window->Present();
 
 			m_frameTimer.Accumulate();

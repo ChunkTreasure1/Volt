@@ -59,7 +59,7 @@ namespace Volt::RHI
 
 				case ResourceState::NonPixelShaderRead:
 				{
-					return { VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
+					return { VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
 					break;
 				}
 
@@ -92,6 +92,12 @@ namespace Volt::RHI
 					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT };
 					break;
 				}
+
+				case ResourceState::DepthWrite:
+				{
+					return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT };
+					break;
+				}
 			}
 
 			return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
@@ -121,7 +127,7 @@ namespace Volt::RHI
 
 				case ResourceState::NonPixelShaderRead:
 				{
-					return { VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
+					return { VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
 					break;
 				}
 
@@ -146,6 +152,12 @@ namespace Volt::RHI
 				case ResourceState::UnorderedAccess:
 				{
 					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT };
+					break;
+				}
+
+				case ResourceState::DepthWrite:
+				{
+					return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT };
 					break;
 				}
 
@@ -465,7 +477,9 @@ namespace Volt::RHI
 			newInfo.clearValue = { colorAtt.clearColor[0], colorAtt.clearColor[1], colorAtt.clearColor[2], colorAtt.clearColor[3] };
 		}
 
-		if (!renderingInfo.depthAttachmentInfo.view)
+		const bool hasDepth = renderingInfo.depthAttachmentInfo.view;
+
+		if (hasDepth)
 		{
 			depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 			depthAttachmentInfo.imageView = renderingInfo.depthAttachmentInfo.view->GetHandle<VkImageView>();
@@ -483,7 +497,7 @@ namespace Volt::RHI
 		vkRenderingInfo.pColorAttachments = colorAttachmentInfo.data();
 		vkRenderingInfo.pStencilAttachment = nullptr;
 
-		if (!renderingInfo.depthAttachmentInfo.view)
+		if (hasDepth)
 		{
 			vkRenderingInfo.pDepthAttachment = &depthAttachmentInfo;
 		}

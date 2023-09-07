@@ -2,12 +2,14 @@
 #include "RenderGraph.h"
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 
 #include "Volt/Core/Profiling.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
+#include <VoltRHI/Images/ImageUtility.h>
 
 namespace Volt
 {
@@ -141,9 +143,23 @@ namespace Volt
 					}
 					else
 					{
-						newState = RHI::ResourceState::RenderTarget;
+						if (resourceNode->GetResourceType() == ResourceType::Image2D)
+						{
+							RenderGraphResourceNode<RenderGraphImage2D>& image2DNode = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>();
+							if (RHI::Utility::IsDepthFormat(image2DNode.resourceInfo.description.format) || RHI::Utility::IsStencilFormat(image2DNode.resourceInfo.description.format))
+							{
+								newState = RHI::ResourceState::DepthWrite;
+							}
+							else
+							{
+								newState = RHI::ResourceState::RenderTarget;
+							}
+						}
+						else
+						{
+							newState = RHI::ResourceState::RenderTarget;
+						}
 					}
-
 				}
 				else
 				{
@@ -232,8 +248,52 @@ namespace Volt
 
 	void RenderGraph::Execute()
 	{
+		RenderGraphExecutionThread::ExecuteRenderGraph(std::move(*this));
+	}
+
+	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(Ref<RHI::Image2D> image)
+	{
+		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
+		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
+		node->handle = resourceHandle;
+		node->resourceInfo.isExternal = true;
+
+		m_resourceNodes.push_back(node);
+		m_transientResourceSystem.AddExternalResource(resourceHandle, image);
+
+		return resourceHandle;
+	}
+
+	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
+	{
+		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
+		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
+		node->handle = resourceHandle;
+		node->resourceInfo.isExternal = true;
+
+		m_resourceNodes.push_back(node);
+		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
+
+		return resourceHandle;
+	}
+
+	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
+	{
+		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
+		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
+		node->handle = resourceHandle;
+		node->resourceInfo.isExternal = true;
+
+		m_resourceNodes.push_back(node);
+		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
+
+		return resourceHandle;
+	}
+
+	void RenderGraph::ExecuteInternal()
+	{
 		VT_PROFILE_FUNCTION();
-		
+
 		m_commandBuffer->Begin();
 
 		for (const auto& passNode : m_passNodes)
@@ -285,49 +345,10 @@ namespace Volt
 		m_commandBuffer->Execute();
 	}
 
-	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(Ref<RHI::Image2D> image)
-	{
-		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
-		Ref<RenderGraphResourceNode<RenderGraphTexture2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture2D>>();
-		node->handle = resourceHandle;
-		node->resourceInfo.isExternal = true;
-
-		m_resourceNodes.push_back(node);
-		m_transientResourceSystem.AddExternalResource(resourceHandle, image);
-
-		return resourceHandle;
-	}
-
-	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
-	{
-		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
-		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
-		node->handle = resourceHandle;
-		node->resourceInfo.isExternal = true;
-
-		m_resourceNodes.push_back(node);
-		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
-
-		return resourceHandle;
-	}
-
-	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
-	{
-		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
-		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
-		node->handle = resourceHandle;
-		node->resourceInfo.isExternal = true;
-
-		m_resourceNodes.push_back(node);
-		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
-
-		return resourceHandle;
-	}
-
 	RenderGraphResourceHandle RenderGraph::CreateImage2D(const RenderGraphImageDesc& textureDesc)
 	{
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
-		Ref<RenderGraphResourceNode<RenderGraphTexture2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture2D>>();
+		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 
@@ -379,7 +400,7 @@ namespace Volt
 	Weak<RHI::Image2D> RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
-		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphTexture2D>>().resourceInfo;
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
 		return m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 	}
@@ -410,7 +431,7 @@ namespace Volt
 		{
 			case ResourceType::Image2D:
 			{
-				const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphTexture2D>>().resourceInfo;
+				const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 				result = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
 
 				break;

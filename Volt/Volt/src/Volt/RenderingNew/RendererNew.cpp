@@ -6,6 +6,8 @@
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Utility/FunctionQueue.h"
 
+#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
+
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 
@@ -52,10 +54,14 @@ namespace Volt
 		{
 			//s_rendererData->meshTable = CreateScope<GPUMeshTable>();
 		}
+
+		RenderGraphExecutionThread::Initialize();
 	}
 
 	void RendererNew::Shutdown()
 	{
+		RenderGraphExecutionThread::Shutdown();
+
 		for (auto& resourceQueue : s_rendererData->deletionQueue)
 		{
 			resourceQueue.Flush();

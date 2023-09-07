@@ -125,6 +125,8 @@ namespace Volt::RHI
 		auto& frameData = m_perFrameInFlightData.at(m_currentFrame);
 		const auto deviceQueue = GraphicsContext::GetDevice()->GetDeviceQueue(QueueType::Graphics);
 
+		Ref<VulkanDeviceQueue> vkQueue = deviceQueue->As<VulkanDeviceQueue>();
+
 		// Queue Submit
 		{
 			VkSubmitInfo submitInfo{};
@@ -141,7 +143,9 @@ namespace Volt::RHI
 			const VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			submitInfo.pWaitDstStageMask = &waitStage;
 
+			vkQueue->AquireLock();
 			VT_VK_CHECK(vkQueueSubmit(deviceQueue->GetHandle<VkQueue>(), 1, &submitInfo, frameData.fence));
+			vkQueue->ReleaseLock();
 		}
 
 		VT_PROFILE_GPU_FLIP(m_swapchain);

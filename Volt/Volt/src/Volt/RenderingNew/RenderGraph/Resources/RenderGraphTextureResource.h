@@ -24,7 +24,7 @@ namespace Volt
 		bool isCubeMap = false;
 	};
 
-	struct RenderGraphTexture2D
+	struct RenderGraphImage2D
 	{
 		RenderGraphImageDesc description{};
 		bool isExternal = false;

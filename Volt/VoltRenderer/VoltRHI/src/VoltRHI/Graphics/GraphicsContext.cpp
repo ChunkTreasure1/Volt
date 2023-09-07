@@ -44,4 +44,14 @@ namespace Volt::RHI
 			function();
 		}
 	}
+
+	void GraphicsContext::LogUnformatted(Severity logSeverity, std::string_view message)
+	{
+		if (!s_logHook.enabled || !s_logHook.logCallback)
+		{
+			return;
+		}
+
+		s_logHook.logCallback(logSeverity, message);
+	}
 }

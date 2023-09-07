@@ -66,6 +66,16 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanDeviceQueue::AquireLock()
+	{
+		m_executeMutex.lock();
+	}
+
+	void VulkanDeviceQueue::ReleaseLock()
+	{
+		m_executeMutex.unlock();
+	}
+
 	void* VulkanDeviceQueue::GetHandleImpl() const
 	{
 		return m_queue;

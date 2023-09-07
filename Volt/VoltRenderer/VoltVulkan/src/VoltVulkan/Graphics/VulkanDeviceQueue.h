@@ -15,6 +15,9 @@ namespace Volt::RHI
 		void WaitForQueue() override;
 		void Execute(const std::vector<Ref<CommandBuffer>>& commandBuffer) override;
 
+		void AquireLock();
+		void ReleaseLock();
+
 	protected:
 		void* GetHandleImpl() const override;
 
