@@ -13,6 +13,14 @@
 
 #include <GraphKey/Registry.h>
 
+#include "Volt/Utility/EnumUtil.h"
+
+CREATE_ENUM(TestEnum, uint32_t,
+	One,
+	Two,
+	Three
+);
+
 namespace Volt
 {
 	AnimationStateMachine::AnimationStateMachine(const std::string& name, AssetHandle aSkeletonHandle)
@@ -194,7 +202,7 @@ namespace Volt
 
 			case StateMachineStateType::AliasState:
 			{
-				auto aliasState = CreateRef<AnimationAliasState>(name);
+				auto aliasState = CreateRef<AliasState>(name);
 				myStates.emplace_back(aliasState);
 				break;
 			}
@@ -278,8 +286,8 @@ namespace Volt
 
 		auto transition = *it;
 
-		AnimationState* fromState = GetStateById(transition->fromState);
-		AnimationState* toState = GetStateById(transition->toState);
+		StateMachineState* fromState = GetStateById(transition->fromState);
+		StateMachineState* toState = GetStateById(transition->toState);
 
 		fromState->transitions.erase(std::remove(fromState->transitions.begin(), fromState->transitions.end(), transition->id), fromState->transitions.end());
 		toState->transitions.erase(std::remove(toState->transitions.begin(), toState->transitions.end(), transition->id), toState->transitions.end());
@@ -319,7 +327,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	AnimationState* AnimationStateMachine::GetStateFromPin(const UUID pinId) const
+	StateMachineState* AnimationStateMachine::GetStateFromPin(const UUID pinId) const
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [pinId](const auto& lhs) { return lhs->topPinId == pinId || lhs->bottomPinId == pinId; });
 		if (it != myStates.end())
@@ -352,16 +360,35 @@ namespace Volt
 
 		for (const auto& state : myStates)
 		{
-			Ref<AnimationState> newState = CreateRef<AnimationState>(state->name, state->isEntry, state->isAny);
+			Ref<StateMachineState> newState;
+			if (state->stateType == StateMachineStateType::AnimationState)
+			{
+				newState = CreateRef<AnimationState>(state->name, state->stateType);
+				auto newAnimState = std::reinterpret_pointer_cast<AnimationState>(newState);
+				auto oldAnimState = std::reinterpret_pointer_cast<AnimationState>(state);
+				if (oldAnimState->stateGraph)
+				{
+					newAnimState->stateGraph = oldAnimState->stateGraph->CreateCopy(entity);
+					newAnimState->stateGraph->SetParentBlackboard(&ownerGraph->GetBlackboard());
+				}
+			}
+			else if (state->stateType == StateMachineStateType::AliasState)
+			{
+				newState = CreateRef<AliasState>(state->name);
+				auto newAliasState = std::reinterpret_pointer_cast<AliasState>(newState);
+				auto oldAliasState = std::reinterpret_pointer_cast<AliasState>(state);
+				
+				newAliasState->transitionFromStates = oldAliasState->transitionFromStates;
+			}
+			else
+			{
+				newState = CreateRef<StateMachineState>(state->name, state->stateType);
+			}
 			newState->transitions = state->transitions;
 			newState->id = state->id;
 			newState->topPinId = state->topPinId;
 			newState->bottomPinId = state->bottomPinId;
-			if (state->stateGraph)
-			{
-				newState->stateGraph = state->stateGraph->CreateCopy(entity);
-				newState->stateGraph->SetParentBlackboard(&ownerGraph->GetBlackboard());
-			}
+			newState->editorState = state->editorState;
 
 			newStateMachine->myStates.emplace_back(newState);
 		}
@@ -417,7 +444,7 @@ namespace Volt
 
 		//	if (!playerNodes.empty())
 		//	{
-		//		Ref<Animation> longestAnimation;
+		//		Ref<Animation>  ;
 		//		Ref<GraphKey::SequencePlayerNode> longestPlayer;
 		//		float longestAnimationTime = std::numeric_limits<float>::lowest();
 		//		for (const auto& player : playerNodes)
@@ -503,7 +530,7 @@ namespace Volt
 
 	const GraphKey::AnimationOutputData AnimationStateMachine::SampleState(int32_t stateIndex)
 	{
-		auto state = myStates.at(stateIndex);
+		auto state = GetAnimationState(stateIndex);
 		if (!state)
 		{
 			return {};
@@ -559,7 +586,7 @@ namespace Volt
 			myCurrentBlendingTime = 0.f;
 		}
 
-		auto statePtr = myStates.at(myCurrentState);
+		auto statePtr = GetAnimationState(myCurrentState);
 		statePtr->startTime = AnimationManager::globalClock;
 		statePtr->stateGraph->SetStartTime(AnimationManager::globalClock);
 	}

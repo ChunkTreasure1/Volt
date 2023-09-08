@@ -31,7 +31,7 @@ namespace Volt
 		Ref<AnimationTransitionGraph> transitionGraph;
 	};
 
-	enum class StateMachineStateType
+	enum class StateMachineStateType : uint8_t
 	{
 		AnimationState,
 		AliasState,
@@ -45,6 +45,7 @@ namespace Volt
 		{
 
 		}
+
 		std::vector<UUID> transitions;
 		std::string name;
 
@@ -61,7 +62,8 @@ namespace Volt
 	{
 		AnimationState(const std::string& aName)
 			: StateMachineState(aName, StateMachineStateType::AnimationState)
-		{}
+		{
+		}
 
 		Ref<AnimationGraphAsset> stateGraph;
 
@@ -69,9 +71,9 @@ namespace Volt
 		float speed = 1.f;
 	};
 
-	struct AnimationAliasState : public StateMachineState
+	struct AliasState : public StateMachineState
 	{
-		AnimationAliasState(const std::string& aName) 
+		AliasState(const std::string& aName)
 			: StateMachineState(aName, StateMachineStateType::AliasState)
 		{
 		}
@@ -128,12 +130,12 @@ namespace Volt
 
 		Ref<AnimationState> GetAnimationState(uint32_t aIndex);
 		Ref<AnimationState> AsAnimationState(Ref<StateMachineState> aState);
-		
+
 		void SetNextState(const UUID targetStateId, const UUID transitionId);
 
 		std::string myState;
 		std::string myName;
-		
+
 		int32_t myStartState = -1;
 		int32_t myCurrentState = -1;
 		int32_t myLastState = -1;

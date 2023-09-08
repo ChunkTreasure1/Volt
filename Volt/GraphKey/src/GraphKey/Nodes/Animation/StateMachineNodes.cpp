@@ -64,9 +64,8 @@ namespace GraphKey
 				out << YAML::BeginMap;
 				{
 					VT_SERIALIZE_PROPERTY(name, state->name, out);
-					VT_SERIALIZE_PROPERTY(isEntry, state->isEntry, out);
-					VT_SERIALIZE_PROPERTY(isAny, state->isAny, out);
 					VT_SERIALIZE_PROPERTY(editorState, state->editorState, out);
+					VT_SERIALIZE_PROPERTY(stateType, static_cast<uint8_t>(state->stateType), out);
 
 					VT_SERIALIZE_PROPERTY(id, state->id, out);
 					VT_SERIALIZE_PROPERTY(pinId, state->topPinId, out);
