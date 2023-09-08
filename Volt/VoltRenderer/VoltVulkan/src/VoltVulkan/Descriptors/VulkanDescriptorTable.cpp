@@ -20,6 +20,21 @@
 
 namespace Volt::RHI
 {
+	namespace Utility
+	{
+		VkImageLayout GetImageLayoutFromDescriptorType(VkDescriptorType descriptorType)
+		{
+			switch (descriptorType)
+			{
+				case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE: return VK_IMAGE_LAYOUT_GENERAL;
+			}
+			
+			return VK_IMAGE_LAYOUT_UNDEFINED;
+		}
+	}
+
 	VulkanDescriptorTable::VulkanDescriptorTable(const DescriptorTableCreateInfo& specification)
 	{
 		m_shader = specification.shader;
@@ -45,14 +60,15 @@ namespace Volt::RHI
 		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
-			description.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // #TODO_Ivar: set to correct layout
 			description.imageView = imageView->GetHandle<VkImageView>();
 			description.sampler = nullptr;
+
+			uint32_t writeDescriptorIndex = 0;
 
 			// Mapping for write descriptor does not exist
 			if (m_activeWriteDescriptorsMapping[set][binding][arrayIndex].size() <= static_cast<size_t>(i))
 			{
-				const uint32_t writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
+				writeDescriptorIndex = m_writeDescriptorsMapping[set][binding][i];
 				WriteDescriptor writeDescriptorCopy = m_writeDescriptors.at(i).at(writeDescriptorIndex);
 				writeDescriptorCopy.dstArrayElement = arrayIndex;
 				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
@@ -62,9 +78,11 @@ namespace Volt::RHI
 			}
 			else
 			{
-				const uint32_t writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
+				writeDescriptorIndex = m_activeWriteDescriptorsMapping[set][binding][arrayIndex][i];
 				m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
 			}
+
+			description.imageLayout = Utility::GetImageLayoutFromDescriptorType(static_cast<VkDescriptorType>(m_activeWriteDescriptors.at(i).at(writeDescriptorIndex).descriptorType));
 		}
 	}
 
@@ -202,6 +220,16 @@ namespace Volt::RHI
 		}
 
 		m_isDirty[index] = false;
+
+		if (m_activeWriteDescriptors.empty())
+		{
+			return;
+		}
+
+		if (m_activeWriteDescriptors.at(index).empty())
+		{
+			return;
+		}
 
 		const auto& writeDescriptors = m_activeWriteDescriptors.at(index);
 

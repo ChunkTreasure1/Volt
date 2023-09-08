@@ -5,6 +5,8 @@
 
 #include <VoltRHI/Core/RHICommon.h>
 
+#include <glm/glm.hpp>
+
 namespace Volt
 {
 	namespace RHI
@@ -18,6 +20,8 @@ namespace Volt
 
 		class BufferView;
 		class ImageView;
+
+		class Image2D;
 	}
 
 	struct RenderingInfo
@@ -38,6 +42,7 @@ namespace Volt
 
 		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments);
 
+		void ClearImage(Ref<RHI::Image2D> image, const glm::vec4& clearColor);
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 
@@ -49,6 +54,7 @@ namespace Volt
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset = 0);
 
 		void SetBufferView(Ref<RHI::BufferView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
+		void SetImageView(Ref<RHI::ImageView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
 
 	private:
 		void BindDescriptorTableIfRequired();

@@ -253,7 +253,7 @@ namespace Volt
 				DiscordSDK::Update();
 			}
 
-			//RenderGraphExecutionThread::WaitForFinishedExecution();
+			RenderGraphExecutionThread::WaitForFinishedExecution();
 			m_window->Present();
 
 			m_frameTimer.Accumulate();

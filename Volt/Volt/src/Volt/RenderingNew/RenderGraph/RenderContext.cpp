@@ -1,3 +1,4 @@
+#include "RenderContext.h"
 #include "vtpch.h"
 #include "RenderContext.h"
 
@@ -82,6 +83,12 @@ namespace Volt
 		result.viewport = viewport;
 
 		return result;
+	}
+
+	void RenderContext::ClearImage(Ref<RHI::Image2D> image, const glm::vec4& clearColor)
+	{
+		VT_PROFILE_FUNCTION();
+		m_commandBuffer->ClearImage(image, { clearColor.x, clearColor.y, clearColor.z, clearColor.w });
 	}
 
 	void RenderContext::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
@@ -190,6 +197,18 @@ namespace Volt
 		}
 
 		m_currentDescriptorTable->SetBufferView(view, set, binding, arrayIndex);
+	}
+
+	void RenderContext::SetImageView(Ref<RHI::ImageView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_currentDescriptorTable)
+		{
+			return;
+		}
+
+		m_currentDescriptorTable->SetImageView(view, set, binding, arrayIndex);
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()

@@ -49,6 +49,8 @@ namespace Volt::RHI
 			result.vulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
 
 			result.vulkan12Features.bufferDeviceAddress = VK_TRUE;
+			result.vulkan12Features.shaderBufferInt64Atomics = VK_TRUE;
+			result.vulkan12Features.shaderSharedInt64Atomics = VK_TRUE;
 
 			result.vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 			result.vulkan13Features.pNext = &result.vulkan12Features;

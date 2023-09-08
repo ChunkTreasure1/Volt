@@ -53,13 +53,8 @@ namespace Volt
 
 	void RenderGraphExecutionThread::WaitForFinishedExecution()
 	{
-		if (!s_data->isExecuting)
-		{
-			return;
-		}
-
 		std::unique_lock lock{ s_data->mutex };
-		s_data->waitForExecutionVariable.wait(lock, []() { return s_data->isExecuting.load(); });
+		s_data->waitForExecutionVariable.wait(lock, []() { return !s_data->isExecuting.load() && s_data->executionQueue.empty(); });
 	}
 
 	void RenderGraphExecutionThread::InitializeThread()

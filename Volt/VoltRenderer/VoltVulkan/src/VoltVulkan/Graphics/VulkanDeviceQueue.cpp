@@ -62,7 +62,7 @@ namespace Volt::RHI
 
 		{
 			std::scoped_lock lock{ m_executeMutex };
-			VT_VK_CHECK(vkQueueSubmit(m_queue, 1, &info, waitFence));
+ 			VT_VK_CHECK(vkQueueSubmit(m_queue, 1, &info, waitFence));
 		}
 	}
 

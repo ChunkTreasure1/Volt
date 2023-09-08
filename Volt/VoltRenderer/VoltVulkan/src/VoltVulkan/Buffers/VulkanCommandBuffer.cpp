@@ -181,6 +181,7 @@ namespace Volt::RHI
 				case ResourceState::NonPixelShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				case ResourceState::TransferSrc: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				case ResourceState::TransferDst: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				case ResourceState::UnorderedAccess: return VK_IMAGE_LAYOUT_GENERAL;
 			}
 
 			return VK_IMAGE_LAYOUT_UNDEFINED;
@@ -838,7 +839,7 @@ namespace Volt::RHI
 			depInfo.pMemoryBarriers = nullptr;
 			depInfo.bufferMemoryBarrierCount = 0;
 			depInfo.pBufferMemoryBarriers = nullptr;
-			depInfo.imageMemoryBarrierCount = 2;
+			depInfo.imageMemoryBarrierCount = 1;
 			depInfo.pImageMemoryBarriers = &srcImageBarrier;
 
 			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
@@ -887,7 +888,7 @@ namespace Volt::RHI
 			depInfo.pMemoryBarriers = nullptr;
 			depInfo.bufferMemoryBarrierCount = 0;
 			depInfo.pBufferMemoryBarriers = nullptr;
-			depInfo.imageMemoryBarrierCount = 2;
+			depInfo.imageMemoryBarrierCount = 1;
 			depInfo.pImageMemoryBarriers = &srcImageBarrier;
 
 			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
