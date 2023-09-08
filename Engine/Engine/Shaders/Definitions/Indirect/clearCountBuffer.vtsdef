@@ -1,4 +1,4 @@
 name: "ClearCountBuffer"
 internal: true
 paths:
-  - "Engine/Shaders/Source/HLSL/Indirect/ClearCountBuffer_cs.hlsl"
+  - "Engine/Shaders/Source/Indirect/ClearCountBuffer_cs.hlsl"

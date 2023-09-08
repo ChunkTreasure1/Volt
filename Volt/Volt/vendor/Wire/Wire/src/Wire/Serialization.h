@@ -114,7 +114,7 @@ namespace Wire
 
 				{ "Texture", Volt::AssetType::Texture },
 
-				{ "Shader", Volt::AssetType::Shader },
+				{ "Shader", Volt::AssetType::ShaderDefinition },
 				{ "ShaderSource", Volt::AssetType::ShaderSource },
 
 				{ "MaterialGraph", Volt::AssetType::MaterialGraph },

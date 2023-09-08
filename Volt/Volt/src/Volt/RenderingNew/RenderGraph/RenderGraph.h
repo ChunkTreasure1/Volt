@@ -47,11 +47,6 @@ namespace Volt
 			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-			RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
-			//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);
-			RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer);
-			RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer);
-
 			void SetHasSideEffect();
 			void SetIsComputePass();
 

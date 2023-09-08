@@ -1,0 +1,4 @@
+name: "DepthOnly"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Utility/DepthOnly_vs.hlsl"

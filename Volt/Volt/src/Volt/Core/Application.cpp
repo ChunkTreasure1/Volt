@@ -17,8 +17,7 @@
 
 #include "Volt/RenderingNew/RendererNew.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
-
-#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 #include "Volt/Core/ScopedTimer.h"
 
@@ -83,14 +82,14 @@ namespace Volt
 		m_window->SetEventCallback(VT_BIND_EVENT_FN(Application::OnEvent));
 
 		FileSystem::Initialize();
-		RendererNew::Initialize();
-
-		m_threadPool.Initialize(std::thread::hardware_concurrency());
-		m_renderThreadPool.Initialize(std::thread::hardware_concurrency() / 2);
+		
+		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
+		
+		RendererNew::Initialize();
+		ShaderMap::Initialize();
 
 		//Renderer::Initialize();
-		//ShaderRegistry::Initialize();
 		//Renderer::LateInitialize();
 
 		//UIRenderer::Initialize();
@@ -176,7 +175,6 @@ namespace Volt
 		//DebugRenderer::Shutdown();
 		//UIRenderer::Shutdown();
 
-		//ShaderRegistry::Shutdown();
 		//Renderer::Shutdown();
 
 		//Amp::AudioManager::Shutdown();
@@ -184,8 +182,8 @@ namespace Volt
 
 		m_assetmanager = nullptr;
 		m_threadPool.Shutdown();
-		m_renderThreadPool.Shutdown();
 
+		ShaderMap::Shutdown();
 		RendererNew::Shutdown();
 		FileSystem::Shutdown();
 
@@ -213,22 +211,20 @@ namespace Volt
 			m_lastTotalTime = time;
 
 			{
+				VT_PROFILE_SCOPE("Application::Render");
+
+				RendererNew::Flush();
+				AppRenderEvent renderEvent;
+				OnEvent(renderEvent);
+			}
+
+			{
 				VT_PROFILE_SCOPE("Application::Update");
 
 				AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
 				OnEvent(updateEvent);
 				Amp::WWiseEngine::Get().Update();
 			}
-
-			{
-				VT_PROFILE_SCOPE("Application::Render");
-
-				RendererNew::Flush();
-
-				AppRenderEvent renderEvent;
-				OnEvent(renderEvent);
-			}
-
 
 			if (m_info.enableImGui)
 			{

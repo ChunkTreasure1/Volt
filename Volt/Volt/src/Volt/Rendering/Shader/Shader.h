@@ -209,13 +209,13 @@ namespace Volt
 		inline const size_t GetHash() const { return myHash; }
 		inline const bool IsInternal() const { return myIsInternal; }
 
-		static AssetType GetStaticType() { return AssetType::Shader; }
+		static AssetType GetStaticType() { return AssetType::ShaderDefinition; }
 		AssetType GetType() override { return GetStaticType(); }
 
 		static Ref<Shader> Create(const std::string& name, std::vector<std::filesystem::path> paths, bool forceCompile = false);
 
 	private:
-		friend class ShaderImporter;
+		friend class ShaderDefinitionImporter;
 
 		struct TypeCount
 		{

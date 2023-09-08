@@ -6,6 +6,7 @@
 #include "VoltVulkan/Graphics/VulkanGraphicsDevice.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
+#include <VoltRHI/Core/Profiling.h>
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
@@ -76,12 +77,16 @@ namespace Volt::RHI
 
 	void VulkanImGuiImplementation::BeginAPI()
 	{
+		VT_PROFILE_FUNCTION();
+
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 	}
 
 	void VulkanImGuiImplementation::EndAPI()
 	{
+		VT_PROFILE_FUNCTION();
+
 		s_commandBuffer->Begin();
 
 		VkCommandBuffer currentCommandBuffer = s_commandBuffer->GetHandle<VkCommandBuffer>();

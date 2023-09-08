@@ -31,7 +31,7 @@ namespace Volt
 		Skeleton = BIT(3),
 		Texture = BIT(4),
 		Material = BIT(5),
-		Shader = BIT(6),
+		ShaderDefinition = BIT(6),
 		ShaderSource = BIT(7),
 		Scene = BIT(8),
 		AnimatedCharacter = BIT(9),
@@ -90,7 +90,7 @@ namespace Volt
 		{ ".dds", AssetType::Texture },
 		{ ".hdr", AssetType::Texture },
 
-		{ ".vtsdef", AssetType::Shader },
+		{ ".vtsdef", AssetType::ShaderDefinition },
 		{ ".hlsl", AssetType::ShaderSource },
 		{ ".hlslh", AssetType::ShaderSource },
 		{ ".hlsli", AssetType::ShaderSource },
@@ -130,7 +130,7 @@ namespace Volt
 
 		{ "Texture", AssetType::Texture },
 
-		{ "Shader", AssetType::Shader },
+		{ "Shader", AssetType::ShaderDefinition },
 		{ "Shader Source", AssetType::ShaderSource },
 
 		{ "Material Graph", AssetType::MaterialGraph },

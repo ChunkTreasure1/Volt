@@ -257,6 +257,7 @@ namespace Volt
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.isExternal = true;
+		node->resourceInfo.description.format = image->GetFormat();
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, image);
@@ -483,21 +484,6 @@ namespace Volt
 	RenderGraphResourceHandle RenderGraph::Builder::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
 		return m_renderGraph.CreateUniformBuffer(bufferDesc);
-	}
-
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(Ref<RHI::Image2D> image)
-	{
-		return m_renderGraph.AddExternalImage2D(image);
-	}
-
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer)
-	{
-		return m_renderGraph.AddExternalBuffer(buffer);
-	}
-
-	RenderGraphResourceHandle RenderGraph::Builder::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer)
-	{
-		return m_renderGraph.AddExternalUniformBuffer(buffer);
 	}
 
 	void RenderGraph::AddPass(std::string_view name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc)

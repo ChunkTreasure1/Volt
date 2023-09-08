@@ -23,10 +23,10 @@ namespace Volt
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 	};
 
-	class ShaderImporter : public AssetImporter
+	class ShaderDefinitionImporter : public AssetImporter
 	{
 	public:
-		~ShaderImporter() override = default;
+		~ShaderDefinitionImporter() override = default;
 
 		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;

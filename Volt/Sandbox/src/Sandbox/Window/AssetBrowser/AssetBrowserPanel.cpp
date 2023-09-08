@@ -900,7 +900,7 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 				if (ImGui::MenuItem("Shader"))
 				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::Shader);
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::ShaderDefinition);
 				}
 
 				if (ImGui::MenuItem("Post Processing Stack"))
@@ -1032,7 +1032,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 					const auto assetType = Volt::AssetManager::GetAssetTypeFromPath(item->path);
 					switch (assetType)
 					{
-						case Volt::AssetType::Shader:
+						case Volt::AssetType::ShaderDefinition:
 						{
 							auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
 							Volt::ShaderRegistry::Unregister(shader->GetName());
@@ -1300,7 +1300,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 	{
 		case Volt::AssetType::Material: originalName = "M_NewMaterial"; break;
 		case Volt::AssetType::AnimatedCharacter: originalName = "CHR_NewCharacter"; break;
-		case Volt::AssetType::Shader: originalName = "SH_NewShader"; break;
+		case Volt::AssetType::ShaderDefinition: originalName = "SH_NewShader"; break;
 		case Volt::AssetType::PhysicsMaterial: originalName = "PM_NewPhysicsMaterial"; break;
 		case Volt::AssetType::Scene: originalName = "SC_NewScene"; break;
 		case Volt::AssetType::ParticlePreset: originalName = "PP_NewParticlePreset"; break;
@@ -1351,7 +1351,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			break;
 		}
 
-		case Volt::AssetType::Shader:
+		case Volt::AssetType::ShaderDefinition:
 		{
 			myNewShaderData = {};
 			UI::OpenModal("New Shader##assetBrowser");

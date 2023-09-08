@@ -6,6 +6,8 @@
 
 #include "Volt/Core/Profiling.h"
 
+#include "Volt/Platform/ThreadUtility.h"
+
 namespace Volt
 {
 	struct RenderGraphThreadData
@@ -60,6 +62,7 @@ namespace Volt
 	void RenderGraphExecutionThread::InitializeThread()
 	{
 		s_data->executionThread = CreateScope<std::thread>(&RenderGraphExecutionThread::RT_ExecuteGraph);
+		SetThreadName(s_data->executionThread->native_handle(), "RenderGraphExecutionThread");
 	}
 
 	void RenderGraphExecutionThread::ShutdownThread()

@@ -66,6 +66,11 @@
 #include "imgui_impl_vulkan.h"
 
 #include <Volt/Rendering/Renderer.h>
+#include <VoltRHI/Graphics/GraphicsContext.h>
+#include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Graphics/DeviceQueue.h>
+
+#include <VoltRHI/../../../VoltVulkan/src/VoltVulkan/Graphics/VulkanDeviceQueue.h>
 
 #include <stdio.h>
 
@@ -1813,7 +1818,15 @@ static void ImGui_ImplVulkan_RenderWindow(ImGuiViewport* viewport, void*)
             check_vk_result(err);
             err = vkResetFences(v->Device, 1, &fd->Fence);
             check_vk_result(err);
+
+            // VOLT_BEGIN_EDIT
+            auto vkQueue = Volt::RHI::GraphicsContext::GetDevice()->GetDeviceQueue(Volt::RHI::QueueType::Graphics)->As<Volt::RHI::VulkanDeviceQueue>();
+
+            vkQueue->AquireLock();
             err = vkQueueSubmit(v->Queue, 1, &info, fd->Fence);
+            vkQueue->ReleaseLock();
+
+            // VOLT_END_EDIT
             check_vk_result(err);
         }
     }

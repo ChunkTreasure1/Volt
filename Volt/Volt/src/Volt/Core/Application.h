@@ -73,7 +73,6 @@ namespace Volt
 		inline Window& GetWindow() const { return *m_window; }
 		inline static Application& Get() { return *m_instance; }
 		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
-		inline static ThreadPool& GetRenderThreadPool() { return Get().m_renderThreadPool; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
 		inline const ApplicationInfo& GetInfo() const { return m_info; }
@@ -121,7 +120,6 @@ namespace Volt
 		Scope<SteamImplementation> m_steamImplementation;
 
 		ThreadPool m_threadPool;
-		ThreadPool m_renderThreadPool;
 	};
 
 	static Application* CreateApplication(const std::filesystem::path& appPath);

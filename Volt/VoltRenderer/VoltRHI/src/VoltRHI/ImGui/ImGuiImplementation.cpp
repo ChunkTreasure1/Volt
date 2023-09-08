@@ -3,6 +3,7 @@
 
 #include "VoltRHI/Graphics/GraphicsContext.h"
 #include "VoltRHI/Core/Core.h"
+#include "VoltRHI/Core/Profiling.h"
 
 #include <VoltVulkan/ImGui/VulkanImGuiImplementation.h>
 #include <VoltD3D12/ImGui/D3D12ImGuiImplementation.h>
@@ -184,6 +185,8 @@ namespace Volt::RHI
 
 	void ImGuiImplementation::Begin()
 	{
+		VT_PROFILE_FUNCTION();
+
 		BeginAPI();
 		ImGui::NewFrame();
 
@@ -195,6 +198,8 @@ namespace Volt::RHI
 
 	void ImGuiImplementation::End()
 	{
+		VT_PROFILE_FUNCTION();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.f); // Round borders
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(43.f / 255.f, 43.f / 255.f, 43.f / 255.f, 100.f / 255.f)); // Background color
 		//ImGui::RenderNotifications(); // <-- Here we render all notifications

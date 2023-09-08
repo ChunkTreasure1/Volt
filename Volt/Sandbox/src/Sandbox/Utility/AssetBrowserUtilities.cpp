@@ -127,7 +127,7 @@ namespace AssetBrowser
 
 		if (renderFunctions.empty())
 		{
-			renderFunctions[Volt::AssetType::Shader] = [](AssetItem* item)
+			renderFunctions[Volt::AssetType::ShaderDefinition] = [](AssetItem* item)
 			{
 				if (ImGui::MenuItem("Recompile Shader"))
 				{

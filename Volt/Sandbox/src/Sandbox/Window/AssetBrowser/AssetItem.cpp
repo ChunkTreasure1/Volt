@@ -132,7 +132,7 @@ namespace AssetBrowser
 					break;
 				case Volt::AssetType::Texture:
 					break;
-				case Volt::AssetType::Shader:
+				case Volt::AssetType::ShaderDefinition:
 					break;
 				case Volt::AssetType::ShaderSource:
 					break;
@@ -248,7 +248,7 @@ namespace AssetBrowser
 			case Volt::AssetType::Skeleton: return { 1.f, 0.49f, 0.8f, 1.f };
 			case Volt::AssetType::Texture: return { 0.9f, 0.26f, 0.27f, 1.f };
 			case Volt::AssetType::Material: return { 0.26f, 0.35f, 0.9f, 1.f };
-			case Volt::AssetType::Shader: return { 0.26f, 0.6f, 0.9f, 1.f };
+			case Volt::AssetType::ShaderDefinition: return { 0.26f, 0.6f, 0.9f, 1.f };
 			case Volt::AssetType::ShaderSource: return { 0.26f, 0.72f, 0.9f, 1.f };
 			case Volt::AssetType::Scene: return { 0.9f, 0.54f, 0.26f, 1.f };
 			case Volt::AssetType::AnimatedCharacter: return { 0.9f, 0.25f, 0.49f, 1.f };

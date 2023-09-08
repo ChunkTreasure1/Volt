@@ -10,6 +10,7 @@
 
 #include "Volt/Asset/Rendering/PostProcessingStack.h"
 #include "Volt/Asset/Rendering/PostProcessingMaterial.h"
+#include "Volt/Asset/Rendering/ShaderDefinition.h"
 
 #include "Volt/Animation/BlendSpace.h"
 
@@ -21,7 +22,6 @@
 #include "Volt/Rendering/Texture/TextureTable.h"
 
 #include "Volt/Rendering/Renderer.h"
-#include "Volt/Rendering/Shader/Shader.h"
 
 #include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
@@ -59,9 +59,11 @@ namespace Volt
 	{
 	}
 
-	bool ShaderImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	bool ShaderDefinitionImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<Shader>();
+		asset = CreateRef<ShaderDefinition>();
+		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
+
 		const auto filesytemPath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filesytemPath)) [[unlikely]]
@@ -115,61 +117,28 @@ namespace Volt
 			paths.emplace_back(path.as<std::string>());
 		}
 
-		YAML::Node inputTexturesNode = root["inputTextures"];
-		std::vector<ShaderTexture> inputTextures; // shader name -> editor name
-		for (const auto input : inputTexturesNode)
-		{
-			std::string shaderName;
-			VT_DESERIALIZE_PROPERTY(shaderName, shaderName, input, std::string("Empty"));
-
-			std::string editorName;
-			VT_DESERIALIZE_PROPERTY(editorName, editorName, input, std::string("Null"));
-
-			inputTextures.emplace_back(shaderName, editorName);
-		}
-
-		Ref<Shader> shader = Shader::Create(name, paths, false);
-		const_cast<std::vector<ShaderTexture>&>(shader->GetResources().shaderTextureDefinitions) = inputTextures; // #TODO_Ivar: Add checking
-		shader->myIsInternal = isInternal;
-
-		if (!shader) [[unlikely]]
-		{
-			VT_CORE_ERROR("Failed to create shader {0}!", name.c_str());
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		asset = shader;
+		shaderDef->m_isInternal = isInternal;
+		shaderDef->m_name = name;
+		shaderDef->m_sourceFiles = paths;
 
 		return true;
 	}
 
-	void ShaderImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	void ShaderDefinitionImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
-		Ref<Shader> shader = std::reinterpret_pointer_cast<Shader>(asset);
+		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		VT_SERIALIZE_PROPERTY(name, shader->GetName(), out);
-		VT_SERIALIZE_PROPERTY(internal, shader->IsInternal(), out);
+		VT_SERIALIZE_PROPERTY(name, shaderDef->GetName(), out);
+		VT_SERIALIZE_PROPERTY(internal, shaderDef->IsInternal(), out);
 
 		out << YAML::Key << "paths" << YAML::BeginSeq;
-		for (const auto& path : shader->GetSourcePaths())
+		for (const auto& path : shaderDef->GetSourceFiles())
 		{
 			out << path;
 		}
 		out << YAML::EndSeq;
-
-		out << YAML::Key << "inputTextures" << YAML::BeginSeq;
-		for (const auto& [shaderName, editorName] : shader->GetResources().shaderTextureDefinitions)
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(shaderName, shaderName, out);
-			VT_SERIALIZE_PROPERTY(editorName, editorName, out);
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
-
 		out << YAML::EndMap;
 
 		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));

@@ -168,7 +168,7 @@ void Sandbox::OnAttach()
 	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);
 	EditorLibrary::RegisterWithType<BlendSpaceEditorPanel>("Animation", Volt::AssetType::BlendSpace);
 	EditorLibrary::RegisterWithType<MeshPreviewPanel>("", Volt::AssetType::Mesh);
-	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", Volt::AssetType::Shader);
+	EditorLibrary::RegisterWithType<ShaderEditorPanel>("Shader", Volt::AssetType::ShaderDefinition);
 	EditorLibrary::RegisterWithType<PostProcessingStackPanel>("Shader", Volt::AssetType::PostProcessingStack);
 	EditorLibrary::RegisterWithType<PostProcessingMaterialPanel>("Shader", Volt::AssetType::PostProcessingMaterial);
 

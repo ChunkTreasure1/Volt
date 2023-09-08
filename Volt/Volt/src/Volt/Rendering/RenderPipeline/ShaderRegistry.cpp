@@ -79,30 +79,30 @@ namespace Volt
 
 	void ShaderRegistry::LoadAllShaders()
 	{
-		const std::vector<std::filesystem::path> searchPaths =
-		{
-			FileSystem::GetShadersPath(),
-			ProjectManager::GetAssetsDirectory()
-		};
+		//const std::vector<std::filesystem::path> searchPaths =
+		//{
+		//	FileSystem::GetShadersPath(),
+		//	ProjectManager::GetAssetsDirectory()
+		//};
 
-		for (const auto& searchPath : searchPaths)
-		{
-			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
-			{
-				const auto relPath = AssetManager::GetRelativePath(path.path());
-				const auto type = AssetManager::GetAssetTypeFromPath(relPath);
+		//for (const auto& searchPath : searchPaths)
+		//{
+		//	for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
+		//	{
+		//		const auto relPath = AssetManager::GetRelativePath(path.path());
+		//		const auto type = AssetManager::GetAssetTypeFromPath(relPath);
 
-				if (type == AssetType::Shader)
-				{
-					if (!AssetManager::ExistsInRegistry(relPath))
-					{
-						AssetManager::Get().AddAssetToRegistry(relPath);
-					}
+		//		if (type == AssetType::Shader)
+		//		{
+		//			if (!AssetManager::ExistsInRegistry(relPath))
+		//			{
+		//				AssetManager::Get().AddAssetToRegistry(relPath);
+		//			}
 
-					Ref<Shader> pipelineAsset = AssetManager::GetAsset<Shader>(relPath);
-					Register(pipelineAsset->GetName(), pipelineAsset);
-				}
-			}
-		}
+		//			Ref<Shader> pipelineAsset = AssetManager::GetAsset<Shader>(relPath);
+		//			Register(pipelineAsset->GetName(), pipelineAsset);
+		//		}
+		//	}
+		//}
 	}
 }

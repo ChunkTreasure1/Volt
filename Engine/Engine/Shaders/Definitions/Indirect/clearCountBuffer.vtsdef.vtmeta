@@ -1,6 +1,7 @@
 Metadata:
-  assetHandle: 17512264519617140399
-  filePath: Engine/Shaders/Definitions/Indirect/clearCountBuffer.vtsdef
+  assetHandle: 15593549215987264513
+  filePath: C:/Programming/Volt/Engine/Engine/Shaders/Definitions/Indirect/clearCountBuffer.vtsdef
   type: 64
   Dependencies:
-    - 10489521087417306666
+    []
+  ? Properties

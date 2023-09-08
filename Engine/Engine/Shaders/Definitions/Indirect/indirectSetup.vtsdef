@@ -1,0 +1,4 @@
+name: "IndirectSetup"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Indirect/IndirectSetup_cs.hlsl"

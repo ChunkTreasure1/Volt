@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Core/Base.h"
+
 namespace Volt
 {
 	namespace RHI
@@ -22,6 +24,7 @@ namespace Volt
 	class Camera;
 	class Scene;
 	class RenderScene;
+	class RenderContext;
 
 	struct SceneRendererSpecification
 	{
@@ -50,7 +53,10 @@ namespace Volt
 		void UpdateCameraBuffer(Ref<Camera> camera);
 		void UpdateLightBuffers();
 
+		void UpdateDescriptorTable(RenderScene& renderScene, RenderContext& renderContext);
 		void UpdateDescriptorTable(RenderScene& renderScene);
+
+		void CreatePipelines();
 
 		Ref<RHI::Image2D> m_outputImage;
 		Ref<RHI::Image2D> m_depthImage;
@@ -62,13 +68,7 @@ namespace Volt
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 
-		Ref<RHI::Shader> m_shader;
-		Ref<RHI::Shader> m_indirectSetupShader;
-		Ref<RHI::Shader> m_clearIndirectCountsShader;
-
 		Ref<RHI::RenderPipeline> m_renderPipeline;
-		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
-		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 
 		Ref<RHI::UniformBufferSet> m_constantBufferSet;
 		Ref<RHI::StorageBufferSet> m_storageBufferSet;
@@ -82,11 +82,15 @@ namespace Volt
 
 		Ref<RHI::SamplerState> m_samplerState;
 
-		Ref<RHI::DescriptorTable> m_indirectSetupDescriptorTable;
-		Ref<RHI::DescriptorTable> m_indirectCountDescriptorTable;
 		Ref<RHI::DescriptorTable> m_descriptorTable;
 
 		uint32_t m_currentActiveCommandCount = 0;
+
+		// Pipelines
+		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
+		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
+
+		Ref<RHI::RenderPipeline> m_preDepthPipeline;
 
 		Weak<Scene> m_scene;
 	};
