@@ -457,7 +457,9 @@ namespace Volt::RHI
 		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
 		for (const auto& [set, sets] : vulkanDescriptorTable.GetDescriptorSets())
 		{
-			vkCmdBindDescriptorSets(m_commandBuffers.at(index).commandBuffer, bindPoint, GetCurrentPipelineLayout(), set, 1, &sets.at(index), 0, nullptr);
+			const bool isSingleFrameSet = sets.size() == 1;
+
+			vkCmdBindDescriptorSets(m_commandBuffers.at(index).commandBuffer, bindPoint, GetCurrentPipelineLayout(), set, 1, &sets.at(isSingleFrameSet ? 0 : index), 0, nullptr);
 		}
 	}
 

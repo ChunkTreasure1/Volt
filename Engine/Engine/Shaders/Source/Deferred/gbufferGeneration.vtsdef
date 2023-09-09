@@ -1,0 +1,5 @@
+name: "GBufferGeneration"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Deferred/GBufferGeneration_vs.hlsl"
+  - "Engine/Shaders/Source/Deferred/GBufferGeneration_ps.hlsl"

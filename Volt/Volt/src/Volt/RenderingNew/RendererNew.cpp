@@ -73,6 +73,12 @@ namespace Volt
 	void RendererNew::Flush()
 	{
 		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+
+		//Application::GetThreadPool().SubmitTask([currentFrame, queueCopy = s_rendererData->deletionQueue.at(currentFrame)]() mutable
+		//{
+		//	queueCopy.Flush();
+		//});
+
 		s_rendererData->deletionQueue.at(currentFrame).Flush();
 	}
 

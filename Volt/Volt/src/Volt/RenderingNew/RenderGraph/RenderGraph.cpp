@@ -314,6 +314,8 @@ namespace Volt
 					barrier.oldState = transition.oldState;
 					barrier.newState = transition.newState;
 					barrier.resource = GetResourceRaw(transition.resourceHandle);
+				
+					m_resourceNodes.at(transition.resourceHandle)->currentState = transition.newState;
 				}
 
 				m_commandBuffer->ResourceBarrier(barrierInfos);
@@ -468,22 +470,34 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::Builder::CreateImage2D(const RenderGraphImageDesc& textureDesc)
 	{
-		return m_renderGraph.CreateImage2D(textureDesc);
+		const auto resourceId = m_renderGraph.CreateImage2D(textureDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
 	}
 
 	RenderGraphResourceHandle RenderGraph::Builder::CreateImage3D(const RenderGraphImageDesc& textureDesc)
 	{
-		return m_renderGraph.CreateImage3D(textureDesc);
+		const auto resourceId = m_renderGraph.CreateImage3D(textureDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
 	}
 
 	RenderGraphResourceHandle RenderGraph::Builder::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
-		return m_renderGraph.CreateBuffer(bufferDesc);
+		const auto resourceId = m_renderGraph.CreateBuffer(bufferDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
 	}
 
 	RenderGraphResourceHandle RenderGraph::Builder::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
-		return m_renderGraph.CreateUniformBuffer(bufferDesc);
+		const auto resourceId = m_renderGraph.CreateUniformBuffer(bufferDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
 	}
 
 	void RenderGraph::AddPass(std::string_view name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc)

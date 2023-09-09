@@ -14,6 +14,7 @@ namespace Volt::RHI
 	struct DescriptorTableCreateInfo
 	{
 		Ref<Shader> shader;
+		uint32_t count = 1;
 	};
 
 	class DescriptorTable : public RHIInterface
@@ -22,6 +23,9 @@ namespace Volt::RHI
 		virtual void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 		virtual void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 		virtual void SetBufferViewSet(Ref<BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
+
+		virtual void SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset = 0) = 0;
+		virtual void SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset = 0) = 0;
 
 		virtual void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 

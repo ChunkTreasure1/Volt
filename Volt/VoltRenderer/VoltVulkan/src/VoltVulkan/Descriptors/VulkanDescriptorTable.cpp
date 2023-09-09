@@ -38,6 +38,7 @@ namespace Volt::RHI
 	VulkanDescriptorTable::VulkanDescriptorTable(const DescriptorTableCreateInfo& specification)
 	{
 		m_shader = specification.shader;
+		m_descriptorPoolCount = specification.count;
 
 		Invalidate();
 	}
@@ -55,9 +56,9 @@ namespace Volt::RHI
 		}
 
 		SetDirty(true);
-		m_imageInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		m_imageInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
 
-		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 		{
 			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
 			description.imageView = imageView->GetHandle<VkImageView>();
@@ -74,7 +75,9 @@ namespace Volt::RHI
 				writeDescriptorCopy.pImageInfo = reinterpret_cast<const VkDescriptorImageInfo*>(&description);
 
 				m_activeWriteDescriptors.at(i).emplace_back(writeDescriptorCopy);
-				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
+
+				writeDescriptorIndex = static_cast<uint32_t>(m_activeWriteDescriptors.at(i).size() - 1);
+				m_activeWriteDescriptorsMapping[set][binding][arrayIndex].emplace_back() = writeDescriptorIndex;
 			}
 			else
 			{
@@ -98,10 +101,10 @@ namespace Volt::RHI
 		VulkanBufferView& vkBufferView = bufferView->AsRef<VulkanBufferView>();
 		auto resource = vkBufferView.GetResource();
 
-		m_bufferInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		m_bufferInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
 		const auto type = resource->GetType();
 
-		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 		{
 			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
 			description.buffer = bufferView->GetHandle<VkBuffer>();
@@ -144,10 +147,10 @@ namespace Volt::RHI
 		VulkanBufferView& vkBufferView = views.front()->AsRef<VulkanBufferView>();
 		auto resource = vkBufferView.GetResource();
 
-		m_bufferInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		m_bufferInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
 		const auto type = resource->GetType();
 
-		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 		{
 			auto& description = m_bufferInfos[set][binding][arrayIndex].at(i);
 			description.buffer = views.at(i)->GetHandle<VkBuffer>();
@@ -176,6 +179,24 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanDescriptorTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
+	{
+		for (uint32_t index = arrayStartOffset; const auto& view : bufferViews)
+		{
+			SetBufferView(view, set, binding, index);
+			index++;
+		}
+	}
+
+	void VulkanDescriptorTable::SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
+	{
+		for (uint32_t index = arrayStartOffset; const auto & view : imageViews)
+		{
+			SetImageView(view, set, binding, index);
+			index++;
+		}
+	}
+
 	void VulkanDescriptorTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
 		if (!m_writeDescriptorsMapping[set].contains(binding))
@@ -184,9 +205,9 @@ namespace Volt::RHI
 		}
 
 		SetDirty(true);
-		m_imageInfos[set][binding][arrayIndex].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+		m_imageInfos[set][binding][arrayIndex].resize(m_descriptorPoolCount);
 
-		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 		{
 			auto& description = m_imageInfos[set][binding][arrayIndex].at(i);
 			description.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -214,24 +235,31 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::Update(const uint32_t index)
 	{
-		if (!m_isDirty[index])
+		uint32_t actualIndex = index;
+
+		if (m_descriptorPoolCount == 1)
+		{
+			actualIndex = 0;
+		}
+
+		if (!m_isDirty[actualIndex])
 		{
 			return;
 		}
 
-		m_isDirty[index] = false;
+		m_isDirty[actualIndex] = false;
 
 		if (m_activeWriteDescriptors.empty())
 		{
 			return;
 		}
 
-		if (m_activeWriteDescriptors.at(index).empty())
+		if (m_activeWriteDescriptors.at(actualIndex).empty())
 		{
 			return;
 		}
 
-		const auto& writeDescriptors = m_activeWriteDescriptors.at(index);
+		const auto& writeDescriptors = m_activeWriteDescriptors.at(actualIndex);
 
 		auto device = GraphicsContext::GetDevice();
 		const VkWriteDescriptorSet* writeDescriptorsPtr = reinterpret_cast<const VkWriteDescriptorSet*>(writeDescriptors.data());
@@ -255,6 +283,8 @@ namespace Volt::RHI
 	void VulkanDescriptorTable::Invalidate()
 	{
 		Release();
+
+		VT_PROFILE_FUNCTION();
 
 		m_isDirty = std::vector<bool>(3, true);
 		m_maxTotalDescriptorCount = 0;
@@ -285,8 +315,9 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 
-		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 		{
+			VT_PROFILE_SCOPE("Create Descriptor Pool");
 			VT_VK_CHECK(vkCreateDescriptorPool(device->GetHandle<VkDevice>(), &info, nullptr, &m_descriptorPools.emplace_back()));
 		}
 
@@ -300,10 +331,12 @@ namespace Volt::RHI
 
 		for (const auto& set : usedSets)
 		{
-			m_descriptorSets[set].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+			m_descriptorSets[set].resize(m_descriptorPoolCount);
 
-			for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+			for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 			{
+				VT_PROFILE_SCOPE("Allocate DescriptorSet");
+
 				allocInfo.descriptorPool = m_descriptorPools.at(i);
 				allocInfo.pSetLayouts = &vulkanShader->GetPaddedDescriptorSetLayouts().at(set);
 
@@ -317,6 +350,8 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::Release()
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (m_descriptorPools.empty())
 		{
 			return;
@@ -337,9 +372,11 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::BuildWriteDescriptors()
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resources = m_shader->GetResources();
 
-		for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 		{
 			m_writeDescriptors.emplace_back();
 			m_activeWriteDescriptors.emplace_back();
@@ -433,6 +470,8 @@ namespace Volt::RHI
 
 	void VulkanDescriptorTable::InitializeInfoStructs()
 	{
+		VT_PROFILE_FUNCTION();
+
 		const auto& resources = m_shader->GetResources();
 
 		for (const auto& [set, bindings] : resources.uniformBuffers)
@@ -441,10 +480,10 @@ namespace Volt::RHI
 			{
 				if (!m_bufferInfos[set].contains(binding))
 				{
-					m_bufferInfos[set][binding][0].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+					m_bufferInfos[set][binding][0].resize(m_descriptorPoolCount);
 				}
 
-				for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+				for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 				{
 					m_bufferInfos[set][binding][0][i].offset = 0;
 					m_bufferInfos[set][binding][0][i].range = info.size;
@@ -458,10 +497,10 @@ namespace Volt::RHI
 			{
 				if (!m_bufferInfos[set].contains(binding))
 				{
-					m_bufferInfos[set][binding][0].resize(VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
+					m_bufferInfos[set][binding][0].resize(m_descriptorPoolCount);
 				}
 
-				for (uint32_t i = 0; i < VulkanSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+				for (uint32_t i = 0; i < m_descriptorPoolCount; i++)
 				{
 					m_bufferInfos[set][binding][0][i].offset = 0;
 					m_bufferInfos[set][binding][0][i].range = info.size;

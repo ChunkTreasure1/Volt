@@ -70,6 +70,7 @@ namespace Volt
 		{
 			glm::vec<4, uint8_t> normal;
 			float tangent = 0.f;
+			glm::vec<2, half_float::half> texCoords = glm::vec<2, half_float::half>(0.f, 0.f);
 		};
 
 		struct VertexAnimationData

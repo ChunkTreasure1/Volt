@@ -12,21 +12,26 @@ namespace Volt
 	public:
 		inline void Push(std::function<void()>&& function)
 		{
-			myQueue.push_back(std::move(function));
+			m_queue.push_back(std::move(function));
 		}
 
 		inline void Flush()
 		{
 			VT_PROFILE_FUNCTION();
-			for (const auto& f : myQueue)
+			for (const auto& f : m_queue)
 			{
 				f();
 			}
 
-			myQueue.clear();
+			m_queue.clear();
+		}
+
+		inline void Clear()
+		{
+			m_queue.clear();
 		}
 
 	private:
-		std::vector<std::function<void()>> myQueue;
+		std::vector<std::function<void()>> m_queue;
 	};
 }

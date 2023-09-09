@@ -59,6 +59,8 @@ namespace Volt
 		};
 
 		void Compile();
+
+		// NOTE: After calling Execute the RenderGraph object is no longer valid to use!
 		void Execute();
 
 		template<typename T>

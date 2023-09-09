@@ -61,7 +61,7 @@ namespace Volt
 			{
 				auto& attachment = colorAttachments.emplace_back();
 				attachment.clearMode = RHI::ClearMode::Clear;
-				attachment.clearColor = { 0.f, 0.f, 0.f, 1.f };
+				attachment.clearColor = { 0.f, 0.f, 0.f, 0.f };
 				attachment.view = view;
 			}
 			else
@@ -199,6 +199,30 @@ namespace Volt
 		m_currentDescriptorTable->SetBufferView(view, set, binding, arrayIndex);
 	}
 
+	void RenderContext::SetBufferViews(const std::vector<Ref<RHI::BufferView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_currentDescriptorTable)
+		{
+			return;
+		}
+
+		m_currentDescriptorTable->SetBufferViews(views, set, binding, arrayStartOffset);
+	}
+
+	void RenderContext::SetBufferViewSet(Ref<RHI::BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_currentDescriptorTable)
+		{
+			return;
+		}
+
+		m_currentDescriptorTable->SetBufferViewSet(bufferViewSet, set, binding, arrayIndex);
+	}
+
 	void RenderContext::SetImageView(Ref<RHI::ImageView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex)
 	{
 		VT_PROFILE_FUNCTION();
@@ -209,6 +233,18 @@ namespace Volt
 		}
 
 		m_currentDescriptorTable->SetImageView(view, set, binding, arrayIndex);
+	}
+
+	void RenderContext::SetImageViews(const std::vector<Ref<RHI::ImageView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_currentDescriptorTable)
+		{
+			return;
+		}
+
+		m_currentDescriptorTable->SetImageViews(views, set, binding, arrayStartOffset);
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()
@@ -238,6 +274,7 @@ namespace Volt
 
 		RHI::DescriptorTableCreateInfo info{};
 		info.shader = shader;
+		info.count = 1;
 
 		Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
 		m_descriptorTableCache[ptr] = descriptorTable;
@@ -259,6 +296,7 @@ namespace Volt
 
 		RHI::DescriptorTableCreateInfo info{};
 		info.shader = shader;
+		info.count = 1;
 
 		Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
 		m_descriptorTableCache[ptr] = descriptorTable;

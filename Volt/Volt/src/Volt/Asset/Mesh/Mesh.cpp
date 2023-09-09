@@ -416,6 +416,8 @@ namespace Volt
 			data.normal.x = uint8_t(octNormal.x * 255);
 			data.normal.y = uint8_t(octNormal.y * 255);
 			data.tangent = Utility::EncodeTangent(vertex.normal, vertex.tangent);
+			data.texCoords.x = static_cast<half_float::half>(vertex.texCoords.x);
+			data.texCoords.y = static_cast<half_float::half>(vertex.texCoords.y);
 		}
 
 		return result;

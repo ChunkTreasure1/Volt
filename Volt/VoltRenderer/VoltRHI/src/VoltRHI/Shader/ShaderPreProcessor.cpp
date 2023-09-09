@@ -619,6 +619,7 @@ namespace Volt::RHI
 			return Format::R16G16B16A16_SFLOAT;
 		}
 
+		GraphicsContext::LogTagged(Severity::Error, "ShaderPreProcessor", "Unable to translate type {0} into any format!", str);
 		return Format::UNDEFINED;
 	}
 
@@ -863,6 +864,7 @@ namespace Volt::RHI
 			return Format::D32_SFLOAT_S8_UINT;
 		}
 
+		GraphicsContext::LogTagged(Severity::Error, "ShaderPreProcessor", "Unable to translate layout qualifier {0} into any format!", tempStr);
 		return Format::UNDEFINED;
 	}
 }

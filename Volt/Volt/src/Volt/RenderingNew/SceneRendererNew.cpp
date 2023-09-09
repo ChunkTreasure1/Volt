@@ -75,13 +75,10 @@ namespace Volt
 			RHI::ImageSpecification spec{};
 			spec.width = specification.initialResolution.x;
 			spec.height = specification.initialResolution.y;
-			spec.usage = RHI::ImageUsage::Attachment;
+			spec.usage = RHI::ImageUsage::AttachmentStorage;
 			spec.generateMips = false;
 
 			m_outputImage = RHI::Image2D::Create(spec);
-
-			spec.format = RHI::Format::D32_SFLOAT;
-			m_depthImage = RHI::Image2D::Create(spec);
 		}
 
 		// Constant buffer
@@ -165,141 +162,27 @@ namespace Volt
 			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 
 			m_outputImage->Invalidate(m_width, m_height);
-			m_depthImage->Invalidate(m_width, m_height);
 
 			m_shouldResize = false;
 		}
 
 		UpdateBuffers(camera);
 
-		struct BufferData
-		{
-			RenderGraphResourceHandle indirectCommandsBuffer;
-			RenderGraphResourceHandle indirectCountsBuffer;
-
-			RenderGraphResourceHandle drawToInstanceOffsetBuffer;
-			RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
-		};
-
-		struct ImageData
-		{
-			RenderGraphResourceHandle outputImage;
-		};
 
 		RenderGraphBlackboard rgBlackboard{};
 		RenderGraph renderGraph{ m_commandBuffer };
 
-		auto& bufferData = rgBlackboard.Add<BufferData>();
-		ImageData& imageData = rgBlackboard.Add<ImageData>();
+		AddExternalResources(renderGraph, rgBlackboard);
+		AddSetupIndirectPasses(renderGraph, rgBlackboard);
 
-		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer);
-		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer);
-		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer);
-		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.AddExternalBuffer(m_instanceOffsetToObjectIDBuffer);
+		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
 
-		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
+		AddPreDepthPass(renderGraph, rgBlackboard);
+		AddGBufferPass(renderGraph, rgBlackboard);
+		AddDeferredShadingPass(renderGraph, rgBlackboard);
 
-		renderGraph.AddPass("Clear counts buffers", [&](RenderGraph::Builder& builder)
-		{
-			builder.WriteResource(bufferData.indirectCountsBuffer);
-			builder.SetHasSideEffect();
-		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			RHI::ShaderDataBuffer pushConstantBuffer = ShaderMap::Get("ClearCountBuffer")->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
-
-			const uint32_t dispatchCount = std::max(1u, static_cast<uint32_t>(m_currentActiveCommandCount / 256) + 1u);
-
-			context.BindPipeline(m_clearIndirectCountsPipeline);
-			context.SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
-			context.PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
-			context.Dispatch(dispatchCount, 1, 1);
-		});
-
-		renderGraph.AddPass("Setup Indirect Args", [&](RenderGraph::Builder& builder)
-		{
-			builder.WriteResource(bufferData.indirectCommandsBuffer);
-			builder.WriteResource(bufferData.indirectCountsBuffer);
-			builder.WriteResource(bufferData.drawToInstanceOffsetBuffer);
-			builder.WriteResource(bufferData.instanceOffsetToObjectIDBuffer);
-
-			builder.SetHasSideEffect();
-		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			RHI::ShaderDataBuffer pushConstantBuffer = ShaderMap::Get("IndirectSetup")->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
-			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
-
-			context.BindPipeline(m_indirectSetupPipeline);
-
-			context.SetBufferView(resources.GetBuffer(bufferData.indirectCountsBuffer)->GetView(), 0, 0);
-			context.SetBufferView(resources.GetBuffer(bufferData.indirectCommandsBuffer)->GetView(), 0, 1);
-			context.SetBufferView(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer)->GetView(), 0, 2);
-			context.SetBufferView(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer)->GetView(), 0, 3);
-
-			context.PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
-			context.Dispatch(dispatchCount, 1, 1);
-		});
-
-		rgBlackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
-		[&](RenderGraph::Builder& builder, PreDepthData& data)
-		{
-			RenderGraphImageDesc desc{};
-			desc.width = m_width;
-			desc.height = m_height;
-			desc.format = RHI::Format::D32_SFLOAT;
-			desc.usage = RHI::ImageUsage::AttachmentStorage;
-			desc.name = "PreDepth";
-			data.depth = builder.CreateImage2D(desc);
-
-			builder.WriteResource(data.depth);
-			builder.SetHasSideEffect();
-		},
-		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			Ref<RHI::ImageView> depthImageView = resources.GetImage2D(data.depth)->GetView();
-
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { depthImageView });
-
-			context.BeginRendering(info);
-			context.BindPipeline(m_preDepthPipeline);
-
-			UpdateDescriptorTable(*m_scene->GetRenderScene(), context);
-
-			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
-			context.EndRendering();
-		});
-
-		renderGraph.AddResourceTransition(bufferData.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
-		renderGraph.AddResourceTransition(bufferData.indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
-
-		//renderGraph.AddPass("Draw Viewport", [&](RenderGraph::Builder& builder)
-		//{
-		//	builder.ReadResource(bufferData.drawToInstanceOffsetBuffer);
-		//	builder.ReadResource(bufferData.instanceOffsetToObjectIDBuffer);
-
-		//	builder.WriteResource(imageData.outputImage);
-
-		//	builder.SetHasSideEffect();
-		//},
-		//[=](RenderContext& context, const RenderGraphPassResources& resources)
-		//{
-		//	Ref<RHI::ImageView> outputImage = resources.GetImage2D(imageData.outputImage)->GetView();
-		//	//Ref<RHI::ImageView> depthImage = resources.GetImage2D(imageData.depthImage)->GetView();
-
-		//	RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { outputImage, depthImage });
-
-		//	info.renderingInfo.colorAttachments.at(0).clearColor = { 0.1f, 0.1f, 0.1f, 1.f };
-
-		//	context.BeginRendering(info);
-		//	context.BindPipeline(m_renderPipeline, m_descriptorTable);
-		//	context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
-		//	context.EndRendering();
-		//});
-
-		renderGraph.AddResourceTransition(imageData.outputImage, RHI::ResourceState::PixelShaderRead);
+		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalImagesData>().outputImage, RHI::ResourceState::PixelShaderRead);
 
 		renderGraph.Compile();
 		renderGraph.Execute();
@@ -335,7 +218,7 @@ namespace Volt
 			m_descriptorTable->SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
 		}
 
-		UpdateDescriptorTable(*renderScene);
+		UpdateDescriptorTableForMeshRendering(*renderScene);
 
 		uint32_t currentMeshIndex = 0;
 
@@ -450,28 +333,27 @@ namespace Volt
 		}
 	}
 
-	void SceneRendererNew::UpdateDescriptorTable(RenderScene& renderScene, RenderContext& renderContext)
+	void SceneRendererNew::UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext)
 	{
-		for (uint32_t index = 0; const auto & mesh : renderScene.GetIndividualMeshes())
-		{
-			renderContext.SetBufferView(mesh->GetVertexPositionsBuffer()->GetView(), 1, 0, index);
-			renderContext.SetBufferView(mesh->GetVertexMaterialBuffer()->GetView(), 2, 0, index);
-			renderContext.SetBufferView(mesh->GetVertexAnimationBuffer()->GetView(), 3, 0, index);
-			renderContext.SetBufferView(mesh->GetIndexStorageBuffer()->GetView(), 4, 0, index);
-			index++;
-		}
+		renderContext.SetBufferViews(renderScene.GetVertexPositionViews(), 1, 0);
+		renderContext.SetBufferViews(renderScene.GetVertexMaterialViews(), 2, 0);
+		renderContext.SetBufferViews(renderScene.GetVertexAnimationViews(), 3, 0);
+		renderContext.SetBufferViews(renderScene.GetIndexBufferViews(), 4, 0);
+
+		renderContext.SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
+		renderContext.SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
+		renderContext.SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
+
+		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, CAMERA_BUFFER_BINDING), 5, CAMERA_BUFFER_BINDING);
+		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, DIRECTIONAL_LIGHT_BINDING), 5, DIRECTIONAL_LIGHT_BINDING);
 	}
 
-	void SceneRendererNew::UpdateDescriptorTable(RenderScene& renderScene)
+	void SceneRendererNew::UpdateDescriptorTableForMeshRendering(RenderScene& renderScene)
 	{
-		for (uint32_t index = 0; const auto & mesh : renderScene.GetIndividualMeshes())
-		{
-			m_descriptorTable->SetBufferView(mesh->GetVertexPositionsBuffer()->GetView(), 1, 0, index);
-			m_descriptorTable->SetBufferView(mesh->GetVertexMaterialBuffer()->GetView(), 2, 0, index);
-			m_descriptorTable->SetBufferView(mesh->GetVertexAnimationBuffer()->GetView(), 3, 0, index);
-			m_descriptorTable->SetBufferView(mesh->GetIndexStorageBuffer()->GetView(), 4, 0, index);
-			index++;
-		}
+		m_descriptorTable->SetBufferViews(renderScene.GetVertexPositionViews(), 1, 0);
+		m_descriptorTable->SetBufferViews(renderScene.GetVertexMaterialViews(), 2, 0);
+		m_descriptorTable->SetBufferViews(renderScene.GetVertexAnimationViews(), 3, 0);
+		m_descriptorTable->SetBufferViews(renderScene.GetIndexBufferViews(), 4, 0);
 	}
 
 	void SceneRendererNew::CreatePipelines()
@@ -482,7 +364,7 @@ namespace Volt
 		// Depth Only pipeline
 		{
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("DepthOnly");
+			pipelineInfo.shader = ShaderMap::Get("PreDepth");
 			m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
 		}
 
@@ -492,5 +374,183 @@ namespace Volt
 			pipelineInfo.shader = ShaderMap::Get("MeshIndirect");
 			m_renderPipeline = RHI::RenderPipeline::Create(pipelineInfo);
 		}
+
+		// GBuffer
+		{
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("GBufferGeneration");
+			pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
+			pipelineInfo.depthMode = RHI::DepthMode::Read;
+
+			m_gbufferPipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		}
+
+		// Deferred Shading
+		{
+			m_deferredShadingPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("DeferredShading"));
+		}
+	}
+
+	void SceneRendererNew::AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		auto& bufferData = blackboard.Add<ExternalBuffersData>();
+		auto& imageData = blackboard.Add<ExternalImagesData>();
+
+		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer);
+		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer);
+		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer);
+		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.AddExternalBuffer(m_instanceOffsetToObjectIDBuffer);
+
+		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
+	}
+
+	void SceneRendererNew::AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		auto& bufferData = blackboard.Get<ExternalBuffersData>();
+
+		renderGraph.AddPass("Clear counts buffers", [&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(bufferData.indirectCountsBuffer);
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RHI::ShaderDataBuffer pushConstantBuffer = ShaderMap::Get("ClearCountBuffer")->GetConstantsBuffer();
+			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
+
+			const uint32_t dispatchCount = std::max(1u, static_cast<uint32_t>(m_currentActiveCommandCount / 256) + 1u);
+
+			context.BindPipeline(m_clearIndirectCountsPipeline);
+			context.SetBufferView(m_indirectCountsBuffer->GetView(), 0, 0);
+			context.PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
+			context.Dispatch(dispatchCount, 1, 1);
+		});
+
+		renderGraph.AddPass("Setup Indirect Args", [&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(bufferData.indirectCommandsBuffer);
+			builder.WriteResource(bufferData.indirectCountsBuffer);
+			builder.WriteResource(bufferData.drawToInstanceOffsetBuffer);
+			builder.WriteResource(bufferData.instanceOffsetToObjectIDBuffer);
+
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			RHI::ShaderDataBuffer pushConstantBuffer = ShaderMap::Get("IndirectSetup")->GetConstantsBuffer();
+			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
+			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
+
+			context.BindPipeline(m_indirectSetupPipeline);
+
+			context.SetBufferView(resources.GetBuffer(bufferData.indirectCountsBuffer)->GetView(), 0, 0);
+			context.SetBufferView(resources.GetBuffer(bufferData.indirectCommandsBuffer)->GetView(), 0, 1);
+			context.SetBufferView(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer)->GetView(), 0, 2);
+			context.SetBufferView(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer)->GetView(), 0, 3);
+
+			context.PushConstants(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
+			context.Dispatch(dispatchCount, 1, 1);
+		});
+	}
+
+	void SceneRendererNew::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
+		[&](RenderGraph::Builder& builder, PreDepthData& data)
+		{
+			RenderGraphImageDesc desc{};
+			desc.width = m_width;
+			desc.height = m_height;
+			desc.format = RHI::Format::D32_SFLOAT;
+			desc.usage = RHI::ImageUsage::Attachment;
+			desc.name = "PreDepth";
+			data.depth = builder.CreateImage2D(desc);
+
+			desc.format = RHI::Format::R16G16B16A16_SFLOAT;
+			desc.name = "Normals";
+			data.normals = builder.CreateImage2D(desc);
+		},
+		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Ref<RHI::ImageView> depthImageView = resources.GetImage2D(data.depth)->GetView();
+			Ref<RHI::ImageView> normalsImageView = resources.GetImage2D(data.normals)->GetView();
+
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
+
+			context.BeginRendering(info);
+			context.BindPipeline(m_preDepthPipeline);
+
+			UpdateDescriptorTableForMeshRendering(*m_scene->GetRenderScene(), context);
+
+			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.EndRendering();
+		});
+	}
+
+	void SceneRendererNew::AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("GBuffer Pass",
+		[&](RenderGraph::Builder& builder, GBufferData& data)
+		{
+			data.albedo = builder.CreateImage2D({ RHI::Format::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo " });
+			data.materialEmissive = builder.CreateImage2D({ RHI::Format::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
+			data.normalEmissive = builder.CreateImage2D({ RHI::Format::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+
+			builder.WriteResource(blackboard.Get<PreDepthData>().depth);
+		},
+		[=](const GBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Ref<RHI::ImageView> albedoView = resources.GetImage2D(data.albedo)->GetView();
+			Ref<RHI::ImageView> materialEmissiveView = resources.GetImage2D(data.materialEmissive)->GetView();
+			Ref<RHI::ImageView> normalEmissiveView = resources.GetImage2D(data.normalEmissive)->GetView();
+
+			Ref<RHI::ImageView> depthView = resources.GetImage2D(blackboard.Get<PreDepthData>().depth)->GetView();
+
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { albedoView, materialEmissiveView, normalEmissiveView, depthView });
+			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
+
+			context.BeginRendering(info);
+			context.BindPipeline(m_gbufferPipeline);
+
+			UpdateDescriptorTableForMeshRendering(*m_scene->GetRenderScene(), context);
+
+			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.EndRendering();
+		});
+	}
+
+	void SceneRendererNew::AddDeferredShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		GBufferData gbufferData = blackboard.Get<GBufferData>();
+		PreDepthData preDepthData = blackboard.Get<PreDepthData>();
+		ExternalImagesData externalImagesData = blackboard.Get<ExternalImagesData>();
+
+		renderGraph.AddPass("Deferred Shading Pass",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(externalImagesData.outputImage);
+
+			builder.ReadResource(gbufferData.albedo);
+			builder.ReadResource(gbufferData.materialEmissive);
+			builder.ReadResource(gbufferData.normalEmissive);
+			builder.ReadResource(preDepthData.depth);
+
+			builder.SetIsComputePass();
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			auto outputImage = resources.GetImage2D(externalImagesData.outputImage);
+
+			context.BindPipeline(m_deferredShadingPipeline);
+			context.SetImageView(resources.GetImage2D(gbufferData.albedo)->GetView(), 0, 0);
+			context.SetImageView(resources.GetImage2D(gbufferData.materialEmissive)->GetView(), 0, 1);
+			context.SetImageView(resources.GetImage2D(gbufferData.normalEmissive)->GetView(), 0, 2);
+			context.SetImageView(resources.GetImage2D(preDepthData.depth)->GetView(), 0, 3);
+			context.SetImageView(outputImage->GetView(), 0, 4);
+
+			context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 1.f });
+			context.Dispatch((m_width / 16) + 1, (m_width / 16) + 1, 1);
+		});
 	}
 }

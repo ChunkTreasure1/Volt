@@ -17,7 +17,7 @@ StructuredBuffer<IndirectDrawData> u_indirectDrawData : register(t1, space0);
 StructuredBuffer<uint> u_instanceOffsetToObjectID : register(t2, space0);
 ////////////////////////
 
-static const uint VERTEX_MATERIAL_DATA_SIZE = 8;
+static const uint VERTEX_MATERIAL_DATA_SIZE = 12;
 static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 
 float2 OctNormalWrap(float2 v)
@@ -183,7 +183,7 @@ struct DefaultInput
     {
         const IndirectDrawData drawData = GetDrawData();
         
-        const uint vertexIndex = u_indexBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
         return vertexIndex;
     }
     
@@ -191,8 +191,8 @@ struct DefaultInput
     {
         const IndirectDrawData drawData = GetDrawData();
         
-        const uint vertexIndex = u_indexBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-        const float3 position = u_vertexPositionsBuffers[NonUniformResourceIndex(drawData.meshId)].Load<float3>(sizeof(float3) * vertexIndex);
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const float3 position = u_vertexPositionsBuffers[drawData.meshId].Load<float3>(sizeof(float3) * vertexIndex);
         
         return position;
     }
@@ -201,8 +201,8 @@ struct DefaultInput
     {
         const IndirectDrawData drawData = GetDrawData();
         
-        const uint vertexIndex = u_indexBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-        const float3 position = u_vertexPositionsBuffers[NonUniformResourceIndex(drawData.meshId)].Load<float3>(sizeof(float3) * vertexIndex);
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const float3 position = u_vertexPositionsBuffers[drawData.meshId].Load<float3>(sizeof(float3) * vertexIndex);
         
         return mul(drawData.transform, float4(position, 1.f));
     }
@@ -210,9 +210,9 @@ struct DefaultInput
     const float3 GetNormal()
     {
         const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
     
-        uint normalValues = u_vertexMaterialDataBuffers[NonUniformResourceIndex(drawData.meshId)].Load(VERTEX_MATERIAL_DATA_SIZE * vertexIndex);
+        uint normalValues = u_vertexMaterialDataBuffers[drawData.meshId].Load(VERTEX_MATERIAL_DATA_SIZE * vertexIndex);
         
         uint2 octIntNormal;
         
@@ -229,35 +229,48 @@ struct DefaultInput
     const float3 GetTangent()
     {    
         const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
     
-        float tangent = u_vertexMaterialDataBuffers[NonUniformResourceIndex(drawData.meshId)].Load<float>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 4);
+        float tangent = u_vertexMaterialDataBuffers[drawData.meshId].Load<float>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 4);
         
         return decode_tangent(GetNormal(), tangent);
+    }
+    
+    const float2 GetTexCoords()
+    {
+        const IndirectDrawData drawData = GetDrawData();
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const uint texCoordsUINT = u_vertexMaterialDataBuffers[drawData.meshId].Load<uint>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 8);
+        
+        float2 result;
+        result.x = asfloat((texCoordsUINT >> 16) & 0xFFFF);
+        result.y = asfloat((texCoordsUINT >> 0) & 0xFFFF);
+    
+        return result;
     }
     
     float4x4 GetSkinnedMatrix()
     {
         const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
     
         uint4 influences;
         
-        uint influenceXY = u_vertexAnimationDataBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 0));
+        uint influenceXY = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 0));
         influences.x = (influenceXY >> 16) & 0xFFFF;
         influences.y = (influenceXY >> 0) & 0xFFFF;
         
-        uint influenceZW = u_vertexAnimationDataBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 4));
+        uint influenceZW = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 4));
         influences.z = (influenceZW >> 16) & 0xFFFF;
         influences.w = (influenceZW >> 0) & 0xFFFF;
     
         float4 weights;
         
-        uint weightsXY = u_vertexAnimationDataBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 8));
+        uint weightsXY = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 8));
         weights.x = asfloat((weightsXY >> 16) & 0xFFFF);
         weights.y = asfloat((weightsXY >> 0) & 0xFFFF);
         
-        uint weightsZW = u_vertexAnimationDataBuffers[NonUniformResourceIndex(drawData.meshId)].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 12));
+        uint weightsZW = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 12));
         weights.z = asfloat((weightsZW >> 16) & 0xFFFF);
         weights.w = asfloat((weightsZW >> 0) & 0xFFFF);
         

@@ -8,6 +8,17 @@ namespace Volt
 {
 	struct RenderGraphImageDesc
 	{
+		RenderGraphImageDesc() = default;
+
+		RenderGraphImageDesc(const RHI::Format format, const uint32_t width, const uint32_t height, const RHI::ImageUsage usage, std::string_view name)
+		{ 
+			this->format = format;
+			this->width = width;
+			this->height = height;
+			this->usage = usage;
+			this->name = name;
+		}
+
 		RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
 		RHI::ImageUsage usage = RHI::ImageUsage::Attachment;
 		RHI::ClearMode clearMode = RHI::ClearMode::Clear;

@@ -3,6 +3,8 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 
+#include <VoltRHI/Buffers/StorageBuffer.h>
+
 namespace Volt
 {
 	RenderScene::RenderScene(Scene* sceneRef)
@@ -40,6 +42,10 @@ namespace Volt
 
 		m_currentIndividualMeshCount = 0;
 		m_individualMeshes.clear();
+		m_vertexPositionViews.clear();
+		m_vertexMaterialViews.clear();
+		m_vertexAnimationViews.clear();
+		m_indexBufferViews.clear();
 
 		for (size_t i = 0; i < m_renderObjects.size(); i++)
 		{
@@ -47,6 +53,9 @@ namespace Volt
 			{
 				m_currentIndividualMeshCount++;
 				m_individualMeshes.push_back(m_renderObjects[i].mesh);
+
+				AddMeshToViews(m_renderObjects[i].mesh);
+			
 			}
 			else
 			{
@@ -54,6 +63,8 @@ namespace Volt
 				{
 					m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 					m_individualMeshes.push_back(m_renderObjects[i].mesh);
+			
+					AddMeshToViews(m_renderObjects[i].mesh);
 				}
 			}
 		}
@@ -97,5 +108,13 @@ namespace Volt
 		{
 			m_renderObjects.erase(it);
 		}
+	}
+
+	void RenderScene::AddMeshToViews(Ref<Mesh> mesh)
+	{
+		m_vertexPositionViews.push_back(mesh->GetVertexPositionsBuffer()->GetView());
+		m_vertexMaterialViews.push_back(mesh->GetVertexMaterialBuffer()->GetView());
+		m_vertexAnimationViews.push_back(mesh->GetVertexAnimationBuffer()->GetView());
+		m_indexBufferViews.push_back(mesh->GetIndexStorageBuffer()->GetView());
 	}
 }

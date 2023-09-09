@@ -7,6 +7,7 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Graphics/DeviceQueue.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Core/Profiling.h>
 
@@ -97,10 +98,18 @@ namespace Volt::RHI
 		}
 
 		const auto& page = m_pageAllocations.at(pageIndex);
-		
+
 		VkImage image;
-		vkCreateImage(device->GetHandle<VkDevice>(), &imageInfo, nullptr, &image);
-		vkBindImageMemory(device->GetHandle<VkDevice>(), image, page.handle, blockAlloc.offset);
+
+		{
+			VT_PROFILE_SCOPE("Create VkImage");
+			vkCreateImage(device->GetHandle<VkDevice>(), &imageInfo, nullptr, &image);
+		}
+
+		{
+			VT_PROFILE_SCOPE("Bind memory");
+			vkBindImageMemory(device->GetHandle<VkDevice>(), image, page.handle, blockAlloc.offset);
+		}
 
 		Ref<VulkanTransientImageAllocation> imageAlloc = CreateRefRHI<VulkanTransientImageAllocation>();
 		imageAlloc->m_memoryHandle = page.handle;
@@ -124,7 +133,7 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 
 		vkDestroyBuffer(device->GetHandle<VkDevice>(), bufferAlloc->m_resource, nullptr);
-	
+
 		AllocationBlock allocBlock = bufferAlloc->m_allocationBlock;
 		ForfeitAllocationBlock(allocBlock);
 	}
@@ -141,7 +150,10 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 
-		vkDestroyImage(device->GetHandle<VkDevice>(), imageAlloc->m_resource, nullptr);
+		{
+			VT_PROFILE_SCOPE("Vulkan Destroy Image");
+			vkDestroyImage(device->GetHandle<VkDevice>(), imageAlloc->m_resource, nullptr);
+		}
 
 		AllocationBlock allocBlock = imageAlloc->m_allocationBlock;
 		ForfeitAllocationBlock(allocBlock);
@@ -172,6 +184,10 @@ namespace Volt::RHI
 
 	std::pair<uint32_t, AllocationBlock> VulkanTransientHeap::FindNextAvailableBlock(const uint64_t size)
 	{
+		VT_PROFILE_FUNCTION();
+
+		std::scoped_lock lock{ m_allocationMutex };
+
 		PageAllocation* pageAllocation = nullptr;
 		uint32_t pageIndex = 0;
 
@@ -238,14 +254,18 @@ namespace Volt::RHI
 
 	void VulkanTransientHeap::ForfeitAllocationBlock(const AllocationBlock& allocBlock)
 	{
+		VT_PROFILE_FUNCTION();
+
+		std::scoped_lock lock{ m_allocationMutex };
+
 		auto& pageAllocation = m_pageAllocations.at(allocBlock.pageId);
-	
+
 		uint64_t finalOffset = allocBlock.offset;
 		uint64_t finalSize = allocBlock.size;
 
 		std::vector<size_t> blocksToMerge;
 
-		for (size_t index = 0; const auto& block : pageAllocation.availableBlocks)
+		for (size_t index = 0; const auto & block : pageAllocation.availableBlocks)
 		{
 			if (block.offset + block.size == finalOffset)
 			{
@@ -277,7 +297,7 @@ namespace Volt::RHI
 		{
 			pageAllocation.availableBlocks.emplace_back(finalSize, finalOffset, 0);
 		}
-	
+
 		pageAllocation.usedSize -= allocBlock.size;
 	}
 
@@ -350,7 +370,7 @@ namespace Volt::RHI
 		imageInfo.pNext = nullptr;
 		imageInfo.flags = 0;
 		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+		imageInfo.format = VK_FORMAT_D32_SFLOAT;
 		imageInfo.extent.width = 1;
 		imageInfo.extent.height = 1;
 		imageInfo.extent.depth = 1;

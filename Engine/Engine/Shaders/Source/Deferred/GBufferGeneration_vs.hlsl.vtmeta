@@ -1,0 +1,7 @@
+Metadata:
+  assetHandle: 5215428307957008596
+  filePath: Engine/Shaders/Source/Deferred/GBufferGeneration_vs.hlsl
+  type: 128
+  Dependencies:
+    []
+  ? Properties

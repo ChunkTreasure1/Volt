@@ -26,6 +26,9 @@ namespace Volt
 	class RenderScene;
 	class RenderContext;
 
+	class RenderGraph;
+	class RenderGraphBlackboard;
+
 	struct SceneRendererSpecification
 	{
 		std::string debugName;
@@ -53,13 +56,20 @@ namespace Volt
 		void UpdateCameraBuffer(Ref<Camera> camera);
 		void UpdateLightBuffers();
 
-		void UpdateDescriptorTable(RenderScene& renderScene, RenderContext& renderContext);
-		void UpdateDescriptorTable(RenderScene& renderScene);
+		void UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext);
+		void UpdateDescriptorTableForMeshRendering(RenderScene& renderScene);
 
 		void CreatePipelines();
 
+		///// Passes //////
+		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddDeferredShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		///////////////////
+
 		Ref<RHI::Image2D> m_outputImage;
-		Ref<RHI::Image2D> m_depthImage;
 
 		bool m_shouldResize = false;
 
@@ -89,8 +99,10 @@ namespace Volt
 		// Pipelines
 		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
+		Ref<RHI::ComputePipeline> m_deferredShadingPipeline;
 
 		Ref<RHI::RenderPipeline> m_preDepthPipeline;
+		Ref<RHI::RenderPipeline> m_gbufferPipeline;
 
 		Weak<Scene> m_scene;
 	};

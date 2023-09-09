@@ -22,6 +22,7 @@ namespace Volt
 		class ImageView;
 
 		class Image2D;
+		class BufferViewSet;
 	}
 
 	struct RenderingInfo
@@ -54,7 +55,11 @@ namespace Volt
 		void PushConstants(const void* data, const uint32_t size, const uint32_t offset = 0);
 
 		void SetBufferView(Ref<RHI::BufferView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
+		void SetBufferViews(const std::vector<Ref<RHI::BufferView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset = 0);
+		void SetBufferViewSet(Ref<RHI::BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0);
+
 		void SetImageView(Ref<RHI::ImageView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
+		void SetImageViews(const std::vector<Ref<RHI::ImageView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset = 0);
 
 	private:
 		void BindDescriptorTableIfRequired();

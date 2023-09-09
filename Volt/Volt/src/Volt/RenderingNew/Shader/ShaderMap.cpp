@@ -63,7 +63,9 @@ namespace Volt
 
 				threadPool.SubmitTask([&, def = shaderDef]() 
 				{
-					Ref<RHI::Shader> shader = RHI::Shader::Create(def->GetName(), def->GetSourceFiles());
+					// #TODO: Fix force compile!
+					// We need to do this because the formats / input layouts are not created correctly otherwise
+					Ref<RHI::Shader> shader = RHI::Shader::Create(def->GetName(), def->GetSourceFiles(), true);
 					m_shaderMap[std::string(def->GetName())] = shader;
 				});
 			}

@@ -60,5 +60,7 @@ namespace Volt::RHI
 		MemoryRequirement m_memoryRequirements;
 
 		std::array<PageAllocation, MAX_PAGE_COUNT> m_pageAllocations;
+	
+		std::mutex m_allocationMutex;
 	};
 }
