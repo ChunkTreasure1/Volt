@@ -56,9 +56,9 @@ namespace Volt
 		myInfo = info;
 		Noise::Initialize();
 
+		Log::Initialize();
 		ProjectManager::SetupProject(myInfo.projectPath);
 		SessionPreferences::Initialize();
-		Log::Initialize();
 
 		WindowProperties windowProperties{};
 		windowProperties.width = info.width;
@@ -186,59 +186,7 @@ namespace Volt
 		{
 			VT_PROFILE_FRAME("Frame");
 
-			myHasSentMouseMovedEvent = false;
-
-			myWindow->BeginFrame();
-
-			float time = (float)glfwGetTime();
-			myCurrentDeltaTime = time - myLastTotalTime;
-			myLastTotalTime = time;
-
-			{
-				VT_PROFILE_SCOPE("Application::Update");
-
-				AppUpdateEvent updateEvent(myCurrentDeltaTime * myTimeScale);
-				OnEvent(updateEvent);
-				Amp::WWiseEngine::Get().Update();
-			}
-
-			{
-				VT_PROFILE_SCOPE("Application::Render");
-
-				Renderer::Flush();
-				Renderer::UpdateDescriptors();
-
-				AppRenderEvent renderEvent;
-				OnEvent(renderEvent);
-			}
-
-
-			if (myInfo.enableImGui)
-			{
-				VT_PROFILE_SCOPE("Application::ImGui");
-
-				myImGuiImplementation->Begin();
-
-				AppImGuiUpdateEvent imguiEvent{};
-				OnEvent(imguiEvent);
-
-				myImGuiImplementation->End();
-			}
-
-			if (myInfo.netEnabled)
-			{
-				VT_PROFILE_SCOPE("Application::Net");
-				myNetHandler->Update(myCurrentDeltaTime);
-			}
-
-			{
-				VT_PROFILE_SCOPE("Discord SDK");
-				DiscordSDK::Update();
-			}
-
-			myWindow->Present();
-
-			myFrameTimer.Accumulate();
+			MainUpdate();
 		}
 	}
 
@@ -293,6 +241,63 @@ namespace Volt
 		myLayerStack.PopLayer(layer);
 	}
 
+	void Application::MainUpdate()
+	{
+		myHasSentMouseMovedEvent = false;
+
+		myWindow->BeginFrame();
+
+		float time = (float)glfwGetTime();
+		myCurrentDeltaTime = time - myLastTotalTime;
+		myLastTotalTime = time;
+
+		{
+			VT_PROFILE_SCOPE("Application::Update");
+
+			AppUpdateEvent updateEvent(myCurrentDeltaTime * myTimeScale);
+			OnEvent(updateEvent);
+			Amp::WWiseEngine::Get().Update();
+		}
+
+		{
+			VT_PROFILE_SCOPE("Application::Render");
+
+			Renderer::Flush();
+			Renderer::UpdateDescriptors();
+
+			AppRenderEvent renderEvent;
+			OnEvent(renderEvent);
+		}
+
+
+		if (myInfo.enableImGui)
+		{
+			VT_PROFILE_SCOPE("Application::ImGui");
+
+			myImGuiImplementation->Begin();
+
+			AppImGuiUpdateEvent imguiEvent{};
+			OnEvent(imguiEvent);
+
+			myImGuiImplementation->End();
+		}
+
+		if (myInfo.netEnabled)
+		{
+			VT_PROFILE_SCOPE("Application::Net");
+			myNetHandler->Update(myCurrentDeltaTime);
+		}
+
+		{
+			VT_PROFILE_SCOPE("Discord SDK");
+			DiscordSDK::Update();
+		}
+
+		myWindow->Present();
+
+		myFrameTimer.Accumulate();
+	}
+
 	bool Application::OnAppUpdateEvent(AppUpdateEvent&)
 	{
 		if (mySteamImplementation)
@@ -320,6 +325,9 @@ namespace Volt
 		}
 
 		myWindow->Resize(e.GetWidth(), e.GetHeight());
+
+		MainUpdate();
+
 		return false;
 	}
 

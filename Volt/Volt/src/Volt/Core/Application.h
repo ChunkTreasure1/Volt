@@ -83,6 +83,8 @@ namespace Volt
 		SteamImplementation& GetSteam() { return *mySteamImplementation; }
 
 	private:
+		void MainUpdate();
+
 		bool OnAppUpdateEvent(AppUpdateEvent& e);
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);

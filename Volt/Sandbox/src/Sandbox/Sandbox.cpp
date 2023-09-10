@@ -217,6 +217,8 @@ void Sandbox::OnAttach()
 	Volt::DiscordSDK::UpdateRichPresence();
 
 	myRuntimeScene->InitializeEngineScripts();
+
+	m_isInitialized = true;
 }
 
 void Sandbox::CreateWatches()
@@ -317,6 +319,7 @@ void Sandbox::SetupNewSceneData()
 
 void Sandbox::OnDetach()
 {
+	m_isInitialized = false;
 	Volt::Log::ClearCallbacks();
 
 	if (mySceneState == SceneState::Play)
@@ -358,6 +361,10 @@ void Sandbox::OnDetach()
 
 void Sandbox::OnEvent(Volt::Event& e)
 {
+	if (!m_isInitialized)
+	{
+		return;
+	}
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent));
 	dispatcher.Dispatch<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent));

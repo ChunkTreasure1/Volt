@@ -165,6 +165,7 @@ private:
 	bool myTitlebarHovered = false;
 	bool myBuildStarted = false;
 	bool myPlayHasMouseControl = false;
+	bool m_isInitialized = false;
 
 	bool myShouldMovePlayer = false;
 	glm::vec3 myMovePlayerToPosition = 0.f;
