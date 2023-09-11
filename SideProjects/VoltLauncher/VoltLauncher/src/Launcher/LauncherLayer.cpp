@@ -498,7 +498,7 @@ void LauncherLayer::UI_DrawEnginesContent()
 
 		if (ImGui::Button("Add"))
 		{
-			const std::string url = "https://github.com/ChunkTreasure1/Volt/releases/download/v0.1.1/Volt.zip";
+			const std::string url = "https://github.com/ChunkTreasure1/Volt/releases/download/v0.1.2/Volt.zip";
 			g_installProgress = 0.f;
 			m_isInstalling = true;
 
