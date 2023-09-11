@@ -11,6 +11,8 @@
 
 #include "Volt/Core/Layer/LayerStack.h"
 
+#include "Volt/Utility/Version.h"
+
 #include "Volt/Events/ApplicationEvent.h"
 #include "Volt/Events/KeyEvent.h"
 
@@ -47,7 +49,8 @@ namespace Volt
 		bool enableSteam = false;
 		bool isRuntime = false;
 		bool netEnabled = true;
-		std::string version = "1.0";
+
+		Version version = VT_VERSION;
 	};
 
 	class ImGuiImplementation;
@@ -65,22 +68,22 @@ namespace Volt
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
 
-		inline Window& GetWindow() const { return *myWindow; }
-		inline static Application& Get() { return *myInstance; }
-		inline static ThreadPool& GetThreadPool() { return Get().myThreadPool; }
-		inline static ThreadPool& GetRenderThreadPool() { return Get().myRenderThreadPool; }
+		inline Window& GetWindow() const { return *m_window; }
+		inline static Application& Get() { return *s_instance; }
+		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
+		inline static ThreadPool& GetRenderThreadPool() { return Get().m_renderThreadPool; }
 
-		inline const bool IsRuntime() const { return myInfo.isRuntime; }
-		inline const ApplicationInfo& GetInfo() const { return myInfo; }
+		inline const bool IsRuntime() const { return m_info.isRuntime; }
+		inline const ApplicationInfo& GetInfo() const { return m_info; }
 
-		inline const float GetAverageFrameTime() const { return myFrameTimer.GetAverageTime(); }
-		inline const float GetMaxFrameTime() const { return myFrameTimer.GetMaxFrameTime(); }
+		inline const float GetAverageFrameTime() const { return m_frameTimer.GetAverageTime(); }
+		inline const float GetMaxFrameTime() const { return m_frameTimer.GetMaxFrameTime(); }
 
-		inline void SetTimeScale(const float aTimeScale) { myTimeScale = aTimeScale; }
+		inline void SetTimeScale(const float aTimeScale) { m_timeScale = aTimeScale; }
 
 		NetHandler& GetNetHandler() { return *myNetHandler; }
-		AI::NavigationSystem& GetNavigationSystem() { return *myNavigationSystem; }
-		SteamImplementation& GetSteam() { return *mySteamImplementation; }
+		AI::NavigationSystem& GetNavigationSystem() { return *m_navigationSystem; }
+		SteamImplementation& GetSteam() { return *m_steamImplementation; }
 
 	private:
 		void MainUpdate();
@@ -93,31 +96,32 @@ namespace Volt
 
 		void SetupWindowPreferences(WindowProperties& windowProperties);
 		
-		bool myIsRunning = false;
-		bool myIsMinimized = false;
-		bool myHasSentMouseMovedEvent = false;
+		inline static Application* s_instance = nullptr;
 
-		float myTimeScale = 1.f;
-		float myCurrentDeltaTime = 0.f;
-		float myLastTotalTime = 0.f;
+		bool m_isRunning = false;
+		bool m_isMinimized = false;
+		bool m_hasSetMouseMovedEvent = false;
 
-		ApplicationInfo myInfo;
-		inline static Application* myInstance;
+		float m_timeScale = 1.f;
+		float m_currentDeltaTime = 0.f;
+		float m_lastTotalTime = 0.f;
 
-		LayerStack myLayerStack;
+		ApplicationInfo m_info;
 
-		MultiTimer myFrameTimer;
+		LayerStack m_layerStack;
 
-		Scope<AssetManager> myAssetManager;
-		Scope<Window> myWindow;
-		Scope<ImGuiImplementation> myImGuiImplementation;
+		MultiTimer m_frameTimer;
+
+		Scope<AssetManager> m_assetManager;
+		Scope<Window> m_window;
+		Scope<ImGuiImplementation> m_imguiImplementation;
 		Scope<NetHandler> myNetHandler;
-		Scope<AI::NavigationSystem> myNavigationSystem;
+		Scope<AI::NavigationSystem> m_navigationSystem;
 
-		Scope<SteamImplementation> mySteamImplementation;
+		Scope<SteamImplementation> m_steamImplementation;
 
-		ThreadPool myThreadPool;
-		ThreadPool myRenderThreadPool;
+		ThreadPool m_threadPool;
+		ThreadPool m_renderThreadPool;
 	};
 
 	static Application* CreateApplication(const std::filesystem::path& appPath);

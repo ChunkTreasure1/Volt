@@ -97,6 +97,7 @@ private:
 	void CreateWatches();
 
 	void SetupNewSceneData();
+	void InitializeModals();
 
 	/////ImGui/////
 	void UpdateDockSpace();
@@ -114,6 +115,10 @@ private:
 	
 	void RenderGameView();
 	///////////////
+
+	///// Modals /////
+	Volt::UUID m_projectUpgradeModal = 0;
+	//////////////////
 
 	///// Debug Rendering /////
 	void RenderSelection(Ref<Volt::Camera> camera);

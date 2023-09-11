@@ -215,9 +215,15 @@ namespace Volt
 
 	void AssetManager::LoadAssetMetafiles()
 	{
-		const auto metafiles = GetMetafiles();
+		const auto projectMetaFiles = GetProjectMetaFiles();
+		const auto engineMetaFiles = GetEngineMetaFiles();
 
-		for (auto file : metafiles)
+		for (auto file : engineMetaFiles)
+		{
+			DeserializeAssetMetafile(file);
+		}
+
+		for (auto file : projectMetaFiles)
 		{
 			DeserializeAssetMetafile(file);
 		}
@@ -1156,6 +1162,51 @@ namespace Volt
 		return pathClean;
 	}
 
+	std::vector<std::filesystem::path> AssetManager::GetEngineMetaFiles()
+	{
+		std::vector<std::filesystem::path> files;
+		std::string ext(".vtmeta");
+
+		// Engine Directory
+		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
+		{
+			if (p.path().extension() == ext)
+			{
+				files.emplace_back(p.path());
+			}
+		}
+
+		return files;
+	}
+
+	std::vector<std::filesystem::path> AssetManager::GetProjectMetaFiles()
+	{
+		if (ProjectManager::IsCurrentProjectDeprecated())
+		{
+			VT_CORE_ERROR("[AssetManager]: Unable to load metafiles as the loaded project is deprecated!");
+			return {};
+		}
+
+
+		std::vector<std::filesystem::path> files;
+		std::string ext(".vtmeta");
+
+		// Project Directory
+
+		if (FileSystem::Exists(ProjectManager::GetAssetsDirectory()))
+		{
+			for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetAssetsDirectory()))
+			{
+				if (p.path().extension() == ext)
+				{
+					files.emplace_back(p.path());
+				}
+			}
+		}
+
+		return files;
+	}
+
 	void AssetManager::SerializeAssetMetaFile(AssetHandle assetHandle)
 	{
 		const auto& metadata = GetMetadataFromHandle(assetHandle);
@@ -1283,35 +1334,5 @@ namespace Volt
 
 			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
 		}
-	}
-
-	std::vector<std::filesystem::path> AssetManager::GetMetafiles()
-	{
-		std::vector<std::filesystem::path> files;
-		std::string ext(".vtmeta");
-
-		// Project Directory
-
-		if (FileSystem::Exists(ProjectManager::GetAssetsDirectory()))
-		{
-			for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetAssetsDirectory()))
-			{
-				if (p.path().extension() == ext)
-				{
-					files.emplace_back(p.path());
-				}
-			}
-		}
-
-		// Engine Directory
-		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
-		{
-			if (p.path().extension() == ext)
-			{
-				files.emplace_back(p.path());
-			}
-		}
-
-		return files;
 	}
 }

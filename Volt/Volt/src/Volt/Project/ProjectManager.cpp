@@ -7,71 +7,95 @@
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/SerializationMacros.h"
 
+#include "Volt/Utility/FileIO/YAMLStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
+
 namespace Volt
 {
 	void ProjectManager::SetupProject(const std::filesystem::path projectPath)
 	{
-		myCurrentProject = CreateScope<Project>();
+		m_currentProject = CreateScope<Project>();
 
 		if (!projectPath.empty())
 		{
-			myCurrentProject->projectDirectory = projectPath.parent_path();
-			myCurrentProject->projectFilePath = projectPath;
+			m_currentProject->projectDirectory = projectPath.parent_path();
+			m_currentProject->projectFilePath = projectPath;
 
 		}
 		else
 		{
-			myCurrentProject->projectDirectory = "./";
+			m_currentProject->projectDirectory = "./";
 		
 			for (const auto& dir : std::filesystem::directory_iterator("./"))
 			{
 				if (dir.path().extension() == ".vtproj")
 				{
-					myCurrentProject->projectFilePath = dir.path();
+					m_currentProject->projectFilePath = dir.path();
 					break;
 				}
 			}
 		}
 
-		LoadProjectInfo();
+		DeserializeProject();
 
-		myCurrentEngineDirectory = std::filesystem::current_path();
+		m_currentEngineDirectory = std::filesystem::current_path();
 	}
 
-	void ProjectManager::LoadProjectInfo()
+	void ProjectManager::SerializeProject()
 	{
-		std::ifstream file(myCurrentProject->projectFilePath);
-		if (!file.is_open())
+		YAMLStreamWriter streamWriter{ m_currentProject->projectFilePath };
+
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("Project");
+
+		streamWriter.SetKey("EngineVersion", VT_VERSION.ToString());
+		streamWriter.SetKey("Name", m_currentProject->name);
+		streamWriter.SetKey("CompanyName", m_currentProject->companyName);
+		streamWriter.SetKey("AssetsDirectory", m_currentProject->assetsDirectory);
+		streamWriter.SetKey("AudioBanksDirectory", m_currentProject->audioBanksDirectory);
+		streamWriter.SetKey("IconPath", m_currentProject->iconPath);
+		streamWriter.SetKey("CursorPath", m_currentProject->cursorPath);
+		streamWriter.SetKey("StartScenePath", m_currentProject->startScenePath);
+
+		streamWriter.EndMap();
+		streamWriter.EndMap();
+		streamWriter.WriteToDisk();
+	}
+
+	void ProjectManager::DeserializeProject()
+	{
+		YAMLStreamReader streamReader{};
+
+		if (!streamReader.OpenFile(m_currentProject->projectFilePath))
 		{
-			VT_CORE_ERROR("Failed to open file: {0}!", myCurrentProject->projectFilePath.string().c_str());
+			VT_CORE_ERROR("[ProjectManager]: Failed to open file: {0}!", m_currentProject->projectFilePath.string());
 			return;
 		}
 
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
-
-		YAML::Node root;
-
-		try
+		if (!streamReader.HasKey("Project"))
 		{
-			root = YAML::Load(sstream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", myCurrentProject->projectFilePath, e.what());
+			VT_CORE_ERROR("[ProjectManager]: Project file {0} is invalid!", m_currentProject->projectFilePath.string());
 			return;
 		}
 
-		YAML::Node rootProjectNode = root["Project"];
+		streamReader.EnterScope("Project");
 
-		VT_DESERIALIZE_PROPERTY(Name, myCurrentProject->name, rootProjectNode, std::string("None"));
-		VT_DESERIALIZE_PROPERTY(CompanyName, myCurrentProject->companyName, rootProjectNode, std::string("None"));
-		VT_DESERIALIZE_PROPERTY(AssetsPath, myCurrentProject->assetsDirectory, rootProjectNode, std::filesystem::path("Assets"));
-		VT_DESERIALIZE_PROPERTY(AudioBanksPath, myCurrentProject->audioBanksDirectory, rootProjectNode, std::filesystem::path("Audio/Banks"));
-		VT_DESERIALIZE_PROPERTY(IconPath, myCurrentProject->iconPath, rootProjectNode, std::filesystem::path(""));
-		VT_DESERIALIZE_PROPERTY(CursorPath, myCurrentProject->cursorPath, rootProjectNode, std::filesystem::path(""));
-		VT_DESERIALIZE_PROPERTY(StartScene, myCurrentProject->startScenePath, rootProjectNode, std::filesystem::path(""));
+		m_currentProject->engineVersion = streamReader.ReadKey("EngineVersion", std::string(""));
+		m_currentProject->name = streamReader.ReadKey("Name", std::string("None"));
+		m_currentProject->companyName = streamReader.ReadKey("CompanyName", std::string("None"));
+		m_currentProject->assetsDirectory = streamReader.ReadKey("AssetsDirectory", std::filesystem::path("Assets"));
+		m_currentProject->audioBanksDirectory = streamReader.ReadKey("AudioBanksDirectory", std::filesystem::path("Audio/Banks"));
+		m_currentProject->iconPath = streamReader.ReadKey("IconPath", std::filesystem::path(""));
+		m_currentProject->cursorPath = streamReader.ReadKey("CursorPath", std::filesystem::path(""));
+		m_currentProject->startScenePath = streamReader.ReadKey("StartScene", std::filesystem::path(""));
+
+		streamReader.ExitScope();
+
+		if (!m_currentProject->engineVersion.IsValid() || m_currentProject->engineVersion != Application::Get().GetInfo().version)
+		{
+			m_currentProject->isDeprecated = true;
+			VT_CORE_ERROR("[ProjectManager]: The loaded project is deprecated!");
+		}
 	}
 
 	const std::filesystem::path ProjectManager::GetEngineScriptsDirectory()
@@ -81,37 +105,37 @@ namespace Volt
 
 	const std::filesystem::path ProjectManager::GetAssetsDirectory()
 	{
-		return myCurrentProject->projectDirectory / myCurrentProject->assetsDirectory;
+		return m_currentProject->isDeprecated ? "./" : m_currentProject->projectDirectory / m_currentProject->assetsDirectory;
 	}
 
 	const std::filesystem::path ProjectManager::GetAudioBanksDirectory()
 	{
-		return myCurrentProject->projectDirectory / myCurrentProject->assetsDirectory / myCurrentProject->audioBanksDirectory;
+		return m_currentProject->isDeprecated ? "./" : m_currentProject->projectDirectory / m_currentProject->assetsDirectory / m_currentProject->audioBanksDirectory;
 	}
 
 	const std::filesystem::path ProjectManager::GetProjectDirectory()
 	{
-		return myCurrentProject->projectDirectory;
+		return m_currentProject->isDeprecated ? "./" : m_currentProject->projectDirectory;
 	}
 
 	const std::filesystem::path ProjectManager::GetEngineDirectory()
 	{
-		return myCurrentEngineDirectory;
+		return m_currentEngineDirectory;
 	}
 
 	const std::filesystem::path ProjectManager::GetPathRelativeToEngine(const std::filesystem::path& path)
 	{
-		return std::filesystem::relative(path, myCurrentEngineDirectory);
+		return std::filesystem::relative(path, m_currentEngineDirectory);
 	}
 
 	const std::filesystem::path ProjectManager::GetCachePath()
 	{
-		return myCurrentProject->projectDirectory / myCurrentProject->assetsDirectory / "Cache";
+		return GetProjectDirectory() / GetAssetsDirectory() / "Cache";
 	}
 
 	const std::filesystem::path ProjectManager::GetPathRelativeToProject(const std::filesystem::path& path)
 	{
-		return std::filesystem::relative(path, myCurrentProject->projectDirectory);
+		return std::filesystem::relative(path, GetProjectDirectory());
 	}
 
 	const std::filesystem::path ProjectManager::GetMonoAssemblyPath()
@@ -121,11 +145,21 @@ namespace Volt
 
 	const std::filesystem::path& ProjectManager::GetDirectory()
 	{
-		return myCurrentProject->projectDirectory;
+		return m_currentProject->projectDirectory;
+	}
+
+	const bool ProjectManager::IsCurrentProjectDeprecated()
+	{
+		return m_currentProject->isDeprecated;
 	}
 
 	const Project& ProjectManager::GetProject()
 	{
-		return *myCurrentProject;
+		return *m_currentProject;
+	}
+
+	void ProjectManager::OnProjectUpgraded()
+	{
+		m_currentProject->isDeprecated = false;
 	}
 }

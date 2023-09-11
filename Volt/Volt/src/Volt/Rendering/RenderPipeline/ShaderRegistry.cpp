@@ -87,6 +87,11 @@ namespace Volt
 
 		for (const auto& searchPath : searchPaths)
 		{
+			if (searchPath.empty())
+			{
+				continue;
+			}
+
 			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
 			{
 				const auto relPath = AssetManager::GetRelativePath(path.path());
