@@ -85,7 +85,7 @@ namespace Volt
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::AssetHandle] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(AssetHandle*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Color3] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec3*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Color4] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(glm::vec4*)&componentData[offset], out); };
-			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Folder] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(std::filesystem::path*)&componentData[offset], out); };
+			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Directory] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(std::filesystem::path*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::Path] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(std::filesystem::path*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::GUID] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(WireGUID*)&componentData[offset], out); };
 			myPropertySerializer[Wire::ComponentRegistry::PropertyType::EntityId] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, YAML::Emitter& out) { VT_SERIALIZE_PROPERTY(data, *(uint32_t*)&componentData[offset], out); };
@@ -115,7 +115,7 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: SerializeVector<AssetHandle>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Color3: SerializeVector<glm::vec3>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Color4: SerializeVector<glm::vec4>(componentData, offset, out); break;
-					case Wire::ComponentRegistry::PropertyType::Folder: SerializeVector<std::filesystem::path>(componentData, offset, out); break;
+					case Wire::ComponentRegistry::PropertyType::Directory: SerializeVector<std::filesystem::path>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::Path: SerializeVector<std::filesystem::path>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::GUID: SerializeVector<WireGUID>(componentData, offset, out); break;
 					case Wire::ComponentRegistry::PropertyType::EntityId: SerializeVector<Wire::EntityId>(componentData, offset, out); break;
@@ -263,7 +263,7 @@ namespace Volt
 				memcpy_s(&componentData[offset], sizeof(glm::vec4), &input, sizeof(glm::vec4));
 			};
 
-			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Folder] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
+			myPropertyDeserializer[Wire::ComponentRegistry::PropertyType::Directory] = [](uint8_t* componentData, uint32_t offset, Wire::ComponentRegistry::PropertyType, const YAML::Node& node)
 			{
 				std::filesystem::path input;
 				VT_DESERIALIZE_PROPERTY(data, input, node, std::filesystem::path(""));
@@ -326,7 +326,7 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: DeserializeVector<AssetHandle>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::Color3: DeserializeVector<glm::vec3>(componentData, offset, node["data"], 0); break;
 					case Wire::ComponentRegistry::PropertyType::Color4: DeserializeVector<glm::vec4>(componentData, offset, node["data"], 0); break;
-					case Wire::ComponentRegistry::PropertyType::Folder: DeserializeVector<std::filesystem::path>(componentData, offset, node["data"], "Null"); break;
+					case Wire::ComponentRegistry::PropertyType::Directory: DeserializeVector<std::filesystem::path>(componentData, offset, node["data"], "Null"); break;
 					case Wire::ComponentRegistry::PropertyType::Path: DeserializeVector<std::filesystem::path>(componentData, offset, node["data"], "Null"); break;
 					case Wire::ComponentRegistry::PropertyType::GUID: DeserializeVector<WireGUID>(componentData, offset, node["data"], WireGUID::Null()); break;
 					case Wire::ComponentRegistry::PropertyType::EntityId: DeserializeVector<Wire::EntityId>(componentData, offset, node["data"], Wire::NullID); break;
@@ -904,7 +904,7 @@ namespace Volt
 			case Wire::ComponentRegistry::PropertyType::AssetHandle: return ((*(AssetHandle*)&buf1[prop.offset]) == (*(AssetHandle*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Color3: return ((*(glm::vec3*)&buf1[prop.offset]) == (*(glm::vec3*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Color4: return ((*(glm::vec4*)&buf1[prop.offset]) == (*(glm::vec4*)&buf2[prop.offset])) ? true : false;
-			case Wire::ComponentRegistry::PropertyType::Folder: return ((*(std::filesystem::path*)&buf1[prop.offset]) == (*(std::filesystem::path*)&buf2[prop.offset])) ? true : false;
+			case Wire::ComponentRegistry::PropertyType::Directory: return ((*(std::filesystem::path*)&buf1[prop.offset]) == (*(std::filesystem::path*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::Path: return ((*(std::filesystem::path*)&buf1[prop.offset]) == (*(std::filesystem::path*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::EntityId: return ((*(Wire::EntityId*)&buf1[prop.offset]) == (*(Wire::EntityId*)&buf2[prop.offset])) ? true : false;
 			case Wire::ComponentRegistry::PropertyType::GUID: return ((*(WireGUID*)&buf1[prop.offset]) == (*(WireGUID*)&buf2[prop.offset])) ? true : false;
@@ -932,7 +932,7 @@ namespace Volt
 					case Wire::ComponentRegistry::PropertyType::AssetHandle: return ((*(std::vector<AssetHandle>*) & buf1[prop.offset]) == (*(std::vector<AssetHandle>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Color4: return ((*(std::vector<glm::vec2>*) & buf1[prop.offset]) == (*(std::vector<glm::vec2>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Color3: return ((*(std::vector<glm::vec3>*) & buf1[prop.offset]) == (*(std::vector<glm::vec3>*) & buf2[prop.offset])) ? true : false;
-					case Wire::ComponentRegistry::PropertyType::Folder: return ((*(std::vector<glm::vec4>*) & buf1[prop.offset]) == (*(std::vector<glm::vec4>*) & buf2[prop.offset])) ? true : false;
+					case Wire::ComponentRegistry::PropertyType::Directory: return ((*(std::vector<glm::vec4>*) & buf1[prop.offset]) == (*(std::vector<glm::vec4>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::EntityId: return ((*(std::vector<Wire::EntityId>*) & buf1[prop.offset]) == (*(std::vector<Wire::EntityId>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::GUID: return ((*(std::vector<WireGUID>*) & buf1[prop.offset]) == (*(std::vector<WireGUID>*) & buf2[prop.offset])) ? true : false;
 					case Wire::ComponentRegistry::PropertyType::Enum: return ((*(uint32_t*)&buf1[prop.offset]) == (*(uint32_t*)&buf2[prop.offset])) ? true : false;

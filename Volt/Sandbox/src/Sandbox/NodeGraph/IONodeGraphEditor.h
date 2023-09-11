@@ -949,7 +949,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::DrawGraphDataPanel()
 					for (auto& param : myOpenGraph->GetBlackboard())
 					{
 						ImGui::TableNextColumn();
-						const std::string strId = "##" + std::to_string(UI::GetId());
+						const std::string strId = "##" + std::to_string(UI::GetID());
 						ImGui::PushItemWidth(ImGui::GetColumnWidth());
 						ImGui::InputTextString(strId.c_str(), &param.name);
 						ImGui::PopItemWidth();
@@ -984,7 +984,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::DrawGraphDataPanel()
 
 				for (auto& e : myOpenGraph->GetEvents())
 				{
-					const std::string strId = "##" + std::to_string(UI::GetId());
+					const std::string strId = "##" + std::to_string(UI::GetID());
 					ImGui::InputTextString(strId.c_str(), &e.name);
 				}
 			}
@@ -1039,7 +1039,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 		}
 	}
 
-	UI::PushId();
+	UI::PushID();
 
 	ImGui::BeginChild("Main", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	{
@@ -1051,7 +1051,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 			myActivateSearchWidget = false;
 		}
 
-		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 		ImGui::BeginChild("Scrollable", ImGui::GetContentRegionAvail());
 		{
 			for (const auto& [category, names] : nodeCategories)
@@ -1216,7 +1216,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 	}
 	ImGui::EndChild();
 
-	UI::PopId();
+	UI::PopID();
 
 	return node;
 }

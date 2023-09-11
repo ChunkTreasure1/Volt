@@ -96,6 +96,7 @@ private:
 	void CreateWatches();
 
 	void SetupNewSceneData();
+	void InitializeModals();
 
 	/////ImGui/////
 	void UpdateDockSpace();
@@ -113,6 +114,10 @@ private:
 	
 	void RenderGameView();
 	///////////////
+
+	///// Modals /////
+	Volt::UUID m_projectUpgradeModal = 0;
+	//////////////////
 
 	///// Debug Rendering /////
 	void RenderSelection(Ref<Volt::Camera> camera);
@@ -160,6 +165,7 @@ private:
 	bool myTitlebarHovered = false;
 	bool myBuildStarted = false;
 	bool myPlayHasMouseControl = false;
+	bool m_isInitialized = false;
 
 	bool myShouldMovePlayer = false;
 	glm::vec3 myMovePlayerToPosition = 0.f;

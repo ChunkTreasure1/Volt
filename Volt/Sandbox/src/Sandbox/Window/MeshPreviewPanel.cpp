@@ -166,7 +166,7 @@ void MeshPreviewPanel::UpdateProperties()
 					subMaterialNames.emplace_back(subMat->GetName());
 				}
 
-				UI::PushId();
+				UI::PushID();
 				if (UI::BeginProperties("subMeshProperties"))
 				{
 					auto currentMaterial = (int32_t)myCurrentMesh->GetSubMeshesMutable().at((uint32_t)mySelectedSubMesh).materialIndex;
@@ -177,7 +177,7 @@ void MeshPreviewPanel::UpdateProperties()
 
 					UI::EndProperties();
 				}
-				UI::PopId();
+				UI::PopID();
 			}
 
 			ImGui::EndChild();

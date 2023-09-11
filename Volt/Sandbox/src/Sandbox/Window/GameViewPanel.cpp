@@ -33,8 +33,8 @@ GameViewPanel::GameViewPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Vol
 	: EditorWindow(GAMEVIEWPANEL_TITLE), mySceneRenderer(sceneRenderer), myEditorScene(editorScene),
 	mySceneState(aSceneState)
 {
-	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_isOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 }
 
 void GameViewPanel::UpdateMainContent()
@@ -111,7 +111,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 	switch (e.GetMouseButton())
 	{
 		case VT_MOUSE_BUTTON_RIGHT:
-			if (myIsHovered)
+			if (m_isHovered)
 			{
 				ImGui::SetWindowFocus("Game Viewport");
 			}
@@ -119,7 +119,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 		case VT_MOUSE_BUTTON_LEFT:
 		{
-			if (myIsHovered && mySceneState == SceneState::Play)
+			if (m_isHovered && mySceneState == SceneState::Play)
 			{
 				Sandbox::Get().SetPlayHasMouseControl();
 			}
@@ -132,7 +132,7 @@ bool GameViewPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool GameViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!myIsHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!m_isHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}

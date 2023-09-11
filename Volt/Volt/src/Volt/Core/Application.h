@@ -11,6 +11,8 @@
 
 #include "Volt/Core/Layer/LayerStack.h"
 
+#include "Volt/Utility/Version.h"
+
 #include "Volt/Events/ApplicationEvent.h"
 #include "Volt/Events/KeyEvent.h"
 
@@ -47,7 +49,8 @@ namespace Volt
 		bool enableSteam = false;
 		bool isRuntime = false;
 		bool netEnabled = true;
-		std::string version = "1.0";
+
+		Version version = VT_VERSION;
 	};
 
 	class SteamImplementation;
@@ -71,7 +74,7 @@ namespace Volt
 		void PopLayer(Layer* layer);
 
 		inline Window& GetWindow() const { return *m_window; }
-		inline static Application& Get() { return *m_instance; }
+		inline static Application& Get() { return *s_instance; }
 		inline static ThreadPool& GetThreadPool() { return Get().m_threadPool; }
 
 		inline const bool IsRuntime() const { return m_info.isRuntime; }
@@ -87,6 +90,8 @@ namespace Volt
 		SteamImplementation& GetSteam() { return *m_steamImplementation; }
 
 	private:
+		void MainUpdate();
+
 		bool OnAppUpdateEvent(AppUpdateEvent& e);
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
@@ -95,6 +100,8 @@ namespace Volt
 
 		void SetupWindowPreferences(WindowProperties& windowProperties);
 		
+		inline static Application* s_instance = nullptr;
+
 		bool m_isRunning = false;
 		bool m_isMinimized = false;
 		bool m_hasSentMouseMovedEvent = false;
@@ -104,7 +111,6 @@ namespace Volt
 		float m_lastTotalTime = 0.f;
 
 		ApplicationInfo m_info;
-		inline static Application* m_instance;
 
 		LayerStack m_layerStack;
 

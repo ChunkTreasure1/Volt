@@ -91,7 +91,7 @@ namespace Wire
 			AssetHandle = 16,
 			Color3 = 17,
 			Color4 = 18,
-			Folder = 19,
+			Directory = 19,
 			Path = 20,
 			Vector = 21,
 			EntityId = 22,
@@ -168,7 +168,7 @@ namespace Wire
 				case PropertyType::AssetHandle: return sizeof(uint64_t);
 				case PropertyType::Color3: return sizeof(float) * 3;
 				case PropertyType::Color4: return sizeof(float) * 4;
-				case PropertyType::Folder: return sizeof(std::filesystem::path);
+				case PropertyType::Directory: return sizeof(std::filesystem::path);
 				case PropertyType::Path: return sizeof(std::filesystem::path);
 				case PropertyType::Vector: return sizeof(std::vector<uint8_t>);
 				case PropertyType::EntityId: return sizeof(Wire::EntityId);

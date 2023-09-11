@@ -31,7 +31,7 @@
 CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
-	myWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	m_windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 
 	myScene = Volt::Scene::CreateDefaultScene("Character Editor", false);
@@ -278,7 +278,7 @@ void CharacterEditorPanel::UpdateViewport()
 	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
 
-	ImGui::SetNextWindowDockID(myMainDockId, ImGuiCond_Always);
+	ImGui::SetNextWindowDockID(m_mainDockID, ImGuiCond_Always);
 	ImGui::SetNextWindowClass(GetWindowClass());
 
 	ImGui::Begin("Viewport##charEdit");
@@ -502,7 +502,7 @@ void CharacterEditorPanel::UpdateAnimations()
 
 				// Remove
 				{
-					auto id = UI::GetId();
+					auto id = UI::GetID();
 
 					std::string strId = "-##" + std::to_string(id);
 
@@ -610,7 +610,7 @@ void CharacterEditorPanel::UpdateAnimationTimelinePanel()
 				const auto& events = myCurrentCharacter->GetAnimationEvents((uint32_t)mySelectedAnimation);
 				for (int index = 0; index < events.size(); index++)
 				{
-					const auto id = UI::GetId();
+					const auto id = UI::GetID();
 					bool selected = false;
 
 					ImGui::Selectable(std::format("{0}: ", events[index].name).c_str(), &selected, ImGuiSelectableFlags_AllowItemOverlap, ImVec2(100, 25));
@@ -769,7 +769,7 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 			auto jointName = myCurrentCharacter->GetSkeleton()->GetNameFromJointIndex(attachment.jointIndex);
 
 			ImGui::PushItemWidth(totalWidth - 11.f);
-			const std::string jntId = "##" + std::to_string(UI::GetId());
+			const std::string jntId = "##" + std::to_string(UI::GetID());
 
 			ImGui::InputTextString(jntId.c_str(), &jointName, ImGuiInputTextFlags_ReadOnly);
 			ImGui::PopItemWidth();
@@ -778,7 +778,7 @@ void CharacterEditorPanel::UpdateJointAttachmentViewPanel()
 
 			ImGui::PushItemWidth(totalWidth - 11.f);
 			
-			const std::string attId = "##" + std::to_string(UI::GetId());
+			const std::string attId = "##" + std::to_string(UI::GetID());
 			ImGui::InputTextString(attId.c_str(), &attachment.name);
 
 			std::string popupName = "offsetRightclick" + std::to_string(index);
@@ -825,13 +825,13 @@ void CharacterEditorPanel::AddAnimationEventModal()
 {
 	if (UI::BeginModal("Add Animation Event", ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("animEvent"))
 		{
 			UI::Property("Name", myAddAnimEventData.name);
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		if (ImGui::Button("Cancel"))
 		{
@@ -881,12 +881,12 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 		{
 			auto& jointAttachments = const_cast<std::vector<Volt::AnimatedCharacter::JointAttachment>&>(myCurrentCharacter->GetJointAttachments());
 
-			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
 
 			for (const auto& name : jointNames)
 			{
-				const std::string id = name + "##" + std::to_string(UI::GetId());
+				const std::string id = name + "##" + std::to_string(UI::GetID());
 
 				UI::ShiftCursor(4.f, 0.f);
 				UI::RenderMatchingTextBackground(myJointSearchQuery, name, EditorTheme::MatchingTextBackground);

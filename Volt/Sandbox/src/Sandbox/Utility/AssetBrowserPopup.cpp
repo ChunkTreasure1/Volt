@@ -13,8 +13,8 @@
 
 #include <imgui.h>
 
-AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
-	: myId(id), myWantedType(wantedType), myHandle(handle), myCallback(callback)
+AssetBrowserPopup::AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle)
+	: myId(id), myWantedType(wantedType), myHandle(handle)
 {
 }
 
@@ -35,7 +35,7 @@ AssetBrowserPopup::State AssetBrowserPopup::Update()
 			}
 		}
 
-		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+		UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 		if (ImGui::BeginChild("##scrolling", ImGui::GetContentRegionAvail())) //#TODO_Ivar: Optimize!
 		{
 			const std::vector<Volt::AssetHandle> items = Volt::AssetManager::GetAllAssetsOfType(myWantedType);
@@ -111,11 +111,6 @@ AssetBrowserPopup::State AssetBrowserPopup::RenderView(const std::vector<Volt::A
 		{
 			myHandle = handle;
 			state = State::Changed;
-			if (myCallback)
-			{
-				myCallback(myHandle);
-			}
-
 			ImGui::CloseCurrentPopup();
 		}
 	}

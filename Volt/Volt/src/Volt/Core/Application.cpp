@@ -2,7 +2,6 @@
 #include "Application.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Prefab.h"
 
 #include "Volt/Input/Input.h"
 #include "Volt/Input/KeyCodes.h"
@@ -45,18 +44,13 @@ namespace Volt
 	Application::Application(const ApplicationInfo& info)
 		: m_frameTimer(100)
 	{
-		VT_CORE_ASSERT(!m_instance, "Application already exists!");
-		m_instance = this;
+		VT_CORE_ASSERT(!s_instance, "Application already exists!");
+		s_instance = this;
 
 		m_info = info;
-		Log::Initialize();
 		Noise::Initialize();
 
-		if (!m_info.isRuntime)
-		{
-			ProjectManager::SetupWorkingDirectory();
-		}
-
+		Log::Initialize();
 		ProjectManager::SetupProject(m_info.projectPath);
 		SessionPreferences::Initialize();
 
@@ -188,7 +182,7 @@ namespace Volt
 		FileSystem::Shutdown();
 
 		m_window = nullptr;
-		m_instance = nullptr;
+		s_instance = nullptr;
 		Log::Shutdown();
 	}
 
@@ -202,57 +196,7 @@ namespace Volt
 		{
 			VT_PROFILE_FRAME("Frame");
 
-			m_hasSentMouseMovedEvent = false;
-
-			m_window->BeginFrame();
-
-			float time = m_window->GetTime();
-			m_currentDeltaTime = time - m_lastTotalTime;
-			m_lastTotalTime = time;
-
-			{
-				VT_PROFILE_SCOPE("Application::Render");
-
-				RendererNew::Flush();
-				AppRenderEvent renderEvent;
-				OnEvent(renderEvent);
-			}
-
-			{
-				VT_PROFILE_SCOPE("Application::Update");
-
-				AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
-				OnEvent(updateEvent);
-				Amp::WWiseEngine::Get().Update();
-			}
-
-			if (m_info.enableImGui)
-			{
-				VT_PROFILE_SCOPE("Application::ImGui");
-
-				m_imguiImplementation->Begin();
-
-				AppImGuiUpdateEvent imguiEvent{};
-				OnEvent(imguiEvent);
-
-				m_imguiImplementation->End();
-			}
-
-			if (m_info.netEnabled)
-			{
-				VT_PROFILE_SCOPE("Application::Net");
-				m_netHandler->Update(m_currentDeltaTime);
-			}
-
-			{
-				VT_PROFILE_SCOPE("Discord SDK");
-				DiscordSDK::Update();
-			}
-
-			RenderGraphExecutionThread::WaitForFinishedExecution();
-			m_window->Present();
-
-			m_frameTimer.Accumulate();
+			MainUpdate();
 		}
 	}
 
@@ -307,6 +251,61 @@ namespace Volt
 		m_layerStack.PopLayer(layer);
 	}
 
+	void Application::MainUpdate()
+	{
+		m_hasSentMouseMovedEvent = false;
+
+		m_window->BeginFrame();
+
+		float time = m_window->GetTime();
+		m_currentDeltaTime = time - m_lastTotalTime;
+		m_lastTotalTime = time;
+
+		{
+			VT_PROFILE_SCOPE("Application::Render");
+
+			RendererNew::Flush();
+			AppRenderEvent renderEvent;
+			OnEvent(renderEvent);
+		}
+
+		{
+			VT_PROFILE_SCOPE("Application::Update");
+
+			AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
+			OnEvent(updateEvent);
+			Amp::WWiseEngine::Get().Update();
+		}
+
+		if (m_info.enableImGui)
+		{
+			VT_PROFILE_SCOPE("Application::ImGui");
+
+			m_imguiImplementation->Begin();
+
+			AppImGuiUpdateEvent imguiEvent{};
+			OnEvent(imguiEvent);
+
+			m_imguiImplementation->End();
+		}
+
+		if (m_info.netEnabled)
+		{
+			VT_PROFILE_SCOPE("Application::Net");
+			m_netHandler->Update(m_currentDeltaTime);
+		}
+
+		{
+			VT_PROFILE_SCOPE("Discord SDK");
+			DiscordSDK::Update();
+		}
+
+		RenderGraphExecutionThread::WaitForFinishedExecution();
+		m_window->Present();
+
+		m_frameTimer.Accumulate();
+	}
+
 	bool Application::OnAppUpdateEvent(AppUpdateEvent&)
 	{
 		if (m_steamImplementation)
@@ -334,6 +333,9 @@ namespace Volt
 		}
 
 		m_window->Resize(e.GetWidth(), e.GetHeight());
+
+		MainUpdate();
+
 		return false;
 	}
 

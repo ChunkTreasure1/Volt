@@ -160,6 +160,11 @@ namespace Volt
 						passUsesPreviousTexture = true;
 						break;
 					}
+
+					if (passUsesPreviousTexture)
+					{
+						break;
+					}
 				}
 
 				for (const auto& read : renderPass->resourceReads)
@@ -169,6 +174,11 @@ namespace Volt
 					if (it != previousRenderPass->resourceWrites.end())
 					{
 						passUsesPreviousTexture = true;
+						break;
+					}
+
+					if (passUsesPreviousTexture)
+					{
 						break;
 					}
 				}

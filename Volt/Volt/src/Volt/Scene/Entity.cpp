@@ -610,7 +610,7 @@ namespace Volt
 						case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(AssetHandle*)&otherComponent[prop.offset]) = (*(AssetHandle*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Color3: (*(glm::vec3*)&otherComponent[prop.offset]) = (*(glm::vec3*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Color4: (*(glm::vec4*)&otherComponent[prop.offset]) = (*(glm::vec4*)&thisComponent[prop.offset]); break;
-						case Wire::ComponentRegistry::PropertyType::Folder: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
+						case Wire::ComponentRegistry::PropertyType::Directory: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::Path: (*(std::filesystem::path*)&otherComponent[prop.offset]) = (*(std::filesystem::path*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::EntityId: (*(Wire::EntityId*)&otherComponent[prop.offset]) = (*(Wire::EntityId*)&thisComponent[prop.offset]); break;
 						case Wire::ComponentRegistry::PropertyType::GUID: (*(WireGUID*)&otherComponent[prop.offset]) = (*(WireGUID*)&thisComponent[prop.offset]); break;
@@ -638,7 +638,7 @@ namespace Volt
 								case Wire::ComponentRegistry::PropertyType::AssetHandle: (*(std::vector<AssetHandle>*) & otherComponent[prop.offset]) = (*(std::vector<AssetHandle>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Color4: (*(std::vector<glm::vec2>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec2>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Color3: (*(std::vector<glm::vec3>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec3>*) & thisComponent[prop.offset]); break;
-								case Wire::ComponentRegistry::PropertyType::Folder: (*(std::vector<glm::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec4>*) & thisComponent[prop.offset]); break;
+								case Wire::ComponentRegistry::PropertyType::Directory: (*(std::vector<glm::vec4>*) & otherComponent[prop.offset]) = (*(std::vector<glm::vec4>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::EntityId: (*(std::vector<Wire::EntityId>*) & otherComponent[prop.offset]) = (*(std::vector<Wire::EntityId>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::GUID: (*(std::vector<WireGUID>*) & otherComponent[prop.offset]) = (*(std::vector<WireGUID>*) & thisComponent[prop.offset]); break;
 								case Wire::ComponentRegistry::PropertyType::Enum: (*(uint32_t*)&otherComponent[prop.offset]) = (*(uint32_t*)&thisComponent[prop.offset]); break;

@@ -1,6 +1,9 @@
 Project:
-    Name: Project
-    AssetRegistry: Assets/AssetRegistry.vtreg
-    AssetsPath: Assets
-    EnginePath: Engine
-    ShadersPath: Engine/Shaders
+  EngineVersion: 0.1.2
+  Name: Project
+  CompanyName: None
+  AssetsDirectory: Assets
+  AudioBanksDirectory: Audio/Banks
+  IconPath: ""
+  CursorPath: ""
+  StartScenePath: ""

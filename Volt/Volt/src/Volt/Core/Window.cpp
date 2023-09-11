@@ -413,13 +413,13 @@ namespace Volt
 
 	void Window::BeginFrame()
 	{
+		glfwPollEvents();
 		m_swapchain->BeginFrame();
 	}
 
 	void Window::Present()
 	{
 		m_swapchain->Present();
-		glfwPollEvents();
 	}
 
 	void Window::Resize(uint32_t aWidth, uint32_t aHeight)

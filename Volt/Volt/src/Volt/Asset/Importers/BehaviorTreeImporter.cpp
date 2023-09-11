@@ -46,6 +46,7 @@ namespace Volt
 		catch (std::exception& e)
 		{
 			e;
+
 			VT_CORE_ASSERT("{0} conains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;

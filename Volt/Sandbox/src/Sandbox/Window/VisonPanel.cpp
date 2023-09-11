@@ -13,7 +13,7 @@
 VisionPanel::VisionPanel(Ref<Volt::Scene>& aScene, EditorCameraController* aEditorCamera)
 	:EditorWindow("Vision", true), myCurrentScene(aScene), myEditorCamera(aEditorCamera)
 {
-	myWindowFlags = ImGuiWindowFlags_MenuBar;
+	m_windowFlags = ImGuiWindowFlags_MenuBar;
 }
 
 void VisionPanel::UpdateMainContent()
@@ -76,11 +76,11 @@ void VisionPanel::UpdateCameraProperties()
 {
 	ImGui::Begin("Camera Properties", nullptr, ImGuiWindowFlags_NoTabBar);
 
-	UI::PushId();
+	UI::PushID();
 
 	if (mySelectedCamera == -1 || myVisionCams[mySelectedCamera].IsNull())
 	{
-		UI::PopId();
+		UI::PopID();
 		ImGui::End();
 		return;
 	}
@@ -144,14 +144,14 @@ void VisionPanel::UpdateCameraProperties()
 	ImGui::LabelText("", "Transform");
 	if (UI::BeginProperties("Transform"))
 	{
-		if (UI::PropertyEntity("Follow", myCurrentScene, visionCamComp.followId, nullptr, "Camera follows this entity"))
+		if (UI::PropertyEntity("Follow", myCurrentScene, visionCamComp.followId, "Camera follows this entity"))
 		{
 			Volt::Entity followEnt = Volt::Entity({ visionCamComp.followId, myCurrentScene.get() });
 
 			visionCamComp.offset = myVisionCams[mySelectedCamera].GetPosition() - followEnt.GetPosition();
 		}
 
-		UI::PropertyEntity("LookAt", myCurrentScene, visionCamComp.lookAtId, nullptr, "Camera looks at this entity");
+		UI::PropertyEntity("LookAt", myCurrentScene, visionCamComp.lookAtId, "Camera looks at this entity");
 
 		if (visionCamComp.followId != 0)
 		{
@@ -204,7 +204,7 @@ void VisionPanel::UpdateCameraProperties()
 			UI::Property("Use Collision", visionCamComp.isColliding);
 			if (visionCamComp.isColliding)
 			{
-				UI::PropertyEntity("Focus Point", myCurrentScene, visionCamComp.collisionRayPoint, nullptr, "Tries to not hide this entity, will be set to the follow entity if left empty");
+				UI::PropertyEntity("Focus Point", myCurrentScene, visionCamComp.collisionRayPoint, "Tries to not hide this entity, will be set to the follow entity if left empty");
 
 				UI::Property("Collision Radius", visionCamComp.collisionRadius);
 
@@ -235,7 +235,7 @@ void VisionPanel::UpdateCameraProperties()
 		}
 	}
 
-	UI::PopId();
+	UI::PopID();
 
 	ImGui::End();
 }

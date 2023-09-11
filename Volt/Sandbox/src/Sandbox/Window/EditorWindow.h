@@ -34,10 +34,10 @@ public:
 	virtual void OnEvent(Volt::Event& e) {}
 	virtual void OpenAsset(Ref<Volt::Asset> asset) {}
 
-	inline const std::string& GetTitle() const { return myTitle; }
-	inline const bool& IsOpen() const { return myIsOpen; }
-	inline const bool IsFocused() const { return myIsFocused; }
-	inline const bool IsHovered() const { return myIsHovered; }
+	inline const std::string& GetTitle() const { return m_title; }
+	inline const bool& IsOpen() const { return m_isOpen; }
+	inline const bool IsFocused() const { return m_isFocused; }
+	inline const bool IsHovered() const { return m_isHovered; }
 	virtual void OnClose() {}
 	virtual void OnOpen() {}
 
@@ -45,28 +45,30 @@ public:
 
 protected:
 	void ForceWindowDocked(ImGuiWindow* childWindow);
-	inline ImGuiWindowClass* GetWindowClass() { return &myWindowClass; };
+	inline ImGuiWindowClass* GetWindowClass() { return &m_windowClass; };
 
-	std::string myTitle;
-	std::string myId;
+	std::string m_title;
+	std::string m_id;
 	EditorCommandStack myCommandStack{};
 
-	ImGuiWindowFlags myWindowFlags = 0;
-	ImGuiWindowFlags myNodePanelFlags = 0;
+	ImGuiWindowFlags m_windowFlags = 0;
+	ImGuiWindowFlags m_nodePanelFlags = 0;
 
-	ImVec2 myMinSize = { -1.f, -1.f };
+	ImVec2 m_minSize = { -1.f, -1.f };
+	glm::vec4 m_backgroundColor = 0.f;
 
-	bool myIsOpen = false;
-	bool myIsFocused = false;
-	bool myIsHovered = false;
-	bool myIsDocked = false;
-	bool myHasDockSpace = false;
+	bool m_isOpen = false;
+	bool m_isFocused = false;
+	bool m_isHovered = false;
+	bool m_isDockspace = false;
+	bool m_hasDockspace = false;
 
-	bool myPreviousFrameOpen = false;
+	bool m_isFullscreenImage = false;
+	bool m_previousFrameOpen = false;
 
-	ImGuiID myMainDockId = 0;
-	ImGuiWindowClass myWindowClass;
+	ImGuiID m_mainDockID = 0;
+	ImGuiWindowClass m_windowClass;
 
 private:
-	std::unordered_map<ImGuiID, ImGuiID> myDockIds;
+	std::unordered_map<ImGuiID, ImGuiID> m_dockIDs;
 };

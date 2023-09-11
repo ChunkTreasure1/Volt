@@ -11,7 +11,12 @@
 #include "Sandbox/UserSettingsManager.h"
 #include "Sandbox/Sandbox.h"
 
+#include "Sandbox/UISystems/ModalSystem.h"
+#include "Sandbox/Modals/MeshImportModal.h"
+
 #include "Sandbox/EditorCommandStack.h"
+
+#include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Asset/Mesh/Material.h>
@@ -39,90 +44,47 @@
 
 ViewportPanel::ViewportPanel(Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::Scene>& editorScene, EditorCameraController* cameraController,
 	SceneState& aSceneState)
-	: EditorWindow("Viewport"), mySceneRenderer(sceneRenderer), myEditorCameraController(cameraController), myEditorScene(editorScene),
-	mySceneState(aSceneState), myAnimatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
+	: EditorWindow("Viewport"), m_sceneRenderer(sceneRenderer), m_editorCameraController(cameraController), m_editorScene(editorScene),
+	m_sceneState(aSceneState), m_animatedPhysicsIcon("Editor/Textures/Icons/Physics/LampPhysicsAnim1.dds", 30)
 {
-	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myMidEvent = false;
+	m_isOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_midEvent = false;
+	m_isFullscreenImage = true;
+
+	auto& meshModal = ModalSystem::AddModal<MeshImportModal>("Import Mesh##viewport");
+	m_meshImportModal = meshModal.GetID();
 }
 
 void ViewportPanel::UpdateMainContent()
 {
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.f, 0.f });
-	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2{ 0.f, 0.f });
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.f, 0.f });
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.f, 0.f });
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.07f, 0.07f, 0.07f, 1.f });
 
 	auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 	auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 	auto viewportOffset = ImGui::GetWindowPos();
 
-	myPerspectiveBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
-	myPerspectiveBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+	m_perspectiveBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+	m_perspectiveBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
-	myViewportMouseCoords = GetViewportLocalPosition(ImGui::GetMousePos());
+	m_viewportMouseCoords = GetViewportLocalPosition(ImGui::GetMousePos());
 
 	ImVec2 viewportSize = ImGui::GetContentRegionAvail();
 
-	if (myViewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
+	if (m_viewportSize != (*(glm::vec2*)&viewportSize) && viewportSize.x > 0 && viewportSize.y > 0)
 	{
 		Resize({ viewportSize.x, viewportSize.y });
 	}
 
 	auto& settings = UserSettingsManager::GetSettings();
 
-	if (!myShowRenderTargets)
+	if (!settings.sceneSettings.use16by9)
 	{
-		if (!settings.sceneSettings.use16by9)
-		{
-			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), { myViewportSize.x, myViewportSize.y });
-		}
-		else
-		{
-			ImGui::Image(UI::GetTextureID(mySceneRenderer->GetFinalImage()), { myViewportSize.x, myViewportSize.y });
-		}
+		ImGui::Image(UI::GetTextureID(m_sceneRenderer->GetFinalImage()), { m_viewportSize.x, m_viewportSize.y });
 	}
 	else
 	{
-		//const auto& passes = mySceneRenderer->GetAllFramebuffers();
-		//const auto& [name, framebuffer] = passes.at(myCurrentRenderPass);
-
-		//const uint32_t rowCount = (uint32_t)std::sqrt(framebuffer->GetSpecification().attachments.size()) + 1;
-
-		//ImVec2 perViewportSize = { myViewportSize.x / rowCount, myViewportSize.y / rowCount };
-
-		//ImGui::TextUnformatted(name.c_str());
-		//for (uint32_t column = 0, i = 0; i < (uint32_t)framebuffer->GetSpecification().attachments.size(); i++)
-		//{
-		//	const auto& att = framebuffer->GetSpecification().attachments.at(i);
-		//	if (Volt::Utility::IsDepthFormat(att.format) || Volt::Utility::IsTypeless(att.format))
-		//	{
-		//		continue;
-		//	}
-
-		//	const ImVec2 startPos = ImGui::GetCursorPos();
-		//	
-		//	// #TODO_Ivar: Reimplement
-
-		//	//ImGui::Image(UI::GetTextureID(framebuffer->GetColorAttachment(i)), perViewportSize);
-
-		//	column++;
-		//	if (column < rowCount)
-		//	{
-		//		ImGui::SameLine();
-		//	}
-		//	else
-		//	{
-		//		column = 0;
-		//	}
-		//	const ImVec2 endPos = ImGui::GetCursorPos();
-
-		//	ImGui::SetCursorPos(startPos);
-		//	ImGui::TextUnformatted(framebuffer->GetColorAttachment(i)->GetSpecification().debugName.c_str());
-		//	ImGui::SetCursorPos(endPos);
-		//}
+		ImGui::Image(UI::GetTextureID(m_sceneRenderer->GetFinalImage()), { m_viewportSize.x, m_viewportSize.y });
 	}
 
 	HandleNonMeshDragDrop();
@@ -142,17 +104,17 @@ void ViewportPanel::UpdateMainContent()
 			const bool duplicate = Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT);
 
 			float snapValue = 0.5f;
-			if (myGizmoOperation == ImGuizmo::ROTATE)
+			if (m_gizmoOperation == ImGuizmo::ROTATE)
 			{
 				snap = settings.sceneSettings.snapRotation && snap ? false : settings.sceneSettings.snapRotation && !snap ? true : snap;
 				snapValue = settings.sceneSettings.rotationSnapValue;
 			}
-			else if (myGizmoOperation == ImGuizmo::SCALE)
+			else if (m_gizmoOperation == ImGuizmo::SCALE)
 			{
 				snap = settings.sceneSettings.snapScale && snap ? false : settings.sceneSettings.snapScale && !snap ? true : snap;
 				snapValue = settings.sceneSettings.scaleSnapValue;
 			}
-			else if (myGizmoOperation == ImGuizmo::TRANSLATE)
+			else if (m_gizmoOperation == ImGuizmo::TRANSLATE)
 			{
 				snap = settings.sceneSettings.snapToGrid && snap ? false : settings.sceneSettings.snapToGrid && !snap ? true : snap;
 				snapValue = settings.sceneSettings.gridSnapValue;
@@ -165,12 +127,12 @@ void ViewportPanel::UpdateMainContent()
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
-			ImGuizmo::SetRect(myPerspectiveBounds[0].x, myPerspectiveBounds[0].y, myPerspectiveBounds[1].x - myPerspectiveBounds[0].x, myPerspectiveBounds[1].y - myPerspectiveBounds[0].y);
+			ImGuizmo::SetRect(m_perspectiveBounds[0].x, m_perspectiveBounds[0].y, m_perspectiveBounds[1].x - m_perspectiveBounds[0].x, m_perspectiveBounds[1].y - m_perspectiveBounds[0].y);
 
 			glm::mat4 deltaMatrix = { 1.f };
 
 			// Temp camera is needed because 1/z messes up the gizmo while it's not in view
-			const auto realCam = myEditorCameraController->GetCamera();
+			const auto realCam = m_editorCameraController->GetCamera();
 			Ref<Volt::Camera> tempCamera = CreateRef<Volt::Camera>(realCam->GetFieldOfView(), realCam->GetAspectRatio(), realCam->GetNearPlane(), realCam->GetFarPlane(), false);
 			tempCamera->SetView(realCam->GetView());
 
@@ -180,7 +142,7 @@ void ViewportPanel::UpdateMainContent()
 			ImGuizmo::Manipulate(
 				glm::value_ptr(view),
 				glm::value_ptr(projection),
-				myGizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
+				m_gizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
 
 			bool wasUsedPreviousFrame = isUsing;
 			isUsing = ImGuizmo::IsUsing();
@@ -189,7 +151,7 @@ void ViewportPanel::UpdateMainContent()
 			{
 				for (auto ent : SelectionManager::GetSelectedEntities())
 				{
-					if (Sandbox::Get().CheckForUpdateNavMesh(Volt::Entity(ent, myEditorScene.get())))
+					if (Sandbox::Get().CheckForUpdateNavMesh(Volt::Entity(ent, m_editorScene.get())))
 					{
 						Sandbox::Get().BakeNavMesh();
 						break;
@@ -224,39 +186,38 @@ void ViewportPanel::UpdateMainContent()
 			}
 		}
 
-		myEditorCameraController->SetIsControllable(myIsHovered && !isUsing);
+		m_editorCameraController->SetIsControllable(m_isHovered && !isUsing);
 	}
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGuizmo::IsOver() && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{
-		myBeganClick = true;
+		m_beganClick = true;
 		HandleSingleSelect();
 	}
 
-	if (myBeganClick && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
+	if (m_beganClick && ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_CONTROL) && !Volt::Input::IsKeyDown(VT_KEY_LEFT_SHIFT))
 	{
-		myStartDragPos = ImGui::GetMousePos();
-		myIsDragging = true;
-		myBeganClick = false;
+		m_startDragPos = ImGui::GetMousePos();
+		m_isDragging = true;
+		m_beganClick = false;
 	}
 
-	if (myIsDragging && Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
+	if (m_isDragging && Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT))
 	{
-		myIsDragging = false;
+		m_isDragging = false;
 	}
 
-	if (myIsDragging)
+	if (m_isDragging)
 	{
 		HandleMultiSelect();
 	}
 
 	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 	{
-		myIsDragging = false;
-		myBeganClick = false;
+		m_isDragging = false;
+		m_beganClick = false;
 	}
 
 	ImGui::PopStyleColor();
-	ImGui::PopStyleVar(4);
 
 	UpdateModals();
 	CheckDragDrop();
@@ -265,16 +226,13 @@ void ViewportPanel::UpdateMainContent()
 
 void ViewportPanel::UpdateContent()
 {
-	if (myMidEvent && ImGui::IsMouseReleased(0))
+	if (m_midEvent && ImGui::IsMouseReleased(0))
 	{
-		myMidEvent = false;
+		m_midEvent = false;
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 2.f));
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.f, 0.f));
-	UI::ScopedColor button(ImGuiCol_Button, { 0.f, 0.f, 0.f, 0.f });
-	UI::ScopedColor hovered(ImGuiCol_ButtonHovered, { 0.3f, 0.305f, 0.31f, 0.5f });
-	UI::ScopedColor active(ImGuiCol_ButtonActive, { 0.5f, 0.505f, 0.51f, 0.5f });
+	UI::ScopedButtonColor transparent{ EditorTheme::Buttons::TransparentButton };
+	UI::ScopedColor background{ ImGuiCol_WindowBg, EditorTheme::MiddleGreyBackground };
 
 	ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTabBar);
 
@@ -284,7 +242,7 @@ void ViewportPanel::UpdateContent()
 	auto& settings = UserSettingsManager::GetSettings();
 
 	Ref<Volt::Texture2D> playIcon = EditorResources::GetEditorIcon(EditorIcon::Play);
-	if (mySceneState == SceneState::Play)
+	if (m_sceneState == SceneState::Play)
 	{
 		playIcon = EditorResources::GetEditorIcon(EditorIcon::Stop);
 	}
@@ -293,7 +251,7 @@ void ViewportPanel::UpdateContent()
 	{
 		static std::vector<Ref<EditorWindow>> fullscreenDeactivatedWindows;
 
-		if (mySceneState == SceneState::Edit)
+		if (m_sceneState == SceneState::Edit)
 		{
 			Sandbox::Get().OnScenePlay();
 
@@ -309,7 +267,7 @@ void ViewportPanel::UpdateContent()
 				}
 			}
 		}
-		else if (mySceneState == SceneState::Play)
+		else if (m_sceneState == SceneState::Play)
 		{
 			Sandbox::Get().OnSceneStop();
 
@@ -326,20 +284,20 @@ void ViewportPanel::UpdateContent()
 
 	ImGui::SameLine();
 
-	Ref<Volt::Texture2D> physicsIcon = myAnimatedPhysicsIcon.GetCurrentFrame();
+	Ref<Volt::Texture2D> physicsIcon = m_animatedPhysicsIcon.GetCurrentFrame();
 	static Ref<Volt::Texture2D> physicsId = physicsIcon;
 
 	if (ImGui::ImageButtonAnimated(UI::GetTextureID(physicsId), UI::GetTextureID(physicsIcon), { buttonSize, buttonSize }))
 	{
-		if (mySceneState == SceneState::Edit)
+		if (m_sceneState == SceneState::Edit)
 		{
 			Sandbox::Get().OnSimulationStart();
-			myAnimatedPhysicsIcon.Play();
+			m_animatedPhysicsIcon.Play();
 		}
-		else if (mySceneState == SceneState::Simulating)
+		else if (m_sceneState == SceneState::Simulating)
 		{
 			Sandbox::Get().OnSimulationStop();
-			myAnimatedPhysicsIcon.Stop();
+			m_animatedPhysicsIcon.Stop();
 		}
 	}
 
@@ -367,7 +325,7 @@ void ViewportPanel::UpdateContent()
 	if (ImGui::Button("16"))
 	{
 		settings.sceneSettings.use16by9 = !settings.sceneSettings.use16by9;
-		Resize(myViewportSize);
+		Resize(m_viewportSize);
 	}
 
 	ImGui::SameLine();
@@ -488,7 +446,7 @@ void ViewportPanel::UpdateContent()
 		ImGui::EndPopup();
 	}
 
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(1);
 	ImGui::End();
 }
 
@@ -499,7 +457,7 @@ void ViewportPanel::OnEvent(Volt::Event& e)
 	dispatcher.Dispatch<Volt::MouseButtonPressedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMousePressed));
 	dispatcher.Dispatch<Volt::MouseButtonReleasedEvent>(VT_BIND_EVENT_FN(ViewportPanel::OnMouseReleased));
 
-	myAnimatedPhysicsIcon.OnEvent(e);
+	m_animatedPhysicsIcon.OnEvent(e);
 }
 
 bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
@@ -508,7 +466,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 	{
 		case VT_MOUSE_BUTTON_RIGHT:
 		{
-			if (myIsHovered)
+			if (m_isHovered)
 			{
 				ImGui::SetWindowFocus("Viewport");
 			}
@@ -521,7 +479,7 @@ bool ViewportPanel::OnMousePressed(Volt::MouseButtonPressedEvent& e)
 
 bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!myIsHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
+	if (!m_isHovered || Volt::Input::IsMouseButtonDown(VT_MOUSE_BUTTON_RIGHT) || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -532,40 +490,19 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 	{
 		case VT_KEY_W:
 		{
-			myGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+			m_gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 			break;
 		}
 
 		case VT_KEY_E:
 		{
-			myGizmoOperation = ImGuizmo::OPERATION::ROTATE;
+			m_gizmoOperation = ImGuizmo::OPERATION::ROTATE;
 			break;
 		}
 
 		case VT_KEY_R:
 		{
-			myGizmoOperation = ImGuizmo::OPERATION::SCALE;
-			break;
-		}
-
-		case VT_KEY_F6:
-		{
-			if (!myShowRenderTargets)
-			{
-				myShowRenderTargets = true;
-				myCurrentRenderPass = 0;
-			}
-			else
-			{
-				//if (myCurrentRenderPass == mySceneRenderer->GetAllFramebuffers().size() - 1)
-				//{
-				//	myShowRenderTargets = false;
-				//}
-				//else
-				//{
-				//	myCurrentRenderPass++;
-				//}
-			}
+			m_gizmoOperation = ImGuizmo::OPERATION::SCALE;
 			break;
 		}
 
@@ -666,7 +603,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
 			{
-				Volt::Entity tempEnt = Volt::Entity(selectedEntity, myEditorScene.get());
+				Volt::Entity tempEnt = Volt::Entity(selectedEntity, m_editorScene.get());
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetId());
@@ -684,7 +621,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				{
 					shouldUpdateNavMesh = true;
 				}
-				myEditorScene->RemoveEntity(i);
+				m_editorScene->RemoveEntity(i);
 			}
 
 			if (shouldUpdateNavMesh)
@@ -718,14 +655,14 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 {
 	if (e.GetMouseButton() == VT_MOUSE_BUTTON_LEFT && !Volt::Input::IsKeyDown(VT_KEY_LEFT_ALT) && GlobalEditorStates::dragStartedInAssetBrowser)
 	{
-		if (myIsHovered)
+		if (m_isHovered)
 		{
 			SelectionManager::DeselectAll();
-			SelectionManager::Select(myCreatedEntity.GetId());
+			SelectionManager::Select(m_createdEntity.GetId());
 		}
 
-		myCreatedEntity = {};
-		myCreatedAssetOnDrag = false;
+		m_createdEntity = {};
+		m_createdAssetOnDrag = false;
 
 		GlobalEditorStates::isDragging = false;
 		GlobalEditorStates::dragStartedInAssetBrowser = false;
@@ -737,29 +674,29 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 
 void ViewportPanel::CheckDragDrop()
 {
-	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = m_perspectiveBounds[1] - m_perspectiveBounds[0];
 
-	int32_t mouseX = (int32_t)myViewportMouseCoords.x;
-	int32_t mouseY = (int32_t)myViewportMouseCoords.y;
+	int32_t mouseX = (int32_t)m_viewportMouseCoords.x;
+	int32_t mouseY = (int32_t)m_viewportMouseCoords.y;
 
 	if (mouseX < 0 || mouseY < 0 || mouseX >(int32_t)perspectiveSize.x || mouseY >(int32_t)perspectiveSize.y)
 	{
-		if (myCreatedAssetOnDrag && myCreatedEntity)
+		if (m_createdAssetOnDrag && m_createdEntity)
 		{
-			myEditorScene->RemoveEntity(myCreatedEntity);
-			myCreatedAssetOnDrag = false;
+			m_editorScene->RemoveEntity(m_createdEntity);
+			m_createdAssetOnDrag = false;
 		}
 
 		return;
 	}
 
 
-	if (!GlobalEditorStates::isDragging || !GlobalEditorStates::dragStartedInAssetBrowser || myCreatedAssetOnDrag || GlobalEditorStates::dragAsset == Volt::Asset::Null())
+	if (!GlobalEditorStates::isDragging || !GlobalEditorStates::dragStartedInAssetBrowser || m_createdAssetOnDrag || GlobalEditorStates::dragAsset == Volt::Asset::Null())
 	{
 		return;
 	}
 
-	myIsInViewport = true;
+	m_isInViewport = true;
 
 	const Volt::AssetHandle handle = GlobalEditorStates::dragAsset;
 	const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromHandle(handle);
@@ -768,7 +705,7 @@ void ViewportPanel::CheckDragDrop()
 	{
 		case Volt::AssetType::Mesh:
 		{
-			Volt::Entity newEntity = myEditorScene->CreateEntity();
+			Volt::Entity newEntity = m_editorScene->CreateEntity();
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
 			EditorCommandStack::GetInstance().PushUndo(command);
@@ -781,7 +718,7 @@ void ViewportPanel::CheckDragDrop()
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
-			myCreatedEntity = newEntity;
+			m_createdEntity = newEntity;
 
 			break;
 		}
@@ -792,7 +729,7 @@ void ViewportPanel::CheckDragDrop()
 			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtmesh");
 
 			Volt::AssetHandle resultHandle = handle;
-			Volt::Entity newEntity = myEditorScene->CreateEntity();
+			Volt::Entity newEntity = m_editorScene->CreateEntity();
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
 			EditorCommandStack::GetInstance().PushUndo(command);
@@ -814,23 +751,21 @@ void ViewportPanel::CheckDragDrop()
 			}
 			else
 			{
-				myEntityToAddMesh = newEntity.GetId();
+				m_entityToAddMesh = newEntity.GetId();
 
-				myMeshImportData = {};
-				myMeshToImport = meshSourcePath;
-				myMeshImportData.destination = myMeshToImport.parent_path().string() + "\\" + myMeshToImport.stem().string() + ".vtmesh";
-				UI::OpenModal("Import Mesh##viewport");
+				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
+				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = meshSourcePath.stem().string();
-			myCreatedEntity = newEntity;
+			m_createdEntity = newEntity;
 
 			break;
 		}
 
 		case Volt::AssetType::ParticlePreset:
 		{
-			Volt::Entity newEntity = myEditorScene->CreateEntity();
+			Volt::Entity newEntity = m_editorScene->CreateEntity();
 
 			auto& particleEmitter = newEntity.AddComponent<Volt::ParticleEmitterComponent>();
 			auto preset = Volt::AssetManager::GetAsset<Volt::ParticlePreset>(handle);
@@ -840,7 +775,7 @@ void ViewportPanel::CheckDragDrop()
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
-			myCreatedEntity = newEntity;
+			m_createdEntity = newEntity;
 
 			break;
 		}
@@ -853,30 +788,30 @@ void ViewportPanel::CheckDragDrop()
 				break;
 			}
 
-			Wire::EntityId id = prefab->Instantiate(myEditorScene.get());
-			Volt::Entity prefabEntity(id, myEditorScene.get());
+			Wire::EntityId id = prefab->Instantiate(m_editorScene.get());
+			Volt::Entity prefabEntity(id, m_editorScene.get());
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
 			EditorCommandStack::GetInstance().PushUndo(command);
-			myCreatedEntity = prefabEntity;
+			m_createdEntity = prefabEntity;
 
 			break;
 		}
 	}
 
 	ImGui::SetWindowFocus();
-	myCreatedAssetOnDrag = true;
+	m_createdAssetOnDrag = true;
 }
 
 void ViewportPanel::UpdateCreatedEntityPosition()
 {
-	if (!myCreatedEntity)
+	if (!m_createdEntity)
 	{
 		return;
 	}
 
-	glm::vec3 dir = myEditorCameraController->GetCamera()->ScreenToWorldRay(myViewportMouseCoords, myViewportSize);
-	glm::vec3 targetPos = myEditorCameraController->GetCamera()->GetPosition();
+	glm::vec3 dir = m_editorCameraController->GetCamera()->ScreenToWorldRay(m_viewportMouseCoords, m_viewportSize);
+	glm::vec3 targetPos = m_editorCameraController->GetCamera()->GetPosition();
 
 	while (targetPos.y > 0.f)
 	{
@@ -896,22 +831,22 @@ void ViewportPanel::UpdateCreatedEntityPosition()
 		targetPos.z = std::round(targetPos.z / settings.sceneSettings.gridSnapValue) * settings.sceneSettings.gridSnapValue;
 	}
 
-	myCreatedEntity.SetPosition({ targetPos.x, 0.f, targetPos.z });
+	m_createdEntity.SetPosition({ targetPos.x, 0.f, targetPos.z });
 }
 
 void ViewportPanel::DuplicateSelection()
 {
-	myEditorCameraController->ForceLooseControl();
+	m_editorCameraController->ForceLooseControl();
 
 	std::vector<Wire::EntityId> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
-		if (SelectionManager::IsAnyParentSelected(ent, myEditorScene))
+		if (SelectionManager::IsAnyParentSelected(ent, m_editorScene))
 		{
 			continue;
 		}
 
-		duplicated.emplace_back(Volt::Entity::Duplicate(myEditorScene->GetRegistry(), myEditorScene->GetScriptFieldCache(), ent));
+		duplicated.emplace_back(Volt::Entity::Duplicate(m_editorScene->GetRegistry(), m_editorScene->GetScriptFieldCache(), ent));
 	}
 
 	SelectionManager::DeselectAll();
@@ -924,10 +859,10 @@ void ViewportPanel::DuplicateSelection()
 
 void ViewportPanel::HandleSingleSelect()
 {
-	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = m_perspectiveBounds[1] - m_perspectiveBounds[0];
 
-	int32_t mouseX = (int32_t)myViewportMouseCoords.x;
-	int32_t mouseY = (int32_t)myViewportMouseCoords.y;
+	int32_t mouseX = (int32_t)m_viewportMouseCoords.x;
+	int32_t mouseY = (int32_t)m_viewportMouseCoords.y;
 
 	if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 	{
@@ -942,11 +877,11 @@ void ViewportPanel::HandleSingleSelect()
 			SelectionManager::DeselectAll();
 		}
 
-		if (pixelData != Wire::NullID && myEditorScene->GetRegistry().Exists(pixelData))
+		if (pixelData != Wire::NullID && m_editorScene->GetRegistry().Exists(pixelData))
 		{
-			if (myEditorScene->GetRegistry().HasComponent<Volt::TransformComponent>(pixelData))
+			if (m_editorScene->GetRegistry().HasComponent<Volt::TransformComponent>(pixelData))
 			{
-				if (myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(pixelData).locked)
+				if (m_editorScene->GetRegistry().GetComponent<Volt::TransformComponent>(pixelData).locked)
 				{
 					return;
 				}
@@ -971,7 +906,7 @@ void ViewportPanel::HandleMultiSelect()
 
 	auto* drawList = ImGui::GetWindowDrawList();
 
-	drawList->AddRectFilled(myStartDragPos, ImGui::GetMousePos(), IM_COL32(97, 192, 255, 127));
+	drawList->AddRectFilled(m_startDragPos, ImGui::GetMousePos(), IM_COL32(97, 192, 255, 127));
 
 	//const glm::vec2 startDragPos = GetViewportLocalPosition(myStartDragPos);
 	//const glm::vec2 currentDragPos = GetViewportLocalPosition(ImGui::GetMousePos());
@@ -987,9 +922,9 @@ void ViewportPanel::HandleMultiSelect()
 	/*if (minDragBoxX >= 0 && minDragBoxY >= 0 && minDragBoxX < (int32_t)perspectiveSize.x && minDragBoxY < (int32_t)perspectiveSize.y &&
 		maxDragBoxX >= 0 && maxDragBoxY >= 0 && maxDragBoxX < (int32_t)perspectiveSize.x && maxDragBoxY < (int32_t)perspectiveSize.y)
 	{
-		auto renderScale = mySceneRenderer->GetSettings().renderScale;
+		auto renderScale = m_sceneRenderer->GetSettings().renderScale;
 
-		const std::vector<uint32_t> data = mySceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
+		const std::vector<uint32_t> data = m_sceneRenderer->GetIDImage()->ReadPixelRange<uint32_t>(
 			(uint32_t)(minDragBoxX * renderScale), (uint32_t)(minDragBoxY * renderScale),
 			(uint32_t)(maxDragBoxX * renderScale), (uint32_t)(maxDragBoxY * renderScale));
 
@@ -1007,15 +942,15 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 {
 	auto firstEntity = SelectionManager::GetSelectedEntities().front();
 
-	if (!myEditorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(firstEntity) || !myEditorScene->GetRegistry().HasComponent<Volt::TransformComponent>(firstEntity))
+	if (!m_editorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(firstEntity) || !m_editorScene->GetRegistry().HasComponent<Volt::TransformComponent>(firstEntity))
 	{
 		return;
 	}
 
-	auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(firstEntity);
-	auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(firstEntity);
+	auto& relationshipComp = m_editorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(firstEntity);
+	auto& transComp = m_editorScene->GetRegistry().GetComponent<Volt::TransformComponent>(firstEntity);
 
-	if (myMidEvent == false)
+	if (m_midEvent == false)
 	{
 		GizmoCommand::GizmoData data;
 		data.positionAdress = &transComp.position;
@@ -1025,19 +960,19 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 		data.previousRotationValue = glm::eulerAngles(transComp.rotation);
 		data.previousScaleValue = transComp.scale;
 		data.id = firstEntity;
-		data.scene = myEditorScene;
+		data.scene = m_editorScene;
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
 		EditorCommandStack::PushUndo(command);
-		myMidEvent = true;
+		m_midEvent = true;
 	}
 
 	glm::mat4 averageTransform = avgTransform;
 
 	if (relationshipComp.Parent != 0)
 	{
-		Volt::Entity parent(relationshipComp.Parent, myEditorScene.get());
-		auto pTransform = myEditorScene->GetWorldSpaceTransform(parent);
+		Volt::Entity parent(relationshipComp.Parent, m_editorScene.get());
+		auto pTransform = m_editorScene->GetWorldSpaceTransform(parent);
 
 		averageTransform = glm::inverse(pTransform) * averageTransform;
 	}
@@ -1048,7 +983,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 	glm::quat delta = glm::inverse(transComp.rotation) * r;
 
-	Volt::Entity ent{ firstEntity, myEditorScene.get() };
+	Volt::Entity ent{ firstEntity, m_editorScene.get() };
 
 	ent.SetLocalPosition(p);
 	ent.SetLocalRotation(transComp.rotation * delta);
@@ -1061,20 +996,20 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{
-		if (SelectionManager::IsAnyParentSelected(entId, myEditorScene))
+		if (SelectionManager::IsAnyParentSelected(entId, m_editorScene))
 		{
 			continue;
 		}
 
-		if (!myEditorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(entId) || !myEditorScene->GetRegistry().HasComponent<Volt::TransformComponent>(entId))
+		if (!m_editorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(entId) || !m_editorScene->GetRegistry().HasComponent<Volt::TransformComponent>(entId))
 		{
 			continue;
 		}
 
-		auto& relationshipComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId);
-		auto& transComp = myEditorScene->GetRegistry().GetComponent<Volt::TransformComponent>(entId);
+		auto& relationshipComp = m_editorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId);
+		auto& transComp = m_editorScene->GetRegistry().GetComponent<Volt::TransformComponent>(entId);
 
-		if (!myMidEvent)
+		if (!m_midEvent)
 		{
 			previousTransforms.emplace_back(entId, transComp);
 		}
@@ -1083,8 +1018,8 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 		if (relationshipComp.Parent != 0)
 		{
-			Volt::Entity parent(relationshipComp.Parent, myEditorScene.get());
-			auto pTransform = myEditorScene->GetWorldSpaceTransform(parent);
+			Volt::Entity parent(relationshipComp.Parent, m_editorScene.get());
+			auto pTransform = m_editorScene->GetWorldSpaceTransform(parent);
 
 			entDeltaTransform = glm::inverse(pTransform) * entDeltaTransform;
 		}
@@ -1096,7 +1031,7 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 		glm::quat delta = glm::inverse(transComp.rotation) * r;
 
-		Volt::Entity ent{ entId, myEditorScene.get() };
+		Volt::Entity ent{ entId, m_editorScene.get() };
 
 		ent.SetLocalPosition(p);
 		ent.SetLocalRotation(transComp.rotation * delta);
@@ -1105,27 +1040,27 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 	if (!previousTransforms.empty())
 	{
-		myMidEvent = true;
+		m_midEvent = true;
 
-		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myEditorScene, previousTransforms);
+		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(m_editorScene, previousTransforms);
 		EditorCommandStack::PushUndo(command);
 	}
 }
 
 void ViewportPanel::UpdateModals()
 {
-	if (ImportState returnVal = EditorUtils::MeshImportModal("Import Mesh##viewport", myMeshImportData, myMeshToImport); returnVal == ImportState::Imported)
-	{
-		Volt::Entity tempEnt{ myEntityToAddMesh, myEditorScene.get() };
+	//if (ImportState returnVal = EditorUtils::MeshImportModal("Import Mesh##viewport", myMeshImportData, myMeshToImport); returnVal == ImportState::Imported)
+	//{
+	//	Volt::Entity tempEnt{ myEntityToAddMesh, myEditorScene.get() };
 
-		auto& meshComp = tempEnt.AddComponent<Volt::MeshComponent>(tempEnt);
-		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myMeshImportData.destination);
-		Volt::AssetManager::Get().SaveAsset(mesh);
-		if (mesh)
-		{
-			meshComp.SetMesh(mesh->handle);
-		}
-	}
+	//	auto& meshComp = tempEnt.AddComponent<Volt::MeshComponent>();
+	//	auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(myMeshImportData.destination);
+	//	Volt::AssetManager::Get().SaveAsset(mesh);
+	//	if (mesh)
+	//	{
+	//		meshComp.handle = mesh->handle;
+	//	}
+	//}
 
 	if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenSceneViewport"); returnState != SaveReturnState::None)
 	{
@@ -1134,8 +1069,8 @@ void ViewportPanel::UpdateModals()
 			Sandbox::Get().SaveScene();
 		}
 
-		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(mySceneToOpen));
-		mySceneToOpen = Volt::Asset::Null();
+		Sandbox::Get().OpenScene(Volt::AssetManager::GetFilePathFromAssetHandle(m_sceneToOpen));
+		m_sceneToOpen = Volt::Asset::Null();
 	}
 }
 
@@ -1165,11 +1100,11 @@ void ViewportPanel::HandleNonMeshDragDrop()
 
 				/*if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 				{
-					uint32_t pixelData = mySceneRenderer->GetIDImage()->ReadPixel<uint32_t>(mouseX, mouseY);
+					uint32_t pixelData = m_sceneRenderer->GetIDImage()->ReadPixel<uint32_t>(mouseX, mouseY);
 
-					if (myEditorScene->GetRegistry().HasComponent<Volt::MeshComponent>(pixelData))
+					if (m_editorScene->GetRegistry().HasComponent<Volt::MeshComponent>(pixelData))
 					{
-						auto& meshComponent = myEditorScene->GetRegistry().GetComponent<Volt::MeshComponent>(pixelData);
+						auto& meshComponent = m_editorScene->GetRegistry().GetComponent<Volt::MeshComponent>(pixelData);
 						meshComponent.overrideMaterial = material->handle;
 					}
 				}*/
@@ -1180,7 +1115,7 @@ void ViewportPanel::HandleNonMeshDragDrop()
 			case Volt::AssetType::Scene:
 			{
 				UI::OpenModal("Do you want to save scene?##OpenSceneViewport");
-				mySceneToOpen = handle;
+				m_sceneToOpen = handle;
 
 				break;
 			}
@@ -1190,37 +1125,37 @@ void ViewportPanel::HandleNonMeshDragDrop()
 
 void ViewportPanel::Resize(const glm::vec2& viewportSize)
 {
-	myViewportSize = { viewportSize.x, viewportSize.y };
+	m_viewportSize = { viewportSize.x, viewportSize.y };
 
 	if (UserSettingsManager::GetSettings().sceneSettings.use16by9)
 	{
-		if (myViewportSize.x > myViewportSize.y)
+		if (m_viewportSize.x > m_viewportSize.y)
 		{
-			myViewportSize.x = myViewportSize.y / 9 * 16;
+			m_viewportSize.x = m_viewportSize.y / 9 * 16;
 		}
 		else
 		{
-			myViewportSize.y = myViewportSize.x / 16 * 9;
+			m_viewportSize.y = m_viewportSize.x / 16 * 9;
 		}
 	}
 
 
-	mySceneRenderer->Resize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
-	myEditorScene->SetRenderSize((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
+	m_sceneRenderer->Resize((uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y);
+	m_editorScene->SetRenderSize((uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y);
 
-	myEditorCameraController->UpdateProjection((uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y);
+	m_editorCameraController->UpdateProjection((uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y);
 
-	Volt::ViewportResizeEvent resizeEvent{ (uint32_t)myPerspectiveBounds[0].x, (uint32_t)myPerspectiveBounds[0].y, (uint32_t)myViewportSize.x, (uint32_t)myViewportSize.y };
+	Volt::ViewportResizeEvent resizeEvent{ (uint32_t)m_perspectiveBounds[0].x, (uint32_t)m_perspectiveBounds[0].y, (uint32_t)m_viewportSize.x, (uint32_t)m_viewportSize.y };
 	Volt::Application::Get().OnEvent(resizeEvent);
 }
 
 glm::vec2 ViewportPanel::GetViewportLocalPosition(const ImVec2& mousePos)
 {
 	auto [mx, my] = mousePos;
-	mx -= myPerspectiveBounds[0].x;
-	my -= myPerspectiveBounds[0].y;
+	mx -= m_perspectiveBounds[0].x;
+	my -= m_perspectiveBounds[0].y;
 
-	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = m_perspectiveBounds[1] - m_perspectiveBounds[0];
 	glm::vec2 result = { mx, my };
 
 	return result;
@@ -1231,10 +1166,10 @@ glm::vec2 ViewportPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 	float mx = mousePos.x;
 	float my = mousePos.y;
 
-	mx -= myPerspectiveBounds[0].x;
-	my -= myPerspectiveBounds[0].y;
+	mx -= m_perspectiveBounds[0].x;
+	my -= m_perspectiveBounds[0].y;
 
-	glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
+	glm::vec2 perspectiveSize = m_perspectiveBounds[1] - m_perspectiveBounds[0];
 	glm::vec2 result = { mx, my };
 
 	return result;
@@ -1243,12 +1178,12 @@ glm::vec2 ViewportPanel::GetViewportLocalPosition(const glm::vec2& mousePos)
 glm::mat4 ViewportPanel::CalculateAverageTransform()
 {
 	glm::vec3 avgTranslation = 0.f;
-	glm::quat avgRotation = glm::quat{ 0.f, 0.f, 0.f, 0.f };
+	glm::quat avgRotation = glm::identity<glm::quat>();
 	glm::vec3 avgScale = 0.f;
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
-		const auto trs = myEditorScene->GetWorldSpaceTRS(Volt::Entity{ ent, myEditorScene.get() });
+		const auto trs = m_editorScene->GetWorldSpaceTRS(Volt::Entity{ ent, m_editorScene.get() });
 
 		avgTranslation += trs.position;
 		avgRotation = trs.rotation;
