@@ -168,7 +168,7 @@ namespace Volt::RHI
 
 		for (const auto& page : m_pageAllocations)
 		{
-			if (page.GetRemainingSize() >= size)
+			if (IsAllocationSupportedInPage(page, size))
 			{
 				return true;
 			}
@@ -193,7 +193,7 @@ namespace Volt::RHI
 
 		for (auto& page : m_pageAllocations)
 		{
-			if (page.GetRemainingSize() >= size)
+			if (IsAllocationSupportedInPage(page, size))
 			{
 				pageAllocation = &page;
 				break;
@@ -299,6 +299,29 @@ namespace Volt::RHI
 		}
 
 		pageAllocation.usedSize -= allocBlock.size;
+	}
+
+	const bool VulkanTransientHeap::IsAllocationSupportedInPage(const PageAllocation& page, const uint64_t size) const
+	{
+		if (page.GetRemainingSize() < size)
+		{
+			return false;
+		}
+
+		for (const auto& availBloc : page.availableBlocks)
+		{
+			if (availBloc.size >= size)
+			{
+				return true;
+			}
+		}
+
+		if (page.GetRemainingTailSize() >= size)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	void VulkanTransientHeap::InitializeAsBufferHeap()

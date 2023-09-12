@@ -53,6 +53,8 @@ namespace Volt::RHI
 		std::pair<uint32_t, AllocationBlock> FindNextAvailableBlock(const uint64_t size);
 		void ForfeitAllocationBlock(const AllocationBlock& allocBlock);
 
+		const bool IsAllocationSupportedInPage(const PageAllocation& page, const uint64_t size) const;
+
 		void InitializeAsBufferHeap();
 		void InitializeAsImageHeap();
 

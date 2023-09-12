@@ -9,6 +9,7 @@
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 
 #include <VoltRHI/Memory/TransientHeap.h>
+#include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Core/Profiling.h>
 
 #include <vulkan/vulkan.h>
@@ -61,7 +62,7 @@ namespace Volt::RHI
 
 		TransientImageCreateInfo info{};
 		info.imageSpecification = imageSpecification;
-		info.size = memoryRequirement.size;
+		info.size = Utility::Align(memoryRequirement.size, memoryRequirement.alignment);
 
 		Ref<Allocation> result;
 
