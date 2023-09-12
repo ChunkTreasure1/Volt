@@ -97,6 +97,8 @@ namespace Volt
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
+		void InvalidateRenderScene();
+
 		inline const uint32_t GetActiveLayer() const { return mySceneLayers.at(myActiveLayerIndex).id; }
 		inline const std::vector<SceneLayer>& GetLayers() const { return mySceneLayers; }
 		inline std::vector<SceneLayer>& GetLayersMutable() { return mySceneLayers; }

@@ -7,9 +7,6 @@
 #include "Volt/Input/KeyCodes.h"
 
 #include "Volt/Core/Window.h"
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/SwapchainVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Core/Layer/Layer.h"
 #include "Volt/Steam/SteamImplementation.h"
@@ -151,8 +148,6 @@ namespace Volt
 
 	Application::~Application()
 	{
-		//GraphicsContextVolt::GetDevice()->WaitForIdle();
-
 		m_navigationSystem = nullptr;
 		m_layerStack.Clear();
 		m_imguiImplementation = nullptr;
@@ -173,6 +168,9 @@ namespace Volt
 
 		//Amp::AudioManager::Shutdown();
 		Amp::WWiseEngine::Get().TermWwise();
+
+		ShaderMap::Shutdown();
+		RendererNew::Shutdown();
 
 		m_assetmanager = nullptr;
 		m_threadPool.Shutdown();

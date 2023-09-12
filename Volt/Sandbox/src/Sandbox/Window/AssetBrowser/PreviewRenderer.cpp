@@ -30,7 +30,7 @@ PreviewRenderer::PreviewRenderer()
 	}
 
 	myEntity = myPreviewScene->CreateEntity();
-	myEntity.AddComponent<Volt::MeshComponent>(myEntity);
+	myEntity.AddComponent<Volt::MeshComponent>();
 
 	Volt::SceneRendererSpecification spec{};
 	spec.initialResolution = { 256, 256 };
@@ -105,7 +105,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 		return false;
 	}
 
-	myEntity.GetComponent<Volt::MeshComponent>().SetMesh(assetItem->handle);
+	myEntity.GetComponent<Volt::MeshComponent>().handle = assetItem->handle;
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
@@ -133,7 +133,7 @@ bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetI
 		return false;
 	}
 
-	myEntity.GetComponent<Volt::MeshComponent>().SetMesh(meshAsset->handle);
+	myEntity.GetComponent<Volt::MeshComponent>().handle = meshAsset->handle;
 	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = material->handle;
 
 	myCamera->SetPosition({ 0.f, 0.f, -150.f });

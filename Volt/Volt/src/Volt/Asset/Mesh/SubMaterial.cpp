@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "SubMaterial.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Shader/Shader.h"
 #include "Volt/Rendering/RenderPipeline/RenderPipeline.h"

@@ -2,8 +2,6 @@
 
 #include "Volt/Rendering/FrameGraph/FrameGraphResource.h"
 
-#include <Volt/Core/Graphics/VulkanAllocatorVolt.h>
-
 namespace Volt
 {
 	class Image2D;

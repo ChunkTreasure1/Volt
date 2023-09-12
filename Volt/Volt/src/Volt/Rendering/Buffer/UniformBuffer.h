@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
+#include <vulkan/vulkan.h>
 
 namespace Volt
 {
@@ -33,13 +33,10 @@ namespace Volt
 		bool myIsDynamic = false;
 
 		VkBuffer myBuffer = nullptr;
-		VmaAllocation myAllocation = nullptr;
 	};
 
 	template<typename T>
 	inline T* UniformBuffer::Map()
 	{
-		VulkanAllocatorVolt allocator{};
-		return allocator.MapMemory<T>(myAllocation);
 	}
 }

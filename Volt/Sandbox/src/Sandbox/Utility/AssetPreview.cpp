@@ -35,7 +35,7 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 	m_sceneRenderer = CreateRef<Volt::SceneRendererNew>(spec);
 
 	m_entity = m_scene->CreateEntity();
-	m_entity.AddComponent<Volt::MeshComponent>(m_entity);
+	m_entity.AddComponent<Volt::MeshComponent>();
 
 	m_assetHandle = Volt::AssetManager::Get().GetAssetHandleFromFilePath(path);
 }
@@ -44,7 +44,7 @@ void AssetPreview::Render()
 {
 	const bool wasLoaded = Volt::AssetManager::Get().IsLoaded(m_assetHandle);
 
-	m_entity.GetComponent<Volt::MeshComponent>().SetMesh(m_assetHandle);
+	m_entity.GetComponent<Volt::MeshComponent>().handle = m_assetHandle;
 
 	Ref<Volt::Mesh> mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(m_assetHandle);
 

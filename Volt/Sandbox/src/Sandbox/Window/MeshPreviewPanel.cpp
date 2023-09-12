@@ -29,8 +29,8 @@ MeshPreviewPanel::MeshPreviewPanel()
 	// Preview entity
 	{
 		auto entity = myScene->CreateEntity();
-		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>(entity);
-		comp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
+		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 		myPreviewEntity = entity;
 	}
 }
@@ -47,7 +47,7 @@ void MeshPreviewPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (asset && asset->IsValid() && asset->GetType() == Volt::AssetType::Mesh)
 	{
-		myPreviewEntity.GetComponent<Volt::MeshComponent>().SetMesh(asset->handle);
+		myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = asset->handle;
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
 		mySelectedSubMesh = -1;
 	}
@@ -213,7 +213,7 @@ void MeshPreviewPanel::UpdateToolbar()
 		if (!meshPath.empty() && FileSystem::Exists(meshPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshPath);
-			myPreviewEntity.GetComponent<Volt::MeshComponent>().SetMesh(myCurrentMesh->handle);
+			myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = myCurrentMesh->handle;
 			mySelectedSubMesh = -1;
 		}
 	}

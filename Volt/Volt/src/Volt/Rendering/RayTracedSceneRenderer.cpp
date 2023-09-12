@@ -3,9 +3,6 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-
 #include "Volt/Rendering/Buffer/GenericBuffer.h"
 #include "Volt/Rendering/Renderer.h"
 
@@ -263,8 +260,6 @@ namespace Volt
 		bufferCreateInfo.size = buildSizeInfo.accelerationStructureSize;
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
 
-		VulkanAllocatorVolt allocator{};
-		result.allocation = allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_GPU_ONLY, result.buffer);
 
 		VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{};
 		accelerationStructureCreateInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
@@ -289,8 +284,6 @@ namespace Volt
 	{
 		//const auto& vulkanFunctions = Renderer::GetVulkanFunctions();
 
-		VulkanAllocatorVolt allocator{};
-		allocator.DestroyBuffer(accelerationStructure.buffer, accelerationStructure.allocation);
 		//vulkanFunctions.vkDestroyAccelerationStructureKHR(GraphicsContextVolt::GetDevice()->GetHandle(), accelerationStructure.handle, nullptr);
 	}
 
@@ -303,8 +296,6 @@ namespace Volt
 		bufferCreateInfo.size = deviceSize;
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
 
-		VulkanAllocatorVolt allocator{};
-		scratchBuffer.allocation = allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_GPU_ONLY, scratchBuffer.handle);
 
 		VkBufferDeviceAddressInfo bufferDeviceAddressInfo{};
 		bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
@@ -317,7 +308,5 @@ namespace Volt
 
 	void RayTracedSceneRenderer::DestroyScratchBuffer(ScratchBuffer scratchBuffer)
 	{
-		VulkanAllocatorVolt allocator{};
-		allocator.DestroyBuffer(scratchBuffer.handle, scratchBuffer.allocation);
 	}
 }

@@ -5,10 +5,6 @@
 
 #include "Volt/Core/Application.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/SwapchainVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-
 #include "Volt/Rendering/Shader/ShaderUtility.h"
 
 #include <spirv_cross/spirv_glsl.hpp>

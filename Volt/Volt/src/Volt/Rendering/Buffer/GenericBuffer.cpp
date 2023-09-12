@@ -1,9 +1,6 @@
 #include "vtpch.h"
 #include "GenericBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-
 #include "Volt/Rendering/Renderer.h"
 
 namespace Volt
@@ -12,7 +9,6 @@ namespace Volt
 		: mySize(size)
 	{
 		const VkDeviceSize bufferSize = (VkDeviceSize)size;
-		VulkanAllocatorVolt allocator{ "GenericBuffer - Create" };
 
 		VkBufferCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -20,11 +16,7 @@ namespace Volt
 		info.usage = bufferUsage;
 		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		myAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU , myBuffer);
 
-		void* bufferData = allocator.MapMemory<void*>(myAllocation);
-		memcpy_s(bufferData, mySize, data, size);
-		allocator.UnmapMemory(myAllocation);
 	}
 
 	GenericBuffer::~GenericBuffer()
@@ -34,11 +26,6 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
-		{
-			VulkanAllocatorVolt allocator{};
-			allocator.DestroyBuffer(buffer, allocation);
-		});
 	}
 
 	const uint64_t GenericBuffer::GetDeviceAddress() const

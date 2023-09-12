@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "Image3D.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/CommandBuffer.h"
 
@@ -31,7 +29,6 @@ namespace Volt
 
 		myImageData.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		VulkanAllocatorVolt allocator{ };
 		//auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -95,21 +92,6 @@ namespace Volt
 		imageInfo.format = myImageData.format;
 		imageInfo.flags = 0;
 
-		VmaMemoryUsage memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-		switch (mySpecification.memoryUsage)
-		{
-			case MemoryUsage::CPUToGPU:
-				memUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-				break;
-			case MemoryUsage::GPUOnly:
-				memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-				break;
-			default:
-				break;
-		}
-
-		myAllocation = allocator.AllocateImage(imageInfo, memUsage, myImage, std::format("Image {}", mySpecification.debugName));
-
 		// Create image views
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -170,11 +152,6 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (!myImage && !myAllocation)
-		{
-			return;
-		}
-
 		//Renderer::SubmitResourceChange([imageViews = myImageViews, image = myImage, allocation = myAllocation]()
 		//{
 		//	auto device = GraphicsContextVolt::GetDevice();
@@ -189,7 +166,6 @@ namespace Volt
 
 		myImageViews.clear();
 		myImage = nullptr;
-		myAllocation = nullptr;
 	}
 
 	void Image3D::TransitionToLayout(VkCommandBuffer commandBuffer, VkImageLayout targetLayout)

@@ -79,8 +79,6 @@
 #include <Volt/Project/ProjectManager.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
-#include <Volt/Core/Graphics/GraphicsContextVolt.h>
 #include <Volt/Events/SettingsEvent.h>
 
 #include <Volt/Discord/DiscordSDK.h>

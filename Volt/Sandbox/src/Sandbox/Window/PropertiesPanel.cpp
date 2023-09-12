@@ -579,7 +579,7 @@ void PropertiesPanel::UpdateMainContent()
 								break;
 							}
 
-							case Wire::ComponentRegistry::PropertyType::Short: 
+							case Wire::ComponentRegistry::PropertyType::Short:
 							{
 								if (UI::Property(prop.name, *(int16_t*)(&data[prop.offset])))
 								{
@@ -630,7 +630,7 @@ void PropertiesPanel::UpdateMainContent()
 								break;
 							}
 
-							case Wire::ComponentRegistry::PropertyType::Float: 
+							case Wire::ComponentRegistry::PropertyType::Float:
 							{
 								if (UI::Property(prop.name, *(float*)(&data[prop.offset])))
 								{
@@ -668,7 +668,7 @@ void PropertiesPanel::UpdateMainContent()
 								}
 								break;
 							}
-							
+
 							case Wire::ComponentRegistry::PropertyType::Vector3:
 							{
 								if (UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset])))
@@ -754,7 +754,7 @@ void PropertiesPanel::UpdateMainContent()
 								break;
 							}
 
-							case Wire::ComponentRegistry::PropertyType::Directory: 
+							case Wire::ComponentRegistry::PropertyType::Directory:
 							{
 								if (UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset])))
 								{
@@ -767,7 +767,7 @@ void PropertiesPanel::UpdateMainContent()
 								break;
 							}
 
-							case Wire::ComponentRegistry::PropertyType::Path: 
+							case Wire::ComponentRegistry::PropertyType::Path:
 							{
 								if (UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset])))
 								{
@@ -924,14 +924,7 @@ void PropertiesPanel::AddComponentPopup()
 							}
 							else if (!myCurrentScene->GetRegistry().HasComponent(info.guid, ent))
 							{
-								if (info.guid == Volt::MeshComponent::comp_guid)
-								{
-									myCurrentScene->GetRegistry().AddComponent<Volt::MeshComponent>(ent, Volt::Entity{ ent, myCurrentScene.get() });
-								}
-								else
-								{
-									myCurrentScene->GetRegistry().AddComponent(info.guid, ent);
-								}
+								myCurrentScene->GetRegistry().AddComponent(info.guid, ent);
 							}
 						}
 

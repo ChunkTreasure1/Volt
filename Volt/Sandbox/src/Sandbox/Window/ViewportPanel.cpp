@@ -710,15 +710,16 @@ void ViewportPanel::CheckDragDrop()
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(newEntity, ObjectStateAction::Create);
 			EditorCommandStack::GetInstance().PushUndo(command);
 
-			auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>(newEntity);
+			auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
 			auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(handle);
 			if (mesh)
 			{
-				meshComp.SetMesh(mesh->handle);
+				meshComp.handle = mesh->handle;
 			}
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
 			m_createdEntity = newEntity;
+			m_editorScene->InvalidateRenderScene();
 
 			break;
 		}
@@ -742,11 +743,11 @@ void ViewportPanel::CheckDragDrop()
 					resultHandle = meshAsset->handle;
 				}
 
-				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>(newEntity);
+				auto& meshComp = newEntity.AddComponent<Volt::MeshComponent>();
 				auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(resultHandle);
 				if (mesh)
 				{
-					meshComp.SetMesh(mesh->handle);
+					meshComp.handle = mesh->handle;
 				}
 			}
 			else
@@ -756,6 +757,8 @@ void ViewportPanel::CheckDragDrop()
 				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
 				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
 			}
+
+			m_editorScene->InvalidateRenderScene();
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = meshSourcePath.stem().string();
 			m_createdEntity = newEntity;

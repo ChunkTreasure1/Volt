@@ -2,7 +2,6 @@
 
 #include "Volt/Rendering/Texture/ImageCommon.h"
 
-#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 #include "Volt/Core/Buffer.h"
 
 #include <vulkan/vulkan.h>
@@ -71,10 +70,8 @@ namespace Volt
 
 		ImageSpecification mySpecification;
 
-		VmaAllocation myAllocation = nullptr;
 		VkImage myImage = nullptr;
 
-		VmaAllocation myMappingAllocation = nullptr;
 		VkBuffer myMappingBuffer = nullptr;
 
 		struct ImageData

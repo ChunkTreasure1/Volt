@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
-
+#include <vulkan/vulkan.h>
 
 namespace Volt
 {
@@ -19,6 +18,5 @@ namespace Volt
 		uint32_t mySize = 0;
 
 		VkBuffer myBuffer = nullptr;
-		VmaAllocation myAllocation = nullptr;
 	};
 }

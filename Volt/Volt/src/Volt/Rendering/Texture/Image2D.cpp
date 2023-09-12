@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "Image2D.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/CommandBuffer.h"
 
@@ -40,7 +38,6 @@ namespace Volt
 
 		std::string allocatorName = "Image2D - Create";
 
-		VulkanAllocatorVolt allocator{ allocatorName };
 		//auto device = GraphicsContextVolt::GetDevice();
 
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -109,20 +106,6 @@ namespace Volt
 			imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		}
 
-		VmaMemoryUsage memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-		switch (mySpecification.memoryUsage)
-		{
-			case MemoryUsage::CPUToGPU:
-				memUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-				break;
-			case MemoryUsage::GPUOnly:
-				memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-				break;
-			default:
-				break;
-		}
-
-		myAllocation = allocator.AllocateImage(imageInfo, memUsage, myImage, std::format("Image {}", mySpecification.debugName));
 		SetName(mySpecification.debugName);
 
 		if (mySpecification.mappable)
@@ -135,13 +118,10 @@ namespace Volt
 			info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			myMappingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, myMappingBuffer);
 		}
 
 		if (data)
 		{
-			VkBuffer stagingBuffer;
-			VmaAllocation stagingAllocation;
 			const VkDeviceSize bufferSize = mySpecification.width * mySpecification.height * Utility::PerPixelSizeFromFormat(mySpecification.format);
 
 			// #TODO_Ivar: Implement correct size for layer + mip
@@ -154,17 +134,8 @@ namespace Volt
 				info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 				info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-				stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
-
-				auto* stagingData = allocator.MapMemory<void>(stagingAllocation);
-				memcpy_s(stagingData, bufferSize, data, bufferSize);
-				allocator.UnmapMemory(stagingAllocation);
-
 				Utility::TransitionImageLayout(myImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-				Utility::CopyBufferToImage(stagingBuffer, myImage, mySpecification.width, mySpecification.height);
 				Utility::TransitionImageLayout(myImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-				allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
 			}
 		}
 
@@ -257,11 +228,6 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		if (!myImage && !myAllocation || myAllocatedWithCustomPool)
-		{
-			return;
-		}
-
 		//Renderer::SubmitResourceChange([imageViews = myImageViews, arrayViews = myArrayImageViews, image = myImage, allocation = myAllocation, usedCustomPool = myAllocatedWithCustomPool, mappingAlloc = myMappingAllocation, mappingBuffer = myMappingBuffer]()
 		//{
 		//	auto device = GraphicsContextVolt::GetDevice();
@@ -290,7 +256,6 @@ namespace Volt
 
 		myImageViews.clear();
 		myImage = nullptr;
-		myAllocation = nullptr;
 	}
 
 	void Image2D::TransitionToLayout(VkCommandBuffer commandBuffer, VkImageLayout targetLayout)
@@ -547,8 +512,6 @@ namespace Volt
 
 	void Image2D::Unmap()
 	{
-		VulkanAllocatorVolt allocator{};
-		allocator.UnmapMemory(myMappingAllocation);
 
 		//VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetCommandBuffer(true);
 
@@ -571,10 +534,6 @@ namespace Volt
 
 	Buffer Image2D::ReadPixelInternal(uint32_t x, uint32_t y, uint32_t size)
 	{
-		VulkanAllocatorVolt allocator{ "Image2D - Read Pixel" };
-
-		VkBuffer stagingBuffer;
-		VmaAllocation stagingAllocation;
 		const VkDeviceSize bufferSize = mySpecification.width * mySpecification.height * Utility::PerPixelSizeFromFormat(mySpecification.format);
 
 		VkBufferCreateInfo info{};
@@ -582,8 +541,6 @@ namespace Volt
 		info.size = bufferSize;
 		info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 
 		//VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
 
@@ -611,25 +568,13 @@ namespace Volt
 
 		//GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
 
-		uint8_t* mappedMemory = allocator.MapMemory<uint8_t>(stagingAllocation);
-
-		const uint32_t perPixelSize = Utility::PerPixelSizeFromFormat(mySpecification.format);
-		const uint32_t bufferIndex = (x + y * mySpecification.width) * perPixelSize;
 		Buffer buffer{ size };
-		buffer.Copy(&mappedMemory[bufferIndex], size);
-
-		allocator.UnmapMemory(stagingAllocation);
-		allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
 
 		return buffer;
 	}
 
 	Buffer Image2D::ReadPixelRangeInternal(uint32_t minX, uint32_t minY, uint32_t maxX, uint32_t maxY, uint32_t size)
 	{
-		VulkanAllocatorVolt allocator{ "Image2D - Read Pixel" };
-
-		VkBuffer stagingBuffer;
-		VmaAllocation stagingAllocation;
 		const VkDeviceSize bufferSize = mySpecification.width * mySpecification.height * Utility::PerPixelSizeFromFormat(mySpecification.format);
 
 		VkBufferCreateInfo info{};
@@ -638,7 +583,6 @@ namespace Volt
 		info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		stagingAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 
 		//VkCommandBuffer commandBuffer = GraphicsContextVolt::GetDevice()->GetSingleUseCommandBuffer(true);
 
@@ -665,10 +609,6 @@ namespace Volt
 		//TransitionToLayout(commandBuffer, originalLayout);
 
 		//GraphicsContextVolt::GetDevice()->FlushSingleUseCommandBuffer(commandBuffer);
-
-		uint8_t* mappedMemory = allocator.MapMemory<uint8_t>(stagingAllocation);
-
-		const uint32_t perPixelSize = Utility::PerPixelSizeFromFormat(mySpecification.format);
 
 		Buffer buffer{ (maxX - minX) * (maxY - minY) * size };
 		uint32_t offset = 0;
@@ -677,21 +617,16 @@ namespace Volt
 		{
 			for (uint32_t y = minY; y < maxY; y++)
 			{
-				uint32_t loc = (x + y * mySpecification.width * perPixelSize);
-				buffer.Copy(&mappedMemory[loc], size, offset);
 				offset += size;
 			}
 		}
 
-		allocator.UnmapMemory(stagingAllocation);
-		allocator.DestroyBuffer(stagingBuffer, stagingAllocation);
 
 		return buffer;
 	}
 
 	void* Image2D::MapInternal()
 	{
-		VulkanAllocatorVolt allocator{};
-		return allocator.MapMemory<void>(myMappingAllocation);
+		return nullptr;
 	}
 }

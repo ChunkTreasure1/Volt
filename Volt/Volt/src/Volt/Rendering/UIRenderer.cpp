@@ -3,7 +3,6 @@
 
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Window.h"
-#include "Volt/Core/Graphics/SwapchainVolt.h"
 
 #include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Mesh/SubMaterial.h"

@@ -1,9 +1,6 @@
 #include "vtpch.h"
 #include "Window.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/SwapchainVolt.h"
-
 #include "Volt/Core/Application.h"
 
 #include "Volt/Events/ApplicationEvent.h"
@@ -413,13 +410,13 @@ namespace Volt
 
 	void Window::BeginFrame()
 	{
-		glfwPollEvents();
 		m_swapchain->BeginFrame();
 	}
 
 	void Window::Present()
 	{
 		m_swapchain->Present();
+		glfwPollEvents();
 	}
 
 	void Window::Resize(uint32_t aWidth, uint32_t aHeight)

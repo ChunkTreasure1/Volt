@@ -1,8 +1,6 @@
 #include "vtpch.h"
 #include "ShaderStorageBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-
 #include "Volt/Rendering/Renderer.h"
 
 namespace Volt
@@ -27,7 +25,6 @@ namespace Volt
 		//auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
-		VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Create" };
 
 		VkBufferCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -41,14 +38,9 @@ namespace Volt
 			info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		}
 
-		VmaAllocationCreateFlags createFlags = 0;
-
 		if ((myUsage & MemoryUsage::CPUToGPU) != MemoryUsage::None)
 		{
-			createFlags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 		}
-
-		myAllocation = allocator.AllocateBuffer(info, createFlags, myBuffer);
 	}
 
 	void ShaderStorageBuffer::ResizeWithElementCount(uint32_t newElementCount)
@@ -63,8 +55,6 @@ namespace Volt
 		//auto device = GraphicsContextVolt::GetDevice();
 		const VkDeviceSize bufferSize = newSize;
 
-		VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Create" };
-
 		VkBufferCreateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		info.size = bufferSize;
@@ -77,20 +67,15 @@ namespace Volt
 			info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		}
 
-		VmaMemoryUsage memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 
 		if ((myUsage & MemoryUsage::CPUToGPU) != MemoryUsage::None)
 		{
-			memUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 		}
 
-		myAllocation = allocator.AllocateBuffer(info, memUsage, myBuffer);
 	}
 
 	void ShaderStorageBuffer::Unmap()
 	{
-		VulkanAllocatorVolt allocator;
-		allocator.UnmapMemory(myAllocation);
 	}
 
 	Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(uint64_t elementSize, uint32_t elementCount, MemoryUsage usage)
@@ -105,13 +90,6 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
-		{
-			VulkanAllocatorVolt allocator{ "ShaderStorageBuffer - Destroy" };
-			allocator.DestroyBuffer(buffer, allocation);
-		});
-
 		myBuffer = nullptr;
-		myAllocation = nullptr;
 	}
 }

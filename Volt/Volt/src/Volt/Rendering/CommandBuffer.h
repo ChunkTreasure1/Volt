@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
 #include "Volt/Rendering/RenderPipeline/RenderPipeline.h"
 
 #include <vulkan/vulkan.h>
@@ -17,7 +16,6 @@ namespace Volt
 	{
 	public:
 		CommandBuffer(uint32_t count, bool swapchainTarget);
-		CommandBuffer(uint32_t count, QueueTypeVolt queueType);
 		CommandBuffer(uint32_t count, Ref<CommandBuffer> primaryCommandBuffer);
 		~CommandBuffer();
 
@@ -36,7 +34,6 @@ namespace Volt
 		const RenderPipelineStatistics& GetPipelineStatistics(uint32_t frameIndex) const;
 
 		static Ref<CommandBuffer> Create(uint32_t count, bool swapchainTarget = false);
-		static Ref<CommandBuffer> Create(uint32_t count, QueueTypeVolt queueType);
 		static Ref<CommandBuffer> Create(uint32_t count, Ref<CommandBuffer> primaryCommandBuffer);
 
 	private:
@@ -68,7 +65,6 @@ namespace Volt
 		uint32_t myPipelineQueryCount = 0;
 		std::vector<RenderPipelineStatistics> myPipelineStatisticsResults;
 
-		QueueTypeVolt myQueueType = QueueTypeVolt::Graphics;
 		CommandBufferLevel myLevel = CommandBufferLevel::Primary;
 		Weak<CommandBuffer> myInheritedCommandBuffer;
 

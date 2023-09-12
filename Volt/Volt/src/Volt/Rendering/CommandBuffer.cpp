@@ -1,10 +1,8 @@
 #include "vtpch.h"
 #include "CommandBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Core/Application.h"
-#include "Volt/Core/Graphics/SwapchainVolt.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -12,12 +10,6 @@ namespace Volt
 {
 	CommandBuffer::CommandBuffer(uint32_t count, bool swapchainTarget)
 		: myCount(count), mySwapchainTarget(swapchainTarget)
-	{
-		Invalidate();
-	}
-
-	CommandBuffer::CommandBuffer(uint32_t count, QueueTypeVolt queueType)
-		: myCount(count), myQueueType(queueType)
 	{
 		Invalidate();
 	}
@@ -62,11 +54,6 @@ namespace Volt
 			vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, myTimestampQueryPools.at(index), 0);
 			myNextAvailableTimestampQuery = 2;
 
-			if (myQueueType == QueueTypeVolt::Graphics)
-			{
-				vkCmdResetQueryPool(myCommandBuffers.at(index), myPipelineStatisticsQueryPools.at(index), 0, myPipelineQueryCount);
-				vkCmdBeginQuery(myCommandBuffers.at(index), myPipelineStatisticsQueryPools.at(index), 0, 0);
-			}
 		}
 	}
 
@@ -78,10 +65,6 @@ namespace Volt
 		{
 			vkCmdWriteTimestamp(myCommandBuffers.at(index), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, myTimestampQueryPools.at(index), 1);
 
-			if (myQueueType == QueueTypeVolt::Graphics)
-			{
-				vkCmdEndQuery(myCommandBuffers.at(index), myPipelineStatisticsQueryPools.at(index), 0);
-			}
 		}
 
 		VT_VK_CHECK(vkEndCommandBuffer(myCommandBuffers.at(index)));
@@ -131,10 +114,6 @@ namespace Volt
 
 		FetchTimestampResults();
 
-		if (myQueueType == QueueTypeVolt::Graphics)
-		{
-			FetchPipelineStatistics();
-		}
 	}
 
 	VkCommandBuffer CommandBuffer::GetCurrentCommandBuffer()
@@ -242,10 +221,6 @@ namespace Volt
 	Ref<CommandBuffer> CommandBuffer::Create(uint32_t count, bool swapchainTarget)
 	{
 		return CreateRef<CommandBuffer>(count, swapchainTarget);
-	}
-	Ref<CommandBuffer> CommandBuffer::Create(uint32_t count, QueueTypeVolt queueType)
-	{
-		return CreateRef<CommandBuffer>(count, queueType);
 	}
 
 	Ref<CommandBuffer> CommandBuffer::Create(uint32_t count, Ref<CommandBuffer> primaryCommandBuffer)

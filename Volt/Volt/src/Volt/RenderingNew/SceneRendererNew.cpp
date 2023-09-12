@@ -137,8 +137,9 @@ namespace Volt
 
 	void SceneRendererNew::Resize(const uint32_t width, const uint32_t height)
 	{
-		m_width = width;
-		m_height = height;
+		m_resizeWidth = width;
+		m_resizeHeight = height;
+
 		m_shouldResize = true;
 	}
 
@@ -158,6 +159,9 @@ namespace Volt
 
 		if (m_shouldResize)
 		{
+			m_width = m_resizeWidth;
+			m_height = m_resizeHeight;
+
 			RenderGraphExecutionThread::WaitForFinishedExecution();
 			RHI::GraphicsContext::GetDevice()->GetDeviceQueue(RHI::QueueType::Graphics)->WaitForQueue();
 

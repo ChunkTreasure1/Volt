@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
 #include "Volt/Rendering/Texture/ImageCommon.h"
 
 namespace Volt
@@ -42,8 +41,6 @@ namespace Volt
 
 	private:
 		ImageSpecification mySpecification;
-
-		VmaAllocation myAllocation = nullptr;
 		VkImage myImage = nullptr;
 
 		struct ImageData

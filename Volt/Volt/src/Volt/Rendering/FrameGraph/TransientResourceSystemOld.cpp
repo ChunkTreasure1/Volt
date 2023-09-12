@@ -2,11 +2,9 @@
 #include "TransientResourceSystemOld.h"
 
 #include "Volt/Rendering/Texture/Image2D.h"
-#include "Volt/Rendering/Memory/GPUImageMemoryPool.h"
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Core/Profiling.h"
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
 
 #include "Volt/Utility/ImageUtility.h"
 

@@ -2,9 +2,6 @@
 #include "vtpch.h"
 #include "ComputePipeline.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/Texture/Image2D.h"
 #include "Volt/Rendering/Texture/Image3D.h"

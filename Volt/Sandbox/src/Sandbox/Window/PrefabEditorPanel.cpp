@@ -45,7 +45,7 @@ void PrefabEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	if (asset && asset->IsValid() && asset->GetType() == Volt::AssetType::Mesh)
 	{
-		myPreviewEntity.GetComponent<Volt::MeshComponent>().SetMesh(asset->handle);
+		myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = asset->handle;
 		myCurrentMesh = std::reinterpret_pointer_cast<Volt::Mesh>(asset);
 		mySelectedSubMesh = 0;
 	}
@@ -161,7 +161,7 @@ void PrefabEditorPanel::UpdateToolbar()
 		if (!prefabPath.empty() && FileSystem::Exists(prefabPath))
 		{
 			myCurrentMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(prefabPath);
-			myPreviewEntity.GetComponent<Volt::MeshComponent>().SetMesh(myCurrentMesh->handle);
+			myPreviewEntity.GetComponent<Volt::MeshComponent>().handle = myCurrentMesh->handle;
 			mySelectedSubMesh = 0;
 		}
 	}

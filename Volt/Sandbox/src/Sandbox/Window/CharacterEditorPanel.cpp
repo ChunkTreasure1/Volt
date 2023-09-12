@@ -152,7 +152,7 @@ void CharacterEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 		for (const auto& attachment : myCurrentCharacter->GetJointAttachments())
 		{
 			auto newEntity = myScene->CreateEntity();
-			newEntity.AddComponent<Volt::MeshComponent>(newEntity).SetMesh(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle);
+			newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
 			newEntity.SetScale(0.2f);
 
 			myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[attachment.id].emplace_back(newEntity);
@@ -897,7 +897,7 @@ void CharacterEditorPanel::AddJointAttachmentPopup()
 					newAttachment.jointIndex = myCurrentCharacter->GetSkeleton()->GetJointIndexFromName(name);
 
 					auto newEntity = myScene->CreateEntity();
-					newEntity.AddComponent<Volt::MeshComponent>(newEntity).SetMesh(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle);
+					newEntity.AddComponent<Volt::MeshComponent>().handle = Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh")->handle;
 					newEntity.SetScale(0.2f);
 
 					myCharacterEntity.GetComponent<Volt::AnimatedCharacterComponent>().attachedEntities[newAttachment.id].emplace_back(newEntity);

@@ -639,6 +639,7 @@ namespace Volt
 
 		LoadLayers(metadata, scene, folderPath);
 		scene->SortScene();
+		scene->InvalidateRenderScene();
 		return true;
 	}
 

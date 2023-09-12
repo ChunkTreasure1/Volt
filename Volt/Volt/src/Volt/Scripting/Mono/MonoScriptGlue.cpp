@@ -4297,7 +4297,7 @@ namespace Volt
 			return;
 		}
 
-		entity.GetComponent<MeshComponent>().SetMesh(handle);
+		entity.GetComponent<MeshComponent>().handle = handle;
 	}
 
 	inline static bool MeshComponent_HasOverrideMaterial(Wire::EntityId id)

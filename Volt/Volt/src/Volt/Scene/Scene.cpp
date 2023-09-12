@@ -681,8 +681,8 @@ namespace Volt
 			Entity childEntity = CreateEntity();
 			ParentEntity(parentEntity, childEntity);
 
-			auto& meshComponent = childEntity.AddComponent<MeshComponent>(childEntity);
-			meshComponent.SetMesh(mesh->handle);
+			auto& meshComponent = childEntity.AddComponent<MeshComponent>();
+			meshComponent.handle = mesh->handle;
 			//meshComponent.subMeshIndex = i;
 			i++;
 		}
@@ -814,8 +814,8 @@ namespace Volt
 			if (createDefaultMesh)
 			{
 				auto ent = newScene->CreateEntity("Cube");
-				auto& meshComp = ent.AddComponent<MeshComponent>(ent);
-				meshComp.SetMesh(AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
+				auto& meshComp = ent.AddComponent<MeshComponent>();
+				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 			}
 
 			// Light
@@ -1128,17 +1128,6 @@ namespace Volt
 				}
 			}
 		});
-
-		myRegistry.SetOnRemoveFunction<MeshComponent>([&](Wire::EntityId id, void* compPtr) 
-		{
-			MeshComponent& comp = *static_cast<MeshComponent*>(compPtr);
-			for (const auto& uuid : comp.renderObjectIds)
-			{
-				m_renderScene->Unregister(uuid);
-			}
-
-			comp.renderObjectIds.clear();
-		});
 	}
 
 	void Scene::IsRecursiveChildOf(Entity parent, Entity currentEntity, bool& outChild)
@@ -1262,5 +1251,33 @@ namespace Volt
 	bool Scene::LayerExists(uint32_t layerId)
 	{
 		return std::find_if(mySceneLayers.begin(), mySceneLayers.end(), [layerId](const auto& lhs) { return lhs.id == layerId; }) != mySceneLayers.end();
+	}
+
+	void Scene::InvalidateRenderScene()
+	{
+		const auto& meshView = myRegistry.GetSingleComponentView<MeshComponent>();
+		for (const auto& id : meshView)
+		{
+			auto& meshComp = myRegistry.GetComponent<MeshComponent>(id);
+
+			for (const auto& uuid : meshComp.renderObjectIds)
+			{
+				m_renderScene->Unregister(uuid);
+			}
+
+			meshComp.renderObjectIds.clear();
+
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
+			if (!mesh || !mesh->IsValid())
+			{
+				continue;
+			}
+
+			for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
+			{
+				auto uuid = m_renderScene->Register(id, mesh, static_cast<uint32_t>(i));
+				meshComp.renderObjectIds.emplace_back(uuid);
+			}
+		}
 	}
 }

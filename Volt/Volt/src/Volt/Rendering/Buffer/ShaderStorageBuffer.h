@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Volt/Core/Graphics/VulkanAllocatorVolt.h"
-
 #include "Volt/Rendering/RendererCommon.h"
 
 namespace Volt
@@ -36,13 +34,10 @@ namespace Volt
 		MemoryUsage myUsage;
 
 		VkBuffer myBuffer = nullptr;
-		VmaAllocation myAllocation = nullptr;
 	};
-
 	template<typename T>
 	inline T* ShaderStorageBuffer::Map()
 	{
-		VulkanAllocatorVolt allocator{};
-		return allocator.MapMemory<T>(myAllocation);
+		return nullptr;
 	}
 }

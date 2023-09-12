@@ -39,8 +39,8 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	// Material sphere
 	{
 		auto entity = myPreviewScene->CreateEntity();
-		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>(entity);
-		comp.SetMesh(Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+		Volt::MeshComponent& comp = entity.AddComponent<Volt::MeshComponent>();
+		comp.handle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh");
 		myPreviewEntity = entity;
 	}
 

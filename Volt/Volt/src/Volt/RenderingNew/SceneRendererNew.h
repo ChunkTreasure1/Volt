@@ -76,6 +76,9 @@ namespace Volt
 		uint32_t m_width = 1280;
 		uint32_t m_height = 720;
 
+		uint32_t m_resizeWidth = 1280;
+		uint32_t m_resizeHeight = 1280;
+
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 
 		Ref<RHI::RenderPipeline> m_renderPipeline;

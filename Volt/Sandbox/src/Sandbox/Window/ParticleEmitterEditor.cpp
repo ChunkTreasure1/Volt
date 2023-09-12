@@ -22,7 +22,7 @@ ParticleEmitterEditor::ParticleEmitterEditor()
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
-	myReferenceModel.AddComponent<Volt::MeshComponent>(myReferenceModel);
+	myReferenceModel.AddComponent<Volt::MeshComponent>();
 
 	myLightEntity = Volt::Entity(myPreviewScene->GetAllEntitiesWith<Volt::DirectionalLightComponent>()[0], myPreviewScene.get());
 	auto& tempComp = myLightEntity.GetComponent<Volt::DirectionalLightComponent>();

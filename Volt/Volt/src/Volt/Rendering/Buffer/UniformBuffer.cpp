@@ -1,9 +1,6 @@
 #include "vtpch.h"
 #include "UniformBuffer.h"
 
-#include "Volt/Core/Graphics/GraphicsContextVolt.h"
-#include "Volt/Core/Graphics/GraphicsDeviceVolt.h"
-
 #include "Volt/Rendering/Shader/ShaderUtility.h"
 #include "Volt/Rendering/Renderer.h"
 
@@ -13,7 +10,6 @@ namespace Volt
 		: mySize(size), myTotalSize(size)
 	{
 		const VkDeviceSize bufferSize = (VkDeviceSize)size;
-		VulkanAllocatorVolt allocator{ "UniformBuffer - Create" };
 
 		// Create buffer
 		{
@@ -22,8 +18,6 @@ namespace Volt
 			info.size = bufferSize;
 			info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			myAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, myBuffer);
 		}
 
 		if (data)
@@ -48,7 +42,6 @@ namespace Volt
 		myTotalSize = alignedSize * elementCount;
 
 		const VkDeviceSize bufferSize = (uint64_t)myTotalSize;
-		VulkanAllocatorVolt allocator{ "UniformBuffer - Create" };
 
 		// Create buffer
 		{
@@ -58,7 +51,6 @@ namespace Volt
 			info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			myAllocation = allocator.AllocateBuffer(info, VMA_MEMORY_USAGE_CPU_TO_GPU, myBuffer);
 		}
 	}
 
@@ -69,29 +61,16 @@ namespace Volt
 			return;
 		}
 
-		Renderer::SubmitResourceChange([buffer = myBuffer, allocation = myAllocation]()
-		{
-			VulkanAllocatorVolt allocator{};
-			allocator.DestroyBuffer(buffer, allocation);
-		});
-
 	}
 
 	void UniformBuffer::SetData(const void* data, uint32_t size)
 	{
 		VT_CORE_ASSERT(mySize >= size, "Unable to set data of larger size than buffer!");
 
-		VulkanAllocatorVolt allocator{ "UniformBuffer - SetData" };
-
-		void* bufferData = allocator.MapMemory<void*>(myAllocation);
-		memcpy_s(bufferData, mySize, data, size);
-		allocator.UnmapMemory(myAllocation);
 	}
 
 	void UniformBuffer::Unmap()
 	{
-		VulkanAllocatorVolt allocator{};
-		allocator.UnmapMemory(myAllocation);
 	}
 
 	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, const void* data)
