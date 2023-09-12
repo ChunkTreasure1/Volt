@@ -149,7 +149,9 @@ namespace Volt
 		static AssetMetadata& GetMetadataFromFilePathMutable(const std::filesystem::path filePath);
 
 		static const std::filesystem::path GetCleanAssetFilePath(const std::filesystem::path& path);
-		std::vector<std::filesystem::path> GetMetafiles();
+		
+		std::vector<std::filesystem::path> GetEngineMetaFiles();
+		std::vector<std::filesystem::path> GetProjectMetaFiles();
 
 		std::unordered_map<AssetType, Scope<AssetImporter>> m_assetImporters;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;

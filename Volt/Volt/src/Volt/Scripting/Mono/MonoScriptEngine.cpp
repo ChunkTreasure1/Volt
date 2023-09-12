@@ -221,11 +221,11 @@ namespace Volt
 				out_field.netData.boundFunction = data;
 				return true;
 
-				Buffer buffer{};
-				buffer.Resize(128);
-				mono_field_get_value(attributeObj, notifyField, buffer.As<void>());
-				out_field.netData.boundFunction = std::string(buffer.As<const char>());
-				buffer.Release();
+				//Buffer buffer{};
+				//buffer.Resize(128);
+				//mono_field_get_value(attributeObj, notifyField, buffer.As<void>());
+				//out_field.netData.boundFunction = std::string(buffer.As<const char>());
+				//buffer.Release();
 			}
 		}
 		return true;
@@ -427,7 +427,6 @@ namespace Volt
 		mono_assembly_setrootdir("Scripts/mono/lib");
 		mono_set_assemblies_path("Scripts/mono/lib");
 
-		//MonoScriptGlue::SteamAPI_Clean();
 		DoDestroyQueue();
 
 		myIsRunning = false;
@@ -440,7 +439,6 @@ namespace Volt
 		s_monoData->sceneContext = nullptr;
 
 		MonoGCManager::CollectGarbage(true);
-		ReloadAssembly();
 	}
 
 	void MonoScriptEngine::OnSceneLoaded()
@@ -483,11 +481,6 @@ namespace Volt
 			Params.scriptId = instanceId;
 
 			auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
-
-			/*if (instance->GetClass()->GetClassNameW() == "Player")
-			{
-				VT_CORE_INFO("Stuff");
-			}*/
 
 			s_monoData->scriptInstances[instanceId] = instance;
 

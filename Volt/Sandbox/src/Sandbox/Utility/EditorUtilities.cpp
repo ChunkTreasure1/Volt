@@ -29,18 +29,15 @@
 
 #include <DirectXTex/DirectXTex.h>
 
-bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType /* = Volt::AssetType::None */, std::function<void(Volt::AssetHandle& value)> callback /* = nullptr */)
+bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHandle, Volt::AssetType wantedType)
 {
 	bool changed = false;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.f, 0.f });
+	UI::BeginPropertyRow();
 
-	ImGui::TableNextColumn();
 	ImGui::TextUnformatted(text.c_str());
-
 	ImGui::TableNextColumn();
-
-	ImGui::PushItemWidth(ImGui::GetColumnWidth() - 2.f * 25.f);
 
 	std::string assetFileName = "Null";
 
@@ -58,10 +55,13 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 		}
 	}
 
+	std::string textId = "##" + std::to_string(UI::GetID());
 
-	std::string textId = "##" + std::to_string(UI::GetId());
-	ImGui::InputTextString(textId.c_str(), &assetFileName, ImGuiInputTextFlags_ReadOnly);
-	ImGui::PopItemWidth();
+	changed = UI::DrawItem(ImGui::GetColumnWidth() - 2.f * 25.f, [&]()
+	{
+		ImGui::InputTextString(textId.c_str(), &assetFileName, ImGuiInputTextFlags_ReadOnly);
+		return false;
+	});
 
 	if (auto ptr = UI::DragDropTarget("ASSET_BROWSER_ITEM"))
 	{
@@ -72,31 +72,22 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 		{
 			assetHandle = newHandle;
 			changed = true;
-			if (callback)
-			{
-				callback(assetHandle);
-			}
 		}
 	}
 
 	ImGui::SameLine();
 
-	std::string buttonId = "X##" + std::to_string(UI::GetId());
+	std::string buttonId = "X##" + std::to_string(UI::GetID());
 	if (ImGui::Button(buttonId.c_str(), { 24.5f, 24.5f }))
 	{
 		assetHandle = Volt::Asset::Null();
 		changed = true;
-		if (callback)
-		{
-			callback(assetHandle);
-		}
 	}
 
 	ImGui::SameLine();
 
-
-	std::string selectButtonId = "...##" + std::to_string(UI::GetId());
-	std::string popupId = "AssetsPopup##" + text + std::to_string(UI::GetId());
+	std::string selectButtonId = "...##" + std::to_string(UI::GetID());
+	std::string popupId = "AssetsPopup##" + text + std::to_string(UI::GetID());
 	const bool startState = s_assetBrowserPopupsOpen[popupId].state;
 
 	if (ImGui::Button(selectButtonId.c_str(), { 24.5f, 24.5f }))
@@ -105,11 +96,12 @@ bool EditorUtils::Property(const std::string& text, Volt::AssetHandle& assetHand
 		s_assetBrowserPopupsOpen[popupId].state = true;
 	}
 
-	if (AssetBrowserPopupInternal(popupId, assetHandle, startState, wantedType, callback))
+	if (AssetBrowserPopupInternal(popupId, assetHandle, startState, wantedType))
 	{
 		changed = true;
 	}
 
+	UI::EndPropertyRow();
 	ImGui::PopStyleVar();
 
 	return changed;
@@ -135,7 +127,7 @@ bool EditorUtils::AssetBrowserPopupField(const std::string& id, Volt::AssetHandl
 
 bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery, bool setAsActive)
 {
-	UI::ScopedColor childColor{ ImGuiCol_ChildBg, EditorTheme::DarkBackground };
+	UI::ScopedColor childColor{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 	UI::ScopedStyleFloat rounding(ImGuiStyleVar_ChildRounding, 2.f);
 
 	constexpr float barHeight = 32.f;
@@ -151,7 +143,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 
 		ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetStyle().WindowPadding.x);
 
-		UI::PushId();
+		UI::PushID();
 
 		if (setAsActive)
 		{
@@ -170,7 +162,7 @@ bool EditorUtils::SearchBar(std::string& outSearchQuery, bool& outHasSearchQuery
 				outHasSearchQuery = false;
 			}
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::PopItemWidth();
 	}
@@ -363,13 +355,13 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	return true;
 }
 
-bool EditorUtils::AssetBrowserPopupInternal(const std::string& popupId, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType, std::function<void(Volt::AssetHandle& value)> callback)
+bool EditorUtils::AssetBrowserPopupInternal(const std::string& popupId, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType)
 {
 	bool changed = false;
 
 	if (auto it = s_assetBrowserPopups.find(popupId); it == s_assetBrowserPopups.end() && s_assetBrowserPopupsOpen[popupId].state != startState)
 	{
-		s_assetBrowserPopups.emplace(popupId, CreateRef<AssetBrowserPopup>(popupId, wantedType, assetHandle, callback));
+		s_assetBrowserPopups.emplace(popupId, CreateRef<AssetBrowserPopup>(popupId, wantedType, assetHandle));
 	}
 
 	AssetBrowserPopup::State returnState = AssetBrowserPopup::State::Closed;
@@ -410,7 +402,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 		ImGui::TextUnformatted("Settings");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Properties"))
 		{
 			UI::Property("Source", srcPath, true);
@@ -418,21 +410,21 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::Separator();
 		ImGui::TextUnformatted("Mesh");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Settings"))
 		{
 			UI::Property("Import Mesh", aImportData.importMesh);
 			if (aImportData.importMesh)
 			{
-				UI::Property("Create Materials", aImportData.createMaterials);
+				UI::Property("Create Material", aImportData.createMaterial);
 			}
 
-			if (!aImportData.createMaterials && aImportData.importMesh)
+			if (!aImportData.createMaterial && aImportData.importMesh)
 			{
 				EditorUtils::Property("Material", aImportData.externalMaterial, Volt::AssetType::Material);
 			}
@@ -455,11 +447,11 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		if (ImGui::Button("Import"))
 		{
-			const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
+			const Volt::AssetHandle material = aImportData.createMaterial ? Volt::Asset::Null() : aImportData.externalMaterial;
 			bool succeded = false;
 
 			if (aImportData.importMesh)
@@ -467,7 +459,7 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(aMeshToImport);
 				if (importMesh && importMesh->IsValid())
 				{
-					if (!aImportData.createMaterials)
+					if (!aImportData.createMaterial)
 					{
 						const auto importedMaterial = importMesh->GetMaterial();
 						const auto materialToUse = Volt::AssetManager::GetAsset<Volt::Material>(aImportData.externalMaterial);
@@ -582,37 +574,37 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 	{
 		ImGui::TextUnformatted("Settings");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Properties"))
 		{
 			UI::Property("Destination Directory", aImportData.destination);
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::Separator();
 		ImGui::TextUnformatted("Mesh");
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("Settings"))
 		{
-			UI::Property("Create Materials", aImportData.createMaterials);
+			UI::Property("Create Materials", aImportData.createMaterial);
 
-			if (!aImportData.createMaterials)
+			if (!aImportData.createMaterial)
 			{
 				EditorUtils::Property("Material", aImportData.externalMaterial, Volt::AssetType::Material);
 			}
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 
 		if (ImGui::Button("Import"))
 		{
 			for (const auto& src : meshesToImport)
 			{
-				const Volt::AssetHandle material = aImportData.createMaterials ? Volt::Asset::Null() : aImportData.externalMaterial;
+				const Volt::AssetHandle material = aImportData.createMaterial ? Volt::Asset::Null() : aImportData.externalMaterial;
 				const std::filesystem::path destinationPath = aImportData.destination / (src.stem().string() + ".vtmesh");
 
 				bool succeded = false;
@@ -620,7 +612,7 @@ ImportState EditorUtils::MeshBatchImportModal(const std::string& aId, MeshImport
 				Ref<Volt::Mesh> importMesh = Volt::AssetManager::GetAsset<Volt::Mesh>(src);
 				if (importMesh && importMesh->IsValid())
 				{
-					if (!aImportData.createMaterials)
+					if (!aImportData.createMaterial)
 					{
 						const auto importedMaterial = importMesh->GetMaterial();
 						const auto materialToUse = Volt::AssetManager::GetAsset<Volt::Material>(aImportData.externalMaterial);

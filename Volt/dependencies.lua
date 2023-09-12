@@ -104,7 +104,6 @@ Library["swresample"] = "%{LibraryDir.ffmpeg}/libswresample.lib"
 Library["swscale"] = "%{LibraryDir.ffmpeg}/libswscale.lib"
 
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
-Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK_Debug}/VkLayer_utils.lib"
 Library["dxc"] = "%{LibraryDir.VulkanSDK}/dxcompiler.lib"
 
 Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK_Debug}/shaderc_sharedd.lib"

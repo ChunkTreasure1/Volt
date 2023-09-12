@@ -32,6 +32,15 @@ Project/Cache
 *.csproj.user
 *.cached
 
+!SideProjects/VoltLauncher/VoltLauncher.sln
+!SideProjects/VoltLauncher/VoltLauncher/VoltLauncher.csproj
+
+!SideProjects/VoltSetup/VoltSetup.sln
+!SideProjects/VoltSetup/VoltSetup/VoltSetup.vcxproj
+
+!SideProjects/VoltVSTools/VoltVSTools.sln
+!SideProjects/VoltVSTools/VoltVSTools/VoltVSTools.csproj
+
 Volt/scripts/data/__pycache__
 Volt/scripts/data/premake5.exe
 

@@ -1,11 +1,14 @@
 #pragma once
 
+#include "Volt/Utility/Version.h"
+
 namespace Volt
 {
 	struct Project
 	{
 		std::string name;
 		std::string companyName;
+		Version engineVersion;
 		std::filesystem::path projectFilePath;
 		std::filesystem::path projectDirectory;
 
@@ -15,13 +18,17 @@ namespace Volt
 		std::filesystem::path cursorPath;
 		std::filesystem::path iconPath;
 		std::filesystem::path startScenePath;
+
+		bool isDeprecated = false;
 	};
 
 	class ProjectManager
 	{
 	public:
-		static void SetupWorkingDirectory();
 		static void SetupProject(const std::filesystem::path projectPath);
+
+		static void SerializeProject();
+		static void DeserializeProject();
 
 		static const std::filesystem::path GetEngineScriptsDirectory();
 		static const std::filesystem::path GetAssetsDirectory();
@@ -34,16 +41,17 @@ namespace Volt
 		static const std::filesystem::path GetMonoAssemblyPath();
 		static const std::filesystem::path& GetDirectory();
 
-		static const Project& GetProject();
+		static const bool IsCurrentProjectDeprecated();
 
+		static const Project& GetProject();
+		static void OnProjectUpgraded();
 
 	private:
-		static void LoadProjectInfo();
 
 		ProjectManager() = delete;
 
-		inline static std::filesystem::path myCurrentEngineDirectory;
-	
-		inline static Scope<Project> myCurrentProject;
+		inline static std::filesystem::path m_currentEngineDirectory;
+
+		inline static Scope<Project> m_currentProject;
 	};
 }

@@ -160,6 +160,10 @@ namespace Volt
 					if (it != previousRenderPass->resourceWrites.end())
 					{
 						passUsesPreviousTexture = true;
+					}
+
+					if (passUsesPreviousTexture)
+					{
 						break;
 					}
 				}
@@ -171,6 +175,10 @@ namespace Volt
 					if (it != previousRenderPass->resourceWrites.end())
 					{
 						passUsesPreviousTexture = true;
+					}
+
+					if (passUsesPreviousTexture)
+					{
 						break;
 					}
 				}

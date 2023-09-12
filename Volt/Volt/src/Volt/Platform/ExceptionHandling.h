@@ -29,7 +29,7 @@ namespace Volt
 
 		const auto& appInfo = Application::Get().GetInfo();
 		const std::filesystem::path dumpPath = CreateOrGetDumpFolder() / (std::format("{0}-{1}_{2}-{3}-{4}_{5}-{6}-{7}",
-			appInfo.title, appInfo.version,
+			appInfo.title, appInfo.version.ToString(),
 			localTime.wYear, localTime.wMonth, localTime.wDay, localTime.wHour,
 			localTime.wMinute, localTime.wSecond) + ".dmp");
 

@@ -176,8 +176,6 @@ project "Launcher"
 			"%{Library.SPIRV_Cross_Debug}",
 			"%{Library.SPIRV_Cross_GLSL_Debug}",
 			"%{Library.SPIRV_Tools_Debug}",
-
-			"%{Library.VulkanUtils}"
 		}
 
 	filter "configurations:Release"

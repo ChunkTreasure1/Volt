@@ -59,7 +59,7 @@ namespace Volt
 					std::unordered_map<std::string, NetRule> outerValue;
 					auto ruleNodeInner = ruleNodeOuter[std::to_string(outerKey).c_str()];
 
-					for (YAML::const_iterator rulesIt = ruleNodeInner.begin(); rulesIt != ruleNodeInner.end(); ++it)
+					for (YAML::const_iterator rulesIt = ruleNodeInner.begin(); rulesIt != ruleNodeInner.end(); ++rulesIt)
 					{
 						std::string innerKey = rulesIt->first.as<std::string>();
 						NetRule innerValue;

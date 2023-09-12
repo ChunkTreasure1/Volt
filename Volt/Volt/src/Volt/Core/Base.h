@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+#define VT_VERSION Version::Create(0, 1, 1)
+
 #define BIT(X) (1 << (X))
 #define TO_NORMALIZEDRGB(r, g, b) glm::vec4{ r / 255.f, g / 255.f, b / 255.f, 1.f }
 #define TO_NORMALIZEDRGBA(r, g, b, a) glm::vec4{ r / 255.f, g / 255.f, b / 255.f, a / 255.f }
@@ -28,8 +30,8 @@ const char* VKResultToString(int32_t result);
 #else
 
 #ifdef VT_DIST
-#define VT_OPTIMIZE_OFF
-#define VT_OPTIMIZE_ON
+#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
+#define VT_OPTIMIZE_ON __pragma(optimize("", on));
 #endif
 
 #ifdef VT_RELEASE

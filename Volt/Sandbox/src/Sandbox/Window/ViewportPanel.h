@@ -40,7 +40,7 @@ public:
 	void UpdateContent() override;
 	void OnEvent(Volt::Event& e) override;
 
-	glm::vec2 GetSize() { return myViewportSize; }
+	glm::vec2 GetSize() { return m_viewportSize; }
 	glm::vec2 GetViewportLocalPosition(const ImVec2& mousePos);
 	glm::vec2 GetViewportLocalPosition(const glm::vec2& mousePos);
 
@@ -65,42 +65,42 @@ private:
 
 	glm::mat4 CalculateAverageTransform();
 
-	Ref<Volt::SceneRenderer>& mySceneRenderer;
-	Ref<Volt::Scene>& myEditorScene;
+	Ref<Volt::SceneRenderer>& m_sceneRenderer;
+	Ref<Volt::Scene>& m_editorScene;
 
-	AnimatedIcon myAnimatedPhysicsIcon;
-	EditorCameraController* myEditorCameraController;
+	AnimatedIcon m_animatedPhysicsIcon;
+	EditorCameraController* m_editorCameraController;
 
-	glm::vec2 myPerspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
-	glm::vec2 myViewportSize = { 1280.f, 720.f };
+	glm::vec2 m_perspectiveBounds[2] = { { 0.f, 0.f }, { 0.f, 0.f } };
+	glm::vec2 m_viewportSize = { 1280.f, 720.f };
 
-	ImGuizmo::OPERATION myGizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
-	SceneState& mySceneState;
+	ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+	SceneState& m_sceneState;
 
 	const std::vector<float> m_snapToGridValues = { 1.f, 10.f, 25.f, 50.f, 100.f, 200.f, 500.f, 1000.f };
 	const std::vector<float> m_snapRotationValues = { 10.f, 30.f, 45.f, 90.f };
 	const std::vector<float> m_snapScaleValues = { 0.01f, 0.1f, 0.25f, 0.5f, 1.f };
 
-	glm::vec2 myViewportMouseCoords;
-	bool myMidEvent;
+	glm::vec2 m_viewportMouseCoords;
+	bool m_midEvent;
 
-	bool myCreatedAssetOnDrag = false;
-	bool myIsInViewport = false;
+	bool m_createdAssetOnDrag = false;
+	bool m_isInViewport = false;
 
-	bool myShowRenderTargets = false;
+	bool m_isDragging = false;
+	bool m_beganClick = false;
+	ImVec2 m_startDragPos = { 0.f, 0.f };
 
-	bool myIsDragging = false;
-	bool myBeganClick = false;
-	ImVec2 myStartDragPos = { 0.f, 0.f };
+	uint32_t m_currentRenderPass = 0;
 
-	uint32_t myCurrentRenderPass = 0;
+	Volt::Entity m_createdEntity;
 
-	Volt::Entity myCreatedEntity;
+	Wire::EntityId m_entityToAddMesh = Wire::NullID;
+	std::filesystem::path m_meshToImport;
 
-	Wire::EntityId myEntityToAddMesh = Wire::NullID;
-	std::filesystem::path myMeshToImport;
-	MeshImportData myMeshImportData;
+	Volt::AssetHandle m_sceneToOpen = Volt::Asset::Null();
 
-	Volt::AssetHandle mySceneToOpen = Volt::Asset::Null();
+	///// Modals /////
+	Volt::UUID m_meshImportModal = 0;
 };
 

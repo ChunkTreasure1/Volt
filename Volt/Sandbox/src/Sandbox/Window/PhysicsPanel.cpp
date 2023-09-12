@@ -77,7 +77,7 @@ void PhysicsPanel::DrawView()
 
 void PhysicsPanel::DrawGeneralMenu()
 {
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties(""))
 	{
 		UI::Property("Gravity", const_cast<glm::vec3&>(Volt::Physics::GetSettings().gravity));
@@ -104,7 +104,7 @@ void PhysicsPanel::DrawGeneralMenu()
 
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 }
 
 void PhysicsPanel::DrawLayersMenu()
@@ -121,7 +121,7 @@ void PhysicsPanel::DrawLayersMenu()
 		const std::string layerId = layer.name + "###" + std::to_string(layer.layerId);
 		if (ImGui::CollapsingHeader(layerId.c_str()))
 		{
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties(""))
 			{
 				UI::Property("Name", layer.name);
@@ -136,7 +136,7 @@ void PhysicsPanel::DrawLayersMenu()
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			{
 				UI::ScopedColor color{ ImGuiCol_Button, { 0.2f, 0.2f, 0.2f, 1.f } };

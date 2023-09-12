@@ -9,7 +9,7 @@
 AssetRegistryPanel::AssetRegistryPanel()
 	: EditorWindow("Asset Registry")
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 }
 
 void AssetRegistryPanel::UpdateMainContent()

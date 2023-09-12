@@ -12,7 +12,7 @@ namespace NodeGraph
 	Editor::Editor(const std::string& title, const std::string& context, bool dockSpace, Ref<EditorBackend> backend)
 		: EditorWindow(title, dockSpace), myContext(context), myBackend(backend)
 	{
-		myWindowFlags = ImGuiWindowFlags_MenuBar;
+		m_windowFlags = ImGuiWindowFlags_MenuBar;
 	}
 
 	Editor::~Editor()
@@ -29,7 +29,7 @@ namespace NodeGraph
 
 	void Editor::UpdateMainContent()
 	{
-		if (myHasDockSpace)
+		if (m_hasDockspace)
 		{
 			DrawMenuBar();
 		}
@@ -41,7 +41,7 @@ namespace NodeGraph
 
 	void Editor::UpdateContent()
 	{
-		if (myHasDockSpace)
+		if (m_hasDockspace)
 		{
 			DrawEditor();
 
@@ -225,9 +225,9 @@ namespace NodeGraph
 
 	void Editor::DrawEditor()
 	{
-		if (myHasDockSpace)
+		if (m_hasDockspace)
 		{
-			ImGui::SetNextWindowDockID(myMainDockId, ImGuiCond_Always);
+			ImGui::SetNextWindowDockID(m_mainDockID, ImGuiCond_Always);
 			ImGui::SetNextWindowClass(GetWindowClass());
 
 			ImGui::SetNextWindowSizeConstraints({ 100.f, 100.f }, { 0.f, 0.f });
@@ -358,7 +358,7 @@ namespace NodeGraph
 			}
 		}
 
-		if (myHasDockSpace)
+		if (m_hasDockspace)
 		{
 			ImGui::End();
 		}
