@@ -16,8 +16,6 @@
 #include <GraphKey/Graph.h>
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 
-#include "EnTTTesting.h"
-
 namespace Volt
 {
 	Entity::Entity()

@@ -125,7 +125,7 @@ std::pair<std::filesystem::path, Volt::AssetHandle> ProjectUpgradeModal::Deseria
 		streamReader.EnterScope("Metadata");
 
 		resultAssetFilePath = streamReader.ReadKey("filePath", std::string(""));
-		resultAssetHandle = streamReader.ReadKey("assetHandle", 0u);
+		resultAssetHandle = streamReader.ReadKey("assetHandle", uint64_t(0u));
 
 		streamReader.ExitScope();
 	}

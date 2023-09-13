@@ -35,6 +35,15 @@ namespace Volt
 		return registry.get<EnTTTagComponent>(m_id).tag;
 	}
 
+	const uint32_t EnttEntity::GetLayerID() const
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTCommonComponent>(m_id) && "Entity must have common component!");
+		return registry.get<EnTTCommonComponent>(m_id).layerId;
+	}
+
 	void EnttEntity::SetTag(std::string_view tag)
 	{
 		auto scenePtr = GetScene();
@@ -221,6 +230,63 @@ namespace Volt
 		registry.get<EnTTTransformComponent>(m_id).scale = scale;
 	}
 
+	void EnttEntity::ClearParent()
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTRelationshipComponent>(m_id) && "Entity must have relationship component!");
+	
+		auto parent = GetParent();
+		parent.RemoveChild(*this);
+
+		registry.get<EnTTRelationshipComponent>(m_id).parent = entt::null;
+	}
+
+	void EnttEntity::ClearChildren()
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTRelationshipComponent>(m_id) && "Entity must have relationship component!");
+
+		auto& children = registry.get<EnTTRelationshipComponent>(m_id).children;
+
+		for (const auto& child : children)
+		{
+			EnttEntity childEnt{ child, m_scene };
+			if (childEnt.GetParent().GetId() == m_id)
+			{
+				childEnt.GetComponent<EnTTRelationshipComponent>().parent = entt::null;
+			}
+		}
+
+		children.clear();
+	}
+
+	void EnttEntity::RemoveChild(EnttEntity entity)
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTRelationshipComponent>(m_id) && "Entity must have relationship component!");
+
+		auto& relComp = registry.get<EnTTRelationshipComponent>(m_id);
+		for (uint32_t index = 0; const auto& id : relComp.children)
+		{
+			if (id == entity.GetId())
+			{
+				EnttEntity childEnt = { id, m_scene };
+				childEnt.GetComponent<EnTTRelationshipComponent>().parent = entt::null;
+				
+				relComp.children.erase(relComp.children.begin() + index);
+				break;
+			}
+
+			index++;
+		}
+	}
+
 	const EnttEntity EnttEntity::GetParent() const
 	{
 		auto scenePtr = GetScene();
@@ -237,6 +303,24 @@ namespace Volt
 		return { relComp.parent, m_scene };
 	}
 
+	const std::vector<EnttEntity> EnttEntity::GetChildren() const
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTRelationshipComponent>(m_id) && "Entity must have relationship component!");
+
+		const auto& children = registry.get<EnTTRelationshipComponent>(m_id).children;
+
+		std::vector<EnttEntity> result{};
+		for (const auto& id : children)
+		{
+			result.emplace_back(id, m_scene);
+		}
+
+		return result;
+	}
+
 	const bool EnttEntity::HasParent() const
 	{
 		auto scenePtr = GetScene();
@@ -246,6 +330,24 @@ namespace Volt
 
 		auto& relComp = registry.get<EnTTRelationshipComponent>(m_id);
 		return relComp.parent != entt::null;
+	}
+
+	const bool EnttEntity::IsVisible() const
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTTransformComponent>(m_id) && "Entity must have transform component!");
+		return registry.get<EnTTTransformComponent>(m_id).visible;
+	}
+
+	const bool EnttEntity::IsLocked() const
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetEnTTRegistry();
+
+		assert(registry.any_of<EnTTTransformComponent>(m_id) && "Entity must have transform component!");
+		return registry.get<EnTTTransformComponent>(m_id).locked;
 	}
 
 	const bool EnttEntity::IsValid() const

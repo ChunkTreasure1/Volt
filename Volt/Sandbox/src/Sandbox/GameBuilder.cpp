@@ -58,7 +58,7 @@ namespace Utility
 		
 		const auto filename = path.filename().string();
 
-		if (skipExtension && !Utils::StringContains(filename, "vtthumb"))
+		if (skipExtension && !Utility::StringContains(filename, "vtthumb"))
 		{
 			VT_CORE_ERROR("[Build] Asset {0} with extensin {1} was skipped!", path.string(), path.extension().string());
 		}

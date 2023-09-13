@@ -17,7 +17,7 @@ namespace Volt
 		Ref<Scene> GetScene() const { return m_scene.lock(); }
 
 		const std::string& GetTag();
-		void SetTag(std::string_view tag);
+		const uint32_t GetLayerID() const;
 
 		const glm::mat4 GetTransform() const;
 		const glm::mat4 GetLocalTransform() const;
@@ -38,6 +38,8 @@ namespace Volt
 		const glm::quat& GetLocalRotation() const;
 		const glm::vec3& GetLocalScale() const;
 
+		void SetTag(std::string_view tag);
+
 		void SetPosition(const glm::vec3& position, bool updatePhysics = true);
 		void SetRotation(const glm::quat& rotation, bool updatePhysics = true);
 		void SetScale(const glm::vec3& scale);
@@ -46,8 +48,17 @@ namespace Volt
 		void SetLocalRotation(const glm::quat& rotation, bool updatePhysics = true);
 		void SetLocalScale(const glm::vec3& scale);
 
+		void ClearParent();
+		void ClearChildren();
+
+		void RemoveChild(EnttEntity entity);
+
 		const EnttEntity GetParent() const;
+		const std::vector<EnttEntity> GetChildren() const;
 		const bool HasParent() const;
+
+		const bool IsVisible() const;
+		const bool IsLocked() const;
 
 		const bool IsValid() const;
 		inline const entt::entity GetId() const { return m_id; }
@@ -74,40 +85,35 @@ namespace Volt
 	template<typename T>
 	inline T& EnttEntity::GetComponent()
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetEnTTRegistry();
+		auto& registry = m_scene->GetEnTTRegistry();
 		return registry.get<T>(m_id);
 	}
 
 	template<typename T>
 	inline const T& EnttEntity::GetComponent() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetEnTTRegistry();
+		auto& registry = m_scene->GetEnTTRegistry();
 		return registry.get<T>(m_id);
 	}
 
 	template<typename T>
 	inline const bool EnttEntity::HasComponent() const
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetEnTTRegistry();
+		auto& registry = m_scene->GetEnTTRegistry();
 		return registry.any_of<T>(m_id);
 	}
 
 	template<typename T, typename ...Args>
 	inline T& EnttEntity::AddComponent(Args && ...args)
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetEnTTRegistry();
+		auto& registry = m_scene->GetEnTTRegistry();
 		return registry.emplace<T>(m_id);
 	}
 
 	template<typename T>
 	inline void EnttEntity::RemoveComponent()
 	{
-		auto scenePtr = GetScene();
-		auto& registry = scenePtr->GetEnTTRegistry();
+		auto& registry = m_scene->GetEnTTRegistry();
 		registry.remove<T>(m_id);
 	}
 }
