@@ -197,7 +197,7 @@ void NetContractPanel::DrawChildRules(Ref<Volt::NetContract> in_contract)
 	DrawChild(in_contract, m_entityId);
 }
 
-void NetContractPanel::DrawChild(Ref<Volt::NetContract> in_contract, Wire::EntityId in_id)
+void NetContractPanel::DrawChild(Ref<Volt::NetContract> in_contract, entt::entity in_id)
 {
 	auto ent = Volt::Entity(in_id, m_scene.get());
 	if (ImGui::CollapsingHeader(ent.GetTag().c_str()))
@@ -243,7 +243,7 @@ bool NetContractPanel::BlockStandardComponents(const std::string& in_name)
 	return false;
 }
 
-void NetContractPanel::DrawRuleSet(Ref<Volt::NetContract> in_contract, Wire::EntityId in_id)
+void NetContractPanel::DrawRuleSet(Ref<Volt::NetContract> in_contract, entt::entity in_id)
 {
 	auto& registry = m_scene->GetRegistry();
 	auto entity = Volt::Entity(in_id, m_scene.get());

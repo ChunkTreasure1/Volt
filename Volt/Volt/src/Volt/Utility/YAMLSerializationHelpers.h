@@ -1,15 +1,17 @@
 #pragma once
 
-#include "Volt/Asset/Asset.h"
 #include "Volt/Rendering/Buffer/BufferLayout.h"
 #include "Volt/Rendering/Shader/Shader.h"
-#include "Volt/Asset/TimelinePreset.h"
 
+#include "Volt/Asset/Asset.h"
+#include "Volt/Asset/TimelinePreset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 
+#include "Volt/Scene/Serialization/VoltGUID.h"
+
+#include <entt.hpp>
+
 #include <glm/glm.hpp>
-#include <Wire/WireGUID.h>
-#include <Wire/Serialization.h>
 #include <yaml-cpp/yaml.h>
 
 namespace YAML
@@ -352,9 +354,26 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<WireGUID>
+	struct convert<entt::entity>
 	{
-		static Node encode(const WireGUID& rhs)
+		static Node encode(const entt::entity& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, entt::entity& v)
+		{
+			v = static_cast<entt::entity>(node.as<uint32_t>());
+			return true;
+		};
+	};
+
+	template<>
+	struct convert<VoltGUID>
+	{
+		static Node encode(const VoltGUID& rhs)
 		{
 			Node node;
 			node.push_back(rhs.hiPart);
@@ -362,9 +381,9 @@ namespace YAML
 			return node;
 		};
 
-		static bool decode(const Node& node, WireGUID& v)
+		static bool decode(const Node& node, VoltGUID& v)
 		{
-			WireGUID guid{ node[0].as<uint64_t>(), node[1].as<uint64_t>() };
+			VoltGUID guid{ node[0].as<uint64_t>(), node[1].as<uint64_t>() };
 			v = guid;
 			return true;
 		};
@@ -471,23 +490,6 @@ namespace YAML
 			return true;
 		};
 	};
-
-	template<>
-	struct convert<Wire::ComponentRegistry::PropertyType>
-	{
-		static Node encode(const Wire::ComponentRegistry::PropertyType& rhs)
-		{
-			Node node;
-			node.push_back((uint32_t)rhs);
-			return node;
-		};
-
-		static bool decode(const Node& node, Wire::ComponentRegistry::PropertyType& v)
-		{
-			v = (Wire::ComponentRegistry::PropertyType)node.as<uint32_t>();
-			return true;
-		};
-	};
 }
 
 namespace Volt
@@ -580,6 +582,12 @@ namespace Volt
 		return out;
 	}
 
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const entt::entity& handle)
+	{
+		out << static_cast<uint32_t>(handle);
+		return out;
+	}
+
 	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Volt::TrackType& handle)
 	{
 		out << static_cast<uint32_t>(handle);
@@ -610,13 +618,7 @@ namespace Volt
 		return out;
 	}
 
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const Wire::ComponentRegistry::PropertyType& handle)
-	{
-		out << static_cast<uint32_t>(handle);
-		return out;
-	}
-
-	inline YAML::Emitter& operator<<(YAML::Emitter& out, const WireGUID& handle)
+	inline YAML::Emitter& operator<<(YAML::Emitter& out, const VoltGUID& handle)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << handle.hiPart << handle.loPart << YAML::EndSeq;

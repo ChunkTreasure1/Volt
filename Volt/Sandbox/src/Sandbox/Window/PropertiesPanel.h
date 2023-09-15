@@ -19,7 +19,7 @@ enum class PropertyEventType
 
 struct PropertyEvent
 {
-	Wire::EntityId myEntityId;
+	entt::entity myEntityId;
 	PropertyEventType myType;
 	std::variant<glm::vec3> myValue;
 };
@@ -40,9 +40,9 @@ private:
 	void AddMonoScriptPopup();
 	void AcceptMonoDragDrop();
 
-	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const Wire::EntityId& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo);
+	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo);
 	void DrawMonoProperties(Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo, Volt::MonoScriptEntry& scriptEntry);
-	void DrawGraphKeyProperties(const Wire::EntityId id, Volt::VisualScriptingComponent& comp);
+	void DrawGraphKeyProperties(const entt::entity id, Volt::VisualScriptingComponent& comp);
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;

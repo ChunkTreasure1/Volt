@@ -117,10 +117,10 @@ namespace Volt
 	{
 		if (myOnCollisionEnterMethod)
 		{
-			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetId());
+			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetID());
 			if (!entityInstance)
 			{
-				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetId());
+				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetID());
 			}
 
 			auto monoEntity = MonoGCManager::GetObjectFromHandle(entityInstance->GetHandle());
@@ -134,10 +134,10 @@ namespace Volt
 	{
 		if (myOnCollisionExitMethod)
 		{
-			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetId());
+			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetID());
 			if (!entityInstance)
 			{
-				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetId());
+				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetID());
 			}
 
 			auto monoEntity = MonoGCManager::GetObjectFromHandle(entityInstance->GetHandle());
@@ -151,10 +151,10 @@ namespace Volt
 	{
 		if (myOnTriggerEnterMethod)
 		{
-			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetId());
+			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetID());
 			if (!entityInstance)
 			{
-				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetId());
+				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetID());
 			}
 
 			auto monoEntity = MonoGCManager::GetObjectFromHandle(entityInstance->GetHandle());
@@ -168,10 +168,10 @@ namespace Volt
 	{
 		if (myOnTriggerExitMethod)
 		{
-			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetId());
+			auto entityInstance = MonoScriptEngine::GetEntityFromId(entity.GetID());
 			if (!entityInstance)
 			{
-				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetId());
+				entityInstance = MonoScriptEngine::GetOrCreateMonoEntity(entity.GetID());
 			}
 
 			auto monoEntity = MonoGCManager::GetObjectFromHandle(entityInstance->GetHandle());

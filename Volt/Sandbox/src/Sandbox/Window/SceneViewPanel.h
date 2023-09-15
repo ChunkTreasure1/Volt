@@ -22,38 +22,38 @@ public:
 	void UpdateMainContent() override;
 	void OnEvent(Volt::Event& e) override;
 
-	void HighlightEntity(Wire::EntityId id);
+	void HighlightEntity(Volt::Entity entity);
 
 private:
 	bool OnKeyPressedEvent(Volt::KeyPressedEvent& e);
 
-	void DrawEntity(Wire::EntityId id, const std::string& filter);
-	void CreatePrefabAndSetupEntities(Wire::EntityId entity);
+	void DrawEntity(Volt::Entity entity, const std::string& filter);
+	void CreatePrefabAndSetupEntities(Volt::Entity entity);
 
 	void RebuildEntityDrawList();
-	void RebuildEntityDrawListRecursive(Wire::EntityId entityId, const std::string& filter);
+	void RebuildEntityDrawListRecursive(Volt::Entity entityId, const std::string& filter);
 
-	bool SearchRecursively(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth = 0);
-	bool SearchRecursivelyParent(Wire::EntityId id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth = 0);
+	bool SearchRecursively(Volt::Entity id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth = 0);
+	bool SearchRecursivelyParent(Volt::Entity id, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth = 0);
 	bool MatchesQuery(const std::string& text, const std::string& filter);
-	bool HasComponent(Wire::EntityId id, const std::string& filter);
-	bool HasScript(Wire::EntityId id, const std::string& filter);
+	bool HasComponent(Volt::Entity id, const std::string& filter);
+	bool HasScript(Volt::Entity id, const std::string& filter);
 
 	void DrawMainRightClickPopup();
 
 	void CorrectMissingPrefabs();
 	void ReloadAllPrefabModal();
-	void ReloadPrefabImpl(Wire::EntityId id, Ref<Volt::Prefab> asset);
+	void ReloadPrefabImpl(Volt::Entity entity, Ref<Volt::Prefab> asset);
 
 	std::string mySearchQuery;
 	bool myHasSearchQuery = false;
-	Wire::EntityId myScrollToEntiy = 0;
+	entt::entity myScrollToEntity = entt::null;
 
 	bool myIsRenamingLayer = false;
 	uint32_t myRenamingLayer = 0;
 
-	std::vector<Wire::EntityId> myEntityDrawList;
-	std::unordered_map<Wire::EntityId, ImGuiID> myEntityToImGuiID;
+	std::vector<entt::entity> myEntityDrawList;
+	std::unordered_map<entt::entity, ImGuiID> myEntityToImGuiID;
 	bool myRebuildDrawList = false;
 
 	Ref<Volt::Scene>& myScene;

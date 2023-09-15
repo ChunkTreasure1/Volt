@@ -8,7 +8,7 @@ namespace GraphKey
 		inputs =
 		{
 			AttributeConfig("", AttributeDirection::Input, GK_BIND_FUNCTION(CallCustomEventNode::CallEvent)),
-			AttributeConfigDefault<Volt::Entity>("Target", AttributeDirection::Input, Volt::Entity{ 0, nullptr })
+			AttributeConfigDefault<Volt::Entity>("Target", AttributeDirection::Input, Volt::Entity{ entt::null, {} })
 		};
 
 		outputs =
@@ -32,18 +32,18 @@ namespace GraphKey
 			return nullMessage;
 		}
 
-		if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-		{
-			return nullMessage;
-		}
+		//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+		//{
+		//	return nullMessage;
+		//}
 
-		auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-		if (!comp.graph)
-		{
-			return nullMessage;
-		}
+		//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+		//if (!comp.graph)
+		//{
+		//	return nullMessage;
+		//}
 
-		return "Call " + comp.graph->GetEventNameFromId(eventId);
+		return "Call "/* + comp.graph->GetEventNameFromId(eventId)*/;
 	}
 
 	void CallCustomEventNode::CallEvent()
@@ -54,18 +54,18 @@ namespace GraphKey
 			return;
 		}
 
-		if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-		{
-			return;
-		}
+		//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+		//{
+		//	return;
+		//}
 
-		auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-		if (!comp.graph)
-		{
-			return;
-		}
+		//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+		//if (!comp.graph)
+		//{
+		//	return;
+		//}
 
-		comp.graph->GetEventSystem().Dispatch(eventId);
+		//comp.graph->GetEventSystem().Dispatch(eventId);
 		ActivateOutput(0);
 	}
 

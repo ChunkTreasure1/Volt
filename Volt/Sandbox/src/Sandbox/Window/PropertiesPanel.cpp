@@ -380,7 +380,7 @@ void PropertiesPanel::UpdateMainContent()
 								break;
 							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]));
 								break;
-							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset]));
+							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(entt::entity*)(&data[prop.offset]));
 								break;
 
 							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset]));
@@ -570,12 +570,12 @@ void PropertiesPanel::UpdateMainContent()
 
 							case Wire::ComponentRegistry::PropertyType::EntityId:
 							{
-								if (UI::PropertyEntity(prop.name, myCurrentScene, *(Wire::EntityId*)(&data[prop.offset])))
+								if (UI::PropertyEntity(prop.name, myCurrentScene, *(entt::entity*)(&data[prop.offset])))
 								{
 									for (auto& ent : entities)
 									{
 										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(Wire::EntityId*)&entData[prop.offset] = *(Wire::EntityId*)(&data[prop.offset]);
+										*(entt::entity*)&entData[prop.offset] = *(entt::entity*)(&data[prop.offset]);
 									}
 								}
 								break;
@@ -1116,7 +1116,7 @@ void PropertiesPanel::AcceptMonoDragDrop()
 	}
 }
 
-void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const Wire::EntityId& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo)
+void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo)
 {
 	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName(scriptEntry.name);
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
@@ -1531,7 +1531,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 							case Volt::MonoFieldType::Asset: fieldChanged = EditorUtils::Property(displayName, *entField->data.As<Volt::AssetHandle>(), Volt::AssetType::None);
 								break;
 
-							case Volt::MonoFieldType::Entity: fieldChanged = UI::PropertyEntity(displayName, myCurrentScene, *entField->data.As<Wire::EntityId>());
+							case Volt::MonoFieldType::Entity: fieldChanged = UI::PropertyEntity(displayName, myCurrentScene, *entField->data.As<entt::entity>());
 								break;
 
 							case Volt::MonoFieldType::Color: fieldChanged = UI::PropertyColor(displayName, *entField->data.As<glm::vec4>());
@@ -1588,7 +1588,7 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 	}
 }
 
-void PropertiesPanel::DrawGraphKeyProperties(const Wire::EntityId id, Volt::VisualScriptingComponent& comp)
+void PropertiesPanel::DrawGraphKeyProperties(const entt::entity id, Volt::VisualScriptingComponent& comp)
 {
 	if (!comp.graph)
 	{

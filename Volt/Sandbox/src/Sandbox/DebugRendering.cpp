@@ -12,7 +12,8 @@
 
 #include <Volt/Physics/MeshColliderCache.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
+#include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Components/PhysicsComponents.h>
 
@@ -70,7 +71,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 	if (settings.showEntityGizmos)
 	{
-		registry.ForEach<Volt::TransformComponent>([&](Wire::EntityId id, const Volt::TransformComponent& transformComp)
+		registry.ForEach<Volt::TransformComponent>([&](entt::entity id, const Volt::TransformComponent& transformComp)
 		{
 			if (registry.HasComponent<Volt::CameraComponent>(id) || registry.HasComponent<Volt::PointLightComponent>(id) || registry.HasComponent<Volt::SpotLightComponent>(id))
 			{
@@ -109,7 +110,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 	if (settings.showEntityGizmos || settings.showLightSpheres)
 	{
-		registry.ForEach<Volt::PointLightComponent, Volt::TransformComponent>([&](Wire::EntityId id, const Volt::PointLightComponent& lightComp, const Volt::TransformComponent& transformComp)
+		registry.ForEach<Volt::PointLightComponent, Volt::TransformComponent>([&](entt::entity id, const Volt::PointLightComponent& lightComp, const Volt::TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -139,7 +140,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 			}
 		});
 
-		registry.ForEach<Volt::SpotLightComponent, Volt::TransformComponent>([&](Wire::EntityId id, const Volt::SpotLightComponent& lightComp, const Volt::TransformComponent& transformComp)
+		registry.ForEach<Volt::SpotLightComponent, Volt::TransformComponent>([&](entt::entity id, const Volt::SpotLightComponent& lightComp, const Volt::TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -171,7 +172,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 		if (settings.showLightSpheres)
 		{
-			registry.ForEach<Volt::PointLightComponent>([&](Wire::EntityId id, const Volt::PointLightComponent& comp)
+			registry.ForEach<Volt::PointLightComponent>([&](entt::entity id, const Volt::PointLightComponent& comp)
 			{
 				Volt::Entity entity{ id, myRuntimeScene.get() };
 				Volt::DebugRenderer::DrawLineSphere(entity.GetPosition(), comp.radius);
@@ -181,7 +182,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		///// Sphere Bounds Visualization /////
 		if (settings.showBoundingSpheres)
 		{
-			registry.ForEach<Volt::MeshComponent>([&](Wire::EntityId id, const Volt::MeshComponent& comp)
+			registry.ForEach<Volt::MeshComponent>([&](entt::entity id, const Volt::MeshComponent& comp)
 			{
 				if (comp.handle == Volt::Asset::Null())
 				{
@@ -249,7 +250,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 	///////////////////////////////////////
 
 	///// Camera Gizmo /////
-	registry.ForEach<Volt::CameraComponent, Volt::TransformComponent>([&](Wire::EntityId id, const Volt::CameraComponent& cameraComponent, const Volt::TransformComponent& transComp)
+	registry.ForEach<Volt::CameraComponent, Volt::TransformComponent>([&](entt::entity id, const Volt::CameraComponent& cameraComponent, const Volt::TransformComponent& transComp)
 	{
 		if (!transComp.visible)
 		{
@@ -287,7 +288,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		case ColliderViewMode::All:
 		{
 			auto collisionMaterial = Volt::AssetManager::GetAsset<Volt::Material>("Editor/Materials/M_ColliderDebug.vtmat");
-			registry.ForEach<Volt::BoxColliderComponent>([&](Wire::EntityId id, const Volt::BoxColliderComponent& collider)
+			registry.ForEach<Volt::BoxColliderComponent>([&](entt::entity id, const Volt::BoxColliderComponent& collider)
 			{
 				Volt::Entity entity{ id, myRuntimeScene.get() };
 				auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
@@ -298,7 +299,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				Volt::DebugRenderer::DrawMesh(cubeMesh, collisionMaterial, transform * colliderTransform, id);
 			});
 
-			registry.ForEach<Volt::SphereColliderComponent>([&](Wire::EntityId id, const Volt::SphereColliderComponent& collider)
+			registry.ForEach<Volt::SphereColliderComponent>([&](entt::entity id, const Volt::SphereColliderComponent& collider)
 			{
 				Volt::Entity entity{ id, myRuntimeScene.get() };
 				auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
@@ -309,7 +310,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				Volt::DebugRenderer::DrawMesh(sphereMesh, collisionMaterial, transform * colliderTransform, id);
 			});
 
-			registry.ForEach<Volt::CapsuleColliderComponent>([&](Wire::EntityId id, const Volt::CapsuleColliderComponent& collider)
+			registry.ForEach<Volt::CapsuleColliderComponent>([&](entt::entity id, const Volt::CapsuleColliderComponent& collider)
 			{
 				Volt::Entity entity{ id, myRuntimeScene.get() };
 				auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);
@@ -320,7 +321,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 				Volt::DebugRenderer::DrawMesh(capsuleMesh, collisionMaterial, transform * colliderTransform, id);
 			});
 
-			registry.ForEach<Volt::MeshColliderComponent>([&](Wire::EntityId id, const Volt::MeshColliderComponent& collider)
+			registry.ForEach<Volt::MeshColliderComponent>([&](entt::entity id, const Volt::MeshColliderComponent& collider)
 			{
 				Volt::Entity entity{ id, myRuntimeScene.get() };
 				auto transform = myRuntimeScene->GetWorldSpaceTransform(entity);

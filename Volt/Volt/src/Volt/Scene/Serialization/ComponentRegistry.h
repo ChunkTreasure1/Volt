@@ -5,7 +5,8 @@
 
 #include <unordered_map>
 
-#define REGISTER_COMPONENT(compType) inline static bool _comp_registered = Volt::ComponentRegistry::RegisterComponent<compType>()
+#define REGISTER_COMPONENT(compType) inline static bool compType ## _comp_registered = Volt::ComponentRegistry::RegisterComponent<compType>()
+#define REGISTER_ENUM(enumType) inline static bool enumType ## _enum_registered = Volt::ComponentRegistry::RegisterEnum<enumType>()
 
 namespace Volt
 {
@@ -15,22 +16,43 @@ namespace Volt
 		template<typename T>
 		static const bool RegisterComponent();
 
+		template<typename T>
+		static const bool RegisterEnum();
+
 	private:
-		inline static std::unordered_map<VoltGUID, Scope<IComponentDesc>> m_registry;
+		inline static std::unordered_map<VoltGUID, const ICommonTypeDesc*> m_componentRegistry;
+		inline static std::unordered_map<VoltGUID, const IEnumTypeDesc*> m_enumRegistry;
 	};
 
 	template<typename T>
 	inline const bool ComponentRegistry::RegisterComponent()
 	{
-		Scope<ComponentDesc<T>> reflectionType = CreateScope<ComponentDesc<T>>();
-		T::Reflect(*reflectionType);
+		static_assert(IsReflectedType<T>());
 
-		if (m_registry.contains(reflectionType->GetGUID()))
+		const auto guid = GetTypeGUID<T>();
+
+		if (m_componentRegistry.contains(guid))
 		{
 			return false;
 		}
 
-		m_registry[reflectionType->GetGUID()] = std::move(reflectionType);
+		m_componentRegistry[guid] = GetTypeDesc<T>();
+		return true;
+	}
+
+	template<typename T>
+	inline const bool ComponentRegistry::RegisterEnum()
+	{
+		static_assert(IsReflectedType<T>() && std::is_enum<T>::value);
+
+		const auto guid = GetTypeGUID<T>();
+
+		if (m_enumRegistry.contains(guid))
+		{
+			return false;
+		}
+
+		m_enumRegistry[guid] = GetTypeDesc<T>();
 		return true;
 	}
 }

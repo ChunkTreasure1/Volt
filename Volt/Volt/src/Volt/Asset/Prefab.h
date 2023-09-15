@@ -3,68 +3,29 @@
 #include "Volt/Asset/Asset.h"
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
-#include <Wire/Registry.h>
+#include <entt.hpp>
 
 namespace Volt
 {
 	class Scene;
-	//class Prefab : public Asset
-	//{
-	//public:
-	//	Prefab() = default;
-	//	Prefab(Wire::Registry& aParentRegistry, Wire::EntityId topEntity);
-	//	~Prefab() override = default;
-
-	//	Wire::EntityId Instantiate(Scene* targetScene, Wire::EntityId specifiedTargetId = 0);
-	//	Wire::EntityId GetRootId();
-
-	//	static AssetType GetStaticType() { return AssetType::Prefab; }
-	//	AssetType GetType() override { return GetStaticType(); };
-
-	//	static void OverridePrefabInRegistry(Wire::Registry& aTargetRegistry, Wire::EntityId aRootEntity, AssetHandle aPrefabId);
-	//	static void OverridePrefabsInRegistry(Wire::Registry& aTargetRegistry, AssetHandle aPrefabId);
-	//	static void OverridePrefabAsset(Wire::Registry& aSrcRegistry, Wire::EntityId aSrcEntity, AssetHandle aPrefabId);
-
-	//	static bool IsRootInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId);
-	//	static bool IsValidInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId);
-	//	static uint32_t GetPrefabVersion(AssetHandle aPrefabId);
-
-	//	static AssetHandle GetCorrectAssethandle(Wire::EntityId aRootId, AssetHandle aPrefabId);
-
-	//	const Wire::Registry& GetRegistry() { return myRegistry; }
-
-	//private:
-	//	friend class PrefabImporter;
-
-	//	static void OverrideEntityInPrefab(Wire::Registry& aTargetRegistry, Wire::EntityId aEntity, Ref<Prefab> aPrefab);
-
-	//	Wire::EntityId InstantiateEntity(Scene* targetScene, Wire::EntityId prefabEntity, Wire::EntityId parentEntity, Wire::EntityId specifiedTargetId = 0);
-	//	Wire::EntityId AddToPrefab(Wire::Registry& aParentRegistry, Wire::EntityId entity, uint32_t& count);
-	//	void OverrideEntity(Wire::Registry& aSrcRegistry, Wire::EntityId aSrcEntity);
-
-	//	std::vector<Wire::EntityId> myKeepEntitiesQueue;
-
-	//	Wire::Registry myRegistry;
-	//	uint32_t myVersion = 0;
-	//};
 
 	class Prefab : public Asset
 	{
 	public:
 		Prefab() = default;
-		Prefab(Scene* scene, Wire::EntityId rootEntity);
+		Prefab(Scene* scene, entt::entity rootEntity);
 		~Prefab() override = default;
 
-		Wire::EntityId GetRootId() { return myRootId; };
-		Wire::EntityId Instantiate(Scene* targetScene, Wire::EntityId aTargetEntity = 0);
+		entt::entity GetRootId() { return myRootId; };
+		entt::entity Instantiate(Scene* targetScene, entt::entity aTargetEntity = entt::null);
 
 		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return myScriptFieldCache; }
 		inline MonoScriptFieldCache& GetScriptFieldCache() { return myScriptFieldCache; }
 
-		static void OverridePrefabAsset(Scene* scene, Wire::EntityId aSrcEntity, AssetHandle aPrefabId);
-		static Wire::EntityId UpdateEntity(Scene* targetScene, Wire::EntityId aTargetEntity, AssetHandle prefabHandle);
-		static bool IsRootInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId);
-		static bool IsValidInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId);
+		static void OverridePrefabAsset(Scene* scene, entt::entity aSrcEntity, AssetHandle aPrefabId);
+		static entt::entity UpdateEntity(Scene* targetScene, entt::entity aTargetEntity, AssetHandle prefabHandle);
+		static bool IsRootInPrefab(entt::entity aEntityId, AssetHandle aPrefabId);
+		static bool IsValidInPrefab(entt::entity aEntityId, AssetHandle aPrefabId);
 		static uint32_t GetPrefabVersion(AssetHandle aPrefabId);
 
 		static void PreloadAllPrefabs();
@@ -72,23 +33,23 @@ namespace Volt
 		static AssetType GetStaticType() { return AssetType::Prefab; }
 		AssetType GetType() override { return GetStaticType(); };
 
-		Wire::Registry& GetRegistry() { return myRegistry; }
+		entt::registry& GetRegistry() { return myRegistry; }
 
 	private:
 		friend class PrefabImporter;
-		bool CreatePrefab(Scene* scene, Wire::EntityId rootEntity);
-		Wire::EntityId RecursiveAddToPrefab(Scene* scene, Wire::EntityId aSrcEntity);
-		void UpdateComponents(Scene* targetScene, Wire::EntityId aTargetEntity);
+		bool CreatePrefab(Scene* scene, entt::entity rootEntity);
+		entt::entity RecursiveAddToPrefab(Scene* scene, entt::entity aSrcEntity);
+		void UpdateComponents(Scene* targetScene, entt::entity aTargetEntity);
 
-		void CorrectEntityReferences(Scene* scene, Wire::EntityId targetEntity);
-		void CorrectEntityReferencesRecursive(Scene* scene, Wire::EntityId targetEntity, Wire::EntityId startEntity);
+		void CorrectEntityReferences(Scene* scene, entt::entity targetEntity);
+		void CorrectEntityReferencesRecursive(Scene* scene, entt::entity targetEntity, entt::entity startEntity);
 
-		Wire::EntityId FindCorrespondingEntity(Wire::Registry& registry, Wire::EntityId startEntity, Wire::EntityId wantedPrefabEntity);
+		entt::entity FindCorrespondingEntity(Scene* targetScene, entt::entity startEntity, entt::entity wantedPrefabEntity);
 
 		uint32_t myVersion = 0;
-		Wire::EntityId myRootId = Wire::NullID;
+		entt::entity myRootId = entt::null;
 
-		Wire::Registry myRegistry;
+		entt::registry myRegistry;
 		MonoScriptFieldCache myScriptFieldCache;
 	};
 }

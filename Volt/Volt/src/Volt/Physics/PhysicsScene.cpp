@@ -6,11 +6,11 @@
 #include "Volt/Physics/PhysicsShapes.h"
 #include "Volt/Physics/PhysicsLayer.h"
 
-#include "Volt/Components/Components.h"
 #include "Volt/Log/Log.h"
 #include "Volt/Core/Profiling.h"
 #include "Volt/Core/Application.h"
 
+#include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono//MonoScriptInstance.h"
@@ -84,7 +84,9 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE("InvokeOnFixedUpdate");
 
-				myEntityScene->GetRegistry().ForEach<MonoScriptComponent, TransformComponent>([&](Wire::EntityId, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
+				auto& registry = myEntityScene->GetRegistry();
+				auto view = registry.view<const MonoScriptComponent, const TransformComponent>();
+				view.each([&](const entt::entity, const MonoScriptComponent& scriptComp, const TransformComponent& transComp) 
 				{
 					if (!transComp.visible)
 					{
@@ -132,7 +134,7 @@ namespace Volt
 	{
 		for (const auto& actor : myPhysicsActors)
 		{
-			if (actor->GetEntity().GetId() == entity.GetId())
+			if (actor->GetEntity().GetID() == entity.GetID())
 			{
 				return actor;
 			}
@@ -145,7 +147,7 @@ namespace Volt
 	{
 		for (const auto& actor : myPhysicsActors)
 		{
-			if (actor->GetEntity().GetId() == entity.GetId())
+			if (actor->GetEntity().GetID() == entity.GetID())
 			{
 				return actor;
 			}
@@ -158,7 +160,7 @@ namespace Volt
 	{
 		for (const auto& actor : myControllerActors)
 		{
-			if (actor->GetEntity().GetId() == entity.GetId())
+			if (actor->GetEntity().GetID() == entity.GetID())
 			{
 				return actor;
 			}
@@ -171,7 +173,7 @@ namespace Volt
 	{
 		for (const auto& actor : myControllerActors)
 		{
-			if (actor->GetEntity().GetId() == entity.GetId())
+			if (actor->GetEntity().GetID() == entity.GetID())
 			{
 				return actor;
 			}
@@ -232,7 +234,7 @@ namespace Volt
 
 		auto it = std::find_if(myPhysicsActors.begin(), myPhysicsActors.end(), [actor](const Ref<PhysicsActor>& a)
 		{
-			return actor->GetEntity().GetId() == a->GetEntity().GetId();
+			return actor->GetEntity().GetID() == a->GetEntity().GetID();
 		});
 
 		if (it != myPhysicsActors.end())
@@ -269,7 +271,7 @@ namespace Volt
 	{
 		auto it = std::find_if(myControllerActors.begin(), myControllerActors.end(), [&, controllerActor](const auto& lhs)
 		{
-			return lhs->GetEntity().GetId() == controllerActor->GetEntity().GetId();
+			return lhs->GetEntity().GetId() == controllerActor->GetEntity().GetID();
 		});
 
 		if (it == myControllerActors.end())
@@ -289,7 +291,7 @@ namespace Volt
 		if (result)
 		{
 			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
-			outHit->hitEntity = actor->GetEntity().GetId();
+			outHit->hitEntity = actor->GetEntity().GetID();
 			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
 			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
 			outHit->distance = hitInfo.block.distance;
@@ -313,7 +315,7 @@ namespace Volt
 		if (result)
 		{
 			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
-			outHit->hitEntity = actor->GetEntity().GetId();
+			outHit->hitEntity = actor->GetEntity().GetID();
 			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
 			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
 			outHit->distance = hitInfo.block.distance;
@@ -334,7 +336,7 @@ namespace Volt
 		if (result)
 		{
 			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
-			outHit->hitEntity = actor->GetEntity().GetId();
+			outHit->hitEntity = actor->GetEntity().GetID();
 			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
 			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
 			outHit->distance = hitInfo.block.distance;
@@ -362,7 +364,7 @@ namespace Volt
 		if (result)
 		{
 			PhysicsActorBase* actor = (PhysicsActorBase*)hitInfo.block.actor->userData;
-			outHit->hitEntity = actor->GetEntity().GetId();
+			outHit->hitEntity = actor->GetEntity().GetID();
 			outHit->position = PhysXUtilities::FromPhysXVector(hitInfo.block.position);
 			outHit->normal = PhysXUtilities::FromPhysXVector(hitInfo.block.normal);
 			outHit->distance = hitInfo.block.distance;

@@ -6,7 +6,7 @@
 
 void SelectionManager::Init()
 {
-	myEntities[mySelectionKey] = std::vector<Wire::EntityId>();
+	myEntities[mySelectionKey] = std::vector<entt::entity>();
 }
 
 void SelectionManager::SetSelectionKey(const std::string& key)
@@ -14,7 +14,7 @@ void SelectionManager::SetSelectionKey(const std::string& key)
 	mySelectionKey = key;
 	if (!myEntities.contains(mySelectionKey))
 	{
-		myEntities[mySelectionKey] = std::vector<Wire::EntityId>();
+		myEntities[mySelectionKey] = std::vector<entt::entity>();
 	}
 }
 
@@ -23,7 +23,7 @@ void SelectionManager::ResetSelectionKey()
 	mySelectionKey = "";
 }
 
-bool SelectionManager::Select(Wire::EntityId entity)
+bool SelectionManager::Select(entt::entity entity)
 {
 	if (myLocked) return false;
 
@@ -36,7 +36,7 @@ bool SelectionManager::Select(Wire::EntityId entity)
 	return true;
 }
 
-bool SelectionManager::Deselect(Wire::EntityId entity)
+bool SelectionManager::Deselect(entt::entity entity)
 {
 	if (myLocked) return false;
 
@@ -64,7 +64,7 @@ bool SelectionManager::IsAnySelected()
 	return !myEntities.at(mySelectionKey).empty();
 }
 
-bool SelectionManager::IsSelected(Wire::EntityId entity)
+bool SelectionManager::IsSelected(entt::entity entity)
 {
 	return std::find(myEntities.at(mySelectionKey).begin(), myEntities.at(mySelectionKey).end(), entity) != myEntities.at(mySelectionKey).end();
 }
@@ -75,25 +75,25 @@ void SelectionManager::Update(Ref<Volt::Scene> scene)
 
 	for (const auto& ent : GetSelectedEntities())
 	{
-		if (!scene->GetRegistry().Exists(ent))
+		if (!scene->GetRegistry().valid(ent))
 		{
 			SelectionManager::Deselect(ent);
 		}
 	}
 }
 
-bool SelectionManager::IsAnyParentSelected(Wire::EntityId id, Ref<Volt::Scene> scene)
+bool SelectionManager::IsAnyParentSelected(entt::entity id, Ref<Volt::Scene> scene)
 {
 	Volt::Entity entity{ id, scene.get() };
 
 	if (entity.GetParent())
 	{
-		if (IsSelected(entity.GetParent().GetId()))
+		if (IsSelected(entity.GetParent().GetID()))
 		{
 			return true;
 		}
 
-		return IsAnyParentSelected(entity.GetParent().GetId(), scene);
+		return IsAnyParentSelected(entity.GetParent().GetID(), scene);
 	}
 
 	return false;

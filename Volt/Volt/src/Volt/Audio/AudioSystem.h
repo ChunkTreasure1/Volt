@@ -1,8 +1,6 @@
 #pragma once
-namespace Wire
-{
-	class Registry;
-}
+
+#include <entt.hpp>
 
 namespace Volt
 {
@@ -13,20 +11,20 @@ namespace Volt
 	{
 	public:
 		AudioSystem() = default;
-		void RuntimeStart(Wire::Registry& registry, Scene* scene);
-		void RuntimeStop(Wire::Registry& registry, Scene* scene);
-		void Update(Wire::Registry& registry, Scene* scene, const float& aDeltaTime);
-		void OnEvent(Wire::Registry& registry, Volt::Event& e);
+		void RuntimeStart(entt::registry& registry, Weak<Scene> scene);
+		void RuntimeStop(entt::registry& registry, Weak<Scene> scene);
+		void Update(entt::registry& registry, Weak<Scene> scene, const float& aDeltaTime);
+		void OnEvent(entt::registry& registry, Volt::Event& e);
 
 	private:
 
 		//AudioSources
-		void UpdateAudioSources(Wire::Registry& registry, Scene* scene, const float& aDeltaTime);
+		void UpdateAudioSources(entt::registry& registry, Weak<Scene> scene, const float& aDeltaTime);
 
 		//AudioListeners
-		void UpdateAudioListeners(Wire::Registry& registry, Scene* scene, const float& aDeltaTime);
+		void UpdateAudioListeners(entt::registry& registry, Weak<Scene> scene, const float& aDeltaTime);
 
-		void UpdateAudioOcclusion(Wire::Registry& registry, Scene* scene);
+		void UpdateAudioOcclusion(entt::registry& registry, Weak<Scene> scene);
 		glm::vec3 CalculatePoint(const glm::vec3& posA, const glm::vec3& posB, float soundWidth, bool isPositive);
 		int CastRay(const glm::vec3& posA, const glm::vec3& posB, bool debug);
 

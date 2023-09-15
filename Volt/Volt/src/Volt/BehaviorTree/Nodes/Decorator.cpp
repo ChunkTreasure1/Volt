@@ -5,7 +5,8 @@
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptInstance.h"
 #include "Volt/Utility/StringUtility.h"
-#include "Volt/Components/Components.h"
+
+#include "Volt/Components/CoreComponents.h"
 
 namespace Volt::BehaviorTree
 {
@@ -57,7 +58,7 @@ namespace Volt::BehaviorTree
 			} break;
 			case eDecoratorType::IF:
 			{
-				auto monoElements = Utility::SplitStringsByCharacter(m_if, '.');
+				auto monoElements = ::Utility::SplitStringsByCharacter(m_if, '.');
 				if (monoElements.size() != 3)
 				{
 					VT_ERROR("bad decorator function string");

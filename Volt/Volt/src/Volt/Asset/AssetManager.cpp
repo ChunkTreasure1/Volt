@@ -53,7 +53,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
 		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
 		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
-		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
+		//m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
 		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>());
 		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>());
 		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>());
@@ -135,7 +135,7 @@ namespace Volt
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyFilePath)
 	{
-		const std::string pathString = Utility::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
+		const std::string pathString = ::Utility::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
 		std::vector<AssetHandle> result{};
 
 		auto& instance = Get();
@@ -433,11 +433,11 @@ namespace Volt
 		std::vector<AssetHandle> filesToMove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::string sourceDirLower = Utility::ToLower(sourceDir.string());
+			const std::string sourceDirLower = ::Utility::ToLower(sourceDir.string());
 
 			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				const std::string filePathLower = Utility::ToLower(metaData.filePath.string());
+				const std::string filePathLower = ::Utility::ToLower(metaData.filePath.string());
 
 				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
@@ -453,7 +453,7 @@ namespace Volt
 				auto& metadata = GetMetadataFromHandleMutable(handle);
 
 				std::string newPath = metadata.filePath.string();
-				const size_t directoryStringLoc = Utility::ToLower(newPath).find(Utility::ToLower(sourceDir.string()));
+				const size_t directoryStringLoc = ::Utility::ToLower(newPath).find(::Utility::ToLower(sourceDir.string()));
 
 				if (directoryStringLoc == std::string::npos)
 				{
@@ -668,11 +668,11 @@ namespace Volt
 		std::vector<AssetHandle> filesToRemove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::string sourceDirLower = Utility::ToLower(folderPath.string());
+			const std::string sourceDirLower = ::Utility::ToLower(folderPath.string());
 
 			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				const std::string filePathLower = Utility::ToLower(metaData.filePath.string());
+				const std::string filePathLower = ::Utility::ToLower(metaData.filePath.string());
 
 				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
@@ -748,11 +748,11 @@ namespace Volt
 
 	bool AssetManager::IsEngineAsset(const std::filesystem::path& path)
 	{
-		const auto pathSplit = Utility::SplitStringsByCharacter(path.string(), '/');
+		const auto pathSplit = ::Utility::SplitStringsByCharacter(path.string(), '/');
 		if (!pathSplit.empty())
 		{
-			std::string lowerFirstPart = Utility::ToLower(pathSplit.front());
-			if (Utility::StringContains(lowerFirstPart, "engine") || Utility::StringContains(lowerFirstPart, "editor"))
+			std::string lowerFirstPart = ::Utility::ToLower(pathSplit.front());
+			if (::Utility::StringContains(lowerFirstPart, "engine") || ::Utility::StringContains(lowerFirstPart, "editor"))
 			{
 				return true;
 			}
@@ -799,7 +799,7 @@ namespace Volt
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		std::string ext = Utility::ToLower(extension);
+		std::string ext = ::Utility::ToLower(extension);
 		if (!s_assetExtensionsMap.contains(ext))
 		{
 			return AssetType::None;
@@ -1158,7 +1158,7 @@ namespace Volt
 
 	const std::filesystem::path AssetManager::GetCleanAssetFilePath(const std::filesystem::path& filePath)
 	{
-		auto pathClean = Utility::ReplaceCharacter(filePath.string(), '\\', '/');
+		auto pathClean = ::Utility::ReplaceCharacter(filePath.string(), '\\', '/');
 		return pathClean;
 	}
 

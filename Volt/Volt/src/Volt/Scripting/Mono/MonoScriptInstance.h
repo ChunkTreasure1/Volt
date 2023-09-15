@@ -3,7 +3,6 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Buffer.h"
 #include "Volt/Scene/Entity.h"
-#include <Wire/Wire.h>
 
 extern "C"
 {

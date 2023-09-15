@@ -1541,7 +1541,7 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 	return changed;
 }
 
-bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::EntityId& value, const std::string& toolTip)
+bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, entt::entity& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1572,7 +1572,7 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
+		entt::entity entityId = *(entt::entity*)ptr;
 		value = entityId;
 		changed = true;
 	}
@@ -1582,7 +1582,7 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 	return changed;
 }
 
-bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, const std::string& toolTip)
+bool UI::PropertyEntity(Ref<Volt::Scene> scene, entt::entity& value, const float width, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1608,7 +1608,7 @@ bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const flo
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
+		entt::entity entityId = *(entt::entity*)ptr;
 		value = entityId;
 		changed = true;
 	}

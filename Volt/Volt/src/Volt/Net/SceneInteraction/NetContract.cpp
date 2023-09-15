@@ -6,7 +6,7 @@
 #include "Volt/Scene/SceneManager.h"
 
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
-#include "Volt/Components/Components.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Net/SceneInteraction/CallMonoMethod.h"
 #include "Volt/Core/Application.h"
@@ -18,7 +18,7 @@
 
 namespace Volt
 {
-	void NetContractContainer::Execute(Wire::EntityId in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
+	void NetContractContainer::Execute(entt::entity in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data)
 	{
 		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
 		if (!entity.HasComponent<PrefabComponent>())
@@ -66,14 +66,14 @@ namespace Volt
 		return GetContract(sceneId->GetHandle());
 	}
 
-	const Ref<NetContract> NetContractContainer::GetContract(Wire::EntityId in_id)
+	const Ref<NetContract> NetContractContainer::GetContract(entt::entity in_id)
 	{
 		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
 		if (!entity.HasComponent<PrefabComponent>()) return m_contracts[AssetHandle(0)];
 		return GetContract(entity.GetComponent<PrefabComponent>().prefabAsset);
 	}
 
-	std::string NetContractContainer::GetMethod(Wire::EntityId in_id, eNetEvent in_event)
+	std::string NetContractContainer::GetMethod(entt::entity in_id, eNetEvent in_event)
 	{
 		auto entity = Entity(in_id, SceneManager::GetActiveScene().lock().get());
 		if (!entity.HasComponent<PrefabComponent>()) return "";
@@ -82,7 +82,7 @@ namespace Volt
 
 	std::string NetContractContainer::GetMethod(Nexus::TYPE::REP_ID in_id, eNetEvent in_event)
 	{
-		auto entity = Entity(static_cast<uint32_t>(in_id), SceneManager::GetActiveScene().lock().get());
+		auto entity = Entity(static_cast<entt::entity>(in_id), SceneManager::GetActiveScene());
 		if (!entity.HasComponent<PrefabComponent>()) return "";
 		return GetMethod(entity.GetComponent<PrefabComponent>().prefabAsset, in_event);
 	}
@@ -103,7 +103,7 @@ namespace Volt
 	{
 		return m_contracts.contains(in_handle);
 	}
-	bool NetContractContainer::RuleExists(const AssetHandle& in_handle, const std::string& in_rule, Wire::EntityId in_ent)
+	bool NetContractContainer::RuleExists(const AssetHandle& in_handle, const std::string& in_rule, entt::entity in_ent)
 	{
 		if (!m_contracts.contains(in_handle)) return false;
 		if (!m_contracts.at(in_handle)->rules.contains(in_ent)) return false;

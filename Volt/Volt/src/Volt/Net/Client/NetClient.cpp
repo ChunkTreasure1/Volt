@@ -63,7 +63,7 @@ namespace Volt
 
 			if (pawnComp.updateTransformPos || pawnComp.updateTransformRot || pawnComp.updateTransformScale)
 			{
-				auto transformPacket = SerializeTransformPacket(entity.GetId(), repId, pawnComp.updateTransformPos, pawnComp.updateTransformRot, pawnComp.updateTransformScale);
+				auto transformPacket = SerializeTransformPacket(entity.GetID(), repId, pawnComp.updateTransformPos, pawnComp.updateTransformRot, pawnComp.updateTransformScale);
 				Transmit(transformPacket);
 				//m_relay.Transmit(transformPacket, Nexus::CreateSockAddr(m_serverAdress, m_serverPort));
 			}
@@ -270,7 +270,7 @@ namespace Volt
 			VT_CORE_ERROR("missing monoscriptComponent in client RPC call");
 			return;
 		}
-		auto scriptsVector = Entity(sceneEnt.GetId(), SceneManager::GetActiveScene().lock().get()).GetComponent<MonoScriptComponent>().scriptIds;
+		auto scriptsVector = Entity(sceneEnt.GetID(), SceneManager::GetActiveScene().lock().get()).GetComponent<MonoScriptComponent>().scriptIds;
 		Ref<MonoScriptInstance> scrInstance = nullptr;
 		for (auto scrID : scriptsVector)
 		{

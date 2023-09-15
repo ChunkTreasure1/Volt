@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(Ref<Volt::Scene> scene, const std::vector<Wire::EntityId>& entities, Ref<Volt::Material> material, float unitModifier)
+	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(Ref<Volt::Scene> scene, const std::vector<entt::entity>& entities, Ref<Volt::Material> material, float unitModifier)
 	{
 		std::vector<Volt::Vertex> v;
 		std::vector<uint32_t> i;

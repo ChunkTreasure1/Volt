@@ -6,11 +6,11 @@
 
 namespace Volt
 {
-	MonoScriptEntity::MonoScriptEntity(const Wire::EntityId& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass)
+	MonoScriptEntity::MonoScriptEntity(const entt::entity& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass)
 	{
 		myEntity = id;
 		myMonoClass = klass;
-		myHandle = MonoScriptEngine::InstantiateClass(UUID(id), myMonoClass->GetClass());
+		myHandle = MonoScriptEngine::InstantiateClass(UUID(static_cast<uint32_t>(id)), myMonoClass->GetClass());
 		myUpdateTimersMethod = myMonoClass->GetMethod("UpdateTimers", 0);
 
 		EntityParams params;

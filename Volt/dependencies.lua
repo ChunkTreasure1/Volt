@@ -1,7 +1,6 @@
 IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/Volt/vendor/GLFW/include"
 IncludeDir["ImGui"] = "%{wks.location}/Volt/vendor/ImGui"
-IncludeDir["Wire"] = "%{wks.location}/Volt/vendor/Wire/Wire/src"
 IncludeDir["spdlog"] = "%{wks.location}/Volt/vendor/spdlog/include"
 IncludeDir["yaml"] = "%{wks.location}/Volt/vendor/yaml-cpp/include"
 IncludeDir["Optick"] = "%{wks.location}/Volt/vendor/Optick/src"

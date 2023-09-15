@@ -17,7 +17,6 @@
 
 #include <GraphKey/Graph.h>
 
-#include <Wire/Wire.h>
 #include <yaml-cpp/yaml.h>
 
 namespace Volt
@@ -71,8 +70,8 @@ namespace Volt
 
 		for (const auto& entityNode : entitiesNode)
 		{
-			Wire::EntityId entityId = Wire::NullID;
-			VT_DESERIALIZE_PROPERTY(id, entityId, entityNode, (Wire::EntityId)Wire::NullID);
+			entt::entity entityId = Wire::NullID;
+			VT_DESERIALIZE_PROPERTY(id, entityId, entityNode, (entt::entity)Wire::NullID);
 
 			if (entityId == Wire::NullID)
 			{

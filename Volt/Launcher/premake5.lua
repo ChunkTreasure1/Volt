@@ -69,7 +69,6 @@ project "Launcher"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Wire}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",

@@ -1,58 +1,61 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
-#include "Volt/Scene/Scene.h"
-#include "Volt/Scene/Entity.h"
-
-#include "Volt/Components/Components.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 
-#include <Wire/Serialization.h>
-#include <glm/glm.hpp>
+#include "Volt/Scene/Scene.h"
+#include "Volt/Scene/Entity.h"
+#include "Volt/Scene/Serialization/ComponentReflection.h"
+#include "Volt/Scene/Serialization/ComponentRegistry.h"
 
-#include <Volt/Events/ApplicationEvent.h>
+#include "Volt/Log/Log.h"
+#include "Volt/Events/ApplicationEvent.h"
+
+#include <Amp/WwiseAudioManager/WwiseAudioManager.h>
+
+#include <entt.hpp>
+#include <glm/glm.hpp>
 
 #include<unordered_map> 
 #include<string>
 
-#include <Volt/Log/Log.h>
-#include <Amp/WwiseAudioManager/WwiseAudioManager.h>
-
-
 namespace Volt
 {
-	SERIALIZE_COMPONENT((struct AudioListenerComponent
+	struct AudioListenerComponent
 	{
-		PROPERTY(Name = Default) bool isDefault = true;
+		bool isDefault = true;
 
-	public:
-		void OnCreate(Wire::EntityId entityID)
+		void OnCreate(entt::entity entityID)
 		{
-			myID = entityID;
-			Amp::WwiseAudioManager::RegisterListener(myID, std::to_string(myID).c_str(), isDefault);
+			m_id = entityID;
+			Amp::WwiseAudioManager::RegisterListener(static_cast<uint32_t>(m_id), std::to_string(static_cast<uint32_t>(m_id)).c_str(), isDefault);
 		}
 
-		CREATE_COMPONENT_GUID("{C540C160-3AF7-4C5D-A0E0-7121F27C7DA5}"_guid);
-	private:
-		uint32_t myID;
-
-	}), AudioListenerComponent);
-
-	SERIALIZE_COMPONENT((struct AudioSourceComponent
-	{
-		//FUNC
-
-	public:
-		void OnCreate(Wire::EntityId entityID)
+		static void ReflectType(TypeDesc<AudioListenerComponent>& reflect)
 		{
-			myID = entityID;
-			Amp::WwiseAudioManager::CreateAudioObject(myID, "SpawnedObj");
+			reflect.SetGUID("{C540C160-3AF7-4C5D-A0E0-7121F27C7DA5}"_guid);
+			reflect.SetLabel("Audio Listener Component");
+			reflect.AddMember(&AudioListenerComponent::isDefault, "default", "Default", "", true);
+		}
+
+		REGISTER_COMPONENT(AudioListenerComponent);
+
+	private:
+		entt::entity m_id = entt::null;
+	};
+
+	struct AudioSourceComponent
+	{
+		void OnCreate(entt::entity entityID)
+		{
+			m_id = entityID;
+			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(m_id), "SpawnedObj");
 		}
 
 		void OnStart(Volt::Entity entity)
 		{
-			myID = entity.GetId();
-			Amp::WwiseAudioManager::CreateAudioObject(myID, entity.GetTag().c_str());
+			m_id = entity.GetID();
+			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(m_id), entity.GetTag().c_str());
 		}
 
 		bool PlayOneshotEvent(const char* aEventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)
@@ -62,7 +65,7 @@ namespace Volt
 
 		bool PlayEvent(const char* aEventName, uint32_t& aPlayingID)
 		{
-			return Amp::WwiseAudioManager::PlayEvent(aEventName, myID, aPlayingID);
+			return Amp::WwiseAudioManager::PlayEvent(aEventName, static_cast<uint32_t>(m_id), aPlayingID);
 		}
 
 		bool StopEvent(const uint32_t& aPlayingID)
@@ -72,7 +75,7 @@ namespace Volt
 
 		void StopAllEvents()
 		{
-			Amp::WwiseAudioManager::StopAllEvents(myID);
+			Amp::WwiseAudioManager::StopAllEvents(static_cast<uint32_t>(m_id));
 		}
 
 		bool PauseEvent(const uint32_t& aPlayingID)
@@ -92,28 +95,31 @@ namespace Volt
 
 		bool SetSwitch(const char* aSwitchGroup, const char* aState)
 		{
-			return Amp::WwiseAudioManager::SetSwitch(aSwitchGroup, aState, myID);
+			return Amp::WwiseAudioManager::SetSwitch(aSwitchGroup, aState, static_cast<uint32_t>(m_id));
 		}
 
 		bool SetParameter(const char* aParameterName, const float& aValue)
 		{
-			return Amp::WwiseAudioManager::SetParameter(aParameterName, aValue, myID);
+			return Amp::WwiseAudioManager::SetParameter(aParameterName, aValue, static_cast<uint32_t>(m_id));
 		}
 
 		bool SetParameter(const char* aParameterName, const float& aValue, const uint32_t& aOvertime)
 		{
-			return Amp::WwiseAudioManager::SetParameter(aParameterName, aValue, myID, aOvertime);
+			return Amp::WwiseAudioManager::SetParameter(aParameterName, aValue, static_cast<uint32_t>(m_id), aOvertime);
 		}
 
-		uint32_t getID() { return myID; }
+		uint32_t getID() { return static_cast<uint32_t>(m_id); }
 
-		//VARIABLES
-	public:
-		CREATE_COMPONENT_GUID("{06A69F94-BB09-4A3A-AF17-C9DA7D552BFE}"_guid);
+		static void ReflectType(TypeDesc<AudioSourceComponent>& reflect)
+		{
+			reflect.SetGUID("{06A69F94-BB09-4A3A-AF17-C9DA7D552BFE}"_guid);
+			reflect.SetLabel("Audio Source Component");
+		}
+
+		REGISTER_COMPONENT(AudioSourceComponent);
 
 	private:
-		uint32_t myID;
-
-	}), AudioSourceComponent);
+		entt::entity m_id = entt::null;
+	};
 
 }

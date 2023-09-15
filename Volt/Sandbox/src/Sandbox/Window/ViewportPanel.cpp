@@ -606,7 +606,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 				Volt::Entity tempEnt = Volt::Entity(selectedEntity, m_editorScene.get());
 				entitiesToRemove.push_back(tempEnt);
 
-				SelectionManager::Deselect(tempEnt.GetId());
+				SelectionManager::Deselect(tempEnt.GetID());
 				SelectionManager::GetFirstSelectedRow() = -1;
 				SelectionManager::GetLastSelectedRow() = -1;
 			}
@@ -658,7 +658,7 @@ bool ViewportPanel::OnMouseReleased(Volt::MouseButtonReleasedEvent& e)
 		if (m_isHovered)
 		{
 			SelectionManager::DeselectAll();
-			SelectionManager::Select(m_createdEntity.GetId());
+			SelectionManager::Select(m_createdEntity.GetID());
 		}
 
 		m_createdEntity = {};
@@ -751,7 +751,7 @@ void ViewportPanel::CheckDragDrop()
 			}
 			else
 			{
-				m_entityToAddMesh = newEntity.GetId();
+				m_entityToAddMesh = newEntity.GetID();
 
 				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).SetImportMeshes({ meshSourcePath });
 				ModalSystem::GetModal<MeshImportModal>(m_meshImportModal).Open();
@@ -788,7 +788,7 @@ void ViewportPanel::CheckDragDrop()
 				break;
 			}
 
-			Wire::EntityId id = prefab->Instantiate(m_editorScene.get());
+			entt::entity id = prefab->Instantiate(m_editorScene.get());
 			Volt::Entity prefabEntity(id, m_editorScene.get());
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
@@ -838,7 +838,7 @@ void ViewportPanel::DuplicateSelection()
 {
 	m_editorCameraController->ForceLooseControl();
 
-	std::vector<Wire::EntityId> duplicated;
+	std::vector<entt::entity> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
 		if (SelectionManager::IsAnyParentSelected(ent, m_editorScene))
@@ -992,7 +992,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 {
-	std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> previousTransforms;
+	std::vector<std::pair<entt::entity, Volt::TransformComponent>> previousTransforms;
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{

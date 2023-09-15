@@ -11,12 +11,12 @@
 #include "Volt/Core/Profiling.h"
 
 #include "Volt/Scene/Entity.h"
-#include "Volt/Scene/EnttEntity.h"
+#include "Volt/Scene/Entity.h"
 
-#include "Volt/Components/Components.h"
 #include "Volt/Components/AudioComponents.h"
 #include "Volt/Components/LightComponents.h"
 #include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Animation/AnimationManager.h"
 #include "Volt/Animation/AnimationController.h"
@@ -33,13 +33,12 @@
 #include "Volt/Math/Math.h"
 
 #include "Volt/Rendering/RendererStructs.h"
+#include "Volt/Rendering/Camera/Camera.h"
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
 
 #include "Volt/Discord/DiscordSDK.h"
-
-#include <Wire/Serialization.h>
 
 #include <GraphKey/TimerManager.h>
 #include <GraphKey/Graph.h>
@@ -57,8 +56,7 @@ namespace Volt
 	{
 		myVisionSystem = CreateRef<Vision>(this);
 
-		SetupComponentCreationFunctions();
-		SetupComponentDeletionFunctions();
+		SetupComponentFunctions();
 
 		AddLayer("Main", 0);
 	}
@@ -68,8 +66,7 @@ namespace Volt
 	{
 		myVisionSystem = CreateRef<Vision>(this);
 
-		SetupComponentCreationFunctions();
-		SetupComponentDeletionFunctions();
+		SetupComponentFunctions();
 
 		AddLayer("Main", 0);
 	}
@@ -83,7 +80,7 @@ namespace Volt
 			return;
 		}
 
-		//myRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, const VisualScriptingComponent& comp)
+		//myRegistry.ForEach<VisualScriptingComponent>([&](entt::entity id, const VisualScriptingComponent& comp)
 		//{
 		//	if (comp.graph)
 		//	{
@@ -91,15 +88,17 @@ namespace Volt
 		//	}
 		//});
 
-		myRegistry.ForEach<AnimationControllerComponent>([&](Wire::EntityId id, const AnimationControllerComponent& controller)
 		{
-			if (controller.controller)
+			ForEachWithComponents<const AnimationControllerComponent>([&](const entt::entity id, const AnimationControllerComponent& controller)
 			{
-				controller.controller->GetGraph()->OnEvent(e);
-			}
-		});
+				if (controller.controller)
+				{
+					controller.controller->GetGraph()->OnEvent(e);
+				}
+			});
+		}
 
-		myAudioSystem.OnEvent(myRegistry, e);
+		myAudioSystem.OnEvent(m_registry, e);
 		myVisionSystem->OnEvent(e);
 	}
 
@@ -118,38 +117,44 @@ namespace Volt
 	{
 		MonoScriptEngine::OnRuntimeStart(this);
 
-		myRegistry.ForEachSafe<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp)
+		// Awake
 		{
-			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
+			ForEachWithComponents<const MonoScriptComponent>([](const entt::entity id, const MonoScriptComponent& scriptComp)
 			{
-				auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
-
-				if (scriptClass && scriptClass->IsEngineScript())
+				for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 				{
-					MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+					auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
+
+					if (scriptClass && scriptClass->IsEngineScript())
+					{
+						MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+					}
 				}
-			}
-		});
+			});
+		}
 
 		MonoScriptEngine::DoOnAwakeInstance();
 
-		myRegistry.ForEachSafe<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp)
+		// Create
 		{
-			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
+			ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 			{
-				auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
-
-				if (scriptClass && scriptClass->IsEngineScript())
+				for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 				{
-					MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+					auto scriptClass = MonoScriptEngine::GetScriptClass(scriptComp.scriptNames[i]);
+
+					if (scriptClass && scriptClass->IsEngineScript())
+					{
+						MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	void Scene::ShutdownEngineScripts()
 	{
-		myRegistry.ForEachSafe<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp)
+		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 		{
 			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 			{
@@ -174,22 +179,22 @@ namespace Volt
 		myIsPlaying = true;
 		myTimeSinceStart = 0.f;
 
-		myAudioSystem.RuntimeStart(myRegistry, this);
+		myAudioSystem.RuntimeStart(m_registry, shared_from_this());
 
 		Application::Get().GetNavigationSystem().OnRuntimeStart();
 
 		MonoScriptEngine::OnRuntimeStart(this);
 
-		myRegistry.ForEach<EntityDataComponent>([](Wire::EntityId, EntityDataComponent& dataComp)
+		ForEachWithComponents<CommonComponent>([](entt::entity, CommonComponent& dataComp)
 		{
 			dataComp.timeSinceCreation = 0.f;
 			dataComp.randomValue = Random::Float(0.f, 1.f);
 		});
 
 		myVisionSystem->Initialize();
-		myAnimationSystem.OnRuntimeStart(myRegistry);
+		myAnimationSystem.OnRuntimeStart(m_registry);
 
-		myRegistry.ForEachSafe<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp)
+		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 		{
 			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 			{
@@ -199,23 +204,12 @@ namespace Volt
 
 		MonoScriptEngine::DoOnAwakeInstance();
 
-		myRegistry.ForEachSafe<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp)
+		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 		{
 			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 			{
 				MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
 			}
-		});
-
-		myRegistry.ForEachSafe<BehaviorTreeComponent>([&](Wire::EntityId id, BehaviorTreeComponent& comp)
-		{
-			if (comp.treeHandle == Volt::Asset::Null())
-				return;
-			auto tree = AssetManager::Get().GetAsset<BehaviorTree::Tree>(comp.treeHandle);
-			if (!tree)
-				return;
-			comp.tree = CreateRef<Volt::BehaviorTree::Tree>(*tree);
-			comp.tree->SetEntity(Volt::Entity(id, this));
 		});
 	}
 
@@ -224,7 +218,7 @@ namespace Volt
 		myIsPlaying = false;
 		GraphKey::TimerManager::Clear();
 
-		myRegistry.ForEachSafe<MonoScriptComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp)
+		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
 		{
 			for (const auto& instId : scriptComp.scriptIds)
 			{
@@ -234,9 +228,9 @@ namespace Volt
 
 		MonoScriptEngine::OnRuntimeEnd();
 
-		myAnimationSystem.OnRuntimeEnd(myRegistry);
+		myAnimationSystem.OnRuntimeEnd(m_registry);
 		Physics::DestroyScene();
-		myAudioSystem.RuntimeStop(myRegistry, this);
+		myAudioSystem.RuntimeStop(m_registry, shared_from_this());
 	}
 
 	void Scene::OnSimulationStart()
@@ -253,7 +247,7 @@ namespace Volt
 	void Scene::Update(float aDeltaTime)
 	{
 		VT_PROFILE_FUNCTION();
-		myStatistics.entityCount = (uint32_t)myRegistry.GetAllEntities().size();
+		myStatistics.entityCount = static_cast<uint32_t>(m_registry.alive());
 
 		AnimationManager::Update(aDeltaTime);
 		Physics::GetScene()->Simulate(aDeltaTime);
@@ -276,17 +270,16 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Update entity time");
 
-			const auto& dataCompView = myRegistry.GetSingleComponentView<EntityDataComponent>();
-			for (const auto& entId : dataCompView)
+			ForEachWithComponents<CommonComponent>([&](entt::entity id, CommonComponent& dataComp)
 			{
-				auto& dataComp = myRegistry.GetComponent<EntityDataComponent>(entId);
 				dataComp.timeSinceCreation += aDeltaTime;
-			}
+			});
 		}
 
 		MonoScriptEngine::DoDestroyQueue();
 		MonoScriptEngine::OnUpdate(aDeltaTime);
-		myRegistry.ForEachSafe<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transformComponent)
+
+		ForEachWithComponents<const MonoScriptComponent, const TransformComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const TransformComponent& transformComponent)
 		{
 			if (!transformComponent.visible)
 			{
@@ -299,59 +292,24 @@ namespace Volt
 				MonoScriptEngine::OnUpdateInstance(scriptComp.scriptIds.at(i), aDeltaTime);
 			}
 		});
+
 		MonoScriptEngine::OnUpdateEntity(aDeltaTime);
 
-		myRegistry.ForEach<CameraComponent, TransformComponent>([this](Wire::EntityId id, CameraComponent& cameraComp, const TransformComponent& transComp)
+		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp) 
 		{
 			if (transComp.visible)
 			{
 				Entity entity = { id, this };
-				 
+
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 				cameraComp.camera->SetPosition(entity.GetPosition());
 				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
-
-				cameraComp.camera->SetAperture(cameraComp.aperture);
-				cameraComp.camera->SetShutterSpeed(cameraComp.shutterSpeed);
-				cameraComp.camera->SetISO(cameraComp.iso);
 			}
 		});
 
-		//myRegistry.ForEach<BehaviorTreeComponent>([&](Wire::EntityId, BehaviorTreeComponent& behaviorTree)
-		//{
-		//	if (behaviorTree.tree)
-		//	{
-		//		behaviorTree.tree->Run();
-		//	}
-		//});
-
-		//myRegistry.ForEach<VideoPlayerComponent>([&](Wire::EntityId, VideoPlayerComponent& videoPlayer)
-		//{
-		//	if (videoPlayer.lastVideoHandle != videoPlayer.videoHandle)
-		//	{
-		//		Ref<Video> video = AssetManager::GetAsset<Video>(videoPlayer.videoHandle);
-		//		if (video && video->IsValid())
-		//		{
-		//			videoPlayer.videoHandle = video->handle;
-		//			videoPlayer.lastVideoHandle = videoPlayer.videoHandle;
-
-		//			video->Play(true);
-		//		}
-		//	}
-
-		//	if (videoPlayer.videoHandle != Asset::Null())
-		//	{
-		//		Ref<Video> videoAsset = AssetManager::GetAsset<Video>(videoPlayer.videoHandle);
-		//		if (videoAsset && videoAsset->IsValid())
-		//		{
-		//			videoAsset->Update(aDeltaTime);
-		//		}
-		//	}
-		//});
-
-		myParticleSystem.Update(myRegistry, this, aDeltaTime);
-		myAudioSystem.Update(myRegistry, this, aDeltaTime);
-		myAnimationSystem.Update(myRegistry, aDeltaTime);
+		myParticleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
+		myAudioSystem.Update(m_registry, shared_from_this(), aDeltaTime);
+		myAnimationSystem.Update(m_registry, aDeltaTime);
 
 		for (auto& [ent, time] : myEntityTimesToDestroy)
 		{
@@ -394,8 +352,8 @@ namespace Volt
 
 	void Scene::UpdateEditor(float aDeltaTime)
 	{
-		myStatistics.entityCount = (uint32_t)myRegistry.GetAllEntities().size();
-		myParticleSystem.Update(myRegistry, this, aDeltaTime);
+		myStatistics.entityCount = static_cast<uint32_t>(m_registry.alive());
+		myParticleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 
 		// Update scene data
 		{
@@ -406,13 +364,15 @@ namespace Volt
 			//Renderer::SetSceneData(sceneData);
 		}
 
-		myRegistry.ForEach<CameraComponent, TransformComponent>([this](Wire::EntityId, CameraComponent& cameraComp, const TransformComponent& transComp)
+		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)
 		{
 			if (transComp.visible)
 			{
+				Entity entity = { id, this };
+
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
-				cameraComp.camera->SetPosition(transComp.position);
-				cameraComp.camera->SetRotation(glm::eulerAngles(transComp.rotation));
+				cameraComp.camera->SetPosition(entity.GetPosition());
+				cameraComp.camera->SetRotation(glm::eulerAngles(entity.GetRotation()));
 			}
 		});
 	}
@@ -421,7 +381,7 @@ namespace Volt
 	{
 		Physics::GetScene()->Simulate(aDeltaTime);
 
-		myStatistics.entityCount = (uint32_t)myRegistry.GetAllEntities().size();
+		myStatistics.entityCount = static_cast<uint32_t>(m_registry.alive());
 
 		// Update scene data
 		{
@@ -435,7 +395,7 @@ namespace Volt
 
 	Entity Scene::CreateEntity(const std::string& tag)
 	{
-		Wire::EntityId id = myRegistry.CreateEntity();
+		entt::entity id = m_registry.create();
 
 		Entity newEntity = Entity(id, this);
 		auto& transform = newEntity.AddComponent<TransformComponent>();
@@ -444,13 +404,12 @@ namespace Volt
 		transform.scale = { 1.f, 1.f, 1.f };
 
 		newEntity.AddComponent<TagComponent>(tag.empty() ? "New Entity" : tag);
-		newEntity.AddComponent<EntityDataComponent>();
-		newEntity.AddComponent<VisualScriptingComponent>();
+		newEntity.AddComponent<CommonComponent>();
 		newEntity.AddComponent<RelationshipComponent>();
 
-		newEntity.GetComponent<EntityDataComponent>().layerId = mySceneLayers.at(myActiveLayerIndex).id;
-		newEntity.GetComponent<EntityDataComponent>().randomValue = Random::Float(0.f, 1.f);
-		newEntity.GetComponent<EntityDataComponent>().timeSinceCreation = 0.f;
+		newEntity.GetComponent<CommonComponent>().layerId = mySceneLayers.at(myActiveLayerIndex).id;
+		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
+		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
 
 		InvalidateEntityTransform(id);
 
@@ -460,38 +419,37 @@ namespace Volt
 
 	void Scene::RemoveEntity(Entity entity)
 	{
-		if (!myRegistry.Exists(entity.GetId()))
+		if (!m_registry.valid(entity.GetID()))
 		{
 			return;
 		}
 
-		if (myEntityTimesToDestroyRemoved.contains(entity.GetId()))
+		if (myEntityTimesToDestroyRemoved.contains(entity.GetID()))
 		{
-			myEntityTimesToDestroyRemoved.at(entity.GetId()) = true;
+			myEntityTimesToDestroyRemoved.at(entity.GetID()) = true;
 		}
 
 		if (entity.HasComponent<RelationshipComponent>())
 		{
 			auto& relComp = entity.GetComponent<RelationshipComponent>();
-			if (relComp.Parent)
+			if (relComp.parent)
 			{
-				Entity parentEnt{ relComp.Parent, this };
+				Entity parentEnt = relComp.parent;
 
 				if (parentEnt.HasComponent<RelationshipComponent>())
 				{
 					auto& parentRelComp = parentEnt.GetComponent<RelationshipComponent>();
-					auto it = std::find(parentRelComp.Children.begin(), parentRelComp.Children.end(), entity.GetId());
-					if (it != parentRelComp.Children.end())
+					auto it = std::find(parentRelComp.children.begin(), parentRelComp.children.end(), entity.GetID());
+					if (it != parentRelComp.children.end())
 					{
-						parentRelComp.Children.erase(it);
+						parentRelComp.children.erase(it);
 					}
 				}
 			}
 
-			for (int32_t i = (int32_t)relComp.Children.size() - 1; i >= 0; --i)
+			for (int32_t i = static_cast<int32_t>(relComp.children.size()) - 1; i >= 0; --i)
 			{
-				Entity childEnt{ relComp.Children.at(i), this };
-				RemoveEntity(childEnt);
+				RemoveEntity(relComp.children.at(i));
 			}
 		}
 
@@ -503,24 +461,24 @@ namespace Volt
 			}
 		}
 
-		myRegistry.RemoveEntity(entity.GetId());
+		m_registry.release(entity.GetID());
 		SortScene();
 	}
 
 	void Scene::RemoveEntity(Entity entity, float aTimeToDestroy)
 	{
-		if (myEntityTimesToDestroy.find(entity.GetId()) != myEntityTimesToDestroy.end())
+		if (myEntityTimesToDestroy.find(entity.GetID()) != myEntityTimesToDestroy.end())
 		{
 			return;
 		}
 
-		myEntityTimesToDestroy.emplace(entity.GetId(), aTimeToDestroy);
-		myEntityTimesToDestroyRemoved.emplace(entity.GetId(), false);
+		myEntityTimesToDestroy.emplace(entity.GetID(), aTimeToDestroy);
+		myEntityTimesToDestroyRemoved.emplace(entity.GetID(), false);
 	}
 
 	void Scene::ParentEntity(Entity parent, Entity child)
 	{
-		if (parent.IsNull() || child.IsNull() || parent == child)
+		if (!parent.IsValid() || !child.IsValid() || parent == child)
 		{
 			return;
 		}
@@ -538,19 +496,19 @@ namespace Volt
 			UnparentEntity(child);
 		}
 
-		auto& childChildren = child.GetComponent<RelationshipComponent>().Children;
+		auto& childChildren = child.GetComponent<RelationshipComponent>().children;
 
-		if (auto it = std::find(childChildren.begin(), childChildren.end(), parent.GetId()) != childChildren.end())
+		if (auto it = std::find(childChildren.begin(), childChildren.end(), parent.GetID()) != childChildren.end())
 		{
 			return;
 		}
 
-		child.GetComponent<RelationshipComponent>().Parent = parent.GetId();
-		parent.GetComponent<RelationshipComponent>().Children.emplace_back(child.GetId());
+		child.GetComponent<RelationshipComponent>().parent = parent;
+		parent.GetComponent<RelationshipComponent>().children.emplace_back(child);
 
-		if (child.GetLayerId() != parent.GetLayerId())
+		if (child.GetLayerID() != parent.GetLayerID())
 		{
-			MoveToLayer(child, parent.GetLayerId());
+			MoveToLayer(child, parent.GetLayerID());
 		}
 
 		ConvertToLocalSpace(child);
@@ -558,33 +516,33 @@ namespace Volt
 
 	void Scene::UnparentEntity(Entity entity)
 	{
-		if (entity.IsNull()) { return; }
+		if (!entity.IsValid()) { return; }
 
 		auto parent = entity.GetParent();
-		if (parent.IsNull())
+		if (!parent.IsValid())
 		{
 			return;
 		}
 
-		auto& children = parent.GetComponent<RelationshipComponent>().Children;
+		auto& children = parent.GetComponent<RelationshipComponent>().children;
 
-		auto it = std::find(children.begin(), children.end(), entity.GetId());
+		auto it = std::find(children.begin(), children.end(), entity.GetID());
 		if (it != children.end())
 		{
 			children.erase(it);
 		}
 
 		ConvertToWorldSpace(entity);
-		entity.GetComponent<RelationshipComponent>().Parent = Wire::NullID;
+		entity.GetComponent<RelationshipComponent>().parent = Entity::Null();
 	}
 
 	glm::mat4 Scene::GetWorldSpaceTransform(Entity entity)
 	{
 		{
 			std::shared_lock lock(myCachedEntityTransformMutex);
-			if (myCachedEntityTransforms.contains(entity.GetId()))
+			if (myCachedEntityTransforms.contains(entity.GetID()))
 			{
-				return myCachedEntityTransforms.at(entity.GetId());
+				return myCachedEntityTransforms.at(entity.GetID());
 			}
 		}
 
@@ -594,11 +552,11 @@ namespace Volt
 		}
 
 		const auto tqs = GetWorldSpaceTRS(entity);
-		const glm::mat4 transform = glm::translate(glm::mat4{1.f}, tqs.position)* glm::mat4_cast(tqs.rotation)* glm::scale(glm::mat4{ 1.f }, tqs.scale);
+		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, tqs.position) * glm::mat4_cast(tqs.rotation) * glm::scale(glm::mat4{ 1.f }, tqs.scale);
 
 		{
 			std::unique_lock lock{ myCachedEntityTransformMutex };
-			myCachedEntityTransforms[entity.GetId()] = transform;
+			myCachedEntityTransforms[entity.GetID()] = transform;
 		}
 
 		return transform;
@@ -628,17 +586,17 @@ namespace Volt
 		return transform;
 	}
 
-	void Scene::InvalidateEntityTransform(Wire::EntityId entity)
+	void Scene::InvalidateEntityTransform(entt::entity entity)
 	{
 		std::unique_lock lock{ myCachedEntityTransformMutex };
 
-		std::vector<Wire::EntityId> entityStack;
+		std::vector<entt::entity> entityStack;
 		entityStack.reserve(10);
 		entityStack.push_back(entity);
 
 		while (!entityStack.empty())
 		{
-			Wire::EntityId currentEntity = entityStack.back();
+			entt::entity currentEntity = entityStack.back();
 			entityStack.pop_back();
 
 			Volt::Entity ent{ currentEntity, this };
@@ -650,9 +608,9 @@ namespace Volt
 
 			auto& relComp = ent.GetComponent<RelationshipComponent>();
 
-			for (const auto& child : relComp.Children)
+			for (const auto& child : relComp.children)
 			{
-				entityStack.push_back(child);
+				entityStack.push_back(child.GetID());
 			}
 
 			if (myCachedEntityTransforms.contains(currentEntity))
@@ -707,13 +665,14 @@ namespace Volt
 	{
 		Entity entity;
 
-		myRegistry.ForEach<TagComponent>([&](Wire::EntityId id, TagComponent& comp)
+		auto view = m_registry.view<TagComponent>();
+		for (const auto& id : view)
 		{
-			if (comp.tag == name)
+			if (m_registry.get<TagComponent>(id).tag == name)
 			{
-				entity = { id, this };
+				return Entity{ id, this };
 			}
-		});
+		}
 
 		return entity;
 	}
@@ -857,57 +816,27 @@ namespace Volt
 
 		auto& otherRegistry = otherScene->GetRegistry();
 
+		// #TODO_Ivar: Reimplement
+
 		// Copy registry
-		for (const auto& ent : myRegistry.GetAllEntities())
-		{
-			otherRegistry.AddEntity(ent);
-			Entity::Copy(myRegistry, otherRegistry, myMonoFieldCache, otherScene->GetScriptFieldCache(), ent, ent);
-		}
-
-		otherRegistry.ForEach<VisualScriptingComponent>([&](Wire::EntityId id, VisualScriptingComponent& comp)
-		{
-			if (!comp.graph)
-			{
-				return;
-			}
-
-			// Set entities to correct scene
-			{
-				for (const auto& n : comp.graph->GetNodes())
-				{
-					for (auto& a : n->inputs)
-					{
-						if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
-						{
-							Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
-							a.data = Volt::Entity{ ent.GetId(), otherScene.get() };
-						}
-					}
-
-					for (auto& a : n->outputs)
-					{
-						if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
-						{
-							Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
-							a.data = Volt::Entity{ ent.GetId(), otherScene.get() };
-						}
-					}
-				}
-			}
-		});
+		//for (const auto& ent : myRegistry.GetAllEntities())
+		//{
+		//	otherRegistry.AddEntity(ent);
+		//	Entity::Copy(myRegistry, otherRegistry, myMonoFieldCache, otherScene->GetScriptFieldCache(), ent, ent);
+		//}
 	}
 
 	void Scene::Clear()
 	{
-		myRegistry.Clear();
+		m_registry.clear();
 	}
 
-	const glm::vec3 Scene::GetWorldPosition(EnttEntity entity) const
+	const glm::vec3 Scene::GetWorldPosition(Entity entity) const
 	{
-		std::vector<EnttEntity> hierarchy{};
+		std::vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
-		EnttEntity currentEntity = entity;
+		Entity currentEntity = entity;
 		while (currentEntity.HasParent())
 		{
 			auto parent = currentEntity.GetParent();
@@ -918,19 +847,19 @@ namespace Volt
 		glm::vec3 resultPosition = 0.f;
 		for (const auto& parent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			const auto& transComp = m_registry.get<TransformComponent>(parent.GetID());
 			resultPosition = resultPosition + transComp.position * transComp.rotation;
 		}
 
 		return resultPosition;
 	}
 
-	const glm::quat Scene::GetWorldRotation(EnttEntity entity) const
+	const glm::quat Scene::GetWorldRotation(Entity entity) const
 	{
-		std::vector<EnttEntity> hierarchy{};
+		std::vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
-		EnttEntity currentEntity = entity;
+		Entity currentEntity = entity;
 		while (currentEntity.HasParent())
 		{
 			auto parent = currentEntity.GetParent();
@@ -941,19 +870,19 @@ namespace Volt
 		glm::quat resultRotation = glm::identity<glm::quat>();
 		for (const auto& parent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			const auto& transComp = m_registry.get<TransformComponent>(parent.GetID());
 			resultRotation = resultRotation * transComp.rotation;
 		}
 
 		return resultRotation;
 	}
 
-	const glm::vec3 Scene::GetWorldScale(EnttEntity entity) const
+	const glm::vec3 Scene::GetWorldScale(Entity entity) const
 	{
-		std::vector<EnttEntity> hierarchy{};
+		std::vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
-		EnttEntity currentEntity = entity;
+		Entity currentEntity = entity;
 		while (currentEntity.HasParent())
 		{
 			auto parent = currentEntity.GetParent();
@@ -964,19 +893,19 @@ namespace Volt
 		glm::vec3 resultScale = 0.f;
 		for (const auto& parent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			const auto& transComp = m_registry.get<TransformComponent>(parent.GetID());
 			resultScale = resultScale + transComp.scale;
 		}
 
 		return resultScale;
 	}
 
-	const glm::mat4 Scene::GetWorldTransform(EnttEntity entity) const
+	const glm::mat4 Scene::GetWorldTransform(Entity entity) const
 	{
-		std::vector<EnttEntity> hierarchy{};
+		std::vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
-		EnttEntity currentEntity = entity;
+		Entity currentEntity = entity;
 		while (currentEntity.HasParent())
 		{
 			auto parent = currentEntity.GetParent();
@@ -987,19 +916,19 @@ namespace Volt
 		glm::mat4 resultTransform = glm::identity<glm::mat4>();
 		for (const auto& parent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
+			const auto& transComp = m_registry.get<TransformComponent>(parent.GetID());
 			resultTransform = resultTransform * transComp.GetTransform();
 		}
 
 		return resultTransform;
 	}
 
-	const Scene::TQS Scene::GetWorldTQS(EnttEntity entity) const
+	const Scene::TQS Scene::GetWorldTQS(Entity entity) const
 	{
-		std::vector<EnttEntity> hierarchy{};
+		std::vector<Entity> hierarchy{};
 		hierarchy.emplace_back(entity);
 
-		EnttEntity currentEntity = entity;
+		Entity currentEntity = entity;
 		while (currentEntity.HasParent())
 		{
 			auto parent = currentEntity.GetParent();
@@ -1010,8 +939,8 @@ namespace Volt
 		TQS resultTransform{};
 		for (const auto& parent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_enttRegistry.get<EnTTTransformComponent>(parent.GetId());
-		
+			const auto& transComp = m_registry.get<TransformComponent>(parent.GetID());
+
 			resultTransform.position = resultTransform.position + transComp.rotation * transComp.position;
 			resultTransform.rotation = resultTransform.rotation * transComp.rotation;
 			resultTransform.scale = resultTransform.scale * transComp.scale;
@@ -1022,230 +951,38 @@ namespace Volt
 
 	void Scene::MoveToLayerRecursive(Entity entity, uint32_t targetLayer)
 	{
-		if (!entity.HasComponent<EntityDataComponent>())
+		if (!entity.HasComponent<CommonComponent>())
 		{
 			return;
 		}
 
-		entity.GetComponent<EntityDataComponent>().layerId = targetLayer;
+		entity.GetComponent<CommonComponent>().layerId = targetLayer;
 
-		for (const auto& child : entity.GetChilden())
+		for (const auto& child : entity.GetChildren())
 		{
 			MoveToLayerRecursive(child, targetLayer);
 		}
 	}
 
-	void Scene::SetupComponentCreationFunctions()
+	void Scene::SetupComponentFunctions()
 	{
-		myRegistry.SetOnCreateFunction<RigidbodyComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
+		m_registry.on_construct<RigidbodyComponent>().connect<&RigidbodyComponent_OnCreate>(this);
+		m_registry.on_construct<CharacterControllerComponent>().connect<&CharacterControllerComponent_OnCreate>(this);
+		m_registry.on_construct<BoxColliderComponent>().connect<&BoxColliderComponent_OnCreate>(this);
+		m_registry.on_construct<SphereColliderComponent>().connect<&SphereColliderComponent_OnCreate>(this);
+		m_registry.on_construct<CapsuleColliderComponent>().connect<&CapsuleColliderComponent_OnCreate>(this);
+		m_registry.on_construct<MeshColliderComponent>().connect<&MeshColliderComponent_OnCreate>(this);
+		m_registry.on_construct<AudioSourceComponent>().connect<&AudioSourceComponent_OnCreate>(this);
+		m_registry.on_construct<AudioListenerComponent>().connect<&AudioListenerComponent_OnCreate>(this);
 
-			Physics::CreateActor(Entity{ id, this });
-		});
-
-		myRegistry.SetOnCreateFunction<CharacterControllerComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			Physics::CreateControllerActor(Entity{ id, this });
-		});
-
-		myRegistry.SetOnCreateFunction<BoxColliderComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			auto entity = Entity{ id, this };
-
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(entity);
-			BoxColliderComponent& comp = *static_cast<BoxColliderComponent*>(compPtr);
-
-			if (actor && !comp.added)
-			{
-				actor->AddCollider(comp, entity);
-			}
-		});
-
-		myRegistry.SetOnCreateFunction<SphereColliderComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			auto entity = Entity{ id, this };
-
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(entity);
-			SphereColliderComponent& comp = *static_cast<SphereColliderComponent*>(compPtr);
-
-			if (actor && !comp.added)
-			{
-				actor->AddCollider(comp, entity);
-			}
-		});
-
-		myRegistry.SetOnCreateFunction<CapsuleColliderComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			auto entity = Entity{ id, this };
-
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(entity);
-			CapsuleColliderComponent& comp = *static_cast<CapsuleColliderComponent*>(compPtr);
-
-			if (actor && !comp.added)
-			{
-				actor->AddCollider(comp, entity);
-			}
-		});
-
-		myRegistry.SetOnCreateFunction<MeshColliderComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			auto entity = Entity{ id, this };
-
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(entity);
-			MeshColliderComponent& comp = *static_cast<MeshColliderComponent*>(compPtr);
-
-			if (actor && !comp.added)
-			{
-				actor->AddCollider(comp, entity);
-			}
-		});
-
-		myRegistry.SetOnCreateFunction<AudioSourceComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			AudioSourceComponent& comp = *static_cast<AudioSourceComponent*>(compPtr);
-			comp.OnCreate(id);
-		});
-
-		myRegistry.SetOnCreateFunction<AudioListenerComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			AudioListenerComponent& comp = *static_cast<AudioListenerComponent*>(compPtr);
-			comp.OnCreate(id);
-		});
-
-
-	}
-	void Scene::SetupComponentDeletionFunctions()
-	{
-		myRegistry.SetOnRemoveFunction<RigidbodyComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-			if (actor)
-			{
-				Physics::GetScene()->RemoveActor(actor);
-			}
-		});
-
-		myRegistry.SetOnRemoveFunction<CharacterControllerComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetControllerActor(Entity{ id, this });
-			if (actor)
-			{
-				Physics::GetScene()->RemoveControllerActor(actor);
-			}
-		});
-
-		myRegistry.SetOnRemoveFunction<BoxColliderComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-			if (actor)
-			{
-				actor->RemoveCollider(ColliderType::Box);
-			}
-		});
-
-		myRegistry.SetOnRemoveFunction<SphereColliderComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-			if (actor)
-			{
-				actor->RemoveCollider(ColliderType::Sphere);
-			}
-		});
-
-		myRegistry.SetOnRemoveFunction<CapsuleColliderComponent>([&](Wire::EntityId id, void*)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-			if (actor)
-			{
-				actor->RemoveCollider(ColliderType::Capsule);
-			}
-		});
-
-		myRegistry.SetOnRemoveFunction<MeshColliderComponent>([&](Wire::EntityId id, void* compPtr)
-		{
-			if (!myIsPlaying)
-			{
-				return;
-			}
-
-			auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
-			if (actor)
-			{
-				auto& comp = *static_cast<MeshColliderComponent*>(compPtr);
-				if (comp.isConvex)
-				{
-					actor->RemoveCollider(ColliderType::ConvexMesh);
-				}
-				else
-				{
-					actor->RemoveCollider(ColliderType::TriangleMesh);
-				}
-			}
-		});
+		m_registry.on_destroy<RigidbodyComponent>().connect<&RigidbodyComponent_OnDestroy>(this);
+		m_registry.on_destroy<CharacterControllerComponent>().connect<&CharacterControllerComponent_OnDestroy>(this);
+		m_registry.on_destroy<BoxColliderComponent>().connect<&BoxColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<SphereColliderComponent>().connect<&SphereColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<CapsuleColliderComponent>().connect<&CapsuleColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<MeshColliderComponent>().connect<&MeshColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<AudioSourceComponent>().connect<&AudioSourceComponent_OnDestroy>(this);
+		m_registry.on_destroy<AudioListenerComponent>().connect<&AudioListenerComponent_OnDestroy>(this);
 	}
 
 	void Scene::IsRecursiveChildOf(Entity parent, Entity currentEntity, bool& outChild)
@@ -1253,10 +990,10 @@ namespace Volt
 		if (currentEntity.HasComponent<RelationshipComponent>())
 		{
 			auto& relComp = currentEntity.GetComponent<RelationshipComponent>();
-			for (const auto& child : relComp.Children)
+			for (const auto& child : relComp.children)
 			{
-				outChild |= parent.GetId() == child;
-				IsRecursiveChildOf(parent, Entity{ child, this }, outChild);
+				outChild |= parent.GetID() == child.GetID();
+				IsRecursiveChildOf(parent, child, outChild);
 			}
 		}
 	}
@@ -1279,7 +1016,7 @@ namespace Volt
 
 		transform.rotation = glm::quat{ r };
 
-		InvalidateEntityTransform(entity.GetId());
+		InvalidateEntityTransform(entity.GetID());
 	}
 
 	void Scene::ConvertToLocalSpace(Entity entity)
@@ -1299,7 +1036,7 @@ namespace Volt
 		Math::Decompose(localTransform, transform.position, r, transform.scale);
 		transform.rotation = glm::quat{ r };
 
-		InvalidateEntityTransform(entity.GetId());
+		InvalidateEntityTransform(entity.GetID());
 	}
 
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
@@ -1307,9 +1044,223 @@ namespace Volt
 		mySceneLayers.emplace_back(layerId, layerName);
 	}
 
+	void Scene::RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		Physics::CreateActor(Entity{ id, this });
+	}
+
+	void Scene::CharacterControllerComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		Physics::CreateControllerActor(Entity{ id, this });
+	}
+
+	void Scene::BoxColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		auto entity = Entity{ id, this };
+
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(entity);
+		BoxColliderComponent& comp = registry.get<BoxColliderComponent>(id);
+
+		if (actor && !comp.added)
+		{
+			actor->AddCollider(comp, entity);
+		}
+	}
+
+	void Scene::SphereColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		auto entity = Entity{ id, this };
+
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(entity);
+		SphereColliderComponent& comp = registry.get<SphereColliderComponent>(id);
+
+		if (actor && !comp.added)
+		{
+			actor->AddCollider(comp, entity);
+		}
+	}
+
+	void Scene::CapsuleColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		auto entity = Entity{ id, this };
+
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(entity);
+		CapsuleColliderComponent& comp = registry.get<CapsuleColliderComponent>(id);
+
+		if (actor && !comp.added)
+		{
+			actor->AddCollider(comp, entity);
+		}
+	}
+
+	void Scene::MeshColliderComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		auto entity = Entity{ id, this };
+
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(entity);
+		MeshColliderComponent& comp = registry.get<MeshColliderComponent>(id);
+
+		if (actor && !comp.added)
+		{
+			actor->AddCollider(comp, entity);
+		}
+	}
+
+	void Scene::AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		AudioSourceComponent& comp = registry.get<AudioSourceComponent>(id);
+		comp.OnCreate(id);
+	}
+
+	void Scene::AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		AudioListenerComponent& comp = registry.get<AudioListenerComponent>(id);
+		comp.OnCreate(id);
+	}
+
+	void Scene::RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
+		if (actor)
+		{
+			Physics::GetScene()->RemoveActor(actor);
+		}
+	}
+
+	void Scene::CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetControllerActor(Entity{ id, this });
+		if (actor)
+		{
+			Physics::GetScene()->RemoveControllerActor(actor);
+		}
+	}
+
+	void Scene::BoxColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
+		if (actor)
+		{
+			actor->RemoveCollider(ColliderType::Box);
+		}
+	}
+
+	void Scene::SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
+		if (actor)
+		{
+			actor->RemoveCollider(ColliderType::Sphere);
+		}
+	}
+
+	void Scene::CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
+		if (actor)
+		{
+			actor->RemoveCollider(ColliderType::Capsule);
+		}
+	}
+
+	void Scene::MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		if (!myIsPlaying)
+		{
+			return;
+		}
+
+		auto actor = Physics::GetScene()->GetActor(Entity{ id, this });
+		if (actor)
+		{
+			auto& comp = registry.get<MeshColliderComponent>(id);
+			if (comp.isConvex)
+			{
+				actor->RemoveCollider(ColliderType::ConvexMesh);
+			}
+			else
+			{
+				actor->RemoveCollider(ColliderType::TriangleMesh);
+			}
+		}
+	}
+
+	void Scene::AudioSourceComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+	}
+
+	void Scene::AudioListenerComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+	}
+
 	void Scene::SortScene()
 	{
-		myRegistry.Sort([](const auto& lhs, const auto& rhs)
+		m_registry.sort<CommonComponent>([](const entt::entity lhs, const entt::entity rhs) 
 		{
 			return lhs < rhs;
 		});
@@ -1340,9 +1291,9 @@ namespace Volt
 	{
 		if (entity.GetParent())
 		{
-			if (entity.GetParent().GetLayerId() != targetLayer)
+			if (entity.GetParent().GetLayerID() != targetLayer)
 			{
-				entity.ResetParent();
+				entity.ClearParent();
 			}
 		}
 
@@ -1369,5 +1320,18 @@ namespace Volt
 	bool Scene::LayerExists(uint32_t layerId)
 	{
 		return std::find_if(mySceneLayers.begin(), mySceneLayers.end(), [layerId](const auto& lhs) { return lhs.id == layerId; }) != mySceneLayers.end();
+	}
+
+	const std::vector<entt::entity> Scene::GetAllEntities() const
+	{
+		std::vector<entt::entity> result{};
+		result.reserve(m_registry.alive());
+
+		m_registry.each([&](const entt::entity id) 
+		{
+			result.emplace_back(id);
+		});
+
+		return result;
 	}
 }

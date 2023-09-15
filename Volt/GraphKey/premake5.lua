@@ -47,7 +47,6 @@ project "GraphKey"
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.Wire}",
 
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.fmod}",

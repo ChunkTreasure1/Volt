@@ -3,8 +3,9 @@
 
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Components/Components.h"
 #include "Volt/Components/PhysicsComponents.h"
+#include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Animation/AnimationController.h"
 
@@ -21,443 +22,12 @@
 
 namespace Volt
 {
-	//Prefab::Prefab(Wire::Registry& aParentRegistry, Wire::EntityId topEntity)
-	//{
-	//	uint32_t count = 0;
-	//	AddToPrefab(aParentRegistry, topEntity, count);
-	//}
-
-	//Wire::EntityId Prefab::Instantiate(Scene* targetScene, Wire::EntityId specifiedTargetId)
-	//{
-	//	auto& targetRegistry = targetScene->GetRegistry();
-
-	//	Wire::EntityId rootEntity = GetRootId();
-	//	Wire::EntityId newRoot = InstantiateEntity(targetScene, rootEntity, Wire::NullID, specifiedTargetId);
-
-	//	auto& rootTransform = targetRegistry.GetComponent<TransformComponent>(newRoot);
-	//	rootTransform.position = { 0.f, 0.f, 0.f };
-	//	rootTransform.rotation = myRegistry.GetComponent<TransformComponent>(rootEntity).rotation;
-	//	rootTransform.scale = myRegistry.GetComponent<TransformComponent>(rootEntity).scale;
-
-	//	auto& tagComp = targetRegistry.GetComponent<TagComponent>(newRoot);
-	//	tagComp.tag = path.stem().string();
-
-	//	Entity ent{ newRoot, targetScene };
-	//	targetScene->MoveToLayer(ent, targetScene->GetActiveLayer());
-
-	//	return newRoot;
-	//}
-
-	//Wire::EntityId Prefab::GetRootId()
-	//{
-	//	Wire::EntityId rootEntity = Wire::NullID;
-	//	for (const auto& ent : myRegistry.GetAllEntities())
-	//	{
-	//		if (myRegistry.HasComponent<RelationshipComponent>(ent))
-	//		{
-	//			auto& relComp = myRegistry.GetComponent<RelationshipComponent>(ent);
-	//			if (relComp.Parent == Wire::NullID)
-	//			{
-	//				rootEntity = ent;
-	//				break;
-	//			}
-	//		}
-	//	}
-	//	return rootEntity;
-	//}
-
-	//void Prefab::OverridePrefabInRegistry(Wire::Registry& aTargetRegistry, Wire::EntityId aRootEntity, AssetHandle prefabId)
-	//{
-	//	Ref<Prefab> prefabAsset = AssetManager::GetAsset<Prefab>(prefabId);
-	//	if (!prefabAsset || !prefabAsset->IsValid())
-	//	{
-	//		VT_CORE_WARN("[Prefab]: Trying to override prefabs with ID {0}, but the prefab is not valid!", prefabId);
-	//		return;
-	//	}
-
-	//	if (!aTargetRegistry.HasComponent<PrefabComponent>(aRootEntity))
-	//	{
-	//		VT_CORE_WARN("[Prefab]: Root entity is not a prefab!");
-	//		return;
-	//	}
-
-	//	OverrideEntityInPrefab(aTargetRegistry, aRootEntity, prefabAsset);
-	//}
-
-	//void Prefab::OverridePrefabsInRegistry(Wire::Registry& aTargetRegistry, AssetHandle aPrefabId)
-	//{
-	//	for (const auto& entity : aTargetRegistry.GetAllEntities())
-	//	{
-	//		if (!aTargetRegistry.HasComponent<PrefabComponent>(entity))
-	//		{
-	//			continue;
-	//		}
-
-	//		auto& prefabComp = aTargetRegistry.GetComponent<PrefabComponent>(entity);
-	//		if (prefabComp.prefabAsset != aPrefabId)
-	//		{
-	//			continue;
-	//		}
-
-	//		if (aTargetRegistry.HasComponent<RelationshipComponent>(entity))
-	//		{
-	//			auto& relComp = aTargetRegistry.GetComponent<RelationshipComponent>(entity);
-	//			if (relComp.Parent != Wire::NullID)
-	//			{
-	//				if (aTargetRegistry.HasComponent<PrefabComponent>(relComp.Parent))
-	//				{
-	//					auto& parentPrefabComp = aTargetRegistry.GetComponent<PrefabComponent>(relComp.Parent);
-	//					if (parentPrefabComp.prefabAsset == prefabComp.prefabAsset)
-	//					{
-	//						continue;
-	//					}
-	//				}
-	//			}
-	//		}
-
-	//		OverridePrefabInRegistry(aTargetRegistry, entity, aPrefabId);
-	//	}
-	//}
-
-	//void RecursiveDeleteChildren(Wire::Registry& aTargetRegistry, Wire::EntityId aTargetEntity)
-	//{
-	//	auto& relComp = aTargetRegistry.GetComponent<RelationshipComponent>(aTargetEntity);
-	//	if (relComp.Parent)
-	//	{
-	//		auto& parentRelComp = aTargetRegistry.GetComponent<RelationshipComponent>(relComp.Parent);
-	//		parentRelComp.Children.erase(std::find(parentRelComp.Children.begin(), parentRelComp.Children.end(), aTargetEntity));
-	//	}
-	//	for (const auto& id : relComp.Children)
-	//	{
-	//		RecursiveDeleteChildren(aTargetRegistry, id);
-	//	}
-	//	aTargetRegistry.RemoveEntity(aTargetEntity);
-	//}
-
-	//void Prefab::OverridePrefabAsset(Wire::Registry& aSrcRegistry, Wire::EntityId aSrcEntity, AssetHandle aPrefabId)
-	//{
-	//	Ref<Prefab> prefabAsset = AssetManager::GetAsset<Prefab>(aPrefabId);
-	//	if (!prefabAsset || !prefabAsset->IsValid())
-	//	{
-	//		VT_CORE_WARN("[Prefab]: Trying to override prefab with ID {0}, but the prefab is not valid!", aPrefabId);
-	//		return;
-	//	}
-
-	//	if (!aSrcRegistry.HasComponent<PrefabComponent>(aSrcEntity))
-	//	{
-	//		VT_CORE_WARN("[Prefab]: Root entity is not a prefab!");
-	//		return;
-	//	}
-
-
-	//	prefabAsset->myVersion++;
-	//	prefabAsset->OverrideEntity(aSrcRegistry, aSrcEntity);
-	//	for (const auto& entityId : prefabAsset->myRegistry.GetAllEntities())
-	//	{
-	//		if (std::find(prefabAsset->myKeepEntitiesQueue.begin(), prefabAsset->myKeepEntitiesQueue.end(), entityId) == prefabAsset->myKeepEntitiesQueue.end())
-	//		{
-	//			RecursiveDeleteChildren(prefabAsset->myRegistry, entityId);
-	//		}
-	//	}
-	//	prefabAsset->myKeepEntitiesQueue.clear();
-	//	OverridePrefabsInRegistry(aSrcRegistry, aPrefabId);
-	//}
-
-	//bool Prefab::IsRootInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId)
-	//{
-	//	Ref<Prefab> prefabAsset = AssetManager::GetAsset<Prefab>(aPrefabId);
-	//	if (!prefabAsset || !prefabAsset->IsValid())
-	//	{
-	//		return false;
-	//	}
-
-	//	Wire::EntityId rootEntity = prefabAsset->GetRootId();
-
-	//	if (aEntityId == rootEntity)
-	//	{
-	//		return true;
-	//	}
-
-	//	return false;
-	//}
-
-	//bool Prefab::IsValidInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId)
-	//{
-	//	Ref<Prefab> prefabAsset = AssetManager::GetAsset<Prefab>(aPrefabId);
-	//	if (!prefabAsset || !prefabAsset->IsValid())
-	//	{
-	//		return false;
-	//	}
-
-	//	return prefabAsset->myRegistry.Exists(aEntityId);
-	//}
-
-	//uint32_t Prefab::GetPrefabVersion(AssetHandle aPrefabId)
-	//{
-	//	Ref<Prefab> prefabAsset = AssetManager::GetAsset<Prefab>(aPrefabId);
-	//	if (!prefabAsset || !prefabAsset->IsValid())
-	//	{
-	//		return 0;
-	//	}
-
-	//	return prefabAsset->myVersion;
-	//}
-
-	//Volt::AssetHandle Prefab::GetCorrectAssethandle(Wire::EntityId aRootId, AssetHandle aPrefabId)
-	//{
-	//	Ref<Prefab> prefabAsset = AssetManager::GetAsset<Prefab>(aPrefabId);
-	//	if (!prefabAsset || !prefabAsset->IsValid() || !prefabAsset->myRegistry.Exists(aRootId))
-	//	{
-	//		return 0;
-	//	}
-
-	//	return prefabAsset->myRegistry.GetComponent<PrefabComponent>(aRootId).prefabAsset;
-	//}
-
-	//void Prefab::OverrideEntityInPrefab(Wire::Registry& aTargetRegistry, Wire::EntityId aEntity, Ref<Prefab> aPrefab)
-	//{
-	//	if (!aTargetRegistry.HasComponent<PrefabComponent>(aEntity))
-	//	{
-	//		return;
-	//	}
-
-	//	auto& srcRegistry = aPrefab->myRegistry;
-	//	auto& targetPrefabComp = aTargetRegistry.GetComponent<PrefabComponent>(aEntity);
-
-	//	if (!srcRegistry.Exists(targetPrefabComp.prefabEntity) || targetPrefabComp.prefabAsset != aPrefab->handle)
-	//	{
-	//		return;
-	//	}
-
-	//	std::vector<WireGUID> excludedComponents = { RelationshipComponent::comp_guid, PrefabComponent::comp_guid, EntityDataComponent::comp_guid };
-
-	//	auto& targetRelationshipComponent = srcRegistry.GetComponent<RelationshipComponent>(targetPrefabComp.prefabEntity);
-	//	if (targetRelationshipComponent.Parent == Wire::NullID)
-	//	{
-	//		excludedComponents.emplace_back(Wire::ComponentRegistry::GetRegistryDataFromName("TransformComponent").guid);
-	//	}
-
-	//	Entity::Copy(srcRegistry, aTargetRegistry, targetPrefabComp.prefabEntity, aEntity, excludedComponents, true);
-	//	targetPrefabComp.version = aPrefab->myVersion;
-
-	//	for (const auto& child : targetRelationshipComponent.Children)
-	//	{
-	//		OverrideEntityInPrefab(aTargetRegistry, child, aPrefab);
-	//	}
-
-	//	// #TODO(Ivar): Check that parenting is correct in all entities
-	//}
-
-	//Wire::EntityId Prefab::InstantiateEntity(Scene* targetScene, Wire::EntityId prefabEntity, Wire::EntityId parentEntity, Wire::EntityId specifiedTargetId)
-	//{
-	//	auto& targetRegistry = targetScene->GetRegistry();
-
-	//	Wire::EntityId newEntity = (specifiedTargetId) ? targetRegistry.AddEntity(specifiedTargetId) : targetRegistry.CreateEntity();
-	//	Entity::Copy(myRegistry, targetRegistry, prefabEntity, newEntity, { Volt::RigidbodyComponent::comp_guid, Volt::CharacterControllerComponent::comp_guid }, true);
-
-	//	if (myRegistry.HasComponent<Volt::RigidbodyComponent>(prefabEntity))
-	//	{
-	//		const auto srcComp = myRegistry.GetComponent<Volt::RigidbodyComponent>(prefabEntity);
-	//		targetRegistry.AddComponent<Volt::RigidbodyComponent>(newEntity, srcComp.bodyType, srcComp.layerId, srcComp.mass, srcComp.linearDrag, srcComp.lockFlags, srcComp.angularDrag, srcComp.disableGravity, srcComp.isKinematic, srcComp.collisionType);
-	//	}
-
-	//	if (myRegistry.HasComponent<Volt::CharacterControllerComponent>(prefabEntity))
-	//	{
-	//		const auto srcComp = myRegistry.GetComponent<Volt::CharacterControllerComponent>(prefabEntity);
-	//		targetRegistry.AddComponent<Volt::CharacterControllerComponent>(newEntity, srcComp.climbingMode, srcComp.slopeLimit, srcComp.invisibleWallHeight, srcComp.maxJumpHeight, srcComp.contactOffset, srcComp.stepOffset, srcComp.density, srcComp.layer, srcComp.hasGravity);
-	//	}
-
-	//	if (myRegistry.HasComponent<RelationshipComponent>(prefabEntity))
-	//	{
-	//		auto& relComp = myRegistry.GetComponent<RelationshipComponent>(prefabEntity);
-	//		if (!targetRegistry.HasComponent<RelationshipComponent>(newEntity))
-	//		{
-	//			targetRegistry.AddComponent<RelationshipComponent>(newEntity);
-	//		}
-
-	//		{
-	//			auto& relCompNew = targetRegistry.GetComponent<RelationshipComponent>(newEntity);
-	//			relCompNew.Children.clear();
-	//			relCompNew.Parent = parentEntity;
-	//		}
-
-	//		for (const auto& child : relComp.Children)
-	//		{
-	//			Wire::EntityId entity = InstantiateEntity(targetScene, child, newEntity);
-	//			auto& relCompNew = targetRegistry.GetComponent<RelationshipComponent>(newEntity);
-	//			relCompNew.Children.emplace_back(entity);
-	//		}
-	//	}
-
-	//	if (targetRegistry.HasComponent<AnimationControllerComponent>(newEntity))
-	//	{
-	//		auto& comp = targetRegistry.GetComponent<AnimationControllerComponent>(newEntity);
-
-	//		if (comp.animationGraph != Asset::Null())
-	//		{
-	//			auto graph = AssetManager::GetAsset<AnimationGraphAsset>(comp.animationGraph);
-	//			if (graph && graph->IsValid())
-	//			{
-	//				comp.controller = CreateRef<AnimationController>(graph, Volt::Entity{ newEntity, targetScene });
-	//			}
-	//		}
-	//	}
-
-	//	if (targetRegistry.HasComponent<VisualScriptingComponent>(newEntity))
-	//	{
-	//		auto& vsComp = targetRegistry.GetComponent<VisualScriptingComponent>(newEntity);
-	//		if (vsComp.graph)
-	//		{
-	//			// Update entityId if the entity ID is of the prefab entity. Otherwise we set it to Null
-	//			for (const auto& n : vsComp.graph->GetNodes())
-	//			{
-	//				for (auto& a : n->inputs)
-	//				{
-	//					if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
-	//					{
-	//						if (std::any_cast<Volt::Entity>(a.data).GetId() == prefabEntity)
-	//						{
-	//							Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
-	//							a.data = Volt::Entity{ newEntity, targetScene };
-	//						}
-	//						else
-	//						{
-	//							a.data = Volt::Entity{ Wire::NullID, targetScene };
-	//						}
-	//					}
-	//				}
-
-	//				for (auto& a : n->outputs)
-	//				{
-	//					if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
-	//					{
-	//						if (std::any_cast<Volt::Entity>(a.data).GetId() == prefabEntity)
-	//						{
-	//							Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
-	//							a.data = Volt::Entity{ newEntity, targetScene };
-	//						}
-	//						else
-	//						{
-	//							a.data = Volt::Entity{ Wire::NullID, targetScene };
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//	return newEntity;
-	//}
-
-	//Wire::EntityId Prefab::AddToPrefab(Wire::Registry& aParentRegistry, Wire::EntityId entity, uint32_t& count)
-	//{
-	//	auto newEntityId = entity;
-	//	while (myRegistry.Exists(newEntityId))
-	//	{
-	//		newEntityId++;
-	//	}
-	//	myRegistry.AddEntity(newEntityId);
-	//	auto& prefabComp = myRegistry.AddComponent<PrefabComponent>(newEntityId);
-	//	prefabComp.prefabAsset = handle;
-	//	prefabComp.prefabEntity = newEntityId;
-
-	//	Entity::Copy(aParentRegistry, myRegistry, entity, newEntityId, { Wire::ComponentRegistry::GetRegistryDataFromName("RelationshipComponent").guid });
-
-	//	// Add children
-	//	if (!myRegistry.HasComponent<RelationshipComponent>(newEntityId))
-	//	{
-	//		myRegistry.AddComponent<RelationshipComponent>(newEntityId);
-	//	}
-
-	//	if (aParentRegistry.HasComponent<RelationshipComponent>(entity))
-	//	{
-	//		auto& relComp = aParentRegistry.GetComponent<RelationshipComponent>(entity);
-
-	//		uint32_t tempCount = count;
-
-	//		for (const auto& child : relComp.Children)
-	//		{
-	//			AddToPrefab(aParentRegistry, child, ++count);
-
-	//			auto& newEntRelComp = myRegistry.GetComponent<RelationshipComponent>(newEntityId);
-	//			newEntRelComp.Children.emplace_back(child);
-	//		}
-
-	//		auto& newEntRelComp = myRegistry.GetComponent<RelationshipComponent>(newEntityId);
-
-	//		if (tempCount == 0)
-	//		{
-	//			newEntRelComp.Parent = Wire::NullID;
-	//		}
-	//		else
-	//		{
-	//			if (aParentRegistry.HasComponent<PrefabComponent>(relComp.Parent))
-	//			{
-	//				auto parentId = aParentRegistry.GetComponent<PrefabComponent>(relComp.Parent).prefabEntity;
-	//				newEntRelComp.Parent = parentId;
-	//				auto& parentChildren = myRegistry.GetComponent<RelationshipComponent>(parentId).Children;
-	//				if (std::find(parentChildren.begin(), parentChildren.end(), newEntityId) == parentChildren.end())
-	//				{
-	//					parentChildren.emplace_back(newEntityId);
-	//				}
-	//			}
-	//			else
-	//			{
-	//				newEntRelComp.Parent = relComp.Parent;
-	//			}
-	//		}
-	//	}
-
-	//	return newEntityId;
-	//}
-
-	//void Prefab::OverrideEntity(Wire::Registry& aSrcRegistry, Wire::EntityId aSrcEntity)
-	//{
-	//	if (!aSrcRegistry.HasComponent<PrefabComponent>(aSrcEntity))
-	//	{
-	//		auto& srcPrefabComp = aSrcRegistry.AddComponent<PrefabComponent>(aSrcEntity);
-
-	//		uint32_t count = 1;
-	//		auto newEnt = AddToPrefab(aSrcRegistry, aSrcEntity, count);
-
-	//		srcPrefabComp.prefabAsset = handle;
-	//		srcPrefabComp.prefabEntity = newEnt;
-	//	}
-
-	//	auto& srcPrefabComp = aSrcRegistry.GetComponent<PrefabComponent>(aSrcEntity);
-	//	srcPrefabComp.version = myVersion;
-
-	//	if (!myRegistry.Exists(srcPrefabComp.prefabEntity) || srcPrefabComp.prefabAsset != this->handle)
-	//	{
-	//		return;
-	//	}
-
-	//	myKeepEntitiesQueue.emplace_back(srcPrefabComp.prefabEntity);
-	//	std::vector<WireGUID> excludedComponents = { Wire::ComponentRegistry::GetRegistryDataFromName("RelationshipComponent").guid };
-
-	//	auto& targetRelationshipComponent = myRegistry.GetComponent<RelationshipComponent>(srcPrefabComp.prefabEntity);
-	//	if (targetRelationshipComponent.Parent == Wire::NullID)
-	//	{
-	//		excludedComponents.emplace_back(Wire::ComponentRegistry::GetRegistryDataFromName("TransformComponent").guid);
-	//	}
-
-	//	Entity::Copy(aSrcRegistry, myRegistry, aSrcEntity, srcPrefabComp.prefabEntity, excludedComponents, true);
-
-	//	auto& srcRelationshipComponent = aSrcRegistry.GetComponent<RelationshipComponent>(aSrcEntity);
-	//	for (const auto& child : srcRelationshipComponent.Children)
-	//	{
-	//		OverrideEntity(aSrcRegistry, child);
-	//	}
-
-	//	// #TODO(Ivar): Check that parenting is correct in all entities
-	//}
-
-	Prefab::Prefab(Scene* scene, Wire::EntityId rootEntity)
+	Prefab::Prefab(Scene* scene, entt::entity rootEntity)
 	{
 		CreatePrefab(scene, rootEntity);
 	}
 
-	bool Prefab::IsValidInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId)
+	bool Prefab::IsValidInPrefab(entt::entity aEntityId, AssetHandle aPrefabId)
 	{
 		Ref<Prefab> prefabAsset = AssetManager::GetAssetLocking<Prefab>(aPrefabId);
 		if (!prefabAsset || !prefabAsset->IsValid())
@@ -465,10 +35,10 @@ namespace Volt
 			return false;
 		}
 
-		return prefabAsset->myRegistry.Exists(aEntityId);
+		return prefabAsset->myRegistry.valid(aEntityId);
 	}
 
-	bool Prefab::IsRootInPrefab(Wire::EntityId aEntityId, AssetHandle aPrefabId)
+	bool Prefab::IsRootInPrefab(entt::entity aEntityId, AssetHandle aPrefabId)
 	{
 		Ref<Prefab> prefabAsset = AssetManager::GetAssetLocking<Prefab>(aPrefabId);
 		if (!prefabAsset || !prefabAsset->IsValid())
@@ -498,55 +68,55 @@ namespace Volt
 		}
 	}
 
-	Wire::EntityId Prefab::Instantiate(Scene* targetScene, Wire::EntityId aTargetEntity)
+	entt::entity Prefab::Instantiate(Scene* targetScene, entt::entity aTargetEntity)
 	{
-		if (myRootId == Wire::NullID) { return Wire::NullID; }
-		auto newEnt = Entity::Duplicate(myRegistry, targetScene->GetRegistry(), myScriptFieldCache, targetScene->GetScriptFieldCache(), myRootId, aTargetEntity, { RelationshipComponent::comp_guid, RigidbodyComponent::comp_guid, CharacterControllerComponent::comp_guid }, true);
+		if (myRootId == entt::null) { return entt::null; }
+		//auto newEnt = Entity::Duplicate(myRegistry, targetScene->GetRegistry(), myScriptFieldCache, targetScene->GetScriptFieldCache(), myRootId, aTargetEntity, { RelationshipComponent::comp_guid, RigidbodyComponent::comp_guid, CharacterControllerComponent::comp_guid }, true);
 
-		UpdateComponents(targetScene, newEnt);
-		CorrectEntityReferences(targetScene, newEnt);
+		//UpdateComponents(targetScene, newEnt);
+		//CorrectEntityReferences(targetScene, newEnt);
 
-		targetScene->InvalidateEntityTransform(newEnt);
+		//targetScene->InvalidateEntityTransform(newEnt);
 
-		return newEnt;
+		return entt::null;
 	}
 
-	void Prefab::UpdateComponents(Scene* targetScene, Wire::EntityId aTargetEntity)
+	void Prefab::UpdateComponents(Scene* targetScene, entt::entity aTargetEntity)
 	{
-		auto& targetRegistry = targetScene->GetRegistry();
-		Wire::EntityId prefabEntity = targetRegistry.GetComponent<PrefabComponent>(aTargetEntity).prefabEntity;
+		Entity targetEntity = { aTargetEntity, targetScene };
+		Entity prefabEntity = { targetEntity.GetComponent<PrefabComponent>().prefabEntity, targetScene };
 
-		if (myRegistry.HasComponent<RigidbodyComponent>(prefabEntity))
+		if (prefabEntity.HasComponent<RigidbodyComponent>())
 		{
-			const auto srcComp = myRegistry.GetComponent<RigidbodyComponent>(prefabEntity);
-			if (targetRegistry.HasComponent<RigidbodyComponent>(aTargetEntity))
+			const auto srcComp = prefabEntity.GetComponent<RigidbodyComponent>();
+			if (targetEntity.HasComponent<RigidbodyComponent>())
 			{
-				targetRegistry.RemoveComponent<RigidbodyComponent>(aTargetEntity);
+				targetEntity.RemoveComponent<RigidbodyComponent>();
 			}
 
-			targetRegistry.AddComponent<RigidbodyComponent>(aTargetEntity, srcComp.bodyType, srcComp.layerId, srcComp.mass, srcComp.linearDrag, srcComp.lockFlags, srcComp.angularDrag, srcComp.disableGravity, srcComp.isKinematic, srcComp.collisionType);
+			targetEntity.AddComponent<RigidbodyComponent>(srcComp.bodyType, srcComp.layerId, srcComp.mass, srcComp.linearDrag, srcComp.lockFlags, srcComp.angularDrag, srcComp.disableGravity, srcComp.isKinematic, srcComp.collisionType);
 		}
 
-		if (targetRegistry.HasComponent<NetActorComponent>(aTargetEntity))
+		if (targetEntity.HasComponent<NetActorComponent>())
 		{
-			auto& srcComp = targetRegistry.GetComponent<NetActorComponent>(aTargetEntity);
+			auto& srcComp = targetEntity.GetComponent<NetActorComponent>();
 			srcComp.repId = Nexus::RandRepID();
 		}
 
-		if (myRegistry.HasComponent<CharacterControllerComponent>(prefabEntity))
+		if (prefabEntity.HasComponent<CharacterControllerComponent>())
 		{
-			const auto srcComp = myRegistry.GetComponent<CharacterControllerComponent>(prefabEntity);
-			if (targetRegistry.HasComponent<CharacterControllerComponent>(aTargetEntity))
+			const auto srcComp = prefabEntity.GetComponent<CharacterControllerComponent>();
+			if (targetEntity.HasComponent<CharacterControllerComponent>())
 			{
-				targetRegistry.RemoveComponent<CharacterControllerComponent>(aTargetEntity);
+				targetEntity.RemoveComponent<CharacterControllerComponent>();
 			}
 
-			targetRegistry.AddComponent<CharacterControllerComponent>(aTargetEntity, srcComp.climbingMode, srcComp.slopeLimit, srcComp.invisibleWallHeight, srcComp.maxJumpHeight, srcComp.contactOffset, srcComp.stepOffset, srcComp.density, srcComp.layer, srcComp.hasGravity);
+			targetEntity.AddComponent<CharacterControllerComponent>(srcComp.climbingMode, srcComp.slopeLimit, srcComp.invisibleWallHeight, srcComp.maxJumpHeight, srcComp.contactOffset, srcComp.stepOffset, srcComp.density, srcComp.layer, srcComp.hasGravity);
 		}
 
-		if (targetRegistry.HasComponent<AnimationControllerComponent>(aTargetEntity))
+		if (targetEntity.HasComponent<AnimationControllerComponent>())
 		{
-			auto& comp = targetRegistry.GetComponent<AnimationControllerComponent>(aTargetEntity);
+			auto& comp = targetEntity.GetComponent<AnimationControllerComponent>();
 
 			if (comp.animationGraph != Asset::Null())
 			{
@@ -558,85 +128,45 @@ namespace Volt
 			}
 		}
 
-		if (targetRegistry.HasComponent<VisualScriptingComponent>(aTargetEntity))
+		if (targetEntity.HasComponent<CommonComponent>())
 		{
-			auto& vsComp = targetRegistry.GetComponent<VisualScriptingComponent>(aTargetEntity);
-			if (vsComp.graph)
-			{
-				// Update entityId if the entity ID is of the prefab entity. Otherwise we set it to Null
-				for (const auto& n : vsComp.graph->GetNodes())
-				{
-					for (auto& a : n->inputs)
-					{
-						if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
-						{
-							if (std::any_cast<Volt::Entity>(a.data).GetId() == prefabEntity)
-							{
-								Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
-								a.data = Volt::Entity{ aTargetEntity, targetScene };
-							}
-							else
-							{
-								a.data = Volt::Entity{ Wire::NullID, targetScene };
-							}
-						}
-					}
-
-					for (auto& a : n->outputs)
-					{
-						if (a.data.has_value() && a.data.type() == typeid(Volt::Entity))
-						{
-							if (std::any_cast<Volt::Entity>(a.data).GetId() == prefabEntity)
-							{
-								Volt::Entity ent = std::any_cast<Volt::Entity>(a.data);
-								a.data = Volt::Entity{ aTargetEntity, targetScene };
-							}
-							else
-							{
-								a.data = Volt::Entity{ Wire::NullID, targetScene };
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if (targetScene->GetRegistry().HasComponent<EntityDataComponent>(aTargetEntity))
-		{
-			auto& comp = targetScene->GetRegistry().GetComponent<EntityDataComponent>(aTargetEntity);
+			auto& comp = targetEntity.GetComponent<CommonComponent>();
 			comp.layerId = targetScene->GetActiveLayer();
 			comp.randomValue = Random::Float(0.f, 1.f);
 			comp.timeSinceCreation = 0.f;
 		}
 		else
 		{
-			auto& comp = targetScene->GetRegistry().AddComponent<EntityDataComponent>(aTargetEntity);
+			auto& comp = targetEntity.AddComponent<CommonComponent>();
 			comp.layerId = targetScene->GetActiveLayer();
 			comp.randomValue = Random::Float(0.f, 1.f);
 			comp.timeSinceCreation = 0.f;
 		}
 
-		if (targetRegistry.HasComponent<RelationshipComponent>(aTargetEntity))
+		if (targetEntity.HasComponent<RelationshipComponent>())
 		{
-			auto& relationshipComp = targetRegistry.GetComponent<RelationshipComponent>(aTargetEntity);
+			auto& relationshipComp = targetEntity.GetComponent<RelationshipComponent>();
 
-			for (auto child : relationshipComp.Children)
+			for (auto child : relationshipComp.children)
 			{
-				UpdateComponents(targetScene, child);
+				UpdateComponents(targetScene, child.GetId());
 			}
 		}
 	}
 
-	void Prefab::CorrectEntityReferences(Scene* scene, Wire::EntityId targetEntity)
+	void Prefab::CorrectEntityReferences(Scene* scene, entt::entity targetEntity)
 	{
 		CorrectEntityReferencesRecursive(scene, targetEntity, targetEntity);
 	}
 
-	void Prefab::CorrectEntityReferencesRecursive(Scene* scene, Wire::EntityId targetEntity, Wire::EntityId startEntity)
+	void Prefab::CorrectEntityReferencesRecursive(Scene* scene, entt::entity targetEntityId, entt::entity startEntityId)
 	{
+		Entity targetEntity = { targetEntityId, scene };
+		Entity startEntity = { startEntityId, scene };
+
 		auto& targetRegistry = scene->GetRegistry();
 
-		for (const auto& [guid, pool] : targetRegistry.GetPools())
+		/*for (const auto& [guid, pool] : targetRegistry.GetPools())
 		{
 			if (!targetRegistry.HasComponent(guid, targetEntity))
 			{
@@ -659,17 +189,17 @@ namespace Volt
 
 				if (prop.type == Wire::ComponentRegistry::PropertyType::EntityId)
 				{
-					Wire::EntityId currentEntityId = *(Wire::EntityId*)&data[prop.offset];
-					Wire::EntityId correspondingEntity = FindCorrespondingEntity(targetRegistry, startEntity, currentEntityId);
+					entt::entity currentEntityId = *(entt::entity*)&data[prop.offset];
+					entt::entity correspondingEntity = FindCorrespondingEntity(targetRegistry, startEntity, currentEntityId);
 
-					*(Wire::EntityId*)&data[prop.offset] = correspondingEntity;
+					*(entt::entity*)&data[prop.offset] = correspondingEntity;
 				}
 			}
-		}
+		}*/
 
-		if (targetRegistry.HasComponent<MonoScriptComponent>(targetEntity))
+		if (targetEntity.HasComponent<MonoScriptComponent>())
 		{
-			for (const auto& script : targetRegistry.GetComponent<MonoScriptComponent>(targetEntity).scriptIds)
+			for (const auto& script : targetEntity.GetComponent<MonoScriptComponent>().scriptIds)
 			{
 				const auto& fieldMap = scene->GetScriptFieldCache().GetCache().at(script);
 
@@ -677,52 +207,55 @@ namespace Volt
 				{
 					if (fieldInstance->field.type == MonoFieldType::Entity)
 					{
-						Wire::EntityId currentEntityId = *fieldInstance->data.As<Wire::EntityId>();
-						Wire::EntityId correspondingEntity = FindCorrespondingEntity(targetRegistry, startEntity, currentEntityId);
+						entt::entity currentEntityId = *fieldInstance->data.As<entt::entity>();
+						entt::entity correspondingEntity = FindCorrespondingEntity(scene, startEntity.GetID(), currentEntityId);
 
-						fieldInstance->SetValue(correspondingEntity, sizeof(Wire::EntityId), MonoFieldType::Entity);
+						fieldInstance->SetValue(correspondingEntity, sizeof(entt::entity), MonoFieldType::Entity);
 					}
 				}
 			}
 		}
 
-		if (targetRegistry.HasComponent<RelationshipComponent>(targetEntity))
+		if (targetEntity.HasComponent<RelationshipComponent>())
 		{
-			for (const auto& child : targetRegistry.GetComponent<RelationshipComponent>(targetEntity).Children)
+			for (const auto& child : targetEntity.GetComponent<RelationshipComponent>().children)
 			{
-				CorrectEntityReferencesRecursive(scene, child, startEntity);
+				CorrectEntityReferencesRecursive(scene, child.GetId(), startEntity.GetID());
 			}
 		}
 	}
 
-	Wire::EntityId Prefab::FindCorrespondingEntity(Wire::Registry& registry, Wire::EntityId currentEntity, Wire::EntityId wantedPrefabEntity)
+	entt::entity Prefab::FindCorrespondingEntity(Scene* scene, entt::entity currentEntityId, entt::entity wantedPrefabEntityId)
 	{
-		if (!registry.HasComponent<PrefabComponent>(currentEntity))
+		Entity currentEntity = { currentEntityId, scene };
+		Entity wantedPrefabEntity = { wantedPrefabEntityId, scene };
+
+		if (!currentEntity.HasComponent<PrefabComponent>())
 		{
-			return 0;
+			return entt::null;
 		}
 
-		if (registry.GetComponent<PrefabComponent>(currentEntity).prefabEntity == wantedPrefabEntity)
+		if (currentEntity.GetComponent<PrefabComponent>().prefabEntity == wantedPrefabEntityId)
 		{
-			return currentEntity;
+			return currentEntity.GetID();
 		}
 
-		if (registry.HasComponent<RelationshipComponent>(currentEntity))
+		if (currentEntity.HasComponent<RelationshipComponent>())
 		{
-			for (const auto& child : registry.GetComponent<RelationshipComponent>(currentEntity).Children)
+			for (const auto& child : currentEntity.GetComponent<RelationshipComponent>().children)
 			{
-				Wire::EntityId result = FindCorrespondingEntity(registry, child, wantedPrefabEntity);
-				if (result != 0)
+				entt::entity result = FindCorrespondingEntity(scene, child.GetId(), wantedPrefabEntity.GetID());
+				if (result != entt::null)
 				{
 					return result;
 				}
 			}
 		}
 
-		return 0;
+		return entt::null;
 	}
 
-	void Prefab::OverridePrefabAsset(Scene* scene, Wire::EntityId aSrcEntity, AssetHandle aPrefabId)
+	void Prefab::OverridePrefabAsset(Scene* scene, entt::entity aSrcEntity, AssetHandle aPrefabId)
 	{
 		const Ref<Prefab> prefabAsset = AssetManager::GetAssetLocking<Prefab>(aPrefabId);
 		if (!prefabAsset || !prefabAsset->IsValid())
@@ -734,47 +267,51 @@ namespace Volt
 		prefabAsset->myVersion++;
 	}
 
-	bool Prefab::CreatePrefab(Scene* scene, Wire::EntityId rootEntity)
+	bool Prefab::CreatePrefab(Scene* scene, entt::entity rootEntityId)
 	{
-		if (!scene->GetRegistry().Exists(rootEntity)) { return false; }
+		if (!scene->GetRegistry().valid(rootEntityId)) { return false; }
 
-		myRegistry.Clear();
-		myRootId = RecursiveAddToPrefab(scene, rootEntity);
+		myRegistry.clear();
+		myRootId = RecursiveAddToPrefab(scene, rootEntityId);
 
-		if (myRegistry.HasComponent<RelationshipComponent>(myRootId))
+		Entity rootEntity = { myRootId, scene };
+
+		if (rootEntity.HasComponent<RelationshipComponent>())
 		{
-			auto& [Children, Parent] = myRegistry.GetComponent<RelationshipComponent>(myRootId);
-			Parent = Wire::NullID;
+			auto& [parent, children] = rootEntity.GetComponent<RelationshipComponent>();
+			parent = Entity::Null();
 		}
 
 		return true;
 	}
 
-	Wire::EntityId Prefab::RecursiveAddToPrefab(Scene* scene, Wire::EntityId aSrcEntity)
+	entt::entity Prefab::RecursiveAddToPrefab(Scene* scene, entt::entity aSrcEntity)
 	{
 		auto& srcRegistry = scene->GetRegistry();
 
-		Wire::EntityId newEntity = aSrcEntity;
-		if (srcRegistry.HasComponent<PrefabComponent>(aSrcEntity))
+		Entity srcEntity = { aSrcEntity, scene };
+		entt::entity newEntity = srcEntity.GetID();
+		
+		if (srcEntity.HasComponent<PrefabComponent>())
 		{
-			newEntity = srcRegistry.GetComponent<PrefabComponent>(aSrcEntity).prefabEntity;
+			newEntity = srcEntity.GetComponent<PrefabComponent>().prefabEntity;
 		}
 		else
 		{
-			srcRegistry.AddComponent<PrefabComponent>(aSrcEntity);
+			srcEntity.AddComponent<PrefabComponent>();
 		}
 
-		auto& srcPrefabComp = srcRegistry.GetComponent<PrefabComponent>(aSrcEntity);
+		auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
 		srcPrefabComp.prefabAsset = handle;
 		srcPrefabComp.prefabEntity = newEntity;
 		srcPrefabComp.version = myVersion;
 
-		myRegistry.AddEntity(newEntity);
-		Entity::Copy(srcRegistry, myRegistry, scene->GetScriptFieldCache(), myScriptFieldCache, aSrcEntity, newEntity);
+		myRegistry.create(newEntity);
+		//Entity::Copy(srcRegistry, myRegistry, scene->GetScriptFieldCache(), myScriptFieldCache, aSrcEntity, newEntity);
 
-		if (srcRegistry.HasComponent<RelationshipComponent>(aSrcEntity))
+	/*	if (srcEntity.HasComponent<RelationshipComponent>())
 		{
-			auto& srcRelationshipComp = srcRegistry.GetComponent<RelationshipComponent>(aSrcEntity);
+			auto& srcRelationshipComp = srcEntity.GetComponent<RelationshipComponent>();
 			auto& targetRelationshipComp = myRegistry.GetComponent<RelationshipComponent>(newEntity);
 
 			auto srcParent = srcRelationshipComp.Parent;
@@ -792,7 +329,7 @@ namespace Volt
 			targetRelationshipComp.Children.clear();
 			for (auto child : children)
 			{
-				Wire::EntityId newChild = child;
+				entt::entity newChild = child;
 
 				if (srcRegistry.HasComponent<PrefabComponent>(child))
 				{
@@ -806,14 +343,14 @@ namespace Volt
 			{
 				RecursiveAddToPrefab(scene, child);
 			}
-		}
+		}*/
 
 		return newEntity;
 	}
 
-	Wire::EntityId Prefab::UpdateEntity(Scene* targetScene, Wire::EntityId aTargetEntity, AssetHandle prefabHandle)
+	entt::entity Prefab::UpdateEntity(Scene* targetScene, entt::entity aTargetEntity, AssetHandle prefabHandle)
 	{
-		if (auto asset = AssetManager::GetAssetLocking<Prefab>(prefabHandle))
+		/*if (auto asset = AssetManager::GetAssetLocking<Prefab>(prefabHandle))
 		{
 			Volt::Entity ent(aTargetEntity, targetScene);
 
@@ -838,8 +375,8 @@ namespace Volt
 			}
 
 			targetScene->MoveToLayer(ent, oldEntityDataComp.layerId);
-		}
+		}*/
 
-		return Wire::NullID;
+		return entt::null;
 	}
 }

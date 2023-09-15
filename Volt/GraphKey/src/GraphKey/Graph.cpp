@@ -18,7 +18,7 @@ namespace GraphKey
 	{
 	}
 
-	Graph::Graph(Wire::EntityId entity)
+	Graph::Graph(entt::entity entity)
 		: myEntity(entity)
 	{
 	}
@@ -228,7 +228,7 @@ namespace GraphKey
 		{
 			Ref<GraphKey::Node> newNode;
 
-			if (dstGraph->GetEntity() != 0)
+			if (dstGraph->GetEntity() != entt::null)
 			{
 				newNode = n->CreateCopy(dstGraph.get(), dstGraph->GetEntity());
 			}
@@ -248,7 +248,7 @@ namespace GraphKey
 			newLink.output = l.output;
 		}
 
-		if (dstGraph->myEntity == 0)
+		if (dstGraph->myEntity == entt::null)
 		{
 			dstGraph->myEntity = srcGraph->myEntity;
 		}
@@ -294,11 +294,12 @@ namespace GraphKey
 									VT_SERIALIZE_PROPERTY(name, i.name, out);
 									VT_SERIALIZE_PROPERTY(id, i.id, out);
 
-									const bool shouldSerialize = !graph->IsAttributeLinked(i.id) && i.data.has_value();
-									if (shouldSerialize && Volt::SceneImporter::GetTypeIndexSerializers().contains(i.data.type()))
-									{
-										Volt::SceneImporter::GetTypeIndexSerializers()[i.data.type()](i.data, out);
-									}
+									// #TODO_Ivar: Reimplement
+									//const bool shouldSerialize = !graph->IsAttributeLinked(i.id) && i.data.has_value();
+									//if (shouldSerialize && Volt::SceneImporter::GetTypeIndexSerializers().contains(i.data.type()))
+									//{
+									//	Volt::SceneImporter::GetTypeIndexSerializers()[i.data.type()](i.data, out);
+									//}
 								}
 								out << YAML::EndMap;
 							}
@@ -314,11 +315,12 @@ namespace GraphKey
 									VT_SERIALIZE_PROPERTY(name, o.name, out);
 									VT_SERIALIZE_PROPERTY(id, o.id, out);
 
-									const bool shouldSerialize = o.data.has_value();
-									if (shouldSerialize && Volt::SceneImporter::GetTypeIndexSerializers().contains(o.data.type()))
-									{
-										Volt::SceneImporter::GetTypeIndexSerializers()[o.data.type()](o.data, out);
-									}
+									// #TODO_Ivar: Reimplement
+									//const bool shouldSerialize = o.data.has_value();
+									//if (shouldSerialize && Volt::SceneImporter::GetTypeIndexSerializers().contains(o.data.type()))
+									//{
+									//	Volt::SceneImporter::GetTypeIndexSerializers()[o.data.type()](o.data, out);
+									//}
 								}
 								out << YAML::EndMap;
 							}
@@ -351,10 +353,12 @@ namespace GraphKey
 						VT_SERIALIZE_PROPERTY(type, GraphKey::TypeRegistry::GetNameFromTypeIndex(p.value.type()), out);
 						VT_SERIALIZE_PROPERTY(id, p.id, out);
 
-						if (Volt::SceneImporter::GetTypeIndexSerializers().contains(p.value.type()))
-						{
-							Volt::SceneImporter::GetTypeIndexSerializers()[p.value.type()](p.value, out);
-						}
+						// #TODO_Ivar: Reimplement
+
+						//if (Volt::SceneImporter::GetTypeIndexSerializers().contains(p.value.type()))
+						//{
+						//	Volt::SceneImporter::GetTypeIndexSerializers()[p.value.type()](p.value, out);
+						//}
 					}
 					out << YAML::EndMap;
 				}
@@ -489,10 +493,12 @@ namespace GraphKey
 
 			data.value = GraphKey::TypeRegistry::GetDefaultValueFromName(type);
 
-			if (Volt::SceneImporter::GetTypeIndexDeserializers().contains(data.value.type()))
-			{
-				Volt::SceneImporter::GetTypeIndexDeserializers()[data.value.type()](data.value, p);
-			}
+			// #TODO_Ivar: Reimplement
+
+			//if (Volt::SceneImporter::GetTypeIndexDeserializers().contains(data.value.type()))
+			//{
+			//	Volt::SceneImporter::GetTypeIndexDeserializers()[data.value.type()](data.value, p);
+			//}
 		}
 
 		for (const auto& e : yamlNode["Events"])
@@ -543,10 +549,12 @@ namespace GraphKey
 				{
 					it->id = i.id;
 
-					if (i.node && it->data.has_value() && Volt::SceneImporter::GetTypeIndexDeserializers().contains(it->data.type()))
-					{
-						Volt::SceneImporter::GetTypeIndexDeserializers()[it->data.type()](it->data, i.node);
-					}
+					// #TODO_Ivar: Reimplement
+
+					//if (i.node && it->data.has_value() && Volt::SceneImporter::GetTypeIndexDeserializers().contains(it->data.type()))
+					//{
+					//	Volt::SceneImporter::GetTypeIndexDeserializers()[it->data.type()](it->data, i.node);
+					//}
 				}
 			}
 
@@ -561,10 +569,12 @@ namespace GraphKey
 				{
 					it->id = o.id;
 
-					if (o.node && it->data.has_value() && Volt::SceneImporter::GetTypeIndexDeserializers().contains(it->data.type()))
-					{
-						Volt::SceneImporter::GetTypeIndexDeserializers()[it->data.type()](it->data, o.node);
-					}
+					// #TODO_Ivar: Reimplement
+
+					//if (o.node && it->data.has_value() && Volt::SceneImporter::GetTypeIndexDeserializers().contains(it->data.type()))
+					//{
+					//	Volt::SceneImporter::GetTypeIndexDeserializers()[it->data.type()](it->data, o.node);
+					//}
 				}
 			}
 

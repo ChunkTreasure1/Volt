@@ -12,8 +12,6 @@
 
 #include <Volt/Scene/SceneManager.h>
 
-#include <Volt/Components/Components.h>
-
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 #include <Volt/Scripting/Mono/MonoScriptInstance.h>
 

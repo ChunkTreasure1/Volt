@@ -2,44 +2,48 @@
 
 #include "Volt/Scene/Serialization/ComponentReflection.h"
 #include "Volt/Scene/Serialization/ComponentRegistry.h"
+#include "Volt/Scene/Entity.h"
 
 #include <glm/glm.hpp>
+#include <entt.hpp>
 
 #include <string>
 #include <string_view>
 
 namespace Volt
 {
-	struct EnTTCommonComponent
+	struct CommonComponent
 	{
 		uint32_t layerId = 0;
+		float randomValue = 0.f;
+		float timeSinceCreation = 0.f;
 
-		static void Reflect(ComponentDesc<EnTTCommonComponent>& reflect)
+		static void ReflectType(TypeDesc<CommonComponent>& reflect)
 		{
-			reflect.SetGUID("{94D13673-10AB-404A-84E3-1E7FB61C0346}"_v_guid);
+			reflect.SetGUID("{A6789316-2D82-46FC-8138-B7BCBB9EA5B8}"_guid);
 			reflect.SetLabel("Common Component");
-			reflect.AddMember(&EnTTCommonComponent::layerId, 0, "layerid", "Layer ID", "", 0u);
+			reflect.AddMember(&CommonComponent::layerId, "layerid", "Layer ID", "", 0u);
 		}
 
-		REGISTER_COMPONENT(EnTTCommonComponent);
+		REGISTER_COMPONENT(CommonComponent);
 	};
 
-	struct EnTTTagComponent
+	struct TagComponent
 	{
-		EnTTTagComponent(std::string_view inTag) : tag(inTag) {}
+		TagComponent(std::string_view inTag) : tag(inTag) {}
 		std::string tag;
 
-		static void Reflect(ComponentDesc<EnTTTagComponent>& reflect)
+		static void ReflectType(TypeDesc<TagComponent>& reflect)
 		{
-			reflect.SetGUID("{CE3F8A13-C73A-4D61-AF93-AA12036FBBFB}"_v_guid);
+			reflect.SetGUID("{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"_guid);
 			reflect.SetLabel("Tag Component");
-			reflect.AddMember(&EnTTTagComponent::tag, 0, "tag", "Tag", "", std::string(""));
+			reflect.AddMember(&TagComponent::tag, "tag", "Tag", "", std::string(""));
 		}
 
-		REGISTER_COMPONENT(EnTTTagComponent);
+		REGISTER_COMPONENT(TagComponent);
 	};
 
-	struct EnTTTransformComponent
+	struct TransformComponent
 	{
 		glm::vec3 position = { 0.f };
 		glm::quat rotation = glm::identity<glm::quat>();
@@ -69,33 +73,69 @@ namespace Volt
 			return glm::rotate(rotation, glm::vec3{ 0.f, 1.f, 0.f });
 		}
 
-		static void Reflect(ComponentDesc<EnTTTransformComponent>& reflect)
+		static void ReflectType(TypeDesc<TransformComponent>& reflect)
 		{
-			reflect.SetGUID("{5D680EA7-BED3-44BB-A47D-EA5D9B944ACE}"_v_guid);
+			reflect.SetGUID("{E1B8016B-1CAA-4782-927E-C17C29B25893}"_guid);
 			reflect.SetLabel("Transform Component");
-			reflect.AddMember(&EnTTTransformComponent::position, 0, "position", "Position", "", glm::vec3{ 0.f });
-			reflect.AddMember(&EnTTTransformComponent::rotation, 1, "rotation", "Rotation", "", glm::identity<glm::quat>());
-			reflect.AddMember(&EnTTTransformComponent::scale, 2, "scale", "Scale", "", glm::vec3{ 1.f });
-			reflect.AddMember(&EnTTTransformComponent::visible, 3, "visible", "Visible", "", true);
-			reflect.AddMember(&EnTTTransformComponent::locked, 4, "locked", "Locked", "", false);
+			reflect.AddMember(&TransformComponent::position, "position", "Position", "", glm::vec3{ 0.f });
+			reflect.AddMember(&TransformComponent::rotation, "rotation", "Rotation", "", glm::identity<glm::quat>());
+			reflect.AddMember(&TransformComponent::scale, "scale", "Scale", "", glm::vec3{ 1.f });
+			reflect.AddMember(&TransformComponent::visible, "visible", "Visible", "", true);
+			reflect.AddMember(&TransformComponent::locked, "locked", "Locked", "", false);
 		}
 
-		REGISTER_COMPONENT(EnTTTransformComponent);
+		REGISTER_COMPONENT(TransformComponent);
 	};
 
-	struct EnTTRelationshipComponent
+	struct RelationshipComponent
 	{
-		entt::entity parent = entt::null;
-		std::vector<entt::entity> children;
+		Entity parent = Entity::Null();
+		std::vector<Entity> children;
 
-		static void Reflect(ComponentDesc<EnTTRelationshipComponent>& reflect)
+		static void ReflectType(TypeDesc<RelationshipComponent>& reflect)
 		{
-			reflect.SetGUID("{82FE1C3B-5327-4307-9A13-3075A13BA81B}"_v_guid);
+			reflect.SetGUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 			reflect.SetLabel("Relationship Component");
-			reflect.AddMember(&EnTTRelationshipComponent::parent, 0, "parent", "Parent", "", entt::null);
-			reflect.AddMember(&EnTTRelationshipComponent::children, 1, "children", "Children", "", std::vector<entt::entity>{});
+			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", Entity::Null());
+			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<Entity>{});
 		}
 
-		REGISTER_COMPONENT(EnTTRelationshipComponent);
+		REGISTER_COMPONENT(RelationshipComponent);
+	};
+
+	struct PrefabComponent
+	{
+		AssetHandle prefabAsset = Asset::Null();
+		entt::entity prefabEntity = entt::null;
+		uint32_t version = 0;
+
+		bool isDirty = false;
+
+		static void ReflectType(TypeDesc<PrefabComponent>& reflect)
+		{
+			reflect.SetGUID("{B8A83ACF-F1CA-4C9F-8D1E-408B5BB388D2}"_guid);
+			reflect.SetLabel("Prefab Component");
+			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetType::Prefab);
+			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", entt::null);
+			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
+		}
+
+		REGISTER_COMPONENT(PrefabComponent);
+	};
+
+	struct MonoScriptComponent
+	{
+		std::vector<std::string> scriptNames;
+		std::vector<UUID> scriptIds;
+
+		static void ReflectType(TypeDesc<MonoScriptComponent>& reflect)
+		{
+			reflect.SetGUID("{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid);
+			reflect.SetLabel("MonoScript Component");
+			reflect.AddMember(&MonoScriptComponent::scriptNames, "scriptNames", "Script Names", "", std::vector<std::string>{});
+			reflect.AddMember(&MonoScriptComponent::scriptIds, "scriptIds", "Script IDs", "", std::vector<UUID>{});
+		}
+
+		REGISTER_COMPONENT(MonoScriptComponent);
 	};
 }

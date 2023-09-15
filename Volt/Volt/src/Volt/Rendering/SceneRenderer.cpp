@@ -20,9 +20,9 @@
 #include "Volt/Core/Graphics/GraphicsDevice.h"
 #include "Volt/Core/Graphics/GraphicsContext.h"
 
-#include "Volt/Components/Components.h"
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/LightComponents.h"
-#include "Volt/Components/PostProcessingComponents.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
@@ -55,7 +55,6 @@
 
 #include "Volt/Rendering/UIRenderer.h"
 #include "Volt/Rendering/DebugRenderer.h"
-#include "Volt/Rendering/RayTracedSceneRenderer.h"
 
 #include "Volt/Rendering/FrameGraph/FrameGraph.h"
 
@@ -126,14 +125,6 @@ namespace Volt
 		CreateBillboardData();
 		CreateTextData();
 
-		if (mySettings.enableRayTracing)
-		{
-			RayTracedSceneRendererSpecification spec{};
-			spec.scene = myScene;
-
-			myRayTracedSceneRenderer = CreateScope<RayTracedSceneRenderer>(spec);
-		}
-
 		myIndirectPasses.reserve(100);
 	}
 
@@ -143,7 +134,6 @@ namespace Volt
 
 		myShaderStorageBufferSet = nullptr;
 		myUniformBufferSet = nullptr;
-		myRayTracedSceneRenderer = nullptr;
 		myGlobalDescriptorSets.clear();
 
 		// Remove line data
@@ -176,7 +166,7 @@ namespace Volt
 		Ref<Camera> camera = nullptr;
 		int32_t highestPrio = -1;
 
-		myScene.lock()->GetRegistry().ForEach<CameraComponent>([&](Wire::EntityId, const CameraComponent& camComp)
+		myScene.lock()->ForEachWithComponents<const CameraComponent>([&](entt::entity, const CameraComponent& camComp)
 		{
 			if ((int32_t)camComp.priority > highestPrio)
 			{
@@ -281,12 +271,6 @@ namespace Volt
 		myCurrentRenderMode = renderingMode;
 		myDeferredShadingPipeline->GetSpecializationConstantBuffer().SetValue("u_renderMode", (uint32_t)myCurrentRenderMode);
 		myDeferredShadingPipeline->Invalidate();
-	}
-
-	void SceneRenderer::UpdateRayTracingScene()
-	{
-		myRayTracedSceneRenderer->BuildBottomLevelAccelerationStructures();
-		myRayTracedSceneRenderer->BuildTopLevelAccelerationStructures();
 	}
 
 	const std::vector<SceneRenderer::Timestamp> SceneRenderer::GetTimestamps()
@@ -939,7 +923,7 @@ namespace Volt
 		auto scenePtr = myScene.lock();
 		auto& registry = scenePtr->GetRegistry();
 
-		registry.ForEach<DirectionalLightComponent, TransformComponent>([&](Wire::EntityId id, const DirectionalLightComponent& dirLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const DirectionalLightComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const TransformComponent& transformComp) 
 		{
 			if (!transformComp.visible)
 			{
@@ -983,7 +967,7 @@ namespace Volt
 			GetCPUData().directionalLight = light;
 		});
 
-		registry.ForEach<PointLightComponent, TransformComponent>([&](Wire::EntityId id, const PointLightComponent& pointLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const PointLightComponent, const TransformComponent>([&](entt::entity id, const PointLightComponent& pointLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1014,7 +998,7 @@ namespace Volt
 			}
 		});
 
-		registry.ForEach<SpotLightComponent, TransformComponent>([&](Wire::EntityId id, const SpotLightComponent& spotLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const SpotLightComponent, const TransformComponent>([&](entt::entity id, const SpotLightComponent& spotLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1087,7 +1071,7 @@ namespace Volt
 			}
 		}
 
-		registry.ForEach<SphereLightComponent, TransformComponent>([&](Wire::EntityId id, const SphereLightComponent& sphereLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const SphereLightComponent, const TransformComponent>([&](entt::entity id, const SphereLightComponent& sphereLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1103,7 +1087,7 @@ namespace Volt
 			sphereLight.radius = sphereLightComp.radius;
 		});
 
-		registry.ForEach<RectangleLightComponent, TransformComponent>([&](Wire::EntityId id, const RectangleLightComponent& rectangleLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const RectangleLightComponent, const TransformComponent>([&](entt::entity id, const RectangleLightComponent& rectangleLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1128,7 +1112,7 @@ namespace Volt
 			rectangleLight.left = left;
 		});
 
-		registry.ForEach<SkylightComponent, TransformComponent>([&](Wire::EntityId id, SkylightComponent& comp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<SkylightComponent, const TransformComponent>([&](entt::entity id, SkylightComponent& comp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1162,14 +1146,14 @@ namespace Volt
 			myEnvironmentSettings.intensity = comp.intensity;
 		});
 
-		registry.ForEach<DecalComponent, TransformComponent, EntityDataComponent>([&](Wire::EntityId id, const DecalComponent& decalComp, const TransformComponent& transComp, const EntityDataComponent& dataComp)
+		scenePtr->ForEachWithComponents<const DecalComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, const DecalComponent& decalComp, const TransformComponent& transComp, const CommonComponent& dataComp)
 		{
 			if (!transComp.visible)
 			{
 				return;
 			}
 
-			Ref<Material> material = AssetManager::QueueAsset<Material>(decalComp.materialHandle);
+			Ref<Material> material = AssetManager::QueueAsset<Material>(decalComp.decalMaterial);
 			if (!material || !material->IsValid())
 			{
 				return;
@@ -1184,7 +1168,7 @@ namespace Volt
 			newCmd.timeSinceCreation = dataComp.timeSinceCreation;
 		});
 
-		registry.ForEach<PostProcessingStackComponent>([&](Wire::EntityId id, const PostProcessingStackComponent& comp)
+		scenePtr->ForEachWithComponents<const PostProcessingStackComponent>([&](entt::entity id, const PostProcessingStackComponent& comp) 
 		{
 			Ref<PostProcessingStack> stack = AssetManager::GetAsset<PostProcessingStack>(comp.postProcessingStack);
 			if (!stack || !stack->IsValid())
@@ -1195,25 +1179,9 @@ namespace Volt
 			GetCPUData().postProcessingStack = stack;
 		});
 
-		registry.ForEach<GTAOEffectComponent>([&](Wire::EntityId id, const GTAOEffectComponent& comp)
+		scenePtr->ForEachWithComponents<const TextRendererComponent>([&](entt::entity id, const TextRendererComponent& comp)
 		{
-			myGTAOSettings.radius = comp.radius;
-			myGTAOSettings.radiusMultiplier = comp.radiusMultiplier;
-			myGTAOSettings.falloffRange = comp.falloffRange;
-			myGTAOSettings.finalValuePower = comp.finalValuePower;
-		});
-
-		registry.ForEach<GlobalFogComponent>([&](Wire::EntityId	id, const GlobalFogComponent& comp)
-		{
-			myVolumetricFogSettings.anisotropy = comp.anisotropy;
-			myVolumetricFogSettings.density = comp.density;
-			myVolumetricFogSettings.globalColor = comp.globalColor;
-			myVolumetricFogSettings.globalDensity = comp.globalDensity;
-		});
-
-		registry.ForEach<TextRendererComponent>([&](Wire::EntityId id, const TextRendererComponent& comp)
-		{
-			Ref<Font> fontAsset = AssetManager::GetAsset<Font>(comp.fontHandle);
+			Ref<Font> fontAsset = AssetManager::GetAsset<Font>(comp.font);
 			if (!fontAsset || !fontAsset->IsValid())
 			{
 				return;
@@ -1245,7 +1213,12 @@ namespace Volt
 		auto& registry = scenePtr->GetRegistry();
 		auto& data = GetCPUData();
 
-		const auto& meshComponentView = (myShouldHideMeshes) ? std::vector<Wire::EntityId>() : registry.GetSingleComponentView<MeshComponent>();
+		if (myShouldHideMeshes)
+		{
+			return;
+		}
+
+		const auto& meshComponentView = registry.view<MeshComponent>();
 		data.submitCommands.reserve(meshComponentView.size());
 
 		const uint32_t hardwareConcurrency = std::thread::hardware_concurrency() * 2;
@@ -1269,12 +1242,12 @@ namespace Volt
 
 		auto submitFunc = [&](uint32_t currentIndex, uint32_t threadIndex)
 		{
-			Wire::EntityId id = meshComponentView.at(currentIndex);
+			entt::entity id = meshComponentView[currentIndex];
 			Entity entity{ id, scenePtr.get() };
 
 			const MeshComponent& meshComp = entity.GetComponent<MeshComponent>();
 			const TransformComponent& transComp = entity.GetComponent<TransformComponent>();
-			const EntityDataComponent& dataComp = entity.GetComponent<EntityDataComponent>();
+			const CommonComponent& dataComp = entity.GetComponent<CommonComponent>();
 
 			if (meshComp.handle == Asset::Null() || !transComp.visible)
 			{
@@ -1288,9 +1261,9 @@ namespace Volt
 			}
 
 			AssetHandle materialHandle = Asset::Null();
-			if (meshComp.overrideMaterial != Asset::Null())
+			if (meshComp.material != Asset::Null())
 			{
-				materialHandle = meshComp.overrideMaterial;
+				materialHandle = meshComp.material;
 			}
 			else
 			{
@@ -1313,7 +1286,7 @@ namespace Volt
 				Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 				if (material && material->IsValid())
 				{
-					cmd.material = (meshComp.subMaterialIndex != -1) ? material->TryGetSubMaterialAt(meshComp.subMaterialIndex) : material->TryGetSubMaterialAt(subMesh.materialIndex);
+					cmd.material = material->TryGetSubMaterialAt(subMesh.materialIndex);
 				}
 				else
 				{
@@ -1323,7 +1296,7 @@ namespace Volt
 				cmd.subMesh = subMesh;
 				cmd.transform = transform * subMesh.transform;
 				cmd.subMeshIndex = i;
-				cmd.id = id;
+				cmd.id = entity.GetUIntID();
 				cmd.timeSinceCreation = dataComp.timeSinceCreation;
 				cmd.randomValue = dataComp.randomValue;
 
@@ -1387,7 +1360,8 @@ namespace Volt
 
 		auto scenePtr = myScene.lock();
 		auto& registry = scenePtr->GetRegistry();
-		registry.ForEach<AnimationControllerComponent, TransformComponent, EntityDataComponent>([&](Wire::EntityId id, AnimationControllerComponent& animComp, const TransformComponent& transformComp, const EntityDataComponent& dataComp)
+
+		scenePtr->ForEachWithComponents<AnimationControllerComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, AnimationControllerComponent& animComp, const TransformComponent& transformComp, const CommonComponent& dataComp) 
 		{
 			if (!transformComp.visible)
 			{
@@ -1415,9 +1389,9 @@ namespace Volt
 				}
 
 				auto skin = character->GetSkin();
-				if (animComp.overrideSkin != Asset::Null())
+				if (animComp.skin != Asset::Null())
 				{
-					Ref<Mesh> overrideSkin = AssetManager::GetAsset<Mesh>(animComp.overrideSkin);
+					Ref<Mesh> overrideSkin = AssetManager::GetAsset<Mesh>(animComp.skin);
 					if (overrideSkin && overrideSkin->IsValid())
 					{
 						skin = overrideSkin;
@@ -1430,9 +1404,9 @@ namespace Volt
 				}
 
 				Ref<Material> material = skin->GetMaterial();
-				if (animComp.overrideMaterial != Asset::Null())
+				if (animComp.material != Asset::Null())
 				{
-					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.overrideMaterial);
+					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.material);
 					if (overrideMaterial && overrideMaterial->IsValid())
 					{
 						material = overrideMaterial;
@@ -1442,7 +1416,7 @@ namespace Volt
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
 				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
-				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, id);
+				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, static_cast<uint32_t>(id));
 			}
 			else
 			{
@@ -1469,9 +1443,9 @@ namespace Volt
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
 				Ref<Material> material = skin->GetMaterial();
-				if (animComp.overrideMaterial != Asset::Null())
+				if (animComp.material != Asset::Null())
 				{
-					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.overrideMaterial);
+					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.material);
 					if (overrideMaterial && overrideMaterial->IsValid())
 					{
 						material = overrideMaterial;
@@ -1479,66 +1453,8 @@ namespace Volt
 				}
 
 				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
-				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, id);
+				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, entity.GetUIntID());
 			}
-		});
-
-		registry.ForEach<AnimatedCharacterComponent, TransformComponent, EntityDataComponent>([&](Wire::EntityId id, const AnimatedCharacterComponent& charComp, const TransformComponent& transformComp, const EntityDataComponent& dataComp)
-		{
-			if (!transformComp.visible)
-			{
-				return;
-			}
-
-			Ref<AnimatedCharacter> character = AssetManager::QueueAsset<AnimatedCharacter>(charComp.animatedCharacter);
-
-			if (!character || !character->IsValid())
-			{
-				return;
-			}
-
-			if (!character->GetSkin() || !character->GetSkeleton())
-			{
-				return;
-			}
-
-			Volt::Entity ent{ id, scenePtr.get() };
-			std::vector<glm::mat4> anim{};
-
-			if (charComp.selectedFrame != -1)
-			{
-				anim = character->SampleAnimation(charComp.currentAnimation, (uint32_t)charComp.selectedFrame);
-			}
-			else if (charComp.isPlaying)
-			{
-				anim = character->SampleAnimation(charComp.currentAnimation, charComp.currentStartTime, charComp.isLooping);
-			}
-
-			if (!anim.empty())
-			{
-				for (const auto& [attachmentId, attachedEntities] : charComp.attachedEntities)
-				{
-					auto attachment = character->GetJointAttachmentFromID(attachmentId);
-					if (attachment.jointIndex == -1)
-					{
-						continue;
-					}
-
-					const glm::mat4 offsetTransform = glm::translate({ 1.f }, attachment.positionOffset) * glm::mat4_cast(attachment.rotationOffset);
-
-					glm::vec3 t, s;
-					glm::quat q;
-					Math::Decompose(anim[attachment.jointIndex] * offsetTransform * glm::inverse(character->GetSkeleton()->GetInverseBindPose().at(attachment.jointIndex)), t, q, s);
-
-					for (auto attachedEntity : attachedEntities)
-					{
-						attachedEntity.SetLocalPosition(t);
-						attachedEntity.SetLocalRotation(q);
-					}
-				}
-			}
-
-			SubmitMesh(character->GetSkin(), character->GetSkin()->GetMaterial(), ent.GetTransform(), anim, dataComp.timeSinceCreation, dataComp.randomValue, id);
 		});
 	}
 
@@ -4508,7 +4424,7 @@ namespace Volt
 		UIRenderer::SetProjection(glm::ortho(-(float)halfSize.x, (float)halfSize.x, -(float)halfSize.y, (float)halfSize.y, 0.1f, 100.f));
 		UIRenderer::SetView({ 1.f });
 
-		scenePtr->GetRegistry().ForEachSafe<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
+		scenePtr->ForEachWithComponents<MonoScriptComponent, TransformComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
 		{
 			if (!transComp.visible)
 			{

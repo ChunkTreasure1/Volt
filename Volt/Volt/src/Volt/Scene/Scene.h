@@ -8,7 +8,6 @@
 
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
-#include <Wire/Wire.h>
 #include <glm/glm.hpp>
 
 #include <entt.hpp>
@@ -29,7 +28,7 @@ namespace Volt
 	class Event;
 	class Image2D;
 
-	class EnttEntity;
+	class Entity;
 
 	struct SceneEnvironment
 	{
@@ -67,7 +66,7 @@ namespace Volt
 		Scene();
 		Scene(const std::string& name);
 
-		inline Wire::Registry& GetRegistry() { return myRegistry; }
+		inline entt::registry& GetRegistry() { return m_registry; }
 		inline const std::string& GetName() const { return myName; }
 		inline const Statistics& GetStatistics() const { return myStatistics; }
 		inline const bool IsPlaying() const { return myIsPlaying; }
@@ -118,7 +117,7 @@ namespace Volt
 		glm::mat4 GetWorldSpaceTransform(Entity entity);
 		TQS GetWorldSpaceTRS(Entity entity);
 
-		void InvalidateEntityTransform(Wire::EntityId entity);
+		void InvalidateEntityTransform(entt::entity entity);
 
 		Vision& GetVision() { return *myVisionSystem; }
 		TimelinePlayer& GetTimelinePlayer() { return myTimelinePlayer; };
@@ -129,12 +128,17 @@ namespace Volt
 		glm::vec3 GetWorldRight(Entity entity);
 		glm::vec3 GetWorldUp(Entity entity);
 
-		template<typename T>
-		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;
-
 		const Entity GetEntityWithName(std::string name);
 
 		inline ParticleSystem& GetParticleSystem() { return myParticleSystem; }
+
+		template<typename... T>
+		const std::vector<entt::entity> GetAllEntitiesWith() const;
+
+		template<typename... T, typename F>
+		void ForEachWithComponents(const F& func);
+
+		const std::vector<entt::entity> GetAllEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
@@ -148,34 +152,49 @@ namespace Volt
 		void Clear();
 
 	private:
-		friend class EnttEntity;
+		friend class Entity;
 
-		///// EnTT //////
-		const glm::vec3 GetWorldPosition(EnttEntity entity) const;
-		const glm::quat GetWorldRotation(EnttEntity entity) const;
-		const glm::vec3 GetWorldScale(EnttEntity entity) const;
+		const glm::vec3 GetWorldPosition(Entity entity) const;
+		const glm::quat GetWorldRotation(Entity entity) const;
+		const glm::vec3 GetWorldScale(Entity entity) const;
 
-		const glm::mat4 GetWorldTransform(EnttEntity entity) const;
-		const TQS GetWorldTQS(EnttEntity entity) const;
+		const glm::mat4 GetWorldTransform(Entity entity) const;
+		const TQS GetWorldTQS(Entity entity) const;
 
-		inline entt::registry& GetEnTTRegistry() { return m_enttRegistry; }
-		
-		entt::registry m_enttRegistry;
-		/////////////////
+		entt::registry m_registry;
 
 		friend class Entity;
 		friend class SceneImporter;
 
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
-		void SetupComponentCreationFunctions();
-		void SetupComponentDeletionFunctions();
+		void SetupComponentFunctions();
 
 		void IsRecursiveChildOf(Entity mainParent, Entity currentEntity, bool& outChild);
 		void ConvertToWorldSpace(Entity entity);
 		void ConvertToLocalSpace(Entity entity);
 
 		void AddLayer(const std::string& layerName, uint32_t layerId);
+
+		///// Component Functions /////
+		void RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void CharacterControllerComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void BoxColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void SphereColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void CapsuleColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void MeshColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id);
+
+		void RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void BoxColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void AudioSourceComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void AudioListenerComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		//////////////////////////////
 
 		SceneEnvironment myEnvironment;
 		Statistics myStatistics;
@@ -185,13 +204,12 @@ namespace Volt
 		float myCurrentDeltaTime = 0.f;
 
 		std::string myName = "New Scene";
-		Wire::Registry myRegistry;
 
-		std::map<Wire::EntityId, bool> myEntityTimesToDestroyRemoved;
-		std::map<Wire::EntityId, float> myEntityTimesToDestroy;
+		std::map<entt::entity, bool> myEntityTimesToDestroyRemoved;
+		std::map<entt::entity, float> myEntityTimesToDestroy;
 
 		std::vector<SceneLayer> mySceneLayers;
-		std::unordered_map<Wire::EntityId, glm::mat4> myCachedEntityTransforms;
+		std::unordered_map<entt::entity, glm::mat4> myCachedEntityTransforms;
 		std::shared_mutex myCachedEntityTransformMutex;
 
 		uint32_t myWidth = 1;
@@ -209,9 +227,24 @@ namespace Volt
 		Ref<Vision> myVisionSystem; // Needs to be of ptr type because of include loop
 	};
 
-	template<typename T>
-	inline const std::vector<Wire::EntityId> Scene::GetAllEntitiesWith() const
+	template<typename ...T>
+	inline const std::vector<entt::entity> Scene::GetAllEntitiesWith() const
 	{
-		return myRegistry.GetComponentView<T>();
+		std::vector<entt::entity> result{};
+
+		auto view = m_registry.view<T...>();
+		for (const auto& ent : view)
+		{
+			result.emplace_back(ent);
+		}
+
+		return result;
+	}
+
+	template<typename... T, typename F>
+	inline void Scene::ForEachWithComponents(const F& func)
+	{
+		auto view = m_registry.view<T...>();
+		view.each(func);
 	}
 }

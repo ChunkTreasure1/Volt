@@ -59,7 +59,6 @@ project "Volt"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Wire}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
@@ -104,7 +103,6 @@ project "Volt"
 	{
 		"GLFW",
 		"ImGui",
-		"Wire",
 		"Optick",
 		"Navigation",
 		"msdf-atlas-gen",

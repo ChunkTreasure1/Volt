@@ -3,8 +3,6 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Buffer.h"
 
-#include <Wire/Wire.h>
-
 #include "Volt/Net/Replicated/ReplicationConditions.h"
 
 extern "C"

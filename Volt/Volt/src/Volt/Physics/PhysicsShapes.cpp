@@ -4,8 +4,9 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Components/Components.h"
 #include "Volt/Scene/Entity.h"
+
+#include "Volt/Components/PhysicsComponents.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"
 #include "Volt/Physics/PhysXInternal.h"
@@ -95,7 +96,7 @@ namespace Volt
 		myEntity.GetComponent<BoxColliderComponent>().halfSize = halfSize;
 	}
 
-	void BoxColliderShape::SetTrigger(bool isTrigger) const
+	void BoxColliderShape::SetTrigger(bool isTrigger)
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
@@ -178,7 +179,7 @@ namespace Volt
 		myEntity.GetComponent<SphereColliderComponent>().offset = offset;
 	}
 
-	void SphereColliderShape::SetTrigger(bool isTrigger) const
+	void SphereColliderShape::SetTrigger(bool isTrigger)
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
@@ -281,7 +282,7 @@ namespace Volt
 		myEntity.GetComponent<CapsuleColliderComponent>().offset = offset;
 	}
 
-	void CapsuleColliderShape::SetTrigger(bool isTrigger) const
+	void CapsuleColliderShape::SetTrigger(bool isTrigger)
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
@@ -392,7 +393,7 @@ namespace Volt
 	{
 	}
 
-	void ConvexMeshShape::SetTrigger(bool) const
+	void ConvexMeshShape::SetTrigger(bool)
 	{
 	}
 
@@ -511,7 +512,7 @@ namespace Volt
 	{
 	}
 
-	void TriangleMeshShape::SetTrigger(bool) const
+	void TriangleMeshShape::SetTrigger(bool)
 	{
 	}
 

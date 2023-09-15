@@ -3,7 +3,6 @@
 #include "Volt/Asset/Animation/Animation.h"
 
 #include <GraphKey/Nodes/Animation/BaseAnimationNodes.h>
-#include <Wire/Entity.h>
 
 #include <any>
 
@@ -80,7 +79,7 @@ namespace Volt
 		AnimationState* GetStateFromPin(const UUID outputId) const;
 		const int32_t GetStateIndexFromId(const UUID stateId) const;
 
-		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, Wire::EntityId entity = 0) const;
+		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, entt::entity entity = entt::null) const;
 
 		void OnEvent(Event& e);
 

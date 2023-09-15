@@ -42,15 +42,15 @@ namespace Volt
 
 			if (valueType == REG_SZ)
 			{
-				myRegistry[Utility::ToString(wKey)] = std::string{};
+				myRegistry[::Utility::ToString(wKey)] = std::string{};
 			}
 			else if (valueType == REG_DWORD)
 			{
-				myRegistry[Utility::ToString(wKey)] = int32_t{0};
+				myRegistry[::Utility::ToString(wKey)] = int32_t{0};
 			}
 			else if (valueType == REG_BINARY)
 			{
-				myRegistry[Utility::ToString(wKey)] = float(0.f);
+				myRegistry[::Utility::ToString(wKey)] = float(0.f);
 			}
 		}
 

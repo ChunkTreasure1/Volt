@@ -12,6 +12,8 @@
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 
+#include <Volt/Components/RenderingComponents.h>
+
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Renderer.h>
 

@@ -5,7 +5,6 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/AnimationGraphAsset.h"
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Components/Components.h"
 
 #include <GraphKey/Nodes/Animation/BaseAnimationNodes.h>
 
@@ -19,7 +18,7 @@ namespace Volt
 	AnimationController::AnimationController(Ref<Volt::AnimationGraphAsset> graph, Entity entity)
 		: myEntity(entity)
 	{
-		myGraph = graph->CreateCopy(entity.GetId());
+		myGraph = graph->CreateCopy(entity.GetID());
 	}
 
 	const std::vector<glm::mat4> AnimationController::Sample()
