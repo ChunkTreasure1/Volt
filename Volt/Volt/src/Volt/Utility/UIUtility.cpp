@@ -888,9 +888,9 @@ void UI::TreeNodePop()
 	ImGui::TreePop();
 }
 
-bool UI::CollapsingHeader(const std::string& label, ImGuiTreeNodeFlags flags)
+bool UI::CollapsingHeader(std::string_view label, ImGuiTreeNodeFlags flags)
 {
-	return ImGui::CollapsingHeader(label.c_str(), flags);
+	return ImGui::CollapsingHeader(label.data(), flags);
 }
 
 bool UI::ImageButton(const std::string& id, ImTextureID textureId, const ImVec2& size, const ImVec4& bg_col, const ImVec4& tint_col)

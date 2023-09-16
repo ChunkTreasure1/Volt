@@ -9,6 +9,8 @@
 
 #include "Volt/Asset/Asset.h"
 
+#include <typeindex>
+
 namespace Volt
 {
 	template<typename T>
@@ -25,8 +27,8 @@ namespace Volt
 
 	enum class ValueType
 	{
+		Default,
 		Component,
-		Color,
 		Enum
 	};
 
@@ -88,6 +90,7 @@ namespace Volt
 		AssetType assetType = AssetType::None;
 
 		const ICommonTypeDesc* typeDesc = nullptr;
+		std::type_index typeIndex = typeid(void);
 		Scope<IDefaultValueType> defaultValue;
 	};
 
@@ -104,6 +107,7 @@ namespace Volt
 		~IComponentTypeDesc() override = default;
 
 		[[nodiscard]] virtual const std::vector<ComponentMember>& GetMembers() const = 0;
+		[[nodiscard]] virtual const bool IsHidden() const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -123,11 +127,13 @@ namespace Volt
 		void SetLabel(std::string_view name);
 		void SetDescription(std::string_view description);
 		void SetGUID(const VoltGUID& guid);
+		inline void SetHidden() { m_isHidden = true; }
 
 		[[nodiscard]] inline const VoltGUID& GetGUID() const override { return m_guid; }
 		[[nodiscard]] inline const std::string_view GetLabel() const override { return m_componentLabel; }
 		[[nodiscard]] inline const std::string_view GetDescription() const override { return m_componentDescription; }
 		[[nodiscard]] inline const std::vector<ComponentMember>& GetMembers() const override { return m_members; }
+		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>
 		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue)
@@ -157,11 +163,11 @@ namespace Volt
 
 			if constexpr (IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, GetTypeDesc<Type>(), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
 			}
 			else
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, nullptr, CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, nullptr, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
 			}
 
 
@@ -177,6 +183,8 @@ namespace Volt
 		VoltGUID m_guid = VoltGUID::Null();
 		std::string m_componentLabel;
 		std::string m_componentDescription;
+
+		bool m_isHidden = false;
 
 	};
 

@@ -22,6 +22,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{A6789316-2D82-46FC-8138-B7BCBB9EA5B8}"_guid);
 			reflect.SetLabel("Common Component");
+			reflect.SetHidden();
 			reflect.AddMember(&CommonComponent::layerId, "layerid", "Layer ID", "", 0u);
 		}
 
@@ -36,6 +37,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"_guid);
 			reflect.SetLabel("Tag Component");
+			reflect.SetHidden();
 			reflect.AddMember(&TagComponent::tag, "tag", "Tag", "", std::string(""));
 		}
 
@@ -48,8 +50,8 @@ namespace Volt
 		glm::quat rotation = glm::identity<glm::quat>();
 		glm::vec3 scale = { 1.f };
 
-		bool visible = false;
-		bool locked = true;
+		bool visible = true;
+		bool locked = false;
 
 		inline const glm::mat4 GetTransform() const
 		{
@@ -76,6 +78,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{E1B8016B-1CAA-4782-927E-C17C29B25893}"_guid);
 			reflect.SetLabel("Transform Component");
+			reflect.SetHidden();
 			reflect.AddMember(&TransformComponent::position, "position", "Position", "", glm::vec3{ 0.f });
 			reflect.AddMember(&TransformComponent::rotation, "rotation", "Rotation", "", glm::identity<glm::quat>());
 			reflect.AddMember(&TransformComponent::scale, "scale", "Scale", "", glm::vec3{ 1.f });
@@ -95,6 +98,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 			reflect.SetLabel("Relationship Component");
+			reflect.SetHidden();
 			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", entt::null);
 			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<entt::entity>{});
 		}
@@ -114,6 +118,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{B8A83ACF-F1CA-4C9F-8D1E-408B5BB388D2}"_guid);
 			reflect.SetLabel("Prefab Component");
+			reflect.SetHidden();
 			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetType::Prefab);
 			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", entt::null);
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
@@ -139,6 +144,7 @@ namespace Volt
 		{
 			reflect.SetGUID("{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid);
 			reflect.SetLabel("MonoScript Component");
+			reflect.SetHidden();
 			reflect.AddMember(&MonoScriptComponent::scriptNames, "scriptNames", "Script Names", "", std::vector<std::string>{});
 			reflect.AddMember(&MonoScriptComponent::scriptIds, "scriptIds", "Script IDs", "", std::vector<UUID>{});
 		}

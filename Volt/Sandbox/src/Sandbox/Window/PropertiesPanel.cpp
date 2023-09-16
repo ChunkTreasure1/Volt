@@ -4,7 +4,12 @@
 #include "Sandbox/Utility/SelectionManager.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
+#include "Sandbox/Utility/ComponentPropertyUtilities.h"
 #include "Sandbox/Window/GraphKey/GraphKeyPanel.h"
+
+#include "Sandbox/Sandbox.h"
+#include "Sandbox/UserSettingsManager.h"
+#include "Sandbox/EditorCommandStack.h"
 
 #include <Volt/Components/LightComponents.h>
 
@@ -27,10 +32,6 @@
 #include <GraphKey/Graph.h>
 
 #include <vector>
-
-#include "Sandbox/Sandbox.h"
-#include "Sandbox/UserSettingsManager.h"
-#include "Sandbox/EditorCommandStack.h"
 
 namespace Utility
 {
@@ -239,6 +240,11 @@ void PropertiesPanel::UpdateMainContent()
 
 	if (singleSelected)
 	{
+		const auto id = SelectionManager::GetSelectedEntities().front();
+		Volt::Entity entity{ id, myCurrentScene };
+
+		ComponentPropertyUtility::DrawComponentProperties(myCurrentScene, entity);
+
 		//const auto entity = SelectionManager::GetSelectedEntities().front();
 
 		//for (const auto& [guid, pool] : registry.GetPools())

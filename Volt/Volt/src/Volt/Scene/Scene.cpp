@@ -55,8 +55,14 @@ namespace Volt
 		: myName(name), myAnimationSystem(this)
 	{
 		myVisionSystem = CreateRef<Vision>(this);
-
+		
 		SetupComponentFunctions();
+
+		// Create dummy entity as entity with id 0 is invalid
+		{
+			auto entity = m_registry.create(); 
+			entity;
+		}
 
 		AddLayer("Main", 0);
 	}
@@ -67,6 +73,12 @@ namespace Volt
 		myVisionSystem = CreateRef<Vision>(this);
 
 		SetupComponentFunctions();
+
+		// Create dummy entity as entity with id 0 is invalid
+		{
+			auto entity = m_registry.create();
+			entity;
+		}
 
 		AddLayer("Main", 0);
 	}
@@ -369,6 +381,11 @@ namespace Volt
 			if (transComp.visible)
 			{
 				Entity entity = { id, this };
+
+				if (!cameraComp.camera)
+				{
+					return;
+				}
 
 				cameraComp.camera->SetPerspectiveProjection(cameraComp.fieldOfView, (float)myWidth / (float)myHeight, cameraComp.nearPlane, cameraComp.farPlane);
 				cameraComp.camera->SetPosition(entity.GetPosition());
@@ -786,6 +803,8 @@ namespace Volt
 				auto ent = newScene->CreateEntity("Cube");
 				auto& meshComp = ent.AddComponent<MeshComponent>();
 				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+
+				ent.AddComponent<RigidbodyComponent>();
 			}
 
 			// Light

@@ -4,6 +4,7 @@
 #include "Volt/Scene/Serialization/ComponentReflection.h"
 
 #include <unordered_map>
+#include <entt.hpp>
 
 #define REGISTER_COMPONENT(compType) inline static bool compType ## _comp_registered = Volt::ComponentRegistry::RegisterComponent<compType>()
 #define REGISTER_ENUM(enumType) inline static bool enumType ## _enum_registered = Volt::ComponentRegistry::RegisterEnum<enumType>()
@@ -19,9 +20,11 @@ namespace Volt
 		template<typename T>
 		static const bool RegisterEnum();
 
+		static const ICommonTypeDesc* GetTypeDescFromName(std::string_view name);
+
 	private:
-		inline static std::unordered_map<VoltGUID, const ICommonTypeDesc*> m_componentRegistry;
-		inline static std::unordered_map<VoltGUID, const IEnumTypeDesc*> m_enumRegistry;
+		inline static std::unordered_map<VoltGUID, const ICommonTypeDesc*> m_typeRegistry;
+		inline static std::unordered_map<std::string_view, VoltGUID> m_typeNameToGUIDMap;
 	};
 
 	template<typename T>
@@ -31,12 +34,16 @@ namespace Volt
 
 		const auto guid = GetTypeGUID<T>();
 
-		if (m_componentRegistry.contains(guid))
+		if (m_typeRegistry.contains(guid))
 		{
 			return false;
 		}
 
-		m_componentRegistry[guid] = GetTypeDesc<T>();
+		const std::string_view name = entt::type_name<T>();
+
+		m_typeRegistry[guid] = GetTypeDesc<T>();
+		m_typeNameToGUIDMap[name] = guid;
+
 		return true;
 	}
 
@@ -47,12 +54,15 @@ namespace Volt
 
 		const auto guid = GetTypeGUID<T>();
 
-		if (m_enumRegistry.contains(guid))
+		if (m_typeRegistry.contains(guid))
 		{
 			return false;
 		}
 
-		m_enumRegistry[guid] = GetTypeDesc<T>();
+		const std::string_view name = entt::type_name<T>();
+
+		m_typeRegistry[guid] = GetTypeDesc<T>();
+		m_typeNameToGUIDMap[name] = guid;
 		return true;
 	}
 }

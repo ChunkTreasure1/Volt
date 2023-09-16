@@ -216,7 +216,7 @@ public:
 	static bool TreeNodeWidth(const std::string& text, float width, float rounding = 0.f, ImGuiTreeNodeFlags flags = 0);
 	static void TreeNodePop();
 
-	static bool CollapsingHeader(const std::string& label, ImGuiTreeNodeFlags flags = 0);
+	static bool CollapsingHeader(std::string_view label, ImGuiTreeNodeFlags flags = 0);
 
 	static void SameLine(float offsetX = 0.f, float spacing = -1.f);
 

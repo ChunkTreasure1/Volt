@@ -59,7 +59,7 @@ namespace Volt
 		reflect.SetLabel("Body Type");
 		reflect.SetDefaultValue(BodyType::Static);
 		reflect.AddConstant(BodyType::Static, "static", "Static");
-		reflect.AddConstant(BodyType::Static, "dynamic", "Dynamic");
+		reflect.AddConstant(BodyType::Dynamic, "dynamic", "Dynamic");
 	}
 
 	REGISTER_ENUM(BodyType);
