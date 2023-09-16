@@ -12,7 +12,7 @@ namespace Volt
 		NOTIFY,
 	};
 
-	static void ReflectType(TypeDesc<eRepCondition>& reflect)
+	inline static void ReflectType(TypeDesc<eRepCondition>& reflect)
 	{
 		reflect.SetGUID("{5A70DDBB-E05F-4854-B73B-4667E45997AB}"_guid);
 		reflect.SetLabel("Replication Condition");

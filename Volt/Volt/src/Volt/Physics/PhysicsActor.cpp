@@ -8,6 +8,8 @@
 #include "Volt/Physics/PhysicsShapes.h"
 #include "Volt/Physics/PhysicsLayer.h"
 
+#include "Volt/Components/CoreComponents.h"
+
 #include "Volt/Log/Log.h"
 
 namespace Volt

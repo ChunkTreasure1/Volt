@@ -30,7 +30,6 @@ namespace Volt
 
 	struct TagComponent
 	{
-		TagComponent(std::string_view inTag) : tag(inTag) {}
 		std::string tag;
 
 		static void ReflectType(TypeDesc<TagComponent>& reflect)
@@ -89,15 +88,15 @@ namespace Volt
 
 	struct RelationshipComponent
 	{
-		Entity parent = Entity::Null();
-		std::vector<Entity> children;
+		entt::entity parent = entt::null;
+		std::vector<entt::entity> children;
 
 		static void ReflectType(TypeDesc<RelationshipComponent>& reflect)
 		{
 			reflect.SetGUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 			reflect.SetLabel("Relationship Component");
-			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", Entity::Null());
-			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<Entity>{});
+			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", entt::null);
+			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<entt::entity>{});
 		}
 
 		REGISTER_COMPONENT(RelationshipComponent);
@@ -121,6 +120,14 @@ namespace Volt
 		}
 
 		REGISTER_COMPONENT(PrefabComponent);
+	};
+
+	struct MonoScriptEntry
+	{
+		MonoScriptEntry(std::string& aName, UUID& aId) : name(aName), id(aId) {}
+
+		std::string& name;
+		UUID& id;
 	};
 
 	struct MonoScriptComponent

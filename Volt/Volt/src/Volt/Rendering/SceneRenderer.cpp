@@ -921,7 +921,6 @@ namespace Volt
 		FetchAnimatedMeshCommands();
 
 		auto scenePtr = myScene.lock();
-		auto& registry = scenePtr->GetRegistry();
 
 		scenePtr->ForEachWithComponents<const DirectionalLightComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const TransformComponent& transformComp) 
 		{
@@ -1270,7 +1269,7 @@ namespace Volt
 				materialHandle = mesh->GetMaterial()->handle;
 			}
 
-			glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+			glm::mat4 transform = entity.GetTransform();
 
 			auto& submitCommands = perThreadSubmitCommands.at(threadIndex);
 
@@ -1359,7 +1358,6 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		auto scenePtr = myScene.lock();
-		auto& registry = scenePtr->GetRegistry();
 
 		scenePtr->ForEachWithComponents<AnimationControllerComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, AnimationControllerComponent& animComp, const TransformComponent& transformComp, const CommonComponent& dataComp) 
 		{
@@ -1415,7 +1413,7 @@ namespace Volt
 
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
-				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+				const glm::mat4 transform = entity.GetTransform();
 				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, static_cast<uint32_t>(id));
 			}
 			else
@@ -1452,7 +1450,7 @@ namespace Volt
 					}
 				}
 
-				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+				const glm::mat4 transform = entity.GetTransform();
 				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, entity.GetUIntID());
 			}
 		});

@@ -13,8 +13,10 @@
 
 #include <Volt/Rendering/SceneRenderer.h>
 #include <Volt/Rendering/Texture/Image2D.h>
+#include <Volt/Rendering/Camera/Camera.h>
 
 #include <Volt/Components/LightComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 PreviewRenderer::PreviewRenderer()
 {
@@ -109,7 +111,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 	}
 
 	myEntity.GetComponent<Volt::MeshComponent>().handle = itemPtr->handle;
-	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
+	myEntity.GetComponent<Volt::MeshComponent>().material = Volt::Asset::Null();
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
 	myCamera->SetRotation(rotation);
@@ -139,7 +141,7 @@ bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetI
 	}
 
 	myEntity.GetComponent<Volt::MeshComponent>().handle = meshAsset->handle;
-	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = material->handle;
+	myEntity.GetComponent<Volt::MeshComponent>().material = material->handle;
 
 	myCamera->SetPosition({ 0.f, 0.f, -150.f });
 	myCamera->SetRotation(0.f);

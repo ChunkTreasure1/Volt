@@ -303,7 +303,7 @@ namespace Volt
 		return MonoFieldType::Unknown;
 	}
 
-	MonoFieldType MonoScriptClass::WirePropTypeToMonoFieldType(const Wire::ComponentRegistry::PropertyType& type)
+	/*MonoFieldType MonoScriptClass::WirePropTypeToMonoFieldType(const Wire::ComponentRegistry::PropertyType& type)
 	{
 		switch (type)
 		{
@@ -367,7 +367,7 @@ namespace Volt
 
 			default: return Wire::ComponentRegistry::PropertyType::Unknown;
 		}
-	}
+	}*/
 
 	bool MonoScriptClass::IsAsset(const MonoFieldType& type)
 	{

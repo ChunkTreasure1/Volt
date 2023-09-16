@@ -22,7 +22,6 @@
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Prefab.h>
-#include <Volt/Components/Components.h>
 
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
@@ -32,6 +31,9 @@
 #include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/Camera/Camera.h>
 #include <Volt/Rendering/Texture/Image2D.h>
+
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Utility/UIUtility.h>
@@ -846,7 +848,8 @@ void ViewportPanel::DuplicateSelection()
 			continue;
 		}
 
-		duplicated.emplace_back(Volt::Entity::Duplicate(m_editorScene->GetRegistry(), m_editorScene->GetScriptFieldCache(), ent));
+		// #TODO_Ivar: Reimplement
+		//duplicated.emplace_back(Volt::Entity::Duplicate(m_editorScene->GetRegistry(), m_editorScene->GetScriptFieldCache(), ent));
 	}
 
 	SelectionManager::DeselectAll();
@@ -877,11 +880,13 @@ void ViewportPanel::HandleSingleSelect()
 			SelectionManager::DeselectAll();
 		}
 
-		if (pixelData != Wire::NullID && m_editorScene->GetRegistry().Exists(pixelData))
+		Volt::Entity entity{ pixelData, m_editorScene };
+
+		if (entity.IsValid())
 		{
-			if (m_editorScene->GetRegistry().HasComponent<Volt::TransformComponent>(pixelData))
+			if (entity.HasComponent<Volt::TransformComponent>())
 			{
-				if (m_editorScene->GetRegistry().GetComponent<Volt::TransformComponent>(pixelData).locked)
+				if (entity.GetComponent<Volt::TransformComponent>().locked)
 				{
 					return;
 				}
@@ -889,12 +894,12 @@ void ViewportPanel::HandleSingleSelect()
 
 			if (deselect)
 			{
-				SelectionManager::Deselect(pixelData);
+				SelectionManager::Deselect(entity.GetID());
 			}
 			else
 			{
-				SelectionManager::Select(pixelData);
-				EditorLibrary::Get<SceneViewPanel>()->HighlightEntity(pixelData);
+				SelectionManager::Select(entity.GetID());
+				EditorLibrary::Get<SceneViewPanel>()->HighlightEntity(entity);
 			}
 		}
 	}
@@ -930,9 +935,9 @@ void ViewportPanel::HandleMultiSelect()
 
 		for (const auto& d : data)
 		{
-			if (d != Wire::NullID)
+			if (d != 0)
 			{
-				SelectionManager::Select(d);
+				SelectionManager::Select(static_cast<entt::entity>(d));
 			}
 		}
 	}
@@ -940,15 +945,16 @@ void ViewportPanel::HandleMultiSelect()
 
 void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 {
-	auto firstEntity = SelectionManager::GetSelectedEntities().front();
+	auto firstEntityId = SelectionManager::GetSelectedEntities().front();
+	Volt::Entity entity{ firstEntityId, m_editorScene };
 
-	if (!m_editorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(firstEntity) || !m_editorScene->GetRegistry().HasComponent<Volt::TransformComponent>(firstEntity))
+	if (!entity.HasComponent<Volt::RelationshipComponent>() || !entity.HasComponent<Volt::TransformComponent>())
 	{
 		return;
 	}
 
-	auto& relationshipComp = m_editorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(firstEntity);
-	auto& transComp = m_editorScene->GetRegistry().GetComponent<Volt::TransformComponent>(firstEntity);
+	auto& relationshipComp = entity.GetComponent<Volt::RelationshipComponent>();
+	auto& transComp = entity.GetComponent<Volt::TransformComponent>();
 
 	if (m_midEvent == false)
 	{
@@ -959,7 +965,7 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 		data.previousPositionValue = transComp.position;
 		data.previousRotationValue = glm::eulerAngles(transComp.rotation);
 		data.previousScaleValue = transComp.scale;
-		data.id = firstEntity;
+		data.id = entity.GetID();
 		data.scene = m_editorScene;
 
 		Ref<GizmoCommand> command = CreateRef<GizmoCommand>(data);
@@ -969,10 +975,10 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 	glm::mat4 averageTransform = avgTransform;
 
-	if (relationshipComp.Parent != 0)
+	if (relationshipComp.parent != entt::null)
 	{
-		Volt::Entity parent(relationshipComp.Parent, m_editorScene.get());
-		auto pTransform = m_editorScene->GetWorldSpaceTransform(parent);
+		Volt::Entity parent(relationshipComp.parent, m_editorScene.get());
+		auto pTransform = parent.GetTransform();
 
 		averageTransform = glm::inverse(pTransform) * averageTransform;
 	}
@@ -983,11 +989,9 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 	glm::quat delta = glm::inverse(transComp.rotation) * r;
 
-	Volt::Entity ent{ firstEntity, m_editorScene.get() };
-
-	ent.SetLocalPosition(p);
-	ent.SetLocalRotation(transComp.rotation * delta);
-	ent.SetLocalScale(s);
+	entity.SetLocalPosition(p);
+	entity.SetLocalRotation(transComp.rotation * delta);
+	entity.SetLocalScale(s);
 }
 
 void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
@@ -996,18 +1000,20 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{
+		Volt::Entity entity{ entId, m_editorScene };
+
 		if (SelectionManager::IsAnyParentSelected(entId, m_editorScene))
 		{
 			continue;
 		}
 
-		if (!m_editorScene->GetRegistry().HasComponent<Volt::RelationshipComponent>(entId) || !m_editorScene->GetRegistry().HasComponent<Volt::TransformComponent>(entId))
+		if (!entity.HasComponent<Volt::RelationshipComponent>() || !entity.HasComponent<Volt::TransformComponent>())
 		{
 			continue;
 		}
 
-		auto& relationshipComp = m_editorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId);
-		auto& transComp = m_editorScene->GetRegistry().GetComponent<Volt::TransformComponent>(entId);
+		auto& relationshipComp = entity.GetComponent<Volt::RelationshipComponent>();
+		auto& transComp = entity.GetComponent<Volt::TransformComponent>();
 
 		if (!m_midEvent)
 		{
@@ -1016,10 +1022,10 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 		glm::mat4 entDeltaTransform = deltaTransform;
 
-		if (relationshipComp.Parent != 0)
+		if (relationshipComp.parent != entt::null)
 		{
-			Volt::Entity parent(relationshipComp.Parent, m_editorScene.get());
-			auto pTransform = m_editorScene->GetWorldSpaceTransform(parent);
+			Volt::Entity parent(relationshipComp.parent, m_editorScene.get());
+			auto pTransform = parent.GetTransform();
 
 			entDeltaTransform = glm::inverse(pTransform) * entDeltaTransform;
 		}
@@ -1031,11 +1037,9 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 		glm::quat delta = glm::inverse(transComp.rotation) * r;
 
-		Volt::Entity ent{ entId, m_editorScene.get() };
-
-		ent.SetLocalPosition(p);
-		ent.SetLocalRotation(transComp.rotation * delta);
-		ent.SetLocalScale(s);
+		entity.SetLocalPosition(p);
+		entity.SetLocalRotation(transComp.rotation * delta);
+		entity.SetLocalScale(s);
 	}
 
 	if (!previousTransforms.empty())
@@ -1101,11 +1105,12 @@ void ViewportPanel::HandleNonMeshDragDrop()
 				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int32_t)perspectiveSize.x && mouseY < (int32_t)perspectiveSize.y)
 				{
 					uint32_t pixelData = m_sceneRenderer->GetIDImage()->ReadPixel<uint32_t>(mouseX, mouseY);
+					Volt::Entity entity{ pixelData, m_editorScene };
 
-					if (m_editorScene->GetRegistry().HasComponent<Volt::MeshComponent>(pixelData))
+					if (entity.HasComponent<Volt::MeshComponent>())
 					{
-						auto& meshComponent = m_editorScene->GetRegistry().GetComponent<Volt::MeshComponent>(pixelData);
-						meshComponent.overrideMaterial = material->handle;
+						auto& meshComponent = entity.GetComponent<Volt::MeshComponent>();
+						meshComponent.material = material->handle;
 					}
 				}
 

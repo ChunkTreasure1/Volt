@@ -6,6 +6,7 @@
 
 #include "Volt/Scene/Entity.h"
 
+#include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"

@@ -10,10 +10,12 @@
 
 #include <Volt/Rendering/SceneRenderer.h>
 
+#include <Volt/Components/LightComponents.h>
+#include <Volt/Components/RenderingComponents.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 #include <random>
-#include <Volt/Components/LightComponents.h>
 
 ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")
@@ -128,7 +130,7 @@ bool ParticleEmitterEditor::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		return false;
 	}
-	myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene.get(), e.GetTimestep());
+	myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene, e.GetTimestep());
 	UpdateEmitter(e.GetTimestep());
 	return false;
 }
@@ -270,7 +272,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 					UI::PropertyAxisColor("Rotation", modelRot);
 					UI::PropertyAxisColor("Scale", modelScale);
 					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, Volt::AssetType::Mesh);
-					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().overrideMaterial, Volt::AssetType::Material);
+					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().material, Volt::AssetType::Material);
 
 					myReferenceModel.SetPosition(modelPos);
 					myReferenceModel.SetRotation(modelRot);

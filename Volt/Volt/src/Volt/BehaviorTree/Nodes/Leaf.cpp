@@ -1,15 +1,16 @@
 #include "vtpch.h"
 #include "BehaviorTreeNode.h"
+#include "../BehaviorTree.hpp"
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptInstance.h"
 #include "Volt/Utility/StringUtility.h"
-#include "Volt/Components/Components.h"
+#include "Volt/Components/CoreComponents.h"
 namespace Volt::BehaviorTree
 {
 	eNodeStatus Leaf::Run()
 	{
-		auto monoElements = Utility::SplitStringsByCharacter(m_monoScriptFunctonName, '.');
+		auto monoElements = ::Utility::SplitStringsByCharacter(m_monoScriptFunctonName, '.');
 		if (monoElements.size() != 3)
 		{
 			VT_CORE_ERROR("Bad leaf");

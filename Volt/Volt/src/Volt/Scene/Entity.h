@@ -5,12 +5,20 @@
 
 namespace Volt
 {
+	template<class T>
+	concept EntityId = std::is_same<T, uint32_t>::value || std::is_same<T, entt::entity>::value;
+
 	class Entity
 	{
 	public:
 		Entity();
-		Entity(entt::entity id, Weak<Scene> scene);
-		Entity(entt::entity id, Scene* scene);
+
+		template<EntityId T>
+		Entity(T id, Weak<Scene> scene);
+
+		template<EntityId T>
+		Entity(T id, Scene* scene);
+
 		Entity(const Entity& entity);
 
 		~Entity();
@@ -92,6 +100,19 @@ namespace Volt
 		entt::entity m_id = entt::null;
 	};
 
+	template<EntityId T>
+	inline Entity::Entity(T id, Weak<Scene> scene)
+		: m_id(static_cast<entt::entity>(id)), m_scene(scene)
+	{
+	}
+
+	template<EntityId T>
+	inline Entity::Entity(T id, Scene* scene)
+		: m_id(static_cast<entt::entity>(id))
+	{
+		m_scene = scene->shared_from_this();
+	}
+
 	template<typename T>
 	inline T& Entity::GetComponent()
 	{
@@ -131,4 +152,6 @@ namespace Volt
 		auto& registry = scenePtr->GetRegistry();
 		registry.remove<T>(m_id);
 	}
+
+
 }

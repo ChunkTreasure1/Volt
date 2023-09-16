@@ -10,7 +10,6 @@
 #include <Volt/Events/MouseEvent.h>
 
 #include <glm/glm.hpp>
-#include <Wire/Entity.h>
 
 #include <imgui.h>
 #include <ImGuizmo.h>

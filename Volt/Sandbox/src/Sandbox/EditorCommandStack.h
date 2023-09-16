@@ -1,9 +1,12 @@
 #pragma once
 
 #include <Volt/Core/Base.h>
+#include <Volt/Components/CoreComponents.h>
+
 #include <stack>
 #include "EditorCommand.h"
 #include "Volt/Scene/Entity.h"
+
 
 #include <tuple>
 
@@ -265,7 +268,7 @@ struct ObjectStateCommand : EditorCommand
 
 			EditorCommandStack::PushUndo(command, true);
 
-			for (int i = 0; i < myEntities.size(); i++)§
+			for (int i = 0; i < myEntities.size(); i++)
 			{
 				myEntities[i].GetScene()->RemoveEntity(myEntities[i]);
 			}

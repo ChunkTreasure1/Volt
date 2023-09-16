@@ -23,7 +23,8 @@
 #include "Volt/Utility/Noise.h"
 
 #include "Volt/Input/Input.h"
-#include "Volt/Components/Components.h"
+#include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 #include "Volt/Components/NavigationComponents.h"
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Components/AudioComponents.h"
@@ -113,15 +114,16 @@ namespace Volt
 	inline static bool Entity_IsValid(entt::entity entityId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		return scene->GetRegistry().Exists(entityId);
+		return scene->GetRegistry().valid(entityId);
 	}
 
 	inline static bool Entity_HasComponent(entt::entity entityId, MonoString* componentType)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Entity entity{ entityId, scene };
 
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		return scene->GetRegistry().HasComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
+		return entity.HasComponent(compName);
 	}
 
 	inline static bool Entity_HasScript(entt::entity entityId, MonoString* scriptType)
@@ -216,18 +218,20 @@ namespace Volt
 
 	inline static void Entity_RemoveComponent(entt::entity entityId, MonoString* componentType)
 	{
-		Scene* scene = MonoScriptEngine::GetSceneContext();
+		//Scene* scene = MonoScriptEngine::GetSceneContext();
 
-		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		scene->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
+		//const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
+		// #TODO_Ivar: Reimplement
+		//scene->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
 	}
 
 	inline static void Entity_RemoveScript(entt::entity entityId, UUID scriptId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
 
-		auto& scriptsIdList = scene->GetRegistry().GetComponent<MonoScriptComponent>(entityId).scriptIds;
-		auto& scriptsNamesList = scene->GetRegistry().GetComponent<MonoScriptComponent>(entityId).scriptNames;
+		auto& scriptsIdList = entity.GetComponent<MonoScriptComponent>().scriptIds;
+		auto& scriptsNamesList = entity.GetComponent<MonoScriptComponent>().scriptNames;
 
 		auto it = std::find(scriptsIdList.begin(), scriptsIdList.end(), scriptId);
 		int32_t index = (int32_t)std::distance(scriptsIdList.begin(), it);
@@ -240,24 +244,26 @@ namespace Volt
 
 	inline static void Entity_AddComponent(entt::entity entityId, MonoString* componentType)
 	{
-		Scene* scene = MonoScriptEngine::GetSceneContext();
+		//Scene* scene = MonoScriptEngine::GetSceneContext();
 
-		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		scene->GetRegistry().AddComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
+		//const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
+		// #TODO_Ivar: Reimplement
+		//scene->GetRegistry().AddComponent(Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid, entityId);
 	}
 
 	inline static void Entity_AddScript(entt::entity entityId, MonoString* scriptType, UUID* outScriptId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Volt::Entity entity{ entityId, scene };
 
 		const auto scriptName = MonoScriptUtils::GetStringFromMonoString(scriptType);
-		if (!scene->GetRegistry().HasComponent<MonoScriptComponent>(entityId))
+		if (!entity.HasComponent<MonoScriptComponent>())
 		{
-			scene->GetRegistry().AddComponent<MonoScriptComponent>(entityId);
+			entity.AddComponent<MonoScriptComponent>();
 		}
 
-		auto sid = scene->GetRegistry().GetComponent<MonoScriptComponent>(entityId).scriptIds.emplace_back(UUID());
-		auto sname = scene->GetRegistry().GetComponent<MonoScriptComponent>(entityId).scriptNames.emplace_back(scriptName);
+		auto sid = entity.GetComponent<MonoScriptComponent>().scriptIds.emplace_back(UUID());
+		auto sname = entity.GetComponent<MonoScriptComponent>().scriptNames.emplace_back(scriptName);
 
 		MonoScriptEngine::OnAwakeInstance(sid, entityId, sname);
 		MonoScriptEngine::QueueOnCreate(sid);
@@ -272,7 +278,7 @@ namespace Volt
 		const auto entityName = MonoScriptUtils::GetStringFromMonoString(name);
 		Entity ent = scene->GetEntityWithName(entityName);
 
-		if (scene->GetRegistry().Exists(ent.GetID()))
+		if (ent.IsValid())
 		{
 			auto instance = MonoScriptEngine::GetEntityFromId(ent.GetID());
 			if (!instance)
@@ -289,7 +295,9 @@ namespace Volt
 	inline static MonoObject* Entity_FindById(entt::entity entityId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		if (scene->GetRegistry().Exists(entityId))
+		Entity entity = { entityId, scene };
+
+		if (entity.IsValid())
 		{
 			auto instance = MonoScriptEngine::GetEntityFromId(entityId);
 			if (!instance)
@@ -325,11 +333,12 @@ namespace Volt
 	inline static void RecursiveCreatePrefabEntities(entt::entity entId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
+		Entity entity = { entId, scene };
 
 		Volt::MonoScriptEngine::GetOrCreateMonoEntity(entId);
-		if (scene->GetRegistry().HasComponent<Volt::MonoScriptComponent>(entId))
+		if (entity.HasComponent<Volt::MonoScriptComponent>())
 		{
-			auto& comp = scene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(entId);
+			auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
 			for (uint32_t i = 0; const auto & sid : comp.scriptIds)
 			{
 				Volt::MonoScriptEngine::OnAwakeInstance(sid, entId, comp.scriptNames[i]);
@@ -338,7 +347,7 @@ namespace Volt
 			}
 
 		}
-		auto children = scene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId).Children;
+		auto children = entity.GetComponent<Volt::RelationshipComponent>().children;
 
 		for (auto child : children)
 		{
@@ -389,40 +398,40 @@ namespace Volt
 	inline static MonoObject* Entity_Clone(entt::entity entityId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		auto& registry = scene->GetRegistry();
+		Entity oldEntity = { entityId, scene };
+		Entity newEntity = scene->CreateEntity();
 
-		Entity ent = scene->CreateEntity();
+		// #TODO_Ivar: Reimplement
+		//Volt::Entity::Copy(registry, registry, scene->GetScriptFieldCache(), scene->GetScriptFieldCache(), entityId, ent.GetID(), { Volt::RigidbodyComponent::comp_guid, Volt::CharacterControllerComponent::comp_guid }, true);
 
-		Volt::Entity::Copy(registry, registry, scene->GetScriptFieldCache(), scene->GetScriptFieldCache(), entityId, ent.GetID(), { Volt::RigidbodyComponent::comp_guid, Volt::CharacterControllerComponent::comp_guid }, true);
-
-		if (registry.HasComponent<Volt::RigidbodyComponent>(entityId))
+		if (oldEntity.HasComponent<Volt::RigidbodyComponent>())
 		{
-			const auto srcComp = registry.GetComponent<Volt::RigidbodyComponent>(entityId);
-			registry.AddComponent<Volt::RigidbodyComponent>(ent.GetID(), srcComp.bodyType, srcComp.layerId, srcComp.mass, srcComp.linearDrag, srcComp.lockFlags, srcComp.angularDrag, srcComp.disableGravity, srcComp.isKinematic, srcComp.collisionType);
+			const auto srcComp = oldEntity.GetComponent<Volt::RigidbodyComponent>();
+			newEntity.AddComponent<Volt::RigidbodyComponent>(srcComp.bodyType, srcComp.layerId, srcComp.mass, srcComp.linearDrag, srcComp.lockFlags, srcComp.angularDrag, srcComp.disableGravity, srcComp.isKinematic, srcComp.collisionType);
 		}
 
-		if (registry.HasComponent<Volt::CharacterControllerComponent>(entityId))
+		if (oldEntity.HasComponent<Volt::CharacterControllerComponent>())
 		{
-			const auto srcComp = registry.GetComponent<Volt::CharacterControllerComponent>(entityId);
-			registry.AddComponent<Volt::CharacterControllerComponent>(ent.GetID(), srcComp.climbingMode, srcComp.slopeLimit, srcComp.invisibleWallHeight, srcComp.maxJumpHeight, srcComp.contactOffset, srcComp.stepOffset, srcComp.density, srcComp.layer, srcComp.hasGravity);
+			const auto srcComp = oldEntity.GetComponent<Volt::CharacterControllerComponent>();
+			newEntity.AddComponent<Volt::CharacterControllerComponent>(srcComp.climbingMode, srcComp.slopeLimit, srcComp.invisibleWallHeight, srcComp.maxJumpHeight, srcComp.contactOffset, srcComp.stepOffset, srcComp.density, srcComp.layer, srcComp.hasGravity);
 		}
 
-		ent.ResetChildren();
+		newEntity.ClearChildren();
 
-		MonoScriptEngine::GetOrCreateMonoEntity(ent.GetID());
+		MonoScriptEngine::GetOrCreateMonoEntity(newEntity.GetID());
 
-		if (scene->GetRegistry().HasComponent<Volt::MonoScriptComponent>(ent.GetID()))
+		if (newEntity.HasComponent<Volt::MonoScriptComponent>())
 		{
-			auto& comp = scene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(ent.GetID());
+			auto& comp = newEntity.GetComponent<Volt::MonoScriptComponent>();
 			for (uint32_t i = 0; const auto & sid : comp.scriptIds)
 			{
-				MonoScriptEngine::OnCreateInstance(sid, ent.GetID(), comp.scriptNames[i]);
+				MonoScriptEngine::OnCreateInstance(sid, newEntity.GetID(), comp.scriptNames[i]);
 				MonoScriptEngine::QueueOnCreate(sid);
 				i++;
 			}
 		}
 
-		auto instance = MonoScriptEngine::GetEntityFromId(ent.GetID());
+		auto instance = MonoScriptEngine::GetEntityFromId(newEntity.GetID());
 
 		if (instance)
 		{
@@ -493,24 +502,25 @@ namespace Volt
 
 	inline static MonoArray* Scene_GetAllEntitiesWithComponent(MonoString* componentType)
 	{
-		Scene* scene = MonoScriptEngine::GetSceneContext();
-		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
+		//Scene* scene = MonoScriptEngine::GetSceneContext();
+		//const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
 
-		auto compGuid = Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid;
-		auto entities = scene->GetRegistry().GetComponentView(compGuid);
+		// #TODO_Ivar: Reimplement
+		//auto compGuid = Wire::ComponentRegistry::GetRegistryDataFromName(compName).guid;
+		//auto entities = scene->GetRegistry().GetComponentView(compGuid);
 
-		return MonoScriptUtils::CreateMonoArrayEntity(entities);
+		//return MonoScriptUtils::CreateMonoArrayEntity(entities);
+		return nullptr;
 	}
 
 	inline static MonoArray* Scene_GetAllEntitiesWithScript(MonoString* scriptType)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		auto& registry = scene->GetRegistry();
 
 		const auto scriptName = MonoScriptUtils::GetStringFromMonoString(scriptType);
 		auto entities = scene->GetAllEntitiesWith<MonoScriptComponent>();
 
-		std::vector<entt::entity> removeEntities;
+		std::vector<uint32_t> removeEntities;
 
 		auto wantedMonoScriptClass = MonoScriptEngine::GetScriptClass(scriptName);
 		if (!wantedMonoScriptClass)
@@ -520,11 +530,13 @@ namespace Volt
 
 		for (uint32_t i = 0; i < entities.size(); ++i)
 		{
-			if (registry.HasComponent<MonoScriptComponent>(entities[i]))
+			Entity entity{ entities[i], scene };
+
+			if (entity.HasComponent<MonoScriptComponent>())
 			{
 				bool hasScript = false;
 
-				for (auto& name : registry.GetComponent<MonoScriptComponent>(entities[i]).scriptNames)
+				for (auto& name : entity.GetComponent<MonoScriptComponent>().scriptNames)
 				{
 					auto currentMonoScriptClass = MonoScriptEngine::GetScriptClass(name);
 					if (!currentMonoScriptClass)
@@ -997,30 +1009,38 @@ namespace Volt
 	inline static MonoArray* RelationshipComponent_GetChildren(entt::entity entityId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		return MonoScriptUtils::CreateMonoArrayEntity(scene->GetRegistry().GetComponent<RelationshipComponent>(entityId).Children);
+		Volt::Entity entity{ entityId, scene };
+
+		return MonoScriptUtils::CreateMonoArrayEntity(entity.GetComponent<RelationshipComponent>().children);
 	}
 
 	inline static MonoObject* RelationshipComponent_FindByName(entt::entity entityId, MonoString* name)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		auto& registry = scene->GetRegistry();
+		Volt::Entity entity{ entityId, scene };
+
 		const auto entityName = MonoScriptUtils::GetStringFromMonoString(name);
 
-		if (!registry.HasComponent<RelationshipComponent>(entityId)) { return nullptr; }
+		if (!entity.HasComponent<RelationshipComponent>()) 
+		{ 
+			return nullptr; 
+		}
 
-		entt::entity childId = 0;
-		for (const auto& c : registry.GetComponent<RelationshipComponent>(entityId).Children)
+		entt::entity childId = entt::null;
+		for (const auto& c : entity.GetComponent<RelationshipComponent>().children)
 		{
-			if (registry.HasComponent<TagComponent>(c))
+			Entity child{ c, scene };
+
+			if (child.GetTag() == entityName)
 			{
-				if (registry.GetComponent<TagComponent>(c).tag == entityName)
-				{
-					childId = c;
-				}
+				childId = c;
+				break;
 			}
 		}
 
-		if (registry.Exists(childId))
+		Entity child{ childId, scene };
+
+		if (child.IsValid())
 		{
 			auto instance = MonoScriptEngine::GetEntityFromId(childId);
 			if (!instance)
@@ -1039,7 +1059,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
 
-		if (entity.IsNull())
+		if (!entity.IsValid())
 		{
 			return nullptr;
 		}
@@ -1059,15 +1079,16 @@ namespace Volt
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
+		Volt::Entity parentEntity{ parentEntityId, scene };
 
 		if (entity.GetParent())
 		{
 			scene->UnparentEntity(entity);
 		}
 
-		if (scene->GetRegistry().Exists(parentEntityId))
+		if (parentEntity.IsValid())
 		{
-			scene->ParentEntity(Volt::Entity{ parentEntityId, scene }, entity);
+			scene->ParentEntity(parentEntity, entity);
 		}
 	}
 #pragma endregion
@@ -3092,7 +3113,7 @@ namespace Volt
 			return;
 		}
 
-		entity.GetComponent<AudioSourceComponent>().StopEvent(entityId);
+		entity.GetComponent<AudioSourceComponent>().StopEvent(entity.GetUIntID());
 	}
 
 	//GAME SYNCS
@@ -3176,7 +3197,8 @@ namespace Volt
 		{
 			return ent.GetID();
 		}
-		return 0;
+
+		return entt::null;
 	}
 
 	inline static void Vision_DoCameraShake(entt::entity entityId, Volt::CameraShakeSettings* shakeSettings)
@@ -3540,133 +3562,6 @@ namespace Volt
 
 #pragma endregion
 
-#pragma region VisualScriptingComponent
-	inline static void VisualScriptingComponent_SetParameterFloat(entt::entity id, MonoString* name, float value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity{ id, scene };
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<VisualScriptingComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<VisualScriptingComponent>().graph)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto graph = entity.GetComponent<VisualScriptingComponent>().graph;
-		graph->SetParameterValue(paramName, value);
-	}
-
-	inline static void VisualScriptingComponent_SetParameterInt(entt::entity id, MonoString* name, int32_t value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity{ id, scene };
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<VisualScriptingComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<VisualScriptingComponent>().graph)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto graph = entity.GetComponent<VisualScriptingComponent>().graph;
-		graph->SetParameterValue(paramName, value);
-	}
-
-	inline static void VisualScriptingComponent_SetParameterBool(entt::entity id, MonoString* name, bool value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity{ id, scene };
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<VisualScriptingComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<VisualScriptingComponent>().graph)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto graph = entity.GetComponent<VisualScriptingComponent>().graph;
-		graph->SetParameterValue(paramName, value);
-	}
-
-	inline static void VisualScriptingComponent_SetParameterVector3(entt::entity id, MonoString* name, glm::vec3* value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity{ id, scene };
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<VisualScriptingComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<VisualScriptingComponent>().graph)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto graph = entity.GetComponent<VisualScriptingComponent>().graph;
-		graph->SetParameterValue(paramName, value);
-	}
-
-	inline static void VisualScriptingComponent_SetParameterString(entt::entity id, MonoString* name, MonoString* value)
-	{
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity{ id, scene };
-
-		if (!entity)
-		{
-			return;
-		}
-
-		if (!entity.HasComponent<VisualScriptingComponent>())
-		{
-			return;
-		}
-
-		if (!entity.GetComponent<VisualScriptingComponent>().graph)
-		{
-			return;
-		}
-
-		const auto paramName = MonoScriptUtils::GetStringFromMonoString(name);
-		auto graph = entity.GetComponent<VisualScriptingComponent>().graph;
-		graph->SetParameterValue(paramName, value);
-	}
-#pragma endregion
-
 #pragma region AnimationControllerComponent
 
 	inline static void AnimationControllerComponent_SetParameterFloat(entt::entity id, MonoString* name, float value)
@@ -4028,7 +3923,7 @@ namespace Volt
 			return false;
 		}
 
-		return entity.GetComponent<AnimationControllerComponent>().overrideMaterial != Asset::Null();
+		return entity.GetComponent<AnimationControllerComponent>().material != Asset::Null();
 	}
 
 	inline static void AnimationControllerComponent_SetOverrideMaterial(entt::entity id, uint64_t materialHandle)
@@ -4046,7 +3941,7 @@ namespace Volt
 			return;
 		}
 
-		entity.GetComponent<AnimationControllerComponent>().overrideMaterial = materialHandle;
+		entity.GetComponent<AnimationControllerComponent>().material = materialHandle;
 	}
 
 	inline static uint64_t AnimationControllerComponent_GetOverrideMaterial(entt::entity id)
@@ -4064,7 +3959,7 @@ namespace Volt
 			return 0;
 		}
 
-		return entity.GetComponent<AnimationControllerComponent>().overrideMaterial;
+		return entity.GetComponent<AnimationControllerComponent>().material;
 	}
 
 	inline static void AnimationControllerComponent_SetOverrideSkin(entt::entity id, uint64_t skinHandle)
@@ -4082,7 +3977,7 @@ namespace Volt
 			return;
 		}
 
-		entity.GetComponent<AnimationControllerComponent>().overrideSkin = skinHandle;
+		entity.GetComponent<AnimationControllerComponent>().skin = skinHandle;
 	}
 
 	inline static uint64_t AnimationControllerComponent_GetOverrideSkin(entt::entity id)
@@ -4100,7 +3995,7 @@ namespace Volt
 			return 0;
 		}
 
-		return entity.GetComponent<AnimationControllerComponent>().overrideSkin;
+		return entity.GetComponent<AnimationControllerComponent>().skin;
 	}
 
 	inline static void AnimationControllerComponent_SetController(entt::entity id, uint64_t animGraphHandle)
@@ -4315,7 +4210,7 @@ namespace Volt
 			return false;
 		}
 
-		return entity.GetComponent<MeshComponent>().overrideMaterial != Asset::Null();
+		return entity.GetComponent<MeshComponent>().material != Asset::Null();
 	}
 
 	inline static void MeshComponent_SetOverrideMaterial(entt::entity id, uint64_t materialHandle)
@@ -4333,7 +4228,7 @@ namespace Volt
 			return;
 		}
 
-		entity.GetComponent<MeshComponent>().overrideMaterial = materialHandle;
+		entity.GetComponent<MeshComponent>().material = materialHandle;
 	}
 
 	inline static uint64_t MeshComponent_GetOverrideMaterial(entt::entity id)
@@ -4351,7 +4246,7 @@ namespace Volt
 			return 0;
 		}
 
-		return entity.GetComponent<MeshComponent>().overrideMaterial;
+		return entity.GetComponent<MeshComponent>().material;
 	}
 #pragma endregion 
 
@@ -4861,32 +4756,6 @@ namespace Volt
 	}
 #pragma endregion
 
-#pragma region GraphKey
-
-	inline static void GraphKey_DispatchEvent(entt::entity entityId, MonoString* eventName)
-	{
-		auto event = MonoScriptUtils::GetStringFromMonoString(eventName);
-		auto scene = MonoScriptEngine::GetSceneContext();
-		Entity entity{ entityId, scene };
-
-		if (entity.HasComponent<Volt::VisualScriptingComponent>())
-		{
-			auto graph = entity.GetComponent<Volt::VisualScriptingComponent>().graph;
-			if (!graph) return;
-			for (auto eventOnEntity : graph->GetEvents())
-			{
-				if (eventOnEntity.name == event)
-				{
-					graph->GetEventSystem().Dispatch(eventOnEntity.id)
-						;
-					return;
-				}
-			}
-		}
-	}
-
-#pragma endregion
-
 #pragma region UIRenderer
 	inline static void UIRenderer_SetViewport(float x, float y, float width, float height)
 	{
@@ -4938,10 +4807,10 @@ namespace Volt
 	inline static Nexus::TYPE::REP_ID NetActorComponent_GetRepId(uint32_t id)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
-		auto entity = Entity(id, scene);
+		auto entity = Entity(static_cast<entt::entity>(id), scene);
 		while (!entity.HasComponent<NetActorComponent>())
 		{
-			if (entity.GetParent().GetID() == 0) return 0;
+			if (entity.GetParent().GetID() == entt::null) return 0;
 			entity = entity.GetParent();
 		}
 		auto netId = entity.GetComponent<NetActorComponent>().repId;
@@ -5011,7 +4880,7 @@ namespace Volt
 		auto prefabData = CreatePrefabData(0, clientId, handle);
 
 		auto scene = MonoScriptEngine::GetSceneContext();
-		auto ent = Entity(spawnPoint, scene);
+		auto ent = Entity(static_cast<entt::entity>(spawnPoint), scene);
 
 		TransformComponent temp;
 		temp.position = ent.GetPosition();
@@ -5359,50 +5228,50 @@ namespace Volt
 #pragma region PostProcessingStack
 	inline static void PostProcessingStack_PushEffect(uint64_t effectHandle)
 	{
-		Scene* scene = MonoScriptEngine::GetSceneContext();
+		//Scene* scene = MonoScriptEngine::GetSceneContext();
 
-		const auto& postStackComponents = scene->GetRegistry().GetSingleComponentView<PostProcessingStackComponent>();
-		if (postStackComponents.empty())
-		{
-			return;
-		}
+		//const auto& postStackComponents = scene->GetRegistry().GetSingleComponentView<PostProcessingStackComponent>();
+		//if (postStackComponents.empty())
+		//{
+		//	return;
+		//}
 
-		const auto& postStackComp = scene->GetRegistry().GetComponent<PostProcessingStackComponent>(postStackComponents.front());
+		//const auto& postStackComp = scene->GetRegistry().GetComponent<PostProcessingStackComponent>(postStackComponents.front());
 
-		Ref<PostProcessingStack> postStack = AssetManager::GetAsset<PostProcessingStack>(postStackComp.postProcessingStack);
-		if (!postStack || !postStack->IsValid())
-		{
-			return;
-		}
+		//Ref<PostProcessingStack> postStack = AssetManager::GetAsset<PostProcessingStack>(postStackComp.postProcessingStack);
+		//if (!postStack || !postStack->IsValid())
+		//{
+		//	return;
+		//}
 
-		Ref<PostProcessingMaterial> postMat = AssetManager::GetAsset<PostProcessingMaterial>(postStackComp.postProcessingStack);
-		if (!postMat || !postMat->IsValid())
-		{
-			return;
-		}
+		//Ref<PostProcessingMaterial> postMat = AssetManager::GetAsset<PostProcessingMaterial>(postStackComp.postProcessingStack);
+		//if (!postMat || !postMat->IsValid())
+		//{
+		//	return;
+		//}
 
-		postStack->PushEffect({ postMat->handle });
+		//postStack->PushEffect({ postMat->handle });
 	}
 
 	inline static void PostProcessingStack_PopEffect()
 	{
-		Scene* scene = MonoScriptEngine::GetSceneContext();
+		//Scene* scene = MonoScriptEngine::GetSceneContext();
 
-		const auto& postStackComponents = scene->GetRegistry().GetSingleComponentView<PostProcessingStackComponent>();
-		if (postStackComponents.empty())
-		{
-			return;
-		}
+		//const auto& postStackComponents = scene->GetRegistry().GetSingleComponentView<PostProcessingStackComponent>();
+		//if (postStackComponents.empty())
+		//{
+		//	return;
+		//}
 
-		const auto& postStackComp = scene->GetRegistry().GetComponent<PostProcessingStackComponent>(postStackComponents.front());
+		//const auto& postStackComp = scene->GetRegistry().GetComponent<PostProcessingStackComponent>(postStackComponents.front());
 
-		Ref<PostProcessingStack> postStack = AssetManager::GetAsset<PostProcessingStack>(postStackComp.postProcessingStack);
-		if (!postStack || !postStack->IsValid())
-		{
-			return;
-		}
+		//Ref<PostProcessingStack> postStack = AssetManager::GetAsset<PostProcessingStack>(postStackComp.postProcessingStack);
+		//if (!postStack || !postStack->IsValid())
+		//{
+		//	return;
+		//}
 
-		postStack->PopEffect();
+		//postStack->PopEffect();
 	}
 #pragma endregion
 
@@ -5538,11 +5407,6 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Net_ForcePortBinding);
 			VT_ADD_INTERNAL_CALL(Net_Reload);
 			VT_ADD_INTERNAL_CALL(Net_IsHost);
-		}
-
-		// Graph Key
-		{
-			VT_ADD_INTERNAL_CALL(GraphKey_DispatchEvent);
 		}
 
 		// Entity
@@ -5923,15 +5787,6 @@ namespace Volt
 
 			VT_ADD_INTERNAL_CALL(NavAgentComponent_GetObstacleAvoidanceQuality);
 			VT_ADD_INTERNAL_CALL(NavAgentComponent_SetObstacleAvoidanceQuality);
-		}
-
-		// Visual Scripting Component
-		{
-			VT_ADD_INTERNAL_CALL(VisualScriptingComponent_SetParameterBool);
-			VT_ADD_INTERNAL_CALL(VisualScriptingComponent_SetParameterInt);
-			VT_ADD_INTERNAL_CALL(VisualScriptingComponent_SetParameterFloat);
-			VT_ADD_INTERNAL_CALL(VisualScriptingComponent_SetParameterVector3);
-			VT_ADD_INTERNAL_CALL(VisualScriptingComponent_SetParameterString);
 		}
 
 		// Animation Controller Component

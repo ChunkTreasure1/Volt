@@ -8,7 +8,7 @@ namespace GraphKey
 		inputs =
 		{
 			AttributeConfig("", AttributeDirection::Input, GK_BIND_FUNCTION(CallCustomEventNode::CallEvent)),
-			AttributeConfigDefault<Volt::Entity>("Target", AttributeDirection::Input, Volt::Entity{ entt::null, {} })
+			AttributeConfigDefault<Volt::Entity>("Target", AttributeDirection::Input, Volt::Entity::Null())
 		};
 
 		outputs =

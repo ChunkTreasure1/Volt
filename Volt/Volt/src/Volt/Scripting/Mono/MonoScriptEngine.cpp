@@ -755,7 +755,7 @@ namespace Volt
 				}
 			}
 
-			s_monoData->scriptEntities[id] = CreateRef<MonoScriptEntity>(entity, scriptIds, s_monoData->coreEntityClass);
+			s_monoData->scriptEntities[id] = CreateRef<MonoScriptEntity>(entity.GetID(), scriptIds, s_monoData->coreEntityClass);
 		}
 
 		return s_monoData->scriptEntities.at(id);

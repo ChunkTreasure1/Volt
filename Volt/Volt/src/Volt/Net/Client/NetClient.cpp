@@ -55,7 +55,7 @@ namespace Volt
 			auto ptr = m_registry.Get(repId);
 			auto repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
 			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
-			if (entity.IsNull()) continue;
+			if (!entity.IsValid()) continue;
 			if (repEntity.GetOwner() != m_id) continue;
 
 			auto pawnComp = entity.GetComponent<NetActorComponent>();
@@ -252,7 +252,7 @@ namespace Volt
 		}
 
 		auto sceneEnt = Entity(netEnt->GetEntityId(), SceneManager::GetActiveScene().lock().get());
-		if (sceneEnt.IsNull())
+		if (!sceneEnt.IsValid())
 		{
 			VT_CORE_ERROR("scene entity is null in client RPC call");
 			return;

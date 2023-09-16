@@ -149,7 +149,7 @@ namespace Volt
 
 			for (auto child : relationshipComp.children)
 			{
-				UpdateComponents(targetScene, child.GetId());
+				UpdateComponents(targetScene, child);
 			}
 		}
 	}
@@ -163,8 +163,6 @@ namespace Volt
 	{
 		Entity targetEntity = { targetEntityId, scene };
 		Entity startEntity = { startEntityId, scene };
-
-		auto& targetRegistry = scene->GetRegistry();
 
 		/*for (const auto& [guid, pool] : targetRegistry.GetPools())
 		{
@@ -220,7 +218,7 @@ namespace Volt
 		{
 			for (const auto& child : targetEntity.GetComponent<RelationshipComponent>().children)
 			{
-				CorrectEntityReferencesRecursive(scene, child.GetId(), startEntity.GetID());
+				CorrectEntityReferencesRecursive(scene, child, startEntity.GetID());
 			}
 		}
 	}
@@ -244,7 +242,7 @@ namespace Volt
 		{
 			for (const auto& child : currentEntity.GetComponent<RelationshipComponent>().children)
 			{
-				entt::entity result = FindCorrespondingEntity(scene, child.GetId(), wantedPrefabEntity.GetID());
+				entt::entity result = FindCorrespondingEntity(scene, child, wantedPrefabEntity.GetID());
 				if (result != entt::null)
 				{
 					return result;
@@ -279,7 +277,7 @@ namespace Volt
 		if (rootEntity.HasComponent<RelationshipComponent>())
 		{
 			auto& [parent, children] = rootEntity.GetComponent<RelationshipComponent>();
-			parent = Entity::Null();
+			parent = entt::null;
 		}
 
 		return true;
@@ -287,26 +285,26 @@ namespace Volt
 
 	entt::entity Prefab::RecursiveAddToPrefab(Scene* scene, entt::entity aSrcEntity)
 	{
-		auto& srcRegistry = scene->GetRegistry();
+		//auto& srcRegistry = scene->GetRegistry();
 
-		Entity srcEntity = { aSrcEntity, scene };
-		entt::entity newEntity = srcEntity.GetID();
-		
-		if (srcEntity.HasComponent<PrefabComponent>())
-		{
-			newEntity = srcEntity.GetComponent<PrefabComponent>().prefabEntity;
-		}
-		else
-		{
-			srcEntity.AddComponent<PrefabComponent>();
-		}
+		//Entity srcEntity = { aSrcEntity, scene };
+		//entt::entity newEntity = srcEntity.GetID();
+		//
+		//if (srcEntity.HasComponent<PrefabComponent>())
+		//{
+		//	newEntity = srcEntity.GetComponent<PrefabComponent>().prefabEntity;
+		//}
+		//else
+		//{
+		//	srcEntity.AddComponent<PrefabComponent>();
+		//}
 
-		auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
-		srcPrefabComp.prefabAsset = handle;
-		srcPrefabComp.prefabEntity = newEntity;
-		srcPrefabComp.version = myVersion;
+		//auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
+		//srcPrefabComp.prefabAsset = handle;
+		//srcPrefabComp.prefabEntity = newEntity;
+		//srcPrefabComp.version = myVersion;
 
-		myRegistry.create(newEntity);
+		//myRegistry.create(newEntity);
 		//Entity::Copy(srcRegistry, myRegistry, scene->GetScriptFieldCache(), myScriptFieldCache, aSrcEntity, newEntity);
 
 	/*	if (srcEntity.HasComponent<RelationshipComponent>())
@@ -345,7 +343,7 @@ namespace Volt
 			}
 		}*/
 
-		return newEntity;
+		return entt::null;
 	}
 
 	entt::entity Prefab::UpdateEntity(Scene* targetScene, entt::entity aTargetEntity, AssetHandle prefabHandle)

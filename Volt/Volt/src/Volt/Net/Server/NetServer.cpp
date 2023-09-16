@@ -62,7 +62,7 @@ namespace Volt
 			auto ptr = m_registry.Get(repId);
 			const auto& repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
 			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
-			if (entity.IsNull()) continue;
+			if (!entity.IsValid()) continue;
 
 			const auto& pawnComp = entity.GetComponent<NetActorComponent>();
 			if (pawnComp.condition != eRepCondition::CONTINUOUS) continue;

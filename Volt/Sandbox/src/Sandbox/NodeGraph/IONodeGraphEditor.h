@@ -87,7 +87,7 @@ namespace Utility
 
 	inline Ref<GraphKey::Node> CreateCallNodeFromEventName(const std::string& nodeName, Volt::Entity pinEntity)
 	{
-		if (!pinEntity.HasComponent<Volt::VisualScriptingComponent>())
+		/*if (!pinEntity.HasComponent<Volt::VisualScriptingComponent>())
 		{
 			return nullptr;
 		}
@@ -115,43 +115,47 @@ namespace Utility
 		auto callType = std::reinterpret_pointer_cast<GraphKey::CallCustomEventNode>(newNode);
 		callType->eventId = (*it).id;
 
-		return newNode;
+		return newNode;*/
+	
+		return nullptr;
 	}
 
 	inline Ref<GraphKey::Node> CreateRecieveNodeFromEventName(const std::string& nodeName, Ref<GraphKey::Graph> graph, Ref<Volt::Scene> current)
 	{
-		auto entId = graph->GetEntity();
-		Volt::Entity entity{ entId, current.get() };
+		//auto entId = graph->GetEntity();
+		//Volt::Entity entity{ entId, current.get() };
 
-		if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-		{
-			return nullptr;
-		}
+		//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+		//{
+		//	return nullptr;
+		//}
 
-		auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-		if (!comp.graph)
-		{
-			return nullptr;
-		}
+		//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+		//if (!comp.graph)
+		//{
+		//	return nullptr;
+		//}
 
-		const auto& events = comp.graph->GetEvents();
-		const std::string eventName = nodeName.substr(nodeName.find_first_of(' ') + 1);
+		//const auto& events = comp.graph->GetEvents();
+		//const std::string eventName = nodeName.substr(nodeName.find_first_of(' ') + 1);
 
-		auto it = std::find_if(events.begin(), events.end(), [&eventName](const auto& lhs)
-		{
-			return lhs.name == eventName;
-		});
+		//auto it = std::find_if(events.begin(), events.end(), [&eventName](const auto& lhs)
+		//{
+		//	return lhs.name == eventName;
+		//});
 
-		if (it == events.end())
-		{
-			return nullptr;
-		}
+		//if (it == events.end())
+		//{
+		//	return nullptr;
+		//}
 
-		Ref<GraphKey::Node> newNode = GraphKey::Registry::Create("RecieveCustomEventNode");
-		auto callType = std::reinterpret_pointer_cast<GraphKey::RecieveCustomEventNode>(newNode);
-		callType->eventId = (*it).id;
+		//Ref<GraphKey::Node> newNode = GraphKey::Registry::Create("RecieveCustomEventNode");
+		//auto callType = std::reinterpret_pointer_cast<GraphKey::RecieveCustomEventNode>(newNode);
+		//callType->eventId = (*it).id;
 
-		return newNode;
+		//return newNode;
+
+		return nullptr;
 	}
 }
 
@@ -1455,25 +1459,27 @@ inline const std::vector<std::string> IONodeGraphEditor<TGraphType, EditorBacken
 		return {};
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return{};
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return{};
+	//}
 
-	auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	if (!comp.graph)
-	{
-		return {};
-	}
+	//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//if (!comp.graph)
+	//{
+	//	return {};
+	//}
 
-	const auto& events = comp.graph->GetEvents();
-	std::vector<std::string> result{};
-	for (const auto& e : events)
-	{
-		result.emplace_back(e.name);
-	}
+	//const auto& events = comp.graph->GetEvents();
+	//std::vector<std::string> result{};
+	//for (const auto& e : events)
+	//{
+	//	result.emplace_back(e.name);
+	//}
 
-	return result;
+	//return result;
+
+	return {};
 }
 
 template<GraphKey::GraphType graphType, typename EditorBackend>

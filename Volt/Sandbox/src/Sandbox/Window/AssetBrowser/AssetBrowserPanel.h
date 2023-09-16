@@ -9,7 +9,6 @@
 #include <Volt/Events/MouseEvent.h>
 
 #include <glm/glm.hpp>
-#include <Wire/Wire.h>
 
 namespace Volt
 {

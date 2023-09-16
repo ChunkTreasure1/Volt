@@ -25,7 +25,6 @@
 #include <Volt/ImGui/ImGuiImplementation.h>
 
 #include <GraphKey/Graph.h>
-#include <Wire/Serialization.h>
 
 #include <vector>
 
@@ -88,15 +87,14 @@ void PropertiesPanel::UpdateMainContent()
 	}
 
 	const bool singleSelected = !(SelectionManager::GetSelectedCount() > 1);
-	auto& registry = myCurrentScene->GetRegistry();
-	const auto firstEntity = SelectionManager::GetSelectedEntities().front();
+	auto firstEntity = Volt::Entity{ SelectionManager::GetSelectedEntities().front(), myCurrentScene };
 	const auto& entities = SelectionManager::GetSelectedEntities();
 
 	if (singleSelected)
 	{
-		if (registry.HasComponent<Volt::TagComponent>(firstEntity))
+		if (firstEntity.HasComponent<Volt::TagComponent>())
 		{
-			auto& tag = registry.GetComponent<Volt::TagComponent>(firstEntity);
+			auto& tag = firstEntity.GetComponent<Volt::TagComponent>();
 			UI::InputText("Name", tag.tag);
 		}
 	}
@@ -107,16 +105,18 @@ void PropertiesPanel::UpdateMainContent()
 		std::string firstName;
 		bool sameName = true;
 
-		if (registry.HasComponent<Volt::TagComponent>(firstEntity))
+		if (firstEntity.HasComponent<Volt::TagComponent>())
 		{
-			firstName = registry.GetComponent<Volt::TagComponent>(firstEntity).tag;
+			firstName = firstEntity.GetTag();
 		}
 
-		for (auto& entity : SelectionManager::GetSelectedEntities())
+		for (auto& id : SelectionManager::GetSelectedEntities())
 		{
-			if (registry.HasComponent<Volt::TagComponent>(entity))
+			Volt::Entity entity{ id, myCurrentScene };
+
+			if (entity.HasComponent<Volt::TagComponent>())
 			{
-				auto& tag = registry.GetComponent<Volt::TagComponent>(entity);
+				auto& tag = entity.GetComponent<Volt::TagComponent>();
 				if (tag.tag != firstName)
 				{
 					sameName = false;
@@ -137,11 +137,13 @@ void PropertiesPanel::UpdateMainContent()
 		UI::PushID();
 		if (UI::InputText("Name", inputText))
 		{
-			for (auto& entity : SelectionManager::GetSelectedEntities())
+			for (auto& id : SelectionManager::GetSelectedEntities())
 			{
-				if (registry.HasComponent<Volt::TagComponent>(entity))
+				Volt::Entity entity{ id, myCurrentScene };
+
+				if (entity.HasComponent<Volt::TagComponent>())
 				{
-					registry.GetComponent<Volt::TagComponent>(entity).tag = inputText;
+					entity.GetComponent<Volt::TagComponent>().tag = inputText;
 				}
 			}
 		}
@@ -153,13 +155,14 @@ void PropertiesPanel::UpdateMainContent()
 		UI::PushID();
 		if (UI::BeginProperties("Transform"))
 		{
-			auto& entity = SelectionManager::GetSelectedEntities().front();
+			auto& entityId = SelectionManager::GetSelectedEntities().front();
+			Volt::Entity entity{ entityId, myCurrentScene };
 
-			if (registry.HasComponent<Volt::TransformComponent>(entity))
+			if (entity.HasComponent<Volt::TransformComponent>())
 			{
 				static bool shouldUpdateNavMesh = false;
 
-				auto& transform = registry.GetComponent<Volt::TransformComponent>(entity);
+				auto& transform = entity.GetComponent<Volt::TransformComponent>();
 
 				if (UI::PropertyAxisColor("Position", transform.position, 0.f))
 				{
@@ -222,7 +225,7 @@ void PropertiesPanel::UpdateMainContent()
 					}
 				}
 
-				if (shouldUpdateNavMesh && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && Sandbox::Get().CheckForUpdateNavMesh({ entity, myCurrentScene.get() }))
+				if (shouldUpdateNavMesh && ImGui::IsMouseReleased(ImGuiMouseButton_Left) && Sandbox::Get().CheckForUpdateNavMesh(entity))
 				{
 					Sandbox::Get().BakeNavMesh();
 					shouldUpdateNavMesh = false;
@@ -234,587 +237,562 @@ void PropertiesPanel::UpdateMainContent()
 		UI::PopID();
 	}
 
-	// Visual Scripting
-	{
-		auto& entity = SelectionManager::GetSelectedEntities().front();
-
-		if (registry.HasComponent<Volt::VisualScriptingComponent>(entity))
-		{
-			Volt::VisualScriptingComponent& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
-			if (!vsComp.graph)
-			{
-				if (ImGui::Button("Create"))
-				{
-					vsComp.graph = CreateRef<GraphKey::Graph>(entity);
-				}
-			}
-			else
-			{
-				if (ImGui::Button("Open"))
-				{
-					GraphKeyPanel::Get().SetActiveGraph(vsComp.graph);
-					GraphKeyPanel::Get().Open();
-				}
-			}
-		}
-	}
-
 	if (singleSelected)
 	{
-		const auto entity = SelectionManager::GetSelectedEntities().front();
+		//const auto entity = SelectionManager::GetSelectedEntities().front();
 
-		for (const auto& [guid, pool] : registry.GetPools())
-		{
-			if (!registry.HasComponent(guid, entity))
-			{
-				continue;
-			}
+		//for (const auto& [guid, pool] : registry.GetPools())
+		//{
+		//	if (!registry.HasComponent(guid, entity))
+		//	{
+		//		continue;
+		//	}
 
-			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-			if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
-				registryInfo.name == "EntityDataComponent")
-			{
-				continue;
-			}
+		//	const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
+		//	if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
+		//		registryInfo.name == "EntityDataComponent")
+		//	{
+		//		continue;
+		//	}
 
-			if (registryInfo.name == "MonoScriptComponent") // Might want to render all scripts last
-			{
-				auto& monoScriptComponent = registry.GetComponent<Volt::MonoScriptComponent>(entity);
+		//	if (registryInfo.name == "MonoScriptComponent") // Might want to render all scripts last
+		//	{
+		//		auto& monoScriptComponent = registry.GetComponent<Volt::MonoScriptComponent>(entity);
 
-				for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
-				{
-					auto scriptEntry = Volt::MonoScriptEntry(monoScriptComponent.scriptNames[i], monoScriptComponent.scriptIds[i]);
-					DrawMonoScript(scriptEntry, entity, registry, registryInfo);
-				}
+		//		for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
+		//		{
+		//			auto scriptEntry = Volt::MonoScriptEntry(monoScriptComponent.scriptNames[i], monoScriptComponent.scriptIds[i]);
+		//			DrawMonoScript(scriptEntry, entity, registry, registryInfo);
+		//		}
 
-				continue;
-			}
+		//		continue;
+		//	}
 
-			if (registryInfo.name == "VisualScriptingComponent")
-			{
-				auto& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
-				DrawGraphKeyProperties(entity, vsComp);
+		//	if (registryInfo.name == "VisualScriptingComponent")
+		//	{
+		//		auto& vsComp = registry.GetComponent<Volt::VisualScriptingComponent>(entity);
+		//		DrawGraphKeyProperties(entity, vsComp);
 
-				continue;
-			}
+		//		continue;
+		//	}
 
-			bool removeComp = false;
-			bool open = UI::CollapsingHeader(registryInfo.name);
-			float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
-			float availRegion = ImGui::GetContentRegionAvail().x;
+		//	bool removeComp = false;
+		//	bool open = UI::CollapsingHeader(registryInfo.name);
+		//	float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
+		//	float availRegion = ImGui::GetContentRegionAvail().x;
 
-			if (!open)
-			{
-				UI::SameLine(availRegion - buttonSize * 0.5f);
-			}
-			else
-			{
-				UI::SameLine(availRegion + buttonSize * 0.5f);
-			}
-			std::string id = "-###Remove" + registryInfo.name;
+		//	if (!open)
+		//	{
+		//		UI::SameLine(availRegion - buttonSize * 0.5f);
+		//	}
+		//	else
+		//	{
+		//		UI::SameLine(availRegion + buttonSize * 0.5f);
+		//	}
+		//	std::string id = "-###Remove" + registryInfo.name;
 
-			{
-				UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
-				UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
-				UI::ScopedButtonColor buttonColor{ EditorTheme::Buttons::RemoveButton };
+		//	{
+		//		UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
+		//		UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
+		//		UI::ScopedButtonColor buttonColor{ EditorTheme::Buttons::RemoveButton };
 
-				if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
-				{
-					removeComp = true;
-				}
-			}
+		//		if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
+		//		{
+		//			removeComp = true;
+		//		}
+		//	}
 
-			if (open)
-			{
-				const std::vector<std::string> excludedComponents =
-				{
-					"ScriptComponent",
-					"MonoScriptComponent",
-				};
+		//	if (open)
+		//	{
+		//		const std::vector<std::string> excludedComponents =
+		//		{
+		//			"ScriptComponent",
+		//			"MonoScriptComponent",
+		//		};
 
-				const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
+		//		const bool isExcluded = std::find(excludedComponents.begin(), excludedComponents.end(), registryInfo.name) != excludedComponents.end();
 
-				UI::PushID();
-				if (!isExcluded && UI::BeginProperties(registryInfo.name))
-				{
-					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
-					for (auto& prop : registryInfo.properties)
-					{
-						if (!prop.visible)
-						{
-							continue;
-						}
+		//		UI::PushID();
+		//		if (!isExcluded && UI::BeginProperties(registryInfo.name))
+		//		{
+		//			uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
+		//			for (auto& prop : registryInfo.properties)
+		//			{
+		//				if (!prop.visible)
+		//				{
+		//					continue;
+		//				}
 
-						switch (prop.type)
-						{
-							case Wire::ComponentRegistry::PropertyType::Bool: UI::Property(prop.name, *(bool*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::String: UI::Property(prop.name, *(std::string*)(&data[prop.offset]));
-								break;
+		//				switch (prop.type)
+		//				{
+		//					case Wire::ComponentRegistry::PropertyType::Bool: UI::Property(prop.name, *(bool*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::String: UI::Property(prop.name, *(std::string*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Int: UI::Property(prop.name, *(int32_t*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::UInt: UI::Property(prop.name, *(uint32_t*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Int: UI::Property(prop.name, *(int32_t*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::UInt: UI::Property(prop.name, *(uint32_t*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Short: UI::Property(prop.name, *(int16_t*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::UShort: UI::Property(prop.name, *(uint16_t*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Short: UI::Property(prop.name, *(int16_t*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::UShort: UI::Property(prop.name, *(uint16_t*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Char: UI::Property(prop.name, *(int8_t*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::UChar: UI::Property(prop.name, *(uint8_t*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Char: UI::Property(prop.name, *(int8_t*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::UChar: UI::Property(prop.name, *(uint8_t*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Float: UI::Property(prop.name, *(float*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::Double: UI::Property(prop.name, *(double*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Float: UI::Property(prop.name, *(float*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::Double: UI::Property(prop.name, *(double*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(glm::vec2*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(entt::entity*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Vector2: UI::Property(prop.name, *(glm::vec2*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::Vector3: UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::Vector4: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::Quaternion: UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::EntityId: UI::PropertyEntity(prop.name, myCurrentScene, *(entt::entity*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::Color4: UI::PropertyColor(prop.name, *(glm::vec4*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Color3: UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::Color4: UI::PropertyColor(prop.name, *(glm::vec4*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::AssetHandle:
-							{
-								Volt::AssetType assetType = Volt::AssetType::None;
+		//					case Wire::ComponentRegistry::PropertyType::AssetHandle:
+		//					{
+		//						Volt::AssetType assetType = Volt::AssetType::None;
 
-								if (prop.specialType.has_value())
-								{
-									assetType = std::any_cast<Volt::AssetType>(prop.specialType);
-								}
+		//						if (prop.specialType.has_value())
+		//						{
+		//							assetType = std::any_cast<Volt::AssetType>(prop.specialType);
+		//						}
 
-								EditorUtils::Property(prop.name, *(Volt::AssetHandle*)(&data[prop.offset]), assetType);
-								break;
-							}
+		//						EditorUtils::Property(prop.name, *(Volt::AssetHandle*)(&data[prop.offset]), assetType);
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Directory: UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset]));
-								break;
-							case Wire::ComponentRegistry::PropertyType::Path: UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset]));
-								break;
+		//					case Wire::ComponentRegistry::PropertyType::Directory: UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset]));
+		//						break;
+		//					case Wire::ComponentRegistry::PropertyType::Path: UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset]));
+		//						break;
 
-							case Wire::ComponentRegistry::PropertyType::Enum:
-							{
-								auto& enumData = Wire::ComponentRegistry::EnumData();
-								if (enumData.find(prop.enumName) != enumData.end())
-								{
-									UI::ComboProperty(prop.name, *(int32_t*)(&data[prop.offset]), enumData.at(prop.enumName));
-								}
-								break;
-							}
-						}
-					}
+		//					case Wire::ComponentRegistry::PropertyType::Enum:
+		//					{
+		//						auto& enumData = Wire::ComponentRegistry::EnumData();
+		//						if (enumData.find(prop.enumName) != enumData.end())
+		//						{
+		//							UI::ComboProperty(prop.name, *(int32_t*)(&data[prop.offset]), enumData.at(prop.enumName));
+		//						}
+		//						break;
+		//					}
+		//				}
+		//			}
 
-					UI::EndProperties();
-				}
+		//			UI::EndProperties();
+		//		}
 
-				if (registryInfo.name == "EnvironmentProbeComponent")
-				{
-					static bool wefg = false;
+		//		if (registryInfo.name == "EnvironmentProbeComponent")
+		//		{
+		//			static bool wefg = false;
 
-					if (ImGui::Button("Generate"))
-					{
-						//auto newTextureHandle = Volt::EnvironmentProbe::Generate(myCurrentScene, entity, myCurrentSceneRenderer);
-						//auto& comp = myCurrentScene->GetRegistry().GetComponent<Volt::EnvironmentProbeComponent>(entity);
-						//comp.environmentHandle = newTextureHandle;
-					}
-				}
+		//			if (ImGui::Button("Generate"))
+		//			{
+		//				//auto newTextureHandle = Volt::EnvironmentProbe::Generate(myCurrentScene, entity, myCurrentSceneRenderer);
+		//				//auto& comp = myCurrentScene->GetRegistry().GetComponent<Volt::EnvironmentProbeComponent>(entity);
+		//				//comp.environmentHandle = newTextureHandle;
+		//			}
+		//		}
 
-				UI::PopID();
-			}
+		//		UI::PopID();
+		//	}
 
-			if (removeComp)
-			{
-				myCurrentScene->GetRegistry().RemoveComponent(registryInfo.guid, entity);
-			}
-		}
+		//	if (removeComp)
+		//	{
+		//		myCurrentScene->GetRegistry().RemoveComponent(registryInfo.guid, entity);
+		//	}
+		//}
 	}
 	else
 	{
-		auto componentsInCommon = registry.GetPools();
+		//auto componentsInCommon = registry.GetPools();
 
-		for (auto& entity : entities)
-		{
-			for (const auto& [guid, pool] : registry.GetPools())
-			{
-				if (!registry.HasComponent(guid, entity))
-				{
-					componentsInCommon.erase(guid);
-					continue;
-				}
-			}
-		}
+		//for (auto& entity : entities)
+		//{
+		//	for (const auto& [guid, pool] : registry.GetPools())
+		//	{
+		//		if (!registry.HasComponent(guid, entity))
+		//		{
+		//			componentsInCommon.erase(guid);
+		//			continue;
+		//		}
+		//	}
+		//}
 
-		const auto& entity = firstEntity;
+		//const auto& entity = firstEntity;
 
-		for (const auto& [guid, pool] : componentsInCommon)
-		{
-			if (!registry.HasComponent(guid, entity))
-			{
-				continue;
-			}
+		//for (const auto& [guid, pool] : componentsInCommon)
+		//{
+		//	if (!registry.HasComponent(guid, entity))
+		//	{
+		//		continue;
+		//	}
 
-			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-			if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
-				registryInfo.name == "EntityDataComponent" || registryInfo.name == "VisualScriptingComponent")
-			{
-				continue;
-			}
+		//	const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
+		//	if (registryInfo.name == "TagComponent" || registryInfo.name == "TransformComponent" || registryInfo.name == "RelationshipComponent" || registryInfo.name == "PrefabComponent" ||
+		//		registryInfo.name == "EntityDataComponent" || registryInfo.name == "VisualScriptingComponent")
+		//	{
+		//		continue;
+		//	}
 
-			bool removeComp = false;
-			bool open = UI::CollapsingHeader(registryInfo.name);
-			float buttonSize = 21.f + GImGui->Style.FramePadding.y;
-			float availRegion = ImGui::GetContentRegionAvail().x;
+		//	bool removeComp = false;
+		//	bool open = UI::CollapsingHeader(registryInfo.name);
+		//	float buttonSize = 21.f + GImGui->Style.FramePadding.y;
+		//	float availRegion = ImGui::GetContentRegionAvail().x;
 
-			if (!open)
-			{
-				UI::SameLine(availRegion - buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
-			}
-			else
-			{
-				UI::SameLine(availRegion + buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
-			}
-			std::string id = "-###Remove" + registryInfo.name;
+		//	if (!open)
+		//	{
+		//		UI::SameLine(availRegion - buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+		//	}
+		//	else
+		//	{
+		//		UI::SameLine(availRegion + buttonSize * 0.5f + GImGui->Style.FramePadding.x * 0.5f);
+		//	}
+		//	std::string id = "-###Remove" + registryInfo.name;
 
-			{
-				UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
-				UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
-				UI::ScopedButtonColor buttonColor{ EditorTheme::Buttons::RemoveButton };
+		//	{
+		//		UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
+		//		UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
+		//		UI::ScopedButtonColor buttonColor{ EditorTheme::Buttons::RemoveButton };
 
-				if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
-				{
-					removeComp = true;
-				}
-			}
+		//		if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
+		//		{
+		//			removeComp = true;
+		//		}
+		//	}
 
-			if (open)
-			{
-				UI::PushID();
-				if (registryInfo.name != "ScriptComponent" && UI::BeginProperties(registryInfo.name))
-				{
-					uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
-					for (const auto& prop : registryInfo.properties)
-					{
-						if (!prop.visible)
-						{
-							continue;
-						}
+		//	if (open)
+		//	{
+		//		UI::PushID();
+		//		if (registryInfo.name != "ScriptComponent" && UI::BeginProperties(registryInfo.name))
+		//		{
+		//			uint8_t* data = (uint8_t*)registry.GetComponentPtr(guid, entity);
+		//			for (const auto& prop : registryInfo.properties)
+		//			{
+		//				if (!prop.visible)
+		//				{
+		//					continue;
+		//				}
 
-						switch (prop.type)
-						{
-							case Wire::ComponentRegistry::PropertyType::Bool:
-							{
-								if (UI::Property(prop.name, *(bool*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(bool*)&entData[prop.offset] = *(bool*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//				switch (prop.type)
+		//				{
+		//					case Wire::ComponentRegistry::PropertyType::Bool:
+		//					{
+		//						if (UI::Property(prop.name, *(bool*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(bool*)&entData[prop.offset] = *(bool*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::String:
-							{
-								if (UI::Property(prop.name, *(std::string*)(&data[prop.offset]), false))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(std::string*)&entData[prop.offset] = *(std::string*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::String:
+		//					{
+		//						if (UI::Property(prop.name, *(std::string*)(&data[prop.offset]), false))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(std::string*)&entData[prop.offset] = *(std::string*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Int:
-							{
-								if (UI::Property(prop.name, *(int32_t*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(int32_t*)&entData[prop.offset] = *(int32_t*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Int:
+		//					{
+		//						if (UI::Property(prop.name, *(int32_t*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(int32_t*)&entData[prop.offset] = *(int32_t*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::UInt:
-							{
-								if (UI::Property(prop.name, *(uint32_t*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(uint32_t*)&entData[prop.offset] = *(uint32_t*)(&data[prop.offset]);
-									}
-								}
+		//					case Wire::ComponentRegistry::PropertyType::UInt:
+		//					{
+		//						if (UI::Property(prop.name, *(uint32_t*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(uint32_t*)&entData[prop.offset] = *(uint32_t*)(&data[prop.offset]);
+		//							}
+		//						}
 
-								break;
-							}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::EntityId:
-							{
-								if (UI::PropertyEntity(prop.name, myCurrentScene, *(entt::entity*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(entt::entity*)&entData[prop.offset] = *(entt::entity*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::EntityId:
+		//					{
+		//						if (UI::PropertyEntity(prop.name, myCurrentScene, *(entt::entity*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(entt::entity*)&entData[prop.offset] = *(entt::entity*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Short: 
-							{
-								if (UI::Property(prop.name, *(int16_t*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(int16_t*)&entData[prop.offset] = *(int16_t*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
-							case Wire::ComponentRegistry::PropertyType::UShort:
-							{
-								if (UI::Property(prop.name, *(uint16_t*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(uint16_t*)&entData[prop.offset] = *(uint16_t*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Short: 
+		//					{
+		//						if (UI::Property(prop.name, *(int16_t*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(int16_t*)&entData[prop.offset] = *(int16_t*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
+		//					case Wire::ComponentRegistry::PropertyType::UShort:
+		//					{
+		//						if (UI::Property(prop.name, *(uint16_t*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(uint16_t*)&entData[prop.offset] = *(uint16_t*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Char:
-							{
-								if (UI::Property(prop.name, *(int8_t*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(int8_t*)&entData[prop.offset] = *(int8_t*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Char:
+		//					{
+		//						if (UI::Property(prop.name, *(int8_t*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(int8_t*)&entData[prop.offset] = *(int8_t*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::UChar:
-							{
-								if (UI::Property(prop.name, *(uint8_t*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(uint8_t*)&entData[prop.offset] = *(uint8_t*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::UChar:
+		//					{
+		//						if (UI::Property(prop.name, *(uint8_t*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(uint8_t*)&entData[prop.offset] = *(uint8_t*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Float: 
-							{
-								if (UI::Property(prop.name, *(float*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(float*)&entData[prop.offset] = *(float*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Float: 
+		//					{
+		//						if (UI::Property(prop.name, *(float*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(float*)&entData[prop.offset] = *(float*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Double:
-							{
-								if (UI::Property(prop.name, *(double*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(double*)&entData[prop.offset] = *(double*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Double:
+		//					{
+		//						if (UI::Property(prop.name, *(double*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(double*)&entData[prop.offset] = *(double*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Vector2:
-							{
-								if (UI::Property(prop.name, *(glm::vec2*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(glm::vec2*)&entData[prop.offset] = *(glm::vec2*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
-							
-							case Wire::ComponentRegistry::PropertyType::Vector3:
-							{
-								if (UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(glm::vec3*)&entData[prop.offset] = *(glm::vec3*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Vector2:
+		//					{
+		//						if (UI::Property(prop.name, *(glm::vec2*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(glm::vec2*)&entData[prop.offset] = *(glm::vec2*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
+		//					
+		//					case Wire::ComponentRegistry::PropertyType::Vector3:
+		//					{
+		//						if (UI::Property(prop.name, *(glm::vec3*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(glm::vec3*)&entData[prop.offset] = *(glm::vec3*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Vector4:
-							{
-								if (UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(glm::vec4*)&entData[prop.offset] = *(glm::vec4*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Vector4:
+		//					{
+		//						if (UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(glm::vec4*)&entData[prop.offset] = *(glm::vec4*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Quaternion:
-							{
-								if (UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(glm::vec4*)&entData[prop.offset] = *(glm::vec4*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Quaternion:
+		//					{
+		//						if (UI::Property(prop.name, *(glm::vec4*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(glm::vec4*)&entData[prop.offset] = *(glm::vec4*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Color3:
-							{
-								if (UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(glm::vec3*)&entData[prop.offset] = *(glm::vec3*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Color3:
+		//					{
+		//						if (UI::PropertyColor(prop.name, *(glm::vec3*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(glm::vec3*)&entData[prop.offset] = *(glm::vec3*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Color4:
-							{
-								if (UI::PropertyColor(prop.name, *(glm::vec4*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(glm::vec4*)&entData[prop.offset] = *(glm::vec4*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Color4:
+		//					{
+		//						if (UI::PropertyColor(prop.name, *(glm::vec4*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(glm::vec4*)&entData[prop.offset] = *(glm::vec4*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::AssetHandle:
-							{
-								Volt::AssetType assetType = Volt::AssetType::None;
+		//					case Wire::ComponentRegistry::PropertyType::AssetHandle:
+		//					{
+		//						Volt::AssetType assetType = Volt::AssetType::None;
 
-								if (prop.specialType.has_value())
-								{
-									assetType = std::any_cast<Volt::AssetType>(prop.specialType);
-								}
+		//						if (prop.specialType.has_value())
+		//						{
+		//							assetType = std::any_cast<Volt::AssetType>(prop.specialType);
+		//						}
 
-								if (EditorUtils::Property(prop.name, *(Volt::AssetHandle*)(&data[prop.offset]), assetType))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(Volt::AssetHandle*)&entData[prop.offset] = *(Volt::AssetHandle*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//						if (EditorUtils::Property(prop.name, *(Volt::AssetHandle*)(&data[prop.offset]), assetType))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(Volt::AssetHandle*)&entData[prop.offset] = *(Volt::AssetHandle*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Directory: 
-							{
-								if (UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(std::filesystem::path*)&entData[prop.offset] = *(std::filesystem::path*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Directory: 
+		//					{
+		//						if (UI::PropertyDirectory(prop.name, *(std::filesystem::path*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(std::filesystem::path*)&entData[prop.offset] = *(std::filesystem::path*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Path: 
-							{
-								if (UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset])))
-								{
-									for (auto& ent : entities)
-									{
-										uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-										*(std::filesystem::path*)&entData[prop.offset] = *(std::filesystem::path*)(&data[prop.offset]);
-									}
-								}
-								break;
-							}
+		//					case Wire::ComponentRegistry::PropertyType::Path: 
+		//					{
+		//						if (UI::Property(prop.name, *(std::filesystem::path*)(&data[prop.offset])))
+		//						{
+		//							for (auto& ent : entities)
+		//							{
+		//								uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//								*(std::filesystem::path*)&entData[prop.offset] = *(std::filesystem::path*)(&data[prop.offset]);
+		//							}
+		//						}
+		//						break;
+		//					}
 
-							case Wire::ComponentRegistry::PropertyType::Enum:
-							{
-								auto& enumData = Wire::ComponentRegistry::EnumData();
-								if (enumData.find(prop.enumName) != enumData.end())
-								{
-									if (UI::ComboProperty(prop.name, *(int32_t*)(&data[prop.offset]), enumData.at(prop.enumName)))
-									{
-										for (auto& ent : entities)
-										{
-											uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
-											*(int32_t*)&entData[prop.offset] = *(int32_t*)(&data[prop.offset]);
-										}
-									}
-								}
-								break;
-							}
-						}
-					}
+		//					case Wire::ComponentRegistry::PropertyType::Enum:
+		//					{
+		//						auto& enumData = Wire::ComponentRegistry::EnumData();
+		//						if (enumData.find(prop.enumName) != enumData.end())
+		//						{
+		//							if (UI::ComboProperty(prop.name, *(int32_t*)(&data[prop.offset]), enumData.at(prop.enumName)))
+		//							{
+		//								for (auto& ent : entities)
+		//								{
+		//									uint8_t* entData = (uint8_t*)registry.GetComponentPtr(guid, ent);
+		//									*(int32_t*)&entData[prop.offset] = *(int32_t*)(&data[prop.offset]);
+		//								}
+		//							}
+		//						}
+		//						break;
+		//					}
+		//				}
+		//			}
 
-					UI::EndProperties();
-				}
+		//			UI::EndProperties();
+		//		}
 
-				UI::PopID();
-			}
+		//		UI::PopID();
+		//	}
 
-			if (removeComp)
-			{
-				for (auto& ent : entities)
-				{
-					myCurrentScene->GetRegistry().RemoveComponent(registryInfo.guid, ent);
-				}
-			}
-		}
+		//	if (removeComp)
+		//	{
+		//		for (auto& ent : entities)
+		//		{
+		//			myCurrentScene->GetRegistry().RemoveComponent(registryInfo.guid, ent);
+		//		}
+		//	}
+		//}
 	}
 
 	ImGui::PushStyleColor(ImGuiCol_Button, { 0.2f, 0.2f, 0.2f, 1.f });
@@ -866,11 +844,11 @@ void PropertiesPanel::AddComponentPopup()
 		const std::vector<std::string> skippedComponents = { "TagComponent", "PrefabComponent", "TransformComponent", "RelationshipComponent", "ScriptComponent", "MonoScriptComponent" };
 		std::vector<std::string> componentNames;
 
-		const auto& componentInfo = Wire::ComponentRegistry::ComponentGUIDs();
-		for (const auto& [name, info] : componentInfo)
-		{
-			componentNames.emplace_back(name);
-		}
+		//const auto& componentInfo = Wire::ComponentRegistry::ComponentGUIDs();
+		//for (const auto& [name, info] : componentInfo)
+		//{
+		//	componentNames.emplace_back(name);
+		//}
 
 		std::sort(componentNames.begin(), componentNames.end());
 
@@ -890,7 +868,7 @@ void PropertiesPanel::AddComponentPopup()
 		}
 
 		{
-			UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
+			/*UI::ScopedColor background{ ImGuiCol_ChildBg, EditorTheme::DarkGreyBackground };
 			ImGui::BeginChild("scrolling", ImGui::GetContentRegionAvail());
 
 			for (const auto& name : componentNames)
@@ -933,7 +911,7 @@ void PropertiesPanel::AddComponentPopup()
 						ImGui::CloseCurrentPopup();
 					}
 				}
-			}
+			}*/
 
 			ImGui::EndChild();
 		}
@@ -989,14 +967,16 @@ void PropertiesPanel::AddMonoScriptPopup()
 				UI::RenderMatchingTextBackground(myScriptSearchQuery, name, EditorTheme::MatchingTextBackground);
 				if (ImGui::MenuItem(name.c_str()))
 				{
-					for (auto& ent : SelectionManager::GetSelectedEntities())
+					for (auto& id : SelectionManager::GetSelectedEntities())
 					{
-						if (!myCurrentScene->GetRegistry().HasComponent<Volt::MonoScriptComponent>(ent))
+						Volt::Entity entity{ id, myCurrentScene };
+
+						if (!entity.HasComponent<Volt::MonoScriptComponent>())
 						{
-							myCurrentScene->GetRegistry().AddComponent<Volt::MonoScriptComponent>(ent);
+							entity.AddComponent<Volt::MonoScriptComponent>();
 						}
 
-						auto& comp = myCurrentScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(ent);
+						auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
 						if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
 						{
 							std::string fullScriptName = "";
@@ -1031,14 +1011,16 @@ void PropertiesPanel::AddMonoScriptPopup()
 
 				Volt::MonoScriptUtils::CreateNewCSFile(myScriptSearchQuery, "", true);
 
-				for (auto& ent : SelectionManager::GetSelectedEntities())
+				for (auto& id : SelectionManager::GetSelectedEntities())
 				{
-					if (!myCurrentScene->GetRegistry().HasComponent<Volt::MonoScriptComponent>(ent))
+					Volt::Entity entity{ id, myCurrentScene };
+
+					if (!entity.HasComponent<Volt::MonoScriptComponent>())
 					{
-						myCurrentScene->GetRegistry().AddComponent<Volt::MonoScriptComponent>(ent);
+						entity.AddComponent<Volt::MonoScriptComponent>(id);
 					}
 
-					auto& comp = myCurrentScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(ent);
+					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
 					if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
 					{
 						std::string fullScriptName = "Project." + myScriptSearchQuery;
@@ -1097,14 +1079,16 @@ void PropertiesPanel::AcceptMonoDragDrop()
 
 			if (!fullMonoClassName.empty())
 			{
-				for (auto& ent : SelectionManager::GetSelectedEntities())
+				for (auto& id : SelectionManager::GetSelectedEntities())
 				{
-					if (!myCurrentScene->GetRegistry().HasComponent<Volt::MonoScriptComponent>(ent))
+					Volt::Entity entity{ id, myCurrentScene };
+
+					if (!entity.HasComponent<Volt::MonoScriptComponent>())
 					{
-						myCurrentScene->GetRegistry().AddComponent<Volt::MonoScriptComponent>(ent);
+						entity.AddComponent<Volt::MonoScriptComponent>();
 					}
 
-					auto& comp = myCurrentScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(ent);
+					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
 					if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
 					{
 						comp.scriptIds.emplace_back(Volt::UUID());
@@ -1116,8 +1100,10 @@ void PropertiesPanel::AcceptMonoDragDrop()
 	}
 }
 
-void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo)
+void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entId)
 {
+	Volt::Entity entity{ entId, myCurrentScene };
+
 	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName(scriptEntry.name);
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
@@ -1167,14 +1153,14 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const e
 	{
 		UI::PushID();
 
-		DrawMonoProperties(registry, registryInfo, scriptEntry);
+		DrawMonoProperties(scriptEntry);
 
 		UI::PopID();
 	}
 
 	if (removeComp)
 	{
-		auto& scriptComp = registry.GetComponent<Volt::MonoScriptComponent>(entity);
+		auto& scriptComp = entity.GetComponent<Volt::MonoScriptComponent>();
 
 		for (uint32_t i = 0; i < scriptComp.scriptIds.size(); ++i)
 		{
@@ -1187,7 +1173,7 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const e
 		}
 		if (scriptComp.scriptIds.empty())
 		{
-			registry.RemoveComponent<Volt::MonoScriptComponent>(entity);
+			entity.RemoveComponent<Volt::MonoScriptComponent>();
 		}
 
 		if (mySceneState == SceneState::Edit)
@@ -1198,10 +1184,10 @@ void PropertiesPanel::DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const e
 	}
 }
 
-void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo, Volt::MonoScriptEntry& scriptEntry)
+void PropertiesPanel::DrawMonoProperties(Volt::MonoScriptEntry& scriptEntry)
 {
 	Ref<Volt::MonoScriptInstance> scriptInstance = Volt::MonoScriptEngine::GetInstanceFromId(scriptEntry.id);
-	if (UI::BeginProperties(registryInfo.name))
+	if (UI::BeginProperties("MonoScripts"))
 	{
 		if ((myCurrentScene->IsPlaying()) && scriptInstance)
 		{
@@ -1586,30 +1572,4 @@ void PropertiesPanel::DrawMonoProperties(Wire::Registry& registry, const Wire::C
 		}
 		UI::EndProperties();
 	}
-}
-
-void PropertiesPanel::DrawGraphKeyProperties(const entt::entity id, Volt::VisualScriptingComponent& comp)
-{
-	if (!comp.graph)
-	{
-		return;
-	}
-
-	bool open = UI::CollapsingHeader("Graph Key");
-
-	if (open)
-	{
-		UI::PushID();
-		if (UI::BeginProperties("GraphKey"))
-		{
-			for (auto& var : comp.graph->GetBlackboard())
-			{
-				GraphKey::TypeRegistry::ExecuteUIFunctionOfType(var.name, var.value);
-			}
-
-			UI::EndProperties();
-		}
-		UI::PopID();
-	}
-
 }

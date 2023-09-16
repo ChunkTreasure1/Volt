@@ -295,7 +295,7 @@ namespace Volt
 
 		MonoScriptEngine::OnUpdateEntity(aDeltaTime);
 
-		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp) 
+		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)
 		{
 			if (transComp.visible)
 			{
@@ -403,7 +403,18 @@ namespace Volt
 		transform.rotation = { 1.f, 0.f, 0.f, 0.f };
 		transform.scale = { 1.f, 1.f, 1.f };
 
-		newEntity.AddComponent<TagComponent>(tag.empty() ? "New Entity" : tag);
+		// Tag
+		{
+			auto& tagComp = newEntity.AddComponent<TagComponent>();
+			if (tag.empty())
+			{
+				tagComp.tag = "New Entity";
+			}
+			else
+			{
+				tagComp.tag = tag;
+			}
+		}
 		newEntity.AddComponent<CommonComponent>();
 		newEntity.AddComponent<RelationshipComponent>();
 
@@ -432,9 +443,9 @@ namespace Volt
 		if (entity.HasComponent<RelationshipComponent>())
 		{
 			auto& relComp = entity.GetComponent<RelationshipComponent>();
-			if (relComp.parent)
+			if (relComp.parent != entt::null)
 			{
-				Entity parentEnt = relComp.parent;
+				Entity parentEnt = { relComp.parent, this };
 
 				if (parentEnt.HasComponent<RelationshipComponent>())
 				{
@@ -449,7 +460,8 @@ namespace Volt
 
 			for (int32_t i = static_cast<int32_t>(relComp.children.size()) - 1; i >= 0; --i)
 			{
-				RemoveEntity(relComp.children.at(i));
+				Entity childEnt{ relComp.children.at(i), this };
+				RemoveEntity(childEnt);
 			}
 		}
 
@@ -503,8 +515,8 @@ namespace Volt
 			return;
 		}
 
-		child.GetComponent<RelationshipComponent>().parent = parent;
-		parent.GetComponent<RelationshipComponent>().children.emplace_back(child);
+		child.GetComponent<RelationshipComponent>().parent = parent.GetID();
+		parent.GetComponent<RelationshipComponent>().children.emplace_back(child.GetID());
 
 		if (child.GetLayerID() != parent.GetLayerID())
 		{
@@ -533,34 +545,35 @@ namespace Volt
 		}
 
 		ConvertToWorldSpace(entity);
-		entity.GetComponent<RelationshipComponent>().parent = Entity::Null();
+		entity.GetComponent<RelationshipComponent>().parent = entt::null;
 	}
 
-	glm::mat4 Scene::GetWorldSpaceTransform(Entity entity)
-	{
-		{
-			std::shared_lock lock(myCachedEntityTransformMutex);
-			if (myCachedEntityTransforms.contains(entity.GetID()))
-			{
-				return myCachedEntityTransforms.at(entity.GetID());
-			}
-		}
+	// #TODO_Ivar: Reimplement into GetWorldTransform(...)
+	//glm::mat4 Scene::GetWorldSpaceTransform(Entity entity)
+	//{
+	//	{
+	//		std::shared_lock lock(myCachedEntityTransformMutex);
+	//		if (myCachedEntityTransforms.contains(entity.GetID()))
+	//		{
+	//			return myCachedEntityTransforms.at(entity.GetID());
+	//		}
+	//	}
 
-		if (!entity.HasComponent<TransformComponent>())
-		{
-			return { 1.f };
-		}
+	//	if (!entity.HasComponent<TransformComponent>())
+	//	{
+	//		return { 1.f };
+	//	}
 
-		const auto tqs = GetWorldSpaceTRS(entity);
-		const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, tqs.position) * glm::mat4_cast(tqs.rotation) * glm::scale(glm::mat4{ 1.f }, tqs.scale);
+	//	const auto tqs = GetWorldSpaceTRS(entity);
+	//	const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, tqs.position) * glm::mat4_cast(tqs.rotation) * glm::scale(glm::mat4{ 1.f }, tqs.scale);
 
-		{
-			std::unique_lock lock{ myCachedEntityTransformMutex };
-			myCachedEntityTransforms[entity.GetID()] = transform;
-		}
+	//	{
+	//		std::unique_lock lock{ myCachedEntityTransformMutex };
+	//		myCachedEntityTransforms[entity.GetID()] = transform;
+	//	}
 
-		return transform;
-	}
+	//	return transform;
+	//}
 
 	Scene::TQS Scene::GetWorldSpaceTRS(Entity entity)
 	{
@@ -610,7 +623,7 @@ namespace Volt
 
 			for (const auto& child : relComp.children)
 			{
-				entityStack.push_back(child.GetID());
+				entityStack.push_back(child);
 			}
 
 			if (myCachedEntityTransforms.contains(currentEntity))
@@ -814,8 +827,6 @@ namespace Volt
 		otherScene->myActiveLayerIndex = myActiveLayerIndex;
 		otherScene->myLastLayerId = myLastLayerId;
 
-		auto& otherRegistry = otherScene->GetRegistry();
-
 		// #TODO_Ivar: Reimplement
 
 		// Copy registry
@@ -966,23 +977,21 @@ namespace Volt
 
 	void Scene::SetupComponentFunctions()
 	{
-		m_registry.on_construct<RigidbodyComponent>().connect<&RigidbodyComponent_OnCreate>(this);
-		m_registry.on_construct<CharacterControllerComponent>().connect<&CharacterControllerComponent_OnCreate>(this);
-		m_registry.on_construct<BoxColliderComponent>().connect<&BoxColliderComponent_OnCreate>(this);
-		m_registry.on_construct<SphereColliderComponent>().connect<&SphereColliderComponent_OnCreate>(this);
-		m_registry.on_construct<CapsuleColliderComponent>().connect<&CapsuleColliderComponent_OnCreate>(this);
-		m_registry.on_construct<MeshColliderComponent>().connect<&MeshColliderComponent_OnCreate>(this);
-		m_registry.on_construct<AudioSourceComponent>().connect<&AudioSourceComponent_OnCreate>(this);
-		m_registry.on_construct<AudioListenerComponent>().connect<&AudioListenerComponent_OnCreate>(this);
+		m_registry.on_construct<RigidbodyComponent>().connect<&Scene::RigidbodyComponent_OnCreate>(this);
+		m_registry.on_construct<CharacterControllerComponent>().connect<&Scene::CharacterControllerComponent_OnCreate>(this);
+		m_registry.on_construct<BoxColliderComponent>().connect<&Scene::BoxColliderComponent_OnCreate>(this);
+		m_registry.on_construct<SphereColliderComponent>().connect<&Scene::SphereColliderComponent_OnCreate>(this);
+		m_registry.on_construct<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnCreate>(this);
+		m_registry.on_construct<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnCreate>(this);
+		m_registry.on_construct<AudioSourceComponent>().connect<&Scene::AudioSourceComponent_OnCreate>(this);
+		m_registry.on_construct<AudioListenerComponent>().connect<&Scene::AudioListenerComponent_OnCreate>(this);
 
-		m_registry.on_destroy<RigidbodyComponent>().connect<&RigidbodyComponent_OnDestroy>(this);
-		m_registry.on_destroy<CharacterControllerComponent>().connect<&CharacterControllerComponent_OnDestroy>(this);
-		m_registry.on_destroy<BoxColliderComponent>().connect<&BoxColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<SphereColliderComponent>().connect<&SphereColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<CapsuleColliderComponent>().connect<&CapsuleColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<MeshColliderComponent>().connect<&MeshColliderComponent_OnDestroy>(this);
-		m_registry.on_destroy<AudioSourceComponent>().connect<&AudioSourceComponent_OnDestroy>(this);
-		m_registry.on_destroy<AudioListenerComponent>().connect<&AudioListenerComponent_OnDestroy>(this);
+		m_registry.on_destroy<RigidbodyComponent>().connect<&Scene::RigidbodyComponent_OnDestroy>(this);
+		m_registry.on_destroy<CharacterControllerComponent>().connect<&Scene::CharacterControllerComponent_OnDestroy>(this);
+		m_registry.on_destroy<BoxColliderComponent>().connect<&Scene::BoxColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<SphereColliderComponent>().connect<&Scene::SphereColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnDestroy>(this);
 	}
 
 	void Scene::IsRecursiveChildOf(Entity parent, Entity currentEntity, bool& outChild)
@@ -990,9 +999,12 @@ namespace Volt
 		if (currentEntity.HasComponent<RelationshipComponent>())
 		{
 			auto& relComp = currentEntity.GetComponent<RelationshipComponent>();
-			for (const auto& child : relComp.children)
+			for (const auto& childId : relComp.children)
 			{
-				outChild |= parent.GetID() == child.GetID();
+				Entity child{ childId, this };
+
+				outChild |= parent.GetID() == childId;
+
 				IsRecursiveChildOf(parent, child, outChild);
 			}
 		}
@@ -1009,7 +1021,7 @@ namespace Volt
 
 		auto& transform = entity.GetComponent<TransformComponent>();
 
-		const glm::mat4 transformMatrix = GetWorldSpaceTransform(entity);
+		const glm::mat4 transformMatrix = GetWorldTransform(entity);
 
 		glm::vec3 r;
 		Math::Decompose(transformMatrix, transform.position, r, transform.scale);
@@ -1029,7 +1041,7 @@ namespace Volt
 		}
 
 		auto& transform = entity.GetComponent<TransformComponent>();
-		const glm::mat4 parentTransform = GetWorldSpaceTransform(parent);
+		const glm::mat4 parentTransform = GetWorldTransform(parent);
 		const glm::mat4 localTransform = glm::inverse(parentTransform) * transform.GetTransform();
 
 		glm::vec3 r;
@@ -1250,17 +1262,9 @@ namespace Volt
 		}
 	}
 
-	void Scene::AudioSourceComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-	}
-
-	void Scene::AudioListenerComponent_OnDestroy(entt::registry& registry, entt::entity id)
-	{
-	}
-
 	void Scene::SortScene()
 	{
-		m_registry.sort<CommonComponent>([](const entt::entity lhs, const entt::entity rhs) 
+		m_registry.sort<CommonComponent>([](const entt::entity lhs, const entt::entity rhs)
 		{
 			return lhs < rhs;
 		});
@@ -1327,7 +1331,7 @@ namespace Volt
 		std::vector<entt::entity> result{};
 		result.reserve(m_registry.alive());
 
-		m_registry.each([&](const entt::entity id) 
+		m_registry.each([&](const entt::entity id)
 		{
 			result.emplace_back(id);
 		});

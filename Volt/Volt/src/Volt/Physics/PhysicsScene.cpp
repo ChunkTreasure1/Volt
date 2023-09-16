@@ -271,7 +271,7 @@ namespace Volt
 	{
 		auto it = std::find_if(myControllerActors.begin(), myControllerActors.end(), [&, controllerActor](const auto& lhs)
 		{
-			return lhs->GetEntity().GetId() == controllerActor->GetEntity().GetID();
+			return lhs->GetEntity().GetID() == controllerActor->GetEntity().GetID();
 		});
 
 		if (it == myControllerActors.end())

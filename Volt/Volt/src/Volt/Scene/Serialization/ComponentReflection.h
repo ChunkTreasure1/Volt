@@ -155,9 +155,9 @@ namespace Volt
 				return *nullMember;
 			}
 
-			if constexpr (IsReflectedType<T>())
+			if constexpr (IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, GetTypeDesc<T>(), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, GetTypeDesc<Type>(), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
 			}
 			else
 			{

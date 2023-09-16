@@ -69,9 +69,4 @@ void RendererSettingsPanel::UpdateMainContent()
 	{
 		mySceneRenderer->ApplySettings();
 	}
-
-	if (ImGui::Button("Reload Ray Tracing"))
-	{
-		mySceneRenderer->UpdateRayTracingScene();
-	}
 }

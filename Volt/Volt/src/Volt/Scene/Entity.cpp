@@ -16,17 +16,6 @@ namespace Volt
 	{
 	}
 
-	Entity::Entity(entt::entity id, Weak<Scene> scene)
-		: m_id(id), m_scene(scene)
-	{
-	}
-
-	Entity::Entity(entt::entity id, Scene* scene)
-		: m_id(id)
-	{
-		m_scene = scene->shared_from_this();
-	}
-
 	Entity::Entity(const Entity& entity)
 	{
 		*this = entity;
@@ -267,8 +256,10 @@ namespace Volt
 
 		auto& children = registry.get<RelationshipComponent>(m_id).children;
 
-		for (auto& child : children)
+		for (auto& childId : children)
 		{
+			Entity child{ childId, m_scene };
+
 			if (child.GetParent().GetID() == m_id)
 			{
 				child.GetComponent<RelationshipComponent>().parent = entt::null;
@@ -286,11 +277,13 @@ namespace Volt
 		assert(registry.any_of<RelationshipComponent>(m_id) && "Entity must have relationship component!");
 
 		auto& relComp = registry.get<RelationshipComponent>(m_id);
-		for (uint32_t index = 0; auto& childEnt : relComp.children)
+		for (uint32_t index = 0; auto& childId : relComp.children)
 		{
+			Entity childEnt{ childId, m_scene };
+			
 			if (childEnt.GetID() == entity.GetID())
 			{
-				childEnt.GetComponent<RelationshipComponent>().parent = Entity::Null();
+				childEnt.GetComponent<RelationshipComponent>().parent = entt::null;
 				
 				relComp.children.erase(relComp.children.begin() + index);
 				break;
@@ -313,7 +306,7 @@ namespace Volt
 			return Null();
 		}
 
-		return { relComp.parent.GetID(), m_scene };
+		return { relComp.parent, m_scene };
 	}
 
 	const std::vector<Entity> Entity::GetChildren() const
@@ -440,7 +433,7 @@ namespace Volt
 
 	const bool Entity::IsValid() const
 	{
-		if (m_scene.expired())
+		if (m_scene.expired() || m_id == static_cast<entt::entity>(0))
 		{
 			return false;
 		}

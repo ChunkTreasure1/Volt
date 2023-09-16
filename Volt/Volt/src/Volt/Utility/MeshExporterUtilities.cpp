@@ -2,7 +2,9 @@
 #include "MeshExporterUtilities.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Components/Components.h"
+
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 namespace Volt
 {

@@ -16,6 +16,8 @@ namespace Volt
 		AssetHandle handle = Asset::Null();
 		AssetHandle material = Asset::Null();
 
+		int32_t subMaterialIndex = -1;
+
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{
 			reflect.SetGUID("{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"_guid);

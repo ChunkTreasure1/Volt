@@ -350,7 +350,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 			Ref<Volt::Scene> scene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
 			std::set<Volt::AssetHandle> sceneDependencies;
 
-			auto& registry = scene->GetRegistry();
+			/*auto& registry = scene->GetRegistry();
 			for (const auto& ent : registry.GetAllEntities())
 			{
 				for (const auto& [guid, pool] : registry.GetPools())
@@ -373,7 +373,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 						}
 					}
 				}
-			}
+			}*/
 
 			for (const auto& [instanceId, fieldMap] : scene->GetScriptFieldCache().GetCache())
 			{

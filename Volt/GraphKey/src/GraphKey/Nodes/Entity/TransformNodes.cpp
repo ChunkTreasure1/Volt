@@ -9,7 +9,7 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfigDefault<Volt::Entity>("Entity", AttributeDirection::Input, Volt::Entity{ entt::null, {} })
+			AttributeConfigDefault<Volt::Entity>("Entity", AttributeDirection::Input, Volt::Entity::Null())
 		};
 
 		outputs =

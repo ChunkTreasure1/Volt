@@ -335,11 +335,13 @@ void NetPanel::DrawVirtualPacketConstructor()
 		{
 			//UI::Property("Rep ID", m_eventSetting.repId);
 			static int addEvent = 0;
-			auto& enumData = Wire::ComponentRegistry::EnumData();
+			
+			// #TODO_Ivar: Reimplement
+			/*auto& enumData = Wire::ComponentRegistry::EnumData();
 			if (enumData.find("eNetEvent") != enumData.end())
 			{
 				UI::ComboProperty("Manage Calls", addEvent, enumData.at("eNetEvent"));
-			}
+			}*/
 			m_eventSetting.netEvent = static_cast<Volt::eNetEvent>(addEvent);
 			UI::EndProperties();
 		}

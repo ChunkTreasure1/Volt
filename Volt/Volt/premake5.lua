@@ -30,6 +30,11 @@ project "Volt"
 		"/ignore:4099",
 	}
 
+	buildoptions 
+	{
+		"/bigobj"
+	}
+
 	files
 	{
 		"src/**.h",

@@ -136,8 +136,9 @@ namespace Volt
 
 		bool IsSubclassOf(Ref<MonoScriptClass> parent);
 
-		static MonoFieldType WirePropTypeToMonoFieldType(const Wire::ComponentRegistry::PropertyType& type);
-		static Wire::ComponentRegistry::PropertyType MonoFieldTypeToWirePropType(const MonoFieldType& type);
+		// #TODO_Ivar: Reimplement
+		//static MonoFieldType WirePropTypeToMonoFieldType(const Wire::ComponentRegistry::PropertyType& type);
+		//static Wire::ComponentRegistry::PropertyType MonoFieldTypeToWirePropType(const MonoFieldType& type);
 		static bool IsAsset(const MonoFieldType& type);
 
 	private:

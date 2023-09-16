@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Sandbox/Window/EditorWindow.h"
-
-#include <Volt/Components/Components.h>
-#include <Volt/Scene/Entity.h>
-#include <Volt/Scene/Scene.h>
-#include <vector>
-#include <variant>
 #include "Sandbox/EditorCommand.h"
 #include "Sandbox/Sandbox.h"
+
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Scene/Entity.h>
+#include <Volt/Scene/Scene.h>
+
+#include <vector>
+#include <variant>
 
 enum class PropertyEventType
 {
@@ -40,9 +41,8 @@ private:
 	void AddMonoScriptPopup();
 	void AcceptMonoDragDrop();
 
-	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo);
-	void DrawMonoProperties(Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo, Volt::MonoScriptEntry& scriptEntry);
-	void DrawGraphKeyProperties(const entt::entity id, Volt::VisualScriptingComponent& comp);
+	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entity);
+	void DrawMonoProperties(Volt::MonoScriptEntry& scriptEntry);
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;

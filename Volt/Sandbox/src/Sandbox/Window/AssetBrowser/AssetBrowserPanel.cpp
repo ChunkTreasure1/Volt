@@ -32,7 +32,7 @@
 
 #include <Volt/ImGui/ImGuiImplementation.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
 #include <Volt/Scene/Scene.h>
 #include <Volt/Project/ProjectManager.h>
 
@@ -219,7 +219,7 @@ void AssetBrowserPanel::UpdateMainContent()
 			if (void* ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 			{
 				entt::entity entity = *(entt::entity*)ptr;
-				if (entity != Wire::NullID)
+				if (entity != entt::null)
 				{
 					CreatePrefabAndSetupEntities(entity);
 					Reload();
@@ -1192,39 +1192,43 @@ AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(
 	return nullptr;
 }
 
-void AssetBrowserPanel::CreatePrefabAndSetupEntities(entt::entity entity)
+void AssetBrowserPanel::CreatePrefabAndSetupEntities(entt::entity id)
 {
-	if (myEditorScene->GetRegistry().HasComponent<Volt::PrefabComponent>(entity))
+	Volt::Entity entity{ id, myEditorScene };
+
+	if (entity.HasComponent<Volt::PrefabComponent>())
 	{
 		UI::Notify(NotificationType::Error, "Unable to create prefab!", "Cannot create prefab of existing prefab!");
 		return;
 	}
 
-	const auto& tagComp = myEditorScene->GetRegistry().GetComponent<Volt::TagComponent>(entity);
+	const auto& tagComp = entity.GetComponent<Volt::TagComponent>();
 
 	std::string name = tagComp.tag + ".vtprefab";
 	name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 
-	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, myEditorScene.get(), entity);
+	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, myEditorScene.get(), entity.GetID());
 	Volt::AssetManager::SaveAsset(prefab);
 
-	SetupEntityAsPrefab(entity, prefab->handle);
+	SetupEntityAsPrefab(entity.GetID(), prefab->handle);
 	Reload();
 }
 
-void AssetBrowserPanel::SetupEntityAsPrefab(entt::entity entity, Volt::AssetHandle prefabId)
+void AssetBrowserPanel::SetupEntityAsPrefab(entt::entity id, Volt::AssetHandle prefabId)
 {
-	if (!myEditorScene->GetRegistry().HasComponent<Volt::PrefabComponent>(entity))
+	Volt::Entity entity{ id, myEditorScene };
+
+	if (!entity.HasComponent<Volt::PrefabComponent>())
 	{
-		myEditorScene->GetRegistry().AddComponent<Volt::PrefabComponent>(entity);
+		entity.AddComponent<Volt::PrefabComponent>();
 	}
 
-	auto& prefabComp = myEditorScene->GetRegistry().GetComponent<Volt::PrefabComponent>(entity);
+	auto& prefabComp = entity.GetComponent<Volt::PrefabComponent>();
 	prefabComp.prefabAsset = prefabId;
-	prefabComp.prefabEntity = entity;
+	prefabComp.prefabEntity = entity.GetID();
 
-	auto& relComp = myEditorScene->GetRegistry().GetComponent<Volt::RelationshipComponent>(entity);
-	for (const auto& child : relComp.Children)
+	auto& relComp = entity.GetComponent<Volt::RelationshipComponent>();
+	for (const auto& child : relComp.children)
 	{
 		SetupEntityAsPrefab(child, prefabId);
 	}

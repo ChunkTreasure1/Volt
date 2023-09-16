@@ -243,14 +243,16 @@ void SceneViewPanel::UpdateMainContent()
 								if (entity.HasComponent<Volt::PrefabComponent>())
 								{
 									auto& prefabComp = entity.GetComponent<Volt::PrefabComponent>();
+
 									auto parent = entity.GetComponent<Volt::RelationshipComponent>().parent;
+									Volt::Entity parentEntity = { parent, myScene };
 
 									bool isRoot = true;
 									bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
 
-									if (parent.IsValid())
+									if (parentEntity.IsValid())
 									{
-										isRoot = (parent.HasComponent<Volt::PrefabComponent>()) ? parent.GetComponent<Volt::PrefabComponent>().prefabAsset != prefabComp.prefabAsset : true;
+										isRoot = (parentEntity.HasComponent<Volt::PrefabComponent>()) ? parentEntity.GetComponent<Volt::PrefabComponent>().prefabAsset != prefabComp.prefabAsset : true;
 									}
 
 									if (isRoot && hasValidLink)
@@ -513,14 +515,17 @@ void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, entt::entity id)
 	{
 		entity.RemoveComponent<Volt::PrefabComponent>();
 	}
-	for (auto& child : entity.GetComponent<Volt::RelationshipComponent>().children)
+
+	for (auto& childId : entity.GetComponent<Volt::RelationshipComponent>().children)
 	{
+		Volt::Entity child{ childId, scene };
+
 		if (child.HasComponent<Volt::PrefabComponent>())
 		{
 			child.RemoveComponent<Volt::PrefabComponent>();
 		}
 
-		RecursiveUnpackPrefab(scene, child.GetID());
+		RecursiveUnpackPrefab(scene, childId);
 	}
 };
 
@@ -581,12 +586,14 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	std::string entityName = "Null";
 
 	Volt::Entity parent = Volt::Entity::Null();
-	std::vector<Volt::Entity> children;
+	std::vector<entt::entity> children;
 
 	if (entity.HasComponent<Volt::RelationshipComponent>())
 	{
-		parent = entity.GetComponent<Volt::RelationshipComponent>().parent;
-		children = entity.GetComponent<Volt::RelationshipComponent>().children;
+		auto& relComp = entity.GetComponent<Volt::RelationshipComponent>();
+
+		parent = Volt::Entity{ relComp.parent, myScene };
+		children = relComp.children;
 	}
 
 	if (entity.HasComponent<Volt::TagComponent>())
@@ -627,7 +634,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 
 	const bool isSelected = SelectionManager::IsSelected(entity.GetID());
 
-	const std::string entityId = entityName + "###" + std::to_string(static_cast<uint32_t>(entity.GetID()));
+	const std::string entityStrId = entityName + "###" + std::to_string(static_cast<uint32_t>(entity.GetID()));
 
 	ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
 	bool isRowClicked = false;
@@ -750,7 +757,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	if (!children.empty())
 	{
 		treeFlags |= ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding;
-		open = ImGui::TreeNodeEx(entityId.c_str(), treeFlags);
+		open = ImGui::TreeNodeEx(entityStrId.c_str(), treeFlags);
 	}
 	else
 	{
@@ -759,7 +766,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		{
 			UI::ShiftCursor(-20.f, 0.f);
 		}
-		ImGui::TreeNodeEx(entityId.c_str(), treeFlags);
+		ImGui::TreeNodeEx(entityStrId.c_str(), treeFlags);
 	}
 
 	UI::PopFont();
@@ -866,15 +873,15 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 			for (size_t i = 0; i < count; i++)
 			{
 				entt::entity id = *(((entt::entity*)payload->Data) + i);
-				Volt::Entity parent = entity;
+				Volt::Entity newParent = entity;
 				Volt::Entity child(id, myScene);
 
 				Ref<ParentChildData> data = CreateRef<ParentChildData>();
-				data->myParent = parent;
+				data->myParent = newParent;
 				data->myChild = child;
 				undoData.push_back(data);
 
-				myScene->ParentEntity(parent, child);
+				myScene->ParentEntity(newParent, child);
 			}
 
 			Ref<ParentingCommand> command = CreateRef<ParentingCommand>(undoData, ParentingAction::Parent);
@@ -942,13 +949,14 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 			const std::string resetId = "Reload Prefab##" + entity.ToString();
 			if (ImGui::MenuItem(resetId.c_str()))
 			{
-				auto parent = entity.GetComponent<Volt::RelationshipComponent>().parent;
-				bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+				Volt::Entity parentEntity = entity.GetParent();
 
 				bool isRoot = true;
-				if (!parent.IsValid())
+				bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
+
+				if (parentEntity.IsValid())
 				{
-					isRoot = (parent.HasComponent<Volt::PrefabComponent>()) ? parent.GetComponent<Volt::PrefabComponent>().prefabAsset != prefabComp.prefabAsset : true;
+					isRoot = (parentEntity.HasComponent<Volt::PrefabComponent>()) ? parentEntity.GetComponent<Volt::PrefabComponent>().prefabAsset != prefabComp.prefabAsset : true;
 				}
 
 				if (!hasValidLink && isRoot)
@@ -993,7 +1001,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		const std::string copyId = "Copy ID##" + entity.ToString();
 		if (ImGui::MenuItem(copyId.c_str()))
 		{
-			Volt::Application::Get().GetWindow().SetClipboard(std::format("{0}", entity).c_str());
+			Volt::Application::Get().GetWindow().SetClipboard(entity.ToString());
 		}
 
 		ImGui::EndPopup();
@@ -1001,7 +1009,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 
 	if (entity.HasComponent<Volt::RelationshipComponent>())
 	{
-		parent = entity.GetComponent<Volt::RelationshipComponent>().parent;
+		parent = entity.GetParent();
 	}
 
 	if (entityDeleted)
@@ -1050,7 +1058,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 
 					for (const auto& e : entity.GetChildren())
 					{
-						recursiveSetVisible(e.GetID(), visible, recursiveSetVisible);
+						recursiveSetVisible(e, visible, recursiveSetVisible);
 					}
 
 					return false;
@@ -1102,7 +1110,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		for (const auto& child : children)
 		{
-			DrawEntity(child, filter);
+			DrawEntity(Volt::Entity{ child, myScene }, filter);
 		}
 
 		ImGui::TreePop();
@@ -1119,7 +1127,7 @@ void SceneViewPanel::CreatePrefabAndSetupEntities(Volt::Entity entity)
 
 	const auto& tagComp = entity.GetComponent<Volt::TagComponent>();
 
-	Ref<Volt::Prefab> prefab = CreateRef<Volt::Prefab>(myScene.get(), entity);
+	Ref<Volt::Prefab> prefab = CreateRef<Volt::Prefab>(myScene.get(), entity.GetID());
 
 	std::string path = "Assets/Prefabs/" + tagComp.tag + ".vtprefab";
 	path.erase(std::remove_if(path.begin(), path.end(), ::isspace), path.end());
@@ -1524,7 +1532,7 @@ void SceneViewPanel::CorrectMissingPrefabs()
 		Volt::Entity entity{ id, myScene };
 
 		auto& prefabComp = entity.GetComponent<Volt::PrefabComponent>();
-		auto parent = entity.GetComponent<Volt::RelationshipComponent>().parent;
+		auto parent = entity.GetParent();
 
 		bool isRoot = true;
 		bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);
@@ -1568,7 +1576,7 @@ void SceneViewPanel::ReloadAllPrefabModal()
 				Volt::Entity entity{ id, myScene };
 
 				auto& prefabComp = entity.GetComponent<Volt::PrefabComponent>();
-				auto parent = entity.GetComponent<Volt::RelationshipComponent>().parent;
+				auto parent = entity.GetParent();
 
 				bool isRoot = true;
 				bool hasValidLink = Volt::Prefab::IsValidInPrefab(prefabComp.prefabEntity, prefabComp.prefabAsset);

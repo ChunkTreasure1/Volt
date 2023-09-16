@@ -114,7 +114,7 @@ namespace Volt
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		glm::mat4 GetWorldSpaceTransform(Entity entity);
+		//glm::mat4 GetWorldSpaceTransform(Entity entity);
 		TQS GetWorldSpaceTRS(Entity entity);
 
 		void InvalidateEntityTransform(entt::entity entity);
@@ -192,8 +192,6 @@ namespace Volt
 		void SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		void CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		void MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void AudioSourceComponent_OnDestroy(entt::registry& registry, entt::entity id);
-		void AudioListenerComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		//////////////////////////////
 
 		SceneEnvironment myEnvironment;
