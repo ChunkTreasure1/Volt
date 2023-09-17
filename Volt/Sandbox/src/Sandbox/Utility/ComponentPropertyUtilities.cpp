@@ -7,6 +7,8 @@
 #include <Volt/Scene/Serialization/ComponentReflection.h>
 #include <Volt/Scene/Serialization/ComponentRegistry.h>
 
+#include <Volt/Components/LightComponents.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 #include <glm/glm.hpp>
@@ -14,7 +16,7 @@
 template<typename T>
 void RegisterPropertyType(std::unordered_map<std::type_index, std::function<bool(std::string_view, void*, const size_t)>>& outFunctionMap)
 {
-	outFunctionMap[std::type_index{ typeid(T) }] = [](std::string_view label, void* data, const size_t offset) -> bool { uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data); return UI::Property(std::string(label), *reinterpret_cast<T*>(bytePtr + offset)); };
+	outFunctionMap[std::type_index{ typeid(T) }] = [](std::string_view label, void* data, const size_t offset) -> bool { uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data); return UI::Property(std::string(label), *reinterpret_cast<T*>(&bytePtr[offset])); };
 }
 
 void ComponentPropertyUtility::Initialize()
@@ -73,6 +75,13 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 				case Volt::ValueType::Component:
 				{
 					const Volt::IComponentTypeDesc* compTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);
+					if (compTypeDesc->GetGUID() == "{EC5514FF-9DE7-44CA-BCD9-8A9F08883F59}"_guid)
+					{
+						Volt::DirectionalLightComponent& dirComp = *(Volt::DirectionalLightComponent*)storage.get(entity.GetID());
+						bool test = dirComp.castShadows;
+						test;
+					}
+					
 					DrawComponent(compTypeDesc, storage.get(entity.GetID()));
 					break;
 				}
@@ -141,7 +150,7 @@ void ComponentPropertyUtility::DrawComponent(const Volt::IComponentTypeDesc* com
 			}
 			else
 			{
-				DrawComponentDefaultMember(member, data, member.offset);
+				DrawComponentDefaultMember(member, data, 0);
 			}
 		}
 
