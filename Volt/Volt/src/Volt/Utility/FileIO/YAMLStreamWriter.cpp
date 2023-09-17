@@ -19,6 +19,16 @@ namespace Volt
 		m_emitter << YAML::EndMap;
 	}
 
+	void YAMLStreamWriter::BeginSequence(const std::string& sequenceName)
+	{
+		m_emitter << YAML::Key << sequenceName << YAML::BeginSeq;
+	}
+
+	void YAMLStreamWriter::EndSequence()
+	{
+		m_emitter << YAML::EndSeq;
+	}
+
 	void YAMLStreamWriter::BeginMapNamned(const std::string& mapName)
 	{
 		m_emitter << YAML::Key << mapName << YAML::Value;

@@ -5,8 +5,8 @@
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
-#include "Volt/Scene/Serialization/ComponentReflection.h"
-#include "Volt/Scene/Serialization/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
 
 #include "Volt/Log/Log.h"
 #include "Volt/Events/ApplicationEvent.h"

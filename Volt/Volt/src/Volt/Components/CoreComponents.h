@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Volt/Scene/Serialization/ComponentReflection.h"
-#include "Volt/Scene/Serialization/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Scene/Entity.h"
 
 #include <glm/glm.hpp>
@@ -140,9 +140,11 @@ namespace Volt
 		std::vector<std::string> scriptNames;
 		std::vector<UUID> scriptIds;
 
+		static constexpr VoltGUID guid = "{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid;
+
 		static void ReflectType(TypeDesc<MonoScriptComponent>& reflect)
 		{
-			reflect.SetGUID("{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid);
+			reflect.SetGUID(guid);
 			reflect.SetLabel("MonoScript Component");
 			reflect.SetHidden();
 			reflect.AddMember(&MonoScriptComponent::scriptNames, "scriptNames", "Script Names", "", std::vector<std::string>{});

@@ -3,8 +3,7 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Log/Log.h"
 
-#include "Volt/Scene/Serialization/VoltGUID.h"
-#include "Volt/Scene/Serialization/TypeAliases.h"
+#include "Volt/Scene/Reflection/VoltGUID.h"
 #include "Volt/Utility/MemoryUtility.h"
 
 #include "Volt/Asset/Asset.h"
@@ -80,6 +79,15 @@ namespace Volt
 		const ValueType m_valueType = VALUE_TYPE;
 	};
 
+	enum class ComponentMemberFlag
+	{
+		None = 0,
+		Color3 = BIT(0),
+		Color4 = BIT(1)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(ComponentMemberFlag);
+
 	struct ComponentMember
 	{
 		ptrdiff_t offset;
@@ -88,6 +96,7 @@ namespace Volt
 		std::string_view description;
 
 		AssetType assetType = AssetType::None;
+		ComponentMemberFlag flags = ComponentMemberFlag::None;
 
 		const ICommonTypeDesc* typeDesc = nullptr;
 		std::type_index typeIndex = typeid(void);
@@ -108,6 +117,8 @@ namespace Volt
 
 		[[nodiscard]] virtual const std::vector<ComponentMember>& GetMembers() const = 0;
 		[[nodiscard]] virtual const bool IsHidden() const = 0;
+		[[nodiscard]] virtual ComponentMember* FindMemberByOffset(const ptrdiff_t offset) = 0;
+		[[nodiscard]] virtual ComponentMember* FindMemberByName(std::string_view name) = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -135,6 +146,9 @@ namespace Volt
 		[[nodiscard]] inline const std::vector<ComponentMember>& GetMembers() const override { return m_members; }
 		[[nodiscard]] inline const bool IsHidden() const override { return m_isHidden; }
 
+		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
+		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
+
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>
 		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue)
 		{
@@ -142,7 +156,13 @@ namespace Volt
 		}
 
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>
-		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue, AssetType assetType)
+		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue, ComponentMemberFlag flags)
+		{
+			return AddMember(memberPtr, name, label, description, defaultValue, AssetType::None, flags);
+		}
+
+		template<typename Type, typename DefaultValueT, typename TypeParent = T>
+		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue, AssetType assetType, ComponentMemberFlag flags = ComponentMemberFlag::None)
 		{
 			static ComponentMember* nullMember = nullptr;
 
@@ -163,11 +183,11 @@ namespace Volt
 
 			if constexpr (IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
 			}
 			else
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, nullptr, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, flags, nullptr, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
 			}
 
 
@@ -175,9 +195,6 @@ namespace Volt
 		}
 
 	private:
-		ComponentMember* FindMemberByOffset(const ptrdiff_t offset);
-		ComponentMember* FindMemberByName(std::string_view name);
-
 		std::vector<ComponentMember> m_members;
 
 		VoltGUID m_guid = VoltGUID::Null();

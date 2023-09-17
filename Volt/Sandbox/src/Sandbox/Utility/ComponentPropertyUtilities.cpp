@@ -4,8 +4,8 @@
 #include "Sandbox/Utility/Theme.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
-#include <Volt/Scene/Serialization/ComponentReflection.h>
-#include <Volt/Scene/Serialization/ComponentRegistry.h>
+#include <Volt/Scene/Reflection/ComponentReflection.h>
+#include <Volt/Scene/Reflection/ComponentRegistry.h>
 
 #include <Volt/Components/LightComponents.h>
 
@@ -74,15 +74,8 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 			{
 				case Volt::ValueType::Component:
 				{
-					const Volt::IComponentTypeDesc* compTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);
-					if (compTypeDesc->GetGUID() == "{EC5514FF-9DE7-44CA-BCD9-8A9F08883F59}"_guid)
-					{
-						Volt::DirectionalLightComponent& dirComp = *(Volt::DirectionalLightComponent*)storage.get(entity.GetID());
-						bool test = dirComp.castShadows;
-						test;
-					}
-					
-					DrawComponent(compTypeDesc, storage.get(entity.GetID()));
+					const Volt::IComponentTypeDesc* compTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);					
+					DrawComponent(scene, compTypeDesc, storage.get(entity.GetID()));
 					break;
 				}
 			}
@@ -90,7 +83,7 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 	}
 }
 
-void ComponentPropertyUtility::DrawComponent(const Volt::IComponentTypeDesc* componentType, void* data)
+void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, const Volt::IComponentTypeDesc* componentType, void* data)
 {
 	if (componentType->IsHidden())
 	{
@@ -135,7 +128,7 @@ void ComponentPropertyUtility::DrawComponent(const Volt::IComponentTypeDesc* com
 					case Volt::ValueType::Component:
 					{
 						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(member.typeDesc);
-						DrawComponentSubSection(compDesc, data, member.offset);
+						DrawComponentSubSection(scene, compDesc, data, member.offset);
 
 						break;
 					}
@@ -143,14 +136,14 @@ void ComponentPropertyUtility::DrawComponent(const Volt::IComponentTypeDesc* com
 					case Volt::ValueType::Enum:
 					{
 						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(member.typeDesc);
-						DrawComponentEnum(member, enumDesc, data, member.offset);
+						DrawComponentEnum(scene, member, enumDesc, data, member.offset);
 						break;
 					}
 				}
 			}
 			else
 			{
-				DrawComponentDefaultMember(member, data, 0);
+				DrawComponentDefaultMember(scene, member, data, 0);
 			}
 		}
 
@@ -158,7 +151,7 @@ void ComponentPropertyUtility::DrawComponent(const Volt::IComponentTypeDesc* com
 	}
 }
 
-void ComponentPropertyUtility::DrawComponentSubSection(const Volt::IComponentTypeDesc* componentType, void* data, const size_t offset)
+void ComponentPropertyUtility::DrawComponentSubSection(Weak<Volt::Scene> scene, const Volt::IComponentTypeDesc* componentType, void* data, const size_t offset)
 {
 	if (componentType->IsHidden())
 	{
@@ -177,7 +170,7 @@ void ComponentPropertyUtility::DrawComponentSubSection(const Volt::IComponentTyp
 					case Volt::ValueType::Component:
 					{
 						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(member.typeDesc);
-						DrawComponentSubSection(compDesc, data, offset + member.offset);
+						DrawComponentSubSection(scene, compDesc, data, offset + member.offset);
 
 						break;
 					}
@@ -185,14 +178,14 @@ void ComponentPropertyUtility::DrawComponentSubSection(const Volt::IComponentTyp
 					case Volt::ValueType::Enum:
 					{
 						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(member.typeDesc);
-						DrawComponentEnum(member, enumDesc, data, offset + member.offset);
+						DrawComponentEnum(scene, member, enumDesc, data, offset + member.offset);
 						break;
 					}
 				}
 			}
 			else
 			{
-				DrawComponentDefaultMember(member, data, offset);
+				DrawComponentDefaultMember(scene, member, data, offset);
 			}
 		}
 
@@ -200,13 +193,32 @@ void ComponentPropertyUtility::DrawComponentSubSection(const Volt::IComponentTyp
 	}
 }
 
-void ComponentPropertyUtility::DrawComponentDefaultMember(const Volt::ComponentMember& member, void* data, const size_t offset)
+void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scene, const Volt::ComponentMember& member, void* data, const size_t offset)
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 
 	if (member.assetType != Volt::AssetType::None)
 	{
 		EditorUtils::Property(std::string(member.label), *reinterpret_cast<Volt::AssetHandle*>(&bytePtr[offset + member.offset]), member.assetType);
+		return;
+	}
+
+	if ((member.flags & Volt::ComponentMemberFlag::Color3) != Volt::ComponentMemberFlag::None)
+	{
+		UI::PropertyColor(std::string(member.label), *reinterpret_cast<glm::vec3*>(&bytePtr[offset + member.offset]));
+		return;
+	}
+
+	if ((member.flags & Volt::ComponentMemberFlag::Color4) != Volt::ComponentMemberFlag::None)
+	{
+		UI::PropertyColor(std::string(member.label), *reinterpret_cast<glm::vec4*>(&bytePtr[offset + member.offset]));
+		return;
+	}
+
+	// Special case for entities
+	if (member.typeIndex == std::type_index{ typeid(entt::entity) })
+	{
+		UI::PropertyEntity(std::string(member.label), scene.lock(), *reinterpret_cast<entt::entity*>(&bytePtr[offset + member.offset]));
 		return;
 	}
 
@@ -218,7 +230,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(const Volt::ComponentM
 	s_propertyFunctions.at(member.typeIndex)(member.label, data, offset + member.offset);
 }
 
-void ComponentPropertyUtility::DrawComponentEnum(const Volt::ComponentMember& member, const Volt::IEnumTypeDesc* enumType, void* data, const size_t offset)
+void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, const Volt::ComponentMember& member, const Volt::IEnumTypeDesc* enumType, void* data, const size_t offset)
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 	const auto& constants = enumType->GetConstants();

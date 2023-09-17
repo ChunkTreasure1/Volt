@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Volt/Scene/Serialization/ComponentReflection.h"
-#include "Volt/Scene/Serialization/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Asset/Asset.h"
@@ -79,7 +79,7 @@ namespace Volt
 		std::string text = "Text";
 		AssetHandle font = Asset::Null();
 		float maxWidth = 100.f;
-		Color4 color = { 1.f };
+		glm::vec4 color = { 1.f };
 
 		static void ReflectType(TypeDesc<TextRendererComponent>& reflect)
 		{
@@ -88,7 +88,7 @@ namespace Volt
 			reflect.AddMember(&TextRendererComponent::text, "text", "Text", "", std::string("Text"));
 			reflect.AddMember(&TextRendererComponent::font, "font", "Font", "", Asset::Null(), AssetType::Font);
 			reflect.AddMember(&TextRendererComponent::maxWidth, "maxWidth", "Max Width", "", 100.f);
-			reflect.AddMember(&TextRendererComponent::color, "color", "Color", "", Color4{ 1.f });
+			reflect.AddMember(&TextRendererComponent::color, "color", "Color", "", glm::vec4{ 1.f }, ComponentMemberFlag::Color4);
 		}
 
 		REGISTER_COMPONENT(TextRendererComponent);

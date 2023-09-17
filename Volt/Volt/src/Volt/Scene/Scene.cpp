@@ -1352,6 +1352,11 @@ namespace Volt
 
 		m_registry.each([&](const entt::entity id)
 		{
+			if (id == static_cast<entt::entity>(0))
+			{
+				return;
+			}
+
 			result.emplace_back(id);
 		});
 

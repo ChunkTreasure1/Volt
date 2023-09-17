@@ -62,4 +62,23 @@ namespace Volt
 		m_currentNode = m_nodeStack.back();
 		m_nodeStack.pop_back();
 	}
+
+	void YAMLStreamReader::ForEach(const std::string& key, std::function<void()> function)
+	{
+		if (!m_currentNode[key])
+		{
+			return;
+		}
+
+		m_nodeStack.emplace_back(m_currentNode);
+
+		for (const auto& node : m_currentNode[key])
+		{
+			m_currentNode = static_cast<YAML::Node>(node);
+			function();
+		}
+
+		m_currentNode = m_nodeStack.back();
+		m_nodeStack.pop_back();
+	}
 }

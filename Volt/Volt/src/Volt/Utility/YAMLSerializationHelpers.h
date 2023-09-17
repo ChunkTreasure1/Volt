@@ -7,7 +7,7 @@
 #include "Volt/Asset/TimelinePreset.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 
-#include "Volt/Scene/Serialization/VoltGUID.h"
+#include "Volt/Scene/Reflection/VoltGUID.h"
 
 #include <entt.hpp>
 

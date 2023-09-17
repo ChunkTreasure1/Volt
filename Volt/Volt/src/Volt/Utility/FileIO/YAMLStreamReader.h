@@ -21,6 +21,8 @@ namespace Volt
 		template<typename T>
 		const T ReadKey(const std::string& key, const T& defaultValue);
 
+		void ForEach(const std::string& key, std::function<void()> function);
+
 	private:
 		YAML::Node m_currentNode;
 		std::vector<YAML::Node> m_nodeStack;

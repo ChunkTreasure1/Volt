@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Utility/YAMLSerializationHelpers.h"
+
 #include <filesystem>
 
 #include <yaml-cpp/yaml.h>
@@ -13,6 +15,9 @@ namespace Volt
 
 		void BeginMap();
 		void EndMap();
+
+		void BeginSequence(const std::string& sequenceName);
+		void EndSequence();
 
 		void BeginMapNamned(const std::string& mapName);
 

@@ -2,8 +2,8 @@
 
 #include "Volt/Asset/Asset.h"
 #include "Volt/Scene/Scene.h"
-#include "Volt/Scene/Serialization/ComponentReflection.h"
-#include "Volt/Scene/Serialization/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
 
 #include <glm/glm.hpp>
 
@@ -14,7 +14,7 @@ namespace Volt
 		float intensity = 1.f;
 		float radius = 100.f;
 		float falloff = 1.f;
-		Color3 color = { 1.f, 1.f, 1.f };
+		glm::vec3 color = { 1.f, 1.f, 1.f };
 		bool castShadows = false;
 		bool ambientOnly = false;
 
@@ -25,7 +25,7 @@ namespace Volt
 			reflect.AddMember(&PointLightComponent::intensity, "intensity", "Intensity", "", 1.f);
 			reflect.AddMember(&PointLightComponent::radius, "radius", "Radius", "", 100.f);
 			reflect.AddMember(&PointLightComponent::falloff, "falloff", "Falloff", "", 1.f);
-			reflect.AddMember(&PointLightComponent::color, "color", "Color", "", glm::vec3{ 1.f });
+			reflect.AddMember(&PointLightComponent::color, "color", "Color", "", glm::vec3{ 1.f }, ComponentMemberFlag::Color3);
 			reflect.AddMember(&PointLightComponent::castShadows, "castShadows", "Cast Shadows", "", false);
 			reflect.AddMember(&PointLightComponent::ambientOnly, "Ambient Only", "Ambient Only", "", false);
 		}
@@ -40,7 +40,7 @@ namespace Volt
 		float range = 100.f;
 		float angleAttenuation = 1.f;
 		float falloff = 1.f;
-		Color3 color = { 1.f, 1.f, 1.f };
+		glm::vec3 color = { 1.f, 1.f, 1.f };
 		bool castShadows = false;
 
 		static void ReflectType(TypeDesc<SpotLightComponent>& reflect)
@@ -52,7 +52,7 @@ namespace Volt
 			reflect.AddMember(&SpotLightComponent::range, "range", "Range", "", 100.f);
 			reflect.AddMember(&SpotLightComponent::angleAttenuation, "angleAttenuation", "Angle Attenuation", "", 1.f);
 			reflect.AddMember(&SpotLightComponent::falloff, "falloff", "Falloff", "", 1.f);
-			reflect.AddMember(&SpotLightComponent::color, "color", "Color", "", Color3{ 1.f });
+			reflect.AddMember(&SpotLightComponent::color, "color", "Color", "", glm::vec3{ 1.f }, ComponentMemberFlag::Color3);
 			reflect.AddMember(&SpotLightComponent::castShadows, "castShadows", "Cast Shadows", "", false);
 		}
 
@@ -63,7 +63,7 @@ namespace Volt
 	{
 		float intensity = 1.f;
 		float radius = 50.f;
-		Color3 color = { 1.f, 1.f, 1.f };
+		glm::vec3 color = { 1.f, 1.f, 1.f };
 
 		static void ReflectType(TypeDesc<SphereLightComponent>& reflect)
 		{
@@ -71,7 +71,7 @@ namespace Volt
 			reflect.SetLabel("Sphere Light Component");
 			reflect.AddMember(&SphereLightComponent::intensity, "intensity", "Intensity", "", 1.f);
 			reflect.AddMember(&SphereLightComponent::radius, "radius", "Radius", "", 50.f);
-			reflect.AddMember(&SphereLightComponent::color, "color", "Color", "", Color3{ 1.f });
+			reflect.AddMember(&SphereLightComponent::color, "color", "Color", "", glm::vec3{ 1.f }, ComponentMemberFlag::Color3);
 		}
 
 		REGISTER_COMPONENT(SphereLightComponent);
@@ -80,7 +80,7 @@ namespace Volt
 	struct RectangleLightComponent
 	{
 		float intensity = 1.f;
-		Color3 color = { 1.f, 1.f, 1.f };
+		glm::vec3 color = { 1.f, 1.f, 1.f };
 		float width = 50.f;
 		float height = 50.f;
 
@@ -89,7 +89,7 @@ namespace Volt
 			reflect.SetGUID("{5AEF9201-4A86-45F1-85F3-E95577E45BF2}"_guid);
 			reflect.SetLabel("Rectangle Light Component");
 			reflect.AddMember(&RectangleLightComponent::intensity, "intensity", "Intensity", "", 1.f);
-			reflect.AddMember(&RectangleLightComponent::color, "color", "Color", "", Color3{ 1.f });
+			reflect.AddMember(&RectangleLightComponent::color, "color", "Color", "", glm::vec3{ 1.f }, ComponentMemberFlag::Color3);
 			reflect.AddMember(&RectangleLightComponent::width, "width", "Width", "", 50.f);
 			reflect.AddMember(&RectangleLightComponent::height, "height", "Height", "", 50.f);
 		}
@@ -100,7 +100,7 @@ namespace Volt
 	struct DirectionalLightComponent
 	{
 		float intensity = 1.f;
-		Color3 color = { 1.f, 1.f, 1.f };
+		glm::vec3 color = { 1.f, 1.f, 1.f };
 		float lightSize = 1.f;
 		bool softShadows = true;
 		bool castShadows = true;
@@ -110,7 +110,7 @@ namespace Volt
 			reflect.SetGUID("{EC5514FF-9DE7-44CA-BCD9-8A9F08883F59}"_guid);
 			reflect.SetLabel("Directional Light Component");
 			reflect.AddMember(&DirectionalLightComponent::intensity, "intensity", "Intensity", "", 1.f);
-			reflect.AddMember(&DirectionalLightComponent::color, "color", "Color", "", Color3{ 1.f });
+			reflect.AddMember(&DirectionalLightComponent::color, "color", "Color", "", glm::vec3{ 1.f }, ComponentMemberFlag::Color3);
 			reflect.AddMember(&DirectionalLightComponent::lightSize, "lightSize", "Light Size", "", 1.f);
 			reflect.AddMember(&DirectionalLightComponent::softShadows, "softShadows", "Soft Shadows", "", true);
 			reflect.AddMember(&DirectionalLightComponent::castShadows, "castShadows", "Cast Shadows", "", true);

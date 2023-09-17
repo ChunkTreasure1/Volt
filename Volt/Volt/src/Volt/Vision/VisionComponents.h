@@ -1,6 +1,6 @@
 #pragma once
-#include "Volt/Scene/Serialization/ComponentRegistry.h"
-#include "Volt/Scene/Serialization/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
 
 #include <entt.hpp>
 #include <glm/glm.hpp>

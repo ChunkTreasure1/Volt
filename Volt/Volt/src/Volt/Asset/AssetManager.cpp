@@ -53,7 +53,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
 		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
 		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
-		//m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
+		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
 		m_assetImporters.emplace(AssetType::Skeleton, CreateScope<SkeletonImporter>());
 		m_assetImporters.emplace(AssetType::AnimationGraph, CreateScope<AnimationGraphImporter>());
 		m_assetImporters.emplace(AssetType::Animation, CreateScope<AnimationImporter>());

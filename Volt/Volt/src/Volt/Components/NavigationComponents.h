@@ -2,8 +2,8 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include "Volt/Scene/Serialization/ComponentReflection.h"
-#include "Volt/Scene/Serialization/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
 
 #include <glm/glm.hpp>
 

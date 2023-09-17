@@ -41,6 +41,11 @@ project "Sandbox"
 		"/WHOLEARCHIVE:GraphKey"
 	}
 
+	buildoptions 
+	{
+		"/bigobj"
+	}
+
     defines
     {
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
