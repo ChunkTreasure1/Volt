@@ -1476,7 +1476,7 @@ namespace Volt
 		RegisterSerializationFunction<entt::entity>(s_typeSerializers);
 		RegisterSerializationFunction<AssetHandle>(s_typeSerializers);
 
-		RegisterDeserializationFunction<int8_t>(s_typeDeserializers);	
+		RegisterDeserializationFunction<int8_t>(s_typeDeserializers);
 		RegisterDeserializationFunction<uint8_t>(s_typeDeserializers);
 		RegisterDeserializationFunction<int16_t>(s_typeDeserializers);
 		RegisterDeserializationFunction<uint16_t>(s_typeDeserializers);
@@ -1486,7 +1486,7 @@ namespace Volt
 		RegisterDeserializationFunction<float>(s_typeDeserializers);
 		RegisterDeserializationFunction<double>(s_typeDeserializers);
 		RegisterDeserializationFunction<bool>(s_typeDeserializers);
-	
+
 		RegisterDeserializationFunction<glm::vec2>(s_typeDeserializers);
 		RegisterDeserializationFunction<glm::vec3>(s_typeDeserializers);
 		RegisterDeserializationFunction<glm::vec4>(s_typeDeserializers);
@@ -1604,8 +1604,8 @@ namespace Volt
 				sceneLayer.id = streamReader.ReadKey("id", 0u);
 				sceneLayer.visible = streamReader.ReadKey("visible", true);
 				sceneLayer.locked = streamReader.ReadKey("locked", false);
-			
-				streamReader.ForEach("Entities", [&]() 
+
+				streamReader.ForEach("Entities", [&]()
 				{
 					DeserializeEntity(scene, metadata, streamReader);
 				});
@@ -1680,7 +1680,7 @@ namespace Volt
 				const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name()));
 				const uint8_t* componentPtr = reinterpret_cast<const uint8_t*>(storage.get(id));
 
-				SerializeClass(componentPtr, 0, componentDesc, streamWriter);
+				SerializeClass(componentPtr, 0, componentDesc, streamWriter, false);
 			}
 		}
 		streamWriter.EndSequence();
@@ -1689,9 +1689,13 @@ namespace Volt
 		streamWriter.EndMap();
 	}
 
-	void SceneImporter::SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamWriter& streamWriter) const
+	void SceneImporter::SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamWriter& streamWriter, bool isSubComponent) const
 	{
-		streamWriter.BeginMap();
+		if (!isSubComponent)
+		{
+			streamWriter.BeginMap();
+		}
+
 		streamWriter.SetKey("guid", compDesc->GetGUID());
 		streamWriter.BeginSequence("members");
 
@@ -1706,12 +1710,12 @@ namespace Volt
 				{
 					case ValueType::Component:
 						streamWriter.SetKey("data", "component");
-						SerializeClass(data, offset + member.offset, compDesc, streamWriter);
+						SerializeClass(data, offset + member.offset, reinterpret_cast<const IComponentTypeDesc*>(member.typeDesc), streamWriter, true);
 						break;
 
 					case ValueType::Enum:
 						streamWriter.SetKey("data", "enum");
-						streamWriter.SetKey("enumValue", *reinterpret_cast<const int32_t*>(&data[member.offset]));
+						streamWriter.SetKey("enumValue", *reinterpret_cast<const int32_t*>(&data[offset + member.offset]));
 						break;
 				}
 			}
@@ -1719,7 +1723,7 @@ namespace Volt
 			{
 				if (s_typeSerializers.contains(member.typeIndex))
 				{
-					s_typeSerializers.at(member.typeIndex)(streamWriter, data, member.offset);
+					s_typeSerializers.at(member.typeIndex)(streamWriter, data, offset + member.offset);
 				}
 			}
 
@@ -1727,7 +1731,11 @@ namespace Volt
 		}
 
 		streamWriter.EndSequence();
-		streamWriter.EndMap();
+
+		if (!isSubComponent)
+		{
+			streamWriter.EndMap();
+		}
 	}
 
 	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const
@@ -1735,7 +1743,7 @@ namespace Volt
 		streamReader.EnterScope("Entity");
 
 		entt::entity entityId = streamReader.ReadKey("id", (entt::entity)entt::null);
-		 
+
 		if (entityId == entt::null)
 		{
 			return;
@@ -1743,7 +1751,7 @@ namespace Volt
 
 		entityId = scene->GetRegistry().create(entityId);
 
-		streamReader.ForEach("components", [&]() 
+		streamReader.ForEach("components", [&]()
 		{
 			VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
 			if (compGuid == VoltGUID::Null())
@@ -1770,7 +1778,7 @@ namespace Volt
 					break;
 				}
 			}
-			
+
 		});
 
 		streamReader.ExitScope();
@@ -1778,7 +1786,7 @@ namespace Volt
 
 	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const
 	{
-		streamReader.ForEach("members", [&]() 
+		streamReader.ForEach("members", [&]()
 		{
 			const std::string memberName = streamReader.ReadKey("name", std::string(""));
 			if (memberName.empty())
@@ -1787,7 +1795,7 @@ namespace Volt
 			}
 
 			const ComponentMember* componentMember = const_cast<IComponentTypeDesc*>(compDesc)->FindMemberByName(memberName);
-		
+
 			if (componentMember->typeDesc != nullptr)
 			{
 				switch (componentMember->typeDesc->GetValueType())

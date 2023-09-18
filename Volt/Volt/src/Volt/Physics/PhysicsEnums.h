@@ -76,7 +76,7 @@ namespace Volt
 		reflect.SetLabel("Climbing Mode");
 		reflect.SetDefaultValue(ClimbingMode::Normal);
 		reflect.AddConstant(ClimbingMode::Normal, "normal", "Normal");
-		reflect.AddConstant(ClimbingMode::Normal, "constrained", "Constrained");
+		reflect.AddConstant(ClimbingMode::Constrained, "constrained", "Constrained");
 	}
 
 	REGISTER_ENUM(ClimbingMode);

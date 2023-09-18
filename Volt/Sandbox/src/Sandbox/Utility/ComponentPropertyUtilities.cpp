@@ -91,7 +91,7 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, const Volt
 	}
 
 	bool removeComp = false;
-	bool open = UI::CollapsingHeader(componentType->GetLabel());
+	bool open = UI::CollapsingHeader(componentType->GetLabel(), ImGuiTreeNodeFlags_DefaultOpen);
 	float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 	float availRegion = ImGui::GetContentRegionAvail().x;
 
@@ -178,7 +178,7 @@ void ComponentPropertyUtility::DrawComponentSubSection(Weak<Volt::Scene> scene, 
 					case Volt::ValueType::Enum:
 					{
 						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(member.typeDesc);
-						DrawComponentEnum(scene, member, enumDesc, data, offset + member.offset);
+						DrawComponentEnum(scene, member, enumDesc, data, offset);
 						break;
 					}
 				}
@@ -235,7 +235,7 @@ void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, const 
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
 	const auto& constants = enumType->GetConstants();
 
-	int32_t& currentValue = *reinterpret_cast<int32_t*>(&bytePtr[offset]);
+	int32_t& currentValue = *reinterpret_cast<int32_t*>(&bytePtr[offset + member.offset]);
 	int32_t currentIndex = 0;
 
 	std::unordered_map<int32_t, int32_t> indexToValueMap;
