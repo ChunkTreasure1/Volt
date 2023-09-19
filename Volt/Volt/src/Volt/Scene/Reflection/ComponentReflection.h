@@ -9,6 +9,18 @@
 #include "Volt/Asset/Asset.h"
 
 #include <typeindex>
+#include <vector>
+
+#define DECLARE_ARRAY_TYPE(type)											\
+namespace Volt																\
+{																			\
+	template<typename ELEMENT_TYPE> struct ArrayTraits<type<ELEMENT_TYPE>>  \
+	{																		\
+		typedef ELEMENT_TYPE element_type;									\
+																			\
+		static const bool is_array = true;									\
+	};																		\
+}																			\
 
 namespace Volt
 {
@@ -17,6 +29,8 @@ namespace Volt
 
 	template<typename T, class ENABLE = void> class TypeDesc;
 	template<typename T> constexpr bool IsReflectedType();
+	template<typename T> constexpr bool IsArrayType();
+
 	template<typename T> const TypeDesc<T>* GetTypeDesc();
 
 	template<typename T> inline constexpr auto ReflectType(TypeDesc<T>& desc) -> decltype(T::ReflectType(std::declval<TypeDesc<T>&>()), void())
@@ -28,7 +42,8 @@ namespace Volt
 	{
 		Default,
 		Component,
-		Enum
+		Enum,
+		Array
 	};
 
 	class IDefaultValueType
@@ -129,6 +144,94 @@ namespace Volt
 		[[nodiscard]] virtual const std::vector<EnumConstant>& GetConstants() const = 0;
 	};
 
+	class IArrayTypeDesc : public CommonTypeDesc<ValueType::Array>
+	{
+	public:
+		[[nodiscard]] virtual const size_t Size(const void* array) const = 0;
+		[[nodiscard]] virtual void* At(void* array, size_t pos) const = 0;
+		[[nodiscard]] virtual const void* At(const void* array, size_t pos) const = 0;
+		[[nodiscard]] virtual void PushBack(void* array, const void* value) const = 0;
+		[[nodiscard]] virtual void* EmplaceBack(void* array, const void* value) const = 0;
+
+		~IArrayTypeDesc() override = default;
+	};
+
+	template<typename T, typename ELEMENT_TYPE>
+	class ArrayTypeDesc : public IArrayTypeDesc
+	{
+	public:
+		~ArrayTypeDesc() override = default;
+	
+		void SetLabel(std::string_view name);
+		void SetDescription(std::string_view description);
+		void SetGUID(const VoltGUID& guid);
+
+		void SetSizeFunction(std::function<size_t(const void*)>&& func)
+		{
+			m_sizeFunction = std::move(func);
+		}
+
+		void SetAtFunction(std::function<void* (void*, size_t)>&& func)
+		{
+			m_atFunction = std::move(func);
+		}
+
+		void SetConstAtFunction(std::function<const void* (const void*, size_t)>&& func)
+		{
+			m_atConstFunction = std::move(func);
+		}
+
+		void SetPushBackFunction(std::function<void(void*, const void*)>&& func)
+		{
+			m_pushBackFunction = std::move(func);
+		}
+
+		void SetEmplaceBackFunction(std::function<void*(void*, const void*)>&& func)
+		{
+			m_emplaceBackFunction = std::move(func);
+		}
+
+		const size_t Size(const void* array) const override
+		{ 
+			return m_sizeFunction(array);
+		}
+
+		void* At(void* array, size_t pos) const override
+		{
+			return m_atFunction(array, pos);
+		}
+
+		const void* At(const void* array, size_t pos) const override
+		{
+			return m_atConstFunction(array, pos);
+		}
+
+		void PushBack(void* array, const void* value) const override
+		{
+			m_pushBackFunction(array, value);
+		}
+
+		void* EmplaceBack(void* array, const void* value) const override
+		{
+			return m_emplaceBackFunction(array, value);
+		}
+
+		[[nodiscard]] inline const VoltGUID& GetGUID() const override { return m_guid; }
+		[[nodiscard]] inline const std::string_view GetLabel() const override { return m_label; }
+		[[nodiscard]] inline const std::string_view GetDescription() const override { return m_description; }
+
+	private:
+		VoltGUID m_guid = VoltGUID::Null();
+		std::string m_label;
+		std::string m_description;
+
+		std::function<size_t(const void* pArray)> m_sizeFunction;
+		std::function<void* (void* pArray, size_t pos)> m_atFunction;
+		std::function<const void* (const void* pArray, size_t pos)> m_atConstFunction;
+		std::function<void(void* pArray, const void* pValue)> m_pushBackFunction;
+		std::function<void* (void* pArray, const void* pValue)> m_emplaceBackFunction;
+	};
+
 	template<typename T>
 	class ComponentTypeDesc : public IComponentTypeDesc
 	{
@@ -181,7 +284,7 @@ namespace Volt
 				return *nullMember;
 			}
 
-			if constexpr (IsReflectedType<Type>())
+			if constexpr (IsArrayType<Type>() || IsReflectedType<Type>())
 			{
 				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
 			}
@@ -313,14 +416,31 @@ namespace Volt
 	}
 
 	// Helpers
+	template<typename T> struct ArrayTraits
+	{
+		typedef void element_type;
+		static const bool is_array = false;
+	};
+
+	template<typename T> struct IsClassType
+	{
+		static const bool value = std::is_class<T>::value && !std::is_enum<T>::value && !ArrayTraits<T>::is_array;
+	};
+
 	template<typename T> class TypeDesc<T, typename std::enable_if<std::is_enum<T>::value>::type> : public EnumTypeDesc<T>
 	{ 
 	public:
 		~TypeDesc() override = default;
 	};
 
-	template<typename T> class TypeDesc<T, typename std::enable_if<std::is_class<T>::value>::type> : public ComponentTypeDesc<T>
+	template<typename T> class TypeDesc<T, typename std::enable_if<IsClassType<T>::value>::type> : public ComponentTypeDesc<T>
 	{ 
+	public:
+		~TypeDesc() override = default;
+	};
+
+	template<typename T> class TypeDesc<T, typename std::enable_if<ArrayTraits<T>::is_array>::type> : public ArrayTypeDesc<T, typename ArrayTraits<T>::element_type>
+	{
 	public:
 		~TypeDesc() override = default;
 	};
@@ -354,6 +474,12 @@ namespace Volt
 		return Helpers::IsReflectedType<T>(0);
 	}
 
+	template<typename T>
+	constexpr bool IsArrayType()
+	{
+		return ArrayTraits<T>::is_array;
+	}
+
 	template<typename T> inline const TypeDesc<T>* GetTypeDesc()
 	{
 		static const TypeDescImpl<T> s_desc;
@@ -364,5 +490,57 @@ namespace Volt
 	{
 		static const TypeDescImpl<T> s_desc;
 		return s_desc.GetGUID();
+	}
+
+	template<typename T, typename ELEMENT_TYPE>
+	inline void ArrayTypeDesc<T, ELEMENT_TYPE>::SetLabel(std::string_view name)
+	{
+		m_label = name;
+	}
+
+	template<typename T, typename ELEMENT_TYPE>
+	inline void ArrayTypeDesc<T, ELEMENT_TYPE>::SetDescription(std::string_view description)
+	{
+		m_description = description;
+	}
+
+	template<typename T, typename ELEMENT_TYPE>
+	inline void ArrayTypeDesc<T, ELEMENT_TYPE>::SetGUID(const VoltGUID& guid)
+	{
+		m_guid = guid;
+	}
+}
+
+DECLARE_ARRAY_TYPE(std::vector);
+
+namespace Volt
+{
+	template<typename ELEMENT_TYPE> inline void ReflectType(TypeDesc<std::vector<ELEMENT_TYPE>>& desc)
+	{
+		desc.SetLabel("std::vector");
+		desc.SetSizeFunction([](const void* array) -> size_t
+		{
+			return (*reinterpret_cast<const std::vector<ELEMENT_TYPE>*>(array)).size();
+		});
+
+		desc.SetAtFunction([](void* array, size_t pos) -> void*
+		{
+			return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array))[pos];
+		});
+
+		desc.SetConstAtFunction([](const void* array, size_t pos) -> const void*
+		{
+			return &(*reinterpret_cast<const std::vector<ELEMENT_TYPE>*>(array)).at(pos);
+		});
+
+		desc.SetPushBackFunction([](void* array, const void* value) -> void
+		{
+			(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).push_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));	
+		});
+
+		desc.SetEmplaceBackFunction([](void* array, const void* value) -> void*
+		{
+			return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
+		});
 	}
 }
