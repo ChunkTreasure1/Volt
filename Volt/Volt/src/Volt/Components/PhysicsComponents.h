@@ -57,6 +57,9 @@ namespace Volt
 		bool disableGravity = false;
 		bool isKinematic = false;
 
+		std::vector<uint32_t> testVector;
+		std::vector<CharacterControllerComponent> testComponentVector;
+
 		inline RigidbodyComponent(BodyType aBodyType = BodyType::Static, uint32_t aLayerId = 0, float aMass = 1.f, float aLinearDrag = 0.01f, uint32_t aLockFlags = 0,
 			float aAngularDrag = 0.05f, bool aDisableGravity = false, bool aIsKinematic = false, CollisionDetectionType aCollisionType = CollisionDetectionType::Discrete)
 			: bodyType(aBodyType), layerId(aLayerId), mass(aMass), linearDrag(aLinearDrag), lockFlags(aLockFlags), angularDrag(aAngularDrag), disableGravity(aDisableGravity),
@@ -77,6 +80,8 @@ namespace Volt
 			reflect.AddMember(&RigidbodyComponent::collisionType, "collisionType", "Collision Type", "", CollisionDetectionType::Discrete);
 			reflect.AddMember(&RigidbodyComponent::disableGravity, "disableGravity", "Disable Gravity", "", false);
 			reflect.AddMember(&RigidbodyComponent::isKinematic, "isKinematic", "Is Kinematic", "", false);
+			reflect.AddMember(&RigidbodyComponent::testVector, "testVector", "Test Vector", "", std::vector<uint32_t>{});
+			reflect.AddMember(&RigidbodyComponent::testComponentVector, "testComponentVector", "Test Component Vector", "", std::vector<CharacterControllerComponent>{});
 		}
 
 		REGISTER_COMPONENT(RigidbodyComponent);

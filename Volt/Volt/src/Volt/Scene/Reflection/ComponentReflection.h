@@ -147,11 +147,15 @@ namespace Volt
 	class IArrayTypeDesc : public CommonTypeDesc<ValueType::Array>
 	{
 	public:
+		[[nodiscard]] virtual const ICommonTypeDesc* GetElementTypeDesc() const = 0;
+		[[nodiscard]] virtual const std::type_index& GetElementTypeIndex() const = 0;
+		[[nodiscard]] virtual const size_t GetElementTypeSize() const = 0;
+
+		virtual void PushBack(void* array, const void* value) const = 0;
 		[[nodiscard]] virtual const size_t Size(const void* array) const = 0;
 		[[nodiscard]] virtual void* At(void* array, size_t pos) const = 0;
 		[[nodiscard]] virtual const void* At(const void* array, size_t pos) const = 0;
-		[[nodiscard]] virtual void PushBack(void* array, const void* value) const = 0;
-		[[nodiscard]] virtual void* EmplaceBack(void* array, const void* value) const = 0;
+		virtual void* EmplaceBack(void* array, const void* value) const = 0;
 
 		~IArrayTypeDesc() override = default;
 	};
@@ -161,7 +165,7 @@ namespace Volt
 	{
 	public:
 		~ArrayTypeDesc() override = default;
-	
+
 		void SetLabel(std::string_view name);
 		void SetDescription(std::string_view description);
 		void SetGUID(const VoltGUID& guid);
@@ -186,22 +190,22 @@ namespace Volt
 			m_pushBackFunction = std::move(func);
 		}
 
-		void SetEmplaceBackFunction(std::function<void*(void*, const void*)>&& func)
+		void SetEmplaceBackFunction(std::function<void* (void*, const void*)>&& func)
 		{
 			m_emplaceBackFunction = std::move(func);
 		}
 
-		const size_t Size(const void* array) const override
-		{ 
+		[[nodiscard]] const size_t Size(const void* array) const override
+		{
 			return m_sizeFunction(array);
 		}
 
-		void* At(void* array, size_t pos) const override
+		[[nodiscard]] void* At(void* array, size_t pos) const override
 		{
 			return m_atFunction(array, pos);
 		}
 
-		const void* At(const void* array, size_t pos) const override
+		[[nodiscard]] const void* At(const void* array, size_t pos) const override
 		{
 			return m_atConstFunction(array, pos);
 		}
@@ -219,11 +223,27 @@ namespace Volt
 		[[nodiscard]] inline const VoltGUID& GetGUID() const override { return m_guid; }
 		[[nodiscard]] inline const std::string_view GetLabel() const override { return m_label; }
 		[[nodiscard]] inline const std::string_view GetDescription() const override { return m_description; }
+		[[nodiscard]] inline const size_t GetElementTypeSize() const override { return sizeof(ELEMENT_TYPE); }
+		[[nodiscard]] inline const ICommonTypeDesc* GetElementTypeDesc() const override
+		{
+			if constexpr (IsReflectedType<ELEMENT_TYPE>() || IsArrayType<ELEMENT_TYPE>())
+			{
+				return GetTypeDesc<ELEMENT_TYPE>();
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+
+		[[nodiscard]] inline const std::type_index& GetElementTypeIndex() const override { return m_elementTypeIndex; }
 
 	private:
 		VoltGUID m_guid = VoltGUID::Null();
 		std::string m_label;
 		std::string m_description;
+
+		std::type_index m_elementTypeIndex = { typeid(ELEMENT_TYPE) };
 
 		std::function<size_t(const void* pArray)> m_sizeFunction;
 		std::function<void* (void* pArray, size_t pos)> m_atFunction;
@@ -390,25 +410,25 @@ namespace Volt
 	{
 		m_enumLabel = name;
 	}
-	
+
 	template<Enum T>
 	inline void EnumTypeDesc<T>::SetDescription(std::string_view description)
 	{
 		m_enumDescription = description;
 	}
-	
+
 	template<Enum T>
 	inline void EnumTypeDesc<T>::SetGUID(const VoltGUID& guid)
 	{
 		m_guid = guid;
 	}
-	
+
 	template<Enum T>
 	inline void EnumTypeDesc<T>::SetDefaultValue(const T& value)
 	{
 		m_defaultValue = value;
 	}
-	
+
 	template<Enum T>
 	inline void EnumTypeDesc<T>::AddConstant(const T& constant, std::string_view name, std::string_view label)
 	{
@@ -428,13 +448,13 @@ namespace Volt
 	};
 
 	template<typename T> class TypeDesc<T, typename std::enable_if<std::is_enum<T>::value>::type> : public EnumTypeDesc<T>
-	{ 
+	{
 	public:
 		~TypeDesc() override = default;
 	};
 
 	template<typename T> class TypeDesc<T, typename std::enable_if<IsClassType<T>::value>::type> : public ComponentTypeDesc<T>
-	{ 
+	{
 	public:
 		~TypeDesc() override = default;
 	};
@@ -520,7 +540,8 @@ namespace Volt
 		desc.SetLabel("std::vector");
 		desc.SetSizeFunction([](const void* array) -> size_t
 		{
-			return (*reinterpret_cast<const std::vector<ELEMENT_TYPE>*>(array)).size();
+			const std::vector<ELEMENT_TYPE>& ptr = *reinterpret_cast<const std::vector<ELEMENT_TYPE>*>(array);
+			return ptr.size();
 		});
 
 		desc.SetAtFunction([](void* array, size_t pos) -> void*
@@ -535,12 +556,19 @@ namespace Volt
 
 		desc.SetPushBackFunction([](void* array, const void* value) -> void
 		{
-			(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).push_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));	
+			(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).push_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
 		});
 
 		desc.SetEmplaceBackFunction([](void* array, const void* value) -> void*
 		{
-			return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
+			if (!value)
+			{
+				return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back();
+			}
+			else
+			{
+				return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
+			}
 		});
 	}
 }

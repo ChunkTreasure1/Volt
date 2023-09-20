@@ -1717,6 +1717,13 @@ namespace Volt
 						streamWriter.SetKey("data", "enum");
 						streamWriter.SetKey("enumValue", *reinterpret_cast<const int32_t*>(&data[offset + member.offset]));
 						break;
+
+					case ValueType::Array:
+					{
+						streamWriter.SetKey("data", "array");
+						SerializeArray(data, offset + member.offset, reinterpret_cast<const IArrayTypeDesc*>(member.typeDesc), streamWriter);
+						break;
+					}
 				}
 			}
 			else
@@ -1736,6 +1743,55 @@ namespace Volt
 		{
 			streamWriter.EndMap();
 		}
+	}
+
+	void SceneImporter::SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamWriter& streamWriter) const
+	{
+		const void* arrayPtr = &data[offset];
+
+		const bool isNonDefaultType = arrayDesc->GetElementTypeDesc() != nullptr;
+		const auto& typeIndex = arrayDesc->GetElementTypeIndex();
+
+		if (!isNonDefaultType && !s_typeSerializers.contains(typeIndex))
+		{
+			return;
+		}
+
+		streamWriter.BeginSequence("values");
+		for (size_t i = 0; i < arrayDesc->Size(arrayPtr); i++)
+		{
+			const uint8_t* elementData = reinterpret_cast<const uint8_t*>(arrayDesc->At(arrayPtr, i));
+
+			streamWriter.BeginMap();
+			if (isNonDefaultType)
+			{
+				switch (arrayDesc->GetElementTypeDesc()->GetValueType())
+				{
+					case ValueType::Component:
+						streamWriter.SetKey("value", "component");
+						SerializeClass(elementData, 0, reinterpret_cast<const IComponentTypeDesc*>(arrayDesc->GetElementTypeDesc()), streamWriter, true);
+						break;
+
+					case ValueType::Enum:
+						streamWriter.SetKey("value", *reinterpret_cast<const int32_t*>(elementData));
+						break;
+
+					case ValueType::Array:
+						streamWriter.SetKey("value", "array");
+						SerializeArray(elementData, 0, reinterpret_cast<const IArrayTypeDesc*>(arrayDesc->GetElementTypeDesc()), streamWriter);
+						break;
+				}
+			}
+			else
+			{
+				if (s_typeSerializers.contains(typeIndex))
+				{
+					s_typeSerializers.at(typeIndex)(streamWriter, elementData, 0);
+				}
+			}
+			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
 	}
 
 	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const
@@ -1795,6 +1851,10 @@ namespace Volt
 			}
 
 			const ComponentMember* componentMember = const_cast<IComponentTypeDesc*>(compDesc)->FindMemberByName(memberName);
+			if (!componentMember)
+			{
+				return;
+			}
 
 			if (componentMember->typeDesc != nullptr)
 			{
@@ -1812,6 +1872,13 @@ namespace Volt
 						*reinterpret_cast<int32_t*>(&data[offset + componentMember->offset]) = streamReader.ReadKey("enumValue", int32_t(0));
 						break;
 					}
+
+					case ValueType::Array:
+					{
+						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(componentMember->typeDesc);
+						DeserializeArray(data, offset + componentMember->offset, arrayTypeDesc, streamReader);
+						break;
+					}
 				}
 			}
 			else
@@ -1821,6 +1888,58 @@ namespace Volt
 					s_typeDeserializers.at(componentMember->typeIndex)(streamReader, data, offset + componentMember->offset);
 				}
 			}
+		});
+	}
+
+	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const
+	{
+		void* arrayPtr = &data[offset];
+
+		const bool isNonDefaultType = arrayDesc->GetElementTypeDesc() != nullptr;
+		const auto& typeIndex = arrayDesc->GetElementTypeIndex();
+
+		if (!isNonDefaultType && !s_typeSerializers.contains(typeIndex))
+		{
+			return;
+		}
+
+		streamReader.ForEach("values", [&]() 
+		{
+			uint8_t* tempDataStorage = new uint8_t[arrayDesc->GetElementTypeSize()];
+
+			if (isNonDefaultType)
+			{
+				switch (arrayDesc->GetElementTypeDesc()->GetValueType())
+				{
+					case ValueType::Component:
+					{
+						const IComponentTypeDesc* compType = reinterpret_cast<const IComponentTypeDesc*>(arrayDesc->GetElementTypeDesc());
+						DeserializeClass(tempDataStorage, 0, compType, streamReader);
+						break;
+					}
+
+					case ValueType::Enum:
+						*reinterpret_cast<int32_t*>(&tempDataStorage) = streamReader.ReadKey("enumValue", int32_t(0));
+						break;
+
+					case ValueType::Array:
+					{
+						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(arrayDesc->GetElementTypeDesc());
+						DeserializeArray(tempDataStorage, 0, arrayTypeDesc, streamReader);
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (s_typeDeserializers.contains(typeIndex))
+				{
+					s_typeDeserializers.at(typeIndex)(streamReader, tempDataStorage, 0);
+				}
+			}
+
+			arrayDesc->PushBack(arrayPtr, tempDataStorage);
+			delete[] tempDataStorage;
 		});
 	}
 }

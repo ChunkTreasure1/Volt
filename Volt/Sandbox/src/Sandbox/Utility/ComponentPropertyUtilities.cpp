@@ -75,7 +75,40 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 				case Volt::ValueType::Component:
 				{
 					const Volt::IComponentTypeDesc* compTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);					
-					DrawComponent(scene, compTypeDesc, storage.get(entity.GetID()));
+
+					if (compTypeDesc->IsHidden())
+					{
+						return;
+					}
+
+					bool removeComp = false;
+					bool open = UI::CollapsingHeader(compTypeDesc->GetLabel(), ImGuiTreeNodeFlags_DefaultOpen);
+					float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
+					float availRegion = ImGui::GetContentRegionAvail().x;
+
+					if (!open)
+					{
+						UI::SameLine(availRegion - buttonSize * 0.5f);
+					}
+					else
+					{
+						UI::SameLine(availRegion + buttonSize * 0.5f);
+					}
+
+					std::string id = "-###Remove" + std::string(compTypeDesc->GetLabel());
+
+					{
+						UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
+						UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
+						UI::ScopedButtonColor buttonColor{ EditorTheme::Buttons::RemoveButton };
+
+						if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
+						{
+							removeComp = true;
+						}
+					}
+
+					DrawComponent(scene, compTypeDesc, storage.get(entity.GetID()), 0, open, false);
 					break;
 				}
 			}
@@ -83,41 +116,17 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 	}
 }
 
-void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, const Volt::IComponentTypeDesc* componentType, void* data)
+void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, const Volt::IComponentTypeDesc* componentType, void* data, const size_t offset, bool isOpen, bool isSubSection)
 {
-	if (componentType->IsHidden())
+	if (isSubSection)
 	{
-		return;
-	}
-
-	bool removeComp = false;
-	bool open = UI::CollapsingHeader(componentType->GetLabel(), ImGuiTreeNodeFlags_DefaultOpen);
-	float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
-	float availRegion = ImGui::GetContentRegionAvail().x;
-
-	if (!open)
-	{
-		UI::SameLine(availRegion - buttonSize * 0.5f);
-	}
-	else
-	{
-		UI::SameLine(availRegion + buttonSize * 0.5f);
-	}
-
-	std::string id = "-###Remove" + std::string(componentType->GetLabel());
-
-	{
-		UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
-		UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
-		UI::ScopedButtonColor buttonColor{ EditorTheme::Buttons::RemoveButton };
-
-		if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
+		if (componentType->IsHidden())
 		{
-			removeComp = true;
+			return;
 		}
 	}
 
-	if (open && UI::BeginProperties(std::string(componentType->GetLabel())))
+	if (isOpen && UI::BeginProperties(std::string(componentType->GetLabel())))
 	{
 		for (const auto& member : componentType->GetMembers())
 		{
@@ -128,7 +137,8 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, const Volt
 					case Volt::ValueType::Component:
 					{
 						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(member.typeDesc);
-						DrawComponentSubSection(scene, compDesc, data, member.offset);
+						bool open = UI::CollapsingHeader(compDesc->GetLabel());
+						DrawComponent(scene, compDesc, data, offset + member.offset, open, true);
 
 						break;
 					}
@@ -136,49 +146,14 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, const Volt
 					case Volt::ValueType::Enum:
 					{
 						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(member.typeDesc);
-						DrawComponentEnum(scene, member, enumDesc, data, member.offset);
-						break;
-					}
-				}
-			}
-			else
-			{
-				DrawComponentDefaultMember(scene, member, data, 0);
-			}
-		}
-
-		UI::EndProperties();
-	}
-}
-
-void ComponentPropertyUtility::DrawComponentSubSection(Weak<Volt::Scene> scene, const Volt::IComponentTypeDesc* componentType, void* data, const size_t offset)
-{
-	if (componentType->IsHidden())
-	{
-		return;
-	}
-
-	bool open = UI::CollapsingHeader(componentType->GetLabel());
-	if (open && UI::BeginProperties(std::string(componentType->GetLabel())))
-	{
-		for (const auto& member : componentType->GetMembers())
-		{
-			if (member.typeDesc)
-			{
-				switch (member.typeDesc->GetValueType())
-				{
-					case Volt::ValueType::Component:
-					{
-						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(member.typeDesc);
-						DrawComponentSubSection(scene, compDesc, data, offset + member.offset);
-
+						DrawComponentEnum(scene, member, enumDesc, data, offset + member.offset);
 						break;
 					}
 
-					case Volt::ValueType::Enum:
+					case Volt::ValueType::Array:
 					{
-						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(member.typeDesc);
-						DrawComponentEnum(scene, member, enumDesc, data, offset);
+						const Volt::IArrayTypeDesc* arrayDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(member.typeDesc);
+						DrawComponentArray(scene, member, arrayDesc, data, offset + member.offset);
 						break;
 					}
 				}
@@ -230,6 +205,43 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 	s_propertyFunctions.at(member.typeIndex)(member.label, data, offset + member.offset);
 }
 
+void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene> scene, const Volt::ComponentMember& arrayMember, void* elementData, const size_t index, const std::type_index& typeIndex)
+{
+	const std::string label = std::format("Element {0}", index);
+
+	if (arrayMember.assetType != Volt::AssetType::None)
+	{
+		EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType);
+		return;
+	}
+
+	if ((arrayMember.flags & Volt::ComponentMemberFlag::Color3) != Volt::ComponentMemberFlag::None)
+	{
+		UI::PropertyColor(label, *reinterpret_cast<glm::vec3*>(elementData));
+		return;
+	}
+
+	if ((arrayMember.flags & Volt::ComponentMemberFlag::Color4) != Volt::ComponentMemberFlag::None)
+	{
+		UI::PropertyColor(label, *reinterpret_cast<glm::vec4*>(elementData));
+		return;
+	}
+
+	// Special case for entities
+	if (arrayMember.typeIndex == std::type_index{ typeid(entt::entity) })
+	{
+		UI::PropertyEntity(label, scene.lock(), *reinterpret_cast<entt::entity*>(elementData));
+		return;
+	}
+
+	if (!s_propertyFunctions.contains(typeIndex))
+	{
+		return;
+	}
+
+	s_propertyFunctions.at(typeIndex)(label, elementData, 0);
+}
+
 void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, const Volt::ComponentMember& member, const Volt::IEnumTypeDesc* enumType, void* data, const size_t offset)
 {
 	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
@@ -258,5 +270,62 @@ void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, const 
 	if (UI::ComboProperty(std::string(member.label), currentValue, constantNames))
 	{
 		currentValue = indexToValueMap.at(currentValue);
+	}
+}
+
+void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, const Volt::ComponentMember& member, const Volt::IArrayTypeDesc* arrayDesc, void* data, const size_t offset)
+{
+	uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
+	void* arrayPtr = &bytePtr[offset];
+
+	const Volt::ICommonTypeDesc* elementTypeDesc = arrayDesc->GetElementTypeDesc();
+	const bool isNonDefaultType = elementTypeDesc != nullptr;
+	const auto& elementTypeIndex = arrayDesc->GetElementTypeIndex();
+
+	if (UI::CollapsingHeader(member.label))
+	{
+		const size_t size = arrayDesc->Size(arrayPtr);
+		for (size_t i = 0; i < size; i++)
+		{
+			void* elementData = arrayDesc->At(arrayPtr, i);
+
+			if (isNonDefaultType)
+			{
+				switch (arrayDesc->GetElementTypeDesc()->GetValueType())
+				{
+					case Volt::ValueType::Component:
+					{
+						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(elementTypeDesc);
+						bool open = UI::CollapsingHeader(std::string(compDesc->GetLabel()) + std::format("##{0}", i));
+						DrawComponent(scene, compDesc, elementData, 0, open, true);
+
+						break;
+					}
+
+					case Volt::ValueType::Enum:
+					{
+						const Volt::IEnumTypeDesc* enumDesc = reinterpret_cast<const Volt::IEnumTypeDesc*>(elementTypeDesc);
+						DrawComponentEnum(scene, member, enumDesc, elementData, 0);
+						break;
+					}
+
+					case Volt::ValueType::Array:
+					{
+						const Volt::IArrayTypeDesc* elementArrayDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(elementTypeDesc);
+						DrawComponentArray(scene, member, elementArrayDesc, elementData, 0);
+						break;
+					}
+				}
+			}
+			else
+			{
+				DrawComponentDefaultMemberArray(scene, member, elementData, i, elementTypeIndex);
+			}
+		}
+
+		if (ImGui::Button((std::string("Add##add_") + std::string(member.label)).c_str()))
+		{
+			arrayDesc->EmplaceBack(arrayPtr, nullptr);
+		}
 	}
 }

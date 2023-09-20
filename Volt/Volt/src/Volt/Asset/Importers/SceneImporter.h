@@ -21,6 +21,7 @@ namespace Volt
 	class Scene;
 	class MonoScriptFieldCache;
 	class IComponentTypeDesc;
+	class IArrayTypeDesc;
 
 	class SceneImporter : public AssetImporter
 	{
@@ -36,9 +37,11 @@ namespace Volt
 
 		void SerializeEntity(entt::entity id, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
 		void SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamWriter& streamWriter, bool isSubComponent) const;
+		void SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamWriter& streamWriter) const;
 
 		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const;
 		void DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const;
+		void DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const;
 
 		inline static std::unordered_map<std::type_index, std::function<void(YAMLStreamWriter&,	const uint8_t*, const size_t)>> s_typeSerializers;
 		inline static std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&,	uint8_t*, const size_t)>> s_typeDeserializers;
