@@ -98,7 +98,10 @@ namespace Volt
 	{
 		None = 0,
 		Color3 = BIT(0),
-		Color4 = BIT(1)
+		Color4 = BIT(1),
+
+		NoCopy = BIT(2),
+		NoSerialize = BIT(3)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ComponentMemberFlag);
@@ -116,6 +119,8 @@ namespace Volt
 		const ICommonTypeDesc* typeDesc = nullptr;
 		std::type_index typeIndex = typeid(void);
 		Scope<IDefaultValueType> defaultValue;
+
+		std::function<void(void* lhs, const void* rhs)> copyFunction;
 	};
 
 	struct EnumConstant
@@ -304,13 +309,18 @@ namespace Volt
 				return *nullMember;
 			}
 
+			auto copyFunction = [](void* lhs, const void* rhs)
+			{
+				*reinterpret_cast<Type*>(lhs) = *reinterpret_cast<const Type*>(rhs);
+			};
+
 			if constexpr (IsArrayType<Type>() || IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 			else
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, flags, nullptr, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue));
+				m_members.emplace_back(offset, name, label, description, assetType, flags, nullptr, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 
 

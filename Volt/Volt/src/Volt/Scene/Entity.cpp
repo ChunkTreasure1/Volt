@@ -454,4 +454,85 @@ namespace Volt
 	{
 		return {};
 	}
+
+	void Entity::Copy(Entity srcEntity, Entity dstEntity)
+	{
+		// #TODO_Ivar: Implement MonoComponent copying
+
+		auto srcScene = srcEntity.GetScene();
+		auto& srcRegistry = srcScene->GetRegistry();
+
+		auto dstScene = dstEntity.GetScene();
+		auto& dstRegistry = dstScene->GetRegistry();
+
+		for (auto&& curr : srcRegistry.storage())
+		{
+			auto& storage = curr.second;
+
+			if (!storage.contains(srcEntity.GetID()))
+			{
+				continue;
+			}
+
+			const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name()));
+			if (!componentDesc)
+			{
+				continue;
+			}
+
+			if (componentDesc->GetValueType() != ValueType::Component)
+			{
+				continue;
+			}
+
+			ComponentRegistry::Helpers::AddComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID());
+			void* voidCompPtr = Volt::ComponentRegistry::Helpers::GetComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID());
+			uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
+
+			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity.GetID())), componentData, 0, componentDesc);
+		}
+
+		// Clear the relationship component, as this is a standalone entity
+		{
+			RelationshipComponent& relComp = dstEntity.GetComponent<RelationshipComponent>();
+			relComp.children.clear();
+			relComp.parent = entt::null;
+		}
+	}
+
+	void Entity::CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc)
+	{
+		for (const auto& member : compDesc->GetMembers())
+		{
+			if ((member.flags & ComponentMemberFlag::NoCopy) != ComponentMemberFlag::None)
+			{
+				continue;
+			}
+
+			if (member.typeDesc != nullptr)
+			{
+				switch (member.typeDesc->GetValueType())
+				{
+					case ValueType::Component:
+					{
+						const IComponentTypeDesc* memberCompDesc = reinterpret_cast<const IComponentTypeDesc*>(member.typeDesc);
+						CopyComponent(srcData, dstData, offset + member.offset, memberCompDesc);
+						break;
+					}
+
+					case ValueType::Enum:
+						*reinterpret_cast<int32_t*>(&dstData[offset + member.offset]) = *(reinterpret_cast<const int32_t*>(&srcData[offset + member.offset]));
+						break;
+
+					case ValueType::Array:
+						member.copyFunction(&dstData[offset + member.offset], &srcData[offset + member.offset]);
+						break;
+				}
+			}
+			else
+			{
+				member.copyFunction(&dstData[offset + member.offset], &srcData[offset + member.offset]);
+			}
+		}
+	}
 }

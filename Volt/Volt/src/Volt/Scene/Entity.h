@@ -5,6 +5,8 @@
 
 namespace Volt
 {
+	class IComponentTypeDesc;
+
 	template<class T>
 	concept EntityId = std::is_same<T, uint32_t>::value || std::is_same<T, entt::entity>::value;
 
@@ -95,7 +97,12 @@ namespace Volt
 
 		static Entity Null();
 
+		// Copies a single entity
+		static void Copy(Entity srcEntity, Entity dstEntity);
+
 	private:
+		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc);
+
 		Weak<Scene> m_scene;
 		entt::entity m_id = entt::null;
 	};

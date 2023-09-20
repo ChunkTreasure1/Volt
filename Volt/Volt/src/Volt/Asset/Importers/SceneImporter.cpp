@@ -1678,12 +1678,21 @@ namespace Volt
 				}
 
 				const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name()));
+				if (!componentDesc)
+				{
+					continue;
+				}
+				
 				const uint8_t* componentPtr = reinterpret_cast<const uint8_t*>(storage.get(id));
-
 				SerializeClass(componentPtr, 0, componentDesc, streamWriter, false);
 			}
 		}
 		streamWriter.EndSequence();
+
+		if (registry.any_of<MonoScriptComponent>(id))
+		{
+			SerializeMono(id, scene, streamWriter);
+		}
 
 		streamWriter.EndMap();
 		streamWriter.EndMap();
@@ -1701,6 +1710,11 @@ namespace Volt
 
 		for (const auto& member : compDesc->GetMembers())
 		{
+			if ((member.flags & ComponentMemberFlag::NoSerialize) != ComponentMemberFlag::None)
+			{
+				continue;
+			}
+
 			streamWriter.BeginMap();
 			streamWriter.SetKey("name", member.name);
 
@@ -1790,6 +1804,47 @@ namespace Volt
 				}
 			}
 			streamWriter.EndMap();
+		}
+		streamWriter.EndSequence();
+	}
+
+	void SceneImporter::SerializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
+	{
+		const auto& scriptFieldCache = scene->GetScriptFieldCache();
+
+		streamWriter.BeginSequence("MonoScripts");
+		{
+			MonoScriptComponent& monoScriptComp = scene->GetRegistry().get<MonoScriptComponent>(id);
+			for (size_t i = 0; i < monoScriptComp.scriptIds.size(); ++i)
+			{
+				const auto& scriptId = monoScriptComp.scriptIds.at(i);
+				const auto& scriptName = monoScriptComp.scriptNames.at(i);
+
+				streamWriter.BeginMap();
+				streamWriter.BeginMapNamned("ScriptEntry");
+
+				streamWriter.SetKey("name", scriptName);
+				streamWriter.SetKey("id", scriptId);
+
+				if (scriptFieldCache.GetCache().contains(scriptId))
+				{
+					streamWriter.BeginSequence("members");
+					const auto& fieldMap = scriptFieldCache.GetCache().at(scriptId);
+					for (const auto& [name, value] : fieldMap)
+					{
+						streamWriter.BeginMap();
+
+						// #TODO_Ivar: Finish implementation
+
+						streamWriter.EndMap();
+					}
+
+					streamWriter.EndSequence();
+				}
+
+				streamWriter.EndMap();
+				streamWriter.EndMap();
+			}
 		}
 		streamWriter.EndSequence();
 	}

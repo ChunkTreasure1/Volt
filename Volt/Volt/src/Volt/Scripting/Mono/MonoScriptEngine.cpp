@@ -18,6 +18,7 @@
 #include "Volt/Scripting/Mono/MonoCoreInstance.h"
 #include "Volt/Scripting/Mono/MonoGCManager.h"
 #include "Volt/Scripting/Mono/MonoEnum.h"
+#include "Volt/Scripting/Mono/MonoTypeRegistry.h"
 
 #include "Volt/Scene/SceneManager.h"
 #include "Volt/Components/CoreComponents.h"
@@ -170,6 +171,8 @@ namespace Volt
 	void MonoScriptEngine::Initialize()
 	{
 		s_monoData = CreateScope<ScriptEngineData>();
+
+		MonoTypeRegistry::Initialize();
 
 		InitializeMono();
 		bool status = LoadAssembly("Scripts/Volt-ScriptCore.dll");
