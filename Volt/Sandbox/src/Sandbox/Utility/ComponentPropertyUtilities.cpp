@@ -282,7 +282,10 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, const
 	const bool isNonDefaultType = elementTypeDesc != nullptr;
 	const auto& elementTypeIndex = arrayDesc->GetElementTypeIndex();
 
-	if (UI::CollapsingHeader(member.label))
+	ImGui::TableNextColumn();
+	const bool arrayOpen = ImGui::TreeNodeEx(member.label.data(), ImGuiTreeNodeFlags_SpanFullWidth);
+
+	if (arrayOpen)
 	{
 		const size_t size = arrayDesc->Size(arrayPtr);
 		for (size_t i = 0; i < size; i++)
@@ -296,6 +299,9 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, const
 					case Volt::ValueType::Component:
 					{
 						const Volt::IComponentTypeDesc* compDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(elementTypeDesc);
+						ImGui::Text("Element %d", i);
+						ImGui::TableNextColumn();
+
 						bool open = UI::CollapsingHeader(std::string(compDesc->GetLabel()) + std::format("##{0}", i));
 						DrawComponent(scene, compDesc, elementData, 0, open, true);
 
@@ -327,5 +333,12 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, const
 		{
 			arrayDesc->EmplaceBack(arrayPtr, nullptr);
 		}
+
+		ImGui::TreePop();
+	}
+
+	if (!arrayOpen)
+	{
+		ImGui::TableNextColumn();
 	}
 }
