@@ -1427,6 +1427,8 @@
 #include "Volt/Scene/Reflection/ComponentReflection.h"
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
 
+#include "Volt/Scripting/Mono/MonoScriptClass.h"
+
 namespace Volt
 {
 	template<typename T>
@@ -1682,7 +1684,7 @@ namespace Volt
 				{
 					continue;
 				}
-				
+
 				const uint8_t* componentPtr = reinterpret_cast<const uint8_t*>(storage.get(id));
 				SerializeClass(componentPtr, 0, componentDesc, streamWriter, false);
 			}
@@ -1833,8 +1835,22 @@ namespace Volt
 					for (const auto& [name, value] : fieldMap)
 					{
 						streamWriter.BeginMap();
+						streamWriter.SetKey("name", name);
 
-						// #TODO_Ivar: Finish implementation
+						if (value->field.type.IsString())
+						{
+							auto cStr = value->data.As<const char>();
+							std::string str(cStr);
+
+							streamWriter.SetKey("data", str);
+						}
+						else
+						{
+							if (s_typeSerializers.contains(value->field.type.typeIndex))
+							{
+								s_typeSerializers.at(value->field.type.typeIndex)(streamWriter, value->data.As<const uint8_t>(), 0);
+							}
+						}
 
 						streamWriter.EndMap();
 					}
@@ -1891,6 +1907,11 @@ namespace Volt
 			}
 
 		});
+
+		if (scene->GetRegistry().any_of<MonoScriptComponent>(entityId))
+		{
+			DeserializeMono(entityId, scene, streamReader);
+		}
 
 		streamReader.ExitScope();
 	}
@@ -1958,9 +1979,10 @@ namespace Volt
 			return;
 		}
 
-		streamReader.ForEach("values", [&]() 
+		streamReader.ForEach("values", [&]()
 		{
 			uint8_t* tempDataStorage = new uint8_t[arrayDesc->GetElementTypeSize()];
+			memset(tempDataStorage, 0, arrayDesc->GetElementTypeSize());
 
 			if (isNonDefaultType)
 			{
@@ -1995,6 +2017,47 @@ namespace Volt
 
 			arrayDesc->PushBack(arrayPtr, tempDataStorage);
 			delete[] tempDataStorage;
+		});
+	}
+
+	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
+	{
+		streamReader.ForEach("MonoScripts", [&]()
+		{
+			streamReader.EnterScope("ScriptEntry");
+
+			const std::string scriptName = streamReader.ReadKey("name", std::string(""));
+			const UUID scriptId = streamReader.ReadKey("id", UUID(0));
+
+			auto& fieldCache = scene->GetScriptFieldCache().GetCache()[scriptId];
+
+			streamReader.ForEach("members", [&]()
+			{
+				const std::string memberName = streamReader.ReadKey("name", std::string(""));
+
+				if (!fieldCache.contains(memberName))
+				{
+					return;
+				}
+
+				auto& field = fieldCache.at(memberName);
+
+				if (field->field.type.IsString())
+				{
+					const std::string str = streamReader.ReadKey("data", std::string(""));
+					field->SetValue(str, str.size());
+				}
+				else
+				{
+					if (s_typeDeserializers.contains(field->field.type.typeIndex))
+					{
+						field->data.Allocate(field->field.type.typeSize);
+						s_typeDeserializers.at(field->field.type.typeIndex)(streamReader, field->data.As<uint8_t>(), 0);
+					}
+				}
+			});
+
+			streamReader.ExitScope();
 		});
 	}
 }
