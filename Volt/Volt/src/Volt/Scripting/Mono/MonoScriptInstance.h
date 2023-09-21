@@ -54,6 +54,8 @@ namespace Volt
 		template<>
 		const std::string GetField(const std::string& name);
 
+		const void* GetFieldRaw(const std::string& name);
+
 		inline const Ref<MonoScriptClass> GetClass() const { return myMonoClass; }
 		inline const GCHandle GetHandle() const { return myHandle; }
 
@@ -89,12 +91,13 @@ namespace Volt
 
 		std::vector<std::string> myFieldNames;
 		inline static Buffer myFieldBuffer;
+		inline static constexpr uint32_t DEFAULT_FIELD_ALLOC_SIZE = 40;
 	};
 
 	template<typename T>
 	inline const T MonoScriptInstance::GetField(const std::string& name)
 	{
-		myFieldBuffer.Allocate(40); // Don't know why sizeof(T) doesn't work here...
+		myFieldBuffer.Allocate(DEFAULT_FIELD_ALLOC_SIZE); // Don't know why sizeof(T) doesn't work here...
 
 		bool success = GetFieldInternal(name, myFieldBuffer.As<void>());
 		if (!success)

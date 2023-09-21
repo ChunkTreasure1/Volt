@@ -206,6 +206,19 @@ namespace Volt
 		SetFieldInternal(name, value);
 	}
 
+	const void* MonoScriptInstance::GetFieldRaw(const std::string& name)
+	{
+		myFieldBuffer.Allocate(DEFAULT_FIELD_ALLOC_SIZE);
+
+		bool success = GetFieldInternal(name, myFieldBuffer.As<void>());
+		if (!success)
+		{
+			return nullptr;
+		}
+
+		return myFieldBuffer.As<void>();
+	}
+
 	bool MonoScriptInstance::GetFieldInternal(const std::string& name, void* outData)
 	{
 		auto instance = MonoGCManager::GetObjectFromHandle(myHandle);

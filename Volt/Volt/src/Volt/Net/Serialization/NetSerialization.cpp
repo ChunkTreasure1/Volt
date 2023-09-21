@@ -143,78 +143,76 @@ VT_OPTIMIZE_OFF
 #pragma region Variable
 Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::REP_ID repId)
 {
-	Volt::MonoFieldType fieldType = variable.GetField().type;
+	auto& fieldType = variable.GetField().type;
 	Volt::RepVariableData varData(10, fieldType);
-	switch (fieldType)
+
+	if (fieldType.typeIndex == typeid(bool))
 	{
-		case Volt::MonoFieldType::Bool:
-		{
-			bool data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Char:
-		{
-			char data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::UChar:
-		{
-			unsigned char data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Short:
-		{
-			short data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Int:
-		{
-			int data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::UInt:
-		{
-			unsigned int data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Int64:
-		{
-			long data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::UInt64:
-		{
-			unsigned long data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Float:
-		{
-			float data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Double:
-		{
-			double data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Quaternion:
-		{
-			glm::quat data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		default: break;
+		bool data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
 	}
+	else if (fieldType.typeIndex == typeid(int8_t))
+	{
+		int8_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(uint8_t))
+	{
+		uint8_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(int16_t))
+	{
+		int16_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(int32_t))
+	{
+		int32_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(uint32_t))
+	{
+		uint32_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(int64_t))
+	{
+		uint64_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(uint64_t))
+	{
+		uint64_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(float))
+	{
+		float data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(double))
+	{
+		double data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(glm::quat))
+	{
+		glm::quat data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+
 	varData.repId = repId;
 	varData.fieldType = variable.GetField().type;
 
@@ -233,75 +231,73 @@ Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepVariableData& dat
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 {
-	packet >> varData.repId >> varData.fieldType;
+	auto& fieldType = varData.fieldType;
+	packet >> varData.repId >> fieldType;
 
-	switch (varData.fieldType)
+
+	if (fieldType.typeIndex == typeid(bool))
 	{
-		case Volt::MonoFieldType::Bool:
-		{
-			bool data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Char:
-		{
-			char data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::UChar:
-		{
-			unsigned char data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Short:
-		{
-			short data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Int:
-		{
-			int data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::UInt:
-		{
-			unsigned int data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Int64:
-		{
-			long data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::UInt64:
-		{
-			unsigned data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Float:
-		{
-			float data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Quaternion:
-		{
-			glm::quat data = { 0,0,0,0 };
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		default: break;
+		bool data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
 	}
+	else if (fieldType.typeIndex == typeid(int8_t))
+	{
+		int8_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(uint8_t))
+	{
+		uint8_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(int16_t))
+	{
+		int16_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(int32_t))
+	{
+		int32_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(uint32_t))
+	{
+		uint32_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(int64_t))
+	{
+		int64_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(uint64_t))
+	{
+		uint64_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(float))
+	{
+		float data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(glm::quat))
+	{
+		glm::quat data = { 0,0,0,0 };
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+
 	return packet;
 }
-VT_OPTIMIZE_ON
 
 Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 {
@@ -311,24 +307,6 @@ Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 	repId = in_data.repId;
 }
 
-//Volt::RepVariableData::RepVariableData(const MonoFieldType fieldType)
-//{
-//	switch (fieldType)
-//	{
-//		case MonoFieldType::Bool:	data->size = sizeof(bool); break;
-//		case MonoFieldType::Char:	data->size = sizeof(char); break;
-//		case MonoFieldType::UChar:	data->size = sizeof(unsigned char); break;
-//		case MonoFieldType::Short:	data->size = sizeof(short); break;
-//		case MonoFieldType::Int:	data->size = sizeof(int); break;
-//		case MonoFieldType::UInt:	data->size = sizeof(unsigned int); break;
-//		case MonoFieldType::Int64:	data->size = sizeof(long); break;
-//		case MonoFieldType::UInt64:	data->size = sizeof(unsigned long); break;
-//		case MonoFieldType::Float:	data->size = sizeof(float); break;
-//		case MonoFieldType::Double:	data->size = sizeof(double); break;
-//		default: break;
-//	}
-//	data->data = (uint8_t*)malloc(data->size);
-//}
 #pragma endregion
 
 #pragma region Transform

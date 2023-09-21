@@ -203,12 +203,12 @@ namespace Volt
 
 				for (const auto& [fieldName, fieldInstance] : fieldMap)
 				{
-					if (fieldInstance->field.type == MonoFieldType::Entity)
+					if (fieldInstance->field.type.IsEntity())
 					{
 						entt::entity currentEntityId = *fieldInstance->data.As<entt::entity>();
 						entt::entity correspondingEntity = FindCorrespondingEntity(scene, startEntity.GetID(), currentEntityId);
 
-						fieldInstance->SetValue(correspondingEntity, sizeof(entt::entity), MonoFieldType::Entity);
+						fieldInstance->SetValue(correspondingEntity, sizeof(entt::entity));
 					}
 				}
 			}

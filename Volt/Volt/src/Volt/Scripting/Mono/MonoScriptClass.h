@@ -66,15 +66,21 @@ namespace Volt
 		MonoScriptField field;
 		Buffer data;
 
+		inline void SetValue(const void* value, const size_t size)
+		{
+			data.Allocate(size);
+			data.Copy(value, size);
+		}
+
 		template<typename T>
-		void SetValue(const T& value, const size_t size)
+		inline void SetValue(const T& value, const size_t size)
 		{
 			data.Allocate(size);
 			data.Copy((void*)&value, size, 0);
 		}
 
 		template<>
-		void SetValue(const std::string& value, const size_t)
+		inline void SetValue(const std::string& value, const size_t)
 		{
 			data.Allocate(value.size() + 1);
 			data.Copy(value.c_str(), value.size() + 1);

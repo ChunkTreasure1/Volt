@@ -70,7 +70,7 @@ namespace Volt
 	};
 
 	static Scope<ScriptEngineData> s_monoData;
-	
+
 	namespace Utility
 	{
 		inline static MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
@@ -473,95 +473,95 @@ namespace Volt
 
 	void MonoScriptEngine::OnAwakeInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName)
 	{
-		if (EntityClassExists(fullClassName))
+		if (!EntityClassExists(fullClassName))
 		{
-			auto scriptEntity = GetOrCreateMonoEntity(entity);
+			return;
+		}
 
-			ScriptParams Params;
-			Params.entity = MonoGCManager::GetObjectFromUUID(UUID(static_cast<uint32_t>(entity)));
-			Params.scriptId = instanceId;
+		auto scriptEntity = GetOrCreateMonoEntity(entity);
 
-			auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
+		ScriptParams Params;
+		Params.entity = MonoGCManager::GetObjectFromUUID(UUID(static_cast<uint32_t>(entity)));
+		Params.scriptId = instanceId;
 
-			s_monoData->scriptInstances[instanceId] = instance;
+		auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
+		s_monoData->scriptInstances[instanceId] = instance;
 
-			const auto& scriptFields = s_monoData->sceneContext->GetScriptFieldCache().GetCache();
+		const auto& scriptFields = s_monoData->sceneContext->GetScriptFieldCache().GetCache();
 
-			// Set field values
-			if (scriptFields.contains(instanceId))
+		// Set field values
+		if (!scriptFields.contains(instanceId))
+		{
+			return;
+		}
+
+		const auto& fieldMap = scriptFields.at(instanceId);
+		for (const auto& [name, fieldInstance] : fieldMap)
+		{
+			if (fieldInstance->field.type.IsEntity())
 			{
-				const auto& fieldMap = scriptFields.at(instanceId);
-				for (const auto& [name, fieldInstance] : fieldMap)
+				entt::entity fieldEnt = *fieldInstance->data.As<entt::entity>();
+				auto fieldEntInstance = GetOrCreateMonoEntity(fieldEnt);
+
+				auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());
+				auto entityObject = MonoGCManager::GetObjectFromHandle(fieldEntInstance->GetHandle());
+
+				if (!instanceObject || !entityObject)
 				{
-					switch (fieldInstance->field.type)
-					{
-						case  MonoFieldType::Entity:
-						{
-							entt::entity fieldEnt = *fieldInstance->data.As<entt::entity>();
-							auto fieldEntInstance = GetOrCreateMonoEntity(fieldEnt);
-
-							auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());
-							auto entityObject = MonoGCManager::GetObjectFromHandle(fieldEntInstance->GetHandle());
-
-							if (!instanceObject || !entityObject)
-							{
-								continue;
-							}
-
-							auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
-							//if (field == nullptr) { break; }
-							mono_field_set_value(instanceObject, field, entityObject);
-
-							continue;
-						}
-
-						case MonoFieldType::String:
-						{
-							MonoString* monoString = MonoScriptUtils::GetMonoStringFromString(std::string(fieldInstance->data.As<const char>()));
-
-							auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
-							mono_field_set_value(MonoGCManager::GetObjectFromHandle(instance->GetHandle()), field, monoString);
-
-							continue;
-						}
-					}
-
-					if (MonoScriptClass::IsAsset(fieldInstance->field.type))
-					{
-						auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
-
-						auto field_class = mono_class_from_mono_type(mono_field_get_type(field));
-						auto ns = mono_class_get_namespace(field_class);
-						auto class_name = mono_class_get_name(field_class);
-
-						auto klass = CreateRef<MonoScriptClass>(s_monoData->coreData.assemblyImage, ns, class_name);
-						auto gcHandle = InstantiateClass(UUID(), klass->GetClass());
-
-						auto handle = fieldInstance->data.As<AssetHandle>();
-						void* args[1] = { handle };
-
-						auto method = klass->GetMethod(".ctor", 1);
-
-						if (method)
-						{
-							CallMethod(gcHandle, method, args);
-						}
-
-						auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());
-						auto object = MonoGCManager::GetObjectFromHandle(gcHandle);
-
-						if (!instanceObject || !object)
-						{
-							continue;
-						}
-
-						mono_field_set_value(instanceObject, field, object);
-						continue;
-					}
-
-					instance->SetField(name, fieldInstance->data.As<const void>());
+					continue;
 				}
+
+				auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
+				if (field != nullptr)
+				{
+					mono_field_set_value(instanceObject, field, entityObject);
+				}
+
+				continue;
 			}
+			else if (fieldInstance->field.type.IsString())
+			{
+				MonoString* monoString = MonoScriptUtils::GetMonoStringFromString(std::string(fieldInstance->data.As<const char>()));
+
+				auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
+				mono_field_set_value(MonoGCManager::GetObjectFromHandle(instance->GetHandle()), field, monoString);
+
+				continue;
+			}
+			else if (fieldInstance->field.type.IsAsset())
+			{
+				auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
+
+				auto field_class = mono_class_from_mono_type(mono_field_get_type(field));
+				auto ns = mono_class_get_namespace(field_class);
+				auto class_name = mono_class_get_name(field_class);
+
+				auto klass = CreateRef<MonoScriptClass>(s_monoData->coreData.assemblyImage, ns, class_name);
+				auto gcHandle = InstantiateClass(UUID(), klass->GetClass());
+
+				auto handle = fieldInstance->data.As<AssetHandle>();
+				void* args[1] = { handle };
+
+				auto method = klass->GetMethod(".ctor", 1);
+
+				if (method)
+				{
+					CallMethod(gcHandle, method, args);
+				}
+
+				auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());
+				auto object = MonoGCManager::GetObjectFromHandle(gcHandle);
+
+				if (!instanceObject || !object)
+				{
+					continue;
+				}
+
+				mono_field_set_value(instanceObject, field, object);
+				continue;
+			}
+
+			instance->SetField(name, fieldInstance->data.As<const void>());
 		}
 	}
 
@@ -773,71 +773,41 @@ namespace Volt
 
 	void MonoScriptEngine::SetScriptFieldDefaultData(UUID instanceId, entt::entity entity, const std::string& fullClassName)
 	{
-		if (EntityClassExists(fullClassName))
+		if (!EntityClassExists(fullClassName))
 		{
-			std::vector<uint64_t> scriptIds;
-			Ref<MonoScriptEntity> monoEntity = CreateRef<MonoScriptEntity>(entity, scriptIds, s_monoData->coreEntityClass);
+			return;
+		}
 
-			ScriptParams Params;
-			Params.entity = MonoGCManager::GetObjectFromUUID(UUID(static_cast<uint32_t>(entity)));
-			Params.scriptId = instanceId;
+		std::vector<uint64_t> scriptIds;
+		Ref<MonoScriptEntity> monoEntity = CreateRef<MonoScriptEntity>(entity, scriptIds, s_monoData->coreEntityClass);
 
-			auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
+		ScriptParams Params;
+		Params.entity = MonoGCManager::GetObjectFromUUID(UUID(static_cast<uint32_t>(entity)));
+		Params.scriptId = instanceId;
 
-			const auto& classFields = Volt::MonoScriptEngine::GetScriptClass(fullClassName)->GetFields();
-			auto& defaultEntityFields = Volt::MonoScriptEngine::GetDefaultScriptFieldMap(fullClassName);
+		auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
 
-			for (const auto& [name, field] : classFields)
+		const auto& classFields = Volt::MonoScriptEngine::GetScriptClass(fullClassName)->GetFields();
+		auto& defaultEntityFields = Volt::MonoScriptEngine::GetDefaultScriptFieldMap(fullClassName);
+
+		for (const auto& [name, field] : classFields)
+		{
+			defaultEntityFields[name] = CreateRef<Volt::MonoScriptFieldInstance>();
+			defaultEntityFields.at(name)->SetValue(0, field.type.typeSize);
+		}
+
+		for (auto& [name, fieldInst] : defaultEntityFields)
+		{
+			if (fieldInst->field.type.typeIndex == typeid(std::string))
 			{
-				defaultEntityFields[name] = CreateRef<Volt::MonoScriptFieldInstance>();
-				defaultEntityFields.at(name)->SetValue(0, 0, field.type);
+				auto value = instance->GetField<MonoString*>(name);
+				auto str = MonoScriptUtils::GetStringFromMonoString(value);
+
+				fieldInst->SetValue(str, str.size());
 			}
-
-			for (auto& [name, fieldInst] : defaultEntityFields)
+			else
 			{
-				switch (fieldInst->field.type)
-				{
-					case MonoFieldType::Bool: fieldInst->SetValue(instance->GetField<bool>(name), sizeof(bool), fieldInst->field.type); break;
-					case MonoFieldType::String:
-					{
-						auto value = instance->GetField<MonoString*>(name);
-						auto str = MonoScriptUtils::GetStringFromMonoString(value);
-
-						fieldInst->SetValue(str, str.size(), fieldInst->field.type); break;
-					}
-
-					case MonoFieldType::Int: fieldInst->SetValue(instance->GetField<int32_t>(name), sizeof(int32_t), fieldInst->field.type); break;
-					case MonoFieldType::UInt: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
-
-					case MonoFieldType::Short: fieldInst->SetValue(instance->GetField<int16_t>(name), sizeof(int16_t), fieldInst->field.type); break;
-					case MonoFieldType::UShort: fieldInst->SetValue(instance->GetField<uint16_t>(name), sizeof(uint16_t), fieldInst->field.type); break;
-
-					case MonoFieldType::Char: fieldInst->SetValue(instance->GetField<int8_t>(name), sizeof(int8_t), fieldInst->field.type); break;
-					case MonoFieldType::UChar: fieldInst->SetValue(instance->GetField<uint8_t>(name), sizeof(uint8_t), fieldInst->field.type); break;
-
-					case MonoFieldType::Float: fieldInst->SetValue(instance->GetField<float>(name), sizeof(float), fieldInst->field.type); break;
-					case MonoFieldType::Double: fieldInst->SetValue(instance->GetField<double>(name), sizeof(double), fieldInst->field.type); break;
-
-					case MonoFieldType::Vector2: fieldInst->SetValue(instance->GetField<glm::vec2>(name), sizeof(glm::vec2), fieldInst->field.type); break;
-					case MonoFieldType::Vector3: fieldInst->SetValue(instance->GetField<glm::vec3>(name), sizeof(glm::vec3), fieldInst->field.type); break;
-					case MonoFieldType::Vector4: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
-					case MonoFieldType::Quaternion: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
-					case MonoFieldType::Entity: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
-
-					case MonoFieldType::Animation:
-					case MonoFieldType::Prefab:
-					case MonoFieldType::Scene:
-					case MonoFieldType::Mesh:
-					case MonoFieldType::Font:
-					case MonoFieldType::Material:
-					case MonoFieldType::Texture:
-					case MonoFieldType::PostProcessingMaterial:
-					case MonoFieldType::Video:
-					case MonoFieldType::AnimationGraph:
-					case MonoFieldType::Asset: fieldInst->SetValue(instance->GetField<AssetHandle>(name), sizeof(AssetHandle), fieldInst->field.type); break;
-					case MonoFieldType::Color: fieldInst->SetValue(instance->GetField<glm::vec4>(name), sizeof(glm::vec4), fieldInst->field.type); break;
-					case MonoFieldType::Enum: fieldInst->SetValue(instance->GetField<uint32_t>(name), sizeof(uint32_t), fieldInst->field.type); break;
-				}
+				fieldInst->SetValue(instance->GetFieldRaw(name), fieldInst->field.type.typeSize);
 			}
 		}
 	}

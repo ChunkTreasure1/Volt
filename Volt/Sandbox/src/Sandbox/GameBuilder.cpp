@@ -384,7 +384,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 						continue;
 					}
 
-					if (!Volt::MonoScriptClass::IsAsset(instance->field.type))
+					if (!instance->field.type.IsAsset())
 					{
 						continue;
 					}

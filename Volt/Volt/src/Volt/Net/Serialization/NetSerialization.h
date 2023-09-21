@@ -95,17 +95,17 @@ namespace Volt
 	struct RepVariableData : public RepData
 	{
 		template<typename T>
-		RepVariableData(const T& data, const MonoFieldType& fieldType);
+		RepVariableData(const T& data, const MonoTypeInfo& fieldType);
 		RepVariableData(const RepVariableData& data);
 		//RepVariableData(const MonoFieldType fieldType);
 		RepVariableData() {}
 
-		MonoFieldType fieldType{};
+		MonoTypeInfo fieldType{};
 		Ref<VariableData> data;
 	};
 
 	template<typename T>
-	inline RepVariableData::RepVariableData(const T& in_data, const MonoFieldType& in_fieldType)
+	inline RepVariableData::RepVariableData(const T& in_data, const MonoTypeInfo& in_fieldType)
 	{
 		data = CreateRef<VariableData>(in_data);
 		fieldType = in_fieldType;

@@ -4,7 +4,6 @@
 #include "Sandbox/EditorCommand.h"
 #include "Sandbox/Sandbox.h"
 
-#include <Volt/Components/CoreComponents.h>
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
 
@@ -40,9 +39,6 @@ private:
 	void AddComponentPopup();
 	void AddMonoScriptPopup();
 	void AcceptMonoDragDrop();
-
-	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const entt::entity& entity);
-	void DrawMonoProperties(Volt::MonoScriptEntry& scriptEntry);
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRenderer>& myCurrentSceneRenderer;

@@ -12,6 +12,7 @@ namespace Volt
 		newType.typeIndex = std::type_index{ typeid(T) };
 		newType.assetType = assetType;
 		newType.typeFlags = typeFlags;
+		newType.typeSize = sizeof(T);
 	}
 
 	void MonoTypeRegistry::Initialize()

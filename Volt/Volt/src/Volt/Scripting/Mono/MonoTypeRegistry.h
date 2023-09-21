@@ -2,6 +2,8 @@
 
 #include "Volt/Asset/Asset.h"
 
+#include <entt.hpp>
+
 #include <unordered_map>
 #include <string_view>
 #include <typeindex>
@@ -19,8 +21,14 @@ namespace Volt
 	struct MonoTypeInfo
 	{
 		std::type_index typeIndex = typeid(void);
+		size_t typeSize = 0;
+
 		AssetType assetType;
 		MonoTypeFlags typeFlags;
+
+		[[nodiscard]] inline const bool IsEntity() const { return typeIndex == typeid(entt::entity); }
+		[[nodiscard]] inline const bool IsAsset() const { return typeIndex == typeid(AssetHandle) && assetType != AssetType::None; }
+		[[nodiscard]] inline const bool IsString() const { return typeIndex == typeid(std::string); }
 	};
 
 	class MonoTypeRegistry

@@ -1,26 +1,60 @@
 #include "sbpch.h"
 #include "ComponentPropertyUtilities.h"
 
+#include "Sandbox/Sandbox.h"
+
 #include "Sandbox/Utility/Theme.h"
 #include "Sandbox/Utility/EditorUtilities.h"
+
+#include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Scene/Reflection/ComponentReflection.h>
 #include <Volt/Scene/Reflection/ComponentRegistry.h>
 
 #include <Volt/Components/LightComponents.h>
 
+#include <Volt/Scripting/Mono/MonoScriptUtils.h>
+#include <Volt/Scripting/Mono/MonoScriptInstance.h>
+#include <Volt/Scripting/Mono/MonoScriptEngine.h>
+
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/PremadeCommands.h>
 
 #include <glm/glm.hpp>
 
 template<typename T>
 void RegisterPropertyType(std::unordered_map<std::type_index, std::function<bool(std::string_view, void*, const size_t)>>& outFunctionMap)
 {
-	outFunctionMap[std::type_index{ typeid(T) }] = [](std::string_view label, void* data, const size_t offset) -> bool { uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data); return UI::Property(std::string(label), *reinterpret_cast<T*>(&bytePtr[offset])); };
+	outFunctionMap[std::type_index{ typeid(T) }] = [](std::string_view label, void* data, const size_t offset) -> bool
+	{
+		uint8_t* bytePtr = reinterpret_cast<uint8_t*>(data);
+		return UI::Property(std::string(label), *reinterpret_cast<T*>(&bytePtr[offset]));
+	};
+}
+
+template<typename T>
+void RegisterMonoPropertyType(std::unordered_map<std::type_index, std::function<void(const std::string&, Ref<Volt::MonoScriptInstance>)>>& outFunctionMap)
+{
+	outFunctionMap[std::type_index{ typeid(T) }] = [](const std::string& name, Ref<Volt::MonoScriptInstance> scriptInstance)
+	{
+		T value = scriptInstance->GetField<T>(name);
+		if (UI::Property(name, value))
+		{
+			if constexpr (std::is_same<T, std::string>::value)
+			{
+				scriptInstance->SetField(name, value);
+			}
+			else
+			{
+				scriptInstance->SetField(name, &value);
+			}
+		}
+	};
 }
 
 void ComponentPropertyUtility::Initialize()
 {
+	// Components
 	RegisterPropertyType<int8_t>(s_propertyFunctions);
 	RegisterPropertyType<uint8_t>(s_propertyFunctions);
 	RegisterPropertyType<int16_t>(s_propertyFunctions);
@@ -46,9 +80,27 @@ void ComponentPropertyUtility::Initialize()
 
 	RegisterPropertyType<std::string>(s_propertyFunctions);
 	RegisterPropertyType<std::filesystem::path>(s_propertyFunctions);
+
+	// Mono scipts
+	RegisterMonoPropertyType<int8_t>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<uint8_t>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<int16_t>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<uint16_t>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<int32_t>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<uint32_t>(s_monoPropertyFunctions);
+
+	RegisterMonoPropertyType<float>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<double>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<bool>(s_monoPropertyFunctions);
+
+	RegisterMonoPropertyType<glm::vec2>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<glm::vec3>(s_monoPropertyFunctions);
+	RegisterMonoPropertyType<glm::vec4>(s_monoPropertyFunctions);
+
+	RegisterMonoPropertyType<std::string>(s_monoPropertyFunctions);
 }
 
-void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, Volt::Entity entity)
+void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Entity entity)
 {
 	if (!s_initialized)
 	{
@@ -74,7 +126,7 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 			{
 				case Volt::ValueType::Component:
 				{
-					const Volt::IComponentTypeDesc* compTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);					
+					const Volt::IComponentTypeDesc* compTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);
 
 					if (compTypeDesc->IsHidden())
 					{
@@ -113,6 +165,27 @@ void ComponentPropertyUtility::DrawComponentProperties(Weak<Volt::Scene> scene, 
 				}
 			}
 		}
+	}
+}
+
+void ComponentPropertyUtility::DrawMonoScripts(Weak<Volt::Scene> scene, Volt::Entity entity)
+{
+	if (!entity.HasComponent<Volt::MonoScriptComponent>())
+	{
+		return;
+	}
+
+	if (!s_initialized)
+	{
+		Initialize();
+		s_initialized = true;
+	}
+
+	auto& monoScriptComp = entity.GetComponent<Volt::MonoScriptComponent>();
+	for (size_t i = 0; i < monoScriptComp.scriptIds.size(); i++)
+	{
+		Volt::MonoScriptEntry entry{ monoScriptComp.scriptNames.at(i), monoScriptComp.scriptIds.at(i) };
+		DrawMonoScript(scene, entry, entity);
 	}
 }
 
@@ -253,7 +326,7 @@ void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, const 
 	std::unordered_map<int32_t, int32_t> indexToValueMap;
 	std::vector<std::string> constantNames;
 
-	for (uint32_t index = 0; const auto& constant : constants)
+	for (uint32_t index = 0; const auto & constant : constants)
 	{
 		const std::string name = std::string(constant.label);
 		constantNames.emplace_back(name);
@@ -341,4 +414,261 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, const
 	{
 		ImGui::TableNextColumn();
 	}
+}
+
+void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Volt::MonoScriptEntry& scriptEntry, Volt::Entity entity)
+{
+	std::string scriptClassName = Volt::MonoScriptUtils::GetClassName(scriptEntry.name);
+	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
+
+	bool removeScript = false;
+	const bool open = UI::CollapsingHeader(scriptClassName + " Script");
+
+	const float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
+	const float availRegion = ImGui::GetContentRegionAvail().x;
+
+	if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonRight))
+	{
+		if (ImGui::Button("Open in Visual Studio"))
+		{
+			auto path = Volt::AssetManager::GetFilePathFromFilename(scriptClassName + ".cs");
+			if (!Volt::PremadeCommands::RunOpenVSFileCommand(UserSettingsManager::GetSettings().externalToolsSettings.customExternalScriptEditor, path))
+			{
+				UI::Notify(NotificationType::Error, "Open file failed!", "External script editor is not valid!");
+			}
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	if (!open)
+	{
+		UI::SameLine(availRegion - buttonSize * 0.5f);
+	}
+	else
+	{
+		UI::SameLine(availRegion + buttonSize * 0.5f);
+	}
+
+	const std::string id = "-###Remove" + std::format("{0}", static_cast<uint64_t>(scriptEntry.id));
+
+	{
+		UI::ScopedStyleFloat round{ ImGuiStyleVar_FrameRounding, 0.f };
+		UI::ScopedStyleFloat2 pad{ ImGuiStyleVar_FramePadding, { 0.f, 0.f } };
+		UI::ScopedColor color{ ImGuiCol_Button, { 0.8f, 0.1f, 0.15f, 1.f } };
+		UI::ScopedColor colorh{ ImGuiCol_ButtonHovered, { 0.9f, 0.2f, 0.2f, 1.f } };
+		UI::ScopedColor colora{ ImGuiCol_ButtonActive, { 0.8f, 0.1f, 0.15f, 1.f } };
+
+		if (ImGui::Button(id.c_str(), ImVec2{ buttonSize, buttonSize }))
+		{
+			removeScript = true;
+		}
+	}
+
+	if (open)
+	{
+		UI::PushID();
+
+		DrawMonoMembers(scene, scriptEntry, entity);
+
+		UI::PopID();
+	}
+
+	if (removeScript)
+	{
+		auto& scriptComp = entity.GetComponent<Volt::MonoScriptComponent>();
+
+		for (uint32_t i = 0; i < scriptComp.scriptIds.size(); ++i)
+		{
+			if (scriptComp.scriptIds[i] == scriptEntry.id)
+			{
+				scriptComp.scriptIds.erase(scriptComp.scriptIds.begin() + i);
+				scriptComp.scriptNames.erase(scriptComp.scriptNames.begin() + i);
+				break;
+			}
+		}
+		if (scriptComp.scriptIds.empty())
+		{
+			entity.RemoveComponent<Volt::MonoScriptComponent>();
+		}
+
+		if (Sandbox::Get().GetSceneState() == SceneState::Edit)
+		{
+			auto scenePtr = scene.lock();
+
+			scenePtr->ShutdownEngineScripts();
+			scenePtr->InitializeEngineScripts();
+		}
+	}
+}
+
+void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Volt::MonoScriptEntry& scriptEntry, Volt::Entity entity)
+{
+	Ref<Volt::MonoScriptInstance> scriptInstance = Volt::MonoScriptEngine::GetInstanceFromId(scriptEntry.id);
+
+	if (!UI::BeginProperties("MonoScripts"))
+	{
+		return;
+	}
+
+	if (scene.lock()->IsPlaying() && scriptInstance)
+	{
+		for (const auto& [name, field] : scriptInstance->GetClass()->GetFields())
+		{
+			std::string displayName = name;
+			if (field.netData.replicatedCondition == Volt::eRepCondition::CONTINUOUS)
+			{
+				displayName = "[C] " + displayName;
+			}
+			else if (field.netData.replicatedCondition == Volt::eRepCondition::NOTIFY)
+			{
+				displayName = "[N] " + displayName;
+			}
+
+			if (field.type.typeIndex == std::type_index{ typeid(Volt::AssetHandle) } && field.type.assetType != Volt::AssetType::None)
+			{
+				Volt::AssetHandle value = scriptInstance->GetField<Volt::AssetHandle>(name);
+
+				if (EditorUtils::Property(displayName, value, field.type.assetType))
+				{
+					scriptInstance->SetField(name, &value);
+				}
+
+				continue;
+			}
+			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
+			{
+				glm::vec4 value = scriptInstance->GetField<glm::vec4>(name);
+				if (UI::PropertyColor(displayName, value))
+				{
+					scriptInstance->SetField(name, &value);
+				}
+
+				continue;
+			}
+
+			if (s_monoPropertyFunctions.contains(field.type.typeIndex))
+			{
+				s_monoPropertyFunctions.at(field.type.typeIndex)(displayName, scriptInstance);
+			}
+		}
+	}
+	else
+	{
+		if (!Volt::MonoScriptEngine::EntityClassExists(scriptEntry.name))
+		{
+			UI::EndProperties();
+			return;
+		}
+
+		const auto& classFields = Volt::MonoScriptEngine::GetScriptClass(scriptEntry.name)->GetFields();
+		const auto& defaultFieldValueMap = Volt::MonoScriptEngine::GetDefaultScriptFieldMap(scriptEntry.name);
+	
+		auto& entityFields = scene.lock()->GetScriptFieldCache().GetCache()[scriptEntry.id];
+	
+		for (const auto& [name, field] : classFields)
+		{
+			if (!entityFields.contains(name))
+			{
+				Ref<Volt::MonoScriptFieldInstance> fieldInstance = CreateRef<Volt::MonoScriptFieldInstance>();
+				fieldInstance->field = field;
+
+				const auto& defaultValueData = defaultFieldValueMap.at(name)->data;
+
+				fieldInstance->data.Allocate(defaultValueData.GetSize());
+				fieldInstance->data.Copy(defaultValueData.As<void>(), defaultValueData.GetSize());
+
+				entityFields[name] = fieldInstance;
+			}
+
+			std::string displayName = name;
+			if (field.netData.replicatedCondition == Volt::eRepCondition::CONTINUOUS)
+			{
+				displayName = "[C] " + displayName;
+			}
+			else if (field.netData.replicatedCondition == Volt::eRepCondition::NOTIFY)
+			{
+				displayName = "[N] " + displayName;
+			}
+
+			auto& currentField = entityFields.at(name);
+			bool fontChanged = false;
+
+			if (currentField->data.IsValid() && !defaultFieldValueMap.at(name)->data.IsValid())
+			{
+				fontChanged = true;
+				UI::PushFont(FontType::Bold_17);
+			}
+			else if (memcmp(currentField->data.As<void>(), defaultFieldValueMap.at(name)->data.As<void>(), currentField->data.GetSize()) != 0) // #TODO_Ivar: Reimplement to use custom function instead
+			{
+				fontChanged = true;
+				UI::PushFont(FontType::Bold_17);
+			}
+
+			bool fieldChanged = false;
+
+			if (field.type.typeIndex == std::type_index{ typeid(std::string) })
+			{
+				std::string str;
+
+				if (currentField->data.IsValid())
+				{
+					str = std::string(currentField->data.As<const char>());
+				}
+
+				if (UI::Property(displayName, str))
+				{
+					currentField->SetValue(str, str.size());
+					if (scriptInstance)
+					{
+						scriptInstance->SetField(name, str);
+					}
+				}
+			}
+			else if (field.type.typeIndex == typeid(Volt::AssetHandle) && field.type.assetType != Volt::AssetType::None)
+			{
+				fieldChanged = EditorUtils::Property(displayName, *currentField->data.As<Volt::AssetHandle>(), field.type.assetType);
+			}
+			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
+			{
+				fieldChanged = UI::PropertyColor(displayName, *currentField->data.As<glm::vec4>());
+			}
+			else
+			{
+				if (s_propertyFunctions.contains(field.type.typeIndex))
+				{
+					fieldChanged = s_propertyFunctions.at(field.type.typeIndex)(displayName, currentField->data.As<void>(), 0);
+				}
+			}
+
+			if (scriptInstance && fieldChanged)
+			{
+				scriptInstance->SetField(name, currentField->data.As<void>());
+			}
+
+			if (fontChanged)
+			{
+				UI::PopFont();
+			}
+
+			auto id = UI::GetID();
+			std::string strId = "##" + name + std::to_string(id);
+
+			if (ImGui::BeginPopupContextItem(strId.c_str(), ImGuiPopupFlags_MouseButtonRight))
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, { 1.f, 1.f, 1.f, 0.f });
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 1.f, 1.f, 1.f, 0.f });
+				if (ImGui::Button("Reset Value"))
+				{
+					entityFields.erase(name);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::EndPopup();
+			}
+		}
+	}
+
+	UI::EndProperties();
 }
