@@ -422,7 +422,7 @@ void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Vol
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
 	bool removeScript = false;
-	const bool open = UI::CollapsingHeader(scriptClassName + " Script");
+	const bool open = UI::CollapsingHeader(scriptClassName + " Script", ImGuiTreeNodeFlags_DefaultOpen);
 
 	const float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
 	const float availRegion = ImGui::GetContentRegionAvail().x;

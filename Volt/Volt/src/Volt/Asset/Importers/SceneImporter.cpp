@@ -1428,6 +1428,7 @@
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
+#include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
 namespace Volt
 {
@@ -2029,18 +2030,29 @@ namespace Volt
 			const std::string scriptName = streamReader.ReadKey("name", std::string(""));
 			const UUID scriptId = streamReader.ReadKey("id", UUID(0));
 
+			auto scriptClass = MonoScriptEngine::GetScriptClass(scriptName);
+			if (!scriptClass)
+			{
+				streamReader.ExitScope();
+				return;
+			}
+
+			const auto& classFields = scriptClass->GetFields();
 			auto& fieldCache = scene->GetScriptFieldCache().GetCache()[scriptId];
 
 			streamReader.ForEach("members", [&]()
 			{
 				const std::string memberName = streamReader.ReadKey("name", std::string(""));
 
-				if (!fieldCache.contains(memberName))
+				if (!classFields.contains(memberName))
 				{
 					return;
 				}
 
-				auto& field = fieldCache.at(memberName);
+				fieldCache[memberName] = CreateRef<MonoScriptFieldInstance>();
+
+				auto field = fieldCache[memberName];
+				field->field = classFields.at(memberName);
 
 				if (field->field.type.IsString())
 				{
@@ -2056,7 +2068,6 @@ namespace Volt
 					}
 				}
 			});
-
 			streamReader.ExitScope();
 		});
 	}

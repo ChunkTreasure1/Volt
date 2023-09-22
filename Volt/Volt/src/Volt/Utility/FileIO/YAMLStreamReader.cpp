@@ -49,7 +49,7 @@ namespace Volt
 	void YAMLStreamReader::EnterScope(const std::string& key)
 	{
 		m_nodeStack.emplace_back(m_currentNode);
-		m_currentNode = m_nodeStack.back()[key];
+		m_currentNode.reset(m_nodeStack.back()[key]);
 	}
 
 	void YAMLStreamReader::ExitScope()
@@ -59,7 +59,7 @@ namespace Volt
 			return;
 		}
 
-		m_currentNode = m_nodeStack.back();
+		m_currentNode.reset(m_nodeStack.back());
 		m_nodeStack.pop_back();
 	}
 
@@ -70,15 +70,16 @@ namespace Volt
 			return;
 		}
 
-		m_nodeStack.emplace_back(m_currentNode);
+		YAML::Node tempNode;
+		tempNode.reset(m_currentNode);
 
 		for (const auto& node : m_currentNode[key])
 		{
-			m_currentNode = static_cast<YAML::Node>(node);
+			m_currentNode.reset(static_cast<YAML::Node>(node));
+
 			function();
 		}
 
-		m_currentNode = m_nodeStack.back();
-		m_nodeStack.pop_back();
+		m_currentNode.reset(tempNode);
 	}
 }
