@@ -94,18 +94,6 @@ namespace Volt
 				}
 			}
 
-			// #TODO_Ivar: Reimplement
-			//if (scriptField.type == MonoFieldType::Enum)
-			//{
-			//	for (const auto& [enumName, monoEnum] : MonoScriptEngine::GetRegisteredEnums())
-			//	{
-			//		if (typeName == enumName)
-			//		{
-			//			scriptField.enumName = enumName;
-			//			break;
-			//		}
-			//	}
-			//}
 			m_fields.emplace(fieldName, scriptField);
 		}
 
@@ -139,19 +127,6 @@ namespace Volt
 			scriptField.type = MonoTypeRegistry::GetTypeInfo(typeName);
 			scriptField.fieldPtr = field;
 			scriptField.fieldAccessability = accessibility;
-
-			// #TODO_Ivar: Reimplement
-			//if (scriptField.type == MonoFieldType::Enum)
-			//{
-			//	for (const auto& [enumName, monoEnum] : MonoScriptEngine::GetRegisteredEnums())
-			//	{
-			//		if (typeName == enumName)
-			//		{
-			//			scriptField.enumName = enumName;
-			//			break;
-			//		}
-			//	}
-			//}
 
 			m_fields.emplace(fieldName, scriptField);
 		}

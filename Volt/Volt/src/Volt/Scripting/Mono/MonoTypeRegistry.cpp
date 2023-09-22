@@ -6,13 +6,14 @@
 namespace Volt
 {
 	template<typename T, AssetType assetType = AssetType::None, MonoTypeFlags typeFlags = MonoTypeFlags::None>
-	void RegisterMonoType(std::string_view monoTypeName, std::unordered_map<std::string_view, MonoTypeInfo>& outTypeMap)
+	void RegisterMonoType(const std::string& monoTypeName, std::unordered_map<std::string, MonoTypeInfo>& outTypeMap)
 	{
 		auto& newType = outTypeMap[monoTypeName];
 		newType.typeIndex = std::type_index{ typeid(T) };
 		newType.assetType = assetType;
 		newType.typeFlags = typeFlags;
 		newType.typeSize = sizeof(T);
+		newType.typeName = std::string(monoTypeName);
 	}
 
 	void MonoTypeRegistry::Initialize()
@@ -52,12 +53,14 @@ namespace Volt
 
 	const MonoTypeInfo MonoTypeRegistry::GetTypeInfo(std::string_view monoTypeName)
 	{
-		if (!s_monoToNativeTypeMap.contains(monoTypeName))
+		const std::string strTypeName = std::string(monoTypeName);
+
+		if (!s_monoToNativeTypeMap.contains(strTypeName))
 		{
 			return {};
 		}
 
-		return s_monoToNativeTypeMap.at(monoTypeName);
+		return s_monoToNativeTypeMap.at(strTypeName);
 	}
 
 	const MonoTypeInfo MonoTypeRegistry::GetTypeInfo(const std::type_index& typeIndex)
@@ -71,5 +74,10 @@ namespace Volt
 		}
 
 		return {};
+	}
+
+	void MonoTypeRegistry::RegisterEnum(const std::string& typeName)
+	{
+		RegisterMonoType<int32_t, AssetType::None, MonoTypeFlags::Enum>(typeName, s_monoToNativeTypeMap);
 	}
 }

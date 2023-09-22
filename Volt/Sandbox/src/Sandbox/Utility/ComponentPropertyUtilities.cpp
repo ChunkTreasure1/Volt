@@ -16,6 +16,7 @@
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 #include <Volt/Scripting/Mono/MonoScriptInstance.h>
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
+#include <Volt/Scripting/Mono/MonoEnum.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/PremadeCommands.h>
@@ -525,7 +526,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				displayName = "[N] " + displayName;
 			}
 
-			if (field.type.typeIndex == std::type_index{ typeid(Volt::AssetHandle) } && field.type.assetType != Volt::AssetType::None)
+			if (field.type.IsAsset())
 			{
 				Volt::AssetHandle value = scriptInstance->GetField<Volt::AssetHandle>(name);
 
@@ -542,6 +543,30 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				if (UI::PropertyColor(displayName, value))
 				{
 					scriptInstance->SetField(name, &value);
+				}
+
+				continue;
+			}
+			else if (field.type.IsEnum())
+			{
+				const auto& registeredEnums = Volt::MonoScriptEngine::GetRegisteredEnums();
+				if (registeredEnums.contains(std::string(field.type.typeName)))
+				{
+					const auto enumData = registeredEnums.at(std::string(field.type.typeName));
+					const auto& enumValues = enumData->GetValues();
+
+					int32_t enumVal = scriptInstance->GetField<int32_t>(name);
+					
+					std::vector<std::string> valueNames{};
+					for (const auto& [valueName, val] : enumValues)
+					{
+						valueNames.emplace_back(valueName);
+					}
+
+					if (UI::ComboProperty(displayName, enumVal, valueNames))
+					{
+						scriptInstance->SetField(name, &enumVal);
+					}
 				}
 
 				continue;
@@ -607,7 +632,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 			bool fieldChanged = false;
 
-			if (field.type.typeIndex == std::type_index{ typeid(std::string) })
+			if (field.type.IsEntity())
 			{
 				std::string str;
 
@@ -625,13 +650,32 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 					}
 				}
 			}
-			else if (field.type.typeIndex == typeid(Volt::AssetHandle) && field.type.assetType != Volt::AssetType::None)
+			else if (field.type.IsAsset())
 			{
 				fieldChanged = EditorUtils::Property(displayName, *currentField->data.As<Volt::AssetHandle>(), field.type.assetType);
 			}
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
 			{
 				fieldChanged = UI::PropertyColor(displayName, *currentField->data.As<glm::vec4>());
+			}
+			else if (field.type.IsEnum())
+			{
+				const auto& registeredEnums = Volt::MonoScriptEngine::GetRegisteredEnums();
+				if (registeredEnums.contains(std::string(field.type.typeName)))
+				{
+					const auto enumData = registeredEnums.at(std::string(field.type.typeName));
+					const auto& enumValues = enumData->GetValues();
+
+					int32_t& enumVal = (int32_t&)*currentField->data.As<uint32_t>();
+
+					std::vector<std::string> valueNames{};
+					for (const auto& [valueName, val] : enumValues)
+					{
+						valueNames.emplace_back(valueName);
+					}
+
+					fieldChanged = UI::ComboProperty(displayName, enumVal, valueNames);
+				}
 			}
 			else
 			{

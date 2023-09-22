@@ -281,6 +281,33 @@ namespace Volt
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
+		// Start finding all enums, as classes may depend on them
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			const char* namespaceStr = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+
+			MonoClass* monoClass = mono_class_from_name(s_monoData->appData.assemblyImage, namespaceStr, name);
+			if (!monoClass)
+			{
+				continue;
+			}
+
+			if (!mono_class_is_enum(monoClass))
+			{
+				continue;
+			}
+
+			const std::string typeName = std::string(namespaceStr) + "." + name;
+			Ref<MonoEnum> monoEnum = CreateRef<MonoEnum>(image, namespaceStr, name);
+			s_monoData->monoEnums.emplace(typeName, monoEnum);
+
+			MonoTypeRegistry::RegisterEnum(typeName);
+		}
+
 		for (int32_t i = 0; i < numTypes; i++)
 		{
 			uint32_t cols[MONO_TYPEDEF_SIZE];
@@ -300,16 +327,8 @@ namespace Volt
 				continue;
 			}
 
-			if (mono_class_is_delegate(monoClass))
+			if (mono_class_is_delegate(monoClass) || mono_class_is_enum(monoClass))
 			{
-				continue;
-			}
-
-			const std::string typeName = std::string(namespaceStr) + "." + name;
-			if (mono_class_is_enum(monoClass))
-			{
-				Ref<MonoEnum> monoEnum = CreateRef<MonoEnum>(image, namespaceStr, name);
-				s_monoData->monoEnums.emplace(typeName, monoEnum);
 				continue;
 			}
 
@@ -334,6 +353,7 @@ namespace Volt
 				}
 			}
 
+			const std::string typeName = std::string(namespaceStr) + "." + name;
 			Ref<MonoScriptClass> scriptClass = CreateRef<MonoScriptClass>(image, namespaceStr, name, true);
 
 			if (scriptClass->IsSubclassOf(s_monoData->coreScriptClass))
@@ -354,7 +374,34 @@ namespace Volt
 		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+		const int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+		// Start finding all enums, as classes may depend on them
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			const char* namespaceStr = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+
+			MonoClass* monoClass = mono_class_from_name(s_monoData->appData.assemblyImage, namespaceStr, name);
+			if (!monoClass)
+			{
+				continue;
+			}
+
+			if (!mono_class_is_enum(monoClass))
+			{
+				continue;
+			}
+
+			const std::string typeName = std::string(namespaceStr) + "." + name;
+			Ref<MonoEnum> monoEnum = CreateRef<MonoEnum>(image, namespaceStr, name);
+			s_monoData->monoEnums.emplace(typeName, monoEnum);
+
+			MonoTypeRegistry::RegisterEnum(typeName);
+		}
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
@@ -375,19 +422,12 @@ namespace Volt
 				continue;
 			}
 
-			if (mono_class_is_delegate(monoClass))
+			if (mono_class_is_delegate(monoClass) || mono_class_is_enum(monoClass))
 			{
 				continue;
 			}
 
 			const std::string typeName = std::string(namespaceStr) + "." + name;
-			if (mono_class_is_enum(monoClass))
-			{
-				Ref<MonoEnum> monoEnum = CreateRef<MonoEnum>(image, namespaceStr, name);
-				s_monoData->monoEnums.emplace(typeName, monoEnum);
-				continue;
-			}
-
 			Ref<MonoScriptClass> scriptClass = CreateRef<MonoScriptClass>(image, namespaceStr, name);
 
 			if (scriptClass->IsSubclassOf(s_monoData->coreScriptClass))

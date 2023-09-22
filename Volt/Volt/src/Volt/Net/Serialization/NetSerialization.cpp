@@ -225,14 +225,14 @@ Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::
 Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepVariableData& data)
 {
 	packet.Append(data.data->data, data.data->size);
-	packet << data.fieldType << data.repId << Volt::eNetSerializerDescriptor::VARIABLE;
+	packet << data.fieldType.typeName << data.repId << Volt::eNetSerializerDescriptor::VARIABLE;
 	return packet;
 }
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 {
 	auto& fieldType = varData.fieldType;
-	packet >> varData.repId >> fieldType;
+	packet >> varData.repId >> fieldType.typeName;
 
 
 	if (fieldType.typeIndex == typeid(bool))

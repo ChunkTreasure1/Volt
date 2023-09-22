@@ -52,7 +52,6 @@ namespace Volt
 		MonoTypeInfo type;
 		FieldAccessibility fieldAccessability = FieldAccessibility::None;
 		MonoClassField* fieldPtr = nullptr;
-		std::string enumName;
 		MonoFieldNetAttribute netData;
 	};
 
