@@ -840,7 +840,7 @@ void ViewportPanel::DuplicateSelection()
 {
 	m_editorCameraController->ForceLooseControl();
 
-	std::vector<entt::entity> duplicated;
+	std::vector<Volt::Entity> duplicated;
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
 		if (SelectionManager::IsAnyParentSelected(ent, m_editorScene))
@@ -848,15 +848,14 @@ void ViewportPanel::DuplicateSelection()
 			continue;
 		}
 
-		// #TODO_Ivar: Reimplement
-		//duplicated.emplace_back(Volt::Entity::Duplicate(m_editorScene->GetRegistry(), m_editorScene->GetScriptFieldCache(), ent));
+		duplicated.emplace_back(Volt::Entity::Duplicate(Volt::Entity{ ent, m_editorScene }));
 	}
 
 	SelectionManager::DeselectAll();
 
 	for (const auto& ent : duplicated)
 	{
-		SelectionManager::Select(ent);
+		SelectionManager::Select(ent.GetID());
 	}
 }
 
@@ -1080,8 +1079,6 @@ void ViewportPanel::UpdateModals()
 
 void ViewportPanel::HandleNonMeshDragDrop()
 {
-	// #TODO_Ivar: Reimplement
-
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
 	{
 		const Volt::AssetHandle handle = *(const Volt::AssetHandle*)ptr;
@@ -1188,7 +1185,7 @@ glm::mat4 ViewportPanel::CalculateAverageTransform()
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
-		const auto trs = m_editorScene->GetWorldSpaceTRS(Volt::Entity{ ent, m_editorScene.get() });
+		const auto trs = m_editorScene->GetWorldTQS(Volt::Entity{ ent, m_editorScene.get() });
 
 		avgTranslation += trs.position;
 		avgRotation = trs.rotation;

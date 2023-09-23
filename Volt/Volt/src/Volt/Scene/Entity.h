@@ -6,6 +6,7 @@
 namespace Volt
 {
 	class IComponentTypeDesc;
+	class PhysicsActor;
 
 	template<class T>
 	concept EntityId = std::is_same<T, uint32_t>::value || std::is_same<T, entt::entity>::value;
@@ -66,6 +67,8 @@ namespace Volt
 
 		void RemoveChild(Entity entity);
 
+		Ref<PhysicsActor> GetPhysicsActor() const;
+
 		const Entity GetParent() const;
 		const std::vector<Entity> GetChildren() const;
 		const bool HasParent() const;
@@ -100,8 +103,15 @@ namespace Volt
 		// Copies a single entity
 		static void Copy(Entity srcEntity, Entity dstEntity);
 
+		// Duplicates an entire entity tree
+		static Entity Duplicate(Entity srcEntity, Entity parent = Entity::Null());
+
 	private:
 		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc);
+		static void CopyMonoScripts(Entity srcEntity, Entity dstEntity);
+
+		void UpdatePhysicsTranslation(bool updateThis);
+		void UpdatePhysicsRotation(bool updateThis);
 
 		Weak<Scene> m_scene;
 		entt::entity m_id = entt::null;

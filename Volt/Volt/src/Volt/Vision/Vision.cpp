@@ -70,23 +70,21 @@ void Volt::Vision::Reset()
 
 void Volt::Vision::Update(float aDeltaTime)
 {
-	// #TODO_Ivar: Reimplement
-	//std::vector<entt::entity> cams = myScene->GetRegistry().GetComponentView<Volt::VisionCameraComponent>();
+	auto cams = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetID()), cams.end());
 
-	//cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetId()), cams.end());
+	if (myVTCams.size() != cams.size())
+	{
+		myVTCams.clear();
+		for (auto& cam : cams)
+		{
+			Volt::Entity newCam{ cam, myScene };
 
-	//if (myVTCams.size() != cams.size())
-	//{
-	//	myVTCams.clear();
-	//	for (auto& cam : cams)
-	//	{
-	//		Volt::Entity newCam{ cam, myScene };
+			newCam.GetComponent<Volt::VisionCameraComponent>().Init(newCam);
 
-	//		newCam.GetComponent<Volt::VisionCameraComponent>().Init(newCam);
-
-	//		myVTCams.push_back(newCam);
-	//	}
-	//}
+			myVTCams.push_back(newCam);
+		}
+	}
 
 	for (auto& camEnt : myVTCams)
 	{

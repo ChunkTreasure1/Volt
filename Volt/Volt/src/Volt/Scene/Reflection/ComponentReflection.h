@@ -147,6 +147,7 @@ namespace Volt
 		~IEnumTypeDesc() override = default;
 
 		[[nodiscard]] virtual const std::vector<EnumConstant>& GetConstants() const = 0;
+		[[nodiscard]] virtual const std::vector<std::string> GetConstantNames() const = 0;
 	};
 
 	class IArrayTypeDesc : public CommonTypeDesc<ValueType::Array>
@@ -355,6 +356,7 @@ namespace Volt
 		[[nodiscard]] inline const std::string_view GetLabel() const override { return m_enumLabel; }
 		[[nodiscard]] inline const std::string_view GetDescription() const override { return m_enumDescription; }
 		[[nodiscard]] inline const std::vector<EnumConstant>& GetConstants() const override { return m_constants; }
+		[[nodiscard]] const std::vector<std::string> GetConstantNames() const override;
 
 	private:
 		VoltGUID m_guid = VoltGUID::Null();
@@ -443,6 +445,19 @@ namespace Volt
 	inline void EnumTypeDesc<T>::AddConstant(const T& constant, std::string_view name, std::string_view label)
 	{
 		m_constants.emplace_back(static_cast<int32_t>(constant), name, label);
+	}
+
+	template<Enum T>
+	inline const std::vector<std::string> EnumTypeDesc<T>::GetConstantNames() const
+	{
+		std::vector<std::string> result{};
+
+		for (const auto& constant : m_constants)
+		{
+			result.emplace_back(std::string(constant.label));
+		}
+
+		return result;
 	}
 
 	// Helpers

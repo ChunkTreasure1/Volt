@@ -67,10 +67,10 @@ namespace Volt
 		Scene(const std::string& name);
 
 		inline entt::registry& GetRegistry() { return m_registry; }
-		inline const std::string& GetName() const { return myName; }
-		inline const Statistics& GetStatistics() const { return myStatistics; }
-		inline const bool IsPlaying() const { return myIsPlaying; }
-		inline const float GetDeltaTime() const { return myCurrentDeltaTime; }
+		inline const std::string& GetName() const { return m_name; }
+		inline const Statistics& GetStatistics() const { return m_statistics; }
+		inline const bool IsPlaying() const { return m_isPlaying; }
+		inline const float GetDeltaTime() const { return m_currentDeltaTime; }
 
 		void SetTimeScale(const float aTimeScale);
 
@@ -98,12 +98,12 @@ namespace Volt
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
-		inline const uint32_t GetActiveLayer() const { return mySceneLayers.at(myActiveLayerIndex).id; }
-		inline const std::vector<SceneLayer>& GetLayers() const { return mySceneLayers; }
-		inline std::vector<SceneLayer>& GetLayersMutable() { return mySceneLayers; }
+		inline const uint32_t GetActiveLayer() const { return m_sceneLayers.at(m_activeLayerIndex).id; }
+		inline const std::vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
+		inline std::vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
 
-		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return myMonoFieldCache; }
-		inline MonoScriptFieldCache& GetScriptFieldCache() { return myMonoFieldCache; }
+		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
+		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
@@ -114,23 +114,18 @@ namespace Volt
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		//glm::mat4 GetWorldSpaceTransform(Entity entity);
-		TQS GetWorldSpaceTRS(Entity entity);
-
 		void InvalidateEntityTransform(entt::entity entity);
 
-		Vision& GetVision() { return *myVisionSystem; }
-		TimelinePlayer& GetTimelinePlayer() { return myTimelinePlayer; };
+		Vision& GetVision() { return *m_visionSystem; }
+		TimelinePlayer& GetTimelinePlayer() { return m_timelinePlayer; };
 
 		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
-		glm::vec3 GetWorldForward(Entity entity);
-		glm::vec3 GetWorldRight(Entity entity);
-		glm::vec3 GetWorldUp(Entity entity);
+		const TQS GetWorldTQS(Entity entity) const;
 
 		const Entity GetEntityWithName(std::string name);
 
-		inline ParticleSystem& GetParticleSystem() { return myParticleSystem; }
+		inline ParticleSystem& GetParticleSystem() { return m_particleSystem; }
 
 		template<typename... T>
 		const std::vector<entt::entity> GetAllEntitiesWith() const;
@@ -153,17 +148,6 @@ namespace Volt
 
 	private:
 		friend class Entity;
-
-		const glm::vec3 GetWorldPosition(Entity entity) const;
-		const glm::quat GetWorldRotation(Entity entity) const;
-		const glm::vec3 GetWorldScale(Entity entity) const;
-
-		const glm::mat4 GetWorldTransform(Entity entity) const;
-		const TQS GetWorldTQS(Entity entity) const;
-
-		entt::registry m_registry;
-
-		friend class Entity;
 		friend class SceneImporter;
 
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
@@ -176,6 +160,8 @@ namespace Volt
 
 		void AddLayer(const std::string& layerName, uint32_t layerId);
 
+		const glm::mat4 GetWorldTransform(Entity entity) const;
+
 		///// Component Functions /////
 		void RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id);
 		void CharacterControllerComponent_OnCreate(entt::registry& registry, entt::entity id);
@@ -185,6 +171,7 @@ namespace Volt
 		void MeshColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
 		void AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id);
 		void AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void CameraComponent_OnCreate(entt::registry& registry, entt::entity id);
 
 		void RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		void CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id);
@@ -194,35 +181,37 @@ namespace Volt
 		void MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		//////////////////////////////
 
-		SceneEnvironment myEnvironment;
-		Statistics myStatistics;
+		SceneEnvironment m_environment;
+		Statistics m_statistics;
 
-		bool myIsPlaying = false;
-		float myTimeSinceStart = 0.f;
-		float myCurrentDeltaTime = 0.f;
+		bool m_isPlaying = false;
+		float m_timeSinceStart = 0.f;
+		float m_currentDeltaTime = 0.f;
 
-		std::string myName = "New Scene";
+		std::string m_name = "New Scene";
+		entt::registry m_registry;
 
-		std::map<entt::entity, bool> myEntityTimesToDestroyRemoved;
-		std::map<entt::entity, float> myEntityTimesToDestroy;
+		std::map<entt::entity, bool> m_entityTimesToDestroyRemoved;
+		std::map<entt::entity, float> m_entityTimesToDestroy;
 
-		std::vector<SceneLayer> mySceneLayers;
-		std::unordered_map<entt::entity, glm::mat4> myCachedEntityTransforms;
-		std::shared_mutex myCachedEntityTransformMutex;
+		std::vector<SceneLayer> m_sceneLayers;
 
-		uint32_t myWidth = 1;
-		uint32_t myHeight = 1;
+		mutable std::unordered_map<entt::entity, glm::mat4> m_cachedEntityTransforms;
+		mutable std::shared_mutex m_cachedEntityTransformMutex;
 
-		uint32_t myLastLayerId = 1;
-		uint32_t myActiveLayerIndex = 0;
-		TimelinePlayer myTimelinePlayer;
+		uint32_t m_viewportWidth = 1;
+		uint32_t m_viewportHeight = 1;
+
+		uint32_t m_lastLayerId = 1;
+		uint32_t m_activeLayerIndex = 0;
+		TimelinePlayer m_timelinePlayer;
 			
-		ParticleSystem myParticleSystem;
-		AudioSystem myAudioSystem;
-		AnimationSystem myAnimationSystem;
-		MonoScriptFieldCache myMonoFieldCache;
+		ParticleSystem m_particleSystem;
+		AudioSystem m_audioSystem;
+		AnimationSystem m_animationSystem;
+		MonoScriptFieldCache m_monoFieldCache;
 
-		Ref<Vision> myVisionSystem; // Needs to be of ptr type because of include loop
+		Ref<Vision> m_visionSystem; // Needs to be of ptr type because of include loop
 	};
 
 	template<typename ...T>

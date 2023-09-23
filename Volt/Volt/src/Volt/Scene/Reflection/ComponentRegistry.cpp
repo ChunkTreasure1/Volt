@@ -38,6 +38,16 @@ namespace Volt
 		ComponentRegistry::s_componentHelperFunctions.at(guid).addComponent(registry, entity);
 	}
 
+	void ComponentRegistry::Helpers::RemoveComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity)
+	{
+		if (!ComponentRegistry::s_componentHelperFunctions.contains(guid))
+		{
+			return;
+		}
+
+		ComponentRegistry::s_componentHelperFunctions.at(guid).removeComponent(registry, entity);
+	}
+
 	const bool ComponentRegistry::Helpers::HasComponentWithGUID(const VoltGUID& guid, const entt::registry& registry, entt::entity entity)
 	{
 		if (!ComponentRegistry::s_componentHelperFunctions.contains(guid))

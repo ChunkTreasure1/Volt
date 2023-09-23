@@ -1537,7 +1537,7 @@ namespace Volt
 		}
 
 		streamReader.EnterScope("Scene");
-		scene->myName = streamReader.ReadKey("name", std::string("New Scene"));
+		scene->m_name = streamReader.ReadKey("name", std::string("New Scene"));
 		streamReader.ExitScope();
 
 		const std::filesystem::path& scenePath = filePath;

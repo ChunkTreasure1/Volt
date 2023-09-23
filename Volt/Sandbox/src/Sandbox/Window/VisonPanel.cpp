@@ -112,12 +112,15 @@ void VisionPanel::UpdateCameraProperties()
 	ImGui::LabelText("", "Core Settings");
 	if (UI::BeginProperties("Core Settings"))
 	{
+		{
+			const Volt::IEnumTypeDesc* camTypeDesc = Volt::GetTypeDesc<Volt::eCameraType>();
+			UI::ComboProperty("Camera Type", *(int32_t*)&visionCamComp.cameraType, camTypeDesc->GetConstantNames());
+		}
 
-		// #TODO_Ivar: Reimplement
-		//auto& enumData = Wire::ComponentRegistry::EnumData();
-
-		//UI::ComboProperty("Camera Type", *(int32_t*)&visionCamComp.cameraType, enumData.at("eCameraType"));
-		//UI::ComboProperty("Blend Type", *(int32_t*)&visionCamComp.blendType, enumData.at("eBlendType"));
+		{
+			const Volt::IEnumTypeDesc* camTypeDesc = Volt::GetTypeDesc<Volt::eBlendType>();
+			UI::ComboProperty("Blend Type", *(int32_t*)&visionCamComp.blendType, camTypeDesc->GetConstantNames());
+		}
 
 		if (visionCamComp.blendType != Volt::eBlendType::None)
 		{

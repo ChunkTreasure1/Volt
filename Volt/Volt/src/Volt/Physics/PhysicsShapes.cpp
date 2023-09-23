@@ -60,7 +60,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		component.added = true;
@@ -87,7 +87,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const glm::vec3 colliderSize = transform.scale * halfSize;
@@ -137,7 +137,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
@@ -163,7 +163,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
@@ -214,7 +214,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
@@ -243,7 +243,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const float heightScale = transform.scale.y;
@@ -263,7 +263,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
@@ -318,7 +318,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Convex";
@@ -430,7 +430,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Triangle";

@@ -7,6 +7,11 @@
 
 #include "Volt/Utility/StringUtility.h"
 
+#include "Volt/Physics/Physics.h"
+#include "Volt/Physics/PhysicsScene.h"
+
+#include "Volt/Net/SceneInteraction/NetActorComponent.h"
+
 #include <cassert>
 
 namespace Volt
@@ -34,7 +39,7 @@ namespace Volt
 		return registry.get<TagComponent>(m_id).tag;
 	}
 
-	const std::string Entity::ToString() const 
+	const std::string Entity::ToString() const
 	{
 		return std::to_string(static_cast<uint32_t>(m_id));
 	}
@@ -117,19 +122,22 @@ namespace Volt
 	const glm::vec3 Entity::GetPosition() const
 	{
 		auto scenePtr = GetScene();
-		return scenePtr->GetWorldPosition(*this);
+		const auto tqs = scenePtr->GetWorldTQS(*this);
+		return tqs.position;
 	}
 
 	const glm::quat Entity::GetRotation() const
 	{
 		auto scenePtr = GetScene();
-		return scenePtr->GetWorldRotation(*this);
+		const auto tqs = scenePtr->GetWorldTQS(*this);
+		return tqs.rotation;
 	}
 
 	const glm::vec3 Entity::GetScale() const
 	{
 		auto scenePtr = GetScene();
-		return scenePtr->GetWorldScale(*this);
+		const auto tqs = scenePtr->GetWorldTQS(*this);
+		return tqs.scale;
 	}
 
 	const glm::vec3& Entity::GetLocalPosition() const
@@ -162,16 +170,16 @@ namespace Volt
 	void Entity::SetPosition(const glm::vec3& position, bool updatePhysics)
 	{
 		Entity parent = GetParent();
-		Scene::TQS parransform{};
+		Scene::TQS parentTransform{};
 
 		if (parent)
 		{
-			parransform = m_scene.lock()->GetWorldTQS(parent);
+			parentTransform = m_scene.lock()->GetWorldTQS(parent);
 		}
 
-		const glm::vec3 translatedPoint = position - parransform.position;
-		const glm::vec3 invertedScale = 1.f / parransform.scale;
-		const glm::vec3 rotatedPoint = glm::conjugate(parransform.rotation) * translatedPoint;
+		const glm::vec3 translatedPoint = position - parentTransform.position;
+		const glm::vec3 invertedScale = 1.f / parentTransform.scale;
+		const glm::vec3 rotatedPoint = glm::conjugate(parentTransform.rotation) * translatedPoint;
 
 		const glm::vec3 localPoint = rotatedPoint * invertedScale;
 		SetLocalPosition(localPoint, updatePhysics);
@@ -180,28 +188,28 @@ namespace Volt
 	void Entity::SetRotation(const glm::quat& rotation, bool updatePhysics)
 	{
 		Entity parent = GetParent();
-		glm::quat parentRotation = glm::identity<glm::quat>();
+		Scene::TQS parentTransform{};
 
 		if (parent)
 		{
-			parentRotation = m_scene.lock()->GetWorldRotation(parent);
+			parentTransform = m_scene.lock()->GetWorldTQS(parent);
 		}
 
-		const glm::quat localRotation = glm::conjugate(parentRotation) * rotation;
+		const glm::quat localRotation = glm::conjugate(parentTransform.rotation) * rotation;
 		SetLocalRotation(localRotation, updatePhysics);
 	}
 
 	void Entity::SetScale(const glm::vec3& scale)
 	{
 		Entity parent = GetParent();
-		glm::vec3 parentScale = { 1.f };
+		Scene::TQS parentTransform{};
 
 		if (parent)
 		{
-			parentScale = m_scene.lock()->GetWorldScale(parent);
+			parentTransform = m_scene.lock()->GetWorldTQS(parent);
 		}
 
-		const glm::vec3 inverseScale = 1.f / parentScale;
+		const glm::vec3 inverseScale = 1.f / parentTransform.scale;
 		const glm::vec3 localScale = scale * inverseScale;
 
 		SetLocalScale(localScale);
@@ -214,6 +222,9 @@ namespace Volt
 
 		assert(registry.any_of<TransformComponent>(m_id) && "Entity must have transform component!");
 		registry.get<TransformComponent>(m_id).position = position;
+
+		UpdatePhysicsTranslation(updatePhysics);
+		scenePtr->InvalidateEntityTransform(m_id);
 	}
 
 	void Entity::SetLocalRotation(const glm::quat& rotation, bool updatePhysics)
@@ -223,6 +234,9 @@ namespace Volt
 
 		assert(registry.any_of<TransformComponent>(m_id) && "Entity must have transform component!");
 		registry.get<TransformComponent>(m_id).rotation = rotation;
+
+		UpdatePhysicsRotation(updatePhysics);
+		scenePtr->InvalidateEntityTransform(m_id);
 	}
 
 	void Entity::SetLocalScale(const glm::vec3& scale)
@@ -232,6 +246,8 @@ namespace Volt
 
 		assert(registry.any_of<TransformComponent>(m_id) && "Entity must have transform component!");
 		registry.get<TransformComponent>(m_id).scale = scale;
+
+		scenePtr->InvalidateEntityTransform(m_id);
 	}
 
 	void Entity::ClearParent()
@@ -240,7 +256,7 @@ namespace Volt
 		auto& registry = scenePtr->GetRegistry();
 
 		assert(registry.any_of<RelationshipComponent>(m_id) && "Entity must have relationship component!");
-	
+
 		auto parent = GetParent();
 		parent.RemoveChild(*this);
 
@@ -277,20 +293,30 @@ namespace Volt
 		assert(registry.any_of<RelationshipComponent>(m_id) && "Entity must have relationship component!");
 
 		auto& relComp = registry.get<RelationshipComponent>(m_id);
-		for (uint32_t index = 0; auto& childId : relComp.children)
+		for (uint32_t index = 0; auto & childId : relComp.children)
 		{
 			Entity childEnt{ childId, m_scene };
-			
+
 			if (childEnt.GetID() == entity.GetID())
 			{
 				childEnt.GetComponent<RelationshipComponent>().parent = entt::null;
-				
+
 				relComp.children.erase(relComp.children.begin() + index);
 				break;
 			}
 
 			index++;
 		}
+	}
+
+	Ref<PhysicsActor> Entity::GetPhysicsActor() const
+	{
+		if (!Physics::GetScene())
+		{
+			return nullptr;
+		}
+
+		return Physics::GetScene()->GetActor(*this);
 	}
 
 	const Entity Entity::GetParent() const
@@ -406,7 +432,7 @@ namespace Volt
 		}
 
 		GetComponent<TransformComponent>().locked = state;
-		
+
 		for (auto child : GetChildren())
 		{
 			child.SetLocked(state);
@@ -433,7 +459,7 @@ namespace Volt
 
 	const bool Entity::IsValid() const
 	{
-		if (m_scene.expired() || m_id == static_cast<entt::entity>(0))
+		if (m_scene.expired() || m_id == entt::null)
 		{
 			return false;
 		}
@@ -441,7 +467,7 @@ namespace Volt
 		auto scenePtr = m_scene.lock();
 		return scenePtr->GetRegistry().valid(m_id);
 	}
-	
+
 	Entity& Entity::operator=(const Entity& entity)
 	{
 		m_scene = entity.m_scene;
@@ -485,12 +511,18 @@ namespace Volt
 				continue;
 			}
 
-			ComponentRegistry::Helpers::AddComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID());
+			if (!ComponentRegistry::Helpers::HasComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID()))
+			{
+				ComponentRegistry::Helpers::AddComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID());
+			}
+
 			void* voidCompPtr = Volt::ComponentRegistry::Helpers::GetComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID());
 			uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
 			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity.GetID())), componentData, 0, componentDesc);
 		}
+
+		CopyMonoScripts(srcEntity, dstEntity);
 
 		// Clear the relationship component, as this is a standalone entity
 		{
@@ -498,6 +530,32 @@ namespace Volt
 			relComp.children.clear();
 			relComp.parent = entt::null;
 		}
+	}
+
+	Entity Entity::Duplicate(Entity srcEntity, Entity parent)
+	{
+		auto scene = srcEntity.GetScene();
+
+		Entity newEntity = scene->CreateEntity();
+
+		Copy(srcEntity, newEntity);
+
+		if (newEntity.HasComponent<NetActorComponent>())
+		{
+			newEntity.GetComponent<NetActorComponent>().repId = Nexus::RandRepID();
+		}
+
+		std::vector<entt::entity> newChildren;
+
+		for (const auto& child : srcEntity.GetChildren())
+		{
+			newChildren.emplace_back(Duplicate(child).GetID());
+		}
+
+		newEntity.GetComponent<RelationshipComponent>().children = newChildren;
+		newEntity.GetComponent<RelationshipComponent>().parent = parent ? parent.GetID() : entt::null;
+
+		return newEntity;
 	}
 
 	void Entity::CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc)
@@ -532,6 +590,66 @@ namespace Volt
 			else
 			{
 				member.copyFunction(&dstData[offset + member.offset], &srcData[offset + member.offset]);
+			}
+		}
+	}
+
+	void Entity::CopyMonoScripts(Entity srcEntity, Entity dstEntity)
+	{
+		const auto& srcComponent = srcEntity.GetComponent<MonoScriptComponent>();
+		auto& dstComponent = dstEntity.GetComponent<MonoScriptComponent>();
+
+		auto srcScene = srcEntity.GetScene();
+		auto dstScene = dstEntity.GetScene();
+
+		dstComponent.scriptNames = srcComponent.scriptNames;
+		dstComponent.scriptIds.clear();
+
+		for (size_t i = 0; i < dstComponent.scriptNames.size(); i++)
+		{
+			dstComponent.scriptIds.emplace_back();
+
+			if (!MonoScriptEngine::EntityClassExists(dstComponent.scriptNames.at(i)))
+			{
+				continue;
+			}
+
+			const auto& classFields = MonoScriptEngine::GetScriptClass(dstComponent.scriptNames.at(i));
+
+			if (!srcScene->GetScriptFieldCache().GetCache().contains(dstComponent.scriptIds.at(i)))
+			{
+				continue;
+			}
+		}
+	}
+
+	void Entity::UpdatePhysicsTranslation(bool updateThis)
+	{
+		if (updateThis && m_scene.lock()->IsPlaying() && (HasComponent<RigidbodyComponent>() || HasComponent<CharacterControllerComponent>()))
+		{
+			auto actor = Physics::GetScene()->GetActor(*this);
+			if (actor)
+			{
+				const glm::vec3 tempPosition = GetPosition();
+				actor->SetPosition(tempPosition, true, false);
+			}
+			else
+			{
+				auto cc = Physics::GetScene()->GetControllerActor(*this);
+				cc->SetFootPosition(GetPosition());
+			}
+		}
+	}
+
+	void Entity::UpdatePhysicsRotation(bool updateThis)
+	{
+		if (updateThis && m_scene.lock()->IsPlaying() && HasComponent<RigidbodyComponent>())
+		{
+			auto actor = Physics::GetScene()->GetActor(*this);
+			if (actor)
+			{
+				const glm::quat tempRotation = GetRotation();
+				actor->SetRotation(tempRotation, true, false);
 			}
 		}
 	}

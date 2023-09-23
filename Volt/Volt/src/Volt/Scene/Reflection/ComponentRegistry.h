@@ -29,6 +29,7 @@ namespace Volt
 		struct HelperFunctions
 		{
 			std::function<void(entt::registry&, entt::entity)> addComponent;
+			std::function<void(entt::registry&, entt::entity)> removeComponent;
 			std::function<bool(const entt::registry&, entt::entity)> hasComponent;
 			std::function<void*(entt::registry&, entt::entity)> getComponent;
 		};
@@ -37,6 +38,7 @@ namespace Volt
 		{
 		public:
 			static void AddComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity);
+			static void RemoveComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity);
 			static const bool HasComponentWithGUID(const VoltGUID& guid, const entt::registry& registry, entt::entity entity);
 			static void* GetComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity);
 
@@ -75,6 +77,11 @@ namespace Volt
 		helpers.addComponent = [](entt::registry& registry, entt::entity entity)
 		{
 			registry.emplace<T>(entity);
+		};
+
+		helpers.removeComponent = [](entt::registry& registry, entt::entity entity)
+		{
+			registry.remove<T>(entity);
 		};
 
 		helpers.hasComponent = [](const entt::registry& registry, entt::entity entity)
