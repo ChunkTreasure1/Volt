@@ -101,7 +101,7 @@ namespace Volt
 		static Entity Null();
 
 		// Copies a single entity
-		static void Copy(Entity srcEntity, Entity dstEntity);
+		static void Copy(Entity srcEntity, Entity dstEntity, bool skipRelationships = true);
 
 		// Duplicates an entire entity tree
 		static Entity Duplicate(Entity srcEntity, Entity parent = Entity::Null());

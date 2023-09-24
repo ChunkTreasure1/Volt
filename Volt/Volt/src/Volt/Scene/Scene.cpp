@@ -760,7 +760,7 @@ namespace Volt
 		m_registry.each([&](entt::entity id)
 		{
 			id = otherScene->m_registry.create(id);
-			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene });
+			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene }, false);
 		});
 	}
 
@@ -841,6 +841,7 @@ namespace Volt
 		m_registry.on_construct<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnCreate>(this);
 		m_registry.on_construct<AudioSourceComponent>().connect<&Scene::AudioSourceComponent_OnCreate>(this);
 		m_registry.on_construct<AudioListenerComponent>().connect<&Scene::AudioListenerComponent_OnCreate>(this);
+		m_registry.on_construct<CameraComponent>().connect<&Scene::CameraComponent_OnCreate>(this);
 
 		m_registry.on_destroy<RigidbodyComponent>().connect<&Scene::RigidbodyComponent_OnDestroy>(this);
 		m_registry.on_destroy<CharacterControllerComponent>().connect<&Scene::CharacterControllerComponent_OnDestroy>(this);

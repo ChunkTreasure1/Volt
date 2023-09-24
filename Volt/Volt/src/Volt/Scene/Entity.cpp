@@ -481,10 +481,8 @@ namespace Volt
 		return {};
 	}
 
-	void Entity::Copy(Entity srcEntity, Entity dstEntity)
+	void Entity::Copy(Entity srcEntity, Entity dstEntity, bool skipRelationships)
 	{
-		// #TODO_Ivar: Implement MonoComponent copying
-
 		auto srcScene = srcEntity.GetScene();
 		auto& srcRegistry = srcScene->GetRegistry();
 
@@ -525,6 +523,7 @@ namespace Volt
 		CopyMonoScripts(srcEntity, dstEntity);
 
 		// Clear the relationship component, as this is a standalone entity
+		if (skipRelationships)
 		{
 			RelationshipComponent& relComp = dstEntity.GetComponent<RelationshipComponent>();
 			relComp.children.clear();
@@ -549,7 +548,7 @@ namespace Volt
 
 		for (const auto& child : srcEntity.GetChildren())
 		{
-			newChildren.emplace_back(Duplicate(child).GetID());
+			newChildren.emplace_back(Duplicate(child, newEntity).GetID());
 		}
 
 		newEntity.GetComponent<RelationshipComponent>().children = newChildren;
@@ -596,6 +595,11 @@ namespace Volt
 
 	void Entity::CopyMonoScripts(Entity srcEntity, Entity dstEntity)
 	{
+		if (!srcEntity.HasComponent<MonoScriptComponent>() || !dstEntity.HasComponent<MonoScriptComponent>())
+		{
+			return;
+		}
+
 		const auto& srcComponent = srcEntity.GetComponent<MonoScriptComponent>();
 		auto& dstComponent = dstEntity.GetComponent<MonoScriptComponent>();
 
@@ -605,20 +609,39 @@ namespace Volt
 		dstComponent.scriptNames = srcComponent.scriptNames;
 		dstComponent.scriptIds.clear();
 
-		for (size_t i = 0; i < dstComponent.scriptNames.size(); i++)
+		for (size_t i = 0; i < srcComponent.scriptNames.size(); i++)
 		{
 			dstComponent.scriptIds.emplace_back();
 
-			if (!MonoScriptEngine::EntityClassExists(dstComponent.scriptNames.at(i)))
+			if (!MonoScriptEngine::EntityClassExists(srcComponent.scriptNames.at(i)))
 			{
 				continue;
 			}
 
-			const auto& classFields = MonoScriptEngine::GetScriptClass(dstComponent.scriptNames.at(i));
+			const auto& classFields = MonoScriptEngine::GetScriptClass(srcComponent.scriptNames.at(i))->GetFields();
 
-			if (!srcScene->GetScriptFieldCache().GetCache().contains(dstComponent.scriptIds.at(i)))
+			if (!srcScene->GetScriptFieldCache().GetCache().contains(srcComponent.scriptIds.at(i)))
 			{
 				continue;
+			}
+
+			const auto& srcFields = srcScene->GetScriptFieldCache().GetCache().at(srcComponent.scriptIds.at(i));
+			auto& dstFields = dstScene->GetScriptFieldCache().GetCache()[dstComponent.scriptIds[i]];
+
+			for (const auto& [name, field] : classFields)
+			{
+				if (!srcFields.contains(name))
+				{
+					continue;
+				}
+
+				auto& srcField = srcFields.at(name);
+
+				dstFields[name] = CreateRef<MonoScriptFieldInstance>();
+				dstFields.at(name)->field = srcFields.at(name)->field;
+
+				const void* dataPtr = srcField->data.As<void>();
+				dstFields.at(name)->SetValue(dataPtr, srcFields.at(name)->field.type.typeSize);
 			}
 		}
 	}
