@@ -109,7 +109,6 @@ namespace Volt
 
 		Entity CreateEntity(const std::string& tag = "");
 		void RemoveEntity(Entity entity);
-		void RemoveEntity(Entity entity, float aTimeToDestroy);
 
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
@@ -158,6 +157,8 @@ namespace Volt
 		void ConvertToWorldSpace(Entity entity);
 		void ConvertToLocalSpace(Entity entity);
 
+		void RemoveEntityInternal(Entity entity, bool removingParent);
+
 		void AddLayer(const std::string& layerName, uint32_t layerId);
 
 		const glm::mat4 GetWorldTransform(Entity entity) const;
@@ -190,9 +191,6 @@ namespace Volt
 
 		std::string m_name = "New Scene";
 		entt::registry m_registry;
-
-		std::map<entt::entity, bool> m_entityTimesToDestroyRemoved;
-		std::map<entt::entity, float> m_entityTimesToDestroy;
 
 		std::vector<SceneLayer> m_sceneLayers;
 

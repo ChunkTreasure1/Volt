@@ -298,40 +298,6 @@ namespace Volt
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 		m_audioSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 		m_animationSystem.Update(m_registry, aDeltaTime);
-
-		for (auto& [ent, time] : m_entityTimesToDestroy)
-		{
-			time -= aDeltaTime;
-			if (time <= 0.f && !m_entityTimesToDestroyRemoved.at(ent))
-			{
-				RemoveEntity(Entity{ ent, this });
-			}
-		}
-
-		for (auto it = m_entityTimesToDestroyRemoved.begin(); it != m_entityTimesToDestroyRemoved.end();)
-		{
-			if (it->second == true)
-			{
-				m_entityTimesToDestroy.erase(it->first);
-				it = m_entityTimesToDestroyRemoved.erase(it);
-			}
-			else
-			{
-				++it;
-			}
-		}
-
-		for (auto it = m_entityTimesToDestroy.begin(); it != m_entityTimesToDestroy.end();)
-		{
-			if (it->second <= 0.f)
-			{
-				it = m_entityTimesToDestroy.erase(it);
-			}
-			else
-			{
-				++it;
-			}
-		}
 	}
 
 	void Scene::FixedUpdate(float aDeltaTime)
@@ -423,62 +389,8 @@ namespace Volt
 
 	void Scene::RemoveEntity(Entity entity)
 	{
-		if (!m_registry.valid(entity.GetID()))
-		{
-			return;
-		}
-
-		if (m_entityTimesToDestroyRemoved.contains(entity.GetID()))
-		{
-			m_entityTimesToDestroyRemoved.at(entity.GetID()) = true;
-		}
-
-		if (entity.HasComponent<RelationshipComponent>())
-		{
-			auto& relComp = entity.GetComponent<RelationshipComponent>();
-			if (relComp.parent != entt::null)
-			{
-				Entity parentEnt = { relComp.parent, this };
-
-				if (parentEnt.HasComponent<RelationshipComponent>())
-				{
-					auto& parentRelComp = parentEnt.GetComponent<RelationshipComponent>();
-					auto it = std::find(parentRelComp.children.begin(), parentRelComp.children.end(), entity.GetID());
-					if (it != parentRelComp.children.end())
-					{
-						parentRelComp.children.erase(it);
-					}
-				}
-			}
-
-			for (int32_t i = static_cast<int32_t>(relComp.children.size()) - 1; i >= 0; --i)
-			{
-				Entity childEnt{ relComp.children.at(i), this };
-				RemoveEntity(childEnt);
-			}
-		}
-
-		if (entity.HasComponent<MonoScriptComponent>())
-		{
-			for (const auto& scriptId : entity.GetComponent<MonoScriptComponent>().scriptIds)
-			{
-				MonoScriptEngine::OnDestroyInstance(scriptId);
-			}
-		}
-
-		m_registry.destroy(entity.GetID());
+		RemoveEntityInternal(entity, false);
 		SortScene();
-	}
-
-	void Scene::RemoveEntity(Entity entity, float aTimeToDestroy)
-	{
-		if (m_entityTimesToDestroy.find(entity.GetID()) != m_entityTimesToDestroy.end())
-		{
-			return;
-		}
-
-		m_entityTimesToDestroy.emplace(entity.GetID(), aTimeToDestroy);
-		m_entityTimesToDestroyRemoved.emplace(entity.GetID(), false);
 	}
 
 	void Scene::ParentEntity(Entity parent, Entity child)
@@ -906,6 +818,52 @@ namespace Volt
 		transform.rotation = glm::quat{ r };
 
 		InvalidateEntityTransform(entity.GetID());
+	}
+
+	void Scene::RemoveEntityInternal(Entity entity, bool removingParent)
+	{
+		if (!m_registry.valid(entity.GetID()))
+		{
+			return;
+		}
+
+		if (entity.HasComponent<RelationshipComponent>())
+		{
+			auto& relComp = entity.GetComponent<RelationshipComponent>();
+			if (relComp.parent != entt::null)
+			{
+				Entity parentEnt = { relComp.parent, this };
+
+				if (parentEnt.HasComponent<RelationshipComponent>() && !removingParent)
+				{
+					auto& parentRelComp = parentEnt.GetComponent<RelationshipComponent>();
+
+					auto it = std::find(parentRelComp.children.begin(), parentRelComp.children.end(), entity.GetID());
+					if (it != parentRelComp.children.end())
+					{
+						parentRelComp.children.erase(it);
+					}
+				}
+			}
+
+			for (int32_t i = static_cast<int32_t>(relComp.children.size()) - 1; i >= 0; --i)
+			{
+				Entity childEnt{ relComp.children.at(i), this };
+				RemoveEntityInternal(childEnt, true);
+			
+				relComp = entity.GetComponent<RelationshipComponent>();
+			}
+		}
+
+		if (entity.HasComponent<MonoScriptComponent>())
+		{
+			for (const auto& scriptId : entity.GetComponent<MonoScriptComponent>().scriptIds)
+			{
+				MonoScriptEngine::OnDestroyInstance(scriptId);
+			}
+		}
+
+		m_registry.destroy(entity.GetID());
 	}
 
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
