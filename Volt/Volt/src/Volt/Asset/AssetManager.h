@@ -217,7 +217,7 @@ namespace Volt
 	template<typename T>
 	inline Ref<T> AssetManager::GetAssetLocking(const std::filesystem::path& path)
 	{
-		return GetAsset<T>(GetAssetHandleFromFilePath(path));
+		return GetAssetLocking<T>(GetAssetHandleFromFilePath(path));
 	}
 
 	template<typename T>

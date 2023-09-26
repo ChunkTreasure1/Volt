@@ -1511,6 +1511,13 @@ namespace Volt
 
 		RegisterDeserializationFunction<entt::entity>(s_typeDeserializers);
 		RegisterDeserializationFunction<AssetHandle>(s_typeDeserializers);
+
+		s_instance = this;
+	}
+
+	SceneImporter::~SceneImporter()
+	{
+		s_instance = nullptr;
 	}
 
 	bool SceneImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
@@ -1642,7 +1649,7 @@ namespace Volt
 				{
 					for (const auto id : scene->GetAllEntities())
 					{
-						Volt::Entity entity{ id, scene };
+						Entity entity{ id, scene };
 						const uint32_t layerId = entity.GetComponent<CommonComponent>().layerId;
 
 						if (layerId != layer.id)

@@ -352,9 +352,9 @@ namespace Volt
 		}
 	}
 
-	Entity Scene::CreateEntity(const std::string& tag)
+	Entity Scene::CreateEntity(const std::string& tag, const entt::entity hintId)
 	{
-		entt::entity id = m_registry.create();
+		entt::entity id = m_registry.create(hintId);
 
 		Entity newEntity = Entity(id, this);
 		auto& transform = newEntity.AddComponent<TransformComponent>();

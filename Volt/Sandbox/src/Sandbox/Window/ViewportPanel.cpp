@@ -790,8 +790,7 @@ void ViewportPanel::CheckDragDrop()
 				break;
 			}
 
-			entt::entity id = prefab->Instantiate(m_editorScene.get());
-			Volt::Entity prefabEntity(id, m_editorScene.get());
+			Volt::Entity prefabEntity = prefab->Instantiate(m_editorScene);
 
 			Ref<ObjectStateCommand> command = CreateRef<ObjectStateCommand>(prefabEntity, ObjectStateAction::Create);
 			EditorCommandStack::GetInstance().PushUndo(command);

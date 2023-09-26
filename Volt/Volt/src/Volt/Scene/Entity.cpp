@@ -250,6 +250,18 @@ namespace Volt
 		scenePtr->InvalidateEntityTransform(m_id);
 	}
 
+	void Entity::SetParent(Entity parentEntity)
+	{
+		auto scenePtr = GetScene();
+		scenePtr->ParentEntity(parentEntity, *this);
+	}
+
+	void Entity::AddChild(Entity childEntity)
+	{
+		auto scenePtr = GetScene();
+		scenePtr->ParentEntity(*this, childEntity);
+	}
+
 	void Entity::ClearParent()
 	{
 		auto scenePtr = GetScene();
@@ -531,9 +543,9 @@ namespace Volt
 		}
 	}
 
-	Entity Entity::Duplicate(Entity srcEntity, Entity parent)
+	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent)
 	{
-		auto scene = srcEntity.GetScene();
+		auto scene = targetScene ? targetScene : srcEntity.GetScene();
 
 		Entity newEntity = scene->CreateEntity();
 
@@ -548,7 +560,7 @@ namespace Volt
 
 		for (const auto& child : srcEntity.GetChildren())
 		{
-			newChildren.emplace_back(Duplicate(child, newEntity).GetID());
+			newChildren.emplace_back(Duplicate(child, targetScene, newEntity).GetID());
 		}
 
 		newEntity.GetComponent<RelationshipComponent>().children = newChildren;

@@ -1207,7 +1207,7 @@ void AssetBrowserPanel::CreatePrefabAndSetupEntities(entt::entity id)
 	std::string name = tagComp.tag + ".vtprefab";
 	name.erase(std::remove_if(name.begin(), name.end(), ::isspace), name.end());
 
-	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, myEditorScene.get(), entity.GetID());
+	Ref<Volt::Prefab> prefab = Volt::AssetManager::CreateAsset<Volt::Prefab>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name, entity);
 	Volt::AssetManager::SaveAsset(prefab);
 
 	SetupEntityAsPrefab(entity.GetID(), prefab->handle);

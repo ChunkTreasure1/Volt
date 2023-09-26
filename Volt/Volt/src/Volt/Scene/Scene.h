@@ -107,13 +107,13 @@ namespace Volt
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
-		Entity CreateEntity(const std::string& tag = "");
+		Entity CreateEntity(const std::string& tag = "", const entt::entity hintId = entt::null);
 		void RemoveEntity(Entity entity);
 
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		void InvalidateEntityTransform(entt::entity entity);
+		void InvalidateEntityTransform(entt::entity entity); // #TODO_Ivar: Change to Volt::Entity
 
 		Vision& GetVision() { return *m_visionSystem; }
 		TimelinePlayer& GetTimelinePlayer() { return m_timelinePlayer; };

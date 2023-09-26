@@ -263,6 +263,7 @@ namespace Volt
 		LoadAsset(handle, asset);
 	}
 
+	// #TODO_Ivar: This function does not seem to do what it's supposed to...
 	void AssetManager::SaveAssetAs(Ref<Asset> asset, const std::filesystem::path& targetFilePath)
 	{
 		auto& instance = Get();
@@ -289,6 +290,15 @@ namespace Volt
 			metaData.isLoaded = true;
 			metaData.type = asset->GetType();
 		}
+
+		AssetMetadata metadata = s_nullMetadata;
+		
+		{
+			ReadLock lock{ instance.m_assetRegistryMutex };
+			metadata = GetMetadataFromHandle(asset->handle);
+		}
+
+		instance.m_assetImporters[metadata.type]->Save(metadata, asset);
 
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };

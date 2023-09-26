@@ -577,8 +577,7 @@ bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty&
 
 	if (auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle))
 	{
-		auto entId = prefab->Instantiate(scenePtr.lock().get());
-		Volt::Entity entity = { entId, scenePtr };
+		auto entity = prefab->Instantiate(scenePtr);
 
 		std::string tagId = " :error";
 		if (entity.HasComponent<Volt::NetActorComponent>())
@@ -595,14 +594,14 @@ bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty&
 			}
 		}
 
-		registry.Register(data.repId, Volt::RepEntity(entId, data.ownerId, data.handle));
+		registry.Register(data.repId, Volt::RepEntity(entity.GetID(), data.ownerId, data.handle));
 		entity.GetComponent<Volt::TagComponent>().tag = entity.GetTag() + tagId + std::to_string(data.repId);
 
-		RecursiveOwnerShipControll(entId, data);
+		RecursiveOwnerShipControll(entity.GetID(), data);
 		if (Volt::MonoScriptEngine::IsRunning())
 		{
 			auto varId = data.repId;
-			RecursiveHandleMono(entId, data.repId, varId, &registry);
+			RecursiveHandleMono(entity.GetID(), data.repId, varId, &registry);
 		}
 		bool status = true;
 		for (auto compData : data.componentData)

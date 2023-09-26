@@ -41,20 +41,16 @@ private:
 
 	void DrawMainRightClickPopup();
 
-	void CorrectMissingPrefabs();
-	void ReloadAllPrefabModal();
-	void ReloadPrefabImpl(Volt::Entity entity, Ref<Volt::Prefab> asset);
+	std::string m_searchQuery;
+	bool m_hasSearchQuery = false;
+	entt::entity m_scrollToEntity = entt::null;
 
-	std::string mySearchQuery;
-	bool myHasSearchQuery = false;
-	entt::entity myScrollToEntity = entt::null;
+	bool m_isRenamingLayer = false;
+	uint32_t m_renamingLayer = 0;
 
-	bool myIsRenamingLayer = false;
-	uint32_t myRenamingLayer = 0;
+	std::vector<entt::entity> m_entityDrawList;
+	std::unordered_map<entt::entity, ImGuiID> m_entityToImGuiID;
+	bool m_rebuildDrawList = false;
 
-	std::vector<entt::entity> myEntityDrawList;
-	std::unordered_map<entt::entity, ImGuiID> myEntityToImGuiID;
-	bool myRebuildDrawList = false;
-
-	Ref<Volt::Scene>& myScene;
+	Ref<Volt::Scene>& m_scene;
 };

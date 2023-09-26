@@ -362,10 +362,10 @@ namespace Volt
 			return nullptr;
 		}
 
-		auto entityId = prefab->Instantiate(scene);
-		RecursiveCreatePrefabEntities(entityId);
+		auto entity = prefab->Instantiate(scene->shared_from_this());
+		RecursiveCreatePrefabEntities(entity.GetID());
 
-		auto instance = MonoScriptEngine::GetEntityFromId(entityId);
+		auto instance = MonoScriptEngine::GetEntityFromId(entity.GetID());
 
 		if (instance)
 		{

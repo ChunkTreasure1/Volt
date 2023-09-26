@@ -99,7 +99,7 @@ void NetContractPanel::DrawActions()
 			Volt::NetContractContainer::Clear();
 			Volt::NetContractContainer::Load();
 			m_scene->RemoveEntity(Volt::Entity(m_entityId, m_scene.get()));
-			m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene.get());
+			m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene).GetID();
 		}
 	}
 	ImGui::SameLine();
@@ -113,7 +113,7 @@ void NetContractPanel::DrawActions()
 		}
 		if (m_handle != 0)
 		{
-			m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene.get());
+			m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene).GetID();
 			Volt::NetContractContainer::Clear();
 			Volt::NetContractContainer::Load();
 		}

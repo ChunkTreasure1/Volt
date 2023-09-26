@@ -109,7 +109,7 @@ namespace AssetBrowser
 			{
 				auto scene = CreateRef<Volt::Scene>("ExportMeshScene");
 
-				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene.get());
+				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene);
 				std::vector<Volt::Entity> meshEntities;
 
 				for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())

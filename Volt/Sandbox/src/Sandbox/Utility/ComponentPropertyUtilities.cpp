@@ -131,7 +131,7 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 
 					if (compTypeDesc->IsHidden())
 					{
-						return;
+						break;
 					}
 
 					bool removeComp = false;

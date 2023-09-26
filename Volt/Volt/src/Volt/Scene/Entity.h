@@ -62,6 +62,9 @@ namespace Volt
 		void SetLocalRotation(const glm::quat& rotation, bool updatePhysics = true);
 		void SetLocalScale(const glm::vec3& scale);
 
+		void SetParent(Entity parentEntity);
+		void AddChild(Entity childEntity);
+
 		void ClearParent();
 		void ClearChildren();
 
@@ -104,7 +107,7 @@ namespace Volt
 		static void Copy(Entity srcEntity, Entity dstEntity, bool skipRelationships = true);
 
 		// Duplicates an entire entity tree
-		static Entity Duplicate(Entity srcEntity, Entity parent = Entity::Null());
+		static Entity Duplicate(Entity srcEntity, Ref<Scene> targetScene = nullptr, Entity parent = Entity::Null());
 
 	private:
 		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc);
