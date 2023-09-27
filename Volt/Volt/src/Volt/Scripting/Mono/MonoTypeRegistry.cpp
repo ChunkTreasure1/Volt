@@ -14,6 +14,16 @@ namespace Volt
 		newType.typeFlags = typeFlags;
 		newType.typeSize = sizeof(T);
 		newType.typeName = std::string(monoTypeName);
+
+		newType.equalFunc = [](const void* lhs, const void* rhs) -> bool
+		{
+			if (!lhs || !rhs)
+			{
+				return false;
+			}
+
+			return (*reinterpret_cast<const T*>(lhs)) == (*reinterpret_cast<const T*>(rhs));
+		};
 	}
 
 	void MonoTypeRegistry::Initialize()

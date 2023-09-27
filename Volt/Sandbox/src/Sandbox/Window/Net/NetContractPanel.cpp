@@ -15,10 +15,9 @@ NetContractPanel::NetContractPanel()
 {
 	m_scene = Volt::Scene::CreateDefaultScene("NetContract scene", false);
 	m_blocked = {
-		"VisualScriptingComponent",
 		"TagComponent",
 		"TransformComponent",
-		"EntityDataComponent",
+		"CommonComponent",
 		"RelationshipComponent",
 		"PrefabComponent",
 		"NetActorComponent"
@@ -82,9 +81,9 @@ void NetContractPanel::DrawActions()
 			auto contract = Volt::NetContractContainer::GetContract(m_handle);
 			if (!std::filesystem::exists(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts"))
 			{
-				std::filesystem::create_directory(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts");
+				std::filesystem::create_directories(Volt::ProjectManager::GetProjectDirectory() / "Assets/Networking/Contracts");
 			}
-			Volt::AssetManager::Get().SaveAsset(contract);
+			Volt::AssetManager::SaveAsset(contract);
 		}
 		else
 		{
@@ -103,20 +102,26 @@ void NetContractPanel::DrawActions()
 		}
 	}
 	ImGui::SameLine();
-	if (EditorUtils::Property("Prefab:", m_handle, Volt::AssetType::Prefab))
+
+	if (UI::BeginProperties("actions"))
 	{
-		if (m_entityId != entt::null)
+		if (EditorUtils::Property("Prefab:", m_handle, Volt::AssetType::Prefab))
 		{
-			m_scene->RemoveEntity(Volt::Entity(m_entityId, m_scene.get()));
-			Volt::NetContractContainer::Clear();
-			Volt::NetContractContainer::Load();
+			if (m_entityId != entt::null)
+			{
+				m_scene->RemoveEntity(Volt::Entity(m_entityId, m_scene.get()));
+				Volt::NetContractContainer::Clear();
+				Volt::NetContractContainer::Load();
+			}
+			if (m_handle != 0)
+			{
+				m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene).GetID();
+				Volt::NetContractContainer::Clear();
+				Volt::NetContractContainer::Load();
+			}
 		}
-		if (m_handle != 0)
-		{
-			m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene).GetID();
-			Volt::NetContractContainer::Clear();
-			Volt::NetContractContainer::Load();
-		}
+
+		UI::EndProperties();
 	}
 }
 
@@ -125,12 +130,14 @@ void NetContractPanel::DrawCalls(Ref<Volt::NetContract> in_contract)
 	// Manage Calls
 	static int addEvent = 0;
 	
-	// #TODO_Ivar: Reimplement
-	/*auto& enumData = Wire::ComponentRegistry::EnumData();
-	if (enumData.find("eNetEvent") != enumData.end())
+	if (UI::BeginProperties("test2"))
 	{
-		UI::ComboProperty("Manage Calls", addEvent, enumData.at("eNetEvent"));
-	}*/
+		const Volt::IEnumTypeDesc* netEventTypeDesc = Volt::GetTypeDesc<Volt::eNetEvent>();
+		UI::ComboProperty("Manage Calls", addEvent, netEventTypeDesc->GetConstantNames());
+	
+		UI::EndProperties();
+	}
+
 	float halfSize = ImGui::GetContentRegionAvail().x * 0.5f;
 	if (ImGui::Button("+##NetContractAddEvent", { halfSize , 0 }))
 	{
@@ -149,18 +156,19 @@ void NetContractPanel::DrawCalls(Ref<Volt::NetContract> in_contract)
 	}
 
 	// Calls
-	/*if (UI::BeginProperties("yes"))
+	if (UI::BeginProperties("yes"))
 	{
 		for (auto& e : in_contract->calls)
 		{
-			if (enumData.find("eNetEvent") == enumData.end()) continue;
-			if (enumData.at("eNetEvent").size() > (uint8_t)e.first)
+			const Volt::IEnumTypeDesc* netEventTypeDesc = Volt::GetTypeDesc<Volt::eNetEvent>();
+			
+			if (netEventTypeDesc->GetConstants().size() > (size_t)e.first)
 			{
-				UI::Property(enumData.at("eNetEvent")[(uint8_t)e.first], e.second);
+				UI::Property(netEventTypeDesc->GetConstantNames()[(size_t)e.first], e.second);
 			}
 		}
 		UI::EndProperties();
-	}*/
+	}
 }
 
 void NetContractPanel::DrawComponentRules(Ref<Volt::NetContract> in_contract)
@@ -237,7 +245,7 @@ void NetContractPanel::RuleEntry(const std::string& in_name, Volt::NetRule& in_r
 	}
 }
 
-bool NetContractPanel::BlockStandardComponents(const std::string& in_name)
+bool NetContractPanel::BlockStandardComponents(const std::string &in_name)
 {
 	if (m_blocked.contains(in_name)) return true;
 	return false;
@@ -247,26 +255,38 @@ void NetContractPanel::DrawRuleSet(Ref<Volt::NetContract> in_contract, entt::ent
 {
 	auto entity = Volt::Entity(in_id, m_scene.get());
 
-	// #TODO_Ivar: Reimplement
-	/*for (const auto& [guid, pool] : registry.GetPools())
+	for (auto&& curr : entity.GetScene()->GetRegistry().storage())
 	{
-		if (!registry.HasComponent(guid, in_id)) continue;
-
-		const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-
-		if (BlockStandardComponents(registryInfo.name)) continue;
-
-		if (registryInfo.name == "MonoScriptComponent")
+		if (auto& storage = curr.second; storage.contains(in_id))
 		{
-			auto& monoScriptComponent = registry.GetComponent<Volt::MonoScriptComponent>(in_id);
-			for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
+			auto typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name());
+			if (!typeDesc)
 			{
-				RuleEntry(monoScriptComponent.scriptNames[i], in_contract->rules[entity.GetComponent<Volt::PrefabComponent>().prefabEntity][monoScriptComponent.scriptNames[i]], entity.GetTag());
+				continue;
 			}
-			continue;
+
+			std::string label = std::string(typeDesc->GetLabel());
+			label.erase(std::remove_if(label.begin(), label.end(), ::isspace));
+
+			if (BlockStandardComponents(label))
+			{
+				continue;
+			}
+
+			if (typeDesc->GetGUID() == Volt::MonoScriptComponent::guid)
+			{
+				auto& monoScriptComponent = entity.GetComponent<Volt::MonoScriptComponent>();
+				for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
+				{
+					RuleEntry(monoScriptComponent.scriptNames[i], in_contract->rules[entity.GetComponent<Volt::PrefabComponent>().prefabEntity][monoScriptComponent.scriptNames[i]], entity.GetTag());
+				}
+			}
+			else
+			{
+				RuleEntry(label, in_contract->rules[entity.GetComponent<Volt::PrefabComponent>().prefabEntity][label], entity.GetTag());
+			}
 		}
-		RuleEntry(registryInfo.name, in_contract->rules[entity.GetComponent<Volt::PrefabComponent>().prefabEntity][registryInfo.name], entity.GetTag());
-	}*/
+	}
 }
 
 

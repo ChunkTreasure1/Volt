@@ -624,7 +624,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				fontChanged = true;
 				UI::PushFont(FontType::Bold_17);
 			}
-			else if (memcmp(currentField->data.As<void>(), defaultFieldValueMap.at(name)->data.As<void>(), currentField->data.GetSize()) != 0) // #TODO_Ivar: Reimplement to use custom function instead
+			else if (!currentField->field.type.equalFunc(currentField->data.As<void>(), defaultFieldValueMap.at(name)->data.As<void>()))
 			{
 				fontChanged = true;
 				UI::PushFont(FontType::Bold_17);

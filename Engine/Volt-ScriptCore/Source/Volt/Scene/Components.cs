@@ -1,7 +1,6 @@
 ﻿namespace Volt
 {
 
-    // #TODO_Ivar: Add guids to all components
     public enum VideoStatus : uint
     {
         Stopped = 0,

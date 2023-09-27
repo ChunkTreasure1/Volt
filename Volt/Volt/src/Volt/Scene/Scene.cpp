@@ -341,15 +341,6 @@ namespace Volt
 		Physics::GetScene()->Simulate(aDeltaTime);
 
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.alive());
-
-		// Update scene data
-		{
-			// #TODO_Ivar: Reimplement
-
-			SceneData sceneData;
-			sceneData.deltaTime = aDeltaTime;
-			sceneData.timeSinceStart = m_timeSinceStart;
-		}
 	}
 
 	Entity Scene::CreateEntity(const std::string& tag, const entt::entity hintId)

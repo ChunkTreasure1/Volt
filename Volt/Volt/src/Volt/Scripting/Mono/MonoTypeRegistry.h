@@ -25,8 +25,10 @@ namespace Volt
 		std::type_index typeIndex = typeid(void);
 		size_t typeSize = 0;
 
-		AssetType assetType;
-		MonoTypeFlags typeFlags;
+		AssetType assetType = AssetType::None;
+		MonoTypeFlags typeFlags = MonoTypeFlags::None;
+		
+		std::function<bool(const void* lhs, const void* rhs)> equalFunc;
 
 		[[nodiscard]] inline const bool IsEntity() const { return typeIndex == typeid(entt::entity); }
 		[[nodiscard]] inline const bool IsAsset() const { return typeIndex == typeid(AssetHandle) && assetType != AssetType::None; }
