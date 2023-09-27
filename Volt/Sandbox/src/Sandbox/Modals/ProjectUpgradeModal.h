@@ -4,6 +4,12 @@
 
 #include <Volt/Asset/Asset.h>
 
+namespace Volt
+{
+	class IComponentTypeDesc;
+	struct ComponentMember;
+}
+
 class ProjectUpgradeModal : public Modal
 {
 public:
@@ -17,7 +23,17 @@ protected:
 
 private:
 	void UpgradeCurrentProject();
-	void ConvertMetaFilesFromV0();
+	void ConvertMetaFilesToV011();
+
+	void ConvertPrefabsToV113();
+	void ConvertScenesToV113();
+
+	void DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath);
+	void DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader);
+	void DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader);
+
+	const bool IsPreV113EntityNull(entt::entity entityId);
+	const Volt::ComponentMember* TryGetComponentMemberFromName(const std::string& memberName, const Volt::IComponentTypeDesc* componentDesc);
 
 	std::pair<std::filesystem::path, Volt::AssetHandle> DeserializeV0MetaFile(const std::filesystem::path& metaPath);
 };

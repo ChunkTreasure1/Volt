@@ -270,7 +270,7 @@ namespace Volt
 					continue;
 				}
 
-				const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name()));
+				const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(ComponentRegistry::GetTypeDescFromName(storage.type().name()));
 				if (!componentDesc)
 				{
 					continue;
@@ -477,7 +477,7 @@ namespace Volt
 				return;
 			}
 
-			const ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromGUID(compGuid);
+			const ICommonTypeDesc* typeDesc = ComponentRegistry::GetTypeDescFromGUID(compGuid);
 			if (!typeDesc)
 			{
 				return;
@@ -487,8 +487,8 @@ namespace Volt
 			{
 				case ValueType::Component:
 				{
-					Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
-					void* voidCompPtr = Volt::ComponentRegistry::Helpers::GetComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
+					ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
+					void* voidCompPtr = ComponentRegistry::Helpers::GetComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
 					uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
 					const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
