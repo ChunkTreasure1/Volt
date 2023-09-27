@@ -221,7 +221,7 @@ namespace Volt
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		ComponentRegistry::Helpers::RemoveComponentWithGUID(VoltGUID::FromStringInternal(compName.c_str()), scene->GetRegistry(), entityId);
+		ComponentRegistry::Helpers::RemoveComponentWithGUID(VoltGUID::FromStringInternal(compName.c_str() + 1), scene->GetRegistry(), entityId);
 	}
 
 	inline static void Entity_RemoveScript(entt::entity entityId, UUID scriptId)
@@ -245,7 +245,7 @@ namespace Volt
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		ComponentRegistry::Helpers::AddComponentWithGUID(VoltGUID::FromStringInternal(compName.c_str()), scene->GetRegistry(), entityId);
+		ComponentRegistry::Helpers::AddComponentWithGUID(VoltGUID::FromStringInternal(compName.c_str() + 1), scene->GetRegistry(), entityId);
 	}
 
 	inline static void Entity_AddScript(entt::entity entityId, MonoString* scriptType, UUID* outScriptId)
@@ -500,7 +500,7 @@ namespace Volt
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		const VoltGUID guid = VoltGUID::FromStringInternal(compName.c_str());
+		const VoltGUID guid = VoltGUID::FromStringInternal(compName.c_str() + 1);
 
 		std::vector<entt::entity> entities;
 

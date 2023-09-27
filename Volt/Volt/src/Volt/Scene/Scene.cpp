@@ -588,7 +588,7 @@ namespace Volt
 		bool result = true;
 		for (const auto& dep : dependencies)
 		{
-			if (AssetManager::Get().IsLoaded(dep))
+			if (AssetManager::IsLoaded(dep))
 			{
 				Ref<Asset> rawAsset = AssetManager::Get().GetAssetRaw(dep);
 				result &= !rawAsset->IsFlagSet(AssetFlag::Queued);

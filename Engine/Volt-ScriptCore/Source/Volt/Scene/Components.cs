@@ -12,10 +12,13 @@
     public abstract class Component
     {
         public Entity entity { get; internal set; }
+        public virtual string GUID { get; set; }
     }
 
     public class TransformComponent : Component
     {
+        public override string GUID { get => "{E1B8016B-1CAA-4782-927E-C17C29B25893}"; }
+
         public Vector3 position
         {
             get
@@ -182,6 +185,8 @@
 
     public class TagComponent : Component
     {
+        public override string GUID { get => "{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"; }
+
         public string tag
         {
             get
@@ -198,6 +203,8 @@
 
     public class RelationshipComponent : Component
     {
+        public override string GUID { get => "{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"; }
+
         public Entity[] children
         {
             get
@@ -261,6 +268,8 @@
 
     public class RigidbodyComponent : Component
     {
+        public override string GUID { get => "{460B7722-00C0-48BE-8B3E-B549BCC9269B}"; }
+
         public BodyType bodyType
         {
             get
@@ -466,6 +475,8 @@
 
     public class BoxColliderComponent : Component
     {
+        public override string GUID { get => "{29707475-D536-4DA4-8D3A-A98948C89A5}"; }
+
         public Vector3 halfSize
         {
             get
@@ -510,6 +521,8 @@
 
     public class SphereColliderComponent : Component
     {
+        public override string GUID { get => "{90246BCE-FF83-41A2-A076-AB0A947C0D6A}"; }
+
         public float radius
         {
             get
@@ -553,6 +566,8 @@
 
     public class CapsuleColliderComponent : Component
     {
+        public override string GUID { get => "{54A48952-7A77-492B-8A9C-2440D82EE5E2}"; }
+
         public float radius
         {
             get
@@ -609,6 +624,8 @@
 
     public class MeshColliderComponent : Component
     {
+        public override string GUID { get => "{E709C708-ED3C-4F68-BC1D-2FE32B897722}"; }
+
         public Mesh colliderMesh
         {
             get
@@ -671,6 +688,8 @@
 
     public class CharacterControllerComponent : Component
     {
+        public override string GUID { get => "{DC5C002A-B72E-42A0-83FC-FFBE1FB2DEF2}"; }
+
         public float slopeLimit
         {
             get
@@ -858,11 +877,10 @@
         }
     }
 
-    public class VisualScriptingComponent : Component
-    { }
-
     public class AnimationControllerComponent : Component
     {
+        public override string GUID { get => "{36D3CFA2-538E-4036-BB28-2B672F294478}"; }
+
         private AnimationController myController;
 
         public AnimationController controller
@@ -942,6 +960,8 @@
 
     public class TextRendererComponent : Component
     {
+        public override string GUID { get => "{8AAA0646-40D2-47E6-B83F-72EA26BD8C01}"; }
+
         public string text
         {
             get
@@ -971,6 +991,8 @@
 
     public class MeshComponent : Component
     {
+        public override string GUID { get => "{45D008BE-65C9-4D6F-A0C6-377F7B384E47}"; }
+
         public Mesh mesh
         {
             get
@@ -1026,6 +1048,8 @@
 
     public class NavAgentComponent : Component
     {
+        public override string GUID { get => "{2B4469CE-9B15-4FA9-ABA6-77BA83465357}"; }
+
         public bool active
         {
             get

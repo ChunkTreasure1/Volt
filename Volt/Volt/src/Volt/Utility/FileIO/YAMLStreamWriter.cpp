@@ -31,8 +31,7 @@ namespace Volt
 
 	void YAMLStreamWriter::BeginMapNamned(const std::string& mapName)
 	{
-		m_emitter << YAML::Key << mapName << YAML::Value;
-		m_emitter << YAML::BeginMap;
+		m_emitter << YAML::Key << mapName << YAML::BeginMap;
 	}
 
 	const bool YAMLStreamWriter::WriteToDisk()
