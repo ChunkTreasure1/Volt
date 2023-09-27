@@ -389,7 +389,7 @@ void SceneViewPanel::UpdateMainContent()
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
 	{
 		const Volt::AssetHandle handle = *(const Volt::AssetHandle*)ptr;
-		const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromHandle(handle);
+		const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
 
 		switch (type)
 		{
@@ -877,8 +877,9 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 					else
 					{
 						prefabAsset->UpdateEntityInPrefab(entity);
+						UpdatePrefabsInScene(prefabAsset, entity);
 
-						Volt::AssetManager::Get().SaveAsset(prefabAsset);
+						Volt::AssetManager::SaveAsset(prefabAsset);
 						UI::Notify(NotificationType::Success, "Prefab updated!", std::format("The prefab file {0} has been updated!", prefabPath.string()));
 					}
 				}
@@ -1049,6 +1050,35 @@ void SceneViewPanel::CreatePrefabAndSetupEntities(Volt::Entity entity)
 
 	path.erase(std::remove_if(path.begin(), path.end(), ::isspace), path.end());
 	Volt::AssetManager::SaveAssetAs(prefab, path);
+}
+
+void SceneViewPanel::UpdatePrefabsInScene(Ref<Volt::Prefab> prefab, Volt::Entity srcEntity)
+{
+	Ref<Volt::Prefab> prefabAsset = Volt::AssetManager::GetAsset<Volt::Prefab>(srcEntity.GetComponent<Volt::PrefabComponent>().prefabAsset);
+	if (!prefabAsset || !prefabAsset->IsValid())
+	{
+		return;
+	}
+
+	m_scene->ForEachWithComponents<const Volt::PrefabComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp) 
+	{
+		if (id == srcEntity.GetID())
+		{
+			return;
+		}
+
+		if (prefabComp.prefabAsset != prefabAsset->handle)
+		{
+			return;
+		}
+
+		if (prefabComp.prefabEntity != srcEntity.GetComponent<Volt::PrefabComponent>().prefabEntity)
+		{
+			return;
+		}
+
+		prefabAsset->UpdateEntityInScene(Volt::Entity{ id, m_scene });
+	});
 }
 
 bool SceneViewPanel::SearchRecursively(Volt::Entity entity, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth)

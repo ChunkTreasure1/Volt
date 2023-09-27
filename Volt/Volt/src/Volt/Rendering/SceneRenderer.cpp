@@ -3001,6 +3001,8 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
+			renderingInfo.colorAttachmentInfo.at(0).clearValue.color.uint32[0] = entt::null;
+
 			const auto& indirectPass = GetOrCreateIndirectPass(commandBuffer);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);

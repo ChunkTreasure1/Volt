@@ -933,7 +933,7 @@ void ViewportPanel::HandleMultiSelect()
 
 		for (const auto& d : data)
 		{
-			if (d != 0)
+			if (d != entt::null)
 			{
 				SelectionManager::Select(static_cast<entt::entity>(d));
 			}

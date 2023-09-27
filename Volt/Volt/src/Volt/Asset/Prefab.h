@@ -65,6 +65,8 @@ namespace Volt
 		Entity Instantiate(Weak<Scene> targetScene);
 		const bool UpdateEntityInPrefab(Entity srcEntity);
 
+		void UpdateEntityInScene(Entity sceneEntity);
+
 		[[nodiscard]] inline const bool IsPrefabValid() { return m_prefabScene != nullptr && m_rootEntityId != entt::null; }
 		[[nodiscard]] const bool IsEntityValidInPrefab(Entity entity) const;
 		[[nodiscard]] const bool IsEntityRoot(Entity entity) const;
@@ -79,6 +81,11 @@ namespace Volt
 
 		void CreatePrefab(Entity srcRootEntity);
 		void AddEntityToPrefabRecursive(Entity entity, Entity parentPrefabEntity);
+		void ValidatePrefabUpdate(Entity srcEntity);
+		const bool UpdateEntityInPrefabInternal(Entity srcEntity, bool isFirst);
+
+		Entity InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity);
+		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
 		Ref<Scene> m_prefabScene;
 
