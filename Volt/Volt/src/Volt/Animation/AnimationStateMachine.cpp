@@ -15,11 +15,16 @@
 
 #include "Volt/Utility/EnumUtil.h"
 
-CREATE_ENUM(TestEnum, uint32_t,
-	One,
-	Two,
-	Three
-);
+enum class TestEnum : uint32_t
+{
+	One, Two, Three
+}; inline static bool TestEnum_reg = Utils::EnumUtil::RegisterEnum("TestEnum", "One, Two, Three"); inline static std::string ToString(TestEnum aEnumValue)
+{
+	return Utils::EnumUtil::ToString("TestEnum", static_cast<uint64_t>(aEnumValue));
+}/*template<TestEnum> inline static TestEnum ToEnum(const std::string& aEnumString)
+{
+	return Utils::EnumUtil::ToEnum<TestEnum>("TestEnum", aEnumString);
+};*/
 
 namespace Volt
 {
@@ -187,7 +192,7 @@ namespace Volt
 		return transition;
 	}
 
-	void AnimationStateMachine::AddState(const std::string& name, StateMachineStateType aStateType, const UUID id)
+	Ref<StateMachineState> AnimationStateMachine::AddState(const std::string& name, StateMachineStateType aStateType, const UUID id)
 	{
 		switch (aStateType)
 		{
@@ -221,12 +226,18 @@ namespace Volt
 
 				if (!alreadyHasEntry)
 				{
-					auto state = CreateRef<AnimationState>("Entry", aStateType);
+					auto state = CreateRef<StateMachineState>("Entry", aStateType);
 					myStates.emplace_back(state);
 				}
 				break;
 			}
+
+			default:
+				VT_CORE_ASSERT(false, "State type construction not implemented.");
+				break;
 		}
+
+		return myStates.back();
 	}
 
 	void AnimationStateMachine::AddTransition(const UUID startStateId, const UUID endStateId)
@@ -316,6 +327,19 @@ namespace Volt
 		return nullptr;
 	}
 
+	AnimationState* AnimationStateMachine::GetAnimationStateById(const UUID stateId) const
+	{
+		auto it = std::find_if(myStates.begin(), myStates.end(), [stateId](const auto& lhs) { return lhs->id == stateId; });
+		if (it != myStates.end())
+		{
+			if (it->get()->stateType == StateMachineStateType::AnimationState)
+			{
+				return std::reinterpret_pointer_cast<AnimationState>(*it).get();
+			}
+		}
+		return nullptr;
+	}
+
 	AnimationTransition* AnimationStateMachine::GetTransitionById(const UUID transitionId) const
 	{
 		auto it = std::find_if(myTransitions.begin(), myTransitions.end(), [transitionId](const auto& lhs) { return lhs->id == transitionId; });
@@ -363,7 +387,7 @@ namespace Volt
 			Ref<StateMachineState> newState;
 			if (state->stateType == StateMachineStateType::AnimationState)
 			{
-				newState = CreateRef<AnimationState>(state->name, state->stateType);
+				newState = CreateRef<AnimationState>(state->name);
 				auto newAnimState = std::reinterpret_pointer_cast<AnimationState>(newState);
 				auto oldAnimState = std::reinterpret_pointer_cast<AnimationState>(state);
 				if (oldAnimState->stateGraph)
@@ -377,7 +401,7 @@ namespace Volt
 				newState = CreateRef<AliasState>(state->name);
 				auto newAliasState = std::reinterpret_pointer_cast<AliasState>(newState);
 				auto oldAliasState = std::reinterpret_pointer_cast<AliasState>(state);
-				
+
 				newAliasState->transitionFromStates = oldAliasState->transitionFromStates;
 			}
 			else

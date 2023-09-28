@@ -65,11 +65,11 @@ namespace GraphKey
 				{
 					VT_SERIALIZE_PROPERTY(name, state->name, out);
 					VT_SERIALIZE_PROPERTY(editorState, state->editorState, out);
-					VT_SERIALIZE_PROPERTY(stateType, static_cast<uint8_t>(state->stateType), out);
+					VT_SERIALIZE_PROPERTY(stateType, ToString(state->stateType), out);
 
 					VT_SERIALIZE_PROPERTY(id, state->id, out);
-					VT_SERIALIZE_PROPERTY(pinId, state->topPinId, out);
-					VT_SERIALIZE_PROPERTY(pinId2, state->bottomPinId, out);
+					VT_SERIALIZE_PROPERTY(topPinId, state->topPinId, out);
+					VT_SERIALIZE_PROPERTY(bottomPinId, state->bottomPinId, out);
 
 					out << YAML::Key << "Transitions" << YAML::BeginSeq;
 					for (const auto& transition : state->transitions)
@@ -77,11 +77,24 @@ namespace GraphKey
 						out << transition;
 					}
 					out << YAML::EndSeq;
-
-					if (state->stateGraph)
+					if (state->stateType == Volt::StateMachineStateType::AnimationState)
 					{
-						VT_SERIALIZE_PROPERTY(skeletonHandle, state->stateGraph->GetSkeletonHandle(), out);
-						Graph::Serialize(state->stateGraph, out);
+						auto animState = Volt::AnimationStateMachine::AsAnimationState(state);
+						if (animState->stateGraph)
+						{
+							VT_SERIALIZE_PROPERTY(skeletonHandle, animState->stateGraph->GetSkeletonHandle(), out);
+							Graph::Serialize(animState->stateGraph, out);
+						}
+					}
+					else if (state->stateType == Volt::StateMachineStateType::AliasState)
+					{
+						auto aliasState = std::reinterpret_pointer_cast<Volt::AliasState>(state);
+						out << YAML::Key << "TransitionFromStates" << YAML::BeginSeq;
+						for (const auto& transition : aliasState->transitionFromStates)
+						{
+							out << transition;
+						}
+						out << YAML::EndSeq;
 					}
 				}
 				out << YAML::EndMap;
@@ -133,30 +146,45 @@ namespace GraphKey
 			std::string stateName;
 			bool stateIsEntry;
 			Volt::UUID stateId = Volt::UUID(0);
+			std::string stateTypeString;
 
 			VT_DESERIALIZE_PROPERTY(name, stateName, stateNode, std::string("Null"));
-			VT_DESERIALIZE_PROPERTY(isEntry, stateIsEntry, stateNode, false);
 			VT_DESERIALIZE_PROPERTY(id, stateId, stateNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(stateType, stateTypeString, stateNode, std::string("Null"));
 
-			auto newState = myStateMachine->CreateState(stateName, stateIsEntry, stateId);
+			Volt::StateMachineStateType stateType = ToEnum<Volt::StateMachineStateType>(stateTypeString);
+
+			auto newState = myStateMachine->AddState(stateName, stateType, stateId);
 
 			VT_DESERIALIZE_PROPERTY(editorState, newState->editorState, stateNode, std::string(""));
-			VT_DESERIALIZE_PROPERTY(pinId, newState->topPinId, stateNode, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(pinId2, newState->bottomPinId, stateNode, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(isAny, newState->isAny, stateNode, false);
+			VT_DESERIALIZE_PROPERTY(topPinId, newState->topPinId, stateNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(bottomPinId, newState->bottomPinId, stateNode, Volt::UUID(0));
 
 			for (const auto& transitionNode : stateNode["Transitions"])
 			{
 				newState->transitions.emplace_back(transitionNode.as<Volt::UUID>());
 			}
 
-			if (stateNode["Graph"])
+			if (stateType == Volt::StateMachineStateType::AnimationState)
 			{
-				Volt::AssetHandle characterHandle;
-				VT_DESERIALIZE_PROPERTY(characterHandle, characterHandle, stateNode, Volt::AssetHandle(0));
-				newState->stateGraph = CreateRef<Volt::AnimationGraphAsset>(characterHandle);
-				Graph::Deserialize(newState->stateGraph, stateNode["Graph"]);
+				auto animState = Volt::AnimationStateMachine::AsAnimationState(newState);
+				if (stateNode["Graph"])
+				{
+					Volt::AssetHandle characterHandle;
+					VT_DESERIALIZE_PROPERTY(characterHandle, characterHandle, stateNode, Volt::AssetHandle(0));
+					animState->stateGraph = CreateRef<Volt::AnimationGraphAsset>(characterHandle);
+					Graph::Deserialize(animState->stateGraph, stateNode["Graph"]);
+				}
 			}
+			else if (stateType == Volt::StateMachineStateType::AliasState)
+			{
+				auto aliasState = std::reinterpret_pointer_cast<Volt::AliasState>(newState);
+				for (const auto& transitionNode : stateNode["TransitionFromStates"])
+				{
+					aliasState->transitionFromStates.emplace_back(transitionNode.as<Volt::UUID>());
+				}
+			}
+
 		}
 
 		for (const auto& transitionNode : rootNode["Transitions"])
@@ -172,7 +200,7 @@ namespace GraphKey
 			auto newTransition = myStateMachine->CreateTransition(transitionId);
 			newTransition->fromState = transitionFromState;
 			newTransition->toState = transitionToState;
-			
+
 			VT_DESERIALIZE_PROPERTY(shouldBlend, newTransition->shouldBlend, transitionNode, false);
 			VT_DESERIALIZE_PROPERTY(blendTime, newTransition->blendTime, transitionNode, 1.f);
 
@@ -181,33 +209,26 @@ namespace GraphKey
 				newTransition->transitionGraph = CreateRef<Volt::AnimationTransitionGraph>();
 				newTransition->transitionGraph->SetStateMachine(myStateMachine.get());
 				newTransition->transitionGraph->SetTransitionID(transitionId);
-				
+
 				Graph::Deserialize(std::reinterpret_pointer_cast<Graph>(newTransition->transitionGraph), transitionNode["Graph"]);
 			}
 		}
 
-		bool hasAnyState = false;
 		bool hasEntryState = false;
 
 		for (const auto& state : myStateMachine->GetStates())
 		{
-			hasAnyState |= state->isAny;
-			hasEntryState |= state->isEntry;
+			hasEntryState |= state->stateType == Volt::StateMachineStateType::EntryState;
 
-			if (hasEntryState && hasAnyState)
+			if (hasEntryState)
 			{
 				break;
 			}
 		}
 
-		if (!hasAnyState)
-		{
-			myStateMachine->AddState("Any", false, true);
-		}
-
 		if (!hasEntryState)
 		{
-			myStateMachine->AddState("Entry", true);
+			myStateMachine->AddState("Entry", Volt::StateMachineStateType::EntryState);
 		}
 	}
 

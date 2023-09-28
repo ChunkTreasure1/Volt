@@ -1,6 +1,7 @@
 #pragma once
 #include "Volt/Core/Base.h"
 #include <unordered_map>
+#include <map>
 namespace Utils
 {
 	/// <summary>
@@ -18,32 +19,30 @@ namespace Utils
 		template<typename T>
 		static T ToEnum(std::string aEnumName, std::string aEnumValue)
 		{
-			auto enumPair = myRegistry[aEnumName];
+			auto enumMap = myRegistry[aEnumName];
+			for (auto& pair : enumMap)
+			{
+				if (pair.second == aEnumValue)
+				{
+					return pair.first;
+				}
+			}
 		}
 
 		static bool RegisterEnum(const std::string& name, const std::string& definitionData)
 		{
-			//parse definition data into umap
-			std::unordered_map<uint64_t, std::string> enumMap;
-
 			const std::string allLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-			/*
-
-			enum class Test : uint64_t
-			{
-				One = 10, Two = 1 << 2, Three = 0x1000000000010011
-			}; inline static bool Test_reg = Utils::EnumUtil::RegisterEnum("Test", "One = 10, Two = 1 << 2, Three = 0x1000000000010011"); inline static std::string ToString(Test aEnumValue)
-			{
-				return Utils::EnumUtil::ToString("Test", static_cast<uint64_t>(aEnumValue));
-			};
-
-			*/
 			size_t stringOffset = definitionData.find_first_of(allLetters);
-			uint64_t highestValueSoFar = 0;
+			std::vector<std::string> enumNames;
+			std::vector<uint64_t> enumValues;
 			while (stringOffset != std::string::npos)
 			{
-				const size_t memberNameEndOffset = definitionData.find_first_not_of(allLetters, stringOffset);
+				size_t memberNameEndOffset = definitionData.find_first_not_of(allLetters, stringOffset);
+				if (memberNameEndOffset == std::string::npos)
+				{
+					memberNameEndOffset = definitionData.size();
+				}
 
 				std::string memberName = definitionData.substr(stringOffset, memberNameEndOffset - stringOffset);
 				uint64_t memberValue = 0;
@@ -61,7 +60,7 @@ namespace Utils
 				std::string memberValueString = definitionData.substr(memberNameEndOffset, endOfMemberOffset - memberNameEndOffset);
 
 				//if the value string contains a = then we need to parse it else we just increment the highest value so far
-				if (memberValueString.contains('='))
+				if (memberValueString.find('=') != std::string::npos)
 				{
 					//remove whitespace
 					memberValueString.erase(std::remove_if(memberValueString.begin(), memberValueString.end(), isspace), memberValueString.end());
@@ -70,27 +69,27 @@ namespace Utils
 					memberValueString.erase(std::remove(memberValueString.begin(), memberValueString.end(), '='), memberValueString.end());
 
 					//if the value is hex
-					if (memberValueString.contains('x'))
+					if (memberValueString.find('x') != std::string::npos)
 					{
 						memberValue = std::stoull(memberValueString, nullptr, 16);
 					}
 					//if the value is binary
-					else if (memberValueString.contains('b'))
+					else if (memberValueString.find('b') != std::string::npos)
 					{
 						memberValue = std::stoull(memberValueString, nullptr, 2);
 					}
 					//if the value is bitshifted to the left
-					else if (memberValueString.contains('<'))
+					else if (memberValueString.find('<') != std::string::npos)
 					{
 						//split string along "<<"
 						const size_t bitshiftOffset = memberValueString.find_first_of('<');
 						std::string base = memberValueString.substr(0, bitshiftOffset);
 						std::string shift = memberValueString.substr(bitshiftOffset + 2, memberValueString.size() - bitshiftOffset - 2);
-						
+
 						memberValue = std::stoull(base, nullptr, 10) << std::stoull(shift, nullptr, 10);
 					}
 					//if the value is bitshifted to the right
-					else if (memberValueString.contains('>'))
+					else if (memberValueString.find('>') != std::string::npos)
 					{
 						//split string along ">>"
 						const size_t bitshiftOffset = memberValueString.find_first_of('>');
@@ -107,55 +106,85 @@ namespace Utils
 				}
 				else
 				{
-					memberValue = highestValueSoFar + 1;
+					memberValue = std::numeric_limits<uint64_t>::max();
 				}
-				
-				highestValueSoFar = memberValue;
-
-				enumMap[memberValue] = memberName;
 
 				stringOffset = definitionData.find_first_of(allLetters, endOfMemberOffset);
+				enumNames.push_back(memberName);
+				enumValues.push_back(memberValue);
+			}
+			for (int i = 0; i < enumValues.size(); i++)
+			{
+				if (enumValues[i] == std::numeric_limits<uint64_t>::max())
+				{
+					if (i == 0)
+					{
+						enumValues[i] = 0;
+					}
+					else
+					{
+						enumValues[i] = enumValues[i - 1] + 1;
+					}
+				}
+			}
+			auto& enumMap = myRegistry[name];
+			for (int i = 0; i < enumNames.size(); i++)
+			{
+				enumMap.insert({ enumValues[i], enumNames[i] });
 			}
 
-
-			myRegistry.insert({ name,  enumMap });
-
-
-			//parse definition data
-
-			//add to registry
+			return true;
 		}
 
 
 
 	private:
 		//<EnumName, <EnumValue, EnumString>>
-		static std::unordered_map<std::string, std::unordered_map<uint64_t, std::string>> myRegistry;
+		inline static std::unordered_map<std::string, std::map<uint64_t, std::string>> myRegistry;
 	};
 }
 
-#define CREATE_ENUM(enumName, type, ...)\
+template<typename T> inline static T ToEnum(const std::string& aEnumString)
+{
+	VT_CORE_ASSERT(false, "Never call this function with a type that does not have a specification, CREATE_ENUM automatically generates a specification for that type.");
+	return T();
+};
+
+#define CREATE_ENUM_TYPED(enumName, type, ...)\
 enum class enumName : type\
 {\
 	__VA_ARGS__\
 };\
-inline static bool enumName##_reg = Utils::EnumUtil::RegisterEnum(#enumName, #__VA_ARGS__); \
-inline static std::string ToString(enumName aEnumValue) { return Utils::EnumUtil::ToString(#enumName, static_cast<uint64_t>(aEnumValue)); }
+inline static bool enumName##_enum_reg = Utils::EnumUtil::RegisterEnum(typeid(enumName).name(), #__VA_ARGS__); \
+inline static std::string ToString(enumName aEnumValue) { return Utils::EnumUtil::ToString(#enumName, static_cast<uint64_t>(aEnumValue)); }\
+template<enumName> inline static enumName ToEnum(const std::string& aEnumString) { return Utils::EnumUtil::ToEnum<enumName>(#enumName, aEnumString); }
 
-//implicit cast to enum
-template<typename T>
-inline T operator|(T aLeft, T aRight)
-{
-	return static_cast<T>(static_cast<uint64_t>(aLeft) | static_cast<uint64_t>(aRight));
-}
+#define CREATE_ENUM(enumName, ...) CREATE_ENUM_TYPED(enumName, uint32_t, __VA_ARGS__)
 
-enum class Test : uint64_t
+
+
+enum class yoo
 {
-	One = 10, Two, Three = 0x1000000000010011, Four
-}; inline static bool Test_reg = Utils::EnumUtil::RegisterEnum("Test", "One = 10, Two = 1 << 2, Three = 0x1000000000010011"); inline static std::string ToString(Test aEnumValue)
-{
-	return Utils::EnumUtil::ToString("Test", static_cast<uint64_t>(aEnumValue));
+	apa = 2,
+	banan
 };
+
+//CREATE_ENUM(Test, uint64_t,
+//	One = 10, Two, Three = 0x1000000000010011, Four);
+
+//enum class Test : uint64_t
+//{
+//	One = 10, Two, Three = 0x1000000000010011, Four
+//}; inline static bool Test_reg = Utils::EnumUtil::RegisterEnum("Test", "One = 10, Two, Three = 0x1000000000010011, Four"); inline static std::string ToString(Test aEnumValue)
+//{
+//	return Utils::EnumUtil::ToString("Test", static_cast<uint64_t>(aEnumValue));
+//}
+//template<> inline static Test ToEnum(const std::string& aEnumString)
+//{
+//	return Utils::EnumUtil::ToEnum<Test>("Test", aEnumString);
+//};
+
+
 
 /*
 enum class Test : uint32_t {

@@ -286,7 +286,7 @@ void AnimationGraphPanel::DrawNodes()
 			// Node
 			{
 				auto id = ed::GetDoubleClickedNode();
-				auto state = GetLastEntry().stateMachine->GetStateById(id.Get());
+				auto state = GetLastEntry().stateMachine->GetAnimationStateById(id.Get());
 
 				if (state && state->stateGraph)
 				{
@@ -420,7 +420,7 @@ void AnimationGraphPanel::DrawNodesPanel()
 	{
 		if (ImGui::Button("Add state"))
 		{
-			GetLastEntry().stateMachine->AddState("New State", false);
+			GetLastEntry().stateMachine->AddState("New State", Volt::StateMachineStateType::AnimationState);
 		}
 	}
 	ImGui::End();
@@ -462,7 +462,7 @@ void AnimationGraphPanel::OnDeleteNode(const Volt::UUID id)
 	{
 		auto stateMachine = GetLastEntry().stateMachine;
 		auto state = stateMachine->GetStateById(id);
-		if (state && !state->isEntry && !state->isAny)
+		if (state && state->stateType != Volt::StateMachineStateType::EntryState)
 		{
 			stateMachine->RemoveState(id);
 		}
@@ -725,11 +725,11 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 
 		auto mainColor = IM_COL32(29, 29, 29, 200);
 
-		if (state->isEntry)
+		if (state->stateType == Volt::StateMachineStateType::EntryState)
 		{
 			mainColor = IM_COL32(255, 174, 0, 255);
 		}
-		else if (state->isAny)
+		else if (state->stateType == Volt::StateMachineStateType::EntryState)
 		{
 			mainColor = IM_COL32(92, 171, 255, 255);
 		}
@@ -803,23 +803,25 @@ void AnimationGraphPanel::OnBeginCreateStateMachine()
 				return false;
 			});
 
+			const bool endIsEntry = endState->stateType == Volt::StateMachineStateType::EntryState;
+			const bool endIsAlias = endState->stateType == Volt::StateMachineStateType::AliasState;
 			if (transitionsToEndCount > 1 || sameStateIt != startState->transitions.end())
 			{
 				ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
 				showLabel("x States are already connected", ImColor{ 255, 0, 0 });
 			}
-			else if (endState->isEntry)
+			else if (endIsEntry)
 			{
 				ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
 				showLabel("x You cannot go to Entry state!", ImColor{ 255, 0, 0 });
 			}
-			else if (endState->isAny)
+			else if (endIsAlias)
 			{
 				ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
-				showLabel("x You cannot go to Any state!", ImColor{ 255, 0, 0 });
+				showLabel("x You cannot go to Alias state!", ImColor{ 255, 0, 0 });
 			}
 
-			if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f) && sameStateIt == startState->transitions.end() && !endState->isEntry && !endState->isAny)
+			if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f) && sameStateIt == startState->transitions.end() && !endIsAlias && !endIsAlias)
 			{
 				stateMachine->AddTransition(startState->id, endState->id);
 			}

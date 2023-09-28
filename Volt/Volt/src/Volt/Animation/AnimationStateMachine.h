@@ -7,6 +7,8 @@
 
 #include <any>
 
+#include "Volt/Utility/EnumUtil.h"
+
 namespace GraphKey
 {
 	class Graph;
@@ -31,12 +33,10 @@ namespace Volt
 		Ref<AnimationTransitionGraph> transitionGraph;
 	};
 
-	enum class StateMachineStateType : uint8_t
-	{
+	CREATE_ENUM_TYPED(StateMachineStateType, uint8_t,
 		AnimationState,
 		AliasState,
-		EntryState
-	};
+		EntryState);
 
 	struct StateMachineState
 	{
@@ -68,7 +68,6 @@ namespace Volt
 		Ref<AnimationGraphAsset> stateGraph;
 
 		float startTime = 0.f;
-		float speed = 1.f;
 	};
 
 	struct AliasState : public StateMachineState
@@ -90,7 +89,7 @@ namespace Volt
 		void Update(float deltaTime);
 		const GraphKey::AnimationOutputData Sample(Ref<Skeleton> skeleton);
 
-		void AddState(const std::string& name, StateMachineStateType aStateType, const UUID id = 0);
+		Ref<StateMachineState> AddState(const std::string& name, StateMachineStateType aStateType, const UUID id = 0);
 		void AddTransition(const UUID startState, const UUID endState);
 
 		Ref<AnimationTransition> CreateTransition(Volt::UUID id);
@@ -101,6 +100,7 @@ namespace Volt
 		void SetStartState(const UUID stateId);
 
 		StateMachineState* GetStateById(const UUID stateId) const;
+		AnimationState* GetAnimationStateById(const UUID stateId) const;
 		AnimationTransition* GetTransitionById(const UUID transitionId) const;
 
 		StateMachineState* GetStateFromPin(const UUID outputId) const;
@@ -116,12 +116,14 @@ namespace Volt
 		inline const AssetHandle GetSkeletonHandle() const { return mySkeletonHandle; }
 
 		inline const std::string& GetName() const { return myName; }
-		inline void SetEditorState(const std::string& state) { myState = state; }
+		inline
+			void SetEditorState(const std::string& state) { myState = state; }
 		inline void SetName(const std::string& name) { myName = name; }
 
 		void SetSkeletonHandle(AssetHandle aSkeletonHandle);
 
 		void Clear();
+		static Ref<AnimationState> AsAnimationState(Ref<StateMachineState> aState);
 
 	private:
 		const bool ShouldTransition(const UUID transitionId, const UUID currentStateId) const;
@@ -129,7 +131,6 @@ namespace Volt
 		const GraphKey::AnimationOutputData SampleState(int32_t stateIndex);
 
 		Ref<AnimationState> GetAnimationState(uint32_t aIndex);
-		Ref<AnimationState> AsAnimationState(Ref<StateMachineState> aState);
 
 		void SetNextState(const UUID targetStateId, const UUID transitionId);
 

@@ -17,7 +17,7 @@ namespace GraphKey
 		const auto animTransitionGraph = static_cast<Volt::AnimationTransitionGraph*>(aGraph);
 		const auto stateMachine = animTransitionGraph->GetStateMachine();
 		const auto transition = stateMachine->GetTransitionById(animTransitionGraph->GetTransitionID());
-		const auto fromState = stateMachine->GetStateById(transition->fromState);
+		const auto fromState = stateMachine->GetAnimationStateById(transition->fromState);
 
 		return fromState->stateGraph->GetRelevantAnimationNode();
 	}
