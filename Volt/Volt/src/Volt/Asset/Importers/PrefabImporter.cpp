@@ -37,6 +37,13 @@ namespace Volt
 			{
 				SceneImporter::Get().DeserializeEntity(prefabScene, metadata, streamReader);
 			});
+		
+			streamReader.ForEach("PrefabReferences", [&]() 
+			{
+				entt::entity entityId = streamReader.ReadKey("entity", (entt::entity)entt::null);
+				AssetHandle prefabHandle = streamReader.ReadKey("prefabHandle", Asset::Null());
+				prefab->m_prefabReferencesMap[entityId] = prefabHandle;
+			});
 		}
 		streamReader.ExitScope();
 
@@ -61,6 +68,18 @@ namespace Volt
 			for (const auto id : prefab->m_prefabScene->GetAllEntities())
 			{
 				SceneImporter::Get().SerializeEntity(id, prefab->m_prefabScene, streamWriter);
+			}
+		}
+		streamWriter.EndSequence();
+
+		streamWriter.BeginSequence("PrefabReferences");
+		{
+			for (const auto& ref : prefab->m_prefabReferencesMap)
+			{
+				streamWriter.BeginMap();
+				streamWriter.SetKey("entity", ref.first);
+				streamWriter.SetKey("prefabHandle", ref.second);
+				streamWriter.EndMap();
 			}
 		}
 		streamWriter.EndSequence();

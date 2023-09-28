@@ -38,12 +38,20 @@ namespace Volt
 			InitializeComponents(newEntity);
 		}
 
-		// Set scene root entity
+		// Set scene root entity & update prefab references
 		{
 			std::vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
 			for (auto& entity : flatInstantiatedHeirarchy)
 			{
-				entity.GetComponent<PrefabComponent>().sceneRootEntity = newEntity.GetID();
+				if (m_prefabReferencesMap.contains(entity.GetComponent<PrefabComponent>().prefabEntity))
+				{
+					Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(entity.GetComponent<PrefabComponent>().prefabAsset);
+					prefabRefAsset->UpdateEntityInScene(entity);
+				}
+				else
+				{
+					entity.GetComponent<PrefabComponent>().sceneRootEntity = newEntity.GetID();
+				}
 			}
 		}
 
@@ -65,6 +73,18 @@ namespace Volt
 			ValidatePrefabUpdate(srcEntity);
 		}
 
+		// Increase prefab version, because we made a change
+		m_version++;
+
+		// Update all entities prefab versions
+		{
+			std::vector<Entity> flatHeirarchy = FlattenEntityHeirarchy(srcEntity);
+			for (auto& entity : flatHeirarchy)
+			{
+				entity.GetComponent<PrefabComponent>().version = m_version;
+			}
+		}
+
 		return updateSucceded;
 	}
 
@@ -78,6 +98,12 @@ namespace Volt
 		const auto& scenePrefabComp = sceneEntity.GetComponent<PrefabComponent>();
 		if (scenePrefabComp.prefabAsset != handle)
 		{
+			if (m_prefabReferencesMap.contains(scenePrefabComp.prefabEntity))
+			{
+				Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(scenePrefabComp.prefabAsset);
+				prefabRefAsset->UpdateEntityInScene(sceneEntity);
+			}
+			
 			return;
 		}
 
@@ -261,22 +287,29 @@ namespace Volt
 	void Prefab::AddEntityToPrefabRecursive(Entity srcEntity, Entity parentPrefabEntity)
 	{
 		entt::entity newEntityId = srcEntity.GetID();
+		auto newEntity = m_prefabScene->CreateEntity("", newEntityId);
 
+		// If this entity already has a prefab component, it probably is another prefab. Add it as a reference
 		if (srcEntity.HasComponent<PrefabComponent>())
 		{
-			newEntityId = srcEntity.GetComponent<PrefabComponent>().prefabEntity;
+			const auto& prefabComp = srcEntity.GetComponent<PrefabComponent>();
+			if (prefabComp.prefabAsset != handle)
+			{
+				m_prefabReferencesMap[newEntity.GetID()] = prefabComp.prefabAsset;
+			}
 		}
 		else
 		{
 			srcEntity.AddComponent<PrefabComponent>();
 		}
 
-		auto newEntity = m_prefabScene->CreateEntity("", newEntityId);
-
 		auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
-		srcPrefabComp.prefabAsset = handle;
-		srcPrefabComp.prefabEntity = newEntity.GetID();
-		srcPrefabComp.version = m_version;
+		if (!m_prefabReferencesMap.contains(newEntity.GetID()))
+		{
+			srcPrefabComp.prefabAsset = handle;
+			srcPrefabComp.prefabEntity = newEntity.GetID();
+			srcPrefabComp.version = m_version;
+		}
 
 		Entity::Copy(srcEntity, newEntity, true);
 
@@ -328,13 +361,41 @@ namespace Volt
 
 		for (const auto& id : entitiesToRemove)
 		{
+			auto entity = Entity{ id, m_prefabScene };
+			const auto& prefabComp = entity.GetComponent<PrefabComponent>();
+
+			// It's a prefab reference, remove if it's the root
+			if (prefabComp.prefabAsset != handle)
+			{
+				Ref<Prefab> prefabAssetRef = AssetManager::GetAsset<Prefab>(prefabComp.prefabAsset);
+				if (prefabAssetRef && prefabAssetRef->IsValid())
+				{
+					if (prefabAssetRef->IsEntityRoot(entity))
+					{
+						if (m_prefabReferencesMap.contains(id))
+						{
+							m_prefabReferencesMap.erase(id);
+						}
+					}
+				}
+			}
+
 			m_prefabScene->RemoveEntity(Entity{ id, m_prefabScene });
 		}
 	}
 
 	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity sceneRootId)
 	{
-		if (!srcEntity.HasComponent<PrefabComponent>())
+		bool shouldAddEntity = !srcEntity.HasComponent<PrefabComponent>();
+		if (!shouldAddEntity)
+		{
+			if (srcEntity.GetComponent<PrefabComponent>().prefabAsset != handle)
+			{
+				shouldAddEntity = true;
+			}
+		}
+
+		if (shouldAddEntity)
 		{
 			Entity prefabParent = Entity::Null();
 
@@ -347,10 +408,6 @@ namespace Volt
 		}
 
 		auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
-		if (srcPrefabComp.prefabAsset != handle)
-		{
-			return false;
-		}
 
 		if (srcPrefabComp.sceneRootEntity != sceneRootId)
 		{

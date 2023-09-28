@@ -21,8 +21,10 @@ namespace Volt
 
 		void BeginMapNamned(const std::string& mapName);
 
-		template<typename T>
-		void SetKey(const std::string& key, const T& value);
+		template<typename K, typename T>
+		void SetKey(const K& key, const T& value);
+
+
 
 		const bool WriteToDisk();
 
@@ -31,8 +33,8 @@ namespace Volt
 		YAML::Emitter m_emitter;
 	};
 	
-	template<typename T>
-	inline void YAMLStreamWriter::SetKey(const std::string& key, const T& value)
+	template<typename K, typename T>
+	inline void YAMLStreamWriter::SetKey(const K& key, const T& value)
 	{
 		m_emitter << YAML::Key << key << YAML::Value << value;
 	}

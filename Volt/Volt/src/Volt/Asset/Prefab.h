@@ -43,6 +43,7 @@ namespace Volt
 		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
 		Ref<Scene> m_prefabScene;
+		std::unordered_map<entt::entity, AssetHandle> m_prefabReferencesMap;
 
 		entt::entity m_rootEntityId = entt::null;
 		uint32_t m_version = 0;
