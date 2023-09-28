@@ -438,7 +438,7 @@ namespace Volt
 
 	inline static bool AssetManager_HasAsset(uint64_t handle)
 	{
-		if (Volt::AssetManager::Get().ExistsInRegistry(handle))
+		if (Volt::AssetManager::ExistsInRegistry(handle))
 		{
 			return true;
 		}
@@ -448,7 +448,7 @@ namespace Volt
 	inline static uint64_t AssetManager_GetAssetHandleFromPath(MonoString* string)
 	{
 		const std::string str = MonoScriptUtils::GetStringFromMonoString(string);
-		return Volt::AssetManager::Get().GetAssetHandleFromFilePath(str);
+		return Volt::AssetManager::GetAssetHandleFromFilePath(str);
 	}
 
 #pragma endregion
@@ -481,7 +481,7 @@ namespace Volt
 			return;
 		}
 
-		Volt::AssetManager::Get().SaveAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
+		Volt::AssetManager::SaveAsset(Volt::AssetManager::Get().GetAssetRaw(handle));
 	}
 
 	inline static MonoArray* Scene_GetAllEntities()
@@ -2344,8 +2344,8 @@ namespace Volt
 
 		if (Application::Get().IsRuntime())
 		{
-			const auto [wx, wy] = Application::Get().GetWindow().GetPosition();
-			const auto [x, y] = Input::GetMousePosition();
+			auto [wx, wy] = Application::Get().GetWindow().GetPosition();
+			auto [x, y] = Input::GetMousePosition();
 			*position = { x - wx, y - wy };
 		}
 		else
@@ -2922,9 +2922,9 @@ namespace Volt
 	inline static MonoArray* Physics_OverlapBox(glm::vec3* origin, glm::vec3* halfSize, uint32_t layerMask)
 	{
 		std::vector<Entity> tempHitList;
-		bool hit = Physics::GetScene()->OverlapBox(*origin, *halfSize, tempHitList, layerMask);
+		bool hasHit = Physics::GetScene()->OverlapBox(*origin, *halfSize, tempHitList, layerMask);
 
-		if (!hit) return nullptr;
+		if (!hasHit) return nullptr;
 
 		MonoArray* array = mono_array_new(MonoScriptEngine::GetAppDomain(), MonoScriptEngine::GetEntityClass()->GetClass(), tempHitList.size());
 
@@ -2947,9 +2947,9 @@ namespace Volt
 	inline static MonoArray* Physics_OverlapSphere(glm::vec3* origin, float radius, uint32_t layerMask)
 	{
 		std::vector<Entity> tempHitList;
-		bool hit = Physics::GetScene()->OverlapSphere(*origin, radius, tempHitList, layerMask);
+		bool hasHit = Physics::GetScene()->OverlapSphere(*origin, radius, tempHitList, layerMask);
 
-		if (!hit) return nullptr;
+		if (!hasHit) return nullptr;
 
 		MonoArray* array = mono_array_new(MonoScriptEngine::GetAppDomain(), MonoScriptEngine::GetEntityClass()->GetClass(), tempHitList.size());
 
@@ -3002,7 +3002,7 @@ namespace Volt
 	{
 		std::string RTPCName = MonoScriptUtils::GetStringFromMonoString(aRTPC);
 
-		return Amp::WwiseAudioManager::SetRTPC(RTPCName.c_str(), aValue);
+		return Amp::WwiseAudioManager::SetRTPC(RTPCName.c_str(), static_cast<float>(aValue));
 	}
 
 	inline static void AMP_StopAllEvents()
@@ -5048,7 +5048,6 @@ namespace Volt
 		auto& backend = handler.GetBackend();
 		if (!backend) { return; }
 
-		auto clientId = backend->GetClientId();
 		auto varId = backend->GetRegistry().GetLinked(repId, str);
 		auto repVar = backend->GetRegistry().GetAs<RepVariable>(varId);
 		if (!repVar) return;
@@ -5271,20 +5270,20 @@ namespace Volt
 	{
 		if (Application::Get().IsRuntime())
 		{
-			return Application::Get().GetWindow().GetWidth();
+			return static_cast<float>(Application::Get().GetWindow().GetWidth());
 		}
 
-		return Application::Get().GetWindow().GetViewportWidth();
+		return static_cast<float>(Application::Get().GetWindow().GetViewportWidth());
 	}
 
 	inline static float Window_GetHeight()
 	{
 		if (Application::Get().IsRuntime())
 		{
-			return Application::Get().GetWindow().GetHeight();
+			return static_cast<float>(Application::Get().GetWindow().GetHeight());
 		}
 
-		return Application::Get().GetWindow().GetViewportHeight();
+		return static_cast<float>(Application::Get().GetWindow().GetViewportHeight());
 	}
 
 	inline static void Window_SetCursor(MonoString* path)

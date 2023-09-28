@@ -39,7 +39,8 @@ namespace AssetBrowser
 			{
 				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
 				{
-					Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromFilePath(item->path), path);
+
+					Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::GetAssetHandleFromFilePath(item->path), path);
 				}
 			}
 
@@ -72,7 +73,7 @@ namespace AssetBrowser
 						}
 					}
 
-					Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::Get().GetAssetHandleFromFilePath(item->path), path);
+					Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::GetAssetHandleFromFilePath(item->path), path);
 				}
 			}
 

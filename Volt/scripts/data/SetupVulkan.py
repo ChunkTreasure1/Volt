@@ -5,7 +5,7 @@ import os
 from colorama import Fore, Back, Style
 from Utility import Utility
 
-vulkanURL = "https://sdk.lunarg.com/sdk/download/1.3.243.0/windows/VulkanSDK-1.3.243.0-Installer.exe"
+vulkanURL = "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe"
 
 class Vulkan:
     @staticmethod

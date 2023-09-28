@@ -21,9 +21,9 @@ bool TaigaAPI::Auth(const std::string& username, const std::string& password, Ta
 	{
 		if (res->status == 200)
 		{
-			nlohmann::json json = nlohmann::json::parse(res->body);
-			info.authToken = json["auth_token"];
-			info.userId = json["id"];
+			nlohmann::json parsedJson = nlohmann::json::parse(res->body);
+			info.authToken = parsedJson["auth_token"];
+			info.userId = parsedJson["id"];
 			return true;
 		}
 	}

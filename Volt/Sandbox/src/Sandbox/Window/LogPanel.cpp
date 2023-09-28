@@ -24,7 +24,7 @@ namespace Utility
 LogPanel::LogPanel()
 	: EditorWindow("Log")
 {
-	myIsOpen = true;
+	m_isOpen = true;
 
 	Volt::Log::AddCallback([&](const LogCallbackData& message)
 	{

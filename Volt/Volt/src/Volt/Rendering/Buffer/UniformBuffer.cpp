@@ -81,7 +81,6 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(mySize >= size, "Unable to set data of larger size than buffer!");
 
-		VkDeviceSize bufferSize = (VkDeviceSize)size;
 		VulkanAllocator allocator{ "UniformBuffer - SetData" };
 
 		void* bufferData = allocator.MapMemory<void*>(myAllocation);

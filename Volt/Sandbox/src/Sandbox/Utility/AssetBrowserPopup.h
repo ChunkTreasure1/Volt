@@ -12,7 +12,7 @@ public:
 		Open
 	};
 
-	AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handle, std::function<void(Volt::AssetHandle& value)> callback = nullptr);
+	AssetBrowserPopup(const std::string& id, Volt::AssetType wantedType, Volt::AssetHandle& handler);
 
 	State Update();
 
@@ -22,7 +22,6 @@ private:
 	std::string myId;
 	Volt::AssetType myWantedType;
 	Volt::AssetHandle& myHandle;
-	std::function<void(Volt::AssetHandle& value)> myCallback;
 
 	std::string mySearchQuery;
 	bool myActivateSearch = false;

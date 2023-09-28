@@ -3,6 +3,8 @@
 #include "Sandbox/Window/AssetBrowser/BrowserItems.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 
+#include <imgui.h>
+
 namespace Volt
 {
 	class Image2D;

@@ -201,6 +201,11 @@ namespace Volt
 		{
 			if (myNavMesh)
 			{
+				if (!myActiveScene)
+				{
+					return;
+				}
+
 				auto& crowd = myNavMesh->GetCrowd();
 				if (!myActiveScene)
 				{
@@ -220,14 +225,10 @@ namespace Volt
 		{
 			if (myNavMesh)
 			{
-				if (myNavMesh->GetCrowd())
+				auto& crowd = myNavMesh->GetCrowd();
+				if (crowd)
 				{
-					auto& crowd = myNavMesh->GetCrowd();
 					crowd->ClearAgents();
-				}
-				else
-				{
-					VT_CORE_ERROR("Could not clear agents because crowd is null");
 				}
 			}
 		}

@@ -3,6 +3,10 @@
 
 #include "Sandbox/Camera/EditorCameraController.h"
 
+#include "Sandbox/UISystems/ModalSystem.h"
+
+#include "Sandbox/Modals/ProjectUpgradeModal.h"
+
 #include "Sandbox/Window/PropertiesPanel.h"
 #include "Sandbox/Window/ViewportPanel.h"
 #include "Sandbox/Window/GameViewPanel.h"
@@ -34,6 +38,10 @@
 #include "Sandbox/Window/PostProcessingStackPanel.h"
 #include "Sandbox/Window/PostProcessingMaterialPanel.h"
 #include "Sandbox/Window/NavigationPanel.h"
+#include "Sandbox/Window/Net/NetPanel.h"
+#include "Sandbox/Window/Net/NetContractPanel.h"
+#include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
+#include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
 #include "Sandbox/Utility/EditorLibrary.h"
@@ -41,9 +49,6 @@
 #include "Sandbox/Utility/NodeEditorHelpers.h"
 
 #include "Sandbox/UserSettingsManager.h"
-
-#include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
-#include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include <Volt/Core/Application.h>
 #include <Volt/Core/Window.h>
@@ -82,9 +87,6 @@
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
 
 #include <imgui.h>
-
-#include "Sandbox/Window/Net/NetPanel.h"
-#include "Sandbox/Window/Net/NetContractPanel.h"
 
 Sandbox::Sandbox()
 {
@@ -196,6 +198,8 @@ void Sandbox::OnAttach()
 		}
 	}
 
+	InitializeModals();
+
 	if (!userSettings.sceneSettings.lastOpenScene.empty())
 	{
 		OpenScene(userSettings.sceneSettings.lastOpenScene);
@@ -215,6 +219,8 @@ void Sandbox::OnAttach()
 	Volt::DiscordSDK::UpdateRichPresence();
 
 	myRuntimeScene->InitializeEngineScripts();
+
+	m_isInitialized = true;
 }
 
 void Sandbox::CreateWatches()
@@ -313,8 +319,18 @@ void Sandbox::SetupNewSceneData()
 	Volt::Application::Get().OnEvent(loadEvent);
 }
 
+void Sandbox::InitializeModals()
+{
+	{
+		auto& modal = ModalSystem::AddModal<ProjectUpgradeModal>("Upgrade Project");
+		m_projectUpgradeModal = modal.GetID();
+	}
+}
+
 void Sandbox::OnDetach()
 {
+	m_isInitialized = false;
+
 	Volt::Log::ClearCallbacks();
 
 	if (mySceneState == SceneState::Play)
@@ -356,6 +372,11 @@ void Sandbox::OnDetach()
 
 void Sandbox::OnEvent(Volt::Event& e)
 {
+	if (!m_isInitialized)
+	{
+		return;
+	}
+
 	Volt::EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<Volt::AppUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnUpdateEvent));
 	dispatcher.Dispatch<Volt::AppImGuiUpdateEvent>(VT_BIND_EVENT_FN(Sandbox::OnImGuiUpdateEvent));
@@ -640,11 +661,11 @@ void Sandbox::SaveScene()
 			if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(myRuntimeScene->handle)))
 			{
 				Volt::AssetManager::Get().SaveAsset(myRuntimeScene);
-				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->name));
+				UI::Notify(NotificationType::Success, "Scene saved!", std::format("Scene {0} was saved successfully!", myRuntimeScene->assetName));
 			}
 			else
 			{
-				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->name));
+				UI::Notify(NotificationType::Error, "Unable to save scene!", std::format("Scene {0} was is not writeable!", myRuntimeScene->assetName));
 			}
 		}
 		else
@@ -793,6 +814,14 @@ bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 
 bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 {
+	static bool shouldOpenProjectUpgradeModal = Volt::ProjectManager::IsCurrentProjectDeprecated();
+	if (shouldOpenProjectUpgradeModal)
+	{
+		ModalSystem::GetModal<ProjectUpgradeModal>(m_projectUpgradeModal).Open();
+
+		shouldOpenProjectUpgradeModal = false;
+	}
+
 	ImGuizmo::BeginFrame();
 
 	if (SaveReturnState returnState = EditorUtils::SaveFilePopup("Do you want to save scene?##OpenScene"); returnState != SaveReturnState::None)
@@ -816,6 +845,8 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	}
 
 	UpdateDockSpace();
+
+	ModalSystem::Update();
 
 	if (myShouldOpenSaveSceneAs)
 	{
@@ -1125,7 +1156,7 @@ bool Sandbox::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 	act.SetDetails("Working on:");
 	act.SetState(scene->GetName().c_str());
 	act.GetParty().GetSize().SetCurrentSize(myRuntimeScene->GetActiveLayer() + 1);
-	act.GetParty().GetSize().SetMaxSize(myRuntimeScene->GetLayers().size());
+	act.GetParty().GetSize().SetMaxSize(static_cast<int32_t>(myRuntimeScene->GetLayers().size()));
 	act.GetTimestamps().SetStart(std::time(nullptr));
 
 	Volt::DiscordSDK::UpdateRichPresence();

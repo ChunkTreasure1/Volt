@@ -489,7 +489,6 @@ namespace Volt
 		//		if (longestPlayer)
 		//		{
 		//			const float animSpeed = longestPlayer->GetInput<float>(2);
-		//			const float endTime = longestAnimationTime * transition->exitStartValue;
 
 		//			if (longestAnimation->IsAtEnd(currentState->startTime, animSpeed)/* || longestAnimation->HasPassedTime(currentState->startTime, animSpeed, endTime)*/)
 		//			{

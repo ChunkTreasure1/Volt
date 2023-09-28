@@ -40,8 +40,8 @@ namespace Utility
 SceneViewPanel::SceneViewPanel(Ref<Volt::Scene>& scene, const std::string& id)
 	: EditorWindow("Scene View", false, id), myScene(scene)
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myIsOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_isOpen = true;
 }
 
 void SceneViewPanel::UpdateMainContent()
@@ -518,7 +518,7 @@ void RecursiveUnpackPrefab(Wire::Registry& registry, Wire::EntityId id)
 
 bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 {
-	if (!myIsHovered || ImGui::IsAnyItemActive())
+	if (!m_isHovered || ImGui::IsAnyItemActive())
 	{
 		return false;
 	}
@@ -587,7 +587,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		entityName = registry.GetComponent<Volt::TagComponent>(entity).tag;
 	}
 
-	constexpr uint32_t maxSearchDepth = 10;
 	const bool hasMatchingParent = SearchRecursivelyParent(entity, filter, 10);
 	const bool hasMatchingChild = SearchRecursively(entity, filter, 10);
 	const bool matchesQuery = MatchesQuery(entityName, filter);
@@ -606,8 +605,8 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		entityName = VT_ICON_FA_CAMERA + std::string(" ") + entityName;
 	}
 
-	const float edgeOffset = 4.f;
 	const float rowHeight = 17.f;
+	const float rowPadding = 4.f;
 
 	auto* window = ImGui::GetCurrentWindow();
 	window->DC.CurrLineSize.y = rowHeight;
@@ -617,7 +616,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	window->DC.CurrLineTextBaseOffset = 3.f;
 
 	const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
-	const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 2).Max.x - 20.f, rowAreaMin.y + rowHeight };
+	const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 2).Max.x - 20.f, rowAreaMin.y + rowHeight + rowPadding * 2.f };
 
 	const bool isSelected = SelectionManager::IsSelected(entity);
 
@@ -687,7 +686,7 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 	};
 
 	const bool descendantSelected = isAnyDescendantSelected(entity, isAnyDescendantSelected);
-	const glm::vec4 selectedColor = myIsFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
+	const glm::vec4 selectedColor = m_isFocused ? EditorTheme::ItemSelectedFocused : EditorTheme::ItemSelected;
 
 	if (isRowHovered)
 	{
@@ -831,7 +830,6 @@ void SceneViewPanel::DrawEntity(Wire::EntityId entity, const std::string& filter
 		{
 			std::vector<Wire::EntityId> selectedEntities = SelectionManager::GetSelectedEntities();
 
-			constexpr uint32_t maxEntNames = 5;
 			for (uint32_t i = 0; const auto & id : selectedEntities)
 			{
 				if (i >= 5)
@@ -1212,7 +1210,7 @@ bool SceneViewPanel::MatchesQuery(const std::string& text, const std::string& fi
 
 	for (const auto& q : queries)
 	{
-		if (lowerText.contains(q))
+		if (Utils::StringContains(lowerText, q))
 		{
 			return true;
 		}
@@ -1237,7 +1235,7 @@ bool SceneViewPanel::HasComponent(Wire::EntityId id, const std::string& filter)
 
 	for (const auto& [name, info] : Wire::ComponentRegistry::ComponentGUIDs())
 	{
-		if (Utils::ToLower(name).contains(Utils::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
+		if (Utils::StringContains(Utils::ToLower(name), Utils::ToLower(compSearchString)) && myScene->GetRegistry().HasComponent(info.guid, id))
 		{
 			return true;
 		}
@@ -1263,7 +1261,7 @@ bool SceneViewPanel::HasScript(Wire::EntityId id, const std::string& filter)
 	{
 		for (const auto& name : myScene->GetRegistry().GetComponent<Volt::MonoScriptComponent>(id).scriptNames)
 		{
-			if (Utils::ToLower(name).contains(Utils::ToLower(scriptSearchString)))
+			if (Utils::StringContains(Utils::ToLower(name), Utils::ToLower(scriptSearchString)))
 			{
 				return true;
 			}
@@ -1370,7 +1368,7 @@ void SceneViewPanel::DrawMainRightClickPopup()
 				if (ImGui::MenuItem("Decal"))
 				{
 					auto ent = myScene->CreateEntity();
-					auto& meshComp = ent.AddComponent<Volt::DecalComponent>();
+					ent.AddComponent<Volt::DecalComponent>();
 					ent.SetTag("New Decal");
 
 					SelectionManager::DeselectAll();

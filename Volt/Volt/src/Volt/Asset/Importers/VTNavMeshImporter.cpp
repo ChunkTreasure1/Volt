@@ -44,8 +44,6 @@ namespace Volt
 		auto navmesh = reinterpret_pointer_cast<AI::NavMesh>(asset);
 		auto realPath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		const auto* mesh = navmesh->GetNavMesh()->GetNavMesh().get();
-
 		if (std::filesystem::exists(realPath))
 		{
 			std::filesystem::remove(realPath);

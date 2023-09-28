@@ -184,12 +184,12 @@ namespace Volt
 
 	void Physics::CreateActors(Scene* scene)
 	{
-		scene->GetRegistry().ForEach<RigidbodyComponent>([&](Wire::EntityId id, const RigidbodyComponent& comp)
+		scene->GetRegistry().ForEach<RigidbodyComponent>([&](Wire::EntityId id, const RigidbodyComponent&)
 		{
 			CreateActor(Entity{ id, scene });
 		});
 
-		scene->GetRegistry().ForEach<CharacterControllerComponent>([&](Wire::EntityId id, const CharacterControllerComponent& comp)
+		scene->GetRegistry().ForEach<CharacterControllerComponent>([&](Wire::EntityId id, const CharacterControllerComponent&)
 		{
 			CreateControllerActor(Entity{ id, scene });
 		});

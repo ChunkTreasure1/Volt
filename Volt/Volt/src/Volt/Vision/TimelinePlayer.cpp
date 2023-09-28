@@ -57,7 +57,7 @@ void Volt::TimelinePlayer::StartTimeline(const TimelinePreset timelinePreset, Sc
 	}
 
 	myCurrentKeyAndTime.clear();
-	myCurrentKeyAndTime.resize(myTimelinePreset.myTracks.size(), { 0,0 });
+	myCurrentKeyAndTime.resize(myTimelinePreset.myTracks.size(), { 0, 0.f });
 }
 
 void Volt::TimelinePlayer::StopTimeline()
@@ -183,7 +183,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 	}
 
 	myCurrentPlaybackTime += deltaTime;
-	const float timelineMaxLengthTime = myTimelinePreset.maxLength / 30;
+	const float timelineMaxLengthTime = myTimelinePreset.maxLength / 30.f;
 	if (myCurrentPlaybackTime >= timelineMaxLengthTime)
 	{
 		Loop();

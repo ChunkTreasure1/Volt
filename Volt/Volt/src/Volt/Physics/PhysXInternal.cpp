@@ -32,6 +32,7 @@ namespace Volt
 		VT_CORE_ASSERT(myPhysXData->physxSDK, "PxCreatePhysics failed!");
 
 		bool extensionsLoaded = PxInitExtensions(*myPhysXData->physxSDK, PhysXDebugger::GetDebugger());
+		extensionsLoaded;
 		VT_CORE_ASSERT(extensionsLoaded, "Failed to initialize PhysX extensions");
 
 		myPhysXData->physxCPUDispatcher = physx::PxDefaultCpuDispatcherCreate(4);

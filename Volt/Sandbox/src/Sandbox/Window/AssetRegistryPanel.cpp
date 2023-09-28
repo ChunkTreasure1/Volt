@@ -9,7 +9,7 @@
 AssetRegistryPanel::AssetRegistryPanel()
 	: EditorWindow("Asset Registry")
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 }
 
 void AssetRegistryPanel::UpdateMainContent()
@@ -74,7 +74,7 @@ void AssetRegistryPanel::UpdateMainContent()
 				auto handle_lower = Utils::ToLower(std::to_string(handle));
 				auto search_lower = Utils::ToLower(mySearchQuery);
 
-				if (!path_lower.contains(search_lower) && !handle_lower.contains(search_lower))
+				if (!Utils::StringContains(path_lower, search_lower) && !Utils::StringContains(handle_lower, search_lower))
 				{
 					continue;
 				}

@@ -207,7 +207,6 @@ namespace Volt
 
 		const int32_t frameCount = (int32_t)myFrames.size();
 		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
-		const float blendValue = (fmodf(normalizedTime, 1.f) * ((float)frameCount)) - (float)currentFrameIndex;
 
 		int32_t nextFrameIndex = currentFrameIndex + 1;
 
@@ -237,8 +236,6 @@ namespace Volt
 		{
 			return true;
 		}
-
-		return false;
 
 		return false;
 	}
@@ -295,19 +292,6 @@ namespace Volt
 		animData.deltaTime = frameTime - (float)animData.currentFrameIndex;
 
 		return animData;
-	}
-
-	const glm::mat4 Animation::BlendFrames(const Pose& currentFrame, const Pose& nextFrame, const glm::mat4& parentTransform, const size_t jointIndex, const float blendFactor)
-	{
-		//const glm::mat4 currentLocalTransform = currentFrame.localTransforms.at(jointIndex);
-		//const glm::mat4 nextLocalTransform = nextFrame.localTransforms.at(jointIndex);
-
-		//const glm::mat4 currentGlobalTransform = parentTransform * glm::transpose(currentLocalTransform);
-		//const glm::mat4 nextGlobalTransform = parentTransform * glm::transpose(nextLocalTransform);
-
-		//return Math::Lerp(currentGlobalTransform, nextGlobalTransform, blendFactor);
-
-		return glm::mat4{ 1.f };
 	}
 }
 

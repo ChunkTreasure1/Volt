@@ -13,6 +13,10 @@
 #include <file_includer.h>
 #include <libshaderc_util/file_finder.h>
 
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <wrl.h>
+	
 namespace Volt
 {
 	namespace Utility
@@ -46,6 +50,12 @@ namespace Volt
 			return output;
 		}
 	}
+
+	struct DXCInstances
+	{
+		inline static IDxcCompiler3* compiler = nullptr;
+		inline static IDxcUtils* utils = nullptr;
+	};
 
 	bool ShaderCompiler::TryCompile(ShaderDataMap& outShaderData, const std::vector<std::filesystem::path>& shaderFiles)
 	{
@@ -155,10 +165,6 @@ namespace Volt
 
 				return false;
 			}
-
-			const auto* begin = (const uint8_t*)compileResult.cbegin();
-			const auto* end = (const uint8_t*)compileResult.cend();
-			const ptrdiff_t size = end - begin;
 
 			outShaderData = std::vector<uint32_t>(compileResult.cbegin(), compileResult.cend());
 		}
@@ -346,11 +352,11 @@ namespace Volt
 
 		if (error.empty())
 		{
-			IDxcBlob* result;
-			compilationResult->GetResult(&result);
+			IDxcBlob* compileResult;
+			compilationResult->GetResult(&compileResult);
 
-			outSource = (const char*)result->GetBufferPointer();
-			result->Release();
+			outSource = (const char*)compileResult->GetBufferPointer();
+			compileResult->Release();
 		}
 
 		sourcePtr->Release();

@@ -117,7 +117,8 @@ void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color)
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
-		myIndices.emplace_back(myVertices.size());
+		const uint32_t index = static_cast<uint32_t>(myVertices.size());
+		myIndices.push_back(index);
 		myVertices.emplace_back(vertex);
 	}
 	else if (myPrimitive == DU_DRAW_LINES)
@@ -133,7 +134,8 @@ void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, un
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
-		myIndices.emplace_back(myVertices.size());
+		const uint32_t index = static_cast<uint32_t>(myVertices.size());
+		myIndices.push_back(index);
 		myVertices.emplace_back(vertex);
 	}
 	else if (myPrimitive == DU_DRAW_LINES)
@@ -150,7 +152,8 @@ void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color, const flo
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
-		myIndices.emplace_back(myVertices.size());
+		const uint32_t index = static_cast<uint32_t>(myVertices.size());
+		myIndices.push_back(index);
 		myVertices.emplace_back(vertex);
 	}
 	else if (myPrimitive == DU_DRAW_LINES)
@@ -167,7 +170,8 @@ void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, un
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
-		myIndices.emplace_back(myVertices.size());
+		const uint32_t index = static_cast<uint32_t>(myVertices.size());
+		myIndices.push_back(index);
 		myVertices.emplace_back(vertex);
 	}
 	else if (myPrimitive == DU_DRAW_LINES)
@@ -182,8 +186,8 @@ void NavMeshDrawCompiler::end()
 	{
 		VT_CORE_ASSERT(!mySubmeshes.empty(), "Missing NavMeshDrawCompiler::begin call");
 
-		mySubmeshes.back().vertexCount = myIndices.size() - mySubmeshes.back().vertexStartOffset;
-		mySubmeshes.back().indexCount = myVertices.size() - mySubmeshes.back().indexStartOffset;
+		mySubmeshes.back().vertexCount = static_cast<uint32_t>(myIndices.size()) - mySubmeshes.back().vertexStartOffset;
+		mySubmeshes.back().indexCount = static_cast<uint32_t>(myVertices.size()) - mySubmeshes.back().indexStartOffset;
 	}
 }
 

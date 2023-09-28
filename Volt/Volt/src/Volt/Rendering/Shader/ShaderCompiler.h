@@ -4,9 +4,6 @@
 
 #include <vulkan/vulkan.h>
 
-struct IDxcCompiler3;
-struct IDxcUtils;
-
 namespace shaderc
 {
 	class Compiler;
@@ -30,13 +27,7 @@ namespace Volt
 
 		static bool TryCompile(ShaderDataMap& outShaderData, const std::vector<std::filesystem::path>& shaderFiles);
 
-	private:
-		struct DXCInstances
-		{
-			inline static IDxcCompiler3* compiler = nullptr;
-			inline static IDxcUtils* utils = nullptr;
-		};
-		
+	private:		
 		static void LoadShaderFromFiles(ShaderSourceMap& shaderSources, const std::vector<std::filesystem::path>& shaderFiles);
 		static const std::vector<Shader::Language> GetLanguages(const std::vector<std::filesystem::path>& paths);
 

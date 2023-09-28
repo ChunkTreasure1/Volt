@@ -149,7 +149,9 @@ namespace Volt
 		static AssetMetadata& GetMetadataFromFilePathMutable(const std::filesystem::path filePath);
 
 		static const std::filesystem::path GetCleanAssetFilePath(const std::filesystem::path& path);
-		std::vector<std::filesystem::path> GetMetafiles();
+		
+		std::vector<std::filesystem::path> GetEngineMetaFiles();
+		std::vector<std::filesystem::path> GetProjectMetaFiles();
 
 		std::unordered_map<AssetType, Scope<AssetImporter>> m_assetImporters;
 		std::unordered_map<AssetHandle, Ref<Asset>> m_assetCache;
@@ -175,7 +177,6 @@ namespace Volt
 		{
 			if (asset->GetType() != T::GetStaticType())
 			{
-				AssetType assetType = asset->GetType();
 				VT_CORE_CRITICAL("Type Mismatch!");
 			}
 		}
@@ -300,7 +301,7 @@ namespace Volt
 		metadata.type = T::GetStaticType();
 		metadata.isLoaded = true;
 
-		asset->name = metadata.filePath.stem().string();
+		asset->assetName = metadata.filePath.stem().string();
 
 		AssetManager::Get().m_assetRegistry.emplace(asset->handle, metadata);
 		AssetManager::Get().m_assetCache.emplace(asset->handle, asset);

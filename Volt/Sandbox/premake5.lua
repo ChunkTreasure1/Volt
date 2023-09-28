@@ -4,19 +4,29 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 project "Sandbox"
 	location "."
 	kind "ConsoleApp"
+	
 	language "C++"
-	cppdialect "C++latest"
-	debugdir "../../Engine"
+	cppdialect "C++20"
 
+	debugdir "../../Engine"
 	targetdir ("../bin/" .. outputdir .."/%{prj.name}")
 	objdir ("../bin-int/" .. outputdir .."/%{prj.name}")
 
 	pchheader "sbpch.h"
 	pchsource "src/sbpch.cpp"
 
+	warnings "Extra"
+
+	flags
+	{
+		"FatalWarnings"
+	}
+
 	disablewarnings
 	{
 		"4005",
+		"4201",
+		"4100",
 		"4927"
 	}
 
@@ -33,9 +43,11 @@ project "Sandbox"
 
     defines
     {
+		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+		"_CRT_SECURE_NO_WARNINGS",
+		"_WINSOCK_DEPRECATED_NO_WARNINGS",
+		
         "GLFW_INCLUDE_NONE",
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
 		"CPPHTTPLIB_OPENSSL_SUPPORT",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
@@ -120,13 +132,6 @@ project "Sandbox"
 		"ImGuizmo",
 		"ImGuiNodeEditor",
 
-		"crypt32.lib",
-		"Bcrypt.lib",
-
-		"Ws2_32.lib",
-		"Winmm.lib",
-		"Version.lib",
-
 		"%{Library.fmod}",
 		"%{Library.fmodstudio}",
 		"%{Library.fsbank}",
@@ -176,53 +181,70 @@ project "Sandbox"
 	filter "system:windows"
 		systemversion "latest"
 
-		filter "configurations:Debug"
-			defines { "VT_DEBUG" }
-			runtime "Debug"
-			symbols "on"
-			optimize "off"
+		defines
+		{
+			"NOMINMAX",
+			"_HAS_STD_BYTE=0",
+		}
 
-			links
-			{
-				"%{Library.ShaderC_Debug}",
-				"%{Library.ShaderC_Utils_Debug}",
-				"%{Library.SPIRV_Cross_Debug}",
-				"%{Library.SPIRV_Cross_GLSL_Debug}",
-				"%{Library.SPIRV_Tools_Debug}",
+		links
+		{
+			"crypt32.lib",
+			"Bcrypt.lib",
+		
+			"Winmm.lib",
+			"Version.lib"
+		}
 
-				"%{Library.VulkanUtils}"
-			}
+	filter "configurations:Debug"
+		defines { "VT_DEBUG" }
+		runtime "Debug"
+		symbols "on"
+		optimize "off"
 
-		filter "configurations:Release"
-			defines { "VT_RELEASE", "NDEBUG" }
-			runtime "Release"
-			symbols "on"
-			optimize "on"
+		links
+		{
+			"%{Library.ShaderC_Debug}",
+			"%{Library.ShaderC_Utils_Debug}",
+			"%{Library.SPIRV_Cross_Debug}",
+			"%{Library.SPIRV_Cross_GLSL_Debug}",
+			"%{Library.SPIRV_Tools_Debug}",
+		}
 
-			links
-			{
-				"%{Library.ShaderC_Release}",
-				"%{Library.ShaderC_Utils_Release}",
-				"%{Library.SPIRV_Cross_Release}",
-				"%{Library.SPIRV_Cross_GLSL_Release}",
-			}
+	filter "configurations:Release"
+		defines { "VT_RELEASE", "NDEBUG" }
+		runtime "Release"
+		symbols "on"
+		optimize "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
-		filter "configurations:Dist"
-			defines { "VT_DIST", "NDEBUG" }
-			runtime "Release"
-			symbols "on"
-			optimize "on"
-			kind "WindowedApp"
+		links
+		{
+			"%{Library.ShaderC_Release}",
+			"%{Library.ShaderC_Utils_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}",
+		}
 
-            links
-			{
-				"%{Library.ShaderC_Release}",
-				"%{Library.ShaderC_Utils_Release}",
-				"%{Library.SPIRV_Cross_Release}",
-				"%{Library.SPIRV_Cross_GLSL_Release}",
-			}
+	filter "configurations:Dist"
+		defines { "VT_DIST", "NDEBUG" }
+		runtime "Release"
+		symbols "on"
+		optimize "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
+		kind "WindowedApp"
 
-			postbuildcommands
-			{
-				'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/Sandbox.exe" "../../Engine/"'
-			}
+        links
+		{
+			"%{Library.ShaderC_Release}",
+			"%{Library.ShaderC_Utils_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}",
+		}
+
+		postbuildcommands
+		{
+			'{COPY} "../bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/Sandbox/Sandbox.exe" "../../Engine/"'
+		}

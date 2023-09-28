@@ -62,12 +62,12 @@ namespace GraphKey
 		virtual ~Node() = default;
 		Node(const Node& node) = delete;
 
-		virtual void OnEvent(Volt::Event& e) {}
+		virtual void OnEvent(Volt::Event&) {}
 		virtual void Initialize() {}
 		virtual void OnCopy() {}
 
-		virtual void Serialize(YAML::Emitter& out) {}
-		virtual void Deserialize(const YAML::Node& node) {}
+		virtual void Serialize(YAML::Emitter&) {}
+		virtual void Deserialize(const YAML::Node&) {}
 		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Wire::EntityId entity = 0);
 
 		virtual const std::string GetName() = 0;
@@ -100,7 +100,7 @@ namespace GraphKey
 		void SetOutputData(uint32_t index, const T& data);
 
 		Volt::UUID id{};
-		Wire::EntityId entity = 0;
+		Wire::EntityId nodeEntity = 0;
 
 		std::vector<Attribute> inputs;
 		std::vector<Attribute> outputs;

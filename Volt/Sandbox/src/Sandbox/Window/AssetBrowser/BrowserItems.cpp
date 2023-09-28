@@ -30,7 +30,7 @@ namespace AssetBrowser
 		PushID();
 		const float thumbnailSize = GetThumbnailSize();
 		const Ref<Volt::Image2D> icon = GetIcon();
-		const bool selected = mySelectionManager->IsSelected(this);
+		const bool isSelected = mySelectionManager->IsSelected(this);
 
 		const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 		const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
@@ -41,7 +41,7 @@ namespace AssetBrowser
 		ImGui::BeginChild("hoverWindow", itemSize, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 		{
 			const bool hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
-			const ImVec4 bgColor = AssetBrowserUtilities::GetBackgroundColor(hovered, selected);
+			const ImVec4 bgColor = AssetBrowserUtilities::GetBackgroundColor(hovered, isSelected);
 
 			UI::ScopedColor middleChild{ ImGuiCol_ChildBg, { bgColor.x, bgColor.y, bgColor.z, bgColor.w } };
 			UI::ScopedStyleFloat rounding{ ImGuiStyleVar_ChildRounding, 2.f };
@@ -98,7 +98,7 @@ namespace AssetBrowser
 				auto cursorPos = ImGui::GetCursorPos();
 				//Type name color at the bottom of the item
 				{
-					UI::ScopedColor typeNameColor(ImGuiCol_Text, GetTypeNameColor(hovered, selected));
+					UI::ScopedColor typeNameColor(ImGuiCol_Text, GetTypeNameColor(hovered, isSelected));
 					UI::ScopedFont typeFont(FontType::Regular_12);
 					UI::ShiftCursor(itemPadding / 2.f, itemHeightModifier - ImGui::CalcTextSize(myTypeName.c_str()).y - itemPadding * 2.f);
 					ImGui::TextUnformatted(myTypeName.c_str());

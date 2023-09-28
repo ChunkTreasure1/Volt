@@ -11,7 +11,7 @@ namespace Volt
 {
 	namespace AI
 	{
-		static void calcVel(float* vel, const float* pos, const float* tgt, const float speed)
+		inline static void calcVel(float* vel, const float* pos, const float* tgt, const float speed)
 		{
 			dtVsub(vel, tgt, pos);
 			vel[1] = 0.0;
@@ -105,9 +105,6 @@ namespace Volt
 			auto agentIndex = myEntityToAgentMap.at(entityId);
 
 			dtCrowdAgent* ag = myCrowd->getEditableAgent(agentIndex);
-			const dtQueryFilter* filter = myCrowd->getFilter(0);
-			const float* halfExtents = myCrowd->getQueryExtents();
-
 			if (ag && ag->active)
 			{
 				ag->npos[0] = position.x;
@@ -237,9 +234,9 @@ namespace Volt
 		{
 			if (!myCrowd) return;
 
-			for (uint32_t i = 0; i < myCrowd->getAgentCount(); ++i)
+			for (int i = 0; i < myCrowd->getAgentCount(); ++i)
 			{
-				myCrowd->removeAgent((int)i);
+				myCrowd->removeAgent(i);
 			}
 
 			myEntityToAgentMap.clear();

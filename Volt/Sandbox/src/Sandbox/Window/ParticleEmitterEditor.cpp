@@ -18,7 +18,7 @@
 ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")
 {
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
@@ -372,7 +372,7 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 					static glm::vec2 lifespan{ myCurrentPreset->minLifeTime, myCurrentPreset->maxLifeTime };
 					lifespan = { myCurrentPreset->minLifeTime ,myCurrentPreset->maxLifeTime };
 
-					UI::Property("Particle Lifespan", lifespan, 0.f, 0.f, nullptr, "x = min life time, y = max life time");
+					UI::Property("Particle Lifespan", lifespan, 0.f, 0.f, "x = min life time, y = max life time");
 					myCurrentPreset->minLifeTime = lifespan.x;
 					myCurrentPreset->maxLifeTime = (lifespan.x > lifespan.y) ? lifespan.x : lifespan.y;
 					//UI::Property("MaxLifeTime", );
@@ -384,7 +384,7 @@ void ParticleEmitterEditor::DrawPropertiesPanel()
 				ImGui::Separator();
 				if (UI::BeginProperties("Emitter"))
 				{
-					UI::Property("Intensity", myCurrentPreset->intensity, false, 0.f, 0.f, nullptr, "Amount of particles spawned each second");
+					UI::Property("Intensity", myCurrentPreset->intensity, 0.f, 0.f, "Amount of particles spawned each second");
 					UI::EndProperties();
 				}
 				ImGui::Checkbox("##burstCheckbox", &myCurrentPreset->isBurst);

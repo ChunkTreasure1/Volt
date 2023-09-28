@@ -80,9 +80,7 @@ namespace Volt
 
 	void AssetManager::AddDependency(AssetHandle asset, const std::filesystem::path& dependency)
 	{
-		auto& metaData = GetMetadataFromHandleMutable(asset);
 		const auto& dependencyMetaData = GetMetadataFromFilePath(dependency);
-
 		AddDependency(asset, dependencyMetaData.handle);
 	}
 
@@ -204,7 +202,7 @@ namespace Volt
 #endif	
 
 			asset->handle = metadata.handle;
-			asset->name = metadata.filePath.stem().string();
+			asset->assetName = metadata.filePath.stem().string();
 
 			metadata.isLoaded = true;
 		}
@@ -217,9 +215,15 @@ namespace Volt
 
 	void AssetManager::LoadAssetMetafiles()
 	{
-		const auto metafiles = GetMetafiles();
+		const auto projectMetaFiles = GetProjectMetaFiles();
+		const auto engineMetaFiles = GetEngineMetaFiles();
 
-		for (auto file : metafiles)
+		for (auto file : engineMetaFiles)
+		{
+			DeserializeAssetMetafile(file);
+		}
+
+		for (auto file : projectMetaFiles)
 		{
 			DeserializeAssetMetafile(file);
 		}
@@ -523,7 +527,7 @@ namespace Volt
 		const auto projDir = GetContextPath(filePath);
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
+			WriteLock cacheLock{ m_assetCacheMutex };
 			m_assetCache.erase(assetHandle);
 		}
 
@@ -552,7 +556,7 @@ namespace Volt
 		const auto projDir = GetContextPath(filePath);
 
 		{
-			WriteLock lock{ m_assetCacheMutex };
+			WriteLock cacheLock{ m_assetCacheMutex };
 			m_assetCache.erase(metadata.handle);
 		}
 
@@ -748,7 +752,7 @@ namespace Volt
 		if (!pathSplit.empty())
 		{
 			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
-			if (lowerFirstPart.contains("engine") || lowerFirstPart.contains("editor"))
+			if (Utils::StringContains(lowerFirstPart, "engine") || Utils::StringContains(lowerFirstPart, "editor"))
 			{
 				return true;
 			}
@@ -1013,7 +1017,7 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-				asset->name = metadata.filePath.stem().string();
+				asset->assetName = metadata.filePath.stem().string();
 
 #ifndef VT_DIST
 				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);
@@ -1101,7 +1105,7 @@ namespace Volt
 					asset->handle = handle;
 				}
 
-				asset->name = metadata.filePath.stem().string();
+				asset->assetName = metadata.filePath.stem().string();
 
 #ifndef VT_DIST
 				VT_CORE_INFO("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath.string().c_str(), asset->handle);
@@ -1158,6 +1162,51 @@ namespace Volt
 		return pathClean;
 	}
 
+	std::vector<std::filesystem::path> AssetManager::GetEngineMetaFiles()
+	{
+		std::vector<std::filesystem::path> files;
+		std::string ext(".vtmeta");
+
+		// Engine Directory
+		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
+		{
+			if (p.path().extension() == ext)
+			{
+				files.emplace_back(p.path());
+			}
+		}
+
+		return files;
+	}
+
+	std::vector<std::filesystem::path> AssetManager::GetProjectMetaFiles()
+	{
+		if (ProjectManager::IsCurrentProjectDeprecated())
+		{
+			VT_CORE_ERROR("[AssetManager]: Unable to load metafiles as the loaded project is deprecated!");
+			return {};
+		}
+
+
+		std::vector<std::filesystem::path> files;
+		std::string ext(".vtmeta");
+
+		// Project Directory
+
+		if (FileSystem::Exists(ProjectManager::GetAssetsDirectory()))
+		{
+			for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetAssetsDirectory()))
+			{
+				if (p.path().extension() == ext)
+				{
+					files.emplace_back(p.path());
+				}
+			}
+		}
+
+		return files;
+	}
+
 	void AssetManager::SerializeAssetMetaFile(AssetHandle assetHandle)
 	{
 		const auto& metadata = GetMetadataFromHandle(assetHandle);
@@ -1178,8 +1227,8 @@ namespace Volt
 
 			out << YAML::Key << "Dependencies" << YAML::Value << metadata.dependencies;
 
-			out << YAML::BeginMap;
 			out << YAML::Key << "Properties" << YAML::Value;
+			out << YAML::BeginMap;
 			for (const auto& [name, data] : metadata.properties)
 			{
 				out << YAML::Key << name << YAML::Value << data;
@@ -1285,35 +1334,5 @@ namespace Volt
 
 			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
 		}
-	}
-
-	std::vector<std::filesystem::path> AssetManager::GetMetafiles()
-	{
-		std::vector<std::filesystem::path> files;
-		std::string ext(".vtmeta");
-
-		// Project Directory
-
-		if (FileSystem::Exists(ProjectManager::GetAssetsDirectory()))
-		{
-			for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetAssetsDirectory()))
-			{
-				if (p.path().extension() == ext)
-				{
-					files.emplace_back(p.path());
-				}
-			}
-		}
-
-		// Engine Directory
-		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
-		{
-			if (p.path().extension() == ext)
-			{
-				files.emplace_back(p.path());
-			}
-		}
-
-		return files;
 	}
 }

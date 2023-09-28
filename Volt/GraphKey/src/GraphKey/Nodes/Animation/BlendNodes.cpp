@@ -84,8 +84,6 @@ namespace GraphKey
 		const auto& additive = GetInput<AnimationOutputData>(1);
 		const auto& additiveBase = skeleton->GetRestPose();
 
-		const float alpha = std::clamp(GetInput<float>(2), 0.f, 1.f);
-
 		if (base.pose.size() != additive.pose.size())
 		{
 			SetOutputData(0, base);
@@ -398,9 +396,9 @@ namespace GraphKey
 		}
 	}
 
-	Ref<Node> LayeredBlendPerBoneNode::CreateCopy(Graph* ownerGraph, Wire::EntityId entity)
+	Ref<Node> LayeredBlendPerBoneNode::CreateCopy(Graph* ownerGraph, Wire::EntityId entityId)
 	{
-		Ref<Node> copy = Node::CreateCopy(ownerGraph, entity);
+		Ref<Node> copy = Node::CreateCopy(ownerGraph, entityId);
 		Ref<LayeredBlendPerBoneNode> blendNode = std::reinterpret_pointer_cast<LayeredBlendPerBoneNode>(copy);
 		blendNode->myIncludeFilters = myIncludeFilters;
 		blendNode->myExcludeFilters = myExcludeFilters;

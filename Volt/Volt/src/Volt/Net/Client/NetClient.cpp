@@ -28,7 +28,7 @@ namespace Volt
 	{
 	}
 
-	void NetClient::MissingEntity(Nexus::TYPE::REP_ID repId)
+	void NetClient::MissingEntity(Nexus::TYPE::REP_ID)
 	{
 
 	}

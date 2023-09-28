@@ -136,7 +136,7 @@ void MaterialEditorPanel::UpdateToolbar()
 				if (FileSystem::IsWriteable(Volt::AssetManager::GetFilesystemPath(mySelectedMaterial->handle)))
 				{
 					Volt::AssetManager::Get().SaveAsset(mySelectedMaterial);
-					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->name));
+					UI::Notify(NotificationType::Success, "Material saved!", std::format("Material {0} was saved!", mySelectedMaterial->assetName));
 				}
 				else
 				{
@@ -237,15 +237,14 @@ void MaterialEditorPanel::UpdateProperties()
 			int32_t selectedShader = 0;
 			const std::string shaderName = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName();
 
-			auto it = std::find(shaderNames.begin(), shaderNames.end(), shaderName);
-			if (it != shaderNames.end())
+			if (auto namesIt = std::find(shaderNames.begin(), shaderNames.end(), shaderName); namesIt != shaderNames.end())
 			{
-				selectedShader = (int32_t)std::distance(shaderNames.begin(), it);
+				selectedShader = (int32_t)std::distance(shaderNames.begin(), namesIt);
 			}
 
 			bool changed = false;
 
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties("Shader"))
 			{
 				if (UI::ComboProperty("Shader", selectedShader, shaderNames))
@@ -296,7 +295,6 @@ void MaterialEditorPanel::UpdateProperties()
 					"Decal"
 				};
 
-				auto flags = mySelectedSubMaterial->GetFlags();
 				int32_t selected = 0;
 				Volt::MaterialFlag currentType = Volt::MaterialFlag::All;
 
@@ -368,24 +366,24 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			UI::Header("Properties");
 			auto& materialData = mySelectedSubMaterial->GetMaterialData();
 
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties("Material Data"))
 			{
 				changed |= UI::PropertyColor("Color", materialData.color);
 				changed |= UI::PropertyColor("Emissive Color", materialData.emissiveColor);
-				changed |= UI::Property("Emissive Strength", materialData.emissiveStrength, true, 0.f, 20.f);
-				changed |= UI::Property("Roughness", materialData.roughness, true, 0.f, 1.f);
-				changed |= UI::Property("Metalness", materialData.metalness, true, 0.f, 1.f);
-				changed |= UI::Property("Normal Strength", materialData.normalStrength, true, -1.f, 1.f);
+				changed |= UI::Property("Emissive Strength", materialData.emissiveStrength, 0.f, 20.f);
+				changed |= UI::Property("Roughness", materialData.roughness, 0.f, 1.f);
+				changed |= UI::Property("Metalness", materialData.metalness, 0.f, 1.f);
+				changed |= UI::Property("Normal Strength", materialData.normalStrength, -1.f, 1.f);
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			if (changed)
 			{
@@ -438,7 +436,7 @@ void MaterialEditorPanel::UpdateProperties()
 			UI::Header("Textures");
 			const auto& textureDefinitions = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetResources().shaderTextureDefinitions;
 
-			UI::PushId();
+			UI::PushID();
 			if (UI::BeginProperties("Textures"))
 			{
 				const auto& textures = mySelectedSubMaterial->GetTextures();
@@ -515,18 +513,17 @@ void MaterialEditorPanel::UpdateProperties()
 					}
 				}
 
-				for (const auto& [shaderName, editorName] : textureDefinitions)
+				for (const auto& [textureShaderName, editorName] : textureDefinitions)
 				{
-					auto it = textures.find(shaderName);
-					if (it == textures.end())
+					if (!textures.contains(textureShaderName))
 					{
 						continue;
 					}
 
 					Volt::AssetHandle textureHandle = Volt::Asset::Null();
-					if (it->second)
+					if (textures.at(textureShaderName))
 					{
-						textureHandle = it->second->handle;
+						textureHandle = textures.at(textureShaderName)->handle;
 					}
 
 					if (EditorUtils::Property(editorName, textureHandle, Volt::AssetType::Texture))
@@ -535,18 +532,18 @@ void MaterialEditorPanel::UpdateProperties()
 
 						if (newTex && newTex->IsValid())
 						{
-							mySelectedSubMaterial->SetTexture(shaderName, newTex);
+							mySelectedSubMaterial->SetTexture(textureShaderName, newTex);
 						}
 						else
 						{
-							mySelectedSubMaterial->SetTexture(shaderName, Volt::Renderer::GetDefaultData().whiteTexture);
+							mySelectedSubMaterial->SetTexture(textureShaderName, Volt::Renderer::GetDefaultData().whiteTexture);
 						}
 					}
 				}
 
 				UI::EndProperties();
 			}
-			UI::PopId();
+			UI::PopID();
 
 			if (mySelectedSubMaterial->GetMaterialSpecializationData().IsValid())
 			{
@@ -554,7 +551,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::Header("Material Parameters");
 
-				UI::PushId();
+				UI::PushID();
 				if (UI::BeginProperties("materialParams"))
 				{
 					auto& materialSpecializationParams = mySelectedSubMaterial->GetMaterialSpecializationData();
@@ -588,7 +585,7 @@ void MaterialEditorPanel::UpdateProperties()
 
 					UI::EndProperties();
 				}
-				UI::PopId();
+				UI::PopID();
 			}
 
 			auto& pipelineGenerationDatas = mySelectedSubMaterial->GetPipelineGenerationDatas();
@@ -599,13 +596,13 @@ void MaterialEditorPanel::UpdateProperties()
 
 				UI::Header("Pipeline Generation");
 
-				UI::PushId();
+				UI::PushID();
 				for (auto& [stage, pipelineGenerationParams] : pipelineGenerationDatas)
 				{
 					if (pipelineGenerationParams.IsValid())
 					{
 						bool dataChanged = false;
-						const uint32_t id = UI::GetId();
+						const uint32_t id = UI::GetID();
 
 						if (UI::BeginProperties("pipelineGeneration" + std::to_string(id)))
 						{
@@ -640,7 +637,7 @@ void MaterialEditorPanel::UpdateProperties()
 						}
 					}
 				}
-				UI::PopId();
+				UI::PopID();
 			}
 		}
 	}
@@ -676,7 +673,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 		{
 			static float padding = 16.f;
 
-			const float thumbnailSize = 85.f;
+			constexpr float thumbnailSize = 85.f;
 			float cellSize = thumbnailSize + padding;
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			int32_t columnCount = (int32_t)(panelWidth / cellSize);
@@ -695,7 +692,6 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			{
 				ImGui::PushID(std::string(material->GetName() + "##" + std::to_string(index)).c_str());
 
-				constexpr float thumbnailSize = 85.f;
 				const ImVec2 itemSize = AssetBrowserUtilities::GetBrowserItemSize(thumbnailSize);
 				const float itemPadding = AssetBrowserUtilities::GetBrowserItemPadding();
 				const ImVec2 minChild = AssetBrowserUtilities::GetBrowserItemPos();
@@ -807,7 +803,7 @@ void MaterialEditorPanel::UpdateMaterials()
 				const std::string materialName = metadata.filePath.stem().string();
 				if (myHasSearchQuery)
 				{
-					if (!Utils::ToLower(materialName).contains(Utils::ToLower(mySearchQuery)))
+					if (!Utils::StringContains(Utils::ToLower(materialName), Utils::ToLower(mySearchQuery)))
 					{
 						continue;
 					}

@@ -520,8 +520,6 @@ namespace Volt
 		auto device = GraphicsContext::GetDevice();
 		VT_VK_CHECK(vkCreateImageView(device->GetHandle(), &info, nullptr, &myImageViews[mip]));
 
-		auto view = myImageViews.at(mip);
-
 		if (mySpecification.isCubeMap)
 		{
 			info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;

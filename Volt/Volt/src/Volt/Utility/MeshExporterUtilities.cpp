@@ -30,7 +30,7 @@ namespace Volt
 
 			for (auto& ind : indices) 
 			{ 
-				ind += v.size(); 
+				ind += static_cast<uint32_t>(v.size()); 
 			}
 
 			v.insert(v.end(), vertices.begin(), vertices.end());
@@ -62,7 +62,7 @@ namespace Volt
 
 			for (auto& ind : indices)
 			{
-				ind += v.size();
+				ind += static_cast<uint32_t>(v.size());
 			}
 
 			v.insert(v.end(), vertices.begin(), vertices.end());

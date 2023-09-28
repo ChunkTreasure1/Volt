@@ -28,7 +28,7 @@ Volt::Application* Volt::CreateApplication(const std::filesystem::path& appPath)
 	Volt::ApplicationInfo info{};
 	info.iconPath = "Editor/Textures/Icons/icon_volt.dds";
 	info.projectPath = appPath;
-	info.useVSync = false;
+	info.useVSync = true;
 	info.enableSteam = true;
 
 	SandboxApp* app;

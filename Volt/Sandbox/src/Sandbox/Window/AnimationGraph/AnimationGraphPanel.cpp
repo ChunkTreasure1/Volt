@@ -843,7 +843,7 @@ void AnimationGraphPanel::DrawGraphProperties()
 		return;
 	}
 
-	UI::PushId();
+	UI::PushID();
 	if (UI::BeginProperties("graphProperties"))
 	{
 		if (node->GetRegistryName() == "StateMachineNode")
@@ -867,7 +867,7 @@ void AnimationGraphPanel::DrawGraphProperties()
 
 		UI::EndProperties();
 	}
-	UI::PopId();
+	UI::PopID();
 
 	if (node->GetRegistryName() == "LayeredBlendPerBoneNode")
 	{
@@ -894,7 +894,7 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 			return;
 		}
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("transitionProperties"))
 		{
 			UI::Property("Should Blend", transition->shouldBlend);
@@ -906,7 +906,7 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 	}
 	else
 	{
@@ -916,7 +916,7 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 			return;
 		}
 
-		UI::PushId();
+		UI::PushID();
 		if (UI::BeginProperties("stateProperties"))
 		{
 			if (node->name != "Entry")
@@ -926,7 +926,7 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 
 			UI::EndProperties();
 		}
-		UI::PopId();
+		UI::PopID();
 	}
 
 }

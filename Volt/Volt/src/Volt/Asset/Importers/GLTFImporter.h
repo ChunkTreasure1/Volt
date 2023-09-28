@@ -45,8 +45,8 @@ namespace Volt
 
 	protected:
 		Ref<Mesh> ImportMeshImpl(const std::filesystem::path& path) override;
-		Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path& path) override { return nullptr; }
-		Ref<Animation> ImportAnimationImpl(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton) override { return nullptr; }
+		Ref<Skeleton> ImportSkeletonImpl(const std::filesystem::path&) override { return nullptr; }
+		Ref<Animation> ImportAnimationImpl(const std::filesystem::path&, Ref<Skeleton>) override { return nullptr; }
 
 	private:
 		void LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node* parent, Ref<Mesh> outMesh);

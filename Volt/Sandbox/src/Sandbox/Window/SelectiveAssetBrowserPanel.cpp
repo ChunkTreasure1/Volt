@@ -12,8 +12,8 @@ static uint32_t s_assetBrowserCount;
 SelectiveAssetBrowserPanel::SelectiveAssetBrowserPanel(Volt::AssetType assetType, const std::string& id)
 	: EditorWindow("Asset Browser##" + id), mySelectiveAssetType(assetType)
 {
-	myIsOpen = true;
-	myWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	m_isOpen = true;
+	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	UpdateAssetList();
 }
 

@@ -14,7 +14,7 @@ namespace Volt
 
 		return newGraph;
 	}
-
+	
 	Ref<GraphKey::Node> AnimationGraphAsset::GetRelevantAnimationNode()
 	{
 		auto sequencePlayerNodes = GetNodesOfType("SequencePlayerNode");
@@ -32,10 +32,12 @@ namespace Volt
 	void AnimationGraphAsset::SetSkeletonHandle(AssetHandle aSkeletonHandle)
 	{
 		mySkeletonHandle = aSkeletonHandle;
+		
 		auto stateMachines = GetNodesOfType("StateMachineNode");
 		for (const auto& node : stateMachines)
 		{
 			auto stateNodeType = std::reinterpret_pointer_cast<GraphKey::StateMachineNode>(node);
+			
 			stateNodeType->GetStateMachine()->SetSkeletonHandle(aSkeletonHandle);
 		}
 	}

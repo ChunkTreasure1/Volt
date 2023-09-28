@@ -32,7 +32,7 @@ namespace Volt
 		return true;
 	}
 
-	void MeshSourceImporter::Save(const AssetMetadata& metadata, const Ref<Asset>&) const
+	void MeshSourceImporter::Save(const AssetMetadata&, const Ref<Asset>&) const
 	{
 
 	}

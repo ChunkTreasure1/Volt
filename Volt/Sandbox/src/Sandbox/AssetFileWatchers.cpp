@@ -23,7 +23,7 @@ void Sandbox::CreateModifiedWatch()
 		myFileChangeQueue.emplace_back([newPath, oldPath, this]()
 		{
 			auto assemblyPath = Volt::ProjectManager::GetMonoAssemblyPath();
-			if ((newPath.parent_path().filename() / newPath.filename()).string().contains((assemblyPath.parent_path().filename() / assemblyPath.filename()).string()))
+			if (Utils::StringContains((newPath.parent_path().filename() / newPath.filename()).string(), (assemblyPath.parent_path().filename() / assemblyPath.filename()).string()))
 			{
 				if (mySceneState == SceneState::Play)
 				{

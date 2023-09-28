@@ -40,10 +40,7 @@ namespace Volt
 	VT_OPTIMIZE_OFF
 		void MonoScriptClass::FindAndCacheFields()
 	{
-		const int32_t fieldCount = mono_class_num_fields(myMonoClass);
-
 		void* iterator = nullptr;
-
 		while (MonoClassField* field = mono_class_get_fields(myMonoClass, &iterator))
 		{
 			const auto accessibility = MonoScriptUtils::GetFieldAccessabilityLevel(field);

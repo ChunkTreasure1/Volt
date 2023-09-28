@@ -380,7 +380,7 @@ namespace GraphKey
 		}
 	}
 
-	void Graph::Deserialize(Ref<Graph> graph, const YAML::Node& node)
+	void Graph::Deserialize(Ref<Graph> graph, const YAML::Node& yamlNode)
 	{
 		struct Attribute
 		{
@@ -431,7 +431,7 @@ namespace GraphKey
 		std::vector<Parameter> parameters;
 		std::vector<Event> events;
 
-		for (const auto& n : node["Nodes"])
+		for (const auto& n : yamlNode["Nodes"])
 		{
 			auto& data = nodes.emplace_back();
 			VT_DESERIALIZE_PROPERTY(id, data.id, n, Volt::UUID(0));
@@ -470,7 +470,7 @@ namespace GraphKey
 			}
 		}
 
-		for (const auto& l : node["Links"])
+		for (const auto& l : yamlNode["Links"])
 		{
 			auto& data = links.emplace_back();
 			VT_DESERIALIZE_PROPERTY(id, data.id, l, Volt::UUID(0));
@@ -478,7 +478,7 @@ namespace GraphKey
 			VT_DESERIALIZE_PROPERTY(output, data.output, l, Volt::UUID(0));
 		}
 
-		for (const auto& p : node["Parameters"])
+		for (const auto& p : yamlNode["Parameters"])
 		{
 			auto& data = parameters.emplace_back();
 			VT_DESERIALIZE_PROPERTY(name, data.name, p, std::string(""));
@@ -499,7 +499,7 @@ namespace GraphKey
 			}
 		}
 
-		for (const auto& e : node["Events"])
+		for (const auto& e : yamlNode["Events"])
 		{
 			auto& data = events.emplace_back();
 			VT_DESERIALIZE_PROPERTY(name, data.name, e, std::string(""));

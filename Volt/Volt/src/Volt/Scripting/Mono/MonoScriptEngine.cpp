@@ -22,6 +22,8 @@
 #include "Volt/Scene/SceneManager.h"
 #include "Volt/Components/Components.h"
 
+#include "Volt/Utility/StringUtility.h"
+
 #include <Wire/Entity.h>
 
 #include <mono/jit/jit.h>
@@ -74,7 +76,6 @@ namespace Volt
 	{
 		inline static MonoAssembly* LoadCSharpAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
 		{
-			uint32_t fileSize = 0;
 			Buffer buffer = Buffer::ReadFromFile(assemblyPath);
 
 			MonoImageOpenStatus status;
@@ -220,11 +221,11 @@ namespace Volt
 				out_field.netData.boundFunction = data;
 				return true;
 
-				Buffer buffer{};
-				buffer.Resize(128);
-				mono_field_get_value(attributeObj, notifyField, buffer.As<void>());
-				out_field.netData.boundFunction = std::string(buffer.As<const char>());
-				buffer.Release();
+				//Buffer buffer{};
+				//buffer.Resize(128);
+				//mono_field_get_value(attributeObj, notifyField, buffer.As<void>());
+				//out_field.netData.boundFunction = std::string(buffer.As<const char>());
+				//buffer.Release();
 			}
 		}
 		return true;
@@ -274,7 +275,7 @@ namespace Volt
 		s_monoData->monoEnums.clear();
 
 		MonoImage* image = mono_assembly_get_image(assembly);
-		MonoClass* scriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -293,7 +294,7 @@ namespace Volt
 				continue;
 			}
 
-			if (monoClass == scriptClass)
+			if (monoClass == monoScriptClass)
 			{
 				continue;
 			}
@@ -349,7 +350,7 @@ namespace Volt
 	void MonoScriptEngine::LoadAndCreateMonoClasses(MonoAssembly* assembly)
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
-		MonoClass* scriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -368,7 +369,7 @@ namespace Volt
 				continue;
 			}
 
-			if (monoClass == scriptClass)
+			if (monoClass == monoScriptClass)
 			{
 				continue;
 			}
@@ -426,7 +427,6 @@ namespace Volt
 		mono_assembly_setrootdir("Scripts/mono/lib");
 		mono_set_assemblies_path("Scripts/mono/lib");
 
-		//MonoScriptGlue::SteamAPI_Clean();
 		DoDestroyQueue();
 
 		myIsRunning = false;
@@ -439,7 +439,6 @@ namespace Volt
 		s_monoData->sceneContext = nullptr;
 
 		MonoGCManager::CollectGarbage(true);
-		ReloadAssembly();
 	}
 
 	void MonoScriptEngine::OnSceneLoaded()
@@ -482,11 +481,6 @@ namespace Volt
 			Params.scriptId = instanceId;
 
 			auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
-
-			/*if (instance->GetClass()->GetClassNameW() == "Player")
-			{
-				VT_CORE_INFO("Stuff");
-			}*/
 
 			s_monoData->scriptInstances[instanceId] = instance;
 
@@ -998,12 +992,12 @@ namespace Volt
 
 		for (const auto& name : assemblyNames)
 		{
-			if (name.contains("Volt-ScriptCore"))
+			if (Utils::StringContains(name, "Volt-ScriptCore"))
 			{
 				continue;
 			}
 
-			if (name.contains("mscorlib"))
+			if (Utils::StringContains(name, "mscorlib"))
 			{
 				continue;
 			}

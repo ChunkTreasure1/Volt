@@ -9,7 +9,7 @@
 ShaderEditorPanel::ShaderEditorPanel()
 	: EditorWindow("Shader Editor", true)
 {
-	myWindowFlags = ImGuiWindowFlags_NoDocking;
+	m_windowFlags = ImGuiWindowFlags_NoDocking;
 }
 
 void ShaderEditorPanel::UpdateMainContent()
@@ -64,7 +64,7 @@ void ShaderEditorPanel::UpdateToolbar()
 			myCurrentShader = Volt::AssetManager::GetAsset<Volt::Shader>(shaderPath);
 			if (!myCurrentShader || !myCurrentShader->IsValid())
 			{
-				UI::Notify(NotificationType::Error, "Unable to open shader!", std::format("Unable to open shader definition {0}!", myCurrentShader->name));
+				UI::Notify(NotificationType::Error, "Unable to open shader!", std::format("Unable to open shader definition {0}!", myCurrentShader->assetName));
 			}
 		}
 	}
@@ -101,7 +101,7 @@ void ShaderEditorPanel::UpdateMainPanel()
 
 		ImGui::TableHeadersRow();
 
-		UI::PushId();
+		UI::PushID();
 
 		for (auto& [shaderName, editorName] : textureDefs)
 		{
@@ -113,7 +113,7 @@ void ShaderEditorPanel::UpdateMainPanel()
 			UI::InputText("", editorName);
 		}
 
-		UI::PopId();
+		UI::PopID();
 
 		ImGui::EndTable();
 	}

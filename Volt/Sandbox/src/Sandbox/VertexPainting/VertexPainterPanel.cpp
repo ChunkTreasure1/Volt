@@ -151,7 +151,6 @@ void VertexPainterPanel::PanelDraw()
 		ImVec4 viewColor = { 0,0,0,0 };
 		ImVec2 buttonSize = { 30,30 };
 
-		float padding = ImGui::GetStyle().FramePadding.y;
 		if (m_settings.isSelecting)
 		{
 			selectBgc = { 0.1f, 0.25f, 0.8f, 1.f };
@@ -277,9 +276,9 @@ void VertexPainterPanel::PanelDraw()
 
 		if (UI::BeginProperties("Vertex View Settings"))
 		{
-			UI::Property("Brush Size", m_settings.billboardRange, false, 0, 0, nullptr, "Range from brush that Vertices are drawn");
-			UI::PropertyDragFloat("Vertex Scalar", m_settings.billboadScalar, 0.1f, true, 0.1f, 10, nullptr, "Vertex size");
-			UI::PropertyDragFloat("Vertex Alpha", m_settings.billboardAlpha, 0.1f, true, 0.0f, 1.0f, nullptr, "Vertex alpha outside of painting area");
+			UI::Property("Brush Size", m_settings.billboardRange, 0, 0, "Range from brush that Vertices are drawn");
+			UI::PropertyDragFloat("Vertex Scalar", m_settings.billboadScalar, 0.1f, 0.1f, 10, "Vertex size");
+			UI::PropertyDragFloat("Vertex Alpha", m_settings.billboardAlpha, 0.1f, 0.0f, 1.0f, "Vertex alpha outside of painting area");
 
 			UI::EndProperties();
 		}
@@ -315,9 +314,9 @@ void VertexPainterPanel::PanelDraw()
 		{
 			//UI::Property("Brush Size", m_settings.brushRadius);
 			UI::Property("Ignore Intencity", m_settings.ignoreIntencity);
-			UI::PropertyDragFloat("Intensity", m_settings.intensity, 0.1f, false, 0, 0, nullptr, "Value increment step per second");
-			UI::PropertyDragFloat("Paint Color", m_settings.paintColor, 0.05f, true, 0, 1, nullptr, "Target channel color when painting (SHIFT)");
-			UI::PropertyDragFloat("Erase Color", m_settings.eraseColor, 0.05f, true, 0, 1, nullptr, "Target channel color when erasing (CTRL)");
+			UI::PropertyDragFloat("Intensity", m_settings.intensity, 0.1f, 0, 0, "Value increment step per second");
+			UI::PropertyDragFloat("Paint Color", m_settings.paintColor, 0.05f, 0, 1, "Target channel color when painting (SHIFT)");
+			UI::PropertyDragFloat("Erase Color", m_settings.eraseColor, 0.05f, 0, 1, "Target channel color when erasing (CTRL)");
 
 			UI::EndProperties();
 		}

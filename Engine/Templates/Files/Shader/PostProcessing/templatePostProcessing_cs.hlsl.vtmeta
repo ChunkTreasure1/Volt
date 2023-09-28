@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 17319603369103029521
+  filePath: Templates/Files/Shader/PostProcessing/templatePostProcessing_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}
