@@ -104,6 +104,7 @@ namespace Volt
 
 		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
 		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
+		const bool IsRelatedTo(Entity entity, Entity otherEntity);
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
@@ -162,6 +163,7 @@ namespace Volt
 		void AddLayer(const std::string& layerName, uint32_t layerId);
 
 		const glm::mat4 GetWorldTransform(Entity entity) const;
+		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
 		///// Component Functions /////
 		void RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id);

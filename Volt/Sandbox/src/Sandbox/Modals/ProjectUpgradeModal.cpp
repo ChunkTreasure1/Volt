@@ -39,7 +39,12 @@ enum class PreV113PropertyType : uint32_t
 	Quaternion = 25
 };
 
-static std::unordered_map<PreV113PropertyType, std::type_index> s_preV113PropTypeToTypeIndexMap;
+struct TypeIndexContainer
+{
+	std::type_index typeIndex = typeid(void);
+};
+
+static std::unordered_map<PreV113PropertyType, TypeIndexContainer> s_preV113PropTypeToTypeIndexMap;
 static bool s_initialize = false;
 
 ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
@@ -47,29 +52,29 @@ ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
 {
 	if (!s_initialize)
 	{
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Bool] = std::type_index{ typeid(bool) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Int] = std::type_index{ typeid(int32_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UInt] = std::type_index{ typeid(uint32_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Short] = std::type_index{ typeid(int16_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UShort] = std::type_index{ typeid(uint16_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Char] = std::type_index{ typeid(int8_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UChar] = std::type_index{ typeid(uint8_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Float] = std::type_index{ typeid(float) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Double] = std::type_index{ typeid(double) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector2] = std::type_index{ typeid(glm::vec2) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector3] = std::type_index{ typeid(glm::vec3) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector4] = std::type_index{ typeid(glm::vec4) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::String] = std::type_index{ typeid(std::string) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Int64] = std::type_index{ typeid(int64_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UInt64] = std::type_index{ typeid(uint64_t) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::AssetHandle] = std::type_index{ typeid(Volt::AssetHandle) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Color3] = std::type_index{ typeid(glm::vec3) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Color4] = std::type_index{ typeid(glm::vec4) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Directory] = std::type_index{ typeid(std::filesystem::path) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Path] = std::type_index{ typeid(std::filesystem::path) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::EntityId] = std::type_index{ typeid(entt::entity) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::GUID] = std::type_index{ typeid(VoltGUID) };
-		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Quaternion] = std::type_index{ typeid(glm::quat) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Bool].typeIndex = std::type_index{ typeid(bool) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Int].typeIndex = std::type_index{ typeid(int32_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UInt].typeIndex = std::type_index{ typeid(uint32_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Short].typeIndex = std::type_index{ typeid(int16_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UShort].typeIndex = std::type_index{ typeid(uint16_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Char].typeIndex = std::type_index{ typeid(int8_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UChar].typeIndex = std::type_index{ typeid(uint8_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Float].typeIndex = std::type_index{ typeid(float) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Double].typeIndex = std::type_index{ typeid(double) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector2].typeIndex = std::type_index{ typeid(glm::vec2) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector3].typeIndex = std::type_index{ typeid(glm::vec3) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Vector4].typeIndex = std::type_index{ typeid(glm::vec4) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::String].typeIndex = std::type_index{ typeid(std::string) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Int64].typeIndex = std::type_index{ typeid(int64_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::UInt64].typeIndex = std::type_index{ typeid(uint64_t) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::AssetHandle].typeIndex = std::type_index{ typeid(Volt::AssetHandle) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Color3].typeIndex = std::type_index{ typeid(glm::vec3) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Color4].typeIndex = std::type_index{ typeid(glm::vec4) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Directory].typeIndex = std::type_index{ typeid(std::filesystem::path) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Path].typeIndex = std::type_index{ typeid(std::filesystem::path) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::EntityId].typeIndex = std::type_index{ typeid(entt::entity) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::GUID].typeIndex = std::type_index{ typeid(VoltGUID) };
+		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Quaternion].typeIndex = std::type_index{ typeid(glm::quat) };
 
 		s_initialize = true;
 	}
@@ -320,7 +325,7 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 		{
 			const Volt::IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(componentMember->typeDesc);
 			const PreV113PropertyType vectorType = static_cast<PreV113PropertyType>(streamReader.ReadKey("vectorType", 0u));
-			const std::type_index vectorValueType = s_preV113PropTypeToTypeIndexMap.at(vectorType);
+			const std::type_index vectorValueType = s_preV113PropTypeToTypeIndexMap.at(vectorType).typeIndex;
 			void* arrayPtr = &componentData[componentMember->offset];
 
 			if (arrayTypeDesc->GetElementTypeIndex() != vectorValueType)
@@ -351,7 +356,7 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 			return;
 		}
 
-		const std::type_index memberType = s_preV113PropTypeToTypeIndexMap.at(oldType);
+		const std::type_index memberType = s_preV113PropTypeToTypeIndexMap.at(oldType).typeIndex;
 		if (memberType != componentMember->typeIndex)
 		{
 			VT_CORE_WARN("[Upgrade Project]: Component member type does not match file specified type!");

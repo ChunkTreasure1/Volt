@@ -693,6 +693,24 @@ namespace Volt
 		return transform;
 	}
 
+	const std::vector<Entity> Scene::FlattenEntityHeirarchy(Entity entity)
+	{
+		std::vector<Entity> result;
+		result.emplace_back(entity);
+
+		for (auto child : entity.GetChildren())
+		{
+			auto childResult = FlattenEntityHeirarchy(child);
+
+			for (auto& childRes : childResult)
+			{
+				result.emplace_back(childRes);
+			}
+		}
+
+		return result;
+	}
+
 	const Scene::TQS Scene::GetWorldTQS(Entity entity) const
 	{
 		std::vector<Entity> hierarchy{};
@@ -754,6 +772,20 @@ namespace Volt
 		m_registry.on_destroy<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnDestroy>(this);
 	}
 
+	const bool Scene::IsRelatedTo(Entity entity, Entity otherEntity)
+	{
+		const auto flatHeirarchy = FlattenEntityHeirarchy(entity);
+		for (const auto& ent : flatHeirarchy)
+		{
+			if (ent.GetID() == entity.GetID())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	void Scene::IsRecursiveChildOf(Entity parent, Entity currentEntity, bool& outChild)
 	{
 		if (currentEntity.HasComponent<RelationshipComponent>())
@@ -763,7 +795,7 @@ namespace Volt
 			{
 				Entity child{ childId, this };
 
-				outChild |= parent.GetID() == childId;
+				outChild |= (parent.GetID() == childId) && (childId != parent.GetID());
 
 				IsRecursiveChildOf(parent, child, outChild);
 			}

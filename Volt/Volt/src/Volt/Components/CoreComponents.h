@@ -110,6 +110,7 @@ namespace Volt
 	{
 		AssetHandle prefabAsset = Asset::Null();
 		entt::entity prefabEntity = entt::null;
+		entt::entity sceneRootEntity = entt::null;
 		uint32_t version = 0;
 
 		bool isDirty = false;
@@ -121,6 +122,7 @@ namespace Volt
 			reflect.SetHidden();
 			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetType::Prefab);
 			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", entt::null);
+			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", entt::null);
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
 		}
 

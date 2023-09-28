@@ -38,13 +38,27 @@ namespace Volt
 			InitializeComponents(newEntity);
 		}
 
+		// Set scene root entity
+		{
+			std::vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
+			for (auto& entity : flatInstantiatedHeirarchy)
+			{
+				entity.GetComponent<PrefabComponent>().sceneRootEntity = newEntity.GetID();
+			}
+		}
+
 		targetScenePtr->InvalidateEntityTransform(newEntity.GetID());
 		return newEntity;
 	}
 
 	const bool Prefab::UpdateEntityInPrefab(Entity srcEntity)
 	{
-		const bool updateSucceded = UpdateEntityInPrefabInternal(srcEntity, true);
+		if (!srcEntity.HasComponent<PrefabComponent>())
+		{
+			return false;
+		}
+
+		const bool updateSucceded = UpdateEntityInPrefabInternal(srcEntity, srcEntity.GetComponent<PrefabComponent>().sceneRootEntity);
 
 		if (updateSucceded)
 		{
@@ -77,6 +91,7 @@ namespace Volt
 		auto sceneTransform = sceneEntity.GetComponent<TransformComponent>();
 		auto sceneRelationships = sceneEntity.GetComponent<RelationshipComponent>();
 		auto sceneCommonComponent = sceneEntity.GetComponent<CommonComponent>();
+		const auto sceneRootId = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
 
 		Entity::Copy(prefabEntity, sceneEntity);
 
@@ -85,6 +100,7 @@ namespace Volt
 			sceneEntity.GetComponent<TransformComponent>() = sceneTransform;
 		}
 
+		sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneRootId;
 		sceneEntity.GetComponent<RelationshipComponent>() = sceneRelationships;
 		sceneEntity.GetComponent<CommonComponent>() = sceneCommonComponent;
 
@@ -119,7 +135,7 @@ namespace Volt
 				auto preParentTransform = newEntity.GetComponent<TransformComponent>();
 
 				newEntity.SetParent(sceneEntity);
-
+				newEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
 				newEntity.GetComponent<TransformComponent>() = preParentTransform;
 			}
 		}
@@ -284,9 +300,16 @@ namespace Volt
 		std::vector<entt::entity> entitiesToRemove;
 		std::vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
 
-		m_prefabScene->ForEachWithComponents<const PrefabComponent>([&](const entt::entity id, const PrefabComponent& prefabComp) 
+		Entity srcPrefabEntity{ srcEntity.GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
+
+		m_prefabScene->ForEachWithComponents<const PrefabComponent>([&](const entt::entity id, const PrefabComponent& prefabComp)
 		{
 			bool exists = false;
+
+			if (!m_prefabScene->IsRelatedTo(srcPrefabEntity, Entity{ id, m_prefabScene }))
+			{
+				return;
+			}
 
 			for (const auto& srcEnt : srcHeirarchy)
 			{
@@ -309,32 +332,27 @@ namespace Volt
 		}
 	}
 
-	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, bool isFirst)
+	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity sceneRootId)
 	{
-		if (isFirst)
+		if (!srcEntity.HasComponent<PrefabComponent>())
 		{
-			if (!srcEntity.HasComponent<PrefabComponent>())
-			{
-				return false;
-			}
-		}
-		else
-		{
-			if (!srcEntity.HasComponent<PrefabComponent>())
-			{
-				Entity prefabParent = Entity::Null();
+			Entity prefabParent = Entity::Null();
 
-				if (srcEntity.HasParent() && srcEntity.GetParent().HasComponent<PrefabComponent>())
-				{
-					prefabParent = { srcEntity.GetParent().GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
-				}
-
-				AddEntityToPrefabRecursive(srcEntity, prefabParent);
+			if (srcEntity.HasParent() && srcEntity.GetParent().HasComponent<PrefabComponent>())
+			{
+				prefabParent = { srcEntity.GetParent().GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
 			}
+
+			AddEntityToPrefabRecursive(srcEntity, prefabParent);
 		}
 
 		auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
 		if (srcPrefabComp.prefabAsset != handle)
+		{
+			return false;
+		}
+
+		if (srcPrefabComp.sceneRootEntity != sceneRootId)
 		{
 			return false;
 		}
@@ -358,7 +376,7 @@ namespace Volt
 
 		for (const auto& srcChild : srcEntity.GetChildren())
 		{
-			UpdateEntityInPrefabInternal(srcChild, false);
+			UpdateEntityInPrefabInternal(srcChild, sceneRootId);
 		}
 
 		return true;
@@ -387,7 +405,7 @@ namespace Volt
 		for (auto child : entity.GetChildren())
 		{
 			auto childResult = FlattenEntityHeirarchy(child);
-		
+
 			for (auto& childRes : childResult)
 			{
 				result.emplace_back(childRes);

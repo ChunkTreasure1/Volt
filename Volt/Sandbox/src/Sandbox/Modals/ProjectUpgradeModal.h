@@ -3,11 +3,18 @@
 #include "Sandbox/Modals/Modal.h"
 
 #include <Volt/Asset/Asset.h>
+#include <entt.hpp>
+
+#include <typeindex>
 
 namespace Volt
 {
 	class IComponentTypeDesc;
 	struct ComponentMember;
+
+	class Scene;
+	struct SceneLayer;
+	class YAMLStreamReader;
 }
 
 class ProjectUpgradeModal : public Modal

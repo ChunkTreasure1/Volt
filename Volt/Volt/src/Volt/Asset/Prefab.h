@@ -37,7 +37,7 @@ namespace Volt
 		void CreatePrefab(Entity srcRootEntity);
 		void AddEntityToPrefabRecursive(Entity entity, Entity parentPrefabEntity);
 		void ValidatePrefabUpdate(Entity srcEntity);
-		const bool UpdateEntityInPrefabInternal(Entity srcEntity, bool isFirst);
+		const bool UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity rootSceneId);
 
 		Entity InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity);
 		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
