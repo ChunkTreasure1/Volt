@@ -15,17 +15,6 @@
 
 #include "Volt/Utility/EnumUtil.h"
 
-enum class TestEnum : uint32_t
-{
-	One, Two, Three
-}; inline static bool TestEnum_reg = Utils::EnumUtil::RegisterEnum("TestEnum", "One, Two, Three"); inline static std::string ToString(TestEnum aEnumValue)
-{
-	return Utils::EnumUtil::ToString("TestEnum", static_cast<uint64_t>(aEnumValue));
-}/*template<TestEnum> inline static TestEnum ToEnum(const std::string& aEnumString)
-{
-	return Utils::EnumUtil::ToEnum<TestEnum>("TestEnum", aEnumString);
-};*/
-
 namespace Volt
 {
 	AnimationStateMachine::AnimationStateMachine(const std::string& name, AssetHandle aSkeletonHandle)
@@ -237,6 +226,7 @@ namespace Volt
 				break;
 		}
 
+		myStates.back()->id = id;
 		return myStates.back();
 	}
 

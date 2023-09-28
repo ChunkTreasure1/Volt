@@ -5,26 +5,30 @@
 namespace Utils
 {
 	/// <summary>
-	/// Class for automatically generating enum to string and string to enum functions.
+	/// Class for automatically generating enum to string and string to enum functions. DO NOT CALL THESE FUNCTIONS DIRECTLY.
 	/// </summary>
 	class EnumUtil
 	{
 	public:
-		static std::string ToString(std::string aEnumName, uint64_t aEnumValue)
+		template<typename EnumType>
+		static std::string ToString(uint64_t aEnumValue)
 		{
-			return myRegistry[aEnumName][aEnumValue];
+			VT_CORE_ASSERT(myRegistry.contains(typeid(EnumType).name()), "Tried to Convert enum to string with an enum that is not registered! EnumName: {0}", typeid(EnumType).name());
+
+			return myRegistry[typeid(EnumType).name()][aEnumValue];
 		}
 
 		//to enum
-		template<typename T>
-		static T ToEnum(std::string aEnumName, std::string aEnumValue)
+		template<typename EnumType>
+		static EnumType ToEnum(std::string aEnumValue)
 		{
-			auto enumMap = myRegistry[aEnumName];
-			for (auto& pair : enumMap)
+			VT_CORE_ASSERT(myRegistry.contains(typeid(EnumType).name()), "Tried to convert string to enum that has not been registered! EnumName: {0}", typeid(EnumType).name());
+			const auto& enumMap = myRegistry[typeid(EnumType).name()];
+			for (const auto& pair : enumMap)
 			{
 				if (pair.second == aEnumValue)
 				{
-					return pair.first;
+					return static_cast<EnumType>(pair.first);
 				}
 			}
 		}
@@ -146,18 +150,19 @@ namespace Utils
 
 template<typename T> inline static T ToEnum(const std::string& aEnumString)
 {
-	VT_CORE_ASSERT(false, "Never call this function with a type that does not have a specification, CREATE_ENUM automatically generates a specification for that type.");
-	return T();
+	return Utils::EnumUtil::ToEnum<T>(aEnumString);
 };
 
 #define CREATE_ENUM_TYPED(enumName, type, ...)\
-enum class enumName : type\
-{\
-	__VA_ARGS__\
-};\
+enum class enumName : type \
+{ \
+	__VA_ARGS__ \
+}; \
 inline static bool enumName##_enum_reg = Utils::EnumUtil::RegisterEnum(typeid(enumName).name(), #__VA_ARGS__); \
-inline static std::string ToString(enumName aEnumValue) { return Utils::EnumUtil::ToString(#enumName, static_cast<uint64_t>(aEnumValue)); }\
-template<enumName> inline static enumName ToEnum(const std::string& aEnumString) { return Utils::EnumUtil::ToEnum<enumName>(#enumName, aEnumString); }
+inline static std::string ToString(enumName aEnumValue) \
+{ \
+	return Utils::EnumUtil::ToString<enumName>(static_cast<uint64_t>(aEnumValue)); \
+}
 
 #define CREATE_ENUM(enumName, ...) CREATE_ENUM_TYPED(enumName, uint32_t, __VA_ARGS__)
 
