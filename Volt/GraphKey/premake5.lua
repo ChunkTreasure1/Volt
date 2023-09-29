@@ -30,6 +30,11 @@ project "GraphKey"
 		"/ignore:4099"
 	}
 
+	buildoptions 
+	{
+		"/bigobj"
+	}
+
 	files
 	{
 		"src/**.h",

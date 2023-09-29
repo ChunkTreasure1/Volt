@@ -106,12 +106,43 @@ namespace Volt
 		REGISTER_COMPONENT(RelationshipComponent);
 	};
 
+	struct PrefabComponentLocalChange
+	{
+		VoltGUID componentGUID = VoltGUID::Null();
+		std::string memberName;
+		
+		static void ReflectType(TypeDesc<PrefabComponentLocalChange>& reflect)
+		{
+			reflect.SetGUID("{C78B94DD-B814-4155-B9DE-072B91DE02B3}"_guid);
+			reflect.SetLabel("Prefab Component Local Change");
+			reflect.AddMember(&PrefabComponentLocalChange::componentGUID, "componentGUID", "Component GUID", "", VoltGUID::Null());
+			reflect.AddMember(&PrefabComponentLocalChange::memberName, "memberName", "Member Name", "", std::string(""));
+		}
+	};
+
+	struct PrefabScriptLocalChange
+	{
+		std::string scriptName;
+		std::string memberName;
+
+		static void ReflectType(TypeDesc<PrefabScriptLocalChange>& reflect)
+		{
+			reflect.SetGUID("{1E471349-604D-4E47-96B1-30B87B4DB159}"_guid);
+			reflect.SetLabel("¨Prefab Script Local Change");
+			reflect.AddMember(&PrefabScriptLocalChange::scriptName, "scriptName", "Script Name", "", std::string(""));
+			reflect.AddMember(&PrefabScriptLocalChange::memberName, "memberName", "Member Name", "", std::string(""));
+		}
+	};
+
 	struct PrefabComponent
 	{
 		AssetHandle prefabAsset = Asset::Null();
 		entt::entity prefabEntity = entt::null;
 		entt::entity sceneRootEntity = entt::null;
 		uint32_t version = 0;
+
+		std::vector<PrefabComponentLocalChange> componentLocalChanges;
+		std::vector<PrefabScriptLocalChange> scriptLocalChanges;
 
 		bool isDirty = false;
 
@@ -124,6 +155,8 @@ namespace Volt
 			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", entt::null);
 			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", entt::null);
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
+			reflect.AddMember(&PrefabComponent::componentLocalChanges, "componentLocalChanges", "Component Local Changes", "", std::vector<PrefabComponentLocalChange>{});
+			reflect.AddMember(&PrefabComponent::scriptLocalChanges, "scriptLocalChanges", "Script Local Changes", "", std::vector<PrefabScriptLocalChange>{});
 		}
 
 		REGISTER_COMPONENT(PrefabComponent);

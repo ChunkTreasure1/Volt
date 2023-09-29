@@ -18,13 +18,19 @@ namespace Volt
 	template<typename T>
 	void RegisterSerializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
 	{
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamWriter& streamWriter, const uint8_t* data, const size_t offset) { streamWriter.SetKey("data", *reinterpret_cast<const T*>(&data[offset])); };
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamWriter& streamWriter, const uint8_t* data, const size_t offset) 
+		{ 
+			streamWriter.SetKey("data", *reinterpret_cast<const T*>(&data[offset])); 
+		};
 	}
 
 	template<typename T>
 	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset) { *reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T()); };
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset) 
+		{ 
+			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T()); 
+		};
 	}
 
 	SceneImporter::SceneImporter()
@@ -572,8 +578,10 @@ namespace Volt
 
 		streamReader.ForEach("values", [&]()
 		{
-			uint8_t* tempDataStorage = new uint8_t[arrayDesc->GetElementTypeSize()];
-			memset(tempDataStorage, 0, arrayDesc->GetElementTypeSize());
+			void* tempDataStorage = nullptr;
+			arrayDesc->DefaultConstructElement(tempDataStorage);
+
+			uint8_t* tempBytePtr = reinterpret_cast<uint8_t*>(tempDataStorage);
 
 			if (isNonDefaultType)
 			{
@@ -582,7 +590,7 @@ namespace Volt
 					case ValueType::Component:
 					{
 						const IComponentTypeDesc* compType = reinterpret_cast<const IComponentTypeDesc*>(arrayDesc->GetElementTypeDesc());
-						DeserializeClass(tempDataStorage, 0, compType, streamReader);
+						DeserializeClass(tempBytePtr, 0, compType, streamReader);
 						break;
 					}
 
@@ -593,7 +601,7 @@ namespace Volt
 					case ValueType::Array:
 					{
 						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(arrayDesc->GetElementTypeDesc());
-						DeserializeArray(tempDataStorage, 0, arrayTypeDesc, streamReader);
+						DeserializeArray(tempBytePtr, 0, arrayTypeDesc, streamReader);
 						break;
 					}
 				}
@@ -602,12 +610,12 @@ namespace Volt
 			{
 				if (s_typeDeserializers.contains(typeIndex))
 				{
-					s_typeDeserializers.at(typeIndex)(streamReader, tempDataStorage, 0);
+					s_typeDeserializers.at(typeIndex)(streamReader, tempBytePtr, 0);
 				}
 			}
 
 			arrayDesc->PushBack(arrayPtr, tempDataStorage);
-			delete[] tempDataStorage;
+			arrayDesc->DestroyElement(tempDataStorage);
 		});
 	}
 

@@ -117,6 +117,8 @@ namespace Volt
 		ComponentMemberFlag flags = ComponentMemberFlag::None;
 
 		const ICommonTypeDesc* typeDesc = nullptr;
+		const ICommonTypeDesc* ownerTypeDesc = nullptr;
+
 		std::type_index typeIndex = typeid(void);
 		Scope<IDefaultValueType> defaultValue;
 
@@ -156,6 +158,10 @@ namespace Volt
 		[[nodiscard]] virtual const ICommonTypeDesc* GetElementTypeDesc() const = 0;
 		[[nodiscard]] virtual const std::type_index& GetElementTypeIndex() const = 0;
 		[[nodiscard]] virtual const size_t GetElementTypeSize() const = 0;
+
+		// NOTE: This function heap allocates and object that MUST be manually deleted!
+		virtual void DefaultConstructElement(void*& value) const = 0;
+		virtual void DestroyElement(void*& value) const = 0;
 
 		virtual void PushBack(void* array, const void* value) const = 0;
 		[[nodiscard]] virtual const size_t Size(const void* array) const = 0;
@@ -224,6 +230,19 @@ namespace Volt
 		void* EmplaceBack(void* array, const void* value) const override
 		{
 			return m_emplaceBackFunction(array, value);
+		}
+
+		void DefaultConstructElement(void*& value) const override
+		{
+			value = new ELEMENT_TYPE();
+		}
+
+		void DestroyElement(void*& value) const override
+		{
+			ELEMENT_TYPE* typePtr = reinterpret_cast<ELEMENT_TYPE*>(value);
+			delete typePtr;
+
+			value = nullptr;
 		}
 
 		[[nodiscard]] inline const VoltGUID& GetGUID() const override { return m_guid; }
@@ -317,11 +336,11 @@ namespace Volt
 
 			if constexpr (IsArrayType<Type>() || IsReflectedType<Type>())
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
+				m_members.emplace_back(offset, name, label, description, assetType, flags, GetTypeDesc<Type>(), this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 			else
 			{
-				m_members.emplace_back(offset, name, label, description, assetType, flags, nullptr, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
+				m_members.emplace_back(offset, name, label, description, assetType, flags, nullptr, this, typeid(Type), CreateScope<DefaultValueType<DefaultValueT>>(defaultValue), copyFunction);
 			}
 
 
