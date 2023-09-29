@@ -43,10 +43,12 @@ namespace Volt
 			std::vector<Entity> flatInstantiatedHeirarchy = FlattenEntityHeirarchy(newEntity);
 			for (auto& entity : flatInstantiatedHeirarchy)
 			{
-				if (m_prefabReferencesMap.contains(entity.GetComponent<PrefabComponent>().prefabEntity))
+				if (m_prefabReferencesMap.contains(entity.GetID()))
 				{
-					Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(entity.GetComponent<PrefabComponent>().prefabAsset);
-					prefabRefAsset->UpdateEntityInScene(entity);
+					const auto& prefabRefData = m_prefabReferencesMap.at(entity.GetID());
+
+					Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(prefabRefData.prefabAsset);
+					prefabRefAsset->UpdateEntityInSceneInternal(entity, prefabRefData.prefabReferenceEntity);
 				}
 				else
 				{
@@ -66,7 +68,7 @@ namespace Volt
 			return false;
 		}
 
-		const bool updateSucceded = UpdateEntityInPrefabInternal(srcEntity, srcEntity.GetComponent<PrefabComponent>().sceneRootEntity);
+		const bool updateSucceded = UpdateEntityInPrefabInternal(srcEntity, srcEntity.GetComponent<PrefabComponent>().sceneRootEntity, entt::null);
 
 		if (updateSucceded)
 		{
@@ -90,81 +92,7 @@ namespace Volt
 
 	void Prefab::UpdateEntityInScene(Entity sceneEntity)
 	{
-		if (!sceneEntity.HasComponent<PrefabComponent>())
-		{
-			return;
-		}
-
-		const auto& scenePrefabComp = sceneEntity.GetComponent<PrefabComponent>();
-		if (scenePrefabComp.prefabAsset != handle)
-		{
-			if (m_prefabReferencesMap.contains(scenePrefabComp.prefabEntity))
-			{
-				Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(scenePrefabComp.prefabAsset);
-				prefabRefAsset->UpdateEntityInScene(sceneEntity);
-			}
-			
-			return;
-		}
-
-		Entity prefabEntity{ scenePrefabComp.prefabEntity, m_prefabScene };
-		if (!prefabEntity)
-		{
-			sceneEntity.GetScene()->RemoveEntity(sceneEntity);
-			return;
-		}
-
-		auto sceneTransform = sceneEntity.GetComponent<TransformComponent>();
-		auto sceneRelationships = sceneEntity.GetComponent<RelationshipComponent>();
-		auto sceneCommonComponent = sceneEntity.GetComponent<CommonComponent>();
-		const auto sceneRootId = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
-
-		Entity::Copy(prefabEntity, sceneEntity);
-
-		if (prefabEntity.GetID() == m_rootEntityId)
-		{
-			sceneEntity.GetComponent<TransformComponent>() = sceneTransform;
-		}
-
-		sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneRootId;
-		sceneEntity.GetComponent<RelationshipComponent>() = sceneRelationships;
-		sceneEntity.GetComponent<CommonComponent>() = sceneCommonComponent;
-
-		sceneEntity.GetScene()->InvalidateEntityTransform(sceneEntity.GetID());
-
-		for (const auto& sceneChild : sceneEntity.GetChildren())
-		{
-			UpdateEntityInScene(sceneChild);
-		}
-
-		for (const auto& prefabChild : prefabEntity.GetChildren())
-		{
-			bool exists = false;
-
-			for (const auto& sceneChild : sceneEntity.GetChildren())
-			{
-				if (!sceneChild.HasComponent<PrefabComponent>())
-				{
-					continue;
-				}
-
-				if (prefabChild.GetID() == sceneChild.GetComponent<PrefabComponent>().prefabEntity)
-				{
-					exists = true;
-					break;
-				}
-			}
-
-			if (!exists)
-			{
-				auto newEntity = InstantiateEntity(sceneEntity.GetScene(), prefabChild);
-				auto preParentTransform = newEntity.GetComponent<TransformComponent>();
-
-				newEntity.SetParent(sceneEntity);
-				newEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
-				newEntity.GetComponent<TransformComponent>() = preParentTransform;
-			}
-		}
+		UpdateEntityInSceneInternal(sceneEntity, entt::null);
 	}
 
 	const bool Prefab::IsEntityValidInPrefab(Entity entity) const
@@ -201,6 +129,21 @@ namespace Volt
 		}
 
 		return prefabComponent.prefabEntity == m_rootEntityId;
+	}
+
+	const bool Prefab::IsReference(Entity entity) const
+	{
+		if (!entity.HasComponent<PrefabComponent>())
+		{
+			return false;
+		}
+
+		return m_prefabReferencesMap.contains(entity.GetComponent<PrefabComponent>().prefabEntity);
+	}
+
+	const Prefab::PrefabReferenceData& Prefab::GetReferenceData(Entity entity) const
+	{
+		return m_prefabReferencesMap.at(entity.GetComponent<PrefabComponent>().prefabEntity);
 	}
 
 	void Prefab::InitializeComponents(Entity entity)
@@ -295,7 +238,9 @@ namespace Volt
 			const auto& prefabComp = srcEntity.GetComponent<PrefabComponent>();
 			if (prefabComp.prefabAsset != handle)
 			{
-				m_prefabReferencesMap[newEntity.GetID()] = prefabComp.prefabAsset;
+				auto& prefabRefData = m_prefabReferencesMap[newEntity.GetID()];
+				prefabRefData.prefabReferenceEntity = prefabComp.prefabEntity;
+				prefabRefData.prefabAsset = prefabComp.prefabAsset;
 			}
 		}
 		else
@@ -304,12 +249,9 @@ namespace Volt
 		}
 
 		auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
-		if (!m_prefabReferencesMap.contains(newEntity.GetID()))
-		{
-			srcPrefabComp.prefabAsset = handle;
-			srcPrefabComp.prefabEntity = newEntity.GetID();
-			srcPrefabComp.version = m_version;
-		}
+		srcPrefabComp.prefabAsset = handle;
+		srcPrefabComp.prefabEntity = newEntity.GetID();
+		srcPrefabComp.version = m_version;
 
 		Entity::Copy(srcEntity, newEntity, true);
 
@@ -361,35 +303,44 @@ namespace Volt
 
 		for (const auto& id : entitiesToRemove)
 		{
-			auto entity = Entity{ id, m_prefabScene };
-			const auto& prefabComp = entity.GetComponent<PrefabComponent>();
-
-			// It's a prefab reference, remove if it's the root
-			if (prefabComp.prefabAsset != handle)
+			// Remove references
+			if (m_prefabReferencesMap.contains(id))
 			{
-				Ref<Prefab> prefabAssetRef = AssetManager::GetAsset<Prefab>(prefabComp.prefabAsset);
-				if (prefabAssetRef && prefabAssetRef->IsValid())
-				{
-					if (prefabAssetRef->IsEntityRoot(entity))
-					{
-						if (m_prefabReferencesMap.contains(id))
-						{
-							m_prefabReferencesMap.erase(id);
-						}
-					}
-				}
+				m_prefabReferencesMap.erase(id);
+			}
+
+			auto entity = Entity{ id, m_prefabScene };
+			if (!entity)
+			{
+				continue;
 			}
 
 			m_prefabScene->RemoveEntity(Entity{ id, m_prefabScene });
 		}
 	}
 
-	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity sceneRootId)
+	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity sceneRootId, entt::entity forcedPrefabEntity)
 	{
 		bool shouldAddEntity = !srcEntity.HasComponent<PrefabComponent>();
 		if (!shouldAddEntity)
 		{
-			if (srcEntity.GetComponent<PrefabComponent>().prefabAsset != handle)
+			const auto& srcPrefabComp = srcEntity.GetComponent<PrefabComponent>();
+
+			if (m_prefabReferencesMap.contains(srcPrefabComp.prefabEntity))
+			{
+				const auto& prefabRefData = m_prefabReferencesMap.at(srcPrefabComp.prefabEntity);
+
+				Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(prefabRefData.prefabAsset);
+				if (!prefabRefAsset || !prefabRefAsset->IsValid())
+				{
+					return false;
+				}
+
+				return prefabRefAsset->UpdateEntityInPrefabInternal(srcEntity, sceneRootId, prefabRefData.prefabReferenceEntity);
+			}
+
+			// Make sure we are not updating from another prefab
+			if (srcEntity.GetComponent<PrefabComponent>().prefabAsset != handle && forcedPrefabEntity == entt::null)
 			{
 				shouldAddEntity = true;
 			}
@@ -414,7 +365,8 @@ namespace Volt
 			return false;
 		}
 
-		Entity targetEntity{ srcPrefabComp.prefabEntity, m_prefabScene };
+		const entt::entity prefabEntityId = forcedPrefabEntity != entt::null ? forcedPrefabEntity : srcPrefabComp.prefabEntity;
+		Entity targetEntity{ prefabEntityId, m_prefabScene };
 		if (!targetEntity)
 		{
 			VT_CORE_WARN("[Prefab]: Trying to update an invalid entity in prefab!");
@@ -433,10 +385,88 @@ namespace Volt
 
 		for (const auto& srcChild : srcEntity.GetChildren())
 		{
-			UpdateEntityInPrefabInternal(srcChild, sceneRootId);
+			UpdateEntityInPrefabInternal(srcChild, sceneRootId, entt::null);
 		}
 
 		return true;
+	}
+
+	void Prefab::UpdateEntityInSceneInternal(Entity sceneEntity, entt::entity forcedPrefabEntity)
+	{
+		if (!sceneEntity.HasComponent<PrefabComponent>())
+		{
+			return;
+		}
+
+		const auto& scenePrefabComp = sceneEntity.GetComponent<PrefabComponent>();
+		const entt::entity prefabEntityId = forcedPrefabEntity != entt::null ? forcedPrefabEntity : scenePrefabComp.prefabEntity;
+
+		if (m_prefabReferencesMap.contains(prefabEntityId))
+		{
+			Ref<Prefab> prefabRefAsset = AssetManager::GetAsset<Prefab>(scenePrefabComp.prefabAsset);
+			prefabRefAsset->UpdateEntityInSceneInternal(sceneEntity, m_prefabReferencesMap.at(prefabEntityId).prefabReferenceEntity);
+
+			return;
+		}
+
+		Entity prefabEntity{ prefabEntityId, m_prefabScene };
+		if (!prefabEntity)
+		{
+			sceneEntity.GetScene()->RemoveEntity(sceneEntity);
+			return;
+		}
+
+		auto sceneTransform = sceneEntity.GetComponent<TransformComponent>();
+		auto sceneRelationships = sceneEntity.GetComponent<RelationshipComponent>();
+		auto sceneCommonComponent = sceneEntity.GetComponent<CommonComponent>();
+		const auto sceneRootId = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
+
+		Entity::Copy(prefabEntity, sceneEntity);
+
+		if (prefabEntity.GetID() == m_rootEntityId)
+		{
+			sceneEntity.GetComponent<TransformComponent>() = sceneTransform;
+		}
+
+		sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneRootId;
+		sceneEntity.GetComponent<RelationshipComponent>() = sceneRelationships;
+		sceneEntity.GetComponent<CommonComponent>() = sceneCommonComponent;
+
+		sceneEntity.GetScene()->InvalidateEntityTransform(sceneEntity.GetID());
+
+		for (const auto& sceneChild : sceneEntity.GetChildren())
+		{
+			UpdateEntityInScene(sceneChild);
+		}
+
+		for (const auto& prefabChild : prefabEntity.GetChildren())
+		{
+			bool exists = false;
+
+			for (const auto& sceneChild : sceneEntity.GetChildren())
+			{
+				if (!sceneChild.HasComponent<PrefabComponent>())
+				{
+					continue;
+				}
+
+				if (prefabChild.GetID() == sceneChild.GetComponent<PrefabComponent>().prefabEntity)
+				{
+					exists = true;
+					break;
+				}
+			}
+
+			if (!exists)
+			{
+				auto newEntity = InstantiateEntity(sceneEntity.GetScene(), prefabChild);
+				auto preParentTransform = newEntity.GetComponent<TransformComponent>();
+
+				newEntity.SetParent(sceneEntity);
+				newEntity.GetComponent<PrefabComponent>().sceneRootEntity = sceneEntity.GetComponent<PrefabComponent>().sceneRootEntity;
+				newEntity.GetComponent<TransformComponent>() = preParentTransform;
+			}
+		}
 	}
 
 	Entity Prefab::InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity)

@@ -1060,7 +1060,7 @@ void SceneViewPanel::UpdatePrefabsInScene(Ref<Volt::Prefab> prefab, Volt::Entity
 		return;
 	}
 
-	m_scene->ForEachWithComponents<const Volt::PrefabComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp) 
+	m_scene->ForEachWithComponents<const Volt::PrefabComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp)
 	{
 		if (id == srcEntity.GetID())
 		{
@@ -1079,6 +1079,32 @@ void SceneViewPanel::UpdatePrefabsInScene(Ref<Volt::Prefab> prefab, Volt::Entity
 
 		prefabAsset->UpdateEntityInScene(Volt::Entity{ id, m_scene });
 	});
+
+	if (prefabAsset->IsReference(srcEntity))
+	{
+		m_scene->ForEachWithComponents<const Volt::PrefabComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp)
+		{
+			if (id == srcEntity.GetID())
+			{
+				return;
+			}
+
+			const auto& prefabRefData = prefabAsset->GetReferenceData(srcEntity);
+
+			if (prefabComp.prefabAsset != prefabRefData.prefabAsset || prefabComp.prefabEntity != prefabRefData.prefabReferenceEntity)
+			{
+				return;
+			}
+
+			Ref<Volt::Prefab> prefabRefAsset = Volt::AssetManager::GetAsset<Volt::Prefab>(prefabRefData.prefabAsset);
+			if (!prefabRefAsset || !prefabRefAsset->IsValid())
+			{
+				return;
+			}
+
+			prefabRefAsset->UpdateEntityInScene(Volt::Entity{ id, m_scene });
+		});
+	}
 }
 
 bool SceneViewPanel::SearchRecursively(Volt::Entity entity, const std::string& filter, uint32_t maxSearchDepth, uint32_t currentDepth)

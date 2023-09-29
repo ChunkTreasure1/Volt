@@ -42,7 +42,11 @@ namespace Volt
 			{
 				entt::entity entityId = streamReader.ReadKey("entity", (entt::entity)entt::null);
 				AssetHandle prefabHandle = streamReader.ReadKey("prefabHandle", Asset::Null());
-				prefab->m_prefabReferencesMap[entityId] = prefabHandle;
+				entt::entity prefabEntityReference = streamReader.ReadKey("prefabEntityReference", (entt::entity)entt::null);
+
+				auto& prefabRefData = prefab->m_prefabReferencesMap[entityId];
+				prefabRefData.prefabAsset = prefabHandle;
+				prefabRefData.prefabReferenceEntity = prefabEntityReference;
 			});
 		}
 		streamReader.ExitScope();
@@ -78,7 +82,8 @@ namespace Volt
 			{
 				streamWriter.BeginMap();
 				streamWriter.SetKey("entity", ref.first);
-				streamWriter.SetKey("prefabHandle", ref.second);
+				streamWriter.SetKey("prefabHandle", ref.second.prefabAsset);
+				streamWriter.SetKey("prefabEntityReference", ref.second.prefabReferenceEntity);
 				streamWriter.EndMap();
 			}
 		}

@@ -777,7 +777,7 @@ namespace Volt
 		const auto flatHeirarchy = FlattenEntityHeirarchy(entity);
 		for (const auto& ent : flatHeirarchy)
 		{
-			if (ent.GetID() == entity.GetID())
+			if (ent.GetID() == otherEntity.GetID())
 			{
 				return true;
 			}

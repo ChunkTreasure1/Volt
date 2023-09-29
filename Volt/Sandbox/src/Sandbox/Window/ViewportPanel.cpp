@@ -617,13 +617,18 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			EditorCommandStack::GetInstance().PushUndo(command);
 
 			bool shouldUpdateNavMesh = false;
-			for (const auto& i : entitiesToRemove)
+			for (const auto& entity : entitiesToRemove)
 			{
-				if (!shouldUpdateNavMesh && Sandbox::Get().CheckForUpdateNavMesh(i))
+				if (!entity)
+				{
+					continue;
+				}
+
+				if (!shouldUpdateNavMesh && Sandbox::Get().CheckForUpdateNavMesh(entity))
 				{
 					shouldUpdateNavMesh = true;
 				}
-				m_editorScene->RemoveEntity(i);
+				m_editorScene->RemoveEntity(entity);
 			}
 
 			if (shouldUpdateNavMesh)
