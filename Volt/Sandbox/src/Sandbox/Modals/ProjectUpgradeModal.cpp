@@ -194,35 +194,57 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 	auto& project = Volt::ProjectManager::GetProject();
 	const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
 
-	std::vector<std::filesystem::path> sceneDirectories;
+	std::vector<std::filesystem::path> sceneFilePaths;
 	for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
 	{
 		if (entry.path().extension().string() == ".vtscene")
 		{
-			sceneDirectories.emplace_back(entry.path().parent_path());
+			sceneFilePaths.emplace_back(entry.path());
 		}
 	}
 
 	// Convert all found scenes
-	for (const auto& sceneDir : sceneDirectories)
+	for (const auto& sceneFilePath : sceneFilePaths)
 	{
+		const auto sceneDir = sceneFilePath.parent_path();
+
 		if (!std::filesystem::exists(sceneDir / "Layers"))
 		{
 			continue;
 		}
 
-		Ref<Volt::Scene> scene = CreateRef<Volt::Scene>();
+		std::string sceneName;
+
+		// Load scene name
+		{
+			Volt::YAMLStreamReader streamReader{};
+			if (!streamReader.OpenFile(sceneFilePath))
+			{
+				VT_CORE_ERROR("[Project Upgrade]: Unable to open scene file! Skipping!");
+				continue;
+			}
+
+			streamReader.EnterScope("Scene");
+			sceneName = streamReader.ReadKey("name", std::string("New Scene"));
+			streamReader.ExitScope();
+		}
+
+		Ref<Volt::Scene> scene = CreateRef<Volt::Scene>(sceneName);
 		std::vector<Volt::SceneLayer> sceneLayers;
 
 		for (const auto& entry : std::filesystem::directory_iterator(sceneDir / "Layers"))
 		{
-			if (entry.path().string() != ".vtlayer")
+			if (entry.path().extension().string() != ".vtlayer")
 			{
 				continue;
 			}
 
 			DeserializePreV113SceneLayer(scene, sceneLayers.emplace_back(), entry.path());
 		}
+
+		Volt::AssetMetadata imposterMeta;
+		imposterMeta.filePath = Volt::AssetManager::GetRelativePath(sceneFilePath);
+		Volt::SceneImporter::Get().Save(imposterMeta, scene);
 	}
 }
 
@@ -304,7 +326,7 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 {
 	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
 
-	streamReader.ForEach("members", [&]() 
+	streamReader.ForEach("properties", [&]() 
 	{
 		const std::string memberName = streamReader.ReadKey("name", std::string(""));
 	
@@ -336,16 +358,23 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 
 			streamReader.ForEach("data", [&]() 
 			{
-				uint8_t* tempDataStorage = new uint8_t[arrayTypeDesc->GetElementTypeSize()];
-				memset(tempDataStorage, 0, arrayTypeDesc->GetElementTypeSize());
+				void* tempDataStorage = nullptr;
+				arrayTypeDesc->DefaultConstructElement(tempDataStorage);
+
+				uint8_t* tempBytePtr = reinterpret_cast<uint8_t*>(tempDataStorage);
 
 				if (typeDeserializers.contains(vectorValueType))
 				{
-					typeDeserializers.at(vectorValueType)(streamReader, tempDataStorage, 0);
+					typeDeserializers.at(vectorValueType)(streamReader, tempBytePtr, 0);
+				}
+
+				if (arrayTypeDesc->GetElementTypeIndex() == std::type_index{ typeid(entt::entity) })
+				{
+					ValidateEntityValidity(reinterpret_cast<entt::entity*>(tempDataStorage));
 				}
 
 				arrayTypeDesc->PushBack(arrayPtr, tempDataStorage);
-				delete[] tempDataStorage;
+				arrayTypeDesc->DestroyElement(tempDataStorage);
 			});
 
 			return;
@@ -366,6 +395,11 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 		if (typeDeserializers.contains(memberType))
 		{
 			typeDeserializers.at(memberType)(streamReader, componentData, componentMember->offset);
+			if (memberType == std::type_index{ typeid(entt::entity )})
+			{
+				entt::entity* entDataPtr = reinterpret_cast<entt::entity*>(&componentData[componentMember->offset]);
+				ValidateEntityValidity(entDataPtr);
+			}
 		}
 	});
 }
@@ -373,6 +407,14 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 const bool ProjectUpgradeModal::IsPreV113EntityNull(entt::entity entityId)
 {
 	return entityId == entt::null || entityId == static_cast<entt::entity>(0);
+}
+
+void ProjectUpgradeModal::ValidateEntityValidity(entt::entity* entityId)
+{
+	if (*entityId == (entt::entity)0)
+	{
+		*entityId = entt::null;
+	}
 }
 
 const Volt::ComponentMember* ProjectUpgradeModal::TryGetComponentMemberFromName(const std::string& memberName, const Volt::IComponentTypeDesc* componentDesc)

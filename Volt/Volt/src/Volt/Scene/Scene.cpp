@@ -306,7 +306,9 @@ namespace Volt
 
 	void Scene::UpdateEditor(float aDeltaTime)
 	{
-		m_statistics.entityCount = static_cast<uint32_t>(m_registry.alive());
+		VT_PROFILE_FUNCTION();
+
+		m_statistics.entityCount = static_cast<uint32_t>(m_registry.size());
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 
 		// Update scene data

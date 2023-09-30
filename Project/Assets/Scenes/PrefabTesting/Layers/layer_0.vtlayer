@@ -1,0 +1,312 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 1048582
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [200, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cylinder
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 1048581
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 2900881217054044389
+              - name: material
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 14485418990224975532
+              - name: prefabEntity
+                data: 1048580
+              - name: sceneRootEntity
+                data: 1048581
+              - name: version
+                data: 0
+              - name: componentLocalChanges
+                data: array
+                values:
+                  []
+              - name: scriptLocalChanges
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 1048581
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-31.1230755, 0, 1210.64172]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cone
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  - data: 1048582
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 18411356710391823355
+              - name: material
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 14485418990224975532
+              - name: prefabEntity
+                data: 1048588
+              - name: sceneRootEntity
+                data: 1048581
+              - name: version
+                data: 0
+              - name: componentLocalChanges
+                data: array
+                values:
+                  - value: component
+                    guid: [4707871384872391901, 12899116997816082105]
+                    members:
+                      - name: componentGUID
+                        data: [5579790378469427390, 5138106327942809248]
+                      - name: memberName
+                        data: handle
+              - name: scriptLocalChanges
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 3
+        components:
+          - guid: [5524573352483143404, 11007889460122951339]
+            members:
+              - name: fieldOfView
+                data: 194
+              - name: nearPlane
+                data: 1
+              - name: farPlane
+                data: 100147
+              - name: priority
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, -500]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Camera
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 2
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Skylight
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5130770350572262273, 9533246575187293344]
+            members:
+              - name: environmentHandle
+                data: 0
+              - name: intensity
+                data: 1
+              - name: lod
+                data: 0
+              - name: turbidity
+                data: 2
+              - name: azimuth
+                data: 0
+              - name: inclination
+                data: 0
+              - name: show
+                data: true
+    - Entity:
+        id: 1
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0.866025448, 0, 0, 0.49999997]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Directional Light
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [4956947959302657279, 6431008363526150588]
+            members:
+              - name: intensity
+                data: 1
+              - name: color
+                data: [1, 1, 1]
+              - name: lightSize
+                data: 1
+              - name: softShadows
+                data: true
+              - name: castShadows
+                data: true
+    - Entity:
+        id: 0
+        components:
+          - guid: [5241627842114713378, 11179844935521484427]
+            members:
+              - name: bodyType
+                data: enum
+                enumValue: 0
+              - name: layerId
+                data: 0
+              - name: mass
+                data: 1
+              - name: linearDrag
+                data: 0.00999999978
+              - name: lockFlags
+                data: 0
+              - name: angularDrag
+                data: 0.0500000007
+              - name: collisionType
+                data: enum
+                enumValue: 0
+              - name: disableGravity
+                data: false
+              - name: isKinematic
+                data: false
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Cube
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 10149696181569838305
+              - name: material
+                data: 0

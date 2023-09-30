@@ -1,5 +1,6 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
+#include "Volt/Core/Profiling.h"
 
 #include "Volt/Animation/AnimationSystem.h"
 #include "Volt/Particles/ParticleSystem.h"
@@ -231,6 +232,8 @@ namespace Volt
 	template<typename... T, typename F>
 	inline void Scene::ForEachWithComponents(const F& func)
 	{
+		VT_PROFILE_FUNCTION();
+
 		auto view = m_registry.view<T...>();
 		view.each(func);
 	}

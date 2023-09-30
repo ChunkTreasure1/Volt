@@ -30,6 +30,8 @@
 
 void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, const float deltaTime)
 {
+	VT_PROFILE_FUNCTION();
+
 	std::set<entt::entity> emittersAliveThisFrame;
 	
 	auto view = registry.view<ParticleEmitterComponent, TransformComponent>();

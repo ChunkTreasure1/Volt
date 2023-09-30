@@ -759,6 +759,8 @@ void Sandbox::InstallMayaTools()
 
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
+	VT_PROFILE_FUNCTION();
+
 	EditorCommandStack::GetInstance().Update(100);
 
 	auto mousePos = Volt::Input::GetMousePosition();

@@ -40,6 +40,7 @@ private:
 	void DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader);
 
 	const bool IsPreV113EntityNull(entt::entity entityId);
+	void ValidateEntityValidity(entt::entity* entityId);
 	const Volt::ComponentMember* TryGetComponentMemberFromName(const std::string& memberName, const Volt::IComponentTypeDesc* componentDesc);
 
 	std::pair<std::filesystem::path, Volt::AssetHandle> DeserializeV0MetaFile(const std::filesystem::path& metaPath);
