@@ -993,7 +993,6 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_CORE_ERROR("[AssetManager] Trying to queue invalid asset {0}!", assetHandle);
 			return;
 		}
 
@@ -1075,7 +1074,6 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_CORE_ERROR("[AssetManager] Trying to queue invalid asset {0}!", assetHandle);
 			return;
 		}
 
@@ -1191,21 +1189,21 @@ namespace Volt
 
 	std::vector<std::filesystem::path> AssetManager::GetProjectMetaFiles()
 	{
-		if (ProjectManager::IsCurrentProjectDeprecated())
+		if (ProjectManager::AreCurrentProjectMetaFilesDeprecated())
 		{
 			VT_CORE_ERROR("[AssetManager]: Unable to load metafiles as the loaded project is deprecated!");
 			return {};
 		}
 
-
 		std::vector<std::filesystem::path> files;
 		std::string ext(".vtmeta");
 
 		// Project Directory
+		const auto assetsDir = ProjectManager::GetProject().projectDirectory / ProjectManager::GetProject().assetsDirectory;
 
-		if (FileSystem::Exists(ProjectManager::GetAssetsDirectory()))
+		if (FileSystem::Exists(assetsDir))
 		{
-			for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetAssetsDirectory()))
+			for (auto& p : std::filesystem::recursive_directory_iterator(assetsDir))
 			{
 				if (p.path().extension() == ext)
 				{

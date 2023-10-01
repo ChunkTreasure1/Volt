@@ -21,15 +21,19 @@ namespace Volt
 
 		Prefab() = default;
 		Prefab(Entity srcRootEntity);
+		Prefab(Ref<Scene> prefabScene, entt::entity rootEntityId, uint32_t version);
+
 		~Prefab() override = default;
 
 		Entity Instantiate(Weak<Scene> targetScene);
 		const bool UpdateEntityInPrefab(Entity srcEntity);
-
 		void UpdateEntityInScene(Entity sceneEntity);
+
+		void CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId) const;
 
 		[[nodiscard]] inline const bool IsPrefabValid() { return m_prefabScene != nullptr && m_rootEntityId != entt::null; }
 		[[nodiscard]] const bool IsEntityValidInPrefab(Entity entity) const;
+		[[nodiscard]] const bool IsEntityValidInPrefab(entt::entity prefabEntityId) const;
 		[[nodiscard]] const bool IsEntityRoot(Entity entity) const;
 		[[nodiscard]] const bool IsReference(Entity entity) const;
 

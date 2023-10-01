@@ -896,6 +896,11 @@ namespace Volt
 		m_sceneLayers.emplace_back(layerId, layerName);
 	}
 
+	void Scene::SetLayers(const std::vector<SceneLayer>& sceneLayers)
+	{
+		m_sceneLayers = sceneLayers;
+	}
+
 	void Scene::RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id)
 	{
 		if (!m_isPlaying)

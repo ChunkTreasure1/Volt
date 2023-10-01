@@ -18,7 +18,7 @@ namespace Volt
 
     public class Entity
     {
-        public readonly uint Id = 0;
+        public readonly uint Id = UInt32.MaxValue;
         ulong[] ScriptIds;
 
         private Dictionary<string, Component> m_componentCache = new Dictionary<string, Component>();

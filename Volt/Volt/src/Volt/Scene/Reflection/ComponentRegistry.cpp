@@ -28,6 +28,11 @@ namespace Volt
 		return s_guidToTypeNameMap.at(guid);
 	}
 
+	const VoltGUID ComponentRegistry::GetGUIDFromTypeName(std::string_view typeName)
+	{
+		return s_typeNameToGUIDMap.at(typeName);
+	}
+
 	void ComponentRegistry::Helpers::AddComponentWithGUID(const VoltGUID& guid, entt::registry& registry, entt::entity entity)
 	{
 		if (!ComponentRegistry::s_componentHelperFunctions.contains(guid))

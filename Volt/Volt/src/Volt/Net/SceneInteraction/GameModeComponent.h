@@ -9,7 +9,7 @@ namespace Volt
 	{
 		AssetHandle prefabHandle;
 		AssetHandle enemy;
-		//PROPERTY(Name = Spawn Point) entt::entity spawnPoint = 0;
+		entt::entity spawnPoint = entt::null;
 
 		static void ReflectType(TypeDesc<GameModeComponent>& reflect)
 		{
@@ -17,6 +17,7 @@ namespace Volt
 			reflect.SetLabel("Game Mode Component");
 			reflect.AddMember(&GameModeComponent::prefabHandle, "prefabHandle", "Prefab", "", Asset::Null());
 			reflect.AddMember(&GameModeComponent::enemy, "enemy", "Enemy", "", Asset::Null());
+			reflect.AddMember(&GameModeComponent::spawnPoint, "spawnPoint", "Spawn Point", "", (entt::entity)entt::null);
 		}
 
 		REGISTER_COMPONENT(GameModeComponent);

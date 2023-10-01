@@ -11,6 +11,16 @@
 
 namespace Volt
 {
+	PrefabImporter::PrefabImporter()
+	{
+		s_instance = this;
+	}
+
+	PrefabImporter::~PrefabImporter()
+	{
+		s_instance = nullptr;
+	}
+
 	bool PrefabImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Prefab>();

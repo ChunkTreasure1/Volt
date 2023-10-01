@@ -352,6 +352,11 @@ namespace Volt
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
 
+		if (!registry.any_of<RelationshipComponent>(m_id))
+		{
+			return {};
+		}
+
 		assert(registry.any_of<RelationshipComponent>(m_id) && "Entity must have relationship component!");
 
 		const auto& children = registry.get<RelationshipComponent>(m_id).children;
@@ -621,7 +626,7 @@ namespace Volt
 		dstComponent.scriptNames = srcComponent.scriptNames;
 		dstComponent.scriptIds.clear();
 
-		for (size_t i = 0; i < srcComponent.scriptNames.size(); i++)
+		for (size_t i = 0; i < srcComponent.scriptNames.size() && i < srcComponent.scriptIds.size(); i++)
 		{
 			dstComponent.scriptIds.emplace_back();
 

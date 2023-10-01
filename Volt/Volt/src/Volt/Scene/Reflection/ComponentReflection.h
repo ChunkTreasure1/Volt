@@ -141,6 +141,7 @@ namespace Volt
 		[[nodiscard]] virtual const bool IsHidden() const = 0;
 		[[nodiscard]] virtual ComponentMember* FindMemberByOffset(const ptrdiff_t offset) = 0;
 		[[nodiscard]] virtual ComponentMember* FindMemberByName(std::string_view name) = 0;
+		[[nodiscard]] virtual const ComponentMember* FindMemberByName(std::string_view name) const = 0;
 	};
 
 	class IEnumTypeDesc : public CommonTypeDesc<ValueType::Enum>
@@ -168,6 +169,7 @@ namespace Volt
 		[[nodiscard]] virtual void* At(void* array, size_t pos) const = 0;
 		[[nodiscard]] virtual const void* At(const void* array, size_t pos) const = 0;
 		virtual void* EmplaceBack(void* array, const void* value) const = 0;
+		virtual void Erase(void* array, size_t pos) const = 0;
 
 		~IArrayTypeDesc() override = default;
 	};
@@ -207,6 +209,11 @@ namespace Volt
 			m_emplaceBackFunction = std::move(func);
 		}
 
+		void SetEraseFunction(std::function<void(void*, size_t)>&& func)
+		{
+			m_eraseFunction = std::move(func);
+		}
+
 		[[nodiscard]] const size_t Size(const void* array) const override
 		{
 			return m_sizeFunction(array);
@@ -230,6 +237,11 @@ namespace Volt
 		void* EmplaceBack(void* array, const void* value) const override
 		{
 			return m_emplaceBackFunction(array, value);
+		}
+
+		void Erase(void* array, size_t pos) const override
+		{
+			m_eraseFunction(array, pos);
 		}
 
 		void DefaultConstructElement(void*& value) const override
@@ -275,6 +287,7 @@ namespace Volt
 		std::function<const void* (const void* pArray, size_t pos)> m_atConstFunction;
 		std::function<void(void* pArray, const void* pValue)> m_pushBackFunction;
 		std::function<void* (void* pArray, const void* pValue)> m_emplaceBackFunction;
+		std::function<void(void* pArray, size_t pos)> m_eraseFunction;
 	};
 
 	template<typename T>
@@ -296,6 +309,7 @@ namespace Volt
 
 		[[nodiscard]] ComponentMember* FindMemberByOffset(const ptrdiff_t offset) override;
 		[[nodiscard]] ComponentMember* FindMemberByName(std::string_view name) override;
+		[[nodiscard]] const ComponentMember* FindMemberByName(std::string_view name) const override;
 
 		template<typename Type, typename DefaultValueT, typename TypeParent = T>
 		const ComponentMember& AddMember(Type TypeParent::* memberPtr, std::string_view name, std::string_view label, std::string_view description, const DefaultValueT& defaultValue)
@@ -422,6 +436,22 @@ namespace Volt
 
 	template<typename T>
 	inline ComponentMember* ComponentTypeDesc<T>::FindMemberByName(std::string_view name)
+	{
+		auto it = std::find_if(m_members.begin(), m_members.end(), [name](const auto& member)
+		{
+			return member.name == name;
+		});
+
+		if (it == m_members.end())
+		{
+			return nullptr;
+		}
+
+		return &(*it);
+	}
+
+	template<typename T>
+	inline const ComponentMember* ComponentTypeDesc<T>::FindMemberByName(std::string_view name) const
 	{
 		auto it = std::find_if(m_members.begin(), m_members.end(), [name](const auto& member)
 		{
@@ -613,6 +643,12 @@ namespace Volt
 			{
 				return &(*reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array)).emplace_back(*reinterpret_cast<const ELEMENT_TYPE*>(value));
 			}
+		});
+
+		desc.SetEraseFunction([](void* array, size_t pos) 
+		{
+			std::vector<ELEMENT_TYPE>& vecRef = *reinterpret_cast<std::vector<ELEMENT_TYPE>*>(array);
+			vecRef.erase(vecRef.begin() + pos);
 		});
 	}
 }

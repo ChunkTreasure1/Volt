@@ -23,6 +23,7 @@ namespace Volt
 		static const ICommonTypeDesc* GetTypeDescFromName(std::string_view name);
 		static const ICommonTypeDesc* GetTypeDescFromGUID(const VoltGUID& guid);
 		static std::string_view GetTypeNameFromGUID(const VoltGUID& guid);
+		static const VoltGUID GetGUIDFromTypeName(std::string_view typeName);
 
 		inline static const auto& GetRegistry() { return s_typeRegistry; }
 

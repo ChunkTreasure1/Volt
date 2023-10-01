@@ -96,6 +96,7 @@ namespace Volt
 		void RemoveLayer(const std::string& layerName);
 		void RemoveLayer(uint32_t layerId);
 		void MoveToLayer(Entity entity, uint32_t targetLayer);
+		void SetLayers(const std::vector<SceneLayer>& sceneLayers); // #TODO_Ivar: We probably don't want to expose this
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 

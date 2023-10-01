@@ -2,9 +2,13 @@
 #include "ProjectUpgradeModal.h"
 
 #include <Volt/Asset/Importers/SceneImporter.h>
+#include <Volt/Asset/Importers/PrefabImporter.h>
+#include <Volt/Asset/Prefab.h>
 
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/FileIO/YAMLStreamReader.h>
+
+#include <Volt/Components/RenderingComponents.h>
 
 #include <imgui.h>
 
@@ -45,7 +49,19 @@ struct TypeIndexContainer
 };
 
 static std::unordered_map<PreV113PropertyType, TypeIndexContainer> s_preV113PropTypeToTypeIndexMap;
+static std::unordered_map<std::type_index, std::function<void(Volt::YAMLStreamReader&, uint8_t*, const size_t)>> s_arrayDeserializers;
+static std::unordered_map<VoltGUID, std::unordered_map<std::string, std::string>> s_componentMemberRemap;
+
 static bool s_initialize = false;
+
+template<typename T>
+void RegisterDeserializationFunction()
+{
+	s_arrayDeserializers[std::type_index{ typeid(T) }] = [](Volt::YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
+	{
+		*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("value", T());
+	};
+}
 
 ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
 	: Modal(strId)
@@ -75,6 +91,48 @@ ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
 		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::EntityId].typeIndex = std::type_index{ typeid(entt::entity) };
 		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::GUID].typeIndex = std::type_index{ typeid(VoltGUID) };
 		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Quaternion].typeIndex = std::type_index{ typeid(glm::quat) };
+
+		RegisterDeserializationFunction<int8_t>();
+		RegisterDeserializationFunction<uint8_t>();
+		RegisterDeserializationFunction<int16_t>();
+		RegisterDeserializationFunction<uint16_t>();
+		RegisterDeserializationFunction<int32_t>();
+		RegisterDeserializationFunction<uint32_t>();
+
+		RegisterDeserializationFunction<float>();
+		RegisterDeserializationFunction<double>();
+		RegisterDeserializationFunction<bool>();
+
+		RegisterDeserializationFunction<glm::vec2>();
+		RegisterDeserializationFunction<glm::vec3>();
+		RegisterDeserializationFunction<glm::vec4>();
+
+		RegisterDeserializationFunction<glm::uvec2>();
+		RegisterDeserializationFunction<glm::uvec3>();
+		RegisterDeserializationFunction<glm::uvec4>();
+
+		RegisterDeserializationFunction<glm::ivec2>();
+		RegisterDeserializationFunction<glm::ivec3>();
+		RegisterDeserializationFunction<glm::ivec4>();
+
+		RegisterDeserializationFunction<glm::quat>();
+		RegisterDeserializationFunction<glm::mat4>();
+		RegisterDeserializationFunction<VoltGUID>();
+
+		RegisterDeserializationFunction<std::string>();
+		RegisterDeserializationFunction<std::filesystem::path>();
+
+		RegisterDeserializationFunction<entt::entity>();
+		RegisterDeserializationFunction<Volt::AssetHandle>();
+
+		// Member remapping
+		{
+			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::MeshComponent>())]["Mesh"] = "handle";
+			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::AnimatedCharacterComponent>())]["Character"] = "animatedCharacter";
+			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::SpriteComponent>())]["Material"] = "materialHandle";
+			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::AnimationControllerComponent>())]["Override Skin"] = "skin";
+			s_componentMemberRemap[Volt::ComponentRegistry::GetGUIDFromTypeName(entt::type_name<Volt::DecalComponent>())]["Material"] = "decalMaterial";
+		}
 
 		s_initialize = true;
 	}
@@ -131,8 +189,8 @@ void ProjectUpgradeModal::UpgradeCurrentProject()
 
 	if (projectVersion.GetMinor() < 3 && projectVersion.GetMajor() == 0)
 	{
-		ConvertScenesToV113();
 		ConvertPrefabsToV113();
+		ConvertScenesToV113();
 	}
 
 	Volt::ProjectManager::OnProjectUpgraded();
@@ -184,6 +242,22 @@ void ProjectUpgradeModal::ConvertMetaFilesToV011()
 
 void ProjectUpgradeModal::ConvertPrefabsToV113()
 {
+	auto& project = Volt::ProjectManager::GetProject();
+	const std::filesystem::path assetsPath = project.projectDirectory / project.assetsDirectory;
+
+	std::vector<std::filesystem::path> prefabFilePaths;
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsPath))
+	{
+		if (entry.path().extension().string() == ".vtprefab")
+		{
+			prefabFilePaths.emplace_back(entry.path());
+		}
+	}
+
+	for (const auto& prefabFilePath : prefabFilePaths)
+	{
+		ConvertPreV113Prefab(prefabFilePath);
+	}
 }
 
 void ProjectUpgradeModal::ConvertScenesToV113()
@@ -232,6 +306,8 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 		Ref<Volt::Scene> scene = CreateRef<Volt::Scene>(sceneName);
 		std::vector<Volt::SceneLayer> sceneLayers;
 
+		std::map<entt::entity, entt::entity> entityRemapping;
+
 		for (const auto& entry : std::filesystem::directory_iterator(sceneDir / "Layers"))
 		{
 			if (entry.path().extension().string() != ".vtlayer")
@@ -239,8 +315,13 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 				continue;
 			}
 
-			DeserializePreV113SceneLayer(scene, sceneLayers.emplace_back(), entry.path());
+			DeserializePreV113SceneLayer(scene, sceneLayers.emplace_back(), entry.path(), entityRemapping);
 		}
+
+		scene->SetLayers(sceneLayers);
+
+		HandleEntityRemapping(scene, entityRemapping);
+		ValidateSceneConversion(scene);
 
 		Volt::AssetMetadata imposterMeta;
 		imposterMeta.filePath = Volt::AssetManager::GetRelativePath(sceneFilePath);
@@ -248,7 +329,58 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 	}
 }
 
-void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath)
+void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& filePath)
+{
+	Volt::YAMLStreamReader streamReader{};
+	if (!streamReader.OpenFile(filePath))
+	{
+		return;
+	}
+
+	uint32_t version = 0;
+	entt::entity rootEntityId = entt::null;
+	Ref<Volt::Scene> prefabScene = CreateRef<Volt::Scene>();
+
+	std::map<entt::entity, entt::entity> entityRemapping;
+
+	streamReader.EnterScope("Prefab");
+	{
+		version = streamReader.ReadKey("version", 0u);
+
+		streamReader.ForEach("entities", [&]()
+		{
+			entt::entity entityId = streamReader.ReadKey("id", (entt::entity)entt::null);
+			if (IsPreV113EntityNull(entityId))
+			{
+				return;
+			}
+
+			DeserializePreV113Entity(prefabScene, streamReader, entityRemapping, true);
+		});
+	}
+	streamReader.ExitScope();
+
+	HandleEntityRemapping(prefabScene, entityRemapping);
+	ValidateSceneConversion(prefabScene);
+
+	// In old prefabs, the root is the only entity with no parent
+	prefabScene->ForEachWithComponents<const Volt::RelationshipComponent>([&](const entt::entity id, const Volt::RelationshipComponent& comp)
+	{
+		if (comp.parent == entt::null)
+		{
+			rootEntityId = id;
+		}
+	});
+
+	Ref<Volt::Prefab> newPrefab = CreateRef<Volt::Prefab>(prefabScene, rootEntityId, version);
+
+	Volt::AssetMetadata imposterMeta{};
+	imposterMeta.filePath = filePath;
+
+	Volt::PrefabImporter::Get().Save(imposterMeta, newPrefab);
+}
+
+void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath, std::map<entt::entity, entt::entity>& entityRemapping)
 {
 	Volt::YAMLStreamReader streamReader{};
 
@@ -264,28 +396,36 @@ void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, V
 		sceneLayer.visible = streamReader.ReadKey("visible", true);
 		sceneLayer.locked = streamReader.ReadKey("locked", false);
 
-		streamReader.ForEach("Entities", [&]() 
+		streamReader.ForEach("Entities", [&]()
 		{
-			DeserializePreV113Entity(scene, streamReader);
+			DeserializePreV113Entity(scene, streamReader, entityRemapping, false);
 		});
 	}
 	streamReader.ExitScope();
 }
 
-void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader)
+void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader, std::map<entt::entity, entt::entity>& entityRemapping, bool isPrefabEntity)
 {
-	streamReader.EnterScope("Entity");
+	if (!isPrefabEntity)
+	{
+		streamReader.EnterScope("Entity");
+	}
 
-	entt::entity entityId = streamReader.ReadKey("id", (entt::entity)entt::null);
+	entt::entity originalEntityId = streamReader.ReadKey("id", (entt::entity)entt::null);
 
-	if (IsPreV113EntityNull(entityId))
+	if (IsPreV113EntityNull(originalEntityId))
 	{
 		return;
 	}
 
-	entityId = scene->GetRegistry().create(entityId);
+	entt::entity entityId = scene->GetRegistry().create(originalEntityId);
 
-	streamReader.ForEach("components", [&]() 
+	if (entityId != originalEntityId)
+	{
+		entityRemapping[originalEntityId] = entityId;
+	}
+
+	streamReader.ForEach("components", [&]()
 	{
 		const VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
 		if (compGuid == VoltGUID::Null())
@@ -316,20 +456,43 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 
 	if (scene->GetRegistry().any_of<Volt::MonoScriptComponent>(entityId))
 	{
+		auto& monoComp = scene->GetRegistry().get<Volt::MonoScriptComponent>(entityId);
+		monoComp;
+
 		Volt::SceneImporter::Get().DeserializeMono(entityId, scene, streamReader);
 	}
 
-	streamReader.ExitScope();
+	if (scene->GetRegistry().any_of<Volt::PrefabComponent>(entityId) && !isPrefabEntity)
+	{
+		auto& prefabComp = scene->GetRegistry().get<Volt::PrefabComponent>(entityId);
+		Ref<Volt::Prefab> prefabAsset = Volt::AssetManager::GetAsset<Volt::Prefab>(prefabComp.prefabAsset);
+
+		if (prefabAsset && prefabAsset->IsValid())
+		{
+			prefabAsset->CopyPrefabEntity(Volt::Entity{ entityId, scene }, prefabComp.prefabEntity);
+		}
+	}
+
+	// Make sure entity has relationship component
+	if (!scene->GetRegistry().any_of<Volt::RelationshipComponent>(entityId))
+	{
+		scene->GetRegistry().emplace<Volt::RelationshipComponent>(entityId);
+	}
+
+	if (!isPrefabEntity)
+	{
+		streamReader.ExitScope();
+	}
 }
 
 void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader)
 {
 	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
 
-	streamReader.ForEach("properties", [&]() 
+	streamReader.ForEach("properties", [&]()
 	{
 		const std::string memberName = streamReader.ReadKey("name", std::string(""));
-	
+
 		if (memberName.empty())
 		{
 			return;
@@ -356,16 +519,16 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 				return;
 			}
 
-			streamReader.ForEach("data", [&]() 
+			streamReader.ForEach("data", [&]()
 			{
 				void* tempDataStorage = nullptr;
 				arrayTypeDesc->DefaultConstructElement(tempDataStorage);
 
 				uint8_t* tempBytePtr = reinterpret_cast<uint8_t*>(tempDataStorage);
 
-				if (typeDeserializers.contains(vectorValueType))
+				if (s_arrayDeserializers.contains(vectorValueType))
 				{
-					typeDeserializers.at(vectorValueType)(streamReader, tempBytePtr, 0);
+					s_arrayDeserializers.at(vectorValueType)(streamReader, tempBytePtr, 0);
 				}
 
 				if (arrayTypeDesc->GetElementTypeIndex() == std::type_index{ typeid(entt::entity) })
@@ -395,13 +558,173 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 		if (typeDeserializers.contains(memberType))
 		{
 			typeDeserializers.at(memberType)(streamReader, componentData, componentMember->offset);
-			if (memberType == std::type_index{ typeid(entt::entity )})
+			if (memberType == std::type_index{ typeid(entt::entity) })
 			{
 				entt::entity* entDataPtr = reinterpret_cast<entt::entity*>(&componentData[componentMember->offset]);
 				ValidateEntityValidity(entDataPtr);
 			}
 		}
 	});
+}
+
+void ProjectUpgradeModal::HandleEntityRemapping(Ref<Volt::Scene> scene, const std::map<entt::entity, entt::entity>& entityRemapping)
+{
+	for (auto&& curr : scene->GetRegistry().storage())
+	{
+		auto& storage = curr.second;
+		std::string_view typeName = storage.type().name();
+
+		const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
+		if (!typeDesc)
+		{
+			continue;
+		}
+
+		if (typeDesc->GetValueType() != Volt::ValueType::Component)
+		{
+			continue;
+		}
+
+		const Volt::IComponentTypeDesc* componentTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);
+
+		for (const auto& member : componentTypeDesc->GetMembers())
+		{
+			if (member.typeDesc)
+			{
+				if (member.typeDesc->GetValueType() != Volt::ValueType::Array)
+				{
+					continue;
+				}
+
+				const Volt::IArrayTypeDesc* memberArrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(member.typeDesc);
+				if (memberArrayTypeDesc->GetElementTypeIndex() != std::type_index{ typeid(entt::entity) })
+				{
+					continue;
+				}
+
+				for (const auto& id : storage)
+				{
+					uint8_t* componentDataPtr = reinterpret_cast<uint8_t*>(storage.get(id));
+					HandleEntityArrayRemapping(scene, entityRemapping, member, componentDataPtr);
+				}
+			}
+			else if (member.typeIndex == std::type_index{ typeid(entt::entity) })
+			{
+				for (const auto& id : storage)
+				{
+					uint8_t* componentDataPtr = reinterpret_cast<uint8_t*>(storage.get(id));
+
+					for (const auto& [originalEntityId, newEntityId] : entityRemapping)
+					{
+						entt::entity& value = *reinterpret_cast<entt::entity*>(&componentDataPtr[member.offset]);
+						if (value == originalEntityId)
+						{
+							value = newEntityId;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void ProjectUpgradeModal::HandleEntityArrayRemapping(Ref<Volt::Scene> scene, const std::map<entt::entity, entt::entity>& entityRemapping, const Volt::ComponentMember& componentMember, uint8_t* componentData)
+{
+	const Volt::IArrayTypeDesc* memberArrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(componentMember.typeDesc);
+	void* arrayPtr = reinterpret_cast<void*>(&componentData[componentMember.offset]);
+
+	for (size_t i = 0; i < memberArrayTypeDesc->Size(arrayPtr); i++)
+	{
+		entt::entity* value = reinterpret_cast<entt::entity*>(memberArrayTypeDesc->At(arrayPtr, i));
+		for (const auto& [originalEntityId, newEntityId] : entityRemapping)
+		{
+			if (*value == originalEntityId)
+			{
+				*value = newEntityId;
+			}
+		}
+	}
+}
+
+void ProjectUpgradeModal::ValidateSceneConversion(Ref<Volt::Scene> scene)
+{
+	for (auto&& curr : scene->GetRegistry().storage())
+	{
+		auto& storage = curr.second;
+		std::string_view typeName = storage.type().name();
+
+		const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
+		if (!typeDesc)
+		{
+			continue;
+		}
+
+		if (typeDesc->GetValueType() != Volt::ValueType::Component)
+		{
+			continue;
+		}
+
+		const Volt::IComponentTypeDesc* componentTypeDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);
+
+		for (const auto& member : componentTypeDesc->GetMembers())
+		{
+			if (member.typeDesc)
+			{
+				if (member.typeDesc->GetValueType() != Volt::ValueType::Array)
+				{
+					continue;
+				}
+
+				const Volt::IArrayTypeDesc* memberArrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(member.typeDesc);
+				if (memberArrayTypeDesc->GetElementTypeIndex() != std::type_index{ typeid(entt::entity) })
+				{
+					continue;
+				}
+
+				for (const auto& id : storage)
+				{
+					uint8_t* componentDataPtr = reinterpret_cast<uint8_t*>(storage.get(id));
+					ValidateSceneConversionArray(scene, member, componentDataPtr);
+				}
+			}
+			else if (member.typeIndex == std::type_index{ typeid(entt::entity) })
+			{
+				for (const auto& id : storage)
+				{
+					uint8_t* componentDataPtr = reinterpret_cast<uint8_t*>(storage.get(id));
+					entt::entity& value = *reinterpret_cast<entt::entity*>(&componentDataPtr[member.offset]);
+
+					if (!scene->GetRegistry().valid(value))
+					{
+						value = entt::null;
+					}
+				}
+			}
+		}
+	}
+}
+
+void ProjectUpgradeModal::ValidateSceneConversionArray(Ref<Volt::Scene> scene, const Volt::ComponentMember& componentMember, uint8_t* componentData)
+{
+	const Volt::IArrayTypeDesc* memberArrayTypeDesc = reinterpret_cast<const Volt::IArrayTypeDesc*>(componentMember.typeDesc);
+	void* arrayPtr = reinterpret_cast<void*>(&componentData[componentMember.offset]);
+
+	std::vector<size_t> indicesToRemove{};
+
+	for (size_t i = 0; i < memberArrayTypeDesc->Size(arrayPtr); i++)
+	{
+		entt::entity* value = reinterpret_cast<entt::entity*>(memberArrayTypeDesc->At(arrayPtr, i));
+		if (!scene->GetRegistry().valid(*value))
+		{
+			indicesToRemove.emplace_back(i);
+			*value = entt::null;
+		}
+	}
+
+	for (const auto& i : indicesToRemove)
+	{
+		memberArrayTypeDesc->Erase(arrayPtr, i);
+	}
 }
 
 const bool ProjectUpgradeModal::IsPreV113EntityNull(entt::entity entityId)
@@ -422,7 +745,7 @@ const Volt::ComponentMember* ProjectUpgradeModal::TryGetComponentMemberFromName(
 	std::string demangledName = Utility::ToLower(memberName);
 	demangledName.erase(std::remove_if(demangledName.begin(), demangledName.end(), ::isspace));
 
-	for (uint32_t idx = 0; const auto& member : componentDesc->GetMembers())
+	for (uint32_t idx = 0; const auto & member : componentDesc->GetMembers())
 	{
 		const std::string memberNameLower = Utility::ToLower(std::string(member.name));
 
@@ -432,6 +755,17 @@ const Volt::ComponentMember* ProjectUpgradeModal::TryGetComponentMemberFromName(
 		}
 
 		idx++;
+	}
+
+	if (s_componentMemberRemap.contains(componentDesc->GetGUID()))
+	{
+		for (const auto& [oldMemberName, newMemberName] : s_componentMemberRemap.at(componentDesc->GetGUID()))
+		{
+			if (memberName == oldMemberName)
+			{
+				return componentDesc->FindMemberByName(newMemberName);
+			}
+		}
 	}
 
 	return nullptr;

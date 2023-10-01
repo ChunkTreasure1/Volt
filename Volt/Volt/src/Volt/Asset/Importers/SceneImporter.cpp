@@ -211,6 +211,8 @@ namespace Volt
 			}
 			streamReader.ExitScope();
 		}
+
+		scene->m_sceneLayers = sceneLayers;
 	}
 
 	void SceneImporter::SaveSceneLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
@@ -414,49 +416,52 @@ namespace Volt
 		streamWriter.BeginSequence("MonoScripts");
 		{
 			MonoScriptComponent& monoScriptComp = scene->GetRegistry().get<MonoScriptComponent>(id);
-			for (size_t i = 0; i < monoScriptComp.scriptIds.size(); ++i)
+			if (monoScriptComp.scriptIds.size() == monoScriptComp.scriptNames.size())
 			{
-				const auto& scriptId = monoScriptComp.scriptIds.at(i);
-				const auto& scriptName = monoScriptComp.scriptNames.at(i);
-
-				streamWriter.BeginMap();
-				streamWriter.BeginMapNamned("ScriptEntry");
-
-				streamWriter.SetKey("name", scriptName);
-				streamWriter.SetKey("id", scriptId);
-
-				if (scriptFieldCache.GetCache().contains(scriptId))
+				for (size_t i = 0; i < monoScriptComp.scriptIds.size(); ++i)
 				{
-					streamWriter.BeginSequence("members");
-					const auto& fieldMap = scriptFieldCache.GetCache().at(scriptId);
-					for (const auto& [name, value] : fieldMap)
+					const auto& scriptId = monoScriptComp.scriptIds.at(i);
+					const auto& scriptName = monoScriptComp.scriptNames.at(i);
+
+					streamWriter.BeginMap();
+					streamWriter.BeginMapNamned("ScriptEntry");
+
+					streamWriter.SetKey("name", scriptName);
+					streamWriter.SetKey("id", scriptId);
+
+					if (scriptFieldCache.GetCache().contains(scriptId))
 					{
-						streamWriter.BeginMap();
-						streamWriter.SetKey("name", name);
-
-						if (value->field.type.IsString())
+						streamWriter.BeginSequence("members");
+						const auto& fieldMap = scriptFieldCache.GetCache().at(scriptId);
+						for (const auto& [name, value] : fieldMap)
 						{
-							auto cStr = value->data.As<const char>();
-							std::string str(cStr);
+							streamWriter.BeginMap();
+							streamWriter.SetKey("name", name);
 
-							streamWriter.SetKey("data", str);
-						}
-						else
-						{
-							if (s_typeSerializers.contains(value->field.type.typeIndex))
+							if (value->field.type.IsString())
 							{
-								s_typeSerializers.at(value->field.type.typeIndex)(streamWriter, value->data.As<const uint8_t>(), 0);
+								auto cStr = value->data.As<const char>();
+								std::string str(cStr);
+
+								streamWriter.SetKey("data", str);
 							}
+							else
+							{
+								if (s_typeSerializers.contains(value->field.type.typeIndex))
+								{
+									s_typeSerializers.at(value->field.type.typeIndex)(streamWriter, value->data.As<const uint8_t>(), 0);
+								}
+							}
+
+							streamWriter.EndMap();
 						}
 
-						streamWriter.EndMap();
+						streamWriter.EndSequence();
 					}
 
-					streamWriter.EndSequence();
+					streamWriter.EndMap();
+					streamWriter.EndMap();
 				}
-
-				streamWriter.EndMap();
-				streamWriter.EndMap();
 			}
 		}
 		streamWriter.EndSequence();

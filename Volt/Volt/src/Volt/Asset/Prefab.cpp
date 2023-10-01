@@ -95,6 +95,21 @@ namespace Volt
 		UpdateEntityInSceneInternal(sceneEntity, entt::null);
 	}
 
+	void Prefab::CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId) const
+	{
+		Entity prefabEntity{ srcPrefabEntityId, m_prefabScene };
+		if (!prefabEntity)
+		{
+			return;
+		}
+
+		auto dstTransform = dstEntity.GetComponent<TransformComponent>();
+
+		Entity::Copy(prefabEntity, dstEntity);
+
+		dstEntity.GetComponent<TransformComponent>() = dstTransform;
+	}
+
 	const bool Prefab::IsEntityValidInPrefab(Entity entity) const
 	{
 		if (!entity.HasComponent<PrefabComponent>())
@@ -112,6 +127,11 @@ namespace Volt
 		Entity prefabEntity{ entity.GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
 		const bool isValid = prefabEntity.IsValid();
 		return isValid;
+	}
+
+	const bool Prefab::IsEntityValidInPrefab(entt::entity prefabEntityId) const
+	{
+		return m_prefabScene->GetRegistry().valid(prefabEntityId);
 	}
 
 	const bool Prefab::IsEntityRoot(Entity entity) const
@@ -500,5 +520,10 @@ namespace Volt
 		}
 
 		return result;
+	}
+
+	Prefab::Prefab(Ref<Scene> prefabScene, entt::entity rootEntityId, uint32_t version)
+		: m_prefabScene(prefabScene), m_rootEntityId(rootEntityId), m_version(version)
+	{
 	}
 }
