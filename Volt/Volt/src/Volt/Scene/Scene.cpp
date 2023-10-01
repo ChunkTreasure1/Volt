@@ -654,6 +654,7 @@ namespace Volt
 			}
 		}
 
+		newScene->InvalidateRenderScene();
 		return newScene;
 	}
 
