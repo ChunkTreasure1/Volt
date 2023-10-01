@@ -10,7 +10,6 @@
 #include <Volt/Events/MouseEvent.h>
 
 #include <glm/glm.hpp>
-#include <Wire/Entity.h>
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -20,7 +19,7 @@ struct GizmoEvent
 	//[0] = transform
 	//[1] = rotation
 	//[2] = scale
-	Wire::EntityId myEntityId;
+	entt::entity myEntityId;
 	std::array<glm::vec3, 3> myValue;
 };
 
@@ -95,7 +94,7 @@ private:
 
 	Volt::Entity m_createdEntity;
 
-	Wire::EntityId m_entityToAddMesh = Wire::NullID;
+	entt::entity m_entityToAddMesh = entt::null;
 	std::filesystem::path m_meshToImport;
 
 	Volt::AssetHandle m_sceneToOpen = Volt::Asset::Null();

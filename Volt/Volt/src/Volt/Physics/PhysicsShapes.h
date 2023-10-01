@@ -19,7 +19,7 @@ namespace Volt
 		void SetMaterial(Ref<PhysicsMaterial> material);
 
 		virtual const bool IsTrigger() const = 0;
-		virtual void SetTrigger(bool isTrigger) const = 0;
+		virtual void SetTrigger(bool isTrigger) = 0;
 
 		virtual const glm::vec3& GetOffset() const = 0;
 		virtual void SetOffset(const glm::vec3& offset) = 0;
@@ -51,7 +51,7 @@ namespace Volt
 		void SetHalfSize(const glm::vec3& halfSize);
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<BoxColliderComponent>().isTrigger; }
-		void SetTrigger(bool isTrigger) const override;
+		void SetTrigger(bool isTrigger) override;
 
 		inline const glm::vec3& GetOffset() const override { return myEntity.GetComponent<BoxColliderComponent>().offset; }
 		void SetOffset(const glm::vec3& offset) override;
@@ -76,7 +76,7 @@ namespace Volt
 		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<SphereColliderComponent>().isTrigger; }
-		void SetTrigger(bool isTrigger) const override;
+		void SetTrigger(bool isTrigger) override;
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
@@ -101,7 +101,7 @@ namespace Volt
 		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<CapsuleColliderComponent>().isTrigger; }
-		void SetTrigger(bool isTrigger) const override;
+		void SetTrigger(bool isTrigger) override;
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
@@ -120,7 +120,7 @@ namespace Volt
 		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<MeshColliderComponent>().isTrigger; }
-		void SetTrigger(bool isTrigger) const override;
+		void SetTrigger(bool isTrigger) override;
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;
@@ -140,7 +140,7 @@ namespace Volt
 		void SetOffset(const glm::vec3& offset) override;
 
 		inline const bool IsTrigger() const override { return myEntity.GetComponent<MeshColliderComponent>().isTrigger; }
-		void SetTrigger(bool isTrigger) const override;
+		void SetTrigger(bool isTrigger) override;
 
 		void SetFilterData(const physx::PxFilterData& filterData) override;
 		void DetachFromActor(physx::PxRigidActor* actor) override;

@@ -13,7 +13,7 @@ namespace Volt
 
 	struct RaycastHit
 	{
-		Wire::EntityId hitEntity;
+		entt::entity hitEntity;
 		glm::vec3 position;
 		glm::vec3 normal;
 		float distance;

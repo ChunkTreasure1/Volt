@@ -16,7 +16,7 @@
 #include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 #include <Volt/RenderingNew/SceneRendererNew.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 

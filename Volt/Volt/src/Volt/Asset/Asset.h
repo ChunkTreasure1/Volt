@@ -117,7 +117,7 @@ namespace Volt
 		{ ".vtncon", AssetType::NetContract },
 	};
 
-	inline static std::unordered_map<std::string, AssetType> s_assetNamesMap =
+	static std::unordered_map<std::string, AssetType> s_assetNamesMap =
 	{
 		{ "Mesh Source", AssetType::MeshSource },
 		{ "Mesh", AssetType::Mesh },
@@ -152,6 +152,22 @@ namespace Volt
 		{ "Net Contract", AssetType::NetContract }
 	};
 
+	inline static const std::unordered_map<std::string, AssetType>& GetAssetNames()
+	{
+		return s_assetNamesMap;
+	}
+
+	inline static std::string GetAssetTypeName(AssetType aType)
+	{
+		for (auto& [name, type] : s_assetNamesMap)
+		{
+			if (type == aType)
+				return name;
+		}
+
+		return "Unknown";
+	}
+
 	struct AssetMetadata
 	{
 		inline void SetValue(const std::string& key, const std::string& data)
@@ -182,17 +198,6 @@ namespace Volt
 		std::vector<AssetHandle> dependencies;
 		std::unordered_map<std::string, std::string> properties;
 	};
-  
-	inline static std::string GetAssetTypeName(AssetType aType)
-	{
-		for (auto& [name, type] : s_assetNamesMap)
-		{
-			if (type == aType)
-				return name;
-		}
-
-		return "Unknown";
-	}
 
 	class Asset
 	{

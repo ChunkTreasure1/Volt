@@ -1,0 +1,152 @@
+Prefab:
+  version: 1
+  rootEntityId: 2097152
+  Entities:
+    - Entity:
+        id: 1048586
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [303.147369, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cylinder
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 2097152
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 3182644094646103757
+              - name: prefabEntity
+                data: 1048586
+              - name: sceneRootEntity
+                data: 4294967295
+              - name: version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 2900881217054044389
+              - name: material
+                data: 0
+    - Entity:
+        id: 3
+        components:
+          - guid: [5524573352483143404, 11007889460122951339]
+            members:
+              - name: fieldOfView
+                data: 255
+              - name: nearPlane
+                data: 1
+              - name: farPlane
+                data: 100000
+              - name: priority
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [952.199524, 0, -728.397705]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Camera
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 2097152
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 3182644094646103757
+              - name: prefabEntity
+                data: 3
+              - name: sceneRootEntity
+                data: 4294967295
+              - name: version
+                data: 0
+    - Entity:
+        id: 2097152
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [2244.06543, 0, 606.14563]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cube
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  - data: 3
+                  - data: 1048586
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 3182644094646103757
+              - name: prefabEntity
+                data: 2097152
+              - name: sceneRootEntity
+                data: 4294967295
+              - name: version
+                data: 0
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 10149696181569838305
+              - name: material
+                data: 0
+  PrefabReferences:
+    []

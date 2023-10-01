@@ -64,7 +64,8 @@ public:
 	inline static Sandbox& Get() { return *myInstance; }
 
 	Ref<Volt::SceneRendererNew>& GetSceneRenderer() { return mySceneRenderer; }
-
+	inline const SceneState GetSceneState() const { return mySceneState; }
+	
 	void NewScene();
 	void OpenScene();
 	void OpenScene(const std::filesystem::path& path);

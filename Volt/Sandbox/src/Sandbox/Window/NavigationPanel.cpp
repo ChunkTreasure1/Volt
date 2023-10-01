@@ -109,59 +109,53 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 	std::vector<Ref<Volt::Mesh>> srcMeshes;
 	std::vector<glm::mat4> srcTransforms;
 
-	auto entitiesWithNavMesh = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent>();
+	const bool navMeshComponentsExist = myScene->GetRegistry().view<Volt::NavMeshComponent>().empty();
 
-	if (!entitiesWithNavMesh.empty())
+	if (navMeshComponentsExist)
 	{
-		auto entitiesWithBoxCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::BoxColliderComponent>();
-		auto entitiesWithCapsuleCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::CapsuleColliderComponent>();
-		auto entitiesWithSphereCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::SphereColliderComponent>();
-		auto entitiesWithMeshCollider = myScene->GetRegistry().GetComponentView<Volt::NavMeshComponent, Volt::MeshColliderComponent>();
+		//myScene->ForEachWithComponents<const Volt::NavMeshComponent, const Volt::BoxColliderComponent>([&](const entt::entity id, const Volt::NavMeshComponent&, const Volt::BoxColliderComponent& collider) 
+		//{
+		//	Volt::Entity entity = { id, myScene };
+		//	auto transform = entity.GetTransform();
 
-		for (auto ent : entitiesWithBoxCollider)
-		{
-			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
-			auto& collider = myScene->GetRegistry().GetComponent<Volt::BoxColliderComponent>(ent);
+		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
+		//	srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f));
+		//});
 
-			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
-			srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), collider.halfSize * 2.f * 0.01f));
-		}
+		//myScene->ForEachWithComponents<const Volt::NavMeshComponent, const Volt::CapsuleColliderComponent>([&](const entt::entity id, const Volt::NavMeshComponent&, const Volt::CapsuleColliderComponent& collider)
+		//{
+		//	Volt::Entity entity = { id, myScene };
+		//	auto transform = entity.GetTransform();
 
-		for (auto ent : entitiesWithCapsuleCollider)
-		{
-			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
-			auto& collider = myScene->GetRegistry().GetComponent<Volt::CapsuleColliderComponent>(ent);
+		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
+		//	srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f }));
+		//});
 
-			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
-			srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f, collider.height * 0.01f, collider.radius * 2.f * 0.01f }));
-		}
+		//myScene->ForEachWithComponents<const Volt::NavMeshComponent, const Volt::SphereColliderComponent>([&](const entt::entity id, const Volt::NavMeshComponent&, const Volt::SphereColliderComponent& collider)
+		//{
+		//	Volt::Entity entity = { id, myScene };
+		//	auto transform = entity.GetTransform();
+		//
+		//	srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
+		//	srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f }));
+		//});
 
-		for (auto ent : entitiesWithSphereCollider)
-		{
-			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
-			auto& collider = myScene->GetRegistry().GetComponent<Volt::SphereColliderComponent>(ent);
+		//myScene->ForEachWithComponents<const Volt::NavMeshComponent, const Volt::CapsuleColliderComponent>([&](const entt::entity id, const Volt::NavMeshComponent&, const Volt::MeshColliderComponent& collider)
+		//{
+		//	Volt::Entity entity = { id, myScene };
+		//	auto transform = entity.GetTransform();
 
-			srcMeshes.emplace_back(Volt::AssetManager::GetAsset<Volt::Mesh>("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
-			srcTransforms.emplace_back(transform * glm::translate(glm::mat4(1.f), collider.offset) * glm::scale(glm::mat4(1.f), { collider.radius * 2.f * 0.01f }));
-		}
+		//	Ref<Volt::Mesh> mesh;
+		//	mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(collider.colliderMesh);
 
-		for (auto ent : entitiesWithMeshCollider)
-		{
-			auto transform = myScene->GetWorldSpaceTransform(Volt::Entity(ent, myScene.get()));
+		//	if (!mesh)
+		//	{
+		//		return;
+		//	}
 
-			Ref<Volt::Mesh> mesh;
-			auto& collider = myScene->GetRegistry().GetComponent<Volt::MeshColliderComponent>(ent);
-			mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(collider.colliderMesh);
-
-			if (!mesh)
-			{
-				continue;
-			}
-
-			srcMeshes.emplace_back(mesh);
-			srcTransforms.emplace_back(transform);
-
-		}
+		//	srcMeshes.emplace_back(mesh);
+		//	srcTransforms.emplace_back(transform);
+		//});
 
 		if (!srcMeshes.empty())
 		{
@@ -175,21 +169,19 @@ Ref<Volt::Mesh> NavigationPanel::CompileWorldMeshes()
 void NavigationPanel::CompileNavLinks()
 {
 	myBuilder.ClearNavLinkConnections();
-	auto entitiesWithNavLink = myScene->GetRegistry().GetComponentView<Volt::NavLinkComponent>();
 
-	for (auto ent : entitiesWithNavLink)
+	myScene->ForEachWithComponents<const Volt::NavLinkComponent>([&](const entt::entity id, const Volt::NavLinkComponent& comp) 
 	{
+		Volt::Entity entity = { id, myScene };
 		Volt::AI::NavLinkConnection link;
-		auto& transformComp = myScene->GetRegistry().GetComponent<Volt::TransformComponent>(ent);
-		auto& linkComp = myScene->GetRegistry().GetComponent<Volt::NavLinkComponent>(ent);
 
-		link.start = transformComp.position + linkComp.start;
-		link.end = transformComp.position + linkComp.end;
-		link.bidirectional = linkComp.bidirectional;
-		link.active = linkComp.active;
+		link.start = entity.GetPosition() + comp.start;
+		link.end = entity.GetPosition() + comp.end;
+		link.bidirectional = comp.bidirectional;
+		link.active = comp.active;
 
 		myBuilder.AddNavLinkConnection(link);
-	}
+	});
 }
 
 void NavigationPanel::SetDefaultAgentSettings()

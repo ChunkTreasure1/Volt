@@ -7,12 +7,12 @@
 #include <Volt/Core/Base.h>
 #include <Volt/Events/Event.h>
 
-#include <Wire/Entity.h>
-
 #include <any>
 #include <vector>
 #include <string>
 #include <functional>
+
+#include <entt.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -67,7 +67,7 @@ namespace GraphKey
 
 		virtual void Serialize(YAML::Emitter&) {}
 		virtual void Deserialize(const YAML::Node&) {}
-		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Wire::EntityId entity = 0);
+		virtual Ref<Node> CreateCopy(Graph* ownerGraph, entt::entity entity = entt::null);
 
 		virtual const std::string GetName() = 0;
 		virtual const glm::vec4 GetColor() = 0;
@@ -96,7 +96,7 @@ namespace GraphKey
 		void SetOutputData(uint32_t index, const T& data);
 
 		Volt::UUID id{};
-		Wire::EntityId nodeEntity = 0;
+		entt::entity nodeEntity = entt::null;
 
 		std::vector<Attribute> inputs;
 		std::vector<Attribute> outputs;

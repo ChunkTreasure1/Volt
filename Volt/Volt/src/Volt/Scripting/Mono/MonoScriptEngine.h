@@ -2,7 +2,6 @@
 
 #include "Volt/Scripting/Mono/MonoScriptUtils.h"
 
-#include <Wire/Entity.h>
 #include <Volt/Core/UUID.h>
 
 extern "C"
@@ -49,8 +48,8 @@ namespace Volt
 
 		static bool EntityClassExists(const std::string& fullClassName);
 
-		static void OnAwakeInstance(UUID instanceId, Wire::EntityId entity, const std::string& fullClassName);
-		static void OnCreateInstance(UUID instanceId, Wire::EntityId entity, const std::string& fullClassName);
+		static void OnAwakeInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName);
+		static void OnCreateInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName);
 		static void OnUpdateInstance(UUID instanceId, float deltaTime);
 		static void OnRenderUIInstance(UUID instanceId);
 		static void OnDestroyInstance(UUID instanceId);
@@ -80,12 +79,12 @@ namespace Volt
 		static const Ref<MonoScriptClass> GetScriptClass(const std::string& name);
 
 		static Ref<MonoScriptInstance> GetInstanceFromId(UUID instanceId);
-		static Ref<MonoScriptEntity> GetEntityFromId(Wire::EntityId entityId);
-		static Ref<MonoScriptEntity> GetOrCreateMonoEntity(Wire::EntityId entity);
+		static Ref<MonoScriptEntity> GetEntityFromId(entt::entity entityId);
+		static Ref<MonoScriptEntity> GetOrCreateMonoEntity(entt::entity entity);
 
 		static MonoScriptFieldMap& GetDefaultScriptFieldMap(std::string fullClassName);
 
-		static void SetScriptFieldDefaultData(UUID instanceId, Wire::EntityId entity, const std::string& fullClassName);
+		static void SetScriptFieldDefaultData(UUID instanceId, entt::entity entity, const std::string& fullClassName);
 
 		static void CallMethod(GCHandle instanceHandle, MonoMethod* method, void** args = nullptr);
 		static void CallStaticMethod(MonoMethod* method, void** args = nullptr);

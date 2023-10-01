@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Sandbox/Window/EditorWindow.h"
-
-#include <Volt/Components/Components.h>
-#include <Volt/Scene/Entity.h>
-#include <Volt/Scene/Scene.h>
-#include <vector>
-#include <variant>
 #include "Sandbox/EditorCommand.h"
 #include "Sandbox/Sandbox.h"
+
+#include <Volt/Scene/Entity.h>
+#include <Volt/Scene/Scene.h>
+
+#include <vector>
+#include <variant>
 
 enum class PropertyEventType
 {
@@ -19,7 +19,7 @@ enum class PropertyEventType
 
 struct PropertyEvent
 {
-	Wire::EntityId myEntityId;
+	entt::entity myEntityId;
 	PropertyEventType myType;
 	std::variant<glm::vec3> myValue;
 };
@@ -39,10 +39,6 @@ private:
 	void AddComponentPopup();
 	void AddMonoScriptPopup();
 	void AcceptMonoDragDrop();
-
-	void DrawMonoScript(Volt::MonoScriptEntry& scriptEntry, const Wire::EntityId& entity, Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo);
-	void DrawMonoProperties(Wire::Registry& registry, const Wire::ComponentRegistry::RegistrationInfo& registryInfo, Volt::MonoScriptEntry& scriptEntry);
-	void DrawGraphKeyProperties(const Wire::EntityId id, Volt::VisualScriptingComponent& comp);
 
 	Ref<Volt::Scene>& myCurrentScene;
 	Ref<Volt::SceneRendererNew>& myCurrentSceneRenderer;

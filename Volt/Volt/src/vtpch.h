@@ -4,6 +4,7 @@
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <stack>
 
 #include <string>
 
@@ -14,10 +15,13 @@
 
 #include <functional>
 #include <algorithm>
+#include <execution>
 #include <filesystem>
 
 #include <future>
 #include <utility>
+
+#include <ranges>
 
 #include <glm/glm.hpp>
 

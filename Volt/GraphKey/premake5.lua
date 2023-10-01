@@ -30,6 +30,11 @@ project "GraphKey"
 		"/ignore:4099"
 	}
 
+	buildoptions 
+	{
+		"/bigobj"
+	}
+
 	files
 	{
 		"src/**.h",
@@ -48,7 +53,6 @@ project "GraphKey"
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.Wire}",
 
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.fmod}",
@@ -60,6 +64,7 @@ project "GraphKey"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.half}",
+		"%{IncludeDir.entt}",
 	}
 
 	defines

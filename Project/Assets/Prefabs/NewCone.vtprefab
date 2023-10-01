@@ -1,0 +1,100 @@
+Prefab:
+  version: 25
+  rootEntityId: 1048588
+  Entities:
+    - Entity:
+        id: 1048588
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [265.700531, 0, 612.239868]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cone
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  - data: 1048580
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 10242065537839545921
+              - name: material
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 14485418990224975532
+              - name: prefabEntity
+                data: 1048588
+              - name: sceneRootEntity
+                data: 4294967295
+              - name: version
+                data: 0
+    - Entity:
+        id: 1048580
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [262.265839, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cylinder
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 1048588
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 2900881217054044389
+              - name: material
+                data: 0
+          - guid: [5521397521163238095, 15170572550557146765]
+            members:
+              - name: prefabAsset
+                data: 14485418990224975532
+              - name: prefabEntity
+                data: 1048580
+              - name: sceneRootEntity
+                data: 4294967295
+              - name: version
+                data: 0
+  PrefabReferences:
+    []

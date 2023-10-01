@@ -23,7 +23,7 @@
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 
 #include <Volt/Utility/UIUtility.h>

@@ -63,7 +63,6 @@ project "Navigation"
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.Wire}",
 
 		"%{IncludeDir.PhysX}",
 
@@ -83,6 +82,7 @@ project "Navigation"
 		"%{IncludeDir.fastlz}",
 
 		"%{IncludeDir.half}",
+		"%{IncludeDir.entt}",
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",

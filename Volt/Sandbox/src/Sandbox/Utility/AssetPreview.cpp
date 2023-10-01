@@ -5,7 +5,7 @@
 #include <Volt/Scene/Scene.h>
 
 #include <Volt/Components/LightComponents.h>
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
 #include <Volt/Asset/AssetManager.h>
 
 #include <Volt/RenderingNew/SceneRendererNew.h>

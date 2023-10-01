@@ -1,6 +1,7 @@
 #pragma once
 #include "Volt/Asset/TimelinePreset.h"
 
+#include <entt.hpp>
 
 namespace Volt
 {
@@ -9,7 +10,7 @@ namespace Volt
 
 	struct StartValue
 	{
-		Wire::EntityId entID;
+		entt::entity entID;
 
 		glm::vec3 Position = glm::vec3(0);
 		glm::quat Rotation = glm::quat();

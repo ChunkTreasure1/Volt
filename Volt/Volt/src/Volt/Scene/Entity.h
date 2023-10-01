@@ -1,33 +1,37 @@
 #pragma once
+
+#include "Volt/Core/Base.h"
 #include "Volt/Scene/Scene.h"
-
-#include <Wire/Entity.h>
-#include <Wire/WireGUID.h>
-
-#include <unordered_map>
 
 namespace Volt
 {
+	class IComponentTypeDesc;
 	class PhysicsActor;
-	class MonoScriptFieldCache;
+
+	template<class T>
+	concept EntityId = std::is_same<T, uint32_t>::value || std::is_same<T, entt::entity>::value;
 
 	class Entity
 	{
 	public:
 		Entity();
-		Entity(Wire::EntityId id, Scene* scene);
+
+		template<EntityId T>
+		Entity(T id, Weak<Scene> scene);
+
+		template<EntityId T>
+		Entity(T id, Scene* scene);
+
 		Entity(const Entity& entity);
 
 		~Entity();
 
-		template<typename T>
-		T& GetComponent();
+		Ref<Scene> GetScene() const { return m_scene.lock(); }
 
-		template<typename T>
-		T& GetComponent() const;
+		const std::string& GetTag() const;
+		const std::string ToString() const;
 
-		const std::string GetTag();
-		void SetTag(const std::string& tag);
+		const uint32_t GetLayerID() const;
 
 		const glm::mat4 GetTransform() const;
 		const glm::mat4 GetLocalTransform() const;
@@ -40,32 +44,15 @@ namespace Volt
 		const glm::vec3 GetLocalRight() const;
 		const glm::vec3 GetLocalUp() const;
 
-		const glm::vec3 GetLocalPosition() const;
-		const glm::quat GetLocalRotation() const;
-		const glm::vec3 GetLocalScale() const;
-
 		const glm::vec3 GetPosition() const;
 		const glm::quat GetRotation() const;
 		const glm::vec3 GetScale() const;
 
-		const bool IsVisible() const;
-		void SetVisible(bool state);
-		void SetLocked(bool state);
+		const glm::vec3& GetLocalPosition() const;
+		const glm::quat& GetLocalRotation() const;
+		const glm::vec3& GetLocalScale() const;
 
-		const uint32_t GetLayerId() const;
-
-		const std::vector<Volt::Entity> GetChilden() const;
-		const Volt::Entity GetParent();
-		
-		void ResetParent();
-		void ResetChildren();
-
-		void RemoveChild(Volt::Entity entity);
-
-		const Ref<PhysicsActor> GetPhysicsActor() const;
-
-		void UpdatePhysicsTranslation(bool updateThis);
-		void UpdatePhysicsRotation(bool updateThis);
+		void SetTag(std::string_view tag);
 
 		void SetPosition(const glm::vec3& position, bool updatePhysics = true);
 		void SetRotation(const glm::quat& rotation, bool updatePhysics = true);
@@ -75,83 +62,116 @@ namespace Volt
 		void SetLocalRotation(const glm::quat& rotation, bool updatePhysics = true);
 		void SetLocalScale(const glm::vec3& scale);
 
-		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args);
+		void SetParent(Entity parentEntity);
+		void AddChild(Entity childEntity);
 
-		template<typename T>
-		bool HasComponent() const;
+		void ClearParent();
+		void ClearChildren();
 
-		template<typename T>
-		void RemoveComponent();
+		void RemoveChild(Entity entity);
 
-		inline const Wire::EntityId GetId() const { return myId; }
-		inline bool IsNull() const
-		{
-			if (myId == Wire::NullID)
-			{
-				return true;
-			}
+		Ref<PhysicsActor> GetPhysicsActor() const;
 
-			if (!myScene || !myScene->GetRegistry().Exists(myId))
-			{
-				return true;
-			}
+		const Entity GetParent() const;
+		const std::vector<Entity> GetChildren() const;
+		const bool HasParent() const;
 
-			return false;
-		}
-		inline Scene* GetScene() const { return myScene; };
+		void SetVisible(bool state);
+		void SetLocked(bool state);
+
+		const bool IsVisible() const;
+		const bool IsLocked() const;
+
+		const bool IsValid() const;
+		inline const entt::entity GetID() const { return m_id; }
+		inline const uint32_t GetUIntID() const { return static_cast<uint32_t>(m_id); }
+
+		template<typename T> T& GetComponent();
+		template<typename T> const T& GetComponent() const;
+		template<typename T> const bool HasComponent() const;
+		template<typename T, typename... Args> T& AddComponent(Args&&... args);
+		template<typename T> void RemoveComponent();
+
+		const bool HasComponent(std::string_view componentName) const;
 
 		Entity& operator=(const Entity& entity);
 
-		inline bool operator==(const Entity& entity) const { return myId == entity.myId; }
-		inline bool operator!() const { return IsNull(); }
-		inline explicit operator bool() const { return !IsNull(); }
+		inline bool operator==(const Entity& entity) const { return m_id == entity.m_id; }
+		inline bool operator!() const { return !IsValid(); }
+		inline explicit operator bool() const { return IsValid(); }
+		inline explicit operator std::string() const { return ToString(); }
 
-		// Copies from one entity to another
-		static void Copy(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
+		static Entity Null();
 
-		// Duplicated an entire entity tree
-		static Wire::EntityId Duplicate(Wire::Registry& aRegistry, MonoScriptFieldCache& scriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
-		static Wire::EntityId Duplicate(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
+		// Copies a single entity
+		static void Copy(Entity srcEntity, Entity dstEntity, bool skipRelationships = true);
 
-		static Volt::Entity Null() { return { 0, nullptr }; }
+		// Duplicates an entire entity tree
+		static Entity Duplicate(Entity srcEntity, Ref<Scene> targetScene = nullptr, Entity parent = Entity::Null());
 
 	private:
-		static void CopyPhysicsComponents(const WireGUID& guid, Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, Wire::EntityId aSrcEntity, Wire::EntityId aTargetEntity);
-		static Wire::EntityId DuplicateInternal(Wire::Registry& aRegistry, MonoScriptFieldCache& scriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aParent, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
-		static Wire::EntityId DuplicateInternal(Wire::Registry& aSrcRegistry, Wire::Registry& aTargetRegistry, MonoScriptFieldCache& scrScriptFieldCache, MonoScriptFieldCache& targetScriptFieldCache, Wire::EntityId aSrcEntity, Wire::EntityId aParent, Wire::EntityId aTargetEntity = Wire::NullID, std::vector<WireGUID> aExcludedComponents = std::vector<WireGUID>(), bool shouldReset = false);
+		static void CopyComponent(const uint8_t* srcData, uint8_t* dstData, const size_t offset, const IComponentTypeDesc* compDesc);
+		static void CopyMonoScripts(Entity srcEntity, Entity dstEntity);
 
-		Scene* myScene = nullptr;
-		Wire::EntityId myId = Wire::NullID;
+		void UpdatePhysicsTranslation(bool updateThis);
+		void UpdatePhysicsRotation(bool updateThis);
+
+		Weak<Scene> m_scene;
+		entt::entity m_id = entt::null;
 	};
+
+	template<EntityId T>
+	inline Entity::Entity(T id, Weak<Scene> scene)
+		: m_id(static_cast<entt::entity>(id)), m_scene(scene)
+	{
+	}
+
+	template<EntityId T>
+	inline Entity::Entity(T id, Scene* scene)
+		: m_id(static_cast<entt::entity>(id))
+	{
+		m_scene = scene->shared_from_this();
+	}
 
 	template<typename T>
 	inline T& Entity::GetComponent()
 	{
-		return myScene->myRegistry.GetComponent<T>(myId);
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetRegistry();
+		return registry.get<T>(m_id);
 	}
 
 	template<typename T>
-	inline T& Entity::GetComponent() const
+	inline const T& Entity::GetComponent() const
 	{
-		return myScene->myRegistry.GetComponent<T>(myId);
-	}
-
-	template<typename T, typename... Args>
-	inline T& Entity::AddComponent(Args&&... args)
-	{
-		return myScene->myRegistry.AddComponent<T>(myId, std::forward<Args>(args)...);
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetRegistry();
+		return registry.get<T>(m_id);
 	}
 
 	template<typename T>
-	inline bool Entity::HasComponent() const
+	inline const bool Entity::HasComponent() const
 	{
-		return myScene->myRegistry.HasComponent<T>(myId);
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetRegistry();
+		return registry.any_of<T>(m_id);
+	}
+
+	template<typename T, typename ...Args>
+	inline T& Entity::AddComponent(Args && ...args)
+	{
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetRegistry();
+		return registry.emplace<T>(m_id);
 	}
 
 	template<typename T>
 	inline void Entity::RemoveComponent()
 	{
-		myScene->myRegistry.RemoveComponent<T>(myId);
+		auto scenePtr = GetScene();
+		auto& registry = scenePtr->GetRegistry();
+		registry.remove<T>(m_id);
 	}
+
+
 }

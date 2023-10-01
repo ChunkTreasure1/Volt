@@ -4,8 +4,10 @@
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Core/Application.h"
 
-#include "Volt/Components/Components.h"
 #include "Volt/Scene/Entity.h"
+
+#include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/PhysicsComponents.h"
 
 #include "Volt/Physics/PhysicsMaterial.h"
 #include "Volt/Physics/PhysXInternal.h"
@@ -58,7 +60,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		component.added = true;
@@ -85,7 +87,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const glm::vec3 colliderSize = transform.scale * halfSize;
@@ -95,7 +97,7 @@ namespace Volt
 		myEntity.GetComponent<BoxColliderComponent>().halfSize = halfSize;
 	}
 
-	void BoxColliderShape::SetTrigger(bool isTrigger) const
+	void BoxColliderShape::SetTrigger(bool isTrigger)
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
@@ -135,7 +137,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
@@ -161,7 +163,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const float maxScale = glm::max(transform.scale.x, glm::max(transform.scale.y, transform.scale.z));
@@ -178,7 +180,7 @@ namespace Volt
 		myEntity.GetComponent<SphereColliderComponent>().offset = offset;
 	}
 
-	void SphereColliderShape::SetTrigger(bool isTrigger) const
+	void SphereColliderShape::SetTrigger(bool isTrigger)
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
@@ -212,7 +214,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
@@ -241,7 +243,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const float heightScale = transform.scale.y;
@@ -261,7 +263,7 @@ namespace Volt
 
 		if (myEntity.HasComponent<TransformComponent>())
 		{
-			transform = myEntity.GetScene()->GetWorldSpaceTRS(myEntity);
+			transform = myEntity.GetScene()->GetWorldTQS(myEntity);
 		}
 
 		const float radiusScale = glm::max(transform.scale.x, transform.scale.z);
@@ -281,7 +283,7 @@ namespace Volt
 		myEntity.GetComponent<CapsuleColliderComponent>().offset = offset;
 	}
 
-	void CapsuleColliderShape::SetTrigger(bool isTrigger) const
+	void CapsuleColliderShape::SetTrigger(bool isTrigger)
 	{
 		myShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		myShape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, !isTrigger);
@@ -316,7 +318,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Convex";
@@ -392,7 +394,7 @@ namespace Volt
 	{
 	}
 
-	void ConvexMeshShape::SetTrigger(bool) const
+	void ConvexMeshShape::SetTrigger(bool)
 	{
 	}
 
@@ -428,7 +430,7 @@ namespace Volt
 
 		if (entity.HasComponent<TransformComponent>())
 		{
-			transform = entity.GetScene()->GetWorldSpaceTRS(entity);
+			transform = entity.GetScene()->GetWorldTQS(entity);
 		}
 
 		const std::string colliderName = AssetManager::Get().GetFilePathFromAssetHandle(component.colliderMesh).stem().string() + std::to_string(component.colliderMesh) + "Triangle";
@@ -511,7 +513,7 @@ namespace Volt
 	{
 	}
 
-	void TriangleMeshShape::SetTrigger(bool) const
+	void TriangleMeshShape::SetTrigger(bool)
 	{
 	}
 

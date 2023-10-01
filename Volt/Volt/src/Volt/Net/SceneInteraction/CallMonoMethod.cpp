@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "CallMonoMethod.h"
 
-#include "Volt/Components/Components.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
@@ -34,7 +34,7 @@ std::vector<void*> Volt::GetMonoArguments(const std::vector<uint8_t>& in_data)
 bool Volt::CallMonoMethod(const Entity& in_entity, const std::string& in_method, const std::vector<uint8_t>& in_data)
 {
 	if (in_method == "") return false;
-	auto monoElements = Utils::SplitStringsByCharacter(in_method, '.');
+	auto monoElements = ::Utility::SplitStringsByCharacter(in_method, '.');
 	if (monoElements.size() != 3)
 	{
 		VT_CORE_ERROR("Incorrect method format in CallMonoMethod");

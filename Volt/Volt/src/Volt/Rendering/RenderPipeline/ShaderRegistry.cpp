@@ -25,7 +25,7 @@ namespace Volt
 
 	void ShaderRegistry::Register(const std::string& name, Ref<Shader> shader)
 	{
-		std::string lowName = Utils::ToLower(name);
+		std::string lowName = ::Utility::ToLower(name);
 		if (myShaderRegistry.contains(lowName))
 		{
 			VT_CORE_ERROR("Shader with that name has already been registered!");
@@ -49,7 +49,7 @@ namespace Volt
 
 	void ShaderRegistry::Unregister(const std::string& name)
 	{
-		std::string lowName = Utils::ToLower(name);
+		std::string lowName = ::Utility::ToLower(name);
 		if (!myShaderRegistry.contains(lowName))
 		{
 			VT_CORE_ERROR("Shader with that name has not been registered!");
@@ -61,13 +61,13 @@ namespace Volt
 
 	bool ShaderRegistry::IsShaderRegistered(const std::string& name)
 	{
-		std::string lowName = Utils::ToLower(name);
+		std::string lowName = ::Utility::ToLower(name);
 		return myShaderRegistry.contains(lowName);
 	}
 
 	Ref<Shader> ShaderRegistry::GetShader(const std::string& name)
 	{
-		std::string lowName = Utils::ToLower(name);
+		std::string lowName = ::Utility::ToLower(name);
 		if (!myShaderRegistry.contains(lowName))
 		{
 			VT_CORE_ERROR("Unable to find shader {0}!", name.c_str());

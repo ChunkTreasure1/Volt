@@ -1,13 +1,15 @@
 #pragma once
-#include <stdint.h>
+
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
+
 #include <Nexus/Utility/Types.h>
-#include <Wire/Serialization.h>
 #include <stdint.h>
 
 namespace Volt
 {
 	// Needs to match c#
-	SERIALIZE_ENUM((enum class eNetEvent : uint8_t
+	enum class eNetEvent : uint8_t
 	{
 		NIL,
 		Hit,
@@ -16,7 +18,22 @@ namespace Volt
 		OnDestruction,
 		Animation,
 		Interact
-	}), eNetEvent);
+	};
+
+	static void ReflectType(TypeDesc<eNetEvent>& reflect)
+	{
+		reflect.SetGUID("{C8146C2E-F4E3-47DB-B3EF-AADD4F96B4C8}"_guid);
+		reflect.SetLabel("Net Event");
+		reflect.AddConstant(eNetEvent::NIL, "nil", "NIL");
+		reflect.AddConstant(eNetEvent::Hit, "hit", "Hit");
+		reflect.AddConstant(eNetEvent::Death, "death", "Death");
+		reflect.AddConstant(eNetEvent::OnCreation, "onCreation", "On Creation");
+		reflect.AddConstant(eNetEvent::OnDestruction, "onDestruction", "On Destruction");
+		reflect.AddConstant(eNetEvent::Animation, "animation", "Animation");
+		reflect.AddConstant(eNetEvent::Interact, "interact", "Interact");
+	}
+
+	REGISTER_ENUM(eNetEvent);
 
 	class NetEvent
 	{

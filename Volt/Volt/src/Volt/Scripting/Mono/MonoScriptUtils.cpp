@@ -170,7 +170,7 @@ namespace Volt
 		return array;
 	}
 
-	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<Wire::EntityId>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<entt::entity>& vector)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
 		std::vector<MonoObject*> monoVector;

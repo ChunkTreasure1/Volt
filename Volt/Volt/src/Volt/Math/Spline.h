@@ -4,7 +4,6 @@
 #include <vector>
 #include <Volt/Scene/Scene.h>
 #include "Volt/Scene/Entity.h"
-#include "Volt/Components/Components.h"
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 
