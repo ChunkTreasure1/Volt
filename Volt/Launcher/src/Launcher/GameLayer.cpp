@@ -2,7 +2,6 @@
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/SceneManager.h>
-#include <Volt/Core/Graphics/SwapchainVolt.h>
 
 #include <Volt/Events/SettingsEvent.h>
 

@@ -54,7 +54,7 @@ namespace Volt
 		{
 			auto ptr = m_registry.Get(repId);
 			auto repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
-			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
+			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene());
 			if (!entity.IsValid()) continue;
 			if (repEntity.GetOwner() != m_id) continue;
 
@@ -249,7 +249,7 @@ namespace Volt
 			return;
 		}
 
-		auto sceneEnt = Entity(netEnt->GetEntityId(), SceneManager::GetActiveScene().lock().get());
+		auto sceneEnt = Entity(netEnt->GetEntityId(), SceneManager::GetActiveScene());
 		if (!sceneEnt.IsValid())
 		{
 			VT_CORE_ERROR("scene entity is null in client RPC call");
@@ -268,7 +268,7 @@ namespace Volt
 			VT_CORE_ERROR("missing monoscriptComponent in client RPC call");
 			return;
 		}
-		auto scriptsVector = Entity(sceneEnt.GetID(), SceneManager::GetActiveScene().lock().get()).GetComponent<MonoScriptComponent>().scriptIds;
+		auto scriptsVector = Entity(sceneEnt.GetID(), SceneManager::GetActiveScene()).GetComponent<MonoScriptComponent>().scriptIds;
 		Ref<MonoScriptInstance> scrInstance = nullptr;
 		for (auto scrID : scriptsVector)
 		{

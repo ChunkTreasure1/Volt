@@ -157,7 +157,6 @@ struct MultiGizmoCommand : EditorCommand
 			return;
 		}
 
-		auto scenePtr = myScene.lock();
 		std::vector<std::pair<entt::entity, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
@@ -182,7 +181,6 @@ struct MultiGizmoCommand : EditorCommand
 			return;
 		}
 
-		auto scenePtr = myScene.lock();
 		std::vector<std::pair<entt::entity, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)

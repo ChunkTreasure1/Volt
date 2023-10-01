@@ -6,8 +6,6 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetBrowserPanel.h"
 
-#include <Volt/Core/Graphics/GraphicsContextVolt.h>
-#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
 #include <Volt/Rendering/Renderer.h>
 
 #include <Volt/Project/ProjectManager.h>

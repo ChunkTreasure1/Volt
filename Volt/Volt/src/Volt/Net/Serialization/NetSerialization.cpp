@@ -91,7 +91,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 			auto netEnt = reinterpret_pointer_cast<Volt::RepEntity>(in_registry.Get(in_data->repId));
 			if (!netEnt) { *out_error = Volt::eNetErrorCode::MISSING_NET_ENTITY; return false; }
 
-			auto sceneEnt = Volt::Entity(netEnt->GetEntityId(), Volt::SceneManager::GetActiveScene().lock().get());
+			auto sceneEnt = Volt::Entity(netEnt->GetEntityId(), Volt::SceneManager::GetActiveScene());
 			if (!sceneEnt.IsValid()) { *out_error = Volt::eNetErrorCode::MISSING_SCENE_ENTITY; return false; }
 
 			if (sceneEnt.HasComponent<Volt::TransformComponent>())
@@ -454,7 +454,7 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepRPCData& rpcData)
 void HandleScript(entt::entity in_id, const std::string& id, bool in_keep)
 {
 	if (in_keep) return;
-	auto ent = Volt::Entity(in_id, Volt::SceneManager::GetActiveScene().lock().get());
+	auto ent = Volt::Entity(in_id, Volt::SceneManager::GetActiveScene());
 	auto& scriptComp = ent.GetComponent<Volt::MonoScriptComponent>();
 
 	for (uint32_t i = 0; i < scriptComp.scriptIds.size(); ++i)
@@ -475,7 +475,7 @@ void HandleComponent(entt::entity in_id, const std::string& in_comp, bool in_kee
 
 	auto scenePtr = Volt::SceneManager::GetActiveScene();
 
-	auto ent = Volt::Entity(in_id, scenePtr.get());
+	auto ent = Volt::Entity(in_id, scenePtr);
 	//scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
 }
 

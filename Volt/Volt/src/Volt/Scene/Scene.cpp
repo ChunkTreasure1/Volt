@@ -57,6 +57,7 @@ namespace Volt
 		: m_name(name), m_animationSystem(this)
 	{
 		m_visionSystem = CreateRef<Vision>(this);
+		m_renderScene = CreateRef<RenderScene>(this);
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
@@ -66,6 +67,7 @@ namespace Volt
 		: m_animationSystem(this)
 	{
 		m_visionSystem = CreateRef<Vision>(this);
+		m_renderScene = CreateRef<RenderScene>(this);
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
@@ -1196,10 +1198,10 @@ namespace Volt
 
 	void Scene::InvalidateRenderScene()
 	{
-		const auto& meshView = myRegistry.GetSingleComponentView<MeshComponent>();
+		const auto& meshView = m_registry.view<MeshComponent>();
 		for (const auto& id : meshView)
 		{
-			auto& meshComp = myRegistry.GetComponent<MeshComponent>(id);
+			auto& meshComp = m_registry.get<MeshComponent>(id);
 
 			for (const auto& uuid : meshComp.renderObjectIds)
 			{

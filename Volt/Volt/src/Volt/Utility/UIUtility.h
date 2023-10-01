@@ -13,7 +13,6 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Components/CoreComponents.h"
-#include "Volt/ImGui/ImGuiImplementation.h"
 
 #include <glm/glm.hpp>
 

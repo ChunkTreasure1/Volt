@@ -24,7 +24,7 @@ namespace Volt
 		void SetValid();
 		void Invalidate();
 
-		const UUID Register(Wire::EntityId entityId, Ref<Mesh> mesh, uint32_t subMeshIndex);
+		const UUID Register(entt::entity entityId, Ref<Mesh> mesh, uint32_t subMeshIndex);
 		void Unregister(UUID id);
 
 		inline const bool IsInvalid() const { return m_isInvalid; }

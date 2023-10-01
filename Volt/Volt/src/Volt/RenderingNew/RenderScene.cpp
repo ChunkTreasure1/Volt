@@ -12,7 +12,7 @@ namespace Volt
 	{
 
 	}
-	
+
 	void RenderScene::PrepareForUpdate()
 	{
 		std::sort(std::execution::par, m_renderObjects.begin(), m_renderObjects.end(), [](const auto& lhs, const auto& rhs)
@@ -55,7 +55,7 @@ namespace Volt
 				m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
 				AddMeshToViews(m_renderObjects[i].mesh);
-			
+
 			}
 			else
 			{
@@ -63,7 +63,7 @@ namespace Volt
 				{
 					m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 					m_individualMeshes.push_back(m_renderObjects[i].mesh);
-			
+
 					AddMeshToViews(m_renderObjects[i].mesh);
 				}
 			}
@@ -80,7 +80,7 @@ namespace Volt
 		m_isInvalid = true;
 	}
 
-	const UUID RenderScene::Register(Wire::EntityId entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
+	const UUID RenderScene::Register(entt::entity entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
 	{
 		m_isInvalid = true;
 
@@ -98,8 +98,8 @@ namespace Volt
 	void RenderScene::Unregister(UUID id)
 	{
 		m_isInvalid = false;
-	
-		auto it = std::find_if(m_renderObjects.begin(), m_renderObjects.end(), [id](const auto& obj) 
+
+		auto it = std::find_if(m_renderObjects.begin(), m_renderObjects.end(), [id](const auto& obj)
 		{
 			return obj.id == id;
 		});

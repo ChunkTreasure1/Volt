@@ -26,7 +26,7 @@ namespace Volt
 
 		~Entity();
 
-		Ref<Scene> GetScene() const { return m_scene.lock(); }
+		Ref<Scene> GetScene() const { return m_scene; }
 
 		const std::string& GetTag() const;
 		const std::string ToString() const;

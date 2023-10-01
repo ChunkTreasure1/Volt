@@ -11,8 +11,6 @@
 #include "Sandbox/UserSettingsManager.h"
 
 #include <Volt/Core/Application.h>
-#include <Volt/Core/Graphics/GraphicsContextVolt.h>
-#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
 
 #include <Volt/Asset/AssetManager.h>
 

@@ -18,6 +18,8 @@
 #include <Volt/Components/PhysicsComponents.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
+#include <Volt/Rendering/Camera/Camera.h>
+
 #include <Volt/RenderingNew/SceneRendererNew.h>
 
 #include <NavigationEditor/Tools/NavMeshDebugDrawer.h>
@@ -43,7 +45,7 @@ void Sandbox::RenderSelection(Ref<Volt::Camera> camera)
 			continue;
 		}
 
-		auto& meshComp = registry.GetComponent<Volt::MeshComponent>(ent);
+		auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
 		auto mesh = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle());
 		if (!mesh || !mesh->IsValid())
 		{
@@ -65,8 +67,7 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 		return;
 	}
 
-	auto& registry = scene->GetRegistry();
-
+	//auto& registry = scene->GetRegistry();
 	//Sandbox::Get().GetSceneRenderer()->SetHideStaticMeshes(settings.colliderViewMode == ColliderViewMode::AllHideMesh || settings.navMeshViewMode == NavMeshViewMode::Only);
 
 	if (settings.showEntityGizmos)

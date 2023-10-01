@@ -3,9 +3,6 @@
 
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
-#include <Volt/Core/Graphics/GraphicsDeviceVolt.h>
-#include <Volt/Core/Graphics/GraphicsContextVolt.h>
-
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Asset/Mesh/Material.h>
 
@@ -108,7 +105,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 	}
 
 	myEntity.GetComponent<Volt::MeshComponent>().handle = assetItem->handle;
-	myEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = Volt::Asset::Null();
+	myEntity.GetComponent<Volt::MeshComponent>().material = Volt::Asset::Null();
 
 	const glm::vec3 rotation = { glm::radians(30.f), glm::radians(135.f), 0.f };
 	myCamera->SetRotation(rotation);

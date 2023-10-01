@@ -26,7 +26,8 @@
 #include "Volt/Math/Math.h"
 
 #include "Volt/Components/LightComponents.h"
-#include "Volt/Components/Components.h"
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/SamplerState.h>
@@ -312,13 +313,11 @@ namespace Volt
 
 	void SceneRendererNew::UpdateLightBuffers()
 	{
-		auto& registry = m_scene->GetRegistry();
-
 		// Directional Light
 		{
 			DirectionalLightData dirLightData{};
 
-			registry.ForEach<DirectionalLightComponent, TransformComponent>([&](Wire::EntityId id, const DirectionalLightComponent& lightComp, const TransformComponent& transComp)
+			m_scene->ForEachWithComponents<const DirectionalLightComponent, const TransformComponent>([&](const entt::entity id, const DirectionalLightComponent& lightComp, const TransformComponent& transComp)
 			{
 				if (!transComp.visible)
 				{

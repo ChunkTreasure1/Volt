@@ -2,7 +2,7 @@
 
 #include "Volt/Core/UUID.h"
 
-#include <Wire/Wire.h>
+#include <entt.hpp>
 
 namespace Volt
 {
@@ -11,7 +11,7 @@ namespace Volt
 	struct RenderObject
 	{
 		UUID id;
-		Wire::EntityId entity;
+		entt::entity entity;
 	
 		Ref<Mesh> mesh;
 		uint32_t subMeshIndex = 0;

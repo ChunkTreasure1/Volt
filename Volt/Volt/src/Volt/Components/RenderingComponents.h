@@ -17,6 +17,9 @@ namespace Volt
 		AssetHandle material = Asset::Null();
 
 		int32_t subMaterialIndex = -1;
+		std::vector<UUID> renderObjectIds;
+
+		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
 		static void ReflectType(TypeDesc<MeshComponent>& reflect)
 		{

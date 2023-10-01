@@ -174,7 +174,7 @@ namespace Volt
 
 		if (parent)
 		{
-			parentTransform = m_scene.lock()->GetWorldTQS(parent);
+			parentTransform = m_scene->GetWorldTQS(parent);
 		}
 
 		const glm::vec3 translatedPoint = position - parentTransform.position;
@@ -192,7 +192,7 @@ namespace Volt
 
 		if (parent)
 		{
-			parentTransform = m_scene.lock()->GetWorldTQS(parent);
+			parentTransform = m_scene->GetWorldTQS(parent);
 		}
 
 		const glm::quat localRotation = glm::conjugate(parentTransform.rotation) * rotation;
@@ -206,7 +206,7 @@ namespace Volt
 
 		if (parent)
 		{
-			parentTransform = m_scene.lock()->GetWorldTQS(parent);
+			parentTransform = m_scene->GetWorldTQS(parent);
 		}
 
 		const glm::vec3 inverseScale = 1.f / parentTransform.scale;
@@ -476,13 +476,12 @@ namespace Volt
 
 	const bool Entity::IsValid() const
 	{
-		if (m_scene.expired() || m_id == entt::null)
+		if (!m_scene || m_id == entt::null)
 		{
 			return false;
 		}
 
-		auto scenePtr = m_scene.lock();
-		return scenePtr->GetRegistry().valid(m_id);
+		return m_scene->GetRegistry().valid(m_id);
 	}
 
 	Entity& Entity::operator=(const Entity& entity)
@@ -665,7 +664,7 @@ namespace Volt
 
 	void Entity::UpdatePhysicsTranslation(bool updateThis)
 	{
-		if (updateThis && m_scene.lock()->IsPlaying() && (HasComponent<RigidbodyComponent>() || HasComponent<CharacterControllerComponent>()))
+		if (updateThis && m_scene->IsPlaying() && (HasComponent<RigidbodyComponent>() || HasComponent<CharacterControllerComponent>()))
 		{
 			auto actor = Physics::GetScene()->GetActor(*this);
 			if (actor)
@@ -683,7 +682,7 @@ namespace Volt
 
 	void Entity::UpdatePhysicsRotation(bool updateThis)
 	{
-		if (updateThis && m_scene.lock()->IsPlaying() && HasComponent<RigidbodyComponent>())
+		if (updateThis && m_scene->IsPlaying() && HasComponent<RigidbodyComponent>())
 		{
 			auto actor = Physics::GetScene()->GetActor(*this);
 			if (actor)

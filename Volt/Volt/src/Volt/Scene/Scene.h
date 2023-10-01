@@ -219,6 +219,7 @@ namespace Volt
 		MonoScriptFieldCache m_monoFieldCache;
 
 		Ref<Vision> m_visionSystem; // Needs to be of ptr type because of include loop
+		Ref<RenderScene> m_renderScene;
 	};
 
 	template<typename ...T>

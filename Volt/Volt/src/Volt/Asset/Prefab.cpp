@@ -30,10 +30,8 @@ namespace Volt
 			return Entity::Null();
 		}
 
-		auto targetScenePtr = targetScene.lock();
-
-		Entity newEntity = Entity::Duplicate(Entity{ m_rootEntityId, m_prefabScene }, targetScenePtr);
-		if (targetScenePtr->IsPlaying())
+		Entity newEntity = Entity::Duplicate(Entity{ m_rootEntityId, m_prefabScene }, targetScene);
+		if (targetScene->IsPlaying())
 		{
 			InitializeComponents(newEntity);
 		}
@@ -57,7 +55,7 @@ namespace Volt
 			}
 		}
 
-		targetScenePtr->InvalidateEntityTransform(newEntity.GetID());
+		targetScene->InvalidateEntityTransform(newEntity.GetID());
 		return newEntity;
 	}
 
@@ -491,15 +489,13 @@ namespace Volt
 
 	Entity Prefab::InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity)
 	{
-		auto targetScenePtr = targetScene.lock();
-
-		Entity newEntity = Entity::Duplicate(Entity{ prefabEntity.GetID(), m_prefabScene }, targetScenePtr);
-		if (targetScenePtr->IsPlaying())
+		Entity newEntity = Entity::Duplicate(Entity{ prefabEntity.GetID(), m_prefabScene }, targetScene);
+		if (targetScene->IsPlaying())
 		{
 			InitializeComponents(newEntity);
 		}
 
-		targetScenePtr->InvalidateEntityTransform(newEntity.GetID());
+		targetScene->InvalidateEntityTransform(newEntity.GetID());
 		return newEntity;
 	}
 
