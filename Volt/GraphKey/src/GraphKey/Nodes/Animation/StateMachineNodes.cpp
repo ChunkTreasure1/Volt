@@ -144,7 +144,6 @@ namespace GraphKey
 		for (const auto& stateNode : rootNode["States"])
 		{
 			std::string stateName;
-			bool stateIsEntry;
 			Volt::UUID stateId = Volt::UUID(0);
 			std::string stateTypeString;
 

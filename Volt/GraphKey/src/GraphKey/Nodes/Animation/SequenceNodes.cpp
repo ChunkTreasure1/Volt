@@ -91,7 +91,7 @@ namespace GraphKey
 		const bool shouldLoop = GetInput<bool>(1);
 		const float speed = GetInput<float>(2);
 		const bool applyRootMotion = GetInput<bool>(3);
-		const float localTime = Volt::AnimationManager::globalClock - animGraph->GetStartTime();
+		//const float localTime = Volt::AnimationManager::globalClock - animGraph->GetStartTime();
 
 		const uint32_t currentFrame = anim->GetFrameFromStartTime(animGraph->GetStartTime(), speed);
 		/* ANIMATION EVENT STUFF

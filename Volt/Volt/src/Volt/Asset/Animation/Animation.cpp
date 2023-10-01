@@ -263,7 +263,7 @@ namespace Volt
 		{
 			return std::clamp(normalizedTime, 0.f, 1.f);
 		}
-		return 0.0f;
+		//return 0.0f;
 	}
 
 	const Animation::PoseData Animation::GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime)

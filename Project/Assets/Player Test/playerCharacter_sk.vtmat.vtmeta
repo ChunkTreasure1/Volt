@@ -4,4 +4,5 @@ Metadata:
   type: 32
   Dependencies:
     []
-  ? Properties
+  Properties:
+    {}
