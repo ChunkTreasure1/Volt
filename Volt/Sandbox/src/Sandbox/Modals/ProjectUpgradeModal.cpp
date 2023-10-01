@@ -418,7 +418,8 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 		return;
 	}
 
-	entt::entity entityId = scene->GetRegistry().create(originalEntityId);
+	Volt::Entity newEntity = scene->CreateEntity("", originalEntityId);
+	const entt::entity entityId = newEntity.GetID();
 
 	if (entityId != originalEntityId)
 	{
@@ -443,7 +444,10 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 		{
 			case Volt::ValueType::Component:
 			{
-				Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
+				if (!Volt::ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, scene->GetRegistry(), entityId))
+				{
+					Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
+				}
 				void* voidCompPtr = Volt::ComponentRegistry::Helpers::GetComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
 				uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
@@ -469,8 +473,14 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 
 		if (prefabAsset && prefabAsset->IsValid())
 		{
-			prefabAsset->CopyPrefabEntity(Volt::Entity{ entityId, scene }, prefabComp.prefabEntity);
+			prefabAsset->CopyPrefabEntity(newEntity, prefabComp.prefabEntity);
 		}
+	}
+
+	if (scene->GetRegistry().any_of<Volt::PrefabComponent>(entityId))
+	{
+		auto& prefabComp = scene->GetRegistry().get<Volt::PrefabComponent>(entityId);
+		VT_CORE_INFO("ID: {0}", prefabComp.prefabEntity);
 	}
 
 	// Make sure entity has relationship component
@@ -502,6 +512,11 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 		if (!componentMember)
 		{
 			return;
+		}
+
+		if (componentMember->name == "prefabEntity")
+		{
+			VT_CORE_INFO("Test");
 		}
 
 		const PreV113PropertyType oldType = static_cast<PreV113PropertyType>(streamReader.ReadKey("type", 0u));

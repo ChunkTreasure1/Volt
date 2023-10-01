@@ -20,7 +20,8 @@ namespace Volt
 	{
 		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamWriter& streamWriter, const uint8_t* data, const size_t offset) 
 		{ 
-			streamWriter.SetKey("data", *reinterpret_cast<const T*>(&data[offset])); 
+			const T& var = *reinterpret_cast<const T*>(&data[offset]);
+			streamWriter.SetKey("data", var);
 		};
 	}
 

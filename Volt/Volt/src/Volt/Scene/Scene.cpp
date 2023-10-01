@@ -665,7 +665,7 @@ namespace Volt
 		m_registry.each([&](entt::entity id)
 		{
 			id = otherScene->m_registry.create(id);
-			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene }, false);
+			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene }, EntityCopyFlags::None);
 		});
 	}
 
