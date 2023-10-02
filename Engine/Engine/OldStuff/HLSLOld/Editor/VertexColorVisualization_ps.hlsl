@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d2ffe60abf100189cffae9ef871fba8c42fb522d01d4d38a0b73687212165a1f
-size 354
+#include "Material.hlsli"
+#include "SamplerStates.hlsli"
+#include "Bindless.hlsli"
+#include "Utility.hlsli"
+#include "Vertex.hlsli"
+
+#include "PBR.hlsli"
+
+struct Output
+{
+    float4 color : SV_Target0;
+};
+
+Output main(DefaultPixelInput input)
+{
+    Output output = (Output) 0;
+    output.color = input.paintedColor;
+    return output;
+}

@@ -32,7 +32,7 @@ namespace Volt
 		bool Load(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 		void Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 
-		void SerializeEntity(entt::entity id, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
+		void SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
 		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const;
 		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
 

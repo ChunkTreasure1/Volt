@@ -7,84 +7,6 @@ Layer:
     - Entity:
         id: 4048368195
         components:
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: New Cube
-          - guid: [5152712443922219371, 10617432012782403218]
-            members:
-              - name: position
-                data: [0, 81.0509033, 901.153564]
-              - name: rotation
-                data: [0, 0, 0, 1]
-              - name: scale
-                data: [28.3263054, 7.24339581, 1]
-              - name: visible
-                data: true
-              - name: locked
-                data: false
-          - guid: [5115013315947959062, 13305215203298195585]
-            members:
-              - name: layerid
-                data: 0
-          - guid: [5086337540049333714, 3220959922222851753]
-            members:
-              - name: parent
-                data: 4294967295
-              - name: children
-                data: array
-                values:
-                  []
-          - guid: [5579790378469427390, 5138106327942809248]
-            members:
-              - name: handle
-                data: 10149696181569838305
-              - name: material
-                data: 4375374330609413162
-    - Entity:
-        id: 3526083837
-        components:
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: New Cube
-          - guid: [5152712443922219371, 10617432012782403218]
-            members:
-              - name: position
-                data: [0, -105.965195, 0]
-              - name: rotation
-                data: [0, 0, 0, 1]
-              - name: scale
-                data: [28.3263054, 1, 18.0467606]
-              - name: visible
-                data: true
-              - name: locked
-                data: false
-          - guid: [5115013315947959062, 13305215203298195585]
-            members:
-              - name: layerid
-                data: 0
-          - guid: [5086337540049333714, 3220959922222851753]
-            members:
-              - name: parent
-                data: 4294967295
-              - name: children
-                data: array
-                values:
-                  []
-          - guid: [5579790378469427390, 5138106327942809248]
-            members:
-              - name: handle
-                data: 10149696181569838305
-              - name: material
-                data: 4375374330609413162
-    - Entity:
-        id: 2396630366
-        components:
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: Cube
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
@@ -97,6 +19,10 @@ Layer:
                 data: true
               - name: locked
                 data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -112,19 +38,86 @@ Layer:
           - guid: [5579790378469427390, 5138106327942809248]
             members:
               - name: handle
-                data: 10149696181569838305
+                data: 0
+              - name: material
+                data: 0
+    - Entity:
+        id: 3526083837
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Entity
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 0
+              - name: material
+                data: 0
+    - Entity:
+        id: 2396630366
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Entity
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 0
               - name: material
                 data: 0
           - guid: [5428802467633469958, 3006162545260469436]
             members:
-              - name: scriptNames
-                data: array
-                values:
-                  - data: Project.TestPlayer
-              - name: scriptIds
-                data: array
-                values:
-                  - data: 1044772166109937624
+              []
         MonoScripts:
           - ScriptEntry:
               name: Project.TestPlayer
@@ -144,22 +137,22 @@ Layer:
                 data: 100000
               - name: priority
                 data: 0
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: Camera
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
-                data: [0, 547.286255, -707.115906]
+                data: [0, 0, 0]
               - name: rotation
-                data: [0.234334081, 0, 0, 0.972156167]
+                data: [0, 0, 0, 1]
               - name: scale
-                data: [1, 0.999999702, 0.999999702]
+                data: [1, 1, 1]
               - name: visible
                 data: true
               - name: locked
                 data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -175,22 +168,22 @@ Layer:
     - Entity:
         id: 2274599077
         components:
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: Directional Light
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
                 data: [0, 0, 0]
               - name: rotation
-                data: [0.866025448, 0, 0, 0.49999997]
+                data: [0, 0, 0, 1]
               - name: scale
                 data: [1, 1, 1]
               - name: visible
                 data: true
               - name: locked
                 data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -218,10 +211,6 @@ Layer:
     - Entity:
         id: 125922531
         components:
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: Skylight
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
@@ -234,6 +223,10 @@ Layer:
                 data: true
               - name: locked
                 data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid

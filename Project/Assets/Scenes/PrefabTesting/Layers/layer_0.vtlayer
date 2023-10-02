@@ -22,7 +22,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: ""
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -77,7 +77,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: ""
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -142,7 +142,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: ""
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -173,7 +173,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: ""
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -220,7 +220,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: ""
+                data: New Entity
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid

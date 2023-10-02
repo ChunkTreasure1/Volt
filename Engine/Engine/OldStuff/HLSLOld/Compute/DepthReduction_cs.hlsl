@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:23cfe6940c4a7ddd19e142a06e53a92f7a091b4824efc8a0948518adb777ea60
-size 533
+#include "Defines.hlsli"
+#include "SamplerStates.hlsli"
+
+RWTexture2D<float> u_targetDepth : register(u0, SPACE_OTHER);
+Texture2D<float> u_srcDepth : register(t1, SPACE_OTHER);
+
+struct PushConstants
+{
+    float2 targetSize;
+};
+
+[[vk::push_constant]] PushConstants u_pushConstants;
+
+[numthreads(32, 32, 1)]
+void main(uint2 threadId : SV_DispatchThreadID)
+{
+    float depth = u_srcDepth.SampleLevel(u_reduceSampler, (float2(threadId) + 0.5f) / u_pushConstants.targetSize, 0.f).x;
+    u_targetDepth[threadId] = depth;
+}

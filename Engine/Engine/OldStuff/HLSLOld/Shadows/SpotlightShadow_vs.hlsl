@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:cf6710b7a0a3cb9ab4e7a19314c76089fd4989d685c38d7e53dc350e498de1c2
-size 839
+#include "Buffers.hlsli"
+#include "Vertex.hlsli"
+#include "Matrix.hlsli"
+
+struct Output
+{
+    float4 position : SV_Position;
+};
+
+struct PushConstants
+{
+    uint spotlightIndex;
+};
+
+[[vk::push_constant]] PushConstants u_pushConstants;
+
+Output main(in DefaultVertexInput input)
+{
+    const ObjectData objectData = input.GetObjectData();
+    float4x4 skinningMatrix = IDENTITY_MATRIX;
+    
+    if (objectData.isAnimated)
+    {
+        skinningMatrix = input.GetSkinnedMatrix();
+    }
+    
+    const float4 worldPosition = mul(objectData.transform, mul(skinningMatrix, float4(input.position, 1.f)));
+    const SpotLight spotlightData = u_spotLights[u_pushConstants.spotlightIndex];
+    
+    Output output = (Output) 0;
+    output.position = mul(spotlightData.viewProjection, worldPosition);
+    return output;
+}

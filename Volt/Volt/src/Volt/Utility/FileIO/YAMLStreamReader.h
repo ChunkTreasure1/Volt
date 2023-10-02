@@ -14,6 +14,7 @@ namespace Volt
 		const bool OpenFile(const std::filesystem::path& filePath);
 
 		const bool HasKey(const std::string& key);
+		const bool IsSequenceEmpty(const std::string& key);
 
 		void EnterScope(const std::string& key);
 		void ExitScope();

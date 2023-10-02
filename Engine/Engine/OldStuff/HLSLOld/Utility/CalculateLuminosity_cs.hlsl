@@ -1,3 +1,24 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:aaf7c9cce4a24ae464ac24bf4cf853a222308de24c88816d099353b2dac49241
-size 781
+#include "Common.hlsli"
+#include "Defines.hlsli"
+#include "ComputeUtility.hlsli"
+
+#include "PBRHelpers.hlsli"
+
+RWTexture2D<float4> o_resultTexture : register(u0, SPACE_OTHER);
+Texture2D<float4> u_colorSource : register(t1, SPACE_OTHER);
+
+[numthreads(8, 8, 1)]
+void main(uint groupIndex : SV_GroupIndex, uint3 groupId : SV_GroupID)
+{
+    float outputWidth, outputHeight;
+    o_resultTexture.GetDimensions(outputWidth, outputHeight);
+
+    const uint2 pixelCoords = RemapThreadIDToPixel(groupIndex, groupId.xy);
+    if (pixelCoords.x > uint(outputWidth) || pixelCoords.y > uint(outputHeight))
+    {
+        return;
+    }
+    
+    const float3 srcColor = u_colorSource[pixelCoords].rgb;
+    o_resultTexture[pixelCoords] = CalculateLuminanceFromLight(srcColor);
+}

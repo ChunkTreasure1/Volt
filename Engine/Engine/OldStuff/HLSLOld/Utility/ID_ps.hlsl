@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6827b0dfd7e14e5a938bf0c6fb07b0c4a05e572dbf2194865b06b3ec04f013ee
-size 396
+#include "Material.hlsli"
+#include "SamplerStates.hlsli"
+#include "Bindless.hlsli"
+#include "Utility.hlsli"
+
+struct Input
+{
+    float4 position : SV_Position;
+    STAGE_VARIABLE(uint, objectID, OBJECTID, 3);
+};
+
+struct Output
+{
+    uint id : SV_Target0;
+};
+
+Output main(Input input)
+{
+    Output output = (Output) 0;
+    output.id = input.objectID;
+    
+    return output;
+}

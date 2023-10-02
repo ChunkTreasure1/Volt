@@ -11,6 +11,17 @@ namespace Volt
 	template<class T>
 	concept EntityId = std::is_same<T, uint32_t>::value || std::is_same<T, entt::entity>::value;
 
+	enum class EntityCopyFlags
+	{
+		None = 0,
+		SkipRelationships = BIT(0),
+		SkipPrefab = BIT(1),
+		SkipTransform = BIT(2),
+		SkipCommonData = BIT(3)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(EntityCopyFlags);
+
 	class Entity
 	{
 	public:
@@ -104,7 +115,7 @@ namespace Volt
 		static Entity Null();
 
 		// Copies a single entity
-		static void Copy(Entity srcEntity, Entity dstEntity, bool skipRelationships = true);
+		static void Copy(Entity srcEntity, Entity dstEntity, const EntityCopyFlags copyFlags = EntityCopyFlags::SkipRelationships);
 
 		// Duplicates an entire entity tree
 		static Entity Duplicate(Entity srcEntity, Ref<Scene> targetScene = nullptr, Entity parent = Entity::Null());

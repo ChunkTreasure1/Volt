@@ -11,8 +11,6 @@
 *.vtchr filter=lfs diff=lfs merge=lfs -text
 *.cached filter=lfs diff=lfs merge=lfs -text
 *.vtsk filter=lfs diff=lfs merge=lfs -text
-*.hlsl filter=lfs diff=lfs merge=lfs -text
-*.hlslh filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
 *.ico filter=lfs diff=lfs merge=lfs -text
 *.dmp filter=lfs diff=lfs merge=lfs -text

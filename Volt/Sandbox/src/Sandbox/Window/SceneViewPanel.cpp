@@ -1149,6 +1149,10 @@ bool SceneViewPanel::SearchRecursivelyParent(Volt::Entity entity, const std::str
 	if (entity.HasComponent<Volt::RelationshipComponent>())
 	{
 		auto parent = entity.GetParent();
+		if (!parent)
+		{
+			return false;
+		}
 
 		if (parent.HasComponent<Volt::TagComponent>())
 		{

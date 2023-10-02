@@ -672,7 +672,7 @@ namespace Volt
 		m_registry.each([&](entt::entity id)
 		{
 			id = otherScene->m_registry.create(id);
-			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene }, false);
+			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene }, EntityCopyFlags::None);
 		});
 	}
 
@@ -906,6 +906,11 @@ namespace Volt
 	void Scene::SetLayers(const std::vector<SceneLayer>& sceneLayers)
 	{
 		m_sceneLayers = sceneLayers;
+
+		for (const auto& layer : m_sceneLayers)
+		{
+			m_lastLayerId = std::max(m_lastLayerId, layer.id);
+		}
 	}
 
 	void Scene::RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id)

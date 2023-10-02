@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:622ba333cfd7d639276d490ed5ac3c219c4038311a0df5de0b2ec915337c1fa8
-size 880
+#include "Material.hlsli"
+#include "SamplerStates.hlsli"
+#include "Bindless.hlsli"
+#include "Utility.hlsli"
+
+struct Input
+{
+    float4 position : SV_Position;
+    STAGE_VARIABLE(float3, normal, NORMAL, 0);
+    STAGE_VARIABLE(float2, texCoords, TEXCOORD, 1);
+    STAGE_VARIABLE(uint, materialIndex, MATERIALINDEX, 2);
+};
+
+struct Output
+{
+    float4 viewNormals : SV_Target0;
+};
+
+Output main(Input input)
+{
+    const Material material = u_materialBuffer[input.materialIndex];
+    float4 albedo = material.SampleAlbedo(u_linearSampler, input.texCoords);
+    albedo.a = step(0.5f, albedo.a);
+    
+    if (albedo.a < 0.05f)
+    {
+        discard;
+    }
+    
+    Output output = (Output) 0;
+    output.viewNormals = float4(mul((float3x3) u_cameraData.view, input.normal), material.SampleMaterial(u_linearSampler, input.texCoords).g);
+    return output;
+}

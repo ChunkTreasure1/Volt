@@ -40,6 +40,8 @@ private:
 	void DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath, std::map<entt::entity, entt::entity>& entityRemapping);
 	void DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader, std::map<entt::entity, entt::entity>& entityRemapping, bool isPrefabEntity);
 	void DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader);
+	void DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const entt::entity entityId, Volt::YAMLStreamReader& streamReader);
+	
 	void HandleEntityRemapping(Ref<Volt::Scene> scene, const std::map<entt::entity, entt::entity>& entityRemapping);
 	void HandleEntityArrayRemapping(Ref<Volt::Scene> scene, const std::map<entt::entity, entt::entity>& entityRemapping, const Volt::ComponentMember& componentMember, uint8_t* componentData);
 	

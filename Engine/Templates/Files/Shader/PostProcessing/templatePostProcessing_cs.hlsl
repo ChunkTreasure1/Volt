@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:699b3cff05f090398e21a2c24e8a363810b85a15d493984a4ad2d473476b022b
-size 695
+#include "Common.hlsli"
+#include "Defines.hlsli"
+
+#include "PostProcessingBase.hlsli"
+
+[numthreads(POST_PROCESSING_THREAD_COUNT, POST_PROCESSING_THREAD_COUNT, 1)]
+void main(uint groupIndex : SV_GroupIndex, uint3 groupId : SV_GroupID)
+{
+    const uint2 pixelCoords = GetPixelCoords(groupIndex, groupId);
+    
+    ///// Safe Guard /////
+    float outputWidth, outputHeight;
+    o_resultTexture.GetDimensions(outputWidth, outputHeight);
+    if (pixelCoords.x > uint(outputWidth) || pixelCoords.y > uint(outputHeight))
+    {
+        return;
+    }
+    //////////////////////
+    
+    const float4 srcColor = GetPreviousColor(pixelCoords);
+    WriteColor(srcColor, pixelCoords);
+}

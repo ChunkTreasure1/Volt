@@ -375,10 +375,17 @@ namespace Volt
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
 
+		if (!registry.any_of<RelationshipComponent>(m_id))
+		{
+			return false;
+		}
+
 		assert(registry.any_of<RelationshipComponent>(m_id) && "Entity must have relationship component!");
 
 		auto& relComp = registry.get<RelationshipComponent>(m_id);
-		return relComp.parent != entt::null;
+		Entity parentEntity{ relComp.parent, m_scene };
+
+		return parentEntity.IsValid();
 	}
 
 	const bool Entity::HasComponent(std::string_view componentName) const
@@ -497,7 +504,7 @@ namespace Volt
 		return {};
 	}
 
-	void Entity::Copy(Entity srcEntity, Entity dstEntity, bool skipRelationships)
+	void Entity::Copy(Entity srcEntity, Entity dstEntity, const EntityCopyFlags copyFlags)
 	{
 		auto srcScene = srcEntity.GetScene();
 		auto& srcRegistry = srcScene->GetRegistry();
@@ -533,18 +540,27 @@ namespace Volt
 			void* voidCompPtr = Volt::ComponentRegistry::Helpers::GetComponentWithGUID(componentDesc->GetGUID(), dstRegistry, dstEntity.GetID());
 			uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
+			if (componentDesc->GetGUID() == GetTypeGUID<PrefabComponent>() && (copyFlags & EntityCopyFlags::SkipPrefab) != EntityCopyFlags::None)
+			{
+				continue;
+			}
+			else if ((componentDesc->GetGUID() == GetTypeGUID<RelationshipComponent>() && (copyFlags & EntityCopyFlags::SkipRelationships) != EntityCopyFlags::None))
+			{
+				continue;
+			}
+			else if ((componentDesc->GetGUID() == GetTypeGUID<TransformComponent>() && (copyFlags & EntityCopyFlags::SkipTransform) != EntityCopyFlags::None))
+			{
+				continue;
+			}
+			else if (componentDesc->GetGUID() == GetTypeGUID<CommonComponent>() && (copyFlags & EntityCopyFlags::SkipCommonData) != EntityCopyFlags::None)
+			{
+				continue;
+			}
+
 			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity.GetID())), componentData, 0, componentDesc);
 		}
 
 		CopyMonoScripts(srcEntity, dstEntity);
-
-		// Clear the relationship component, as this is a standalone entity
-		if (skipRelationships)
-		{
-			RelationshipComponent& relComp = dstEntity.GetComponent<RelationshipComponent>();
-			relComp.children.clear();
-			relComp.parent = entt::null;
-		}
 	}
 
 	Entity Entity::Duplicate(Entity srcEntity, Ref<Scene> targetScene, Entity parent)

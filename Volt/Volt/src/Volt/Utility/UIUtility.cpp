@@ -1536,7 +1536,7 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 	return changed;
 }
 
-bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, entt::entity& value, const std::string& toolTip)
+bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::entity& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1548,7 +1548,7 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, entt::e
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity{ value, scene.get() };
+	Volt::Entity entity{ value, scene.lock().get() };
 
 	std::string entityName;
 	if (entity)
@@ -1577,14 +1577,14 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, entt::e
 	return changed;
 }
 
-bool UI::PropertyEntity(Ref<Volt::Scene> scene, entt::entity& value, const float width, const std::string& toolTip)
+bool UI::PropertyEntity(Weak<Volt::Scene> scene, entt::entity& value, const float width, const std::string& toolTip)
 {
 	bool changed = false;
 
 	SimpleToolTip(toolTip);
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity{ value, scene.get() };
+	Volt::Entity entity{ value, scene.lock().get() };
 
 	std::string entityName;
 	if (entity)

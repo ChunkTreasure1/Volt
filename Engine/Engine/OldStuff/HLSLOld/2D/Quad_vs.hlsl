@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c06b193f2a14499665d4901a18b7df8422aff71395d3b42084edf017b61b9afe
-size 719
+#include "Vertex.hlsli"
+
+struct PushConstants
+{
+    float4x4 viewProjectionTransform;
+    float4 color;
+    float2 vertexOffset;
+    uint textureIndex;
+};
+[[vk::push_constant]] PushConstants u_pushConstants;
+
+struct Output
+{
+    float4 position : SV_Position;
+    STAGE_VARIABLE(float4, color, COLOR, 0);
+    STAGE_VARIABLE(float2, texCoords, TEXCOORDS, 1);
+};
+
+Output main(DefaultQuadVertex input)
+{
+    float4 tempPos = input.position;
+    tempPos.xy += u_pushConstants.vertexOffset;
+    
+    Output output;
+    output.position = mul(u_pushConstants.viewProjectionTransform, tempPos);
+    output.texCoords = input.texCoords;
+    output.color = u_pushConstants.color;
+
+    return output;
+}

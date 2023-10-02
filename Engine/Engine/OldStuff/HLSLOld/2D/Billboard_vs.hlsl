@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2fb06f3c3918caa917229312543f8a40126c9a421478381fc1c588fb6f463fad
-size 331
+#include "Vertex.hlsli"
+
+DefaultBillboardVertex main(DefaultBillboardVertex input)
+{
+    DefaultBillboardVertex output;
+    output.position = input.position;
+    output.color = input.color;
+    output.scale = input.scale;
+    output.textureIndex = input.textureIndex;
+    output.id = input.id;
+    
+    return output;
+}

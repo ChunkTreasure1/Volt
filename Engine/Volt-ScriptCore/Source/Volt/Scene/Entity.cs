@@ -123,19 +123,11 @@ namespace Volt
         {
             get
             {
-                if (!HasComponent<RelationshipComponent>())
-                {
-                    AddComponent<RelationshipComponent>();
-                }
                 return GetComponent<RelationshipComponent>().parent;
             }
 
             set
             {
-                if (!HasComponent<RelationshipComponent>())
-                {
-                    AddComponent<RelationshipComponent>();
-                }
                 GetComponent<RelationshipComponent>().parent = value;
             }
         }
