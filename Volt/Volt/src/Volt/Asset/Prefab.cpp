@@ -95,7 +95,7 @@ namespace Volt
 		UpdateEntityInSceneInternal(sceneEntity, entt::null);
 	}
 
-	void Prefab::CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId) const
+	void Prefab::CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId, const EntityCopyFlags copyFlags) const
 	{
 		Entity prefabEntity{ srcPrefabEntityId, m_prefabScene };
 		if (!prefabEntity)
@@ -103,7 +103,7 @@ namespace Volt
 			return;
 		}
 
-		Entity::Copy(prefabEntity, dstEntity, EntityCopyFlags::SkipPrefab | EntityCopyFlags::SkipRelationships | EntityCopyFlags::SkipTransform | EntityCopyFlags::SkipCommonData);
+		Entity::Copy(prefabEntity, dstEntity, copyFlags);
 	}
 
 	const bool Prefab::IsEntityValidInPrefab(Entity entity) const

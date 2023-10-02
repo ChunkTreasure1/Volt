@@ -29,7 +29,7 @@ namespace Volt
 		const bool UpdateEntityInPrefab(Entity srcEntity);
 		void UpdateEntityInScene(Entity sceneEntity);
 
-		void CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId) const;
+		void CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId, const EntityCopyFlags copyFlags = EntityCopyFlags::SkipRelationships) const;
 
 		[[nodiscard]] inline const bool IsPrefabValid() { return m_prefabScene != nullptr && m_rootEntityId != entt::null; }
 		[[nodiscard]] const bool IsEntityValidInPrefab(Entity entity) const;

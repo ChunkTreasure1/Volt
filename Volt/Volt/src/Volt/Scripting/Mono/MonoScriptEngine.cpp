@@ -556,8 +556,6 @@ namespace Volt
 				{
 					mono_field_set_value(instanceObject, field, entityObject);
 				}
-
-				continue;
 			}
 			else if (fieldInstance->field.type.IsString())
 			{
@@ -565,8 +563,6 @@ namespace Volt
 
 				auto field = mono_class_get_field_from_name(instance->GetClass()->GetClass(), name.c_str());
 				mono_field_set_value(MonoGCManager::GetObjectFromHandle(instance->GetHandle()), field, monoString);
-
-				continue;
 			}
 			else if (fieldInstance->field.type.IsAsset())
 			{
@@ -598,10 +594,11 @@ namespace Volt
 				}
 
 				mono_field_set_value(instanceObject, field, object);
-				continue;
 			}
-
-			instance->SetField(name, fieldInstance->data.As<const void>());
+			else
+			{
+				instance->SetField(name, fieldInstance->data.As<const void>());
+			}
 		}
 	}
 

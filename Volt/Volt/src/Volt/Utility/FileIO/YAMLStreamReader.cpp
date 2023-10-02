@@ -46,6 +46,11 @@ namespace Volt
 		return false;
 	}
 
+	const bool YAMLStreamReader::IsSequenceEmpty(const std::string& key)
+	{
+		return m_currentNode[key].IsSequence() && m_currentNode[key].size() == 0;
+	}
+
 	void YAMLStreamReader::EnterScope(const std::string& key)
 	{
 		m_nodeStack.emplace_back(m_currentNode);

@@ -57,6 +57,8 @@ namespace Volt
 
 		Log::Initialize();
 		ProjectManager::SetupProject(m_info.projectPath);
+		Log::InitializeFileSinks();
+		
 		SessionPreferences::Initialize();
 
 		WindowProperties windowProperties{};

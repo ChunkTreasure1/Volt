@@ -8,6 +8,8 @@
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/FileIO/YAMLStreamReader.h>
 
+#include <Volt/Scripting/Mono/MonoScriptEngine.h>
+
 #include <Volt/Components/RenderingComponents.h>
 
 #include <imgui.h>
@@ -55,7 +57,7 @@ static std::unordered_map<VoltGUID, std::unordered_map<std::string, std::string>
 static bool s_initialize = false;
 
 template<typename T>
-void RegisterDeserializationFunction()
+void RegisterArrayDeserializationFunction()
 {
 	s_arrayDeserializers[std::type_index{ typeid(T) }] = [](Volt::YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
 	{
@@ -92,38 +94,38 @@ ProjectUpgradeModal::ProjectUpgradeModal(const std::string& strId)
 		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::GUID].typeIndex = std::type_index{ typeid(VoltGUID) };
 		s_preV113PropTypeToTypeIndexMap[PreV113PropertyType::Quaternion].typeIndex = std::type_index{ typeid(glm::quat) };
 
-		RegisterDeserializationFunction<int8_t>();
-		RegisterDeserializationFunction<uint8_t>();
-		RegisterDeserializationFunction<int16_t>();
-		RegisterDeserializationFunction<uint16_t>();
-		RegisterDeserializationFunction<int32_t>();
-		RegisterDeserializationFunction<uint32_t>();
+		RegisterArrayDeserializationFunction<int8_t>();
+		RegisterArrayDeserializationFunction<uint8_t>();
+		RegisterArrayDeserializationFunction<int16_t>();
+		RegisterArrayDeserializationFunction<uint16_t>();
+		RegisterArrayDeserializationFunction<int32_t>();
+		RegisterArrayDeserializationFunction<uint32_t>();
 
-		RegisterDeserializationFunction<float>();
-		RegisterDeserializationFunction<double>();
-		RegisterDeserializationFunction<bool>();
+		RegisterArrayDeserializationFunction<float>();
+		RegisterArrayDeserializationFunction<double>();
+		RegisterArrayDeserializationFunction<bool>();
 
-		RegisterDeserializationFunction<glm::vec2>();
-		RegisterDeserializationFunction<glm::vec3>();
-		RegisterDeserializationFunction<glm::vec4>();
+		RegisterArrayDeserializationFunction<glm::vec2>();
+		RegisterArrayDeserializationFunction<glm::vec3>();
+		RegisterArrayDeserializationFunction<glm::vec4>();
 
-		RegisterDeserializationFunction<glm::uvec2>();
-		RegisterDeserializationFunction<glm::uvec3>();
-		RegisterDeserializationFunction<glm::uvec4>();
+		RegisterArrayDeserializationFunction<glm::uvec2>();
+		RegisterArrayDeserializationFunction<glm::uvec3>();
+		RegisterArrayDeserializationFunction<glm::uvec4>();
 
-		RegisterDeserializationFunction<glm::ivec2>();
-		RegisterDeserializationFunction<glm::ivec3>();
-		RegisterDeserializationFunction<glm::ivec4>();
+		RegisterArrayDeserializationFunction<glm::ivec2>();
+		RegisterArrayDeserializationFunction<glm::ivec3>();
+		RegisterArrayDeserializationFunction<glm::ivec4>();
 
-		RegisterDeserializationFunction<glm::quat>();
-		RegisterDeserializationFunction<glm::mat4>();
-		RegisterDeserializationFunction<VoltGUID>();
+		RegisterArrayDeserializationFunction<glm::quat>();
+		RegisterArrayDeserializationFunction<glm::mat4>();
+		RegisterArrayDeserializationFunction<VoltGUID>();
 
-		RegisterDeserializationFunction<std::string>();
-		RegisterDeserializationFunction<std::filesystem::path>();
+		RegisterArrayDeserializationFunction<std::string>();
+		RegisterArrayDeserializationFunction<std::filesystem::path>();
 
-		RegisterDeserializationFunction<entt::entity>();
-		RegisterDeserializationFunction<Volt::AssetHandle>();
+		RegisterArrayDeserializationFunction<entt::entity>();
+		RegisterArrayDeserializationFunction<Volt::AssetHandle>();
 
 		// Member remapping
 		{
@@ -321,7 +323,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 		scene->SetLayers(sceneLayers);
 
 		HandleEntityRemapping(scene, entityRemapping);
-		ValidateSceneConversion(scene);
+		//ValidateSceneConversion(scene);
 
 		Volt::AssetMetadata imposterMeta;
 		imposterMeta.filePath = Volt::AssetManager::GetRelativePath(sceneFilePath);
@@ -426,6 +428,11 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 		entityRemapping[originalEntityId] = entityId;
 	}
 
+	bool skipTransformComp = false;
+	bool skipPrefabComp = false;
+	bool skipRelComp = false;
+	bool skipCommonComp = false;
+
 	streamReader.ForEach("components", [&]()
 	{
 		const VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
@@ -452,19 +459,41 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 				uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
 				const Volt::IComponentTypeDesc* componentDesc = reinterpret_cast<const Volt::IComponentTypeDesc*>(typeDesc);
+
+				if (componentDesc->GetGUID() == Volt::GetTypeGUID<Volt::TransformComponent>())
+				{
+					if (!streamReader.IsSequenceEmpty("properties"))
+					{
+						skipTransformComp = true;
+					}
+				}
+				else if (componentDesc->GetGUID() == Volt::GetTypeGUID<Volt::PrefabComponent>())
+				{
+					if (!streamReader.IsSequenceEmpty("properties"))
+					{
+						skipPrefabComp = true;
+					}
+				}
+				else if (componentDesc->GetGUID() == Volt::GetTypeGUID<Volt::RelationshipComponent>())
+				{
+					if (!streamReader.IsSequenceEmpty("properties"))
+					{
+						skipRelComp = true;
+					}
+				}
+				else if (componentDesc->GetGUID() == Volt::GetTypeGUID<Volt::CommonComponent>())
+				{
+					if (!streamReader.IsSequenceEmpty("properties"))
+					{
+						skipCommonComp = true;
+					}
+				}
+
 				DeserializePreV113Component(componentData, componentDesc, streamReader);
 				break;
 			}
 		}
 	});
-
-	if (scene->GetRegistry().any_of<Volt::MonoScriptComponent>(entityId))
-	{
-		auto& monoComp = scene->GetRegistry().get<Volt::MonoScriptComponent>(entityId);
-		monoComp;
-
-		Volt::SceneImporter::Get().DeserializeMono(entityId, scene, streamReader);
-	}
 
 	if (scene->GetRegistry().any_of<Volt::PrefabComponent>(entityId) && !isPrefabEntity)
 	{
@@ -473,14 +502,31 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 
 		if (prefabAsset && prefabAsset->IsValid())
 		{
-			prefabAsset->CopyPrefabEntity(newEntity, prefabComp.prefabEntity);
+			Volt::EntityCopyFlags copyFlags = Volt::EntityCopyFlags::None;
+			if (skipTransformComp)
+			{
+				copyFlags = copyFlags | Volt::EntityCopyFlags::SkipTransform;
+			}
+			if (skipPrefabComp)
+			{
+				copyFlags = copyFlags | Volt::EntityCopyFlags::SkipPrefab;
+			}
+			if (skipRelComp)
+			{
+				copyFlags = copyFlags | Volt::EntityCopyFlags::SkipRelationships;
+			}
+			if (skipCommonComp)
+			{
+				copyFlags = copyFlags | Volt::EntityCopyFlags::SkipCommonData;
+			}
+
+			prefabAsset->CopyPrefabEntity(newEntity, prefabComp.prefabEntity, copyFlags);
 		}
 	}
 
-	if (scene->GetRegistry().any_of<Volt::PrefabComponent>(entityId))
+	if (scene->GetRegistry().any_of<Volt::MonoScriptComponent>(entityId))
 	{
-		auto& prefabComp = scene->GetRegistry().get<Volt::PrefabComponent>(entityId);
-		VT_CORE_INFO("ID: {0}", prefabComp.prefabEntity);
+		DeserializePreV113MonoScripts(scene, entityId, streamReader);
 	}
 
 	// Make sure entity has relationship component
@@ -512,11 +558,6 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 		if (!componentMember)
 		{
 			return;
-		}
-
-		if (componentMember->name == "prefabEntity")
-		{
-			VT_CORE_INFO("Test");
 		}
 
 		const PreV113PropertyType oldType = static_cast<PreV113PropertyType>(streamReader.ReadKey("type", 0u));
@@ -579,6 +620,74 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 				ValidateEntityValidity(entDataPtr);
 			}
 		}
+	});
+}
+
+void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const entt::entity entityId, Volt::YAMLStreamReader& streamReader)
+{
+	Volt::Entity entity{ entityId, scene };
+	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
+
+	streamReader.ForEach("MonoScripts", [&]()
+	{
+		streamReader.EnterScope("ScriptEntry");
+
+		if (!entity.HasComponent<Volt::MonoScriptComponent>())
+		{
+			entity.AddComponent<Volt::MonoScriptComponent>();
+		}
+
+		const std::string scriptName = streamReader.ReadKey("name", std::string(""));
+		Volt::UUID scriptId = streamReader.ReadKey("id", Volt::UUID(0));
+
+		auto scriptClass = Volt::MonoScriptEngine::GetScriptClass(scriptName);
+		if (!scriptClass)
+		{
+			streamReader.ExitScope();
+			return;
+		}
+
+		auto& scriptComp = entity.GetComponent<Volt::MonoScriptComponent>();
+
+		if (auto it = std::find(scriptComp.scriptNames.begin(), scriptComp.scriptNames.end(), scriptName); it != scriptComp.scriptNames.end())
+		{
+			const size_t index = std::distance(scriptComp.scriptNames.begin(), it);
+			scriptId = scriptComp.scriptIds.at(index);
+		}
+		else
+		{
+			scriptComp.scriptIds.emplace_back(scriptId);
+			scriptComp.scriptNames.emplace_back(scriptName);
+		}
+
+		const auto& classFields = scriptClass->GetFields();
+		auto& fieldCache = scene->GetScriptFieldCache().GetCache()[scriptId];
+
+		streamReader.ForEach("properties", [&]()
+		{
+			const std::string memberName = streamReader.ReadKey("name", std::string(""));
+			if (!classFields.contains(memberName))
+			{
+				return;
+			}
+
+			Ref<Volt::MonoScriptFieldInstance> fieldInstance = CreateRef<Volt::MonoScriptFieldInstance>();
+			fieldCache[memberName] = fieldInstance;
+
+			fieldInstance->field = classFields.at(memberName);
+			if (fieldInstance->field.type.IsString())
+			{
+				const std::string str = streamReader.ReadKey("data", std::string(""));
+				fieldInstance->SetValue(str, str.size());
+			}
+			else if (typeDeserializers.contains(fieldInstance->field.type.typeIndex))
+			{
+				fieldInstance->data.Allocate(fieldInstance->field.type.typeSize);
+				typeDeserializers.at(fieldInstance->field.type.typeIndex)(streamReader, fieldInstance->data.As<uint8_t>(), 0);
+			}
+		});
+
+		streamReader.ExitScope();
 	});
 }
 
@@ -670,6 +779,11 @@ void ProjectUpgradeModal::ValidateSceneConversion(Ref<Volt::Scene> scene)
 
 		const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
 		if (!typeDesc)
+		{
+			continue;
+		}
+
+		if (typeDesc->GetGUID() == Volt::GetTypeGUID<Volt::PrefabComponent>())
 		{
 			continue;
 		}

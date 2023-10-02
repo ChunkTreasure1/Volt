@@ -139,18 +139,11 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 					}
 
 					bool removeComp = false;
-					bool open = UI::CollapsingHeader(compTypeDesc->GetLabel(), ImGuiTreeNodeFlags_DefaultOpen);
-					float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
+					bool open = UI::CollapsingHeader(compTypeDesc->GetLabel(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap);
+					float buttonSize = 21.f + GImGui->Style.FramePadding.y * 0.5f;
 					float availRegion = ImGui::GetContentRegionAvail().x;
 
-					if (!open)
-					{
-						UI::SameLine(availRegion - buttonSize * 0.5f);
-					}
-					else
-					{
-						UI::SameLine(availRegion + buttonSize * 0.5f);
-					}
+					UI::SameLine(availRegion - buttonSize * 0.5f + 1.f);
 
 					std::string id = "-###Remove" + std::string(compTypeDesc->GetLabel());
 
@@ -166,6 +159,12 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 					}
 
 					DrawComponent(scene, entity, compTypeDesc, storage.get(entity.GetID()), 0, open, false);
+
+					if (removeComp)
+					{
+						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene.lock()->GetRegistry(), entity.GetID());
+					}
+
 					break;
 				}
 			}
@@ -204,7 +203,12 @@ void ComponentPropertyUtility::DrawComponent(Weak<Volt::Scene> scene, Volt::Enti
 		}
 	}
 
-	if (isOpen && UI::BeginProperties(std::string(componentType->GetLabel())))
+	if (!isOpen)
+	{
+		return;
+	}
+
+	if (UI::BeginProperties(std::string(componentType->GetLabel())))
 	{
 		for (const auto& member : componentType->GetMembers())
 		{
@@ -459,10 +463,10 @@ void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Vol
 	scriptClassName[0] = static_cast<char>(std::toupper(scriptClassName[0]));
 
 	bool removeScript = false;
-	const bool open = UI::CollapsingHeader(scriptClassName + " Script", ImGuiTreeNodeFlags_DefaultOpen);
+	const bool open = UI::CollapsingHeader(scriptClassName + " Script", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_AllowItemOverlap);
 
-	const float buttonSize = 22.f + GImGui->Style.FramePadding.y * 0.5f;
-	const float availRegion = ImGui::GetContentRegionAvail().x;
+	float buttonSize = 21.f + GImGui->Style.FramePadding.y * 0.5f;
+	float availRegion = ImGui::GetContentRegionAvail().x;
 
 	if (ImGui::BeginPopupContextItem(nullptr, ImGuiPopupFlags_MouseButtonRight))
 	{
@@ -478,14 +482,7 @@ void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Vol
 		ImGui::EndPopup();
 	}
 
-	if (!open)
-	{
-		UI::SameLine(availRegion - buttonSize * 0.5f);
-	}
-	else
-	{
-		UI::SameLine(availRegion + buttonSize * 0.5f);
-	}
+	UI::SameLine(availRegion - buttonSize * 0.5f + 1.f);
 
 	const std::string id = "-###Remove" + std::format("{0}", static_cast<uint64_t>(scriptEntry.id));
 
@@ -543,7 +540,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 {
 	Ref<Volt::MonoScriptInstance> scriptInstance = Volt::MonoScriptEngine::GetInstanceFromId(scriptEntry.id);
 
-	if (!UI::BeginProperties("MonoScripts"))
+	if (!UI::BeginProperties("MonoScripts" + std::string("##") + scriptEntry.name))
 	{
 		return;
 	}
@@ -573,6 +570,15 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				}
 
 				continue;
+			}
+			else if (field.type.IsEntity())
+			{
+				entt::entity value = scriptInstance->GetField<entt::entity>(name);
+				if (UI::PropertyEntity(displayName, scene, value))
+				{
+					scriptInstance->SetField(name, &value);
+					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+				}
 			}
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
 			{
@@ -659,6 +665,13 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			}
 
 			auto& currentField = entityFields.at(name);
+
+			// #TODO_Ivar: We probably should not have to check this here
+			if (!currentField->data.IsValid())
+			{
+				continue;
+			}
+
 			bool fontChanged = false;
 
 			if (currentField->data.IsValid() && !defaultFieldValueMap.at(name)->data.IsValid())
@@ -674,7 +687,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 			bool fieldChanged = false;
 
-			if (field.type.IsEntity())
+			if (field.type.IsString())
 			{
 				std::string str;
 
@@ -693,6 +706,10 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
 				}
+			}
+			else if (field.type.IsEntity())
+			{
+				fieldChanged = UI::PropertyEntity(displayName, scene, *currentField->data.As<entt::entity>());
 			}
 			else if (field.type.IsAsset())
 			{

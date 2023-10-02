@@ -4,6 +4,7 @@
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Components/CoreComponents.h"
+#include "Volt/Components/RenderingComponents.h"
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
@@ -97,7 +98,7 @@ namespace Volt
 		RegisterDeserializationFunction<VoltGUID>(s_typeDeserializers);
 
 		RegisterDeserializationFunction<std::string>(s_typeDeserializers);
-		RegisterDeserializationFunction<std::filesystem::path>(s_typeDeserializers);
+		RegisterDeserializationFunction<std::filesystem::path>(s_typeDeserializers); 
 
 		RegisterDeserializationFunction<entt::entity>(s_typeDeserializers);
 		RegisterDeserializationFunction<AssetHandle>(s_typeDeserializers);
@@ -213,6 +214,11 @@ namespace Volt
 			streamReader.ExitScope();
 		}
 
+		for (const auto& layer : sceneLayers)
+		{
+			scene->m_lastLayerId = std::max(scene->m_lastLayerId, layer.id);
+		}
+
 		scene->m_sceneLayers = sceneLayers;
 	}
 
@@ -249,7 +255,7 @@ namespace Volt
 							continue;
 						}
 
-						SerializeEntity(id, scene, streamWriter);
+						SerializeEntity(id, metadata, scene, streamWriter);
 					}
 				}
 				streamWriter.EndSequence();
@@ -260,7 +266,7 @@ namespace Volt
 		}
 	}
 
-	void SceneImporter::SerializeEntity(entt::entity id, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
+	void SceneImporter::SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
 	{
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Entity");
@@ -294,6 +300,19 @@ namespace Volt
 		if (registry.any_of<MonoScriptComponent>(id))
 		{
 			SerializeMono(id, scene, streamWriter);
+		}
+
+		if (registry.any_of<VertexPaintedComponent>(id))
+		{
+			std::filesystem::path vpPath = (ProjectManager::GetDirectory() / metadata.filePath.parent_path() / "Layers" / ("ent_" + std::to_string((uint32_t)id) + ".entVp"));
+			auto& vpComp = registry.get<VertexPaintedComponent>(id);
+
+			// #TODO_Ivar: This is kind of questionable after TGA
+			if (std::filesystem::exists(vpPath))
+			{
+				using std::filesystem::perms;
+				std::filesystem::permissions(vpPath, perms::_All_write);
+			}
 		}
 
 		streamWriter.EndMap();
@@ -627,9 +646,16 @@ namespace Volt
 
 	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
 	{
+		Entity entity{ id, scene };
+
 		streamReader.ForEach("MonoScripts", [&]()
 		{
 			streamReader.EnterScope("ScriptEntry");
+
+			if (!entity.HasComponent<MonoScriptComponent>())
+			{
+				entity.AddComponent<MonoScriptComponent>();
+			}
 
 			const std::string scriptName = streamReader.ReadKey("name", std::string(""));
 			const UUID scriptId = streamReader.ReadKey("id", UUID(0));
@@ -640,6 +666,10 @@ namespace Volt
 				streamReader.ExitScope();
 				return;
 			}
+
+			auto& scriptComp = entity.GetComponent<MonoScriptComponent>();
+			scriptComp.scriptIds.emplace_back(scriptId);
+			scriptComp.scriptNames.emplace_back(scriptName);
 
 			const auto& classFields = scriptClass->GetFields();
 			auto& fieldCache = scene->GetScriptFieldCache().GetCache()[scriptId];

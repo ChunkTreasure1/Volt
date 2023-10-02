@@ -182,8 +182,6 @@ namespace Volt
 			reflect.SetGUID(guid);
 			reflect.SetLabel("MonoScript Component");
 			reflect.SetHidden();
-			reflect.AddMember(&MonoScriptComponent::scriptNames, "scriptNames", "Script Names", "", std::vector<std::string>{});
-			reflect.AddMember(&MonoScriptComponent::scriptIds, "scriptIds", "Script IDs", "", std::vector<UUID>{});
 		}
 
 		REGISTER_COMPONENT(MonoScriptComponent);

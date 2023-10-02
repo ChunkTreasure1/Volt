@@ -383,7 +383,9 @@ namespace Volt
 		assert(registry.any_of<RelationshipComponent>(m_id) && "Entity must have relationship component!");
 
 		auto& relComp = registry.get<RelationshipComponent>(m_id);
-		return relComp.parent != entt::null;
+		Entity parentEntity{ relComp.parent, m_scene };
+
+		return parentEntity.IsValid();
 	}
 
 	const bool Entity::HasComponent(std::string_view componentName) const

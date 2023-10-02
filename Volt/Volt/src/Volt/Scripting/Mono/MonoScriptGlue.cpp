@@ -123,7 +123,9 @@ namespace Volt
 		Entity entity{ entityId, scene };
 
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		return entity.HasComponent(compName);
+		const VoltGUID guid = VoltGUID::FromStringInternal(compName.c_str() + 1);
+
+		return ComponentRegistry::Helpers::HasComponentWithGUID(guid, scene->GetRegistry(), entityId);
 	}
 
 	inline static bool Entity_HasScript(entt::entity entityId, MonoString* scriptType)
@@ -245,7 +247,13 @@ namespace Volt
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		const auto compName = MonoScriptUtils::GetStringFromMonoString(componentType);
-		ComponentRegistry::Helpers::AddComponentWithGUID(VoltGUID::FromStringInternal(compName.c_str() + 1), scene->GetRegistry(), entityId);
+
+		const auto guid = VoltGUID::FromStringInternal(compName.c_str() + 1);
+
+		if (!ComponentRegistry::Helpers::HasComponentWithGUID(guid, scene->GetRegistry(), entityId))
+		{
+			ComponentRegistry::Helpers::AddComponentWithGUID(guid, scene->GetRegistry(), entityId);
+		}
 	}
 
 	inline static void Entity_AddScript(entt::entity entityId, MonoString* scriptType, UUID* outScriptId)
@@ -504,7 +512,7 @@ namespace Volt
 
 		std::vector<entt::entity> entities;
 
-		scene->GetRegistry().each([&](const entt::entity id) 
+		scene->GetRegistry().each([&](const entt::entity id)
 		{
 			ComponentRegistry::Helpers::HasComponentWithGUID(guid, scene->GetRegistry(), id);
 		});
@@ -1020,9 +1028,9 @@ namespace Volt
 
 		const auto entityName = MonoScriptUtils::GetStringFromMonoString(name);
 
-		if (!entity.HasComponent<RelationshipComponent>()) 
-		{ 
-			return nullptr; 
+		if (!entity.HasComponent<RelationshipComponent>())
+		{
+			return nullptr;
 		}
 
 		entt::entity childId = entt::null;
@@ -1053,7 +1061,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	inline static MonoObject* RelationshipComponent_GetParent(entt::entity entityId)
+	inline static MonoObject* RelationshipComponent_GetParent(uint32_t entityId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
