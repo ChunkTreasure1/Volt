@@ -14,6 +14,8 @@
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
+#include "Volt/Core/BinarySerializer.h"
+
 namespace Volt
 {
 	template<typename T>
@@ -313,6 +315,12 @@ namespace Volt
 				using std::filesystem::perms;
 				std::filesystem::permissions(vpPath, perms::_All_write);
 			}
+
+			BinarySerializer binaryVp(vpPath, sizeof(uint32_t) * vpComp.vertexColors.size() + sizeof(vpComp.meshHandle));
+
+			binaryVp.Serialize(vpComp.vertexColors.data(), sizeof(uint32_t) * vpComp.vertexColors.size());
+			binaryVp.Serialize(vpComp.meshHandle);
+			binaryVp.WriteToFile();
 		}
 
 		streamWriter.EndMap();
@@ -533,6 +541,41 @@ namespace Volt
 		if (scene->GetRegistry().any_of<MonoScriptComponent>(entityId))
 		{
 			DeserializeMono(entityId, scene, streamReader);
+		}
+
+		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entityId))
+		{
+			std::filesystem::path vpPath = metadata.filePath.parent_path();
+			vpPath = ProjectManager::GetDirectory() / vpPath / "Layers" / ("ent_" + std::to_string((uint32_t)entityId) + ".entVp");
+
+			if (std::filesystem::exists(vpPath))
+			{
+				auto& vpComp = scene->GetRegistry().get<VertexPaintedComponent>(entityId);
+				
+				std::ifstream vpFile(vpPath, std::ios::in | std::ios::binary);
+				if (!vpFile.is_open())
+				{
+					VT_CORE_ERROR("Could not open entVp file!");
+				}
+
+				std::vector<uint8_t> totalData;
+				const size_t srcSize = vpFile.seekg(0, std::ios::end).tellg();
+				totalData.resize(srcSize);
+				vpFile.seekg(0, std::ios::beg);
+				vpFile.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
+				vpFile.close();
+
+				memcpy_s(&vpComp.meshHandle, sizeof(vpComp.meshHandle), totalData.data() + totalData.size() - sizeof(vpComp.meshHandle), sizeof(vpComp.meshHandle));
+				totalData.resize(totalData.size() - sizeof(vpComp.meshHandle));
+
+				vpComp.vertexColors.reserve(totalData.size() / sizeof(uint32_t));
+				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(uint32_t))
+				{
+					uint32_t vpColor;
+					memcpy_s(&vpColor, sizeof(uint32_t), totalData.data() + offset, sizeof(uint32_t));
+					vpComp.vertexColors.push_back(vpColor);
+				}
+			}
 		}
 
 		streamReader.ExitScope();

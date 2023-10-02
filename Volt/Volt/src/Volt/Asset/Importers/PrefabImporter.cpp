@@ -81,7 +81,7 @@ namespace Volt
 		{
 			for (const auto id : prefab->m_prefabScene->GetAllEntities())
 			{
-				SceneImporter::Get().SerializeEntity(id, prefab->m_prefabScene, streamWriter);
+				SceneImporter::Get().SerializeEntity(id, metadata, prefab->m_prefabScene, streamWriter);
 			}
 		}
 		streamWriter.EndSequence();

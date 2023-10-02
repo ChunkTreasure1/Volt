@@ -116,7 +116,7 @@ namespace Volt
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		void InvalidateEntityTransform(entt::entity entity); // #TODO_Ivar: Change to Volt::Entity
+		void InvalidateEntityTransform(entt::entity entity);
 
 		Vision& GetVision() { return *m_visionSystem; }
 		TimelinePlayer& GetTimelinePlayer() { return m_timelinePlayer; };
