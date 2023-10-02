@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:24148b6913196cba637b091801ba66dc014050e0a2cd66b4e51fec49603ded84
-size 553
+#include "ComputeUtility.hlsli"
+#include "SamplerStates.hlsli"
+
+#include "Buffers.hlsli"
+#include "PostProcessingBase.hlsli"
+#include "Utility.hlsli"
+
+[numthreads(8, 8, 1)]
+void main(uint groupIndex : SV_GroupIndex, uint3 groupId : SV_GroupID)
+{
+    float outputWidth, outputHeight;
+    o_resultTexture.GetDimensions(outputWidth, outputHeight);
+
+    const uint2 pixelCoords = GetPixelCoords(groupIndex, groupId);
+    
+    if (pixelCoords.x > uint(outputWidth) || pixelCoords.y > uint(outputHeight))
+    {
+        return;
+    }
+    
+}
