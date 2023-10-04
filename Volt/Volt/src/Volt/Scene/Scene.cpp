@@ -36,6 +36,7 @@
 
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
@@ -61,6 +62,10 @@ namespace Volt
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
+	}
+
+	Scene::~Scene()
+	{
 	}
 
 	Scene::Scene()
@@ -779,6 +784,7 @@ namespace Volt
 		m_registry.on_destroy<SphereColliderComponent>().connect<&Scene::SphereColliderComponent_OnDestroy>(this);
 		m_registry.on_destroy<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnDestroy>(this);
 		m_registry.on_destroy<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnDestroy>(this);
+		m_registry.on_destroy<MeshComponent>().connect<&Scene::MeshComponent_OnDestroy>(this);
 	}
 
 	const bool Scene::IsRelatedTo(Entity entity, Entity otherEntity)
@@ -1122,6 +1128,15 @@ namespace Volt
 			{
 				actor->RemoveCollider(ColliderType::TriangleMesh);
 			}
+		}
+	}
+
+	void Scene::MeshComponent_OnDestroy(entt::registry& registry, entt::entity id)
+	{
+		auto& meshComp = registry.get<MeshComponent>(id);
+		for (const auto& renderId : meshComp.renderObjectIds)
+		{
+			m_renderScene->Unregister(renderId);
 		}
 	}
 

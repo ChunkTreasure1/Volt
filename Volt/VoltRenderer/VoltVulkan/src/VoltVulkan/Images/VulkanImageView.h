@@ -12,7 +12,7 @@ namespace Volt::RHI
 		VulkanImageView(const ImageViewSpecification& specification);
 		~VulkanImageView() override;
 
-		const Format GetFormat() const;
+		const PixelFormat GetFormat() const;
 		const ImageAspect GetImageAspect() const override;
 
 	protected:

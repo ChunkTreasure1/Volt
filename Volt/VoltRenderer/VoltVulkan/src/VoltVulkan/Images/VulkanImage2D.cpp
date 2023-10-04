@@ -296,7 +296,7 @@ namespace Volt::RHI
 		return m_specification.height;
 	}
 
-	const Format VulkanImage2D::GetFormat() const
+	const PixelFormat VulkanImage2D::GetFormat() const
 	{
 		return m_specification.format;
 	}
@@ -308,6 +308,11 @@ namespace Volt::RHI
 
 	void VulkanImage2D::SetName(std::string_view name)
 	{
+		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
+		{
+			return;
+		}
+
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -315,7 +320,7 @@ namespace Volt::RHI
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
-		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
 	void* VulkanImage2D::GetHandleImpl() const

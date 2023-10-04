@@ -12,14 +12,14 @@ namespace Volt::RHI
 
 	namespace Utility
 	{
-		inline static constexpr VkFormat VoltToVulkanFormat(Format format)
+		inline static constexpr VkFormat VoltToVulkanFormat(PixelFormat format)
 		{
 			return static_cast<VkFormat>(format);
 		}
 
-		inline static constexpr Format VulkanToVoltFormat(VkFormat format)
+		inline static constexpr PixelFormat VulkanToVoltFormat(VkFormat format)
 		{
-			return static_cast<Format>(format);
+			return static_cast<PixelFormat>(format);
 		}
 
 		inline static constexpr VkPresentModeKHR VoltToVulkanPresentMode(PresentMode presentMode)
@@ -246,7 +246,7 @@ namespace Volt::RHI
 			return result;
 		}
 
-		inline static VkImageUsageFlags GetVkImageUsageFlags(ImageUsage usageFlags, Format imageFormat)
+		inline static VkImageUsageFlags GetVkImageUsageFlags(ImageUsage usageFlags, PixelFormat imageFormat)
 		{
 			VkImageUsageFlags result = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 

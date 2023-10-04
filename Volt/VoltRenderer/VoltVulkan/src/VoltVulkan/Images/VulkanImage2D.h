@@ -24,7 +24,7 @@ namespace Volt::RHI
 
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
-		const Format GetFormat() const override;
+		const PixelFormat GetFormat() const override;
 		const uint32_t CalculateMipCount() const override;
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }

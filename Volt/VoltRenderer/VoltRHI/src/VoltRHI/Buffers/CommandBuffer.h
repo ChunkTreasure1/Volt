@@ -58,6 +58,9 @@ namespace Volt::RHI
 
 		virtual void ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers) = 0;
 
+		virtual void BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor) = 0;
+		virtual void EndMarker() = 0;
+
 		virtual const uint32_t BeginTimestamp() = 0;
 		virtual void EndTimestamp(uint32_t timestampIndex) = 0;
 		virtual const float GetExecutionTime(uint32_t timestampIndex) const = 0;

@@ -128,7 +128,7 @@ namespace Volt::RHI
 		return m_specs.height;
 	}
 
-	const Format D3D12Image2D::GetFormat() const
+	const PixelFormat D3D12Image2D::GetFormat() const
 	{
 		return m_specs.format;
 	}

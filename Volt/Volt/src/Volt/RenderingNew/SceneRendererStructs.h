@@ -24,6 +24,11 @@ namespace Volt
 		RenderGraphResourceHandle normals;
 	};
 
+	struct VisibilityBufferData
+	{
+		RenderGraphResourceHandle visibility;
+	};
+
 	struct GBufferData
 	{
 		RenderGraphResourceHandle albedo;

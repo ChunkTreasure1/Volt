@@ -30,6 +30,7 @@ namespace Volt
 		inline const bool IsInvalid() const { return m_isInvalid; }
 		inline const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
+		const uint32_t GetMeshIndex(Ref<Mesh> mesh) const;
 
 		inline const std::span<const Weak<Mesh>> GetIndividualMeshes() const { return m_individualMeshes; }
 

@@ -552,78 +552,78 @@ namespace Volt::RHI
 		return ElementType::Bool;
 	}
 
-	Format ShaderPreProcessor::FindDefaultFormatFromString(std::string_view str)
+	PixelFormat ShaderPreProcessor::FindDefaultFormatFromString(std::string_view str)
 	{
 		if (str == "float")
 		{
-			return Format::R32_SFLOAT;
+			return PixelFormat::R32_SFLOAT;
 		}
 		else if (str == "float2")
 		{
-			return Format::R32G32_SFLOAT;
+			return PixelFormat::R32G32_SFLOAT;
 		}
 		else if (str == "float3")
 		{
-			return Format::R32G32B32_SFLOAT;
+			return PixelFormat::R32G32B32_SFLOAT;
 		}
 		else if (str == "float4")
 		{
-			return Format::R32G32B32A32_SFLOAT;
+			return PixelFormat::R32G32B32A32_SFLOAT;
 		}
 		else if (str == "int")
 		{
-			return Format::R32_SINT;
+			return PixelFormat::R32_SINT;
 		}
 		else if (str == "int2")
 		{
-			return Format::R32G32_SINT;
+			return PixelFormat::R32G32_SINT;
 		}
 		else if (str == "int3")
 		{
-			return Format::R32G32B32_SINT;
+			return PixelFormat::R32G32B32_SINT;
 		}
 		else if (str == "int4")
 		{
-			return Format::R32G32B32A32_SINT;
+			return PixelFormat::R32G32B32A32_SINT;
 		}
 		else if (str == "uint")
 		{
-			return Format::R32_UINT;
+			return PixelFormat::R32_UINT;
 		}
 		else if (str == "uint2")
 		{
-			return Format::R32G32_UINT;
+			return PixelFormat::R32G32_UINT;
 		}
 		else if (str == "uint3")
 		{
-			return Format::R32G32B32_UINT;
+			return PixelFormat::R32G32B32_UINT;
 		}
 		else if (str == "uint4")
 		{
-			return Format::R32G32B32A32_UINT;
+			return PixelFormat::R32G32B32A32_UINT;
 		}
 		else if (str == "half")
 		{
-			return Format::R16_SFLOAT;
+			return PixelFormat::R16_SFLOAT;
 		}
 		else if (str == "half2")
 		{
-			return Format::R16G16_SFLOAT;
+			return PixelFormat::R16G16_SFLOAT;
 		}
 		else if (str == "half3")
 		{
-			return Format::R16G16B16_SFLOAT;
+			return PixelFormat::R16G16B16_SFLOAT;
 		}
 		else if (str == "half4")
 		{
-			return Format::R16G16B16A16_SFLOAT;
+			return PixelFormat::R16G16B16A16_SFLOAT;
 		}
 
 		GraphicsContext::LogTagged(Severity::Error, "ShaderPreProcessor", "Unable to translate type {0} into any format!", str);
-		return Format::UNDEFINED;
+		return PixelFormat::UNDEFINED;
 	}
 
-	Format ShaderPreProcessor::FindFormatFromLayoutQualifier(const std::string& layoutStr)
+	PixelFormat ShaderPreProcessor::FindFormatFromLayoutQualifier(const std::string& layoutStr)
 	{
 		std::string tempStr = layoutStr;
 		tempStr.erase(std::remove(tempStr.begin(), tempStr.end(), '['), tempStr.end());
@@ -635,236 +635,236 @@ namespace Volt::RHI
 		// Floating point
 		if (tempStr == "rgba32f")
 		{
-			return Format::R32G32B32A32_SFLOAT;
+			return PixelFormat::R32G32B32A32_SFLOAT;
 		}
 		else if (tempStr == "rgb32f")
 		{
-			return Format::R32G32B32_SFLOAT;
+			return PixelFormat::R32G32B32_SFLOAT;
 		}
 		else if (tempStr == "rg32f")
 		{
-			return Format::R32G32_SFLOAT;
+			return PixelFormat::R32G32_SFLOAT;
 		}
 		else if (tempStr == "r32f")
 		{
-			return Format::R32_SFLOAT;
+			return PixelFormat::R32_SFLOAT;
 		}
 		else if (tempStr == "rgba16f")
 		{
-			return Format::R16G16B16A16_SFLOAT;
+			return PixelFormat::R16G16B16A16_SFLOAT;
 		}
 		else if (tempStr == "rgb16f")
 		{
-			return Format::R16G16B16_SFLOAT;
+			return PixelFormat::R16G16B16_SFLOAT;
 		}
 		else if (tempStr == "rg16f")
 		{
-			return Format::R16G16_SFLOAT;
+			return PixelFormat::R16G16_SFLOAT;
 		}
 		else if (tempStr == "r16f")
 		{
-			return Format::R16_SFLOAT;
+			return PixelFormat::R16_SFLOAT;
 		}
 		else if (tempStr == "rgba16")
 		{
-			return Format::R16G16B16A16_UNORM;
+			return PixelFormat::R16G16B16A16_UNORM;
 		}
 		else if (tempStr == "rgb16")
 		{
-			return Format::R16G16B16_UNORM;
+			return PixelFormat::R16G16B16_UNORM;
 		}
 		else if (tempStr == "rg16")
 		{
-			return Format::R16G16_UNORM;
+			return PixelFormat::R16G16_UNORM;
 		}
 		else if (tempStr == "r16")
 		{
-			return Format::R16_UNORM;
+			return PixelFormat::R16_UNORM;
 		}
 		else if (tempStr == "rgba8")
 		{
-			return Format::R8G8B8A8_UNORM;
+			return PixelFormat::R8G8B8A8_UNORM;
 		}
 		else if (tempStr == "rgb8")
 		{
-			return Format::R8G8B8_UNORM;
+			return PixelFormat::R8G8B8_UNORM;
 		}
 		else if (tempStr == "rg8")
 		{
-			return Format::R8G8_UNORM;
+			return PixelFormat::R8G8_UNORM;
 		}
 		else if (tempStr == "r8")
 		{
-			return Format::R8_UNORM;
+			return PixelFormat::R8_UNORM;
 		}
 		else if (tempStr == "rgba16_snorm")
 		{
-			return Format::R16G16B16A16_SNORM;
+			return PixelFormat::R16G16B16A16_SNORM;
 		}
 		else if (tempStr == "rgb16_snorm")
 		{
-			return Format::R16G16B16_SNORM;
+			return PixelFormat::R16G16B16_SNORM;
 		}
 		else if (tempStr == "rg16_snorm")
 		{
-			return Format::R16G16_SNORM;
+			return PixelFormat::R16G16_SNORM;
 		}
 		else if (tempStr == "r16_snorm")
 		{
-			return Format::R16_SNORM;
+			return PixelFormat::R16_SNORM;
 		}
 		else if (tempStr == "rgba8_snorm")
 		{
-			return Format::R8G8B8A8_SNORM;
+			return PixelFormat::R8G8B8A8_SNORM;
 		}
 		else if (tempStr == "rgb8_snorm")
 		{
-			return Format::R8G8B8_SNORM;
+			return PixelFormat::R8G8B8_SNORM;
 		}
 		else if (tempStr == "rg8_snorm")
 		{
-			return Format::R8G8_SNORM;
+			return PixelFormat::R8G8_SNORM;
 		}
 		else if (tempStr == "r8_snorm")
 		{
-			return Format::R8_SNORM;
+			return PixelFormat::R8_SNORM;
 		}
 		else if (tempStr == "r11f_g11f_b10f")
 		{
-			return Format::B10G11R11_UFLOAT_PACK32;
+			return PixelFormat::B10G11R11_UFLOAT_PACK32;
 		}
 		else if (tempStr == "rgb10_a2")
 		{
-			Format::A2R10G10B10_UNORM_PACK32;
+			PixelFormat::A2R10G10B10_UNORM_PACK32;
 		}
 
 		// Signed int
 		if (tempStr == "rgba32i")
 		{
-			return Format::R32G32B32A32_SINT;
+			return PixelFormat::R32G32B32A32_SINT;
 		}
 		else if (tempStr == "rgb32i")
 		{
-			return Format::R32G32B32_SINT;
+			return PixelFormat::R32G32B32_SINT;
 		}
 		else if (tempStr == "rg32i")
 		{
-			return Format::R32G32_SINT;
+			return PixelFormat::R32G32_SINT;
 		}
 		else if (tempStr == "r32i")
 		{
-			return Format::R32_SINT;
+			return PixelFormat::R32_SINT;
 		}
 		else if (tempStr == "rgba16i")
 		{
-			return Format::R16G16B16A16_SINT;
+			return PixelFormat::R16G16B16A16_SINT;
 		}
 		else if (tempStr == "rgb16i")
 		{
-			return Format::R16G16B16_SINT;
+			return PixelFormat::R16G16B16_SINT;
 		}
 		else if (tempStr == "rg16i")
 		{
-			return Format::R16G16_SINT;
+			return PixelFormat::R16G16_SINT;
 		}
 		else if (tempStr == "r16i")
 		{
-			return Format::R16_SINT;
+			return PixelFormat::R16_SINT;
 		}
 		else if (tempStr == "rgba8i")
 		{
-			return Format::R8G8B8A8_SINT;
+			return PixelFormat::R8G8B8A8_SINT;
 		}
 		else if (tempStr == "rgb8i")
 		{
-			return Format::R8G8B8_SINT;
+			return PixelFormat::R8G8B8_SINT;
 		}
 		else if (tempStr == "rg8i")
 		{
-			return Format::R8G8_SINT;
+			return PixelFormat::R8G8_SINT;
 		}
 		else if (tempStr == "r8i")
 		{
-			return Format::R8_SINT;
+			return PixelFormat::R8_SINT;
 		}
 
 		// Unsigned int
 		if (tempStr == "rgba32ui")
 		{
-			return Format::R32G32B32A32_UINT;
+			return PixelFormat::R32G32B32A32_UINT;
 		}
 		else if (tempStr == "rgb32ui")
 		{
-			return Format::R32G32B32_UINT;
+			return PixelFormat::R32G32B32_UINT;
 		}
 		else if (tempStr == "rg32ui")
 		{
-			return Format::R32G32_UINT;
+			return PixelFormat::R32G32_UINT;
 		}
 		else if (tempStr == "r32ui")
 		{
-			return Format::R32_UINT;
+			return PixelFormat::R32_UINT;
 		}
 		else if (tempStr == "rgba16ui")
 		{
-			return Format::R16G16B16A16_UINT;
+			return PixelFormat::R16G16B16A16_UINT;
 		}
 		else if (tempStr == "rgb16ui")
 		{
-			return Format::R16G16B16_UINT;
+			return PixelFormat::R16G16B16_UINT;
 		}
 		else if (tempStr == "rg16ui")
 		{
-			return Format::R16G16_UINT;
+			return PixelFormat::R16G16_UINT;
 		}
 		else if (tempStr == "r16ui")
 		{
-			return Format::R16_UINT;
+			return PixelFormat::R16_UINT;
 		}
 		else if (tempStr == "rgba8ui")
 		{
-			return Format::R8G8B8A8_UINT;
+			return PixelFormat::R8G8B8A8_UINT;
 		}
 		else if (tempStr == "rgb8ui")
 		{
-			return Format::R8G8B8_UINT;
+			return PixelFormat::R8G8B8_UINT;
 		}
 		else if (tempStr == "rg8ui")
 		{
-			return Format::R8G8_UINT;
+			return PixelFormat::R8G8_UINT;
 		}
 		else if (tempStr == "r8ui")
 		{
-			return Format::R8_UINT;
+			return PixelFormat::R8_UINT;
 		}
 		else if (tempStr == "rgb10_a2ui")
 		{
-			return Format::A2B10G10R10_UINT_PACK32;
+			return PixelFormat::A2B10G10R10_UINT_PACK32;
 		}
 
 		// Depth
 		if (tempStr == "d32f")
 		{
-			return Format::D32_SFLOAT;
+			return PixelFormat::D32_SFLOAT;
 		}
 		else if (tempStr == "d16u")
 		{
-			return Format::D16_UNORM;
+			return PixelFormat::D16_UNORM;
 		}
 		else if (tempStr == "d16us8")
 		{
-			return Format::D16_UNORM_S8_UINT;
+			return PixelFormat::D16_UNORM_S8_UINT;
 		}
 		else if (tempStr == "d24us8")
 		{
-			return Format::D24_UNORM_S8_UINT;
+			return PixelFormat::D24_UNORM_S8_UINT;
 		}
 		else if (tempStr == "d32us8")
 		{
-			return Format::D32_SFLOAT_S8_UINT;
+			return PixelFormat::D32_SFLOAT_S8_UINT;
 		}
 
 		GraphicsContext::LogTagged(Severity::Error, "ShaderPreProcessor", "Unable to translate layout qualifier {0} into any format!", tempStr);
-		return Format::UNDEFINED;
+		return PixelFormat::UNDEFINED;
 	}
 }

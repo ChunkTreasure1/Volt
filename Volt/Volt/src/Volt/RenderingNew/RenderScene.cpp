@@ -51,7 +51,7 @@ namespace Volt
 		{
 			if (i == 0)
 			{
-				m_currentIndividualMeshCount++;
+				m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 				m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
 				AddMeshToViews(m_renderObjects[i].mesh);
@@ -97,7 +97,7 @@ namespace Volt
 
 	void RenderScene::Unregister(UUID id)
 	{
-		m_isInvalid = false;
+		m_isInvalid = true;
 
 		auto it = std::find_if(m_renderObjects.begin(), m_renderObjects.end(), [id](const auto& obj)
 		{
@@ -108,6 +108,21 @@ namespace Volt
 		{
 			m_renderObjects.erase(it);
 		}
+	}
+
+	const uint32_t RenderScene::GetMeshIndex(Ref<Mesh> mesh) const
+	{
+		auto it = std::find_if(m_individualMeshes.begin(), m_individualMeshes.end(), [&](Weak<Mesh> lhs) 
+		{
+			return lhs.Get() == mesh.get();
+		});
+
+		if (it != m_individualMeshes.end())
+		{
+			return static_cast<uint32_t>(std::distance(m_individualMeshes.begin(), it));
+		}
+
+		return std::numeric_limits<uint32_t>::max();
 	}
 
 	void RenderScene::AddMeshToViews(Ref<Mesh> mesh)

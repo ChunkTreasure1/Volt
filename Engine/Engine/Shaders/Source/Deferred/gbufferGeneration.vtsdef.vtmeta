@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 14379989806067929652
-  filePath: C:/Programming/Volt/Engine/Engine/Shaders/Source/Deferred/gbufferGeneration.vtsdef
+  assetHandle: 13920412086826050520
+  filePath: Engine/Shaders/Source/Deferred/gbufferGeneration.vtsdef
   type: 64
   Dependencies:
-    []
-  ? Properties
+    - 5215428307957008596
+    - 8444368873269543305
+  Properties:
+    {}

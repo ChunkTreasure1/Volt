@@ -20,7 +20,7 @@ namespace Volt::RHI
 		const Ref<ImageView> GetView(const int32_t mip, const int32_t layer) override;
 		const uint32_t GetWidth() const override;
 		const uint32_t GetHeight() const override;
-		const Format GetFormat() const override;
+		const PixelFormat GetFormat() const override;
 		const ImageAspect GetImageAspect() const override;
 		const uint32_t CalculateMipCount() const override;
 

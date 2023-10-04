@@ -25,7 +25,7 @@ namespace Volt::RHI
 	public:
 		struct SurfaceFormat
 		{
-			Format format;
+			PixelFormat format;
 			ColorSpace colorSpace;
 		};
 		
@@ -121,6 +121,6 @@ namespace Volt::RHI
 		VkSwapchainKHR_T* m_swapchain = nullptr;
 		VkSurfaceKHR_T* m_surface = nullptr;
 
-		Format m_swapchainFormat = Format::UNDEFINED;
+		PixelFormat m_swapchainFormat = PixelFormat::UNDEFINED;
 	};
 }

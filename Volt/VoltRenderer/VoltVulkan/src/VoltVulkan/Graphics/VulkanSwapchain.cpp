@@ -24,7 +24,7 @@ namespace Volt::RHI
 
 			for (const auto& format : swapchainFormats)
 			{
-				if (format.format == Format::B8G8R8A8_UNORM && format.colorSpace == ColorSpace::SRGB_NONLINEAR)
+				if (format.format == PixelFormat::B8G8R8A8_UNORM && format.colorSpace == ColorSpace::SRGB_NONLINEAR)
 				{
 					result.format = Utility::VoltToVulkanFormat(format.format);
 					result.colorSpace = Utility::VoltToVulkanColorSpace(format.colorSpace);

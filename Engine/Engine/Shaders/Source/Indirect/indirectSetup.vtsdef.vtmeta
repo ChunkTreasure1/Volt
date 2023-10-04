@@ -1,7 +1,8 @@
 Metadata:
-  assetHandle: 5859814654689736240
-  filePath: C:/Programming/Volt/Engine/Engine/Shaders/Source/Indirect/indirectSetup.vtsdef
+  assetHandle: 15016074700767103834
+  filePath: Engine/Shaders/Source/Indirect/indirectSetup.vtsdef
   type: 64
   Dependencies:
-    []
-  ? Properties
+    - 9521548831228798930
+  Properties:
+    {}

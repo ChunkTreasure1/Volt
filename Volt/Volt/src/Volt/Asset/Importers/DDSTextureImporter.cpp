@@ -33,41 +33,41 @@ namespace Volt
 			}
 		}
 
-		static RHI::Format DDSToImageFormat(tdl::DDSFile::DXGIFormat format)
+		static RHI::PixelFormat DDSToImageFormat(tdl::DDSFile::DXGIFormat format)
 		{
 			switch (format)
 			{
-				case tdl::DDSFile::DXGIFormat::R32G32B32A32_Float: return RHI::Format::R32G32B32A32_SFLOAT;
-				case tdl::DDSFile::DXGIFormat::R16G16B16A16_Float: return RHI::Format::R16G16B16A16_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R32G32B32A32_Float: return RHI::PixelFormat::R32G32B32A32_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R16G16B16A16_Float: return RHI::PixelFormat::R16G16B16A16_SFLOAT;
 
-				case tdl::DDSFile::DXGIFormat::R32G32_Float: return RHI::Format::R32G32_SFLOAT;
-				case tdl::DDSFile::DXGIFormat::R16G16_Float: return RHI::Format::R16G16_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R32G32_Float: return RHI::PixelFormat::R32G32_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R16G16_Float: return RHI::PixelFormat::R16G16_SFLOAT;
 
-				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm: return RHI::Format::R8G8B8A8_UNORM;
-				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB: return RHI::Format::R8G8B8A8_SRGB;
+				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm: return RHI::PixelFormat::R8G8B8A8_UNORM;
+				case tdl::DDSFile::DXGIFormat::R8G8B8A8_UNorm_SRGB: return RHI::PixelFormat::R8G8B8A8_SRGB;
 
-				case tdl::DDSFile::DXGIFormat::R32_Float: return RHI::Format::R32_SFLOAT;
-				case tdl::DDSFile::DXGIFormat::R32_UInt: return RHI::Format::R32_UINT;
-				case tdl::DDSFile::DXGIFormat::R32_SInt: return RHI::Format::R32_SINT;
+				case tdl::DDSFile::DXGIFormat::R32_Float: return RHI::PixelFormat::R32_SFLOAT;
+				case tdl::DDSFile::DXGIFormat::R32_UInt: return RHI::PixelFormat::R32_UINT;
+				case tdl::DDSFile::DXGIFormat::R32_SInt: return RHI::PixelFormat::R32_SINT;
 
-				case tdl::DDSFile::DXGIFormat::BC1_UNorm: return RHI::Format::BC1_RGB_UNORM_BLOCK;
-				case tdl::DDSFile::DXGIFormat::BC1_UNorm_SRGB: return RHI::Format::BC1_RGB_SRGB_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC1_UNorm: return RHI::PixelFormat::BC1_RGB_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC1_UNorm_SRGB: return RHI::PixelFormat::BC1_RGB_SRGB_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC2_UNorm: return RHI::Format::BC2_UNORM_BLOCK;
-				case tdl::DDSFile::DXGIFormat::BC2_UNorm_SRGB: return RHI::Format::BC2_SRGB_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC2_UNorm: return RHI::PixelFormat::BC2_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC2_UNorm_SRGB: return RHI::PixelFormat::BC2_SRGB_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC3_UNorm: return RHI::Format::BC3_UNORM_BLOCK;
-				case tdl::DDSFile::DXGIFormat::BC3_UNorm_SRGB: return RHI::Format::BC3_SRGB_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC3_UNorm: return RHI::PixelFormat::BC3_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC3_UNorm_SRGB: return RHI::PixelFormat::BC3_SRGB_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC4_UNorm: return RHI::Format::BC4_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC4_UNorm: return RHI::PixelFormat::BC4_UNORM_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC5_UNorm: return RHI::Format::BC5_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC5_UNorm: return RHI::PixelFormat::BC5_UNORM_BLOCK;
 
-				case tdl::DDSFile::DXGIFormat::BC7_UNorm: return RHI::Format::BC7_UNORM_BLOCK;
-				case tdl::DDSFile::DXGIFormat::BC7_UNorm_SRGB: return RHI::Format::BC7_SRGB_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC7_UNorm: return RHI::PixelFormat::BC7_UNORM_BLOCK;
+				case tdl::DDSFile::DXGIFormat::BC7_UNorm_SRGB: return RHI::PixelFormat::BC7_SRGB_BLOCK;
 			}
 
-			return RHI::Format::R8G8B8A8_UNORM;
+			return RHI::PixelFormat::R8G8B8A8_UNORM;
 		}
 	}
 

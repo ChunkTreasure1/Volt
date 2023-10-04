@@ -128,6 +128,7 @@ namespace Volt
 
 	SceneRendererNew::~SceneRendererNew()
 	{
+		RenderGraphExecutionThread::WaitForFinishedExecution();
 		m_commandBuffer = nullptr;
 	}
 
@@ -184,6 +185,9 @@ namespace Volt
 		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
 
 		AddPreDepthPass(renderGraph, rgBlackboard);
+
+		AddVisbilityBufferPass(renderGraph, rgBlackboard);
+
 		AddGBufferPass(renderGraph, rgBlackboard);
 		AddDeferredShadingPass(renderGraph, rgBlackboard);
 
@@ -225,8 +229,6 @@ namespace Volt
 
 		UpdateDescriptorTableForMeshRendering(*renderScene);
 
-		uint32_t currentMeshIndex = 0;
-
 		std::unordered_map<Mesh*, uint32_t> meshDataMap;
 		std::unordered_map<size_t, uint32_t> meshSubMeshIndexMap;
 
@@ -245,23 +247,23 @@ namespace Volt
 			}
 			else
 			{
-				meshIndex = currentMeshIndex++;
+				meshIndex = renderScene->GetMeshIndex(obj.mesh);
 				meshDataMap[meshPtr] = meshIndex;
 			}
 
-			Entity entity{ obj.entity, m_scene.Get() };
+			Entity entity{ obj.entity, m_scene };
 
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
 
-			const size_t meshSubMeshHash = Utility::HashMeshSubMesh(obj.mesh, subMesh);
-			if (meshSubMeshIndexMap.contains(meshSubMeshHash))
+			//const size_t meshSubMeshHash = Utility::HashMeshSubMesh(obj.mesh, subMesh);
+			//if (meshSubMeshIndexMap.contains(meshSubMeshHash))
+			//{
+			//	const uint32_t cmdIndex = meshSubMeshIndexMap.at(meshSubMeshHash);
+			//	indirectCommands[cmdIndex].command.instanceCount++;
+			//}
+			//else
 			{
-				const uint32_t cmdIndex = meshSubMeshIndexMap.at(meshSubMeshHash);
-				indirectCommands[cmdIndex].command.instanceCount++;
-			}
-			else
-			{
-				meshSubMeshIndexMap[meshSubMeshHash] = m_currentActiveCommandCount;
+				//meshSubMeshIndexMap[meshSubMeshHash] = m_currentActiveCommandCount;
 
 				indirectCommands[m_currentActiveCommandCount].command.vertexCount = subMesh.indexCount;
 				indirectCommands[m_currentActiveCommandCount].command.instanceCount = 1;
@@ -274,7 +276,7 @@ namespace Volt
 
 			drawDataBuffer[index].meshId = meshIndex;
 			drawDataBuffer[index].vertexStartOffset = subMesh.vertexStartOffset;
-			drawDataBuffer[index].transform = entity.GetTransform();
+			drawDataBuffer[index].transform = entity.GetTransform() * subMesh.transform;
 
 			index++;
 		}
@@ -324,7 +326,7 @@ namespace Volt
 					return;
 				}
 
-				Entity entity = { id, m_scene.Get() };
+				Entity entity = { id, m_scene };
 
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
 				dirLightData.direction = glm::vec4{ dir.x, dir.y, dir.z, 0.f };
@@ -369,6 +371,15 @@ namespace Volt
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("PreDepth");
 			m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		}
+
+		// Visibility Buffer pipeline
+		{
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("VisibilityBuffer");
+			pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
+			pipelineInfo.depthMode = RHI::DepthMode::Read;
+			m_visibilityPipeline = RHI::RenderPipeline::Create(pipelineInfo);
 		}
 
 		// Main pipeline
@@ -464,12 +475,12 @@ namespace Volt
 			RenderGraphImageDesc desc{};
 			desc.width = m_width;
 			desc.height = m_height;
-			desc.format = RHI::Format::D32_SFLOAT;
+			desc.format = RHI::PixelFormat::D32_SFLOAT;
 			desc.usage = RHI::ImageUsage::Attachment;
 			desc.name = "PreDepth";
 			data.depth = builder.CreateImage2D(desc);
 
-			desc.format = RHI::Format::R16G16B16A16_SFLOAT;
+			desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
 			desc.name = "Normals";
 			data.normals = builder.CreateImage2D(desc);
 		},
@@ -490,14 +501,42 @@ namespace Volt
 		});
 	}
 
+	void SceneRendererNew::AddVisbilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
+
+		blackboard.Add<VisibilityBufferData>() = renderGraph.AddPass<VisibilityBufferData>("Visibility Buffer",
+		[&](RenderGraph::Builder& builder, VisibilityBufferData& data)
+		{
+			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisiblityBuffer - Visibility" });
+			builder.WriteResource(preDepthHandle);
+		},
+		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			Ref<RHI::ImageView> visibilityView = resources.GetImage2D(data.visibility)->GetView();
+			Ref<RHI::ImageView> depthView = resources.GetImage2D(preDepthHandle)->GetView();
+
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { visibilityView, depthView });
+			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
+
+			context.BeginRendering(info);
+			context.BindPipeline(m_visibilityPipeline);
+
+			UpdateDescriptorTableForMeshRendering(*m_scene->GetRenderScene(), context);
+
+			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.EndRendering();
+		});
+	}
+
 	void SceneRendererNew::AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("GBuffer Pass",
 		[&](RenderGraph::Builder& builder, GBufferData& data)
 		{
-			data.albedo = builder.CreateImage2D({ RHI::Format::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo " });
-			data.materialEmissive = builder.CreateImage2D({ RHI::Format::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
-			data.normalEmissive = builder.CreateImage2D({ RHI::Format::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+			data.albedo = builder.CreateImage2D({ RHI::PixelFormat::R8G8B8A8_UNORM, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo " });
+			data.materialEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
+			data.normalEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
 			builder.WriteResource(blackboard.Get<PreDepthData>().depth);
 		},

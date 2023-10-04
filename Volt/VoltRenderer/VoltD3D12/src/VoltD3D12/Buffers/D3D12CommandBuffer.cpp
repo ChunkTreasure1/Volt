@@ -200,6 +200,14 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
+	{
+	}
+
+	void D3D12CommandBuffer::EndMarker()
+	{
+	}
+
 	const uint32_t D3D12CommandBuffer::BeginTimestamp()
 	{
 		return 0;

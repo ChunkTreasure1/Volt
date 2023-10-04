@@ -10,7 +10,7 @@ namespace Volt
 	{
 		RenderGraphImageDesc() = default;
 
-		RenderGraphImageDesc(const RHI::Format format, const uint32_t width, const uint32_t height, const RHI::ImageUsage usage, std::string_view name)
+		RenderGraphImageDesc(const RHI::PixelFormat format, const uint32_t width, const uint32_t height, const RHI::ImageUsage usage, std::string_view name)
 		{ 
 			this->format = format;
 			this->width = width;
@@ -19,7 +19,7 @@ namespace Volt
 			this->name = name;
 		}
 
-		RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
+		RHI::PixelFormat format = RHI::PixelFormat::R8G8B8A8_UNORM;
 		RHI::ImageUsage usage = RHI::ImageUsage::Attachment;
 		RHI::ClearMode clearMode = RHI::ClearMode::Clear;
 

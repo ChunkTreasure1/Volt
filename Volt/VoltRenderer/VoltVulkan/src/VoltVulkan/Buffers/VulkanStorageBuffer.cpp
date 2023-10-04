@@ -82,6 +82,11 @@ namespace Volt::RHI
 
 	void VulkanStorageBuffer::SetName(std::string_view name)
 	{
+		if (!Volt::RHI::vkSetDebugUtilsObjectNameEXT)
+		{
+			return;
+		}
+
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
@@ -89,7 +94,7 @@ namespace Volt::RHI
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();
-		vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 	
 	void* VulkanStorageBuffer::GetHandleImpl() const

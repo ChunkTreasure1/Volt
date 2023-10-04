@@ -67,6 +67,7 @@ namespace Volt
 
 		Scene();
 		Scene(const std::string& name);
+		~Scene() override;
 
 		inline entt::registry& GetRegistry() { return m_registry; }
 		inline const std::string& GetName() const { return m_name; }
@@ -189,6 +190,7 @@ namespace Volt
 		void SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		void CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		void MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void MeshComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		//////////////////////////////
 
 		SceneEnvironment m_environment;

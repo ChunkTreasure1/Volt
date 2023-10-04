@@ -211,9 +211,9 @@ namespace Volt::RHI
 			dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 			dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
-			std::vector<Format> outputFormats{};
-			Format depthFormat = Format::UNDEFINED;
-			Format stencilFormat = Format::UNDEFINED;
+			std::vector<PixelFormat> outputFormats{};
+			PixelFormat depthFormat = PixelFormat::UNDEFINED;
+			PixelFormat stencilFormat = PixelFormat::UNDEFINED;
 
 			for (const auto& format : shaderResources.outputFormats)
 			{

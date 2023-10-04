@@ -3,6 +3,7 @@
 
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
+#include "VoltVulkan/Common/VulkanFunctions.h"
 
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
@@ -238,6 +239,8 @@ namespace Volt::RHI
 			m_timestampCounts[lastIndex] = m_nextAvailableTimestampQuery;
 			m_nextAvailableTimestampQuery = 2;
 		}
+
+		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
 	}
 
 	void VulkanCommandBuffer::End()
@@ -245,6 +248,8 @@ namespace Volt::RHI
 		VT_PROFILE_FUNCTION();
 
 		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		EndMarker();
 
 		if (m_hasTimestampSupport)
 		{
@@ -563,57 +568,73 @@ namespace Volt::RHI
 
 		std::vector<VkImageMemoryBarrier2> imageBarriers{};
 		std::vector<VkBufferMemoryBarrier2> bufferBarriers{};
+		std::vector<VkMemoryBarrier2> memoryBarriers{};
 
 		for (const auto& resourceBarrier : resourceBarriers)
 		{
 			auto resourcePtr = resourceBarrier.resource;
 
-			if (resourcePtr->GetType() == ResourceType::Image2D)
+			if (!resourcePtr)
 			{
 				auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
 				auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
-				const auto dstLayout = Utility::GetDstLayoutFromResourceState(resourceBarrier.newState);
 
-				auto& vkImage = resourceBarrier.resource->AsRef<VulkanImage2D>();
-
-				auto& barrier = imageBarriers.emplace_back();
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-				barrier.pNext = nullptr;
-				barrier.srcStageMask = srcStage;
+				auto& barrier = memoryBarriers.emplace_back();
+				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
 				barrier.srcAccessMask = srcAccess;
-				barrier.dstStageMask = dstStage;
+				barrier.srcStageMask = srcStage;
 				barrier.dstAccessMask = dstAccess;
-				barrier.newLayout = dstLayout;
-				barrier.oldLayout = static_cast<VkImageLayout>(vkImage.m_currentImageLayout);
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.m_imageAspect);
-				barrier.subresourceRange.baseArrayLayer = 0;
-				barrier.subresourceRange.baseMipLevel = 0;
-				barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-				barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-				barrier.image = vkImage.GetHandle<VkImage>();
-
-				vkImage.m_currentImageLayout = static_cast<uint32_t>(dstLayout);
+				barrier.dstStageMask = dstStage;
 			}
-			else if (resourcePtr->GetType() == ResourceType::StorageBuffer)
+			else
 			{
-				auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
-				auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
+				if (resourcePtr->GetType() == ResourceType::Image2D)
+				{
+					auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
+					auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
+					const auto dstLayout = Utility::GetDstLayoutFromResourceState(resourceBarrier.newState);
 
-				auto& vkBuffer = resourceBarrier.resource->AsRef<VulkanStorageBuffer>();
-				auto& barrier = bufferBarriers.emplace_back();
-				barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
-				barrier.pNext = nullptr;
-				barrier.srcStageMask = srcStage;
-				barrier.srcAccessMask = srcAccess;
-				barrier.dstStageMask = dstStage;
-				barrier.dstAccessMask = dstAccess;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.offset = 0;
-				barrier.size = vkBuffer.GetByteSize();
-				barrier.buffer = vkBuffer.GetHandle<VkBuffer>();
+					auto& vkImage = resourceBarrier.resource->AsRef<VulkanImage2D>();
+
+					auto& barrier = imageBarriers.emplace_back();
+					barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+					barrier.pNext = nullptr;
+					barrier.srcStageMask = srcStage;
+					barrier.srcAccessMask = srcAccess;
+					barrier.dstStageMask = dstStage;
+					barrier.dstAccessMask = dstAccess;
+					barrier.newLayout = dstLayout;
+					barrier.oldLayout = static_cast<VkImageLayout>(vkImage.m_currentImageLayout);
+					barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+					barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+					barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.m_imageAspect);
+					barrier.subresourceRange.baseArrayLayer = 0;
+					barrier.subresourceRange.baseMipLevel = 0;
+					barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+					barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+					barrier.image = vkImage.GetHandle<VkImage>();
+
+					vkImage.m_currentImageLayout = static_cast<uint32_t>(dstLayout);
+				}
+				else if (resourcePtr->GetType() == ResourceType::StorageBuffer)
+				{
+					auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
+					auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
+
+					auto& vkBuffer = resourceBarrier.resource->AsRef<VulkanStorageBuffer>();
+					auto& barrier = bufferBarriers.emplace_back();
+					barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+					barrier.pNext = nullptr;
+					barrier.srcStageMask = srcStage;
+					barrier.srcAccessMask = srcAccess;
+					barrier.dstStageMask = dstStage;
+					barrier.dstAccessMask = dstAccess;
+					barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+					barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+					barrier.offset = 0;
+					barrier.size = vkBuffer.GetByteSize();
+					barrier.buffer = vkBuffer.GetHandle<VkBuffer>();
+				}
 			}
 		}
 
@@ -621,8 +642,8 @@ namespace Volt::RHI
 		info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
 		info.pNext = nullptr;
 		info.dependencyFlags = 0;
-		info.memoryBarrierCount = 0;
-		info.pMemoryBarriers = nullptr;
+		info.memoryBarrierCount = static_cast<uint32_t>(memoryBarriers.size());
+		info.pMemoryBarriers = memoryBarriers.data();
 		info.bufferMemoryBarrierCount = static_cast<uint32_t>(bufferBarriers.size());
 		info.pBufferMemoryBarriers = bufferBarriers.data();
 		info.imageMemoryBarrierCount = static_cast<uint32_t>(imageBarriers.size());
@@ -632,6 +653,32 @@ namespace Volt::RHI
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 
 		vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &info);
+	}
+
+	void VulkanCommandBuffer::BeginMarker(std::string_view markerLabel, const std::array<float, 4>& markerColor)
+	{
+		if (Volt::RHI::vkCmdBeginDebugUtilsLabelEXT)
+		{
+			VkDebugUtilsLabelEXT markerInfo{};
+			markerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+			markerInfo.pLabelName = markerLabel.data();
+			markerInfo.color[0] = markerColor[0];
+			markerInfo.color[1] = markerColor[1];
+			markerInfo.color[2] = markerColor[2];
+			markerInfo.color[3] = markerColor[3];
+
+			const uint32_t index = GetCurrentCommandBufferIndex();
+			Volt::RHI::vkCmdBeginDebugUtilsLabelEXT(m_commandBuffers.at(index).commandBuffer, &markerInfo);
+		}
+	}
+
+	void VulkanCommandBuffer::EndMarker()
+	{
+		if (Volt::RHI::vkCmdEndDebugUtilsLabelEXT)
+		{
+			const uint32_t index = GetCurrentCommandBufferIndex();
+			Volt::RHI::vkCmdEndDebugUtilsLabelEXT(m_commandBuffers.at(index).commandBuffer);
+		}
 	}
 
 	const uint32_t VulkanCommandBuffer::BeginTimestamp()

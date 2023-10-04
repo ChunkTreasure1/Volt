@@ -51,7 +51,7 @@ namespace Volt::RHI
 		FIFORelaxed = 3 // V-sync if slow dont
 	};
 
-	enum class Format : uint32_t
+	enum class PixelFormat : uint32_t
 	{
 		UNDEFINED = 0,
 		R4G4_UNORM_PACK8 = 1,
@@ -581,7 +581,7 @@ namespace Volt::RHI
 		uint32_t layers = 1;
 		uint32_t mips = 1;
 
-		Format format = Format::R8G8B8A8_UNORM;
+		PixelFormat format = PixelFormat::R8G8B8A8_UNORM;
 		ImageUsage usage = ImageUsage::Texture;
 
 		MemoryUsage memoryUsage = MemoryUsage::GPU;

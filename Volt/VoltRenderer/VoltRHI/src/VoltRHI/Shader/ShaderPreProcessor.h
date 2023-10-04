@@ -9,7 +9,7 @@ namespace Volt::RHI
 	{
 		std::string preProcessedResult;
 	
-		std::vector<Format> outputFormats;
+		std::vector<PixelFormat> outputFormats;
 		BufferLayout vertexLayout;
 	};
 
@@ -30,8 +30,8 @@ namespace Volt::RHI
 		static bool PreProcessPixelSource(const PreProcessorData& data, PreProcessorResult& outResult);
 		static bool PreProcessVertexSource(const PreProcessorData& data, PreProcessorResult& outResult);
 
-		static Format FindDefaultFormatFromString(std::string_view str);
-		static Format FindFormatFromLayoutQualifier(const std::string& str);
+		static PixelFormat FindDefaultFormatFromString(std::string_view str);
+		static PixelFormat FindFormatFromLayoutQualifier(const std::string& str);
 
 		static ElementType FindDefaultElementTypeFromString(std::string_view str);
 		static ElementType FindElementTypeFromTag(std::string_view tagStr);

@@ -247,10 +247,7 @@ namespace Volt::RHI
 
 		extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 		std::vector<const char*> extensionsVector{ extensions, extensions + extensionCount };
-
-#ifdef VT_ENABLE_GPU_MARKERS
 		extensionsVector.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
 
 		return extensionsVector;
 	}

@@ -11,6 +11,11 @@ RendererSettingsPanel::RendererSettingsPanel(Ref<Volt::SceneRendererNew>& sceneR
 
 void RendererSettingsPanel::UpdateMainContent()
 {
+	if (ImGui::Button("Invalidate Render Scene"))
+	{
+		mySceneRenderer->Invalidate();
+	}
+
 	//UI::Header("Settings");
 
 	//bool changed = false;

@@ -765,8 +765,8 @@ struct CD3DX12_CLEAR_VALUE : public D3D12_CLEAR_VALUE
         DXGI_FORMAT format,
         FLOAT depth,
         UINT8 stencil ) noexcept
-    {
-        Format = format;
+	{
+		Format = format;
         memset( &Color, 0, sizeof( Color ) );
         /* Use memcpy to preserve NAN values */
         memcpy( &DepthStencil.Depth, &depth, sizeof( depth ) );
@@ -1032,7 +1032,7 @@ struct CD3DX12_SUBRESOURCE_FOOTPRINT : public D3D12_SUBRESOURCE_FOOTPRINT
         UINT depth,
         UINT rowPitch ) noexcept
     {
-        Format = format;
+		Format = format;
         Width = width;
         Height = height;
         Depth = depth;
@@ -1042,7 +1042,7 @@ struct CD3DX12_SUBRESOURCE_FOOTPRINT : public D3D12_SUBRESOURCE_FOOTPRINT
         const D3D12_RESOURCE_DESC& resDesc,
         UINT rowPitch ) noexcept
     {
-        Format = resDesc.Format;
+		Format = resDesc.Format;
         Width = UINT( resDesc.Width );
         Height = resDesc.Height;
         Depth = (resDesc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D ? resDesc.DepthOrArraySize : 1u);
@@ -1971,7 +1971,7 @@ struct CD3DX12_RESOURCE_DESC : public D3D12_RESOURCE_DESC
         Height = height;
         DepthOrArraySize = depthOrArraySize;
         MipLevels = mipLevels;
-        Format = format;
+		Format = format;
         SampleDesc.Count = sampleCount;
         SampleDesc.Quality = sampleQuality;
         Layout = layout;
@@ -2075,7 +2075,7 @@ struct CD3DX12_RESOURCE_DESC1 : public D3D12_RESOURCE_DESC1
         Height = o.Height;
         DepthOrArraySize = o.DepthOrArraySize;
         MipLevels = o.MipLevels;
-        Format = o.Format;
+		Format = o.Format;
         SampleDesc = o.SampleDesc;
         Layout = o.Layout;
         Flags = o.Flags;
@@ -2103,7 +2103,7 @@ struct CD3DX12_RESOURCE_DESC1 : public D3D12_RESOURCE_DESC1
         Height = height;
         DepthOrArraySize = depthOrArraySize;
         MipLevels = mipLevels;
-        Format = format;
+		Format = format;
         SampleDesc.Count = sampleCount;
         SampleDesc.Quality = sampleQuality;
         Layout = layout;

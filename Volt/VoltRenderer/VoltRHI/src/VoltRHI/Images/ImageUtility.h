@@ -6,16 +6,16 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		inline static bool IsDepthFormat(Format format)
+		inline static bool IsDepthFormat(PixelFormat format)
 		{
 			switch (format)
 			{
-				case Format::D16_UNORM:
-				case Format::X8_D24_UNORM_PACK32:
-				case Format::D16_UNORM_S8_UINT:
-				case Format::D24_UNORM_S8_UINT:
-				case Format::D32_SFLOAT_S8_UINT:
-				case Format::D32_SFLOAT:
+				case PixelFormat::D16_UNORM:
+				case PixelFormat::X8_D24_UNORM_PACK32:
+				case PixelFormat::D16_UNORM_S8_UINT:
+				case PixelFormat::D24_UNORM_S8_UINT:
+				case PixelFormat::D32_SFLOAT_S8_UINT:
+				case PixelFormat::D32_SFLOAT:
 					return true;
 					break;
 			}
@@ -23,13 +23,13 @@ namespace Volt::RHI
 			return false;
 		}
 
-		inline static bool IsStencilFormat(Format format)
+		inline static bool IsStencilFormat(PixelFormat format)
 		{
 			switch (format)
 			{
-				case Format::D16_UNORM_S8_UINT:
-				case Format::D24_UNORM_S8_UINT:
-				case Format::D32_SFLOAT_S8_UINT:
+				case PixelFormat::D16_UNORM_S8_UINT:
+				case PixelFormat::D24_UNORM_S8_UINT:
+				case PixelFormat::D32_SFLOAT_S8_UINT:
 					return true;
 					break;
 			}

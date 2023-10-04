@@ -1121,28 +1121,28 @@ namespace Volt
 		// White texture
 		{
 			constexpr uint32_t whiteTextureData = 0xffffffff;
-			s_defaultData->whiteTexture = Texture2D::Create(RHI::Format::R8G8B8A8_UNORM, 1, 1, &whiteTextureData);
+			s_defaultData->whiteTexture = Texture2D::Create(RHI::PixelFormat::R8G8B8A8_UNORM, 1, 1, &whiteTextureData);
 			s_defaultData->whiteTexture->handle = Asset::Null();
 		}
 
 		// White uint texture
 		{
 			constexpr uint32_t whiteTextureData = 0xffffffff;
-			s_defaultData->whiteUINTTexture = Texture2D::Create(RHI::Format::R32G32B32A32_UINT, 1, 1, &whiteTextureData);
+			s_defaultData->whiteUINTTexture = Texture2D::Create(RHI::PixelFormat::R32G32B32A32_UINT, 1, 1, &whiteTextureData);
 			s_defaultData->whiteUINTTexture->handle = Asset::Null();
 		}
 
 		// Empty normal
 		{
 			const glm::vec4 normalData = { 0.f, 0.5f, 1.f, 0.5f };
-			s_defaultData->emptyNormal = Texture2D::Create(RHI::Format::R32G32B32A32_SFLOAT, 1, 1, &normalData);
+			s_defaultData->emptyNormal = Texture2D::Create(RHI::PixelFormat::R32G32B32A32_SFLOAT, 1, 1, &normalData);
 			s_defaultData->emptyNormal->handle = Asset::Null();
 		}
 
 		// Empty Material
 		{
 			const glm::vec4 materialData = { 0.f, 1.f, 1.f, 0.f };
-			s_defaultData->emptyMaterial = Texture2D::Create(RHI::Format::R32G32B32A32_SFLOAT, 1, 1, &materialData);
+			s_defaultData->emptyMaterial = Texture2D::Create(RHI::PixelFormat::R32G32B32A32_SFLOAT, 1, 1, &materialData);
 			s_defaultData->emptyMaterial->handle = Asset::Null();
 		}
 

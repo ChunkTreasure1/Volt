@@ -53,7 +53,7 @@ namespace Volt::RHI
 		m_imageView = nullptr;
 	}
 
-	const Format VulkanImageView::GetFormat() const
+	const PixelFormat VulkanImageView::GetFormat() const
 	{
 		return m_specification.image->GetFormat();
 	}

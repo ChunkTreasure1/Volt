@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:688250eb6f130efc23467ef54667617b1a910f5c40eccfa1c7bbc0b11b2bedb7
-size 399
+struct PushConstants
+{
+    uint size;
+};
+
+[[vk::push_constant]] PushConstants u_pushConstants;
+
+RWStructuredBuffer<uint> u_countsBuffer : register(u0, space0);
+
+[numthreads(256, 1, 1)]
+void main(uint threadId : SV_DispatchThreadID)
+{
+    if (threadId >= u_pushConstants.size)
+    {
+        return;
+    }
+    
+    u_countsBuffer[0] = 0;
+    u_countsBuffer[1] = 0;
+}

@@ -33,7 +33,7 @@ namespace Volt
 	{
 		std::string debugName;
 		glm::uvec2 initialResolution = { 1280, 720 };
-		Weak<Scene> scene;
+		Ref<Scene> scene;
 	};
 
 	class SceneRendererNew
@@ -48,9 +48,10 @@ namespace Volt
 
 		Ref<RHI::Image2D> GetFinalImage();
 
+		// #TODO_Ivar: TEMP, Should not be public!
+		void Invalidate();
 	private:
 		void OnRender(Ref<Camera> camera);
-		void Invalidate();
 
 		void UpdateBuffers(Ref<Camera> camera);
 		void UpdateCameraBuffer(Ref<Camera> camera);
@@ -65,6 +66,9 @@ namespace Volt
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
+		void AddVisbilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddDeferredShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		///////////////////
@@ -99,14 +103,15 @@ namespace Volt
 
 		uint32_t m_currentActiveCommandCount = 0;
 
-		// Pipelines
+		///// Pipelines /////
 		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 		Ref<RHI::ComputePipeline> m_deferredShadingPipeline;
 
 		Ref<RHI::RenderPipeline> m_preDepthPipeline;
 		Ref<RHI::RenderPipeline> m_gbufferPipeline;
-
-		Weak<Scene> m_scene;
+		Ref<RHI::RenderPipeline> m_visibilityPipeline;
+		/////////////////////
+		Ref<Scene> m_scene;
 	};
 }

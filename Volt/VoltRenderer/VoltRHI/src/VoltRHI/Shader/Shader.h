@@ -128,7 +128,7 @@ namespace Volt::RHI
 		ShaderDataBuffer constantsBuffer{};
 		BufferLayout vertexLayout{};
 	
-		std::vector<Format> outputFormats;
+		std::vector<PixelFormat> outputFormats;
 	};
 
 	class Shader : public RHIInterface

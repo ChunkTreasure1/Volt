@@ -14,7 +14,7 @@ namespace Volt
 	class Texture2D : public Asset
 	{
 	public:
-		Texture2D(RHI::Format format, uint32_t width, uint32_t height, const void* data);
+		Texture2D(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data);
 		Texture2D(Ref<RHI::Image2D> image);
 		Texture2D() = default;
 		~Texture2D() override;
@@ -28,7 +28,7 @@ namespace Volt
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		AssetType GetType() override { return GetStaticType(); }
 
-		static Ref<Texture2D> Create(RHI::Format format, uint32_t width, uint32_t height, const void* data = nullptr);
+		static Ref<Texture2D> Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		static Ref<Texture2D> Create(Ref<RHI::Image2D> image);
 
 	private:

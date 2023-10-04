@@ -68,6 +68,7 @@ namespace Volt
 		void AddPass(std::string_view name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 
 		void AddResourceTransition(RenderGraphResourceHandle resourceHandle, RHI::ResourceState newState);
+		void AddResourceTransition(RHI::ResourceState oldState, RHI::ResourceState newState);
 
 		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
 		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);

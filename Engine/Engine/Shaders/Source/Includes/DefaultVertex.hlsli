@@ -170,13 +170,19 @@ struct DefaultInput
     uint GetObjectID()
     {
         const uint instanceOffset = u_drawToInstanceOffset[drawIndex];
-        return u_instanceOffsetToObjectID[instanceOffset + instanceId];
+        return instanceOffset;
+        //return u_instanceOffsetToObjectID[instanceOffset + instanceId];
     }
     
     const IndirectDrawData GetDrawData()
     {
         const uint objectId = GetObjectID();
         return u_indirectDrawData[objectId];
+    }
+    
+    const uint GetTriangleID()
+    {
+        return vertexId % 3;
     }
     
     const uint GetVertexIndex()

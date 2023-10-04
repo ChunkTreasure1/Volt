@@ -5,7 +5,7 @@
 
 namespace Volt
 {
-	Texture2D::Texture2D(RHI::Format format, uint32_t width, uint32_t height, const void* data)
+	Texture2D::Texture2D(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data)
 	{
 		RHI::ImageSpecification imageSpec{};
 		imageSpec.format = format;
@@ -36,7 +36,7 @@ namespace Volt
 		return m_image->GetHeight();
 	}
 
-	Ref<Texture2D> Texture2D::Create(RHI::Format format, uint32_t width, uint32_t height, const void* data)
+	Ref<Texture2D> Texture2D::Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data)
 	{
 		return CreateRef<Texture2D>(format, width, height, data);
 	}

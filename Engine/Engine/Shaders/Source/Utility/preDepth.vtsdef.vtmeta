@@ -1,7 +1,9 @@
 Metadata:
-  assetHandle: 15950073302620413006
-  filePath: C:/Programming/Volt/Engine/Engine/Shaders/Source/Utility/preDepth.vtsdef
+  assetHandle: 3178055852521492034
+  filePath: Engine/Shaders/Source/Utility/preDepth.vtsdef
   type: 64
   Dependencies:
-    []
-  ? Properties
+    - 15140976001098997334
+    - 16066151942631060855
+  Properties:
+    {}

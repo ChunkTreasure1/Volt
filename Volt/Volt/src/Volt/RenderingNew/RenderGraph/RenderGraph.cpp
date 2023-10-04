@@ -304,6 +304,8 @@ namespace Volt
 				continue;
 			}
 
+			m_commandBuffer->BeginMarker(passNode->name, { 1.f, 1.f, 1.f, 1.f });
+
 			if (!m_resourceTransitions.at(passNode->index).empty())
 			{
 				std::vector<RHI::ResourceBarrierInfo> barrierInfos{};
@@ -314,7 +316,7 @@ namespace Volt
 					barrier.oldState = transition.oldState;
 					barrier.newState = transition.newState;
 					barrier.resource = GetResourceRaw(transition.resourceHandle);
-				
+
 					m_resourceNodes.at(transition.resourceHandle)->currentState = transition.newState;
 				}
 
@@ -323,9 +325,10 @@ namespace Volt
 
 			{
 				VT_PROFILE_SCOPE(passNode->name.data());
-
 				passNode->Execute(*this, m_renderContext);
 			}
+
+			m_commandBuffer->EndMarker();
 		}
 
 		// Add the barriers specified after last pass
@@ -538,6 +541,18 @@ namespace Volt
 		newAccess.oldState = currentState;
 		newAccess.newState = newState;
 		newAccess.resourceHandle = resourceHandle;
+	}
+
+	void RenderGraph::AddResourceTransition(RHI::ResourceState oldState, RHI::ResourceState newState)
+	{
+		if (m_resourceTransitions.size() <= static_cast<size_t>(m_passIndex))
+		{
+			m_resourceTransitions.resize(m_passIndex + 1);
+		}
+
+		auto& newAccess = m_resourceTransitions.at(m_passIndex).emplace_back();
+		newAccess.oldState = oldState;
+		newAccess.newState = newState;
 	}
 
 	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle)

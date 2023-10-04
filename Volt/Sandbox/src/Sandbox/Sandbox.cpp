@@ -676,7 +676,6 @@ void Sandbox::TransitionToNewScene()
 	myRuntimeScene->OnRuntimeEnd();
 
 	SelectionManager::DeselectAll();
-
 	Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 
 	myRuntimeScene = CreateRef<Volt::Scene>();

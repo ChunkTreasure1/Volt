@@ -103,8 +103,12 @@ namespace Volt
 	void RenderContext::DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();
-
 		BindDescriptorTableIfRequired();
+
+		if (maxDrawCount == 0)
+		{
+			return;
+		}
 
 		m_commandBuffer->DrawIndirectCount(commandsBuffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 	}
