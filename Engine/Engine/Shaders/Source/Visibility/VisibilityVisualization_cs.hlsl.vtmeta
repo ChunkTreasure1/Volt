@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 4806760845052372822
+  filePath: Engine/Shaders/Source/Visibility/VisibilityVisualization_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

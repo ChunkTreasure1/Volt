@@ -4,6 +4,13 @@
 
 namespace Volt
 {
+	enum class VisibilityVisualization
+	{
+		None = 0,
+		ObjectID = 1,
+		TriangleID = 2
+	};
+
 	struct ExternalImagesData
 	{
 		RenderGraphResourceHandle outputImage;

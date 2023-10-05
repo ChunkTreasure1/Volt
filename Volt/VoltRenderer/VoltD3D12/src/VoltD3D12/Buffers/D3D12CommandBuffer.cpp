@@ -164,7 +164,7 @@ namespace Volt::RHI
 			
 			if (attachment.clearMode == ClearMode::Clear)
 			{
-				cmdData.commandList->ClearRenderTargetView(*viewHandle, attachment.clearColor.data(), 0, nullptr);
+				cmdData.commandList->ClearRenderTargetView(*viewHandle, attachment.clearColor.float32, 0, nullptr);
 			}
 			rtvViews.emplace_back(*viewHandle);
 		}

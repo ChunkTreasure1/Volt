@@ -2,6 +2,8 @@
 
 #include "Volt/Core/Base.h"
 
+#include "Volt/RenderingNew/SceneRendererStructs.h"
+
 namespace Volt
 {
 	namespace RHI
@@ -67,7 +69,8 @@ namespace Volt
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
-		void AddVisbilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddDeferredShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -103,15 +106,21 @@ namespace Volt
 
 		uint32_t m_currentActiveCommandCount = 0;
 
+		///// TEMP /////
+		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;
+		////////////////
+
 		///// Pipelines /////
 		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 		Ref<RHI::ComputePipeline> m_deferredShadingPipeline;
+		Ref<RHI::ComputePipeline> m_visibilityVisualizationPipeline;
 
 		Ref<RHI::RenderPipeline> m_preDepthPipeline;
 		Ref<RHI::RenderPipeline> m_gbufferPipeline;
 		Ref<RHI::RenderPipeline> m_visibilityPipeline;
 		/////////////////////
+
 		Ref<Scene> m_scene;
 	};
 }

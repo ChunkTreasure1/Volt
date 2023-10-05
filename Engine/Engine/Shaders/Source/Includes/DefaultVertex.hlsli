@@ -182,7 +182,7 @@ struct DefaultInput
     
     const uint GetTriangleID()
     {
-        return vertexId % 3;
+        return vertexId / 3;
     }
     
     const uint GetVertexIndex()

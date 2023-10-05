@@ -6,7 +6,6 @@
 #include "Volt/RenderingNew/RendererCommon.h"
 #include "Volt/RenderingNew/RendererNew.h"
 
-#include "Volt/RenderingNew/SceneRendererStructs.h"
 #include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
@@ -186,10 +185,18 @@ namespace Volt
 
 		AddPreDepthPass(renderGraph, rgBlackboard);
 
-		AddVisbilityBufferPass(renderGraph, rgBlackboard);
+		AddVisibilityBufferPass(renderGraph, rgBlackboard);
 
-		AddGBufferPass(renderGraph, rgBlackboard);
-		AddDeferredShadingPass(renderGraph, rgBlackboard);
+		if (m_visibilityVisualization != VisibilityVisualization::None)
+		{
+			AddVisibilityVisualizationPass(renderGraph, rgBlackboard);
+		}
+		else
+		{
+			AddGBufferPass(renderGraph, rgBlackboard);
+			AddDeferredShadingPass(renderGraph, rgBlackboard);
+		}
+
 
 		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalImagesData>().outputImage, RHI::ResourceState::PixelShaderRead);
 
@@ -403,6 +410,11 @@ namespace Volt
 		{
 			m_deferredShadingPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("DeferredShading"));
 		}
+
+		// Visibility buffer visualization
+		{
+			m_visibilityVisualizationPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("VisibilityVisualization"));
+		}
 	}
 
 	void SceneRendererNew::AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -501,7 +513,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRendererNew::AddVisbilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRendererNew::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
 
@@ -510,14 +522,16 @@ namespace Volt
 		{
 			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisiblityBuffer - Visibility" });
 			builder.WriteResource(preDepthHandle);
+			builder.SetHasSideEffect();
 		},
-		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			Ref<RHI::ImageView> visibilityView = resources.GetImage2D(data.visibility)->GetView();
 			Ref<RHI::ImageView> depthView = resources.GetImage2D(preDepthHandle)->GetView();
 
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { visibilityView, depthView });
 			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
+			info.renderingInfo.colorAttachments.at(0).SetClearColor(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max());
 
 			context.BeginRendering(info);
 			context.BindPipeline(m_visibilityPipeline);
@@ -526,6 +540,35 @@ namespace Volt
 
 			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 			context.EndRendering();
+		});
+	}
+
+	void SceneRendererNew::AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		ExternalImagesData externalImagesData = blackboard.Get<ExternalImagesData>();
+		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
+
+		renderGraph.AddPass("Visibility Visualization",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.WriteResource(externalImagesData.outputImage);
+
+			builder.ReadResource(visBufferData.visibility);
+
+			builder.SetIsComputePass();
+			builder.SetHasSideEffect();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			auto outputImage = resources.GetImage2D(externalImagesData.outputImage);
+
+			context.BindPipeline(m_visibilityVisualizationPipeline);
+			context.SetImageView(resources.GetImage2D(visBufferData.visibility)->GetView(), 0, 0);
+			context.SetImageView(outputImage->GetView(), 0, 1);
+
+			context.ClearImage(m_outputImage, { 0.1f, 0.1f, 0.1f, 1.f });
+			context.PushConstants(&m_visibilityVisualization, sizeof(uint32_t));
+			context.Dispatch((m_width / 16) + 1, (m_height / 16) + 1, 1);
 		});
 	}
 
@@ -592,7 +635,7 @@ namespace Volt
 			context.SetImageView(outputImage->GetView(), 0, 4);
 
 			context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 1.f });
-			context.Dispatch((m_width / 16) + 1, (m_width / 16) + 1, 1);
+			context.Dispatch((m_width / 16) + 1, (m_height / 16) + 1, 1);
 		});
 	}
 }

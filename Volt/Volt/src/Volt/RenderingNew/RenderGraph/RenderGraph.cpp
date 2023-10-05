@@ -122,7 +122,7 @@ namespace Volt
 				continue;
 			}
 
-			for (const auto& resource : pass->resourceWrites)
+			auto writeResourceFunc = [&](const RenderGraphResourceHandle& resource)
 			{
 				int32_t lastAccessPassIndex = lastResourceAccess.at(resource);
 
@@ -168,7 +168,7 @@ namespace Volt
 
 				if (oldState == newState)
 				{
-					continue;
+					return;
 				}
 
 				auto& newAccess = resultAccesses.at(pass->index).emplace_back();
@@ -178,6 +178,16 @@ namespace Volt
 
 				passAccesses[pass->index][resource] = newAccess;
 				lastResourceAccess[resource] = static_cast<int32_t>(pass->index);
+			};
+
+			for (const auto& resource : pass->resourceCreates)
+			{
+				writeResourceFunc(resource);
+			}
+
+			for (const auto& resource : pass->resourceWrites)
+			{
+				writeResourceFunc(resource);
 			}
 
 			for (const auto& resource : pass->resourceReads)

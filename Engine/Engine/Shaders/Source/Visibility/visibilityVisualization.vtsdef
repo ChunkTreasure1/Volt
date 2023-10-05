@@ -1,0 +1,4 @@
+name: "VisibilityVisualization"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Visibility/VisibilityVisualization_cs.hlsl"

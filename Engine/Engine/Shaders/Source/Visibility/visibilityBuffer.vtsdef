@@ -1,5 +1,5 @@
 name: "VisibilityBuffer"
 internal: true
 paths:
-  - "Engine/Shaders/Source/Indirect/VisibilityBuffer_vs.hlsl"
-  - "Engine/Shaders/Source/Indirect/VisibilityBuffer_ps.hlsl"
+  - "Engine/Shaders/Source/Visibility/VisibilityBuffer_vs.hlsl"
+  - "Engine/Shaders/Source/Visibility/VisibilityBuffer_ps.hlsl"
