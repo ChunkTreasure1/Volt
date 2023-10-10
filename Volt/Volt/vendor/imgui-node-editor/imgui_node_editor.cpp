@@ -1409,7 +1409,7 @@ void ed::EditorContext::End()
 		ImDrawList_ChannelsGrow(drawList, userChannel + channelsToCopy);
 		for (int i = 0; i < channelsToCopy; ++i)
 			ImDrawList_SwapChannels(drawList, userChannel + i, c_UserLayerChannelStart + i);
-}
+	}
 # endif
 
 # if 0
@@ -2182,8 +2182,8 @@ ed::Control ed::EditorContext::BuildControl(bool allowOffscreen)
 	// Check for interaction with background.
 	auto backgroundClicked = emitInteractiveArea(NodeId(0), editorRect);
 	auto backgroundDoubleClicked = !doubleClickedObject && ImGui::IsItemHovered() ? ImGui::IsMouseDoubleClicked(0) : false;
+	auto isBackgroundActive = ImGui::IsItemActive();
 	auto isBackgroundHot = !hotObject;
-	auto isBackgroundActive = ImGui::IsItemActive() && isBackgroundHot;
 	auto isDragging = ImGui::IsMouseDragging(0, 1) || ImGui::IsMouseDragging(1, 1) || ImGui::IsMouseDragging(2, 1);
 
 	if (backgroundDoubleClicked)

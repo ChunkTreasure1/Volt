@@ -225,8 +225,10 @@ namespace Volt
 				VT_CORE_ASSERT(false, "State type construction not implemented.");
 				break;
 		}
-
-		myStates.back()->id = id;
+		if (id != 0)
+		{
+			myStates.back()->id = id;
+		}
 		return myStates.back();
 	}
 
