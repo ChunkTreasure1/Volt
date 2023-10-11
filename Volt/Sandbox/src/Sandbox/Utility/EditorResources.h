@@ -57,6 +57,10 @@ enum class EditorIcon
 	GraphPinAnimationPose,
 	GraphPinAnimationPoseFilled,
 
+	StateMachineAliasState,
+	StateMachineAnimationState,
+
+
 	Volt,
 };
 

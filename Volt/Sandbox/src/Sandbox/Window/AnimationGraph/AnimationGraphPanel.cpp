@@ -5,13 +5,16 @@
 
 #include <Volt/Animation/AnimationStateMachine.h>
 #include <Volt/Animation/AnimationTransitionGraph.h>
+
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/AssetManager.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 #include <GraphKey/Nodes/Animation/StateMachineNodes.h>
 #include <GraphKey/Nodes/Animation/BlendNodes.h>
+
 
 #include <builders.h>
 #include <typeindex>
@@ -422,6 +425,11 @@ void AnimationGraphPanel::DrawNodesPanel()
 		{
 			GetLastEntry().stateMachine->AddState("New State", Volt::StateMachineStateType::AnimationState);
 		}
+
+		if (ImGui::Button("Add Alias"))
+		{
+			GetLastEntry().stateMachine->AddState("New Alias", Volt::StateMachineStateType::AliasState);
+		}
 	}
 	ImGui::End();
 }
@@ -623,13 +631,32 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 
 		// Content
 		{
+			Ref<Volt::Texture2D> Icon;
+			if (state->stateType == Volt::StateMachineStateType::AnimationState)
+			{
+				Icon = EditorResources::GetEditorIcon(EditorIcon::StateMachineAnimationState);
+
+			}
+			else if (state->stateType == Volt::StateMachineStateType::AliasState)
+			{
+				Icon = EditorResources::GetEditorIcon(EditorIcon::StateMachineAliasState);
+			}
+
 			ImGui::BeginHorizontal("content_frame");
 			ImGui::Spring(1, padding);
 
 			ImGui::BeginVertical("content", ImVec2(0.0f, 0.0f));
-			ImGui::Dummy(ImVec2(160, 0));
+			ImGui::Dummy(ImVec2(160.f, 0));
 			ImGui::Spring(1);
+
+			ImGui::BeginHorizontal("contentinfo");
+			if (Icon)
+			{
+				ImGui::Image(UI::GetTextureID(Icon), ImVec2(20, 20));
+			}
 			ImGui::TextUnformatted(state->name.c_str());
+			ImGui::EndHorizontal();
+
 			ImGui::Spring(1);
 			ImGui::EndVertical();
 			contentRect = ImGui_GetItemRect();
@@ -910,8 +937,8 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 	}
 	else
 	{
-		auto node = GetLastEntry().stateMachine->GetStateById(selectedNodes.at(0));
-		if (!node)
+		auto selectedNode = GetLastEntry().stateMachine->GetStateById(selectedNodes.at(0));
+		if (!selectedNode)
 		{
 			return;
 		}
@@ -919,9 +946,36 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 		UI::PushID();
 		if (UI::BeginProperties("stateProperties"))
 		{
-			if (node->name != "Entry")
+			if (selectedNode->name != "Entry")
 			{
-				UI::Property("Name", node->name);
+				UI::Property("Name", selectedNode->name);
+			}
+
+			if (selectedNode->stateType == Volt::StateMachineStateType::AliasState)
+			{
+				auto aliasState = reinterpret_cast<Volt::AliasState*>(selectedNode);
+
+				UI::Header("Transition from states");
+				for (auto state : GetLastEntry().stateMachine->GetStates())
+				{
+					if (state->stateType == Volt::StateMachineStateType::AnimationState)
+					{
+						auto it = std::find(aliasState->transitionFromStates.begin(), aliasState->transitionFromStates.end(), state->id);
+						bool value = it != aliasState->transitionFromStates.end();
+						if (UI::Property(state->name, value))
+						{
+							if (value) // changed from false to true
+							{
+								aliasState->transitionFromStates.push_back(state->id);
+							}
+							else //changed from true to false
+							{
+								aliasState->transitionFromStates.erase(it);
+							}
+						}
+					}
+				}
+
 			}
 
 			UI::EndProperties();

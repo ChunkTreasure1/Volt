@@ -55,30 +55,37 @@ namespace Volt
 			myCurrentBlendingTime += deltaTime;
 		}
 
-		// Check any state for transitions
-		/*for (const auto& state : myStates)
+		// Check alias states for transitions
+		for (const auto& state : myStates)
 		{
-			if (state->isAny)
+			if (state->stateType == StateMachineStateType::AliasState)
 			{
-				for (const auto transitionId : state->transitions)
+				Ref<AliasState> aliasState = std::reinterpret_pointer_cast<AliasState>(state);
+				auto it = std::find(aliasState->transitionFromStates.begin(), aliasState->transitionFromStates.end(), GetAnimationState(myCurrentState)->id);
+				if (it != aliasState->transitionFromStates.end())
 				{
-					if (ShouldTransition(transitionId, state->id))
+					for (const auto transitionId : state->transitions)
 					{
-						const auto transition = GetTransitionById(transitionId);
-						if (transition->toState == myStates.at(myCurrentState)->id)
+						if (ShouldTransition(transitionId, state->id))
 						{
-							continue;
-						}
+							const auto transition = GetTransitionById(transitionId);
+							if (transition->toState == myStates.at(myCurrentState)->id)
+							{
+								continue;
+							}
 
-						SetNextState(transition->toState, transitionId);
-						return;
+							SetNextState(transition->toState, transitionId);
+							return;
+						}
 					}
 				}
 				break;
 			}
-		}*/
+		}
 
 		const auto& currState = myStates.at(myCurrentState);
+
+		VT_WARN("{}", currState->name);
 
 		for (const auto& id : currState->transitions)
 		{
