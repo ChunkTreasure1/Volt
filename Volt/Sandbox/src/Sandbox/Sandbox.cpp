@@ -205,6 +205,11 @@ void Sandbox::OnAttach()
 		OpenScene(userSettings.sceneSettings.lastOpenScene);
 	}
 
+	if(!myRuntimeScene)
+	{
+		NewScene();
+	}
+
 	constexpr int64_t discordAppId = 1108502963447681106;
 
 	Volt::DiscordSDK::Init(discordAppId, false);
