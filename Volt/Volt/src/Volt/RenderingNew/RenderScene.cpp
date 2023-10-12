@@ -2,6 +2,7 @@
 #include "RenderScene.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Asset/Mesh/Material.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
@@ -42,6 +43,7 @@ namespace Volt
 
 		m_currentIndividualMeshCount = 0;
 		m_individualMeshes.clear();
+		m_individualMaterials.clear();
 		m_vertexPositionViews.clear();
 		m_vertexMaterialViews.clear();
 		m_vertexAnimationViews.clear();
@@ -56,6 +58,14 @@ namespace Volt
 
 				AddMeshToViews(m_renderObjects[i].mesh);
 
+				for (const auto& subMaterial : m_renderObjects[i].mesh->GetMaterial()->GetSubMaterials())
+				{
+					const uint32_t materialIndex = GetMaterialIndex(subMaterial.second);
+					if (materialIndex == std::numeric_limits<uint32_t>::max())
+					{
+						m_individualMaterials.push_back(subMaterial.second);
+					}
+				}
 			}
 			else
 			{
@@ -65,6 +75,15 @@ namespace Volt
 					m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
 					AddMeshToViews(m_renderObjects[i].mesh);
+
+					for (const auto& subMaterial : m_renderObjects[i].mesh->GetMaterial()->GetSubMaterials())
+					{
+						const uint32_t materialIndex = GetMaterialIndex(subMaterial.second);
+						if (materialIndex == std::numeric_limits<uint32_t>::max())
+						{
+							m_individualMaterials.push_back(subMaterial.second);
+						}
+					}
 				}
 			}
 		}
@@ -112,7 +131,7 @@ namespace Volt
 
 	const uint32_t RenderScene::GetMeshIndex(Ref<Mesh> mesh) const
 	{
-		auto it = std::find_if(m_individualMeshes.begin(), m_individualMeshes.end(), [&](Weak<Mesh> lhs) 
+		auto it = std::find_if(m_individualMeshes.begin(), m_individualMeshes.end(), [&](Weak<Mesh> lhs)
 		{
 			return lhs.Get() == mesh.get();
 		});
@@ -120,6 +139,21 @@ namespace Volt
 		if (it != m_individualMeshes.end())
 		{
 			return static_cast<uint32_t>(std::distance(m_individualMeshes.begin(), it));
+		}
+
+		return std::numeric_limits<uint32_t>::max();
+	}
+
+	const uint32_t RenderScene::GetMaterialIndex(Ref<SubMaterial> material) const
+	{
+		auto it = std::find_if(m_individualMaterials.begin(), m_individualMaterials.end(), [&](Weak<SubMaterial> lhs)
+		{
+			return lhs.Get() == material.get();
+		});
+
+		if (it != m_individualMaterials.end())
+		{
+			return static_cast<uint32_t>(std::distance(m_individualMaterials.begin(), it));
 		}
 
 		return std::numeric_limits<uint32_t>::max();

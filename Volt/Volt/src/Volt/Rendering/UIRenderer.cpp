@@ -14,7 +14,6 @@
 #include "Volt/Rendering/Buffer/VertexBufferSet.h"
 
 #include "Volt/Rendering/CommandBuffer.h"
-#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Texture/Image2D.h"
@@ -501,7 +500,7 @@ namespace Volt
 
 			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, remappedPosition)* glm::rotate(glm::mat4{ 1.f }, cmd.rotation, { 0.f, 0.f, 1.f })* glm::scale(glm::mat4{ 1.f }, { cmd.scale.x * minScale, cmd.scale.y * minScale, 1.f });
 
-			subMat->Bind(s_uiRendererData->commandBuffer);
+			//subMat->Bind(s_uiRendererData->commandBuffer);
 
 			if (cmd.image)
 			{
@@ -511,17 +510,17 @@ namespace Volt
 					textureIndex = Renderer::GetBindlessData().textureTable->AddTexture(cmd.image);
 				}
 
-				subMat->SetValue("textureIndex", textureIndex);
+				//subMat->SetValue("textureIndex", textureIndex);
 			}
 			else
 			{
-				subMat->SetValue("textureIndex", 0);
+				//subMat->SetValue("textureIndex", 0);
 			}
 
-			subMat->SetValue("color", cmd.color);
-			subMat->SetValue("viewProjectionTransform", s_uiRendererData->currentProjection * s_uiRendererData->currentView * transform);
-			subMat->SetValue("vertexOffset", cmd.offset);
-			subMat->PushMaterialData(s_uiRendererData->commandBuffer);
+			//subMat->SetValue("color", cmd.color);
+			//subMat->SetValue("viewProjectionTransform", s_uiRendererData->currentProjection * s_uiRendererData->currentView * transform);
+			//subMat->SetValue("vertexOffset", cmd.offset);
+			//subMat->PushMaterialData(s_uiRendererData->commandBuffer);
 
 			//const uint32_t currentIndex = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 
@@ -572,94 +571,94 @@ namespace Volt
 
 	void UIRenderer::CreateQuadData()
 	{
-		RenderPipelineSpecification spec{};
-		spec.name = "Quad";
-		spec.shader = ShaderRegistry::GetShader("Quad");
-		spec.depthMode = DepthMode::ReadWrite;
-		spec.cullMode = CullMode::None;
+		//RenderPipelineSpecification spec{};
+		//spec.name = "Quad";
+		//spec.shader = ShaderRegistry::GetShader("Quad");
+		//spec.depthMode = DepthMode::ReadWrite;
+		//spec.cullMode = CullMode::None;
 
-		spec.framebufferAttachments =
-		{
-			{ ImageFormat::RGBA16F, { 1.f }, TextureBlend::Alpha },
-			{ ImageFormat::DEPTH32F }
-		};
-		spec.vertexLayout =
-		{
-			{ ElementType::Float4, "POSITION" },
-			{ ElementType::Float4, "COLOR" },
-			{ ElementType::Float2, "TEXCOORD" }
-		};
+		//spec.framebufferAttachments =
+		//{
+		//	{ ImageFormat::RGBA16F, { 1.f }, TextureBlend::Alpha },
+		//	{ ImageFormat::DEPTH32F }
+		//};
+		//spec.vertexLayout =
+		//{
+		//	{ ElementType::Float4, "POSITION" },
+		//	{ ElementType::Float4, "COLOR" },
+		//	{ ElementType::Float2, "TEXCOORD" }
+		//};
 
-		spec.depthCompareOperator = CompareOperator::LessEqual;
+		//spec.depthCompareOperator = CompareOperator::LessEqual;
 
-		s_uiRendererData->quadData.quadMaterial = Material::Create(spec);
+		//s_uiRendererData->quadData.quadMaterial = Material::Create(spec);
 
-		// Vertex Buffer
-		{
-			constexpr uint32_t VERTEX_COUNT = 4;
+		//// Vertex Buffer
+		//{
+		//	constexpr uint32_t VERTEX_COUNT = 4;
 
-			SpriteVertex* tempVertPtr = new SpriteVertex[VERTEX_COUNT];
-			tempVertPtr[0].position = { -0.5f, -0.5f, 0.f, 1.f };
-			tempVertPtr[1].position = { 0.5f, -0.5f, 0.f, 1.f };
-			tempVertPtr[2].position = { 0.5f,  0.5f, 0.f, 1.f };
-			tempVertPtr[3].position = { -0.5f,  0.5f, 0.f, 1.f };
+		//	SpriteVertex* tempVertPtr = new SpriteVertex[VERTEX_COUNT];
+		//	tempVertPtr[0].position = { -0.5f, -0.5f, 0.f, 1.f };
+		//	tempVertPtr[1].position = { 0.5f, -0.5f, 0.f, 1.f };
+		//	tempVertPtr[2].position = { 0.5f,  0.5f, 0.f, 1.f };
+		//	tempVertPtr[3].position = { -0.5f,  0.5f, 0.f, 1.f };
 
-			tempVertPtr[0].texCoords = { 0.f, 1.f };
-			tempVertPtr[1].texCoords = { 1.f, 1.f };
-			tempVertPtr[2].texCoords = { 1.f, 0.f };
-			tempVertPtr[3].texCoords = { 0.f, 0.f };
+		//	tempVertPtr[0].texCoords = { 0.f, 1.f };
+		//	tempVertPtr[1].texCoords = { 1.f, 1.f };
+		//	tempVertPtr[2].texCoords = { 1.f, 0.f };
+		//	tempVertPtr[3].texCoords = { 0.f, 0.f };
 
-			tempVertPtr[0].color = { 1.f };
-			tempVertPtr[1].color = { 1.f };
-			tempVertPtr[2].color = { 1.f };
-			tempVertPtr[3].color = { 1.f };
+		//	tempVertPtr[0].color = { 1.f };
+		//	tempVertPtr[1].color = { 1.f };
+		//	tempVertPtr[2].color = { 1.f };
+		//	tempVertPtr[3].color = { 1.f };
 
-			s_uiRendererData->quadData.vertexBuffer = RHI::VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * VERTEX_COUNT);
-			delete[] tempVertPtr;
-		}
+		//	s_uiRendererData->quadData.vertexBuffer = RHI::VertexBuffer::Create(tempVertPtr, sizeof(SpriteVertex) * VERTEX_COUNT);
+		//	delete[] tempVertPtr;
+		//}
 
-		// Index Buffer
-		{
-			constexpr uint32_t INDEX_COUNT = 6;
+		//// Index Buffer
+		//{
+		//	constexpr uint32_t INDEX_COUNT = 6;
 
-			uint32_t* tempIndexPtr = new uint32_t[INDEX_COUNT];
+		//	uint32_t* tempIndexPtr = new uint32_t[INDEX_COUNT];
 
-			tempIndexPtr[0] = 0;
-			tempIndexPtr[1] = 3;
-			tempIndexPtr[2] = 2;
+		//	tempIndexPtr[0] = 0;
+		//	tempIndexPtr[1] = 3;
+		//	tempIndexPtr[2] = 2;
 
-			tempIndexPtr[3] = 2;
-			tempIndexPtr[4] = 1;
-			tempIndexPtr[5] = 0;
+		//	tempIndexPtr[3] = 2;
+		//	tempIndexPtr[4] = 1;
+		//	tempIndexPtr[5] = 0;
 
-			s_uiRendererData->quadData.indexBuffer = RHI::IndexBuffer::Create(tempIndexPtr, INDEX_COUNT);
-			delete[] tempIndexPtr;
-		}
+		//	s_uiRendererData->quadData.indexBuffer = RHI::IndexBuffer::Create(tempIndexPtr, INDEX_COUNT);
+		//	delete[] tempIndexPtr;
+		//}
 	}
 
 	void UIRenderer::CreateTextData()
 	{
 		auto& textData = s_uiRendererData->textData;
 
-		// Create pipeline
-		{
-			RenderPipelineSpecification spec{};
-			spec.name = "Text";
-			spec.shader = ShaderRegistry::GetShader("Text");
-			spec.depthMode = DepthMode::Read;
-			spec.cullMode = CullMode::Back;
+		//// Create pipeline
+		//{
+		//	RenderPipelineSpecification spec{};
+		//	spec.name = "Text";
+		//	spec.shader = ShaderRegistry::GetShader("Text");
+		//	spec.depthMode = DepthMode::Read;
+		//	spec.cullMode = CullMode::Back;
 
-			spec.framebufferAttachments =
-			{
-				{ ImageFormat::RGBA16F, { 1.f }, TextureBlend::Alpha },
-				{ ImageFormat::DEPTH32F }
-			};
+		//	spec.framebufferAttachments =
+		//	{
+		//		{ ImageFormat::RGBA16F, { 1.f }, TextureBlend::Alpha },
+		//		{ ImageFormat::DEPTH32F }
+		//	};
 
-			spec.vertexLayout = TextVertex::GetVertexLayout();
-			spec.depthCompareOperator = CompareOperator::LessEqual;
+		//	spec.vertexLayout = TextVertex::GetVertexLayout();
+		//	spec.depthCompareOperator = CompareOperator::LessEqual;
 
-			textData.renderPipeline = RenderPipeline::Create(spec);
-		}
+		//	textData.renderPipeline = RenderPipeline::Create(spec);
+		//}
 
 		textData.vertexBufferBase = new TextVertex[TextData::MAX_INDICES];
 		textData.vertexBufferPtr = textData.vertexBufferBase;

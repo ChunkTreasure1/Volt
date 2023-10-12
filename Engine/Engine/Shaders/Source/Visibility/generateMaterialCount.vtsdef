@@ -1,0 +1,4 @@
+name: "GenerateMaterialCount"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Visibility/GenerateMaterialCount_cs.hlsl"

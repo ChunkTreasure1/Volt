@@ -72,6 +72,8 @@ namespace Volt
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddDeferredShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		///////////////////
@@ -99,6 +101,7 @@ namespace Volt
 		Ref<RHI::StorageBuffer> m_drawToInstanceOffsetBuffer;
 		Ref<RHI::StorageBuffer> m_instanceOffsetToObjectIDBuffer;
 		Ref<RHI::StorageBuffer> m_indirectDrawDataBuffer;
+		Ref<RHI::StorageBuffer> m_materialsBuffer;
 
 		Ref<RHI::SamplerState> m_samplerState;
 
@@ -115,6 +118,9 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 		Ref<RHI::ComputePipeline> m_deferredShadingPipeline;
 		Ref<RHI::ComputePipeline> m_visibilityVisualizationPipeline;
+		Ref<RHI::ComputePipeline> m_generateMaterialCountPipeline;
+
+		Ref<RHI::ComputePipeline> m_prefixSumPipeline;
 
 		Ref<RHI::RenderPipeline> m_preDepthPipeline;
 		Ref<RHI::RenderPipeline> m_gbufferPipeline;

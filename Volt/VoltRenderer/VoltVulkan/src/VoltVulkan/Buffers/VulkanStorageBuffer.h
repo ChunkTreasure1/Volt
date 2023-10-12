@@ -5,11 +5,14 @@
 namespace Volt::RHI
 {
 	class Allocation;
+	class Allocator;
+
 	class VulkanStorageBuffer : public StorageBuffer
 	{
 	public:
 		VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 		VulkanStorageBuffer(const size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage);
+		VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage, MemoryUsage memoryUsage);
 		~VulkanStorageBuffer() override;
 
 		void ResizeByteSize(const size_t byteSize) override;
@@ -39,6 +42,9 @@ namespace Volt::RHI
 		uint32_t m_size = 0;
 
 		Ref<Allocation> m_allocation;
+		Weak<Allocator> m_customAllocator;
+
+		bool m_allocatedUsingCustomAllocator = false;
 
 		BufferUsage m_bufferUsage = BufferUsage::StorageBuffer;
 		MemoryUsage m_memoryUsage = MemoryUsage::GPU;

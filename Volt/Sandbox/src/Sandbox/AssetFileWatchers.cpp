@@ -56,28 +56,27 @@ void Sandbox::CreateModifiedWatch()
 
 				case Volt::AssetType::ShaderSource:
 				{
-					//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
-					
+					// #TODO_Ivar: Reimplement
 					const auto assets = Volt::AssetManager::GetAllAssetsWithDependency(Volt::AssetManager::GetRelativePath(newPath));
-					for (const auto& asset : assets)
-					{
-						Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
-						if (!shader || !shader->IsValid())
-						{
-							continue;
-						}
+					//for (const auto& asset : assets)
+					//{
+					//	Ref<Volt::Shader> shader = Volt::AssetManager::GetAsset<Volt::Shader>(asset);
+					//	if (!shader || !shader->IsValid())
+					//	{
+					//		continue;
+					//	}
 
-						if (shader->Reload(true))
-						{
-							UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shader->GetName()));
+					//	if (shader->Reload(true))
+					//	{
+					//		UI::Notify(NotificationType::Success, "Recompiled shader!", std::format("Shader {0} was successfully recompiled!", shader->GetName()));
 
-							Volt::Renderer::ReloadShader(shader);
-						}
-						else
-						{
-							UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shader->GetName()));
-						}
-					}
+					//		Volt::Renderer::ReloadShader(shader);
+					//	}
+					//	else
+					//	{
+					//		UI::Notify(NotificationType::Error, "Failed to recompile shader!", std::format("Recompilation of shader {0} failed! Check log for more info!", shader->GetName()));
+					//	}
+					//}
 					break;
 				}
 

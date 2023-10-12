@@ -230,6 +230,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value)
+	{
+	}
+
 	void D3D12CommandBuffer::CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size)
 	{
 	}

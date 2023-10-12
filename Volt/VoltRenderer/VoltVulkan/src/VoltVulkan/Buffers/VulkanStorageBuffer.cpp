@@ -13,7 +13,7 @@
 namespace Volt::RHI
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
+		: m_byteSize(count* elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(elementSize * count);
 	}
@@ -22,7 +22,13 @@ namespace Volt::RHI
 	{
 		Invalidate(size);
 	}
-	
+
+	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
+	{
+		Invalidate(size);
+	}
+
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
 		Release();
@@ -32,23 +38,23 @@ namespace Volt::RHI
 	{
 		Invalidate(byteSize);
 	}
-	
+
 	void VulkanStorageBuffer::Resize(const uint32_t size)
 	{
 		const size_t newSize = size * m_elementSize;
 		Invalidate(newSize);
 	}
-	
+
 	const size_t VulkanStorageBuffer::GetByteSize() const
 	{
 		return m_byteSize;
 	}
-	
+
 	const uint32_t VulkanStorageBuffer::GetSize() const
 	{
 		return m_size;
 	}
-	
+
 	void VulkanStorageBuffer::Unmap()
 	{
 		m_allocation->Unmap();
@@ -56,7 +62,16 @@ namespace Volt::RHI
 
 	void VulkanStorageBuffer::SetData(const void* data, const size_t size)
 	{
-		Ref<Allocation> stagingAllocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		Ref<Allocation> stagingAllocation = nullptr;
+
+		if (m_allocatedUsingCustomAllocator)
+		{
+			stagingAllocation = m_customAllocator->CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		}
+		else
+		{
+			stagingAllocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		}
 
 		void* mappedPtr = stagingAllocation->Map<void>();
 		memcpy_s(mappedPtr, m_byteSize, data, size);
@@ -69,6 +84,18 @@ namespace Volt::RHI
 
 		cmdBuffer->End();
 		cmdBuffer->Execute();
+
+		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		{
+			if (allocatedUsingCustomAllocator)
+			{
+				customAllocator->DestroyBuffer(allocation);
+			}
+			else
+			{
+				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			}
+		});
 	}
 
 	Ref<BufferView> VulkanStorageBuffer::GetView()
@@ -96,12 +123,12 @@ namespace Volt::RHI
 		auto device = GraphicsContext::GetDevice();
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
-	
+
 	void* VulkanStorageBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();
 	}
-	
+
 	void* VulkanStorageBuffer::MapInternal()
 	{
 		return m_allocation->Map<void>();
@@ -113,7 +140,15 @@ namespace Volt::RHI
 		m_byteSize = byteSize;
 
 		const VkDeviceSize bufferSize = byteSize;
-		m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
+
+		if (m_allocatedUsingCustomAllocator)
+		{
+			m_allocation = m_customAllocator->CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
+		}
+		else
+		{
+			m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, m_bufferUsage | BufferUsage::TransferDst | BufferUsage::StorageBuffer, m_memoryUsage);
+		}
 	}
 
 	void VulkanStorageBuffer::Release()
@@ -123,9 +158,16 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([allocation = m_allocation]() 
+		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = m_allocation]()
 		{
-			GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			if (allocatedUsingCustomAllocator)
+			{
+				customAllocator->DestroyBuffer(allocation);
+			}
+			else
+			{
+				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			}
 		});
 
 		m_allocation = nullptr;

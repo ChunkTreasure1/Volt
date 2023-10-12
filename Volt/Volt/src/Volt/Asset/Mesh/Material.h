@@ -4,9 +4,12 @@
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class Shader;
+	}
+
 	class SubMaterial;
-	class Shader;
-	struct RenderPipelineSpecification;
 
 	class Material : public Asset
 	{
@@ -25,14 +28,12 @@ namespace Volt
 		inline const std::string& GetName() const { return myName; }
 		inline void SetName(const std::string& aName) { myName = aName; }
 
-		Ref<SubMaterial> CreateSubMaterial(Ref<Shader> shader, const std::string& name = "New Material");
-		Ref<SubMaterial> CreateSubMaterial(const RenderPipelineSpecification& specification);
+		Ref<SubMaterial> CreateSubMaterial(Ref<RHI::Shader> shader, const std::string& name = "New Material");
 
 		static AssetType GetStaticType() { return AssetType::Material; }
 		AssetType GetType() override { return GetStaticType(); }
 
-		static Ref<Material> Create(Ref<Shader> shader, const uint32_t subMaterialCount = 1);
-		static Ref<Material> Create(const RenderPipelineSpecification& specification, const uint32_t subMaterialCount = 1);
+		static Ref<Material> Create(Ref<RHI::Shader> shader, const uint32_t subMaterialCount = 1);
 
 	private:
 		friend class FbxImporter;

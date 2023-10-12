@@ -41,7 +41,7 @@ namespace Volt
 		return mySubMaterials.at(index);
 	}
 
-	Ref<SubMaterial> Material::CreateSubMaterial(Ref<Shader> shader, const std::string& subMaterialName)
+	Ref<SubMaterial> Material::CreateSubMaterial(Ref<RHI::Shader> shader, const std::string& subMaterialName)
 	{
 		const uint32_t index = (uint32_t)mySubMaterials.size();
 		auto material = mySubMaterials.emplace(index, SubMaterial::Create(subMaterialName, index, shader));
@@ -49,33 +49,13 @@ namespace Volt
 		return mySubMaterials.at(index);
 	}
 
-	Ref<SubMaterial> Material::CreateSubMaterial(const RenderPipelineSpecification& specification)
-	{
-		const uint32_t index = (uint32_t)mySubMaterials.size();
-		auto material = mySubMaterials.emplace(index, SubMaterial::Create("New Material", index, specification));
-
-		return mySubMaterials.at(index);
-	}
-
-	Ref<Material> Material::Create(Ref<Shader> shader, const uint32_t subMaterialCount)
+	Ref<Material> Material::Create(Ref<RHI::Shader> shader, const uint32_t subMaterialCount)
 	{
 		auto mat = CreateRef<Material>();
 
 		for (uint32_t i = 0; i < subMaterialCount; i++)
 		{
 			mat->CreateSubMaterial(shader);
-		}
-
-		return mat;
-	}
-
-	Ref<Material> Material::Create(const RenderPipelineSpecification& specification, const uint32_t subMaterialCount)
-	{
-		auto mat = CreateRef<Material>();
-
-		for (uint32_t i = 0; i < subMaterialCount; i++)
-		{
-			mat->CreateSubMaterial(specification);
 		}
 
 		return mat;

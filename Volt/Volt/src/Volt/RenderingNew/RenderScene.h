@@ -12,6 +12,7 @@ namespace Volt
 	}
 
 	class Scene;
+	class SubMaterial;
 
 	class RenderScene
 	{
@@ -31,8 +32,10 @@ namespace Volt
 		inline const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
 		const uint32_t GetMeshIndex(Ref<Mesh> mesh) const;
+		const uint32_t GetMaterialIndex(Ref<SubMaterial> material) const;
 
 		inline const std::span<const Weak<Mesh>> GetIndividualMeshes() const { return m_individualMeshes; }
+		inline const std::span<const Weak<SubMaterial>> GetIndividualMaterials() const { return m_individualMaterials; }
 
 		inline const std::vector<Ref<RHI::BufferView>>& GetVertexPositionViews() const { return m_vertexPositionViews; }
 		inline const std::vector<Ref<RHI::BufferView>>& GetVertexAnimationViews() const { return m_vertexAnimationViews; }
@@ -50,6 +53,7 @@ namespace Volt
 
 		std::vector<RenderObject> m_renderObjects;
 		std::vector<Weak<Mesh>> m_individualMeshes;
+		std::vector<Weak<SubMaterial>> m_individualMaterials;
 
 		std::vector<Ref<RHI::BufferView>> m_vertexPositionViews;
 		std::vector<Ref<RHI::BufferView>> m_vertexMaterialViews;

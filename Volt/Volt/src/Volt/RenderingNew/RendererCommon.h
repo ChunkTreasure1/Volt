@@ -17,8 +17,18 @@ namespace Volt
 		glm::mat4 transform;
 		uint32_t meshId{};
 		uint32_t vertexStartOffset{};
+		uint32_t materialId{};
 
-		uint32_t padding[2];
+		uint32_t padding;
+	};
+
+	struct GPUMaterialNew
+	{
+		uint32_t textures[16];
+
+		uint32_t textureCount = 0;
+		uint32_t materialFlags = 0;
+		glm::uvec2 padding;
 	};
 
 	///// Rendering Structures /////

@@ -10,7 +10,6 @@
 #include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 
 #include <Volt/Asset/Mesh/Material.h>
 

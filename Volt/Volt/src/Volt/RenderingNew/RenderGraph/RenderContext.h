@@ -44,6 +44,8 @@ namespace Volt
 		const RenderingInfo CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments);
 
 		void ClearImage(Ref<RHI::Image2D> image, const glm::vec4& clearColor);
+		void ClearBuffer(Ref<RHI::StorageBuffer> buffer, uint32_t clearValue);
+
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 

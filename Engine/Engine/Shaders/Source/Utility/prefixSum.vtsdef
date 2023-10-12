@@ -1,0 +1,4 @@
+name: "PrefixSum"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Utility/PrefixSum_cs.hlsl"

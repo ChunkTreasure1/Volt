@@ -7,8 +7,9 @@
 #include <Volt/Asset/Rendering/PostProcessingMaterial.h>
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 #include <Volt/Rendering/Renderer.h>
+
+#include <Volt/RenderingNew/Shader/ShaderMap.h>
 
 PostProcessingMaterialPanel::PostProcessingMaterialPanel()
 	: EditorWindow("Post Processing Material Editor")
@@ -35,13 +36,13 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 	UI::Header("Shader");
 	std::vector<std::string> shaderNames;
 	shaderNames.emplace_back("None");
-	for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
-	{
-		if (!shader->IsInternal())
-		{
-			shaderNames.emplace_back(shader->GetName());
-		}
-	}
+	//for (const auto& [name, shader] : Volt::ShaderMap::GetShaderRegistry())
+	//{
+	//	if (!shader->IsInternal())
+	//	{
+	//		shaderNames.emplace_back(shader->GetName());
+	//	}
+	//}
 
 	int32_t selectedShader = 0;
 	const std::string shaderName = myCurrentMaterial->GetName();
@@ -57,11 +58,11 @@ void PostProcessingMaterialPanel::UpdateMainContent()
 	{
 		if (UI::ComboProperty("Shader", selectedShader, shaderNames))
 		{
-			auto newPipeline = Volt::ShaderRegistry::GetShader(shaderNames.at(selectedShader));
-			if (newPipeline)
-			{
-				myCurrentMaterial->SetShader(newPipeline);
-			}
+			//auto newPipeline = Volt::ShaderRegistry::GetShader(shaderNames.at(selectedShader));
+			//if (newPipeline)
+			//{
+			//	myCurrentMaterial->SetShader(newPipeline);
+			//}
 		}
 		UI::EndProperties();
 	}

@@ -19,17 +19,25 @@ namespace Volt
 
 	void ShaderMap::Shutdown()
 	{
-		m_shaderMap.clear();
+		s_shaderMap.clear();
+	}
+
+	void ShaderMap::ReloadAll()
+	{
+		for (const auto [name, shader] : s_shaderMap)
+		{
+			shader->Reload(true);
+		}
 	}
 
 	Ref<RHI::Shader> ShaderMap::Get(const std::string& name)
 	{
-		if (!m_shaderMap.contains(name))
+		if (!s_shaderMap.contains(name))
 		{
 			return nullptr;
 		}
 
-		return m_shaderMap.at(name);
+		return s_shaderMap.at(name);
 	}
 
 	void ShaderMap::LoadShaders()
@@ -66,7 +74,7 @@ namespace Volt
 					// #TODO: Fix force compile!
 					// We need to do this because the formats / input layouts are not created correctly otherwise
 					Ref<RHI::Shader> shader = RHI::Shader::Create(def->GetName(), def->GetSourceFiles(), true);
-					m_shaderMap[std::string(def->GetName())] = shader;
+					s_shaderMap[std::string(def->GetName())] = shader;
 				});
 			}
 		}
@@ -74,7 +82,7 @@ namespace Volt
 
 	void ShaderMap::RegisterShader(const std::string& name, Ref<RHI::Shader> shader)
 	{
-		std::scoped_lock lock{ m_registerMutex };
-		m_shaderMap[std::string(name)] = shader;
+		std::scoped_lock lock{ s_registerMutex };
+		s_shaderMap[std::string(name)] = shader;
 	}
 }

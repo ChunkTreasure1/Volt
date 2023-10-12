@@ -10,7 +10,7 @@
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/Animation.h"
 
-#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 #include "Volt/Project/ProjectManager.h"
 
@@ -80,13 +80,13 @@ namespace Volt
 
 		if (tgaMesh.Materials.empty())
 		{
-			mesh->m_material->CreateSubMaterial(ShaderRegistry::GetShader("Illum"));
+			mesh->m_material->CreateSubMaterial(ShaderMap::Get("Illum"));
 		}
 		else
 		{
 			for (const auto& material : tgaMesh.Materials)
 			{
-				mesh->m_material->CreateSubMaterial(ShaderRegistry::GetShader("Illum"), material.MaterialName);
+				mesh->m_material->CreateSubMaterial(ShaderMap::Get("Illum"), material.MaterialName);
 			}
 		}
 

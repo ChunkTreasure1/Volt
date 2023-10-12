@@ -213,11 +213,6 @@ namespace Volt
 		return myGPUExecutionTimes.at(frameIndex).at(queryId / 2);
 	}
 
-	const RenderPipelineStatistics& CommandBuffer::GetPipelineStatistics(uint32_t frameIndex) const
-	{
-		return myPipelineStatisticsResults.at(frameIndex);
-	}
-
 	Ref<CommandBuffer> CommandBuffer::Create(uint32_t count, bool swapchainTarget)
 	{
 		return CreateRef<CommandBuffer>(count, swapchainTarget);

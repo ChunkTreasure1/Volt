@@ -97,7 +97,7 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
-			material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(outlineGeomData.outputImage).image);
+			//material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(outlineGeomData.outputImage).image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
@@ -146,17 +146,17 @@ namespace Volt
 				renderingInfo.width = myRenderSize.x;
 				renderingInfo.height = myRenderSize.y;
 
-				if (index == 0)
-				{
-					material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(jumpFloodInitData.outputImage).image);
-				}
-				else
-				{
-					material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(data.outputImage[0]).image);
-				}
+				//if (index == 0)
+				//{
+				//	material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(jumpFloodInitData.outputImage).image);
+				//}
+				//else
+				//{
+				//	material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(data.outputImage[0]).image);
+				//}
 
-				material->GetSubMaterialAt(0)->SetValue("texelSize", floodPassData.texelSize);
-				material->GetSubMaterialAt(0)->SetValue("step", floodPassData.step);
+				//material->GetSubMaterialAt(0)->SetValue("texelSize", floodPassData.texelSize);
+				//material->GetSubMaterialAt(0)->SetValue("step", floodPassData.step);
 
 				Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 				Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);

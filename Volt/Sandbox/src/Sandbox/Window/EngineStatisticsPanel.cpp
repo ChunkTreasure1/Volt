@@ -7,7 +7,6 @@
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
 #include <Volt/RenderingNew/SceneRendererNew.h>
-#include <Volt/Rendering/RenderPipeline/RenderPipeline.h>
 
 #include <Volt/Utility/UIUtility.h>
 

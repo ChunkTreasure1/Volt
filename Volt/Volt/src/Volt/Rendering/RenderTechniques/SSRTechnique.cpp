@@ -39,30 +39,30 @@ namespace Volt
 		}, 
 			[=](const SSROutput& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			const auto& preDepthResource = resources.GetImageResource(preDepthData.preDepth);
-			const auto& viewNormalsResource = resources.GetImageResource(preDepthData.viewNormals);
-			const auto& colorResource = resources.GetImageResource(skyboxData.outputImage);
+			//const auto& preDepthResource = resources.GetImageResource(preDepthData.preDepth);
+			//const auto& viewNormalsResource = resources.GetImageResource(preDepthData.viewNormals);
+			//const auto& colorResource = resources.GetImageResource(skyboxData.outputImage);
 			//const auto& outputResource = resources.GetImageResource(data.output);
 
-			FrameGraphRenderPassInfo renderPassInfo{};
-			renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);
-			renderPassInfo.name = "SSR Pass";
+			//FrameGraphRenderPassInfo renderPassInfo{};
+			//renderPassInfo.color = TO_NORMALIZEDRGB(115, 237, 190);
+			//renderPassInfo.name = "SSR Pass";
 
-			FrameGraphRenderingInfo renderingInfo = FrameGraph::CreateRenderingInfoFromResources(
-				{
-					resources.GetImageResource(data.output)
-				});
+			//FrameGraphRenderingInfo renderingInfo = FrameGraph::CreateRenderingInfoFromResources(
+			//	{
+			//		resources.GetImageResource(data.output)
+			//	});
 
-			renderingInfo.width = myRenderSize.x;
-			renderingInfo.height = myRenderSize.y;
+			//renderingInfo.width = myRenderSize.x;
+			//renderingInfo.height = myRenderSize.y;
 
-			material->GetSubMaterialAt(0)->Set(0, preDepthResource.image);
-			material->GetSubMaterialAt(0)->Set(1, viewNormalsResource.image);
-			material->GetSubMaterialAt(0)->Set(2, colorResource.image);
+			////material->GetSubMaterialAt(0)->Set(0, preDepthResource.image);
+			////material->GetSubMaterialAt(0)->Set(1, viewNormalsResource.image);
+			////material->GetSubMaterialAt(0)->Set(2, colorResource.image);
 
-			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
-			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
-			Renderer::EndFrameGraphPass(commandBuffer);
+			//Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
+			//Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
+			//Renderer::EndFrameGraphPass(commandBuffer);
 		});
 	}
 
@@ -81,7 +81,7 @@ namespace Volt
 		},
 			[=](FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
 		{
-			const auto& ssrResource = resources.GetImageResource(ssrData.output);
+			//const auto& ssrResource = resources.GetImageResource(ssrData.output);
 			const auto& colorResource = resources.GetImageResource(skyboxData.outputImage);
 
 			FrameGraphRenderPassInfo renderPassInfo{};
@@ -98,7 +98,7 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
-			material->GetSubMaterialAt(0)->Set(0, ssrResource.image);
+			//material->GetSubMaterialAt(0)->Set(0, ssrResource.image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);

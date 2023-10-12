@@ -16,15 +16,18 @@
 
 #include "Volt/Physics/PhysicsMaterial.h"
 
-#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
 #include "Volt/Rendering/ComputePipeline.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 #include "Volt/Rendering/Texture/TextureTable.h"
+
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 #include "Volt/Rendering/Renderer.h"
 
 #include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
+
+#include <VoltRHI/Shader/Shader.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -230,10 +233,10 @@ namespace Volt
 				}
 			}
 
-			Ref<Shader> shader = ShaderRegistry::GetShader(shaderNameString);
-			if (!shader || !shader->IsValid())
+			Ref<RHI::Shader> shader = ShaderMap::Get(shaderNameString);
+			if (!shader)
 			{
-				//shader = Renderer::GetDefaultData().defaultShader;
+				shader = ShaderMap::Get("VisibilityBuffer");
 				VT_CORE_ERROR("Shader {0} not found or invalid! Falling back to default!", shaderNameString);
 			}
 
@@ -398,7 +401,7 @@ namespace Volt
 
 			//Renderer::UpdateMaterial(material.get());
 
-			//materials.emplace(materialIndex, material);
+			materials.emplace(materialIndex, material);
 		}
 
 		Ref<Material> material = std::reinterpret_pointer_cast<Material>(asset);
@@ -423,30 +426,17 @@ namespace Volt
 				for (const auto& [index, subMaterial] : material->mySubMaterials)
 				{
 					out << YAML::BeginMap;
-					VT_SERIALIZE_PROPERTY(material, subMaterial->myName, out);
+					VT_SERIALIZE_PROPERTY(material, subMaterial->m_name, out);
 					VT_SERIALIZE_PROPERTY(index, index, out);
-					VT_SERIALIZE_PROPERTY(shader, subMaterial->myPipeline->GetSpecification().shader->GetName(), out);
-					VT_SERIALIZE_PROPERTY(isPermutation, subMaterial->GetPipeline()->IsPermutation(), out);
-					VT_SERIALIZE_PROPERTY(flags, (uint32_t)subMaterial->myMaterialFlags, out);
-					VT_SERIALIZE_PROPERTY(topology, (uint32_t)subMaterial->myTopology, out);
-					VT_SERIALIZE_PROPERTY(cullMode, (uint32_t)subMaterial->myCullMode, out);
-					VT_SERIALIZE_PROPERTY(triangleFillMode, (uint32_t)subMaterial->myTriangleFillMode, out);
-					VT_SERIALIZE_PROPERTY(depthMode, (uint32_t)subMaterial->myDepthMode, out);
-
-					out << YAML::Key << "data" << YAML::Value;
-					out << YAML::BeginMap;
-					{
-						VT_SERIALIZE_PROPERTY(color, subMaterial->myMaterialData.color, out);
-						VT_SERIALIZE_PROPERTY(emissiveColor, subMaterial->myMaterialData.emissiveColor, out);
-						VT_SERIALIZE_PROPERTY(emissiveStrength, subMaterial->myMaterialData.emissiveStrength, out);
-						VT_SERIALIZE_PROPERTY(roughness, subMaterial->myMaterialData.roughness, out);
-						VT_SERIALIZE_PROPERTY(metalness, subMaterial->myMaterialData.metalness, out);
-						VT_SERIALIZE_PROPERTY(normalStrength, subMaterial->myMaterialData.normalStrength, out);
-					}
-					out << YAML::EndMap;
+					VT_SERIALIZE_PROPERTY(shader, subMaterial->m_pipeline->GetShader()->GetName(), out);
+					VT_SERIALIZE_PROPERTY(flags, (uint32_t)subMaterial->m_materialFlags, out);
+					VT_SERIALIZE_PROPERTY(topology, (uint32_t)subMaterial->m_topology, out);
+					VT_SERIALIZE_PROPERTY(cullMode, (uint32_t)subMaterial->m_cullMode, out);
+					VT_SERIALIZE_PROPERTY(triangleFillMode, (uint32_t)subMaterial->m_triangleFillMode, out);
+					VT_SERIALIZE_PROPERTY(depthMode, (uint32_t)subMaterial->m_depthMode, out);
 
 					out << YAML::Key << "textures" << YAML::BeginSeq;
-					for (const auto& [binding, texture] : subMaterial->myTextures)
+					for (const auto& [binding, texture] : subMaterial->m_textures)
 					{
 						out << YAML::BeginMap;
 						VT_SERIALIZE_PROPERTY(binding, binding, out);
@@ -461,92 +451,6 @@ namespace Volt
 						out << YAML::EndMap;
 					}
 					out << YAML::EndSeq;
-
-					if (subMaterial->GetMaterialSpecializationData().IsValid())
-					{
-						const auto& materialData = subMaterial->GetMaterialSpecializationData();
-						out << YAML::Key << "specializationData" << YAML::Value;
-						out << YAML::BeginMap;
-						{
-							VT_SERIALIZE_PROPERTY(size, materialData.GetSize(), out);
-
-							out << YAML::Key << "members" << YAML::BeginSeq;
-							for (const auto& [memberName, memberData] : materialData.GetMembers())
-							{
-								out << YAML::BeginMap;
-								VT_SERIALIZE_PROPERTY(name, memberName, out);
-								VT_SERIALIZE_PROPERTY(type, memberData.type, out);
-
-								switch (memberData.type)
-								{
-									case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<bool>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<uint32_t>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec2>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec3>(memberName), out); break;
-									case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::uvec4>(memberName), out); break;
-
-									case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<int32_t>(memberName), out); break;
-									case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec2>(memberName), out); break;
-									case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec3>(memberName), out); break;
-									case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::ivec4>(memberName), out); break;
-
-									case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<float>(memberName), out); break;
-									case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec2>(memberName), out); break;
-									case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec3>(memberName), out); break;
-									case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, materialData.GetValue<glm::vec4>(memberName), out); break;
-								}
-
-								out << YAML::EndMap;
-							}
-							out << YAML::EndSeq;
-						}
-						out << YAML::EndMap;
-					}
-
-					if (!subMaterial->GetPipelineGenerationDatas().empty())
-					{
-						out << YAML::Key << "pipelineGenerationData" << YAML::BeginSeq;
-						{
-							for (const auto& [stage, generationData] : subMaterial->GetPipelineGenerationDatas())
-							{
-								out << YAML::BeginMap;
-								VT_SERIALIZE_PROPERTY(stage, stage, out);
-								VT_SERIALIZE_PROPERTY(size, generationData.GetSize(), out);
-
-								out << YAML::Key << "members" << YAML::BeginSeq;
-								for (const auto& [memberName, memberData] : generationData.GetMembers())
-								{
-									out << YAML::BeginMap;
-									VT_SERIALIZE_PROPERTY(name, memberName, out);
-									VT_SERIALIZE_PROPERTY(type, memberData.type, out);
-
-									switch (memberData.type)
-									{
-										case Volt::ShaderUniformType::Bool: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<bool>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<uint32_t>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::uvec2>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::uvec3>(memberName), out); break;
-										case Volt::ShaderUniformType::UInt4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::uvec4>(memberName), out); break;
-
-										case Volt::ShaderUniformType::Int: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<int32_t>(memberName), out); break;
-										case Volt::ShaderUniformType::Int2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::ivec2>(memberName), out); break;
-										case Volt::ShaderUniformType::Int3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::ivec3>(memberName), out); break;
-										case Volt::ShaderUniformType::Int4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::ivec4>(memberName), out); break;
-
-										case Volt::ShaderUniformType::Float: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<float>(memberName), out); break;
-										case Volt::ShaderUniformType::Float2: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::vec2>(memberName), out); break;
-										case Volt::ShaderUniformType::Float3: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::vec3>(memberName), out); break;
-										case Volt::ShaderUniformType::Float4: VT_SERIALIZE_PROPERTY(data, generationData.GetValue<glm::vec4>(memberName), out); break;
-									}
-
-									out << YAML::EndMap;
-								}
-								out << YAML::EndSeq;
-								out << YAML::EndMap;
-							}
-						}
-						out << YAML::EndSeq;
-					}
 					out << YAML::EndMap;
 				}
 				out << YAML::EndSeq;
@@ -884,14 +788,14 @@ namespace Volt
 			return false;
 		}
 
-		Ref<Shader> shader;
-		shader = ShaderRegistry::GetShader(shaderName);
+		Ref<RHI::Shader> shader;
+		shader = ShaderMap::Get(shaderName);
 		if (!shader)
 		{
-			shader = Renderer::GetDefaultData().defaultPostProcessingShader;
+			//shader = Renderer::GetDefaultData().defaultPostProcessingShader;
 		}
 
-		asset = CreateRef<PostProcessingMaterial>(shader);
+		//asset = CreateRef<PostProcessingMaterial>(shader);
 		Ref<PostProcessingMaterial> postMat = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
 
 		YAML::Node specializationDataNode = rootMaterialNode["specializationData"];

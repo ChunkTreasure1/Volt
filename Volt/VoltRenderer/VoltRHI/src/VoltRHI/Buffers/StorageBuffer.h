@@ -5,6 +5,7 @@
 namespace Volt::RHI
 {
 	class BufferView;
+	class Allocator;
 
 	class StorageBuffer : public RHIResource
 	{
@@ -26,7 +27,8 @@ namespace Volt::RHI
 		T* Map();
 
 		static Ref<StorageBuffer> Create(uint32_t count, size_t elementSize, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
-		static Ref<StorageBuffer> Create(size_t size , BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static Ref<StorageBuffer> Create(size_t size, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static Ref<StorageBuffer> Create(size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
 
 	protected:
 		virtual void* MapInternal() = 0;

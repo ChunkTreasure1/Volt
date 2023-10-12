@@ -337,7 +337,8 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 					{
 						for (const auto& [binding, tex] : originalMaterial->GetSubMaterials().at(i)->GetTextures())
 						{
-							reimportedMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
+							// #TODO_Ivar: Reimplement
+							//reimportedMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
 						}
 					}
 

@@ -16,7 +16,6 @@
 
 #include <Volt/Scripting/Mono/MonoScriptEngine.h>
 
-#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Renderer.h>
 
@@ -685,11 +684,12 @@ void Sandbox::DrawMenuBar()
 			{
 				//Volt::GraphicsContextVolt::GetDevice()->WaitForIdle();
 
-				for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
-				{
-					shader->Reload(true);
-					Volt::Renderer::ReloadShader(shader);
-				}
+				// #TODO_Ivar: Reimplement
+				//for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
+				//{
+				//	shader->Reload(true);
+				//	Volt::Renderer::ReloadShader(shader);
+				//}
 			}
 
 			if (ImGui::MenuItem("Compile C#"))

@@ -6,8 +6,6 @@
 
 #include <Volt/Project/ProjectManager.h>
 
-#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
-
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>

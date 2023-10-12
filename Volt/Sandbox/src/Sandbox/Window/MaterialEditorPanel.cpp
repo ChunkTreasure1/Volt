@@ -17,8 +17,6 @@
 #include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/VulkanFramebuffer.h>
 #include <Volt/Rendering/Renderer.h>
-#include <Volt/Rendering/RenderPipeline/RenderPipeline.h>
-#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
@@ -220,426 +218,427 @@ void MaterialEditorPanel::UpdateProperties()
 	if (ImGui::Begin("Properties##materialEditor", nullptr, ImGuiWindowFlags_NoCollapse))
 	{
 		ForceWindowDocked(ImGui::GetCurrentWindow());
-
-		if (mySelectedSubMaterial)
-		{
-			UI::Header("Shader");
-			std::vector<std::string> shaderNames;
-			shaderNames.emplace_back("None");
-			for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
-			{
-				if (!shader->IsInternal())
-				{
-					shaderNames.emplace_back(shader->GetName());
-				}
-			}
-
-			int32_t selectedShader = 0;
-			const std::string shaderName = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName();
-
-			if (auto namesIt = std::find(shaderNames.begin(), shaderNames.end(), shaderName); namesIt != shaderNames.end())
-			{
-				selectedShader = (int32_t)std::distance(shaderNames.begin(), namesIt);
-			}
-
-			bool changed = false;
-
-			UI::PushID();
-			if (UI::BeginProperties("Shader"))
-			{
-				if (UI::ComboProperty("Shader", selectedShader, shaderNames))
-				{
-					auto newPipeline = Volt::ShaderRegistry::GetShader(shaderNames.at(selectedShader));
-					if (newPipeline)
-					{
-						mySelectedSubMaterial->SetShader(newPipeline);
-
-						if (shaderNames.at(selectedShader) == "Illum")
-						{
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, true);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, false);
-							changed = true;
-						}
-						else if (shaderNames.at(selectedShader) == "IllumTransparent")
-						{
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, true);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, false);
-							changed = true;
-						}
-						else if (shaderNames.at(selectedShader) == "IllumSSS")
-						{
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, true);
-							changed = true;
-						}
-						else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Deferred))
-						{
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, true);
-							changed = true;
-						}
-					}
-				}
-
-				const std::vector<const char*> materialTypes =
-				{
-					"Opaque",
-					"Transparent",
-					"Subsurface Scattering",
-					"Decal"
-				};
-
-				int32_t selected = 0;
-				Volt::MaterialFlag currentType = Volt::MaterialFlag::All;
-
-				if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Opaque) || mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Deferred))
-				{
-					selected = 0;
-					currentType = Volt::MaterialFlag::Opaque;
-				}
-				else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Transparent))
-				{
-					selected = 1;
-					currentType = Volt::MaterialFlag::Transparent;
-				}
-				else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::SSS))
-				{
-					selected = 2;
-					currentType = Volt::MaterialFlag::SSS;
-				}
-				else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Decal))
-				{
-					selected = 3;
-					currentType = Volt::MaterialFlag::Decal;
-				}
-
-				if (UI::ComboProperty("Material Type", selected, materialTypes))
-				{
-					if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Deferred) && currentType == Volt::MaterialFlag::Opaque)
-					{
-						mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
-					}
-					else
-					{
-						mySelectedSubMaterial->SetFlag(currentType, false);
-					}
-
-					if (selected == 0)
-					{
-						if (mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName() == "Illum")
-						{
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, true);
-						}
-						else
-						{
-							mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, true);
-						}
-
-					}
-					else if (selected == 1) mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, true);
-					else if (selected == 2) mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, true);
-					else if (selected == 3) mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Decal, true);
-
-					mySelectedSubMaterial->RecompilePermutation();
-					changed = true;
-				}
-
-				bool castingShadows = mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::CastShadows);
-				if (UI::Property("Cast Shadows", castingShadows))
-				{
-					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::CastShadows, castingShadows);
-					changed = true;
-				}
-
-				bool castingAO = mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::CastAO);
-				if (UI::Property("Cast AO", castingAO))
-				{
-					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::CastAO, castingAO);
-					changed = true;
-				}
-
-				UI::EndProperties();
-			}
-			UI::PopID();
-
-			UI::Header("Properties");
-			auto& materialData = mySelectedSubMaterial->GetMaterialData();
-
-			UI::PushID();
-			if (UI::BeginProperties("Material Data"))
-			{
-				changed |= UI::PropertyColor("Color", materialData.color);
-				changed |= UI::PropertyColor("Emissive Color", materialData.emissiveColor);
-				changed |= UI::Property("Emissive Strength", materialData.emissiveStrength, 0.f, 20.f);
-				changed |= UI::Property("Roughness", materialData.roughness, 0.f, 1.f);
-				changed |= UI::Property("Metalness", materialData.metalness, 0.f, 1.f);
-				changed |= UI::Property("Normal Strength", materialData.normalStrength, -1.f, 1.f);
-
-				UI::EndProperties();
-			}
-			UI::PopID();
-
-			if (changed)
-			{
-				Volt::Renderer::UpdateMaterial(mySelectedSubMaterial.get());
-			}
-
-			if (ImGui::CollapsingHeader("Advanced"))
-			{
-				if (UI::BeginProperties("Advanced"))
-				{
-					const std::vector<const char*> topologyStrings = { "Triangle List", "Line List", "Triangle Strip", "Path List", "Point List" };
-					auto currentTopology = mySelectedSubMaterial->GetTopology();
-
-					if (UI::ComboProperty("Topology", *(int32_t*)&currentTopology, topologyStrings))
-					{
-						mySelectedSubMaterial->SetTopology(currentTopology);
-					}
-
-					const std::vector<const char*> cullModeStrings = { "Front", "Back", "Front And Back", "None" };
-					auto currentCullMode = mySelectedSubMaterial->GetCullMode();
-
-					if (UI::ComboProperty("Cull Mode", *(int32_t*)&currentCullMode, cullModeStrings))
-					{
-						mySelectedSubMaterial->SetCullMode(currentCullMode);
-					}
-
-					const std::vector<const char*> fillModeStrings = { "Solid", "Wireframe" };
-					auto currentFillMode = mySelectedSubMaterial->GetFillMode();
-
-					if (UI::ComboProperty("Fill Mode", *(int32_t*)&currentFillMode, fillModeStrings))
-					{
-						mySelectedSubMaterial->SetFillMode(currentFillMode);
-					}
-
-					const std::vector<const char*> depthModeStrings = { "Read", "Write", "Read/Write", "None" };
-					auto currentDepthMode = mySelectedSubMaterial->GetDepthMode();
-
-					if (UI::ComboProperty("Depth Mode", *(int32_t*)&currentDepthMode, depthModeStrings))
-					{
-						mySelectedSubMaterial->SetDepthMode(currentDepthMode);
-					}
-
-					UI::EndProperties();
-				}
-
-			}
-
-			ImGui::Separator();
-
-			UI::Header("Textures");
-			const auto& textureDefinitions = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetResources().shaderTextureDefinitions;
-
-			UI::PushID();
-			if (UI::BeginProperties("Textures"))
-			{
-				const auto& textures = mySelectedSubMaterial->GetTextures();
-
-				// Default textures
-				{
-					if (textures.contains("albedo"))
-					{
-						Volt::AssetHandle textureHandle = Volt::Asset::Null();
-						if (textures.at("albedo"))
-						{
-							textureHandle = textures.at("albedo")->handle;
-						}
-
-						if (EditorUtils::Property("Albedo", textureHandle, Volt::AssetType::Texture))
-						{
-							auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
-
-							if (newTex && newTex->IsValid())
-							{
-								mySelectedSubMaterial->SetTexture("albedo", newTex);
-							}
-							else
-							{
-								mySelectedSubMaterial->SetTexture("albedo", Volt::Renderer::GetDefaultData().whiteTexture);
-							}
-						}
-					}
-
-					if (textures.contains("normal"))
-					{
-						Volt::AssetHandle textureHandle = Volt::Asset::Null();
-						if (textures.at("normal"))
-						{
-							textureHandle = textures.at("normal")->handle;
-						}
-
-						if (EditorUtils::Property("Normal", textureHandle, Volt::AssetType::Texture))
-						{
-							auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
-
-							if (newTex && newTex->IsValid())
-							{
-								mySelectedSubMaterial->SetTexture("normal", newTex);
-							}
-							else
-							{
-								mySelectedSubMaterial->SetTexture("normal", Volt::Renderer::GetDefaultData().whiteTexture);
-							}
-						}
-					}
-
-					if (textures.contains("material"))
-					{
-						Volt::AssetHandle textureHandle = Volt::Asset::Null();
-						if (textures.at("material"))
-						{
-							textureHandle = textures.at("material")->handle;
-						}
-
-						if (EditorUtils::Property("Material", textureHandle, Volt::AssetType::Texture))
-						{
-							auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
-
-							if (newTex && newTex->IsValid())
-							{
-								mySelectedSubMaterial->SetTexture("material", newTex);
-							}
-							else
-							{
-								mySelectedSubMaterial->SetTexture("material", Volt::Renderer::GetDefaultData().whiteTexture);
-							}
-						}
-					}
-				}
-
-				for (const auto& [textureShaderName, editorName] : textureDefinitions)
-				{
-					if (!textures.contains(textureShaderName))
-					{
-						continue;
-					}
-
-					Volt::AssetHandle textureHandle = Volt::Asset::Null();
-					if (textures.at(textureShaderName))
-					{
-						textureHandle = textures.at(textureShaderName)->handle;
-					}
-
-					if (EditorUtils::Property(editorName, textureHandle, Volt::AssetType::Texture))
-					{
-						auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
-
-						if (newTex && newTex->IsValid())
-						{
-							mySelectedSubMaterial->SetTexture(textureShaderName, newTex);
-						}
-						else
-						{
-							mySelectedSubMaterial->SetTexture(textureShaderName, Volt::Renderer::GetDefaultData().whiteTexture);
-						}
-					}
-				}
-
-				UI::EndProperties();
-			}
-			UI::PopID();
-
-			if (mySelectedSubMaterial->GetMaterialSpecializationData().IsValid())
-			{
-				ImGui::Separator();
-
-				UI::Header("Material Parameters");
-
-				UI::PushID();
-				if (UI::BeginProperties("materialParams"))
-				{
-					auto& materialSpecializationParams = mySelectedSubMaterial->GetMaterialSpecializationData();
-
-					for (auto& [name, memberData] : materialSpecializationParams.GetMembers())
-					{
-						if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const Volt::ShaderTexture& shaderTexture) { return shaderTexture.shaderName == name; }); it != textureDefinitions.end())
-						{
-							continue;
-						}
-
-						switch (memberData.type)
-						{
-							case Volt::ShaderUniformType::Bool: UI::Property(name, materialSpecializationParams.GetValue<bool>(name)); break;
-							case Volt::ShaderUniformType::UInt:  UI::Property(name, materialSpecializationParams.GetValue<uint32_t>(name)); break;
-							case Volt::ShaderUniformType::UInt2: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec2>(name)); break;
-							case Volt::ShaderUniformType::UInt3: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec3>(name)); break;
-							case Volt::ShaderUniformType::UInt4: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec4>(name)); break;
-
-							case Volt::ShaderUniformType::Int: UI::Property(name, materialSpecializationParams.GetValue<int32_t>(name)); break;
-							case Volt::ShaderUniformType::Int2: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec2>(name)); break;
-							case Volt::ShaderUniformType::Int3: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec3>(name)); break;
-							case Volt::ShaderUniformType::Int4: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec4>(name)); break;
-
-							case Volt::ShaderUniformType::Float: UI::Property(name, materialSpecializationParams.GetValue<float>(name)); break;
-							case Volt::ShaderUniformType::Float2: UI::Property(name, materialSpecializationParams.GetValue<glm::vec2>(name)); break;
-							case Volt::ShaderUniformType::Float3: UI::Property(name, materialSpecializationParams.GetValue<glm::vec3>(name)); break;
-							case Volt::ShaderUniformType::Float4: UI::Property(name, materialSpecializationParams.GetValue<glm::vec4>(name)); break;
-						}
-					}
-
-					UI::EndProperties();
-				}
-				UI::PopID();
-			}
-
-			auto& pipelineGenerationDatas = mySelectedSubMaterial->GetPipelineGenerationDatas();
-
-			if (!pipelineGenerationDatas.empty())
-			{
-				ImGui::Separator();
-
-				UI::Header("Pipeline Generation");
-
-				UI::PushID();
-				for (auto& [stage, pipelineGenerationParams] : pipelineGenerationDatas)
-				{
-					if (pipelineGenerationParams.IsValid())
-					{
-						bool dataChanged = false;
-						const uint32_t id = UI::GetID();
-
-						if (UI::BeginProperties("pipelineGeneration" + std::to_string(id)))
-						{
-							for (auto& [name, memberData] : pipelineGenerationParams.GetMembers())
-							{
-								switch (memberData.type)
-								{
-									case Volt::ShaderUniformType::Bool: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<bool>(name)); break;
-									case Volt::ShaderUniformType::UInt: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<uint32_t>(name)); break;
-									case Volt::ShaderUniformType::UInt2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec2>(name)); break;
-									case Volt::ShaderUniformType::UInt3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec3>(name)); break;
-									case Volt::ShaderUniformType::UInt4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec4>(name)); break;
-
-									case Volt::ShaderUniformType::Int: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<int32_t>(name)); break;
-									case Volt::ShaderUniformType::Int2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec2>(name)); break;
-									case Volt::ShaderUniformType::Int3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec3>(name)); break;
-									case Volt::ShaderUniformType::Int4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec4>(name)); break;
-
-									case Volt::ShaderUniformType::Float: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<float>(name)); break;
-									case Volt::ShaderUniformType::Float2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec2>(name)); break;
-									case Volt::ShaderUniformType::Float3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec3>(name)); break;
-									case Volt::ShaderUniformType::Float4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec4>(name)); break;
-								}
-							}
-
-							UI::EndProperties();
-						}
-
-						if (dataChanged)
-						{
-							mySelectedSubMaterial->RecompilePermutation();
-						}
-					}
-				}
-				UI::PopID();
-			}
-		}
+		
+		// #TODO_Ivar: Reimplement
+		//if (mySelectedSubMaterial)
+		//{
+		//	UI::Header("Shader");
+		//	std::vector<std::string> shaderNames;
+		//	shaderNames.emplace_back("None");
+		//	for (const auto& [name, shader] : Volt::ShaderRegistry::GetShaderRegistry())
+		//	{
+		//		if (!shader->IsInternal())
+		//		{
+		//			shaderNames.emplace_back(shader->GetName());
+		//		}
+		//	}
+
+		//	int32_t selectedShader = 0;
+		//	const std::string shaderName = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName();
+
+		//	if (auto namesIt = std::find(shaderNames.begin(), shaderNames.end(), shaderName); namesIt != shaderNames.end())
+		//	{
+		//		selectedShader = (int32_t)std::distance(shaderNames.begin(), namesIt);
+		//	}
+
+		//	bool changed = false;
+
+		//	UI::PushID();
+		//	if (UI::BeginProperties("Shader"))
+		//	{
+		//		if (UI::ComboProperty("Shader", selectedShader, shaderNames))
+		//		{
+		//			auto newPipeline = Volt::ShaderRegistry::GetShader(shaderNames.at(selectedShader));
+		//			if (newPipeline)
+		//			{
+		//				mySelectedSubMaterial->SetShader(newPipeline);
+
+		//				if (shaderNames.at(selectedShader) == "Illum")
+		//				{
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, true);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, false);
+		//					changed = true;
+		//				}
+		//				else if (shaderNames.at(selectedShader) == "IllumTransparent")
+		//				{
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, true);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, false);
+		//					changed = true;
+		//				}
+		//				else if (shaderNames.at(selectedShader) == "IllumSSS")
+		//				{
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, true);
+		//					changed = true;
+		//				}
+		//				else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Deferred))
+		//				{
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, true);
+		//					changed = true;
+		//				}
+		//			}
+		//		}
+
+		//		const std::vector<const char*> materialTypes =
+		//		{
+		//			"Opaque",
+		//			"Transparent",
+		//			"Subsurface Scattering",
+		//			"Decal"
+		//		};
+
+		//		int32_t selected = 0;
+		//		Volt::MaterialFlag currentType = Volt::MaterialFlag::All;
+
+		//		if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Opaque) || mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Deferred))
+		//		{
+		//			selected = 0;
+		//			currentType = Volt::MaterialFlag::Opaque;
+		//		}
+		//		else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Transparent))
+		//		{
+		//			selected = 1;
+		//			currentType = Volt::MaterialFlag::Transparent;
+		//		}
+		//		else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::SSS))
+		//		{
+		//			selected = 2;
+		//			currentType = Volt::MaterialFlag::SSS;
+		//		}
+		//		else if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Decal))
+		//		{
+		//			selected = 3;
+		//			currentType = Volt::MaterialFlag::Decal;
+		//		}
+
+		//		if (UI::ComboProperty("Material Type", selected, materialTypes))
+		//		{
+		//			if (mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::Deferred) && currentType == Volt::MaterialFlag::Opaque)
+		//			{
+		//				mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, false);
+		//			}
+		//			else
+		//			{
+		//				mySelectedSubMaterial->SetFlag(currentType, false);
+		//			}
+
+		//			if (selected == 0)
+		//			{
+		//				if (mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetName() == "Illum")
+		//				{
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Deferred, true);
+		//				}
+		//				else
+		//				{
+		//					mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Opaque, true);
+		//				}
+
+		//			}
+		//			else if (selected == 1) mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Transparent, true);
+		//			else if (selected == 2) mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::SSS, true);
+		//			else if (selected == 3) mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::Decal, true);
+
+		//			mySelectedSubMaterial->RecompilePermutation();
+		//			changed = true;
+		//		}
+
+		//		bool castingShadows = mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::CastShadows);
+		//		if (UI::Property("Cast Shadows", castingShadows))
+		//		{
+		//			mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::CastShadows, castingShadows);
+		//			changed = true;
+		//		}
+
+		//		bool castingAO = mySelectedSubMaterial->HasFlag(Volt::MaterialFlag::CastAO);
+		//		if (UI::Property("Cast AO", castingAO))
+		//		{
+		//			mySelectedSubMaterial->SetFlag(Volt::MaterialFlag::CastAO, castingAO);
+		//			changed = true;
+		//		}
+
+		//		UI::EndProperties();
+		//	}
+		//	UI::PopID();
+
+		//	UI::Header("Properties");
+		//	auto& materialData = mySelectedSubMaterial->GetMaterialData();
+
+		//	UI::PushID();
+		//	if (UI::BeginProperties("Material Data"))
+		//	{
+		//		changed |= UI::PropertyColor("Color", materialData.color);
+		//		changed |= UI::PropertyColor("Emissive Color", materialData.emissiveColor);
+		//		changed |= UI::Property("Emissive Strength", materialData.emissiveStrength, 0.f, 20.f);
+		//		changed |= UI::Property("Roughness", materialData.roughness, 0.f, 1.f);
+		//		changed |= UI::Property("Metalness", materialData.metalness, 0.f, 1.f);
+		//		changed |= UI::Property("Normal Strength", materialData.normalStrength, -1.f, 1.f);
+
+		//		UI::EndProperties();
+		//	}
+		//	UI::PopID();
+
+		//	if (changed)
+		//	{
+		//		Volt::Renderer::UpdateMaterial(mySelectedSubMaterial.get());
+		//	}
+
+		//	if (ImGui::CollapsingHeader("Advanced"))
+		//	{
+		//		if (UI::BeginProperties("Advanced"))
+		//		{
+		//			const std::vector<const char*> topologyStrings = { "Triangle List", "Line List", "Triangle Strip", "Path List", "Point List" };
+		//			auto currentTopology = mySelectedSubMaterial->GetTopology();
+
+		//			if (UI::ComboProperty("Topology", *(int32_t*)&currentTopology, topologyStrings))
+		//			{
+		//				mySelectedSubMaterial->SetTopology(currentTopology);
+		//			}
+
+		//			const std::vector<const char*> cullModeStrings = { "Front", "Back", "Front And Back", "None" };
+		//			auto currentCullMode = mySelectedSubMaterial->GetCullMode();
+
+		//			if (UI::ComboProperty("Cull Mode", *(int32_t*)&currentCullMode, cullModeStrings))
+		//			{
+		//				mySelectedSubMaterial->SetCullMode(currentCullMode);
+		//			}
+
+		//			const std::vector<const char*> fillModeStrings = { "Solid", "Wireframe" };
+		//			auto currentFillMode = mySelectedSubMaterial->GetFillMode();
+
+		//			if (UI::ComboProperty("Fill Mode", *(int32_t*)&currentFillMode, fillModeStrings))
+		//			{
+		//				mySelectedSubMaterial->SetFillMode(currentFillMode);
+		//			}
+
+		//			const std::vector<const char*> depthModeStrings = { "Read", "Write", "Read/Write", "None" };
+		//			auto currentDepthMode = mySelectedSubMaterial->GetDepthMode();
+
+		//			if (UI::ComboProperty("Depth Mode", *(int32_t*)&currentDepthMode, depthModeStrings))
+		//			{
+		//				mySelectedSubMaterial->SetDepthMode(currentDepthMode);
+		//			}
+
+		//			UI::EndProperties();
+		//		}
+
+		//	}
+
+		//	ImGui::Separator();
+
+		//	UI::Header("Textures");
+		//	const auto& textureDefinitions = mySelectedSubMaterial->GetPipeline()->GetSpecification().shader->GetResources().shaderTextureDefinitions;
+
+		//	UI::PushID();
+		//	if (UI::BeginProperties("Textures"))
+		//	{
+		//		const auto& textures = mySelectedSubMaterial->GetTextures();
+
+		//		// Default textures
+		//		{
+		//			if (textures.contains("albedo"))
+		//			{
+		//				Volt::AssetHandle textureHandle = Volt::Asset::Null();
+		//				if (textures.at("albedo"))
+		//				{
+		//					textureHandle = textures.at("albedo")->handle;
+		//				}
+
+		//				if (EditorUtils::Property("Albedo", textureHandle, Volt::AssetType::Texture))
+		//				{
+		//					auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
+
+		//					if (newTex && newTex->IsValid())
+		//					{
+		//						mySelectedSubMaterial->SetTexture("albedo", newTex);
+		//					}
+		//					else
+		//					{
+		//						mySelectedSubMaterial->SetTexture("albedo", Volt::Renderer::GetDefaultData().whiteTexture);
+		//					}
+		//				}
+		//			}
+
+		//			if (textures.contains("normal"))
+		//			{
+		//				Volt::AssetHandle textureHandle = Volt::Asset::Null();
+		//				if (textures.at("normal"))
+		//				{
+		//					textureHandle = textures.at("normal")->handle;
+		//				}
+
+		//				if (EditorUtils::Property("Normal", textureHandle, Volt::AssetType::Texture))
+		//				{
+		//					auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
+
+		//					if (newTex && newTex->IsValid())
+		//					{
+		//						mySelectedSubMaterial->SetTexture("normal", newTex);
+		//					}
+		//					else
+		//					{
+		//						mySelectedSubMaterial->SetTexture("normal", Volt::Renderer::GetDefaultData().whiteTexture);
+		//					}
+		//				}
+		//			}
+
+		//			if (textures.contains("material"))
+		//			{
+		//				Volt::AssetHandle textureHandle = Volt::Asset::Null();
+		//				if (textures.at("material"))
+		//				{
+		//					textureHandle = textures.at("material")->handle;
+		//				}
+
+		//				if (EditorUtils::Property("Material", textureHandle, Volt::AssetType::Texture))
+		//				{
+		//					auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
+
+		//					if (newTex && newTex->IsValid())
+		//					{
+		//						mySelectedSubMaterial->SetTexture("material", newTex);
+		//					}
+		//					else
+		//					{
+		//						mySelectedSubMaterial->SetTexture("material", Volt::Renderer::GetDefaultData().whiteTexture);
+		//					}
+		//				}
+		//			}
+		//		}
+
+		//		for (const auto& [textureShaderName, editorName] : textureDefinitions)
+		//		{
+		//			if (!textures.contains(textureShaderName))
+		//			{
+		//				continue;
+		//			}
+
+		//			Volt::AssetHandle textureHandle = Volt::Asset::Null();
+		//			if (textures.at(textureShaderName))
+		//			{
+		//				textureHandle = textures.at(textureShaderName)->handle;
+		//			}
+
+		//			if (EditorUtils::Property(editorName, textureHandle, Volt::AssetType::Texture))
+		//			{
+		//				auto newTex = Volt::AssetManager::GetAsset<Volt::Texture2D>(textureHandle);
+
+		//				if (newTex && newTex->IsValid())
+		//				{
+		//					mySelectedSubMaterial->SetTexture(textureShaderName, newTex);
+		//				}
+		//				else
+		//				{
+		//					mySelectedSubMaterial->SetTexture(textureShaderName, Volt::Renderer::GetDefaultData().whiteTexture);
+		//				}
+		//			}
+		//		}
+
+		//		UI::EndProperties();
+		//	}
+		//	UI::PopID();
+
+		//	if (mySelectedSubMaterial->GetMaterialSpecializationData().IsValid())
+		//	{
+		//		ImGui::Separator();
+
+		//		UI::Header("Material Parameters");
+
+		//		UI::PushID();
+		//		if (UI::BeginProperties("materialParams"))
+		//		{
+		//			auto& materialSpecializationParams = mySelectedSubMaterial->GetMaterialSpecializationData();
+
+		//			for (auto& [name, memberData] : materialSpecializationParams.GetMembers())
+		//			{
+		//				if (auto it = std::find_if(textureDefinitions.begin(), textureDefinitions.end(), [&](const Volt::ShaderTexture& shaderTexture) { return shaderTexture.shaderName == name; }); it != textureDefinitions.end())
+		//				{
+		//					continue;
+		//				}
+
+		//				switch (memberData.type)
+		//				{
+		//					case Volt::ShaderUniformType::Bool: UI::Property(name, materialSpecializationParams.GetValue<bool>(name)); break;
+		//					case Volt::ShaderUniformType::UInt:  UI::Property(name, materialSpecializationParams.GetValue<uint32_t>(name)); break;
+		//					case Volt::ShaderUniformType::UInt2: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec2>(name)); break;
+		//					case Volt::ShaderUniformType::UInt3: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec3>(name)); break;
+		//					case Volt::ShaderUniformType::UInt4: UI::Property(name, materialSpecializationParams.GetValue<glm::uvec4>(name)); break;
+
+		//					case Volt::ShaderUniformType::Int: UI::Property(name, materialSpecializationParams.GetValue<int32_t>(name)); break;
+		//					case Volt::ShaderUniformType::Int2: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec2>(name)); break;
+		//					case Volt::ShaderUniformType::Int3: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec3>(name)); break;
+		//					case Volt::ShaderUniformType::Int4: UI::Property(name, materialSpecializationParams.GetValue<glm::ivec4>(name)); break;
+
+		//					case Volt::ShaderUniformType::Float: UI::Property(name, materialSpecializationParams.GetValue<float>(name)); break;
+		//					case Volt::ShaderUniformType::Float2: UI::Property(name, materialSpecializationParams.GetValue<glm::vec2>(name)); break;
+		//					case Volt::ShaderUniformType::Float3: UI::Property(name, materialSpecializationParams.GetValue<glm::vec3>(name)); break;
+		//					case Volt::ShaderUniformType::Float4: UI::Property(name, materialSpecializationParams.GetValue<glm::vec4>(name)); break;
+		//				}
+		//			}
+
+		//			UI::EndProperties();
+		//		}
+		//		UI::PopID();
+		//	}
+
+		//	auto& pipelineGenerationDatas = mySelectedSubMaterial->GetPipelineGenerationDatas();
+
+		//	if (!pipelineGenerationDatas.empty())
+		//	{
+		//		ImGui::Separator();
+
+		//		UI::Header("Pipeline Generation");
+
+		//		UI::PushID();
+		//		for (auto& [stage, pipelineGenerationParams] : pipelineGenerationDatas)
+		//		{
+		//			if (pipelineGenerationParams.IsValid())
+		//			{
+		//				bool dataChanged = false;
+		//				const uint32_t id = UI::GetID();
+
+		//				if (UI::BeginProperties("pipelineGeneration" + std::to_string(id)))
+		//				{
+		//					for (auto& [name, memberData] : pipelineGenerationParams.GetMembers())
+		//					{
+		//						switch (memberData.type)
+		//						{
+		//							case Volt::ShaderUniformType::Bool: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<bool>(name)); break;
+		//							case Volt::ShaderUniformType::UInt: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<uint32_t>(name)); break;
+		//							case Volt::ShaderUniformType::UInt2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec2>(name)); break;
+		//							case Volt::ShaderUniformType::UInt3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec3>(name)); break;
+		//							case Volt::ShaderUniformType::UInt4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::uvec4>(name)); break;
+
+		//							case Volt::ShaderUniformType::Int: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<int32_t>(name)); break;
+		//							case Volt::ShaderUniformType::Int2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec2>(name)); break;
+		//							case Volt::ShaderUniformType::Int3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec3>(name)); break;
+		//							case Volt::ShaderUniformType::Int4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::ivec4>(name)); break;
+
+		//							case Volt::ShaderUniformType::Float: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<float>(name)); break;
+		//							case Volt::ShaderUniformType::Float2: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec2>(name)); break;
+		//							case Volt::ShaderUniformType::Float3: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec3>(name)); break;
+		//							case Volt::ShaderUniformType::Float4: dataChanged |= UI::Property(name, pipelineGenerationParams.GetValue<glm::vec4>(name)); break;
+		//						}
+		//					}
+
+		//					UI::EndProperties();
+		//				}
+
+		//				if (dataChanged)
+		//				{
+		//					mySelectedSubMaterial->RecompilePermutation();
+		//				}
+		//			}
+		//		}
+		//		UI::PopID();
+		//	}
+		//}
 	}
 	ImGui::End();
 }
@@ -771,7 +770,7 @@ void MaterialEditorPanel::UpdateSubMaterials()
 			{
 				if (ImGui::MenuItem("Add Material"))
 				{
-					mySelectedMaterial->CreateSubMaterial(Volt::ShaderRegistry::GetShader("Illum"));
+					//mySelectedMaterial->CreateSubMaterial(Volt::ShaderRegistry::GetShader("Illum"));
 				}
 
 				ImGui::EndPopup();

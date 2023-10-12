@@ -1,5 +1,4 @@
-#include "Defines.hlsli"
-#include "Structures.hlsli"
+#include "DrawBuffers.hlsli"
 
 #ifndef VERTEX_H
 #define VERTEX_H
@@ -10,12 +9,6 @@ ByteAddressBuffer u_vertexMaterialDataBuffers[] : register(t0, space2);
 ByteAddressBuffer u_vertexAnimationDataBuffers[] : register(t0, space3);
 ByteAddressBuffer u_indexBuffers[] : register(t0, space4);
 //////////////////////////
-
-///// Draw buffers /////
-StructuredBuffer<uint> u_drawToInstanceOffset : register(t0, space0);
-StructuredBuffer<IndirectDrawData> u_indirectDrawData : register(t1, space0);
-StructuredBuffer<uint> u_instanceOffsetToObjectID : register(t2, space0);
-////////////////////////
 
 static const uint VERTEX_MATERIAL_DATA_SIZE = 12;
 static const uint VERTEX_ANIMATION_DATA_SIZE = 16;

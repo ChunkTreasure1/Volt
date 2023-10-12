@@ -18,10 +18,20 @@ struct IndirectDrawData
     float4x4 transform;
     uint meshId;
     uint vertexStartOffset;
+    uint materialId;
     
-    uint2 padding;
+    uint padding;
 };
 
+struct Material
+{
+    uint textures[16];
+    
+    uint textureCount;
+    uint materialFlags;
+    uint2 padding;
+};
+    
 ///// Rendering Structures /////
 struct CameraData
 {

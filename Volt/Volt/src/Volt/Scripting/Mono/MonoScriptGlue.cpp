@@ -4426,248 +4426,249 @@ namespace Volt
 	}
 #pragma endregion
 
+	// #TODO_Ivar: Reimplement something similar
 #pragma region Material
-	inline static void Material_SetColor(uint64_t handle, glm::vec4* color)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		material->GetSubMaterialAt(0)->GetMaterialData().color = *color;
-		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
-	}
+	//inline static void Material_SetColor(uint64_t handle, glm::vec4* color)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	material->GetSubMaterialAt(0)->GetMaterialData().color = *color;
+	//	Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
+	//}
 
-	inline static void Material_GetColor(uint64_t handle, glm::vec4* outColor)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		*outColor = material->GetSubMaterialAt(0)->GetMaterialData().color;
-	}
+	//inline static void Material_GetColor(uint64_t handle, glm::vec4* outColor)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	*outColor = material->GetSubMaterialAt(0)->GetMaterialData().color;
+	//}
 
-	inline static void Material_SetEmissiveColor(uint64_t handle, glm::vec3* color)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		material->GetSubMaterialAt(0)->GetMaterialData().emissiveColor = *color;
-		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
-	}
+	//inline static void Material_SetEmissiveColor(uint64_t handle, glm::vec3* color)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	material->GetSubMaterialAt(0)->GetMaterialData().emissiveColor = *color;
+	//	Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
+	//}
 
-	inline static void Material_GetEmissiveColor(uint64_t handle, glm::vec3* outColor)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		*outColor = material->GetSubMaterialAt(0)->GetMaterialData().emissiveColor;
-	}
+	//inline static void Material_GetEmissiveColor(uint64_t handle, glm::vec3* outColor)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	*outColor = material->GetSubMaterialAt(0)->GetMaterialData().emissiveColor;
+	//}
 
-	inline static void Material_SetEmissiveStrength(uint64_t handle, float strength)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		material->GetSubMaterialAt(0)->GetMaterialData().emissiveStrength = strength;
-		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
-	}
+	//inline static void Material_SetEmissiveStrength(uint64_t handle, float strength)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	material->GetSubMaterialAt(0)->GetMaterialData().emissiveStrength = strength;
+	//	Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
+	//}
 
-	inline static float Material_GetEmissiveStrength(uint64_t handle)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return 0.f;
-		}
-		return material->GetSubMaterialAt(0)->GetMaterialData().emissiveStrength;
-	}
+	//inline static float Material_GetEmissiveStrength(uint64_t handle)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return 0.f;
+	//	}
+	//	return material->GetSubMaterialAt(0)->GetMaterialData().emissiveStrength;
+	//}
 
-	inline static void Material_SetRoughness(uint64_t handle, float roughness)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		material->GetSubMaterialAt(0)->GetMaterialData().roughness = roughness;
-		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
-	}
+	//inline static void Material_SetRoughness(uint64_t handle, float roughness)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	material->GetSubMaterialAt(0)->GetMaterialData().roughness = roughness;
+	//	Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
+	//}
 
-	inline static float Material_GetRoughness(uint64_t handle)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return 0.f;
-		}
-		return material->GetSubMaterialAt(0)->GetMaterialData().roughness;
-	}
+	//inline static float Material_GetRoughness(uint64_t handle)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return 0.f;
+	//	}
+	//	return material->GetSubMaterialAt(0)->GetMaterialData().roughness;
+	//}
 
-	inline static void Material_SetMetalness(uint64_t handle, float metalness)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		material->GetSubMaterialAt(0)->GetMaterialData().metalness = metalness;
-		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
-	}
+	//inline static void Material_SetMetalness(uint64_t handle, float metalness)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	material->GetSubMaterialAt(0)->GetMaterialData().metalness = metalness;
+	//	Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
+	//}
 
-	inline static float Material_GetMetalness(uint64_t handle)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return 0.f;
-		}
-		return material->GetSubMaterialAt(0)->GetMaterialData().metalness;
-	}
+	//inline static float Material_GetMetalness(uint64_t handle)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return 0.f;
+	//	}
+	//	return material->GetSubMaterialAt(0)->GetMaterialData().metalness;
+	//}
 
-	inline static void Material_SetNormalStrength(uint64_t handle, float strength)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return;
-		}
-		material->GetSubMaterialAt(0)->GetMaterialData().normalStrength = strength;
-		Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
-	}
+	//inline static void Material_SetNormalStrength(uint64_t handle, float strength)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return;
+	//	}
+	//	material->GetSubMaterialAt(0)->GetMaterialData().normalStrength = strength;
+	//	Renderer::UpdateMaterial(material->GetSubMaterialAt(0).get());
+	//}
 
-	inline static float Material_GetNormalStrength(uint64_t handle)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set value on invalid material!");
-			return 0.f;
-		}
-		return material->GetSubMaterialAt(0)->GetMaterialData().normalStrength;
-	}
+	//inline static float Material_GetNormalStrength(uint64_t handle)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set value on invalid material!");
+	//		return 0.f;
+	//	}
+	//	return material->GetSubMaterialAt(0)->GetMaterialData().normalStrength;
+	//}
 
-	inline static void Material_SetBool(uint64_t handle, MonoString* name, bool value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetBool(uint64_t handle, MonoString* name, bool value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, value);
+	//}
 
-	inline static void Material_SetInt(uint64_t handle, MonoString* name, int32_t value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetInt(uint64_t handle, MonoString* name, int32_t value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, value);
+	//}
 
-	inline static void Material_SetUInt(uint64_t handle, MonoString* name, uint32_t value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetUInt(uint64_t handle, MonoString* name, uint32_t value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, value);
+	//}
 
-	inline static void Material_SetFloat(uint64_t handle, MonoString* name, float value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetFloat(uint64_t handle, MonoString* name, float value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, value);
+	//}
 
-	inline static void Material_SetFloat2(uint64_t handle, MonoString* name, glm::vec2* value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetFloat2(uint64_t handle, MonoString* name, glm::vec2* value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, *value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, *value);
+	//}
 
-	inline static void Material_SetFloat3(uint64_t handle, MonoString* name, glm::vec3* value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetFloat3(uint64_t handle, MonoString* name, glm::vec3* value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, *value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, *value);
+	//}
 
-	inline static void Material_SetFloat4(uint64_t handle, MonoString* name, glm::vec4* value)
-	{
-		Ref<Material> material = AssetManager::GetAsset<Material>(handle);
-		if (!material || !material->IsValid())
-		{
-			VT_CORE_ERROR("Trying to set parameter on invalid material!");
-			return;
-		}
+	//inline static void Material_SetFloat4(uint64_t handle, MonoString* name, glm::vec4* value)
+	//{
+	//	Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+	//	if (!material || !material->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Trying to set parameter on invalid material!");
+	//		return;
+	//	}
 
-		const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
-		material->GetSubMaterialAt(0)->SetValue(param, *value);
-	}
+	//	const std::string param = MonoScriptUtils::GetStringFromMonoString(name);
+	//	material->GetSubMaterialAt(0)->SetValue(param, *value);
+	//}
 
-	inline static uint64_t Material_CreateCopy(uint64_t materialToCopy)
-	{
-		Ref<Material> originalMaterial = AssetManager::GetAsset<Material>(materialToCopy);
-		if (!originalMaterial || !originalMaterial->IsValid())
-		{
-			VT_CORE_ERROR("Unable to copy invalid material!");
-			return 0;
-		}
+	//inline static uint64_t Material_CreateCopy(uint64_t materialToCopy)
+	//{
+	//	Ref<Material> originalMaterial = AssetManager::GetAsset<Material>(materialToCopy);
+	//	if (!originalMaterial || !originalMaterial->IsValid())
+	//	{
+	//		VT_CORE_ERROR("Unable to copy invalid material!");
+	//		return 0;
+	//	}
 
-		Ref<Material> copiedMaterial = AssetManager::CreateMemoryAsset<Material>(*originalMaterial);
-		return copiedMaterial->handle;
-	}
+	//	Ref<Material> copiedMaterial = AssetManager::CreateMemoryAsset<Material>(*originalMaterial);
+	//	return copiedMaterial->handle;
+	//}
 #pragma endregion
 
 #pragma region PostProcessingMaterial
@@ -5857,30 +5858,31 @@ namespace Volt
 			VT_ADD_INTERNAL_CALL(Mesh_GetMaterial);
 		}
 
+		// #TODO_Ivar: Reimplement something similar
 		// Material
 		{
-			VT_ADD_INTERNAL_CALL(Material_SetBool);
-			VT_ADD_INTERNAL_CALL(Material_SetInt);
-			VT_ADD_INTERNAL_CALL(Material_SetUInt);
-			VT_ADD_INTERNAL_CALL(Material_SetFloat);
-			VT_ADD_INTERNAL_CALL(Material_SetFloat2);
-			VT_ADD_INTERNAL_CALL(Material_SetFloat3);
-			VT_ADD_INTERNAL_CALL(Material_SetFloat4);
+			//VT_ADD_INTERNAL_CALL(Material_SetBool);
+			//VT_ADD_INTERNAL_CALL(Material_SetInt);
+			//VT_ADD_INTERNAL_CALL(Material_SetUInt);
+			//VT_ADD_INTERNAL_CALL(Material_SetFloat);
+			//VT_ADD_INTERNAL_CALL(Material_SetFloat2);
+			//VT_ADD_INTERNAL_CALL(Material_SetFloat3);
+			//VT_ADD_INTERNAL_CALL(Material_SetFloat4);
 
-			VT_ADD_INTERNAL_CALL(Material_CreateCopy);
+			//VT_ADD_INTERNAL_CALL(Material_CreateCopy);
 
-			VT_ADD_INTERNAL_CALL(Material_SetColor);
-			VT_ADD_INTERNAL_CALL(Material_GetColor);
-			VT_ADD_INTERNAL_CALL(Material_SetEmissiveColor);
-			VT_ADD_INTERNAL_CALL(Material_GetEmissiveColor);
-			VT_ADD_INTERNAL_CALL(Material_SetEmissiveStrength);
-			VT_ADD_INTERNAL_CALL(Material_GetEmissiveStrength);
-			VT_ADD_INTERNAL_CALL(Material_SetRoughness);
-			VT_ADD_INTERNAL_CALL(Material_GetRoughness);
-			VT_ADD_INTERNAL_CALL(Material_SetMetalness);
-			VT_ADD_INTERNAL_CALL(Material_GetMetalness);
-			VT_ADD_INTERNAL_CALL(Material_SetNormalStrength);
-			VT_ADD_INTERNAL_CALL(Material_GetNormalStrength);
+			//VT_ADD_INTERNAL_CALL(Material_SetColor);
+			//VT_ADD_INTERNAL_CALL(Material_GetColor);
+			//VT_ADD_INTERNAL_CALL(Material_SetEmissiveColor);
+			//VT_ADD_INTERNAL_CALL(Material_GetEmissiveColor);
+			//VT_ADD_INTERNAL_CALL(Material_SetEmissiveStrength);
+			//VT_ADD_INTERNAL_CALL(Material_GetEmissiveStrength);
+			//VT_ADD_INTERNAL_CALL(Material_SetRoughness);
+			//VT_ADD_INTERNAL_CALL(Material_GetRoughness);
+			//VT_ADD_INTERNAL_CALL(Material_SetMetalness);
+			//VT_ADD_INTERNAL_CALL(Material_GetMetalness);
+			//VT_ADD_INTERNAL_CALL(Material_SetNormalStrength);
+			//VT_ADD_INTERNAL_CALL(Material_GetNormalStrength);
 		}
 
 		// Post Processing Material

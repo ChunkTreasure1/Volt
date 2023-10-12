@@ -20,6 +20,7 @@ namespace Volt
 	{
 		RenderGraphResourceHandle indirectCommandsBuffer;
 		RenderGraphResourceHandle indirectCountsBuffer;
+		RenderGraphResourceHandle indirectDrawDataBuffer;
 
 		RenderGraphResourceHandle drawToInstanceOffsetBuffer;
 		RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
@@ -34,6 +35,11 @@ namespace Volt
 	struct VisibilityBufferData
 	{
 		RenderGraphResourceHandle visibility;
+	};
+
+	struct MaterialCountData
+	{
+		RenderGraphResourceHandle materialCountBuffer;
 	};
 
 	struct GBufferData

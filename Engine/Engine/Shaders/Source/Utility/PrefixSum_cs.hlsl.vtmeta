@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 1828877427646594939
+  filePath: Engine/Shaders/Source/Utility/PrefixSum_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

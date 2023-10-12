@@ -36,8 +36,9 @@
 
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
-#include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 #include <Volt/Rendering/Renderer.h>
+
+#include <Volt/RenderingNew/Shader/ShaderMap.h>
 
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
@@ -1036,7 +1037,7 @@ void AssetBrowserPanel::DeleteFilesModal()
 						case Volt::AssetType::ShaderDefinition:
 						{
 							auto shader = Volt::AssetManager::GetAsset<Volt::Shader>(item->path);
-							Volt::ShaderRegistry::Unregister(shader->GetName());
+							//Volt::ShaderRegistry::Unregister(shader->GetName());
 							break;
 						}
 					}
@@ -1330,7 +1331,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		{
 			Ref<Volt::Material> material = Volt::AssetManager::CreateAsset<Volt::Material>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
 			material->SetName(std::filesystem::path(tempName).stem().string());
-			material->CreateSubMaterial(Volt::ShaderRegistry::GetShader("Illum"));
+			material->CreateSubMaterial(Volt::ShaderMap::Get("Illum"));
 			Volt::AssetManager::SaveAsset(material);
 
 			newAssetHandle = material->handle;
@@ -1637,7 +1638,7 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				fout.close();
 
 				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + ".vtsdef", tempName, shaderPaths, false);
-				Volt::ShaderRegistry::Register(tempName, newShader);
+				//Volt::ShaderRegistry::Register(tempName, newShader);
 			}
 
 			ImGui::CloseCurrentPopup();

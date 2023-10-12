@@ -8,7 +8,7 @@
 #include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Mesh/SubMaterial.h"
 
-#include "Volt/Rendering/Renderer.h"
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 namespace Volt
 {
@@ -41,7 +41,7 @@ namespace Volt
 		offset += sizeof(uint32_t);
 
 		const AssetHandle materialHandle = *(AssetHandle*)&totalData[offset];
-		//mesh->m_material = AssetManager::GetAsset<Material>(materialHandle);
+		mesh->m_material = AssetManager::GetAsset<Material>(materialHandle);
 		offset += sizeof(AssetHandle);
 
 		const uint32_t vertexCount = *(uint32_t*)&totalData[offset];
@@ -121,7 +121,7 @@ namespace Volt
 		if (!mesh->m_material)
 		{
 			mesh->m_material = CreateRef<Material>();
-			//mesh->m_material->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, Renderer::GetDefaultData().defaultShader));
+			mesh->m_material->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, ShaderMap::Get("VisibilityBuffer")));
 		}
 
 		mesh->Construct();

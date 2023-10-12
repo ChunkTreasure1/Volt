@@ -7,7 +7,7 @@
 #include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Rendering/RenderPipeline/ShaderRegistry.h"
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_STB_IMAGE_WRITE
@@ -53,7 +53,7 @@ namespace Volt
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderRegistry::GetShader("Illum"));
+			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderMap::Get("Illum"));
 			index++;
 		}
 
@@ -235,7 +235,7 @@ namespace Volt
 
 				if (!outMesh->m_material->mySubMaterials.contains(subMesh.materialIndex))
 				{
-					outMesh->m_material->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderRegistry::GetShader("Deferred"));
+					outMesh->m_material->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderMap::Get("Deferred"));
 				}
 			}
 		}

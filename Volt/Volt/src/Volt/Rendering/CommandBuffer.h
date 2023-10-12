@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Volt/Rendering/RenderPipeline/RenderPipeline.h"
 
 #include <vulkan/vulkan.h>
 
@@ -31,7 +30,6 @@ namespace Volt
 		void EndTimestamp(uint32_t timestampId);
 
 		const float GetExecutionTime(uint32_t frameIndex, uint32_t queryId) const;
-		const RenderPipelineStatistics& GetPipelineStatistics(uint32_t frameIndex) const;
 
 		static Ref<CommandBuffer> Create(uint32_t count, bool swapchainTarget = false);
 		static Ref<CommandBuffer> Create(uint32_t count, Ref<CommandBuffer> primaryCommandBuffer);
@@ -63,7 +61,6 @@ namespace Volt
 		std::vector<std::vector<float>> myGPUExecutionTimes;
 
 		uint32_t myPipelineQueryCount = 0;
-		std::vector<RenderPipelineStatistics> myPipelineStatisticsResults;
 
 		CommandBufferLevel myLevel = CommandBufferLevel::Primary;
 		Weak<CommandBuffer> myInheritedCommandBuffer;

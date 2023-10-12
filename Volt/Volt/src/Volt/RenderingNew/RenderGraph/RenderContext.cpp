@@ -91,6 +91,11 @@ namespace Volt
 		m_commandBuffer->ClearImage(image, { clearColor.x, clearColor.y, clearColor.z, clearColor.w });
 	}
 
+	void RenderContext::ClearBuffer(Ref<RHI::StorageBuffer> buffer, uint32_t clearValue)
+	{
+		m_commandBuffer->ClearBuffer(buffer, clearValue);
+	}
+
 	void RenderContext::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 		VT_PROFILE_FUNCTION();

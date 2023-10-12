@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 1667891878663634397
+  filePath: Engine/Shaders/Source/Visibility/GenerateMaterialCount_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}
