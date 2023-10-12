@@ -187,6 +187,20 @@ namespace Volt::RHI
 		return m_resources;
 	}
 
+	const ShaderResourceBinding& VulkanShader::GetResourceBindingFromName(std::string_view name) const
+	{
+		static ShaderResourceBinding invalidBinding{};
+		
+		std::string nameStr = std::string(name);
+		
+		if (!m_resources.bindings.contains(nameStr))
+		{
+			return invalidBinding;
+		}
+
+		return m_resources.bindings.at(nameStr);
+	}
+
 	const std::vector<std::filesystem::path>& VulkanShader::GetSourceFiles() const
 	{
 		return m_sourceFiles;
@@ -305,6 +319,11 @@ namespace Volt::RHI
 			const uint32_t set = compiler.get_decoration(ubo.id, spv::DecorationDescriptorSet);
 			const std::string& name = compiler.get_name(ubo.id);
 
+			if (!TryAddShaderBinding(name, set, binding))
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
+
 			if (name == "$Globals")
 			{
 				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Shader {0} seems to have incorrectly defined global variables!", m_name);
@@ -332,6 +351,12 @@ namespace Volt::RHI
 			const size_t size = compiler.get_declared_struct_size(bufferBaseType);
 			const uint32_t binding = compiler.get_decoration(ssbo.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(ssbo.id, spv::DecorationDescriptorSet);
+			const std::string& name = compiler.get_name(ssbo.id);
+
+			if (!TryAddShaderBinding(name, set, binding))
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
 
 			const bool firstEntry = !m_resources.storageBuffers[set].contains(binding);
 
@@ -362,6 +387,12 @@ namespace Volt::RHI
 			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
 			const auto& imageType = compiler.get_type(image.type_id);
+			const std::string& name = compiler.get_name(image.id);
+
+			if (!TryAddShaderBinding(name, set, binding))
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
 
 			const bool firstEntry = !m_resources.storageImages[set].contains(binding);
 
@@ -391,6 +422,12 @@ namespace Volt::RHI
 			const uint32_t binding = compiler.get_decoration(image.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(image.id, spv::DecorationDescriptorSet);
 			const auto& imageType = compiler.get_type(image.type_id);
+			const std::string& name = compiler.get_name(image.id);
+
+			if (!TryAddShaderBinding(name, set, binding))
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
 
 			const bool firstEntry = !m_resources.images[set].contains(binding);
 
@@ -419,6 +456,12 @@ namespace Volt::RHI
 		{
 			const uint32_t binding = compiler.get_decoration(sampler.id, spv::DecorationBinding);
 			const uint32_t set = compiler.get_decoration(sampler.id, spv::DecorationDescriptorSet);
+			const std::string& name = compiler.get_name(sampler.id);
+
+			if (!TryAddShaderBinding(name, set, binding))
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to add binding with name {0} to list. It already exists!", name);
+			}
 
 			auto& shaderSampler = m_resources.samplers[set][binding];
 			shaderSampler.usageStages = shaderSampler.usageStages | stage;
@@ -660,5 +703,17 @@ namespace Volt::RHI
 		{
 			m_descriptorPoolSizes.emplace_back(static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLER), seperateSamplerCount * VulkanSwapchain::MAX_FRAMES_IN_FLIGHT);
 		}
+	}
+
+	const bool VulkanShader::TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding)
+	{
+		if (m_resources.bindings.contains(name))
+		{
+			return false;
+		}
+
+		m_resources.bindings[name] = { set, binding };
+
+		return true;
 	}
 }

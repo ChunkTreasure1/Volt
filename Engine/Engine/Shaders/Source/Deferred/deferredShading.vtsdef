@@ -1,4 +1,0 @@
-name: "DeferredShading"
-internal: true
-paths:
-  - "Engine/Shaders/Source/Deferred/DeferredShading_cs.hlsl"

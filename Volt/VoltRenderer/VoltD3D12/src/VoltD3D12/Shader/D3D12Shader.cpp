@@ -65,4 +65,10 @@ namespace Volt::RHI
 	{
 		return ShaderDataBuffer();
 	}
+
+	const ShaderResourceBinding& D3D12Shader::GetResourceBindingFromName(std::string_view name) const
+	{
+		static ShaderResourceBinding invalidBinding{};
+		return invalidBinding;
+	}
 }

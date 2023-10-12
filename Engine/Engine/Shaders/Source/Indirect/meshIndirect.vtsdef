@@ -1,5 +1,0 @@
-name: "MeshIndirect"
-internal: true
-paths:
-  - "Engine/Shaders/Source/Indirect/MeshIndirect_vs.hlsl"
-  - "Engine/Shaders/Source/Indirect/MeshIndirect_ps.hlsl"

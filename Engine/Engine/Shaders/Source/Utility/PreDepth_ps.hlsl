@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:107b94f610dc5fe0f50fd3eb6c3131d4bad0bb551b54d90d9b41fd4fa9634da2
-size 383
+#include "CommonBuffers.hlsli"
+
+struct Output
+{
+    [[vt::rgba16f]] float4 normal : SV_Target;
+    [[vt::d32f]];
+};
+
+struct Input
+{
+    float4 position : SV_Position;
+    float3 normal : NORMAL;
+};
+
+Output main(Input input)
+{
+    float3 normal = normalize(input.normal);
+    
+    Output output;
+    output.normal = float4(normal, 1.f);    
+
+    return output;
+}

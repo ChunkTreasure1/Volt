@@ -60,7 +60,6 @@ namespace Volt
 		void UpdateLightBuffers();
 
 		void UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext);
-		void UpdateDescriptorTableForMeshRendering(RenderScene& renderScene);
 
 		void CreatePipelines();
 
@@ -73,9 +72,6 @@ namespace Volt
 		void AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-
-		void AddGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddDeferredShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		///////////////////
 
 		Ref<RHI::Image2D> m_outputImage;
@@ -105,8 +101,6 @@ namespace Volt
 
 		Ref<RHI::SamplerState> m_samplerState;
 
-		Ref<RHI::DescriptorTable> m_descriptorTable;
-
 		uint32_t m_currentActiveCommandCount = 0;
 
 		///// TEMP /////
@@ -116,14 +110,12 @@ namespace Volt
 		///// Pipelines /////
 		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
-		Ref<RHI::ComputePipeline> m_deferredShadingPipeline;
 		Ref<RHI::ComputePipeline> m_visibilityVisualizationPipeline;
 		Ref<RHI::ComputePipeline> m_generateMaterialCountPipeline;
 
 		Ref<RHI::ComputePipeline> m_prefixSumPipeline;
 
 		Ref<RHI::RenderPipeline> m_preDepthPipeline;
-		Ref<RHI::RenderPipeline> m_gbufferPipeline;
 		Ref<RHI::RenderPipeline> m_visibilityPipeline;
 		/////////////////////
 

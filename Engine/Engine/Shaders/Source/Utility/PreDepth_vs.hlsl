@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f688532e89a843586ac1da56428133a98bf340e8b31c35f6de35f776bfa3d6b6
-size 427
+#include "CommonBuffers.hlsli"
+#include "DefaultVertex.hlsli"
+
+struct Output
+{
+    float4 position : SV_Position;
+    float3 normal : NORMAL;
+};
+
+Output main(in DefaultInput input)
+{
+    float4 worldPosition = input.GetWorldPosition();
+    
+    Output output;
+    output.position = mul(u_cameraData.projection, mul(u_cameraData.view, worldPosition));
+    output.normal = input.GetNormal();
+    return output;
+}

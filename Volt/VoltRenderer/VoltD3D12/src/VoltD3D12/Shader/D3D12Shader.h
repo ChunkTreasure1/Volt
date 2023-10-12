@@ -22,6 +22,7 @@ namespace Volt::RHI
 		const ShaderResources& GetResources() const override;
 		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
 		ShaderDataBuffer GetConstantsBuffer() const override;
+		const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const override;
 
 	private:
 		friend class D3D12ShaderCompiler;

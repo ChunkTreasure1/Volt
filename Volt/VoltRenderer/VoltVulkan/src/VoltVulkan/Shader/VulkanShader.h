@@ -27,9 +27,10 @@ namespace Volt::RHI
 
 		const bool Reload(bool forceCompile) override;
 		std::string_view GetName() const override;
-		const ShaderResources& GetResources() const override;
-		ShaderDataBuffer GetConstantsBuffer() const override;
 		const std::vector<std::filesystem::path>& GetSourceFiles() const override;
+		const ShaderResources& GetResources() const override;
+		const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const override;
+		ShaderDataBuffer GetConstantsBuffer() const override;
 
 		inline const std::vector<std::pair<uint32_t, uint32_t>>& GetDescriptorPoolSizes() const { return m_descriptorPoolSizes; }
 		inline const std::vector<VkDescriptorSetLayout_T*>& GetDescriptorSetLayouts() const { return m_descriptorSetLayouts; }
@@ -57,6 +58,8 @@ namespace Volt::RHI
 
 		void CreateDescriptorSetLayouts();
 		void CalculateDescriptorPoolSizes();
+
+		const bool TryAddShaderBinding(const std::string& name, uint32_t set, uint32_t binding);
 
 		std::unordered_map<ShaderStage, SourceData> m_shaderSources;
 		std::unordered_map<ShaderStage, std::vector<uint32_t>> m_shaderData;

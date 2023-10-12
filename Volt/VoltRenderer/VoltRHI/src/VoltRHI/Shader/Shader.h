@@ -115,6 +115,14 @@ namespace Volt::RHI
 	};
 	/////////////////////////////////
 
+	struct ShaderResourceBinding
+	{
+		uint32_t set = std::numeric_limits<uint32_t>::max();
+		uint32_t binding = std::numeric_limits<uint32_t>::max();
+
+		inline const bool IsValid() const { return set != std::numeric_limits<uint32_t>::max() && binding != std::numeric_limits<uint32_t>::max(); }
+	};
+
 	struct ShaderResources
 	{
 		std::map<uint32_t, std::map<uint32_t, ShaderConstantBuffer>> uniformBuffers;
@@ -123,6 +131,8 @@ namespace Volt::RHI
 		std::map<uint32_t, std::map<uint32_t, ShaderImage>> images;
 		std::map<uint32_t, std::map<uint32_t, ShaderSampler>> samplers;
 		std::set<uint32_t> usedSets{};
+
+		std::unordered_map<std::string, ShaderResourceBinding> bindings;
 
 		ShaderConstantData constants{};
 		ShaderDataBuffer constantsBuffer{};
@@ -139,6 +149,7 @@ namespace Volt::RHI
 		virtual const ShaderResources& GetResources() const = 0;
 		virtual const std::vector<std::filesystem::path>& GetSourceFiles() const = 0;
 		virtual ShaderDataBuffer GetConstantsBuffer() const = 0;
+		virtual const ShaderResourceBinding& GetResourceBindingFromName(std::string_view name) const = 0;
 
 		static Ref<Shader> Create(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile = false);
 

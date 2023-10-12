@@ -208,6 +208,18 @@ namespace Volt
 		m_currentDescriptorTable->SetBufferView(view, set, binding, arrayIndex);
 	}
 
+	void RenderContext::SetBufferView(std::string_view name, Ref<RHI::BufferView> view, const uint32_t arrayIndex)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_currentDescriptorTable)
+		{
+			return;
+		}
+
+		m_currentDescriptorTable->SetBufferView(name, view, arrayIndex);
+	}
+
 	void RenderContext::SetBufferViews(const std::vector<Ref<RHI::BufferView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset)
 	{
 		VT_PROFILE_FUNCTION();
@@ -242,6 +254,18 @@ namespace Volt
 		}
 
 		m_currentDescriptorTable->SetImageView(view, set, binding, arrayIndex);
+	}
+
+	void RenderContext::SetImageView(std::string_view name, Ref<RHI::ImageView> view, const uint32_t arrayIndex)
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (!m_currentDescriptorTable)
+		{
+			return;
+		}
+
+		m_currentDescriptorTable->SetImageView(name, view, arrayIndex);
 	}
 
 	void RenderContext::SetImageViews(const std::vector<Ref<RHI::ImageView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset)

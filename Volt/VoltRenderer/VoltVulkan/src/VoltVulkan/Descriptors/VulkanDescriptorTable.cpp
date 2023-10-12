@@ -179,6 +179,30 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanDescriptorTable::SetImageView(std::string_view name, Ref<ImageView> view, uint32_t arrayIndex)
+	{
+		const auto& binding = m_shader->GetResourceBindingFromName(name);
+		if (!binding.IsValid())
+		{
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to find binding with name {0}!", name);
+			return;
+		}
+
+		SetImageView(view, binding.set, binding.binding, arrayIndex);
+	}
+
+	void VulkanDescriptorTable::SetBufferView(std::string_view name, Ref<BufferView> view, uint32_t arrayIndex)
+	{
+		const auto& binding = m_shader->GetResourceBindingFromName(name);
+		if (!binding.IsValid())
+		{
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to find binding with name {0}!", name);
+			return;
+		}
+
+		SetBufferView(view, binding.set, binding.binding, arrayIndex);
+	}
+
 	void VulkanDescriptorTable::SetBufferViews(const std::vector<Ref<BufferView>>& bufferViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset)
 	{
 		for (uint32_t index = arrayStartOffset; const auto& view : bufferViews)
