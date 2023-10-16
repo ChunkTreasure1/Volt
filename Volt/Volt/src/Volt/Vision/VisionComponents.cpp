@@ -1,7 +1,8 @@
 #include "vtpch.h"
 #include "VisionComponents.h"
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
@@ -95,7 +96,7 @@ void Volt::VisionCameraComponent::Update(Entity& camEntity, float aDeltaTime)
 
 void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDeltaTime)
 {
-	if (followId != 0)
+	if (followId != entt::null)
 	{
 		Volt::Entity followEnt = Volt::Entity{ followId, camEntity.GetScene() };
 
@@ -119,7 +120,7 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 		}
 	}
 
-	if (lookAtId != 0)
+	if (lookAtId != entt::null)
 	{
 		Entity lookAtEnt = Entity{ lookAtId, camEntity.GetScene() };
 

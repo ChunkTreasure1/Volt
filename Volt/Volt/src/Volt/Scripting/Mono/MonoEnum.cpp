@@ -9,9 +9,9 @@
 namespace Volt
 {
 	MonoEnum::MonoEnum(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& enumName)
-		: myNamespace(classNamespace), myEnumName(enumName)
+		: m_namespace(classNamespace), m_enumName(enumName)
 	{
-		myMonoClass = mono_class_from_name(assemblyImage, classNamespace.c_str(), enumName.c_str());
+		m_monoClass = mono_class_from_name(assemblyImage, classNamespace.c_str(), enumName.c_str());
 
 		LoadEnumValues();
 	}
@@ -21,8 +21,8 @@ namespace Volt
 		void* iterator = nullptr;
 		uint32_t count = 0;
 
-		MonoObject* tempObject = mono_object_new(MonoScriptEngine::GetAppDomain(), myMonoClass);
-		while (MonoClassField* field = mono_class_get_fields(myMonoClass, &iterator))
+		MonoObject* tempObject = mono_object_new(MonoScriptEngine::GetAppDomain(), m_monoClass);
+		while (MonoClassField* field = mono_class_get_fields(m_monoClass, &iterator))
 		{
 			if (count == 0)
 			{
@@ -38,13 +38,13 @@ namespace Volt
 				uint32_t value;
 				mono_field_get_value(tempObject, field, &value);
 
-				myEnumValues.emplace_back(fieldName, value);
+				m_enumValues.emplace_back(fieldName, value);
 				continue;
 			}
 
 			MonoObject* valueObject = mono_field_get_value_object(MonoScriptEngine::GetAppDomain(), field, tempObject);
 			uint32_t value = *(uint32_t*)mono_object_unbox(valueObject);
-			myEnumValues.emplace_back(fieldName, value);
+			m_enumValues.emplace_back(fieldName, value);
 		}
 	}
 }

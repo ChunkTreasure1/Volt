@@ -3,7 +3,8 @@
 
 #include "Volt/Physics/PhysicsActor.h"
 #include "Volt/Physics/PhysicsLayer.h"
-#include "Volt/Components/Components.h"
+
+#include "Volt/Components/CoreComponents.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Scripting/Mono/MonoScriptInstance.h"
@@ -48,7 +49,7 @@ namespace Volt
 			Entity entityA = actorA->GetEntity();
 			Entity entityB = actorB->GetEntity();
 
-			if (entityA.IsNull() || entityB.IsNull())
+			if (!entityA.IsValid() || !entityB.IsValid())
 			{
 				return;
 			}
@@ -84,39 +85,13 @@ namespace Volt
 					});
 				}
 			}
-
-			if (entityA.HasComponent<VisualScriptingComponent>() && entityA.IsVisible())
-			{
-				auto& scriptComp = entityA.GetComponent<VisualScriptingComponent>();
-				if (scriptComp.graph)
-				{
-					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
-					{
-						GraphKey::OnCollisionEnterEvent e{ entityB };
-						scriptComp.graph->OnEvent(e);
-					});
-				}
-			}
-
-			if (entityB.HasComponent<VisualScriptingComponent>() && entityB.IsVisible())
-			{
-				auto& scriptComp = entityB.GetComponent<VisualScriptingComponent>();
-				if (scriptComp.graph)
-				{
-					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
-					{
-						GraphKey::OnCollisionEnterEvent e{ entityA };
-						scriptComp.graph->OnEvent(e);
-					});
-				}
-			}
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
 			Entity entityA = actorA->GetEntity();
 			Entity entityB = actorB->GetEntity();
 
-			if (entityA.IsNull() || entityB.IsNull())
+			if (!entityA.IsValid() || !entityB.IsValid())
 			{
 				return;
 			}
@@ -152,32 +127,6 @@ namespace Volt
 					});
 				}
 			}
-
-			if (entityA.HasComponent<VisualScriptingComponent>() && entityA.IsVisible())
-			{
-				auto& scriptComp = entityA.GetComponent<VisualScriptingComponent>();
-				if (scriptComp.graph)
-				{
-					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
-					{
-						GraphKey::OnCollisionExitEvent e{ entityB };
-						scriptComp.graph->OnEvent(e);
-					});
-				}
-			}
-
-			if (entityB.HasComponent<VisualScriptingComponent>() && entityB.IsVisible())
-			{
-				auto& scriptComp = entityB.GetComponent<VisualScriptingComponent>();
-				if (scriptComp.graph)
-				{
-					myFrameEvents.emplace_back([scriptComp, entityA, entityB]()
-					{
-						GraphKey::OnCollisionExitEvent e{ entityA };
-						scriptComp.graph->OnEvent(e);
-					});
-				}
-			}
 		}
 	}
 
@@ -208,7 +157,7 @@ namespace Volt
 				Entity triggerEntity = triggerActor->GetEntity();
 				Entity otherEntity = otherActor->GetEntity();
 
-				if (triggerEntity.IsNull() || otherEntity.IsNull())
+				if (!triggerEntity.IsValid() || !otherEntity.IsValid())
 				{
 					return;
 				}
@@ -244,39 +193,13 @@ namespace Volt
 						});
 					}
 				}
-
-				if (triggerEntity.HasComponent<VisualScriptingComponent>() && triggerEntity.IsVisible())
-				{
-					auto& scriptComp = triggerEntity.GetComponent<VisualScriptingComponent>();
-					if (scriptComp.graph)
-					{
-						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
-						{
-							GraphKey::OnTriggerEnterEvent e{ otherEntity };
-							scriptComp.graph->OnEvent(e);
-						});
-					}
-				}
-
-				if (otherEntity.HasComponent<VisualScriptingComponent>() && otherEntity.IsVisible())
-				{
-					auto& scriptComp = otherEntity.GetComponent<VisualScriptingComponent>();
-					if (scriptComp.graph)
-					{
-						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
-						{
-							GraphKey::OnTriggerEnterEvent e{ triggerEntity };
-							scriptComp.graph->OnEvent(e);
-						});
-					}
-				}
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
 				Entity triggerEntity = triggerActor->GetEntity();
 				Entity otherEntity = otherActor->GetEntity();
 
-				if (triggerEntity.IsNull() || otherEntity.IsNull())
+				if (!triggerEntity.IsValid() || !otherEntity.IsValid())
 				{
 					return;
 				}
@@ -310,32 +233,6 @@ namespace Volt
 							{
 								scriptInstance->InvokeOnTriggerExit(triggerEntity);
 							}
-						});
-					}
-				}
-
-				if (triggerEntity.HasComponent<VisualScriptingComponent>() && triggerEntity.IsVisible())
-				{
-					auto& scriptComp = triggerEntity.GetComponent<VisualScriptingComponent>();
-					if (scriptComp.graph)
-					{
-						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
-						{
-							GraphKey::OnTriggerExitEvent e{ otherEntity };
-							scriptComp.graph->OnEvent(e);
-						});
-					}
-				}
-
-				if (otherEntity.HasComponent<VisualScriptingComponent>() && otherEntity.IsVisible())
-				{
-					auto& scriptComp = otherEntity.GetComponent<VisualScriptingComponent>();
-					if (scriptComp.graph)
-					{
-						myFrameEvents.emplace_back([scriptComp, triggerEntity, otherEntity]()
-						{
-							GraphKey::OnTriggerExitEvent e{ triggerEntity };
-							scriptComp.graph->OnEvent(e);
 						});
 					}
 				}

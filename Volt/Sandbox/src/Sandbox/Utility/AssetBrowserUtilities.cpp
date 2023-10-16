@@ -12,6 +12,8 @@
 #include <Volt/Asset/Animation/Skeleton.h>
 #include <Volt/Asset/Importers/MeshTypeImporter.h>
 
+#include <Volt/Components/RenderingComponents.h>
+
 #include <Volt/Rendering/Shader/Shader.h>
 #include <Volt/Rendering/Renderer.h>
 
@@ -107,7 +109,7 @@ namespace AssetBrowser
 			{
 				auto scene = CreateRef<Volt::Scene>("ExportMeshScene");
 
-				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene.get());
+				Volt::AssetManager::GetAsset<Volt::Prefab>(item->handle)->Instantiate(scene);
 				std::vector<Volt::Entity> meshEntities;
 
 				for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())

@@ -23,6 +23,7 @@ namespace Volt
 	{
 	public:
 		static void Initialize();
+		static void InitializeFileSinks();
 		static void Shutdown();
 
 		static void SetLogLevel(spdlog::level::level_enum level);

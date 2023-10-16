@@ -15,6 +15,7 @@
 #include <functional>
 #include <algorithm>
 #include <filesystem>
+#include <execution>
 
 #include <glm/glm.hpp>
 #include <Volt/Log/Log.h>

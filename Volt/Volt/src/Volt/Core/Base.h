@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-#define VT_VERSION Version::Create(0, 1, 1)
+#define VT_VERSION Version::Create(0, 1, 3)
 
 #define BIT(X) (1 << (X))
 #define TO_NORMALIZEDRGB(r, g, b) glm::vec4{ r / 255.f, g / 255.f, b / 255.f, 1.f }

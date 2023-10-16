@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <codecvt>
 
-namespace Utils
+namespace Utility
 {
 	inline std::string ToLower(const std::string& str)
 	{

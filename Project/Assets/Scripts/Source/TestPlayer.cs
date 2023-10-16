@@ -6,7 +6,8 @@ namespace Project
     {
         private void OnCreate()
         {
-
+            Entity parent = entity.parent;
+            parent.position = new Vector3(0f);
         }
 
         private void OnUpdate(float deltaTime)

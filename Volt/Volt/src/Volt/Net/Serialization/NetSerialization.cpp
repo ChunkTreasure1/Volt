@@ -11,7 +11,6 @@
 #include "Volt/Net/SceneInteraction/NetActorComponent.h"
 
 #include "Volt/Net/SceneInteraction/NetContract.h"
-#include <Wire/Registry.h>
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Components/PhysicsComponents.h"
 #include "Volt/Physics/PhysicsScene.h"
@@ -93,7 +92,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 			if (!netEnt) { *out_error = Volt::eNetErrorCode::MISSING_NET_ENTITY; return false; }
 
 			auto sceneEnt = Volt::Entity(netEnt->GetEntityId(), Volt::SceneManager::GetActiveScene().lock().get());
-			if (sceneEnt.IsNull()) { *out_error = Volt::eNetErrorCode::MISSING_SCENE_ENTITY; return false; }
+			if (!sceneEnt.IsValid()) { *out_error = Volt::eNetErrorCode::MISSING_SCENE_ENTITY; return false; }
 
 			if (sceneEnt.HasComponent<Volt::TransformComponent>())
 			{
@@ -144,78 +143,76 @@ VT_OPTIMIZE_OFF
 #pragma region Variable
 Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::REP_ID repId)
 {
-	Volt::MonoFieldType fieldType = variable.GetField().type;
+	auto& fieldType = variable.GetField().type;
 	Volt::RepVariableData varData(10, fieldType);
-	switch (fieldType)
+
+	if (fieldType.typeIndex == typeid(bool))
 	{
-		case Volt::MonoFieldType::Bool:
-		{
-			bool data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Char:
-		{
-			char data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::UChar:
-		{
-			unsigned char data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Short:
-		{
-			short data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Int:
-		{
-			int data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::UInt:
-		{
-			unsigned int data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Int64:
-		{
-			long data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::UInt64:
-		{
-			unsigned long data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Float:
-		{
-			float data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Double:
-		{
-			double data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		case Volt::MonoFieldType::Quaternion:
-		{
-			glm::quat data;
-			variable.GetValue(data);
-			varData = Volt::RepVariableData(data, fieldType);
-		}break;
-		default: break;
+		bool data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
 	}
+	else if (fieldType.typeIndex == typeid(int8_t))
+	{
+		int8_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(uint8_t))
+	{
+		uint8_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(int16_t))
+	{
+		int16_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(int32_t))
+	{
+		int32_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(uint32_t))
+	{
+		uint32_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(int64_t))
+	{
+		uint64_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(uint64_t))
+	{
+		uint64_t data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(float))
+	{
+		float data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(double))
+	{
+		double data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+	else if (fieldType.typeIndex == typeid(glm::quat))
+	{
+		glm::quat data;
+		variable.GetValue(data);
+		varData = Volt::RepVariableData(data, fieldType);
+	}
+
 	varData.repId = repId;
 	varData.fieldType = variable.GetField().type;
 
@@ -228,81 +225,79 @@ Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::
 Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepVariableData& data)
 {
 	packet.Append(data.data->data, data.data->size);
-	packet << data.fieldType << data.repId << Volt::eNetSerializerDescriptor::VARIABLE;
+	packet << data.fieldType.typeName << data.repId << Volt::eNetSerializerDescriptor::VARIABLE;
 	return packet;
 }
 
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepVariableData& varData)
 {
-	packet >> varData.repId >> varData.fieldType;
+	auto& fieldType = varData.fieldType;
+	packet >> varData.repId >> fieldType.typeName;
 
-	switch (varData.fieldType)
+
+	if (fieldType.typeIndex == typeid(bool))
 	{
-		case Volt::MonoFieldType::Bool:
-		{
-			bool data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Char:
-		{
-			char data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::UChar:
-		{
-			unsigned char data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Short:
-		{
-			short data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Int:
-		{
-			int data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::UInt:
-		{
-			unsigned int data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Int64:
-		{
-			long data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::UInt64:
-		{
-			unsigned data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Float:
-		{
-			float data;
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		case Volt::MonoFieldType::Quaternion:
-		{
-			glm::quat data = { 0,0,0,0 };
-			packet >> data;
-			varData.data = CreateRef<Volt::VariableData>(data);
-		}break;
-		default: break;
+		bool data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
 	}
+	else if (fieldType.typeIndex == typeid(int8_t))
+	{
+		int8_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(uint8_t))
+	{
+		uint8_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(int16_t))
+	{
+		int16_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(int32_t))
+	{
+		int32_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(uint32_t))
+	{
+		uint32_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(int64_t))
+	{
+		int64_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(uint64_t))
+	{
+		uint64_t data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(float))
+	{
+		float data;
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+	else if (fieldType.typeIndex == typeid(glm::quat))
+	{
+		glm::quat data = { 0,0,0,0 };
+		packet >> data;
+		varData.data = CreateRef<Volt::VariableData>(data);
+	}
+
 	return packet;
 }
-VT_OPTIMIZE_ON
 
 Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 {
@@ -312,28 +307,10 @@ Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 	repId = in_data.repId;
 }
 
-//Volt::RepVariableData::RepVariableData(const MonoFieldType fieldType)
-//{
-//	switch (fieldType)
-//	{
-//		case MonoFieldType::Bool:	data->size = sizeof(bool); break;
-//		case MonoFieldType::Char:	data->size = sizeof(char); break;
-//		case MonoFieldType::UChar:	data->size = sizeof(unsigned char); break;
-//		case MonoFieldType::Short:	data->size = sizeof(short); break;
-//		case MonoFieldType::Int:	data->size = sizeof(int); break;
-//		case MonoFieldType::UInt:	data->size = sizeof(unsigned int); break;
-//		case MonoFieldType::Int64:	data->size = sizeof(long); break;
-//		case MonoFieldType::UInt64:	data->size = sizeof(unsigned long); break;
-//		case MonoFieldType::Float:	data->size = sizeof(float); break;
-//		case MonoFieldType::Double:	data->size = sizeof(double); break;
-//		default: break;
-//	}
-//	data->data = (uint8_t*)malloc(data->size);
-//}
 #pragma endregion
 
 #pragma region Transform
-Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId, int pos, int rot, int scale)
+Nexus::Packet SerializeTransformPacket(entt::entity in_entityId, Nexus::TYPE::REP_ID in_repId, int pos, int rot, int scale)
 {
 	Volt::Entity entity = Volt::Entity(in_entityId, Volt::SceneManager::GetActiveScene().lock().get());
 	Volt::RepTransformComponentData entTransform;
@@ -474,12 +451,11 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepRPCData& rpcData)
 }
 #pragma endregion 
 
-void HandleScript(Wire::EntityId in_id, const std::string& id, bool in_keep)
+void HandleScript(entt::entity in_id, const std::string& id, bool in_keep)
 {
 	if (in_keep) return;
-	auto& sceneRegistry = Volt::SceneManager::GetActiveScene().lock()->GetRegistry();
 	auto ent = Volt::Entity(in_id, Volt::SceneManager::GetActiveScene().lock().get());
-	auto& scriptComp = sceneRegistry.GetComponent<Volt::MonoScriptComponent>(in_id);
+	auto& scriptComp = ent.GetComponent<Volt::MonoScriptComponent>();
 
 	for (uint32_t i = 0; i < scriptComp.scriptIds.size(); ++i)
 	{
@@ -493,74 +469,77 @@ void HandleScript(Wire::EntityId in_id, const std::string& id, bool in_keep)
 }
 
 #pragma region  Prefab
-void HandleComponent(Wire::EntityId in_id, const std::string& in_comp, bool in_keep)
+void HandleComponent(entt::entity in_id, const std::string& in_comp, bool in_keep)
 {
 	if (in_keep) return;
 
 	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
 
 	auto ent = Volt::Entity(in_id, scenePtr.get());
-	scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
+	//scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
 }
 
-void RecursiveOwnerShipControll(Wire::EntityId in_id, const Volt::RepPrefabData& data)
+void RecursiveOwnerShipControll(entt::entity in_id, const Volt::RepPrefabData& data)
 {
-	auto contract = Volt::NetContractContainer::GetContract(data.handle);
+	//auto contract = Volt::NetContractContainer::GetContract(data.handle);
 
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
+	//auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
 
-	auto ent = Volt::Entity(in_id, scenePtr.get());
-	const auto prefabData = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle);
-	const auto& prefabComponent = ent.GetComponent<Volt::PrefabComponent>();
-	auto prefabRegistry = prefabData->GetRegistry();
-	auto sceneRegistry = scenePtr->GetRegistry();
+	//auto ent = Volt::Entity(in_id, scenePtr.get());
+	//const auto prefabData = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle);
+	//const auto& prefabComponent = ent.GetComponent<Volt::PrefabComponent>();
 
-	auto isOwner = Volt::Application::Get().GetNetHandler().IsOwner(data.repId);
-	auto isHost = Volt::Application::Get().GetNetHandler().IsHost();
+	// #TODO_Ivar: Reimplement
+	//auto prefabRegistry = prefabData->GetRegistry();
+	//auto sceneRegistry = scenePtr->GetRegistry();
 
-	// Components
-	if (contract) if (contract->rules.contains(prefabComponent.prefabEntity))
-	{
-		for (const auto& [guid, pool] : sceneRegistry.GetPools())
-		{
-			if (!sceneRegistry.HasComponent(guid, in_id)) continue;
-			const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-			if (!Volt::NetContractContainer::RuleExists(data.handle, registryInfo.name, prefabComponent.prefabEntity) && registryInfo.guid != Volt::MonoScriptComponent::comp_guid) continue;
-			if (registryInfo.guid == Volt::MonoScriptComponent::comp_guid)
-			{
-				auto& monoScriptComponent = sceneRegistry.GetComponent<Volt::MonoScriptComponent>(in_id);
-				for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
-				{
-					if (!contract->rules.at(prefabComponent.prefabEntity).contains(monoScriptComponent.scriptNames[i])) continue;
-					HandleScript(in_id, monoScriptComponent.scriptNames[i], contract->rules.at(prefabComponent.prefabEntity).at(monoScriptComponent.scriptNames[i]).ShouldKeep(isHost, isOwner));
-				}
-			}
-			else
-			{
-				HandleComponent(in_id, registryInfo.name, contract->rules.at(prefabComponent.prefabEntity)[registryInfo.name].ShouldKeep(isHost, isOwner));
-			}
-		}
-	}
+	//auto isOwner = Volt::Application::Get().GetNetHandler().IsOwner(data.repId);
+	//auto isHost = Volt::Application::Get().GetNetHandler().IsHost();
 
-	// Children
-	if (!ent.HasComponent<Volt::RelationshipComponent>()) return;
-	auto children = ent.GetComponent<Volt::RelationshipComponent>().Children;
-	for (const auto& c : children)
-	{
-		RecursiveOwnerShipControll(c, data);
-	}
+	//// Components
+	//if (contract) if (contract->rules.contains(prefabComponent.prefabEntity))
+	//{
+	//	for (const auto& [guid, pool] : sceneRegistry.GetPools())
+	//	{
+	//		if (!sceneRegistry.HasComponent(guid, in_id)) continue;
+	//		const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
+	//		if (!Volt::NetContractContainer::RuleExists(data.handle, registryInfo.name, prefabComponent.prefabEntity) && registryInfo.guid != Volt::MonoScriptComponent::comp_guid) continue;
+	//		if (registryInfo.guid == Volt::MonoScriptComponent::comp_guid)
+	//		{
+	//			auto& monoScriptComponent = sceneRegistry.GetComponent<Volt::MonoScriptComponent>(in_id);
+	//			for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
+	//			{
+	//				if (!contract->rules.at(prefabComponent.prefabEntity).contains(monoScriptComponent.scriptNames[i])) continue;
+	//				HandleScript(in_id, monoScriptComponent.scriptNames[i], contract->rules.at(prefabComponent.prefabEntity).at(monoScriptComponent.scriptNames[i]).ShouldKeep(isHost, isOwner));
+	//			}
+	//		}
+	//		else
+	//		{
+	//			HandleComponent(in_id, registryInfo.name, contract->rules.at(prefabComponent.prefabEntity)[registryInfo.name].ShouldKeep(isHost, isOwner));
+	//		}
+	//	}
+	//}
+
+	//// Children
+	//if (!ent.HasComponent<Volt::RelationshipComponent>()) return;
+	//auto children = ent.GetComponent<Volt::RelationshipComponent>().Children;
+	//for (const auto& c : children)
+	//{
+	//	RecursiveOwnerShipControll(c, data);
+	//}
 }
 
 // #mmax: should be called on play :P
-void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry, bool manageInstances)
+void RecursiveHandleMono(entt::entity entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry, bool manageInstances)
 {
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock().get();
+	Volt::Entity entity = { entId,  Volt::SceneManager::GetActiveScene() };
+
 	auto repEnt = registry->GetAs<Volt::RepEntity>(owner);
 
 	Volt::MonoScriptEngine::GetOrCreateMonoEntity(entId);
-	if (scenePtr->GetRegistry().HasComponent<Volt::MonoScriptComponent>(entId))
+	if (entity.HasComponent<Volt::MonoScriptComponent>())
 	{
-		auto& comp = scenePtr->GetRegistry().GetComponent<Volt::MonoScriptComponent>(entId);
+		auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
 		for (uint32_t i = 0; const auto & sid : comp.scriptIds)
 		{
 			if (manageInstances)
@@ -584,8 +563,8 @@ void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus:
 		}
 	}
 
-	if (!scenePtr->GetRegistry().HasComponent<Volt::RelationshipComponent>(entId)) return;
-	auto children = scenePtr->GetRegistry().GetComponent<Volt::RelationshipComponent>(entId).Children;
+	if (!entity.HasComponent<Volt::RelationshipComponent>()) return;
+	auto children = entity.GetComponent<Volt::RelationshipComponent>().children;
 	for (auto child : children)
 	{
 		RecursiveHandleMono(child, owner, varId, registry);
@@ -594,15 +573,16 @@ void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus:
 
 bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty& registry)
 {
-	auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
+	auto scenePtr = Volt::SceneManager::GetActiveScene();
 
 	if (auto prefab = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle))
 	{
-		auto entId = prefab->Instantiate(scenePtr.get());
+		auto entity = prefab->Instantiate(scenePtr);
+
 		std::string tagId = " :error";
-		if (Volt::Entity(entId, scenePtr.get()).HasComponent<Volt::NetActorComponent>())
+		if (entity.HasComponent<Volt::NetActorComponent>())
 		{
-			auto& netActorComp = Volt::Entity(entId, scenePtr.get()).GetComponent<Volt::NetActorComponent>();
+			auto& netActorComp = entity.GetComponent<Volt::NetActorComponent>();
 			netActorComp.repId = data.repId;
 			netActorComp.clientId = data.ownerId;
 			switch (netActorComp.condition)
@@ -613,15 +593,15 @@ bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty&
 				default:												break;
 			}
 		}
-		auto ent = Volt::Entity(entId, scenePtr.get());
-		registry.Register(data.repId, Volt::RepEntity(entId, data.ownerId, data.handle));
-		ent.GetComponent<Volt::TagComponent>().tag = ent.GetTag() + tagId + std::to_string(data.repId);
 
-		RecursiveOwnerShipControll(entId, data);
+		registry.Register(data.repId, Volt::RepEntity(entity.GetID(), data.ownerId, data.handle));
+		entity.GetComponent<Volt::TagComponent>().tag = entity.GetTag() + tagId + std::to_string(data.repId);
+
+		RecursiveOwnerShipControll(entity.GetID(), data);
 		if (Volt::MonoScriptEngine::IsRunning())
 		{
 			auto varId = data.repId;
-			RecursiveHandleMono(entId, data.repId, varId, &registry);
+			RecursiveHandleMono(entity.GetID(), data.repId, varId, &registry);
 		}
 		bool status = true;
 		for (auto compData : data.componentData)
@@ -631,19 +611,19 @@ bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty&
 			status = false;
 		}
 
-		if (scenePtr->GetRegistry().HasComponent<Volt::RigidbodyComponent>(entId))
+		if (entity.HasComponent<Volt::RigidbodyComponent>())
 		{
 			if (!Volt::Application::Get().GetNetHandler().IsOwner(data.repId))
 			{
-				Volt::Physics::GetScene()->GetActor(ent)->SetGravityDisabled(true);
+				Volt::Physics::GetScene()->GetActor(entity)->SetGravityDisabled(true);
 			}
 		}
 
-		if (scenePtr->GetRegistry().HasComponent<Volt::CharacterControllerComponent>(entId))
+		if (entity.HasComponent<Volt::CharacterControllerComponent>())
 		{
 			if (!Volt::Application::Get().GetNetHandler().IsOwner(data.repId))
 			{
-				Volt::Physics::GetScene()->GetControllerActor(ent)->SetGravity(false);
+				Volt::Physics::GetScene()->GetControllerActor(entity)->SetGravity(false);
 			}
 		}
 

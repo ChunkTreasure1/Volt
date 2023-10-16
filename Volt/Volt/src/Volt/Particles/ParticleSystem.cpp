@@ -10,7 +10,8 @@
 #include "Volt/Utility/FileSystem.h"
 #include "Volt/Utility/Random.h"
 
-#include "Volt/Components/Components.h"
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 #include <Volt/Core/Base.h>
 #include "Volt/Asset/AssetManager.h"
@@ -27,10 +28,14 @@
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Threading/ThreadPool.h"
 
-void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const float deltaTime)
+void Volt::ParticleSystem::Update(entt::registry& registry, Weak<Scene> scene, const float deltaTime)
 {
-	std::set<Wire::EntityId> emittersAliveThisFrame;
-	registry.ForEach<ParticleEmitterComponent, TransformComponent>([&](Wire::EntityId id, ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp)
+	VT_PROFILE_FUNCTION();
+
+	std::set<entt::entity> emittersAliveThisFrame;
+	
+	auto view = registry.view<ParticleEmitterComponent, TransformComponent>();
+	view.each([&](const entt::entity id, ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp) 
 	{
 		if (particleEmitterComponent.preset == Asset::Null())
 		{
@@ -80,7 +85,7 @@ void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const 
 		}
 	});
 
-	std::vector<Wire::EntityId> emittersToRemove{};
+	std::vector<entt::entity> emittersToRemove{};
 	std::vector<std::future<void>> futures{};
 	std::mutex emittersToRemoveMutex;
 
@@ -135,7 +140,7 @@ void Volt::ParticleSystem::Update(Wire::Registry& registry, Scene* scene, const 
 	}
 }
 
-void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, glm::vec3 aEntityPos, const float& intencity)
+void Volt::ParticleSystem::SendParticles(ParticleEmitterComponent& particleEmitterComponent, entt::entity id, glm::vec3 aEntityPos, const float& intencity)
 {
 	auto e = AssetManager::GetAsset<ParticlePreset>(particleEmitterComponent.preset);
 	while (particleEmitterComponent.internalTimer > 0)

@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:362668dd93ce135a5b7cb186d7f23771f802a031ffa9c52cfb5aa2878d791c1d
-size 384
+#include "Vertex.hlsli"
+#include "SamplerStates.hlsli"
+
+#include "Utility.hlsli"
+
+Texture2D<float4> u_sceneColor : register(t0, SPACE_MATERIAL);
+
+float4 main(DefaultFullscreenTriangleVertex input) : SV_Target0
+{
+    float4 color = u_sceneColor.Sample(u_pointSampler, input.texCoords);
+    
+    if (color.a > 0.5f)
+    {
+        discard;
+    }
+    
+    return color;
+}

@@ -6,7 +6,7 @@
 #include "Volt/Animation/AnimationController.h"
 #include "Volt/Animation/AnimationStateMachine.h"
 
-#include "Volt/Components/Components.h"
+#include "Volt/Components/RenderingComponents.h"
 
 namespace Volt
 {
@@ -14,9 +14,10 @@ namespace Volt
 		: myScene(scene)
 	{}
 
-	void AnimationSystem::OnRuntimeStart(Wire::Registry& registry)
+	void AnimationSystem::OnRuntimeStart(entt::registry& registry)
 	{
-		registry.ForEach<AnimationControllerComponent>([=](Wire::EntityId id, AnimationControllerComponent& comp)
+		auto view = registry.view<AnimationControllerComponent>();
+		view.each([&](const entt::entity id, AnimationControllerComponent& comp) 
 		{
 			if (comp.animationGraph != Asset::Null())
 			{
@@ -29,14 +30,11 @@ namespace Volt
 		});
 	}
 
-	void AnimationSystem::OnRuntimeEnd(Wire::Registry&)
+	void AnimationSystem::OnRuntimeEnd(entt::registry&)
 	{
 	}
 
-	void AnimationSystem::Update(Wire::Registry&, float)
+	void AnimationSystem::Update(entt::registry&, float)
 	{
-		//myRegistry.ForEach<AnimationControllerComponent>([](Wire::EntityId, AnimationControllerComponent& comp)
-		//	{
-		//	});
 	}
 }

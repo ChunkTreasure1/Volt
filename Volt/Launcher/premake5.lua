@@ -69,7 +69,6 @@ project "Launcher"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Wire}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
@@ -87,6 +86,7 @@ project "Launcher"
 		"%{IncludeDir.discord}",
 
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.entt}",
 		"%{IncludeDir.ffmpeg}",
 
 		"%{IncludeDir.detour}",

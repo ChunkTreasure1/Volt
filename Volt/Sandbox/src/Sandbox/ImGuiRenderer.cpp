@@ -793,7 +793,7 @@ void Sandbox::SaveSceneAsModal()
 
 			const auto relPath = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + mySaveSceneData.name + ".vtscene");
 			
-			myRuntimeScene->CopyTo(myRuntimeScene);
+			//myRuntimeScene->CopyTo(myRuntimeScene);
 			myRuntimeScene->handle = {};
 
 			Volt::AssetManager::SaveAssetAs(myRuntimeScene, relPath);

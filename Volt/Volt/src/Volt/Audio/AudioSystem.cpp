@@ -5,7 +5,6 @@
 #include "../Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
 
-#include <Volt/Components/Components.h>
 #include <Volt/Components/AudioComponents.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
@@ -14,37 +13,45 @@
 
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 
-void Volt::AudioSystem::RuntimeStart(Wire::Registry& registry, Scene* scene)
+void Volt::AudioSystem::RuntimeStart(entt::registry& registry, Weak<Scene> scene)
 {
-	registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
+	// Sources
 	{
-		Volt::Entity entity({ id, scene });
-		audioSourceComp.OnStart(entity);
+		auto view = registry.view<AudioSourceComponent>();
+		view.each([&](entt::entity id, AudioSourceComponent& audioSourceComp) 
+		{
+			Volt::Entity entity(id, scene);
+			audioSourceComp.OnStart(entity);
+		});
 	}
-	);
 
-	//TODO: Check for multiple AudioListners with default
-	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent& audioListenerComp)
+	// Listeners
 	{
-		Volt::Entity entity({ id, scene });
-		Amp::WwiseAudioManager::RegisterListener(entity.GetId(), entity.GetTag().c_str(), audioListenerComp.isDefault);	
+		auto view = registry.view<AudioListenerComponent>();
+		view.each([&](entt::entity id, AudioListenerComponent& audioListenerComp)
+		{
+			Volt::Entity entity({ id, scene });
+			Amp::WwiseAudioManager::RegisterListener(static_cast<uint32_t>(id), entity.GetTag().c_str(), audioListenerComp.isDefault);
+		});
 	}
-	);
 }
 
-void Volt::AudioSystem::RuntimeStop(Wire::Registry& registry, Scene* scene)
+void Volt::AudioSystem::RuntimeStop(entt::registry& registry, Weak<Scene> scene)
 {
-	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent&)
+	// Listeners
 	{
-		Volt::Entity entity({ id, scene });
-		Amp::WwiseAudioManager::UnregisterListener();
+		auto view = registry.view<AudioListenerComponent>();
+		view.each([&](entt::entity id, AudioListenerComponent& audioListenerComp)
+		{
+			Volt::Entity entity({ id, scene });
+			Amp::WwiseAudioManager::UnregisterListener();
+		});
 	}
-	);
 
 	Amp::WwiseAudioManager::ClearAllObjects();
 }
 
-void Volt::AudioSystem::Update(Wire::Registry& registry, Scene* scene, const float& aDeltaTime)
+void Volt::AudioSystem::Update(entt::registry& registry, Weak<Scene> scene, const float& aDeltaTime)
 {
 	VT_PROFILE_FUNCTION();
 
@@ -54,28 +61,28 @@ void Volt::AudioSystem::Update(Wire::Registry& registry, Scene* scene, const flo
 	UpdateAudioSources(registry, scene, aDeltaTime);
 }
 
-void Volt::AudioSystem::OnEvent(Wire::Registry&, Volt::Event&)
+void Volt::AudioSystem::OnEvent(entt::registry&, Volt::Event&)
 {
 }
 
-void Volt::AudioSystem::UpdateAudioSources(Wire::Registry& registry, Scene* scene, const float&)
+void Volt::AudioSystem::UpdateAudioSources(entt::registry& registry, Weak<Scene> scene, const float&)
 {
-	registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
+	auto view = registry.view<AudioSourceComponent>();
+	view.each([&](entt::entity id, AudioSourceComponent& audioSourceComp)
 	{
 		Volt::Entity entity({ id, scene });
 		Amp::WwiseAudioManager::SetObjectPosition(audioSourceComp.getID(), entity.GetPosition(), entity.GetForward(), entity.GetUp());
-	}
-	);
+	});
 }
 
-void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* scene, const float&)
+void Volt::AudioSystem::UpdateAudioListeners(entt::registry& registry, Weak<Scene> scene, const float&)
 {
-	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent&)
+	auto view = registry.view<AudioListenerComponent>();
+	view.each([&](entt::entity id, AudioListenerComponent& audioListenerComp)
 	{
 		Volt::Entity entity({ id, scene });
 		Amp::WwiseAudioManager::SetListenerPosition(entity.GetPosition(), entity.GetForward(), entity.GetUp());
-	}
-	);
+	});
 }
 
 //void Volt::AudioSystem::UpdateAudioOcclusion(Wire::Registry& registry, Scene* scene)
@@ -83,13 +90,13 @@ void Volt::AudioSystem::UpdateAudioListeners(Wire::Registry& registry, Scene* sc
 //	if (fixedUpdateTimer < 0.25f) { return; }
 //	fixedUpdateTimer = 0.f;
 //
-//	registry.ForEach<AudioListenerComponent>([&](Wire::EntityId id, AudioListenerComponent& audioListenerComp)
+//	registry.ForEach<AudioListenerComponent>([&](entt::entity id, AudioListenerComponent& audioListenerComp)
 //	{
 //		Volt::Entity entity({ id, scene });
 //		if (audioListenerComp.isActive)
 //		{
 //			std::vector<Volt::Entity> audioSources;
-//			registry.ForEach<AudioSourceComponent>([&](Wire::EntityId id, AudioSourceComponent& audioSourceComp)
+//			registry.ForEach<AudioSourceComponent>([&](entt::entity id, AudioSourceComponent& audioSourceComp)
 //			{
 //				Volt::Entity entity({ id, scene });
 //				audioSources.push_back(entity);

@@ -41,6 +41,11 @@ project "Sandbox"
 		"/WHOLEARCHIVE:GraphKey"
 	}
 
+	buildoptions 
+	{
+		"/bigobj"
+	}
+
     defines
     {
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
@@ -80,7 +85,7 @@ project "Sandbox"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Wire}",
+		"%{IncludeDir.entt}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",

@@ -164,7 +164,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 	std::vector<std::string> result{};
 	for (const auto& [score, entry] : scores)
 	{
-		if (!Utils::StringContains(Utils::ToLower(entry), Utils::ToLower(query)))
+		if (!Utility::StringContains(Utility::ToLower(entry), Utility::ToLower(query)))
 		{
 			continue;
 		}
@@ -177,7 +177,7 @@ const std::vector<std::string> UI::GetEntriesMatchingQuery(const std::string& qu
 
 void UI::RenderMatchingTextBackground(const std::string& query, const std::string& text, const glm::vec4& color, const glm::uvec2& offset)
 {
-	const auto matchOffset = Utils::ToLower(text).find(Utils::ToLower(query));
+	const auto matchOffset = Utility::ToLower(text).find(Utility::ToLower(query));
 
 	if (matchOffset == std::string::npos)
 	{
@@ -888,9 +888,9 @@ void UI::TreeNodePop()
 	ImGui::TreePop();
 }
 
-bool UI::CollapsingHeader(const std::string& label, ImGuiTreeNodeFlags flags)
+bool UI::CollapsingHeader(std::string_view label, ImGuiTreeNodeFlags flags)
 {
-	return ImGui::CollapsingHeader(label.c_str(), flags);
+	return ImGui::CollapsingHeader(label.data(), flags);
 }
 
 bool UI::ImageButton(const std::string& id, ImTextureID textureId, const ImVec2& size, const ImVec4& bg_col, const ImVec4& tint_col)
@@ -1541,7 +1541,7 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 	return changed;
 }
 
-bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::EntityId& value, const std::string& toolTip)
+bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::entity& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1553,7 +1553,7 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity{ value, scene.get() };
+	Volt::Entity entity{ value, scene.lock().get() };
 
 	std::string entityName;
 	if (entity)
@@ -1572,7 +1572,7 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
+		entt::entity entityId = *(entt::entity*)ptr;
 		value = entityId;
 		changed = true;
 	}
@@ -1582,14 +1582,14 @@ bool UI::PropertyEntity(const std::string& text, Ref<Volt::Scene> scene, Wire::E
 	return changed;
 }
 
-bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const float width, const std::string& toolTip)
+bool UI::PropertyEntity(Weak<Volt::Scene> scene, entt::entity& value, const float width, const std::string& toolTip)
 {
 	bool changed = false;
 
 	SimpleToolTip(toolTip);
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity{ value, scene.get() };
+	Volt::Entity entity{ value, scene.lock().get() };
 
 	std::string entityName;
 	if (entity)
@@ -1608,7 +1608,7 @@ bool UI::PropertyEntity(Ref<Volt::Scene> scene, Wire::EntityId& value, const flo
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
+		entt::entity entityId = *(entt::entity*)ptr;
 		value = entityId;
 		changed = true;
 	}

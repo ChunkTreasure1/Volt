@@ -57,6 +57,8 @@ namespace Volt
 
 		Log::Initialize();
 		ProjectManager::SetupProject(m_info.projectPath);
+		Log::InitializeFileSinks();
+		
 		SessionPreferences::Initialize();
 
 		WindowProperties windowProperties{};
@@ -251,9 +253,12 @@ namespace Volt
 
 		{
 			VT_PROFILE_SCOPE("Application::Update");
-
 			AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
 			OnEvent(updateEvent);
+		}
+
+		{
+			VT_PROFILE_SCOPE("Application::UpdateAudio")
 			Amp::WWiseEngine::Get().Update();
 		}
 

@@ -31,13 +31,13 @@ bool GraphKeyPanel::SaveSettings(const std::string& data)
 		return false;
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return false;
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return false;
+	//}
 
-	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	vsComp.graphState = data;
+	//auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//vsComp.graphState = data;
 
 	return true;
 }
@@ -57,13 +57,13 @@ size_t GraphKeyPanel::LoadSettings(std::string& data)
 		return 0;
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return 0;
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return 0;
+	//}
 
-	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	data = vsComp.graphState;
+	//auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//data = vsComp.graphState;
 
 	return data.size();
 }

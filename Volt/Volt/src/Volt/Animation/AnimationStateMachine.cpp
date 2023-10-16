@@ -318,7 +318,7 @@ namespace Volt
 		return (int32_t)diff;
 	}
 
-	Ref<AnimationStateMachine> AnimationStateMachine::CreateCopy(GraphKey::Graph* ownerGraph, Wire::EntityId entity) const
+	Ref<AnimationStateMachine> AnimationStateMachine::CreateCopy(GraphKey::Graph* ownerGraph, entt::entity entity) const
 	{
 		Ref<AnimationStateMachine> newStateMachine = CreateRef<AnimationStateMachine>(myName, myCharacterHandle);
 		newStateMachine->myStartState = myStartState;

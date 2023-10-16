@@ -29,7 +29,6 @@ namespace Volt
 	class CommandBuffer;
 	class ComputePipeline;
 	class ShaderStorageBufferSet;
-	class RayTracedSceneRenderer;
 
 	class GlobalDescriptorSet;
 	class VertexBufferSet;
@@ -171,8 +170,6 @@ namespace Volt
 
 		void SetRenderMode(RenderMode renderingMode);
 		inline const RenderMode GetCurrentRenderMode() const { return myCurrentRenderMode; }
-
-		void UpdateRayTracingScene(); // #TODO_Ivar: Remove!
 
 		const std::vector<Timestamp> GetTimestamps();
 		const SceneRendererStatistics& GetStatistics() const;
@@ -395,8 +392,6 @@ namespace Volt
 		Ref<ShaderStorageBufferSet> myShaderStorageBufferSet;
 
 		Ref<CommandBuffer> myCommandBuffer;
-
-		Scope<RayTracedSceneRenderer> myRayTracedSceneRenderer;
 
 		std::unordered_map<uint32_t, Ref<GlobalDescriptorSet>> myGlobalDescriptorSets;
 		std::vector<std::vector<TimestampInfo>> myTimestamps;

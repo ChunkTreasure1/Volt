@@ -50,7 +50,7 @@ void Volt::TimelinePlayer::StartTimeline(const TimelinePreset timelinePreset, Sc
 
 		if (ent)
 		{
-			myEntityStartValues[i].entID = ent.GetId();
+			myEntityStartValues[i].entID = ent.GetID();
 			myEntityStartValues[i].Position = ent.GetPosition();
 			myEntityStartValues[i].Rotation = ent.GetRotation();
 		}
@@ -93,7 +93,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 		{
 #pragma region AnimationTrack
 
-			if (track.keyframes.empty() || track.targetEntity == 0 || myCurrentKeyAndTime[trackIndex].first == track.keyframes.size() - 1) { continue; }
+			if (track.keyframes.empty() || track.targetEntity == entt::null || myCurrentKeyAndTime[trackIndex].first == track.keyframes.size() - 1) { continue; }
 
 			Entity trackEntity{ track.targetEntity, scene };
 
@@ -118,12 +118,12 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 				if (trackEntity.HasComponent<Volt::VisionCameraComponent>())
 				{
 					const auto& VCamComp = trackEntity.GetComponent<Volt::VisionCameraComponent>();
-					if (VCamComp.followId == Wire::NullID)
+					if (VCamComp.followId == entt::null)
 					{
 						trackEntity.SetPosition(glm::mix(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
 					}
 
-					if (VCamComp.lookAtId == Wire::NullID)
+					if (VCamComp.lookAtId == entt::null)
 					{
 						trackEntity.SetRotation(glm::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
 					}
@@ -153,7 +153,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 
 			if (myCurrentPlaybackTime <= track.clips.at(0).startTime)
 			{
-				if (vision.GetActiveCamera().GetId() != track.clips[0].activeCamera)
+				if (vision.GetActiveCamera().GetID() != track.clips[0].activeCamera)
 				{
 					vision.SetActiveCamera(track.clips[0].activeCamera, 0, Volt::eBlendType::None);
 					myCurrentPlaybackTime += deltaTime;
@@ -206,7 +206,7 @@ void Volt::TimelinePlayer::GetPreviewOnTime(TimelinePreset& timelinePreset, cons
 	{
 		const Volt::Track track = timelinePreset.myTracks[trackIndex];
 
-		if (&selectedTrack == &timelinePreset.myTracks[trackIndex] || track.keyframes.empty() || track.targetEntity == 0) { continue; }
+		if (&selectedTrack == &timelinePreset.myTracks[trackIndex] || track.keyframes.empty() || track.targetEntity == entt::null) { continue; }
 
 		Entity trackEntity{ track.targetEntity, scene };
 

@@ -217,7 +217,7 @@ namespace Volt
 	template<typename T>
 	inline Ref<T> AssetManager::GetAssetLocking(const std::filesystem::path& path)
 	{
-		return GetAsset<T>(GetAssetHandleFromFilePath(path));
+		return GetAssetLocking<T>(GetAssetHandleFromFilePath(path));
 	}
 
 	template<typename T>
@@ -290,7 +290,7 @@ namespace Volt
 	inline Ref<T> AssetManager::CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args && ...args)
 	{
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
-		const std::filesystem::path filePath = Utils::ReplaceCharacter((targetDir / filename).string(), '\\', '/');
+		const std::filesystem::path filePath = ::Utility::ReplaceCharacter((targetDir / filename).string(), '\\', '/');
 
 		WriteLock lockCache{ Get().m_assetCacheMutex };
 		WriteLock lockRegistry{ Get().m_assetRegistryMutex };

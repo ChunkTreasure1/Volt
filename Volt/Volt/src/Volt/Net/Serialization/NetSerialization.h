@@ -5,7 +5,7 @@
 #include "Nexus/Interface/Replication/ReplicationRegistry.h"
 //#include "Volt/Net/SceneInteraction/NetPrefabInstantiation.h"
 
-#include <Volt/Components/Components.h>
+#include "Volt/Components/CoreComponents.h"
 #include "Volt/Utility/StringUtility.h"
 
 #include "Volt/Scene/Entity.h"
@@ -95,17 +95,17 @@ namespace Volt
 	struct RepVariableData : public RepData
 	{
 		template<typename T>
-		RepVariableData(const T& data, const MonoFieldType& fieldType);
+		RepVariableData(const T& data, const MonoTypeInfo& fieldType);
 		RepVariableData(const RepVariableData& data);
 		//RepVariableData(const MonoFieldType fieldType);
 		RepVariableData() {}
 
-		MonoFieldType fieldType{};
+		MonoTypeInfo fieldType{};
 		Ref<VariableData> data;
 	};
 
 	template<typename T>
-	inline RepVariableData::RepVariableData(const T& in_data, const MonoFieldType& in_fieldType)
+	inline RepVariableData::RepVariableData(const T& in_data, const MonoTypeInfo& in_fieldType)
 	{
 		data = CreateRef<VariableData>(in_data);
 		fieldType = in_fieldType;
@@ -135,7 +135,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 #pragma region Transform
 Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepTransformComponentData& transform);
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepTransformComponentData& transform);
-Nexus::Packet SerializeTransformPacket(Wire::EntityId in_entityId, Nexus::TYPE::REP_ID in_repId, int  pos = 1, int  rot = 1, int  scale = 1);
+Nexus::Packet SerializeTransformPacket(entt::entity in_entityId, Nexus::TYPE::REP_ID in_repId, int  pos = 1, int  rot = 1, int  scale = 1);
 Volt::RepTransformComponentData CreateTransformComponentData(Nexus::TYPE::REP_ID in_repId, const Volt::TransformComponent& component);
 #pragma endregion
 
@@ -155,8 +155,8 @@ Nexus::Packet SerializeVariablePacket(Volt::RepVariable& variable, Nexus::TYPE::
 #pragma region Prefab
 Nexus::Packet& operator<(Nexus::Packet& packet, const Volt::RepPrefabData& data);
 Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepPrefabData& data);
-void RecursiveOwnerShipControll(Wire::EntityId in_id, const Volt::RepPrefabData& data);
-void RecursiveHandleMono(Wire::EntityId entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry = nullptr, bool manageInstances = true);
+void RecursiveOwnerShipControll(entt::entity in_id, const Volt::RepPrefabData& data);
+void RecursiveHandleMono(entt::entity entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry = nullptr, bool manageInstances = true);
 bool ConstructPrefab(const Volt::RepPrefabData& data, Nexus::ReplicationRegisty& registry);
 Volt::RepPrefabData CreatePrefabData(Nexus::TYPE::REP_ID in_repId, Nexus::TYPE::CLIENT_ID in_ownerId, Volt::AssetHandle in_handle);
 #pragma endregion

@@ -58,8 +58,8 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				{
 					std::make_pair("Submesh Count", std::to_string(asset->GetSubMeshes().size())),
 					std::make_pair("Material Path", materialFilePath),
-					std::make_pair("Vertex Count", Utils::ToStringWithThousandSeparator(asset->GetVertexCount())),
-					std::make_pair("Index Count", Utils::ToStringWithThousandSeparator(asset->GetIndexCount())),
+					std::make_pair("Vertex Count", Utility::ToStringWithThousandSeparator(asset->GetVertexCount())),
+					std::make_pair("Index Count", Utility::ToStringWithThousandSeparator(asset->GetIndexCount())),
 					std::make_pair("Source Mesh Path", sourceMeshPath.string())
 				};
 				return data;
@@ -74,7 +74,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				std::vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Duration", std::to_string(asset->GetDuration()) + " seconds"),
-					std::make_pair("Frame Count", Utils::ToStringWithThousandSeparator(asset->GetFrameCount())),
+					std::make_pair("Frame Count", Utility::ToStringWithThousandSeparator(asset->GetFrameCount())),
 					std::make_pair("Frames Per Second", std::to_string(asset->GetFramesPerSecond())),
 				};
 				return data;
@@ -130,7 +130,7 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 				const auto& layers = asset->GetLayers();
 				std::vector<std::pair<std::string, std::string>> data =
 				{
-					std::make_pair("Entity Count", Utils::ToStringWithThousandSeparator(stats.entityCount)),
+					std::make_pair("Entity Count", Utility::ToStringWithThousandSeparator(stats.entityCount)),
 					std::make_pair("Layer Count", std::to_string(layers.size())),
 				};
 				for (int i = 0; i < layers.size(); ++i)

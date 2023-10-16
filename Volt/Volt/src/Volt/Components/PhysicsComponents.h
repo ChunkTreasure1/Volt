@@ -1,26 +1,24 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-
 #include "Volt/Physics/PhysicsEnums.h"
 
-#include <Wire/Serialization.h>
 #include <glm/glm.hpp>
 
 namespace Volt
 {
-	SERIALIZE_COMPONENT((struct CharacterControllerComponent
+	struct CharacterControllerComponent
 	{
-		PROPERTY(Name = Climbing Mode, SpecialType = Enum) ClimbingMode climbingMode = ClimbingMode::Normal;
+		ClimbingMode climbingMode = ClimbingMode::Normal;
 
-		PROPERTY(Name = Slope Limit) float slopeLimit = 20.f;
-		PROPERTY(Name = Invisible Wall Height) float invisibleWallHeight = 200.f;
-		PROPERTY(Name = Max Jump Height) float maxJumpHeight = 100.f;
-		PROPERTY(Name = Contact Offset) float contactOffset = 1.f;
-		PROPERTY(Name = Step Offset) float stepOffset = 10.f;
-		PROPERTY(Name = Density) float density = 1.f;
-		PROPERTY(Name = Layer) uint32_t layer = 0;
-		PROPERTY(Name = Has Gravity) bool hasGravity = true;
+		float slopeLimit = 20.f;
+		float invisibleWallHeight = 200.f;
+		float maxJumpHeight = 100.f;
+		float contactOffset = 1.f;
+		float stepOffset = 10.f;
+		float density = 1.f;
+		uint32_t layer = 0;
+		bool hasGravity = true;
 
 		inline CharacterControllerComponent(ClimbingMode aClimbingMode = ClimbingMode::Normal, float aSlopeLimit = 20.f, float aInvisibleWallHeight = 200.f, float aMaxJumpHeight = 100.f,
 			float aContactOffset = 1.f, float aStepOffset = 10.f, float aDensity = 1.f, uint32_t aLayer = 0, bool aHasGravity = true)
@@ -28,35 +26,36 @@ namespace Volt
 			stepOffset(aStepOffset), density(aDensity), layer(aLayer), hasGravity(aHasGravity)
 		{ }
 
-		CREATE_COMPONENT_GUID("{DC5C002A-B72E-42A0-83FC-FFBE1FB2DEF2}"_guid);
-	}), CharacterControllerComponent);
+		static void ReflectType(TypeDesc<CharacterControllerComponent>& reflect)
+		{
+			reflect.SetGUID("{DC5C002A-B72E-42A0-83FC-FFBE1FB2DEF2}"_guid);
+			reflect.SetLabel("Character Controller Component");
+			reflect.AddMember(&CharacterControllerComponent::climbingMode, "climbingMode", "Climbing Mode", "", ClimbingMode::Normal);
+			reflect.AddMember(&CharacterControllerComponent::slopeLimit, "slopeLimit", "Slope Limit", "", 20.f);
+			reflect.AddMember(&CharacterControllerComponent::invisibleWallHeight, "invisibleWallHeight", "Invisible Wall Height", "", 200.f);
+			reflect.AddMember(&CharacterControllerComponent::maxJumpHeight, "maxJumpHeight", "Max Jump Height", "", 100.f);
+			reflect.AddMember(&CharacterControllerComponent::contactOffset, "contactOffset", "Contact Offset", "", 1.f);
+			reflect.AddMember(&CharacterControllerComponent::stepOffset, "stepOffset", "Step Offset", "", 10.f);
+			reflect.AddMember(&CharacterControllerComponent::density, "density", "Density", "", 1.f);
+			reflect.AddMember(&CharacterControllerComponent::layer, "layer", "Layer", "", 0);
+			reflect.AddMember(&CharacterControllerComponent::hasGravity, "hasGravity", "Has Gravity", "", true);
+		}
 
-	struct LastRigidbodyData
+		REGISTER_COMPONENT(CharacterControllerComponent);
+	};
+
+	struct RigidbodyComponent
 	{
 		BodyType bodyType = BodyType::Static;
 		uint32_t layerId = 0;
 		float mass = 1.f;
 		float linearDrag = 0.01f;
+		uint32_t lockFlags = 0; // #TODO: add enum support
 		float angularDrag = 0.05f;
+		CollisionDetectionType collisionType = CollisionDetectionType::Discrete;
+
 		bool disableGravity = false;
 		bool isKinematic = false;
-
-		CollisionDetectionType collisionType = CollisionDetectionType::Discrete;
-		uint32_t lockFlags = 0;
-	};
-
-	SERIALIZE_COMPONENT((struct RigidbodyComponent
-	{
-		PROPERTY(Name = Type, SpecialType = Enum) BodyType bodyType = BodyType::Static;
-		PROPERTY(Name = Layer ID) uint32_t layerId = 0;
-		PROPERTY(Name = Mass) float mass = 1.f;
-		PROPERTY(Name = Linear Drag) float linearDrag = 0.01f;
-		PROPERTY(Name = Lock Flags) uint32_t lockFlags = 0; // #TODO: add enum support
-		PROPERTY(Name = Angular Drag) float angularDrag = 0.05f;
-		PROPERTY(Name = Collision Type, SpecialType = Enum) CollisionDetectionType collisionType = CollisionDetectionType::Discrete;
-
-		PROPERTY(Name = Disable Graivity) bool disableGravity = false;
-		PROPERTY(Name = Is Kinematic) bool isKinematic = false;
 
 		inline RigidbodyComponent(BodyType aBodyType = BodyType::Static, uint32_t aLayerId = 0, float aMass = 1.f, float aLinearDrag = 0.01f, uint32_t aLockFlags = 0,
 			float aAngularDrag = 0.05f, bool aDisableGravity = false, bool aIsKinematic = false, CollisionDetectionType aCollisionType = CollisionDetectionType::Discrete)
@@ -65,23 +64,30 @@ namespace Volt
 		{
 		}
 
-		CREATE_COMPONENT_GUID("{460B7722-00C0-48BE-8B3E-B549BCC9269B}"_guid);
-	}), RigidbodyComponent);
+		static void ReflectType(TypeDesc<RigidbodyComponent>& reflect)
+		{
+			reflect.SetGUID("{460B7722-00C0-48BE-8B3E-B549BCC9269B}"_guid);
+			reflect.SetLabel("Rigidbody Component");
+			reflect.AddMember(&RigidbodyComponent::bodyType, "bodyType", "Body Type", "", BodyType::Static);
+			reflect.AddMember(&RigidbodyComponent::layerId, "layerId", "Layer ID", "", 0);
+			reflect.AddMember(&RigidbodyComponent::mass, "mass", "Mass", "", 1.f);
+			reflect.AddMember(&RigidbodyComponent::linearDrag, "linearDrag", "Linear Drag", "", 0.01f);
+			reflect.AddMember(&RigidbodyComponent::lockFlags, "lockFlags", "Lock Flags", "", 0);
+			reflect.AddMember(&RigidbodyComponent::angularDrag, "angularDrag", "Angular Drag", "", 0.05f);
+			reflect.AddMember(&RigidbodyComponent::collisionType, "collisionType", "Collision Type", "", CollisionDetectionType::Discrete);
+			reflect.AddMember(&RigidbodyComponent::disableGravity, "disableGravity", "Disable Gravity", "", false);
+			reflect.AddMember(&RigidbodyComponent::isKinematic, "isKinematic", "Is Kinematic", "", false);
+		}
 
-	struct LastBoxColliderData
+		REGISTER_COMPONENT(RigidbodyComponent);
+	};
+
+	struct BoxColliderComponent
 	{
 		glm::vec3 halfSize = { 50.f, 50.f, 50.f };
 		glm::vec3 offset = { 0.f, 0.f, 0.f };
 		bool isTrigger = false;
 		AssetHandle material = Asset::Null();
-	};
-
-	SERIALIZE_COMPONENT((struct BoxColliderComponent
-	{
-		PROPERTY(Name = Half Size) glm::vec3 halfSize = { 50.f, 50.f, 50.f };
-		PROPERTY(Name = Offset) glm::vec3 offset = { 0.f, 0.f, 0.f };
-		PROPERTY(Name = Is Trigger) bool isTrigger = false;
-		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
 
 		bool added = false;
 
@@ -90,23 +96,25 @@ namespace Volt
 		{
 		}
 
-		CREATE_COMPONENT_GUID("{29707475-D536-4DA4-8D3A-A98948C89A5}"_guid);
-	}), BoxColliderComponent);
+		static void ReflectType(TypeDesc<BoxColliderComponent>& reflect)
+		{
+			reflect.SetGUID("{29707475-D536-4DA4-8D3A-A98948C89A5}"_guid);
+			reflect.SetLabel("Box Collider Component");
+			reflect.AddMember(&BoxColliderComponent::halfSize, "halfSize", "Half Size", "", glm::vec3{ 50.f });
+			reflect.AddMember(&BoxColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
+			reflect.AddMember(&BoxColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
+			reflect.AddMember(&BoxColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+		}
 
-	struct LastSphereColliderData
+		REGISTER_COMPONENT(BoxColliderComponent);
+	};
+
+	struct SphereColliderComponent
 	{
 		float radius = 50.f;
 		glm::vec3 offset = { 0.f, 0.f, 0.f };
 		bool isTrigger = false;
 		AssetHandle material = Asset::Null();
-	};
-
-	SERIALIZE_COMPONENT((struct SphereColliderComponent
-	{
-		PROPERTY(Name = Radius) float radius = 50.f;
-		PROPERTY(Name = Offset) glm::vec3 offset = { 0.f, 0.f, 0.f };
-		PROPERTY(Name = Is Trigger) bool isTrigger = false;
-		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
 
 		bool added = false;
 
@@ -115,25 +123,26 @@ namespace Volt
 		{
 		}
 
-		CREATE_COMPONENT_GUID("{90246BCE-FF83-41A2-A076-AB0A947C0D6A}"_guid);
-	}), SphereColliderComponent);
+		static void ReflectType(TypeDesc<SphereColliderComponent>& reflect)
+		{
+			reflect.SetGUID("{90246BCE-FF83-41A2-A076-AB0A947C0D6A}"_guid);
+			reflect.SetLabel("Sphere Collider Component");
+			reflect.AddMember(&SphereColliderComponent::radius, "radius", "Radius", "", 50.f);
+			reflect.AddMember(&SphereColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
+			reflect.AddMember(&SphereColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
+			reflect.AddMember(&SphereColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+		}
 
-	struct LastCapsuleColliderData
+		REGISTER_COMPONENT(SphereColliderComponent);
+	};
+
+	struct CapsuleColliderComponent
 	{
 		float radius = 50.f;
 		float height = 50.f;
 		glm::vec3 offset = { 0.f, 0.f, 0.f };
 		bool isTrigger = false;
 		AssetHandle material = Asset::Null();
-	};
-
-	SERIALIZE_COMPONENT((struct CapsuleColliderComponent
-	{
-		PROPERTY(Name = Radius) float radius = 50.f;
-		PROPERTY(Name = Height) float height = 50.f;
-		PROPERTY(Name = Offset) glm::vec3 offset = { 0.f, 0.f, 0.f };
-		PROPERTY(Name = Is Trigger) bool isTrigger = false;
-		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
 
 		bool added = false;
 
@@ -142,25 +151,27 @@ namespace Volt
 		{
 		}
 
-		CREATE_COMPONENT_GUID("{54A48952-7A77-492B-8A9C-2440D82EE5E2}"_guid);
-	}), CapsuleColliderComponent);
+		static void ReflectType(TypeDesc<CapsuleColliderComponent>& reflect)
+		{
+			reflect.SetGUID("{54A48952-7A77-492B-8A9C-2440D82EE5E2}"_guid);
+			reflect.SetLabel("Capsule Collider Component");
+			reflect.AddMember(&CapsuleColliderComponent::radius, "radius", "Radius", "", 50.f);
+			reflect.AddMember(&CapsuleColliderComponent::height, "height", "Height", "", 50.f);
+			reflect.AddMember(&CapsuleColliderComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
+			reflect.AddMember(&CapsuleColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
+			reflect.AddMember(&CapsuleColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+		}
 
-	struct LastMeshColliderData
-	{
-		AssetHandle colliderMesh;
-		bool isConvex = false;
-		bool isTrigger = false;
-		AssetHandle material = Asset::Null();
-		int32_t subMeshIndex = -1;
+		REGISTER_COMPONENT(CapsuleColliderComponent);
 	};
 
-	SERIALIZE_COMPONENT((struct MeshColliderComponent
+	struct MeshColliderComponent
 	{
-		PROPERTY(Name = Collider Mesh, SpecialType = Asset, AssetType = Mesh) AssetHandle colliderMesh = Asset::Null();
-		PROPERTY(Name = Physics Material) AssetHandle material = Asset::Null();
-		PROPERTY(Name = Sub Mesh Index) int32_t subMeshIndex = -1;
-		PROPERTY(Name = Is Convex) bool isConvex = true;
-		PROPERTY(Name = Is Trigger) bool isTrigger = false;
+		AssetHandle colliderMesh = Asset::Null();
+		AssetHandle material = Asset::Null();
+		int32_t subMeshIndex = -1;
+		bool isConvex = true;
+		bool isTrigger = false;
 
 		bool added = false;
 
@@ -169,6 +180,17 @@ namespace Volt
 		{
 		}
 
-		CREATE_COMPONENT_GUID("{E709C708-ED3C-4F68-BC1D-2FE32B897722}"_guid);
-	}), MeshColliderComponent);
+		static void ReflectType(TypeDesc<MeshColliderComponent>& reflect)
+		{
+			reflect.SetGUID("{E709C708-ED3C-4F68-BC1D-2FE32B897722}"_guid);
+			reflect.SetLabel("Mesh Collider Component");
+			reflect.AddMember(&MeshColliderComponent::colliderMesh, "colliderMesh", "Collider Mesh", "", Asset::Null(), AssetType::Mesh);
+			reflect.AddMember(&MeshColliderComponent::material, "material", "Material", "", Asset::Null(), AssetType::PhysicsMaterial);
+			reflect.AddMember(&MeshColliderComponent::subMeshIndex, "subMeshIndex", "subMeshIndex", "", -1);
+			reflect.AddMember(&MeshColliderComponent::isConvex, "isConvex", "Is Convex", "", true);
+			reflect.AddMember(&MeshColliderComponent::isTrigger, "isTrigger", "Is Trigger", "", false);
+		}
+
+		REGISTER_COMPONENT(MeshColliderComponent);
+	};
 }

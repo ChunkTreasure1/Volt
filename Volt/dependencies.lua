@@ -1,7 +1,6 @@
 IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/Volt/vendor/GLFW/include"
 IncludeDir["ImGui"] = "%{wks.location}/Volt/vendor/ImGui"
-IncludeDir["Wire"] = "%{wks.location}/Volt/vendor/Wire/Wire/src"
 IncludeDir["spdlog"] = "%{wks.location}/Volt/vendor/spdlog/include"
 IncludeDir["yaml"] = "%{wks.location}/Volt/vendor/yaml-cpp/include"
 IncludeDir["Optick"] = "%{wks.location}/Volt/vendor/Optick/src"
@@ -36,6 +35,7 @@ IncludeDir["steam"] = "%{wks.location}/Volt/vendor/steam/include"
 IncludeDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/include"
 IncludeDir["NFDExtended"] = "%{wks.location}/Volt/vendor/nfd-extended/src/include"
 IncludeDir["TGAFbx"] = "%{wks.location}/Volt/vendor/TGAFbx/src"
+IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
 IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
