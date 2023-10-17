@@ -152,7 +152,10 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
 				auto asset = Volt::AssetManager::GetAsset<Volt::AnimatedCharacter>(aAssetHandle);
-
+				if (!asset->IsValid())
+				{
+					return std::vector<std::pair<std::string, std::string>>();
+				}
 				const auto skeletonFilePath = Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetSkeleton()->handle).string();
 				const auto meshFilePath = Volt::AssetManager::GetFilePathFromAssetHandle(asset->GetSkin()->handle).string();
 

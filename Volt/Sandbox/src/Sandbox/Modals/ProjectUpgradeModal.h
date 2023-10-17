@@ -18,6 +18,6 @@ protected:
 private:
 	void UpgradeCurrentProject();
 	void ConvertMetaFilesFromV0();
-
+	void ConvertAnimationGraphsToV0_1_2();
 	std::pair<std::filesystem::path, Volt::AssetHandle> DeserializeV0MetaFile(const std::filesystem::path& metaPath);
 };
