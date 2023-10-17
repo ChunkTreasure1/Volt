@@ -56,7 +56,7 @@ namespace Volt
 			
 			context.BindPipeline(pipeline);
 			context.SetBufferView("u_inputValues", inputBufferView);
-			context.SetBufferView("o_outputValues", outputBufferView);
+			context.SetBufferView("o_outputBuffer", outputBufferView);
 			context.SetBufferView("o_stateBuffer", stateBuffer->GetView());
 
 			context.Dispatch(groupCount, 1, 1);

@@ -41,6 +41,7 @@ namespace Volt::RHI
 		virtual void DrawIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
 
 		virtual void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) = 0;
+		virtual void DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset) = 0;
 
 		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
 		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;

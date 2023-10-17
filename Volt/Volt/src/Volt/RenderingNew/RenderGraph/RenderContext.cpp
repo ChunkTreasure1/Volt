@@ -189,10 +189,9 @@ namespace Volt
 		}
 	}
 
-	void RenderContext::PushConstants(const void* data, const uint32_t size, const uint32_t offset)
+	void RenderContext::PushConstantsRaw(const void* data, const uint32_t size, const uint32_t offset)
 	{
 		VT_PROFILE_FUNCTION();
-
 		m_commandBuffer->PushConstants(data, size, offset);
 	}
 

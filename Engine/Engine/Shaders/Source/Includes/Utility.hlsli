@@ -11,3 +11,8 @@ float3 GetRandomColor(uint _seed)
                 float((hash >> 8) & 255),
                 float((hash >> 16) & 255)) / 255.0;
 }
+
+uint DivideRoundUp(uint dividend, uint divisor)
+{
+    return (dividend - 1) / divisor + 1;
+}

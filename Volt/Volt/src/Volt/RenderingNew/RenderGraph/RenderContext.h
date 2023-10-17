@@ -54,7 +54,10 @@ namespace Volt
 
 		void SetExternalDescriptorTable(Ref<RHI::DescriptorTable> descriptorTable);
 
-		void PushConstants(const void* data, const uint32_t size, const uint32_t offset = 0);
+		void PushConstantsRaw(const void* data, const uint32_t size, const uint32_t offset = 0);
+
+		template<typename T>
+		void PushConstants(const T& data, const uint32_t offset = 0);
 
 		void SetBufferView(Ref<RHI::BufferView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
 		void SetBufferView(std::string_view name, Ref<RHI::BufferView> view, const uint32_t arrayIndex = 0);
@@ -82,4 +85,10 @@ namespace Volt
 
 		std::unordered_map<void*, Ref<RHI::DescriptorTable>> m_descriptorTableCache;
 	};
+
+	template<typename T>
+	inline void RenderContext::PushConstants(const T& data, const uint32_t offset)
+	{
+		PushConstantsRaw(&data, sizeof(T), offset);
+	}
 }

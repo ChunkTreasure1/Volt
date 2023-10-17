@@ -100,6 +100,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset)
+	{
+	}
+
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 		GetCommandData().commandList->RSSetViewports(static_cast<uint32_t>(viewports.size()), reinterpret_cast<const D3D12_VIEWPORT*>(viewports.data()));

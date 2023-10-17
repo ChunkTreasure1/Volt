@@ -197,6 +197,7 @@ namespace Volt::RHI
 		if (!binding.IsValid())
 		{
 			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to find binding with name {0}!", name);
+			assert(false);
 			return;
 		}
 

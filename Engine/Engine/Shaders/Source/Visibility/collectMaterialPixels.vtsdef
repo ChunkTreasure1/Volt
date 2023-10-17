@@ -1,0 +1,4 @@
+name: "CollectMaterialPixels"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Visibility/CollectMaterialPixels_cs.hlsl"

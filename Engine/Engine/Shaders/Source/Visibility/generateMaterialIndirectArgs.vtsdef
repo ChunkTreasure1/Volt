@@ -1,0 +1,4 @@
+name: "GenerateMaterialIndirectArgs"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Visibility/GenerateMaterialIndirectArgs_cs.hlsl"

@@ -72,6 +72,10 @@ namespace Volt
 		void AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
+		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		///////////////////
 
 		Ref<RHI::Image2D> m_outputImage;
@@ -112,6 +116,9 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
 		Ref<RHI::ComputePipeline> m_visibilityVisualizationPipeline;
 		Ref<RHI::ComputePipeline> m_generateMaterialCountPipeline;
+		Ref<RHI::ComputePipeline> m_collectMaterialPixelsPipeline;
+		Ref<RHI::ComputePipeline> m_generateMaterialIndirectArgsPipeline;
+		Ref<RHI::ComputePipeline> m_generateGBufferPipeline;
 
 		Ref<RHI::ComputePipeline> m_prefixSumPipeline;
 

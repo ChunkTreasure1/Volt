@@ -369,12 +369,21 @@ namespace Volt::RHI
 		vkCmdDispatch(m_commandBuffers.at(index).commandBuffer, groupCountX, groupCountY, groupCountZ);
 	}
 
+	void VulkanCommandBuffer::DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+		VT_PROFILE_GPU_EVENT("DispatchIndirect");
+
+		vkCmdDispatchIndirect(m_commandBuffers.at(index).commandBuffer, commandsBuffer->GetHandle<VkBuffer>(), offset);
+	}
+
 	void VulkanCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
-		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer)
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
 
-			vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
+		vkCmdSetViewport(m_commandBuffers.at(index).commandBuffer, 0, static_cast<uint32_t>(viewports.size()), reinterpret_cast<const VkViewport*>(viewports.data()));
 	}
 
 	void VulkanCommandBuffer::SetScissors(const std::vector<Rect2D>& scissors)
@@ -978,7 +987,7 @@ namespace Volt::RHI
 			depInfo.pImageMemoryBarriers = nullptr;
 			depInfo.bufferMemoryBarrierCount = 1;
 			depInfo.pBufferMemoryBarriers = &srcBufferBarrier;
-		
+
 			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
 		}
 

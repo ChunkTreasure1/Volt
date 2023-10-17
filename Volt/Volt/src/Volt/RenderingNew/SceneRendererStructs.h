@@ -40,6 +40,18 @@ namespace Volt
 	struct MaterialCountData
 	{
 		RenderGraphResourceHandle materialCountBuffer;
+		RenderGraphResourceHandle materialStartBuffer;
+	};
+
+	struct MaterialPixelsData
+	{
+		RenderGraphResourceHandle pixelCollectionBuffer;
+		RenderGraphResourceHandle currentMaterialCountBuffer;
+	};
+
+	struct MaterialIndirectArgsData
+	{
+		RenderGraphResourceHandle materialIndirectArgsBuffer;
 	};
 
 	struct GBufferData
