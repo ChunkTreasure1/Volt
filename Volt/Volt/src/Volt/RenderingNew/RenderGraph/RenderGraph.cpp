@@ -27,14 +27,14 @@ namespace Volt
 		{
 			pass->refCount = static_cast<uint32_t>(pass->resourceWrites.size());
 
-			for (const auto& handle : pass->resourceReads)
+			for (const auto& access : pass->resourceReads)
 			{
-				m_resourceNodes.at(handle)->refCount++;
+				m_resourceNodes.at(access.handle)->refCount++;
 			}
 
-			for (const auto& handle : pass->resourceWrites)
+			for (const auto& access : pass->resourceWrites)
 			{
-				m_resourceNodes.at(handle)->producer = pass;
+				m_resourceNodes.at(access.handle)->producer = pass;
 			}
 		}
 
@@ -64,9 +64,9 @@ namespace Volt
 			producer->refCount--;
 			if (producer->refCount == 0)
 			{
-				for (const auto& handle : producer->resourceReads)
+				for (const auto& access : producer->resourceReads)
 				{
-					auto node = m_resourceNodes.at(handle);
+					auto node = m_resourceNodes.at(access.handle);
 					node->refCount--;
 					if (node->refCount == 0)
 					{
@@ -91,14 +91,14 @@ namespace Volt
 				m_resourceNodes.at(handle)->producer = pass;
 			}
 
-			for (const auto& handle : pass->resourceWrites)
+			for (const auto& access : pass->resourceWrites)
 			{
-				m_resourceNodes.at(handle)->lastUsage = pass;
+				m_resourceNodes.at(access.handle)->lastUsage = pass;
 			}
 
-			for (const auto& handle : pass->resourceReads)
+			for (const auto& access : pass->resourceReads)
 			{
-				m_resourceNodes.at(handle)->lastUsage = pass;
+				m_resourceNodes.at(access.handle)->lastUsage = pass;
 			}
 		}
 
@@ -122,48 +122,55 @@ namespace Volt
 				continue;
 			}
 
-			auto writeResourceFunc = [&](const RenderGraphResourceHandle& resource)
+			auto writeResourceFunc = [&](const RenderGraphPassResourceAccess& access)
 			{
-				int32_t lastAccessPassIndex = lastResourceAccess.at(resource);
+				int32_t lastAccessPassIndex = lastResourceAccess.at(access.handle);
 
 				RHI::ResourceState oldState = RHI::ResourceState::Undefined;
 				RHI::ResourceState newState = RHI::ResourceState::Undefined;
 
 				if (lastAccessPassIndex != -1)
 				{
-					oldState = passAccesses[lastAccessPassIndex][resource].newState;
+					oldState = passAccesses[lastAccessPassIndex][access.handle].newState;
 				}
 
-				auto resourceNode = m_resourceNodes.at(resource);
-				if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
+				auto resourceNode = m_resourceNodes.at(access.handle);
+				if (access.state != RHI::ResourceState::Undefined)
 				{
-					if (pass->isComputePass)
+					newState = access.state;
+				}
+				else
+				{
+					if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
 					{
-						newState = RHI::ResourceState::UnorderedAccess;
-					}
-					else
-					{
-						if (resourceNode->GetResourceType() == ResourceType::Image2D)
+						if (pass->isComputePass)
 						{
-							RenderGraphResourceNode<RenderGraphImage2D>& image2DNode = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>();
-							if (RHI::Utility::IsDepthFormat(image2DNode.resourceInfo.description.format) || RHI::Utility::IsStencilFormat(image2DNode.resourceInfo.description.format))
+							newState = RHI::ResourceState::UnorderedAccess;
+						}
+						else
+						{
+							if (resourceNode->GetResourceType() == ResourceType::Image2D)
 							{
-								newState = RHI::ResourceState::DepthWrite;
+								RenderGraphResourceNode<RenderGraphImage2D>& image2DNode = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>();
+								if (RHI::Utility::IsDepthFormat(image2DNode.resourceInfo.description.format) || RHI::Utility::IsStencilFormat(image2DNode.resourceInfo.description.format))
+								{
+									newState = RHI::ResourceState::DepthWrite;
+								}
+								else
+								{
+									newState = RHI::ResourceState::RenderTarget;
+								}
 							}
 							else
 							{
 								newState = RHI::ResourceState::RenderTarget;
 							}
 						}
-						else
-						{
-							newState = RHI::ResourceState::RenderTarget;
-						}
 					}
-				}
-				else
-				{
-					newState = RHI::ResourceState::UnorderedAccess;
+					else
+					{
+						newState = RHI::ResourceState::UnorderedAccess;
+					}
 				}
 
 				if (oldState == newState)
@@ -174,15 +181,15 @@ namespace Volt
 				auto& newAccess = resultAccesses.at(pass->index).emplace_back();
 				newAccess.oldState = oldState;
 				newAccess.newState = newState;
-				newAccess.resourceHandle = resource;
+				newAccess.resourceHandle = access.handle;
 
-				passAccesses[pass->index][resource] = newAccess;
-				lastResourceAccess[resource] = static_cast<int32_t>(pass->index);
+				passAccesses[pass->index][access.handle] = newAccess;
+				lastResourceAccess[access.handle] = static_cast<int32_t>(pass->index);
 			};
 
 			for (const auto& resource : pass->resourceCreates)
 			{
-				writeResourceFunc(resource);
+				writeResourceFunc(RenderGraphPassResourceAccess{ RHI::ResourceState::Undefined, resource });
 			}
 
 			for (const auto& resource : pass->resourceWrites)
@@ -190,34 +197,42 @@ namespace Volt
 				writeResourceFunc(resource);
 			}
 
-			for (const auto& resource : pass->resourceReads)
+			for (const auto& access : pass->resourceReads)
 			{
-				int32_t lastAccessPassIndex = lastResourceAccess.at(resource);
+				int32_t lastAccessPassIndex = lastResourceAccess.at(access.handle);
 
 				RHI::ResourceState oldState = RHI::ResourceState::Undefined;
 				RHI::ResourceState newState = RHI::ResourceState::Undefined;
 
 				if (lastAccessPassIndex != -1)
 				{
-					oldState = passAccesses[lastAccessPassIndex][resource].newState;
+					oldState = passAccesses[lastAccessPassIndex][access.handle].newState;
 				}
 
-				auto resourceNode = m_resourceNodes.at(resource);
-				if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
+				auto resourceNode = m_resourceNodes.at(access.handle);
+				if (access.state != RHI::ResourceState::Undefined)
 				{
-					if (pass->isComputePass)
-					{
-						newState = RHI::ResourceState::NonPixelShaderRead;
-					}
-					else
-					{
-						newState = RHI::ResourceState::PixelShaderRead;
-					}
+					newState = access.state;
 				}
 				else
 				{
-					newState = RHI::ResourceState::NonPixelShaderRead | RHI::ResourceState::PixelShaderRead;
+					if (resourceNode->GetResourceType() == ResourceType::Image2D || resourceNode->GetResourceType() == ResourceType::Image3D)
+					{
+						if (pass->isComputePass)
+						{
+							newState = RHI::ResourceState::NonPixelShaderRead;
+						}
+						else
+						{
+							newState = RHI::ResourceState::PixelShaderRead;
+						}
+					}
+					else
+					{
+						newState = RHI::ResourceState::NonPixelShaderRead | RHI::ResourceState::PixelShaderRead;
+					}
 				}
+
 
 				if (oldState == newState)
 				{
@@ -227,10 +242,10 @@ namespace Volt
 				auto& newAccess = resultAccesses.at(pass->index).emplace_back();
 				newAccess.oldState = oldState;
 				newAccess.newState = newState;
-				newAccess.resourceHandle = resource;
+				newAccess.resourceHandle = access.handle;
 
-				passAccesses[pass->index][resource] = newAccess;
-				lastResourceAccess[resource] = static_cast<int32_t>(pass->index);
+				passAccesses[pass->index][access.handle] = newAccess;
+				lastResourceAccess[access.handle] = static_cast<int32_t>(pass->index);
 			}
 		}
 
@@ -565,16 +580,16 @@ namespace Volt
 		newAccess.newState = newState;
 	}
 
-	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle)
+	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState)
 	{
-		m_pass->resourceReads.emplace_back(handle);
+		m_pass->resourceReads.emplace_back(forceState, handle);
 	}
 
-	void RenderGraph::Builder::WriteResource(RenderGraphResourceHandle handle)
+	void RenderGraph::Builder::WriteResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState)
 	{
 		if (!m_pass->CreatesResource(handle))
 		{
-			m_pass->resourceWrites.emplace_back(handle);
+			m_pass->resourceWrites.emplace_back(forceState, handle);
 		}
 	}
 

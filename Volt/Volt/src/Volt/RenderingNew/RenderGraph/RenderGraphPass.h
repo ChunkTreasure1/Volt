@@ -11,6 +11,12 @@ namespace Volt
 	class RenderGraph;
 	class RenderContext;
 
+	struct RenderGraphPassResourceAccess
+	{ 
+		RHI::ResourceState state;
+		RenderGraphResourceHandle handle;
+	};
+
 	struct RenderGraphPassNodeBase
 	{
 		std::string_view name;
@@ -22,8 +28,8 @@ namespace Volt
 		bool isCulled = false;
 		bool hasSideEffect = false;
 
-		std::vector<RenderGraphResourceHandle> resourceReads;
-		std::vector<RenderGraphResourceHandle> resourceWrites;
+		std::vector<RenderGraphPassResourceAccess> resourceReads;
+		std::vector<RenderGraphPassResourceAccess> resourceWrites;
 		std::vector<RenderGraphResourceHandle> resourceCreates;
 
 		virtual void Execute(RenderGraph& frameGraph, RenderContext& context) = 0;

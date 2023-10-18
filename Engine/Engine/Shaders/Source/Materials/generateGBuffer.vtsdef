@@ -1,0 +1,4 @@
+name: "GenerateGBuffer"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Materials/GenerateGBuffer_cs.hlsl"

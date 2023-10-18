@@ -1,3 +1,4 @@
+#include "Defines.hlsli"
 
 #define TG_SIZE 512
 #define TG_WAVE_SIZE 32
@@ -13,6 +14,13 @@ struct State
     uint prefix;
     uint state;
 };
+
+struct Data
+{
+    uint valueCount;
+};
+
+PUSH_CONSTANT(Data, u_data);
 
 StructuredBuffer<uint> u_inputValues : register(t0, space0);
 
@@ -32,6 +40,11 @@ void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
     const uint localValueIndex = WAVE_SIZE * WAVE_INDEX + LANE_INDEX;
     const uint valueIndex = TG_SIZE * groupId.x + localValueIndex;
 
+    if (valueIndex >= u_data.valueCount)
+    {
+        return;
+    }
+    
     const bool isLastLaneInWave = groupThreadId.x == (WAVE_INDEX * WAVE_SIZE) + WAVE_SIZE - 1;
     
     uint value = u_inputValues[valueIndex];

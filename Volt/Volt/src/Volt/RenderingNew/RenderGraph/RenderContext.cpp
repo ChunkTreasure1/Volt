@@ -105,6 +105,14 @@ namespace Volt
 		m_commandBuffer->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
 
+	void RenderContext::DispatchIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset)
+	{
+		VT_PROFILE_FUNCTION();
+
+		BindDescriptorTableIfRequired();
+		m_commandBuffer->DispatchIndirect(commandsBuffer, offset);
+	}
+
 	void RenderContext::DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
 	{
 		VT_PROFILE_FUNCTION();

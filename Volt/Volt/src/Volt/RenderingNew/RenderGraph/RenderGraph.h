@@ -50,8 +50,8 @@ namespace Volt
 			void SetHasSideEffect();
 			void SetIsComputePass();
 
-			void ReadResource(RenderGraphResourceHandle handle);
-			void WriteResource(RenderGraphResourceHandle handle);
+			void ReadResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState = RHI::ResourceState::Undefined);
+			void WriteResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState = RHI::ResourceState::Undefined);
 		
 		private:
 			RenderGraph& m_renderGraph;

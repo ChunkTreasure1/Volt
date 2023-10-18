@@ -184,7 +184,6 @@ namespace Volt::RHI
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to find binding with name {0}!", name);
 			return;
 		}
 
@@ -196,8 +195,6 @@ namespace Volt::RHI
 		const auto& binding = m_shader->GetResourceBindingFromName(name);
 		if (!binding.IsValid())
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Unable to find binding with name {0}!", name);
-			assert(false);
 			return;
 		}
 

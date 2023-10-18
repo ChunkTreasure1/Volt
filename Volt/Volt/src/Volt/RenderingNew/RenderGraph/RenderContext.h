@@ -47,6 +47,7 @@ namespace Volt
 		void ClearBuffer(Ref<RHI::StorageBuffer> buffer, uint32_t clearValue);
 
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ);
+		void DispatchIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset);
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 
 		void BindPipeline(Ref<RHI::RenderPipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable = nullptr);

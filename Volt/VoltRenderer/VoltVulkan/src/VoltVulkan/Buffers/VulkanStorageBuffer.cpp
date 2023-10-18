@@ -13,18 +13,19 @@
 namespace Volt::RHI
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_byteSize(count* elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
+		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(elementSize * count);
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+		: m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(size);
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
+		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(size);
 	}

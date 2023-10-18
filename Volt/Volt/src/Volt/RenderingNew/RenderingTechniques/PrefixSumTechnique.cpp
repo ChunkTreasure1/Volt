@@ -45,7 +45,7 @@ namespace Volt
 			builder.SetIsComputePass();
 			builder.SetHasSideEffect();
 		},
-		[pipeline = m_pipeline, groupCount, inputBuffer, outputBuffer](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[pipeline = m_pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			Ref<RHI::BufferView> inputBufferView = resources.GetBuffer(inputBuffer)->GetView();
 			Ref<RHI::BufferView> outputBufferView = resources.GetBuffer(outputBuffer)->GetView();
@@ -58,6 +58,7 @@ namespace Volt
 			context.SetBufferView("u_inputValues", inputBufferView);
 			context.SetBufferView("o_outputBuffer", outputBufferView);
 			context.SetBufferView("o_stateBuffer", stateBuffer->GetView());
+			context.PushConstants(valueCount);
 
 			context.Dispatch(groupCount, 1, 1);
 		});
