@@ -13,65 +13,98 @@ namespace Volt::RHI
 {
 	struct EnabledFeatures
 	{
+		// Native
 		VkPhysicalDeviceVulkan11Features vulkan11Features;
 		VkPhysicalDeviceVulkan12Features vulkan12Features;
 		VkPhysicalDeviceVulkan13Features vulkan13Features;
 
 		VkPhysicalDeviceFeatures2 physicalDeviceFeatures;
+
+		// Extensions
+		VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT;
 	};
+
+	static EnabledFeatures s_enabledFeatures{};
 
 	namespace Utility
 	{
-		inline static EnabledFeatures GetEnabledFeatures()
+		inline static void GetEnabledFeatures(Weak<VulkanPhysicalGraphicsDevice> physicalDevice)
 		{
-			EnabledFeatures result{};
 
-			result.vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-			result.vulkan11Features.pNext = nullptr;
-			result.vulkan11Features.shaderDrawParameters = VK_TRUE;
+			s_enabledFeatures.vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+			s_enabledFeatures.vulkan11Features.pNext = nullptr;
+			s_enabledFeatures.vulkan11Features.shaderDrawParameters = VK_TRUE;
 
-			result.vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-			result.vulkan12Features.pNext = &result.vulkan11Features;
-			result.vulkan12Features.drawIndirectCount = VK_TRUE;
-			result.vulkan12Features.samplerFilterMinmax = VK_TRUE;
-			result.vulkan12Features.hostQueryReset = VK_TRUE;
-			result.vulkan12Features.runtimeDescriptorArray = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+			s_enabledFeatures.vulkan12Features.pNext = &s_enabledFeatures.vulkan11Features;
+			s_enabledFeatures.vulkan12Features.drawIndirectCount = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.samplerFilterMinmax = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.hostQueryReset = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.runtimeDescriptorArray = VK_TRUE;
 
-			result.vulkan12Features.descriptorIndexing = VK_TRUE;
-			result.vulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
-			result.vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
-			result.vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
-			result.vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
-			result.vulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
-			
-			result.vulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-			result.vulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
-			result.vulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.descriptorIndexing = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
 
-			result.vulkan12Features.bufferDeviceAddress = VK_TRUE;
-			result.vulkan12Features.shaderBufferInt64Atomics = VK_TRUE;
-			result.vulkan12Features.shaderSharedInt64Atomics = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
 
-			result.vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-			result.vulkan13Features.pNext = &result.vulkan12Features;
-			result.vulkan13Features.synchronization2 = VK_TRUE;
-			result.vulkan13Features.maintenance4 = VK_TRUE;
-			result.vulkan13Features.dynamicRendering = VK_TRUE;
-			result.vulkan13Features.shaderDemoteToHelperInvocation = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.bufferDeviceAddress = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.shaderBufferInt64Atomics = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.shaderSharedInt64Atomics = VK_TRUE;
 
-			result.physicalDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-			result.physicalDeviceFeatures.pNext = &result.vulkan13Features;
-			result.physicalDeviceFeatures.features.inheritedQueries = VK_TRUE;
-			result.physicalDeviceFeatures.features.multiDrawIndirect = VK_TRUE;
-			result.physicalDeviceFeatures.features.geometryShader = VK_TRUE;
-			result.physicalDeviceFeatures.features.imageCubeArray = VK_TRUE;
-			result.physicalDeviceFeatures.features.samplerAnisotropy = VK_TRUE;
-			result.physicalDeviceFeatures.features.pipelineStatisticsQuery = VK_TRUE;
-			result.physicalDeviceFeatures.features.fillModeNonSolid = VK_TRUE;
-			result.physicalDeviceFeatures.features.wideLines = VK_TRUE;
-			result.physicalDeviceFeatures.features.independentBlend = VK_TRUE;
+			s_enabledFeatures.vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+			s_enabledFeatures.vulkan13Features.pNext = &s_enabledFeatures.vulkan12Features;
+			s_enabledFeatures.vulkan13Features.synchronization2 = VK_TRUE;
+			s_enabledFeatures.vulkan13Features.maintenance4 = VK_TRUE;
+			s_enabledFeatures.vulkan13Features.dynamicRendering = VK_TRUE;
+			s_enabledFeatures.vulkan13Features.shaderDemoteToHelperInvocation = VK_TRUE;
 
-			return result;
+			void* chainEntryPoint = &s_enabledFeatures.vulkan13Features;
+
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+			{
+				s_enabledFeatures.descriptorBufferFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT;
+				s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBuffer = VK_TRUE;
+				s_enabledFeatures.descriptorBufferFeaturesEXT.pNext = chainEntryPoint;
+
+				chainEntryPoint = &s_enabledFeatures.descriptorBufferFeaturesEXT;
+			}
+
+			s_enabledFeatures.physicalDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			s_enabledFeatures.physicalDeviceFeatures.pNext = chainEntryPoint;
+			s_enabledFeatures.physicalDeviceFeatures.features.inheritedQueries = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.multiDrawIndirect = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.geometryShader = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.imageCubeArray = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.samplerAnisotropy = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.pipelineStatisticsQuery = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.fillModeNonSolid = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.wideLines = VK_TRUE;
+			s_enabledFeatures.physicalDeviceFeatures.features.independentBlend = VK_TRUE;
+		}
+
+		inline static std::vector<const char*> GetEnabledExtensions(Weak<VulkanPhysicalGraphicsDevice> physicalDevice)
+		{
+			std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
+			}
+
+#ifdef VT_ENABLE_VALIDATION
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+			}
+#endif
+
+			return enabledExtensions;
 		}
 	}
 
@@ -121,22 +154,18 @@ namespace Volt::RHI
 			deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueInfos.size());
 			deviceInfo.pQueueCreateInfos = deviceQueueInfos.data();
 			deviceInfo.pEnabledFeatures = nullptr;
-
-			std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+			deviceInfo.enabledLayerCount = 0;
 
 #ifdef VT_ENABLE_VALIDATION
 			deviceInfo.enabledLayerCount = 1u;
 			deviceInfo.ppEnabledLayerNames = &s_validationLayer;
-
-			enabledExtensions.emplace_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 #endif
+			const auto enabledExtensions = Utility::GetEnabledExtensions(m_physicalDevice);
+			Utility::GetEnabledFeatures(m_physicalDevice);
 
 			deviceInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 			deviceInfo.ppEnabledExtensionNames = enabledExtensions.data();
-
-			const auto enabledFeatures = Utility::GetEnabledFeatures();
-
-			deviceInfo.pNext = &enabledFeatures.physicalDeviceFeatures;
+			deviceInfo.pNext = &s_enabledFeatures.physicalDeviceFeatures;
 
 			VT_VK_CHECK(vkCreateDevice(physicalDevicePtr.GetHandle<VkPhysicalDevice>(), &deviceInfo, nullptr, &m_device));
 		}

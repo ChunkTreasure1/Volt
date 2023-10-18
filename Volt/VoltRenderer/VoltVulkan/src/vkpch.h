@@ -17,6 +17,7 @@
 #include <functional>
 #include <algorithm>
 #include <filesystem>
+#include <numeric>
 
 #include <future>
 

@@ -9,9 +9,11 @@ namespace Volt::RHI
 	{
 	public:
 		D3D12ImageView(const ImageViewSpecification specification);
+		~D3D12ImageView() override;
 		void* GetHandleImpl() const override;
 
 		const ImageAspect GetImageAspect() const override;
+		const uint64_t GetDeviceAddress() const override;
 
 	private:
 		ImageViewSpecification m_specs;

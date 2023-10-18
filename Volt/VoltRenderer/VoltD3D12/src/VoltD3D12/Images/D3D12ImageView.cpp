@@ -14,7 +14,7 @@ namespace Volt::RHI
 
 	D3D12ImageView::D3D12ImageView(const ImageViewSpecification specification) : m_specs(specification)
 	{
-		m_view = new CD3DX12_CPU_DESCRIPTOR_HANDLE;
+		m_view = new CD3DX12_CPU_DESCRIPTOR_HANDLE();
 
 		auto image = specification.image->As<D3D12Image2D>();
 
@@ -35,6 +35,11 @@ namespace Volt::RHI
 		}
 	}
 
+	D3D12ImageView::~D3D12ImageView()
+	{
+		delete m_view;
+	}
+
 	void* D3D12ImageView::GetHandleImpl() const
 	{
 		return m_view;
@@ -43,5 +48,10 @@ namespace Volt::RHI
 	const ImageAspect D3D12ImageView::GetImageAspect() const
 	{
 		return ImageAspect();
+	}
+
+	const uint64_t D3D12ImageView::GetDeviceAddress() const
+	{
+		return m_viewID;
 	}
 }

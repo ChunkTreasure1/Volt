@@ -10,7 +10,9 @@ namespace Volt::RHI
 	{
 	public:
 		VulkanBufferView(const BufferViewSpecification& specification);
-		
+
+		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
+
 		Ref<RHIResource> GetResource() const { return m_buffer; }
 
 	protected:

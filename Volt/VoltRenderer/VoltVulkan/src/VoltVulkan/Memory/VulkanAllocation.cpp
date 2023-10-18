@@ -16,6 +16,11 @@ namespace Volt::RHI
 		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation);
 	}
 
+	const uint64_t VulkanImageAllocation::GetDeviceAddress() const
+	{
+		return 0;
+	}
+
 	void* VulkanImageAllocation::GetResourceHandleInternal() const
 	{
 		return m_resource;
@@ -36,6 +41,15 @@ namespace Volt::RHI
 	void VulkanBufferAllocation::Unmap()
 	{
 		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation);
+	}
+
+	const uint64_t VulkanBufferAllocation::GetDeviceAddress() const
+	{
+		VkBufferDeviceAddressInfo bufferAddressInfo{};
+		bufferAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+		bufferAddressInfo.pNext = nullptr;
+		bufferAddressInfo.buffer = m_resource;
+		return vkGetBufferDeviceAddress(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferAddressInfo);
 	}
 
 	void* VulkanBufferAllocation::GetResourceHandleInternal() const
@@ -59,6 +73,15 @@ namespace Volt::RHI
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkUnmapMemory(device->GetHandle<VkDevice>(), m_memoryHandle);
+	}
+
+	const uint64_t VulkanTransientBufferAllocation::GetDeviceAddress() const
+	{
+		VkBufferDeviceAddressInfo bufferAddressInfo{};
+		bufferAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+		bufferAddressInfo.pNext = nullptr;
+		bufferAddressInfo.buffer = m_resource;
+		return vkGetBufferDeviceAddress(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferAddressInfo);
 	}
 	
 	void* VulkanTransientBufferAllocation::GetResourceHandleInternal() const
@@ -85,6 +108,11 @@ namespace Volt::RHI
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkUnmapMemory(device->GetHandle<VkDevice>(), m_memoryHandle);
+	}
+
+	const uint64_t VulkanTransientImageAllocation::GetDeviceAddress() const
+	{
+		return 0;
 	}
 	
 	void* VulkanTransientImageAllocation::GetResourceHandleInternal() const

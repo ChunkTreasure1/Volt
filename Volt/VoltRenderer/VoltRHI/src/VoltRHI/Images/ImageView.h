@@ -25,6 +25,7 @@ namespace Volt::RHI
 		static Ref<ImageView> Create(const ImageViewSpecification specification);
 
 		virtual const ImageAspect GetImageAspect() const = 0;
+		virtual const uint64_t GetDeviceAddress() const = 0;
 
 	protected:
 		ImageView() = default;

@@ -17,6 +17,7 @@ namespace Volt::RHI
 		~BufferView() override = default;
 
 		static Ref<BufferView> Create(const BufferViewSpecification& specification);
+		[[nodiscard]] virtual const uint64_t GetDeviceAddress() const = 0;
 
 	protected:
 		BufferView() = default;

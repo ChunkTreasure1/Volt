@@ -3,6 +3,7 @@
 
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanSwapchain.h"
+#include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -190,9 +191,9 @@ namespace Volt::RHI
 	const ShaderResourceBinding& VulkanShader::GetResourceBindingFromName(std::string_view name) const
 	{
 		static ShaderResourceBinding invalidBinding{};
-		
+
 		std::string nameStr = std::string(name);
-		
+
 		if (!m_resources.bindings.contains(nameStr))
 		{
 			return invalidBinding;
@@ -572,7 +573,7 @@ namespace Volt::RHI
 				{
 					descriptorBinding.descriptorCount = static_cast<uint32_t>(data.arraySize);
 				}
-				
+
 				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
@@ -594,7 +595,7 @@ namespace Volt::RHI
 				{
 					descriptorBinding.descriptorCount = static_cast<uint32_t>(data.arraySize);
 				}
-				
+
 				descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 				descriptorBinding.stageFlags = static_cast<VkShaderStageFlags>(data.usageStages);
 			}
@@ -612,9 +613,11 @@ namespace Volt::RHI
 			}
 		}
 
-		constexpr VkDescriptorBindingFlags bindlessFlags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+		constexpr VkDescriptorBindingFlags bindlessFlags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
 
 		auto device = GraphicsContext::GetDevice();
+
+		const bool usingDescriptorBuffers = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled();
 
 		int32_t lastSet = -1;
 		for (const auto& [set, bindings] : descriptorSetBindings)
@@ -626,6 +629,12 @@ namespace Volt::RHI
 				info.pNext = nullptr;
 				info.bindingCount = 0;
 				info.pBindings = nullptr;
+				info.flags = 0;
+
+				if (usingDescriptorBuffers)
+				{
+					info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
+				}
 
 				VT_VK_CHECK(vkCreateDescriptorSetLayout(device->GetHandle<VkDevice>(), &info, nullptr, &m_nullPaddedDescriptorSetLayouts.emplace_back()));
 				lastSet++;
@@ -636,6 +645,12 @@ namespace Volt::RHI
 			info.pNext = nullptr;
 			info.bindingCount = static_cast<uint32_t>(bindings.size());
 			info.pBindings = bindings.data();
+			info.flags = 0;
+
+			if (usingDescriptorBuffers)
+			{
+				info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
+			}
 
 			std::vector<VkDescriptorBindingFlags> bindingFlags{};
 
@@ -650,8 +665,12 @@ namespace Volt::RHI
 
 				if (isBindlessMap[set][binding.binding].value)
 				{
-					info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 					flags = bindlessFlags;
+					if (!usingDescriptorBuffers)
+					{
+						info.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+						flags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+					}
 				}
 			}
 

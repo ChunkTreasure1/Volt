@@ -10,6 +10,11 @@ namespace Volt::RHI
 	{
 	}
 
+	const uint64_t VulkanBufferView::GetDeviceAddress() const
+	{
+		return m_buffer->GetDeviceAddress();
+	}
+
 	void* VulkanBufferView::GetHandleImpl() const
 	{
 		return m_buffer->GetHandle<void*>();

@@ -4,6 +4,10 @@
 #include "VoltRHI/Graphics/GraphicsContext.h"
 
 #include <VoltVulkan/Descriptors/VulkanDescriptorTable.h>
+#include <VoltVulkan/Descriptors/VulkanDescriptorBufferTable.h>
+
+// #TODO_Ivar: Temp
+#include <VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h>
 
 namespace Volt::RHI
 {
@@ -18,7 +22,18 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanDescriptorTable>(specification); break;
+			case GraphicsAPI::Vulkan:
+			{
+				if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+				{
+					return CreateRefRHI<VulkanDescriptorBufferTable>(specification);
+				}
+				else
+				{
+					return CreateRefRHI<VulkanDescriptorTable>(specification);
+				}
+				break;
+			}
 		}
 
 		return nullptr;

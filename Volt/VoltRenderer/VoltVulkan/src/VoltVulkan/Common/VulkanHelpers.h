@@ -243,6 +243,11 @@ namespace Volt::RHI
 				result |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 			}
 
+			if ((usageFlags & BufferUsage::DescriptorBuffer) != BufferUsage::None)
+			{
+				result |= VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT; // #TODO_Ivar: This might cause issues
+			}
+
 			return result;
 		}
 

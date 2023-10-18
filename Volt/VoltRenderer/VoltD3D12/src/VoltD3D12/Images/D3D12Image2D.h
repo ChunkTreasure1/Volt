@@ -26,6 +26,7 @@ namespace Volt::RHI
 
 		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
 		void SetName(std::string_view name) override;
+		const uint64_t GetDeviceAddress() const override;
 
 	private:
 		Ref<ImageView> m_view;

@@ -23,6 +23,8 @@ namespace Volt::RHI
 
 	private:
 		VkDevice_T* m_device = nullptr;
+
+		bool m_descriptorBuffersAvailiable = false;
 	
 		Weak<VulkanPhysicalGraphicsDevice> m_physicalDevice;
 	};

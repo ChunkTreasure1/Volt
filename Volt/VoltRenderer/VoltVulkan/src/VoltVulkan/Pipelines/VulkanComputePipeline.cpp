@@ -3,6 +3,7 @@
 
 #include "VoltVulkan/Shader/VulkanShader.h"
 #include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -16,12 +17,12 @@ namespace Volt::RHI
 	{
 		Invalidate();
 	}
-	
+
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{
 		Release();
 	}
-	
+
 	void VulkanComputePipeline::Invalidate()
 	{
 		Release();
@@ -72,6 +73,11 @@ namespace Volt::RHI
 			info.basePipelineHandle = nullptr;
 			info.basePipelineIndex = 0;
 
+			if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+			{
+				info.flags = VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
+			}
+
 			VT_VK_CHECK(vkCreateComputePipelines(device->GetHandle<VkDevice>(), nullptr, 1, &info, nullptr, &m_pipeline));
 		}
 	}
@@ -85,7 +91,7 @@ namespace Volt::RHI
 	{
 		return m_pipeline;
 	}
-	
+
 	void VulkanComputePipeline::Release()
 	{
 		if (!m_pipeline)
@@ -93,7 +99,7 @@ namespace Volt::RHI
 			return;
 		}
 
-		GraphicsContext::DestroyResource([pipeline = m_pipeline, pipelineLayout = m_pipelineLayout]() 
+		GraphicsContext::DestroyResource([pipeline = m_pipeline, pipelineLayout = m_pipelineLayout]()
 		{
 			auto device = GraphicsContext::GetDevice();
 			vkDestroyPipeline(device->GetHandle<VkDevice>(), pipeline, nullptr);

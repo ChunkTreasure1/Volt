@@ -433,7 +433,10 @@ namespace Volt::RHI
 		StorageBuffer = BIT(3),
 		IndexBuffer = BIT(4),
 		VertexBuffer = BIT(5),
-		IndirectBuffer = BIT(6)
+		IndirectBuffer = BIT(6),
+	
+		// Vulkan only
+		DescriptorBuffer = BIT(7)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(BufferUsage);
@@ -487,7 +490,7 @@ namespace Volt::RHI
 
 		IndexBuffer,
 		VertexBuffer,
-		ConstantBuffer,
+		UniformBuffer,
 		StorageBuffer
 	};
 

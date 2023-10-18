@@ -11,6 +11,8 @@ namespace Volt::RHI
 
 	class SamplerState;
 
+	class CommandBuffer;
+
 	struct DescriptorTableCreateInfo
 	{
 		Ref<Shader> shader;
@@ -20,7 +22,6 @@ namespace Volt::RHI
 	class DescriptorTable : public RHIInterface
 	{
 	public:
-
 		// Set using bindings
 		virtual void SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
 		virtual void SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
@@ -37,6 +38,8 @@ namespace Volt::RHI
 		static Ref<DescriptorTable> Create(const DescriptorTableCreateInfo& specification);
 
 	protected:
+		virtual void Bind(Ref<CommandBuffer> commandBuffer) = 0;
+
 		DescriptorTable() = default;
 	};
 }

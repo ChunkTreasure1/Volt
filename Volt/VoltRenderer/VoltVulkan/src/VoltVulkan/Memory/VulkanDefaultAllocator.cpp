@@ -4,10 +4,10 @@
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
 #include "VoltVulkan/Memory/VulkanAllocation.h"
+#include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
-#include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 #include <VoltRHI/Images/ImageUtility.h>
 
 #include <VoltRHI/Core/Profiling.h>
@@ -55,6 +55,11 @@ namespace Volt::RHI
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		bufferInfo.size = size;
 		bufferInfo.usage = Utility::GetVkBufferUsageFlags(usage);
+
+		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+		{
+			bufferInfo.usage |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+		}
 
 		VmaMemoryUsage usageFlags = VMA_MEMORY_USAGE_AUTO;
 		VmaAllocationCreateFlags createFlags = 0;

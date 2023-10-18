@@ -323,6 +323,11 @@ namespace Volt::RHI
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
+	const uint64_t VulkanImage2D::GetDeviceAddress() const
+	{
+		return m_allocation->GetDeviceAddress();
+	}
+
 	void* VulkanImage2D::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkImage>();

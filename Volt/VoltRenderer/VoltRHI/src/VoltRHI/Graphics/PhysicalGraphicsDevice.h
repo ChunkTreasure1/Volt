@@ -11,12 +11,12 @@ namespace Volt::RHI
 		VT_DELETE_COMMON_OPERATORS(PhysicalGraphicsDevice);
 		~PhysicalGraphicsDevice() override = default;
 
-		inline const DeviceCapabilities& GetCapabilities() const { return m_capabilities; }
+		[[nodiscard]] virtual const DeviceVendor GetDeviceVendor() const = 0;
+		[[nodiscard]] virtual std::string_view GetDeviceName() const = 0;
 
 		static Ref<PhysicalGraphicsDevice> Create(const PhysicalDeviceCreateInfo& deviceInfo);
 
 	protected:
-		DeviceCapabilities m_capabilities;
 		PhysicalGraphicsDevice() = default;
 	};
 }

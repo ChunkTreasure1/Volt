@@ -65,6 +65,11 @@ namespace Volt::RHI
 		bufferInfo.size = createInfo.size;
 		bufferInfo.usage = Utility::GetVkBufferUsageFlags(createInfo.usage);
 
+		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+		{
+			bufferInfo.usage |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+		}
+
 		const auto& page = m_pageAllocations.at(pageIndex);
 
 		VkBuffer buffer;

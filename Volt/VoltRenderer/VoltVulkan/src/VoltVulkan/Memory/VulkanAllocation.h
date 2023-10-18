@@ -15,7 +15,8 @@ namespace Volt::RHI
 		~VulkanImageAllocation() override = default;
 
 		void Unmap() override;
-		inline const UUID GetHeapID() const override { return 0; }
+		[[nodiscard]] inline const UUID GetHeapID() const override { return 0; }
+		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -37,6 +38,7 @@ namespace Volt::RHI
 
 		void Unmap() override;
 		inline const UUID GetHeapID() const override { return 0; }
+		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -58,6 +60,7 @@ namespace Volt::RHI
 
 		void Unmap() override;
 		inline const UUID GetHeapID() const override { return m_heapId; }
+		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
 
 	protected:
 		void* GetResourceHandleInternal() const override;
@@ -82,6 +85,7 @@ namespace Volt::RHI
 
 		void Unmap() override;
 		inline const UUID GetHeapID() const override { return m_heapId; }
+		[[nodiscard]] const uint64_t GetDeviceAddress() const override;
 
 	protected:
 		void* GetResourceHandleInternal() const override;

@@ -4,6 +4,7 @@
 #include "VoltVulkan/Shader/VulkanShader.h"
 #include "VoltVulkan/Common/VulkanHelpers.h"
 #include "VoltVulkan/Common/VulkanCommon.h"
+#include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -266,6 +267,11 @@ namespace Volt::RHI
 			pipelineInfo.layout = m_pipelineLayout;
 			pipelineInfo.subpass = 0;
 			pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+			if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+			{
+				pipelineInfo.flags = VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
+			}
 
 			VT_VK_CHECK(vkCreateGraphicsPipelines(device->GetHandle<VkDevice>(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline));
 		}

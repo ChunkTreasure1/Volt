@@ -125,6 +125,11 @@ namespace Volt::RHI
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
+	const uint64_t VulkanStorageBuffer::GetDeviceAddress() const
+	{
+		return m_allocation->GetDeviceAddress();
+	}
+
 	void* VulkanStorageBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();

@@ -63,6 +63,11 @@ namespace Volt::RHI
 		return m_specification.image->GetImageAspect();
 	}
 
+	const uint64_t VulkanImageView::GetDeviceAddress() const
+	{
+		return m_specification.image->GetDeviceAddress();
+	}
+
 	void* VulkanImageView::GetHandleImpl() const
 	{
 		return m_imageView;

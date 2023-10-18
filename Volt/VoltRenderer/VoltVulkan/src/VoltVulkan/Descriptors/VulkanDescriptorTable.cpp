@@ -7,6 +7,7 @@
 #include "VoltVulkan/Images/VulkanImageView.h"
 #include "VoltVulkan/Buffers/VulkanBufferView.h"
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
+#include "VoltVulkan/Buffers/VulkanCommandBuffer.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -22,7 +23,7 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		VkImageLayout GetImageLayoutFromDescriptorType(VkDescriptorType descriptorType)
+		inline VkImageLayout GetImageLayoutFromDescriptorType(VkDescriptorType descriptorType)
 		{
 			switch (descriptorType)
 			{
@@ -292,6 +293,23 @@ namespace Volt::RHI
 	void* VulkanDescriptorTable::GetHandleImpl() const
 	{
 		return nullptr;
+	}
+
+	void VulkanDescriptorTable::Bind(Ref<CommandBuffer> commandBuffer)
+	{
+		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
+
+		const uint32_t index = vulkanCommandBuffer.GetCurrentCommandBufferIndex();
+		Update(index);
+
+		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
+
+		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
+		for (const auto& [set, sets] : GetDescriptorSets())
+		{
+			const bool isSingleFrameSet = sets.size() == 1;
+			vkCmdBindDescriptorSets(vulkanCommandBuffer.GetHandle<VkCommandBuffer>(), bindPoint, vulkanCommandBuffer.GetCurrentPipelineLayout(), set, 1, &sets.at(isSingleFrameSet ? 0 : index), 0, nullptr);
+		}
 	}
 
 	void VulkanDescriptorTable::SetDirty(bool state)

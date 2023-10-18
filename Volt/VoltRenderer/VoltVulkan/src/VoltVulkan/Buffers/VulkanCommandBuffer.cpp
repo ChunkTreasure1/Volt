@@ -12,6 +12,7 @@
 #include "VoltVulkan/Pipelines/VulkanComputePipeline.h"
 
 #include "VoltVulkan/Descriptors/VulkanDescriptorTable.h"
+#include "VoltVulkan/Descriptors/VulkanDescriptorBufferTable.h"
 
 #include "VoltVulkan/Images/VulkanImage2D.h"
 #include "VoltVulkan/Buffers/VulkanStorageBuffer.h"
@@ -460,21 +461,17 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		VulkanDescriptorTable& vulkanDescriptorTable = descriptorTable->AsRef<VulkanDescriptorTable>();
-		const uint32_t index = GetCurrentCommandBufferIndex();
-		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(m_currentCommandBufferIndex).commandBuffer);
 
-		vulkanDescriptorTable.Update(index);
-
-		VkPipelineBindPoint bindPoint = m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
-
-		// #TODO_Ivar: move to an implementation that binds all descriptor sets in one call
-		for (const auto& [set, sets] : vulkanDescriptorTable.GetDescriptorSets())
+		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
 		{
-			const bool isSingleFrameSet = sets.size() == 1;
-
-			vkCmdBindDescriptorSets(m_commandBuffers.at(index).commandBuffer, bindPoint, GetCurrentPipelineLayout(), set, 1, &sets.at(isSingleFrameSet ? 0 : index), 0, nullptr);
+			descriptorTable->AsRef<VulkanDescriptorBufferTable>().Bind(As<CommandBuffer>());
 		}
+		else
+		{
+			descriptorTable->AsRef<VulkanDescriptorTable>().Bind(As<CommandBuffer>());
+		}
+
 	}
 
 	void VulkanCommandBuffer::BeginRendering(const RenderingInfo& renderingInfo)
@@ -1148,7 +1145,7 @@ namespace Volt::RHI
 			}
 		}
 
-		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampSupport;
+		m_hasTimestampSupport = GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().hasTimestampSupport;
 		if (m_hasTimestampSupport)
 		{
 			CreateQueryPools();
@@ -1250,7 +1247,7 @@ namespace Volt::RHI
 			const uint64_t startTime = m_timestampQueryResults.at(timestampsIndex).at(i);
 			const uint64_t endTime = m_timestampQueryResults.at(timestampsIndex).at(i + 1);
 
-			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
+			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().GetProperties().timestampPeriod : 0.f;
 			m_executionTimes.at(timestampsIndex)[i / 2] = nsTime * 0.000001f; // Convert to ms
 		}
 	}

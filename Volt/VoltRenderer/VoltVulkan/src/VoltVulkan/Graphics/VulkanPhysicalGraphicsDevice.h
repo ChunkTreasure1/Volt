@@ -2,6 +2,8 @@
 
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 
+#include "VoltVulkan/Graphics/PhysicalDeviceProperties.h"
+
 struct VkPhysicalDevice_T;
 
 namespace Volt::RHI
@@ -13,23 +15,12 @@ namespace Volt::RHI
 		int32_t transferFamilyQueueIndex = -1;
 	};
 
-	struct PhysicalDeviceMemoryProperties
+	struct ExtensionProperties
 	{
-		struct MemoryType
-		{
-			uint32_t propertyFlags;
-			uint32_t heapIndex;
-			uint32_t index;
-		};
+		inline static constexpr uint32_t MAX_EXTENSION_NAME_SIZE = 256;
 
-		struct MemoryHeap
-		{
-			uint64_t size;
-			uint32_t flags;
-		};
-
-		std::vector<MemoryType> memoryTypes;
-		std::vector<MemoryHeap> memoryHeaps;
+		char extensionName[MAX_EXTENSION_NAME_SIZE];
+		uint32_t specVersion;
 	};
 
 	class VulkanPhysicalGraphicsDevice final : public PhysicalGraphicsDevice
@@ -38,21 +29,30 @@ namespace Volt::RHI
 		VulkanPhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& createInfo);
 		~VulkanPhysicalGraphicsDevice() override;
 
-		inline const PhysicalDeviceQueueFamilyIndices& GetQueueFamilies() const { return m_queueFamilyIndices; }
+		[[nodiscard]] inline std::string_view GetDeviceName() const override { return m_deviceProperties.deviceName; }
+		[[nodiscard]] inline const DeviceVendor GetDeviceVendor() const override { return m_deviceProperties.vendor; }
+		[[nodiscard]] inline const PhysicalDeviceProperties& GetProperties() const { return m_deviceProperties; }
 
+		inline const PhysicalDeviceQueueFamilyIndices& GetQueueFamilies() const { return m_queueFamilyIndices; }
 		const int32_t GetMemoryTypeIndex(const uint32_t reqMemoryTypeBits, const uint32_t requiredPropertyFlags);
+		const bool IsExtensionAvailiable(const char* extensionName) const;
+		const bool AreDescriptorBuffersEnabled() const;
 
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
-		void FindMemoryProperties();
+		void FetchMemoryProperties();
+		void FetchDeviceProperties();
+		void FetchAvailiableExtensions();
 
 		VkPhysicalDevice_T* m_physicalDevice = nullptr;
 
 		PhysicalDeviceQueueFamilyIndices m_queueFamilyIndices{};
-		PhysicalDeviceMemoryProperties m_deviceMemoryProperties;
 
+		std::vector<ExtensionProperties> m_availiableExtensions;
+
+		PhysicalDeviceProperties m_deviceProperties;
 		PhysicalDeviceCreateInfo m_createInfo{};
 	};
 }

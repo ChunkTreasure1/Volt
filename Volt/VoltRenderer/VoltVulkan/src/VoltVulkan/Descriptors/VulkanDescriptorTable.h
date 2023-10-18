@@ -63,7 +63,10 @@ namespace Volt::RHI
 		inline const std::map<uint32_t, std::vector<VkDescriptorSet_T*>>& GetDescriptorSets() const { return m_descriptorSets; }
 
 	protected:
+		friend class VulkanCommandBuffer;
+
 		void* GetHandleImpl() const override;
+		void Bind(Ref<CommandBuffer> commandBuffer) override;
 
 	private:
 		void SetDirty(bool state);

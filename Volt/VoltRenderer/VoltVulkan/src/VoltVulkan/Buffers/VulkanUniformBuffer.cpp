@@ -17,12 +17,6 @@ namespace Volt::RHI
 	{
 		const VkDeviceSize bufferSize = static_cast<VkDeviceSize>(size);
 
-		VkBufferCreateInfo info{};
-		info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		info.size = bufferSize;
-		info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
 		m_allocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::UniformBuffer, MemoryUsage::CPUToGPU);
 
 		if (data)
@@ -86,6 +80,11 @@ namespace Volt::RHI
 
 		auto device = GraphicsContext::GetDevice();
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
+	}
+
+	const uint64_t VulkanUniformBuffer::GetDeviceAddress() const
+	{
+		return m_allocation->GetDeviceAddress();
 	}
 
 	void* VulkanUniformBuffer::MapInternal()

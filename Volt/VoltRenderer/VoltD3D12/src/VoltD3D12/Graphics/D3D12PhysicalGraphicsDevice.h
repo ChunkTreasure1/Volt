@@ -16,6 +16,9 @@ namespace Volt::RHI
 		D3D12PhysicalGraphicsDevice(const PhysicalDeviceCreateInfo& info);
 		~D3D12PhysicalGraphicsDevice() override;
 
+		[[nodiscard]] inline std::string_view GetDeviceName() const override { return ""; }
+		[[nodiscard]] inline const DeviceVendor GetDeviceVendor() const override { return DeviceVendor::Unknown; }
+
 		[[nodiscard]] IDXGIFactory4* GetFactory() { return m_factory; }
 		[[nodiscard]] IDXGIAdapter1* GetAdapter() { return m_adapter; }
 

@@ -74,6 +74,9 @@ namespace Volt::RHI
 		void* GetHandleImpl() const override;
 
 	private:
+		friend class VulkanDescriptorTable;
+		friend class VulkanDescriptorBufferTable;
+
 		inline static constexpr uint32_t MAX_QUERIES = 64;
 
 		void Invalidate();
@@ -82,9 +85,8 @@ namespace Volt::RHI
 		void CreateQueryPools();
 		void FetchTimestampResults();
 
-		const uint32_t GetCurrentCommandBufferIndex() const;
-
 		VkPipelineLayout_T* GetCurrentPipelineLayout();
+		const uint32_t GetCurrentCommandBufferIndex() const;
 
 		struct CommandBufferData
 		{

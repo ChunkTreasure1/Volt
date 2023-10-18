@@ -148,4 +148,9 @@ namespace Volt::RHI
 		std::wstring wname(name.begin(), name.end());
 		m_image.texture->SetName(wname.c_str());
 	}
+
+	const uint64_t D3D12Image2D::GetDeviceAddress() const
+	{
+		return 0;
+	}
 }
