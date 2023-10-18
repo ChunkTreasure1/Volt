@@ -2,6 +2,8 @@
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
 
+#include <entt.hpp>
+
 #include <string>
 #include <unordered_map>
 #include <typeindex>
@@ -32,7 +34,7 @@ namespace Volt
 		static MonoArray* CreateMonoArray(const std::vector<T>& vector);
 		static MonoArray* CreateMonoArrayUInt32(const std::vector<uint32_t>& vector);
 		static MonoArray* CreateMonoArrayUInt64(const std::vector<uint64_t>& vector);
-		static MonoArray* CreateMonoArrayEntity(const std::vector<Wire::EntityId>& vector);
+		static MonoArray* CreateMonoArrayEntity(const std::vector<entt::entity>& vector);
 
 		static bool CreateNewCSFile(std::string name, std::filesystem::path directoryFromAssets, bool regenerate);
 

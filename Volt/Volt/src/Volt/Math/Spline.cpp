@@ -2,6 +2,8 @@
 #include "Spline.h"
 #include "Volt/Rendering/DebugRenderer.h"
 
+#include "Volt/Components/CoreComponents.h"
+
 Spline::Spline(Ref<Volt::Scene>& aScene, int aAmoutOfCubes)
 	:myCurrentScene(aScene)
 {

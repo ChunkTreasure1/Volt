@@ -2,8 +2,6 @@
 
 #include "GraphKey/Node.h"
 
-#include <Volt/Components/Components.h>
-
 namespace GraphKey
 {
 	struct CustomEventNode : public Node

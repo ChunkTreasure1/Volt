@@ -33,7 +33,7 @@ namespace GraphKey
 	{
 	public:
 		Graph();
-		Graph(Wire::EntityId entity);
+		Graph(entt::entity entity);
 		~Graph() override = default;
 
 		void OnEvent(Volt::Event& e);
@@ -56,14 +56,14 @@ namespace GraphKey
 
 		const bool IsAttributeLinked(const Volt::UUID id) const;
 
-		inline const Wire::EntityId GetEntity() const { return myEntity; }
+		inline const entt::entity GetEntity() const { return myEntity; }
 		inline std::vector<Ref<Node>>& GetNodes() { return myNodes; }
 		inline std::vector<Link>& GetLinks() { return myLinks; }
 		inline std::vector<GraphParameter>& GetBlackboard() { return myParentBlackboard ? *myParentBlackboard : myBlackboard; }
 		inline std::vector<GraphEvent>& GetEvents() { return myGraphEvents; }
 		inline EventSystem& GetEventSystem() { return myEventSystem; }
 
-		inline void SetEntity(Wire::EntityId id) { myEntity = id; }
+		inline void SetEntity(entt::entity id) { myEntity = id; }
 		inline void SetParentBlackboard(std::vector<GraphParameter>* blackboard) { myParentBlackboard = blackboard; }
 
 		void AddEvent(const std::string& name, const Volt::UUID id = {});
@@ -105,7 +105,7 @@ namespace GraphKey
 		std::vector<GraphParameter> myBlackboard;
 		std::vector<GraphEvent> myGraphEvents;
 
-		Wire::EntityId myEntity = 0;
+		entt::entity myEntity = entt::null;
 
 		std::vector<Ref<Node>> myNodes;
 		std::vector<Link> myLinks;

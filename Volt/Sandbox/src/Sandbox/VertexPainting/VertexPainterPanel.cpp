@@ -5,7 +5,10 @@
 #include <Volt/Asset/AssetManager.h>
 #include <Volt/Rendering/DebugRenderer.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
+
+#include <Volt/Rendering/Camera/Camera.h>
 
 #include <Volt/Events/Event.h>
 #include <Volt/Core/Base.h>
@@ -338,7 +341,7 @@ void VertexPainterPanel::PanelDraw()
 				Volt::Entity entity = Volt::Entity(entId, ex_scene.get());
 				if (!entity.HasComponent<Volt::MeshComponent>()) continue;
 				auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-				meshComp.overrideMaterial = m_materialSettings.singleMat;
+				meshComp.material = m_materialSettings.singleMat;
 			}
 		}
 		/*ImGui::TreePop();
@@ -609,12 +612,12 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 			if (!entity.HasComponent<Volt::MeshComponent>()) continue;
 			auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
 
-			std::pair<Wire::EntityId, Volt::AssetHandle> entry;
+			std::pair<entt::entity, Volt::AssetHandle> entry;
 			entry.first = entId;
-			entry.second = meshComp.overrideMaterial;
+			entry.second = meshComp.material;
 			m_originalMaterials.insert(entry);
 
-			meshComp.overrideMaterial = Volt::AssetManager::GetAssetHandleFromFilePath("Editor/Materials/M_VisualizeVertexColors.vtmat");
+			meshComp.material = Volt::AssetManager::GetAssetHandleFromFilePath("Editor/Materials/M_VisualizeVertexColors.vtmat");
 		}
 		return;
 	}
@@ -623,7 +626,7 @@ void VertexPainterPanel::SetView(bool in_viewVertexColors)
 		Volt::Entity entity = Volt::Entity(_pair.first, ex_scene.get());
 		if (!entity.HasComponent<Volt::MeshComponent>()) continue;
 		auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-		meshComp.overrideMaterial = _pair.second;
+		meshComp.material = _pair.second;
 	}
 	m_originalMaterials.clear();
 

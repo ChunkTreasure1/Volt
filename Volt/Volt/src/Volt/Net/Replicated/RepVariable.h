@@ -19,7 +19,7 @@ namespace Volt
 	class RepVariable : public Nexus::Replicated
 	{
 	public:
-		RepVariable(const std::string& in_variableName, Nexus::TYPE::REP_ID in_repOwner, Nexus::TYPE::CLIENT_ID in_ownerId, Ref<MonoScriptInstance> in_scriptInstance, MonoScriptField in_field, Wire::EntityId in_entityId)
+		RepVariable(const std::string& in_variableName, Nexus::TYPE::REP_ID in_repOwner, Nexus::TYPE::CLIENT_ID in_ownerId, Ref<MonoScriptInstance> in_scriptInstance, MonoScriptField in_field, entt::entity in_entityId)
 			: Replicated(Nexus::TYPE::eReplicatedType::VARIABLE, in_ownerId)
 			, m_varName(in_variableName)
 			, m_repOwner(in_repOwner)
@@ -46,7 +46,7 @@ namespace Volt
 		MonoScriptField m_field;
 		const std::string m_varName;
 		const Nexus::TYPE::REP_ID m_repOwner;
-		const Wire::EntityId m_entityId;
+		const entt::entity m_entityId;
 		bool m_changed = false;
 	};
 

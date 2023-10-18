@@ -63,8 +63,10 @@ BehaviorEditor::BehaviorEditor(const std::string& title, const std::string& cont
 		myBehaviourTree = CreateRef<Volt::BehaviorTree::Tree>();
 		Ref<NodeGraph::EditorContext> editorContext = CreateRef<NodeGraph::EditorContext>();
 		m_scene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
-		myTreeEntity = Volt::Entity(56, m_scene.get());
-		myTreeEntity.AddComponent <Volt::BehaviorTreeComponent>();
+
+		// #TODO_Ivar: What??
+		/*myTreeEntity = Volt::Entity(56, m_scene.get());
+		myTreeEntity.AddComponent <Volt::BehaviorTreeComponent>();*/
 
 		editorContext->onBeginCreate = [&]()
 		{

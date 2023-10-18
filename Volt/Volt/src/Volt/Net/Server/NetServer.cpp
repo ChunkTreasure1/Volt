@@ -62,14 +62,14 @@ namespace Volt
 			auto ptr = m_registry.Get(repId);
 			const auto& repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
 			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
-			if (entity.IsNull()) continue;
+			if (!entity.IsValid()) continue;
 
 			const auto& pawnComp = entity.GetComponent<NetActorComponent>();
 			if (pawnComp.condition != eRepCondition::CONTINUOUS) continue;
 
 			if (pawnComp.updateTransformPos || pawnComp.updateTransformRot || pawnComp.updateTransformScale)
 			{
-				auto transformPacket = SerializeTransformPacket(entity.GetId(), repId, pawnComp.updateTransformPos, pawnComp.updateTransformRot, pawnComp.updateTransformScale);
+				auto transformPacket = SerializeTransformPacket(entity.GetID(), repId, pawnComp.updateTransformPos, pawnComp.updateTransformRot, pawnComp.updateTransformScale);
 				for (const auto& connection : m_connectionRegistry.GetClientIDs())
 				{
 					if (connection.first == repEntity.GetOwner()) continue;

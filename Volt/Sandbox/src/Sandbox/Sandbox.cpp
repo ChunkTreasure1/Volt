@@ -55,7 +55,7 @@
 
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/LightComponents.h>
 
 #include <Volt/Asset/Mesh/SubMaterial.h>
@@ -510,7 +510,7 @@ void Sandbox::OnScenePlay()
 	{
 		myShouldMovePlayer = false;
 
-		myRuntimeScene->GetRegistry().ForEach<Volt::MonoScriptComponent>([&](Wire::EntityId id, const Volt::MonoScriptComponent& scriptComp)
+		myRuntimeScene->ForEachWithComponents<const Volt::MonoScriptComponent>([&](const entt::entity id, const Volt::MonoScriptComponent& scriptComp) 
 		{
 			for (const auto& name : scriptComp.scriptNames)
 			{
@@ -641,7 +641,7 @@ bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)
 
 bool Sandbox::CheckForUpdateNavMesh(Volt::Entity entity)
 {
-	for (auto child : entity.GetChilden())
+	for (auto child : entity.GetChildren())
 	{
 		if (CheckForUpdateNavMesh(child))
 		{
@@ -764,6 +764,8 @@ void Sandbox::InstallMayaTools()
 
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
+	VT_PROFILE_FUNCTION();
+
 	EditorCommandStack::GetInstance().Update(100);
 
 	auto mousePos = Volt::Input::GetMousePosition();
@@ -899,7 +901,7 @@ void Sandbox::RenderGameView()
 			Volt::Entity cameraEntity{};
 			int32_t highestPrio = -1;
 
-			myRuntimeScene->GetRegistry().ForEach<Volt::CameraComponent>([&](Wire::EntityId id, const Volt::CameraComponent& camComp)
+			myRuntimeScene->ForEachWithComponents<const Volt::CameraComponent>([&](const entt::entity id, const Volt::CameraComponent& camComp)
 			{
 				if ((int32_t)camComp.priority > highestPrio)
 				{

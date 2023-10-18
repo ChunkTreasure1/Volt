@@ -78,6 +78,6 @@ private:
 	Ref<Volt::Scene>& ex_scene;
 	Ref<EditorCameraController>& ex_cameraController;
 
-	std::unordered_map<Wire::EntityId, Volt::AssetHandle> m_originalMaterials;
+	std::unordered_map<entt::entity, Volt::AssetHandle> m_originalMaterials;
 };
 

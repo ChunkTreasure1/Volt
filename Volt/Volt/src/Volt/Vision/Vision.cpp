@@ -1,7 +1,8 @@
 #include "vtpch.h"
 #include "Vision.h"
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
+#include <Volt/Components/CoreComponents.h>
 
 #include <Volt/Utility/Noise.h>
 
@@ -22,7 +23,7 @@ void Volt::Vision::OnEvent(Volt::Event& e)
 
 void Volt::Vision::Initialize()
 {
-	std::vector<Wire::EntityId> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	std::vector<entt::entity> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	myVTCams.clear();
 
@@ -64,14 +65,13 @@ void Volt::Vision::Reset()
 {
 	myVTCams.clear();
 	myScene->RemoveEntity(myTransitionCamera);
-	myActiveCamera = Volt::Entity{ 0,nullptr };
+	myActiveCamera = Volt::Entity::Null();
 }
 
 void Volt::Vision::Update(float aDeltaTime)
 {
-	std::vector<Wire::EntityId> cams = myScene->GetRegistry().GetComponentView<Volt::VisionCameraComponent>();
-
-	cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetId()), cams.end());
+	auto cams = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetID()), cams.end());
 
 	if (myVTCams.size() != cams.size())
 	{
@@ -338,7 +338,7 @@ void Volt::Vision::SetActiveCamera(const Volt::Entity aCamEntity)
 	if (myActiveCamera == aCamEntity)
 		return;
 
-	for (const auto& cam : myVTCams)
+	for (auto& cam : myVTCams)
 	{
 		cam.GetComponent<Volt::CameraComponent>().priority = 0;
 
@@ -352,7 +352,7 @@ void Volt::Vision::SetActiveCamera(const Volt::Entity aCamEntity)
 	}
 }
 
-void Volt::Vision::SetActiveCamera(const Wire::EntityId aEntityID, const float& aBlendTime, eBlendType blendType)
+void Volt::Vision::SetActiveCamera(const entt::entity aEntityID, const float& aBlendTime, eBlendType blendType)
 {
 	Volt::Entity camEnt = Volt::Entity{ aEntityID, myScene };
 
@@ -361,7 +361,7 @@ void Volt::Vision::SetActiveCamera(const Wire::EntityId aEntityID, const float& 
 		if (myActiveCamera == camEnt)
 			return;
 
-		for (const auto& cam : myVTCams)
+		for (auto& cam : myVTCams)
 		{
 			cam.GetComponent<Volt::CameraComponent>().priority = 0;
 
@@ -378,7 +378,7 @@ void Volt::Vision::SetActiveCamera(const Wire::EntityId aEntityID, const float& 
 	}
 }
 
-void Volt::Vision::SetActiveCamera(const Wire::EntityId aEntityID)
+void Volt::Vision::SetActiveCamera(const entt::entity aEntityID)
 {
 	Volt::Entity ent = Volt::Entity{ aEntityID, myScene };
 
@@ -419,7 +419,7 @@ void Volt::Vision::SetCameraFollow(Volt::Entity aCamera, Volt::Entity aFollowEnt
 	{
 		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
 		{
-			aCamera.GetComponent<Volt::VisionCameraComponent>().followId = aFollowEntity.GetId();
+			aCamera.GetComponent<Volt::VisionCameraComponent>().followId = aFollowEntity.GetID();
 		}
 	}
 }
@@ -432,7 +432,7 @@ void Volt::Vision::SetCameraLookAt(Volt::Entity aCamera, Volt::Entity aLookAtEnt
 	{
 		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
 		{
-			aCamera.GetComponent<Volt::VisionCameraComponent>().lookAtId = aLookAtEnt.GetId();
+			aCamera.GetComponent<Volt::VisionCameraComponent>().lookAtId = aLookAtEnt.GetID();
 		}
 	}
 }
@@ -445,7 +445,7 @@ void Volt::Vision::SetCameraFocusPoint(Volt::Entity aCamera, Volt::Entity aFocus
 	{
 		if (aCamera.HasComponent<Volt::VisionCameraComponent>())
 		{
-			aCamera.GetComponent<Volt::VisionCameraComponent>().collisionRayPoint = aFocusEntity.GetId();
+			aCamera.GetComponent<Volt::VisionCameraComponent>().collisionRayPoint = aFocusEntity.GetID();
 		}
 	}
 }
@@ -509,7 +509,7 @@ const std::vector<Volt::Entity> Volt::Vision::GetAllCamerasInScene()
 
 void Volt::Vision::SetTriggerCamera(const Volt::Entity aTriggerCamera)
 {
-	for (const auto& cam : myVTCams)
+	for (auto& cam : myVTCams)
 	{
 		cam.GetComponent<Volt::CameraComponent>().priority = 0;
 

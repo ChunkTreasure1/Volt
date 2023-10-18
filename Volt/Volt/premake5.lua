@@ -30,6 +30,11 @@ project "Volt"
 		"/ignore:4099",
 	}
 
+	buildoptions 
+	{
+		"/bigobj"
+	}
+
 	files
 	{
 		"src/**.h",
@@ -59,7 +64,6 @@ project "Volt"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Wire}",
 		"%{IncludeDir.Optick}",
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
@@ -78,6 +82,7 @@ project "Volt"
 		"%{IncludeDir.steam}",
 		"%{IncludeDir.discord}",
 		"%{IncludeDir.NFDExtended}",
+		"%{IncludeDir.entt}",
 
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ffmpeg}",
@@ -103,7 +108,6 @@ project "Volt"
 	{
 		"GLFW",
 		"ImGui",
-		"Wire",
 		"Optick",
 		"Navigation",
 		"msdf-atlas-gen",

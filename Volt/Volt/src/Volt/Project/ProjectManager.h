@@ -42,6 +42,7 @@ namespace Volt
 		static const std::filesystem::path& GetDirectory();
 
 		static const bool IsCurrentProjectDeprecated();
+		static const bool AreCurrentProjectMetaFilesDeprecated();
 
 		static const Project& GetProject();
 		static void OnProjectUpgraded();

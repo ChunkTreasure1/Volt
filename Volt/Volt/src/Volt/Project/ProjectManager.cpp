@@ -153,6 +153,11 @@ namespace Volt
 		return m_currentProject->isDeprecated;
 	}
 
+	const bool ProjectManager::AreCurrentProjectMetaFilesDeprecated()
+	{
+		return m_currentProject->engineVersion < Version::Create(0, 1, 1);
+	}
+
 	const Project& ProjectManager::GetProject()
 	{
 		return *m_currentProject;

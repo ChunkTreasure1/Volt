@@ -72,16 +72,16 @@ namespace Volt
 
 		const dtCrowdAgent* DtCrowd::GetAgent(Volt::Entity entity)
 		{
-			if (!myCrowd || !entity.HasComponent<Volt::NavAgentComponent>() || !myEntityToAgentMap.contains(entity.GetId()))
+			if (!myCrowd || !entity.HasComponent<Volt::NavAgentComponent>() || !myEntityToAgentMap.contains(entity.GetID()))
 			{
-				VT_CORE_WARN("Could not get agent from entity: {0}", entity.GetId());
+				VT_CORE_WARN("Could not get agent from entity: {0}", entity.GetID());
 				return nullptr;
 			}
 
-			return myCrowd->getAgent(myEntityToAgentMap.at(entity.GetId()));
+			return myCrowd->getAgent(myEntityToAgentMap.at(entity.GetID()));
 		}
 
-		const dtCrowdAgent* DtCrowd::GetAgent(Wire::EntityId entityId)
+		const dtCrowdAgent* DtCrowd::GetAgent(entt::entity entityId)
 		{
 			if (!myCrowd || !myEntityToAgentMap.contains(entityId))
 			{
@@ -94,7 +94,7 @@ namespace Volt
 
 		void DtCrowd::SetAgentPosition(Volt::Entity entity, glm::vec3 position)
 		{
-			auto entityId = entity.GetId();
+			auto entityId = entity.GetID();
 
 			if (!myCrowd || !myEntityToAgentMap.contains(entityId))
 			{
@@ -117,9 +117,9 @@ namespace Volt
 
 		void DtCrowd::SetAgentTarget(Volt::Entity entity, glm::vec3 target)
 		{
-			auto entityId = entity.GetId();
+			auto entityId = entity.GetID();
 
-			if (!myCrowd || !myEntityToAgentMap.contains(entity.GetId()))
+			if (!myCrowd || !myEntityToAgentMap.contains(entity.GetID()))
 			{
 				VT_CORE_WARN("Could not set agent target for entity: {0}", entityId);
 				return;
@@ -143,9 +143,9 @@ namespace Volt
 
 		void DtCrowd::ResetAgentTarget(Volt::Entity entity)
 		{
-			auto entityId = entity.GetId();
+			auto entityId = entity.GetID();
 
-			if (!myCrowd || !myEntityToAgentMap.contains(entity.GetId()))
+			if (!myCrowd || !myEntityToAgentMap.contains(entity.GetID()))
 			{
 				VT_CORE_WARN("Could not set agent target for entity: {0}", entityId);
 				return;
@@ -194,24 +194,24 @@ namespace Volt
 		{
 			if (!myCrowd)
 			{
-				VT_CORE_WARN("Could not update agent parameters for entity: {0}", entity.GetId());
+				VT_CORE_WARN("Could not update agent parameters for entity: {0}", entity.GetID());
 				return;
 			}
 
-			if (!myEntityToAgentMap.contains(entity.GetId()))
+			if (!myEntityToAgentMap.contains(entity.GetID()))
 			{
 				AddAgent(entity);
 			}
 
 			auto ap = GetAgentParams(entity);
-			myCrowd->updateAgentParameters(myEntityToAgentMap.at(entity.GetId()), &ap);
+			myCrowd->updateAgentParameters(myEntityToAgentMap.at(entity.GetID()), &ap);
 		}
 
 		void DtCrowd::AddAgent(Volt::Entity entity)
 		{
-			if (!myCrowd || !entity.HasComponent<Volt::NavAgentComponent>() || myEntityToAgentMap.contains(entity.GetId()))
+			if (!myCrowd || !entity.HasComponent<Volt::NavAgentComponent>() || myEntityToAgentMap.contains(entity.GetID()))
 			{
-				VT_CORE_WARN("Could not add agent for entity: {0}", entity.GetId());
+				VT_CORE_WARN("Could not add agent for entity: {0}", entity.GetID());
 				return;
 			}
 
@@ -219,15 +219,15 @@ namespace Volt
 
 			auto ap = GetAgentParams(entity);
 
-			myEntityToAgentMap[entity.GetId()] = (uint32_t)myCrowd->addAgent((const float*)&position, &ap);
+			myEntityToAgentMap[entity.GetID()] = (uint32_t)myCrowd->addAgent((const float*)&position, &ap);
 		}
 
 		void DtCrowd::RemoveAgent(Volt::Entity entity)
 		{
-			if (!myCrowd && !myEntityToAgentMap.contains(entity.GetId())) return;
+			if (!myCrowd && !myEntityToAgentMap.contains(entity.GetID())) return;
 
-			myCrowd->removeAgent((int)myEntityToAgentMap.at(entity.GetId()));
-			myEntityToAgentMap.erase(entity.GetId());
+			myCrowd->removeAgent((int)myEntityToAgentMap.at(entity.GetID()));
+			myEntityToAgentMap.erase(entity.GetID());
 		}
 
 		void DtCrowd::ClearAgents()

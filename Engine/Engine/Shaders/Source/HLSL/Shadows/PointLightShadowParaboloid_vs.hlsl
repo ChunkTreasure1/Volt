@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4adb509dea786e0d03e61a54a5ecddaa493f94e105defffd2fbd1c67f814355f
-size 489
+#include "Buffers.hlsli"
+#include "Vertex.hlsli"
+#include "Matrix.hlsli"
+
+float4 main(in DefaultVertexInput input) : POSITION
+{
+    const ObjectData objectData = input.GetObjectData();
+    float4x4 skinningMatrix = IDENTITY_MATRIX;
+    
+    if (objectData.isAnimated)
+    {
+        skinningMatrix = input.GetSkinnedMatrix();
+    }
+    
+    const float4 worldPosition = mul(objectData.transform, mul(skinningMatrix, float4(input.position, 1.f)));
+    return worldPosition;
+}

@@ -63,13 +63,13 @@ namespace Utility
 
 		const auto& param = *it;
 
-		const auto splitParam = Utils::SplitStringsByCharacter(paramName, ' ');
+		const auto splitParam = Utility::SplitStringsByCharacter(paramName, ' ');
 		if (splitParam.size() < 2)
 		{
 			return nullptr;
 		}
 
-		if (Utils::StringContains(Utils::ToLower(splitParam.at(0)), "set"))
+		if (Utility::StringContains(Utility::ToLower(splitParam.at(0)), "set"))
 		{
 			Ref<GraphKey::Node> node;
 			GK_CREATE_SET_PARAMETER_NODE(std::type_index(param.value.type()), param.id, node);
@@ -87,7 +87,7 @@ namespace Utility
 
 	inline Ref<GraphKey::Node> CreateCallNodeFromEventName(const std::string& nodeName, Volt::Entity pinEntity)
 	{
-		if (!pinEntity.HasComponent<Volt::VisualScriptingComponent>())
+		/*if (!pinEntity.HasComponent<Volt::VisualScriptingComponent>())
 		{
 			return nullptr;
 		}
@@ -115,43 +115,47 @@ namespace Utility
 		auto callType = std::reinterpret_pointer_cast<GraphKey::CallCustomEventNode>(newNode);
 		callType->eventId = (*it).id;
 
-		return newNode;
+		return newNode;*/
+	
+		return nullptr;
 	}
 
 	inline Ref<GraphKey::Node> CreateRecieveNodeFromEventName(const std::string& nodeName, Ref<GraphKey::Graph> graph, Ref<Volt::Scene> current)
 	{
-		auto entId = graph->GetEntity();
-		Volt::Entity entity{ entId, current.get() };
+		//auto entId = graph->GetEntity();
+		//Volt::Entity entity{ entId, current.get() };
 
-		if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-		{
-			return nullptr;
-		}
+		//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+		//{
+		//	return nullptr;
+		//}
 
-		auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-		if (!comp.graph)
-		{
-			return nullptr;
-		}
+		//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+		//if (!comp.graph)
+		//{
+		//	return nullptr;
+		//}
 
-		const auto& events = comp.graph->GetEvents();
-		const std::string eventName = nodeName.substr(nodeName.find_first_of(' ') + 1);
+		//const auto& events = comp.graph->GetEvents();
+		//const std::string eventName = nodeName.substr(nodeName.find_first_of(' ') + 1);
 
-		auto it = std::find_if(events.begin(), events.end(), [&eventName](const auto& lhs)
-		{
-			return lhs.name == eventName;
-		});
+		//auto it = std::find_if(events.begin(), events.end(), [&eventName](const auto& lhs)
+		//{
+		//	return lhs.name == eventName;
+		//});
 
-		if (it == events.end())
-		{
-			return nullptr;
-		}
+		//if (it == events.end())
+		//{
+		//	return nullptr;
+		//}
 
-		Ref<GraphKey::Node> newNode = GraphKey::Registry::Create("RecieveCustomEventNode");
-		auto callType = std::reinterpret_pointer_cast<GraphKey::RecieveCustomEventNode>(newNode);
-		callType->eventId = (*it).id;
+		//Ref<GraphKey::Node> newNode = GraphKey::Registry::Create("RecieveCustomEventNode");
+		//auto callType = std::reinterpret_pointer_cast<GraphKey::RecieveCustomEventNode>(newNode);
+		//callType->eventId = (*it).id;
 
-		return newNode;
+		//return newNode;
+
+		return nullptr;
 	}
 }
 
@@ -1114,16 +1118,16 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 					}
 
 					bool visible = false;
-					const std::string lowerQuery = Utils::ToLower(query);
+					const std::string lowerQuery = Utility::ToLower(query);
 
 					for (const auto& n : names)
 					{
-						const std::string lowerName = Utils::ToLower(n);
-						visible |= Utils::StringContains(lowerName, lowerQuery);
+						const std::string lowerName = Utility::ToLower(n);
+						visible |= Utility::StringContains(lowerName, lowerQuery);
 					}
 
-					const std::string lowerCategory = Utils::ToLower(category);
-					visible |= Utils::StringContains(lowerCategory, lowerQuery);
+					const std::string lowerCategory = Utility::ToLower(category);
+					visible |= Utility::StringContains(lowerCategory, lowerQuery);
 
 					return visible;
 				};
@@ -1212,7 +1216,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 					for (const auto& name : tempNames)
 					{
 						const bool nodeHasPin = nodeHasPinOfType(name);
-						const bool containsQuery = Utils::StringContains(Utils::ToLower(name), Utils::ToLower(query));
+						const bool containsQuery = Utility::StringContains(Utility::ToLower(name), Utility::ToLower(query));
 
 						UI::RenderMatchingTextBackground(query, name, EditorTheme::MatchingTextBackground);
 						if (containsQuery && nodeHasPin && ImGui::MenuItem(name.c_str()) && myOpenGraph)
@@ -1490,25 +1494,27 @@ inline const std::vector<std::string> IONodeGraphEditor<TGraphType, EditorBacken
 		return {};
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return{};
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return{};
+	//}
 
-	auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	if (!comp.graph)
-	{
-		return {};
-	}
+	//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//if (!comp.graph)
+	//{
+	//	return {};
+	//}
 
-	const auto& events = comp.graph->GetEvents();
-	std::vector<std::string> result{};
-	for (const auto& e : events)
-	{
-		result.emplace_back(e.name);
-	}
+	//const auto& events = comp.graph->GetEvents();
+	//std::vector<std::string> result{};
+	//for (const auto& e : events)
+	//{
+	//	result.emplace_back(e.name);
+	//}
 
-	return result;
+	//return result;
+
+	return {};
 }
 
 template<GraphKey::GraphType graphType, typename EditorBackend>

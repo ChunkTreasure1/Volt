@@ -1,0 +1,189 @@
+#pragma once
+
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include "Volt/Scene/Entity.h"
+
+#include <glm/glm.hpp>
+#include <entt.hpp>
+
+#include <string>
+#include <string_view>
+
+namespace Volt
+{
+	struct CommonComponent
+	{
+		uint32_t layerId = 0;
+		float randomValue = 0.f;
+		float timeSinceCreation = 0.f;
+
+		static void ReflectType(TypeDesc<CommonComponent>& reflect)
+		{
+			reflect.SetGUID("{A6789316-2D82-46FC-8138-B7BCBB9EA5B8}"_guid);
+			reflect.SetLabel("Common Component");
+			reflect.SetHidden();
+			reflect.AddMember(&CommonComponent::layerId, "layerid", "Layer ID", "", 0u);
+		}
+
+		REGISTER_COMPONENT(CommonComponent);
+	};
+
+	struct TagComponent
+	{
+		std::string tag;
+
+		static void ReflectType(TypeDesc<TagComponent>& reflect)
+		{
+			reflect.SetGUID("{282FA5FB-6A77-47DB-8340-3D34F1A1FBBD}"_guid);
+			reflect.SetLabel("Tag Component");
+			reflect.SetHidden();
+			reflect.AddMember(&TagComponent::tag, "tag", "Tag", "", std::string(""));
+		}
+
+		REGISTER_COMPONENT(TagComponent);
+	};
+
+	struct TransformComponent
+	{
+		glm::vec3 position = { 0.f };
+		glm::quat rotation = glm::identity<glm::quat>();
+		glm::vec3 scale = { 1.f };
+
+		bool visible = true;
+		bool locked = false;
+
+		inline const glm::mat4 GetTransform() const
+		{
+			return glm::translate(glm::mat4(1.f), position) *
+				glm::mat4_cast(rotation) * glm::scale(glm::mat4(1.f), scale);
+		}
+
+		inline const glm::vec3 GetForward() const
+		{
+			return glm::rotate(rotation, glm::vec3{ 0.f, 0.f, 1.f });
+		}
+
+		inline const glm::vec3 GetRight() const
+		{
+			return glm::rotate(rotation, glm::vec3{ 1.f, 0.f, 0.f });
+		}
+
+		inline const glm::vec3 GetUp() const
+		{
+			return glm::rotate(rotation, glm::vec3{ 0.f, 1.f, 0.f });
+		}
+
+		static void ReflectType(TypeDesc<TransformComponent>& reflect)
+		{
+			reflect.SetGUID("{E1B8016B-1CAA-4782-927E-C17C29B25893}"_guid);
+			reflect.SetLabel("Transform Component");
+			reflect.SetHidden();
+			reflect.AddMember(&TransformComponent::position, "position", "Position", "", glm::vec3{ 0.f });
+			reflect.AddMember(&TransformComponent::rotation, "rotation", "Rotation", "", glm::identity<glm::quat>());
+			reflect.AddMember(&TransformComponent::scale, "scale", "Scale", "", glm::vec3{ 1.f });
+			reflect.AddMember(&TransformComponent::visible, "visible", "Visible", "", true);
+			reflect.AddMember(&TransformComponent::locked, "locked", "Locked", "", false);
+		}
+
+		REGISTER_COMPONENT(TransformComponent);
+	};
+
+	struct RelationshipComponent
+	{
+		entt::entity parent = entt::null;
+		std::vector<entt::entity> children;
+
+		static void ReflectType(TypeDesc<RelationshipComponent>& reflect)
+		{
+			reflect.SetGUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
+			reflect.SetLabel("Relationship Component");
+			reflect.SetHidden();
+			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", entt::null);
+			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<entt::entity>{});
+		}
+
+		REGISTER_COMPONENT(RelationshipComponent);
+	};
+
+	struct PrefabComponentLocalChange
+	{
+		VoltGUID componentGUID = VoltGUID::Null();
+		std::string memberName;
+		
+		static void ReflectType(TypeDesc<PrefabComponentLocalChange>& reflect)
+		{
+			reflect.SetGUID("{C78B94DD-B814-4155-B9DE-072B91DE02B3}"_guid);
+			reflect.SetLabel("Prefab Component Local Change");
+			reflect.AddMember(&PrefabComponentLocalChange::componentGUID, "componentGUID", "Component GUID", "", VoltGUID::Null());
+			reflect.AddMember(&PrefabComponentLocalChange::memberName, "memberName", "Member Name", "", std::string(""));
+		}
+	};
+
+	struct PrefabScriptLocalChange
+	{
+		std::string scriptName;
+		std::string memberName;
+
+		static void ReflectType(TypeDesc<PrefabScriptLocalChange>& reflect)
+		{
+			reflect.SetGUID("{1E471349-604D-4E47-96B1-30B87B4DB159}"_guid);
+			reflect.SetLabel("¨Prefab Script Local Change");
+			reflect.AddMember(&PrefabScriptLocalChange::scriptName, "scriptName", "Script Name", "", std::string(""));
+			reflect.AddMember(&PrefabScriptLocalChange::memberName, "memberName", "Member Name", "", std::string(""));
+		}
+	};
+
+	struct PrefabComponent
+	{
+		AssetHandle prefabAsset = Asset::Null();
+		entt::entity prefabEntity = entt::null;
+		entt::entity sceneRootEntity = entt::null;
+		uint32_t version = 0;
+
+		std::vector<PrefabComponentLocalChange> componentLocalChanges;
+		std::vector<PrefabScriptLocalChange> scriptLocalChanges;
+
+		bool isDirty = false;
+
+		static void ReflectType(TypeDesc<PrefabComponent>& reflect)
+		{
+			reflect.SetGUID("{B8A83ACF-F1CA-4C9F-8D1E-408B5BB388D2}"_guid);
+			reflect.SetLabel("Prefab Component");
+			reflect.SetHidden();
+			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetType::Prefab);
+			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", entt::null);
+			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", entt::null);
+			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
+			reflect.AddMember(&PrefabComponent::componentLocalChanges, "componentLocalChanges", "Component Local Changes", "", std::vector<PrefabComponentLocalChange>{});
+			reflect.AddMember(&PrefabComponent::scriptLocalChanges, "scriptLocalChanges", "Script Local Changes", "", std::vector<PrefabScriptLocalChange>{});
+		}
+
+		REGISTER_COMPONENT(PrefabComponent);
+	};
+
+	struct MonoScriptEntry
+	{
+		MonoScriptEntry(std::string& aName, UUID& aId) : name(aName), id(aId) {}
+
+		std::string& name;
+		UUID& id;
+	};
+
+	struct MonoScriptComponent
+	{
+		std::vector<std::string> scriptNames;
+		std::vector<UUID> scriptIds;
+
+		static constexpr VoltGUID guid = "{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid;
+
+		static void ReflectType(TypeDesc<MonoScriptComponent>& reflect)
+		{
+			reflect.SetGUID(guid);
+			reflect.SetLabel("MonoScript Component");
+			reflect.SetHidden();
+		}
+
+		REGISTER_COMPONENT(MonoScriptComponent);
+	};
+}

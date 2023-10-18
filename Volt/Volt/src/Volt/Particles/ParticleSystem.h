@@ -1,15 +1,12 @@
 #pragma once
 
+#include "Volt/Asset/Asset.h"
+#include "Volt/Particles/Particle.h"
+
+#include <entt.hpp>
 #include <glm/glm.hpp>
-#include <Volt/Asset/Asset.h>
 
 #include <shared_mutex>
-
-namespace Wire
-{
-	class Registry;
-	typedef uint32_t EntityId;
-}
 
 namespace Volt
 {
@@ -30,14 +27,14 @@ namespace Volt
 	{
 	public:
 		ParticleSystem() = default;
-		void Update(Wire::Registry& registry, Scene* scene, float deltaTime);
+		void Update(entt::registry& registry, Weak<Scene> scene, float deltaTime);
 		//void RenderParticles(Wire::Registry& registry);
 
 		const auto& GetParticleStorage() const { return m_particleStorage; }
 
 	private:
 		void UpdateParticles(ParticleEmitterComponent& particleEmitterComponent, TransformComponent& transformComp, const float& deltaTime);
-		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, Wire::EntityId id, glm::vec3 aEntityPos, const float& deltaTime);
+		void SendParticles(ParticleEmitterComponent& particleEmitterComponent, entt::entity id, glm::vec3 aEntityPos, const float& deltaTime);
 
 		bool ParticleKillCheck(Particle& particle, const float& deltaTime);
 		void ParticlePositionUpdate(Particle& particle, const float& deltaTime, const glm::vec3& entityForward);
@@ -46,8 +43,8 @@ namespace Volt
 		void ParticleColorUpdate(Particle& particle, const float& deltaTime);
 		void ParticleTimeUpdate(Particle& particle, float deltaTime);
 
-		std::unordered_map<Wire::EntityId, ParticleSystemInternalStorage> m_particleStorage;
+		std::unordered_map<entt::entity, ParticleSystemInternalStorage> m_particleStorage;
 
-		std::shared_mutex myUpdateMutex;
+		std::shared_mutex m_updateMutex;
 	};
 }

@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d5854f5817831d8c5d0253741d77a1bc6acebdc1276219ad00a9bb9f68cedc01
-size 421
+#include <Common.hlsli>
+#include <Buffers.hlsli>
+
+struct Input
+{
+    float4 position : POSITION;
+    float4 color : COLOR;
+};
+
+struct Output
+{
+    float4 position : SV_POSITION;
+    float4 color : COLOR;
+};
+
+Output main(Input input)
+{
+    Output output;
+    output.position = mul(u_cameraData.projection, mul(u_cameraData.view, input.position));
+    output.color = input.color;
+
+    return output;
+}

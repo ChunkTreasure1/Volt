@@ -14,12 +14,15 @@ namespace Volt
 		const bool OpenFile(const std::filesystem::path& filePath);
 
 		const bool HasKey(const std::string& key);
+		const bool IsSequenceEmpty(const std::string& key);
 
 		void EnterScope(const std::string& key);
 		void ExitScope();
 
 		template<typename T>
 		const T ReadKey(const std::string& key, const T& defaultValue);
+
+		void ForEach(const std::string& key, std::function<void()> function);
 
 	private:
 		YAML::Node m_currentNode;

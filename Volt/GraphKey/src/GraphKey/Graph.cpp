@@ -12,13 +12,88 @@
 #include <Volt/Utility/SerializationMacros.h>
 #include <Volt/Utility/YAMLSerializationHelpers.h>
 
-namespace GraphKey
+inline static std::unordered_map<std::type_index, std::function<void(const std::any& data, YAML::Emitter& out)>> s_typeSerializers;
+inline static std::unordered_map<std::type_index, std::function<void(std::any& data, const YAML::Node& node)>> s_typeDeserializers;
+inline static bool s_initialized = false;
+
+namespace Volt
 {
-	Graph::Graph()
+	template<typename T>
+	void RegisterTypeSerializer()
 	{
+		s_typeSerializers[std::type_index{ typeid(T) }] = [](const std::any& data, YAML::Emitter& out)
+		{
+			T var = std::any_cast<T>(data);
+			VT_SERIALIZE_PROPERTY(data, var, out);
+		};
+
+		s_typeDeserializers[std::type_index{ typeid(T) }] = [](std::any& data, const YAML::Node& node)
+		{
+			T tempData = {};
+			VT_DESERIALIZE_PROPERTY(data, tempData, node, T{});
+
+			data = tempData;
+		};
 	}
 
-	Graph::Graph(Wire::EntityId entity)
+	void RegisterEntitySerializer()
+	{
+		s_typeSerializers[std::type_index{ typeid(Volt::Entity) }] = [](const std::any& data, YAML::Emitter& out)
+		{
+			Volt::Entity var = std::any_cast<Volt::Entity>(data);
+			VT_SERIALIZE_PROPERTY(data, var.GetID(), out);
+		};
+
+		s_typeDeserializers[std::type_index{ typeid(Volt::Entity) }] = [](std::any& data, const YAML::Node& node)
+		{
+			entt::entity tempData = {};
+			VT_DESERIALIZE_PROPERTY(data, tempData, node, (entt::entity)entt::null);
+
+			data = Volt::Entity{ tempData, nullptr };
+		};
+	}
+}
+
+namespace GraphKey
+{
+
+
+	Graph::Graph()
+	{
+		if (!s_initialized)
+		{
+			s_initialized = true;
+
+			Volt::RegisterTypeSerializer<bool>();
+			Volt::RegisterTypeSerializer<int64_t>();
+			Volt::RegisterTypeSerializer<uint64_t>();
+
+			Volt::RegisterTypeSerializer<int32_t>();
+			Volt::RegisterTypeSerializer<uint32_t>();
+
+			Volt::RegisterTypeSerializer<int16_t>();
+			Volt::RegisterTypeSerializer<uint16_t>();
+
+			Volt::RegisterTypeSerializer<int8_t>();
+			Volt::RegisterTypeSerializer<uint8_t>();
+
+			Volt::RegisterTypeSerializer<float>();
+			Volt::RegisterTypeSerializer<double>();
+
+			Volt::RegisterTypeSerializer<glm::vec2>();
+			Volt::RegisterTypeSerializer<glm::vec3>();
+			Volt::RegisterTypeSerializer<glm::vec4>();
+
+			Volt::RegisterTypeSerializer<glm::quat>();
+
+			Volt::RegisterTypeSerializer<std::string>();
+			Volt::RegisterTypeSerializer<Volt::AssetHandle>();
+
+			Volt::RegisterEntitySerializer();
+		}
+	}
+
+	Graph::Graph(entt::entity entity)
 		: myEntity(entity)
 	{
 	}
@@ -232,7 +307,7 @@ namespace GraphKey
 		{
 			Ref<GraphKey::Node> newNode;
 
-			if (dstGraph->GetEntity() != 0)
+			if (dstGraph->GetEntity() != entt::null)
 			{
 				newNode = n->CreateCopy(dstGraph.get(), dstGraph->GetEntity());
 			}
@@ -252,7 +327,7 @@ namespace GraphKey
 			newLink.output = l.output;
 		}
 
-		if (dstGraph->myEntity == 0)
+		if (dstGraph->myEntity == entt::null)
 		{
 			dstGraph->myEntity = srcGraph->myEntity;
 		}
@@ -299,9 +374,9 @@ namespace GraphKey
 									VT_SERIALIZE_PROPERTY(id, i.id, out);
 
 									const bool shouldSerialize = !graph->IsAttributeLinked(i.id) && i.data.has_value();
-									if (shouldSerialize && Volt::SceneImporter::GetTypeIndexSerializers().contains(i.data.type()))
+									if (shouldSerialize && s_typeSerializers.contains(i.data.type()))
 									{
-										Volt::SceneImporter::GetTypeIndexSerializers()[i.data.type()](i.data, out);
+										s_typeSerializers[i.data.type()](i.data, out);
 									}
 								}
 								out << YAML::EndMap;
@@ -319,9 +394,9 @@ namespace GraphKey
 									VT_SERIALIZE_PROPERTY(id, o.id, out);
 
 									const bool shouldSerialize = o.data.has_value();
-									if (shouldSerialize && Volt::SceneImporter::GetTypeIndexSerializers().contains(o.data.type()))
+									if (shouldSerialize && s_typeSerializers.contains(o.data.type()))
 									{
-										Volt::SceneImporter::GetTypeIndexSerializers()[o.data.type()](o.data, out);
+										s_typeSerializers[o.data.type()](o.data, out);
 									}
 								}
 								out << YAML::EndMap;
@@ -355,9 +430,9 @@ namespace GraphKey
 						VT_SERIALIZE_PROPERTY(type, GraphKey::TypeRegistry::GetNameFromTypeIndex(p.value.type()), out);
 						VT_SERIALIZE_PROPERTY(id, p.id, out);
 
-						if (Volt::SceneImporter::GetTypeIndexSerializers().contains(p.value.type()))
+						if (s_typeSerializers.contains(p.value.type()))
 						{
-							Volt::SceneImporter::GetTypeIndexSerializers()[p.value.type()](p.value, out);
+							s_typeSerializers[p.value.type()](p.value, out);
 						}
 					}
 					out << YAML::EndMap;
@@ -493,9 +568,9 @@ namespace GraphKey
 
 			data.value = GraphKey::TypeRegistry::GetDefaultValueFromName(type);
 
-			if (Volt::SceneImporter::GetTypeIndexDeserializers().contains(data.value.type()))
+			if (s_typeDeserializers.contains(data.value.type()))
 			{
-				Volt::SceneImporter::GetTypeIndexDeserializers()[data.value.type()](data.value, p);
+				s_typeDeserializers[data.value.type()](data.value, p);
 			}
 		}
 
@@ -547,9 +622,9 @@ namespace GraphKey
 				{
 					it->id = i.id;
 
-					if (i.node && it->data.has_value() && Volt::SceneImporter::GetTypeIndexDeserializers().contains(it->data.type()))
+					if (i.node && it->data.has_value() && s_typeDeserializers.contains(it->data.type()))
 					{
-						Volt::SceneImporter::GetTypeIndexDeserializers()[it->data.type()](it->data, i.node);
+						s_typeDeserializers[it->data.type()](it->data, i.node);
 					}
 				}
 			}
@@ -565,9 +640,9 @@ namespace GraphKey
 				{
 					it->id = o.id;
 
-					if (o.node && it->data.has_value() && Volt::SceneImporter::GetTypeIndexDeserializers().contains(it->data.type()))
+					if (o.node && it->data.has_value() && s_typeDeserializers.contains(it->data.type()))
 					{
-						Volt::SceneImporter::GetTypeIndexDeserializers()[it->data.type()](it->data, o.node);
+						s_typeDeserializers[it->data.type()](it->data, o.node);
 					}
 				}
 			}

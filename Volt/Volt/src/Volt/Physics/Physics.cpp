@@ -184,15 +184,25 @@ namespace Volt
 
 	void Physics::CreateActors(Scene* scene)
 	{
-		scene->GetRegistry().ForEach<RigidbodyComponent>([&](Wire::EntityId id, const RigidbodyComponent&)
-		{
-			CreateActor(Entity{ id, scene });
-		});
+		auto& registry = scene->GetRegistry();
 
-		scene->GetRegistry().ForEach<CharacterControllerComponent>([&](Wire::EntityId id, const CharacterControllerComponent&)
+		// Rigidbodies
 		{
-			CreateControllerActor(Entity{ id, scene });
-		});
+			auto view = registry.view<const RigidbodyComponent>();
+			view.each([&](const entt::entity id, const RigidbodyComponent&)
+			{
+				CreateActor(Entity{ id, scene });
+			});
+		}
+
+		// Character controller
+		{
+			auto view = registry.view<const CharacterControllerComponent>();
+			view.each([&](const entt::entity id, const CharacterControllerComponent&)
+			{
+				CreateControllerActor(Entity{ id, scene });
+			});
+		}
 	}
 
 	Ref<PhysicsActor> Physics::CreateActor(Entity entity)

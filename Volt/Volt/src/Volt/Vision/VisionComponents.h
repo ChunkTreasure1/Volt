@@ -1,5 +1,8 @@
 #pragma once
-#include <Wire/Serialization.h>
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+
+#include <entt.hpp>
 #include <glm/glm.hpp>
 #include <string>
 
@@ -9,65 +12,106 @@ namespace Volt
 	class Scene;
 	class Entity;
 
-	SERIALIZE_ENUM((enum class eCameraType : uint32_t
+	enum class eCameraType : uint32_t
 	{
 		Free,
 		ThirdPerson,
 		FirstPerson
+	};
 
-	}), eCameraType)
+	inline static void ReflectType(TypeDesc<eCameraType>& reflect)
+	{
+		reflect.SetGUID("{3B9E92F4-0B5B-48CF-ADFC-AFE72F871208}"_guid);
+		reflect.SetLabel("Camera Type");
+		reflect.AddConstant(eCameraType::Free, "free", "Free");
+		reflect.AddConstant(eCameraType::ThirdPerson, "thirdPerson", "Third Person");
+		reflect.AddConstant(eCameraType::FirstPerson, "firstPerson", "First Person");
+	}
 
-		SERIALIZE_ENUM((enum class eBlendType : uint32_t
+	enum class eBlendType : uint32_t
 	{
 		None,
 		EaseIn,
 		EaseOut,
 		EaseInAndOut
+	};
 
-	}), eBlendType)
-
-		SERIALIZE_COMPONENT((struct VisionTriggerComponent
+	inline static void ReflectType(TypeDesc<eBlendType>& reflect)
 	{
-		PROPERTY(Name = Camera, Visible = true) Wire::EntityId triggerCam = Wire::NullID;
-		PROPERTY(Name = Force Camera, Visible = true) bool forceActiveCam = false;
+		reflect.SetGUID("{7E7EB035-2857-47E3-A4DF-9BE639D1A10F}"_guid);
+		reflect.SetLabel("Blend Type");
+		reflect.AddConstant(eBlendType::None, "none", "None");
+		reflect.AddConstant(eBlendType::EaseIn, "easeIn", "Ease In");
+		reflect.AddConstant(eBlendType::EaseOut, "easeOut", "Ease Out");
+		reflect.AddConstant(eBlendType::EaseInAndOut, "easeInAndOut", "Ease In And Out");
+	}
 
-		CREATE_COMPONENT_GUID("{E846C1DE-F199-4BFF-9D15-9E73B8D1C941}"_guid)
-	}), VisionTriggerComponent);
-
-	SERIALIZE_COMPONENT((struct VisionCameraComponent
+	struct VisionTriggerComponent
 	{
-		PROPERTY(Name = Blend Time, Visible = false) float blendTime = 1.f;
-		PROPERTY(Name = Field Of View, Visible = false) float fieldOfView = 60.f;
+		entt::entity triggerCam = entt::null;
+		bool forceActiveCam = false;
 
-		PROPERTY(Name = Ignored Layers, Visible = false) std::vector<uint32_t> layerMasks = std::vector<uint32_t>();
+		static void ReflectType(TypeDesc<VisionTriggerComponent>& reflect)
+		{
+			reflect.SetGUID("{E846C1DE-F199-4BFF-9D15-9E73B8D1C941}"_guid);
+			reflect.SetLabel("Vision Trigger Component");
+			reflect.AddMember(&VisionTriggerComponent::triggerCam, "triggerCam", "Trigger Camera", "", entt::null);
+			reflect.AddMember(&VisionTriggerComponent::forceActiveCam, "forceActiveCam", "Force Active Camera", "", false);
+		}
+	};
 
-		PROPERTY(Name = Camera Type, SpecialType = Enum, Visible = false) eCameraType cameraType = eCameraType::Free;
-		PROPERTY(Name = Blend Type, SpecialType = Enum, Visible = false) eBlendType blendType = eBlendType::None;
+	struct VisionCameraComponent
+	{
+		float blendTime = 1.f;
+		float fieldOfView = 60.f;
+		std::vector<uint32_t> layerMasks = std::vector<uint32_t>();
+		eCameraType cameraType = eCameraType::Free;
+		eBlendType blendType = eBlendType::None;
+		float damping = 0.f;
+		glm::vec3 offset = { 0 };
+		entt::entity followId = entt::null;
+		entt::entity lookAtId = entt::null;
+		entt::entity collisionRayPoint = entt::null;
+		float focalDistance = 1000.f;
+		float mouseSensitivity = 0.15f;
+		float collisionRadius = 100.f;
+		bool isColliding = false;
+		bool isDefault = false;
+		bool xFollowLock = false;
+		bool yFollowLock = false;
+		bool zFollowLock = false;
+		bool xShouldDamp = true;
+		bool yShouldDamp = true;
+		bool zShouldDamp = true;
+		bool additiveBlend = false;
 
-		PROPERTY(Name = Damping, Visible = false) float damping = 0.f;
-		PROPERTY(Name = Offset, Visible = false) glm::vec3 offset = { 0 };
-
-		PROPERTY(Name = Follow, Visible = false) Wire::EntityId followId = Wire::NullID;
-		PROPERTY(Name = LookAt, Visible = false) Wire::EntityId lookAtId = Wire::NullID;
-		PROPERTY(Name = Collision Focus Point, Visible = false) Wire::EntityId collisionRayPoint = Wire::NullID;
-
-		PROPERTY(Name = Focal Distance, Visible = false) float focalDistance = 1000.f;
-		PROPERTY(Name = Mouse Sensitivity, Visible = false) float mouseSensitivity = 0.15f;
-
-		PROPERTY(Name = Collision Sphere Radius, Visible = false) float collisionRadius = 100.f;
-
-		PROPERTY(Name = Collision, Visible = false) bool isColliding = false;
-		PROPERTY(Name = Is Default, Visible = false) bool isDefault = false;
-
-		PROPERTY(Name = X FollowLock, Visible = false) bool xFollowLock = false;
-		PROPERTY(Name = Y FollowLock, Visible = false) bool yFollowLock = false;
-		PROPERTY(Name = Z FollowLock, Visible = false) bool zFollowLock = false;
-
-		PROPERTY(Name = X ShouldDamp, Visible = false) bool xShouldDamp = true;
-		PROPERTY(Name = Y ShouldDamp, Visible = false) bool yShouldDamp = true;
-		PROPERTY(Name = Z ShouldDamp, Visible = false) bool zShouldDamp = true;
-
-		PROPERTY(Name = Additive Blend, Visible = false) bool additiveBlend = false;
+		static void ReflectType(TypeDesc<VisionCameraComponent>& reflect)
+		{
+			reflect.SetGUID("{1213269A-DB9A-4BC2-82DF-6656A41451A3}"_guid);
+			reflect.SetLabel("Vision Camera Component");
+			reflect.AddMember(&VisionCameraComponent::blendTime, "blendTime", "Blend Time", "", 1.f);
+			reflect.AddMember(&VisionCameraComponent::fieldOfView, "fieldOfView", "Field Of View", "", 60.f);
+			reflect.AddMember(&VisionCameraComponent::layerMasks, "layerMasks", "Layer Masks", "", std::vector<uint32_t>());
+			reflect.AddMember(&VisionCameraComponent::cameraType, "cameraType", "Camera Type", "", eCameraType::Free);
+			reflect.AddMember(&VisionCameraComponent::blendType, "blendType", "Blend Type", "", eBlendType::None);
+			reflect.AddMember(&VisionCameraComponent::damping, "damping", "Damping", "", 0.f);
+			reflect.AddMember(&VisionCameraComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
+			reflect.AddMember(&VisionCameraComponent::followId, "followId", "Follow ID", "", entt::null);
+			reflect.AddMember(&VisionCameraComponent::lookAtId, "lookAtId", "Look At ID", "", entt::null);
+			reflect.AddMember(&VisionCameraComponent::collisionRayPoint, "collisionRayPoint", "Collision Ray Point", "", entt::null);
+			reflect.AddMember(&VisionCameraComponent::focalDistance, "focalDistance", "Focal Distance", "", 1000.f);
+			reflect.AddMember(&VisionCameraComponent::mouseSensitivity, "mouseSensitivity", "Mouse Sensitivity", "", 0.15f);
+			reflect.AddMember(&VisionCameraComponent::collisionRadius, "collisionRadius", "Collision Radius", "", 100.f);
+			reflect.AddMember(&VisionCameraComponent::isColliding, "isColliding", "Is Colliding", "", false);
+			reflect.AddMember(&VisionCameraComponent::isDefault, "isDefault", "Is Default", "", false);
+			reflect.AddMember(&VisionCameraComponent::xFollowLock, "xFollowLock", "X Follow Lock", "", false);
+			reflect.AddMember(&VisionCameraComponent::yFollowLock, "yFollowLock", "Y Follow Lock", "", false);
+			reflect.AddMember(&VisionCameraComponent::zFollowLock, "zFollowLock", "Z Follow Lock", "", false);
+			reflect.AddMember(&VisionCameraComponent::xShouldDamp, "xShouldDamp", "X Should Damp", "", true);
+			reflect.AddMember(&VisionCameraComponent::yShouldDamp, "yShouldDamp", "Y Should Damp", "", true);
+			reflect.AddMember(&VisionCameraComponent::zShouldDamp, "zShouldDamp", "Z Should Damp", "", true);
+			reflect.AddMember(&VisionCameraComponent::additiveBlend, "additiveBlend", "Additive Blend", "", false);
+		}
 
 		void Init(Entity& camEntity);
 		void Update(Entity& camEntity, float aDeltaTime);
@@ -78,7 +122,6 @@ namespace Volt
 		void TPSController(Entity& camEntity, float aDeltaTime);
 		void FPSController(Entity& camEntity, float aDeltaTime);
 
-		CREATE_COMPONENT_GUID("{1213269A-DB9A-4BC2-82DF-6656A41451A3}"_guid)
 		float myTargetFoV = 0.f;
 		bool myIsLocked = false;
 
@@ -101,5 +144,5 @@ namespace Volt
 		glm::vec2 myMousePos = { 0.f };
 
 
-	}), VisionCameraComponent);
+	};
 }

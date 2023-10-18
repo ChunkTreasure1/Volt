@@ -58,7 +58,7 @@ namespace Utility
 		
 		const auto filename = path.filename().string();
 
-		if (skipExtension && !Utils::StringContains(filename, "vtthumb"))
+		if (skipExtension && !Utility::StringContains(filename, "vtthumb"))
 		{
 			VT_CORE_ERROR("[Build] Asset {0} with extensin {1} was skipped!", path.string(), path.extension().string());
 		}
@@ -350,7 +350,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 			Ref<Volt::Scene> scene = Volt::AssetManager::GetAsset<Volt::Scene>(sceneHandle);
 			std::set<Volt::AssetHandle> sceneDependencies;
 
-			auto& registry = scene->GetRegistry();
+			/*auto& registry = scene->GetRegistry();
 			for (const auto& ent : registry.GetAllEntities())
 			{
 				for (const auto& [guid, pool] : registry.GetPools())
@@ -373,7 +373,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 						}
 					}
 				}
-			}
+			}*/
 
 			for (const auto& [instanceId, fieldMap] : scene->GetScriptFieldCache().GetCache())
 			{
@@ -384,7 +384,7 @@ void GameBuilder::Thread_BuildGame(const BuildInfo& buildInfo)
 						continue;
 					}
 
-					if (!Volt::MonoScriptClass::IsAsset(instance->field.type))
+					if (!instance->field.type.IsAsset())
 					{
 						continue;
 					}
@@ -447,7 +447,7 @@ uint32_t GameBuilder::GetRelevantFileCount(const BuildInfo& buildInfo)
 		{
 			const auto filePath = file.path().string();
 
-			if (!file.is_directory() && !Utils::StringContains(filePath, "HLSL"))
+			if (!file.is_directory() && !Utility::StringContains(filePath, "HLSL"))
 			{
 				result++;
 			}

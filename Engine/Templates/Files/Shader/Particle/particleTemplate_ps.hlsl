@@ -1,3 +1,36 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4d7c4f9ee14ed6bcf8fce8bb1ebb0aeeda2335fdb18eb06baf9d031a7653b7de
-size 1148
+#include "SamplerStates.hlsli"
+#include "Particle.hlsli"
+
+#include "PBR.hlsli"
+
+float4 main(in ParticleData input) : SV_Target
+{
+    //float4 albedo = input.SampleAlbedo(u_anisotropicSampler, input.texCoords) * input.color;
+    //albedo.a = step(0.5f, albedo.a);
+    
+    //if (albedo.a < 0.05f)
+    //{
+    //    discard;
+    //}
+    
+    //const float3 normal = float3(0.f, 0.f, -1.f);
+    //const float4 rotatedNormal = mul(u_cameraData.inverseView, float4(normal, 0.f));
+    
+    //const float4 materialData = input.SampleMaterial(u_linearSampler, input.texCoords);
+   
+    //PBRData pbrData;
+    //pbrData.albedo = albedo;
+    //pbrData.normal = rotatedNormal.xyz;
+    //pbrData.metallic = materialData.r;
+    //pbrData.roughness = materialData.g;
+    //pbrData.emissive = 0.f;
+    //pbrData.worldPosition = input.worldPosition;
+    //pbrData.position = input.position;
+    
+    //const float3 pbrLighting = CalculatePBR(pbrData);
+    
+    //return float4(pbrLighting, albedo.a);
+    
+    const float4 texColor = input.SampleAlbedo(u_anisotropicSampler, input.texCoords);
+    return texColor * input.color;
+}
