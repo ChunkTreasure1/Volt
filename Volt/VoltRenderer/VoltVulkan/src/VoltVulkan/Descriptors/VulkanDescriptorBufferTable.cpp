@@ -71,6 +71,16 @@ namespace Volt::RHI
 
 	void VulkanDescriptorBufferTable::SetImageView(Ref<ImageView> imageView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		if (!m_descriptorSetBindingOffsets.contains(set))
+		{
+			return;
+		}
+
+		if (!m_descriptorSetBindingOffsets.at(set).contains(binding))
+		{
+			return;
+		}
+
 		const VkDescriptorType descriptorType = static_cast<VkDescriptorType>(m_imageDescriptorTypes.at(set).at(binding));
 
 		VkDescriptorImageInfo imageDescriptor;
@@ -84,31 +94,39 @@ namespace Volt::RHI
 		imageDescriptorInfo.type = descriptorType;
 
 		uint64_t descriptorTypeSize = 0;
-		uint64_t descriptorTypeOffset = 0;
 
 		if (descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
 		{
 			imageDescriptorInfo.data.pStorageImage = &imageDescriptor;
 
 			descriptorTypeSize = m_descriptorTypeOffsets.storageImageSize;
-			descriptorTypeOffset = m_descriptorTypeOffsets.storageImageOffset;
 		}
 		else if (descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE)
 		{
 			imageDescriptorInfo.data.pSampledImage = &imageDescriptor;
 
 			descriptorTypeSize = m_descriptorTypeOffsets.imageSize;
-			descriptorTypeOffset = m_descriptorTypeOffsets.imageOffset;
 		}
 
-		const uint64_t bufferOffset = m_descriptorSetBindingOffsets.at(set).at(binding) + descriptorTypeOffset * arrayIndex;
+		const uint64_t bufferOffset = m_descriptorSetBindingOffsets.at(set).at(binding) + descriptorTypeSize * arrayIndex;
 		void* descriptorPtr = m_hostDescriptorBuffer.As<void>(bufferOffset);
 
+		VT_ENSURE(bufferOffset < m_accumulatedSize);
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &imageDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
 	void VulkanDescriptorBufferTable::SetBufferView(Ref<BufferView> bufferView, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		if (!m_descriptorSetBindingOffsets.contains(set))
+		{
+			return;
+		}
+
+		if (!m_descriptorSetBindingOffsets.at(set).contains(binding))
+		{
+			return;
+		}
+
 		VkDescriptorAddressInfoEXT addressInfo{};
 		addressInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT;
 		addressInfo.pNext = nullptr;
@@ -117,21 +135,18 @@ namespace Volt::RHI
 
 		Ref<RHIResource> rawResource = bufferView->AsRef<VulkanBufferView>().GetResource();
 
-		uint64_t descriptorTypeOffset = 0;
 		uint64_t descriptorTypeSize = 0;
 		VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
 		if (rawResource->GetType() == ResourceType::StorageBuffer)
 		{
 			addressInfo.range = rawResource->AsRef<VulkanStorageBuffer>().GetByteSize();
-			descriptorTypeOffset = m_descriptorTypeOffsets.ssboOffset;
 			descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			descriptorTypeSize = m_descriptorTypeOffsets.ssboSize;
 		}
 		else if (rawResource->GetType() == ResourceType::UniformBuffer)
 		{
 			addressInfo.range = rawResource->AsRef<VulkanUniformBuffer>().GetSize();
-			descriptorTypeOffset = m_descriptorTypeOffsets.uboOffset;
 			descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptorTypeSize = m_descriptorTypeOffsets.uboSize;
 		}
@@ -149,9 +164,10 @@ namespace Volt::RHI
 			bufferDescriptorInfo.data.pUniformBuffer = &addressInfo;
 		}
 
-		const uint64_t bufferOffset = m_descriptorSetBindingOffsets.at(set).at(binding) + descriptorTypeOffset * arrayIndex;
+		const uint64_t bufferOffset = m_descriptorSetBindingOffsets.at(set).at(binding) + descriptorTypeSize * arrayIndex;
 		void* descriptorPtr = m_hostDescriptorBuffer.As<void>(bufferOffset);
 
+		VT_ENSURE(bufferOffset < m_accumulatedSize);
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
@@ -201,6 +217,16 @@ namespace Volt::RHI
 
 	void VulkanDescriptorBufferTable::SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex)
 	{
+		if (!m_descriptorSetBindingOffsets.contains(set))
+		{
+			return;
+		}
+
+		if (!m_descriptorSetBindingOffsets.at(set).contains(binding))
+		{
+			return;
+		}
+
 		VkSampler sampler = samplerState->GetHandle<VkSampler>();
 
 		VkDescriptorGetInfoEXT imageDescriptorInfo{};
@@ -210,9 +236,8 @@ namespace Volt::RHI
 		imageDescriptorInfo.data.pSampler = &sampler;
 
 		const uint64_t descriptorTypeSize = m_descriptorTypeOffsets.samplerSize;
-		const uint64_t descriptorTypeOffset = m_descriptorTypeOffsets.samplerOffset;
 
-		const uint64_t bufferOffset = m_descriptorSetBindingOffsets.at(set).at(binding) + descriptorTypeOffset * arrayIndex;
+		const uint64_t bufferOffset = m_descriptorSetBindingOffsets.at(set).at(binding) + descriptorTypeSize * arrayIndex;
 		void* descriptorPtr = m_hostDescriptorBuffer.As<void>(bufferOffset);
 
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &imageDescriptorInfo, descriptorTypeSize, descriptorPtr);
@@ -229,6 +254,14 @@ namespace Volt::RHI
 
 		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->AsRef<VulkanCommandBuffer>();
 		const VkPipelineBindPoint bindPoint = vulkanCommandBuffer.m_currentRenderPipeline ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
+
+		{
+			void* buff = m_descriptorBuffer->Map<void*>();
+
+			memcpy(buff, m_hostDescriptorBuffer.GetData(), m_accumulatedSize);
+
+			m_descriptorBuffer->Unmap();
+		}
 
 		for (const auto& set : m_shader->GetResources().usedSets)
 		{
@@ -278,7 +311,9 @@ namespace Volt::RHI
 
 		const uint64_t accumulatedSize = std::accumulate(m_descriptorSetLayoutSizes.begin(), m_descriptorSetLayoutSizes.end(), uint64_t(0));
 		m_descriptorBuffer = GraphicsContext::GetDefaultAllocator().CreateBuffer(accumulatedSize, BufferUsage::DescriptorBuffer, MemoryUsage::CPUToGPU);
-		m_hostDescriptorBuffer = Buffer(accumulatedSize);
+		m_hostDescriptorBuffer.Resize(accumulatedSize);
+
+		m_accumulatedSize = accumulatedSize;
 
 		CalculateDescriptorOffsets();
 	}
@@ -287,23 +322,36 @@ namespace Volt::RHI
 	{
 		GraphicsContext::DestroyResource([descriptorBuffer = m_descriptorBuffer]()
 		{
-			GraphicsContext::GetDefaultAllocator().DestroyBuffer(descriptorBuffer);
+			if (descriptorBuffer)
+			{
+				GraphicsContext::GetDefaultAllocator().DestroyBuffer(descriptorBuffer);
+			}
 		});
 
+		m_descriptorBuffer = nullptr;
 		m_descriptorSetLayoutSizes.clear();
+		m_usedDescriptorSets.clear();
+		m_descriptorSetOffsets.clear();
+		m_descriptorSetBindingOffsets.clear();
+		m_imageDescriptorTypes.clear();
+		m_hostDescriptorBuffer.Release();
 	}
 
 	void VulkanDescriptorBufferTable::CalculateDescriptorOffsets()
 	{
 		VT_PROFILE_FUNCTION();
 
+		auto device = GraphicsContext::GetDevice();
+
 		const auto& resources = m_shader->GetResources();
+		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();
+		const auto& descriptorSetLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
 
 		for (const auto& [set, bindings] : resources.uniformBuffers)
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.uboOffset;
+				m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.uboSize;
 			}
 		}
 
@@ -313,11 +361,11 @@ namespace Volt::RHI
 			{
 				if (data.arraySize == -1)
 				{
-					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.ssboOffset * VulkanDefaults::STORAGE_BUFFER_BINDLESS_TABLE_SIZE;
+					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.ssboSize * VulkanDefaults::STORAGE_BUFFER_BINDLESS_TABLE_SIZE;
 				}
 				else
 				{
-					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.ssboOffset * data.arraySize;
+					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.ssboSize * data.arraySize;
 				}
 			}
 		}
@@ -328,11 +376,11 @@ namespace Volt::RHI
 			{
 				if (data.arraySize == -1)
 				{
-					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.storageImageOffset * VulkanDefaults::STORAGE_IMAGE_BINDLESS_TABLE_SIZE;
+					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.storageImageSize * VulkanDefaults::STORAGE_IMAGE_BINDLESS_TABLE_SIZE;
 				}
 				else
 				{
-					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.storageImageOffset * data.arraySize;
+					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.storageImageSize * data.arraySize;
 				}
 
 				m_imageDescriptorTypes[set][binding] = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
@@ -345,11 +393,11 @@ namespace Volt::RHI
 			{
 				if (data.arraySize == -1)
 				{
-					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.imageOffset * VulkanDefaults::IMAGE_BINDLESS_TABLE_SIZE;
+					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.imageSize * VulkanDefaults::IMAGE_BINDLESS_TABLE_SIZE;
 				}
 				else
 				{
-					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.imageOffset * data.arraySize;
+					m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.imageSize * data.arraySize;
 				}
 
 				m_imageDescriptorTypes[set][binding] = static_cast<uint32_t>(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
@@ -360,21 +408,23 @@ namespace Volt::RHI
 		{
 			for (const auto& [binding, data] : bindings)
 			{
-				m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.samplerOffset;
+				m_descriptorSetBindingOffsets[set][binding] = m_descriptorTypeOffsets.samplerSize;
 			}
 		}
 
 		for (auto& [set, bindings] : m_descriptorSetBindingOffsets)
 		{
 			const uint64_t setBaseOffset = m_descriptorSetOffsets.at(set);
-			uint64_t currentOffset = 0;
+			//uint64_t currentOffset = 0;
 
 			for (auto& [binding, offset] : bindings)
 			{
-				const uint64_t descriptorSize = offset;
+				//const uint64_t descriptorSize = offset;
 
-				offset = setBaseOffset + currentOffset;
-				currentOffset += descriptorSize;
+				vkGetDescriptorSetLayoutBindingOffsetEXT(device->GetHandle<VkDevice>(), descriptorSetLayouts.at(set), binding, &offset);
+
+				offset += setBaseOffset;
+				//currentOffset += descriptorSize;
 			}
 		}
 	}

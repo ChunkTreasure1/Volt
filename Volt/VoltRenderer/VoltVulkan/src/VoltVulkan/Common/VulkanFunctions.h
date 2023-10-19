@@ -15,6 +15,7 @@ namespace Volt::RHI
 	inline PFN_vkGetDescriptorEXT vkGetDescriptorEXT;
 	inline PFN_vkCmdBindDescriptorBuffersEXT vkCmdBindDescriptorBuffersEXT;
 	inline PFN_vkCmdSetDescriptorBufferOffsetsEXT vkCmdSetDescriptorBufferOffsetsEXT;
+	inline PFN_vkGetDescriptorSetLayoutBindingOffsetEXT vkGetDescriptorSetLayoutBindingOffsetEXT;
 
 	inline static void FindVulkanFunctions(VkInstance instance)
 	{
@@ -24,6 +25,7 @@ namespace Volt::RHI
 
 		// Descriptor Buffers
 		VT_GET_VULKAN_FUNCTION(vkGetDescriptorSetLayoutSizeEXT);
+		VT_GET_VULKAN_FUNCTION(vkGetDescriptorSetLayoutBindingOffsetEXT);
 		VT_GET_VULKAN_FUNCTION(vkGetDescriptorEXT);
 		VT_GET_VULKAN_FUNCTION(vkCmdBindDescriptorBuffersEXT);
 		VT_GET_VULKAN_FUNCTION(vkCmdSetDescriptorBufferOffsetsEXT);

@@ -423,6 +423,12 @@ extern "C" {
 		*/
 		VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT = 0x00000040,
 
+		///// Volt_Implementation /////
+
+		// Enables support for VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT to be used with descriptor buffers
+		VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT = 0x00000060,
+		///// Volt_Implementation /////
+
 		VMA_ALLOCATOR_CREATE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 	} VmaAllocatorCreateFlagBits;
 	/// See #VmaAllocatorCreateFlagBits.
@@ -11400,6 +11406,7 @@ public:
 	bool m_UseExtMemoryBudget;
 	bool m_UseAmdDeviceCoherentMemory;
 	bool m_UseKhrBufferDeviceAddress;
+	bool m_UseDescriptorBuffers;
 	bool m_UseExtMemoryPriority;
 	VkDevice m_hDevice;
 	VkInstance m_hInstance;
@@ -12885,6 +12892,10 @@ VkResult VmaBlockVector::CreateBlock(VkDeviceSize blockSize, size_t* pNewBlockIn
 	if (m_hAllocator->m_UseKhrBufferDeviceAddress)
 	{
 		allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+		if (m_hAllocator->m_UseDescriptorBuffers)
+		{
+			allocFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+		}
 		VmaPnextChainPushFront(&allocInfo, &allocFlagsInfo);
 	}
 #endif // VMA_BUFFER_DEVICE_ADDRESS
@@ -14028,6 +14039,7 @@ VmaAllocator_T::VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo) :
 	m_UseAmdDeviceCoherentMemory((pCreateInfo->flags& VMA_ALLOCATOR_CREATE_AMD_DEVICE_COHERENT_MEMORY_BIT) != 0),
 	m_UseKhrBufferDeviceAddress((pCreateInfo->flags& VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT) != 0),
 	m_UseExtMemoryPriority((pCreateInfo->flags& VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT) != 0),
+	m_UseDescriptorBuffers((pCreateInfo->flags& VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT) != 0),
 	m_hDevice(pCreateInfo->device),
 	m_hInstance(pCreateInfo->instance),
 	m_AllocationCallbacksSpecified(pCreateInfo->pAllocationCallbacks != VMA_NULL),
@@ -14701,10 +14713,20 @@ VkResult VmaAllocator_T::AllocateDedicatedMemory(
 		{
 			canContainBufferWithDeviceAddress = false;
 		}
+
 		if (canContainBufferWithDeviceAddress)
 		{
 			allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
 			VmaPnextChainPushFront(&allocInfo, &allocFlagsInfo);
+		}
+
+		if (m_UseDescriptorBuffers)
+		{
+			allocFlagsInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT | VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
+			if (!canContainBufferWithDeviceAddress)
+			{
+				VmaPnextChainPushFront(&allocInfo, &allocFlagsInfo);
+			}
 		}
 	}
 #endif // #if VMA_BUFFER_DEVICE_ADDRESS

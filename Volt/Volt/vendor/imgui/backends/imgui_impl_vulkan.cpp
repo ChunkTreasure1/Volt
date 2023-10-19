@@ -423,8 +423,15 @@ static void CreateOrResizeBuffer(VkBuffer& buffer, VkDeviceMemory& buffer_memory
     VkMemoryRequirements req;
     vkGetBufferMemoryRequirements(v->Device, buffer, &req);
     bd->BufferMemoryAlignment = (bd->BufferMemoryAlignment > req.alignment) ? bd->BufferMemoryAlignment : req.alignment;
+
+    VkMemoryAllocateFlagsInfo allocFlagsInfo{};
+    allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+    allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT | VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+    allocFlagsInfo.pNext = nullptr;
+
     VkMemoryAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.pNext = &allocFlagsInfo;
     alloc_info.allocationSize = req.size;
     alloc_info.memoryTypeIndex = ImGui_ImplVulkan_MemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, req.memoryTypeBits);
     err = vkAllocateMemory(v->Device, &alloc_info, v->Allocator, &buffer_memory);
@@ -656,10 +663,18 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
         check_vk_result(err);
         VkMemoryRequirements req;
         vkGetImageMemoryRequirements(v->Device, bd->FontImage, &req);
+
+        VkMemoryAllocateFlagsInfo allocFlagsInfo{};
+        allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+        allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT | VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+        allocFlagsInfo.pNext = nullptr;
+
         VkMemoryAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         alloc_info.allocationSize = req.size;
         alloc_info.memoryTypeIndex = ImGui_ImplVulkan_MemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req.memoryTypeBits);
+        alloc_info.pNext = &allocFlagsInfo;
+
         err = vkAllocateMemory(v->Device, &alloc_info, v->Allocator, &bd->FontMemory);
         check_vk_result(err);
         err = vkBindImageMemory(v->Device, bd->FontImage, bd->FontMemory, 0);
@@ -695,8 +710,15 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
         VkMemoryRequirements req;
         vkGetBufferMemoryRequirements(v->Device, bd->UploadBuffer, &req);
         bd->BufferMemoryAlignment = (bd->BufferMemoryAlignment > req.alignment) ? bd->BufferMemoryAlignment : req.alignment;
+
+        VkMemoryAllocateFlagsInfo allocFlagsInfo{};
+        allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+        allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT | VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+        allocFlagsInfo.pNext = nullptr;
+
         VkMemoryAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.pNext = &allocFlagsInfo;
         alloc_info.allocationSize = req.size;
         alloc_info.memoryTypeIndex = ImGui_ImplVulkan_MemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, req.memoryTypeBits);
         err = vkAllocateMemory(v->Device, &alloc_info, v->Allocator, &bd->UploadBufferMemory);

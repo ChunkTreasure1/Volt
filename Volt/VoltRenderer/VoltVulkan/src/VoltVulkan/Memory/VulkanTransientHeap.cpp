@@ -377,6 +377,16 @@ namespace Volt::RHI
 		allocInfo.allocationSize = m_memoryRequirements.size;
 		allocInfo.memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex);
 
+		VkMemoryAllocateFlagsInfo flagsInfo{};
+		flagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+		flagsInfo.pNext = nullptr;
+		
+		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+		{
+			flagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT | VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+			allocInfo.pNext = &flagsInfo;
+		}
+
 		for (uint32_t i = 0; i < MAX_PAGE_COUNT; i++)
 		{
 			m_pageAllocations[i].size = allocInfo.allocationSize;
@@ -441,6 +451,16 @@ namespace Volt::RHI
 		allocInfo.pNext = nullptr;
 		allocInfo.allocationSize = m_memoryRequirements.size;
 		allocInfo.memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex);
+
+		VkMemoryAllocateFlagsInfo flagsInfo{};
+		flagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+		flagsInfo.pNext = nullptr;
+
+		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+		{
+			flagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT | VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT;
+			allocInfo.pNext = &flagsInfo;
+		}
 
 		for (uint32_t i = 0; i < MAX_PAGE_COUNT; i++)
 		{

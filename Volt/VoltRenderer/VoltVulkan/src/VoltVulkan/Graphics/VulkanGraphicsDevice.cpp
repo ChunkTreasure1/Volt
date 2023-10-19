@@ -54,6 +54,7 @@ namespace Volt::RHI
 			s_enabledFeatures.vulkan12Features.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
 
 			s_enabledFeatures.vulkan12Features.bufferDeviceAddress = VK_TRUE;
+			s_enabledFeatures.vulkan12Features.bufferDeviceAddressCaptureReplay = VK_TRUE;
 			s_enabledFeatures.vulkan12Features.shaderBufferInt64Atomics = VK_TRUE;
 			s_enabledFeatures.vulkan12Features.shaderSharedInt64Atomics = VK_TRUE;
 
@@ -70,6 +71,7 @@ namespace Volt::RHI
 			{
 				s_enabledFeatures.descriptorBufferFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT;
 				s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBuffer = VK_TRUE;
+				s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBufferCaptureReplay = VK_TRUE;
 				s_enabledFeatures.descriptorBufferFeaturesEXT.pNext = chainEntryPoint;
 
 				chainEntryPoint = &s_enabledFeatures.descriptorBufferFeaturesEXT;

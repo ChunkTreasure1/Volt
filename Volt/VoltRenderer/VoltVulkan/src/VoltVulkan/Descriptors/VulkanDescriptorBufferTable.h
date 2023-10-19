@@ -55,6 +55,7 @@ namespace Volt::RHI
 
 		Weak<Shader> m_shader;
 		uint32_t m_descriptorBufferCount = 0;
+		uint64_t m_accumulatedSize = 0;
 
 		Ref<Allocation> m_descriptorBuffer;
 		Buffer m_hostDescriptorBuffer;

@@ -23,22 +23,28 @@
 #define BIT(X) (1 << (X))
 //////////////////////////
 
-#ifdef VT_PLATFORM_WINDOWS
-#define VT_RHI_DEBUGBREAK() __debugbreak();
-#else
-#error "Debug break not implemented!"
-#endif
-
 #ifdef VT_DEBUG
 
+#ifdef VT_PLATFORM_WINDOWS
+	#define VT_RHI_DEBUGBREAK() __debugbreak();
+#else
+	#error "Debug break not implemented!"
+#endif
+
+#define VT_ENSURE(x) if (!(x)) { VT_RHI_DEBUGBREAK(); }
 #define VT_ENABLE_GPU_MARKERS
 #define VT_ENABLE_DEBUG_ALLOCATIONS
 
 #elif VT_RELEASE
 
+#define VT_RHI_DEBUGBREAK
 #define VT_ENABLE_GPU_MARKERS
 
 #elif VT_DIST
+
+#define VT_RHI_DEBUGBREAK
+#define VT_ENSURE
+
 
 #endif
 
