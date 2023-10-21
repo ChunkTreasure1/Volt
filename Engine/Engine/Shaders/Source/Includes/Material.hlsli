@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Resources.hlsli"
 #include "Bindless.hlsli"
 
 struct Material
@@ -22,3 +23,5 @@ struct Material
         return (T)u_bindlessTexture2D[textures[materialTextureIndex].handle];
     }
 };
+
+StructuredBuffer<Material> u_materials : register(t3, space0);
