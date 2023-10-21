@@ -52,6 +52,7 @@
 
 inline static constexpr uint32_t CAMERA_BUFFER_BINDING = 0;
 inline static constexpr uint32_t DIRECTIONAL_LIGHT_BINDING = 1;
+inline static constexpr uint32_t SAMPLERS_BINDING = 2;
 
 namespace Volt
 {
@@ -87,8 +88,9 @@ namespace Volt
 		// Constant buffer
 		{
 			m_constantBufferSet = RHI::UniformBufferSet::Create(RendererNew::GetFramesInFlight());
-			m_constantBufferSet->Add<CameraDataNew>(5, CAMERA_BUFFER_BINDING);
-			m_constantBufferSet->Add<DirectionalLightData>(5, DIRECTIONAL_LIGHT_BINDING);
+			m_constantBufferSet->Add<CameraDataNew>(2, CAMERA_BUFFER_BINDING);
+			m_constantBufferSet->Add<DirectionalLightData>(2, DIRECTIONAL_LIGHT_BINDING);
+			m_constantBufferSet->Add<SamplersData>(2, SAMPLERS_BINDING);
 		}
 
 		// Storage buffers
@@ -303,6 +305,7 @@ namespace Volt
 	{
 		UpdateCameraBuffer(camera);
 		UpdateLightBuffers();
+		UpdateSamplersBuffer();
 	}
 
 	void SceneRendererNew::UpdateCameraBuffer(Ref<Camera> camera)
@@ -312,7 +315,7 @@ namespace Volt
 			return;
 		}
 
-		auto cameraBuffer = m_constantBufferSet->Get(5, CAMERA_BUFFER_BINDING, m_commandBuffer->GetCurrentIndex());
+		auto cameraBuffer = m_constantBufferSet->Get(2, CAMERA_BUFFER_BINDING, m_commandBuffer->GetCurrentIndex());
 
 		CameraDataNew* cameraData = cameraBuffer->Map<CameraDataNew>();
 
@@ -323,6 +326,14 @@ namespace Volt
 		cameraData->position = glm::vec4(camera->GetPosition(), 1.f);
 
 		cameraBuffer->Unmap();
+	}
+
+	void SceneRendererNew::UpdateSamplersBuffer()
+	{
+		auto samplersBuffer = m_constantBufferSet->Get(2, SAMPLERS_BINDING, m_commandBuffer->GetCurrentIndex());
+
+		*samplersBuffer->Map<SamplersData>() = RendererNew::GetSamplersData();
+		samplersBuffer->Unmap();
 	}
 
 	void SceneRendererNew::UpdateLightBuffers()
@@ -346,24 +357,30 @@ namespace Volt
 				dirLightData.intensity = lightComp.intensity;
 			});
 
-			m_constantBufferSet->Get(5, DIRECTIONAL_LIGHT_BINDING, m_commandBuffer->GetCurrentIndex())->SetData<DirectionalLightData>(dirLightData);
+			m_constantBufferSet->Get(2, DIRECTIONAL_LIGHT_BINDING, m_commandBuffer->GetCurrentIndex())->SetData<DirectionalLightData>(dirLightData);
 		}
 	}
 
 	void SceneRendererNew::UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext)
 	{
 		renderContext.SetBufferViews(renderScene.GetVertexPositionViews(), 1, 0);
-		renderContext.SetBufferViews(renderScene.GetVertexMaterialViews(), 2, 0);
-		renderContext.SetBufferViews(renderScene.GetVertexAnimationViews(), 3, 0);
-		renderContext.SetBufferViews(renderScene.GetIndexBufferViews(), 4, 0);
+		renderContext.SetBufferViews(renderScene.GetVertexMaterialViews(), 1, 1);
+		renderContext.SetBufferViews(renderScene.GetVertexAnimationViews(), 1, 2);
+		renderContext.SetBufferViews(renderScene.GetIndexBufferViews(), 1, 3);
 
 		renderContext.SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
 		renderContext.SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
 		renderContext.SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
 		renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
 
-		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, CAMERA_BUFFER_BINDING), 5, CAMERA_BUFFER_BINDING);
-		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(5, DIRECTIONAL_LIGHT_BINDING), 5, DIRECTIONAL_LIGHT_BINDING);
+		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, CAMERA_BUFFER_BINDING), 2, CAMERA_BUFFER_BINDING);
+		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, DIRECTIONAL_LIGHT_BINDING), 2, DIRECTIONAL_LIGHT_BINDING);
+	}
+
+	void SceneRendererNew::UpdateDescriptorTableForBindlessRendering(RenderScene& renderScene, RenderContext& renderContext)
+	{
+		renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
+		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, SAMPLERS_BINDING), 2, SAMPLERS_BINDING);
 	}
 
 	void SceneRendererNew::CreatePipelines()

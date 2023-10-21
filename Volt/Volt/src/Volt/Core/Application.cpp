@@ -171,9 +171,6 @@ namespace Volt
 		//Amp::AudioManager::Shutdown();
 		Amp::WWiseEngine::Get().TermWwise();
 
-		ShaderMap::Shutdown();
-		RendererNew::Shutdown();
-
 		m_assetmanager = nullptr;
 		m_threadPool.Shutdown();
 

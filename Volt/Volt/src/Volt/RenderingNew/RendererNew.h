@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Volt/RenderingNew/SamplerLibrary.h"
+#include "Volt/RenderingNew/RendererStructs.h"
 
 namespace Volt
 {
@@ -17,14 +17,15 @@ namespace Volt
 		static void Shutdown();
 
 		static void Flush();
-
 		static const uint32_t GetFramesInFlight();
-
 		static void DestroyResource(std::function<void()>&& function);
 
-		static Ref<RHI::SamplerState> GetSampler(SamplerType samplerType);
+		static SamplersData GetSamplersData();
 
 	private:
+		static void RegisterSamplers();
+		static void UnregisterSamplers();
+
 		RendererNew() = delete;
 	};
 }

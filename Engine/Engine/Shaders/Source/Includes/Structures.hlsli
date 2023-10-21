@@ -22,17 +22,31 @@ struct IndirectDrawData
     
     uint padding;
 };
-
-struct Material
-{
-    uint textures[16];
-    
-    uint textureCount;
-    uint materialFlags;
-    uint2 padding;
-};
     
 ///// Rendering Structures /////
+struct CommonResourcesData
+{
+};
+
+struct SamplersData
+{
+    uint linearSampler;
+    uint linearPointSampler;
+    
+    uint pointSampler;
+    uint pointLinearSampler;
+    
+    uint linearClampSampler;
+    uint linearPointClampSampler;
+    
+    uint pointClampSampler;
+    uint pointLinearClampSampler;
+    
+    uint anisotropicSampler;
+    
+    uint3 padding;
+};
+
 struct CameraData
 {
     float4x4 view;

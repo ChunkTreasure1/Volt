@@ -37,6 +37,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         return;
     }
     
+    
+    
     const uint2 pixelPosition = u_pixelCollection[pixelIndex];
     const uint2 visibilityValues = u_visibilityBuffer.Load(int3(pixelPosition, 0));
 

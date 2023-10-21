@@ -262,7 +262,7 @@ namespace Volt
 				}
 
 			}
-			else
+			else if (passIndex < static_cast<uint32_t>(resultAccesses.size()))
 			{
 				passTransitions = resultAccesses[passIndex];
 			}

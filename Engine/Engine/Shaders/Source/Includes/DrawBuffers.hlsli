@@ -2,6 +2,7 @@
 
 #include "Defines.hlsli"
 #include "Structures.hlsli"
+#include "Material.hlsli"
 
 ///// Draw buffers /////
 StructuredBuffer<uint> u_drawToInstanceOffset : register(t0, space0);

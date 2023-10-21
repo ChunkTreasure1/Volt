@@ -223,7 +223,7 @@ namespace Volt::RHI
 
 		// VK_EXT_descriptor_buffer
 		{
-			m_deviceProperties.descriptorBufferProperties.enabled = IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
+			m_deviceProperties.descriptorBufferProperties.enabled = false; //IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME); // #TODO_Ivar: Temporarily disabled
 			m_deviceProperties.descriptorBufferProperties.combinedImageSamplerDescriptorSingleArray = descriptorBufferProperties.combinedImageSamplerDescriptorSingleArray;
 			m_deviceProperties.descriptorBufferProperties.bufferlessPushDescriptors = descriptorBufferProperties.bufferlessPushDescriptors;
 			m_deviceProperties.descriptorBufferProperties.allowSamplerImageViewPostSubmitCreation = descriptorBufferProperties.allowSamplerImageViewPostSubmitCreation;

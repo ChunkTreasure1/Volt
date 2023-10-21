@@ -57,9 +57,11 @@ namespace Volt
 
 		void UpdateBuffers(Ref<Camera> camera);
 		void UpdateCameraBuffer(Ref<Camera> camera);
+		void UpdateSamplersBuffer();
 		void UpdateLightBuffers();
 
 		void UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext);
+		void UpdateDescriptorTableForBindlessRendering(RenderScene& renderScene, RenderContext& renderContext);
 
 		void CreatePipelines();
 

@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "Texture2D.h"
 
+#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+
 #include <VoltRHI/Images/Image2D.h>
 
 namespace Volt
@@ -14,6 +16,8 @@ namespace Volt
 		imageSpec.height = (uint32_t)height;
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
+
+		GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Texture2D::Texture2D(Ref<RHI::Image2D> image)
@@ -23,6 +27,7 @@ namespace Volt
 
 	Texture2D::~Texture2D()
 	{
+		GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
 		m_image = nullptr;
 	}
 

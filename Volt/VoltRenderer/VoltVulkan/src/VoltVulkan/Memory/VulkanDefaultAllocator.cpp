@@ -23,7 +23,12 @@ namespace Volt::RHI
 		info.physicalDevice = GraphicsContext::GetPhysicalDevice()->GetHandle<VkPhysicalDevice>();
 		info.device = GraphicsContext::GetDevice()->GetHandle<VkDevice>();
 		info.instance = GraphicsContext::Get().GetHandle<VkInstance>();
-		info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT | VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT;
+		info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+
+		if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
+		{
+			info.flags |= VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT;
+		}
 
 		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator));
 	}
