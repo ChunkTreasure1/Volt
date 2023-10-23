@@ -1,4 +1,5 @@
 #include "Defines.hlsli"
+#include "Resources.hlsli"
 
 Texture2D<uint2> u_visibilityBuffer : register(t0, space0);
 StructuredBuffer<uint> u_materialCountBuffer : register(t1, space0);
@@ -15,6 +16,18 @@ struct Data
 };
 
 PUSH_CONSTANT(Data, u_data);
+
+struct Constants
+{
+    TextureT<uint2> visibilityBuffer;
+    TypedBuffer<uint> materialCountBuffer;
+    TypedBuffer<uint> materialStartBuffer;
+    TypedBuffer<uint2> pixelCollection;
+    
+    TextureT<float4> albedo;
+    TextureT<float4> materialEmissive;
+    TextureT<float4> normalEmissive;
+};
 
 groupshared uint m_materialCount;
 groupshared uint m_materialStart;
@@ -36,8 +49,6 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     {
         return;
     }
-    
-    
     
     const uint2 pixelPosition = u_pixelCollection[pixelIndex];
     const uint2 visibilityValues = u_visibilityBuffer.Load(int3(pixelPosition, 0));

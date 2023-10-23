@@ -1,10 +1,10 @@
 #include "vkpch.h"
 #include "VulkanGraphicsDevice.h"
 
+#include "VoltVulkan/Common/VulkanCommon.h"	
+
 #include "VoltVulkan/Graphics/VulkanDeviceQueue.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
-
-#include "VoltVulkan/Common/VulkanCommon.h"	
 
 #include <vulkan/vulkan.h>
 #include <optick.h>

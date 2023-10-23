@@ -244,7 +244,7 @@ namespace Volt::RHI
 				error = std::format("Failed to compile. Error: {}\n", result);
 				error.append(std::format("{0}\nWhile compiling shader file: {1}", Utility::GetErrorStringFromResult(compilationResult), filepath.string()));
 
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShaderCompiler]", error);
+				GraphicsContext::LogUnformatted(Severity::Error, "[VulkanShaderCompiler]: " + error);
 
 				sourcePtr->Release();
 				compilationResult->Release();
@@ -264,7 +264,7 @@ namespace Volt::RHI
 			sourcePtr->Release();
 			compilationResult->Release();
 
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanShaderCompiler]", error);
+			GraphicsContext::LogUnformatted(Severity::Error, "[VulkanShaderCompiler]: " + error);
 			return CompilationResult::Failure;
 		}
 

@@ -6,6 +6,8 @@
 
 #include "VoltVulkan/Memory/VulkanTransientHeap.h"
 
+#include "VoltVulkan/Descriptors/VulkanBindlessManager.h"
+
 #include <VoltRHI/Graphics/PhysicalGraphicsDevice.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Memory/Allocator.h>
@@ -134,10 +136,14 @@ namespace Volt::RHI
 	
 		m_defaultAllocator = DefaultAllocator::Create();
 		m_transientAllocator = TransientAllocator::Create();
+
+		VulkanBindlessManager::CreateGlobalDescriptorLayout();
 	}
 
 	void VulkanGraphicsContext::Shutdown()
 	{
+		VulkanBindlessManager::DestroyGlobalDescriptorLayout();
+
 		m_defaultAllocator = nullptr;
 		m_transientAllocator = nullptr;
 
