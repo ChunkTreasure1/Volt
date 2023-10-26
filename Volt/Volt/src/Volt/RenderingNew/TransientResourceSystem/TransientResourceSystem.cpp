@@ -60,7 +60,8 @@ namespace Volt
 			return m_allocatedResources.at(resourceHandle)->As<RHI::StorageBuffer>();
 		}
 
-		Ref<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.usage);
+		// #TODO_Ivar: Switch to transient allocations
+		Ref<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.usage, bufferDesc.memoryUsage);
 		m_allocatedResources[resourceHandle] = buffer;
 
 		return buffer;

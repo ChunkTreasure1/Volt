@@ -5,6 +5,7 @@
 #include "VoltVulkan/Common/VulkanHelpers.h"
 #include "VoltVulkan/Common/VulkanCommon.h"
 #include "VoltVulkan/Graphics/VulkanPhysicalGraphicsDevice.h"
+#include "VoltVulkan/Descriptors/VulkanBindlessManager.h"
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
@@ -86,12 +87,15 @@ namespace Volt::RHI
 
 			assert(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
 
-			const auto& setLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
+			// #TODO_Ivar: Remove
+			//const auto& setLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
+
+			const auto descriptorSetLayout = VulkanBindlessManager::GetGlobalDescriptorSetLayout();
 
 			VkPipelineLayoutCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-			info.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-			info.pSetLayouts = setLayouts.data();
+			info.setLayoutCount = 1;
+			info.pSetLayouts = &descriptorSetLayout;
 			info.pushConstantRangeCount = shaderResources.constants.size > 0 ? 1 : 0;
 			info.pPushConstantRanges = &pushConstantRange;
 

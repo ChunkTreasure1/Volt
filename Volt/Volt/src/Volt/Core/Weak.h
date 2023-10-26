@@ -24,6 +24,11 @@ public:
 
 	[[nodiscard]] T* Get();
 	void Reset();
+	
+	inline const size_t GetHash() const
+	{ 
+		return std::hash<void*>()(m_weakPtr.lock().get());
+	}
 
 	template<typename U>
 	[[nodiscard]] Weak<U> As();
@@ -32,6 +37,11 @@ public:
 
 	template<typename U>
 	Weak<T>& operator=(const Weak<U>& other);
+
+	bool operator==(const Weak<T>& rhs) const;
+
+	template<typename U>
+	bool operator==(const Weak<U>& rhs) const;
 
 	inline operator bool() const { return !m_weakPtr.expired(); }
 	inline operator std::shared_ptr<T>() const { return m_weakPtr.lock(); }
@@ -122,9 +132,37 @@ inline Weak<T>& Weak<T>::operator=(const Weak<T>& other)
 }
 
 template<typename T>
+inline bool Weak<T>::operator==(const Weak<T>& rhs) const
+{
+	return m_weakPtr.lock().get() == rhs.m_weakPtr.lock().get();
+}
+
+template<typename T>
+template<typename U>
+inline bool Weak<T>::operator==(const Weak<U>& rhs) const
+{
+	return Get() == rhs.Get();
+}
+
+
+template<typename T>
 template<typename U>
 inline Weak<T>& Weak<T>::operator=(const Weak<U>& other)
 {
 	m_weakPtr = std::reinterpret_pointer_cast<T>(other.GetSharedPtr());
 	return *this;
+}
+
+namespace std
+{
+	template<typename T> struct hash;
+
+	template<class Ty>
+	struct hash<Weak<Ty>>
+	{
+		std::size_t operator()(const Weak<Ty> ptr) const
+		{
+			return std::hash<void*>()(ptr.Get());
+		}
+	};
 }

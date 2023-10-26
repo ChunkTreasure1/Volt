@@ -10,6 +10,7 @@ namespace Volt
 	{
 		size_t size;
 		RHI::BufferUsage usage = RHI::BufferUsage::None;
+		RHI::MemoryUsage memoryUsage = RHI::MemoryUsage::GPU;
 	};
 
 	struct RenderGraphBuffer

@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphCommon.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
-
+#include <VoltRHI/Shader/Shader.h>
+	
 #include <glm/glm.hpp>
 
 namespace Volt
@@ -50,27 +52,19 @@ namespace Volt
 		void DispatchIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset);
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 
-		void BindPipeline(Ref<RHI::RenderPipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable = nullptr);
-		void BindPipeline(Ref<RHI::ComputePipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable = nullptr);
-
-		void SetExternalDescriptorTable(Ref<RHI::DescriptorTable> descriptorTable);
-
-		void PushConstantsRaw(const void* data, const uint32_t size, const uint32_t offset = 0);
+		void BindPipeline(Ref<RHI::RenderPipeline> pipeline);
+		void BindPipeline(Ref<RHI::ComputePipeline> pipeline);
 
 		template<typename T>
-		void PushConstants(const T& data, const uint32_t offset = 0);
-
-		void SetBufferView(Ref<RHI::BufferView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
-		void SetBufferView(std::string_view name, Ref<RHI::BufferView> view, const uint32_t arrayIndex = 0);
-		void SetBufferViews(const std::vector<Ref<RHI::BufferView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset = 0);
-		void SetBufferViewSet(Ref<RHI::BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0);
-
-		void SetImageView(Ref<RHI::ImageView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex = 0);
-		void SetImageView(std::string_view name, Ref<RHI::ImageView> view, const uint32_t arrayIndex = 0);
-		void SetImageViews(const std::vector<Ref<RHI::ImageView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset = 0);
+		void SetConstant(const T& data);
 
 	private:
+		friend class RenderGraph;
+
 		void BindDescriptorTableIfRequired();
+
+		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
+		void SetCurrentPassIndex(const uint32_t passIndex);
 
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::RenderPipeline> renderPipeline);
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline);
@@ -82,14 +76,22 @@ namespace Volt
 		Weak<RHI::ComputePipeline> m_currentComputePipeline;
 		Ref<RHI::DescriptorTable> m_currentDescriptorTable;
 
+		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
+		uint32_t m_currentPassIndex = 0;
+
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 
 		std::unordered_map<void*, Ref<RHI::DescriptorTable>> m_descriptorTableCache;
+	
+		// #TODO_Ivar: Should be changed
+		uint8_t m_passConstantsData[RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE];
+		uint32_t m_currentPassConstantsOffset = 0;
 	};
 
 	template<typename T>
-	inline void RenderContext::PushConstants(const T& data, const uint32_t offset)
+	inline void RenderContext::SetConstant(const T& data)
 	{
-		PushConstantsRaw(&data, sizeof(T), offset);
+		memcpy_s(&m_passConstantsData[m_currentPassConstantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - m_currentPassConstantsOffset, &data, sizeof(T));
+		m_currentPassConstantsOffset += sizeof(T);
 	}
 }

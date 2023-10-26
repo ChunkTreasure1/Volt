@@ -87,6 +87,7 @@ namespace Volt
 				break;
 			}
 
+
 			std::function<void()> executeFunction{};
 			if (s_data->executionQueue.try_pop(executeFunction))
 			{
@@ -95,6 +96,8 @@ namespace Volt
 				s_data->isExecuting = false;
 				s_data->waitForExecutionVariable.notify_one();
 			}
+
+			GlobalResourceManager::Update();
 		}
 	}
 }

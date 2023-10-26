@@ -11,6 +11,7 @@ namespace Volt
 	{
 		class SamplerState;
 		class Image2D;
+		class DescriptorTable;
 	}
 
 	typedef uint32_t ResourceHandle;
@@ -22,9 +23,11 @@ namespace Volt
 		{
 			std::scoped_lock lock{ accessMutex };
 
-			if (resourceToHandleMap.contains(resource))
+			const auto hash = resource.GetHash();
+
+			if (resourceToHandleMap.contains(hash))
 			{
-				return resourceToHandleMap.at(resource);
+				return resourceToHandleMap.at(hash);
 			}
 
 			ResourceHandle handle = static_cast<ResourceHandle>(resources.size());
@@ -35,15 +38,21 @@ namespace Volt
 				availiableHandles.pop_back();
 			}
 
-			resources.emplace_back(resource);
-			resourceToHandleMap[resource] = handle;
+			if (static_cast<uint32_t>(resources.size()) < handle + 1)
+			{
+				resources.resize(handle + 1);
+			}
+
+			resourceToHandleMap[hash] = handle;
+			resources[handle] = resource;
+			dirtyResources.emplace_back(resource);
 
 			return handle;
 		}
 
 		inline const ResourceHandle GetResourceHandle(Weak<T> resource)
 		{
-			return resourceToHandleMap.at(resource);
+			return resourceToHandleMap.at(resource.GetHash());
 		}
 
 		inline void RemoveResource(ResourceHandle resourceHandle)
@@ -64,7 +73,23 @@ namespace Volt
 				}
 			}
 
+			auto it = std::find_if(dirtyResources.begin(), dirtyResources.end(), [&](const auto& dirty) 
+			{
+				if (dirty == resources[resourceHandle])
+				{
+					return true;
+				}
+
+				return false;
+			});
+
+			if (it != dirtyResources.end())
+			{
+				dirtyResources.erase(it);
+			}
+
 			resources[resourceHandle] = Weak<T>{};
+
 			availiableHandles.emplace_back(resourceHandle);
 		}
 
@@ -72,15 +97,17 @@ namespace Volt
 		{
 			std::scoped_lock lock{ accessMutex };
 
-			if (!resourceToHandleMap.contains(resource))
+			const auto hash = resource.GetHash();
+
+			if (!resourceToHandleMap.contains(hash))
 			{
 				return;
 			}
 
-			const ResourceHandle resourceHandle = resourceToHandleMap.at(resource);
+			const ResourceHandle resourceHandle = resourceToHandleMap.at(hash);
 
 			resources[resourceHandle] = Weak<T>{};
-			resourceToHandleMap.erase(resource);
+			resourceToHandleMap.erase(hash);
 			availiableHandles.emplace_back(resourceHandle);
 		}
 
@@ -89,16 +116,31 @@ namespace Volt
 			return resources;
 		}
 
-		std::map<Weak<T>, ResourceHandle> resourceToHandleMap;
+		inline std::span<const Weak<T>> GetDirtyRange()
+		{
+			return dirtyResources;
+		}
+
+		inline void ClearDirty()
+		{
+			dirtyResources.clear();
+		}
+
+		std::map<size_t, ResourceHandle> resourceToHandleMap;
 		std::vector<ResourceHandle> availiableHandles;
 
 		std::vector<Weak<T>> resources;
+		std::vector<Weak<T>> dirtyResources;
+
 		std::mutex accessMutex;
 	};
 
 	class GlobalResourceManager
 	{
 	public:
+		static void Initialize();
+		static void Shutdown();
+
 		template<typename T>
 		static const ResourceHandle RegisterResource(Weak<T> resource);
 
@@ -111,9 +153,16 @@ namespace Volt
 		template<typename T>
 		static std::span<const Weak<T>> GetResourceRange();
 
+		template<typename T>
+		static ResourceHandle GetResourceHandle(Weak<T> resource);
+		
+		static void Update();
+		inline static Ref<RHI::DescriptorTable> GetDescriptorTable() { return s_globalDescriptorTable; }
 	private:
 		template<typename T>
 		static ResourceContainer<T>& GetResourceContainer();
+
+		inline static Ref<RHI::DescriptorTable> s_globalDescriptorTable;
 
 		GlobalResourceManager() = delete;
 	};
@@ -144,6 +193,13 @@ namespace Volt
 	{
 		auto& container = GetResourceContainer<T>();
 		return container.GetRange();
+	}
+
+	template<typename T>
+	inline ResourceHandle GlobalResourceManager::GetResourceHandle(Weak<T> resource)
+	{
+		auto& container = GetResourceContainer<T>();
+		return container.GetResourceHandle(resource);
 	}
 
 	template<typename T>

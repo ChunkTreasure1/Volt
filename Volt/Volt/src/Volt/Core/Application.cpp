@@ -79,8 +79,9 @@ namespace Volt
 		m_threadPool.Initialize(std::thread::hardware_concurrency() / 2);
 		m_assetmanager = CreateScope<AssetManager>();
 		
-		RendererNew::Initialize();
+		RendererNew::PreInitialize();
 		ShaderMap::Initialize();
+		RendererNew::Initialize();
 
 		//Renderer::Initialize();
 		//Renderer::LateInitialize();
@@ -264,6 +265,7 @@ namespace Volt
 			RendererNew::Flush();
 			AppRenderEvent renderEvent;
 			OnEvent(renderEvent);
+			RendererNew::Update();
 		}
 
 		{

@@ -1,39 +1,40 @@
 #include "Structures.hlsli"
+#include "Resources.hlsli"
 
-struct DrawCullData
+struct Constants
 {
+    RWTypedBuffer<uint> countsBuffer;
+    TypedBuffer<IndirectGPUCommand> indirectCommands;
+    RWTypedBuffer<uint> drawToInstanceOffset;
+    RWTypedBuffer<uint> instanceOffsetToObjectID;
+    
     uint drawCallCount;
 };
-
-[[vk::push_constant]] DrawCullData u_cullData;
-
-RWStructuredBuffer<uint> u_countsBuffer : register(u0, space0);
-StructuredBuffer<IndirectGPUCommand> u_indirectCommands : register(t1, space0);
-RWStructuredBuffer<uint> u_drawToInstanceOffset : register(u2, space0);
-RWStructuredBuffer<uint> u_instanceOffsetToObjectID : register(u3, space0);
 
 [numthreads(256, 1, 1)]
 void main(uint3 threadId : SV_DispatchThreadID)
 {
+    Constants constants = GetConstants<Constants>();
+    
     const uint globalId = threadId.x;
-    if (globalId >= u_cullData.drawCallCount)
+    if (globalId >= constants.drawCallCount)
     {
         return;
     }
 
-    const uint objectId = u_indirectCommands[globalId].objectId;
-    const uint instanceCount = u_indirectCommands[globalId].instanceCount;
+    const uint objectId = constants.indirectCommands.Load(globalId).objectId;
+    const uint instanceCount = constants.indirectCommands.Load(globalId).instanceCount;
   
     uint drawIndex;
-    InterlockedAdd(u_countsBuffer[0], 1, drawIndex);
+    constants.countsBuffer.InterlockedAdd(0, 1, drawIndex);
     
     uint instanceOffset;
-    InterlockedAdd(u_countsBuffer[1], instanceCount, instanceOffset);
+    constants.countsBuffer.InterlockedAdd(1, instanceCount, instanceOffset);
   
-    u_drawToInstanceOffset[drawIndex] = drawIndex;
+    constants.drawToInstanceOffset.Store(drawIndex, drawIndex);
   
     for (uint i = 0; i < instanceCount; i++)
     {
-        u_instanceOffsetToObjectID[instanceOffset + i] = objectId + i;
+        constants.instanceOffsetToObjectID.Store(instanceOffset + i, objectId + i);
     }
 }

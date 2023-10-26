@@ -13,12 +13,15 @@ namespace Volt
 	class RendererNew
 	{
 	public:
+		static void PreInitialize();
 		static void Initialize();
 		static void Shutdown();
 
 		static void Flush();
 		static const uint32_t GetFramesInFlight();
 		static void DestroyResource(std::function<void()>&& function);
+
+		static void Update();
 
 		static SamplersData GetSamplersData();
 

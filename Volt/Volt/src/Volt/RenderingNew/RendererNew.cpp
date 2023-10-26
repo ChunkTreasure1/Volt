@@ -56,7 +56,7 @@ namespace Volt
 
 	Scope<RendererData> s_rendererData;
 
-	void RendererNew::Initialize()
+	void RendererNew::PreInitialize()
 	{
 		s_rendererData = CreateScope<RendererData>();
 		s_rendererData->deletionQueue.resize(Application::Get().GetWindow().GetSwapchain().GetFramesInFlight());
@@ -76,6 +76,11 @@ namespace Volt
 
 			s_rendererData->shaderCompiler = RHI::ShaderCompiler::Create(shaderCompilerInfo);
 		}
+	}
+
+	void RendererNew::Initialize()
+	{
+		GlobalResourceManager::Initialize();
 
 		RegisterSamplers();
 
@@ -87,6 +92,8 @@ namespace Volt
 		RenderGraphExecutionThread::Shutdown();
 
 		UnregisterSamplers();
+
+		GlobalResourceManager::Shutdown();
 		
 		s_rendererData->Shutdown();
 		s_rendererData = nullptr;
@@ -119,6 +126,11 @@ namespace Volt
 
 		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
 		s_rendererData->deletionQueue.at(currentFrame).Push(std::move(function));
+	}
+
+	void RendererNew::Update()
+	{
+		//GlobalResourceManager::Update();
 	}
 
 	SamplersData RendererNew::GetSamplersData()

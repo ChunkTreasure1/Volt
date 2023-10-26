@@ -42,8 +42,8 @@
 
 #elif VT_DIST
 
-#define VT_RHI_DEBUGBREAK
-#define VT_ENSURE
+#define VT_RHI_DEBUGBREAK()
+#define VT_ENSURE(x)
 
 
 #endif

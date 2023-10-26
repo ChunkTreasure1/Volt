@@ -4,6 +4,7 @@
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphResourceHandle.h"
 #include "Volt/RenderingNew/RenderGraph/RenderContext.h"
 #include "Volt/RenderingNew/TransientResourceSystem/TransientResourceSystem.h" 
+#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
 #include "Volt/Core/Base.h"
 
@@ -36,6 +37,7 @@ namespace Volt
 	{
 	public:
 		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer);
+		~RenderGraph();
 
 		class Builder
 		{
@@ -81,27 +83,35 @@ namespace Volt
 		friend class RenderGraphExecutionThread;
 
 		void ExecuteInternal();
+		void DestroyResources();
+		void AllocateConstantsBuffer();
 
 		RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
 		RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);
 		RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
-		Weak<RHI::Image2D> GetImage2D(const RenderGraphResourceHandle resourceHandle);
+		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle);
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
-		Weak<RHI::StorageBuffer> GetBuffer(const RenderGraphResourceHandle resourceHandle);
-		Weak<RHI::UniformBuffer> GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
+		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);
+		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
 
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
 		std::vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;
 		std::vector<std::vector<RenderGraphResourceAccess>> m_resourceTransitions; // Pass -> Transitions
+		
+		std::vector<ResourceHandle> m_usedGlobalImage2DResourceHandles;
+		std::vector<ResourceHandle> m_usedGlobalBufferResourceHandles;
 
 		uint32_t m_passIndex = 0;
 		RenderGraphResourceHandle m_resourceIndex = 0;
 
 		Weak<RHI::CommandBuffer> m_commandBuffer;
+
+		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
+		ResourceHandle m_passConstantsBufferResourceHandle = 0;
 
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;

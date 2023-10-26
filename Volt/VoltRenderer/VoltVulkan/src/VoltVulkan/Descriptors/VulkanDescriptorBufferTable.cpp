@@ -243,6 +243,11 @@ namespace Volt::RHI
 		vkGetDescriptorEXT(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &imageDescriptorInfo, descriptorTypeSize, descriptorPtr);
 	}
 
+	void VulkanDescriptorBufferTable::Update(const uint32_t index)
+	{
+
+	}
+
 	void* VulkanDescriptorBufferTable::GetHandleImpl() const
 	{
 		return nullptr;

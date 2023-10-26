@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Defines.hlsli"
+
 #define DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(textureType, binding, space) \
     textureType<float> u_##textureType##float[] : register(binding, space); \
     textureType<float2> u_##textureType##float2[] : register(binding, space); \
@@ -39,7 +41,7 @@ ByteAddressBuffer u_ByteAddressBuffer[] : register(t7, space0);
 RWByteAddressBuffer u_RWByteAddressBuffer[] : register(u8, space0);
 
 ByteAddressBuffer u_UniformBuffer[] : register(t9, space0);
-SamplerState u_SamplerState[] : register(t10, space0);
+SamplerState u_SamplerState[] : register(s10, space0);
 
 struct BufferHandle
 {
@@ -342,7 +344,7 @@ struct RWTypedBuffer
         RWByteAddressBuffer buffer = DESCRIPTOR_HEAP(RWBufferHandle, handle);
         const uint address = index * sizeof(T);
 
-        return buffer.Load <T> (address);
+        return buffer.Load<T>(address);
     }
   
     void Store(in uint index, T value)
@@ -352,6 +354,15 @@ struct RWTypedBuffer
         
         buffer.Store<T>(address, value);
     }
+    
+    void InterlockedAdd(in uint index, uint value, out uint originalValue)
+    {
+        RWByteAddressBuffer buffer = DESCRIPTOR_HEAP(RWBufferHandle, handle);
+        const uint address = index * sizeof(T);
+        
+        buffer.InterlockedAdd(address, value, originalValue);
+    }
+    
 };
 
 template<typename T>
@@ -491,3 +502,17 @@ struct RWTexture
         texture.GetDimensions(width, height, depth);
     }
 };
+
+struct PushContantData
+{
+    uint constantsBufferIndex;
+    uint constantsOffset;
+};
+
+PUSH_CONSTANT(PushContantData, u_pushConstantData);
+
+template<typename T>
+T GetConstants()
+{
+    return u_ByteAddressBuffer[u_pushConstantData.constantsBufferIndex].Load<T>(u_pushConstantData.constantsOffset);
+}

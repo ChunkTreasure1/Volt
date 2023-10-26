@@ -1,5 +1,8 @@
 #pragma once
 
+struct VkDescriptorSetLayout_T;
+struct VkDescriptorSet_T;
+
 namespace Volt::RHI
 {
 	class VulkanBindlessManager
@@ -7,6 +10,9 @@ namespace Volt::RHI
 	public:
 		static void CreateGlobalDescriptorLayout();
 		static void DestroyGlobalDescriptorLayout();
+
+		static VkDescriptorSetLayout_T* GetGlobalDescriptorSetLayout();
+		static VkDescriptorSet_T* GetGlobalDescriptorSet();
 
 	private:
 

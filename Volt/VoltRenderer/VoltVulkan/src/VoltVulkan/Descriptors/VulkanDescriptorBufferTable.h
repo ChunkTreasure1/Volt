@@ -41,6 +41,8 @@ namespace Volt::RHI
 
 		void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex /* = 0 */) override;
 
+		void Update(const uint32_t index /* = 0 */) override;
+
 	protected:
 		friend class VulkanCommandBuffer;
 

@@ -181,7 +181,7 @@ namespace Volt::RHI
 		switch (specification.optimizationLevel)
 		{
 			case ShaderCompiler::OptimizationLevel::Disable: arguments.push_back(L"-Od"); break;
-			case ShaderCompiler::OptimizationLevel::Debug: arguments.push_back(L"-O1"); arguments.push_back(DXC_ARG_DEBUG); arguments.push_back(L"-fspv-debug=vulkan"); break;
+			case ShaderCompiler::OptimizationLevel::Debug: arguments.push_back(L"-O1"); arguments.push_back(DXC_ARG_DEBUG); /*arguments.push_back(L"-fspv-debug=vulkan");*/ break;
 			case ShaderCompiler::OptimizationLevel::Full: arguments.push_back(L"-O3"); break;
 		}
 
@@ -311,7 +311,7 @@ namespace Volt::RHI
 		{
 			filepath.c_str(),
 			L"-P", // Preproccess
-			L"-D", L"__HLSL__", L"__VULKAN__"
+			L"-D", L"__HLSL__"
 		};
 
 		if ((m_flags & ShaderCompilerFlags::WarningsAsErrors) != ShaderCompilerFlags::None)

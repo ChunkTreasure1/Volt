@@ -2,9 +2,12 @@
 #include "vtpch.h"
 #include "RenderContext.h"
 
+#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+
 #include "Volt/Core/Profiling.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
+#include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
 #include <VoltRHI/Pipelines/ComputePipeline.h>
@@ -126,7 +129,7 @@ namespace Volt
 		m_commandBuffer->DrawIndirectCount(commandsBuffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 	}
 
-	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable)
+	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -142,18 +145,10 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-
-		if (externalDescriptorTable)
-		{
-			SetExternalDescriptorTable(externalDescriptorTable);
-		}
-		else
-		{
-			m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
-		}
+		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 	}
 
-	void RenderContext::BindPipeline(Ref<RHI::ComputePipeline> pipeline, Ref<RHI::DescriptorTable> externalDescriptorTable)
+	void RenderContext::BindPipeline(Ref<RHI::ComputePipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -169,122 +164,19 @@ namespace Volt
 		m_commandBuffer->BindPipeline(pipeline);
 
 		m_descriptorTableIsBound = false;
-
-		if (externalDescriptorTable)
-		{
-			SetExternalDescriptorTable(externalDescriptorTable);
-		}
-		else
-		{
-			m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
-		}
+		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
 	}
 
-	void RenderContext::SetExternalDescriptorTable(Ref<RHI::DescriptorTable> descriptorTable)
+	void RenderContext::SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer)
 	{
-		VT_PROFILE_FUNCTION();
-
-		m_descriptorTableIsBound = false;
-		m_currentDescriptorTable = descriptorTable;
-
-		if (m_currentRenderPipeline)
-		{
-			m_descriptorTableCache[m_currentRenderPipeline.Get()] = descriptorTable;
-		}
-		else
-		{
-			m_descriptorTableCache[m_currentComputePipeline.Get()] = descriptorTable;
-		}
+		m_passConstantsBuffer = constantsBuffer;
 	}
 
-	void RenderContext::PushConstantsRaw(const void* data, const uint32_t size, const uint32_t offset)
+	void RenderContext::SetCurrentPassIndex(const uint32_t passIndex)
 	{
-		VT_PROFILE_FUNCTION();
-		m_commandBuffer->PushConstants(data, size, offset);
-	}
-
-	void RenderContext::SetBufferView(Ref<RHI::BufferView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetBufferView(view, set, binding, arrayIndex);
-	}
-
-	void RenderContext::SetBufferView(std::string_view name, Ref<RHI::BufferView> view, const uint32_t arrayIndex)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetBufferView(name, view, arrayIndex);
-	}
-
-	void RenderContext::SetBufferViews(const std::vector<Ref<RHI::BufferView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetBufferViews(views, set, binding, arrayStartOffset);
-	}
-
-	void RenderContext::SetBufferViewSet(Ref<RHI::BufferViewSet> bufferViewSet, uint32_t set, uint32_t binding, uint32_t arrayIndex)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetBufferViewSet(bufferViewSet, set, binding, arrayIndex);
-	}
-
-	void RenderContext::SetImageView(Ref<RHI::ImageView> view, const uint32_t set, const uint32_t binding, const uint32_t arrayIndex)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetImageView(view, set, binding, arrayIndex);
-	}
-
-	void RenderContext::SetImageView(std::string_view name, Ref<RHI::ImageView> view, const uint32_t arrayIndex)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetImageView(name, view, arrayIndex);
-	}
-
-	void RenderContext::SetImageViews(const std::vector<Ref<RHI::ImageView>>& views, const uint32_t set, const uint32_t binding, const uint32_t arrayStartOffset)
-	{
-		VT_PROFILE_FUNCTION();
-
-		if (!m_currentDescriptorTable)
-		{
-			return;
-		}
-
-		m_currentDescriptorTable->SetImageViews(views, set, binding, arrayStartOffset);
+		m_currentPassIndex = passIndex;
+		m_currentPassConstantsOffset = 0;
+		memset(m_passConstantsData, 0, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE);
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()
@@ -296,7 +188,22 @@ namespace Volt
 			return;
 		}
 
+		struct PushConstantsData
+		{
+			uint32_t constatsBufferIndex;
+			uint32_t constantsOffset;
+		} constantsData;
+
+		constantsData.constatsBufferIndex = GlobalResourceManager::GetResourceHandle(m_passConstantsBuffer);
+		constantsData.constantsOffset = m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
+
+		m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
 		m_commandBuffer->BindDescriptorTable(m_currentDescriptorTable);
+
+		uint8_t* mappedConstantsPtr = m_passConstantsBuffer->Map<uint8_t>();
+		memcpy_s(&mappedConstantsPtr[constantsData.constantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, m_passConstantsData, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE);
+		m_passConstantsBuffer->Unmap();
+
 		m_descriptorTableIsBound = true;
 	}
 
@@ -304,43 +211,43 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto shader = renderPipeline->GetShader();
-		void* ptr = shader.get();
+		//auto shader = renderPipeline->GetShader();
+		//void* ptr = shader.get();
 
-		if (m_descriptorTableCache.contains(ptr))
-		{
-			return m_descriptorTableCache.at(ptr);
-		}
+		//if (m_descriptorTableCache.contains(ptr))
+		//{
+		//	return m_descriptorTableCache.at(ptr);
+		//}
 
-		RHI::DescriptorTableCreateInfo info{};
-		info.shader = shader;
-		info.count = 1;
+		//RHI::DescriptorTableCreateInfo info{};
+		//info.shader = shader;
+		//info.count = 1;
 
-		Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
-		m_descriptorTableCache[ptr] = descriptorTable;
+		//Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
+		//m_descriptorTableCache[ptr] = descriptorTable;
 
-		return descriptorTable;
+		return GlobalResourceManager::GetDescriptorTable();
 	}
 
 	Ref<RHI::DescriptorTable> RenderContext::GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline)
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto shader = computePipeline->GetShader();
-		void* ptr = shader.get();
+		//auto shader = computePipeline->GetShader();
+		//void* ptr = shader.get();
 
-		if (m_descriptorTableCache.contains(ptr))
-		{
-			return m_descriptorTableCache.at(ptr);
-		}
+		//if (m_descriptorTableCache.contains(ptr))
+		//{
+		//	return m_descriptorTableCache.at(ptr);
+		//}
 
-		RHI::DescriptorTableCreateInfo info{};
-		info.shader = shader;
-		info.count = 1;
+		//RHI::DescriptorTableCreateInfo info{};
+		//info.shader = shader;
+		//info.count = 1;
 
-		Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
-		m_descriptorTableCache[ptr] = descriptorTable;
+		//Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(info);
+		//m_descriptorTableCache[ptr] = descriptorTable;
 
-		return descriptorTable;
+		return GlobalResourceManager::GetDescriptorTable();
 	}
 }

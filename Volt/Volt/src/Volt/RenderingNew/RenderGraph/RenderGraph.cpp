@@ -5,6 +5,9 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphCommon.h"
+
+#include "Volt/RenderingNew/RendererNew.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -15,6 +18,10 @@ namespace Volt
 {
 	RenderGraph::RenderGraph(Ref<RHI::CommandBuffer> commandBuffer)
 		: m_commandBuffer(commandBuffer), m_renderContext(commandBuffer)
+	{
+	}
+
+	RenderGraph::~RenderGraph()
 	{
 	}
 
@@ -269,6 +276,8 @@ namespace Volt
 
 			passIndex++;
 		}
+
+		AllocateConstantsBuffer();
 	}
 
 	void RenderGraph::Execute()
@@ -320,6 +329,8 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		m_renderContext.SetPassConstantsBuffer(m_passConstantsBuffer);
+
 		m_commandBuffer->Begin();
 
 		for (const auto& passNode : m_passNodes)
@@ -350,6 +361,7 @@ namespace Volt
 
 			{
 				VT_PROFILE_SCOPE(passNode->name.data());
+				m_renderContext.SetCurrentPassIndex(passNode->index);
 				passNode->Execute(*this, m_renderContext);
 			}
 
@@ -374,6 +386,37 @@ namespace Volt
 
 		m_commandBuffer->End();
 		m_commandBuffer->Execute();
+	
+		DestroyResources();
+	}
+
+	void RenderGraph::DestroyResources()
+	{
+		RendererNew::DestroyResource([usedImage2Ds = m_usedGlobalImage2DResourceHandles, usedBuffers = m_usedGlobalBufferResourceHandles, passConstantsBuffer = m_passConstantsBufferResourceHandle]()
+		{
+			for (const auto& resource : usedImage2Ds)
+			{
+				GlobalResourceManager::UnregisterResource<RHI::Image2D>(resource);
+			}
+
+			for (const auto& resource : usedBuffers)
+			{
+				GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(resource);
+			}
+
+			GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(passConstantsBuffer);
+		});
+	}
+
+	void RenderGraph::AllocateConstantsBuffer()
+	{
+		RenderGraphBufferDesc desc{};
+		desc.size = m_passIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
+		desc.usage = RHI::BufferUsage::StorageBuffer;
+		desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
+
+		m_passConstantsBuffer = m_transientResourceSystem.AquireBuffer(m_resourceIndex++, desc);
+		m_passConstantsBufferResourceHandle = GlobalResourceManager::RegisterResource(m_passConstantsBuffer);
 	}
 
 	RenderGraphResourceHandle RenderGraph::CreateImage2D(const RenderGraphImageDesc& textureDesc)
@@ -428,28 +471,34 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	Weak<RHI::Image2D> RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
+	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
-		return m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
+		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
+		m_usedGlobalImage2DResourceHandles.emplace_back() = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+
+		return m_usedGlobalImage2DResourceHandles.back();
 	}
 
-	Weak<RHI::StorageBuffer> RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
+	ResourceHandle RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
+		
+		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
+		m_usedGlobalBufferResourceHandles.emplace_back() = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(buffer);
 
-		return m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
+		return m_usedGlobalBufferResourceHandles.back();
 	}
 
-	Weak<RHI::UniformBuffer> RenderGraph::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)
+	ResourceHandle RenderGraph::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
-		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
-		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
+		//const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		//const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
-		return m_transientResourceSystem.AquireUniformBuffer(resourceHandle, bufferDesc.description);
+		return 0;//m_transientResourceSystem.AquireUniformBuffer(resourceHandle, bufferDesc.description);
 	}
 
 	Weak<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)

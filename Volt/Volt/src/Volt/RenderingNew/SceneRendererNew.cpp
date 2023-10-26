@@ -170,27 +170,27 @@ namespace Volt
 		AddExternalResources(renderGraph, rgBlackboard);
 		AddSetupIndirectPasses(renderGraph, rgBlackboard);
 
-		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
-		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
+		//renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+		//renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
 
-		AddPreDepthPass(renderGraph, rgBlackboard);
+		//AddPreDepthPass(renderGraph, rgBlackboard);
 
-		AddVisibilityBufferPass(renderGraph, rgBlackboard);
-		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
+		//AddVisibilityBufferPass(renderGraph, rgBlackboard);
+		//AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
-		PrefixSumTechnique prefixSum{ renderGraph, m_prefixSumPipeline };
-		prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_materialsBuffer->GetSize());
+		//PrefixSumTechnique prefixSum{ renderGraph, m_prefixSumPipeline };
+		//prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_materialsBuffer->GetSize());
 
-		AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
-		AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
+		//AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
+		//AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
 
-		// For every material -> run compute shading shader using indirect args
-		AddGenerateGBufferPass(renderGraph, rgBlackboard);
+		//// For every material -> run compute shading shader using indirect args
+		//AddGenerateGBufferPass(renderGraph, rgBlackboard);
 
-		if (m_visibilityVisualization != VisibilityVisualization::None)
-		{
-			AddVisibilityVisualizationPass(renderGraph, rgBlackboard);
-		}
+		//if (m_visibilityVisualization != VisibilityVisualization::None)
+		//{
+		//	AddVisibilityVisualizationPass(renderGraph, rgBlackboard);
+		//}
 
 		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalImagesData>().outputImage, RHI::ResourceState::PixelShaderRead);
 
@@ -363,24 +363,24 @@ namespace Volt
 
 	void SceneRendererNew::UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext)
 	{
-		renderContext.SetBufferViews(renderScene.GetVertexPositionViews(), 1, 0);
-		renderContext.SetBufferViews(renderScene.GetVertexMaterialViews(), 1, 1);
-		renderContext.SetBufferViews(renderScene.GetVertexAnimationViews(), 1, 2);
-		renderContext.SetBufferViews(renderScene.GetIndexBufferViews(), 1, 3);
+		//renderContext.SetBufferViews(renderScene.GetVertexPositionViews(), 1, 0);
+		//renderContext.SetBufferViews(renderScene.GetVertexMaterialViews(), 1, 1);
+		//renderContext.SetBufferViews(renderScene.GetVertexAnimationViews(), 1, 2);
+		//renderContext.SetBufferViews(renderScene.GetIndexBufferViews(), 1, 3);
 
-		renderContext.SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
-		renderContext.SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
-		renderContext.SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
-		renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
+		//renderContext.SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
+		//renderContext.SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
+		//renderContext.SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
+		//renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
 
-		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, CAMERA_BUFFER_BINDING), 2, CAMERA_BUFFER_BINDING);
-		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, DIRECTIONAL_LIGHT_BINDING), 2, DIRECTIONAL_LIGHT_BINDING);
+		//renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, CAMERA_BUFFER_BINDING), 2, CAMERA_BUFFER_BINDING);
+		//renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, DIRECTIONAL_LIGHT_BINDING), 2, DIRECTIONAL_LIGHT_BINDING);
 	}
 
 	void SceneRendererNew::UpdateDescriptorTableForBindlessRendering(RenderScene& renderScene, RenderContext& renderContext)
 	{
-		renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
-		renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, SAMPLERS_BINDING), 2, SAMPLERS_BINDING);
+		//renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
+		//renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, SAMPLERS_BINDING), 2, SAMPLERS_BINDING);
 	}
 
 	void SceneRendererNew::CreatePipelines()
@@ -388,35 +388,35 @@ namespace Volt
 		m_clearIndirectCountsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("ClearCountBuffer"));
 		m_indirectSetupPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("IndirectSetup"));
 
-		// Depth Only pipeline
-		{
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("PreDepth");
-			m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-		}
+		//// Depth Only pipeline
+		//{
+		//	RHI::RenderPipelineCreateInfo pipelineInfo{};
+		//	pipelineInfo.shader = ShaderMap::Get("PreDepth");
+		//	m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		//}
 
-		// Visibility Buffer pipeline
-		{
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("VisibilityBuffer");
-			pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
-			pipelineInfo.depthMode = RHI::DepthMode::Read;
-			m_visibilityPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-		}
+		//// Visibility Buffer pipeline
+		//{
+		//	RHI::RenderPipelineCreateInfo pipelineInfo{};
+		//	pipelineInfo.shader = ShaderMap::Get("VisibilityBuffer");
+		//	pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
+		//	pipelineInfo.depthMode = RHI::DepthMode::Read;
+		//	m_visibilityPipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		//}
 
-		// Visibility buffer compute
-		{
-			m_visibilityVisualizationPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("VisibilityVisualization"));
-			m_generateMaterialCountPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialCount"));
-			m_collectMaterialPixelsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CollectMaterialPixels"));
-			m_generateMaterialIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialIndirectArgs"));
-			m_generateGBufferPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateGBuffer"));
-		}
+		//// Visibility buffer compute
+		//{
+		//	m_visibilityVisualizationPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("VisibilityVisualization"));
+		//	m_generateMaterialCountPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialCount"));
+		//	m_collectMaterialPixelsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CollectMaterialPixels"));
+		//	m_generateMaterialIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialIndirectArgs"));
+		//	m_generateGBufferPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateGBuffer"));
+		//}
 
-		// Utility
-		{
-			m_prefixSumPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("PrefixSum"));
-		}
+		//// Utility
+		//{
+		//	m_prefixSumPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("PrefixSum"));
+		//}
 	}
 
 	void SceneRendererNew::AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -444,14 +444,12 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			RHI::ShaderDataBuffer pushConstantBuffer = ShaderMap::Get("ClearCountBuffer")->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("size", static_cast<uint32_t>(m_currentActiveCommandCount));
-
 			const uint32_t dispatchCount = std::max(1u, static_cast<uint32_t>(m_currentActiveCommandCount / 256) + 1u);
 
 			context.BindPipeline(m_clearIndirectCountsPipeline);
-			context.SetBufferView("u_countsBuffer", m_indirectCountsBuffer->GetView());
-			context.PushConstantsRaw(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
+			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
+			context.SetConstant(static_cast<uint32_t>(m_currentActiveCommandCount));
+
 			context.Dispatch(dispatchCount, 1, 1);
 		});
 
@@ -466,61 +464,58 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			RHI::ShaderDataBuffer pushConstantBuffer = ShaderMap::Get("IndirectSetup")->GetConstantsBuffer();
-			pushConstantBuffer.SetMemberData("drawCallCount", static_cast<uint32_t>(m_currentActiveCommandCount));
 			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
 
 			context.BindPipeline(m_indirectSetupPipeline);
+			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
+			context.SetConstant(resources.GetBuffer(bufferData.indirectCommandsBuffer));
+			context.SetConstant(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer));
+			context.SetConstant(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer));
+			context.SetConstant(static_cast<uint32_t>(m_currentActiveCommandCount));
 
-			context.SetBufferView("u_countsBuffer", resources.GetBuffer(bufferData.indirectCountsBuffer)->GetView());
-			context.SetBufferView("u_indirectCommands", resources.GetBuffer(bufferData.indirectCommandsBuffer)->GetView());
-			context.SetBufferView("u_drawToInstanceOffset", resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer)->GetView());
-			context.SetBufferView("u_instanceOffsetToObjectID", resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer)->GetView());
-
-			context.PushConstantsRaw(pushConstantBuffer.GetBuffer(), static_cast<uint32_t>(pushConstantBuffer.GetSize()));
 			context.Dispatch(dispatchCount, 1, 1);
 		});
 	}
 
 	void SceneRendererNew::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
-		[&](RenderGraph::Builder& builder, PreDepthData& data)
-		{
-			RenderGraphImageDesc desc{};
-			desc.width = m_width;
-			desc.height = m_height;
-			desc.format = RHI::PixelFormat::D32_SFLOAT;
-			desc.usage = RHI::ImageUsage::Attachment;
-			desc.name = "PreDepth";
-			data.depth = builder.CreateImage2D(desc);
+		//blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
+		//[&](RenderGraph::Builder& builder, PreDepthData& data)
+		//{
+		//	RenderGraphImageDesc desc{};
+		//	desc.width = m_width;
+		//	desc.height = m_height;
+		//	desc.format = RHI::PixelFormat::D32_SFLOAT;
+		//	desc.usage = RHI::ImageUsage::Attachment;
+		//	desc.name = "PreDepth";
+		//	data.depth = builder.CreateImage2D(desc);
 
-			desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
-			desc.name = "Normals";
-			data.normals = builder.CreateImage2D(desc);
+		//	desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
+		//	desc.name = "Normals";
+		//	data.normals = builder.CreateImage2D(desc);
 
-			builder.SetHasSideEffect();
-		},
-		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			Ref<RHI::ImageView> depthImageView = resources.GetImage2D(data.depth)->GetView();
-			Ref<RHI::ImageView> normalsImageView = resources.GetImage2D(data.normals)->GetView();
+		//	builder.SetHasSideEffect();
+		//},
+		//[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		//{
+		//	Ref<RHI::ImageView> depthImageView = resources.GetImage2D(data.depth)->GetView();
+		//	Ref<RHI::ImageView> normalsImageView = resources.GetImage2D(data.normals)->GetView();
 
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
+		//	RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
 
-			context.BeginRendering(info);
-			context.BindPipeline(m_preDepthPipeline);
+		//	context.BeginRendering(info);
+		//	context.BindPipeline(m_preDepthPipeline);
 
-			UpdateDescriptorTableForMeshRendering(*m_scene->GetRenderScene(), context);
+		//	UpdateDescriptorTableForMeshRendering(*m_scene->GetRenderScene(), context);
 
-			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
-			context.EndRendering();
-		});
+		//	context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+		//	context.EndRendering();
+		//});
 	}
 
 	void SceneRendererNew::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
+		/*const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
 
 		blackboard.Add<VisibilityBufferData>() = renderGraph.AddPass<VisibilityBufferData>("Visibility Buffer",
 		[&](RenderGraph::Builder& builder, VisibilityBufferData& data)
@@ -545,12 +540,12 @@ namespace Volt
 
 			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 			context.EndRendering();
-		});
+		});*/
 	}
 
 	void SceneRendererNew::AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		ExternalImagesData externalImagesData = blackboard.Get<ExternalImagesData>();
+		/*ExternalImagesData externalImagesData = blackboard.Get<ExternalImagesData>();
 		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
 
 		renderGraph.AddPass("Visibility Visualization",
@@ -574,169 +569,169 @@ namespace Volt
 			context.ClearImage(m_outputImage, { 0.1f, 0.1f, 0.1f, 1.f });
 			context.PushConstants(m_visibilityVisualization);
 			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
-		});
+		});*/
 	}
 
 	void SceneRendererNew::AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
-		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
+		//ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
+		//VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
 
-		blackboard.Add<MaterialCountData>() = renderGraph.AddPass<MaterialCountData>("Generate Material Count",
-		[&](RenderGraph::Builder& builder, MaterialCountData& data) 
-		{
-			data.materialCountBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer});
-			data.materialStartBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer });
+		//blackboard.Add<MaterialCountData>() = renderGraph.AddPass<MaterialCountData>("Generate Material Count",
+		//[&](RenderGraph::Builder& builder, MaterialCountData& data) 
+		//{
+		//	data.materialCountBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer});
+		//	data.materialStartBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer });
 
-			builder.ReadResource(visBufferData.visibility);
-			builder.ReadResource(externalBuffersData.indirectDrawDataBuffer);
+		//	builder.ReadResource(visBufferData.visibility);
+		//	builder.ReadResource(externalBuffersData.indirectDrawDataBuffer);
 
-			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
-		}, 
-		[=](const MaterialCountData& data, RenderContext& context, const RenderGraphPassResources& resources) 
-		{
-			Ref<RHI::ImageView> visBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
-			Ref<RHI::BufferView> indirectDrawDataBuffer = resources.GetBuffer(externalBuffersData.indirectDrawDataBuffer)->GetView();
+		//	builder.SetIsComputePass();
+		//	builder.SetHasSideEffect();
+		//}, 
+		//[=](const MaterialCountData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		//{
+		//	Ref<RHI::ImageView> visBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
+		//	Ref<RHI::BufferView> indirectDrawDataBuffer = resources.GetBuffer(externalBuffersData.indirectDrawDataBuffer)->GetView();
 
-			Ref<RHI::StorageBuffer> materialCountBuffer = resources.GetBuffer(data.materialCountBuffer);
-			
-			context.ClearBuffer(materialCountBuffer, 0);
+		//	Ref<RHI::StorageBuffer> materialCountBuffer = resources.GetBuffer(data.materialCountBuffer);
+		//	
+		//	context.ClearBuffer(materialCountBuffer, 0);
 
-			context.BindPipeline(m_generateMaterialCountPipeline);
-			context.SetImageView(visBufferView, 0, 0);
-			context.SetBufferView(indirectDrawDataBuffer, 0, 1);
-			context.SetBufferView(materialCountBuffer->GetView(), 0, 2);
+		//	context.BindPipeline(m_generateMaterialCountPipeline);
+		//	context.SetImageView(visBufferView, 0, 0);
+		//	context.SetBufferView(indirectDrawDataBuffer, 0, 1);
+		//	context.SetBufferView(materialCountBuffer->GetView(), 0, 2);
 
-			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
-		});
+		//	context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
+		//});
 	}
 
 	void SceneRendererNew::AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
-		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
-		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
+		//ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
+		//VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
+		//MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
 
-		blackboard.Add<MaterialPixelsData>() = renderGraph.AddPass<MaterialPixelsData>("Collect Material Pixels",
-		[&](RenderGraph::Builder& builder, MaterialPixelsData& data)
-		{
-			data.pixelCollectionBuffer = builder.CreateBuffer({ m_width * m_height * sizeof(glm::uvec2), RHI::BufferUsage::StorageBuffer });
-			data.currentMaterialCountBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer });
+		//blackboard.Add<MaterialPixelsData>() = renderGraph.AddPass<MaterialPixelsData>("Collect Material Pixels",
+		//[&](RenderGraph::Builder& builder, MaterialPixelsData& data)
+		//{
+		//	data.pixelCollectionBuffer = builder.CreateBuffer({ m_width * m_height * sizeof(glm::uvec2), RHI::BufferUsage::StorageBuffer });
+		//	data.currentMaterialCountBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer });
 
-			builder.ReadResource(visBufferData.visibility);
-			builder.ReadResource(externalBuffersData.indirectDrawDataBuffer);
-			builder.ReadResource(matCountData.materialStartBuffer);
+		//	builder.ReadResource(visBufferData.visibility);
+		//	builder.ReadResource(externalBuffersData.indirectDrawDataBuffer);
+		//	builder.ReadResource(matCountData.materialStartBuffer);
 
-			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
-		},
-		[=](const MaterialPixelsData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			Ref<RHI::ImageView> visBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
-			Ref<RHI::BufferView> indirectDrawDataBuffer = resources.GetBuffer(externalBuffersData.indirectDrawDataBuffer)->GetView();
-			Ref<RHI::BufferView> matStartBuffer = resources.GetBuffer(matCountData.materialStartBuffer)->GetView();
+		//	builder.SetIsComputePass();
+		//	builder.SetHasSideEffect();
+		//},
+		//[=](const MaterialPixelsData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		//{
+		//	Ref<RHI::ImageView> visBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
+		//	Ref<RHI::BufferView> indirectDrawDataBuffer = resources.GetBuffer(externalBuffersData.indirectDrawDataBuffer)->GetView();
+		//	Ref<RHI::BufferView> matStartBuffer = resources.GetBuffer(matCountData.materialStartBuffer)->GetView();
 
-			Ref<RHI::StorageBuffer> pixelCollectionBuffer = resources.GetBuffer(data.pixelCollectionBuffer);
-			Ref<RHI::StorageBuffer> currentMatCountBuffer = resources.GetBuffer(data.currentMaterialCountBuffer);
+		//	Ref<RHI::StorageBuffer> pixelCollectionBuffer = resources.GetBuffer(data.pixelCollectionBuffer);
+		//	Ref<RHI::StorageBuffer> currentMatCountBuffer = resources.GetBuffer(data.currentMaterialCountBuffer);
 
-			context.ClearBuffer(pixelCollectionBuffer, std::numeric_limits<uint32_t>::max());
-			context.ClearBuffer(currentMatCountBuffer, 0);
+		//	context.ClearBuffer(pixelCollectionBuffer, std::numeric_limits<uint32_t>::max());
+		//	context.ClearBuffer(currentMatCountBuffer, 0);
 
-			context.BindPipeline(m_collectMaterialPixelsPipeline);
-			context.SetImageView("u_visibilityBuffer", visBufferView);
-			context.SetBufferView("u_indirectDrawData", indirectDrawDataBuffer);
-			context.SetBufferView("u_materialStartBuffer", matStartBuffer);
-			context.SetBufferView("o_currentMaterialCountBuffer", currentMatCountBuffer->GetView());
-			context.SetBufferView("o_pixelCollectionBuffer", pixelCollectionBuffer->GetView());
+		//	context.BindPipeline(m_collectMaterialPixelsPipeline);
+		//	context.SetImageView("u_visibilityBuffer", visBufferView);
+		//	context.SetBufferView("u_indirectDrawData", indirectDrawDataBuffer);
+		//	context.SetBufferView("u_materialStartBuffer", matStartBuffer);
+		//	context.SetBufferView("o_currentMaterialCountBuffer", currentMatCountBuffer->GetView());
+		//	context.SetBufferView("o_pixelCollectionBuffer", pixelCollectionBuffer->GetView());
 
-			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
-		});
+		//	context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
+		//});
 	}
 
 	void SceneRendererNew::AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
+		//MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
 
-		blackboard.Add<MaterialIndirectArgsData>() = renderGraph.AddPass<MaterialIndirectArgsData>("Generate Material Indirect Args",
-		[&](RenderGraph::Builder& builder, MaterialIndirectArgsData& data) 
-		{
-			data.materialIndirectArgsBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(RHI::IndirectDispatchCommand), RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer });
+		//blackboard.Add<MaterialIndirectArgsData>() = renderGraph.AddPass<MaterialIndirectArgsData>("Generate Material Indirect Args",
+		//[&](RenderGraph::Builder& builder, MaterialIndirectArgsData& data) 
+		//{
+		//	data.materialIndirectArgsBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(RHI::IndirectDispatchCommand), RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer });
 
-			builder.ReadResource(matCountData.materialCountBuffer);
-			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
-		}, 
-		[=](const MaterialIndirectArgsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
-		{
-			Ref<RHI::BufferView> matCountBuffer = resources.GetBuffer(matCountData.materialCountBuffer)->GetView();
-			Ref<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBuffer(data.materialIndirectArgsBuffer);
+		//	builder.ReadResource(matCountData.materialCountBuffer);
+		//	builder.SetIsComputePass();
+		//	builder.SetHasSideEffect();
+		//}, 
+		//[=](const MaterialIndirectArgsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		//{
+		//	Ref<RHI::BufferView> matCountBuffer = resources.GetBuffer(matCountData.materialCountBuffer)->GetView();
+		//	Ref<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBuffer(data.materialIndirectArgsBuffer);
 
-			context.ClearBuffer(indirectArgsBuffer, 0);
+		//	context.ClearBuffer(indirectArgsBuffer, 0);
 
-			const uint32_t materialCount = m_materialsBuffer->GetSize();
+		//	const uint32_t materialCount = m_materialsBuffer->GetSize();
 
-			context.BindPipeline(m_generateMaterialIndirectArgsPipeline);
-			context.PushConstants(materialCount);
-			context.SetBufferView("u_materialCounts", matCountBuffer);
-			context.SetBufferView("u_indirectArgsBuffer", indirectArgsBuffer->GetView());
-			context.Dispatch(Math::DivideRoundUp(m_materialsBuffer->GetSize(), 32u), 1, 1);
-		});
+		//	context.BindPipeline(m_generateMaterialIndirectArgsPipeline);
+		//	context.PushConstants(materialCount);
+		//	context.SetBufferView("u_materialCounts", matCountBuffer);
+		//	context.SetBufferView("u_indirectArgsBuffer", indirectArgsBuffer->GetView());
+		//	context.Dispatch(Math::DivideRoundUp(m_materialsBuffer->GetSize(), 32u), 1, 1);
+		//});
 	}
 
 	void SceneRendererNew::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		MaterialIndirectArgsData indirectArgsData = blackboard.Get<MaterialIndirectArgsData>();
-		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
-		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
-		MaterialPixelsData matPixelsData = blackboard.Get<MaterialPixelsData>();
+		//MaterialIndirectArgsData indirectArgsData = blackboard.Get<MaterialIndirectArgsData>();
+		//VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
+		//MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
+		//MaterialPixelsData matPixelsData = blackboard.Get<MaterialPixelsData>();
 
-		blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("Generate GBuffer Data",
-		[&](RenderGraph::Builder& builder, GBufferData& data)
-		{
-			data.albedo = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
-			data.materialEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
-			data.normalEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+		//blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("Generate GBuffer Data",
+		//[&](RenderGraph::Builder& builder, GBufferData& data)
+		//{
+		//	data.albedo = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+		//	data.materialEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
+		//	data.normalEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
-			builder.ReadResource(indirectArgsData.materialIndirectArgsBuffer, RHI::ResourceState::IndirectArgument);
-			builder.ReadResource(visBufferData.visibility);
-			builder.ReadResource(matCountData.materialCountBuffer);
-			builder.ReadResource(matCountData.materialStartBuffer);
-			builder.ReadResource(matPixelsData.pixelCollectionBuffer);
+		//	builder.ReadResource(indirectArgsData.materialIndirectArgsBuffer, RHI::ResourceState::IndirectArgument);
+		//	builder.ReadResource(visBufferData.visibility);
+		//	builder.ReadResource(matCountData.materialCountBuffer);
+		//	builder.ReadResource(matCountData.materialStartBuffer);
+		//	builder.ReadResource(matPixelsData.pixelCollectionBuffer);
 
-			builder.SetHasSideEffect();
-			builder.SetIsComputePass();
-		},
-		[=](const GBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			Ref<RHI::Image2D> albedoImage = resources.GetImage2D(data.albedo);
-			Ref<RHI::Image2D> materialEmissiveImage = resources.GetImage2D(data.materialEmissive);
-			Ref<RHI::Image2D> normalEmissiveImage = resources.GetImage2D(data.normalEmissive);
-		
-			Ref<RHI::ImageView> visibilityBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
-			Ref<RHI::BufferView> matCountBufferView = resources.GetBuffer(matCountData.materialCountBuffer)->GetView();
-			Ref<RHI::BufferView> matStartBufferView = resources.GetBuffer(matCountData.materialStartBuffer)->GetView();
-			Ref<RHI::BufferView> matPixelsBufferView = resources.GetBuffer(matPixelsData.pixelCollectionBuffer)->GetView();
+		//	builder.SetHasSideEffect();
+		//	builder.SetIsComputePass();
+		//},
+		//[=](const GBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		//{
+		//	Ref<RHI::Image2D> albedoImage = resources.GetImage2D(data.albedo);
+		//	Ref<RHI::Image2D> materialEmissiveImage = resources.GetImage2D(data.materialEmissive);
+		//	Ref<RHI::Image2D> normalEmissiveImage = resources.GetImage2D(data.normalEmissive);
+		//
+		//	Ref<RHI::ImageView> visibilityBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
+		//	Ref<RHI::BufferView> matCountBufferView = resources.GetBuffer(matCountData.materialCountBuffer)->GetView();
+		//	Ref<RHI::BufferView> matStartBufferView = resources.GetBuffer(matCountData.materialStartBuffer)->GetView();
+		//	Ref<RHI::BufferView> matPixelsBufferView = resources.GetBuffer(matPixelsData.pixelCollectionBuffer)->GetView();
 
-			Ref<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBuffer(indirectArgsData.materialIndirectArgsBuffer);
-		
-			context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 1.f });
-			context.ClearImage(materialEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
-			context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
+		//	Ref<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBuffer(indirectArgsData.materialIndirectArgsBuffer);
+		//
+		//	context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 1.f });
+		//	context.ClearImage(materialEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
+		//	context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
 
-			context.BindPipeline(m_generateGBufferPipeline);
-			context.SetImageView("o_albedo", albedoImage->GetView());
-			context.SetImageView("o_materialEmissive", materialEmissiveImage->GetView());
-			context.SetImageView("o_normalEmissive", normalEmissiveImage->GetView());
-			
-			context.SetImageView("u_visibilityBuffer", visibilityBufferView);
-			context.SetBufferView("u_materialCountBuffer", matCountBufferView);
-			context.SetBufferView("u_materialStartBuffer", matStartBufferView);
-			context.SetBufferView("u_pixelCollection", matPixelsBufferView);
+		//	context.BindPipeline(m_generateGBufferPipeline);
+		//	context.SetImageView("o_albedo", albedoImage->GetView());
+		//	context.SetImageView("o_materialEmissive", materialEmissiveImage->GetView());
+		//	context.SetImageView("o_normalEmissive", normalEmissiveImage->GetView());
+		//	
+		//	context.SetImageView("u_visibilityBuffer", visibilityBufferView);
+		//	context.SetBufferView("u_materialCountBuffer", matCountBufferView);
+		//	context.SetBufferView("u_materialStartBuffer", matStartBufferView);
+		//	context.SetBufferView("u_pixelCollection", matPixelsBufferView);
 
-			context.PushConstants(0);
+		//	context.PushConstants(0);
 
-			context.DispatchIndirect(indirectArgsBuffer, 0); // Should be offset with material ID
-		});
+		//	context.DispatchIndirect(indirectArgsBuffer, 0); // Should be offset with material ID
+		//});
 	}
 }

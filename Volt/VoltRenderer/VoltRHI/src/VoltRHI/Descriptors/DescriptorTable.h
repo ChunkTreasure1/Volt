@@ -2,6 +2,8 @@
 
 #include "VoltRHI/Core/RHIInterface.h"
 
+#include <vector>
+
 namespace Volt::RHI
 {
 	class Shader;
@@ -34,6 +36,8 @@ namespace Volt::RHI
 		virtual void SetImageViews(const std::vector<Ref<ImageView>>& imageViews, uint32_t set, uint32_t binding, uint32_t arrayStartOffset = 0) = 0;
 
 		virtual void SetSamplerState(Ref<SamplerState> samplerState, uint32_t set, uint32_t binding, uint32_t arrayIndex = 0) = 0;
+
+		virtual void Update(const uint32_t index = 0) = 0;
 
 		static Ref<DescriptorTable> Create(const DescriptorTableCreateInfo& specification);
 

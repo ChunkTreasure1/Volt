@@ -1,20 +1,23 @@
-struct PushConstants
+#include "Defines.hlsli"
+#include "Resources.hlsli"
+
+struct Constants
 {
+    RWTypedBuffer<uint> countsBuffer;
     uint size;
 };
-
-[[vk::push_constant]] PushConstants u_pushConstants;
-
-RWStructuredBuffer<uint> u_countsBuffer : register(u0, space0);
 
 [numthreads(256, 1, 1)]
 void main(uint threadId : SV_DispatchThreadID)
 {
-    if (threadId >= u_pushConstants.size)
+    Constants constants = GetConstants<Constants>();
+
+    if (threadId >= constants.size)
     {
         return;
     }
     
-    u_countsBuffer[0] = 0;
-    u_countsBuffer[1] = 0;
+    
+    constants.countsBuffer.Store(0, 0);
+    constants.countsBuffer.Store(1, 0);
 }

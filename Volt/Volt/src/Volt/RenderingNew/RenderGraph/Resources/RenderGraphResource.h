@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 #include "RenderGraphResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
@@ -62,10 +63,10 @@ namespace Volt
 	public:
 		RenderGraphPassResources(RenderGraph& renderGraph, RenderGraphPassNodeBase& pass);
 		
-		Ref<RHI::Image2D> GetImage2D(const RenderGraphResourceHandle resourceHandle) const;
+		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle) const;
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
-		Ref<RHI::StorageBuffer> GetBuffer(const RenderGraphResourceHandle resourceHandle) const;
-		Ref<RHI::UniformBuffer> GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const;
+		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle) const;
+		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const;
 
 	private:
 		void ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const;

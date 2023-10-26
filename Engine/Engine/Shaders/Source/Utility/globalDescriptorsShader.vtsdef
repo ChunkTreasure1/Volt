@@ -1,0 +1,4 @@
+name: "GlobalDescriptorsShader"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl"
