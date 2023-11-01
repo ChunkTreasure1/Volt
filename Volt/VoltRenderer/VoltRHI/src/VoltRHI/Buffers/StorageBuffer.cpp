@@ -7,7 +7,7 @@
 
 namespace Volt::RHI
 {
-	Ref<StorageBuffer> StorageBuffer::Create(uint32_t count, size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	Ref<StorageBuffer> StorageBuffer::Create(uint32_t count, size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
@@ -18,13 +18,13 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(count, elementSize, bufferUsage, memoryUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(count, elementSize, name, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;
 	}
 
-	Ref<StorageBuffer> StorageBuffer::Create(size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	Ref<StorageBuffer> StorageBuffer::Create(size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
@@ -35,13 +35,13 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, bufferUsage, memoryUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, name, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;
 	}
 
-	Ref<StorageBuffer> StorageBuffer::Create(size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	Ref<StorageBuffer> StorageBuffer::Create(size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 	{
 		const auto api = GraphicsContext::GetAPI();
 
@@ -52,7 +52,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, customAllocator, bufferUsage, memoryUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, customAllocator, name, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;

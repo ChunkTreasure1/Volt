@@ -24,6 +24,8 @@ namespace Volt
 
 		RenderGraphResourceHandle drawToInstanceOffsetBuffer;
 		RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
+
+		RenderGraphResourceHandle meshesBuffer;
 	};
 
 	struct PreDepthData

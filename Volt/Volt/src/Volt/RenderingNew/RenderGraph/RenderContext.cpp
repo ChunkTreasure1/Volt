@@ -170,13 +170,21 @@ namespace Volt
 	void RenderContext::SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer)
 	{
 		m_passConstantsBuffer = constantsBuffer;
+		m_passConstantsBufferData.resize(constantsBuffer->GetByteSize());
+		memset(m_passConstantsBufferData.data(), 0, m_passConstantsBufferData.size());
 	}
 
 	void RenderContext::SetCurrentPassIndex(const uint32_t passIndex)
 	{
 		m_currentPassIndex = passIndex;
 		m_currentPassConstantsOffset = 0;
-		memset(m_passConstantsData, 0, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE);
+	}
+
+	void RenderContext::UploadConstantsData()
+	{
+		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
+		memcpy_s(mappedPtr, m_passConstantsBuffer->GetByteSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
+		m_passConstantsBuffer->Unmap();
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()
@@ -199,10 +207,6 @@ namespace Volt
 
 		m_commandBuffer->PushConstants(&constantsData, sizeof(PushConstantsData), 0);
 		m_commandBuffer->BindDescriptorTable(m_currentDescriptorTable);
-
-		uint8_t* mappedConstantsPtr = m_passConstantsBuffer->Map<uint8_t>();
-		memcpy_s(&mappedConstantsPtr[constantsData.constantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, m_passConstantsData, RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE);
-		m_passConstantsBuffer->Unmap();
 
 		m_descriptorTableIsBound = true;
 	}

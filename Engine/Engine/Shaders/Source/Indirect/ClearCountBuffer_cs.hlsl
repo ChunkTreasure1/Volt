@@ -17,7 +17,6 @@ void main(uint threadId : SV_DispatchThreadID)
         return;
     }
     
-    
     constants.countsBuffer.Store(0, 0);
     constants.countsBuffer.Store(1, 0);
 }

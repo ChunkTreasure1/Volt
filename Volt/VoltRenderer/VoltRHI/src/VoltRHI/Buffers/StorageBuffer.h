@@ -26,9 +26,9 @@ namespace Volt::RHI
 		template<typename T>
 		T* Map();
 
-		static Ref<StorageBuffer> Create(uint32_t count, size_t elementSize, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
-		static Ref<StorageBuffer> Create(size_t size, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
-		static Ref<StorageBuffer> Create(size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static Ref<StorageBuffer> Create(uint32_t count, size_t elementSize, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static Ref<StorageBuffer> Create(size_t size, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
+		static Ref<StorageBuffer> Create(size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage = BufferUsage::StorageBuffer, MemoryUsage memoryUsage = MemoryUsage::GPU);
 
 	protected:
 		virtual void* MapInternal() = 0;

@@ -23,6 +23,7 @@ public:
 	T& operator*() const;
 
 	[[nodiscard]] T* Get();
+	[[nodiscard]] const T* Get() const;
 	void Reset();
 	
 	inline const size_t GetHash() const
@@ -110,6 +111,12 @@ template<typename T>
 inline T& Weak<T>::operator*() const
 {
 	return *m_weakPtr.lock();
+}
+
+template<typename T>
+inline const T* Weak<T>::Get() const
+{
+	return m_weakPtr.lock().get();
 }
 
 template<typename T>

@@ -12,22 +12,25 @@
 
 namespace Volt::RHI
 {
-	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(elementSize * count);
+		SetName(name);
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(size);
+		SetName(name);
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, BufferUsage bufferUsage, MemoryUsage memoryUsage)
+	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
 		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
 	{
 		Invalidate(size);
+		SetName(name);
 	}
 
 	VulkanStorageBuffer::~VulkanStorageBuffer()
@@ -118,7 +121,7 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_allocation->GetHandle<VkBuffer>();
+		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
 		nameInfo.pObjectName = name.data();
 
 		auto device = GraphicsContext::GetDevice();

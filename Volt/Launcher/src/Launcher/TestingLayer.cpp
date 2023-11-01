@@ -73,8 +73,8 @@ void TestingLayer::OnAttach()
 
 	// Storage buffers
 	{
-		m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(RHI::IndirectIndexedCommand), RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
-		m_transformsBuffer = RHI::StorageBuffer::Create(100 * 100 * 100, sizeof(glm::mat4), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
+		m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(RHI::IndirectIndexedCommand), "", RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
+		m_transformsBuffer = RHI::StorageBuffer::Create(100 * 100 * 100, sizeof(glm::mat4), "", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
 
 		glm::mat4* transforms = m_transformsBuffer->Map<glm::mat4>();
 		for (uint32_t x = 0; x < 100; x++)

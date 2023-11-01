@@ -91,6 +91,7 @@ namespace Volt
 		RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
+		Ref<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
 		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle);
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
 		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);

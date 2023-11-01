@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Volt/Core/UUID.h"
+#include "Volt/Utility/UniqueQueue.h"
+
+#include "Volt/RenderingNew/Resources/ResourceHandle.h"
 
 #include <unordered_map>
 #include <vector>
@@ -13,8 +16,6 @@ namespace Volt
 		class Image2D;
 		class DescriptorTable;
 	}
-
-	typedef uint32_t ResourceHandle;
 
 	template<typename T>
 	struct ResourceContainer
@@ -31,12 +32,7 @@ namespace Volt
 			}
 
 			ResourceHandle handle = static_cast<ResourceHandle>(resources.size());
-
-			if (!availiableHandles.empty())
-			{
-				handle = availiableHandles.back();
-				availiableHandles.pop_back();
-			}
+			availiableHandles.TryPop(handle);
 
 			if (static_cast<uint32_t>(resources.size()) < handle + 1)
 			{
@@ -89,8 +85,7 @@ namespace Volt
 			}
 
 			resources[resourceHandle] = Weak<T>{};
-
-			availiableHandles.emplace_back(resourceHandle);
+			availiableHandles.Push(resourceHandle);
 		}
 
 		inline void RemoveResource(Weak<T> resource)
@@ -108,7 +103,7 @@ namespace Volt
 
 			resources[resourceHandle] = Weak<T>{};
 			resourceToHandleMap.erase(hash);
-			availiableHandles.emplace_back(resourceHandle);
+			availiableHandles.Push(resourceHandle);
 		}
 
 		inline std::span<const Weak<T>> GetRange()
@@ -127,7 +122,7 @@ namespace Volt
 		}
 
 		std::map<size_t, ResourceHandle> resourceToHandleMap;
-		std::vector<ResourceHandle> availiableHandles;
+		UniqueQueue<ResourceHandle> availiableHandles;
 
 		std::vector<Weak<T>> resources;
 		std::vector<Weak<T>> dirtyResources;

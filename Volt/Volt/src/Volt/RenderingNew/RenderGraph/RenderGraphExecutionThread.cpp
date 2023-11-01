@@ -1,12 +1,16 @@
 #include "vtpch.h"
 #include "RenderGraphExecutionThread.h"
 
+#include "Volt/Core/Application.h"
 #include "Volt/Core/Threading/ThreadSafeQueue.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
 
 #include "Volt/Core/Profiling.h"
 
+#include "Volt/Utility/FunctionQueue.h"
 #include "Volt/Platform/ThreadUtility.h"
+
+#include <VoltRHI/Graphics/Swapchain.h>
 
 namespace Volt
 {
@@ -22,6 +26,8 @@ namespace Volt
 
 		std::atomic_bool isExecuting;
 		std::atomic_bool isRunning;
+
+		FunctionQueue deletionQueue;
 	};
 
 	inline static Scope<RenderGraphThreadData> s_data;
@@ -57,6 +63,17 @@ namespace Volt
 	{
 		std::unique_lock lock{ s_data->mutex };
 		s_data->waitForExecutionVariable.wait(lock, []() { return !s_data->isExecuting.load() && s_data->executionQueue.empty(); });
+	}
+
+	void RenderGraphExecutionThread::DestroyRenderGraphResource(std::function<void()>&& function)
+	{
+		if (!s_data)
+		{
+			function();
+			return;
+		}
+
+		s_data->deletionQueue.Push(std::move(function));
 	}
 
 	void RenderGraphExecutionThread::InitializeThread()
@@ -97,7 +114,7 @@ namespace Volt
 				s_data->waitForExecutionVariable.notify_one();
 			}
 
-			GlobalResourceManager::Update();
+			s_data->deletionQueue.Flush();
 		}
 	}
 }

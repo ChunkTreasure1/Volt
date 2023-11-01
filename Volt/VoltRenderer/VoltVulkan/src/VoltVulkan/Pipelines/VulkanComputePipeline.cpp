@@ -28,6 +28,8 @@ namespace Volt::RHI
 	{
 		Release();
 
+		VT_ENSURE(m_shader);
+
 		auto device = GraphicsContext::GetDevice();
 		const auto& shaderResources = m_shader->GetResources();
 		Ref<VulkanShader> vulkanShader = m_shader->As<VulkanShader>();

@@ -8,6 +8,8 @@
 
 #include "Volt/Rendering/RendererStructs.h"
 
+#include "Volt/RenderingNew/Resources/ResourceHandle.h"
+
 namespace Volt
 {
 	namespace RHI
@@ -56,6 +58,11 @@ namespace Volt
 		inline Ref<RHI::StorageBuffer> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
 		inline Ref<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexStorageBuffer; }
 
+		inline const ResourceHandle GetVertexPositionsHandle() const { return m_vertexPositionsHandle; }
+		inline const ResourceHandle GetVertexMaterialHandle() const { return m_vertexMaterialHandle; }
+		inline const ResourceHandle GetVertexAnimationHandle() const { return m_vertexAnimationHandle; }
+		inline const ResourceHandle GetIndexBufferHandle() const { return m_indexBufferHandle; }
+
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
 
@@ -99,6 +106,11 @@ namespace Volt
 		Ref<RHI::StorageBuffer> m_vertexMaterialBuffer;
 		Ref<RHI::StorageBuffer> m_vertexAnimationBuffer;
 		Ref<RHI::StorageBuffer> m_indexStorageBuffer;
+
+		ResourceHandle m_vertexPositionsHandle = 0;
+		ResourceHandle m_vertexMaterialHandle = 0;
+		ResourceHandle m_vertexAnimationHandle = 0;
+		ResourceHandle m_indexBufferHandle = 0;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;

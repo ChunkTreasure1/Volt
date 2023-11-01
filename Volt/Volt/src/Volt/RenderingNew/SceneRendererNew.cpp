@@ -95,13 +95,14 @@ namespace Volt
 
 		// Storage buffers
 		{
-			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
-			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), RHI::BufferUsage::IndirectBuffer);
+			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), "Indirect Commands", RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
+			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), "Indirect Counts", RHI::BufferUsage::IndirectBuffer);
 
-			m_drawToInstanceOffsetBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
-			m_instanceOffsetToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t));
-			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
-			m_materialsBuffer = RHI::StorageBuffer::Create(1, sizeof(GPUMaterialNew), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
+			m_drawToInstanceOffsetBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t), "Draw To Instance Offset");
+			m_instanceOffsetToObjectIDBuffer = RHI::StorageBuffer::Create(1, sizeof(uint32_t), "Instance Offset to Object ID");
+			m_indirectDrawDataBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectDrawData), "Indirect Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
+			m_materialsBuffer = RHI::StorageBuffer::Create(1, sizeof(GPUMaterialNew), "Materials Buffer", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
+			m_meshesBuffer = RHI::StorageBuffer::Create(1, sizeof(GPUMeshNew), "Meshes Buffer", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
 		}
 
 		// Sampler state
@@ -170,10 +171,10 @@ namespace Volt
 		AddExternalResources(renderGraph, rgBlackboard);
 		AddSetupIndirectPasses(renderGraph, rgBlackboard);
 
-		//renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
-		//renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
+		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalBuffersData>().indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
 
-		//AddPreDepthPass(renderGraph, rgBlackboard);
+		AddPreDepthPass(renderGraph, rgBlackboard);
 
 		//AddVisibilityBufferPass(renderGraph, rgBlackboard);
 		//AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
@@ -205,7 +206,7 @@ namespace Volt
 		auto renderScene = m_scene->GetRenderScene();
 
 		renderScene->PrepareForUpdate();
-		//const uint32_t individualMeshCount = renderScene->GetIndividualMeshCount();
+		const auto& individualMeshes = renderScene->GetIndividualMeshes();
 		const uint32_t renderObjectCount = renderScene->GetRenderObjectCount();
 
 		if (m_indirectCommandsBuffer->GetSize() < renderObjectCount)
@@ -224,11 +225,33 @@ namespace Volt
 			m_drawToInstanceOffsetBuffer->Resize(renderObjectCount);
 		}
 
-		std::unordered_map<Mesh*, uint32_t> meshDataMap;
+		if (m_meshesBuffer->GetSize() < individualMeshes.size())
+		{
+			m_meshesBuffer->Resize(individualMeshes.size());
+		}
+
+		std::unordered_map<const Mesh*, uint32_t> meshDataMap;
 		std::unordered_map<size_t, uint32_t> meshSubMeshIndexMap;
 
 		IndirectDrawData* drawDataBuffer = m_indirectDrawDataBuffer->Map<IndirectDrawData>();
 		IndirectGPUCommandNew* indirectCommands = m_indirectCommandsBuffer->Map<IndirectGPUCommandNew>();
+		GPUMeshNew* gpuMeshes = m_meshesBuffer->Map<GPUMeshNew>();
+
+		for (uint32_t meshIndex = 0; const auto& mesh : individualMeshes)
+		{
+			GPUMeshNew gpuMesh{};
+			gpuMesh.vertexPositions = mesh->GetVertexPositionsHandle();
+			gpuMesh.vertexMaterial = mesh->GetVertexMaterialHandle();
+			gpuMesh.vertexAnimation = mesh->GetVertexAnimationHandle();
+			gpuMesh.indexBuffer = mesh->GetIndexBufferHandle();
+
+			gpuMeshes[meshIndex] = gpuMesh;
+			meshDataMap[mesh.Get()] = meshIndex;
+
+			meshIndex++;
+		}
+
+		m_meshesBuffer->Unmap();
 
 		m_currentActiveCommandCount = 0;
 		for (uint32_t index = 0; const auto & obj : *renderScene)
@@ -242,8 +265,7 @@ namespace Volt
 			}
 			else
 			{
-				meshIndex = renderScene->GetMeshIndex(obj.mesh);
-				meshDataMap[meshPtr] = meshIndex;
+				continue;
 			}
 
 			Entity entity{ obj.entity, m_scene };
@@ -277,6 +299,7 @@ namespace Volt
 			index++;
 		}
 
+		m_meshesBuffer->Unmap();
 		m_indirectDrawDataBuffer->Unmap();
 		m_indirectCommandsBuffer->Unmap();
 
@@ -361,39 +384,17 @@ namespace Volt
 		}
 	}
 
-	void SceneRendererNew::UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext)
-	{
-		//renderContext.SetBufferViews(renderScene.GetVertexPositionViews(), 1, 0);
-		//renderContext.SetBufferViews(renderScene.GetVertexMaterialViews(), 1, 1);
-		//renderContext.SetBufferViews(renderScene.GetVertexAnimationViews(), 1, 2);
-		//renderContext.SetBufferViews(renderScene.GetIndexBufferViews(), 1, 3);
-
-		//renderContext.SetBufferView(m_drawToInstanceOffsetBuffer->GetView(), 0, 0);
-		//renderContext.SetBufferView(m_indirectDrawDataBuffer->GetView(), 0, 1);
-		//renderContext.SetBufferView(m_instanceOffsetToObjectIDBuffer->GetView(), 0, 2);
-		//renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
-
-		//renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, CAMERA_BUFFER_BINDING), 2, CAMERA_BUFFER_BINDING);
-		//renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, DIRECTIONAL_LIGHT_BINDING), 2, DIRECTIONAL_LIGHT_BINDING);
-	}
-
-	void SceneRendererNew::UpdateDescriptorTableForBindlessRendering(RenderScene& renderScene, RenderContext& renderContext)
-	{
-		//renderContext.SetBufferView(m_materialsBuffer->GetView(), 0, 3);
-		//renderContext.SetBufferViewSet(m_constantBufferSet->GetBufferViewSet(2, SAMPLERS_BINDING), 2, SAMPLERS_BINDING);
-	}
-
 	void SceneRendererNew::CreatePipelines()
 	{
 		m_clearIndirectCountsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("ClearCountBuffer"));
 		m_indirectSetupPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("IndirectSetup"));
 
-		//// Depth Only pipeline
-		//{
-		//	RHI::RenderPipelineCreateInfo pipelineInfo{};
-		//	pipelineInfo.shader = ShaderMap::Get("PreDepth");
-		//	m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-		//}
+		// Depth Only pipeline
+		{
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("PreDepth");
+			m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		}
 
 		//// Visibility Buffer pipeline
 		//{
@@ -429,6 +430,7 @@ namespace Volt
 		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer);
 		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.AddExternalBuffer(m_instanceOffsetToObjectIDBuffer);
 		bufferData.indirectDrawDataBuffer = renderGraph.AddExternalBuffer(m_indirectDrawDataBuffer);
+		bufferData.meshesBuffer = renderGraph.AddExternalBuffer(m_meshesBuffer);
 
 		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
 	}
@@ -479,38 +481,35 @@ namespace Volt
 
 	void SceneRendererNew::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		//blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
-		//[&](RenderGraph::Builder& builder, PreDepthData& data)
-		//{
-		//	RenderGraphImageDesc desc{};
-		//	desc.width = m_width;
-		//	desc.height = m_height;
-		//	desc.format = RHI::PixelFormat::D32_SFLOAT;
-		//	desc.usage = RHI::ImageUsage::Attachment;
-		//	desc.name = "PreDepth";
-		//	data.depth = builder.CreateImage2D(desc);
+		blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
+		[&](RenderGraph::Builder& builder, PreDepthData& data)
+		{
+			RenderGraphImageDesc desc{};
+			desc.width = m_width;
+			desc.height = m_height;
+			desc.format = RHI::PixelFormat::D32_SFLOAT;
+			desc.usage = RHI::ImageUsage::Attachment;
+			desc.name = "PreDepth";
+			data.depth = builder.CreateImage2D(desc);
 
-		//	desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
-		//	desc.name = "Normals";
-		//	data.normals = builder.CreateImage2D(desc);
+			desc.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
+			desc.name = "Normals";
+			data.normals = builder.CreateImage2D(desc);
 
-		//	builder.SetHasSideEffect();
-		//},
-		//[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		//{
-		//	Ref<RHI::ImageView> depthImageView = resources.GetImage2D(data.depth)->GetView();
-		//	Ref<RHI::ImageView> normalsImageView = resources.GetImage2D(data.normals)->GetView();
+			builder.SetHasSideEffect();
+		},
+		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Ref<RHI::ImageView> depthImageView = resources.GetImage2DView(data.depth);
+			Ref<RHI::ImageView> normalsImageView = resources.GetImage2DView(data.normals);
 
-		//	RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
 
-		//	context.BeginRendering(info);
-		//	context.BindPipeline(m_preDepthPipeline);
-
-		//	UpdateDescriptorTableForMeshRendering(*m_scene->GetRenderScene(), context);
-
-		//	context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
-		//	context.EndRendering();
-		//});
+			context.BeginRendering(info);
+			context.BindPipeline(m_preDepthPipeline);
+			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.EndRendering();
+		});
 	}
 
 	void SceneRendererNew::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)

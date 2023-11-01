@@ -36,6 +36,6 @@ namespace Volt::RHI
 
 	Ref<StorageBuffer> StorageBufferSet::AddInternal(const uint32_t size, uint32_t elementCount, BufferUsage memoryUsage)
 	{
-		return StorageBuffer::Create(elementCount, size, memoryUsage);
+		return StorageBuffer::Create(elementCount, size, "", memoryUsage);
 	}
 }

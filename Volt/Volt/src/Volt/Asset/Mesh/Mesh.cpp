@@ -2,6 +2,7 @@
 #include "Mesh.h"
 
 #include "Volt/Rendering/Renderer.h"
+#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
 #include "Volt/Math/Math.h"
 
@@ -151,11 +152,10 @@ namespace Volt
 
 	Mesh::~Mesh()
 	{
-		//for (uint32_t i = 0; const auto& subMesh : mySubMeshes)
-		//{
-		//	Renderer::RemoveMesh(this, i);
-		//	i++;
-		//}
+		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_vertexPositionsHandle);
+		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_vertexAnimationHandle);
+		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_vertexMaterialHandle);
+		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_indexBufferHandle);
 	}
 
 	void Mesh::Construct()
@@ -227,32 +227,42 @@ namespace Volt
 		m_vertexBuffer = RHI::VertexBuffer::Create(encodedVertices.data(), uint32_t(encodedVertices.size() * sizeof(EncodedVertex)));
 		m_indexBuffer = RHI::IndexBuffer::Create(m_indices.data(), uint32_t(m_indices.size()));
 
+		const std::string meshName = assetName;
+
 		// Vertex positions
 		{
 			const auto vertexPositions = GetVertexPositions();
-			m_vertexPositionsBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3));
+			m_vertexPositionsBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions - " + meshName);
 			m_vertexPositionsBuffer->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
+
+			m_vertexPositionsHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_vertexPositionsBuffer);
 		}
 
 		// Vertex material data
 		{
 			const auto vertexMaterialData = GetVertexMaterialData();
-			m_vertexMaterialBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData));
+			m_vertexMaterialBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData), "Vertex Material Data - " + meshName);
 			m_vertexMaterialBuffer->SetData(vertexMaterialData.data(), vertexMaterialData.size() * sizeof(VertexMaterialData));
+		
+			m_vertexMaterialHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_vertexMaterialBuffer);
 		}
 
 
 		// Vertex animation data
 		{
 			const auto vertexAnimationData = GetVertexAnimationData();
-			m_vertexAnimationBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData));
+			m_vertexAnimationBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData), "Vertex Animation Data - " + meshName);
 			m_vertexAnimationBuffer->SetData(vertexAnimationData.data(), vertexAnimationData.size() * sizeof(VertexAnimationData));
+		
+			m_vertexAnimationHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_vertexAnimationBuffer);
 		}
 
 		// Indices
 		{
-			m_indexStorageBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t));
+			m_indexStorageBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName);
 			m_indexStorageBuffer->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
+
+			m_indexBufferHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_indexStorageBuffer);
 		}
 
 		for (auto& subMesh : m_subMeshes)
@@ -294,12 +304,6 @@ namespace Volt
 			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
 			i++;
 		}
-
-		//for (uint32_t i = 0; const auto & subMesh : mySubMeshes)
-		//{
-		//	Renderer::AddMesh(this, i);
-		//	i++;
-		//}
 	}
 
 	const std::vector<EncodedVertex> Mesh::GetEncodedVertices() const

@@ -276,8 +276,6 @@ namespace Volt
 
 			passIndex++;
 		}
-
-		AllocateConstantsBuffer();
 	}
 
 	void RenderGraph::Execute()
@@ -329,6 +327,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		AllocateConstantsBuffer();
 		m_renderContext.SetPassConstantsBuffer(m_passConstantsBuffer);
 
 		m_commandBuffer->Begin();
@@ -384,15 +383,19 @@ namespace Volt
 			m_commandBuffer->ResourceBarrier(barrierInfos);
 		}
 
+		m_renderContext.UploadConstantsData();
+
 		m_commandBuffer->End();
+		
+		GlobalResourceManager::Update();
+
 		m_commandBuffer->Execute();
-	
 		DestroyResources();
 	}
 
 	void RenderGraph::DestroyResources()
 	{
-		RendererNew::DestroyResource([usedImage2Ds = m_usedGlobalImage2DResourceHandles, usedBuffers = m_usedGlobalBufferResourceHandles, passConstantsBuffer = m_passConstantsBufferResourceHandle]()
+		RenderGraphExecutionThread::DestroyRenderGraphResource([usedImage2Ds = m_usedGlobalImage2DResourceHandles, usedBuffers = m_usedGlobalBufferResourceHandles, passConstantsBuffer = m_passConstantsBufferResourceHandle]()
 		{
 			for (const auto& resource : usedImage2Ds)
 			{
@@ -414,6 +417,7 @@ namespace Volt
 		desc.size = m_passIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE;
 		desc.usage = RHI::BufferUsage::StorageBuffer;
 		desc.memoryUsage = RHI::MemoryUsage::CPUToGPU;
+		desc.name = "Render Graph Constants";
 
 		m_passConstantsBuffer = m_transientResourceSystem.AquireBuffer(m_resourceIndex++, desc);
 		m_passConstantsBufferResourceHandle = GlobalResourceManager::RegisterResource(m_passConstantsBuffer);
@@ -469,6 +473,17 @@ namespace Volt
 		m_resourceNodes.push_back(node);
 
 		return resourceHandle;
+	}
+
+	Ref<RHI::ImageView> RenderGraph::GetImage2DView(const RenderGraphResourceHandle resourceHandle)
+	{
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
+		m_usedGlobalImage2DResourceHandles.emplace_back() = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+
+		return image->GetView();
 	}
 
 	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)

@@ -65,6 +65,7 @@ namespace Volt
 
 		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
 		void SetCurrentPassIndex(const uint32_t passIndex);
+		void UploadConstantsData();
 
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::RenderPipeline> renderPipeline);
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline);
@@ -84,14 +85,14 @@ namespace Volt
 		std::unordered_map<void*, Ref<RHI::DescriptorTable>> m_descriptorTableCache;
 	
 		// #TODO_Ivar: Should be changed
-		uint8_t m_passConstantsData[RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE];
+		std::vector<uint8_t> m_passConstantsBufferData;
 		uint32_t m_currentPassConstantsOffset = 0;
 	};
 
 	template<typename T>
 	inline void RenderContext::SetConstant(const T& data)
 	{
-		memcpy_s(&m_passConstantsData[m_currentPassConstantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - m_currentPassConstantsOffset, &data, sizeof(T));
+		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + m_currentPassConstantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - m_currentPassConstantsOffset, &data, sizeof(T));
 		m_currentPassConstantsOffset += sizeof(T);
 	}
 }

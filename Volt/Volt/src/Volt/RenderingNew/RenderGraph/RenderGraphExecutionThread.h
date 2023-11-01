@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 namespace Volt
 {
 	class RenderGraph;
@@ -12,6 +14,8 @@ namespace Volt
 
 		static void ExecuteRenderGraph(RenderGraph&& renderGraph);
 		static void WaitForFinishedExecution();
+
+		static void DestroyRenderGraphResource(std::function<void()>&& function);
 
 	private:
 		static void InitializeThread();

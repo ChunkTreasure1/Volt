@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/RenderingNew/Resources/ResourceHandle.h"
+
 #include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt
@@ -29,6 +31,14 @@ namespace Volt
 		uint32_t textureCount = 0;
 		uint32_t materialFlags = 0;
 		glm::uvec2 padding;
+	};
+
+	struct GPUMeshNew
+	{
+		ResourceHandle vertexPositions;
+		ResourceHandle vertexMaterial;
+		ResourceHandle vertexAnimation;
+		ResourceHandle indexBuffer;
 	};
 
 	///// Rendering Structures /////

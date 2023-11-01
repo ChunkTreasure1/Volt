@@ -60,9 +60,6 @@ namespace Volt
 		void UpdateSamplersBuffer();
 		void UpdateLightBuffers();
 
-		void UpdateDescriptorTableForMeshRendering(RenderScene& renderScene, RenderContext& renderContext);
-		void UpdateDescriptorTableForBindlessRendering(RenderScene& renderScene, RenderContext& renderContext);
-
 		void CreatePipelines();
 
 		///// Passes //////
@@ -104,6 +101,7 @@ namespace Volt
 		Ref<RHI::StorageBuffer> m_instanceOffsetToObjectIDBuffer;
 		Ref<RHI::StorageBuffer> m_indirectDrawDataBuffer;
 		Ref<RHI::StorageBuffer> m_materialsBuffer;
+		Ref<RHI::StorageBuffer> m_meshesBuffer;
 
 		Ref<RHI::SamplerState> m_samplerState;
 
