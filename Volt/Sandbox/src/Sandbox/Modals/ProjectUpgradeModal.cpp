@@ -196,14 +196,15 @@ void ProjectUpgradeModal::UpgradeCurrentProject()
 		ConvertMetaFilesToV011();
 	}
 
+	if (projectVersion.GetPatch() < 2 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
+	{
+		ConvertAnimationGraphsToV0_1_2();
+	}
+
 	if (projectVersion.GetMinor() < 3 && projectVersion.GetMajor() == 0)
 	{
 		ConvertPrefabsToV113();
 		ConvertScenesToV113();
-	}
-	if (projectVersion.GetPatch() < 2 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
-	{
-		ConvertAnimationGraphsToV0_1_2();
 	}
 
 	Volt::ProjectManager::OnProjectUpgraded();
