@@ -67,6 +67,8 @@ namespace Volt
 		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle) const;
 		
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
+
+		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle) const;
 		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle) const;
 		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const;
 

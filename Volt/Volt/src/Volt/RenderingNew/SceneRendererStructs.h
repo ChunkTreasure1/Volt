@@ -20,12 +20,15 @@ namespace Volt
 	{
 		RenderGraphResourceHandle indirectCommandsBuffer;
 		RenderGraphResourceHandle indirectCountsBuffer;
-		RenderGraphResourceHandle indirectDrawDataBuffer;
 
-		RenderGraphResourceHandle drawToInstanceOffsetBuffer;
 		RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
 
-		RenderGraphResourceHandle meshesBuffer;
+		RenderGraphResourceHandle drawContextBuffer;
+	};
+
+	struct UniformBuffersData
+	{
+		RenderGraphResourceHandle cameraDataBuffer;
 	};
 
 	struct PreDepthData

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/RenderingNew/RenderObject.h"
+#include "Volt/RenderingNew/Resources/GlobalResource.h"
 
 #include <span>
 
@@ -9,6 +10,7 @@ namespace Volt
 	namespace RHI
 	{
 		class BufferView;
+		class StorageBuffer;
 	}
 
 	class Scene;
@@ -18,7 +20,7 @@ namespace Volt
 	{
 	public:
 		RenderScene(Scene* sceneRef);
-		~RenderScene() = default;
+		~RenderScene();
 
 		void PrepareForUpdate();
 
@@ -31,16 +33,13 @@ namespace Volt
 		inline const bool IsInvalid() const { return m_isInvalid; }
 		inline const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
-		const uint32_t GetMeshIndex(Ref<Mesh> mesh) const;
+		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
 		const uint32_t GetMaterialIndex(Ref<SubMaterial> material) const;
 
-		inline const std::span<const Weak<Mesh>> GetIndividualMeshes() const { return m_individualMeshes; }
-		inline const std::span<const Weak<SubMaterial>> GetIndividualMaterials() const { return m_individualMaterials; }
-
-		inline const std::vector<Ref<RHI::BufferView>>& GetVertexPositionViews() const { return m_vertexPositionViews; }
-		inline const std::vector<Ref<RHI::BufferView>>& GetVertexAnimationViews() const { return m_vertexAnimationViews; }
-		inline const std::vector<Ref<RHI::BufferView>>& GetVertexMaterialViews() const { return m_vertexMaterialViews; }
-		inline const std::vector<Ref<RHI::BufferView>>& GetIndexBufferViews() const { return m_indexBufferViews; }
+		inline const GlobalResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
+		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
+		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
+		inline const GlobalResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
 
 		std::vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
 		std::vector<RenderObject>::iterator end() { return m_renderObjects.end(); }
@@ -49,16 +48,20 @@ namespace Volt
 		const std::vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
 
 	private:
-		void AddMeshToViews(Ref<Mesh> mesh);
+		void UploadGPUMeshes();
+		void UploadObjectDrawData();
+		void UploadGPUScene();
+		void UploadGPUMaterials();
 
 		std::vector<RenderObject> m_renderObjects;
 		std::vector<Weak<Mesh>> m_individualMeshes;
 		std::vector<Weak<SubMaterial>> m_individualMaterials;
+		std::unordered_map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
 
-		std::vector<Ref<RHI::BufferView>> m_vertexPositionViews;
-		std::vector<Ref<RHI::BufferView>> m_vertexMaterialViews;
-		std::vector<Ref<RHI::BufferView>> m_vertexAnimationViews;
-		std::vector<Ref<RHI::BufferView>> m_indexBufferViews;
+		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuSceneBuffer;
+		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMeshesBuffer;
+		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMaterialsBuffer;
+		Scope<GlobalResource<RHI::StorageBuffer>> m_objectDrawDataBuffer;
 
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;

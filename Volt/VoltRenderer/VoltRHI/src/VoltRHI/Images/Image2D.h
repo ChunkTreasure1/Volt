@@ -20,6 +20,7 @@ namespace Volt::RHI
 		virtual const uint32_t GetWidth() const = 0;
 		virtual const uint32_t GetHeight() const = 0;
 		virtual const PixelFormat GetFormat() const = 0;
+		virtual const ImageUsage GetUsage() const = 0;
 		virtual const uint32_t CalculateMipCount() const = 0;
 
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);

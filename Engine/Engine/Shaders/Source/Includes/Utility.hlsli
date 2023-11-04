@@ -16,3 +16,8 @@ uint DivideRoundUp(uint dividend, uint divisor)
 {
     return (dividend - 1) / divisor + 1;
 }
+
+float4x4 ToFloat4x4(float4x3 transform)
+{
+    return float4x4(float4(transform[0], 0.f), float4(transform[1], 0.f), float4(transform[2], 0.f), float4(0.f, 0.f, 0.f, 1.f));
+}

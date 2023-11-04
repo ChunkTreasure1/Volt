@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <span>
 
 namespace Volt
 {
@@ -106,6 +107,33 @@ namespace Volt
 			availiableHandles.Push(resourceHandle);
 		}
 
+		inline void MarkAsDirty(ResourceHandle handle)
+		{
+			std::scoped_lock lock{ accessMutex };
+			
+			if (static_cast<uint32_t>(resources.size()) >= handle)
+			{
+				return;
+			}
+
+			auto it = std::find_if(dirtyResources.begin(), dirtyResources.end(), [&](const auto& dirty)
+			{
+				if (dirty == resources[handle])
+				{
+					return true;
+				}
+
+				return false;
+			});
+
+			if (it != dirtyResources.end())
+			{
+				return;
+			}
+
+			dirtyResources.emplace_back(resources[handle]);
+		}
+
 		inline std::span<const Weak<T>> GetRange()
 		{
 			return resources;
@@ -150,7 +178,10 @@ namespace Volt
 
 		template<typename T>
 		static ResourceHandle GetResourceHandle(Weak<T> resource);
-		
+
+		template<typename T>
+		static void MarkAsDirty(ResourceHandle handle);
+ 		
 		static void Update();
 		inline static Ref<RHI::DescriptorTable> GetDescriptorTable() { return s_globalDescriptorTable; }
 	private:
@@ -195,6 +226,13 @@ namespace Volt
 	{
 		auto& container = GetResourceContainer<T>();
 		return container.GetResourceHandle(resource);
+	}
+
+	template<typename T>
+	inline void GlobalResourceManager::MarkAsDirty(ResourceHandle handle)
+	{
+		auto& container = GetResourceContainer<T>();
+		container.MarkAsDirty(handle);
 	}
 
 	template<typename T>

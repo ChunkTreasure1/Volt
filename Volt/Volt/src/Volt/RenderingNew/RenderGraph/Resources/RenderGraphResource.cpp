@@ -23,6 +23,12 @@ namespace Volt
 		return m_renderGraph.GetImage2D(resourceHandle);
 	}
 
+	Weak<RHI::StorageBuffer> RenderGraphPassResources::GetBufferRaw(const RenderGraphResourceHandle resourceHandle) const
+	{
+		ValidateResourceAccess(resourceHandle);
+		return m_renderGraph.GetBufferRaw(resourceHandle);
+	}
+
 	ResourceHandle RenderGraphPassResources::GetBuffer(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);

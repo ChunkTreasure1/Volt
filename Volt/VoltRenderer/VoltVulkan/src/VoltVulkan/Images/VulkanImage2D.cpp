@@ -301,6 +301,11 @@ namespace Volt::RHI
 		return m_specification.format;
 	}
 
+	const ImageUsage VulkanImage2D::GetUsage() const
+	{
+		return m_specification.usage;
+	}
+
 	const uint32_t VulkanImage2D::CalculateMipCount() const
 	{
 		return Utility::CalculateMipCount(m_specification.width, m_specification.height);

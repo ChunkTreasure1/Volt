@@ -10,6 +10,17 @@
 
 namespace Volt
 {
+	static constexpr uint32_t TEXTURE1D_BINDING = 0;
+	static constexpr uint32_t TEXTURE2D_BINDING = 1;
+	static constexpr uint32_t TEXTURE3D_BINDING = 2;
+	static constexpr uint32_t TEXTURECUBE_BINDING = 3;
+	static constexpr uint32_t RWTEXTURE1D_BINDING = 4;
+	static constexpr uint32_t RWTEXTURE2D_BINDING = 5;
+	static constexpr uint32_t RWTEXTURE3D_BINDING = 6;
+
+	static constexpr uint32_t BYTEADDRESSBUFFER_BINDING = 7;
+	static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
+
 	void GlobalResourceManager::Initialize()
 	{
 		RHI::DescriptorTableCreateInfo info{};
@@ -33,8 +44,8 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, 7, resources.GetResourceHandle(resource));
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, 8, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource));
 			}
 
 			resources.ClearDirty();
@@ -47,8 +58,12 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource->GetView(), 0, 1, resources.GetResourceHandle(resource));
-				s_globalDescriptorTable->SetImageView(resource->GetView(), 0, 5, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetImageView(resource->GetView(), 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource));
+
+				if (resource->GetUsage() == RHI::ImageUsage::Storage || resource->GetUsage() == RHI::ImageUsage::AttachmentStorage)
+				{
+					s_globalDescriptorTable->SetImageView(resource->GetView(), 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource));
+				}
 			}
 
 			resources.ClearDirty();

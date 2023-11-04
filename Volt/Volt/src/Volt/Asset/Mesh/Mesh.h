@@ -6,9 +6,8 @@
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/BoundingStructures.h"
 
-#include "Volt/Rendering/RendererStructs.h"
-
 #include "Volt/RenderingNew/Resources/ResourceHandle.h"
+#include "Volt/RenderingNew/GPUScene.h"
 
 namespace Volt
 {
@@ -49,7 +48,7 @@ namespace Volt
 		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
 
 		inline const std::map<uint32_t, BoundingSphere> GetSubMeshBoundingSpheres() const { return m_subMeshBoundingSpheres; }
-
+		
 		inline Ref<RHI::VertexBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
 		inline Ref<RHI::IndexBuffer> GetIndexBuffer() const { return m_indexBuffer; }
 

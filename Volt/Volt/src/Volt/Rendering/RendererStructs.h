@@ -105,22 +105,6 @@ namespace Volt
 		float padding1 = 0.f;
 	};
 
-	struct GPUMeshLOD
-	{
-		uint32_t indexCount = 0;
-		uint32_t indexOffset = 0;
-	};
-
-	struct GPUMesh
-	{
-		inline static constexpr uint32_t MAX_LOD_COUNT = 8;
-
-		uint32_t lodCount = 0;
-		glm::ivec3 padding = 0;
-
-		GPUMeshLOD lods[MAX_LOD_COUNT];
-	};
-
 	///// Indirect /////
 	struct IndirectBatch
 	{

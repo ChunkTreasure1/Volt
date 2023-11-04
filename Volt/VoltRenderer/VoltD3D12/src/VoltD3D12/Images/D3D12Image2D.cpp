@@ -133,6 +133,11 @@ namespace Volt::RHI
 		return m_specs.format;
 	}
 
+	const ImageUsage D3D12Image2D::GetUsage() const
+	{
+		return m_specs.usage;
+	}
+
 	const ImageAspect D3D12Image2D::GetImageAspect() const
 	{
 		return ImageAspect();

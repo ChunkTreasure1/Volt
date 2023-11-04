@@ -13,7 +13,7 @@ namespace Volt
 		UUID id;
 		entt::entity entity;
 	
-		Ref<Mesh> mesh;
+		Weak<Mesh> mesh;
 		uint32_t subMeshIndex = 0;
 		uint32_t vertexBufferIndex = 0;
 	};

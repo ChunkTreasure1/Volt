@@ -3,6 +3,7 @@
 #include "Volt/Core/Base.h"
 
 #include "Volt/RenderingNew/SceneRendererStructs.h"
+#include "Volt/RenderingNew/Resources/GlobalResource.h"
 
 namespace Volt
 {
@@ -15,7 +16,6 @@ namespace Volt
 		class ComputePipeline;
 
 		class UniformBufferSet;
-		class StorageBufferSet;
 		class StorageBuffer;
 
 		class SamplerState;
@@ -63,6 +63,7 @@ namespace Volt
 		void CreatePipelines();
 
 		///// Passes //////
+		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -92,16 +93,14 @@ namespace Volt
 		Ref<RHI::RenderPipeline> m_renderPipeline;
 
 		Ref<RHI::UniformBufferSet> m_constantBufferSet;
-		Ref<RHI::StorageBufferSet> m_storageBufferSet;
 
 		Ref<RHI::StorageBuffer> m_indirectCommandsBuffer;
 		Ref<RHI::StorageBuffer> m_indirectCountsBuffer;
 		
-		Ref<RHI::StorageBuffer> m_drawToInstanceOffsetBuffer;
-		Ref<RHI::StorageBuffer> m_instanceOffsetToObjectIDBuffer;
-		Ref<RHI::StorageBuffer> m_indirectDrawDataBuffer;
-		Ref<RHI::StorageBuffer> m_materialsBuffer;
-		Ref<RHI::StorageBuffer> m_meshesBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_instanceOffsetToObjectIDBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_drawToInstanceOffsetBuffer;
+
+		Ref<RHI::StorageBuffer> m_drawContextBuffer;
 
 		Ref<RHI::SamplerState> m_samplerState;
 

@@ -1,7 +1,10 @@
-#include "DrawBuffers.hlsli"
+#pragma once
 
-#ifndef VERTEX_H
-#define VERTEX_H
+#include "Defines.hlsli"
+#include "GPUScene.hlsli"
+#include "DrawContext.hlsli"
+
+#include "Structures.hlsli"
 
 static const uint VERTEX_MATERIAL_DATA_SIZE = 12;
 static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
@@ -147,139 +150,165 @@ float3 decode_tangent(float3 normal, float diamond_tangent)
     return packed_tangent.x * t1 + packed_tangent.y * t2;
 }
 
+struct Constants
+{
+    TypedBuffer<GPUScene> gpuScene;
+    TypedBuffer<DrawContext> drawContext;
+    
+    TypedBuffer<CameraData> cameraData; // #TODO_Ivar: Should be uniform buffer
+};
+
 struct DefaultInput
 {
     uint vertexId : SV_VertexID;
     uint instanceId : SV_InstanceID;
     BUILTIN_VARIABLE("DrawIndex", uint, drawIndex);
     
-    uint GetObjectID()
-    {
-        const uint instanceOffset = u_drawToInstanceOffset[drawIndex];
-        return instanceOffset;
-        //return u_instanceOffsetToObjectID[instanceOffset + instanceId];
-    }
-    
-    const IndirectDrawData GetDrawData()
-    {
-        const uint objectId = GetObjectID();
-        return u_indirectDrawData[objectId];
-    }
-    
-    const uint GetTriangleID()
-    {
-        return vertexId / 3;
-    }
-    
-    const uint GetVertexIndex()
-    {
-        const IndirectDrawData drawData = GetDrawData();
+    //uint GetObjectID()
+    //{
+    //    Constants constants = GetConstants<Constants>();
+    //    DrawContext context = constants.drawContext.Load(0);
         
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-        return vertexIndex;
-    }
+    //    return context.drawToInstanceOffset.Load(drawIndex);
+    //    //return u_instanceOffsetToObjectID[instanceOffset + instanceId];
+    //}
     
-    const float3 GetLocalPosition()
-    {
-        const IndirectDrawData drawData = GetDrawData();
+    //const ObjectDrawData GetDrawData()
+    //{
+    //    const uint objectId = GetObjectID();
         
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-        const float3 position = u_vertexPositionsBuffers[drawData.meshId].Load<float3>(sizeof(float3) * vertexIndex);
+    //    const Constants constants = GetConstants<Constants>();
+    //    const GPUScene scene = constants.gpuScene.Load(0);
         
-        return position;
-    }
+    //    return scene.objectDrawDataBuffer.Load(objectId);
+    //}
     
-    const float4 GetWorldPosition()
-    {
-        const IndirectDrawData drawData = GetDrawData();
-        
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-        const float3 position = u_vertexPositionsBuffers[drawData.meshId].Load<float3>(sizeof(float3) * vertexIndex);
-        
-        return mul(drawData.transform, float4(position, 1.f));
-    }
+    //const uint GetTriangleID()
+    //{
+    //    return vertexId / 3;
+    //}
     
-    const float3 GetNormal()
-    {
-        const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-    
-        uint normalValues = u_vertexMaterialDataBuffers[drawData.meshId].Load(VERTEX_MATERIAL_DATA_SIZE * vertexIndex);
+    //const GPUMesh GetMesh()
+    //{
+    //    const Constants constants = GetConstants<Constants>();
+    //    const GPUScene scene = constants.gpuScene.Load(0);
+    //    const ObjectDrawData drawData = GetDrawData();
         
-        uint2 octIntNormal;
-        
-        octIntNormal.x = (normalValues >> 8) & 0xFF;
-        octIntNormal.y = (normalValues >> 0) & 0xFF;
+    //    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+    //    return mesh;
+    //}
     
-        float2 octNormal = 0.f;
-        octNormal.x = octIntNormal.x / 255.f;
-        octNormal.y = octIntNormal.y / 255.f;
+    //const uint GetVertexIndex()
+    //{
+    //    const Constants constants = GetConstants<Constants>();
+    //    const GPUScene scene = constants.gpuScene.Load(0);
+    //    const ObjectDrawData drawData = GetDrawData();
+        
+    //    const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+        
+    //    const uint vertexIndex = mesh.indexBuffer.Load(vertexId) + mesh.vertexStartOffset;
+    //    return vertexIndex;
+    //}
+    
+    //const float3 GetLocalPosition()
+    //{
+    //    const IndirectDrawData drawData = GetDrawData();
+        
+    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+    //    const float3 position = u_vertexPositionsBuffers[drawData.meshId].Load<float3>(sizeof(float3) * vertexIndex);
+        
+    //    return position;
+    //}
+    
+    //const float4 GetWorldPosition()
+    //{
+    //    const IndirectDrawData drawData = GetDrawData();
+        
+    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+    //    const float3 position = u_vertexPositionsBuffers[drawData.meshId].Load<float3>(sizeof(float3) * vertexIndex);
+        
+    //    return mul(drawData.transform, float4(position, 1.f));
+    //}
+    
+    //const float3 GetNormal()
+    //{
+    //    const IndirectDrawData drawData = GetDrawData();
+    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+    
+    //    uint normalValues = u_vertexMaterialDataBuffers[drawData.meshId].Load(VERTEX_MATERIAL_DATA_SIZE * vertexIndex);
+        
+    //    uint2 octIntNormal;
+        
+    //    octIntNormal.x = (normalValues >> 8) & 0xFF;
+    //    octIntNormal.y = (normalValues >> 0) & 0xFF;
+    
+    //    float2 octNormal = 0.f;
+    //    octNormal.x = octIntNormal.x / 255.f;
+    //    octNormal.y = octIntNormal.y / 255.f;
 
-        return OctNormalDecode(octNormal);
-    }
+    //    return OctNormalDecode(octNormal);
+    //}
     
-    const float3 GetTangent()
-    {    
-        const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+    //const float3 GetTangent()
+    //{    
+    //    const IndirectDrawData drawData = GetDrawData();
+    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
     
-        float tangent = u_vertexMaterialDataBuffers[drawData.meshId].Load<float>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 4);
+    //    float tangent = u_vertexMaterialDataBuffers[drawData.meshId].Load<float>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 4);
         
-        return decode_tangent(GetNormal(), tangent);
-    }
+    //    return decode_tangent(GetNormal(), tangent);
+    //}
     
-    const float2 GetTexCoords()
-    {
-        const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-        const uint texCoordsUINT = u_vertexMaterialDataBuffers[drawData.meshId].Load<uint>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 8);
+    //const float2 GetTexCoords()
+    //{
+    //    const IndirectDrawData drawData = GetDrawData();
+    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+    //    const uint texCoordsUINT = u_vertexMaterialDataBuffers[drawData.meshId].Load<uint>((VERTEX_MATERIAL_DATA_SIZE * vertexIndex) + 8);
         
-        float2 result;
-        result.x = asfloat((texCoordsUINT >> 16) & 0xFFFF);
-        result.y = asfloat((texCoordsUINT >> 0) & 0xFFFF);
+    //    float2 result;
+    //    result.x = asfloat((texCoordsUINT >> 16) & 0xFFFF);
+    //    result.y = asfloat((texCoordsUINT >> 0) & 0xFFFF);
     
-        return result;
-    }
+    //    return result;
+    //}
     
-    float4x4 GetSkinnedMatrix()
-    {
-        const IndirectDrawData drawData = GetDrawData();
-        const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
+    //float4x4 GetSkinnedMatrix()
+    //{
+    //    const IndirectDrawData drawData = GetDrawData();
+    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
     
-        uint4 influences;
+    //    uint4 influences;
         
-        uint influenceXY = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 0));
-        influences.x = (influenceXY >> 16) & 0xFFFF;
-        influences.y = (influenceXY >> 0) & 0xFFFF;
+    //    uint influenceXY = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 0));
+    //    influences.x = (influenceXY >> 16) & 0xFFFF;
+    //    influences.y = (influenceXY >> 0) & 0xFFFF;
         
-        uint influenceZW = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 4));
-        influences.z = (influenceZW >> 16) & 0xFFFF;
-        influences.w = (influenceZW >> 0) & 0xFFFF;
+    //    uint influenceZW = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 4));
+    //    influences.z = (influenceZW >> 16) & 0xFFFF;
+    //    influences.w = (influenceZW >> 0) & 0xFFFF;
     
-        float4 weights;
+    //    float4 weights;
         
-        uint weightsXY = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 8));
-        weights.x = asfloat((weightsXY >> 16) & 0xFFFF);
-        weights.y = asfloat((weightsXY >> 0) & 0xFFFF);
+    //    uint weightsXY = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 8));
+    //    weights.x = asfloat((weightsXY >> 16) & 0xFFFF);
+    //    weights.y = asfloat((weightsXY >> 0) & 0xFFFF);
         
-        uint weightsZW = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 12));
-        weights.z = asfloat((weightsZW >> 16) & 0xFFFF);
-        weights.w = asfloat((weightsZW >> 0) & 0xFFFF);
+    //    uint weightsZW = u_vertexAnimationDataBuffers[drawData.meshId].Load<uint>((VERTEX_ANIMATION_DATA_SIZE * vertexIndex + 12));
+    //    weights.z = asfloat((weightsZW >> 16) & 0xFFFF);
+    //    weights.w = asfloat((weightsZW >> 0) & 0xFFFF);
         
-        float4x4 skinningMatrix = 0.f;
-        //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.x], float(weights.x));
-        //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.y], float(weights.y));
-        //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.z], float(weights.z));
-        //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.w], float(weights.w));
+    //    float4x4 skinningMatrix = 0.f;
+    //    //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.x], float(weights.x));
+    //    //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.y], float(weights.y));
+    //    //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.z], float(weights.z));
+    //    //skinningMatrix += mul(u_animationData[objectData.boneOffset + influences.w], float(weights.w));
 
-        return skinningMatrix;
-    }
+    //    return skinningMatrix;
+    //}
     
-    const float4x4 GetTransform()
-    {
-        const IndirectDrawData drawData = GetDrawData();
-        return drawData.transform;
-    }
+    //const float4x4 GetTransform()
+    //{
+    //    const IndirectDrawData drawData = GetDrawData();
+    //    return drawData.transform;
+    //}
 };
-
-#endif

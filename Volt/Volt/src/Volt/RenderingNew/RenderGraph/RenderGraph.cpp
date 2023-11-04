@@ -481,7 +481,9 @@ namespace Volt
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
-		m_usedGlobalImage2DResourceHandles.emplace_back() = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+
+		m_usedGlobalImage2DResourceHandles.insert(handle);
 
 		return image->GetView();
 	}
@@ -492,9 +494,11 @@ namespace Volt
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
-		m_usedGlobalImage2DResourceHandles.emplace_back() = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+		
+		m_usedGlobalImage2DResourceHandles.insert(handle);
 
-		return m_usedGlobalImage2DResourceHandles.back();
+		return handle;
 	}
 
 	ResourceHandle RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
@@ -503,9 +507,24 @@ namespace Volt
 		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 		
 		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
-		m_usedGlobalBufferResourceHandles.emplace_back() = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(buffer);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(buffer);
 
-		return m_usedGlobalBufferResourceHandles.back();
+		m_usedGlobalBufferResourceHandles.insert(handle);
+
+		return handle;
+	}
+
+	Weak<RHI::StorageBuffer> RenderGraph::GetBufferRaw(const RenderGraphResourceHandle resourceHandle)
+	{
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
+
+		auto buffer = m_transientResourceSystem.AquireBuffer(resourceHandle, bufferDesc.description);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(buffer);
+
+		m_usedGlobalBufferResourceHandles.insert(handle);
+
+		return buffer;
 	}
 
 	ResourceHandle RenderGraph::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle)

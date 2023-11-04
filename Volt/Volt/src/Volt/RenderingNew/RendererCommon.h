@@ -24,15 +24,6 @@ namespace Volt
 		uint32_t padding;
 	};
 
-	struct GPUMaterialNew
-	{
-		uint32_t textures[16];
-
-		uint32_t textureCount = 0;
-		uint32_t materialFlags = 0;
-		glm::uvec2 padding;
-	};
-
 	struct GPUMeshNew
 	{
 		ResourceHandle vertexPositions;

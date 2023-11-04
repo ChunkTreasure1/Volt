@@ -180,16 +180,18 @@ namespace Volt
 			m_vertices.clear();
 			m_indices.clear();
 
+			// For every sub mesh
 			for (size_t i = 0; i < extractedVertices.size(); i++)
 			{
 				auto& currentVertices = extractedVertices.at(i);
 				auto& currentIndices = extractedIndices.at(i);
+				auto& currentSubMesh = m_subMeshes.at(i);
+
 				auto& gpuMesh = m_gpuMeshes.emplace_back();
+				gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
 
 				std::vector<uint32_t> lodIndices = currentIndices;
 				std::vector<uint32_t> resultIndices;
-
-				auto& currentSubMesh = m_subMeshes.at(i);
 
 				currentSubMesh.indexStartOffset = uint32_t(m_indices.size());
 
@@ -263,6 +265,15 @@ namespace Volt
 			m_indexStorageBuffer->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
 
 			m_indexBufferHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_indexStorageBuffer);
+		}
+
+		// Set all buffers in the gpu meshes
+		for (auto& gpuMesh : m_gpuMeshes)
+		{
+			gpuMesh.vertexPositionsBuffer = m_vertexPositionsHandle;
+			gpuMesh.vertexMaterialBuffer = m_vertexMaterialHandle;
+			gpuMesh.vertexAnimationBuffer = m_vertexAnimationHandle;
+			gpuMesh.indexBuffer = m_indexBufferHandle;
 		}
 
 		for (auto& subMesh : m_subMeshes)
