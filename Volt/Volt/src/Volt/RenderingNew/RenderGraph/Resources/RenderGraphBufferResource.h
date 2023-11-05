@@ -19,6 +19,7 @@ namespace Volt
 	{
 		RenderGraphBufferDesc description{};
 		bool isExternal = false;
+		bool trackGlobalResource = true;
 
 		inline static constexpr ResourceType GetResourceType()
 		{
@@ -30,6 +31,7 @@ namespace Volt
 	{
 		RenderGraphBufferDesc description{};
 		bool isExternal = false;
+		bool trackGlobalResource = true;
 
 		inline static constexpr ResourceType GetResourceType()
 		{

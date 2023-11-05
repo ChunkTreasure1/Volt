@@ -152,10 +152,10 @@ namespace Volt
 
 	Mesh::~Mesh()
 	{
-		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_vertexPositionsHandle);
-		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_vertexAnimationHandle);
-		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_vertexMaterialHandle);
-		GlobalResourceManager::UnregisterResource<RHI::StorageBuffer>(m_indexBufferHandle);
+		m_vertexPositionsBuffer = nullptr;
+		m_vertexMaterialBuffer = nullptr;
+		m_vertexAnimationBuffer = nullptr;
+		m_indexBuffer = nullptr;
 	}
 
 	void Mesh::Construct()
@@ -226,54 +226,43 @@ namespace Volt
 		}
 
 		const auto encodedVertices = GetEncodedVertices();
-		m_vertexBuffer = RHI::VertexBuffer::Create(encodedVertices.data(), uint32_t(encodedVertices.size() * sizeof(EncodedVertex)));
-		m_indexBuffer = RHI::IndexBuffer::Create(m_indices.data(), uint32_t(m_indices.size()));
-
 		const std::string meshName = assetName;
 
 		// Vertex positions
 		{
 			const auto vertexPositions = GetVertexPositions();
-			m_vertexPositionsBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions - " + meshName);
-			m_vertexPositionsBuffer->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
-
-			m_vertexPositionsHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_vertexPositionsBuffer);
+			m_vertexPositionsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexPositions.size()), sizeof(glm::vec3), "Vertex Positions - " + meshName));
+			m_vertexPositionsBuffer->GetResource()->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
 		}
 
 		// Vertex material data
 		{
 			const auto vertexMaterialData = GetVertexMaterialData();
-			m_vertexMaterialBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData), "Vertex Material Data - " + meshName);
-			m_vertexMaterialBuffer->SetData(vertexMaterialData.data(), vertexMaterialData.size() * sizeof(VertexMaterialData));
-		
-			m_vertexMaterialHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_vertexMaterialBuffer);
+			m_vertexMaterialBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexMaterialData.size()), sizeof(VertexMaterialData), "Vertex Material Data - " + meshName));
+			m_vertexMaterialBuffer->GetResource()->SetData(vertexMaterialData.data(), vertexMaterialData.size() * sizeof(VertexMaterialData));
 		}
 
 
 		// Vertex animation data
 		{
 			const auto vertexAnimationData = GetVertexAnimationData();
-			m_vertexAnimationBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData), "Vertex Animation Data - " + meshName);
-			m_vertexAnimationBuffer->SetData(vertexAnimationData.data(), vertexAnimationData.size() * sizeof(VertexAnimationData));
-		
-			m_vertexAnimationHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_vertexAnimationBuffer);
+			m_vertexAnimationBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(vertexAnimationData.size()), sizeof(VertexAnimationData), "Vertex Animation Data - " + meshName));
+			m_vertexAnimationBuffer->GetResource()->SetData(vertexAnimationData.data(), vertexAnimationData.size() * sizeof(VertexAnimationData));
 		}
 
 		// Indices
 		{
-			m_indexStorageBuffer = RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName);
-			m_indexStorageBuffer->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
-
-			m_indexBufferHandle = GlobalResourceManager::RegisterResource<RHI::StorageBuffer>(m_indexStorageBuffer);
+			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName));
+			m_indexBuffer->GetResource()->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
 		}
 
 		// Set all buffers in the gpu meshes
 		for (auto& gpuMesh : m_gpuMeshes)
 		{
-			gpuMesh.vertexPositionsBuffer = m_vertexPositionsHandle;
-			gpuMesh.vertexMaterialBuffer = m_vertexMaterialHandle;
-			gpuMesh.vertexAnimationBuffer = m_vertexAnimationHandle;
-			gpuMesh.indexBuffer = m_indexBufferHandle;
+			gpuMesh.vertexPositionsBuffer = m_vertexPositionsBuffer->GetResourceHandle();
+			gpuMesh.vertexMaterialBuffer = m_vertexMaterialBuffer->GetResourceHandle();
+			gpuMesh.vertexAnimationBuffer = m_vertexAnimationBuffer->GetResourceHandle();
+			gpuMesh.indexBuffer = m_indexBuffer->GetResourceHandle();
 		}
 
 		for (auto& subMesh : m_subMeshes)

@@ -97,13 +97,12 @@ namespace Volt
 
 		// Storage buffers
 		{
-			m_indirectCommandsBuffer = RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), "Indirect Commands", RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU);
-			m_indirectCountsBuffer = RHI::StorageBuffer::Create(2, sizeof(uint32_t), "Indirect Counts", RHI::BufferUsage::IndirectBuffer);
-
+			m_indirectCommandsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(IndirectGPUCommandNew), "Indirect Commands", RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU));
+			m_indirectCountsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(2, sizeof(uint32_t), "Indirect Counts", RHI::BufferUsage::IndirectBuffer));
 			m_drawToInstanceOffsetBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(uint32_t), "Draw To Instance Offset"));
 			m_instanceOffsetToObjectIDBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(uint32_t), "Instance Offset to Object ID"));
 
-			m_drawContextBuffer = RHI::StorageBuffer::Create(1, sizeof(DrawContext), "Draw Context", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU);
+			m_drawContextBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(DrawContext), "Draw Context", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU));
 		}
 
 		// Sampler state
@@ -210,21 +209,24 @@ namespace Volt
 		renderScene->PrepareForUpdate();
 		const uint32_t renderObjectCount = renderScene->GetRenderObjectCount();
 
-		if (m_indirectCommandsBuffer->GetSize() < renderObjectCount)
+		if (m_indirectCommandsBuffer->GetResource()->GetSize() < renderObjectCount)
 		{
-			m_indirectCommandsBuffer->Resize(renderObjectCount);
+			m_indirectCommandsBuffer->GetResource()->Resize(renderObjectCount);
+			m_indirectCommandsBuffer->MarkAsDirty();
 		}
 
 		if (m_instanceOffsetToObjectIDBuffer->GetResource()->GetSize() < renderObjectCount)
 		{
 			m_instanceOffsetToObjectIDBuffer->GetResource()->Resize(renderObjectCount);
+			m_instanceOffsetToObjectIDBuffer->MarkAsDirty();
+
 			m_drawToInstanceOffsetBuffer->GetResource()->Resize(renderObjectCount);
 			m_drawToInstanceOffsetBuffer->MarkAsDirty();
 		}
 
 		std::unordered_map<size_t, uint32_t> meshSubMeshIndexMap;
 
-		IndirectGPUCommandNew* indirectCommands = m_indirectCommandsBuffer->Map<IndirectGPUCommandNew>();
+		IndirectGPUCommandNew* indirectCommands = m_indirectCommandsBuffer->GetResource()->Map<IndirectGPUCommandNew>();
 
 		m_currentActiveCommandCount = 0;
 		for (uint32_t index = 0; const auto & obj : *renderScene)
@@ -255,7 +257,7 @@ namespace Volt
 			index++;
 		}
 
-		m_indirectCommandsBuffer->Unmap();
+		m_indirectCommandsBuffer->GetResource()->Unmap();
 
 		m_scene->GetRenderScene()->SetValid();
 	}
@@ -268,12 +270,12 @@ namespace Volt
 
 		// Update draw context
 		{
-			DrawContext* drawContext = m_drawContextBuffer->Map<DrawContext>();
+			DrawContext* drawContext = m_drawContextBuffer->GetResource()->Map<DrawContext>();
 
 			drawContext->drawToInstanceOffset = m_drawToInstanceOffsetBuffer->GetResourceHandle();
 			drawContext->instanceOffsetToObjectIDBuffer = m_instanceOffsetToObjectIDBuffer->GetResourceHandle();
 
-			m_drawContextBuffer->Unmap();
+			m_drawContextBuffer->GetResource()->Unmap();
 		}
 	}
 
@@ -398,11 +400,12 @@ namespace Volt
 		auto& bufferData = blackboard.Add<ExternalBuffersData>();
 		auto& imageData = blackboard.Add<ExternalImagesData>();
 
-		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer);
-		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer);
-		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.AddExternalBuffer(m_instanceOffsetToObjectIDBuffer->GetResource());
+		bufferData.indirectCommandsBuffer = renderGraph.AddExternalBuffer(m_indirectCommandsBuffer->GetResource(), false);
+		bufferData.indirectCountsBuffer = renderGraph.AddExternalBuffer(m_indirectCountsBuffer->GetResource(), false);
+		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.AddExternalBuffer(m_instanceOffsetToObjectIDBuffer->GetResource(), false);
+		bufferData.drawToInstanceOffsetBuffer = renderGraph.AddExternalBuffer(m_drawToInstanceOffsetBuffer->GetResource(), false);
 
-		bufferData.drawContextBuffer = renderGraph.AddExternalBuffer(m_drawContextBuffer);
+		bufferData.drawContextBuffer = renderGraph.AddExternalBuffer(m_drawContextBuffer->GetResource(), false);
 
 		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
 	}
@@ -442,7 +445,7 @@ namespace Volt
 			context.BindPipeline(m_indirectSetupPipeline);
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCommandsBuffer));
-			context.SetConstant(m_drawToInstanceOffsetBuffer->GetResourceHandle());
+			context.SetConstant(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer));
 			context.SetConstant(static_cast<uint32_t>(m_currentActiveCommandCount));
 
@@ -493,7 +496,7 @@ namespace Volt
 			context.SetConstant(drawContextHandle);
 			context.SetConstant(cameraDataHandle);
 
-			context.DrawIndirectCount(m_indirectCommandsBuffer, 0, m_indirectCountsBuffer, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+			context.DrawIndirectCount(m_indirectCommandsBuffer->GetResource(), 0, m_indirectCountsBuffer->GetResource(), 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 			context.EndRendering();
 		});
 	}

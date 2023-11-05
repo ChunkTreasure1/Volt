@@ -6,7 +6,7 @@
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/BoundingStructures.h"
 
-#include "Volt/RenderingNew/Resources/ResourceHandle.h"
+#include "Volt/RenderingNew/Resources/GlobalResource.h"
 #include "Volt/RenderingNew/GPUScene.h"
 
 namespace Volt
@@ -49,18 +49,10 @@ namespace Volt
 
 		inline const std::map<uint32_t, BoundingSphere> GetSubMeshBoundingSpheres() const { return m_subMeshBoundingSpheres; }
 		
-		inline Ref<RHI::VertexBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
-		inline Ref<RHI::IndexBuffer> GetIndexBuffer() const { return m_indexBuffer; }
-
-		inline Ref<RHI::StorageBuffer> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
-		inline Ref<RHI::StorageBuffer> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
-		inline Ref<RHI::StorageBuffer> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
-		inline Ref<RHI::StorageBuffer> GetIndexStorageBuffer() const { return m_indexStorageBuffer; }
-
-		inline const ResourceHandle GetVertexPositionsHandle() const { return m_vertexPositionsHandle; }
-		inline const ResourceHandle GetVertexMaterialHandle() const { return m_vertexMaterialHandle; }
-		inline const ResourceHandle GetVertexAnimationHandle() const { return m_vertexAnimationHandle; }
-		inline const ResourceHandle GetIndexBufferHandle() const { return m_indexBufferHandle; }
+		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
+		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
+		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
+		inline Ref<GlobalResource<RHI::StorageBuffer>> GetIndexStorageBuffer() const { return m_indexBuffer; }
 
 		static AssetType GetStaticType() { return AssetType::Mesh; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -98,18 +90,11 @@ namespace Volt
 		std::vector<uint32_t> m_indices;
 
 		Ref<Material> m_material;
-		Ref<RHI::VertexBuffer> m_vertexBuffer;
-		Ref<RHI::IndexBuffer> m_indexBuffer;
 
-		Ref<RHI::StorageBuffer> m_vertexPositionsBuffer;
-		Ref<RHI::StorageBuffer> m_vertexMaterialBuffer;
-		Ref<RHI::StorageBuffer> m_vertexAnimationBuffer;
-		Ref<RHI::StorageBuffer> m_indexStorageBuffer;
-
-		ResourceHandle m_vertexPositionsHandle = 0;
-		ResourceHandle m_vertexMaterialHandle = 0;
-		ResourceHandle m_vertexAnimationHandle = 0;
-		ResourceHandle m_indexBufferHandle = 0;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexPositionsBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexMaterialBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexAnimationBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_indexBuffer;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;

@@ -69,13 +69,15 @@ namespace Volt
 		T& AddPass(std::string_view name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 		void AddPass(std::string_view name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 
+		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
+
 		void AddResourceTransition(RenderGraphResourceHandle resourceHandle, RHI::ResourceState newState);
 		void AddResourceTransition(RHI::ResourceState oldState, RHI::ResourceState newState);
 
-		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image);
-		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image);
-		RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer);
-		RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer);
+		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource = true);
+		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image, bool trackGlobalResource = true);
+		RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource = true);
+		RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource = true);
 
 	private:
 		friend class RenderGraphPassResources;
@@ -106,13 +108,14 @@ namespace Volt
 		
 		std::set<ResourceHandle> m_usedGlobalImage2DResourceHandles;
 		std::set<ResourceHandle> m_usedGlobalBufferResourceHandles;
+		std::vector<uint8_t*> m_temporaryAllocations;
 
 		uint32_t m_passIndex = 0;
 		RenderGraphResourceHandle m_resourceIndex = 0;
 
 		Weak<RHI::CommandBuffer> m_commandBuffer;
-
 		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
+
 		ResourceHandle m_passConstantsBufferResourceHandle = 0;
 
 		TransientResourceSystem m_transientResourceSystem;

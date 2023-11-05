@@ -90,17 +90,14 @@ namespace Volt
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 
-		Ref<RHI::RenderPipeline> m_renderPipeline;
-
 		Ref<RHI::UniformBufferSet> m_constantBufferSet;
 
-		Ref<RHI::StorageBuffer> m_indirectCommandsBuffer;
-		Ref<RHI::StorageBuffer> m_indirectCountsBuffer;
-		
+		Ref<GlobalResource<RHI::StorageBuffer>> m_indirectCommandsBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_indirectCountsBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_instanceOffsetToObjectIDBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_drawToInstanceOffsetBuffer;
-
-		Ref<RHI::StorageBuffer> m_drawContextBuffer;
+		
+		Ref<GlobalResource<RHI::StorageBuffer>> m_drawContextBuffer;
 
 		Ref<RHI::SamplerState> m_samplerState;
 
