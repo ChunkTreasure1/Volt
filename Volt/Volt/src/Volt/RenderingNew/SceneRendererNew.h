@@ -2,6 +2,7 @@
 
 #include "Volt/Core/Base.h"
 
+#include "Volt/RenderingNew/RendererCommon.h"
 #include "Volt/RenderingNew/SceneRendererStructs.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 
@@ -52,6 +53,7 @@ namespace Volt
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
+
 	private:
 		void OnRender(Ref<Camera> camera);
 
@@ -60,10 +62,15 @@ namespace Volt
 		void UpdateSamplersBuffer();
 		void UpdateLightBuffers();
 
+		void UploadIndirectCommands(RenderGraph& renderGraph, RenderGraphResourceHandle bufferHandle);
+
 		void CreatePipelines();
 
 		///// Passes //////
 		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
+
+		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -92,16 +99,11 @@ namespace Volt
 
 		Ref<RHI::UniformBufferSet> m_constantBufferSet;
 
-		Ref<GlobalResource<RHI::StorageBuffer>> m_indirectCommandsBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_indirectCountsBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_instanceOffsetToObjectIDBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_drawToInstanceOffsetBuffer;
-		
-		Ref<GlobalResource<RHI::StorageBuffer>> m_drawContextBuffer;
-
 		Ref<RHI::SamplerState> m_samplerState;
 
 		uint32_t m_currentActiveCommandCount = 0;
+
+		std::vector<IndirectGPUCommandNew> m_indirectGPUCommands;
 
 		///// TEMP /////
 		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;

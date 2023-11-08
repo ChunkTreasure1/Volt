@@ -33,8 +33,8 @@ void main(uint3 threadId : SV_DispatchThreadID)
   
     constants.drawToInstanceOffset.Store(drawIndex, drawIndex);
   
-    for (uint i = 0; i < instanceCount; i++)
-    {
-        constants.instanceOffsetToObjectID.Store(instanceOffset + i, objectId + i);
-    }
+    //for (uint i = 0; i < instanceCount; i++)
+    //{
+    //    constants.instanceOffsetToObjectID.Store(instanceOffset + i, objectId + i);
+    //}
 }

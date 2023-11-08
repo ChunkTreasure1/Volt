@@ -108,8 +108,8 @@ void TestingLayer::OnAttach()
 		m_descriptorTable->SetBufferView(m_constantBuffer->GetView(), 0, 0);
 		m_descriptorTable->SetBufferView(m_transformsBuffer->GetView(), 0, 1);
 
-		m_descriptorTable->SetBufferView(m_cubeMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 0);
-		m_descriptorTable->SetBufferView(m_sphereMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 1);
+		//m_descriptorTable->SetBufferView(m_cubeMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 0);
+		//m_descriptorTable->SetBufferView(m_sphereMesh->GetVertexPositionsBuffer()->GetView(), 1, 0, 1);
 	}
 }
 
@@ -167,7 +167,7 @@ bool TestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	m_commandBuffer->BeginRendering(renderingInfo);
 
 	m_commandBuffer->BindPipeline(m_renderPipeline);
-	m_commandBuffer->BindIndexBuffer(m_cubeMesh->GetIndexBuffer());
+	//m_commandBuffer->BindIndexBuffer(m_cubeMesh->GetIndexBuffer());
 	//m_commandBuffer->BindVertexBuffers({ m_mesh->GetVertexBuffer() }, 0);
 	m_commandBuffer->BindDescriptorTable(m_descriptorTable);
 

@@ -9,14 +9,15 @@ struct Output
 
 Output main(in DefaultInput input)
 {
-    //float4 worldPosition = input.GetWorldPosition();
+    const Constants constants = GetConstants<Constants>();
+    float4 worldPosition = mul(input.GetTransform(), float4(input.GetVertexPositionData().position, 1.f));
     
-    //const uint triangleId = input.GetTriangleID();
-    //const uint objectId = input.GetObjectID();
+    const uint triangleId = input.GetTriangleID();
+    const uint objectId = input.GetObjectID();
     
     Output output;
-    output.position = 0.f; // mul(u_cameraData.projection, mul(u_cameraData.view, worldPosition));
-    output.visId = 0u; //uint2(objectId, triangleId);
+    output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
+    output.visId = uint2(objectId, triangleId);
     
     return output;
 }

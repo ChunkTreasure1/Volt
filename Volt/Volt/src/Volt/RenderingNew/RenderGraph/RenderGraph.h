@@ -79,6 +79,16 @@ namespace Volt
 		RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource = true);
 		RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource = true);
 
+		RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
+		RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);
+		RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
+		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
+
+		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle);
+		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
+		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);
+		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
+
 	private:
 		friend class RenderGraphPassResources;
 		friend class Builder;
@@ -88,18 +98,9 @@ namespace Volt
 		void DestroyResources();
 		void AllocateConstantsBuffer();
 
-		RenderGraphResourceHandle CreateImage2D(const RenderGraphImageDesc& textureDesc);
-		RenderGraphResourceHandle CreateImage3D(const RenderGraphImageDesc& textureDesc);
-		RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
-		RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
-
 		Ref<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
-		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle);
-		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
-		ResourceHandle GetBuffer(const RenderGraphResourceHandle resourceHandle);
-		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
-		ResourceHandle GetUniformBuffer(const RenderGraphResourceHandle resourceHandle);
 
+		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
