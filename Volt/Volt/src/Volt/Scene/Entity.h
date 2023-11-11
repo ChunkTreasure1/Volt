@@ -20,7 +20,7 @@ namespace Volt
 		SkipCommonData = BIT(3)
 	};
 
-	VT_SETUP_ENUM_CLASS_OPERATORS(EntityCopyFlags);
+	VT_SETUP_ENUM_CLASS_OPERATORS(EntityCopyFlags)
 
 	class Entity
 	{

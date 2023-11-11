@@ -160,7 +160,7 @@ namespace Volt
 		[[nodiscard]] virtual const std::type_index& GetElementTypeIndex() const = 0;
 		[[nodiscard]] virtual const size_t GetElementTypeSize() const = 0;
 
-		// NOTE: This function heap allocates and object that MUST be manually deleted!
+		// NOTE: This function heap allocates an object that MUST be manually deleted!
 		virtual void DefaultConstructElement(void*& value) const = 0;
 		virtual void DestroyElement(void*& value) const = 0;
 

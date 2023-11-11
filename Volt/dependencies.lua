@@ -47,6 +47,7 @@ IncludeDir["vma"] = "%{wks.location}/Volt/vendor/vma"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["shaderc_utils"] = "%{wks.location}/Volt/vendor/shaderc/libshaderc_util/include"
 IncludeDir["shaderc_glslc"] = "%{wks.location}/Volt/vendor/shaderc/glslc"
+IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
 
@@ -61,6 +62,8 @@ LibraryDir["discord"] = "%{wks.location}/Volt/vendor/DiscordSDK/lib"
 
 LibraryDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/lib/%{cfg.buildcfg}"
 LibraryDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/lib/%{cfg.buildcfg}"
+
+LibraryDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/lib"
 
 Library = {}
 Library["fmod"] = "%{LibraryDir.fmod}/fmod_vc.lib"
@@ -116,3 +119,5 @@ Library["ShaderC_Release"] = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["ShaderC_Utils_Release"] = "%{LibraryDir.VulkanSDK}/shaderc_util.lib"
 Library["SPIRV_Cross_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+
+Library["Aftermath"] = "%{LibraryDir.Aftermath}/x64/GFSDK_Aftermath_Lib.x64.lib"

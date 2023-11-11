@@ -9,6 +9,7 @@
 #include "Volt/RenderingNew/Shader/ShaderMap.h"
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphUtils.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraphBlackboard.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
@@ -164,10 +165,10 @@ namespace Volt
 		UploadUniformBuffers(renderGraph, rgBlackboard, camera);
 		AddSetupIndirectPasses(renderGraph, rgBlackboard);
 
-		AddPreDepthPass(renderGraph, rgBlackboard); 
+		AddPreDepthPass(renderGraph, rgBlackboard);
 
 		AddVisibilityBufferPass(renderGraph, rgBlackboard);
-		//AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
+		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
 		//PrefixSumTechnique prefixSum{ renderGraph, m_prefixSumPipeline };
 		//prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_materialsBuffer->GetSize());
@@ -298,6 +299,37 @@ namespace Volt
 		renderGraph.AddMappedBufferUpload(bufferHandle, m_indirectGPUCommands.data(), m_indirectGPUCommands.size() * sizeof(IndirectGPUCommandNew), "Upload Indirect Commands");
 	}
 
+	void SceneRendererNew::BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard)
+	{
+		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+
+		builder.ReadResource(externalBuffers.drawContextBuffer);
+		builder.ReadResource(uniformBuffers.cameraDataBuffer);
+
+		builder.ReadResource(externalBuffers.indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
+		builder.ReadResource(externalBuffers.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+	}
+
+	void SceneRendererNew::RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard)
+	{
+		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+
+		const auto gpuSceneHandle = m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle();
+		const auto drawContextHandle = resources.GetBuffer(externalBuffers.drawContextBuffer);
+		const auto cameraDataHandle = resources.GetBuffer(uniformBuffers.cameraDataBuffer);
+
+		const auto indirectCommands = resources.GetBufferRaw(externalBuffers.indirectCommandsBuffer);
+		const auto indirectCounts = resources.GetBufferRaw(externalBuffers.indirectCountsBuffer);
+
+		context.SetConstant(gpuSceneHandle);
+		context.SetConstant(drawContextHandle);
+		context.SetConstant(cameraDataHandle);
+
+		context.DrawIndirectCount(indirectCommands, 0, indirectCounts, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+	}
+
 	void SceneRendererNew::CreatePipelines()
 	{
 		m_clearIndirectCountsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("ClearCountBuffer"));
@@ -319,14 +351,14 @@ namespace Volt
 			m_visibilityPipeline = RHI::RenderPipeline::Create(pipelineInfo);
 		}
 
-		//// Visibility buffer compute
-		//{
-		//	m_visibilityVisualizationPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("VisibilityVisualization"));
-		//	m_generateMaterialCountPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialCount"));
-		//	m_collectMaterialPixelsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CollectMaterialPixels"));
-		//	m_generateMaterialIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialIndirectArgs"));
-		//	m_generateGBufferPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateGBuffer"));
-		//}
+		// Visibility buffer compute
+		{
+			//	m_visibilityVisualizationPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("VisibilityVisualization"));
+			m_generateMaterialCountPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialCount"));
+			//	m_collectMaterialPixelsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CollectMaterialPixels"));
+			//	m_generateMaterialIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialIndirectArgs"));
+			//	m_generateGBufferPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateGBuffer"));
+		}
 
 		//// Utility
 		//{
@@ -338,67 +370,51 @@ namespace Volt
 	{
 		auto& buffersData = blackboard.Add<UniformBuffersData>();
 
-		buffersData = renderGraph.AddPass<UniformBuffersData>("Create Uniform Buffers",
-		[&](RenderGraph::Builder& builder, UniformBuffersData& data)
 		{
-			data.cameraDataBuffer = builder.CreateBuffer({ sizeof(CameraDataNew), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Camera Data" });
-		},
-		[=](const UniformBuffersData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			// Set camera data
-			{
-				auto cameraDataBuffer = resources.GetBufferRaw(data.cameraDataBuffer);
-				CameraDataNew* cameraDataPtr = cameraDataBuffer->Map<CameraDataNew>();
+			const auto desc = RGUtils::CreateBufferDesc<CameraDataNew>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Camera Data");
+			buffersData.cameraDataBuffer = renderGraph.CreateBuffer(desc);
 
-				cameraDataPtr->projection = camera->GetProjection();
-				cameraDataPtr->view = camera->GetView();
-				cameraDataPtr->inverseView = glm::inverse(camera->GetView());
-				cameraDataPtr->inverseProjection = glm::inverse(camera->GetProjection());
-				cameraDataPtr->position = glm::vec4(camera->GetPosition(), 1.f);
+			// Upload
+			CameraDataNew camData{};
+			camData.projection = camera->GetProjection();
+			camData.view = camera->GetView();
+			camData.inverseView = glm::inverse(camData.view);
+			camData.inverseProjection = glm::inverse(camData.projection);
+			camData.position = glm::vec4(camera->GetPosition(), 1.f);
 
-				cameraDataBuffer->Unmap();
-			}
-		});
+			renderGraph.AddMappedBufferUpload(buffersData.cameraDataBuffer, &camData, sizeof(CameraDataNew), "Upload Camera Data");
+		}
 	}
 
 	void SceneRendererNew::SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& renderScene = m_scene->GetRenderScene();
-		auto& bufferData = blackboard.Add<ExternalBuffersData>();
+		auto& bufferData = blackboard.Get<ExternalBuffersData>();
 
-		bufferData.indirectCommandsBuffer = renderGraph.CreateBuffer(
-			{
-				.size = std::max(renderScene->GetRenderObjectCount(), 1u) * sizeof(IndirectGPUCommandNew),
-				.usage = RHI::BufferUsage::IndirectBuffer,
-				.memoryUsage = RHI::MemoryUsage::CPUToGPU,
-				.name = "Indirect Commands"
-			});
+		{
+			const auto desc = RGUtils::CreateBufferDesc<IndirectGPUCommandNew>(std::max(renderScene->GetRenderObjectCount(), 1u), RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::CPUToGPU, "Indirect Commands");
+			bufferData.indirectCommandsBuffer = renderGraph.CreateBuffer(desc);
+		}
 
-		bufferData.indirectCountsBuffer = renderGraph.CreateBuffer(
-			{
-				.size = 2 * sizeof(uint32_t),
-				.usage = RHI::BufferUsage::IndirectBuffer,
-				.name = "Indirect Counts"
-			});
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(2, RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Indirect Counts");
+			bufferData.indirectCountsBuffer = renderGraph.CreateBuffer(desc);
+		}
 
-		bufferData.drawToInstanceOffsetBuffer = renderGraph.CreateBuffer(
-			{
-				.size = std::max(renderScene->GetRenderObjectCount(), 1u) * sizeof(uint32_t),
-				.name = "Draw To Instance Offset"
-			});
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetRenderObjectCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Draw To Instance Offset");
+			bufferData.drawToInstanceOffsetBuffer = renderGraph.CreateBuffer(desc);
+		}
 
-		bufferData.instanceOffsetToObjectIDBuffer = renderGraph.CreateBuffer(
-			{
-				.size = std::max(renderScene->GetRenderObjectCount(), 1u) * sizeof(uint32_t),
-				.name = "Instance Offset To Object ID"
-			});
+		{
+			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetRenderObjectCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Instance Offset To Object ID");
+			bufferData.instanceOffsetToObjectIDBuffer = renderGraph.CreateBuffer(desc);
+		}
 
-		bufferData.drawContextBuffer = renderGraph.CreateBuffer(
-			{
-				.size = sizeof(DrawContext),
-				.memoryUsage = RHI::MemoryUsage::CPUToGPU,
-				.name = "Draw Context"
-			});
+		{
+			const auto desc = RGUtils::CreateBufferDesc<DrawContext>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Draw Context");
+			bufferData.drawContextBuffer = renderGraph.CreateBuffer(desc);
+		}
 
 		UploadIndirectCommands(renderGraph, bufferData.indirectCommandsBuffer);
 
@@ -416,6 +432,9 @@ namespace Volt
 	{
 		auto& imageData = blackboard.Add<ExternalImagesData>();
 		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
+
+		auto& bufferData = blackboard.Add<ExternalBuffersData>();
+		bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResource(), false);
 	}
 
 	void SceneRendererNew::AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -464,9 +483,6 @@ namespace Volt
 
 	void SceneRendererNew::AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
-		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-
 		blackboard.Add<PreDepthData>() = renderGraph.AddPass<PreDepthData>("Pre Depth Pass",
 		[&](RenderGraph::Builder& builder, PreDepthData& data)
 		{
@@ -482,36 +498,22 @@ namespace Volt
 			desc.name = "Normals";
 			data.normals = builder.CreateImage2D(desc);
 
-			builder.ReadResource(externalBuffers.drawContextBuffer);
-			builder.ReadResource(uniformBuffers.cameraDataBuffer);
-
-			builder.ReadResource(externalBuffers.indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
-			builder.ReadResource(externalBuffers.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+			BuildMeshPass(builder, blackboard);
 
 			builder.SetHasSideEffect();
 		},
 		[=](const PreDepthData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Ref<RHI::ImageView> depthImageView = resources.GetImage2DView(data.depth);
-			Ref<RHI::ImageView> normalsImageView = resources.GetImage2DView(data.normals);
+			Weak<RHI::ImageView> depthImageView = resources.GetImage2DView(data.depth);
+			Weak<RHI::ImageView> normalsImageView = resources.GetImage2DView(data.normals);
 
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
 
 			context.BeginRendering(info);
 			context.BindPipeline(m_preDepthPipeline);
 
-			const auto gpuSceneHandle = m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle();
-			const auto drawContextHandle = resources.GetBuffer(externalBuffers.drawContextBuffer);
-			const auto cameraDataHandle = resources.GetBuffer(uniformBuffers.cameraDataBuffer);
+			RenderMeshes(context, resources, blackboard);
 
-			const auto indirectCommands = resources.GetBufferRaw(externalBuffers.indirectCommandsBuffer);
-			const auto indirectCounts = resources.GetBufferRaw(externalBuffers.indirectCountsBuffer);
-
-			context.SetConstant(gpuSceneHandle);
-			context.SetConstant(drawContextHandle);
-			context.SetConstant(cameraDataHandle);
-
-			context.DrawIndirectCount(indirectCommands, 0, indirectCounts, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 			context.EndRendering();
 		});
 	}
@@ -519,8 +521,6 @@ namespace Volt
 	void SceneRendererNew::AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto preDepthHandle = blackboard.Get<PreDepthData>().depth;
-		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
-		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
 		blackboard.Add<VisibilityBufferData>() = renderGraph.AddPass<VisibilityBufferData>("Visibility Buffer",
 		[&](RenderGraph::Builder& builder, VisibilityBufferData& data)
@@ -528,11 +528,7 @@ namespace Volt
 			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisiblityBuffer - Visibility" });
 			builder.WriteResource(preDepthHandle);
 
-			builder.ReadResource(externalBuffers.drawContextBuffer);
-			builder.ReadResource(uniformBuffers.cameraDataBuffer);
-
-			builder.ReadResource(externalBuffers.indirectCommandsBuffer, RHI::ResourceState::IndirectArgument);
-			builder.ReadResource(externalBuffers.indirectCountsBuffer, RHI::ResourceState::IndirectArgument);
+			BuildMeshPass(builder, blackboard);
 
 			builder.SetHasSideEffect();
 		},
@@ -548,18 +544,8 @@ namespace Volt
 			context.BeginRendering(info);
 			context.BindPipeline(m_visibilityPipeline);
 
-			const auto gpuSceneHandle = m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle();
-			const auto drawContextHandle = resources.GetBuffer(externalBuffers.drawContextBuffer);
-			const auto cameraDataHandle = resources.GetBuffer(uniformBuffers.cameraDataBuffer);
+			RenderMeshes(context, resources, blackboard);
 
-			const auto indirectCommands = resources.GetBufferRaw(externalBuffers.indirectCommandsBuffer);
-			const auto indirectCounts = resources.GetBufferRaw(externalBuffers.indirectCountsBuffer);
-
-			context.SetConstant(gpuSceneHandle);
-			context.SetConstant(drawContextHandle);
-			context.SetConstant(cameraDataHandle);
-
-			context.DrawIndirectCount(indirectCommands, 0, indirectCounts, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
 			context.EndRendering();
 		});
 	}
@@ -595,37 +581,42 @@ namespace Volt
 
 	void SceneRendererNew::AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		//ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
-		//VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
+		ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
+		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
 
-		//blackboard.Add<MaterialCountData>() = renderGraph.AddPass<MaterialCountData>("Generate Material Count",
-		//[&](RenderGraph::Builder& builder, MaterialCountData& data) 
-		//{
-		//	data.materialCountBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer});
-		//	data.materialStartBuffer = builder.CreateBuffer({ m_materialsBuffer->GetSize() * sizeof(uint32_t), RHI::BufferUsage::StorageBuffer });
+		const auto& renderScene = m_scene->GetRenderScene();
 
-		//	builder.ReadResource(visBufferData.visibility);
-		//	builder.ReadResource(externalBuffersData.indirectDrawDataBuffer);
+		blackboard.Add<MaterialCountData>() = renderGraph.AddPass<MaterialCountData>("Generate Material Count",
+		[&](RenderGraph::Builder& builder, MaterialCountData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Counts");
+				data.materialCountBuffer = builder.CreateBuffer(desc);
+			}
 
-		//	builder.SetIsComputePass();
-		//	builder.SetHasSideEffect();
-		//}, 
-		//[=](const MaterialCountData& data, RenderContext& context, const RenderGraphPassResources& resources) 
-		//{
-		//	Ref<RHI::ImageView> visBufferView = resources.GetImage2D(visBufferData.visibility)->GetView();
-		//	Ref<RHI::BufferView> indirectDrawDataBuffer = resources.GetBuffer(externalBuffersData.indirectDrawDataBuffer)->GetView();
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Starts");
+				data.materialStartBuffer = builder.CreateBuffer(desc);
+			}
 
-		//	Ref<RHI::StorageBuffer> materialCountBuffer = resources.GetBuffer(data.materialCountBuffer);
-		//	
-		//	context.ClearBuffer(materialCountBuffer, 0);
+			builder.ReadResource(visBufferData.visibility);
+			builder.ReadResource(externalBuffersData.objectDrawDataBuffer);
 
-		//	context.BindPipeline(m_generateMaterialCountPipeline);
-		//	context.SetImageView(visBufferView, 0, 0);
-		//	context.SetBufferView(indirectDrawDataBuffer, 0, 1);
-		//	context.SetBufferView(materialCountBuffer->GetView(), 0, 2);
+			builder.SetIsComputePass();
+			builder.SetHasSideEffect();
+		},
+		[=](const MaterialCountData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Ref<RHI::StorageBuffer> materialCountBuffer = resources.GetBufferRaw(data.materialCountBuffer);
+			context.ClearBuffer(materialCountBuffer, 0);
 
-		//	context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
-		//});
+			context.BindPipeline(m_generateMaterialCountPipeline);
+			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
+			context.SetConstant(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResourceHandle());
+			context.SetConstant(resources.GetBuffer(data.materialCountBuffer));
+
+			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
+		});
 	}
 
 	void SceneRendererNew::AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)

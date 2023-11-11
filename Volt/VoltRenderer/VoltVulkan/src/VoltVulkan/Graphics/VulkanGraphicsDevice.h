@@ -1,6 +1,7 @@
 #pragma once
 
 #include <VoltRHI/Graphics/GraphicsDevice.h>
+#include <VoltRHI/Utility/GPUCrashTracker.h>
 
 struct VkDevice_T;
 
@@ -25,5 +26,6 @@ namespace Volt::RHI
 		VkDevice_T* m_device = nullptr;
 	
 		Weak<VulkanPhysicalGraphicsDevice> m_physicalDevice;
+		GPUCrashTracker m_deviceCrashTracker{};
 	};
 }

@@ -168,6 +168,7 @@ namespace Volt::RHI
 			if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
 			{
 				m_swapchainNeedsRebuild = true;
+				m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 				return;
 			}
 			else if (presentResult != VK_SUCCESS)

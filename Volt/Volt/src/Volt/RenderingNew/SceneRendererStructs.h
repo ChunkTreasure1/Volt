@@ -25,6 +25,7 @@ namespace Volt
 		RenderGraphResourceHandle drawToInstanceOffsetBuffer;
 
 		RenderGraphResourceHandle drawContextBuffer;
+		RenderGraphResourceHandle objectDrawDataBuffer;
 	};
 
 	struct UniformBuffersData

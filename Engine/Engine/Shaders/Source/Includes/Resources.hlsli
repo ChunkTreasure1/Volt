@@ -363,6 +363,14 @@ struct RWTypedBuffer
         buffer.InterlockedAdd(address, value, originalValue);
     }
     
+    void InterlockedAdd(in uint index, uint value)
+    {
+        RWByteAddressBuffer buffer = DESCRIPTOR_HEAP(RWBufferHandle, handle);
+        const uint address = index * sizeof(T);
+        
+        uint tempVal;
+        buffer.InterlockedAdd(address, value, tempVal);
+    }
 };
 
 template<typename T>
@@ -440,6 +448,24 @@ struct TextureT
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
         texture.GetDimensions(mipLevel, width, height, depth, numberOfLevels);
+    }
+    
+    void GetDimensions(out uint width)
+    {
+        Texture1D<T> texture = DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);
+        texture.GetDimensions(width);
+    }
+    
+    void GetDimensions(out uint width, out uint height)
+    {
+        Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
+        texture.GetDimensions(width, height);
+    }
+    
+    void GetDimensions(out uint width, out uint height, out uint depth)
+    {
+        Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
+        texture.GetDimensions(width, height, depth);
     }
 };
 

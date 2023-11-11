@@ -216,6 +216,8 @@ project "Sandbox"
 			"%{Library.SPIRV_Cross_Debug}",
 			"%{Library.SPIRV_Cross_GLSL_Debug}",
 			"%{Library.SPIRV_Tools_Debug}",
+
+			"%{Library.Aftermath}"
 		}
 
 	filter "configurations:Release"
@@ -232,6 +234,8 @@ project "Sandbox"
 			"%{Library.ShaderC_Utils_Release}",
 			"%{Library.SPIRV_Cross_Release}",
 			"%{Library.SPIRV_Cross_GLSL_Release}",
+
+			"%{Library.Aftermath}"
 		}
 
 	filter "configurations:Dist"

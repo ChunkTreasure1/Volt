@@ -6,6 +6,9 @@
 #include "Volt/RenderingNew/SceneRendererStructs.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 
+// #TODO_Ivar: Maybe remove from here
+#include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
+
 namespace Volt
 {
 	namespace RHI
@@ -31,6 +34,8 @@ namespace Volt
 
 	class RenderGraph;
 	class RenderGraphBlackboard;
+
+	class RenderGraph::Builder;
 
 	struct SceneRendererSpecification
 	{
@@ -63,6 +68,9 @@ namespace Volt
 		void UpdateLightBuffers();
 
 		void UploadIndirectCommands(RenderGraph& renderGraph, RenderGraphResourceHandle bufferHandle);
+
+		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
+		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
 
 		void CreatePipelines();
 

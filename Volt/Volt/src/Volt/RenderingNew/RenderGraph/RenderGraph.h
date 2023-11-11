@@ -98,8 +98,7 @@ namespace Volt
 		void DestroyResources();
 		void AllocateConstantsBuffer();
 
-		Ref<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
-
+		Weak<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 

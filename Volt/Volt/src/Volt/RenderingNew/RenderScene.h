@@ -33,6 +33,7 @@ namespace Volt
 		inline const bool IsInvalid() const { return m_isInvalid; }
 		inline const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
+		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
 		const uint32_t GetMaterialIndex(Ref<SubMaterial> material) const;
 

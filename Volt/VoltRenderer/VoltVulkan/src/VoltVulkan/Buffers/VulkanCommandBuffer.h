@@ -85,6 +85,9 @@ namespace Volt::RHI
 		void CreateQueryPools();
 		void FetchTimestampResults();
 
+		// #TODO_Ivar: Maybe move somewhere else
+		void CheckWaitReturnValue(uint32_t resultValue);
+
 		VkPipelineLayout_T* GetCurrentPipelineLayout();
 		const uint32_t GetCurrentCommandBufferIndex() const;
 
@@ -107,7 +110,7 @@ namespace Volt::RHI
 
 		// Queries
 		uint32_t m_timestampQueryCount = 0;
-		uint32_t m_nextAvailableTimestampQuery = 2; // The two first are command buffer total
+		uint32_t m_nextAvailableTimestampQuery = 0; // The two first are command buffer total
 		uint32_t m_lastAvailableTimestampQuery = 0;
 
 		std::vector<VkQueryPool_T*> m_timestampQueryPools;

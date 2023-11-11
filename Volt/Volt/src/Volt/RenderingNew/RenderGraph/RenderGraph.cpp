@@ -486,7 +486,7 @@ namespace Volt
 		return resourceHandle;
 	}
 
-	Ref<RHI::ImageView> RenderGraph::GetImage2DView(const RenderGraphResourceHandle resourceHandle)
+	Weak<RHI::ImageView> RenderGraph::GetImage2DView(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;

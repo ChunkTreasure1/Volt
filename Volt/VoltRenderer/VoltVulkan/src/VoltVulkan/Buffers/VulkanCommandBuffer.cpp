@@ -29,9 +29,18 @@
 #include <VoltRHI/Images/ImageView.h>
 
 #include <VoltRHI/Shader/Shader.h>
+#include <VoltRHI/Core/Profiling.h>
+#include <VoltRHI/Utility/NsightAftermathHelpers.h>
+
+#ifdef VT_ENABLE_NV_AFTERMATH
+
+#include <GFSDK_Aftermath.h>
+#include <GFSDK_Aftermath_Defines.h>
+#include <GFSDK_Aftermath_GpuCrashDump.h>
+
+#endif
 
 #include <vulkan/vulkan.h>
-#include <VoltRHI/Core/Profiling.h>
 
 namespace Volt::RHI
 {
@@ -218,9 +227,15 @@ namespace Volt::RHI
 
 		if (!m_isSwapchainTarget)
 		{
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
+			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
 			VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
 			VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
+		}
+
+		// If the next timestamp query is zero, no frame has run before
+		if (m_nextAvailableTimestampQuery > 0)
+		{
+			FetchTimestampResults();
 		}
 
 		// Begin command buffer
@@ -269,8 +284,6 @@ namespace Volt::RHI
 			auto device = GraphicsContext::GetDevice();
 			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
 		}
-
-		FetchTimestampResults();
 	}
 
 	void VulkanCommandBuffer::ExecuteAndWait()
@@ -283,7 +296,7 @@ namespace Volt::RHI
 			device->GetDeviceQueue(m_queueType)->Execute({ As<VulkanCommandBuffer>() });
 
 			const uint32_t index = GetCurrentCommandBufferIndex();
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
+			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(index).fence, VK_TRUE, UINT64_MAX));
 		}
 
 		FetchTimestampResults();
@@ -292,7 +305,7 @@ namespace Volt::RHI
 	void VulkanCommandBuffer::WaitForLastFence()
 	{
 		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_lastCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
+		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &m_commandBuffers.at(m_lastCommandBufferIndex).fence, VK_TRUE, UINT64_MAX));
 	}
 
 	void VulkanCommandBuffer::WaitForFences()
@@ -304,7 +317,7 @@ namespace Volt::RHI
 		}
 
 		auto device = GraphicsContext::GetDevice();
-		VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 	}
 
 	void VulkanCommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
@@ -566,6 +579,13 @@ namespace Volt::RHI
 			pipelineLayout = vkPipeline.GetPipelineLayout();
 			stageFlags = static_cast<VkPipelineStageFlags>(vkPipeline.GetShader()->GetResources().constants.stageFlags);
 		}
+
+#ifdef VT_ENABLE_COMMAND_BUFFER_VALIDATION
+		if (stageFlags == 0)
+		{
+			return;
+		}
+#endif
 
 		vkCmdPushConstants(m_commandBuffers.at(index).commandBuffer, pipelineLayout, stageFlags, offset, size, data);
 	}
@@ -1163,7 +1183,7 @@ namespace Volt::RHI
 				fences.emplace_back(cmdBuffer.fence);
 			}
 
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 
 			for (auto& cmdBuffer : m_commandBuffers)
 			{
@@ -1179,7 +1199,7 @@ namespace Volt::RHI
 				fences.push_back(VulkanSwapchain::Get().GetFence(i));
 			}
 
-			VT_VK_CHECK(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
+			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 		}
 
 		for (const auto& pool : m_timestampQueryPools)
@@ -1255,6 +1275,41 @@ namespace Volt::RHI
 	const uint32_t VulkanCommandBuffer::GetCurrentCommandBufferIndex() const
 	{
 		return m_currentCommandBufferIndex;
+	}
+
+	void VulkanCommandBuffer::CheckWaitReturnValue(uint32_t resultValue)
+	{
+		VkResult vkResult = static_cast<VkResult>(resultValue);
+
+#ifdef VT_ENABLE_NV_AFTERMATH
+		if (vkResult == VK_ERROR_DEVICE_LOST)
+		{
+			auto tdrTerminationTimeout = std::chrono::seconds(3);
+			auto tStart = std::chrono::steady_clock::now();
+			auto tElapsed = std::chrono::milliseconds::zero();
+
+			GFSDK_Aftermath_CrashDump_Status status = GFSDK_Aftermath_CrashDump_Status_Unknown;
+			AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GetCrashDumpStatus(&status));
+
+			while (status != GFSDK_Aftermath_CrashDump_Status_CollectingDataFailed && status != GFSDK_Aftermath_CrashDump_Status_Finished && tElapsed < tdrTerminationTimeout)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GetCrashDumpStatus(&status));
+
+				auto tEnd = std::chrono::steady_clock::now();
+				tElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(tEnd - tStart);
+			}
+
+			if (status != GFSDK_Aftermath_CrashDump_Status_Finished)
+			{
+				GraphicsContext::LogTagged(Severity::Error, "[Aftermath]", "Unexpected crash dump status: {0}", static_cast<uint32_t>(status));
+			}
+
+			exit(1);
+		}
+#endif
+
+		VT_VK_CHECK(vkResult);
 	}
 
 	VkPipelineLayout_T* VulkanCommandBuffer::GetCurrentPipelineLayout()

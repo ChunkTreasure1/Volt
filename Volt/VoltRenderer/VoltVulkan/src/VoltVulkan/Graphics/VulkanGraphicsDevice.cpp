@@ -22,6 +22,7 @@ namespace Volt::RHI
 
 		// Extensions
 		VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT;
+		VkDeviceDiagnosticsConfigCreateInfoNV aftermathDiagInfo{};
 	};
 
 	static EnabledFeatures s_enabledFeatures{};
@@ -67,15 +68,26 @@ namespace Volt::RHI
 
 			void* chainEntryPoint = &s_enabledFeatures.vulkan13Features;
 
-			if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
-			{
-				s_enabledFeatures.descriptorBufferFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT;
-				s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBuffer = VK_TRUE;
-				s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBufferCaptureReplay = VK_TRUE;
-				s_enabledFeatures.descriptorBufferFeaturesEXT.pNext = chainEntryPoint;
+			//if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+			//{
+			//	s_enabledFeatures.descriptorBufferFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT;
+			//	s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBuffer = VK_TRUE;
+			//	s_enabledFeatures.descriptorBufferFeaturesEXT.descriptorBufferCaptureReplay = VK_TRUE;
+			//	s_enabledFeatures.descriptorBufferFeaturesEXT.pNext = chainEntryPoint;
 
-				chainEntryPoint = &s_enabledFeatures.descriptorBufferFeaturesEXT;
-			}
+			//	chainEntryPoint = &s_enabledFeatures.descriptorBufferFeaturesEXT;
+			//}
+
+#ifdef VT_ENABLE_NV_AFTERMATH
+			s_enabledFeatures.aftermathDiagInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
+			s_enabledFeatures.aftermathDiagInfo.pNext = chainEntryPoint;
+			s_enabledFeatures.aftermathDiagInfo.flags =
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV |
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV |
+				VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV; // #TODO_Ivar: Implement some kind of debug level
+
+			chainEntryPoint = &s_enabledFeatures.aftermathDiagInfo;
+#endif
 
 			s_enabledFeatures.physicalDeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 			s_enabledFeatures.physicalDeviceFeatures.pNext = chainEntryPoint;
@@ -96,10 +108,22 @@ namespace Volt::RHI
 		{
 			std::vector<const char*> enabledExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-			if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+			//if (physicalDevice->IsExtensionAvailiable(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+			//{
+			//	enabledExtensions.emplace_back(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
+			//}
+
+#ifdef VT_ENABLE_NV_AFTERMATH
+			if (physicalDevice->IsExtensionAvailiable(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME))
 			{
-				enabledExtensions.emplace_back(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
+				enabledExtensions.emplace_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);
 			}
+
+			if (physicalDevice->IsExtensionAvailiable(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
+			}
+#endif
 
 #ifdef VT_ENABLE_VALIDATION
 			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME))
@@ -170,6 +194,10 @@ namespace Volt::RHI
 			deviceInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 			deviceInfo.ppEnabledExtensionNames = enabledExtensions.data();
 			deviceInfo.pNext = &s_enabledFeatures.physicalDeviceFeatures;
+
+#ifdef VT_ENABLE_NV_AFTERMATH
+			m_deviceCrashTracker.Initialize(GraphicsAPI::Vulkan);
+#endif
 
 			VT_VK_CHECK(vkCreateDevice(physicalDevicePtr.GetHandle<VkPhysicalDevice>(), &deviceInfo, nullptr, &m_device));
 		}

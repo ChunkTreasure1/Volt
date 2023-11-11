@@ -47,6 +47,8 @@ project "VoltRHI"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.Optick}",
+
+		"%{IncludeDir.Aftermath}"
 	}
 
 	defines

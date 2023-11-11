@@ -1,35 +1,40 @@
-#include "Utility.hlsli"
-#include "Common.hlsli"
 #include "Structures.hlsli"
+#include "Resources.hlsli"
+#include "GPUScene.hlsli"
+#include "Common.hlsli"
 
-Texture2D<uint2> u_visibilityBuffer : register(t0, space0);
-StructuredBuffer<IndirectDrawData> u_indirectDrawData : register(t1, space0);
-
-RWStructuredBuffer<uint> u_materialCountsBuffer : register(u2, space0);
+struct Constants
+{
+    TextureT<uint2> visibilityBuffer;
+    TypedBuffer<ObjectDrawData> objectDrawData;
+    RWTypedBuffer<uint> materialCountsBuffer;
+};
 
 [numthreads(16, 16, 1)]
 void main(uint3 threadId : SV_DispatchThreadID)
 {
-    const uint2 pixelValue = u_visibilityBuffer.Load(int3(threadId.xy, 0));
-
+    const Constants constants = GetConstants<Constants>();
+    
     uint2 size;
-    u_visibilityBuffer.GetDimensions(size.x, size.y);
+    constants.visibilityBuffer.GetDimensions(size.x, size.y);
     
     if (threadId.x >= size.x || threadId.y >= size.y)
     {
         return;
     }
     
+    const uint2 pixelValue = constants.visibilityBuffer.Load2D(int3(threadId.xy, 0));
+    
     if (pixelValue.x == UINT32_MAX)
     {
         return;
     }
     
-    IndirectDrawData objectData = u_indirectDrawData[pixelValue.x];
+    ObjectDrawData objectData = constants.objectDrawData.Load(pixelValue.x);
     if (objectData.materialId == UINT32_MAX)
     {
         return;
     }
     
-    InterlockedAdd(u_materialCountsBuffer[objectData.materialId], 1);
+    constants.materialCountsBuffer.InterlockedAdd(objectData.materialId, 1);
 }

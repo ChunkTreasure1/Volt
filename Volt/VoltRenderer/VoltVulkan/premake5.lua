@@ -49,6 +49,8 @@ project "VoltVulkan"
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
+
+		"%{IncludeDir.Aftermath}"
 	}
 
 	defines

@@ -11,7 +11,7 @@ namespace Volt
 	{
 	}
 
-	Ref<RHI::ImageView> RenderGraphPassResources::GetImage2DView(const RenderGraphResourceHandle resourceHandle) const
+	Weak<RHI::ImageView> RenderGraphPassResources::GetImage2DView(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
 		return m_renderGraph.GetImage2DView(resourceHandle);

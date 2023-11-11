@@ -31,14 +31,15 @@ const char* VKResultToString(int32_t result);
 
 #else
 
-#ifdef VT_DIST
-#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
-#define VT_OPTIMIZE_ON __pragma(optimize("", on));
-#endif
-
 #ifdef VT_RELEASE
 #define VT_ENABLE_SHADER_DEBUG
 #define VT_PROFILE_GPU
+#define VT_OPTIMIZE_OFF __pragma(optimize("", off));
+#define VT_OPTIMIZE_ON __pragma(optimize("", on));
+
+#endif
+
+#ifdef VT_DIST
 #define VT_OPTIMIZE_OFF __pragma(optimize("", off));
 #define VT_OPTIMIZE_ON __pragma(optimize("", on));
 #endif
@@ -65,21 +66,15 @@ if (x)					\
 #define VT_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
 ///// Helper Defines /////
-#define VT_SETUP_ENUM_CLASS_OPERATORS(enumClass) \
-inline enumClass operator|(enumClass aLhs, enumClass aRhs) \
-{																						\
-	return (enumClass)((std::underlying_type<enumClass>::type)aLhs | (std::underlying_type<enumClass>::type)aRhs); \
-}\
-\
-inline enumClass operator&(enumClass aLhs, enumClass aRhs) \
-{ \
-	return (enumClass)((std::underlying_type<enumClass>::type)aLhs & (std::underlying_type<enumClass>::type)aRhs); \
-} \
-\
-inline enumClass operator~(enumClass aLhs) \
-{ \
-	return (enumClass)(~(std::underlying_type<enumClass>::type)aLhs); \
-}\
+#define VT_SETUP_ENUM_CLASS_OPERATORS(enumType) \
+	inline           enumType& operator|=(enumType& Lhs, enumType Rhs) { return Lhs = (enumType)((__underlying_type(enumType))Lhs | (__underlying_type(enumType))Rhs); } \
+	inline           enumType& operator&=(enumType& Lhs, enumType Rhs) { return Lhs = (enumType)((__underlying_type(enumType))Lhs & (__underlying_type(enumType))Rhs); } \
+	inline           enumType& operator^=(enumType& Lhs, enumType Rhs) { return Lhs = (enumType)((__underlying_type(enumType))Lhs ^ (__underlying_type(enumType))Rhs); } \
+	inline constexpr enumType  operator| (enumType  Lhs, enumType Rhs) { return (enumType)((__underlying_type(enumType))Lhs | (__underlying_type(enumType))Rhs); } \
+	inline constexpr enumType  operator& (enumType  Lhs, enumType Rhs) { return (enumType)((__underlying_type(enumType))Lhs & (__underlying_type(enumType))Rhs); } \
+	inline constexpr enumType  operator^ (enumType  Lhs, enumType Rhs) { return (enumType)((__underlying_type(enumType))Lhs ^ (__underlying_type(enumType))Rhs); } \
+	inline constexpr bool  operator! (enumType  E)             { return !(__underlying_type(enumType))E; } \
+	inline constexpr enumType  operator~ (enumType  E)             { return (enumType)~(__underlying_type(enumType))E; } \
 //////////////////////////
 
 template<typename T>
