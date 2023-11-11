@@ -97,6 +97,8 @@ namespace Volt
 		UploadGPUMaterials();
 		UploadObjectDrawData();
 		UploadGPUScene();
+
+		BuildMeshCommands();
 	}
 
 	void RenderScene::SetValid()
@@ -262,5 +264,38 @@ namespace Volt
 		}
 
 		m_gpuMaterialsBuffer->GetResource()->Unmap();
+	}
+
+	void RenderScene::BuildMeshCommands()
+	{
+		m_meshCommands.clear();
+
+		for (uint32_t index = 0; const auto& obj : m_renderObjects)
+		{
+			Entity entity{ obj.entity, m_scene };
+
+			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
+			auto& newCommand = m_meshCommands.emplace_back();
+
+			//const size_t meshSubMeshHash = Utility::HashMeshSubMesh(obj.mesh, subMesh);
+			//if (meshSubMeshIndexMap.contains(meshSubMeshHash))
+			//{
+			//	const uint32_t cmdIndex = meshSubMeshIndexMap.at(meshSubMeshHash);
+			//	indirectCommands[cmdIndex].command.instanceCount++;
+			//}
+			//else
+			{
+				//meshSubMeshIndexMap[meshSubMeshHash] = m_currentActiveCommandCount;
+
+				newCommand.command.vertexCount = subMesh.indexCount;
+				newCommand.command.instanceCount = 1;
+				newCommand.command.firstVertex = subMesh.indexStartOffset;
+				newCommand.command.firstInstance = 0;
+				newCommand.objectId = index;
+				newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
+			}
+
+			index++;
+		}
 	}
 }

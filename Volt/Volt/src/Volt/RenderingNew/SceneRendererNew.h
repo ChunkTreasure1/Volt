@@ -109,10 +109,6 @@ namespace Volt
 
 		Ref<RHI::SamplerState> m_samplerState;
 
-		uint32_t m_currentActiveCommandCount = 0;
-
-		std::vector<IndirectGPUCommandNew> m_indirectGPUCommands;
-
 		///// TEMP /////
 		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;
 		////////////////

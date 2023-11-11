@@ -17,6 +17,11 @@ void Sandbox::CreateModifiedWatch()
 {
 	myFileWatcher->AddCallback(efsw::Actions::Modified, [&](const auto newPath, const auto oldPath)
 	{
+		if (newPath.extension().string() == ".nv-gpudmp" || oldPath.extension().string() == ".nv-gpudmp")
+		{
+			return;
+		}
+
 		std::scoped_lock lock(myFileWatcherMutex);
 		myFileChangeQueue.emplace_back([newPath, oldPath, this]()
 		{

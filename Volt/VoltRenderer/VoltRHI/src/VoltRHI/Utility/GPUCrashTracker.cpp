@@ -14,6 +14,7 @@
 
 namespace Volt::RHI
 {
+#ifdef VT_ENABLE_NV_AFTERMATH
 	inline const uint32_t GetAPIFlag(const GraphicsAPI api)
 	{
 		switch (api)
@@ -24,6 +25,7 @@ namespace Volt::RHI
 
 		return GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_None;
 	}
+#endif
 
 	GPUCrashTracker::~GPUCrashTracker()
 	{
@@ -68,6 +70,8 @@ namespace Volt::RHI
 
 	void GPUCrashTracker::WriteGPUCrashDumpToFile(const void* pGPUCrashDump, const uint32_t gpuCrashDumpSize)
 	{
+#ifdef VT_ENABLE_NV_AFTERMATH
+
 		GFSDK_Aftermath_GpuCrashDump_Decoder decoder{};
 		AFTERMATH_CHECK_ERROR(GFSDK_Aftermath_GpuCrashDump_CreateDecoder(GFSDK_Aftermath_Version_API, pGPUCrashDump, gpuCrashDumpSize, &decoder));
 
@@ -89,6 +93,7 @@ namespace Volt::RHI
 			dumpFile.write((const char*)pGPUCrashDump, gpuCrashDumpSize);
 			dumpFile.close();
 		}
+#endif
 	}
 
 	void GPUCrashTracker::GpuCrashDumpCallback(const void* pGpuCrashDump, const uint32_t gpuCrashDumpSize, void* pUserData)

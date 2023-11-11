@@ -196,42 +196,7 @@ namespace Volt
 
 		auto renderScene = m_scene->GetRenderScene();
 		renderScene->PrepareForUpdate();
-
-		std::unordered_map<size_t, uint32_t> meshSubMeshIndexMap;
-
-		m_currentActiveCommandCount = 0;
-		m_indirectGPUCommands.clear();
-		for (uint32_t index = 0; const auto & obj : *renderScene)
-		{
-			Entity entity{ obj.entity, m_scene };
-
-			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
-
-			auto& newCommand = m_indirectGPUCommands.emplace_back();
-
-			//const size_t meshSubMeshHash = Utility::HashMeshSubMesh(obj.mesh, subMesh);
-			//if (meshSubMeshIndexMap.contains(meshSubMeshHash))
-			//{
-			//	const uint32_t cmdIndex = meshSubMeshIndexMap.at(meshSubMeshHash);
-			//	indirectCommands[cmdIndex].command.instanceCount++;
-			//}
-			//else
-			{
-				//meshSubMeshIndexMap[meshSubMeshHash] = m_currentActiveCommandCount;
-
-				newCommand.command.vertexCount = subMesh.indexCount;
-				newCommand.command.instanceCount = 1;
-				newCommand.command.firstVertex = subMesh.indexStartOffset;
-				newCommand.command.firstInstance = 0;
-				newCommand.objectId = index;
-				newCommand.meshId = renderScene->GetMeshID(obj.mesh, obj.subMeshIndex);
-				m_currentActiveCommandCount++;
-			}
-
-			index++;
-		}
-
-		m_scene->GetRenderScene()->SetValid();
+		renderScene->SetValid();
 	}
 
 	void SceneRendererNew::UpdateBuffers(Ref<Camera> camera)
@@ -296,7 +261,9 @@ namespace Volt
 
 	void SceneRendererNew::UploadIndirectCommands(RenderGraph& renderGraph, RenderGraphResourceHandle bufferHandle)
 	{
-		renderGraph.AddMappedBufferUpload(bufferHandle, m_indirectGPUCommands.data(), m_indirectGPUCommands.size() * sizeof(IndirectGPUCommandNew), "Upload Indirect Commands");
+		const auto& renderScene = m_scene->GetRenderScene();
+
+		renderGraph.AddMappedBufferUpload(bufferHandle, renderScene->GetMeshCommands().data(), renderScene->GetMeshCommandCount() * sizeof(IndirectGPUCommandNew), "Upload Indirect Commands");
 	}
 
 	void SceneRendererNew::BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard)
@@ -327,7 +294,7 @@ namespace Volt
 		context.SetConstant(drawContextHandle);
 		context.SetConstant(cameraDataHandle);
 
-		context.DrawIndirectCount(indirectCommands, 0, indirectCounts, 0, m_currentActiveCommandCount, sizeof(IndirectGPUCommandNew));
+		context.DrawIndirectCount(indirectCommands, 0, indirectCounts, 0, m_scene->GetRenderScene()->GetMeshCommandCount(), sizeof(IndirectGPUCommandNew));
 	}
 
 	void SceneRendererNew::CreatePipelines()
@@ -449,11 +416,12 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			const uint32_t dispatchCount = std::max(1u, static_cast<uint32_t>(m_currentActiveCommandCount / 256) + 1u);
+			const uint32_t commandCount = m_scene->GetRenderScene()->GetMeshCommandCount();
+			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
 
 			context.BindPipeline(m_clearIndirectCountsPipeline);
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
-			context.SetConstant(static_cast<uint32_t>(m_currentActiveCommandCount));
+			context.SetConstant(commandCount);
 
 			context.Dispatch(dispatchCount, 1, 1);
 		});
@@ -469,14 +437,15 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			const uint32_t dispatchCount = std::max(1u, (uint32_t)(m_currentActiveCommandCount / 256) + 1u);
+			const uint32_t commandCount = m_scene->GetRenderScene()->GetMeshCommandCount();
+			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
 
 			context.BindPipeline(m_indirectSetupPipeline);
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCommandsBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer));
-			context.SetConstant(static_cast<uint32_t>(m_currentActiveCommandCount));
+			context.SetConstant(commandCount);
 
 			context.Dispatch(dispatchCount, 1, 1);
 		});

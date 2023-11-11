@@ -3,6 +3,8 @@
 #include "Volt/RenderingNew/RenderObject.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 
+#include "Volt/RenderingNew/RendererCommon.h"
+
 #include <span>
 
 namespace Volt
@@ -32,6 +34,7 @@ namespace Volt
 
 		inline const bool IsInvalid() const { return m_isInvalid; }
 		inline const uint32_t GetRenderObjectCount() const { return static_cast<uint32_t>(m_renderObjects.size()); }
+		inline const uint32_t GetMeshCommandCount() const { return static_cast<uint32_t>(m_meshCommands.size()); }
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
 		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
@@ -48,13 +51,18 @@ namespace Volt
 		const std::vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
 		const std::vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
 
+		inline std::span<const IndirectGPUCommandNew> GetMeshCommands() const { return m_meshCommands; }
+
 	private:
 		void UploadGPUMeshes();
 		void UploadObjectDrawData();
 		void UploadGPUScene();
 		void UploadGPUMaterials();
 
+		void BuildMeshCommands();
+
 		std::vector<RenderObject> m_renderObjects;
+		std::vector<IndirectGPUCommandNew> m_meshCommands;
 		std::vector<Weak<Mesh>> m_individualMeshes;
 		std::vector<Weak<SubMaterial>> m_individualMaterials;
 		std::unordered_map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
