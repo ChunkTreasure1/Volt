@@ -499,6 +499,19 @@ namespace Volt
 		return image->GetView();
 	}
 
+	Weak<RHI::Image2D> RenderGraph::GetImage2DRaw(const RenderGraphResourceHandle resourceHandle)
+	{
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+
+		m_usedGlobalImage2DResourceHandles.insert(handle);
+
+		return image;
+	}
+
 	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);

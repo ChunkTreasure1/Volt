@@ -27,7 +27,7 @@ namespace Volt
 		std::atomic_bool isExecuting;
 		std::atomic_bool isRunning;
 
-		FunctionQueue deletionQueue;
+		std::vector<FunctionQueue> deletionQueue;
 	};
 
 	inline static Scope<RenderGraphThreadData> s_data;
@@ -36,6 +36,9 @@ namespace Volt
 	{
 		s_data = CreateScope<RenderGraphThreadData>();
 		s_data->isRunning = true;
+
+		const uint32_t frameCount = Application::Get().GetWindow().GetSwapchain().GetFramesInFlight();
+		s_data->deletionQueue.resize(frameCount);
 
 		InitializeThread();
 	}
@@ -73,7 +76,8 @@ namespace Volt
 			return;
 		}
 
-		s_data->deletionQueue.Push(std::move(function));
+		const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+		s_data->deletionQueue.at(currentFrame).Push(std::move(function));
 	}
 
 	void RenderGraphExecutionThread::InitializeThread()
@@ -104,6 +108,8 @@ namespace Volt
 				break;
 			}
 
+			const uint32_t currentFrame = Application::Get().GetWindow().GetSwapchain().GetCurrentFrame();
+			s_data->deletionQueue.at(currentFrame).Flush();
 
 			std::function<void()> executeFunction{};
 			if (s_data->executionQueue.try_pop(executeFunction))
@@ -113,8 +119,6 @@ namespace Volt
 				s_data->isExecuting = false;
 				s_data->waitForExecutionVariable.notify_one();
 			}
-
-			s_data->deletionQueue.Flush();
 		}
 	}
 }

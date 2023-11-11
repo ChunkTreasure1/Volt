@@ -1,4 +1,5 @@
 #include "Defines.hlsli"
+#include "Resources.hlsli"
 
 #define TG_SIZE 512
 #define TG_WAVE_SIZE 32
@@ -15,17 +16,13 @@ struct State
     uint state;
 };
 
-struct Data
+struct Constants
 {
+    TypedBuffer<uint> inputValues;
+    RWTypedBuffer<uint> outputValues;
+    RWTypedBuffer<State> stateBuffer; // Should be globallycoherent
     uint valueCount;
 };
-
-PUSH_CONSTANT(Data, u_data);
-
-StructuredBuffer<uint> u_inputValues : register(t0, space0);
-
-RWStructuredBuffer<uint> o_outputBuffer : register(u1, space0);
-globallycoherent RWStructuredBuffer<State> o_stateBuffer : register(u2, space0);
 
 groupshared uint m_wavePrefixSums[TG_WAVE_COUNT];
 groupshared uint m_groupAggregate;
@@ -33,6 +30,8 @@ groupshared uint m_groupAggregate;
 [numthreads(TG_SIZE, 1, 1)]
 void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
 {
+    const Constants constants = GetConstants<Constants>();
+    
     const uint WAVE_SIZE = WaveGetLaneCount();
     const uint WAVE_INDEX = groupThreadId.x / WAVE_SIZE;
     const uint LANE_INDEX = WaveGetLaneIndex();
@@ -40,14 +39,14 @@ void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
     const uint localValueIndex = WAVE_SIZE * WAVE_INDEX + LANE_INDEX;
     const uint valueIndex = TG_SIZE * groupId.x + localValueIndex;
 
-    if (valueIndex >= u_data.valueCount)
+    if (valueIndex >= constants.valueCount)
     {
         return;
     }
     
     const bool isLastLaneInWave = groupThreadId.x == (WAVE_INDEX * WAVE_SIZE) + WAVE_SIZE - 1;
     
-    uint value = u_inputValues[valueIndex];
+    uint value = constants.inputValues.Load(valueIndex);
     uint lanePrefixSum = WavePrefixSum(value);
 
     if (isLastLaneInWave)
@@ -79,15 +78,18 @@ void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
     
     if (groupThreadId.x == TG_SIZE - 1)
     {
-        o_stateBuffer[groupId.x].aggregate = laneAggregate + value;
-        o_stateBuffer[groupId.x].state = STATE_AGG_READY;
+        State state;
+        state.aggregate = laneAggregate + value;
+        state.state = STATE_AGG_READY;
         
         [branch]
         if (groupId.x == 0)
         {
-            o_stateBuffer[groupId.x].prefix = laneAggregate;
-            o_stateBuffer[groupId.x].state = STATE_PRE_READY;
+            state.prefix = laneAggregate;
+            state.state = STATE_PRE_READY;
         }
+        
+        constants.stateBuffer.Store(groupId.x, state);
     }
     
     if (groupThreadId.x < groupId.x && groupId.x != 0)
@@ -96,7 +98,7 @@ void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
         while (currentLookBackIndex >= 0)
         {
             // #TODO_Ivar: Implement better lookback
-            uint localLookBackState = o_stateBuffer[currentLookBackIndex].state;
+            uint localLookBackState = constants.stateBuffer.Load(currentLookBackIndex).state;
             //if (localLookBackState == STATE_PRE_READY)
             //{
             //    //uint otherPrefix  = o_stateBuffer[currentLookBackIndex].prefix;
@@ -109,7 +111,7 @@ void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
             //else 
             if (localLookBackState == STATE_AGG_READY || localLookBackState == STATE_PRE_READY)
             {
-                uint otherAggregate = o_stateBuffer[currentLookBackIndex].aggregate;
+                uint otherAggregate = constants.stateBuffer.Load(currentLookBackIndex).aggregate;
                 InterlockedAdd(m_groupAggregate, otherAggregate);
                 
                 currentLookBackIndex -= TG_SIZE;
@@ -122,8 +124,11 @@ void main(uint3 groupThreadId : SV_GroupThreadID, uint3 groupId : SV_GroupID)
     
     if (groupThreadId.x == 0)
     {
-        o_stateBuffer[groupId.x].state = STATE_PRE_READY;
+        State state = constants.stateBuffer.Load(groupId.x);
+        state.state = STATE_PRE_READY;
+
+        constants.stateBuffer.Store(groupId.x, state);
     }
     
-    o_outputBuffer[valueIndex] = m_groupAggregate + laneAggregate;
+    constants.outputValues.Store(valueIndex, m_groupAggregate + laneAggregate);
 }

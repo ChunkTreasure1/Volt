@@ -33,12 +33,14 @@ namespace Volt::RHI
 		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED))
 	{
 		Invalidate(specification.width, specification.height, data);
+		SetName(specification.debugName);
 	}
 
 	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification, Ref<Allocator> customAllocator, const void* data)
 		: m_specification(specification), m_currentImageLayout(static_cast<uint32_t>(VK_IMAGE_LAYOUT_UNDEFINED)), m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator)
 	{
 		Invalidate(specification.width, specification.height, data);
+		SetName(specification.debugName);
 	}
 
 	VulkanImage2D::~VulkanImage2D()

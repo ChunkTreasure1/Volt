@@ -4,6 +4,7 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraphBlackboard.h"
+#include "Volt/RenderingNew/RenderGraph/RenderGraphUtils.h"
 
 #include "Volt/Math/Math.h"
 
@@ -19,7 +20,7 @@ namespace Volt
 
 	void PrefixSumTechnique::Execute(RenderGraphResourceHandle inputBuffer, RenderGraphResourceHandle outputBuffer, const uint32_t valueCount)
 	{
-		//constexpr uint32_t TG_SIZE = 512;
+		constexpr uint32_t TG_SIZE = 512;
 
 		struct PrefixSumData
 		{
@@ -33,34 +34,34 @@ namespace Volt
 			uint32_t state;
 		};
 
-		//const uint32_t groupCount = Math::DivideRoundUp(valueCount, TG_SIZE);
+		const uint32_t groupCount = Math::DivideRoundUp(valueCount, TG_SIZE);
 
-		//m_renderGraph.AddPass<PrefixSumData>("Prefix Sum", 
-		//[&](RenderGraph::Builder& builder, PrefixSumData& data) 
-		//{
-		//	data.stateBuffer = builder.CreateBuffer({ groupCount * sizeof(State), RHI::BufferUsage::StorageBuffer });
+		m_renderGraph.AddPass<PrefixSumData>("Prefix Sum",
+		[&](RenderGraph::Builder& builder, PrefixSumData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<State>(groupCount, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "State Buffer");
+				data.stateBuffer = builder.CreateBuffer(desc);
+			}
 
-		//	builder.ReadResource(inputBuffer);
-		//	builder.WriteResource(outputBuffer);
-		//	builder.SetIsComputePass();
-		//	builder.SetHasSideEffect();
-		//},
-		//[pipeline = m_pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		//{
-		//	Ref<RHI::BufferView> inputBufferView = resources.GetBuffer(inputBuffer)->GetView();
-		//	Ref<RHI::BufferView> outputBufferView = resources.GetBuffer(outputBuffer)->GetView();
+			builder.ReadResource(inputBuffer);
+			builder.WriteResource(outputBuffer);
+			builder.SetIsComputePass();
+			builder.SetHasSideEffect();
+		},
+		[pipeline = m_pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Weak<RHI::StorageBuffer> stateBuffer = resources.GetBufferRaw(data.stateBuffer);
 
-		//	Ref<RHI::StorageBuffer> stateBuffer = resources.GetBuffer(data.stateBuffer);
-		//
-		//	context.ClearBuffer(stateBuffer, 0);
-		//	
-		//	context.BindPipeline(pipeline);
-		//	context.SetBufferView("u_inputValues", inputBufferView);
-		//	context.SetBufferView("o_outputBuffer", outputBufferView);
-		//	context.SetBufferView("o_stateBuffer", stateBuffer->GetView());
-		//	context.PushConstants(valueCount);
+			context.ClearBuffer(stateBuffer, 0);
 
-		//	context.Dispatch(groupCount, 1, 1);
-		//});
+			context.BindPipeline(pipeline);
+			context.SetConstant(resources.GetBuffer(inputBuffer));
+			context.SetConstant(resources.GetBuffer(outputBuffer));
+			context.SetConstant(resources.GetBuffer(data.stateBuffer));
+			context.SetConstant(valueCount);
+
+			context.Dispatch(groupCount, 1, 1);
+		});
 	}
 }

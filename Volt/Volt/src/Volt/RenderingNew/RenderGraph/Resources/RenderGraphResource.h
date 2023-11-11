@@ -64,6 +64,7 @@ namespace Volt
 		RenderGraphPassResources(RenderGraph& renderGraph, RenderGraphPassNodeBase& pass);
 		
 		Weak<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle) const;
+		Weak<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle) const;
 		ResourceHandle GetImage2D(const RenderGraphResourceHandle resourceHandle) const;
 		
 		//Ref<RHI::Image3D> GetImage3D(const RenderGraphResourceHandle resourceHandle); // #TODO: Implement Image3D first
