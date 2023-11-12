@@ -87,25 +87,6 @@ namespace Volt
 
 			m_outputImage = RHI::Image2D::Create(spec);
 		}
-
-		// Constant buffer
-		{
-			m_constantBufferSet = RHI::UniformBufferSet::Create(RendererNew::GetFramesInFlight());
-			m_constantBufferSet->Add<CameraDataNew>(2, CAMERA_BUFFER_BINDING);
-			m_constantBufferSet->Add<DirectionalLightData>(2, DIRECTIONAL_LIGHT_BINDING);
-			m_constantBufferSet->Add<SamplersData>(2, SAMPLERS_BINDING);
-		}
-
-		// Sampler state
-		{
-			RHI::SamplerStateCreateInfo info{};
-			info.minFilter = RHI::TextureFilter::Linear;
-			info.magFilter = RHI::TextureFilter::Linear;
-			info.mipFilter = RHI::TextureFilter::Linear;
-			info.wrapMode = RHI::TextureWrap::Repeat;
-
-			m_samplerState = RHI::SamplerState::Create(info);
-		}
 	}
 
 	SceneRendererNew::~SceneRendererNew()
@@ -154,8 +135,6 @@ namespace Volt
 			m_shouldResize = false;
 		}
 
-		UpdateBuffers(camera);
-
 		RenderGraphBlackboard rgBlackboard{};
 		RenderGraph renderGraph{ m_commandBuffer };
 
@@ -176,7 +155,7 @@ namespace Volt
 		AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
 		AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
 
-		// For every material -> run compute shading shader using indirect args
+		 //For every material -> run compute shading shader using indirect args
 		AddGenerateGBufferPass(renderGraph, rgBlackboard);
 
 		//if (m_visibilityVisualization != VisibilityVisualization::None)
@@ -197,66 +176,6 @@ namespace Volt
 		auto renderScene = m_scene->GetRenderScene();
 		renderScene->PrepareForUpdate();
 		renderScene->SetValid();
-	}
-
-	void SceneRendererNew::UpdateBuffers(Ref<Camera> camera)
-	{
-		UpdateCameraBuffer(camera);
-		UpdateLightBuffers();
-		UpdateSamplersBuffer();
-	}
-
-	void SceneRendererNew::UpdateCameraBuffer(Ref<Camera> camera)
-	{
-		if (!camera)
-		{
-			return;
-		}
-
-		auto cameraBuffer = m_constantBufferSet->Get(2, CAMERA_BUFFER_BINDING, m_commandBuffer->GetCurrentIndex());
-
-		CameraDataNew* cameraData = cameraBuffer->Map<CameraDataNew>();
-
-		cameraData->projection = camera->GetProjection();
-		cameraData->view = camera->GetView();
-		cameraData->inverseView = glm::inverse(camera->GetView());
-		cameraData->inverseProjection = glm::inverse(camera->GetProjection());
-		cameraData->position = glm::vec4(camera->GetPosition(), 1.f);
-
-		cameraBuffer->Unmap();
-	}
-
-	void SceneRendererNew::UpdateSamplersBuffer()
-	{
-		auto samplersBuffer = m_constantBufferSet->Get(2, SAMPLERS_BINDING, m_commandBuffer->GetCurrentIndex());
-
-		*samplersBuffer->Map<SamplersData>() = RendererNew::GetSamplersData();
-		samplersBuffer->Unmap();
-	}
-
-	void SceneRendererNew::UpdateLightBuffers()
-	{
-		// Directional Light
-		{
-			DirectionalLightData dirLightData{};
-
-			m_scene->ForEachWithComponents<const DirectionalLightComponent, const TransformComponent>([&](const entt::entity id, const DirectionalLightComponent& lightComp, const TransformComponent& transComp)
-			{
-				if (!transComp.visible)
-				{
-					return;
-				}
-
-				Entity entity = { id, m_scene };
-
-				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
-				dirLightData.direction = glm::vec4{ dir.x, dir.y, dir.z, 0.f };
-				dirLightData.color = lightComp.color;
-				dirLightData.intensity = lightComp.intensity;
-			});
-
-			m_constantBufferSet->Get(2, DIRECTIONAL_LIGHT_BINDING, m_commandBuffer->GetCurrentIndex())->SetData<DirectionalLightData>(dirLightData);
-		}
 	}
 
 	void SceneRendererNew::UploadIndirectCommands(RenderGraph& renderGraph, RenderGraphResourceHandle bufferHandle)
@@ -677,7 +596,7 @@ namespace Volt
 		blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("Generate GBuffer Data",
 		[&](RenderGraph::Builder& builder, GBufferData& data)
 		{
-			data.albedo = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+			data.albedo = renderGraph.AddExternalImage2D(m_outputImage);  //builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
 			data.materialEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
 			data.normalEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
@@ -686,6 +605,8 @@ namespace Volt
 			builder.ReadResource(matCountData.materialCountBuffer);
 			builder.ReadResource(matCountData.materialStartBuffer);
 			builder.ReadResource(matPixelsData.pixelCollectionBuffer);
+
+			builder.ReadResource(data.albedo);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();

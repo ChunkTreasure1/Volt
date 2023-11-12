@@ -62,11 +62,6 @@ namespace Volt
 	private:
 		void OnRender(Ref<Camera> camera);
 
-		void UpdateBuffers(Ref<Camera> camera);
-		void UpdateCameraBuffer(Ref<Camera> camera);
-		void UpdateSamplersBuffer();
-		void UpdateLightBuffers();
-
 		void UploadIndirectCommands(RenderGraph& renderGraph, RenderGraphResourceHandle bufferHandle);
 
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
@@ -104,10 +99,6 @@ namespace Volt
 		uint32_t m_resizeHeight = 1280;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
-
-		Ref<RHI::UniformBufferSet> m_constantBufferSet;
-
-		Ref<RHI::SamplerState> m_samplerState;
 
 		///// TEMP /////
 		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;

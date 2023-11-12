@@ -1058,7 +1058,6 @@ namespace Volt::RHI
 
 		auto& vkImage = dstImage->AsRef<VulkanImage2D>();
 
-
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
@@ -1073,6 +1072,165 @@ namespace Volt::RHI
 		region.imageExtent = { width, height, 1 };
 
 		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.m_currentImageLayout), 1, &region);
+	}
+
+	void VulkanCommandBuffer::CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height)
+	{
+		VulkanImage2D& srcVkImage = srcImage->AsRef<VulkanImage2D>();
+		VulkanImage2D& dstVkImage = dstImage->AsRef<VulkanImage2D>();
+
+		const VkImageAspectFlags srcImageAspect = static_cast<VkImageAspectFlags>(srcVkImage.GetImageAspect());
+		const VkImageAspectFlags dstImageAspect = static_cast<VkImageAspectFlags>(dstVkImage.GetImageAspect());
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		VkImageSubresourceRange srcRange{};
+		srcRange.aspectMask = srcImageAspect;
+		srcRange.baseArrayLayer = 0;
+		srcRange.baseMipLevel = 0;
+		srcRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		srcRange.levelCount = VK_REMAINING_MIP_LEVELS;
+
+		VkImageSubresourceRange dstRange{};
+		srcRange.aspectMask = dstImageAspect;
+		srcRange.baseArrayLayer = 0;
+		srcRange.baseMipLevel = 0;
+		srcRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		srcRange.levelCount = VK_REMAINING_MIP_LEVELS;
+
+		const VkImageLayout srcOriginalLayout = static_cast<VkImageLayout>(srcVkImage.GetCurrentLayout());
+		const VkImageLayout dstOriginalLayout = static_cast<VkImageLayout>(dstVkImage.GetCurrentLayout());
+
+		std::array<VkImageMemoryBarrier2, 2> memBarriers;
+		uint32_t barrierCount = 0;
+
+		// Src transition
+		if (srcOriginalLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+		{
+			VkImageMemoryBarrier2& srcImageBarrier = memBarriers[barrierCount++];
+			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			srcImageBarrier.pNext = nullptr;
+			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			srcImageBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			srcImageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			srcImageBarrier.oldLayout = static_cast<VkImageLayout>(srcVkImage.GetCurrentLayout());
+			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.subresourceRange = srcRange;
+			srcImageBarrier.image = srcVkImage.GetHandle<VkImage>();
+		}
+
+		if (dstOriginalLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+		{
+			VkImageMemoryBarrier2& dstImageBarrier = memBarriers[barrierCount++];
+			dstImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			dstImageBarrier.pNext = nullptr;
+			dstImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			dstImageBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			dstImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			dstImageBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			dstImageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			dstImageBarrier.oldLayout = static_cast<VkImageLayout>(dstVkImage.GetCurrentLayout());
+			dstImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstImageBarrier.subresourceRange = dstRange;
+			dstImageBarrier.image = dstVkImage.GetHandle<VkImage>();
+		}
+
+		VkDependencyInfo depInfo{};
+		depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+		depInfo.pNext = nullptr;
+		depInfo.dependencyFlags = 0;
+		depInfo.memoryBarrierCount = 0;
+		depInfo.pMemoryBarriers = nullptr;
+		depInfo.bufferMemoryBarrierCount = 0;
+		depInfo.pBufferMemoryBarriers = nullptr;
+		depInfo.imageMemoryBarrierCount = barrierCount;
+		depInfo.pImageMemoryBarriers = memBarriers.data();
+
+		vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
+
+		VkImageCopy2 info{};
+		info.sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2;
+		info.pNext = nullptr;
+		info.srcSubresource.aspectMask = srcImageAspect;
+		info.srcSubresource.baseArrayLayer = 0;
+		info.srcSubresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		info.srcSubresource.mipLevel = 0;
+		info.dstSubresource.aspectMask = dstImageAspect;
+		info.dstSubresource.baseArrayLayer = 0;
+		info.dstSubresource.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		info.dstSubresource.mipLevel = 0;
+		info.srcOffset.x = 0;
+		info.srcOffset.y = 0;
+		info.srcOffset.z = 0;
+		info.dstOffset.x = 0;
+		info.dstOffset.y = 0;
+		info.dstOffset.z = 0;
+		info.extent.width = width;
+		info.extent.height = height;
+		info.extent.depth = 1;
+
+		VkCopyImageInfo2 cpyInfo{};
+		cpyInfo.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2;
+		cpyInfo.pNext = nullptr;
+		cpyInfo.srcImage = srcVkImage.GetHandle<VkImage>();
+		cpyInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		cpyInfo.dstImage = dstVkImage.GetHandle<VkImage>();
+		cpyInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		cpyInfo.pRegions = &info;
+		cpyInfo.regionCount = 1;
+
+		vkCmdCopyImage2(m_commandBuffers.at(index).commandBuffer, &cpyInfo);
+
+		barrierCount = 0;
+
+		if (srcOriginalLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+		{
+			VkImageMemoryBarrier2& srcImageBarrier = memBarriers[barrierCount++];
+			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			srcImageBarrier.pNext = nullptr;
+			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcImageBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			srcImageBarrier.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			srcImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			srcImageBarrier.newLayout = static_cast<VkImageLayout>(srcVkImage.GetCurrentLayout());
+			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.subresourceRange = srcRange;
+			srcImageBarrier.image = srcVkImage.GetHandle<VkImage>();
+		}
+
+		if (dstOriginalLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+		{
+			VkImageMemoryBarrier2& srcImageBarrier = memBarriers[barrierCount++];
+			srcImageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+			srcImageBarrier.pNext = nullptr;
+			srcImageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcImageBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			srcImageBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			srcImageBarrier.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			srcImageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			srcImageBarrier.newLayout = static_cast<VkImageLayout>(dstVkImage.GetCurrentLayout());
+			srcImageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcImageBarrier.subresourceRange = dstRange;
+			srcImageBarrier.image = dstVkImage.GetHandle<VkImage>();
+		}
+
+		depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+		depInfo.pNext = nullptr;
+		depInfo.dependencyFlags = 0;
+		depInfo.memoryBarrierCount = 0;
+		depInfo.pMemoryBarriers = nullptr;
+		depInfo.bufferMemoryBarrierCount = 0;
+		depInfo.pBufferMemoryBarriers = nullptr;
+		depInfo.imageMemoryBarrierCount = barrierCount;
+		depInfo.pImageMemoryBarriers = memBarriers.data();
+
+		vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
 	}
 
 	const uint32_t VulkanCommandBuffer::GetCurrentIndex() const

@@ -72,6 +72,7 @@ namespace Volt::RHI
 
 		virtual void CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size) = 0;
 		virtual void CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip = 0) = 0;
+		virtual void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) = 0;
 
 		virtual const uint32_t GetCurrentIndex() const = 0;
 

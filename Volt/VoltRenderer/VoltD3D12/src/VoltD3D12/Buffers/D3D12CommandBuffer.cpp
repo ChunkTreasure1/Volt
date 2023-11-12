@@ -246,6 +246,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height)
+	{
+	}
+
 	const uint32_t D3D12CommandBuffer::GetCurrentIndex() const
 	{
 		return m_currentCommandBufferIndex;

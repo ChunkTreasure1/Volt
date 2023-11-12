@@ -37,11 +37,22 @@ namespace Volt::RHI
 	{
 		for (int32_t i = static_cast<int32_t>(m_activeImageAllocations.size()) - 1; i >= 0; i--)
 		{
+			if (!m_activeBufferAllocations.at(i))
+			{
+				continue;
+			}
+
 			DestroyImage(m_activeImageAllocations.at(i));
 		}
 
 		for (int32_t i = static_cast<int32_t>(m_activeBufferAllocations.size()) - 1; i >= 0; i--)
 		{
+			// #TODO_Ivar: Probably want to take a look at why allocations can be empty here
+			if (!m_activeBufferAllocations.at(i))
+			{
+				continue;
+			}
+
 			DestroyBuffer(m_activeBufferAllocations.at(i));
 		}
 
