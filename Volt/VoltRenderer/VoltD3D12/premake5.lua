@@ -42,6 +42,7 @@ project "VoltD3D12"
 		"src/",
 		"../VoltRHI/src",
 		"../../Volt/src",
+		"../../CoreUtilities/src",
 
 		"../VoltD3D12/vendor/dxc/include",
 		"%{IncludeDir.GLFW}",

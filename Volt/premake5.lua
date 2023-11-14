@@ -45,6 +45,7 @@ include "Volt/vendor/DirectXTK"
 include "Volt/vendor/stb_image"
 include "Volt/vendor/vma"
 include "Volt/vendor/cityhash"
+include "Volt/vendor/tracy"
 
 group "Core"
 include "Amp"
@@ -52,6 +53,7 @@ include "Volt"
 include "GraphKey"
 include "Navigation"
 include "Nexus"
+include "CoreUtilities"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
 group "Core/Renderer"

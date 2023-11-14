@@ -1,6 +1,8 @@
 #pragma once
 #include "VoltRHI/Core/Core.h"
 
+#include <CoreUtilities/Containers/StackVector.h>
+
 #include <array>
 #include <functional>
 
@@ -10,6 +12,8 @@ namespace Volt::RHI
 	class GraphicsDevice;
 	class ImageView;
 	class RHIResource;
+
+	inline static constexpr size_t MAX_COLOR_ATTACHMENT_COUNT = 8;
 
 	enum class QueueType
 	{
@@ -676,7 +680,7 @@ namespace Volt::RHI
 
 	struct RenderingInfo
 	{
-		std::vector<AttachmentInfo> colorAttachments{};
+		StackVector<AttachmentInfo, MAX_COLOR_ATTACHMENT_COUNT> colorAttachments;
 		AttachmentInfo depthAttachmentInfo{};
 
 		Rect2D renderArea{};

@@ -54,12 +54,14 @@ project "Volt"
 		"../Navigation/src/",
 		"../Nexus/src/",
 		"../VoltRenderer/VoltRHI/src",
+		"../CoreUtilities/src",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
@@ -103,6 +105,7 @@ project "Volt"
 		"GLFW",
 		"ImGui",
 		"Optick",
+		"tracy",
 		"Navigation",
 		"msdf-atlas-gen",
 		"YamlCPP",
@@ -112,6 +115,7 @@ project "Volt"
 		"NFD-Extended",
 		"TGAFBX",
 		"cityhash",
+		"CoreUtilities",
 
 		"DirectXTK",
 		"stb",
@@ -130,7 +134,9 @@ project "Volt"
 		"OPTICK_ENABLE_GPU_VULKAN",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
+		"GLM_FORCE_LEFT_HANDED",
+
+		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"
@@ -193,6 +199,8 @@ project "Volt"
 		runtime "Release"
 		optimize "on"
 		symbols "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
 	filter "configurations:Dist"
 		defines { "VT_DIST", "NDEBUG" }
@@ -200,6 +208,8 @@ project "Volt"
 		runtime "Release"
 		optimize "on"
 		symbols "on"
+		vectorextensions "AVX2"
+		isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
 project "Shaders"
 	location "."

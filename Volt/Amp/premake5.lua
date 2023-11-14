@@ -46,6 +46,7 @@ project "Amp"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.fmod}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.wwise}"
@@ -59,7 +60,9 @@ project "Amp"
 		"PX_PHYSX_STATIC_LIB",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
+		"GLM_FORCE_LEFT_HANDED",
+
+		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"

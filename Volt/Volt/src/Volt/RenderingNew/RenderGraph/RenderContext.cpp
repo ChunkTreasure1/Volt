@@ -55,17 +55,19 @@ namespace Volt
 		viewport.minDepth = 0.f;
 		viewport.maxDepth = 1.f;
 
-		std::vector<RHI::AttachmentInfo> colorAttachments;
+		StackVector<RHI::AttachmentInfo, RHI::MAX_COLOR_ATTACHMENT_COUNT> colorAttachments;
 		RHI::AttachmentInfo depthAttachment{};
 
 		for (const auto& view : attachments)
 		{
 			if ((view->GetImageAspect() & RHI::ImageAspect::Color) != RHI::ImageAspect::None)
 			{
-				auto& attachment = colorAttachments.emplace_back();
+				RHI::AttachmentInfo attachment{};
 				attachment.clearMode = RHI::ClearMode::Clear;
 				attachment.clearColor = { 0.f, 0.f, 0.f, 0.f };
 				attachment.view = view;
+
+				colorAttachments.Push(attachment);
 			}
 			else
 			{

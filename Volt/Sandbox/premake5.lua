@@ -81,6 +81,7 @@ project "Sandbox"
 		"../Navigation/src/",
 		"../Nexus/src",
 		"../VoltRenderer/VoltRHI/src",
+		"../CoreUtilities/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -88,6 +89,7 @@ project "Sandbox"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.fmod}",

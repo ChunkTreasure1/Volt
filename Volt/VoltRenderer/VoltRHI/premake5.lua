@@ -43,10 +43,12 @@ project "VoltRHI"
 		"../VoltD3D12/src",
 		"../VoltVulkan/src",
 		"../../Volt/src",
+		"../../CoreUtilities/src",
 
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 
 		"%{IncludeDir.Aftermath}"
 	}
@@ -56,6 +58,8 @@ project "VoltRHI"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
+
+		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"

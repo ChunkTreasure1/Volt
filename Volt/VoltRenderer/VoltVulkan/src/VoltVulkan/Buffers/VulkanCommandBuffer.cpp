@@ -491,12 +491,12 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		std::vector<VkRenderingAttachmentInfo> colorAttachmentInfo{};
+		StackVector<VkRenderingAttachmentInfo, MAX_COLOR_ATTACHMENT_COUNT> colorAttachmentInfo{};
 		VkRenderingAttachmentInfo depthAttachmentInfo{};
 
 		for (const auto& colorAtt : renderingInfo.colorAttachments)
 		{
-			auto& newInfo = colorAttachmentInfo.emplace_back();
+			VkRenderingAttachmentInfo newInfo{};
 			newInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 			newInfo.imageView = colorAtt.view->GetHandle<VkImageView>();
 			newInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -504,6 +504,8 @@ namespace Volt::RHI
 			newInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
 			memcpy_s(&newInfo.clearValue, sizeof(uint32_t) * 4, &colorAtt.clearColor, sizeof(uint32_t) * 4);
+		
+			colorAttachmentInfo.Push(newInfo);
 		}
 
 		const bool hasDepth = renderingInfo.depthAttachmentInfo.view;
@@ -523,8 +525,8 @@ namespace Volt::RHI
 		vkRenderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
 		vkRenderingInfo.renderArea = { renderingInfo.renderArea.offset.x, renderingInfo.renderArea.offset.y, renderingInfo.renderArea.extent.width, renderingInfo.renderArea.extent.height };
 		vkRenderingInfo.layerCount = renderingInfo.layerCount;
-		vkRenderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentInfo.size());
-		vkRenderingInfo.pColorAttachments = colorAttachmentInfo.data();
+		vkRenderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentInfo.Size());
+		vkRenderingInfo.pColorAttachments = colorAttachmentInfo.Data();
 		vkRenderingInfo.pStencilAttachment = nullptr;
 
 		if (hasDepth)

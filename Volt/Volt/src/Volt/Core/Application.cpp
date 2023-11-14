@@ -192,9 +192,8 @@ namespace Volt
 
 		while (m_isRunning)
 		{
-			VT_PROFILE_FRAME("Frame");
-
 			MainUpdate();
+			VT_PROFILE_FRAME("Frame");
 		}
 	}
 
@@ -275,7 +274,7 @@ namespace Volt
 		}
 
 		{
-			VT_PROFILE_SCOPE("Application::UpdateAudio")
+			VT_PROFILE_SCOPE("Application::UpdateAudio");
 			Amp::WWiseEngine::Get().Update();
 		}
 

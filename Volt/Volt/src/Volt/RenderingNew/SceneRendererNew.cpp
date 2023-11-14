@@ -428,7 +428,7 @@ namespace Volt
 
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { visibilityView, depthView });
 			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
-			info.renderingInfo.colorAttachments.at(0).SetClearColor(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max());
+			info.renderingInfo.colorAttachments.At(0).SetClearColor(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max());
 
 			context.BeginRendering(info);
 			context.BindPipeline(m_visibilityPipeline);

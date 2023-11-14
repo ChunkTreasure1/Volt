@@ -122,8 +122,6 @@ See documentation chapter: \ref statistics.
 */
 
 
-#include <VoltRHI/Core/Profiling.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15552,7 +15550,6 @@ void VmaAllocator_T::FreeVulkanMemory(uint32_t memoryType, VkDeviceSize size, Vk
 
 	// VULKAN CALL vkFreeMemory.
 	{
-		VT_PROFILE_SCOPE("Acctual free");
 		(*m_VulkanFunctions.vkFreeMemory)(m_hDevice, hMemory, GetAllocationCallbacks());
 	}
 
@@ -17096,8 +17093,6 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateBuffer(
 {
 	VMA_ASSERT(allocator && pBufferCreateInfo && pAllocationCreateInfo && pBuffer && pAllocation);
 
-	VT_PROFILE_FUNCTION();
-
 	if (pBufferCreateInfo->size == 0)
 	{
 		return VK_ERROR_INITIALIZATION_FAILED;
@@ -17132,8 +17127,6 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateBuffer(
 			requiresDedicatedAllocation, prefersDedicatedAllocation);
 
 		{
-			VT_PROFILE_SCOPE("Allocate");
-
 			// 3. Allocate memory using allocator.
 			res = allocator->AllocateMemory(
 				vkMemReq,
@@ -17154,8 +17147,6 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateBuffer(
 			// 3. Bind buffer with memory.
 			if ((pAllocationCreateInfo->flags & VMA_ALLOCATION_CREATE_DONT_BIND_BIT) == 0)
 			{
-				VT_PROFILE_SCOPE("Bind");
-
 				res = allocator->BindBufferMemory(*pAllocation, 0, *pBuffer, VMA_NULL);
 			}
 			if (res >= 0)
@@ -17375,8 +17366,6 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateImage(
 {
 	VMA_ASSERT(allocator && pImageCreateInfo && pAllocationCreateInfo && pImage && pAllocation);
 
-	VT_PROFILE_FUNCTION();
-
 	if (pImageCreateInfo->extent.width == 0 ||
 		pImageCreateInfo->extent.height == 0 ||
 		pImageCreateInfo->extent.depth == 0 ||
@@ -17413,7 +17402,6 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateImage(
 			requiresDedicatedAllocation, prefersDedicatedAllocation);
 
 		{
-			VT_PROFILE_SCOPE("Allocate");
 			res = allocator->AllocateMemory(
 				vkMemReq,
 				requiresDedicatedAllocation,
@@ -17432,7 +17420,6 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateImage(
 			// 3. Bind image with memory.
 			if ((pAllocationCreateInfo->flags & VMA_ALLOCATION_CREATE_DONT_BIND_BIT) == 0)
 			{
-				VT_PROFILE_SCOPE("Bind");
 				res = allocator->BindImageMemory(*pAllocation, 0, *pImage, VMA_NULL);
 			}
 			if (res >= 0)
@@ -17522,8 +17509,6 @@ VMA_CALL_PRE void VMA_CALL_POST vmaDestroyImage(
 {
 	VMA_ASSERT(allocator);
 
-	VT_PROFILE_FUNCTION();
-
 	if (image == VK_NULL_HANDLE && allocation == VK_NULL_HANDLE)
 	{
 		return;
@@ -17535,13 +17520,10 @@ VMA_CALL_PRE void VMA_CALL_POST vmaDestroyImage(
 
 		if (image != VK_NULL_HANDLE)
 		{
-			VT_PROFILE_SCOPE("Destroy Image");
 			(*allocator->GetVulkanFunctions().vkDestroyImage)(allocator->m_hDevice, image, allocator->GetAllocationCallbacks());
 		}
 	if (allocation != VK_NULL_HANDLE)
 	{
-		VT_PROFILE_SCOPE("Free");
-
 		allocator->FreeMemory(
 			1, // allocationCount
 			&allocation);

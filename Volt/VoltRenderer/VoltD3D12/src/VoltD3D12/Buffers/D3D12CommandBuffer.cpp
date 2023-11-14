@@ -157,7 +157,7 @@ namespace Volt::RHI
 		auto& cmdData = GetCommandData();
 
 		std::vector<CD3DX12_CPU_DESCRIPTOR_HANDLE> rtvViews;
-		rtvViews.reserve(renderingInfo.colorAttachments.size());
+		rtvViews.reserve(renderingInfo.colorAttachments.Size());
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE* dsvView = nullptr;
 

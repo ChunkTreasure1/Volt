@@ -59,9 +59,11 @@ project "Navigation"
 		"../Volt/src",
 		"../Nexus/src",
 		"../VoltRenderer/VoltRHI/src",
+		"../CoreUtilities/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.spdlog}",
 
 		"%{IncludeDir.PhysX}",
@@ -97,7 +99,9 @@ project "Navigation"
 
 		"_USE_MATH_DEFINES",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"_CRT_SECURE_NO_WARNINGS"
+		"_CRT_SECURE_NO_WARNINGS",
+
+		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.c"

@@ -49,9 +49,11 @@ project "GraphKey"
 		"../Amp/src/",
 		"../Nexus/src",
 		"../VoltRenderer/VoltRHI/src",
+		"../CoreUtilities/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.spdlog}",
 
 		"%{IncludeDir.glm}",
@@ -73,7 +75,9 @@ project "GraphKey"
 		"PX_PHYSX_STATIC_LIB",
 
 		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
+		"GLM_FORCE_LEFT_HANDED",
+
+		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"

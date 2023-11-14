@@ -42,10 +42,12 @@ project "VoltVulkan"
 		"src/",
 		"../VoltRHI/src",
 		"../../Volt/src",
+		"../../CoreUtilities/src",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
@@ -58,7 +60,9 @@ project "VoltVulkan"
 		"NOMINMAX",
 		"_HAS_STD_BYTE=0",
 		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"OPTICK_ENABLE_GPU_VULKAN"
+		"OPTICK_ENABLE_GPU_VULKAN",
+
+		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"
@@ -105,6 +109,8 @@ project "VoltVulkan"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
+			vectorextensions "AVX2"
+			isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
 
 		filter "configurations:Dist"
 			defines { "VT_DIST", "NDEBUG" }
@@ -112,3 +118,5 @@ project "VoltVulkan"
 			runtime "Release"
 			optimize "on"
 			symbols "on"
+			vectorextensions "AVX2"
+			isaextensions { "BMI", "POPCNT", "LZCNT", "F16C" }
