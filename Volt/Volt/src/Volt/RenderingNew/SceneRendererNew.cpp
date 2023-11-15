@@ -268,6 +268,18 @@ namespace Volt
 			camData.inverseView = glm::inverse(camData.view);
 			camData.inverseProjection = glm::inverse(camData.projection);
 			camData.position = glm::vec4(camera->GetPosition(), 1.f);
+			camData.viewProjection = camData.projection * camData.view;
+			camData.inverseViewProjection = glm::inverse(camData.viewProjection);
+
+			float depthLinearizeMul = (-camData.projection[3][2]);
+			float depthLinearizeAdd = (camData.projection[2][2]);
+
+			if (depthLinearizeMul * depthLinearizeAdd < 0.f)
+			{
+				depthLinearizeAdd = -depthLinearizeAdd;
+			}
+
+			camData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
 
 			renderGraph.AddMappedBufferUpload(buffersData.cameraDataBuffer, &camData, sizeof(CameraDataNew), "Upload Camera Data");
 		}
@@ -523,7 +535,7 @@ namespace Volt
 			}
 
 			{
-				const auto desc = RGUtils::CreateBufferDescGPU<uint32_t>(m_scene->GetRenderScene()->GetIndividualMaterialCount(), "Current Material Count");
+				const auto desc = RGUtils::CreateBufferDescGPU<uint32_t>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), "Current Material Count");
 				data.currentMaterialCountBuffer = builder.CreateBuffer(desc);
 			}
 
@@ -561,7 +573,7 @@ namespace Volt
 		[&](RenderGraph::Builder& builder, MaterialIndirectArgsData& data)
 		{
 			{
-				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectDispatchCommand>(m_scene->GetRenderScene()->GetIndividualMaterialCount(), RHI::BufferUsage::IndirectBuffer | RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Indirect Args");
+				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectDispatchCommand>(std::max(m_scene->GetRenderScene()->GetIndividualMaterialCount(), 1u), RHI::BufferUsage::IndirectBuffer | RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Material Indirect Args");
 				data.materialIndirectArgsBuffer = builder.CreateBuffer(desc);
 			}
 
@@ -588,10 +600,11 @@ namespace Volt
 
 	void SceneRendererNew::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		MaterialIndirectArgsData indirectArgsData = blackboard.Get<MaterialIndirectArgsData>();
-		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
-		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
-		MaterialPixelsData matPixelsData = blackboard.Get<MaterialPixelsData>();
+		const auto& indirectArgsData = blackboard.Get<MaterialIndirectArgsData>();
+		const auto& visBufferData = blackboard.Get<VisibilityBufferData>();
+		const auto& matCountData = blackboard.Get<MaterialCountData>();
+		const auto& matPixelsData = blackboard.Get<MaterialPixelsData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
 		blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("Generate GBuffer Data",
 		[&](RenderGraph::Builder& builder, GBufferData& data)
@@ -605,6 +618,7 @@ namespace Volt
 			builder.ReadResource(matCountData.materialCountBuffer);
 			builder.ReadResource(matCountData.materialStartBuffer);
 			builder.ReadResource(matPixelsData.pixelCollectionBuffer);
+			builder.ReadResource(uniformBuffers.cameraDataBuffer);
 
 			builder.ReadResource(data.albedo);
 
@@ -630,10 +644,15 @@ namespace Volt
 			context.SetConstant(resources.GetBuffer(matCountData.materialStartBuffer));
 			context.SetConstant(resources.GetBuffer(matPixelsData.pixelCollectionBuffer));
 
+			context.SetConstant(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle());
+			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+
 			context.SetConstant(resources.GetImage2D(data.albedo));
 			context.SetConstant(resources.GetImage2D(data.materialEmissive));
 			context.SetConstant(resources.GetImage2D(data.normalEmissive));
 			context.SetConstant(0); // Material ID
+
+			context.SetConstant(glm::vec2(m_width, m_height));
 
 			context.DispatchIndirect(indirectArgsBuffer, 0); // Should be offset with material ID
 		});

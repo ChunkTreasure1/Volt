@@ -55,7 +55,11 @@ struct CameraData
     float4x4 inverseView;
     float4x4 inverseProjection;
 
+    float4x4 viewProjection;
+    float4x4 inverseViewProjection;
+    
     float4 position;
+    float2 depthUnpackConsts;
 };
 
 struct DirectionalLight

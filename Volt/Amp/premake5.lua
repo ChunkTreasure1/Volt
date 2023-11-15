@@ -41,6 +41,7 @@ project "Amp"
 	{
 		"src/",
 		"../Volt/src",
+		"../CoreUtilities/src",
 
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",

@@ -436,6 +436,8 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateImage2D(const RenderGraphImageDesc& textureDesc)
 	{
+		VT_CORE_ASSERT(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
 		node->handle = resourceHandle;
@@ -448,6 +450,8 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateImage3D(const RenderGraphImageDesc& textureDesc)
 	{
+		VT_CORE_ASSERT(textureDesc.width > 0 && textureDesc.height > 0, "Width and height must not be zero!");
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphTexture3D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture3D>>();
 		node->handle = resourceHandle;
@@ -460,6 +464,8 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
+		VT_CORE_ASSERT(bufferDesc.size > 0, "Size must not be zero!");
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
 		node->handle = resourceHandle;
@@ -474,6 +480,8 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
 	{
+		VT_CORE_ASSERT(bufferDesc.size > 0, "Size must not be zero!");
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
 		node->handle = resourceHandle;

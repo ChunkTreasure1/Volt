@@ -14,6 +14,10 @@ public:
 
 	void Push(const T& value);
 	void Erase(const size_t index);
+
+	template<typename... Args>
+	[[nodiscard]] constexpr T& Emplace(Args&&... args);
+
 	[[nodiscard]] constexpr const T& At(const size_t index) const;
 	[[nodiscard]] constexpr T& At(const size_t index);
 	[[nodiscard]] constexpr size_t Size() const;
@@ -84,6 +88,14 @@ inline StackVector<T, MAX_SIZE>::StackVector(std::initializer_list<T> initialize
 			break;
 		}
 	}
+}
+
+template<typename T, size_t MAX_SIZE>
+template<typename ...Args>
+inline constexpr T& StackVector<T, MAX_SIZE>::Emplace(Args&& ...args)
+{
+	assert(m_currentSize < MAX_SIZE);
+	return m_data[m_currentSize++] = T{ std::forward<Args>(args)... };
 }
 
 template<typename T, size_t MAX_SIZE>

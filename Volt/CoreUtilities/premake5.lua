@@ -47,6 +47,8 @@ project "CoreUtilities"
 		"src/",
 		
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.Optick}",
+		"%{IncludeDir.tracy}",
 	}
 
 	defines

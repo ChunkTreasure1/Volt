@@ -496,7 +496,7 @@ namespace Volt::RHI
 
 		for (const auto& colorAtt : renderingInfo.colorAttachments)
 		{
-			VkRenderingAttachmentInfo newInfo{};
+			VkRenderingAttachmentInfo& newInfo = colorAttachmentInfo.Emplace();
 			newInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 			newInfo.imageView = colorAtt.view->GetHandle<VkImageView>();
 			newInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -504,8 +504,6 @@ namespace Volt::RHI
 			newInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
 			memcpy_s(&newInfo.clearValue, sizeof(uint32_t) * 4, &colorAtt.clearColor, sizeof(uint32_t) * 4);
-		
-			colorAttachmentInfo.Push(newInfo);
 		}
 
 		const bool hasDepth = renderingInfo.depthAttachmentInfo.view;

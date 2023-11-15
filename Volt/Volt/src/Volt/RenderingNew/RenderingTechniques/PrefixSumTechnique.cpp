@@ -40,7 +40,7 @@ namespace Volt
 		[&](RenderGraph::Builder& builder, PrefixSumData& data)
 		{
 			{
-				const auto desc = RGUtils::CreateBufferDesc<State>(groupCount, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "State Buffer");
+				const auto desc = RGUtils::CreateBufferDesc<State>(std::max(groupCount, 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "State Buffer");
 				data.stateBuffer = builder.CreateBuffer(desc);
 			}
 
