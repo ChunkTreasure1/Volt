@@ -12,7 +12,7 @@
 
 namespace Volt
 {
-	const GCHandle MonoGCManager::AddReferenceToObject(const UUID id, MonoObject* object)
+	const GCHandle MonoGCManager::AddReferenceToObject(const UUID64 id, MonoObject* object)
 	{
 		auto handle = mono_gchandle_new_v2(object, false);
 		myHandles.emplace(id, handle);
@@ -40,7 +40,7 @@ namespace Volt
 		return obj;
 	}
 
-	MonoObject* MonoGCManager::GetObjectFromUUID(const UUID id)
+	MonoObject* MonoGCManager::GetObjectFromUUID(const UUID64 id)
 	{
 		if (!myHandles.contains(id))
 		{

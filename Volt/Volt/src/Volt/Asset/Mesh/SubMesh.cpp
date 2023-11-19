@@ -25,7 +25,7 @@ namespace Volt
 		uint64_t count = duration_cast<milliseconds>(time.time_since_epoch()).count();
 
 		m_hash = Utility::HashCombine(m_hash, std::hash<uint64_t>()(count));
-		m_hash = Utility::HashCombine(m_hash, std::hash<uint64_t>()(UUID()));
+		m_hash = Utility::HashCombine(m_hash, std::hash<uint64_t>()(UUID64()));
 	}
 
 	const bool SubMesh::operator==(const SubMesh& rhs) const

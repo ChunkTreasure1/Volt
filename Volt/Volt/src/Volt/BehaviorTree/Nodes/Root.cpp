@@ -10,7 +10,7 @@ namespace Volt::BehaviorTree
 	}
 
 
-	void Node::SetUUID(const UUID& in_id)
+	void Node::SetUUID(const UUID64& in_id)
 	{
 		Ref<Node> this_node = m_tree->GetNodeManager().m_nodes[m_uuid];
 		m_tree->GetNodeManager().m_nodes.erase(m_tree->GetNodeManager().m_nodes.find(m_uuid));

@@ -54,7 +54,7 @@ namespace Volt
 		return {};
 	}
 
-	const AnimatedCharacter::JointAttachment AnimatedCharacter::GetJointAttachmentFromID(const UUID& id) const
+	const AnimatedCharacter::JointAttachment AnimatedCharacter::GetJointAttachmentFromID(const UUID64& id) const
 	{
 		for (const auto& jnt : myJointAttachments)
 		{

@@ -7,7 +7,7 @@ namespace GraphKey
 	struct ParameterNode : public Node
 	{
 		inline ~ParameterNode() override = default;
-		Volt::UUID parameterId;
+		UUID64 parameterId;
 	};
 
 	template<typename T>

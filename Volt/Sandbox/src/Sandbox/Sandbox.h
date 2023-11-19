@@ -117,7 +117,7 @@ private:
 	///////////////
 
 	///// Modals /////
-	Volt::UUID m_projectUpgradeModal = 0;
+	UUID64 m_projectUpgradeModal = 0;
 	//////////////////
 
 	///// Debug Rendering /////

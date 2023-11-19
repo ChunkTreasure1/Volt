@@ -11,7 +11,7 @@ void ModalSystem::Update()
 	}
 }
 
-void ModalSystem::RemoveModal(const Volt::UUID& modalId)
+void ModalSystem::RemoveModal(const UUID64& modalId)
 {
 	if (s_modals.contains(modalId))
 	{

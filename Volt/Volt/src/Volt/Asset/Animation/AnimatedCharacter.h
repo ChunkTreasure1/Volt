@@ -25,7 +25,7 @@ namespace Volt
 		{
 			std::string name;
 			int32_t jointIndex = -1;
-			UUID id{};
+			UUID64 id{};
 
 			glm::vec3 positionOffset = 0.f;
 			glm::quat rotationOffset = { 1.f, 0.f, 0.f, 0.f };
@@ -46,7 +46,7 @@ namespace Volt
 
 		inline const std::vector<JointAttachment>& GetJointAttachments() const { return myJointAttachments; };
 		const JointAttachment GetJointAttachmentFromName(const std::string& name) const;
-		const JointAttachment GetJointAttachmentFromID(const UUID& id) const;
+		const JointAttachment GetJointAttachmentFromID(const UUID64& id) const;
 		const bool HasJointAttachment(const std::string& attachmentName) const;
 
 		inline void SetSkeleton(Ref<Skeleton> skeleton) { mySkeleton = skeleton; }

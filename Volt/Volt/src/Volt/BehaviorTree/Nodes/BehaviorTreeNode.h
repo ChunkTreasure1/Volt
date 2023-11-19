@@ -21,8 +21,8 @@ namespace Volt::BehaviorTree
 	public:
 		virtual ~Node() = default;
 		virtual eNodeStatus Run() = 0;
-		UUID GetUUID() { return m_uuid; }
-		void SetUUID(const UUID& in_id);
+		UUID64 GetUUID() { return m_uuid; }
+		void SetUUID(const UUID64& in_id);
 		eNodeKind m_kind = eNodeKind::NIL;
 		std::string m_name = "SOMETHING WENT WRONG HERE";
 		void SetPos(const std::string& in_data) { m_position = in_data; }
@@ -32,7 +32,7 @@ namespace Volt::BehaviorTree
 	protected:
 		std::string m_position;
 		friend class Tree;
-		UUID m_uuid;
+		UUID64 m_uuid;
 	};
 
 	// One child

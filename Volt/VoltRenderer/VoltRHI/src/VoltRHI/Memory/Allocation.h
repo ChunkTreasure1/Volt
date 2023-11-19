@@ -25,7 +25,7 @@ namespace Volt::RHI
 		constexpr T* Map();
 
 		virtual void Unmap() = 0;
-		[[nodiscard]] virtual const UUID GetHeapID() const = 0;
+		[[nodiscard]] virtual const UUID64 GetHeapID() const = 0;
 		[[nodiscard]] virtual const uint64_t GetDeviceAddress() const = 0;
 
 	protected:

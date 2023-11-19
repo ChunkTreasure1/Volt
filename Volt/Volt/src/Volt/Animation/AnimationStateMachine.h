@@ -20,9 +20,9 @@ namespace Volt
 
 	struct AnimationTransition
 	{
-		UUID id;
-		UUID fromState;
-		UUID toState;
+		UUID64 id;
+		UUID64 fromState;
+		UUID64 toState;
 
 		bool hasExitTime = false;
 		bool shouldBlend = true;
@@ -39,13 +39,13 @@ namespace Volt
 			: name(aName), isEntry(aIsEntry), isAny(aIsAny)
 		{}
 
-		std::vector<UUID> transitions;
+		std::vector<UUID64> transitions;
 		std::string name;
 
 		Ref<AnimationGraphAsset> stateGraph;
-		UUID id{};
-		UUID pinId{};
-		UUID pinId2{};
+		UUID64 id{};
+		UUID64 pinId{};
+		UUID64 pinId2{};
 
 		std::string editorState;
 		bool isEntry = false;
@@ -63,21 +63,21 @@ namespace Volt
 		const GraphKey::AnimationOutputData Sample(Ref<Skeleton> skeleton);
 
 		void AddState(const std::string& name, bool isEntry = false, bool isAny = false);
-		void AddTransition(const UUID startState, const UUID endState);
+		void AddTransition(const UUID64 startState, const UUID64 endState);
 
-		Ref<AnimationState> CreateState(const std::string& name, bool isEntry, const UUID id);
-		Ref<AnimationTransition> CreateTransition(Volt::UUID id);
+		Ref<AnimationState> CreateState(const std::string& name, bool isEntry, const UUID64 id);
+		Ref<AnimationTransition> CreateTransition(UUID64 id);
 
-		void RemoveState(const UUID id);
-		void RemoveTransition(const UUID id);
+		void RemoveState(const UUID64 id);
+		void RemoveTransition(const UUID64 id);
 
-		void SetStartState(const UUID stateId);
+		void SetStartState(const UUID64 stateId);
 
-		AnimationState* GetStateById(const UUID stateId) const;
-		AnimationTransition* GetTransitionById(const UUID transitionId) const;
+		AnimationState* GetStateById(const UUID64 stateId) const;
+		AnimationTransition* GetTransitionById(const UUID64 transitionId) const;
 
-		AnimationState* GetStateFromPin(const UUID outputId) const;
-		const int32_t GetStateIndexFromId(const UUID stateId) const;
+		AnimationState* GetStateFromPin(const UUID64 outputId) const;
+		const int32_t GetStateIndexFromId(const UUID64 stateId) const;
 
 		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, entt::entity entity = entt::null) const;
 
@@ -97,11 +97,11 @@ namespace Volt
 		void Clear();
 
 	private:
-		const bool ShouldTransition(const UUID transitionId, const UUID currentStateId) const;
+		const bool ShouldTransition(const UUID64 transitionId, const UUID64 currentStateId) const;
 		const GraphKey::AnimationOutputData CrossfadeTransition();
 		const GraphKey::AnimationOutputData SampleState(int32_t stateIndex);
 		
-		void SetNextState(const UUID targetStateId, const UUID transitionId);
+		void SetNextState(const UUID64 targetStateId, const UUID64 transitionId);
 
 		std::string myState;
 		std::string myName;

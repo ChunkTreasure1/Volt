@@ -186,8 +186,8 @@ protected:
 
 	virtual void DrawNodesPanel();
 	virtual void OnBeginCreate();
-	virtual void OnDeleteLink(const Volt::UUID id);
-	virtual void OnDeleteNode(const Volt::UUID id);
+	virtual void OnDeleteLink(const UUID64 id);
+	virtual void OnDeleteNode(const UUID64 id);
 
 	virtual void OnCopy();
 	virtual void OnPaste();
@@ -196,7 +196,7 @@ protected:
 	Ref<Volt::Scene>& myCurrentScene;
 
 private:
-	const IncompatiblePinReason CanLinkPins(const Volt::UUID input, const Volt::UUID output);
+	const IncompatiblePinReason CanLinkPins(const UUID64 input, const UUID64 output);
 
 	void DrawGraphDataPanel();
 	void DrawNodeContextMenu();
@@ -218,7 +218,7 @@ private:
 	Scope<NodeGraphCommandStack> myCommandStack;
 
 	const GraphKey::GraphType myGraphType = TGraphType;
-	Volt::UUID myNewNodeLinkPinId = Volt::UUID(0);
+	UUID64 myNewNodeLinkPinId = UUID64(0);
 
 	std::string mySearchQuery;
 	std::string myContextSearchQuery;
@@ -263,12 +263,12 @@ inline IONodeGraphEditor<graphType, EditorBackend>::IONodeGraphEditor(const std:
 			OnBeginCreate();
 		};
 
-		editorContext->onDeleteLink = [this](const Volt::UUID id)
+		editorContext->onDeleteLink = [this](const UUID64 id)
 		{
 			OnDeleteLink(id);
 		};
 
-		editorContext->onDeleteNode = [this](const Volt::UUID id)
+		editorContext->onDeleteNode = [this](const UUID64 id)
 		{
 			OnDeleteNode(id);
 		};
@@ -526,7 +526,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::DrawContextPopups()
 }
 
 template<GraphKey::GraphType graphType, typename EditorBackend>
-inline const IONodeGraphEditor<graphType, EditorBackend>::IncompatiblePinReason IONodeGraphEditor<graphType, EditorBackend>::CanLinkPins(const Volt::UUID input, const Volt::UUID output)
+inline const IONodeGraphEditor<graphType, EditorBackend>::IncompatiblePinReason IONodeGraphEditor<graphType, EditorBackend>::CanLinkPins(const UUID64 input, const UUID64 output)
 {
 	auto* startAttr = myOpenGraph->GetAttributeByID(input);
 	auto* endAttr = myOpenGraph->GetAttributeByID(output);
@@ -679,7 +679,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 		{
 			if (myGraphType == GraphKey::GraphType::Animation && startAttr->type == GraphKey::AttributeType::Flow)
 			{
-				std::vector<Volt::UUID> linksToRemove{};
+				std::vector<UUID64> linksToRemove{};
 
 				if (!startAttr->links.empty())
 				{
@@ -732,13 +732,13 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 }
 
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
-inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnDeleteLink(const Volt::UUID id)
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnDeleteLink(const UUID64 id)
 {
 	myOpenGraph->RemoveLink(id);
 }
 
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
-inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnDeleteNode(const Volt::UUID id)
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnDeleteNode(const UUID64 id)
 {
 	myOpenGraph->RemoveNode(id);
 }
@@ -777,10 +777,10 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 {
 	struct Link
 	{
-		Volt::UUID input = 0;
-		Volt::UUID output = 0;
+		UUID64 input = 0;
+		UUID64 output = 0;
 
-		Volt::UUID id{};
+		UUID64 id{};
 	};
 
 	std::vector<std::pair<std::pair<GraphKey::Attribute*, GraphKey::Attribute*>, GraphKey::Link>> linksToCopy;
@@ -881,7 +881,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 	{
 		n->id = {};
 
-		std::vector<Volt::UUID> pins;
+		std::vector<UUID64> pins;
 		for (auto& i : n->inputs)
 		{
 			pins.emplace_back(i.id);
@@ -1196,7 +1196,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 							myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
 							myOpenGraph->AddNode(node);
 
-							std::vector<Volt::UUID> pinIds{};
+							std::vector<UUID64> pinIds{};
 
 							for (const auto& i : node->inputs)
 							{
@@ -1320,7 +1320,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 
 						if (myGraphType == GraphKey::GraphType::Animation && startPin->type == GraphKey::AttributeType::Flow)
 						{
-							std::vector<Volt::UUID> linksToRemove{};
+							std::vector<UUID64> linksToRemove{};
 
 							if (!startPin->links.empty())
 							{
@@ -1431,7 +1431,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::InitializeStyle(ed::St
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
 inline const Volt::Entity IONodeGraphEditor<TGraphType, EditorBackend>::GetEntityFromCurrentNewPin()
 {
-	if (myNewNodeLinkPinId == Volt::UUID(0))
+	if (myNewNodeLinkPinId == UUID64(0))
 	{
 		return {};
 	}

@@ -27,8 +27,8 @@ namespace Volt
 
 struct LinkPair
 {
-	Volt::UUID fromId;
-	Volt::UUID toId;
+	UUID64 fromId;
+	UUID64 toId;
 };
 
 inline bool operator==(const LinkPair& lhs, const LinkPair& rhs)
@@ -65,8 +65,8 @@ public:
 	bool SaveSettings(const std::string& data)  override;
 	size_t LoadSettings(std::string& data)  override;
 
-	bool SaveNodeSettings(const Volt::UUID nodeId, const std::string& data)  override;
-	size_t LoadNodeSettings(const Volt::UUID nodeId, std::string& data)  override;
+	bool SaveNodeSettings(const UUID64 nodeId, const std::string& data)  override;
+	size_t LoadNodeSettings(const UUID64 nodeId, std::string& data)  override;
 
 protected:
 	void DrawMenuBar() override;
@@ -76,8 +76,8 @@ protected:
 	void DrawNodesPanel() override;
 
 	void OnBeginCreate() override;
-	void OnDeleteLink(const Volt::UUID id) override;
-	void OnDeleteNode(const Volt::UUID id) override;
+	void OnDeleteLink(const UUID64 id) override;
+	void OnDeleteNode(const UUID64 id) override;
 
 private:
 	enum class EditorType
@@ -105,8 +105,8 @@ private:
 
 	void DrawLayeredBlendPerBoneProperties(Ref<GraphKey::Node> node);
 
-	const std::vector<Volt::UUID> GetSelectedStates() const;
-	const std::vector<Volt::UUID> GetSelectedTransitions() const;
+	const std::vector<UUID64> GetSelectedStates() const;
+	const std::vector<UUID64> GetSelectedTransitions() const;
 
 	inline const GraphDepthEntry& GetLastEntry() const { return myGraphDepth.back(); }
 

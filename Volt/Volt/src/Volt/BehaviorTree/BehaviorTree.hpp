@@ -20,20 +20,20 @@ namespace Volt::BehaviorTree
 		eNodeStatus Run() { return m_nodeManger.GetNodeFromUUID(m_root)->Run(); }
 		NodeManager& GetNodeManager() { return m_nodeManger; } 
 
-		UUID GetRoot() { return m_root; }
-		void SetRoot(UUID in_uuid) { m_root = in_uuid; }
+		UUID64 GetRoot() { return m_root; }
+		void SetRoot(UUID64 in_uuid) { m_root = in_uuid; }
 		void ResetRoot() { m_root = m_startRoot; }
 
 		void SetEntity(const Volt::Entity& in_entity) { m_entity = in_entity; }
 		Entity GetEntity() { return m_entity; }
-		void SetStartRoot(UUID in_uuid) { m_startRoot = in_uuid; }
+		void SetStartRoot(UUID64 in_uuid) { m_startRoot = in_uuid; }
 		void FullReset();
 		void ClearRootLink() { m_nodeManger.m_links[m_root].clear(); }
 
 		template<typename _T>
-		UUID CreateNode();
+		UUID64 CreateNode();
 		template<typename _T>
-		UUID CreateNode(const UUID& in_id);
+		UUID64 CreateNode(const UUID64& in_id);
 
 		static AssetType GetStaticType() { return AssetType::BehaviorGraph; }
 		AssetType GetType() override { return AssetType::BehaviorGraph; }
@@ -45,8 +45,8 @@ namespace Volt::BehaviorTree
 
 		Volt::Entity m_entity = Volt::Entity::Null();
 
-		UUID m_root = 0;
-		UUID m_startRoot = 0;
+		UUID64 m_root = 0;
+		UUID64 m_startRoot = 0;
 	};
 
 	inline Tree::Tree()
@@ -111,7 +111,7 @@ namespace Volt::BehaviorTree
 	}
 
 	template<typename _T>
-	inline UUID Tree::CreateNode()
+	inline UUID64 Tree::CreateNode()
 	{
 		static_assert(std::derived_from<_T, Node> && "Bad type");
 
@@ -123,7 +123,7 @@ namespace Volt::BehaviorTree
 	}
 
 	template<typename _T>
-	inline UUID Tree::CreateNode(const UUID& in_id)
+	inline UUID64 Tree::CreateNode(const UUID64& in_id)
 	{
 		static_assert(std::derived_from<_T, Node> && "Bad type");
 

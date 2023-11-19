@@ -16,15 +16,15 @@ namespace Volt
 	class MonoGCManager
 	{
 	public:
-		static const GCHandle AddReferenceToObject(const UUID id, MonoObject* object);
+		static const GCHandle AddReferenceToObject(const UUID64 id, MonoObject* object);
 		static void RemoveReferenceToObject(const GCHandle handle);
 
 		static MonoObject* GetObjectFromHandle(const GCHandle handle);
-		static MonoObject* GetObjectFromUUID(const UUID id);
+		static MonoObject* GetObjectFromUUID(const UUID64 id);
 
 		static void CollectGarbage(bool waitForThread = false);
 
 	private:
-		inline static std::unordered_map<UUID, GCHandle> myHandles;
+		inline static std::unordered_map<UUID64, GCHandle> myHandles;
 	};
 }

@@ -100,6 +100,6 @@ private:
 	Volt::AssetHandle m_sceneToOpen = Volt::Asset::Null();
 
 	///// Modals /////
-	Volt::UUID m_meshImportModal = 0;
+	UUID64 m_meshImportModal = 0;
 };
 

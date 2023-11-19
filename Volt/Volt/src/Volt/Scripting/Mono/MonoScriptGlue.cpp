@@ -226,7 +226,7 @@ namespace Volt
 		ComponentRegistry::Helpers::RemoveComponentWithGUID(VoltGUID::FromStringInternal(compName.c_str() + 1), scene->GetRegistry(), entityId);
 	}
 
-	inline static void Entity_RemoveScript(entt::entity entityId, UUID scriptId)
+	inline static void Entity_RemoveScript(entt::entity entityId, UUID64 scriptId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -256,7 +256,7 @@ namespace Volt
 		}
 	}
 
-	inline static void Entity_AddScript(entt::entity entityId, MonoString* scriptType, UUID* outScriptId)
+	inline static void Entity_AddScript(entt::entity entityId, MonoString* scriptType, UUID64* outScriptId)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Volt::Entity entity{ entityId, scene };
@@ -267,7 +267,7 @@ namespace Volt
 			entity.AddComponent<MonoScriptComponent>();
 		}
 
-		auto sid = entity.GetComponent<MonoScriptComponent>().scriptIds.emplace_back(UUID());
+		auto sid = entity.GetComponent<MonoScriptComponent>().scriptIds.emplace_back(UUID64());
 		auto sname = entity.GetComponent<MonoScriptComponent>().scriptNames.emplace_back(scriptName);
 
 		MonoScriptEngine::OnAwakeInstance(sid, entityId, sname);

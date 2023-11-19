@@ -20,13 +20,13 @@ namespace GraphKey
 	{
 		std::string name;
 		std::any value;
-		Volt::UUID id;
+		UUID64 id;
 	};
 
 	struct GraphEvent
 	{
 		std::string name;
-		Volt::UUID id;
+		UUID64 id;
 	};
 
 	class Graph : public Volt::Asset, public std::enable_shared_from_this<Graph>
@@ -41,20 +41,20 @@ namespace GraphKey
 		void AddNode(Ref<Node> node);
 		void AddLink(Link link);
 
-		const Volt::UUID CreateLink(const Volt::UUID inputId, const Volt::UUID outputId);
-		const Volt::UUID CreateLink(const Volt::UUID linkId, const Volt::UUID inputId, const Volt::UUID outputId);
+		const UUID64 CreateLink(const UUID64 inputId, const UUID64 outputId);
+		const UUID64 CreateLink(const UUID64 linkId, const UUID64 inputId, const UUID64 outputId);
 
-		void RemoveNode(Volt::UUID id);
-		void RemoveLink(Volt::UUID id);
+		void RemoveNode(UUID64 id);
+		void RemoveLink(UUID64 id);
 
 		const std::vector<Ref<Node>> GetNodesOfType(const std::string& type);
 
-		Attribute* GetAttributeByID(const Volt::UUID id) const;
-		Link* GetLinkByID(const Volt::UUID id);
-		Ref<Node> GetNodeByID(const Volt::UUID id);
-		Ref<Node> GetNodeFromAttributeID(const Volt::UUID id);
+		Attribute* GetAttributeByID(const UUID64 id) const;
+		Link* GetLinkByID(const UUID64 id);
+		Ref<Node> GetNodeByID(const UUID64 id);
+		Ref<Node> GetNodeFromAttributeID(const UUID64 id);
 
-		const bool IsAttributeLinked(const Volt::UUID id) const;
+		const bool IsAttributeLinked(const UUID64 id) const;
 
 		inline const entt::entity GetEntity() const { return myEntity; }
 		inline std::vector<Ref<Node>>& GetNodes() { return myNodes; }
@@ -66,13 +66,13 @@ namespace GraphKey
 		inline void SetEntity(entt::entity id) { myEntity = id; }
 		inline void SetParentBlackboard(std::vector<GraphParameter>* blackboard) { myParentBlackboard = blackboard; }
 
-		void AddEvent(const std::string& name, const Volt::UUID id = {});
-		const std::string GetEventNameFromId(const Volt::UUID id);
+		void AddEvent(const std::string& name, const UUID64 id = {});
+		const std::string GetEventNameFromId(const UUID64 id);
 
-		const std::string GetParameterNameFromId(const Volt::UUID id);
+		const std::string GetParameterNameFromId(const UUID64 id);
 		const bool HasParameter(const std::string& name) const;
-		const bool HasParameter(const Volt::UUID& id) const;
-		void AddParameter(const std::string& name, std::any value, const Volt::UUID id = {});
+		const bool HasParameter(const UUID64& id) const;
+		void AddParameter(const std::string& name, std::any value, const UUID64 id = {});
 
 		template<typename T>
 		inline void AddParameter(const std::string& name);
@@ -84,10 +84,10 @@ namespace GraphKey
 		inline void SetParameterValue(const std::string& name, const T& value);
 
 		template<typename T>
-		inline const T GetParameterValue(const Volt::UUID id);
+		inline const T GetParameterValue(const UUID64 id);
 
 		template<typename T>
-		inline void SetParameterValue(const Volt::UUID id, const T& value);
+		inline void SetParameterValue(const UUID64 id, const T& value);
 
 		void RemoveParameter(const std::string& name);
 
@@ -169,7 +169,7 @@ namespace GraphKey
 	}
 
 	template<typename T>
-	inline const T Graph::GetParameterValue(const Volt::UUID id)
+	inline const T Graph::GetParameterValue(const UUID64 id)
 	{
 		auto& blackboard = myParentBlackboard ? *myParentBlackboard : myBlackboard;
 
@@ -187,7 +187,7 @@ namespace GraphKey
 	}
 
 	template<typename T>
-	inline void Graph::SetParameterValue(const Volt::UUID id, const T& value)
+	inline void Graph::SetParameterValue(const UUID64 id, const T& value)
 	{
 		auto& blackboard = myParentBlackboard ? *myParentBlackboard : myBlackboard;
 

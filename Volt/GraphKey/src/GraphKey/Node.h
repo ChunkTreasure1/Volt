@@ -42,9 +42,9 @@ namespace GraphKey
 		virtual ~Attribute() = default;
 
 		std::string name;
-		Volt::UUID id{};
+		UUID64 id{};
 
-		std::vector<Volt::UUID> links;
+		std::vector<UUID64> links;
 		std::function<void()> function;
 
 		std::any data;
@@ -73,7 +73,7 @@ namespace GraphKey
 		virtual const glm::vec4 GetColor() = 0;
 
 		inline const std::string& GetRegistryName() const { return myRegistryName; }
-		const uint32_t GetAttributeIndexFromID(const Volt::UUID id) const;
+		const uint32_t GetAttributeIndexFromID(const UUID64 id) const;
 
 		template<typename T>
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, bool hidden = false, const std::function<void()>& function = nullptr, bool linkable = true);
@@ -95,7 +95,7 @@ namespace GraphKey
 		template<typename T>
 		void SetOutputData(uint32_t index, const T& data);
 
-		Volt::UUID id{};
+		UUID64 id{};
 		entt::entity nodeEntity = entt::null;
 
 		std::vector<Attribute> inputs;

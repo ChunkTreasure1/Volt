@@ -111,11 +111,11 @@ namespace Volt
 		m_isInvalid = true;
 	}
 
-	const UUID RenderScene::Register(entt::entity entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
+	const UUID64 RenderScene::Register(entt::entity entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
 	{
 		m_isInvalid = true;
 
-		UUID newId = {};
+		UUID64 newId = {};
 		auto& newObj = m_renderObjects.emplace_back();
 
 		newObj.id = newId;
@@ -126,7 +126,7 @@ namespace Volt
 		return newId;
 	}
 
-	void RenderScene::Unregister(UUID id)
+	void RenderScene::Unregister(UUID64 id)
 	{
 		m_isInvalid = true;
 

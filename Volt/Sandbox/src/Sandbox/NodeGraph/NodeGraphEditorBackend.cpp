@@ -3,7 +3,7 @@
 
 namespace NodeGraph
 {
-	const NodeGraph::Link EditorBackend::CreateLink(const Volt::UUID inputId, const Volt::UUID outputId)
+	const NodeGraph::Link EditorBackend::CreateLink(const UUID64 inputId, const UUID64 outputId)
 	{
 		NodeGraph::Link newLink{};
 		newLink.input = outputId;

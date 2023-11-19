@@ -416,7 +416,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 
 							if (!fullScriptName.empty())
 							{
-								comp.scriptIds.emplace_back(Volt::UUID());
+								comp.scriptIds.emplace_back(UUID64());
 								comp.scriptNames.emplace_back(fullScriptName);
 							}
 						}
@@ -447,7 +447,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 					{
 						std::string fullScriptName = "Project." + myScriptSearchQuery;
 
-						comp.scriptIds.emplace_back(Volt::UUID());
+						comp.scriptIds.emplace_back(UUID64());
 						comp.scriptNames.emplace_back(fullScriptName);
 					}
 				}
@@ -513,7 +513,7 @@ void PropertiesPanel::AcceptMonoDragDrop()
 					auto& comp = entity.GetComponent<Volt::MonoScriptComponent>();
 					if (comp.scriptIds.size() < Volt::MonoScriptEngine::MAX_SCRIPTS_PER_ENTITY)
 					{
-						comp.scriptIds.emplace_back(Volt::UUID());
+						comp.scriptIds.emplace_back(UUID64());
 						comp.scriptNames.emplace_back(fullMonoClassName);
 					}
 				}

@@ -12,7 +12,7 @@ namespace GraphKey
 	public:
 		inline static void Update(float deltaTime)
 		{
-			std::vector<Volt::UUID> timersToRemove{};
+			std::vector<UUID64> timersToRemove{};
 
 			for (auto& [id, timer] : myTimers)
 			{
@@ -35,15 +35,15 @@ namespace GraphKey
 			myTimers.clear();
 		}
 
-		inline static const Volt::UUID AddTimer(const float time, std::function<void()>&& endFunction)
+		inline static const UUID64 AddTimer(const float time, std::function<void()>&& endFunction)
 		{
-			Volt::UUID id{};
+			UUID64 id{};
 			myTimers.emplace(id, Timer{ time, std::move(endFunction) });
 
 			return id;
 		}
 
-		inline static void StopTimer(const Volt::UUID id)
+		inline static void StopTimer(const UUID64 id)
 		{
 			if (!myTimers.contains(id))
 			{
@@ -62,6 +62,6 @@ namespace GraphKey
 			std::function<void()> endFunction;
 		};
 
-		inline static std::unordered_map<Volt::UUID, Timer> myTimers;
+		inline static std::unordered_map<UUID64, Timer> myTimers;
 	};
 }

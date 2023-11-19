@@ -20,8 +20,8 @@ public:
 	bool SaveSettings(const std::string& data)  override;
 	size_t LoadSettings(std::string& data)  override;
 
-	bool SaveNodeSettings(const Volt::UUID nodeId, const std::string& data)  override;
-	size_t LoadNodeSettings(const Volt::UUID nodeId, std::string& data)  override;
+	bool SaveNodeSettings(const UUID64 nodeId, const std::string& data)  override;
+	size_t LoadNodeSettings(const UUID64 nodeId, std::string& data)  override;
 
 	void SetActiveGraph(Ref<GraphKey::Graph> graph);
 	inline static GraphKeyPanel& Get() { return *myInstance; }

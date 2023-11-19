@@ -13,22 +13,22 @@ namespace Volt::BehaviorTree
 	class NodeManager
 	{
 	public:
-		Ref<Node> GetNodeFromUUID(const UUID& in_uuid);
-		const std::vector<Link>& GetLinksFromUUID(const UUID& in_uuid);
-		const Link& GetLink(const UUID& in_uuid);
+		Ref<Node> GetNodeFromUUID(const UUID64& in_uuid);
+		const std::vector<Link>& GetLinksFromUUID(const UUID64& in_uuid);
+		const Link& GetLink(const UUID64& in_uuid);
 
-		std::unordered_map<UUID, Ref<Node>>& GetNodes()  { return m_nodes; };
+		std::unordered_map<UUID64, Ref<Node>>& GetNodes()  { return m_nodes; };
 
-		const std::unordered_map<UUID, Link>& GetLinkIDs() const { return m_linkIDs; };
-		std::unordered_map<UUID, std::vector<Link>>& GetLinksNoConst() { return m_links; };
-		const std::unordered_map<UUID, std::vector<Link>>& GetLinks() const { return m_links; };
+		const std::unordered_map<UUID64, Link>& GetLinkIDs() const { return m_linkIDs; };
+		std::unordered_map<UUID64, std::vector<Link>>& GetLinksNoConst() { return m_links; };
+		const std::unordered_map<UUID64, std::vector<Link>>& GetLinks() const { return m_links; };
 
-		bool RegisterNode(const UUID& in_uuid, Ref<Node> in_node);
-		bool RegisterLink(const UUID& in_parentID, const UUID& in_childID, const UUID& in_linkID = 0);
+		bool RegisterNode(const UUID64& in_uuid, Ref<Node> in_node);
+		bool RegisterLink(const UUID64& in_parentID, const UUID64& in_childID, const UUID64& in_linkID = 0);
 
-		void UnregisterNode(const UUID& in_uuid);
+		void UnregisterNode(const UUID64& in_uuid);
 		void UnregisterLink(const Link& in_link);
-		void UnregisterLink(const UUID& in_linkID);
+		void UnregisterLink(const UUID64& in_linkID);
 
 	private:
 		friend class Tree;
@@ -37,11 +37,11 @@ namespace Volt::BehaviorTree
 		NodeManager();
 		~NodeManager();
 
-		std::unordered_map<UUID, Ref<Node>> m_nodes;
+		std::unordered_map<UUID64, Ref<Node>> m_nodes;
 
-		std::unordered_map<UUID, Link> m_linkIDs;
+		std::unordered_map<UUID64, Link> m_linkIDs;
 		// <ParentUUiD, Link vec>
-		std::unordered_map<UUID, std::vector<Link>> m_links;
+		std::unordered_map<UUID64, std::vector<Link>> m_links;
 	};
 
 }

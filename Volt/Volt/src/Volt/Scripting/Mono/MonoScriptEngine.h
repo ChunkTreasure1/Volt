@@ -48,13 +48,13 @@ namespace Volt
 
 		static bool EntityClassExists(const std::string& fullClassName);
 
-		static void OnAwakeInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName);
-		static void OnCreateInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName);
-		static void OnUpdateInstance(UUID instanceId, float deltaTime);
-		static void OnRenderUIInstance(UUID instanceId);
-		static void OnDestroyInstance(UUID instanceId);
-		static void OnEnableInstance(UUID instanceId);
-		static void OnDisableInstance(UUID instanceId);
+		static void OnAwakeInstance(UUID64 instanceId, entt::entity entity, const std::string& fullClassName);
+		static void OnCreateInstance(UUID64 instanceId, entt::entity entity, const std::string& fullClassName);
+		static void OnUpdateInstance(UUID64 instanceId, float deltaTime);
+		static void OnRenderUIInstance(UUID64 instanceId);
+		static void OnDestroyInstance(UUID64 instanceId);
+		static void OnEnableInstance(UUID64 instanceId);
+		static void OnDisableInstance(UUID64 instanceId);
 
 		static void OnUpdateEntity(float deltaTime);
 		static void OnUpdate(float deltaTime);
@@ -63,7 +63,7 @@ namespace Volt
 
 		static void DoDestroyQueue();
 		static void DoOnCreateQueue();
-		static void QueueOnCreate(UUID instanceId);
+		static void QueueOnCreate(UUID64 instanceId);
 
 		static Scene* GetSceneContext();
 		static MonoDomain* GetAppDomain();
@@ -78,13 +78,13 @@ namespace Volt
 		static const std::unordered_map<std::string, Ref<MonoEnum>>& GetRegisteredEnums();
 		static const Ref<MonoScriptClass> GetScriptClass(const std::string& name);
 
-		static Ref<MonoScriptInstance> GetInstanceFromId(UUID instanceId);
+		static Ref<MonoScriptInstance> GetInstanceFromId(UUID64 instanceId);
 		static Ref<MonoScriptEntity> GetEntityFromId(entt::entity entityId);
 		static Ref<MonoScriptEntity> GetOrCreateMonoEntity(entt::entity entity);
 
 		static MonoScriptFieldMap& GetDefaultScriptFieldMap(std::string fullClassName);
 
-		static void SetScriptFieldDefaultData(UUID instanceId, entt::entity entity, const std::string& fullClassName);
+		static void SetScriptFieldDefaultData(UUID64 instanceId, entt::entity entity, const std::string& fullClassName);
 
 		static void CallMethod(GCHandle instanceHandle, MonoMethod* method, void** args = nullptr);
 		static void CallStaticMethod(MonoMethod* method, void** args = nullptr);
@@ -115,7 +115,7 @@ namespace Volt
 
 		static MonoMethod* GetScriptConstructor();
 		static MonoMethod* GetEntityConstructor();
-		static GCHandle InstantiateClass(const UUID id, MonoClass* monoClass);
+		static GCHandle InstantiateClass(const UUID64 id, MonoClass* monoClass);
 
 		static const std::vector<std::string> GetReferencedAssembliesName(MonoImage* image);
 		static void LoadReferencedAssemblies(const std::vector<std::string>& assemblyNames);

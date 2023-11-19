@@ -17,7 +17,7 @@ namespace Volt
 		AssetHandle material = Asset::Null();
 
 		int32_t subMaterialIndex = -1;
-		std::vector<UUID> renderObjectIds;
+		std::vector<UUID64> renderObjectIds;
 
 		[[nodiscard]] inline const AssetHandle& GetHandle() const { return handle; }
 
@@ -62,7 +62,7 @@ namespace Volt
 		uint32_t currentAnimation = 0;
 		float currentStartTime = 0.f;
 
-		std::unordered_map<UUID, std::vector<Entity>> attachedEntities;
+		std::unordered_map<UUID64, std::vector<Entity>> attachedEntities;
 
 		bool isLooping = true;
 		bool isPlaying = false;

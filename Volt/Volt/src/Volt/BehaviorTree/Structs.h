@@ -5,9 +5,9 @@ namespace Volt::BehaviorTree
 {
 	struct Link
 	{
-		UUID m_parentID = 0;
-		UUID m_childID = 0;
-		UUID m_uuid = 0;
+		UUID64 m_parentID = 0;
+		UUID64 m_childID = 0;
+		UUID64 m_uuid = 0;
 
 		bool operator==(const Link& in_link) { return (m_uuid == in_link.m_uuid); }
 	};
@@ -17,7 +17,7 @@ namespace Volt::BehaviorTree
 	{
 		inline static const Link link = { 0,0,0 };
 		inline static const std::vector<Link> linkVec;
-		inline static const UUID id = UUID(0);
+		inline static const UUID64 id = UUID64(0);
 	}
 
 	enum class eNodeStatus : uint32_t

@@ -32,7 +32,6 @@
 #include "Sandbox/Window/Sequencer.h"
 #include "Sandbox/Window/BlendSpaceEditorPanel.h"
 #include "Sandbox/Window/CurveGraphPanel.h"
-#include "Sandbox/Window/MaterialGraphPanel.h"
 #include "Sandbox/Window/Timeline.h"
 #include "Sandbox/Window/ShaderEditorPanel.h"
 #include "Sandbox/Window/PostProcessingStackPanel.h"

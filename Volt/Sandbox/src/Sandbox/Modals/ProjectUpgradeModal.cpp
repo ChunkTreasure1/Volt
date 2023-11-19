@@ -638,7 +638,7 @@ void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, 
 		}
 
 		const std::string scriptName = streamReader.ReadKey("name", std::string(""));
-		Volt::UUID scriptId = streamReader.ReadKey("id", Volt::UUID(0));
+		UUID64 scriptId = streamReader.ReadKey("id", UUID64(0));
 
 		auto scriptClass = Volt::MonoScriptEngine::GetScriptClass(scriptName);
 		if (!scriptClass)

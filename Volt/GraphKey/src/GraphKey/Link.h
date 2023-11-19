@@ -6,9 +6,9 @@ namespace GraphKey
 {
 	struct Link
 	{
-		Volt::UUID input = 0;
-		Volt::UUID output = 0;
+		UUID64 input = 0;
+		UUID64 output = 0;
 
-		Volt::UUID id{};
+		UUID64 id{};
 	};
 }

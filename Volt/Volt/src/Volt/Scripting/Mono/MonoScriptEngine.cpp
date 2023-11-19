@@ -56,14 +56,14 @@ namespace Volt
 		std::unordered_map<std::string, Ref<MonoScriptClass>> coreClasses;
 		std::unordered_map<std::string, Ref<MonoEnum>> monoEnums;
 
-		std::map<UUID, Ref<MonoScriptInstance>> scriptInstances;
-		std::map<UUID, Ref<MonoCoreInstance>> coreInstances;
+		std::map<UUID64, Ref<MonoScriptInstance>> scriptInstances;
+		std::map<UUID64, Ref<MonoCoreInstance>> coreInstances;
 
 		std::unordered_map<entt::entity, Ref<MonoScriptEntity>> scriptEntities;
 		std::unordered_map<std::string, MonoScriptFieldMap> scriptFieldsDefault;
 
-		std::vector<UUID> scriptOnCreateQueue;
-		std::vector<UUID> scriptDestroyQueue;
+		std::vector<UUID64> scriptOnCreateQueue;
+		std::vector<UUID64> scriptDestroyQueue;
 
 		bool enableDebugging = false;
 		std::mutex mutex;
@@ -511,7 +511,7 @@ namespace Volt
 		VT_CORE_INFO("[MonoScriptEngine] C# Assembly has been reloaded!");
 	}
 
-	void MonoScriptEngine::OnAwakeInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName)
+	void MonoScriptEngine::OnAwakeInstance(UUID64 instanceId, entt::entity entity, const std::string& fullClassName)
 	{
 		if (!EntityClassExists(fullClassName))
 		{
@@ -521,7 +521,7 @@ namespace Volt
 		auto scriptEntity = GetOrCreateMonoEntity(entity);
 
 		ScriptParams Params;
-		Params.entity = MonoGCManager::GetObjectFromUUID(UUID(static_cast<uint32_t>(entity)));
+		Params.entity = MonoGCManager::GetObjectFromUUID(UUID64(static_cast<uint32_t>(entity)));
 		Params.scriptId = instanceId;
 
 		auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
@@ -573,7 +573,7 @@ namespace Volt
 				auto class_name = mono_class_get_name(field_class);
 
 				auto klass = CreateRef<MonoScriptClass>(s_monoData->coreData.assemblyImage, ns, class_name);
-				auto gcHandle = InstantiateClass(UUID(), klass->GetClass());
+				auto gcHandle = InstantiateClass(UUID64(), klass->GetClass());
 
 				auto handle = fieldInstance->data.As<AssetHandle>();
 				void* args[1] = { handle };
@@ -602,7 +602,7 @@ namespace Volt
 		}
 	}
 
-	void MonoScriptEngine::OnCreateInstance(UUID instanceId, entt::entity entity, const std::string& fullClassName)
+	void MonoScriptEngine::OnCreateInstance(UUID64 instanceId, entt::entity entity, const std::string& fullClassName)
 	{
 		if (s_monoData->scriptInstances.contains(instanceId))
 		{
@@ -610,7 +610,7 @@ namespace Volt
 		}
 	}
 
-	void MonoScriptEngine::OnUpdateInstance(UUID instanceId, float deltaTime)
+	void MonoScriptEngine::OnUpdateInstance(UUID64 instanceId, float deltaTime)
 	{
 		if (s_monoData->scriptInstances.contains(instanceId))
 		{
@@ -618,7 +618,7 @@ namespace Volt
 		}
 	}
 
-	void MonoScriptEngine::OnRenderUIInstance(UUID instanceId)
+	void MonoScriptEngine::OnRenderUIInstance(UUID64 instanceId)
 	{
 		if (s_monoData->scriptInstances.contains(instanceId))
 		{
@@ -626,12 +626,12 @@ namespace Volt
 		}
 	}
 
-	void MonoScriptEngine::OnDestroyInstance(UUID instanceId)
+	void MonoScriptEngine::OnDestroyInstance(UUID64 instanceId)
 	{
 		s_monoData->scriptDestroyQueue.emplace_back(instanceId);
 	}
 
-	void MonoScriptEngine::OnEnableInstance(UUID instanceId)
+	void MonoScriptEngine::OnEnableInstance(UUID64 instanceId)
 	{
 		if (s_monoData->scriptInstances.contains(instanceId))
 		{
@@ -639,7 +639,7 @@ namespace Volt
 		}
 	}
 
-	void MonoScriptEngine::OnDisableInstance(UUID instanceId)
+	void MonoScriptEngine::OnDisableInstance(UUID64 instanceId)
 	{
 		if (s_monoData->scriptInstances.contains(instanceId))
 		{
@@ -705,7 +705,7 @@ namespace Volt
 		}
 	}
 
-	void MonoScriptEngine::QueueOnCreate(UUID instanceId)
+	void MonoScriptEngine::QueueOnCreate(UUID64 instanceId)
 	{
 		s_monoData->scriptOnCreateQueue.emplace_back(instanceId);
 	}
@@ -760,7 +760,7 @@ namespace Volt
 		return s_monoData->scriptClasses.at(name);
 	}
 
-	Ref<MonoScriptInstance> MonoScriptEngine::GetInstanceFromId(UUID instanceId)
+	Ref<MonoScriptInstance> MonoScriptEngine::GetInstanceFromId(UUID64 instanceId)
 	{
 		if (!s_monoData->scriptInstances.contains(instanceId))
 		{
@@ -808,7 +808,7 @@ namespace Volt
 		return s_monoData->scriptFieldsDefault[fullClassName];
 	}
 
-	void MonoScriptEngine::SetScriptFieldDefaultData(UUID instanceId, entt::entity entity, const std::string& fullClassName)
+	void MonoScriptEngine::SetScriptFieldDefaultData(UUID64 instanceId, entt::entity entity, const std::string& fullClassName)
 	{
 		if (!EntityClassExists(fullClassName))
 		{
@@ -819,7 +819,7 @@ namespace Volt
 		Ref<MonoScriptEntity> monoEntity = CreateRef<MonoScriptEntity>(entity, scriptIds, s_monoData->coreEntityClass);
 
 		ScriptParams Params;
-		Params.entity = MonoGCManager::GetObjectFromUUID(UUID(static_cast<uint32_t>(entity)));
+		Params.entity = MonoGCManager::GetObjectFromUUID(UUID64(static_cast<uint32_t>(entity)));
 		Params.scriptId = instanceId;
 
 		auto instance = CreateRef<MonoScriptInstance>(s_monoData->scriptClasses.at(fullClassName), &Params);
@@ -968,7 +968,7 @@ namespace Volt
 		return s_monoData->coreEntityClass->GetMethod(".ctor", 2);
 	}
 
-	GCHandle MonoScriptEngine::InstantiateClass(const UUID id, MonoClass* monoClass)
+	GCHandle MonoScriptEngine::InstantiateClass(const UUID64 id, MonoClass* monoClass)
 	{
 		MonoObject* instance = mono_object_new(s_monoData->coreData.domain, monoClass);
 		mono_runtime_object_init(instance);

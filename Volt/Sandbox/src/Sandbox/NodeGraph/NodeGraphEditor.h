@@ -22,8 +22,8 @@ namespace NodeGraph
 
 		std::function<void()> onBeginCreate;
 
-		std::function<void(const Volt::UUID)> onDeleteLink;
-		std::function<void(const Volt::UUID)> onDeleteNode;
+		std::function<void(const UUID64)> onDeleteLink;
+		std::function<void(const UUID64)> onDeleteNode;
 
 		std::function<void()> onShowNodeContextMenu;
 		std::function<void()> onShowPinContextMenu;
@@ -47,20 +47,20 @@ namespace NodeGraph
 		void UpdateMainContent() override;
 		void UpdateContent() override;
 
-		void CreateNode(const Volt::UUID id, const std::vector<Volt::UUID> pins);
-		void CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output);
+		void CreateNode(const UUID64 id, const std::vector<UUID64> pins);
+		void CreateLink(const UUID64 id, const UUID64 input, const UUID64 output);
 
-		void RemoveLink(const Volt::UUID linkId);
-		void RemoveNode(const Volt::UUID nodeId);
+		void RemoveLink(const UUID64 linkId);
+		void RemoveNode(const UUID64 nodeId);
 
-		const std::vector<Volt::UUID> GetSelectedNodes();
-		const std::vector<Volt::UUID> GetSelectedLinks();
+		const std::vector<UUID64> GetSelectedNodes();
+		const std::vector<UUID64> GetSelectedLinks();
 
 		virtual bool SaveSettings(const std::string& data) = 0;
 		virtual size_t LoadSettings(std::string& data)  = 0;
 
-		virtual bool SaveNodeSettings(const Volt::UUID nodeId, const std::string& data) = 0;
-		virtual size_t LoadNodeSettings(const Volt::UUID nodeId, std::string& data) = 0;
+		virtual bool SaveNodeSettings(const UUID64 nodeId, const std::string& data) = 0;
+		virtual size_t LoadNodeSettings(const UUID64 nodeId, std::string& data) = 0;
 
 		inline const EditorContext& GetContext() const { return *myEditorContext; }
 		inline EditorBackend& GetBackend() const { return *myBackend; }
@@ -79,7 +79,7 @@ namespace NodeGraph
 		virtual void DrawLinks();
 
 		bool myCreateNewNode = false;
-		Volt::UUID myNewLinkPinId = 0;
+		UUID64 myNewLinkPinId = 0;
 		std::string myContext;
 
 	private:

@@ -134,22 +134,22 @@ namespace GraphKey
 		{
 			std::string stateName;
 			bool stateIsEntry;
-			Volt::UUID stateId = Volt::UUID(0);
+			UUID64 stateId = UUID64(0);
 
 			VT_DESERIALIZE_PROPERTY(name, stateName, stateNode, std::string("Null"));
 			VT_DESERIALIZE_PROPERTY(isEntry, stateIsEntry, stateNode, false);
-			VT_DESERIALIZE_PROPERTY(id, stateId, stateNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(id, stateId, stateNode, UUID64(0));
 
 			auto newState = myStateMachine->CreateState(stateName, stateIsEntry, stateId);
 
 			VT_DESERIALIZE_PROPERTY(editorState, newState->editorState, stateNode, std::string(""));
-			VT_DESERIALIZE_PROPERTY(pinId, newState->pinId, stateNode, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(pinId2, newState->pinId2, stateNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(pinId, newState->pinId, stateNode, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(pinId2, newState->pinId2, stateNode, UUID64(0));
 			VT_DESERIALIZE_PROPERTY(isAny, newState->isAny, stateNode, false);
 
 			for (const auto& transitionNode : stateNode["Transitions"])
 			{
-				newState->transitions.emplace_back(transitionNode.as<Volt::UUID>());
+				newState->transitions.emplace_back(transitionNode.as<UUID64>());
 			}
 
 			if (stateNode["Graph"])
@@ -163,13 +163,13 @@ namespace GraphKey
 
 		for (const auto& transitionNode : rootNode["Transitions"])
 		{
-			Volt::UUID transitionId;
-			Volt::UUID transitionFromState;
-			Volt::UUID transitionToState;
+			UUID64 transitionId;
+			UUID64 transitionFromState;
+			UUID64 transitionToState;
 
-			VT_DESERIALIZE_PROPERTY(id, transitionId, transitionNode, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(fromState, transitionFromState, transitionNode, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(toState, transitionToState, transitionNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(id, transitionId, transitionNode, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(fromState, transitionFromState, transitionNode, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(toState, transitionToState, transitionNode, UUID64(0));
 
 			auto newTransition = myStateMachine->CreateTransition(transitionId);
 			newTransition->fromState = transitionFromState;

@@ -14,7 +14,7 @@ public:
 	void Close();
 	bool Update();
 
-	inline const Volt::UUID GetID() const { return m_id; }
+	inline const UUID64 GetID() const { return m_id; }
 
 protected:
 	virtual void DrawModalContent() = 0;
@@ -26,6 +26,6 @@ private:
 
 	bool m_wasOpenLastFrame = false;
 
-	Volt::UUID m_id;
+	UUID64 m_id;
 	std::string m_strId;
 };

@@ -70,8 +70,8 @@ BehaviorEditor::BehaviorEditor(const std::string& title, const std::string& cont
 
 		editorContext->onBeginCreate = [&]()
 		{
-			static Volt::UUID newNodeLinkPin = 0;
-			static Volt::UUID newLinkPin = 0;
+			static UUID64 newNodeLinkPin = 0;
+			static UUID64 newLinkPin = 0;
 			static bool createNewNode = false;
 
 			auto showLabel = [](const char* label, ImColor color)
@@ -131,13 +131,13 @@ BehaviorEditor::BehaviorEditor(const std::string& title, const std::string& cont
 			}
 		};
 
-		editorContext->onDeleteLink = [this](const Volt::UUID id)
+		editorContext->onDeleteLink = [this](const UUID64 id)
 		{
 			myBehaviourTree->GetNodeManager().UnregisterLink(id);
 			SortOutput();
 		};
 
-		editorContext->onDeleteNode = [this](const Volt::UUID id)
+		editorContext->onDeleteNode = [this](const UUID64 id)
 		{
 			if (id != myBehaviourTree->GetRoot())
 			{
@@ -149,8 +149,8 @@ BehaviorEditor::BehaviorEditor(const std::string& title, const std::string& cont
 				auto rootNode = myBehaviourTree->GetRoot();
 				myBehaviourTree->ClearRootLink();
 				GetBackend().nodes.push_back(NodeGraph::Node(rootNode));
-				GetBackend().nodes.back().pins.push_back(Volt::UUID());
-				GetBackend().nodes.back().pins.push_back(Volt::UUID());
+				GetBackend().nodes.back().pins.push_back(UUID64());
+				GetBackend().nodes.back().pins.push_back(UUID64());
 
 				SelectNode(ed::NodeId(rootNode));
 			}
@@ -164,8 +164,8 @@ BehaviorEditor::BehaviorEditor(const std::string& title, const std::string& cont
 		InitializeEditor(editorContext);
 
 		GetBackend().nodes.push_back(NodeGraph::Node(myBehaviourTree->GetRoot()));
-		GetBackend().nodes.back().pins.push_back(Volt::UUID());
-		GetBackend().nodes.back().pins.push_back(Volt::UUID());
+		GetBackend().nodes.back().pins.push_back(UUID64());
+		GetBackend().nodes.back().pins.push_back(UUID64());
 	}
 
 }
@@ -209,11 +209,11 @@ void BehaviorEditor::OpenAsset(Ref<Volt::Asset> asset)
 
 }
 
-void BehaviorEditor::AddNodeToBackend(const Volt::UUID& in_nodeID)
+void BehaviorEditor::AddNodeToBackend(const UUID64& in_nodeID)
 {
 	GetBackend().nodes.push_back(NodeGraph::Node(in_nodeID));
-	GetBackend().nodes.back().pins.push_back(Volt::UUID());
-	GetBackend().nodes.back().pins.push_back(Volt::UUID());
+	GetBackend().nodes.back().pins.push_back(UUID64());
+	GetBackend().nodes.back().pins.push_back(UUID64());
 }
 
 void BehaviorEditor::DrawNodes()
@@ -677,7 +677,7 @@ size_t BehaviorEditor::LoadSettings(std::string& data)
 	return size_t();
 }
 
-bool BehaviorEditor::SaveNodeSettings(const Volt::UUID nodeId, const std::string& data)
+bool BehaviorEditor::SaveNodeSettings(const UUID64 nodeId, const std::string& data)
 {
 	auto node = myBehaviourTree->GetNodeManager().GetNodeFromUUID(nodeId);
 	if (!node)
@@ -687,7 +687,7 @@ bool BehaviorEditor::SaveNodeSettings(const Volt::UUID nodeId, const std::string
 	return true;
 }
 
-size_t BehaviorEditor::LoadNodeSettings(const Volt::UUID nodeId, std::string& data)
+size_t BehaviorEditor::LoadNodeSettings(const UUID64 nodeId, std::string& data)
 {
 	auto node = myBehaviourTree->GetNodeManager().GetNodeFromUUID(nodeId);
 	if (!node)

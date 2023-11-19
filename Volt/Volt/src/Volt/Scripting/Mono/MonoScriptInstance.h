@@ -15,7 +15,7 @@ namespace Volt
 	struct ScriptParams
 	{
 		MonoObject* entity;
-		UUID scriptId;
+		UUID64 scriptId;
 	};
 
 	using GCHandle = void*;

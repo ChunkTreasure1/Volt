@@ -164,16 +164,16 @@ namespace Volt
 
 	struct MonoScriptEntry
 	{
-		MonoScriptEntry(std::string& aName, UUID& aId) : name(aName), id(aId) {}
+		MonoScriptEntry(std::string& aName, UUID64& aId) : name(aName), id(aId) {}
 
 		std::string& name;
-		UUID& id;
+		UUID64& id;
 	};
 
 	struct MonoScriptComponent
 	{
 		std::vector<std::string> scriptNames;
-		std::vector<UUID> scriptIds;
+		std::vector<UUID64> scriptIds;
 
 		static constexpr VoltGUID guid = "{CF0E9A06-FB14-4B56-BC9C-5557E808B829}"_guid;
 

@@ -118,12 +118,12 @@ namespace GraphKey
 		myLinks.emplace_back(link);
 	}
 
-	const Volt::UUID Graph::CreateLink(const Volt::UUID inputId, const Volt::UUID outputId)
+	const UUID64 Graph::CreateLink(const UUID64 inputId, const UUID64 outputId)
 	{
-		return CreateLink(Volt::UUID{}, inputId, outputId);
+		return CreateLink(UUID64{}, inputId, outputId);
 	}
 
-	const Volt::UUID Graph::CreateLink(const Volt::UUID linkId, const Volt::UUID inputId, const Volt::UUID outputId)
+	const UUID64 Graph::CreateLink(const UUID64 linkId, const UUID64 inputId, const UUID64 outputId)
 	{
 		Link newLink{};
 		newLink.id = linkId;
@@ -148,7 +148,7 @@ namespace GraphKey
 		return newLink.id;
 	}
 
-	void Graph::RemoveNode(Volt::UUID id)
+	void Graph::RemoveNode(UUID64 id)
 	{
 		auto it = std::find_if(myNodes.begin(), myNodes.end(), [&id](const auto& lhs)
 		{
@@ -180,7 +180,7 @@ namespace GraphKey
 		myNodes.erase(it);
 	}
 
-	void Graph::RemoveLink(Volt::UUID id)
+	void Graph::RemoveLink(UUID64 id)
 	{
 		auto it = std::find_if(myLinks.begin(), myLinks.end(), [&id](const auto& lhs)
 		{
@@ -203,7 +203,7 @@ namespace GraphKey
 		myLinks.erase(it);
 	}
 
-	Attribute* Graph::GetAttributeByID(const Volt::UUID id) const
+	Attribute* Graph::GetAttributeByID(const UUID64 id) const
 	{
 		for (const auto& node : myNodes)
 		{
@@ -227,7 +227,7 @@ namespace GraphKey
 		return nullptr;
 	}
 
-	Link* Graph::GetLinkByID(const Volt::UUID id)
+	Link* Graph::GetLinkByID(const UUID64 id)
 	{
 		if (auto it = std::find_if(myLinks.begin(), myLinks.end(), [&](const Link& link) { return link.id == id; }); it != myLinks.end())
 		{
@@ -237,7 +237,7 @@ namespace GraphKey
 		return nullptr;
 	}
 
-	Ref<Node> Graph::GetNodeByID(const Volt::UUID id)
+	Ref<Node> Graph::GetNodeByID(const UUID64 id)
 	{
 		if (auto it = std::find_if(myNodes.begin(), myNodes.end(), [&](const Ref<Node>& node) { return node->id == id; }); it != myNodes.end())
 		{
@@ -247,7 +247,7 @@ namespace GraphKey
 		return nullptr;
 	}
 
-	Ref<Node> Graph::GetNodeFromAttributeID(const Volt::UUID id)
+	Ref<Node> Graph::GetNodeFromAttributeID(const UUID64 id)
 	{
 		for (const auto& n : myNodes)
 		{
@@ -271,7 +271,7 @@ namespace GraphKey
 		return nullptr;
 	}
 
-	const bool Graph::IsAttributeLinked(const Volt::UUID id) const
+	const bool Graph::IsAttributeLinked(const UUID64 id) const
 	{
 		const auto* attr = GetAttributeByID(id);
 		if (attr)
@@ -456,16 +456,16 @@ namespace GraphKey
 		struct Attribute
 		{
 			std::string name;
-			Volt::UUID id;
+			UUID64 id;
 
 			YAML::Node node;
 		};
 
 		struct NodeData
 		{
-			Volt::UUID id;
-			Volt::UUID parameterId;
-			Volt::UUID eventId;
+			UUID64 id;
+			UUID64 parameterId;
+			UUID64 eventId;
 
 			std::string type;
 			std::string state;
@@ -478,23 +478,23 @@ namespace GraphKey
 
 		struct LinkData
 		{
-			Volt::UUID id;
+			UUID64 id;
 
-			Volt::UUID input;
-			Volt::UUID output;
+			UUID64 input;
+			UUID64 output;
 		};
 
 		struct Parameter
 		{
 			std::string name;
 			std::any value;
-			Volt::UUID id;
+			UUID64 id;
 		};
 
 		struct Event
 		{
 			std::string name;
-			Volt::UUID id;
+			UUID64 id;
 		};
 
 		std::vector<NodeData> nodes;
@@ -505,10 +505,10 @@ namespace GraphKey
 		for (const auto& n : yamlNode["Nodes"])
 		{
 			auto& data = nodes.emplace_back();
-			VT_DESERIALIZE_PROPERTY(id, data.id, n, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(id, data.id, n, UUID64(0));
 			VT_DESERIALIZE_PROPERTY(type, data.type, n, std::string(""));
-			VT_DESERIALIZE_PROPERTY(parameterId, data.parameterId, n, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(eventId, data.eventId, n, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(parameterId, data.parameterId, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(eventId, data.eventId, n, UUID64(0));
 			VT_DESERIALIZE_PROPERTY(state, data.state, n, std::string(""));
 
 			if (n["nodeSpecific"])
@@ -519,7 +519,7 @@ namespace GraphKey
 			for (const auto& i : n["inputs"])
 			{
 				auto& inData = data.inputs.emplace_back();
-				VT_DESERIALIZE_PROPERTY(id, inData.id, i, Volt::UUID(0));
+				VT_DESERIALIZE_PROPERTY(id, inData.id, i, UUID64(0));
 				VT_DESERIALIZE_PROPERTY(name, inData.name, i, std::string("Null"));
 
 				if (i["data"])
@@ -531,7 +531,7 @@ namespace GraphKey
 			for (const auto& o : n["outputs"])
 			{
 				auto& outData = data.outputs.emplace_back();
-				VT_DESERIALIZE_PROPERTY(id, outData.id, o, Volt::UUID(0));
+				VT_DESERIALIZE_PROPERTY(id, outData.id, o, UUID64(0));
 				VT_DESERIALIZE_PROPERTY(name, outData.name, o, std::string("Null"));
 
 				if (o["data"])
@@ -544,16 +544,16 @@ namespace GraphKey
 		for (const auto& l : yamlNode["Links"])
 		{
 			auto& data = links.emplace_back();
-			VT_DESERIALIZE_PROPERTY(id, data.id, l, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(input, data.input, l, Volt::UUID(0));
-			VT_DESERIALIZE_PROPERTY(output, data.output, l, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(id, data.id, l, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(input, data.input, l, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(output, data.output, l, UUID64(0));
 		}
 
 		for (const auto& p : yamlNode["Parameters"])
 		{
 			auto& data = parameters.emplace_back();
 			VT_DESERIALIZE_PROPERTY(name, data.name, p, std::string(""));
-			VT_DESERIALIZE_PROPERTY(id, data.id, p, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(id, data.id, p, UUID64(0));
 
 			std::string type;
 			VT_DESERIALIZE_PROPERTY(type, type, p, std::string(""));
@@ -574,7 +574,7 @@ namespace GraphKey
 		{
 			auto& data = events.emplace_back();
 			VT_DESERIALIZE_PROPERTY(name, data.name, e, std::string(""));
-			VT_DESERIALIZE_PROPERTY(id, data.id, e, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(id, data.id, e, UUID64(0));
 		}
 
 		for (const auto& p : parameters)
@@ -663,7 +663,7 @@ namespace GraphKey
 		}
 	}
 
-	void Graph::AddEvent(const std::string& name, const Volt::UUID id)
+	void Graph::AddEvent(const std::string& name, const UUID64 id)
 	{
 		std::string eventName = name;
 
@@ -680,7 +680,7 @@ namespace GraphKey
 		myGraphEvents.emplace_back(eventName, id);
 	}
 
-	const std::string Graph::GetEventNameFromId(const Volt::UUID id)
+	const std::string Graph::GetEventNameFromId(const UUID64 id)
 	{
 		auto it = std::find_if(myGraphEvents.begin(), myGraphEvents.end(), [&id](const auto& lhs)
 		{
@@ -695,7 +695,7 @@ namespace GraphKey
 		return (*it).name;
 	}
 
-	const std::string Graph::GetParameterNameFromId(const Volt::UUID id)
+	const std::string Graph::GetParameterNameFromId(const UUID64 id)
 	{
 		auto& blackboard = myParentBlackboard ? *myParentBlackboard : myBlackboard;
 
@@ -724,7 +724,7 @@ namespace GraphKey
 		return it != blackboard.end();
 	}
 
-	const bool Graph::HasParameter(const Volt::UUID& id) const
+	const bool Graph::HasParameter(const UUID64& id) const
 	{
 		auto& blackboard = myParentBlackboard ? *myParentBlackboard : myBlackboard;
 
@@ -741,7 +741,7 @@ namespace GraphKey
 		return false;
 	}
 
-	void Graph::AddParameter(const std::string& name, std::any value, const Volt::UUID id)
+	void Graph::AddParameter(const std::string& name, std::any value, const UUID64 id)
 	{
 		auto& blackboard = myParentBlackboard ? *myParentBlackboard : myBlackboard;
 		blackboard.emplace_back(name, value, id);

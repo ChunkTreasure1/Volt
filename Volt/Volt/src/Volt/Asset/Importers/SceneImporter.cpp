@@ -702,7 +702,7 @@ namespace Volt
 			}
 
 			const std::string scriptName = streamReader.ReadKey("name", std::string(""));
-			const UUID scriptId = streamReader.ReadKey("id", UUID(0));
+			const UUID64 scriptId = streamReader.ReadKey("id", UUID64(0));
 
 			auto scriptClass = MonoScriptEngine::GetScriptClass(scriptName);
 			if (!scriptClass)

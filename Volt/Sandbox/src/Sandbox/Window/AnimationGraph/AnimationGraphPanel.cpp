@@ -102,7 +102,7 @@ size_t AnimationGraphPanel::LoadSettings(std::string& data)
 	return 0;
 }
 
-bool AnimationGraphPanel::SaveNodeSettings(const Volt::UUID nodeId, const std::string& data)
+bool AnimationGraphPanel::SaveNodeSettings(const UUID64 nodeId, const std::string& data)
 {
 	if (GetLastEntry().editorType == EditorType::Graph)
 	{
@@ -127,7 +127,7 @@ bool AnimationGraphPanel::SaveNodeSettings(const Volt::UUID nodeId, const std::s
 	return true;
 }
 
-size_t AnimationGraphPanel::LoadNodeSettings(const Volt::UUID nodeId, std::string& data)
+size_t AnimationGraphPanel::LoadNodeSettings(const UUID64 nodeId, std::string& data)
 {
 	if (GetLastEntry().editorType == EditorType::Graph)
 	{
@@ -437,7 +437,7 @@ void AnimationGraphPanel::OnBeginCreate()
 	OnBeginCreateStateMachine();
 }
 
-void AnimationGraphPanel::OnDeleteLink(const Volt::UUID id)
+void AnimationGraphPanel::OnDeleteLink(const UUID64 id)
 {
 	if (GetLastEntry().editorType == EditorType::Graph)
 	{
@@ -451,7 +451,7 @@ void AnimationGraphPanel::OnDeleteLink(const Volt::UUID id)
 	}
 }
 
-void AnimationGraphPanel::OnDeleteNode(const Volt::UUID id)
+void AnimationGraphPanel::OnDeleteNode(const UUID64 id)
 {
 	if (GetLastEntry().editorType == EditorType::Graph)
 	{
@@ -984,7 +984,7 @@ void AnimationGraphPanel::DrawLayeredBlendPerBoneProperties(Ref<GraphKey::Node> 
 
 }
 
-const std::vector<Volt::UUID> AnimationGraphPanel::GetSelectedStates() const
+const std::vector<UUID64> AnimationGraphPanel::GetSelectedStates() const
 {
 	std::vector<ed::NodeId> selectedNodeIds;
 	selectedNodeIds.resize(ed::GetSelectedObjectCount());
@@ -994,7 +994,7 @@ const std::vector<Volt::UUID> AnimationGraphPanel::GetSelectedStates() const
 
 	auto stateMachine = GetLastEntry().stateMachine;
 
-	std::vector<Volt::UUID> result;
+	std::vector<UUID64> result;
 	for (const auto& n : stateMachine->GetStates())
 	{
 		auto it = std::find_if(selectedNodeIds.begin(), selectedNodeIds.end(), [&](const ed::NodeId& id)
@@ -1011,7 +1011,7 @@ const std::vector<Volt::UUID> AnimationGraphPanel::GetSelectedStates() const
 	return result;
 }
 
-const std::vector<Volt::UUID> AnimationGraphPanel::GetSelectedTransitions() const
+const std::vector<UUID64> AnimationGraphPanel::GetSelectedTransitions() const
 {
 	std::vector<ed::LinkId> selectedLinkIds;
 	selectedLinkIds.resize(ed::GetSelectedObjectCount());
@@ -1021,7 +1021,7 @@ const std::vector<Volt::UUID> AnimationGraphPanel::GetSelectedTransitions() cons
 
 	auto stateMachine = GetLastEntry().stateMachine;
 
-	std::vector<Volt::UUID> result;
+	std::vector<UUID64> result;
 	for (const auto& l : stateMachine->GetTransitions())
 	{
 		auto it = std::find_if(selectedLinkIds.begin(), selectedLinkIds.end(), [&](const ed::LinkId& id)

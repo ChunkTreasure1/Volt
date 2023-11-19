@@ -38,6 +38,6 @@ namespace Volt
 
 		float myCurrentStartTime = 0.f;
 
-		std::unordered_map<UUID, std::vector<Entity>> myAttachedEntities;
+		std::unordered_map<UUID64, std::vector<Entity>> myAttachedEntities;
 	};
 }

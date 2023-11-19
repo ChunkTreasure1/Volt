@@ -181,7 +181,7 @@ namespace Volt
 		myStates.emplace_back(state);
 	}
 
-	Ref<AnimationState> AnimationStateMachine::CreateState(const std::string& name, bool isEntry, const UUID id)
+	Ref<AnimationState> AnimationStateMachine::CreateState(const std::string& name, bool isEntry, const UUID64 id)
 	{
 		auto state = CreateRef<AnimationState>(name, isEntry, false);
 		state->id = id;
@@ -190,7 +190,7 @@ namespace Volt
 		return state;
 	}
 
-	Ref<AnimationTransition> AnimationStateMachine::CreateTransition(Volt::UUID id)
+	Ref<AnimationTransition> AnimationStateMachine::CreateTransition(UUID64 id)
 	{
 		auto transition = CreateRef<AnimationTransition>();
 		transition->id = id;
@@ -199,7 +199,7 @@ namespace Volt
 		return transition;
 	}
 
-	void AnimationStateMachine::AddTransition(const UUID startStateId, const UUID endStateId)
+	void AnimationStateMachine::AddTransition(const UUID64 startStateId, const UUID64 endStateId)
 	{
 		Ref<AnimationTransition> transition = CreateRef<AnimationTransition>();
 		transition->fromState = startStateId;
@@ -219,7 +219,7 @@ namespace Volt
 		myTransitions.emplace_back(transition);
 	}
 
-	void AnimationStateMachine::RemoveState(const UUID id)
+	void AnimationStateMachine::RemoveState(const UUID64 id)
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [&id](const auto& lhs)
 		{
@@ -240,7 +240,7 @@ namespace Volt
 		myStates.erase(it);
 	}
 
-	void AnimationStateMachine::RemoveTransition(const UUID id)
+	void AnimationStateMachine::RemoveTransition(const UUID64 id)
 	{
 		auto it = std::find_if(myTransitions.begin(), myTransitions.end(), [&id](const auto& lhs)
 		{
@@ -263,7 +263,7 @@ namespace Volt
 		myTransitions.erase(it);
 	}
 
-	void AnimationStateMachine::SetStartState(const UUID stateId)
+	void AnimationStateMachine::SetStartState(const UUID64 stateId)
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [stateId](const auto& lhs) { return lhs->id == stateId; });
 		if (it != myStates.end())
@@ -273,7 +273,7 @@ namespace Volt
 		}
 	}
 
-	AnimationState* AnimationStateMachine::GetStateById(const UUID stateId) const
+	AnimationState* AnimationStateMachine::GetStateById(const UUID64 stateId) const
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [stateId](const auto& lhs) { return lhs->id == stateId; });
 		if (it != myStates.end())
@@ -284,7 +284,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	AnimationTransition* AnimationStateMachine::GetTransitionById(const UUID transitionId) const
+	AnimationTransition* AnimationStateMachine::GetTransitionById(const UUID64 transitionId) const
 	{
 		auto it = std::find_if(myTransitions.begin(), myTransitions.end(), [transitionId](const auto& lhs) { return lhs->id == transitionId; });
 		if (it != myTransitions.end())
@@ -295,7 +295,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	AnimationState* AnimationStateMachine::GetStateFromPin(const UUID pinId) const
+	AnimationState* AnimationStateMachine::GetStateFromPin(const UUID64 pinId) const
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [pinId](const auto& lhs) { return lhs->pinId == pinId || lhs->pinId2 == pinId; });
 		if (it != myStates.end())
@@ -306,7 +306,7 @@ namespace Volt
 		return nullptr;
 	}
 
-	const int32_t AnimationStateMachine::GetStateIndexFromId(const UUID stateId) const
+	const int32_t AnimationStateMachine::GetStateIndexFromId(const UUID64 stateId) const
 	{
 		auto it = std::find_if(myStates.begin(), myStates.end(), [stateId](const auto& lhs) { return lhs->id == stateId; });
 		if (it == myStates.end())
@@ -363,7 +363,7 @@ namespace Volt
 		return newStateMachine;
 	}
 
-	const bool AnimationStateMachine::ShouldTransition(const UUID transitionId, const UUID currentStateId) const
+	const bool AnimationStateMachine::ShouldTransition(const UUID64 transitionId, const UUID64 currentStateId) const
 	{
 		const auto transition = GetTransitionById(transitionId);
 		const auto currentState = GetStateById(currentStateId);
@@ -485,7 +485,7 @@ namespace Volt
 		return sample;
 	}
 
-	void AnimationStateMachine::SetNextState(const UUID targetStateId, const UUID transitionId)
+	void AnimationStateMachine::SetNextState(const UUID64 targetStateId, const UUID64 transitionId)
 	{
 		const auto transition = GetTransitionById(transitionId);
 

@@ -10,12 +10,12 @@ namespace GraphKey
 	class EventSystem
 	{
 	public:
-		void RegisterListener(Volt::UUID nodeId, Volt::UUID eventId, std::function<void()>&& eventFunc);
-		void UnregisterListener(Volt::UUID nodeId, Volt::UUID eventId);
+		void RegisterListener(UUID64 nodeId, UUID64 eventId, std::function<void()>&& eventFunc);
+		void UnregisterListener(UUID64 nodeId, UUID64 eventId);
 
-		void Dispatch(const Volt::UUID& e);
+		void Dispatch(const UUID64& e);
 
 	private:
-		std::unordered_map<Volt::UUID, std::unordered_map<Volt::UUID, std::function<void()>>> myEvents;
+		std::unordered_map<UUID64, std::unordered_map<UUID64, std::function<void()>>> myEvents;
 	};
 }

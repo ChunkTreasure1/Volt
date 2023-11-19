@@ -10,7 +10,7 @@ namespace Volt
 	{
 		myEntity = id;
 		myMonoClass = klass;
-		myHandle = MonoScriptEngine::InstantiateClass(UUID(static_cast<uint32_t>(id)), myMonoClass->GetClass());
+		myHandle = MonoScriptEngine::InstantiateClass(UUID64(static_cast<uint32_t>(id)), myMonoClass->GetClass());
 		myUpdateTimersMethod = myMonoClass->GetMethod("UpdateTimers", 0);
 
 		EntityParams params;

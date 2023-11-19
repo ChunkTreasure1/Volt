@@ -3,7 +3,7 @@
 
 namespace GraphKey
 {
-	void EventSystem::RegisterListener(Volt::UUID nodeId, Volt::UUID eventType, std::function<void()>&& eventFunc)
+	void EventSystem::RegisterListener(UUID64 nodeId, UUID64 eventType, std::function<void()>&& eventFunc)
 	{
 		auto& typeEvents = myEvents[eventType];
 
@@ -13,7 +13,7 @@ namespace GraphKey
 		}
 	}
 
-	void EventSystem::UnregisterListener(Volt::UUID nodeId, Volt::UUID eventType)
+	void EventSystem::UnregisterListener(UUID64 nodeId, UUID64 eventType)
 	{
 		auto& typeEvents = myEvents[eventType];
 		if (typeEvents.contains(nodeId))
@@ -22,7 +22,7 @@ namespace GraphKey
 		}
 	}
 
-	void EventSystem::Dispatch(const Volt::UUID& e)
+	void EventSystem::Dispatch(const UUID64& e)
 	{
 		auto& typeEvents = myEvents[e];
 		for (const auto& [nodeId, func] : typeEvents)

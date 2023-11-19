@@ -55,10 +55,10 @@ namespace Volt
 		root = root["Behavior Tree"];
 
 		YAML::Node sequenceNodes = root["SequenceIDs"];
-		for (const auto& n : sequenceNodes.as<std::vector<UUID>>())
+		for (const auto& n : sequenceNodes.as<std::vector<UUID64>>())
 			behaviorTree->CreateNode<BehaviorTree::Sequence>(n);
 		YAML::Node selectorNodes = root["SelectorIDs"];
-		for (const auto& n : selectorNodes.as<std::vector<UUID>>())
+		for (const auto& n : selectorNodes.as<std::vector<UUID64>>())
 			behaviorTree->CreateNode<BehaviorTree::Selector>(n);
 
 		// OH NO...
@@ -66,7 +66,7 @@ namespace Volt
 		for (const auto& n : decoraterNodes)
 		{
 			int decType;
-			UUID thing;
+			UUID64 thing;
 			std::string ifFun1;
 			VT_DESERIALIZE_PROPERTY(uuid, thing, n, uint64_t(0));
 			VT_DESERIALIZE_PROPERTY(ifFun, ifFun1, n, std::string(""));
@@ -78,7 +78,7 @@ namespace Volt
 		YAML::Node leafNodes = root["LeafIDs"];
 		for (const auto& n : leafNodes)
 		{
-			UUID thing;
+			UUID64 thing;
 			std::string funcName;
 			VT_DESERIALIZE_PROPERTY(uuid, thing, n, uint64_t(0));
 			VT_DESERIALIZE_PROPERTY(functionName, funcName, n, std::string(""));
@@ -88,13 +88,13 @@ namespace Volt
 		YAML::Node linkNodes = root["Links"];
 		for (const auto& n : linkNodes)
 		{
-			UUID lnkID;
-			UUID parentID;
-			UUID childID;
+			UUID64 lnkID;
+			UUID64 parentID;
+			UUID64 childID;
 
-			VT_DESERIALIZE_PROPERTY(LinkID, lnkID, n, UUID(0));
-			VT_DESERIALIZE_PROPERTY(ParentID, parentID, n, UUID(0));
-			VT_DESERIALIZE_PROPERTY(ChildID, childID, n, UUID(0));
+			VT_DESERIALIZE_PROPERTY(LinkID, lnkID, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(ParentID, parentID, n, UUID64(0));
+			VT_DESERIALIZE_PROPERTY(ChildID, childID, n, UUID64(0));
 
 			behaviorTree->GetNodeManager().RegisterLink(parentID, childID, lnkID);
 			//behaviorTree-><BehaviorTree::Selector>(n);
@@ -102,9 +102,9 @@ namespace Volt
 
 		for (const auto& positionNode : root["Positions"])
 		{
-			UUID nodeID;
+			UUID64 nodeID;
 			std::string position;
-			VT_DESERIALIZE_PROPERTY(uuid, nodeID, positionNode, Volt::UUID(0));
+			VT_DESERIALIZE_PROPERTY(uuid, nodeID, positionNode, UUID64(0));
 			VT_DESERIALIZE_PROPERTY(pos, position, positionNode, std::string(""));
 			behaviorTree->GetNodeManager().GetNodeFromUUID(nodeID)->SetPos(position);
 		}
@@ -114,12 +114,12 @@ namespace Volt
 	void BehaviorTreeImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<BehaviorTree::Tree> tree = std::reinterpret_pointer_cast<BehaviorTree::Tree>(asset);
-		Volt::UUID rootID = tree->GetRoot();
+		UUID64 rootID = tree->GetRoot();
 
-		std::vector<Volt::UUID> decoratorVec;
-		std::vector<Volt::UUID> selectorVec;
-		std::vector<Volt::UUID> sequenceVec;
-		std::vector<Volt::UUID> leafVec;
+		std::vector<UUID64> decoratorVec;
+		std::vector<UUID64> selectorVec;
+		std::vector<UUID64> sequenceVec;
+		std::vector<UUID64> leafVec;
 
 		for (const auto& n : tree->GetNodeManager().m_nodes)
 		{

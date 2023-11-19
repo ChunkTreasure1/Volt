@@ -51,13 +51,13 @@ namespace NodeGraph
 		}
 	}
 
-	void Editor::CreateNode(const Volt::UUID id, const std::vector<Volt::UUID> pins)
+	void Editor::CreateNode(const UUID64 id, const std::vector<UUID64> pins)
 	{
 		Node newNode{ id, pins };
 		GetBackend().nodes.emplace_back(newNode);
 	}
 
-	void Editor::CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output)
+	void Editor::CreateLink(const UUID64 id, const UUID64 input, const UUID64 output)
 	{
 		Link newLink{};
 		newLink.id = id;
@@ -67,7 +67,7 @@ namespace NodeGraph
 		GetBackend().links.emplace_back(newLink);
 	}
 
-	void Editor::RemoveLink(const Volt::UUID linkId)
+	void Editor::RemoveLink(const UUID64 linkId)
 	{
 		auto it = std::find_if(myBackend->links.begin(), myBackend->links.end(), [&linkId](const auto& lhs)
 		{
@@ -80,7 +80,7 @@ namespace NodeGraph
 		}
 	}
 
-	void Editor::RemoveNode(const Volt::UUID nodeId)
+	void Editor::RemoveNode(const UUID64 nodeId)
 	{
 		auto it = std::find_if(myBackend->nodes.begin(), myBackend->nodes.end(), [&nodeId](const auto& lhs)
 		{
@@ -108,7 +108,7 @@ namespace NodeGraph
 		myBackend->nodes.erase(it);
 	}
 
-	const std::vector<Volt::UUID> Editor::GetSelectedNodes()
+	const std::vector<UUID64> Editor::GetSelectedNodes()
 	{
 		std::vector<ed::NodeId> selectedNodeIds;
 		selectedNodeIds.resize(ed::GetSelectedObjectCount());
@@ -116,7 +116,7 @@ namespace NodeGraph
 		int32_t nodeCount = ed::GetSelectedNodes(selectedNodeIds.data(), (int32_t)selectedNodeIds.size());
 		selectedNodeIds.resize(nodeCount);
 
-		std::vector<Volt::UUID> result;
+		std::vector<UUID64> result;
 		for (const auto& n : myBackend->nodes)
 		{
 			auto it = std::find_if(selectedNodeIds.begin(), selectedNodeIds.end(), [&](const ed::NodeId& id)
@@ -133,7 +133,7 @@ namespace NodeGraph
 		return result;
 	}
 
-	const std::vector<Volt::UUID> Editor::GetSelectedLinks()
+	const std::vector<UUID64> Editor::GetSelectedLinks()
 	{
 		std::vector<ed::LinkId> selectedLinkIds;
 		selectedLinkIds.resize(ed::GetSelectedObjectCount());
@@ -141,7 +141,7 @@ namespace NodeGraph
 		int32_t linkCount = ed::GetSelectedLinks(selectedLinkIds.data(), (int32_t)selectedLinkIds.size());
 		selectedLinkIds.resize(linkCount);
 
-		std::vector<Volt::UUID> result;
+		std::vector<UUID64> result;
 		for (const auto& l : myBackend->links)
 		{
 			auto it = std::find_if(selectedLinkIds.begin(), selectedLinkIds.end(), [&](const ed::LinkId& id)

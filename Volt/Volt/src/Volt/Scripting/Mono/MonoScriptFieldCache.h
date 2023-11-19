@@ -17,10 +17,10 @@ namespace Volt
 		MonoScriptFieldCache() = default;
 		~MonoScriptFieldCache() = default;
 
-		inline std::unordered_map<UUID, MonoScriptFieldMap>& GetCache() { return myScriptFields; }
-		inline const std::unordered_map<UUID, MonoScriptFieldMap>& GetCache() const { return myScriptFields; }
+		inline std::unordered_map<UUID64, MonoScriptFieldMap>& GetCache() { return myScriptFields; }
+		inline const std::unordered_map<UUID64, MonoScriptFieldMap>& GetCache() const { return myScriptFields; }
 
 	private:
-		std::unordered_map<UUID, MonoScriptFieldMap> myScriptFields;
+		std::unordered_map<UUID64, MonoScriptFieldMap> myScriptFields;
 	};
 }

@@ -84,7 +84,7 @@ namespace GraphKey
 		return newNode;
 	}
 	
-	const uint32_t Node::GetAttributeIndexFromID(const Volt::UUID attrId) const
+	const uint32_t Node::GetAttributeIndexFromID(const UUID64 attrId) const
 	{
 		auto itInputs = std::find_if(inputs.begin(), inputs.end(), [attrId](const auto& lhs) { return lhs.id == attrId; });
 		if (itInputs != inputs.end())

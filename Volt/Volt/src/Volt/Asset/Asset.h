@@ -12,7 +12,7 @@
 
 namespace Volt
 {
-	using AssetHandle = UUID;
+	using AssetHandle = UUID64;
 
 	enum class AssetFlag : uint16_t
 	{

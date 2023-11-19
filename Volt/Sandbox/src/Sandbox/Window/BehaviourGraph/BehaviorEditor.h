@@ -20,8 +20,8 @@ enum class ePinType
 
 struct OwnedPin
 {
-	Volt::UUID pinUUID = 0;
-	Volt::UUID nodeUUID = 0;
+	UUID64 pinUUID = 0;
+	UUID64 nodeUUID = 0;
 	ePinType type = ePinType::INPUT;
 };
 
@@ -34,8 +34,8 @@ public:
 	void OpenAsset(Ref<Volt::Asset> asset) override;
 
 	template <class _T>
-	Volt::UUID ConstructNewNode();
-	void AddNodeToBackend(const Volt::UUID& in_nodeID);
+	UUID64 ConstructNewNode();
+	void AddNodeToBackend(const UUID64& in_nodeID);
 
 	void DrawNodes() override;
 	void DrawPanels() override;
@@ -50,8 +50,8 @@ public:
 	bool SaveSettings(const std::string& data)  override;
 	size_t LoadSettings(std::string& data)  override;
 
-	bool SaveNodeSettings(const Volt::UUID nodeId, const std::string& data)  override;
-	size_t LoadNodeSettings(const Volt::UUID nodeId, std::string& data) override;
+	bool SaveNodeSettings(const UUID64 nodeId, const std::string& data)  override;
+	size_t LoadNodeSettings(const UUID64 nodeId, std::string& data) override;
 protected:
 	Volt::BehaviorTree::Decorator* m_decPtr{ nullptr };
 	Volt::Entity myTreeEntity = Volt::Entity::Null();
@@ -62,7 +62,7 @@ protected:
 };
 
 template<class _T>
-inline Volt::UUID BehaviorEditor::ConstructNewNode()
+inline UUID64 BehaviorEditor::ConstructNewNode()
 {
 	auto nNode = myBehaviourTree->CreateNode<_T>();
 	AddNodeToBackend(nNode);

@@ -22,7 +22,7 @@ namespace Volt
 	private:
 		Ref<MonoScriptClass> myMonoClass;
 
-		UUID myUUID{};
+		UUID64 myUUID{};
 		GCHandle myHandle = nullptr;
 	};
 }

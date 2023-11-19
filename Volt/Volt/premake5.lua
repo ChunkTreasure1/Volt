@@ -55,6 +55,7 @@ project "Volt"
 		"../Nexus/src/",
 		"../VoltRenderer/VoltRHI/src",
 		"../CoreUtilities/src",
+		"../Mosaic/src",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
@@ -116,6 +117,7 @@ project "Volt"
 		"TGAFBX",
 		"cityhash",
 		"CoreUtilities",
+		"Mosaic",
 
 		"DirectXTK",
 		"stb",

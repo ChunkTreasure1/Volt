@@ -7,7 +7,7 @@ namespace GraphKey
 	struct CustomEventNode : public Node
 	{
 		~CustomEventNode() override = default;
-		Volt::UUID eventId;
+		UUID64 eventId;
 	};
 
 	struct CallCustomEventNode : public CustomEventNode

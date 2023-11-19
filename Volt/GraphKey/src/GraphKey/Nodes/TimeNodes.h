@@ -20,7 +20,7 @@ namespace GraphKey
 			{
 				AttributeConfig("", AttributeDirection::Output),
 				AttributeConfig("Timer Done", AttributeDirection::Output),
-				AttributeConfig<Volt::UUID>("ID", AttributeDirection::Output, true)
+				AttributeConfig<UUID64>("ID", AttributeDirection::Output, true)
 			};
 		}
 
@@ -48,7 +48,7 @@ namespace GraphKey
 			inputs =
 			{
 				AttributeConfig("", AttributeDirection::Input, GK_BIND_FUNCTION(StopTimerNode::StopTimer)),
-				AttributeConfig<Volt::UUID>("ID", AttributeDirection::Input, true)
+				AttributeConfig<UUID64>("ID", AttributeDirection::Input, true)
 			};
 
 			outputs =
@@ -63,7 +63,7 @@ namespace GraphKey
 	private:
 		inline void StopTimer()
 		{
-			const auto timerId = GetInput<Volt::UUID>(1);
+			const auto timerId = GetInput<UUID64>(1);
 
 			TimerManager::StopTimer(timerId);
 			ActivateOutput(0);

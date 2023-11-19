@@ -10,7 +10,7 @@ namespace Volt
 
 	struct RenderObject
 	{
-		UUID id;
+		UUID64 id;
 		entt::entity entity;
 	
 		Weak<Mesh> mesh;

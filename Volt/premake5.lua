@@ -54,6 +54,7 @@ include "GraphKey"
 include "Navigation"
 include "Nexus"
 include "CoreUtilities"
+include "Mosaic"
 include (path.join(VoltRootDirectory, "Volt-ScriptCore"))
 
 group "Core/Renderer"

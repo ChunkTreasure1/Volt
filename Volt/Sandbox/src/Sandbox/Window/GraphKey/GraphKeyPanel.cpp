@@ -68,7 +68,7 @@ size_t GraphKeyPanel::LoadSettings(std::string& data)
 	return data.size();
 }
 
-bool GraphKeyPanel::SaveNodeSettings(const Volt::UUID nodeId, const std::string& data) 
+bool GraphKeyPanel::SaveNodeSettings(const UUID64 nodeId, const std::string& data) 
 {
 	auto node = myOpenGraph->GetNodeByID(nodeId);
 	if (!node)
@@ -80,7 +80,7 @@ bool GraphKeyPanel::SaveNodeSettings(const Volt::UUID nodeId, const std::string&
 	return true;
 }
 
-size_t GraphKeyPanel::LoadNodeSettings(const Volt::UUID nodeId, std::string& data) 
+size_t GraphKeyPanel::LoadNodeSettings(const UUID64 nodeId, std::string& data) 
 {
 	auto node = myOpenGraph->GetNodeByID(nodeId);
 	if (!node)
