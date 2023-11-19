@@ -100,7 +100,7 @@ namespace Volt::RHI
 
 				case ResourceState::UnorderedAccess:
 				{
-					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT };
+					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT };
 					break;
 				}
 
@@ -162,7 +162,7 @@ namespace Volt::RHI
 
 				case ResourceState::UnorderedAccess:
 				{
-					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT };
+					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT };
 					break;
 				}
 

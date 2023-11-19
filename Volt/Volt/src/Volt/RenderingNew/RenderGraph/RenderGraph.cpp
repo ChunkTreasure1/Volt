@@ -122,6 +122,12 @@ namespace Volt
 			m_resourceTransitions.resize(m_passNodes.size());
 		}
 
+		struct LastPassUsageInfo
+		{
+			bool resourceWasUsed = false;
+			RenderGraphResourceAccess accessInfo{};
+		};
+
 		///// Create resource barriers /////
 		for (const auto& pass : m_passNodes)
 		{
@@ -130,7 +136,7 @@ namespace Volt
 				continue;
 			}
 
-			auto writeResourceFunc = [&](const RenderGraphPassResourceAccess& access)
+			auto writeResourceFunc = [&](const RenderGraphPassResourceAccess& access) -> LastPassUsageInfo
 			{
 				int32_t lastAccessPassIndex = lastResourceAccess.at(access.handle);
 
@@ -181,9 +187,18 @@ namespace Volt
 					}
 				}
 
+				LastPassUsageInfo lastUsageInfo{};
+
+				if (oldState == RHI::ResourceState::UnorderedAccess || oldState == RHI::ResourceState::DepthWrite || oldState == RHI::ResourceState::RenderTarget)
+				{
+					lastUsageInfo.resourceWasUsed = true;
+					lastUsageInfo.accessInfo.oldState = oldState;
+					lastUsageInfo.accessInfo.newState = newState;
+				}
+
 				if (oldState == newState)
 				{
-					return;
+					return lastUsageInfo;
 				}
 
 				auto& newAccess = resultAccesses.at(pass->index).emplace_back();
@@ -193,7 +208,11 @@ namespace Volt
 
 				passAccesses[pass->index][access.handle] = newAccess;
 				lastResourceAccess[access.handle] = static_cast<int32_t>(pass->index);
+
+				return lastUsageInfo;
 			};
+
+			LastPassUsageInfo previousDependenciesInfo{};
 
 			for (const auto& resource : pass->resourceCreates)
 			{
@@ -202,7 +221,13 @@ namespace Volt
 
 			for (const auto& resource : pass->resourceWrites)
 			{
-				writeResourceFunc(resource);
+				const auto lastUsageInfo = writeResourceFunc(resource);
+				if (lastUsageInfo.resourceWasUsed)
+				{
+					previousDependenciesInfo.resourceWasUsed = true;
+					previousDependenciesInfo.accessInfo.oldState |= lastUsageInfo.accessInfo.oldState;
+					previousDependenciesInfo.accessInfo.newState |= lastUsageInfo.accessInfo.newState;
+				}
 			}
 
 			for (const auto& access : pass->resourceReads)
@@ -241,6 +266,12 @@ namespace Volt
 					}
 				}
 
+				if (oldState == RHI::ResourceState::UnorderedAccess || oldState == RHI::ResourceState::DepthWrite || oldState == RHI::ResourceState::RenderTarget)
+				{
+					previousDependenciesInfo.resourceWasUsed = true;
+					previousDependenciesInfo.accessInfo.oldState |= oldState;
+					previousDependenciesInfo.accessInfo.newState |= newState;
+				}
 
 				if (oldState == newState)
 				{
@@ -254,6 +285,13 @@ namespace Volt
 
 				passAccesses[pass->index][access.handle] = newAccess;
 				lastResourceAccess[access.handle] = static_cast<int32_t>(pass->index);
+			}
+
+			if (previousDependenciesInfo.resourceWasUsed)
+			{
+				auto& execBarrier = resultAccesses.at(pass->index).emplace_back();
+				execBarrier.oldState = previousDependenciesInfo.accessInfo.oldState;
+				execBarrier.newState = previousDependenciesInfo.accessInfo.newState;
 			}
 		}
 
@@ -356,7 +394,10 @@ namespace Volt
 					barrier.newState = transition.newState;
 					barrier.resource = GetResourceRaw(transition.resourceHandle);
 
-					m_resourceNodes.at(transition.resourceHandle)->currentState = transition.newState;
+					if (barrier.resource)
+					{
+						m_resourceNodes.at(transition.resourceHandle)->currentState = transition.newState;
+					}
 				}
 
 				m_commandBuffer->ResourceBarrier(barrierInfos);
@@ -578,6 +619,11 @@ namespace Volt
 
 	Weak<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
 	{
+		if (resourceHandle == std::numeric_limits<RenderGraphResourceHandle>::max())
+		{
+			return {};
+		}
+
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 
 		Weak<RHI::RHIResource> result{};
@@ -652,7 +698,7 @@ namespace Volt
 		return resourceId;
 	}
 
-	void RenderGraph::AddPass(std::string_view name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc)
+	void RenderGraph::AddPass(const std::string& name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc)
 	{
 		static_assert(sizeof(executeFunc) <= 512 && "Execution function must not be larger than 512 bytes!");
 		struct Empty
@@ -682,7 +728,6 @@ namespace Volt
 
 		uint8_t* tempData = new uint8_t[size];
 		memcpy_s(tempData, size, data, size);
-
 
 		Ref<RenderGraphPassNode<Empty>> newNode = CreateRef<RenderGraphPassNode<Empty>>();
 		newNode->name = name;

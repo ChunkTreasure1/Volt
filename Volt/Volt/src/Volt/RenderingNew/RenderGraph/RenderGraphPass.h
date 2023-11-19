@@ -19,7 +19,7 @@ namespace Volt
 
 	struct RenderGraphPassNodeBase
 	{
-		std::string_view name;
+		std::string name;
 		
 		uint32_t index = 0;
 		uint32_t refCount = 0;

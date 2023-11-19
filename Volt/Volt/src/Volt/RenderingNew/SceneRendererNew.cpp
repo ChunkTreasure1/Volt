@@ -84,6 +84,7 @@ namespace Volt
 			spec.height = specification.initialResolution.y;
 			spec.usage = RHI::ImageUsage::AttachmentStorage;
 			spec.generateMips = false;
+			spec.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
 
 			m_outputImage = RHI::Image2D::Create(spec);
 		}
@@ -155,8 +156,17 @@ namespace Volt
 		AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
 		AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
 
-		 //For every material -> run compute shading shader using indirect args
-		AddGenerateGBufferPass(renderGraph, rgBlackboard);
+		//For every material -> run compute shading shader using indirect args
+		auto& gbufferData = rgBlackboard.Add<GBufferData>();
+
+		gbufferData.albedo = renderGraph.AddExternalImage2D(m_outputImage); //renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+		gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
+		gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+
+		for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
+		{
+			AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
+		}
 
 		//if (m_visibilityVisualization != VisibilityVisualization::None)
 		//{
@@ -598,7 +608,7 @@ namespace Volt
 		});
 	}
 
-	void SceneRendererNew::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRendererNew::AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId)
 	{
 		const auto& indirectArgsData = blackboard.Get<MaterialIndirectArgsData>();
 		const auto& visBufferData = blackboard.Get<VisibilityBufferData>();
@@ -606,13 +616,13 @@ namespace Volt
 		const auto& matPixelsData = blackboard.Get<MaterialPixelsData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
-		blackboard.Add<GBufferData>() = renderGraph.AddPass<GBufferData>("Generate GBuffer Data",
-		[&](RenderGraph::Builder& builder, GBufferData& data)
-		{
-			data.albedo = renderGraph.AddExternalImage2D(m_outputImage);  //builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
-			data.materialEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
-			data.normalEmissive = builder.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+		const auto& gbufferData = blackboard.Get<GBufferData>();
 
+		const std::string passName = std::format("Generate GBuffer Data: Material {0}", materialId);
+
+		renderGraph.AddPass(passName,
+		[&](RenderGraph::Builder& builder)
+		{
 			builder.ReadResource(indirectArgsData.materialIndirectArgsBuffer, RHI::ResourceState::IndirectArgument);
 			builder.ReadResource(visBufferData.visibility);
 			builder.ReadResource(matCountData.materialCountBuffer);
@@ -620,25 +630,30 @@ namespace Volt
 			builder.ReadResource(matPixelsData.pixelCollectionBuffer);
 			builder.ReadResource(uniformBuffers.cameraDataBuffer);
 
-			builder.ReadResource(data.albedo);
+			builder.WriteResource(gbufferData.albedo);
+			builder.WriteResource(gbufferData.materialEmissive);
+			builder.WriteResource(gbufferData.normalEmissive);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
 		},
-		[=](const GBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::Image2D> albedoImage = resources.GetImage2DRaw(data.albedo);
-			Weak<RHI::Image2D> materialEmissiveImage = resources.GetImage2DRaw(data.materialEmissive);
-			Weak<RHI::Image2D> normalEmissiveImage = resources.GetImage2DRaw(data.normalEmissive);
-		
+			Weak<RHI::Image2D> albedoImage = resources.GetImage2DRaw(gbufferData.albedo);
+			Weak<RHI::Image2D> materialEmissiveImage = resources.GetImage2DRaw(gbufferData.materialEmissive);
+			Weak<RHI::Image2D> normalEmissiveImage = resources.GetImage2DRaw(gbufferData.normalEmissive);
+
 			Weak<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBufferRaw(indirectArgsData.materialIndirectArgsBuffer);
-		
-			context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 1.f });
-			context.ClearImage(materialEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
-			context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
+
+			if (first)
+			{
+				context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 1.f });
+				context.ClearImage(materialEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
+				context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
+			}
 
 			context.BindPipeline(m_generateGBufferPipeline);
-			
+
 			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant(resources.GetBuffer(matCountData.materialCountBuffer));
 			context.SetConstant(resources.GetBuffer(matCountData.materialStartBuffer));
@@ -647,14 +662,14 @@ namespace Volt
 			context.SetConstant(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle());
 			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
 
-			context.SetConstant(resources.GetImage2D(data.albedo));
-			context.SetConstant(resources.GetImage2D(data.materialEmissive));
-			context.SetConstant(resources.GetImage2D(data.normalEmissive));
-			context.SetConstant(0); // Material ID
+			context.SetConstant(resources.GetImage2D(gbufferData.albedo));
+			context.SetConstant(resources.GetImage2D(gbufferData.materialEmissive));
+			context.SetConstant(resources.GetImage2D(gbufferData.normalEmissive));
+			context.SetConstant(materialId);
 
 			context.SetConstant(glm::vec2(m_width, m_height));
 
-			context.DispatchIndirect(indirectArgsBuffer, 0); // Should be offset with material ID
+			context.DispatchIndirect(indirectArgsBuffer, sizeof(RHI::IndirectDispatchCommand) * materialId); // Should be offset with material ID
 		});
 	}
 }

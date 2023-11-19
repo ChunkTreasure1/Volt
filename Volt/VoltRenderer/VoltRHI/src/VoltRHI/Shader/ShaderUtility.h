@@ -95,21 +95,21 @@ namespace Volt::RHI
 		{
 			switch (stage)
 			{
-				case ShaderStage::Vertex:		return L"vs_6_5";
-				case ShaderStage::Pixel:		return L"ps_6_5";
-				case ShaderStage::Hull:			return L"hs_6_5";
-				case ShaderStage::Domain:		return L"hs_6_5";
-				case ShaderStage::Geometry:		return L"gs_6_5";
-				case ShaderStage::Compute:		return L"cs_6_5";
+				case ShaderStage::Vertex:		return L"vs_6_6";
+				case ShaderStage::Pixel:		return L"ps_6_6";
+				case ShaderStage::Hull:			return L"hs_6_6";
+				case ShaderStage::Domain:		return L"hs_6_6";
+				case ShaderStage::Geometry:		return L"gs_6_6";
+				case ShaderStage::Compute:		return L"cs_6_6";
 					
-				case ShaderStage::RayGen:		return L"lib_6_5";
-				case ShaderStage::Miss:			return L"lib_6_5";
-				case ShaderStage::ClosestHit:   return L"lib_6_5";
-				case ShaderStage::AnyHit:		return L"lib_6_5";
-				case ShaderStage::Intersection: return L"lib_6_5";
+				case ShaderStage::RayGen:		return L"lib_6_6";
+				case ShaderStage::Miss:			return L"lib_6_6";
+				case ShaderStage::ClosestHit:   return L"lib_6_6";
+				case ShaderStage::AnyHit:		return L"lib_6_6";
+				case ShaderStage::Intersection: return L"lib_6_6";
 			
-				case ShaderStage::Task:			return L"ms_6_5";
-				case ShaderStage::Mesh:			return L"as_6_5";
+				case ShaderStage::Task:			return L"ms_6_6";
+				case ShaderStage::Mesh:			return L"as_6_6";
 			}
 
 			assert(false);

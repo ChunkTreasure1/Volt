@@ -35,7 +35,7 @@ namespace Volt
 			ResourceHandle handle = static_cast<ResourceHandle>(resources.size());
 			availiableHandles.TryPop(handle);
 
-			if (static_cast<uint32_t>(resources.size()) < handle + 1)
+			if (static_cast<ResourceHandle>(resources.size()) < handle + 1)
 			{
 				resources.resize(handle + 1);
 			}
@@ -56,7 +56,7 @@ namespace Volt
 		{
 			std::scoped_lock lock{ accessMutex };
 
-			if (resourceHandle >= static_cast<uint32_t>(resources.size()))
+			if (resourceHandle >= static_cast<ResourceHandle>(resources.size()))
 			{
 				return;
 			}
@@ -111,7 +111,7 @@ namespace Volt
 		{
 			std::scoped_lock lock{ accessMutex };
 			
-			if (static_cast<uint32_t>(resources.size()) >= handle)
+			if (handle >= static_cast<ResourceHandle>(resources.size()))
 			{
 				return;
 			}
@@ -131,7 +131,7 @@ namespace Volt
 				return;
 			}
 
-			dirtyResources.emplace_back(resources[handle]);
+			dirtyResources.emplace_back(resources[handle]); 
 		}
 
 		inline std::span<const Weak<T>> GetRange()

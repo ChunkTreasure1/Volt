@@ -85,6 +85,6 @@ namespace Volt
 		RHI::ResourceState oldState;
 		RHI::ResourceState newState;
 
-		RenderGraphResourceHandle resourceHandle = 0;
+		RenderGraphResourceHandle resourceHandle = std::numeric_limits<RenderGraphResourceHandle>::max();
  	};
 }

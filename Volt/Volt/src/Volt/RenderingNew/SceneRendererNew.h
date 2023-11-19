@@ -85,7 +85,7 @@ namespace Volt
 		void AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
-		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId);
 		///////////////////
 
 		Ref<RHI::Image2D> m_outputImage;

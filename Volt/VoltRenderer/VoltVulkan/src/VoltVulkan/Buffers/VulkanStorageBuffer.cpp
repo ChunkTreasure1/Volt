@@ -13,21 +13,21 @@
 namespace Volt::RHI
 {
 	VulkanStorageBuffer::VulkanStorageBuffer(const uint32_t count, const size_t elementSize, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
+		: m_byteSize(count * elementSize), m_size(count), m_elementSize(elementSize), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(elementSize * count);
 		SetName(name);
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
+		: m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(size);
 		SetName(name);
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(const size_t size, Ref<Allocator> customAllocator, std::string_view name, BufferUsage bufferUsage, MemoryUsage memoryUsage)
-		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage)
+		: m_allocatedUsingCustomAllocator(true), m_customAllocator(customAllocator), m_bufferUsage(bufferUsage), m_memoryUsage(memoryUsage), m_name(name)
 	{
 		Invalidate(size);
 		SetName(name);
@@ -47,6 +47,8 @@ namespace Volt::RHI
 	{
 		const size_t newSize = size * m_elementSize;
 		Invalidate(newSize);
+
+		SetName(m_name);
 	}
 
 	const size_t VulkanStorageBuffer::GetByteSize() const

@@ -66,8 +66,8 @@ namespace Volt
 		void Execute();
 
 		template<typename T>
-		T& AddPass(std::string_view name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
-		void AddPass(std::string_view name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
+		T& AddPass(const std::string& name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
+		void AddPass(const std::string& name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 
 		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
 
@@ -124,7 +124,7 @@ namespace Volt
 	};
 
 	template<typename T>
-	inline T& RenderGraph::AddPass(std::string_view name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc)
+	inline T& RenderGraph::AddPass(const std::string& name, std::function<void(Builder&, T&)> createFunc, std::function<void(const T&, RenderContext&, const RenderGraphPassResources&)>&& executeFunc)
 	{
 		static_assert(sizeof(executeFunc) <= 512 && "Execution function must not be larger than 512 bytes!");
 		
@@ -132,7 +132,6 @@ namespace Volt
 		newNode->name = name;
 		newNode->executeFunction = executeFunc;
 		newNode->index = m_passIndex++;
-		newNode->name = name;
 
 		m_passNodes.push_back(newNode);
 		m_resourceTransitions.emplace_back();

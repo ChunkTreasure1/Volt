@@ -1282,6 +1282,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh"));
 					ent.SetTag("New Cube");
 
+					m_scene->InvalidateRenderScene();
+
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
 				}
@@ -1292,6 +1294,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Capsule.vtmesh"));
 					ent.SetTag("New Capsule");
+
+					m_scene->InvalidateRenderScene();
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
@@ -1304,6 +1308,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cone.vtmesh"));
 					ent.SetTag("New Cone");
 
+					m_scene->InvalidateRenderScene();
+
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
 				}
@@ -1314,6 +1320,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cylinder.vtmesh"));
 					ent.SetTag("New Cylinder");
+
+					m_scene->InvalidateRenderScene();
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
@@ -1326,6 +1334,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Sphere.vtmesh"));
 					ent.SetTag("New Sphere");
 
+					m_scene->InvalidateRenderScene();
+
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());
 				}
@@ -1336,6 +1346,8 @@ void SceneViewPanel::DrawMainRightClickPopup()
 					auto& meshComp = ent.AddComponent<Volt::MeshComponent>();
 					meshComp.handle = (Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Plane.vtmesh"));
 					ent.SetTag("New Plane");
+
+					m_scene->InvalidateRenderScene();
 
 					SelectionManager::DeselectAll();
 					SelectionManager::Select(ent.GetID());

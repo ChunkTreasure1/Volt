@@ -32,7 +32,7 @@ void main(uint3 threadId : SV_DispatchThreadID)
         return;
     }
     
-    ObjectDrawData objectData = constants.objectDrawData.Load(pixelValue.x);
+    const ObjectDrawData objectData = constants.objectDrawData.Load(pixelValue.x);
     if (objectData.materialId == UINT32_MAX)
     {
         return;

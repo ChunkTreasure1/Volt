@@ -42,6 +42,8 @@ namespace Volt::RHI
 		size_t m_byteSize = 0;
 		uint32_t m_size = 0;
 
+		std::string m_name;
+
 		Ref<Allocation> m_allocation;
 		Weak<Allocator> m_customAllocator;
 
