@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::Mock:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanTransientHeap>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanTransientHeap>(createInfo); break;
 		}
 
 		return nullptr;

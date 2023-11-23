@@ -14,11 +14,11 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12CommandBuffer>(count, queueType, swapchainTarget); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(count, queueType, swapchainTarget); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanCommandBuffer>(count, queueType, swapchainTarget); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(count, queueType, swapchainTarget); break;
 		}
 
 		return nullptr;
@@ -30,11 +30,11 @@ namespace Volt::RHI
 		
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12CommandBuffer>(1, QueueType::Graphics, false); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12CommandBuffer>(1, QueueType::Graphics, false); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanCommandBuffer>(1, QueueType::Graphics, false); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanCommandBuffer>(1, QueueType::Graphics, false); break;
 		}
 
 		return nullptr;

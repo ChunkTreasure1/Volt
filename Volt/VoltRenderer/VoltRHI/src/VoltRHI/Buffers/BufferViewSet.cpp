@@ -15,6 +15,6 @@ namespace Volt::RHI
 
 	Ref<BufferViewSet> BufferViewSet::Create(const std::vector<Ref<BufferView>>& bufferViews)
 	{
-		return CreateRefRHI<BufferViewSet>(bufferViews);
+		return CreateRef<BufferViewSet>(bufferViews);
 	}
 }

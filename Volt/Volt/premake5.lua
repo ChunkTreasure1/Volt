@@ -12,23 +12,11 @@ project "Volt"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099",
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	buildoptions 
 	{
@@ -54,15 +42,12 @@ project "Volt"
 		"../Navigation/src/",
 		"../Nexus/src/",
 		"../VoltRenderer/VoltRHI/src",
-		"../CoreUtilities/src",
 		"../Mosaic/src",
 		
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Optick}",
-		"%{IncludeDir.tracy}",
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
@@ -82,7 +67,6 @@ project "Volt"
 		"%{IncludeDir.NFDExtended}",
 		"%{IncludeDir.entt}",
 
-		"%{IncludeDir.glm}",
 		"%{IncludeDir.ffmpeg}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.DirectXTex}",
@@ -129,16 +113,7 @@ project "Volt"
 
 	defines
 	{
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"_CRT_SECURE_NO_WARNINGS",
-
 		"PX_PHYSX_STATIC_LIB",
-		"OPTICK_ENABLE_GPU_VULKAN",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED",
-
-		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"

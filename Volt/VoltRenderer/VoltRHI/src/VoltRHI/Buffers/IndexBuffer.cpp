@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanIndexBuffer>(indices); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanIndexBuffer>(indices); break;
 		}
 
 		return nullptr;
@@ -35,7 +35,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanIndexBuffer>(indices, count); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanIndexBuffer>(indices, count); break;
 		}
 
 		return nullptr;

@@ -203,9 +203,9 @@ namespace Volt::RHI
 			VT_VK_CHECK(vkCreateDevice(physicalDevicePtr.GetHandle<VkPhysicalDevice>(), &deviceInfo, nullptr, &m_device));
 		}
 
-		m_deviceQueues[QueueType::Graphics] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
-		m_deviceQueues[QueueType::TransferCopy] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
-		m_deviceQueues[QueueType::Compute] = CreateRefRHI<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
+		m_deviceQueues[QueueType::Graphics] = CreateRef<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Graphics });
+		m_deviceQueues[QueueType::TransferCopy] = CreateRef<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::TransferCopy });
+		m_deviceQueues[QueueType::Compute] = CreateRef<VulkanDeviceQueue>(DeviceQueueCreateInfo{ this, QueueType::Compute });
 
 #ifdef VT_ENABLE_GPU_PROFILING
 		{

@@ -2,7 +2,6 @@
 
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 #include "Volt/Core/Base.h"
-#include "Volt/Core/Weak.h"
 
 namespace Volt
 {

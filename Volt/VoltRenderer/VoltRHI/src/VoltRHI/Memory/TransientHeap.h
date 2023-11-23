@@ -4,7 +4,7 @@
 #include "VoltRHI/Core/RHICommon.h"
 #include "VoltRHI/Core/RHIInterface.h"
 
-#include <Volt/Core/UUID.h>
+#include <CoreUtilities/UUID.h>
 
 namespace Volt::RHI
 {

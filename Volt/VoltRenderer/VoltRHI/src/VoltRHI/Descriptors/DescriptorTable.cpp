@@ -26,11 +26,11 @@ namespace Volt::RHI
 			{
 				if (GraphicsContext::GetPhysicalDevice()->AsRef<VulkanPhysicalGraphicsDevice>().AreDescriptorBuffersEnabled())
 				{
-					return CreateRefRHI<VulkanDescriptorBufferTable>(specification);
+					return CreateRef<VulkanDescriptorBufferTable>(specification);
 				}
 				else
 				{
-					return CreateRefRHI<VulkanDescriptorTable>(specification);
+					return CreateRef<VulkanDescriptorTable>(specification);
 				}
 				break;
 			}

@@ -14,11 +14,11 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12Swapchain>(window); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12Swapchain>(window); break;
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanSwapchain>(window); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanSwapchain>(window); break;
 		}
 
 		return nullptr;

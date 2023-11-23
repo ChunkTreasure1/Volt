@@ -3,10 +3,10 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Log/Log.h"
 
-#include "Volt/Scene/Reflection/VoltGUID.h"
 #include "Volt/Utility/MemoryUtility.h"
-
 #include "Volt/Asset/Asset.h"
+
+#include <CoreUtilities/VoltGUID.h>
 
 #include <typeindex>
 #include <vector>

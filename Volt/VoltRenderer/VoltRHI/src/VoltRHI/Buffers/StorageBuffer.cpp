@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(count, elementSize, name, bufferUsage, memoryUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanStorageBuffer>(count, elementSize, name, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;
@@ -35,7 +35,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, name, bufferUsage, memoryUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanStorageBuffer>(size, name, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;
@@ -52,7 +52,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanStorageBuffer>(size, customAllocator, name, bufferUsage, memoryUsage); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanStorageBuffer>(size, customAllocator, name, bufferUsage, memoryUsage); break;
 		}
 
 		return nullptr;

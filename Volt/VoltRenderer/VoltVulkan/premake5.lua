@@ -12,23 +12,11 @@ project "VoltVulkan"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099",
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	files
 	{
@@ -41,13 +29,9 @@ project "VoltVulkan"
 	{
 		"src/",
 		"../VoltRHI/src",
-		"../../Volt/src",
-		"../../CoreUtilities/src",
 
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Optick}",
-		"%{IncludeDir.tracy}",
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
@@ -57,12 +41,7 @@ project "VoltVulkan"
 
 	defines
 	{
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"OPTICK_ENABLE_GPU_VULKAN",
-
-		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"

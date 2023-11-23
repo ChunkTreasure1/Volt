@@ -24,10 +24,10 @@ namespace Volt::RHI
 
 		switch (s_graphicsAPI)
 		{
-			case GraphicsAPI::D3D12: return CreateRefRHI<D3D12GraphicsContext>(createInfo); break;
+			case GraphicsAPI::D3D12: return CreateRef<D3D12GraphicsContext>(createInfo); break;
 			case GraphicsAPI::MoltenVk:
 				break;
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanGraphicsContext>(createInfo); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanGraphicsContext>(createInfo); break;
 		}
 
 		return nullptr;

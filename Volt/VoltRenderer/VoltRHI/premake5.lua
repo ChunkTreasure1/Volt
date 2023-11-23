@@ -12,23 +12,11 @@ project "VoltRHI"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099",
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	files
 	{
@@ -42,24 +30,11 @@ project "VoltRHI"
 		"src/",
 		"../VoltD3D12/src",
 		"../VoltVulkan/src",
-		"../../Volt/src",
-		"../../CoreUtilities/src",
 
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.imgui_notify}",
-		"%{IncludeDir.Optick}",
-		"%{IncludeDir.tracy}",
 
 		"%{IncludeDir.Aftermath}"
-	}
-
-	defines
-	{
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-
-		"TRACY_ENABLE"
 	}
 
 	filter "files:vendor/**.cpp"

@@ -345,7 +345,7 @@ namespace Volt::RHI
 		sourceBuffer.Size = sourcePtr->GetBufferSize();
 		sourceBuffer.Encoding = 0;
 
-		const Scope<HLSLIncluder> includer = CreateScopeRHI<HLSLIncluder>();
+		const Scope<HLSLIncluder> includer = CreateScope<HLSLIncluder>();
 
 		IDxcResult* compilationResult = nullptr;
 		HRESULT result = m_hlslCompiler->Compile(&sourceBuffer, arguments.data(), static_cast<uint32_t>(arguments.size()), includer.get(), IID_PPV_ARGS(&compilationResult));

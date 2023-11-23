@@ -25,9 +25,9 @@ public:
 	[[nodiscard]] T* Get();
 	[[nodiscard]] const T* Get() const;
 	void Reset();
-	
+
 	inline const size_t GetHash() const
-	{ 
+	{
 		return std::hash<void*>()(m_weakPtr.lock().get());
 	}
 

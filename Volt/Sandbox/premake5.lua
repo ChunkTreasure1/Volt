@@ -17,23 +17,19 @@ project "Sandbox"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
+	
 	disablewarnings
 	{
-		"4005",
-		"4201",
-		"4100",
-		"4927"
+		"4927",
 	}
 
 	linkoptions 
 	{
-		"/ignore:4006",
-		"/ignore:4099",
 		"/ignore:4098",
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
@@ -48,15 +44,8 @@ project "Sandbox"
 
     defines
     {
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"_CRT_SECURE_NO_WARNINGS",
-		"_WINSOCK_DEPRECATED_NO_WARNINGS",
-		
         "GLFW_INCLUDE_NONE",
 		"CPPHTTPLIB_OPENSSL_SUPPORT",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
     }
 
 	files
@@ -81,15 +70,12 @@ project "Sandbox"
 		"../Navigation/src/",
 		"../Nexus/src",
 		"../VoltRenderer/VoltRHI/src",
-		"../CoreUtilities/src",
 
         "%{IncludeDir.GLFW}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.Optick}",
-		"%{IncludeDir.tracy}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.fmod}",

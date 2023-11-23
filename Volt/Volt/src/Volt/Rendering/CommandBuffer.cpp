@@ -67,7 +67,7 @@ namespace Volt
 
 		}
 
-		VT_VK_CHECK(vkEndCommandBuffer(myCommandBuffers.at(index)));
+		//VT_VK_CHECK(vkEndCommandBuffer(myCommandBuffers.at(index)));
 
 		myHasEnded = true;
 
@@ -434,51 +434,51 @@ namespace Volt
 
 	void CommandBuffer::BeginPrimary()
 	{
-		const uint32_t index = GetCurrentIndex();
+		//const uint32_t index = GetCurrentIndex();
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		//VkCommandBufferBeginInfo beginInfo{};
+		//beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		//beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-		VT_VK_CHECK(vkBeginCommandBuffer(myCommandBuffers.at(index), &beginInfo));
+		//VT_VK_CHECK(vkBeginCommandBuffer(myCommandBuffers.at(index), &beginInfo));
 	}
 
 	void CommandBuffer::BeginSecondary()
 	{
-		VkCommandBufferInheritanceRenderingInfo inheritRenderingInfo{};
-		inheritRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
-		inheritRenderingInfo.pNext = nullptr;
-		inheritRenderingInfo.flags = 0;
-		inheritRenderingInfo.viewMask = 0;
-		inheritRenderingInfo.colorAttachmentCount = 0;
-		inheritRenderingInfo.pColorAttachmentFormats = nullptr;
-		inheritRenderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
-		inheritRenderingInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
-		inheritRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		//VkCommandBufferInheritanceRenderingInfo inheritRenderingInfo{};
+		//inheritRenderingInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
+		//inheritRenderingInfo.pNext = nullptr;
+		//inheritRenderingInfo.flags = 0;
+		//inheritRenderingInfo.viewMask = 0;
+		//inheritRenderingInfo.colorAttachmentCount = 0;
+		//inheritRenderingInfo.pColorAttachmentFormats = nullptr;
+		//inheritRenderingInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+		//inheritRenderingInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+		//inheritRenderingInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-		VkCommandBufferInheritanceInfo inheritInfo{};
-		inheritInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritInfo.pNext = &inheritRenderingInfo;
-		inheritInfo.renderPass = nullptr;
-		inheritInfo.subpass = 0;
-		inheritInfo.framebuffer = nullptr;
-		inheritInfo.occlusionQueryEnable = VK_FALSE;
-		inheritInfo.queryFlags = 0;
-		inheritInfo.pipelineStatistics = VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
-			VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
-			VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
-			VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
-			VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
-			VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
-			VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
+		//VkCommandBufferInheritanceInfo inheritInfo{};
+		//inheritInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		//inheritInfo.pNext = &inheritRenderingInfo;
+		//inheritInfo.renderPass = nullptr;
+		//inheritInfo.subpass = 0;
+		//inheritInfo.framebuffer = nullptr;
+		//inheritInfo.occlusionQueryEnable = VK_FALSE;
+		//inheritInfo.queryFlags = 0;
+		//inheritInfo.pipelineStatistics = VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
+		//	VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
+		//	VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
+		//	VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
+		//	VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
+		//	VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
+		//	VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
-		const uint32_t index = GetCurrentIndex();
+		//const uint32_t index = GetCurrentIndex();
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		beginInfo.pInheritanceInfo = &inheritInfo;
+		//VkCommandBufferBeginInfo beginInfo{};
+		//beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		//beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		//beginInfo.pInheritanceInfo = &inheritInfo;
 
-		VT_VK_CHECK(vkBeginCommandBuffer(myCommandBuffers.at(index), &beginInfo));
+		//VT_VK_CHECK(vkBeginCommandBuffer(myCommandBuffers.at(index), &beginInfo));
 	}
 }

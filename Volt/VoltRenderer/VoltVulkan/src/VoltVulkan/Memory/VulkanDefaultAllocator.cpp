@@ -110,7 +110,7 @@ namespace Volt::RHI
 
 		VmaAllocationInfo allocInfo{};
 
-		Ref<VulkanBufferAllocation> allocation = CreateRefRHI<VulkanBufferAllocation>();
+		Ref<VulkanBufferAllocation> allocation = CreateRef<VulkanBufferAllocation>();
 		VT_VK_CHECK(vmaCreateBuffer(m_allocator, &bufferInfo, &allocCreateInfo, &allocation->m_resource, &allocation->m_allocation, &allocInfo));
 
 		m_activeBufferAllocations.push_back(allocation);
@@ -152,7 +152,7 @@ namespace Volt::RHI
 
 		VmaAllocationInfo allocInfo{};
 
-		Ref<VulkanImageAllocation> allocation = CreateRefRHI<VulkanImageAllocation>();
+		Ref<VulkanImageAllocation> allocation = CreateRef<VulkanImageAllocation>();
 		VT_VK_CHECK(vmaCreateImage(m_allocator, &imageInfo, &allocCreateInfo, &allocation->m_resource, &allocation->m_allocation, &allocInfo));
 
 		if (!imageSpecification.debugName.empty())

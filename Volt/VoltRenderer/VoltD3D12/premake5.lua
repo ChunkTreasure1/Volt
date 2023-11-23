@@ -12,23 +12,11 @@ project "VoltD3D12"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099",
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	files
 	{
@@ -41,21 +29,10 @@ project "VoltD3D12"
 	{
 		"src/",
 		"../VoltRHI/src",
-		"../../Volt/src",
-		"../../CoreUtilities/src",
 
 		"../VoltD3D12/vendor/dxc/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Optick}",
-	}
-
-	defines
-	{
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"VT_PLATFORM_WINDOWS"
 	}
 
 	links
@@ -77,6 +54,11 @@ project "VoltD3D12"
 
 	filter "system:windows"
 		systemversion "latest"
+
+		defines
+		{
+			"VT_PLATFORM_WINDOWS"
+		}
 
 		filter "configurations:Debug"
 			defines 

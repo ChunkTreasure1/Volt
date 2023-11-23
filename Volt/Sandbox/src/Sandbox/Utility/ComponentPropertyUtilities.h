@@ -1,7 +1,8 @@
 #pragma once
 
 #include <Volt/Scene/Entity.h>
-#include <Volt/Scene/Reflection/VoltGUID.h>
+
+#include <CoreUtilities/VoltGUID.h>
 
 #include <unordered_map>
 #include <functional>

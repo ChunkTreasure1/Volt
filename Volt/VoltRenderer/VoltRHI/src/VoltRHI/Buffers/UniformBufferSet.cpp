@@ -31,7 +31,7 @@ namespace Volt::RHI
 
 	Ref<UniformBufferSet> UniformBufferSet::Create(uint32_t bufferCount)
 	{
-		return CreateRefRHI<UniformBufferSet>(bufferCount);
+		return CreateRef<UniformBufferSet>(bufferCount);
 	}
 
 	Ref<UniformBuffer> UniformBufferSet::AddInternal(const uint32_t size)

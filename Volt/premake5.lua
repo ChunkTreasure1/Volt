@@ -1,5 +1,6 @@
 local VoltRootDirectory = os.getenv("VOLT_PATH")
 
+include "./scripts/premakeCustomization/premakeCommon.lua"
 include "./scripts/premakeCustomization/solution_items.lua"
 include "Dependencies.lua"
 

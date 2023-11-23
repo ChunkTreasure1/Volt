@@ -18,7 +18,7 @@ namespace Volt::RHI
 			case GraphicsAPI::MoltenVk:
 				break;
 
-			case GraphicsAPI::Vulkan: return CreateRefRHI<VulkanUniformBuffer>(size, data); break;
+			case GraphicsAPI::Vulkan: return CreateRef<VulkanUniformBuffer>(size, data); break;
 		}
 
 		return nullptr;

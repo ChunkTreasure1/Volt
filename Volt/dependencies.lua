@@ -52,6 +52,8 @@ IncludeDir["Aftermath"] = "%{wks.location}/Volt/vendor/Aftermath/include"
 
 IncludeDir["meshoptimizer"] = "%{wks.location}/Volt/vendor/meshoptimizer/src"
 
+IncludeDir["CoreUtilities"] = "%{wks.location}/CoreUtilities/src"
+
 LibraryDir = {}
 LibraryDir["PhysX"] = "%{wks.location}/Volt/vendor/PhysX/lib/%{cfg.buildcfg}"
 LibraryDir["fmod"] = "%{wks.location}/Volt/vendor/fmod/lib/%{cfg.buildcfg}"

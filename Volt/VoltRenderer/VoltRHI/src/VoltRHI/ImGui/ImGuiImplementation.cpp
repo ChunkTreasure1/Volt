@@ -237,12 +237,12 @@ namespace Volt::RHI
 
 		switch (api)
 		{
-			case GraphicsAPI::D3D12: implementation = CreateRefRHI<D3D12ImGuiImplementation>(createInfo);
+			case GraphicsAPI::D3D12: implementation = CreateRef<D3D12ImGuiImplementation>(createInfo);
 			case GraphicsAPI::MoltenVk:
 			case GraphicsAPI::Mock:
 				break;
 			
-			case GraphicsAPI::Vulkan: implementation = CreateRefRHI<VulkanImGuiImplementation>(createInfo);
+			case GraphicsAPI::Vulkan: implementation = CreateRef<VulkanImGuiImplementation>(createInfo);
 		}
 
 		implementation->Initialize();
