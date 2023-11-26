@@ -44,17 +44,14 @@ namespace Volt
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
-		auto mesh = TextureImporter::ImportTexture(filePath);
+		asset = TextureImporter::ImportTexture(filePath);
 
-		if (!mesh)
+		if (!asset)
 		{
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		asset = mesh;
-
-		//Renderer::AddTexture(std::reinterpret_pointer_cast<Texture2D>(asset)->GetImage());
 		return true;
 	}
 
@@ -211,7 +208,7 @@ namespace Volt
 			bool isPermutation;
 			VT_DESERIALIZE_PROPERTY(isPermutation, isPermutation, materialNode, false);
 
-			std::unordered_map<std::string, Ref<Texture2D>> textures;
+			std::map<std::string, Ref<Texture2D>> textures;
 
 			YAML::Node texturesNode = materialNode["textures"];
 			for (const auto& textureNode : texturesNode)

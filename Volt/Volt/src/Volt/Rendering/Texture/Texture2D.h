@@ -35,8 +35,6 @@ namespace Volt
 		static Ref<Texture2D> Create(Ref<RHI::Image2D> image);
 
 	private:
-
-		ResourceHandle m_resourceHandle = Resource::Invalid;
 		Ref<RHI::Image2D> m_image;
 	};
 }

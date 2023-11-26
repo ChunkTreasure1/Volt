@@ -40,7 +40,12 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
-				auto asset = Volt::AssetManager::GetAsset<Volt::Mesh>(aAssetHandle);
+				auto asset = Volt::AssetManager::QueueAsset<Volt::Mesh>(aAssetHandle);
+				if (!asset || !asset->IsValid())
+				{
+					return {};
+				}
+
 				std::filesystem::path sourceMeshPath = "Could not find the source mesh path";
 				//const auto& dependencies = Volt::AssetManager::GetMetadataFromHandle(aAssetHandle).dependencies;
 				//for (const auto& d : dependencies)

@@ -12,23 +12,24 @@ namespace Volt
 		RHI::ImageSpecification imageSpec{};
 		imageSpec.format = format;
 		imageSpec.usage = RHI::ImageUsage::Texture;
-		imageSpec.width = (uint32_t)width;
-		imageSpec.height = (uint32_t)height;
+		imageSpec.width = static_cast<uint32_t>(width);
+		imageSpec.height = static_cast<uint32_t>(height);
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
-
-		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Texture2D::Texture2D(Ref<RHI::Image2D> image)
 		: m_image(image)
 	{
-		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Texture2D::~Texture2D()
 	{
-		GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+		if (m_image)
+		{
+			GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+		}
+		
 		m_image = nullptr;
 	}
 
@@ -44,16 +45,17 @@ namespace Volt
 
 	ResourceHandle Texture2D::GetResourceHandle() const
 	{
-		return m_resourceHandle;
+		return GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	void Texture2D::SetImage(Ref<RHI::Image2D> image)
 	{
-		GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+		if (m_image)
+		{
+			GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+		}
 
 		m_image = image;
-
-		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Ref<Texture2D> Texture2D::Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data)
