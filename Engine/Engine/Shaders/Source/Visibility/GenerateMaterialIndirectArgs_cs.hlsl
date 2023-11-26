@@ -21,8 +21,9 @@ void main(uint3 threadId : SV_DispatchThreadID)
     }
     
     const uint argsIndex = threadId.x * 3;
- 
-    constants.indirectArgsBuffer.Store(argsIndex, DivideRoundUp(max(constants.materialCounts.Load(threadId.x), 1), TG_SIZE));
+    const uint materialCount = constants.materialCounts.Load(threadId.x);
+    
+    constants.indirectArgsBuffer.Store(argsIndex, materialCount > 0 ? DivideRoundUp(materialCount, TG_SIZE) : 0);
     constants.indirectArgsBuffer.Store(argsIndex + 1, 1);
     constants.indirectArgsBuffer.Store(argsIndex + 2, 1);
 }

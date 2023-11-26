@@ -171,7 +171,7 @@ namespace Volt
 		commandBuffer->Execute();
 
 		Ref<Texture2D> texture = CreateRef<Texture2D>();
-		texture->m_image = image;
+		texture->SetImage(image);
 
 		return texture;
 	}

@@ -8,7 +8,6 @@
 
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
-#include <VoltRHI/Images/ImageUtility.h>
 
 #include <VoltRHI/Core/Profiling.h>
 
@@ -30,7 +29,7 @@ namespace Volt::RHI
 			info.flags |= VMA_ALLOCATOR_CREATE_EXT_DESCRIPTOR_BUFFER_BIT;
 		}
 
-		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator));
+		VT_VK_CHECK(vmaCreateAllocator(&info, &m_allocator))
 	}
 
 	VulkanDefaultAllocator::~VulkanDefaultAllocator()
@@ -42,7 +41,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			DestroyImage(m_activeImageAllocations.at(i));
+			VulkanDefaultAllocator::DestroyImage(m_activeImageAllocations.at(i));
 		}
 
 		for (int32_t i = static_cast<int32_t>(m_activeBufferAllocations.size()) - 1; i >= 0; i--)
@@ -53,7 +52,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			DestroyBuffer(m_activeBufferAllocations.at(i));
+			VulkanDefaultAllocator::DestroyBuffer(m_activeBufferAllocations.at(i));
 		}
 
 		vmaDestroyAllocator(m_allocator);
@@ -68,7 +67,7 @@ namespace Volt::RHI
 		bufferInfo.pNext = nullptr;
 		bufferInfo.pQueueFamilyIndices = nullptr;
 		bufferInfo.queueFamilyIndexCount = 0;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; 
 		bufferInfo.size = size;
 		bufferInfo.usage = Utility::GetVkBufferUsageFlags(usage);
 
@@ -168,11 +167,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<VulkanBufferAllocation> bufferAlloc = allocation->As<VulkanBufferAllocation>();
+		const Ref<VulkanBufferAllocation> bufferAlloc = allocation->As<VulkanBufferAllocation>();
 		vmaDestroyBuffer(m_allocator, bufferAlloc->m_resource, bufferAlloc->m_allocation);
 
-		auto it = std::find(m_activeBufferAllocations.begin(), m_activeBufferAllocations.end(), allocation);
-		if (it != m_activeBufferAllocations.end())
+		if (const auto it = std::ranges::find(m_activeBufferAllocations, allocation); it != m_activeBufferAllocations.end())
 		{
 			m_activeBufferAllocations.erase(it);
 		}
@@ -182,11 +180,10 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
-		Ref<VulkanImageAllocation> imageAlloc = allocation->As<VulkanImageAllocation>();
+		const Ref<VulkanImageAllocation> imageAlloc = allocation->As<VulkanImageAllocation>();
 		vmaDestroyImage(m_allocator, imageAlloc->m_resource, imageAlloc->m_allocation);
 
-		auto it = std::find(m_activeImageAllocations.begin(), m_activeImageAllocations.end(), allocation);
-		if (it != m_activeImageAllocations.end())
+		if (const auto it = std::ranges::find(m_activeImageAllocations, allocation); it != m_activeImageAllocations.end())
 		{
 			m_activeImageAllocations.erase(it);
 		}

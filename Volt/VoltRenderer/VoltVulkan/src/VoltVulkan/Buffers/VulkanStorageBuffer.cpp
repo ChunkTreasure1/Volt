@@ -8,6 +8,7 @@
 #include <VoltRHI/Buffers/BufferView.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
 
+#include <VoltRHI/Memory/MemoryCommon.h>
 #include <VoltRHI/Memory/Allocation.h>
 
 namespace Volt::RHI
@@ -83,7 +84,7 @@ namespace Volt::RHI
 		memcpy_s(mappedPtr, m_byteSize, data, size);
 		stagingAllocation->Unmap();
 
-		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
+		const Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Begin();
 
 		cmdBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
@@ -123,10 +124,10 @@ namespace Volt::RHI
 		VkDebugUtilsObjectNameInfoEXT nameInfo{};
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-		nameInfo.objectHandle = (uint64_t)m_allocation->GetResourceHandle<VkBuffer>();
+		nameInfo.objectHandle = reinterpret_cast<uint64_t>(m_allocation->GetResourceHandle<VkBuffer>());
 		nameInfo.pObjectName = name.data();
 
-		auto device = GraphicsContext::GetDevice();
+		const auto device = GraphicsContext::GetDevice();
 		Volt::RHI::vkSetDebugUtilsObjectNameEXT(device->GetHandle<VkDevice>(), &nameInfo);
 	}
 
@@ -148,9 +149,9 @@ namespace Volt::RHI
 	void VulkanStorageBuffer::Invalidate(const size_t byteSize)
 	{
 		Release();
-		m_byteSize = byteSize;
+		m_byteSize = std::max(byteSize, Memory::GetMinBufferAllocationSize());
 
-		const VkDeviceSize bufferSize = byteSize;
+		const VkDeviceSize bufferSize = m_byteSize;
 
 		if (m_allocatedUsingCustomAllocator)
 		{

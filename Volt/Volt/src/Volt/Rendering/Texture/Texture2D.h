@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
+#include "Volt/RenderingNew/Resources/ResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -22,8 +23,10 @@ namespace Volt
 		const uint32_t GetWidth() const;
 		const uint32_t GetHeight() const;
 
+		ResourceHandle GetResourceHandle() const;
+
 		inline const Ref<RHI::Image2D> GetImage() const { return m_image; }
-		inline void SetImage(Ref<RHI::Image2D> image) { m_image = image; }
+		void SetImage(Ref<RHI::Image2D> image);
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -32,9 +35,8 @@ namespace Volt
 		static Ref<Texture2D> Create(Ref<RHI::Image2D> image);
 
 	private:
-		friend class DDSTextureImporter;
-		friend class DefaultTextureImporter;
 
+		ResourceHandle m_resourceHandle = Resource::Invalid;
 		Ref<RHI::Image2D> m_image;
 	};
 }

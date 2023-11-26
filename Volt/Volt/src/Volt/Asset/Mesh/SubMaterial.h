@@ -47,6 +47,8 @@ namespace Volt
 		void SetFlag(MaterialFlag flag, bool state);
 		void SetShader(Ref<RHI::Shader> shader);
 
+		void AddTexture(Ref<Texture2D> texture);
+
 		inline void SetTopology(const RHI::Topology topology) { m_topology = topology; InvalidatePipeline(m_pipeline->GetShader()); }
 		inline void SetCullMode(const RHI::CullMode cullMode) { m_cullMode = cullMode; InvalidatePipeline(m_pipeline->GetShader()); }
 		inline void SetFillMode(const RHI::FillMode fillMode) { m_triangleFillMode = fillMode; InvalidatePipeline(m_pipeline->GetShader()); }
@@ -58,7 +60,7 @@ namespace Volt
 		inline const RHI::DepthMode GetDepthMode() const { return m_depthMode; }
 
 		inline const std::string& GetName() const { return m_name; }
-		inline const std::map<std::string, Ref<Texture2D>>& GetTextures() const { return m_textures; }
+		inline const std::vector<Ref<Texture2D>>& GetTextures() const { return m_textures; }
 
 		inline const MaterialFlag GetFlags() const { return m_materialFlags; }
 
@@ -78,7 +80,7 @@ namespace Volt
 		void InvalidatePipeline(Ref<RHI::Shader> shader);
 
 		Ref<RHI::RenderPipeline> m_pipeline;
-		std::map<std::string, Ref<Texture2D>> m_textures;
+		std::vector<Ref<Texture2D>> m_textures;
 
 		MaterialFlag m_materialFlags = MaterialFlag::Deferred | MaterialFlag::CastAO | MaterialFlag::CastShadows;
 		

@@ -45,6 +45,11 @@ namespace Volt
 		Invalidate();
 	}
 
+	void SubMaterial::AddTexture(Ref<Texture2D> texture)
+	{
+		m_textures.emplace_back(texture);
+	}
+
 	void SubMaterial::SetFlag(MaterialFlag flag, bool state)
 	{
 		if (state)

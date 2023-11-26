@@ -67,4 +67,9 @@ namespace Volt
 		RenderGraphResourceHandle materialEmissive;
 		RenderGraphResourceHandle normalEmissive;
 	};
+
+	struct FinalColorData
+	{
+		RenderGraphResourceHandle finalColorOutput;
+	};
 }

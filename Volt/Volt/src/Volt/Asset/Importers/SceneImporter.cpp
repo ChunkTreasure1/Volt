@@ -115,6 +115,8 @@ namespace Volt
 
 	bool SceneImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		asset = CreateRef<Scene>();
 		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(asset);
 
@@ -174,6 +176,8 @@ namespace Volt
 
 	void SceneImporter::LoadSceneLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::filesystem::path layersFolderPath = sceneDirectory / "Layers";
 		if (!std::filesystem::exists(layersFolderPath))
 		{
@@ -498,6 +502,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		streamReader.EnterScope("Entity");
 
 		entt::entity entityId = streamReader.ReadKey("id", (entt::entity)entt::null);
@@ -584,6 +590,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		streamReader.ForEach("members", [&]()
 		{
 			const std::string memberName = streamReader.ReadKey("name", std::string(""));
@@ -635,6 +643,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		void* arrayPtr = &data[offset];
 
 		const bool isNonDefaultType = arrayDesc->GetElementTypeDesc() != nullptr;
@@ -690,6 +700,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		Entity entity{ id, scene };
 
 		streamReader.ForEach("MonoScripts", [&]()

@@ -606,6 +606,13 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 
 		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
 
+		const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
+		const auto& newSceneMeta = Volt::AssetManager::GetMetadataFromHandle(newScene->handle);
+		if (newSceneMeta.type != Volt::AssetType::Scene)
+		{
+			return;
+		}
+
 		if (metadata.filePath == path)
 		{
 			Volt::AssetManager::Get().ReloadAsset(myRuntimeScene->handle);
@@ -615,8 +622,7 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 			Volt::AssetManager::Get().Unload(myRuntimeScene->handle);
 		}
 
-		myRuntimeScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
-
+		myRuntimeScene = newScene;
 		SetupNewSceneData();
 	}
 }

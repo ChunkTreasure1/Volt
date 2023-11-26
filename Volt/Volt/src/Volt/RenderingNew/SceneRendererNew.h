@@ -86,6 +86,8 @@ namespace Volt
 		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId);
+
+		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		///////////////////
 
 		Ref<RHI::Image2D> m_outputImage;
@@ -112,6 +114,7 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_collectMaterialPixelsPipeline;
 		Ref<RHI::ComputePipeline> m_generateMaterialIndirectArgsPipeline;
 		Ref<RHI::ComputePipeline> m_generateGBufferPipeline;
+		Ref<RHI::ComputePipeline> m_shadingPipeline;
 
 		Ref<RHI::ComputePipeline> m_prefixSumPipeline;
 

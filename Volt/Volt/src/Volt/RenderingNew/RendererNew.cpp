@@ -135,7 +135,7 @@ namespace Volt
 
 	SamplersData RendererNew::GetSamplersData()
 	{
-		return SamplersData();
+		return s_rendererData->samplersData;
 	}
 
 	template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None>

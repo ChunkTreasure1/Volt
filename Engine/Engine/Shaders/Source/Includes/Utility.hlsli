@@ -172,3 +172,12 @@ float LinearizeDepth(const float screenDepth, in const CameraData cameraData)
     // Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
     return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
 }
+
+float3x3 CalculateTBN(float3 inNormal, float3 inTangent)
+{
+    const float3 normal = normalize(inNormal);
+    const float3 tangent = normalize(inTangent);
+    const float3 bitangent = normalize(cross(normal, tangent));
+    
+    return transpose(float3x3(tangent, bitangent, normal));
+}

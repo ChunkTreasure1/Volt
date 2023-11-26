@@ -159,7 +159,7 @@ namespace Volt
 		//For every material -> run compute shading shader using indirect args
 		auto& gbufferData = rgBlackboard.Add<GBufferData>();
 
-		gbufferData.albedo = renderGraph.AddExternalImage2D(m_outputImage); //renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+		gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
 		gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
 		gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
@@ -167,6 +167,8 @@ namespace Volt
 		{
 			AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
 		}
+
+		AddShadingPass(renderGraph, rgBlackboard);
 
 		//if (m_visibilityVisualization != VisibilityVisualization::None)
 		//{
@@ -255,6 +257,7 @@ namespace Volt
 			m_collectMaterialPixelsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CollectMaterialPixels"));
 			m_generateMaterialIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialIndirectArgs"));
 			m_generateGBufferPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateGBuffer"));
+			m_shadingPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("Shading"));
 		}
 
 		// Utility
@@ -436,7 +439,7 @@ namespace Volt
 		blackboard.Add<VisibilityBufferData>() = renderGraph.AddPass<VisibilityBufferData>("Visibility Buffer",
 		[&](RenderGraph::Builder& builder, VisibilityBufferData& data)
 		{
-			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisiblityBuffer - Visibility" });
+			data.visibility = builder.CreateImage2D({ RHI::PixelFormat::R32G32_UINT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "VisibilityBuffer - Visibility" });
 			builder.WriteResource(preDepthHandle);
 
 			BuildMeshPass(builder, blackboard);
@@ -526,15 +529,15 @@ namespace Volt
 			context.SetConstant(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResourceHandle());
 			context.SetConstant(resources.GetBuffer(data.materialCountBuffer));
 
-			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
+			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1);
 		});
 	}
 
 	void SceneRendererNew::AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		ExternalBuffersData externalBuffersData = blackboard.Get<ExternalBuffersData>();
-		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
-		MaterialCountData matCountData = blackboard.Get<MaterialCountData>();
+		const ExternalBuffersData& externalBuffersData = blackboard.Get<ExternalBuffersData>();
+		const VisibilityBufferData& visBufferData = blackboard.Get<VisibilityBufferData>();
+		const MaterialCountData& matCountData = blackboard.Get<MaterialCountData>();
 
 		blackboard.Add<MaterialPixelsData>() = renderGraph.AddPass<MaterialPixelsData>("Collect Material Pixels",
 		[&](RenderGraph::Builder& builder, MaterialPixelsData& data)
@@ -571,7 +574,7 @@ namespace Volt
 			context.SetConstant(resources.GetBuffer(data.currentMaterialCountBuffer));
 			context.SetConstant(resources.GetBuffer(data.pixelCollectionBuffer));
 
-			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
+			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1);
 		});
 	}
 
@@ -647,7 +650,7 @@ namespace Volt
 
 			if (first)
 			{
-				context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 1.f });
+				context.ClearImage(albedoImage, { 0.1f, 0.1f, 0.1f, 0.f });
 				context.ClearImage(materialEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
 				context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
 			}
@@ -670,6 +673,39 @@ namespace Volt
 			context.SetConstant(glm::vec2(m_width, m_height));
 
 			context.DispatchIndirect(indirectArgsBuffer, sizeof(RHI::IndirectDispatchCommand) * materialId); // Should be offset with material ID
+		});
+	}
+
+	void SceneRendererNew::AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& gbufferData = blackboard.Get<GBufferData>();
+
+		blackboard.Add<FinalColorData>() = renderGraph.AddPass<FinalColorData>("Shading Pass",
+		[&](RenderGraph::Builder& builder, FinalColorData& data) 
+		{
+			data.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
+
+			builder.WriteResource(data.finalColorOutput);
+			builder.ReadResource(gbufferData.albedo);
+			builder.ReadResource(gbufferData.materialEmissive);
+			builder.ReadResource(gbufferData.normalEmissive);
+
+			builder.SetHasSideEffect();
+			builder.SetIsComputePass();
+		},
+		[=](const FinalColorData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Weak<RHI::Image2D> outputImage = resources.GetImage2DRaw(data.finalColorOutput);
+
+			context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 0.f });
+
+			context.BindPipeline(m_shadingPipeline);
+			context.SetConstant(resources.GetImage2D(gbufferData.albedo));
+			context.SetConstant(resources.GetImage2D(gbufferData.materialEmissive));
+			context.SetConstant(resources.GetImage2D(gbufferData.normalEmissive));
+			context.SetConstant(resources.GetImage2D(data.finalColorOutput));
+
+			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});
 	}
 }

@@ -12,7 +12,7 @@ struct Constants
     RWTypedBuffer<uint2> pixelCollectionBuffer;
 };
 
-[numthreads(16, 16, 1)]
+[numthreads(8, 8, 1)]
 void main(uint3 threadId : SV_DispatchThreadID)
 {
     const Constants constants = GetConstants<Constants>();

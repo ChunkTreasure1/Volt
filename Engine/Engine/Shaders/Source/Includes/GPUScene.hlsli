@@ -7,7 +7,8 @@
 
 struct GPUMaterial
 {
-    uint textures[16];
+    TextureT<float4> textures[16];
+    uint samplers[16];
     
     uint textureCount;
     uint materialFlags;
@@ -38,6 +39,8 @@ struct ObjectDrawData
     float4x4 transform;
     uint meshId;
     uint materialId;
+    
+    uint2 padding;
 };
 
 struct GPUScene

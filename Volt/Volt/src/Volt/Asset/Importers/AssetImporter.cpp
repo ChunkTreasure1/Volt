@@ -227,13 +227,9 @@ namespace Volt
 				{
 					textures.emplace(shaderName, texture);
 				}
-				else
-				{
-					textures.emplace(shaderName, nullptr);
-				}
 			}
 
-			Ref<RHI::Shader> shader = ShaderMap::Get(shaderNameString);
+			Ref<RHI::Shader> shader = ShaderMap::Get("VisibilityBuffer");
 			if (!shader)
 			{
 				shader = ShaderMap::Get("VisibilityBuffer");
@@ -241,6 +237,11 @@ namespace Volt
 			}
 
 			Ref<SubMaterial> material = SubMaterial::Create(materialNameString, materialIndex, shader);
+
+			for (const auto& [name, texture] : textures)
+			{
+				material->AddTexture(texture);
+			}
 
 			//material->SetFlags((MaterialFlag)materialFlags);
 			//if (!material->HasFlag(MaterialFlag::Opaque) && !material->HasFlag(MaterialFlag::Transparent) && !material->HasFlag(MaterialFlag::Deferred))
@@ -436,8 +437,10 @@ namespace Volt
 					VT_SERIALIZE_PROPERTY(depthMode, (uint32_t)subMaterial->m_depthMode, out);
 
 					out << YAML::Key << "textures" << YAML::BeginSeq;
-					for (const auto& [binding, texture] : subMaterial->m_textures)
+					for (const auto& texture : subMaterial->m_textures)
 					{
+						std::string binding = "";
+
 						out << YAML::BeginMap;
 						VT_SERIALIZE_PROPERTY(binding, binding, out);
 

@@ -1,25 +1,25 @@
 #pragma once
 
+#include "Volt/RenderingNew/Resources/ResourceHandle.h"
+
 #include <glm/glm.hpp>
 
 namespace Volt
 {
 	struct SamplersData
 	{
-		uint32_t linearSampler;
-		uint32_t linearPointSampler;
+		ResourceHandle linearSampler;
+		ResourceHandle linearPointSampler;
 
-		uint32_t pointSampler;
-		uint32_t pointLinearSampler;
+		ResourceHandle pointSampler;
+		ResourceHandle pointLinearSampler;
 
-		uint32_t linearClampSampler;
-		uint32_t linearPointClampSampler;
+		ResourceHandle linearClampSampler;
+		ResourceHandle linearPointClampSampler;
 
-		uint32_t pointClampSampler;
-		uint32_t pointLinearClampSampler;
+		ResourceHandle pointClampSampler;
+		ResourceHandle pointLinearClampSampler;
 
-		uint32_t anisotropicSampler;
-
-		glm::uvec3 padding;
+		ResourceHandle anisotropicSampler;
 	};
 }

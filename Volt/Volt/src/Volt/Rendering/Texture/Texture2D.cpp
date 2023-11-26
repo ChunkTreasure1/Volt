@@ -17,12 +17,13 @@ namespace Volt
 
 		m_image = RHI::Image2D::Create(imageSpec, data);
 
-		GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
+		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Texture2D::Texture2D(Ref<RHI::Image2D> image)
 		: m_image(image)
 	{
+		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Texture2D::~Texture2D()
@@ -39,6 +40,20 @@ namespace Volt
 	const uint32_t Texture2D::GetHeight() const
 	{
 		return m_image->GetHeight();
+	}
+
+	ResourceHandle Texture2D::GetResourceHandle() const
+	{
+		return m_resourceHandle;
+	}
+
+	void Texture2D::SetImage(Ref<RHI::Image2D> image)
+	{
+		GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+
+		m_image = image;
+
+		m_resourceHandle = GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
 	}
 
 	Ref<Texture2D> Texture2D::Create(RHI::PixelFormat format, uint32_t width, uint32_t height, const void* data)

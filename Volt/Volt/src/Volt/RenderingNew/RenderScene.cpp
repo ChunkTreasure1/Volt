@@ -3,9 +3,12 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
+#include "Volt/Asset/Mesh/SubMaterial.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Scene/Entity.h"
 #include "Volt/RenderingNew/GPUScene.h"
+#include "Volt/RenderingNew/RendererNew.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
 #include "Volt/Math/Math.h"
@@ -258,6 +261,14 @@ namespace Volt
 
 			GPUMaterialNew gpuMat{};
 			gpuMat.textureCount = 0;
+
+			for (const auto& texture : material->GetTextures())
+			{
+				gpuMat.textures[gpuMat.textureCount] = texture->GetResourceHandle();
+				gpuMat.samplers[gpuMat.textureCount] = RendererNew::GetSamplersData().linearSampler;
+
+				gpuMat.textureCount++;
+			}
 
 			gpuMaterials[currentIndex] = gpuMat;
 			currentIndex++;

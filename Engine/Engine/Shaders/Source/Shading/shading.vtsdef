@@ -1,0 +1,4 @@
+name: "Shading"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Shading/Shading_cs.hlsl"

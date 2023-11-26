@@ -100,12 +100,13 @@ struct RWTexture3DHandle
     uint handle;
 };
 
+// #TODO_Ivar: Add ability to access resources uniformly
 struct VulkanResourceDescriptorHeapInternal
 {
     ByteAddressBuffer operator[](BufferHandle handle)
     {
         return u_ByteAddressBuffer[NonUniformResourceIndex(handle.handle)];
-    }
+    }   
 
     RWByteAddressBuffer operator[](RWBufferHandle handle)
     {
@@ -432,6 +433,12 @@ struct TextureT
         return texture.SampleLevel(samplerState, location, lod);
     }
     
+    T SampleGrad2D(in SamplerState samplerState, in float2 location, in float2 ddx, in float2 ddy)
+    {
+        Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
+        return texture.SampleGrad(samplerState, location, ddx, ddy);
+    }
+    
     void GetDimensions(in uint mipLevel, out uint width, out uint numberOfLevels)
     {
         Texture1D<T> texture = DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);
@@ -528,6 +535,11 @@ struct RWTexture
         texture.GetDimensions(width, height, depth);
     }
 };
+
+SamplerState GetSampler(uint samplerIndex)
+{
+    return u_SamplerState[NonUniformResourceIndex(samplerIndex)];
+}
 
 struct PushContantData
 {

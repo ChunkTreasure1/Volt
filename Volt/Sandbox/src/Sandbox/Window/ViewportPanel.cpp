@@ -1,4 +1,5 @@
 #include "sbpch.h"
+#include "sbpch.h"
 #include "ViewportPanel.h"
 
 #include "Sandbox/Window/SceneViewPanel.h"

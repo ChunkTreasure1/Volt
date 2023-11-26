@@ -214,6 +214,11 @@ project "Shaders"
 		"../../Project/Assets/**.hlsli"
 	}
 
+	includedirs
+	{
+		"../../Engine/Engine/Shaders/Source/Includes"
+	}
+
 	filter "configurations:Debug"
 		runtime "Debug"
 		optimize "off"

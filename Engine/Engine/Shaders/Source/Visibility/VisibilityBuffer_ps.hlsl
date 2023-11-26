@@ -2,7 +2,7 @@
 
 struct Output
 {
-    [[vt::rg32ui]] uint2 visId : SV_Target;
+    [[vt::rg32ui]] uint2 visId : SV_Target0;
     [[vt::d32f]];
 };
 

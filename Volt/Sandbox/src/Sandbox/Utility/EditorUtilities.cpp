@@ -335,11 +335,11 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 					for (uint32_t i = 0; i < subMaterialCount; i++)
 					{
-						for (const auto& [binding, tex] : originalMaterial->GetSubMaterials().at(i)->GetTextures())
-						{
-							// #TODO_Ivar: Reimplement
-							//reimportedMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
-						}
+						//for (const auto& tex : originalMaterial->GetSubMaterials().at(i)->GetTextures())
+						//{
+						//	// #TODO_Ivar: Reimplement
+						//	//reimportedMesh->GetMaterial()->GetSubMaterials().at(i)->SetTexture(binding, tex);
+						//}
 					}
 
 					Volt::AssetManager::Get().SaveAsset(reimportedMesh->GetMaterial());

@@ -63,6 +63,20 @@ struct DefaultInput
         return mesh.vertexPositionsBuffer.Load(vertexIndex);
     }
     
+    const VertexMaterialData GetVertexMaterialData()
+    {
+        const Constants constants = GetConstants < Constants > ();
+        const GPUScene scene = constants.gpuScene.Load(0);
+        const DrawContext context = constants.drawContext.Load(0);
+   
+        const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
+        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
+        const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+    
+        const uint vertexIndex = mesh.indexBuffer.Load(vertexId) + mesh.vertexStartOffset;
+        return mesh.vertexMaterialBuffer.Load(vertexIndex);
+    }
+
     const float4x4 GetTransform()
     {
         const Constants constants = GetConstants<Constants>();
