@@ -163,24 +163,68 @@ namespace Volt
 		auto extractedVertices = ExtractSubMeshVertices();
 		auto extractedIndices = ExtractSubMeshIndices();
 
-		// Optimize mesh
+		// Meshlets
 		{
 			for (size_t i = 0; i < extractedVertices.size(); i++)
 			{
 				auto& currentVertices = extractedVertices.at(i);
 				auto& currentIndices = extractedIndices.at(i);
 
-				meshopt_optimizeVertexCache(currentIndices.data(), currentIndices.data(), currentIndices.size(), currentVertices.size());
-				meshopt_optimizeVertexFetch(currentVertices.data(), currentIndices.data(), currentIndices.size(), currentVertices.data(), currentVertices.size(), sizeof(Vertex));
+				meshopt_optimizeOverdraw(currentIndices.data(), currentIndices.data(), currentIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), 1.05f);
 			}
-		}
 
-		// Create LODs
-		{
+			constexpr size_t MAX_VERTICES = 64;
+			constexpr size_t MAX_TRIANGLES = 124;
+			constexpr float CONE_WEIGHT = 0.f;
+
+			for (size_t i = 0; i < extractedVertices.size(); i++)
+			{
+				auto& currentVertices = extractedVertices.at(i);
+				auto& currentIndices = extractedIndices.at(i);
+
+				const size_t maxMeshlets = meshopt_buildMeshletsBound(extractedIndices.size(), MAX_VERTICES, MAX_TRIANGLES);
+
+				std::vector<meshopt_Meshlet> meshlets{ maxMeshlets };
+				std::vector<uint32_t> meshletVertexRemapping(maxMeshlets * MAX_VERTICES);
+				std::vector<uint8_t> meshletTriangles(maxMeshlets * MAX_TRIANGLES * 3);
+
+				const size_t meshletCount = meshopt_buildMeshlets(meshlets.data(), meshletVertexRemapping.data(), meshletTriangles.data(), currentIndices.data(), currentIndices.size(),
+					&currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), MAX_VERTICES, MAX_TRIANGLES, CONE_WEIGHT);
+
+				const meshopt_Meshlet& last = meshlets.at(meshletCount - 1);
+				meshletVertexRemapping.resize(last.vertex_offset + last.vertex_count);
+				meshletTriangles.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
+				meshlets.resize(meshletCount);
+
+				const size_t meshletTrianglesOffset = m_meshletTriangles.size();
+				m_meshletTriangles.resize(meshletTrianglesOffset + meshletTriangles.size());
+
+				for (size_t tri = 0; tri < meshletTriangles.size(); tri++)
+				{
+					m_meshletTriangles[meshletTrianglesOffset + tri] = meshletTriangles[tri];
+				}
+
+				const size_t meshletOffset = m_meshlets.size();
+				m_meshlets.reserve(meshletOffset + meshletCount);
+
+				auto& subMesh = m_subMeshes.at(i);
+				subMesh.meshletStartOffset = static_cast<uint32_t>(meshletOffset);
+				subMesh.meshletCount = static_cast<uint32_t>(meshlets.size());
+				subMesh.meshletTriangleStartOffset = static_cast<uint32_t>(meshletTrianglesOffset);
+
+				for (const auto& meshlet : meshlets)
+				{
+					auto& newMeshlet = m_meshlets.emplace_back();
+					newMeshlet.vertexOffset = meshlet.vertex_offset;
+					newMeshlet.vertexCount = meshlet.vertex_count;
+					newMeshlet.triangleOffset = meshlet.triangle_offset;
+					newMeshlet.triangleCount = meshlet.triangle_count;
+				}
+			}
+
 			m_vertices.clear();
 			m_indices.clear();
 
-			// For every sub mesh
 			for (size_t i = 0; i < extractedVertices.size(); i++)
 			{
 				auto& currentVertices = extractedVertices.at(i);
@@ -189,41 +233,76 @@ namespace Volt
 
 				auto& gpuMesh = m_gpuMeshes.emplace_back();
 				gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
-
-				std::vector<uint32_t> lodIndices = currentIndices;
-				std::vector<uint32_t> resultIndices;
-
-				currentSubMesh.indexStartOffset = uint32_t(m_indices.size());
-
-				while (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
-				{
-					GPUMeshLOD& lod = gpuMesh.lods[gpuMesh.lodCount++];
-
-					lod.indexOffset = uint32_t(m_indices.size() + resultIndices.size());
-					lod.indexCount = uint32_t(lodIndices.size());
-
-					resultIndices.insert(resultIndices.end(), lodIndices.begin(), lodIndices.end());
-
-					if (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
-					{
-						size_t nextIndicesTarget = size_t(double(lodIndices.size()) * 0.75);
-						size_t nextIndices = meshopt_simplify(lodIndices.data(), lodIndices.data(), lodIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), nextIndicesTarget, 1e-2f);
-
-						// Error bound reached
-						if (nextIndices == lodIndices.size())
-						{
-							break;
-						}
-
-						lodIndices.resize(nextIndices);
-						meshopt_optimizeVertexCache(lodIndices.data(), lodIndices.data(), lodIndices.size(), currentVertices.size());
-					}
-				}
+				gpuMesh.meshletStartOffset = currentSubMesh.meshletStartOffset;
+				gpuMesh.meshletCount = currentSubMesh.meshletCount;
+				gpuMesh.meshletTriangleStartOffset = currentSubMesh.meshletTriangleStartOffset;
 
 				m_vertices.insert(m_vertices.end(), currentVertices.begin(), currentVertices.end());
-				m_indices.insert(m_indices.end(), resultIndices.begin(), resultIndices.end());
+				m_indices.insert(m_indices.end(), currentIndices.begin(), currentIndices.end());
 			}
 		}
+
+		//// Optimize mesh
+		//{
+		//	for (size_t i = 0; i < extractedVertices.size(); i++)
+		//	{
+		//		auto& currentVertices = extractedVertices.at(i);
+		//		auto& currentIndices = extractedIndices.at(i);
+
+		//		meshopt_optimizeVertexCache(currentIndices.data(), currentIndices.data(), currentIndices.size(), currentVertices.size());
+		//		meshopt_optimizeVertexFetch(currentVertices.data(), currentIndices.data(), currentIndices.size(), currentVertices.data(), currentVertices.size(), sizeof(Vertex));
+		//	}
+		//}
+
+		//// Create LODs
+		//{
+		//	m_vertices.clear();
+		//	m_indices.clear();
+
+		//	// For every sub mesh
+		//	for (size_t i = 0; i < extractedVertices.size(); i++)
+		//	{
+		//		auto& currentVertices = extractedVertices.at(i);
+		//		auto& currentIndices = extractedIndices.at(i);
+		//		auto& currentSubMesh = m_subMeshes.at(i);
+
+		//		auto& gpuMesh = m_gpuMeshes.emplace_back();
+		//		gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
+
+		//		std::vector<uint32_t> lodIndices = currentIndices;
+		//		std::vector<uint32_t> resultIndices;
+
+		//		currentSubMesh.indexStartOffset = uint32_t(m_indices.size());
+
+		//		while (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
+		//		{
+		//			GPUMeshLOD& lod = gpuMesh.lods[gpuMesh.lodCount++];
+
+		//			lod.indexOffset = uint32_t(m_indices.size() + resultIndices.size());
+		//			lod.indexCount = uint32_t(lodIndices.size());
+
+		//			resultIndices.insert(resultIndices.end(), lodIndices.begin(), lodIndices.end());
+
+		//			if (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
+		//			{
+		//				size_t nextIndicesTarget = size_t(double(lodIndices.size()) * 0.75);
+		//				size_t nextIndices = meshopt_simplify(lodIndices.data(), lodIndices.data(), lodIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), nextIndicesTarget, 1e-2f);
+
+		//				// Error bound reached
+		//				if (nextIndices == lodIndices.size())
+		//				{
+		//					break;
+		//				}
+
+		//				lodIndices.resize(nextIndices);
+		//				meshopt_optimizeVertexCache(lodIndices.data(), lodIndices.data(), lodIndices.size(), currentVertices.size());
+		//			}
+		//		}
+
+		//		m_vertices.insert(m_vertices.end(), currentVertices.begin(), currentVertices.end());
+		//		m_indices.insert(m_indices.end(), resultIndices.begin(), resultIndices.end());
+		//	}
+		//}
 
 		const auto encodedVertices = GetEncodedVertices();
 		const std::string meshName = assetName;
@@ -254,6 +333,12 @@ namespace Volt
 		{
 			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName));
 			m_indexBuffer->GetResource()->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
+		}
+
+		// Meshlet Triangles
+		{
+			m_meshletTrianglesBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_meshletTriangles.size()), sizeof(uint32_t), "Meshlet Triangles Buffer"));
+			m_meshletTrianglesBuffer->GetResource()->SetData(m_meshletTriangles.data(), m_meshletTriangles.size() * sizeof(uint32_t));
 		}
 
 		// Set all buffers in the gpu meshes

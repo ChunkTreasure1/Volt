@@ -77,6 +77,14 @@ namespace Volt
 			half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
 		};
 
+		struct Meshlet
+		{
+			uint32_t vertexOffset;
+			uint32_t triangleOffset;
+			uint32_t vertexCount;
+			uint32_t triangleCount;
+		};
+
 		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
 		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
 
@@ -87,6 +95,8 @@ namespace Volt
 		std::vector<SubMesh> m_subMeshes;
 
 		std::vector<Vertex> m_vertices;
+		std::vector<Meshlet> m_meshlets;
+		std::vector<uint32_t> m_meshletTriangles;
 		std::vector<uint32_t> m_indices;
 
 		Ref<Material> m_material;
@@ -95,6 +105,9 @@ namespace Volt
 		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexMaterialBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexAnimationBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_indexBuffer;
+
+		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletTrianglesBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletsBuffer;
 
 		BoundingSphere m_boundingSphere;
 		BoundingBox m_boundingBox;
