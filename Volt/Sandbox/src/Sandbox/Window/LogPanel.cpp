@@ -78,13 +78,13 @@ void LogPanel::UpdateMainContent()
 	ImGui::PopItemWidth();
 
 	myCurrentLogMessages.clear();
-	for (const auto& msg : myLogMessages)
+	for (const auto msg : myLogMessages)
 	{
 		bool newCategory = true;
 
 		for (const auto& cat : myCategories)
 		{
-			if (std::string(cat) == msg.category)
+			if (cat == msg.category)
 			{
 				newCategory = false;
 				break;

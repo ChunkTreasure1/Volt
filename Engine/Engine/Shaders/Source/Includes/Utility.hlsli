@@ -165,12 +165,20 @@ float3 decode_tangent(float3 normal, float diamond_tangent)
     return packed_tangent.x * t1 + packed_tangent.y * t2;
 }
 
+// Gives a linear depth value between near plane and far plane
 float LinearizeDepth(const float screenDepth, in const CameraData cameraData)
 {
     float depthLinearizeMul = cameraData.depthUnpackConsts.x;
     float depthLinearizeAdd = cameraData.depthUnpackConsts.y;
     // Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
     return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+}
+
+// Gives a linear depth value between near plane and far plane in range [0...1]
+float LinearizeDepth01(const float screenDepth, in const CameraData cameraData)
+{
+    const float linearDepth = LinearizeDepth(screenDepth, cameraData);
+    return (linearDepth - cameraData.nearPlane) / (cameraData.farPlane - cameraData.nearPlane);
 }
 
 float3x3 CalculateTBN(float3 inNormal, float3 inTangent)

@@ -283,6 +283,8 @@ namespace Volt
 			camData.position = glm::vec4(camera->GetPosition(), 1.f);
 			camData.viewProjection = camData.projection * camData.view;
 			camData.inverseViewProjection = glm::inverse(camData.viewProjection);
+			camData.nearPlane = camera->GetNearPlane();
+			camData.farPlane = camera->GetFarPlane();
 
 			float depthLinearizeMul = (-camData.projection[3][2]);
 			float depthLinearizeAdd = (camData.projection[2][2]);

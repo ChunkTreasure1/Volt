@@ -29,7 +29,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     const float4 albedo = constants.albedo.Load2D(int3(threadId.xy, 0));
     
-    if (albedo.a < 1.f)
+    if (albedo.a < 0.5f)
     {
         return;
     }

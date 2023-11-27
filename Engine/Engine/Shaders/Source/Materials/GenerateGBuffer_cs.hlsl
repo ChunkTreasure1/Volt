@@ -295,7 +295,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     GradientInterpolationResults results = Interpolate2DWithDerivatives(derivatives, triTexCoords);
     
-    float linearZ = LinearizeDepth(z / interpW, cameraData);
+    float linearZ = LinearizeDepth01(z / interpW, cameraData);
     float mip = pow(pow(linearZ, 0.9f) * 5.f, 1.5f);
     
     float2 texCoordsDX = results.dx * mip;
@@ -308,8 +308,10 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     texCoordsDY *= interpW;
 #endif    
 
-    const float3 tangent = normalize(InterpolateWithDerivatives(derivatives, triTangents));
-    const float3 normal = normalize(InterpolateWithDerivatives(derivatives, triNormals));
+    const float3x3 worldRotationMatrix = (float3x3)drawData.transform;
+    
+    const float3 tangent = normalize(mul(worldRotationMatrix, normalize(InterpolateWithDerivatives(derivatives, triTangents))));
+    const float3 normal = normalize(mul(worldRotationMatrix, normalize(InterpolateWithDerivatives(derivatives, triNormals))));
     
     const float3 tangentNormal = float3(0.5f, 0.5f, 1.f);
     const float3x3 TBN = CalculateTBN(normal, tangent);

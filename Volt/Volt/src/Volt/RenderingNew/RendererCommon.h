@@ -45,7 +45,10 @@ namespace Volt
 		glm::mat4 inverseViewProjection;
 
 		glm::vec4 position;
+		
 		glm::vec2 depthUnpackConsts;
+		float nearPlane;
+		float farPlane;
 	};
 
 	struct DirectionalLightData
