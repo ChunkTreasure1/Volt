@@ -11,7 +11,8 @@ namespace Volt
 		RHI::IndirectDrawCommand command{};
 		uint32_t objectId{};
 		uint32_t meshId{};
-		uint32_t padding[2]{};
+		uint32_t meshletId{};
+		uint32_t padding{};
 	};
 
 	struct IndirectDrawData

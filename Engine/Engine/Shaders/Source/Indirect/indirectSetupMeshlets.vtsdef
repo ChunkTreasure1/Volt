@@ -1,0 +1,4 @@
+name: "IndirectSetupMeshlets"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Indirect/IndirectSetupMeshlets_cs.hlsl"

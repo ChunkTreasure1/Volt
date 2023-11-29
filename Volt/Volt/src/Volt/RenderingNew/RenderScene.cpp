@@ -281,6 +281,7 @@ namespace Volt
 	{
 		m_meshCommands.clear();
 
+#if 0
 		for (uint32_t index = 0; const auto& obj : m_renderObjects)
 		{
 			Entity entity{ obj.entity, m_scene };
@@ -308,5 +309,28 @@ namespace Volt
 
 			index++;
 		}
+#else
+		for (uint32_t index = 0; const auto & obj : m_renderObjects)
+		{
+			Entity entity{ obj.entity, m_scene };
+
+			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
+			const auto& meshlets = obj.mesh->GetMeshlets();
+
+			for (uint32_t meshletIdx = 0; meshletIdx < subMesh.meshletCount; meshletIdx++)
+			{
+				const auto& currentMeshlet = meshlets.at(subMesh.meshletStartOffset + meshletIdx);
+
+				auto& newCommand = m_meshCommands.emplace_back();
+				newCommand.command.vertexCount = currentMeshlet.triangleCount * 3;
+				newCommand.command.instanceCount = 1;
+				newCommand.command.firstVertex = currentMeshlet.triangleOffset;
+				newCommand.command.firstInstance = 0;
+				newCommand.objectId = index;
+				newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
+				newCommand.meshletId = subMesh.meshletStartOffset + meshletIdx;
+			}
+		}
+#endif
 	}
 }

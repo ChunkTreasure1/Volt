@@ -21,6 +21,14 @@ namespace Volt
 
 	class Material;
 
+	struct Meshlet
+	{
+		uint32_t vertexOffset;
+		uint32_t triangleOffset;
+		uint32_t vertexCount;
+		uint32_t triangleCount;
+	};
+
 	class Mesh : public Asset
 	{
 	public:
@@ -40,8 +48,9 @@ namespace Volt
 		inline const size_t GetVertexCount() const { return m_vertices.size(); }
 		inline const size_t GetIndexCount() const { return m_indices.size(); }
 
-		inline const std::vector<Vertex>& GetVertices() { return m_vertices; }
-		inline const std::vector<uint32_t>& GetIndices() { return m_indices; }
+		inline const std::vector<Vertex>& GetVertices() const { return m_vertices; }
+		inline const std::vector<uint32_t>& GetIndices() const { return m_indices; }
+		inline const std::vector<Meshlet>& GetMeshlets() const { return m_meshlets; }
 
 		inline const BoundingSphere& GetBoundingSphere() const { return m_boundingSphere; }
 		inline const BoundingBox& GetBoundingBox() const { return m_boundingBox; }
@@ -77,14 +86,6 @@ namespace Volt
 			half_float::half weights[4] = { half_float::half(0.f), half_float::half(0.f), half_float::half(0.f), half_float::half(0.f) };
 		};
 
-		struct Meshlet
-		{
-			uint32_t vertexOffset;
-			uint32_t triangleOffset;
-			uint32_t vertexCount;
-			uint32_t triangleCount;
-		};
-
 		std::vector<std::vector<Vertex>> ExtractSubMeshVertices();
 		std::vector<std::vector<uint32_t>> ExtractSubMeshIndices();
 
@@ -97,6 +98,7 @@ namespace Volt
 		std::vector<Vertex> m_vertices;
 		std::vector<Meshlet> m_meshlets;
 		std::vector<uint32_t> m_meshletTriangles;
+		std::vector<uint32_t> m_meshletVertexRemapping;
 		std::vector<uint32_t> m_indices;
 
 		Ref<Material> m_material;
@@ -107,6 +109,7 @@ namespace Volt
 		Ref<GlobalResource<RHI::StorageBuffer>> m_indexBuffer;
 
 		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletTrianglesBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletVertexRemappingBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletsBuffer;
 
 		BoundingSphere m_boundingSphere;

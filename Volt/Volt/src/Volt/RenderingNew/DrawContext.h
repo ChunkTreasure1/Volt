@@ -8,5 +8,9 @@ namespace Volt
 	{
 		ResourceHandle drawToInstanceOffset;
 		ResourceHandle instanceOffsetToObjectIDBuffer;
+
+		ResourceHandle drawIndexToObjectId;
+		ResourceHandle drawIndexToMeshletId;
 	};
 }
+

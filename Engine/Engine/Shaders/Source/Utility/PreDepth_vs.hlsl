@@ -1,11 +1,13 @@
 #include "CommonBuffers.hlsli"
-#include "DefaultVertex.hlsli"
+#include "DefaultVertexMeshlet.hlsli"
 #include "Utility.hlsli"
 
 struct Output
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
+    
+    uint vertexId : VERTEXID;
 };
 
 Output main(in DefaultInput input)
@@ -16,5 +18,6 @@ Output main(in DefaultInput input)
     Output output;
     output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
     output.normal = float3(0.f, 1.f, 0.f);
+    output.vertexId = input.vertexId;
     return output;
 }

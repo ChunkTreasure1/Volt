@@ -26,6 +26,10 @@ namespace Volt
 
 		RenderGraphResourceHandle drawContextBuffer;
 		RenderGraphResourceHandle objectDrawDataBuffer;
+
+		// Meshlets
+		RenderGraphResourceHandle drawIndexToObjectId;
+		RenderGraphResourceHandle drawIndexToMeshletId;
 	};
 
 	struct UniformBuffersData

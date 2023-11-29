@@ -38,11 +38,13 @@ struct GPUMesh
     
     TypedBuffer<uint> meshletTrianglesBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
+    TypedBuffer<uint> meshletsVertexRemappingBuffer;
     
     uint vertexStartOffset;
     uint meshletCount;
     uint meshletStartOffset;
     uint meshletTriangleStartOffset;
+    uint meshletVertexRemapStartOffset;
   
     uint lodCount;
     GPUMeshLOD lods[MAX_LOD_COUNT];

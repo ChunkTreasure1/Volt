@@ -10,7 +10,8 @@ struct IndirectGPUCommand
     
     uint objectId;
     uint meshId;
-    uint2 padding;
+    uint meshletId;
+    uint padding;
 };
 
 struct IndirectDrawData

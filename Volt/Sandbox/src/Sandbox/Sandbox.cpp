@@ -607,6 +607,11 @@ void Sandbox::OpenScene(const std::filesystem::path& path)
 		const auto& metadata = Volt::AssetManager::GetMetadataFromHandle(myRuntimeScene->handle);
 
 		const auto newScene = Volt::AssetManager::GetAsset<Volt::Scene>(path);
+		if (!newScene)
+		{
+			return;
+		}
+
 		const auto& newSceneMeta = Volt::AssetManager::GetMetadataFromHandle(newScene->handle);
 		if (newSceneMeta.type != Volt::AssetType::Scene)
 		{

@@ -182,7 +182,7 @@ namespace Volt
 				auto& currentVertices = extractedVertices.at(i);
 				auto& currentIndices = extractedIndices.at(i);
 
-				const size_t maxMeshlets = meshopt_buildMeshletsBound(extractedIndices.size(), MAX_VERTICES, MAX_TRIANGLES);
+				const size_t maxMeshlets = meshopt_buildMeshletsBound(currentIndices.size(), MAX_VERTICES, MAX_TRIANGLES);
 
 				std::vector<meshopt_Meshlet> meshlets{ maxMeshlets };
 				std::vector<uint32_t> meshletVertexRemapping(maxMeshlets * MAX_VERTICES);
@@ -204,6 +204,14 @@ namespace Volt
 					m_meshletTriangles[meshletTrianglesOffset + tri] = meshletTriangles[tri];
 				}
 
+				const size_t meshletVertexOffset = m_meshletVertexRemapping.size();
+				m_meshletVertexRemapping.resize(meshletVertexOffset + meshletVertexRemapping.size());
+
+				for (size_t v = 0; v < meshletVertexRemapping.size(); v++)
+				{
+					m_meshletVertexRemapping[meshletVertexOffset + v] = meshletVertexRemapping.at(v);
+				}
+
 				const size_t meshletOffset = m_meshlets.size();
 				m_meshlets.reserve(meshletOffset + meshletCount);
 
@@ -211,6 +219,7 @@ namespace Volt
 				subMesh.meshletStartOffset = static_cast<uint32_t>(meshletOffset);
 				subMesh.meshletCount = static_cast<uint32_t>(meshlets.size());
 				subMesh.meshletTriangleStartOffset = static_cast<uint32_t>(meshletTrianglesOffset);
+				subMesh.meshletVertexRemapStartOffset = static_cast<uint32_t>(meshletVertexOffset);
 
 				for (const auto& meshlet : meshlets)
 				{
@@ -236,6 +245,7 @@ namespace Volt
 				gpuMesh.meshletStartOffset = currentSubMesh.meshletStartOffset;
 				gpuMesh.meshletCount = currentSubMesh.meshletCount;
 				gpuMesh.meshletTriangleStartOffset = currentSubMesh.meshletTriangleStartOffset;
+				gpuMesh.meshletVertexRemapStartOffset = currentSubMesh.meshletVertexRemapStartOffset;
 
 				m_vertices.insert(m_vertices.end(), currentVertices.begin(), currentVertices.end());
 				m_indices.insert(m_indices.end(), currentIndices.begin(), currentIndices.end());
@@ -341,6 +351,18 @@ namespace Volt
 			m_meshletTrianglesBuffer->GetResource()->SetData(m_meshletTriangles.data(), m_meshletTriangles.size() * sizeof(uint32_t));
 		}
 
+		// Meshlets
+		{
+			m_meshletsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_meshlets.size()), sizeof(Meshlet), "Meshlet Buffer"));
+			m_meshletsBuffer->GetResource()->SetData(m_meshlets.data(), m_meshlets.size() * sizeof(Meshlet));
+		}
+
+		// Meshlets Vertex Remapping
+		{
+			m_meshletVertexRemappingBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_meshletVertexRemapping.size()), sizeof(Meshlet), "Meshlet Vertex Remapping Buffer"));
+			m_meshletVertexRemappingBuffer->GetResource()->SetData(m_meshletVertexRemapping.data(), m_meshletVertexRemapping.size() * sizeof(uint32_t));
+		}
+
 		// Set all buffers in the gpu meshes
 		for (auto& gpuMesh : m_gpuMeshes)
 		{
@@ -348,6 +370,9 @@ namespace Volt
 			gpuMesh.vertexMaterialBuffer = m_vertexMaterialBuffer->GetResourceHandle();
 			gpuMesh.vertexAnimationBuffer = m_vertexAnimationBuffer->GetResourceHandle();
 			gpuMesh.indexBuffer = m_indexBuffer->GetResourceHandle();
+			gpuMesh.meshletTrianglesBuffer = m_meshletTrianglesBuffer->GetResourceHandle();
+			gpuMesh.meshletsBuffer = m_meshletsBuffer->GetResourceHandle();
+			gpuMesh.meshletsVertexRemappingBuffer = m_meshletVertexRemappingBuffer->GetResourceHandle();
 		}
 
 		for (auto& subMesh : m_subMeshes)
