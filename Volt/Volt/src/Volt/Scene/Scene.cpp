@@ -107,7 +107,7 @@ namespace Volt
 
 		// Awake
 		{
-			ForEachWithComponents<const MonoScriptComponent>([](const entt::entity id, const MonoScriptComponent& scriptComp)
+			ForEachWithComponents<const MonoScriptComponent, const IDComponent>([](const entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
 			{
 				for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 				{
@@ -115,7 +115,7 @@ namespace Volt
 
 					if (scriptClass && scriptClass->IsEngineScript())
 					{
-						MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+						MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 					}
 				}
 			});
@@ -125,7 +125,7 @@ namespace Volt
 
 		// Create
 		{
-			ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
+			ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
 			{
 				for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 				{
@@ -133,7 +133,7 @@ namespace Volt
 
 					if (scriptClass && scriptClass->IsEngineScript())
 					{
-						MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+						MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 					}
 				}
 			});
@@ -182,21 +182,21 @@ namespace Volt
 		m_visionSystem->Initialize();
 		m_animationSystem.OnRuntimeStart(m_registry);
 
-		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
+		ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
 		{
 			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 			{
-				MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+				MonoScriptEngine::OnAwakeInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 			}
 		});
 
 		MonoScriptEngine::DoOnAwakeInstance();
 
-		ForEachWithComponents<const MonoScriptComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp)
+		ForEachWithComponents<const MonoScriptComponent, const IDComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const IDComponent& idComponent)
 		{
 			for (uint32_t i = 0; i < scriptComp.scriptIds.size(); i++)
 			{
-				MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], id, scriptComp.scriptNames[i]);
+				MonoScriptEngine::OnCreateInstance(scriptComp.scriptIds[i], idComponent.id, scriptComp.scriptNames[i]);
 			}
 		});
 	}
@@ -345,9 +345,9 @@ namespace Volt
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.alive());
 	}
 
-	Entity Scene::CreateEntity(const std::string& tag, const entt::entity hintId)
+	Entity Scene::CreateEntity(const std::string& tag)
 	{
-		entt::entity id = m_registry.create(hintId);
+		entt::entity id = m_registry.create();
 
 		Entity newEntity = Entity(id, this);
 		auto& transform = newEntity.AddComponent<TransformComponent>();
@@ -369,15 +369,73 @@ namespace Volt
 		}
 		newEntity.AddComponent<CommonComponent>();
 		newEntity.AddComponent<RelationshipComponent>();
+		newEntity.AddComponent<IDComponent>();
 
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
 		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
 
-		InvalidateEntityTransform(id);
+		const auto uuid = newEntity.GetComponent<IDComponent>().id;
 
+		m_entityRegistry.AddEntity(newEntity);
+
+		InvalidateEntityTransform(uuid);
 		SortScene();
 		return newEntity;
+	}
+
+	Entity Scene::CreateEntityWithUUID(const EntityID& uuid, const std::string& tag)
+	{
+		entt::entity id = m_registry.create();
+
+		Entity newEntity = Entity(id, this);
+		auto& transform = newEntity.AddComponent<TransformComponent>();
+		transform.position = { 0.f, 0.f, 0.f };
+		transform.rotation = { 1.f, 0.f, 0.f, 0.f };
+		transform.scale = { 1.f, 1.f, 1.f };
+
+		// Tag
+		{
+			auto& tagComp = newEntity.AddComponent<TagComponent>();
+			if (tag.empty())
+			{
+				tagComp.tag = "New Entity";
+			}
+			else
+			{
+				tagComp.tag = tag;
+			}
+		}
+		newEntity.AddComponent<CommonComponent>();
+		newEntity.AddComponent<RelationshipComponent>();
+		newEntity.AddComponent<IDComponent>();
+
+		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
+		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
+		newEntity.GetComponent<CommonComponent>().timeSinceCreation = 0.f;
+
+		newEntity.GetComponent<IDComponent>().id = uuid;
+
+		m_entityRegistry.AddEntity(newEntity);
+
+		InvalidateEntityTransform(uuid);
+		SortScene();
+		return newEntity;
+	}
+
+	Entity Scene::GetEntityFromUUID(const EntityID uuid) const
+	{
+		if (!m_entityRegistry.Contains(uuid))
+		{
+			return Entity::Null();
+		}
+
+		return { m_entityRegistry.GetHandleFromUUID(uuid), const_cast<Scene*>(this) }; // #TODO_Ivar: Doubtable
+	}
+
+	entt::entity Scene::GetHandleFromUUID(const EntityID uuid) const
+	{
+		return m_entityRegistry.GetHandleFromUUID(uuid);
 	}
 
 	void Scene::RemoveEntity(Entity entity)
@@ -443,21 +501,21 @@ namespace Volt
 		}
 
 		ConvertToWorldSpace(entity);
-		entity.GetComponent<RelationshipComponent>().parent = entt::null;
+		entity.GetComponent<RelationshipComponent>().parent = Entity::NullID();
 	}
 
-	void Scene::InvalidateEntityTransform(entt::entity entity)
+	void Scene::InvalidateEntityTransform(const EntityID& entityUUID)
 	{
-		std::vector<entt::entity> entityStack;
+		std::vector<EntityID> entityStack;
 		entityStack.reserve(10);
-		entityStack.push_back(entity);
+		entityStack.push_back(entityUUID);
 
 		while (!entityStack.empty())
 		{
-			entt::entity currentEntity = entityStack.back();
+			const EntityID currentUUID = entityStack.back();
 			entityStack.pop_back();
 
-			Volt::Entity ent{ currentEntity, this };
+			Volt::Entity ent{ m_entityRegistry.GetHandleFromUUID(currentUUID), this };
 
 			if (!ent.HasComponent<RelationshipComponent>())
 			{
@@ -473,9 +531,9 @@ namespace Volt
 
 			{
 				std::unique_lock lock{ m_cachedEntityTransformMutex };
-				if (m_cachedEntityTransforms.contains(currentEntity))
+				if (m_cachedEntityTransforms.contains(currentUUID))
 				{
-					m_cachedEntityTransforms.erase(currentEntity);
+					m_cachedEntityTransforms.erase(currentUUID);
 				}
 			}
 		}
@@ -521,6 +579,11 @@ namespace Volt
 		}
 
 		return entity;
+	}
+
+	const bool Scene::IsEntityValid(EntityID entityId) const
+	{
+		return m_registry.valid(m_entityRegistry.GetHandleFromUUID(entityId));
 	}
 
 	const std::set<AssetHandle> Scene::GetDependencyList(const std::filesystem::path& scenePath)
@@ -617,6 +680,9 @@ namespace Volt
 			if (createDefaultMesh)
 			{
 				auto ent = newScene->CreateEntity("Cube");
+
+				auto id = ent.GetComponent<IDComponent>();
+
 				auto& meshComp = ent.AddComponent<MeshComponent>();
 				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 
@@ -729,7 +795,7 @@ namespace Volt
 		TQS resultTransform{};
 		for (const auto& ent : std::ranges::reverse_view(hierarchy))
 		{
-			const auto& transComp = m_registry.get<TransformComponent>(ent.GetID());
+			const auto& transComp = m_registry.get<TransformComponent>((entt::entity)ent);
 
 			resultTransform.position = resultTransform.position + resultTransform.rotation * transComp.position;
 			resultTransform.rotation = resultTransform.rotation * transComp.rotation;
@@ -795,7 +861,7 @@ namespace Volt
 			auto& relComp = currentEntity.GetComponent<RelationshipComponent>();
 			for (const auto& childId : relComp.children)
 			{
-				Entity child{ childId, this };
+				Entity child{ m_entityRegistry.GetHandleFromUUID(childId), this };
 
 				outChild |= (parent.GetID() == childId) && (childId != parent.GetID());
 
@@ -847,7 +913,7 @@ namespace Volt
 
 	void Scene::RemoveEntityInternal(Entity entity, bool removingParent)
 	{
-		if (!m_registry.valid(entity.GetID()))
+		if (!m_registry.valid(entity))
 		{
 			return;
 		}
@@ -855,9 +921,9 @@ namespace Volt
 		if (entity.HasComponent<RelationshipComponent>())
 		{
 			auto& relComp = entity.GetComponent<RelationshipComponent>();
-			if (relComp.parent != entt::null)
+			if (relComp.parent != Entity::NullID())
 			{
-				Entity parentEnt = { relComp.parent, this };
+				Entity parentEnt = { m_entityRegistry.GetHandleFromUUID(relComp.parent), this };
 
 				if (parentEnt.HasComponent<RelationshipComponent>() && !removingParent)
 				{
@@ -873,7 +939,7 @@ namespace Volt
 
 			for (int32_t i = static_cast<int32_t>(relComp.children.size()) - 1; i >= 0; --i)
 			{
-				Entity childEnt{ relComp.children.at(i), this };
+				Entity childEnt{ m_entityRegistry.GetHandleFromUUID(relComp.children.at(i)), this };
 				RemoveEntityInternal(childEnt, true);
 			
 				relComp = entity.GetComponent<RelationshipComponent>();
@@ -888,7 +954,8 @@ namespace Volt
 			}
 		}
 
-		m_registry.destroy(entity.GetID());
+		m_entityRegistry.RemoveEntity(entity);
+		m_registry.destroy(entity);
 	}
 
 	void Scene::AddLayer(const std::string& layerName, uint32_t layerId)
@@ -1182,14 +1249,14 @@ namespace Volt
 		return std::find_if(m_sceneLayers.begin(), m_sceneLayers.end(), [layerId](const auto& lhs) { return lhs.id == layerId; }) != m_sceneLayers.end();
 	}
 
-	const std::vector<entt::entity> Scene::GetAllEntities() const
+	const std::vector<Entity> Scene::GetAllEntities() const
 	{
-		std::vector<entt::entity> result{};
+		std::vector<Entity> result{};
 		result.reserve(m_registry.alive());
 
 		m_registry.each([&](const entt::entity id)
 		{
-			result.emplace_back(id);
+			result.emplace_back(Entity{ id, const_cast<Scene*>(this) }); // Doubtable
 		});
 
 		return result;

@@ -5,7 +5,7 @@
 
 namespace Volt
 {
-	Ref<AnimationGraphAsset> AnimationGraphAsset::CreateCopy(entt::entity entity)
+	Ref<AnimationGraphAsset> AnimationGraphAsset::CreateCopy(EntityID entity)
 	{
 		Ref<AnimationGraphAsset> newGraph = CreateRef<AnimationGraphAsset>(myAnimatedCharacter);
 		newGraph->SetEntity(entity);

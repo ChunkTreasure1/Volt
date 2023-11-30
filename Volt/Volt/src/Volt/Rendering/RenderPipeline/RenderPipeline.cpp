@@ -223,14 +223,14 @@ namespace Volt
 			blendInfo.blendConstants[2] = 0.f;
 			blendInfo.blendConstants[3] = 0.f;
 
-			const bool hasRenderPass = !mySpecification.renderPass.expired();
+			const bool hasRenderPass = mySpecification.renderPass;
 
 			std::vector<VkPipelineColorBlendAttachmentState> blendAttachments{};
 			std::vector<FramebufferAttachment> attachments;
 
 			if (hasRenderPass)
 			{
-				attachments = mySpecification.renderPass.lock()->framebuffer->GetSpecification().attachments;
+				attachments = mySpecification.renderPass->framebuffer->GetSpecification().attachments;
 			}
 			else
 			{
@@ -374,11 +374,11 @@ namespace Volt
 
 			if (hasRenderPass)
 			{
-				attachmentFormats = mySpecification.renderPass.lock()->framebuffer->GetColorFormats();
-				depthFormat = mySpecification.renderPass.lock()->framebuffer->GetDepthFormat();
-				if (Utility::IsStencilFormat(mySpecification.renderPass.lock()->framebuffer->GetDepthAttachment()->GetFormat()))
+				attachmentFormats = mySpecification.renderPass->framebuffer->GetColorFormats();
+				depthFormat = mySpecification.renderPass->framebuffer->GetDepthFormat();
+				if (Utility::IsStencilFormat(mySpecification.renderPass->framebuffer->GetDepthAttachment()->GetFormat()))
 				{
-					stencilFormat = mySpecification.renderPass.lock()->framebuffer->GetDepthFormat();
+					stencilFormat = mySpecification.renderPass->framebuffer->GetDepthFormat();
 				}
 			}
 			else

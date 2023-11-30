@@ -1,6 +1,7 @@
 #pragma once
 
-#include <entt.hpp>
+#include <Volt/Scene/EntityID.h>
+
 #include <unordered_map>
 
 namespace Volt
@@ -15,22 +16,22 @@ public:
 	static void SetSelectionKey(const std::string& key);
 	static void ResetSelectionKey();
 
-	static bool Select(entt::entity entity);
-	static bool Deselect(entt::entity entity);
+	static bool Select(Volt::EntityID entity);
+	static bool Deselect(Volt::EntityID entity);
 
 	static void DeselectAll();
 	static bool IsAnySelected();
-	static bool IsSelected(entt::entity entity);
+	static bool IsSelected(Volt::EntityID entity);
 
 	static void Update(Ref<Volt::Scene> scene);
 
-	static bool IsAnyParentSelected(entt::entity entity, Ref<Volt::Scene> scene);
+	static bool IsAnyParentSelected(Volt::EntityID entity, Ref<Volt::Scene> scene);
 
 	inline static int32_t& GetFirstSelectedRow() { return myFirstSelectedRow; }
 	inline static int32_t& GetLastSelectedRow() { return myLastSelectedRow; }
 
 	inline static const size_t GetSelectedCount() { return myEntities["Default"].size(); }
-	inline static const std::vector<entt::entity>& GetSelectedEntities() { return myEntities.at(mySelectionKey); }
+	inline static const std::vector<Volt::EntityID>& GetSelectedEntities() { return myEntities.at(mySelectionKey); }
 
 	inline static void Lock() { myLocked = true; }
 	inline static void Unlock() { myLocked = false; }
@@ -43,5 +44,5 @@ private:
 
 	inline static int32_t myFirstSelectedRow = -1;
 	inline static int32_t myLastSelectedRow = -1;
-	inline static std::unordered_map<std::string, std::vector<entt::entity>> myEntities;
+	inline static std::unordered_map<std::string, std::vector<Volt::EntityID>> myEntities;
 };

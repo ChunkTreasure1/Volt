@@ -4,8 +4,6 @@
 
 #include "Volt/Scene/Entity.h"
 
-#include <entt.hpp>
-
 namespace Volt
 {
 	class Scene;
@@ -16,12 +14,12 @@ namespace Volt
 		struct PrefabReferenceData
 		{
 			AssetHandle prefabAsset;
-			entt::entity prefabReferenceEntity;
+			EntityID prefabReferenceEntity;
 		};
 
 		Prefab() = default;
 		Prefab(Entity srcRootEntity);
-		Prefab(Ref<Scene> prefabScene, entt::entity rootEntityId, uint32_t version);
+		Prefab(Ref<Scene> prefabScene, EntityID rootEntityId, uint32_t version);
 
 		~Prefab() override = default;
 
@@ -29,11 +27,11 @@ namespace Volt
 		const bool UpdateEntityInPrefab(Entity srcEntity);
 		void UpdateEntityInScene(Entity sceneEntity);
 
-		void CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId, const EntityCopyFlags copyFlags = EntityCopyFlags::SkipRelationships) const;
+		void CopyPrefabEntity(Entity dstEntity, EntityID srcPrefabEntityId, const EntityCopyFlags copyFlags = EntityCopyFlags::SkipRelationships) const;
 
-		[[nodiscard]] inline const bool IsPrefabValid() { return m_prefabScene != nullptr && m_rootEntityId != entt::null; }
+		[[nodiscard]] inline const bool IsPrefabValid() { return m_prefabScene != nullptr && m_rootEntityId != Entity::NullID(); }
 		[[nodiscard]] const bool IsEntityValidInPrefab(Entity entity) const;
-		[[nodiscard]] const bool IsEntityValidInPrefab(entt::entity prefabEntityId) const;
+		[[nodiscard]] const bool IsEntityValidInPrefab(EntityID prefabEntityId) const;
 		[[nodiscard]] const bool IsEntityRoot(Entity entity) const;
 		[[nodiscard]] const bool IsReference(Entity entity) const;
 
@@ -45,22 +43,24 @@ namespace Volt
 	private:
 		friend class PrefabImporter;
 
+		[[nodiscard]] const Entity GetRootEntity() const;
+
 		void InitializeComponents(Entity entity);
 
 		void CreatePrefab(Entity srcRootEntity);
 		void AddEntityToPrefabRecursive(Entity entity, Entity parentPrefabEntity);
 		void ValidatePrefabUpdate(Entity srcEntity);
 
-		const bool UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity rootSceneId, entt::entity forcedPrefabEntity);
-		void UpdateEntityInSceneInternal(Entity sceneEntity, entt::entity forcedPrefabEntity);
+		const bool UpdateEntityInPrefabInternal(Entity srcEntity, EntityID rootSceneId, EntityID forcedPrefabEntity);
+		void UpdateEntityInSceneInternal(Entity sceneEntity, EntityID forcedPrefabEntity);
 
 		Entity InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity);
 		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
 		Ref<Scene> m_prefabScene;
-		std::unordered_map<entt::entity, PrefabReferenceData> m_prefabReferencesMap; // Maps this prefabs entity to an entity in another prefab
+		std::unordered_map<EntityID, PrefabReferenceData> m_prefabReferencesMap; // Maps this prefabs entity to an entity in another prefab
 
-		entt::entity m_rootEntityId = entt::null;
+		EntityID m_rootEntityId = Entity::NullID();
 		uint32_t m_version = 0;
 	};
 }

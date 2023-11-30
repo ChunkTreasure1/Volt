@@ -81,7 +81,7 @@ namespace Volt
 			return myCrowd->getAgent(myEntityToAgentMap.at(entity.GetID()));
 		}
 
-		const dtCrowdAgent* DtCrowd::GetAgent(entt::entity entityId)
+		const dtCrowdAgent* DtCrowd::GetAgent(EntityID entityId)
 		{
 			if (!myCrowd || !myEntityToAgentMap.contains(entityId))
 			{

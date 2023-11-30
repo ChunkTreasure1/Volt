@@ -44,6 +44,19 @@ namespace Volt
 		REGISTER_COMPONENT(TagComponent);
 	};
 
+	struct IDComponent
+	{
+		EntityID id{};
+
+		static void ReflectType(TypeDesc<IDComponent>& reflect)
+		{
+			reflect.SetGUID("{663E0E0B-43EC-4973-8A9B-FF8A0BA566AA}"_guid);
+			reflect.SetLabel("ID Component");
+			reflect.SetHidden();
+			reflect.AddMember(&IDComponent::id, "id", "ID", "", EntityID{}, ComponentMemberFlag::NoSerialize);
+		}
+	};
+
 	struct TransformComponent
 	{
 		glm::vec3 position = { 0.f };
@@ -91,16 +104,16 @@ namespace Volt
 
 	struct RelationshipComponent
 	{
-		entt::entity parent = entt::null;
-		std::vector<entt::entity> children;
+		EntityID parent = EntityID(0);
+		std::vector<EntityID> children;
 
 		static void ReflectType(TypeDesc<RelationshipComponent>& reflect)
 		{
 			reflect.SetGUID("{4A5FEDD2-4D0B-4696-A9E6-DCDFFB25B32C}"_guid);
 			reflect.SetLabel("Relationship Component");
 			reflect.SetHidden();
-			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", entt::null);
-			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<entt::entity>{});
+			reflect.AddMember(&RelationshipComponent::parent, "parent", "Parent", "", EntityID(0));
+			reflect.AddMember(&RelationshipComponent::children, "children", "Children", "", std::vector<EntityID>{});
 		}
 
 		REGISTER_COMPONENT(RelationshipComponent);
@@ -137,8 +150,8 @@ namespace Volt
 	struct PrefabComponent
 	{
 		AssetHandle prefabAsset = Asset::Null();
-		entt::entity prefabEntity = entt::null;
-		entt::entity sceneRootEntity = entt::null;
+		EntityID prefabEntity = EntityID(0);
+		EntityID sceneRootEntity = EntityID(0);
 		uint32_t version = 0;
 
 		std::vector<PrefabComponentLocalChange> componentLocalChanges;
@@ -152,8 +165,8 @@ namespace Volt
 			reflect.SetLabel("Prefab Component");
 			reflect.SetHidden();
 			reflect.AddMember(&PrefabComponent::prefabAsset, "prefabAsset", "Prefab Asset", "", Asset::Null(), AssetType::Prefab);
-			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", entt::null);
-			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", entt::null);
+			reflect.AddMember(&PrefabComponent::prefabEntity, "prefabEntity", "Prefab Entity", "", EntityID(0));
+			reflect.AddMember(&PrefabComponent::sceneRootEntity, "sceneRootEntity", "Scene Root Entity", "", EntityID(0));
 			reflect.AddMember(&PrefabComponent::version, "version", "Version", "", 0);
 			reflect.AddMember(&PrefabComponent::componentLocalChanges, "componentLocalChanges", "Component Local Changes", "", std::vector<PrefabComponentLocalChange>{});
 			reflect.AddMember(&PrefabComponent::scriptLocalChanges, "scriptLocalChanges", "Script Local Changes", "", std::vector<PrefabScriptLocalChange>{});

@@ -48,7 +48,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
-		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
+		Volt::Entity ent = skylightEntities.front();
 		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
@@ -98,7 +98,7 @@ void MaterialEditorPanel::OnOpen()
 	{
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
-		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
+		Volt::Entity ent = skylightEntities.front();
 		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
@@ -163,7 +163,7 @@ void MaterialEditorPanel::UpdateToolbar()
 			if (SelectionManager::GetSelectedCount() > 0)
 			{
 				auto id = SelectionManager::GetSelectedEntities().front();
-				Volt::Entity entity{ id, myEditorScene };
+				Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
 				if (entity.HasComponent<Volt::MeshComponent>())
 				{
@@ -198,7 +198,7 @@ void MaterialEditorPanel::UpdateToolbar()
 			if (SelectionManager::GetSelectedCount() > 0 && mySelectedMaterial)
 			{
 				auto id = SelectionManager::GetSelectedEntities().front();
-				Volt::Entity entity{ id, myEditorScene };
+				Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
 				if (entity.HasComponent<Volt::MeshComponent>())
 				{

@@ -166,7 +166,7 @@ namespace Volt
 		Ref<Camera> camera = nullptr;
 		int32_t highestPrio = -1;
 
-		myScene.lock()->ForEachWithComponents<const CameraComponent>([&](entt::entity, const CameraComponent& camComp)
+		myScene->ForEachWithComponents<const CameraComponent>([&](entt::entity, const CameraComponent& camComp)
 		{
 			if ((int32_t)camComp.priority > highestPrio)
 			{
@@ -920,7 +920,7 @@ namespace Volt
 		FetchMeshCommands();
 		FetchAnimatedMeshCommands();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 
 		scenePtr->ForEachWithComponents<const DirectionalLightComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const TransformComponent& transformComp) 
 		{
@@ -929,7 +929,7 @@ namespace Volt
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 
 			DirectionalLight light{};
 			light.colorIntensity = glm::vec4(dirLightComp.color.x, dirLightComp.color.y, dirLightComp.color.z, dirLightComp.intensity);
@@ -973,7 +973,7 @@ namespace Volt
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 			const auto position = lightEntity.GetPosition();
 
 			auto& pointLight = GetCPUData().pointLights.emplace_back();
@@ -1004,7 +1004,7 @@ namespace Volt
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 
 			auto& spotLight = GetCPUData().spotLights.emplace_back();
 			spotLight.color = spotLightComp.color;
@@ -1077,7 +1077,7 @@ namespace Volt
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 
 			auto& sphereLight = GetCPUData().sphereLights.emplace_back();
 			sphereLight.position = lightEntity.GetPosition();
@@ -1093,7 +1093,7 @@ namespace Volt
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 			const glm::vec3 dir = glm::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f });
 			const glm::vec3 left = glm::rotate(lightEntity.GetRotation(), { -1.f, 0.f, 0.f });
 			const glm::vec3 up = glm::rotate(lightEntity.GetRotation(), { 0.f, 1.f, 0.f });
@@ -1158,7 +1158,7 @@ namespace Volt
 				return;
 			}
 
-			Entity entity{ id, scenePtr.get() };
+			Entity entity{ id, scenePtr };
 
 			auto& newCmd = GetCPUData().decalCommands.emplace_back();
 			newCmd.material = material;
@@ -1186,7 +1186,7 @@ namespace Volt
 				return;
 			}
 
-			Entity entity{ id, scenePtr.get() };
+			Entity entity{ id, scenePtr };
 
 			TextCommand textCmd{};
 			textCmd.text = comp.text;
@@ -1208,7 +1208,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 		auto& registry = scenePtr->GetRegistry();
 		auto& data = GetCPUData();
 
@@ -1242,7 +1242,7 @@ namespace Volt
 		auto submitFunc = [&](uint32_t currentIndex, uint32_t threadIndex)
 		{
 			entt::entity id = meshComponentView[currentIndex];
-			Entity entity{ id, scenePtr.get() };
+			Entity entity{ id, scenePtr };
 
 			const MeshComponent& meshComp = entity.GetComponent<MeshComponent>();
 			const TransformComponent& transComp = entity.GetComponent<TransformComponent>();
@@ -1295,7 +1295,7 @@ namespace Volt
 				cmd.subMesh = subMesh;
 				cmd.transform = transform * subMesh.transform;
 				cmd.subMeshIndex = i;
-				cmd.id = entity.GetUIntID();
+				cmd.id = entity.GetID();
 				cmd.timeSinceCreation = dataComp.timeSinceCreation;
 				cmd.randomValue = dataComp.randomValue;
 
@@ -1357,7 +1357,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 
 		scenePtr->ForEachWithComponents<AnimationControllerComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, AnimationControllerComponent& animComp, const TransformComponent& transformComp, const CommonComponent& dataComp) 
 		{
@@ -1376,7 +1376,7 @@ namespace Volt
 					return;
 				}
 
-				auto entity = Entity(id, scenePtr.get());
+				auto entity = Entity(id, scenePtr);
 
 				const auto anim = animComp.controller->Sample();
 
@@ -1437,7 +1437,7 @@ namespace Volt
 					return;
 				}
 
-				auto entity = Entity(id, scenePtr.get());
+				auto entity = Entity(id, scenePtr);
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
 				Ref<Material> material = skin->GetMaterial();
@@ -1451,7 +1451,7 @@ namespace Volt
 				}
 
 				const glm::mat4 transform = entity.GetTransform();
-				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, entity.GetUIntID());
+				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, entity.GetID());
 			}
 		});
 	}
@@ -1460,7 +1460,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 
 		const auto& particleStorage = scenePtr->GetParticleSystem().GetParticleStorage();
 		for (const auto& [entityId, storage] : particleStorage)
@@ -1473,7 +1473,7 @@ namespace Volt
 
 			const auto material = AssetManager::GetAsset<Material>(preset->material);
 
-			Entity entity{ entityId, scenePtr.get() };
+			Entity entity{ entityId, scenePtr };
 
 			if (preset->type == ParticlePreset::eType::PARTICLE)
 			{
@@ -2213,12 +2213,12 @@ namespace Volt
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image)
 	{
-		UpdateGlobalDescriptorSet(globalDescriptorSet, set, binding, index, image, image.lock()->GetLayout());
+		UpdateGlobalDescriptorSet(globalDescriptorSet, set, binding, index, image, image->GetLayout());
 	}
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image, VkImageLayout targetLayout)
 	{
-		auto imagePtr = image.lock();
+		auto imagePtr = image;
 
 		VkDescriptorImageInfo descriptorInfo{};
 		descriptorInfo.imageLayout = targetLayout;
@@ -2234,7 +2234,7 @@ namespace Volt
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image3D> image)
 	{
-		auto imagePtr = image.lock();
+		auto imagePtr = image;
 
 		VkDescriptorImageInfo descriptorInfo{};
 		descriptorInfo.imageLayout = imagePtr->GetLayout();
@@ -2254,7 +2254,7 @@ namespace Volt
 
 		for (const auto& image : images)
 		{
-			auto imagePtr = image.lock();
+			auto imagePtr = image;
 			auto& descriptorInfo = descriptorInfos.emplace_back();
 
 			descriptorInfo.imageLayout = targetLayout;
@@ -3001,7 +3001,7 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
-			renderingInfo.colorAttachmentInfo.at(0).clearValue.color.uint32[0] = entt::null;
+			renderingInfo.colorAttachmentInfo.at(0).clearValue.color.uint32[0] = Entity::NullID();
 
 			const auto& indirectPass = GetOrCreateIndirectPass(commandBuffer);
 
@@ -3090,7 +3090,7 @@ namespace Volt
 			const auto outputImage = resources.GetImageResource(data.skybox);
 
 			myPreethamPipeline->Clear(currentIndex);
-			myPreethamPipeline->SetImage(outputImage.image.lock(), 0, 0, ImageAccess::Write);
+			myPreethamPipeline->SetImage(outputImage.image, 0, 0, ImageAccess::Write);
 			myPreethamPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			myPreethamPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushData, sizeof(PreethamData));
 			myPreethamPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), cubeMapSize / groupSize, cubeMapSize / groupSize, 6, currentIndex);
@@ -3148,13 +3148,13 @@ namespace Volt
 			if (myEnvironmentSettings.radianceMap)
 			{
 				const auto& envResource = resources.GetImageResource(data.radianceImage);
-				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, envResource.image.lock());
+				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, envResource.image);
 			}
 			else
 			{
 				const auto& preethamSkyData = frameGraph.GetBlackboard().Get<PreethamSkyData>();
 				const auto& preethamResource = resources.GetImageResource(preethamSkyData.skybox);
-				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, preethamResource.image.lock());
+				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, preethamResource.image);
 			}
 
 			mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->SetValue("intensity", myEnvironmentSettings.intensity);
@@ -3294,11 +3294,11 @@ namespace Volt
 
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
-			shadingPipeline->SetImage(albedoResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-			shadingPipeline->SetImage(materialEmissiveResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-			shadingPipeline->SetImage(normalEmissiveResource.image.lock(), Sets::OTHER, 2, ImageAccess::Read);
-			shadingPipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 3, ImageAccess::Read);
-			shadingPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 4, ImageAccess::Write);
+			shadingPipeline->SetImage(albedoResource.image, Sets::OTHER, 0, ImageAccess::Read);
+			shadingPipeline->SetImage(materialEmissiveResource.image, Sets::OTHER, 1, ImageAccess::Read);
+			shadingPipeline->SetImage(normalEmissiveResource.image, Sets::OTHER, 2, ImageAccess::Read);
+			shadingPipeline->SetImage(depthResource.image, Sets::OTHER, 3, ImageAccess::Read);
+			shadingPipeline->SetImage(targetResource.image, Sets::OTHER, 4, ImageAccess::Write);
 
 			shadingPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			shadingPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets[Sets::RENDERER_BUFFERS]->GetOrAllocateDescriptorSet(currentIndex), Sets::RENDERER_BUFFERS);
@@ -3315,8 +3315,8 @@ namespace Volt
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (targetResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (targetResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (targetResource.image->GetHeight() / threadCount) + 1);
 			Renderer::DispatchComputePipeline(commandBuffer, shadingPipeline, dispatchX, dispatchY, 1);
 
 			shadingPipeline->ClearAllResources();
@@ -3366,7 +3366,7 @@ namespace Volt
 
 			for (const auto& decalCmd : commands)
 			{
-				decalCmd.material->GetSubMaterialAt(0)->Set(0, depthResource.image.lock());
+				decalCmd.material->GetSubMaterialAt(0)->Set(0, depthResource.image);
 				decalCmd.material->GetSubMaterialAt(0)->SetValue("targetSize", myRenderSize);
 				decalCmd.material->GetSubMaterialAt(0)->SetValue("transform", decalCmd.transform);
 				decalCmd.material->GetSubMaterialAt(0)->SetValue("materialIndex", Renderer::GetBindlessData().materialTable->GetIndexFromMaterial(decalCmd.material->TryGetSubMaterialAt(0).get()));
@@ -3457,11 +3457,11 @@ namespace Volt
 				if (mySettings.enableVolumetricFog)
 				{
 					const auto& fogResource = resources.GetImageResource(volumetricFogData.rayMarched);
-					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, fogResource.image3D.lock());
+					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, fogResource.image3D);
 				}
 				else
 				{
-					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, Renderer::GetDefaultData().black3DImage);
+					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, Weak<Image3D>{Renderer::GetDefaultData().black3DImage});
 				}
 			}
 
@@ -3667,14 +3667,14 @@ namespace Volt
 				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 				const auto& outputBlurImage = resources.GetImageResource(data.blurOne);
 
-				auto diffuseImage = diffuseInputImage.image.lock();
+				auto diffuseImage = diffuseInputImage.image;
 				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), diffuseImage->GetHandle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
 
 				diffuseImage->TransitionToLayout(commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-				mySSSBlurPipeline[0]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image, Sets::OTHER, 0, ImageAccess::Read);
+				mySSSBlurPipeline[0]->SetImage(depthInputImage.image, Sets::OTHER, 1, ImageAccess::Read);
+				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image, Sets::OTHER, 2, ImageAccess::Write);
 
 				mySSSBlurPipeline[0]->Bind(commandBuffer->GetCurrentCommandBuffer());
 				mySSSBlurPipeline[0]->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
@@ -3682,8 +3682,8 @@ namespace Volt
 
 				constexpr uint32_t threadCount = 16;
 
-				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image.lock()->GetWidth() / threadCount) + 1);
-				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image.lock()->GetHeight() / threadCount) + 1);
+				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image->GetWidth() / threadCount) + 1);
+				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image->GetHeight() / threadCount) + 1);
 
 				ImageBarrierInfo imageBarrier{};
 				imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
@@ -3710,12 +3710,12 @@ namespace Volt
 				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 				const auto& outputBlurImage = resources.GetImageResource(data.blurTwo);
 
-				auto outputImage = outputBlurImage.image.lock();
+				auto outputImage = outputBlurImage.image;
 				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), outputImage->GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, subresourceRange);
 
-				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-				mySSSBlurPipeline[1]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image, Sets::OTHER, 0, ImageAccess::Read);
+				mySSSBlurPipeline[1]->SetImage(depthInputImage.image, Sets::OTHER, 1, ImageAccess::Read);
+				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image, Sets::OTHER, 2, ImageAccess::Write);
 
 				mySSSBlurPipeline[1]->Bind(commandBuffer->GetCurrentCommandBuffer());
 				mySSSBlurPipeline[1]->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
@@ -3723,8 +3723,8 @@ namespace Volt
 
 				constexpr uint32_t threadCount = 16;
 
-				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image.lock()->GetWidth() / threadCount) + 1);
-				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image.lock()->GetHeight() / threadCount) + 1);
+				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image->GetWidth() / threadCount) + 1);
+				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image->GetHeight() / threadCount) + 1);
 
 				Renderer::DispatchComputePipeline(commandBuffer, mySSSBlurPipeline[1], dispatchX, dispatchY, 1);
 			}
@@ -3755,14 +3755,14 @@ namespace Volt
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& sssBlurResource = resources.GetImageResource(blurData.blurTwo);
 
-			mySSSCompositePipeline->SetImage(sssBlurResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-			mySSSCompositePipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
+			mySSSCompositePipeline->SetImage(sssBlurResource.image, Sets::OTHER, 0, ImageAccess::Read);
+			mySSSCompositePipeline->SetImage(outputImageResource.image, Sets::OTHER, 1, ImageAccess::Write);
 			mySSSCompositePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 16;
 
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, mySSSCompositePipeline, dispatchX, dispatchY, 1);
 			EndTimestamp();
@@ -3900,8 +3900,8 @@ namespace Volt
 			const auto& accumResource = resources.GetImageResource(forwardTransparentData.accumulation);
 			const auto& revealResource = resources.GetImageResource(forwardTransparentData.revealage);
 
-			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(0, accumResource.image.lock());
-			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(1, revealResource.image.lock());
+			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(0, accumResource.image);
+			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(1, revealResource.image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, myTransparentCompositeMaterial, myGlobalDescriptorSets);
@@ -4007,14 +4007,14 @@ namespace Volt
 			const auto& srcColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& targetResource = resources.GetImageResource(data.luminosityImage);
 
-			myLuminosityPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			myLuminosityPipeline->SetImage(srcColorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+			myLuminosityPipeline->SetImage(targetResource.image, Sets::OTHER, 0, ImageAccess::Write);
+			myLuminosityPipeline->SetImage(srcColorResource.image, Sets::OTHER, 1, ImageAccess::Read);
 			myLuminosityPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (targetResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (targetResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (targetResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myLuminosityPipeline, dispatchX, dispatchY, 1);
 
@@ -4051,7 +4051,7 @@ namespace Volt
 				BeginTimestamp(name);
 
 				const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
-				postMaterial->Render(commandBuffer, outputImageResource.image.lock());
+				postMaterial->Render(commandBuffer, outputImageResource.image);
 				EndTimestamp();
 			});
 		}
@@ -4076,13 +4076,13 @@ namespace Volt
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 
-			myACESPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+			myACESPipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
 			myACESPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myACESPipeline, dispatchX, dispatchY, 1);
 			EndTimestamp();
@@ -4108,13 +4108,13 @@ namespace Volt
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 
-			myGammaCorrectionPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+			myGammaCorrectionPipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
 			myGammaCorrectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myGammaCorrectionPipeline, dispatchX, dispatchY, 1);
 			EndTimestamp();
@@ -4330,7 +4330,7 @@ namespace Volt
 			myLightCullPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			myLightCullPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &cullData, sizeof(LightCullData));
 
-			myLightCullPipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
+			myLightCullPipeline->SetImage(depthResource.image, Sets::OTHER, 0, ImageAccess::Read);
 			myLightCullPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(commandBuffer->GetCurrentIndex()), Sets::RENDERER_BUFFERS);
 
 			{
@@ -4407,8 +4407,8 @@ namespace Volt
 			const auto& colorHistoryResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& motionVectorResource = resources.GetImageResource(motionVectorData.currentDepth);
 
-			myHistoryColor->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), colorHistoryResource.image.lock());
-			myHistoryDepth->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), motionVectorResource.image.lock());
+			myHistoryColor->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), colorHistoryResource.image);
+			myHistoryDepth->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), motionVectorResource.image);
 		});
 	}
 
@@ -4416,7 +4416,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 
 		const auto halfSize = myScaledSize / 2u;
 

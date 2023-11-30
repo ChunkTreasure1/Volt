@@ -102,10 +102,10 @@ void SceneViewPanel::UpdateMainContent()
 				RebuildEntityDrawList();
 			}
 
-			std::unordered_map<uint32_t, std::vector<entt::entity>> layerEntityLists;
+			std::unordered_map<uint32_t, std::vector<Volt::EntityID>> layerEntityLists;
 			for (const auto& entId : m_entityDrawList)
 			{
-				Volt::Entity entity{ entId, m_scene };
+				Volt::Entity entity = m_scene->GetEntityFromUUID(entId);
 
 				if (!entity.HasComponent<Volt::CommonComponent>())
 				{
@@ -269,9 +269,8 @@ void SceneViewPanel::UpdateMainContent()
 							const auto newVal = !layer.visible;
 							layer.visible = newVal;
 
-							for (const auto& entityId : m_scene->GetAllEntities())
+							for (auto entity : m_scene->GetAllEntities())
 							{
-								Volt::Entity entity{ entityId, m_scene.get() };
 								if (entity.GetParent())
 								{
 									continue;
@@ -295,9 +294,8 @@ void SceneViewPanel::UpdateMainContent()
 							const auto newVal = !layer.locked;
 							layer.locked = newVal;
 
-							for (const auto& entityId : m_scene->GetAllEntities())
+							for (auto entity : m_scene->GetAllEntities())
 							{
-								Volt::Entity entity{ entityId, m_scene.get() };
 								if (entity.GetParent())
 								{
 									continue;
@@ -319,7 +317,7 @@ void SceneViewPanel::UpdateMainContent()
 					{
 						for (const auto& id : layerEntityLists[layer.id])
 						{
-							Volt::Entity entity{ id, m_scene.get() };
+							Volt::Entity entity = m_scene->GetEntityFromUUID(id);
 							DrawEntity(entity, m_searchQuery);
 						}
 
@@ -458,9 +456,9 @@ void SceneViewPanel::HighlightEntity(Volt::Entity entity)
 	m_scrollToEntity = entity.GetID();
 }
 
-void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, entt::entity id)
+void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, Volt::EntityID id)
 {
-	Volt::Entity entity{ id, scene };
+	Volt::Entity entity = scene->GetEntityFromUUID(id);
 
 	if (entity.HasComponent<Volt::PrefabComponent>())
 	{
@@ -469,7 +467,7 @@ void RecursiveUnpackPrefab(Ref<Volt::Scene> scene, entt::entity id)
 
 	for (auto& childId : entity.GetComponent<Volt::RelationshipComponent>().children)
 	{
-		Volt::Entity child{ childId, scene };
+		Volt::Entity child = scene->GetEntityFromUUID(childId);
 
 		if (child.HasComponent<Volt::PrefabComponent>())
 		{
@@ -497,7 +495,7 @@ bool SceneViewPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
 			{
-				Volt::Entity tempEnt = Volt::Entity(selectedEntity, m_scene.get());
+				Volt::Entity tempEnt = m_scene->GetEntityFromUUID(selectedEntity);
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetID());
@@ -537,13 +535,13 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	std::string entityName = "Null";
 
 	Volt::Entity parent = Volt::Entity::Null();
-	std::vector<entt::entity> children;
+	std::vector<Volt::EntityID> children;
 
 	if (entity.HasComponent<Volt::RelationshipComponent>())
 	{
 		auto& relComp = entity.GetComponent<Volt::RelationshipComponent>();
 
-		parent = Volt::Entity{ relComp.parent, m_scene };
+		parent = m_scene->GetEntityFromUUID(relComp.parent);
 		children = relComp.children;
 	}
 
@@ -701,9 +699,9 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		UI::RenderMatchingTextBackground(entityName, entityName, EditorTheme::MatchingTextBackground, offset);
 	}
 
-	if (m_scrollToEntity != entt::null && m_scrollToEntity == entity.GetID())
+	if (m_scrollToEntity != Volt::Entity::NullID() && m_scrollToEntity == entity.GetID())
 	{
-		m_scrollToEntity = entt::null;
+		m_scrollToEntity = Volt::Entity::NullID();
 		ImGui::SetScrollHereY();
 	}
 
@@ -794,13 +792,13 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		{
 			ImGui::TextUnformatted(entity.GetTag().c_str());
 
-			const entt::entity entityId = entity.GetID();
-			ImGui::SetDragDropPayload("scene_entity_hierarchy", &entityId, sizeof(entt::entity));
+			const Volt::EntityID entityId = entity.GetID();
+			ImGui::SetDragDropPayload("scene_entity_hierarchy", &entityId, sizeof(Volt::EntityID));
 			ImGui::EndDragDropSource();
 		}
 		else
 		{
-			std::vector<entt::entity> selectedEntities = SelectionManager::GetSelectedEntities();
+			std::vector<Volt::EntityID> selectedEntities = SelectionManager::GetSelectedEntities();
 
 			for (uint32_t i = 0; const auto & id : selectedEntities)
 			{
@@ -809,7 +807,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 					break;
 				}
 
-				Volt::Entity ent{ id, m_scene.get() };
+				Volt::Entity ent = m_scene->GetEntityFromUUID(id);
 				ImGui::TextUnformatted(ent.GetTag().c_str());
 				i++;
 			}
@@ -930,7 +928,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		auto selection = SelectionManager::GetSelectedEntities();
 		for (const auto& selectedEntity : selection)
 		{
-			Volt::Entity tempEnt = Volt::Entity(selectedEntity, m_scene.get());
+			Volt::Entity tempEnt = m_scene->GetEntityFromUUID(selectedEntity);
 			entitiesToRemove.push_back(tempEnt);
 
 			SelectionManager::Deselect(tempEnt.GetID());
@@ -984,7 +982,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				{
 					for (const auto& e : SelectionManager::GetSelectedEntities())
 					{
-						recursiveSetVisible(Volt::Entity{ e, m_scene }, newVal, recursiveSetVisible);
+						recursiveSetVisible(m_scene->GetEntityFromUUID(e), newVal, recursiveSetVisible);
 					}
 				}
 			}
@@ -1004,7 +1002,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				{
 					for (const auto& e : SelectionManager::GetSelectedEntities())
 					{
-						Volt::Entity tempEnt = { e, m_scene };
+						Volt::Entity tempEnt = m_scene->GetEntityFromUUID(e);
 
 						auto& eTransformComponent = tempEnt.GetComponent<Volt::TransformComponent>();
 						eTransformComponent.locked = newVal;
@@ -1021,7 +1019,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	{
 		for (const auto& child : children)
 		{
-			DrawEntity(Volt::Entity{ child, m_scene }, filter);
+			DrawEntity(m_scene->GetEntityFromUUID(child), filter);
 		}
 
 		ImGui::TreePop();
@@ -1060,9 +1058,9 @@ void SceneViewPanel::UpdatePrefabsInScene(Ref<Volt::Prefab> prefab, Volt::Entity
 		return;
 	}
 
-	m_scene->ForEachWithComponents<const Volt::PrefabComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp)
+	m_scene->ForEachWithComponents<const Volt::PrefabComponent, const Volt::IDComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp, const Volt::IDComponent& idComponent)
 	{
-		if (id == srcEntity.GetID())
+		if (idComponent.id == srcEntity.GetID())
 		{
 			return;
 		}
@@ -1082,9 +1080,9 @@ void SceneViewPanel::UpdatePrefabsInScene(Ref<Volt::Prefab> prefab, Volt::Entity
 
 	if (prefabAsset->IsReference(srcEntity))
 	{
-		m_scene->ForEachWithComponents<const Volt::PrefabComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp)
+		m_scene->ForEachWithComponents<const Volt::PrefabComponent, const Volt::IDComponent>([&](const entt::entity id, const Volt::PrefabComponent& prefabComp, const Volt::IDComponent& idComponent)
 		{
-			if (id == srcEntity.GetID())
+			if (idComponent.id == srcEntity.GetID())
 			{
 				return;
 			}

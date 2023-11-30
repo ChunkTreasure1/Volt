@@ -54,7 +54,7 @@ namespace Volt
 		{
 			auto ptr = m_registry.Get(repId);
 			auto repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
-			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
+			auto entity = SceneManager::GetActiveScene()->GetEntityFromUUID(repEntity.GetEntityId());
 			if (!entity.IsValid()) continue;
 			if (repEntity.GetOwner() != m_id) continue;
 
@@ -132,7 +132,7 @@ namespace Volt
 			if (m_registry.Get(repId)->GetType() == Nexus::TYPE::eReplicatedType::ENTITY)
 			{
 				auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
-				Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
+				Volt::SceneManager::GetActiveScene()->RemoveEntity(Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(ent));
 			}
 			m_registry.Unregister(repId);
 		}
@@ -204,9 +204,8 @@ namespace Volt
 
 		m_registry.Unregister(repId);
 		auto scene = SceneManager::GetActiveScene();
-		auto scenePtr = scene.lock();
 
-		scenePtr->RemoveEntity(Entity(repEnt->GetEntityId(), scenePtr.get()));
+		scene->RemoveEntity(scene->GetEntityFromUUID(repEnt->GetEntityId()));
 
 		// find Entity
 		// find connected variables
@@ -251,7 +250,7 @@ namespace Volt
 			return;
 		}
 
-		auto sceneEnt = Entity(netEnt->GetEntityId(), SceneManager::GetActiveScene().lock().get());
+		auto sceneEnt = SceneManager::GetActiveScene()->GetEntityFromUUID(netEnt->GetEntityId());
 		if (!sceneEnt.IsValid())
 		{
 			VT_CORE_ERROR("scene entity is null in client RPC call");
@@ -270,7 +269,7 @@ namespace Volt
 			VT_CORE_ERROR("missing monoscriptComponent in client RPC call");
 			return;
 		}
-		auto scriptsVector = Entity(sceneEnt.GetID(), SceneManager::GetActiveScene().lock().get()).GetComponent<MonoScriptComponent>().scriptIds;
+		auto scriptsVector = sceneEnt.GetComponent<MonoScriptComponent>().scriptIds;
 		Ref<MonoScriptInstance> scrInstance = nullptr;
 		for (auto scrID : scriptsVector)
 		{

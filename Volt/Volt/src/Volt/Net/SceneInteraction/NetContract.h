@@ -5,6 +5,7 @@
 #include <Nexus/Utility/Types.h>
 
 #include "Volt/Net/Event/NetEvent.h"
+#include "Volt/Scene/EntityID.h"
 
 #include <entt.hpp>
 
@@ -45,7 +46,7 @@ namespace Volt
 		AssetHandle prefab = AssetHandle(0);
 
 		std::unordered_map<eNetEvent, std::string> calls;
-		std::unordered_map<entt::entity, std::unordered_map<std::string, NetRule>> rules;
+		std::unordered_map<Volt::EntityID, std::unordered_map<std::string, NetRule>> rules;
 
 		static AssetType GetStaticType() { return AssetType::NetContract; }
 		AssetType GetType() override { return GetStaticType(); }
@@ -54,7 +55,7 @@ namespace Volt
 	class NetContractContainer
 	{
 	public:
-		static void Execute(entt::entity in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data);
+		static void Execute(Volt::EntityID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data);
 		static void Execute(Nexus::TYPE::REP_ID in_id, eNetEvent in_method, const std::vector<uint8_t>& in_data);
 
 		static std::string GetMethod(const AssetHandle& in_handle, eNetEvent in_method);
@@ -62,14 +63,14 @@ namespace Volt
 
 		static Ref<NetContract> GetContract(const AssetHandle& in_handle);
 		static const Ref<NetContract> GetContract(Nexus::TYPE::REP_ID in_id);
-		static const Ref<NetContract> GetContract(entt::entity in_id);
+		static const Ref<NetContract> GetContract(Volt::EntityID in_id);
 
-		static std::string GetMethod(entt::entity in_id, eNetEvent in_method);
+		static std::string GetMethod(Volt::EntityID in_id, eNetEvent in_method);
 		static std::string GetMethod(Nexus::TYPE::REP_ID in_id, eNetEvent in_method);
 
 		static void AddContract(const AssetHandle& in_handle);
 		static bool ContractExists(const AssetHandle& in_handle);
-		static bool RuleExists(const AssetHandle& in_handle, const std::string& in_rule, entt::entity in_ent = entt::null);
+		static bool RuleExists(const AssetHandle& in_handle, const std::string& in_rule, Volt::EntityID = Volt::EntityID(0));
 
 		static void Load();
 		static void Clear();

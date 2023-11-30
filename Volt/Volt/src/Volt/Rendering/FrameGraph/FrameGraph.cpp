@@ -83,12 +83,12 @@ namespace Volt
 			unreferencedResources.pop_back();
 
 			auto producer = unrefResource->producer;
-			if (producer.expired() || producer.lock()->hasSideEffect)
+			if (!producer || producer->hasSideEffect)
 			{
 				continue;
 			}
 
-			auto producerPtr = producer.lock();
+			auto producerPtr = producer;
 
 			VT_CORE_ASSERT(producerPtr->refCount > 0, "Ref count cannot be zero at this time!");
 
@@ -217,7 +217,7 @@ namespace Volt
 				// If this is the first access, use the images layout
 				if (resourceAccesses[write].empty())
 				{
-					srcAccess = { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_NONE,  (!node.resource.image.expired()) ? node.resource.image.lock()->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
+					srcAccess = { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_NONE,  (node.resource.image) ? node.resource.image->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
 				}
 				else
 				{
@@ -268,7 +268,7 @@ namespace Volt
 				// If this is the first access, use the images layout
 				if (resourceAccesses[read].empty())
 				{
-					srcAccess = { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_NONE,  (!node.resource.image.expired()) ? node.resource.image.lock()->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
+					srcAccess = { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_NONE,  (node.resource.image) ? node.resource.image->GetLayout() : VK_IMAGE_LAYOUT_UNDEFINED };
 				}
 				else
 				{
@@ -309,7 +309,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto commandBuffer = myPrimaryCommandBuffer.lock();
+		auto commandBuffer = myPrimaryCommandBuffer;
 		myCommandBufferCache.Reset();
 
 		std::vector<std::future<void>> commandBufferFutures;
@@ -336,7 +336,7 @@ namespace Volt
 
 					for (uint32_t i = 0; const auto & resource : myImageBarrierResources.at(renderPassNode->index))
 					{
-						barriers[i].image = GetImageResource(resource).image.lock()->GetHandle();
+						barriers[i].image = GetImageResource(resource).image->GetHandle();
 						i++;
 					}
 
@@ -376,11 +376,11 @@ namespace Volt
 		{
 			const auto& pass = passNodes.at(passIndex);
 
-			Renderer::BeginSection(myPrimaryCommandBuffer.lock(), pass->name, { 1.f });
+			Renderer::BeginSection(myPrimaryCommandBuffer, pass->name, { 1.f });
 
 			secondaryCmdBuffer->Submit();
 
-			Renderer::EndSection(myPrimaryCommandBuffer.lock());
+			Renderer::EndSection(myPrimaryCommandBuffer);
 
 			passIndex++;
 		}
@@ -389,16 +389,16 @@ namespace Volt
 		{
 			if (resource.resource.isExternal)
 			{
-				if (resource.lastUsage.expired())
+				if (!resource.lastUsage)
 				{
 					continue;
 				}
 
-				for (const auto& access : myResourceAccesses.at(resource.lastUsage.lock()->index))
+				for (const auto& access : myResourceAccesses.at(resource.lastUsage->index))
 				{
 					if (access.first == i)
 					{
-						resource.resource.image.lock()->OverrideLayout(access.second.dstLayout);
+						resource.resource.image->OverrideLayout(access.second.dstLayout);
 						break;
 					}
 				}
@@ -457,7 +457,7 @@ namespace Volt
 
 		VT_CORE_ASSERT(myResourceNodes.size() > static_cast<size_t>(resourceHandle), "[FrameGraph] ResourceHandle {} is not valid!", resourceHandle);
 
-		if (myResourceNodes.at(resourceHandle).resource.image.expired())
+		if (!myResourceNodes.at(resourceHandle).resource.image)
 		{
 			const auto& specification = myResourceNodes.at(resourceHandle).resource.specification;
 			myResourceNodes.at(resourceHandle).resource.image = myTransientResourceSystem.AquireTexture(specification, resourceHandle);
@@ -505,7 +505,7 @@ namespace Volt
 				renderingInfo.hasDepth = true;
 
 				renderingInfo.depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-				renderingInfo.depthAttachmentInfo.imageView = resource.image.lock()->GetView();
+				renderingInfo.depthAttachmentInfo.imageView = resource.image->GetView();
 
 				if (Utility::IsStencilFormat(resource.specification.format))
 				{
@@ -523,7 +523,7 @@ namespace Volt
 			{
 				auto& attInfo = renderingInfo.colorAttachmentInfo.emplace_back();
 				attInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-				attInfo.imageView = resource.image.lock()->GetView();
+				attInfo.imageView = resource.image->GetView();
 				attInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				attInfo.loadOp = Utility::VoltToVulkanLoadOp(resource.specification.clearMode);
 				attInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -542,8 +542,8 @@ namespace Volt
 	FrameGraphResourceHandle FrameGraph::Builder::CreateTexture(const FrameGraphTextureSpecification& textureSpecification)
 	{
 		auto handle = myFrameGraph.CreateTexture(textureSpecification);
-		myRenderPass.lock()->resourceCreates.emplace_back(handle);
-		myRenderPass.lock()->resourceWrites.emplace_back(handle);
+		myRenderPass->resourceCreates.emplace_back(handle);
+		myRenderPass->resourceWrites.emplace_back(handle);
 
 		return handle;
 	}
@@ -562,24 +562,24 @@ namespace Volt
 
 	void FrameGraph::Builder::SetHasSideEffect()
 	{
-		myRenderPass.lock()->hasSideEffect = true;
+		myRenderPass->hasSideEffect = true;
 	}
 
 	void FrameGraph::Builder::SetIsComputePass()
 	{
-		myRenderPass.lock()->isComputePass = true;
+		myRenderPass->isComputePass = true;
 	}
 
 	void FrameGraph::Builder::ReadResource(FrameGraphResourceHandle handle)
 	{
-		myRenderPass.lock()->resourceReads.emplace_back(handle);
+		myRenderPass->resourceReads.emplace_back(handle);
 	}
 
 	void FrameGraph::Builder::WriteResource(FrameGraphResourceHandle handle)
 	{
-		if (!myRenderPass.lock()->CreatesResource(handle))
+		if (!myRenderPass->CreatesResource(handle))
 		{
-			myRenderPass.lock()->resourceWrites.emplace_back(handle);
+			myRenderPass->resourceWrites.emplace_back(handle);
 		}
 	}
 }

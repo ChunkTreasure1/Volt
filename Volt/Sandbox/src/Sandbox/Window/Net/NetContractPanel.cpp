@@ -53,7 +53,7 @@ void NetContractPanel::DrawPanel()
 	{
 		DrawCalls(contract);
 		ImGui::Separator();
-		if (Volt::Entity(m_entityId, m_scene.get()).HasComponent<Volt::NetActorComponent>())
+		if (m_scene->GetEntityFromUUID(m_entityId).HasComponent<Volt::NetActorComponent>())
 		{
 			ImGui::TextColored(ImColor(0, 255, 0), "NetActorComponent");
 		}
@@ -75,7 +75,7 @@ void NetContractPanel::DrawActions()
 		{
 			UI::Notify(NotificationType::Error, "NetContract save Failed", "Make sure file is writable");
 		}
-		else if (m_entityId != entt::null && m_handle != 0)
+		else if (m_entityId != Volt::Entity::NullID() && m_handle != 0)
 		{
 			UI::Notify(NotificationType::Success, "NetContract Saved ", "");
 			auto contract = Volt::NetContractContainer::GetContract(m_handle);
@@ -93,11 +93,11 @@ void NetContractPanel::DrawActions()
 	ImGui::SameLine();
 	if (ImGui::Button("Refresh"))
 	{
-		if (m_entityId != entt::null && m_handle != 0)
+		if (m_entityId != Volt::Entity::NullID() && m_handle != 0)
 		{
 			Volt::NetContractContainer::Clear();
 			Volt::NetContractContainer::Load();
-			m_scene->RemoveEntity(Volt::Entity(m_entityId, m_scene.get()));
+			m_scene->RemoveEntity(m_scene->GetEntityFromUUID(m_entityId));
 			m_entityId = Volt::AssetManager::GetAsset<Volt::Prefab>(m_handle)->Instantiate(m_scene).GetID();
 		}
 	}
@@ -107,9 +107,9 @@ void NetContractPanel::DrawActions()
 	{
 		if (EditorUtils::Property("Prefab:", m_handle, Volt::AssetType::Prefab))
 		{
-			if (m_entityId != entt::null)
+			if (m_entityId != Volt::Entity::NullID())
 			{
-				m_scene->RemoveEntity(Volt::Entity(m_entityId, m_scene.get()));
+				m_scene->RemoveEntity(m_scene->GetEntityFromUUID(m_entityId));
 				Volt::NetContractContainer::Clear();
 				Volt::NetContractContainer::Load();
 			}
@@ -173,7 +173,7 @@ void NetContractPanel::DrawCalls(Ref<Volt::NetContract> in_contract)
 
 void NetContractPanel::DrawComponentRules(Ref<Volt::NetContract> in_contract)
 {
-	if (m_entityId == entt::null || m_handle == 0) return;
+	if (m_entityId == Volt::Entity::NullID() || m_handle == 0) return;
 	//auto entity = Volt::Entity(m_entityId, m_scene.get());
 	//auto& registry = m_scene->GetRegistry();
 
@@ -201,14 +201,14 @@ void NetContractPanel::DrawComponentRules(Ref<Volt::NetContract> in_contract)
 
 void NetContractPanel::DrawChildRules(Ref<Volt::NetContract> in_contract)
 {
-	if (m_entityId == entt::null || m_handle == 0) return;
+	if (m_entityId == Volt::Entity::NullID() || m_handle == 0) return;
 
 	DrawChild(in_contract, m_entityId);
 }
 
-void NetContractPanel::DrawChild(Ref<Volt::NetContract> in_contract, entt::entity in_id)
+void NetContractPanel::DrawChild(Ref<Volt::NetContract> in_contract, Volt::EntityID in_id)
 {
-	auto ent = Volt::Entity(in_id, m_scene.get());
+	auto ent = m_scene->GetEntityFromUUID(in_id);
 	if (ImGui::CollapsingHeader(ent.GetTag().c_str()))
 	{
 		DrawRuleSet(in_contract, in_id);
@@ -251,13 +251,13 @@ bool NetContractPanel::BlockStandardComponents(const std::string &in_name)
 	return false;
 }
 
-void NetContractPanel::DrawRuleSet(Ref<Volt::NetContract> in_contract, entt::entity in_id)
+void NetContractPanel::DrawRuleSet(Ref<Volt::NetContract> in_contract, Volt::EntityID in_id)
 {
-	auto entity = Volt::Entity(in_id, m_scene.get());
+	auto entity = m_scene->GetEntityFromUUID(in_id);
 
 	for (auto&& curr : entity.GetScene()->GetRegistry().storage())
 	{
-		if (auto& storage = curr.second; storage.contains(in_id))
+		if (auto& storage = curr.second; storage.contains(entity))
 		{
 			auto typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(storage.type().name());
 			if (!typeDesc)
