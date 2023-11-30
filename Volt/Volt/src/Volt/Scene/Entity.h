@@ -2,6 +2,9 @@
 
 #include "Volt/Core/Base.h"
 #include "Volt/Scene/Scene.h"
+#include "Volt/Scene/EntityID.h"
+
+#include <entt.hpp>
 
 namespace Volt
 {
@@ -22,6 +25,7 @@ namespace Volt
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(EntityCopyFlags);
 
+
 	class Entity
 	{
 	public:
@@ -37,7 +41,7 @@ namespace Volt
 
 		~Entity();
 
-		Ref<Scene> GetScene() const { return m_scene.lock(); }
+		Weak<Scene> GetScene() const { return m_scene; }
 
 		const std::string& GetTag() const;
 		const std::string ToString() const;
@@ -94,8 +98,7 @@ namespace Volt
 		const bool IsLocked() const;
 
 		const bool IsValid() const;
-		inline const entt::entity GetID() const { return m_id; }
-		inline const uint32_t GetUIntID() const { return static_cast<uint32_t>(m_id); }
+		const EntityID GetID() const;
 
 		template<typename T> T& GetComponent();
 		template<typename T> const T& GetComponent() const;
@@ -107,12 +110,15 @@ namespace Volt
 
 		Entity& operator=(const Entity& entity);
 
-		inline bool operator==(const Entity& entity) const { return m_id == entity.m_id; }
+		inline bool operator==(const Entity& entity) const { return m_handle == entity.m_handle; }
 		inline bool operator!() const { return !IsValid(); }
 		inline explicit operator bool() const { return IsValid(); }
 		inline explicit operator std::string() const { return ToString(); }
+		inline operator entt::entity() const { return m_handle; }
+		inline operator uint32_t() const { return static_cast<uint32_t>(m_handle); }
 
 		static Entity Null();
+		constexpr static EntityID NullID() { return EntityID(0); }
 
 		// Copies a single entity
 		static void Copy(Entity srcEntity, Entity dstEntity, const EntityCopyFlags copyFlags = EntityCopyFlags::SkipRelationships);
@@ -128,18 +134,18 @@ namespace Volt
 		void UpdatePhysicsRotation(bool updateThis);
 
 		Weak<Scene> m_scene;
-		entt::entity m_id = entt::null;
+		entt::entity m_handle = entt::null;
 	};
 
 	template<EntityId T>
 	inline Entity::Entity(T id, Weak<Scene> scene)
-		: m_id(static_cast<entt::entity>(id)), m_scene(scene)
+		: m_handle(static_cast<entt::entity>(id)), m_scene(scene)
 	{
 	}
 
 	template<EntityId T>
 	inline Entity::Entity(T id, Scene* scene)
-		: m_id(static_cast<entt::entity>(id))
+		: m_handle(static_cast<entt::entity>(id))
 	{
 		m_scene = scene->shared_from_this();
 	}
@@ -149,7 +155,7 @@ namespace Volt
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
-		return registry.get<T>(m_id);
+		return registry.get<T>(m_handle);
 	}
 
 	template<typename T>
@@ -157,7 +163,7 @@ namespace Volt
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
-		return registry.get<T>(m_id);
+		return registry.get<T>(m_handle);
 	}
 
 	template<typename T>
@@ -165,7 +171,7 @@ namespace Volt
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
-		return registry.any_of<T>(m_id);
+		return registry.any_of<T>(m_handle);
 	}
 
 	template<typename T, typename ...Args>
@@ -173,7 +179,7 @@ namespace Volt
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
-		return registry.emplace<T>(m_id);
+		return registry.emplace<T>(m_handle);
 	}
 
 	template<typename T>
@@ -181,7 +187,7 @@ namespace Volt
 	{
 		auto scenePtr = GetScene();
 		auto& registry = scenePtr->GetRegistry();
-		registry.remove<T>(m_id);
+		registry.remove<T>(m_handle);
 	}
 
 

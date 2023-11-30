@@ -6,7 +6,7 @@
 
 namespace Volt
 {
-	MonoScriptEntity::MonoScriptEntity(const entt::entity& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass)
+	MonoScriptEntity::MonoScriptEntity(const EntityID& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass)
 	{
 		myEntity = id;
 		myMonoClass = klass;

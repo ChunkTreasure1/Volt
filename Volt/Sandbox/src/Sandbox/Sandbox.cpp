@@ -1047,7 +1047,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 				for (const auto& id : SelectionManager::GetSelectedEntities())
 				{
-					Volt::Entity ent{ id, myRuntimeScene.get() };
+					Volt::Entity ent = myRuntimeScene->GetEntityFromUUID(id);
 					avgPos += ent.GetPosition();
 				}
 

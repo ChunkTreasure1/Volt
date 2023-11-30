@@ -21,6 +21,8 @@ namespace Volt
 	template<typename T>
 	void RegisterSerializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamWriter&, const uint8_t*, const size_t)>>& outTypes)
 	{
+		VT_PROFILE_FUNCTION();
+
 		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamWriter& streamWriter, const uint8_t* data, const size_t offset) 
 		{ 
 			const T& var = *reinterpret_cast<const T*>(&data[offset]);
@@ -31,6 +33,8 @@ namespace Volt
 	template<typename T>
 	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
+		VT_PROFILE_FUNCTION();
+
 		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset) 
 		{ 
 			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T()); 
@@ -69,7 +73,7 @@ namespace Volt
 		RegisterSerializationFunction<std::string>(s_typeSerializers);
 		RegisterSerializationFunction<std::filesystem::path>(s_typeSerializers);
 
-		RegisterSerializationFunction<entt::entity>(s_typeSerializers);
+		RegisterSerializationFunction<Volt::EntityID>(s_typeSerializers);
 		RegisterSerializationFunction<AssetHandle>(s_typeSerializers);
 
 		RegisterDeserializationFunction<int8_t>(s_typeDeserializers);
@@ -102,7 +106,7 @@ namespace Volt
 		RegisterDeserializationFunction<std::string>(s_typeDeserializers);
 		RegisterDeserializationFunction<std::filesystem::path>(s_typeDeserializers); 
 
-		RegisterDeserializationFunction<entt::entity>(s_typeDeserializers);
+		RegisterDeserializationFunction<Volt::EntityID>(s_typeDeserializers);
 		RegisterDeserializationFunction<AssetHandle>(s_typeDeserializers);
 
 		s_instance = this;
@@ -115,6 +119,8 @@ namespace Volt
 
 	bool SceneImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		asset = CreateRef<Scene>();
 		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(asset);
 
@@ -173,6 +179,8 @@ namespace Volt
 
 	void SceneImporter::LoadSceneLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		std::filesystem::path layersFolderPath = sceneDirectory / "Layers";
 		if (!std::filesystem::exists(layersFolderPath))
 		{
@@ -193,6 +201,8 @@ namespace Volt
 
 		for (const auto& layerPath : layerPaths)
 		{
+			VT_PROFILE_SCOPE("Layer");
+
 			auto& sceneLayer = sceneLayers.emplace_back();
 
 			YAMLStreamReader streamReader{};
@@ -247,9 +257,8 @@ namespace Volt
 
 				streamWriter.BeginSequence("Entities");
 				{
-					for (const auto id : scene->GetAllEntities())
+					for (const auto entity : scene->GetAllEntities())
 					{
-						Entity entity{ id, scene };
 						const uint32_t layerId = entity.GetComponent<CommonComponent>().layerId;
 
 						if (layerId != layer.id)
@@ -257,7 +266,7 @@ namespace Volt
 							continue;
 						}
 
-						SerializeEntity(id, metadata, scene, streamWriter);
+						SerializeEntity(entity, metadata, scene, streamWriter);
 					}
 				}
 				streamWriter.EndSequence();
@@ -275,7 +284,9 @@ namespace Volt
 
 		auto& registry = scene->GetRegistry();
 
-		streamWriter.SetKey("id", id);
+		Entity entity{ id, scene };
+
+		streamWriter.SetKey("id", entity.GetID());
 		streamWriter.BeginSequence("components");
 		{
 			for (auto&& curr : registry.storage())
@@ -497,19 +508,23 @@ namespace Volt
 
 	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		streamReader.EnterScope("Entity");
 
-		entt::entity entityId = streamReader.ReadKey("id", (entt::entity)entt::null);
+		EntityID entityId = streamReader.ReadKey("id", Entity::NullID());
 
-		if (entityId == entt::null)
+		if (entityId == Entity::NullID())
 		{
 			return;
 		}
 
-		entityId = scene->GetRegistry().create(entityId);
+		auto entity = scene->CreateEntityWithUUID(entityId);
 
 		streamReader.ForEach("components", [&]()
 		{
+			VT_PROFILE_SCOPE("Component");
+
 			VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
 			if (compGuid == VoltGUID::Null())
 			{
@@ -526,8 +541,12 @@ namespace Volt
 			{
 				case ValueType::Component:
 				{
-					ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
-					void* voidCompPtr = ComponentRegistry::Helpers::GetComponentWithGUID(compGuid, scene->GetRegistry(), entityId);
+					if (!ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, scene->GetRegistry(), entity))
+					{
+						ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entity);
+					}
+
+					void* voidCompPtr = ComponentRegistry::Helpers::GetComponentWithGUID(compGuid, scene->GetRegistry(), entity);
 					uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
 
 					const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
@@ -538,19 +557,19 @@ namespace Volt
 
 		});
 
-		if (scene->GetRegistry().any_of<MonoScriptComponent>(entityId))
+		if (scene->GetRegistry().any_of<MonoScriptComponent>(entity))
 		{
-			DeserializeMono(entityId, scene, streamReader);
+			DeserializeMono(entity, scene, streamReader);
 		}
 
-		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entityId))
+		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entity))
 		{
 			std::filesystem::path vpPath = metadata.filePath.parent_path();
 			vpPath = ProjectManager::GetDirectory() / vpPath / "Layers" / ("ent_" + std::to_string((uint32_t)entityId) + ".entVp");
 
 			if (std::filesystem::exists(vpPath))
 			{
-				auto& vpComp = scene->GetRegistry().get<VertexPaintedComponent>(entityId);
+				auto& vpComp = scene->GetRegistry().get<VertexPaintedComponent>(entity);
 				
 				std::ifstream vpFile(vpPath, std::ios::in | std::ios::binary);
 				if (!vpFile.is_open())
@@ -583,6 +602,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		streamReader.ForEach("members", [&]()
 		{
 			const std::string memberName = streamReader.ReadKey("name", std::string(""));
@@ -634,6 +655,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		void* arrayPtr = &data[offset];
 
 		const bool isNonDefaultType = arrayDesc->GetElementTypeDesc() != nullptr;
@@ -689,6 +712,8 @@ namespace Volt
 
 	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
 	{
+		VT_PROFILE_FUNCTION();
+
 		Entity entity{ id, scene };
 
 		streamReader.ForEach("MonoScripts", [&]()

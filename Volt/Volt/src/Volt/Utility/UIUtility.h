@@ -266,8 +266,8 @@ public:
 	static bool PropertyAxisColor(const std::string& text, glm::vec3& value, float resetValue = 0.f);
 	static bool PropertyAxisColor(const std::string& text, glm::vec2& value, float resetValue = 0.f);
 	
-	static bool PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::entity& value, const std::string& toolTip = "");
-	static bool PropertyEntity(Weak<Volt::Scene> scene, entt::entity& value, const float width, const std::string& toolTip = "");
+	static bool PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, Volt::EntityID& value, const std::string& toolTip = "");
+	static bool PropertyEntity(Weak<Volt::Scene> scene, Volt::EntityID& value, const float width, const std::string& toolTip = "");
 
 	static bool PropertyDragFloat(const std::string& text, float& value, float increment, float min = 0.f, float max = 0.f, const std::string& toolTip = "");
 	static bool PropertyTextBox(const std::string& text, const std::string& value, bool readOnly = false, const std::string& toolTip = "");

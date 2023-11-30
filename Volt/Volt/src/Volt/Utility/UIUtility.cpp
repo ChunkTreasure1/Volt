@@ -1541,7 +1541,7 @@ bool UI::PropertyTextBox(const std::string& text, const std::string& value, bool
 	return changed;
 }
 
-bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::entity& value, const std::string& toolTip)
+bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, Volt::EntityID& value, const std::string& toolTip)
 {
 	bool changed = false;
 
@@ -1553,7 +1553,7 @@ bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::
 	ImGui::TableNextColumn();
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity{ value, scene.lock().get() };
+	Volt::Entity entity = scene->GetEntityFromUUID(value);
 
 	std::string entityName;
 	if (entity)
@@ -1572,7 +1572,7 @@ bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		entt::entity entityId = *(entt::entity*)ptr;
+		Volt::EntityID entityId = *(Volt::EntityID*)ptr;
 		value = entityId;
 		changed = true;
 	}
@@ -1582,14 +1582,14 @@ bool UI::PropertyEntity(const std::string& text, Weak<Volt::Scene> scene, entt::
 	return changed;
 }
 
-bool UI::PropertyEntity(Weak<Volt::Scene> scene, entt::entity& value, const float width, const std::string& toolTip)
+bool UI::PropertyEntity(Weak<Volt::Scene> scene, Volt::EntityID& value, const float width, const std::string& toolTip)
 {
 	bool changed = false;
 
 	SimpleToolTip(toolTip);
 	std::string id = "##" + std::to_string(s_stackId++);
 
-	Volt::Entity entity{ value, scene.lock().get() };
+	Volt::Entity entity = scene->GetEntityFromUUID(value);
 
 	std::string entityName;
 	if (entity)
@@ -1608,7 +1608,7 @@ bool UI::PropertyEntity(Weak<Volt::Scene> scene, entt::entity& value, const floa
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		entt::entity entityId = *(entt::entity*)ptr;
+		Volt::EntityID entityId = *(Volt::EntityID*)ptr;
 		value = entityId;
 		changed = true;
 	}

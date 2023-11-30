@@ -79,7 +79,7 @@ namespace Volt
 		AnimationState* GetStateFromPin(const UUID outputId) const;
 		const int32_t GetStateIndexFromId(const UUID stateId) const;
 
-		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, entt::entity entity = entt::null) const;
+		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, Volt::EntityID entity = Volt::EntityID(0)) const;
 
 		void OnEvent(Event& e);
 

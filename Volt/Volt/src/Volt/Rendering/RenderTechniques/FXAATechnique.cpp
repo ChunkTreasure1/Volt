@@ -45,8 +45,8 @@ namespace Volt
 			const auto& currentColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& resultResource = resources.GetImageResource(data.tempColor);
 
-			pipeline->SetImage(resultResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			pipeline->SetImage(currentColorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+			pipeline->SetImage(resultResource.image, Sets::OTHER, 0, ImageAccess::Write);
+			pipeline->SetImage(currentColorResource.image, Sets::OTHER, 1, ImageAccess::Read);
 
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
@@ -83,8 +83,8 @@ namespace Volt
 			const auto& tempColorResource = resources.GetImageResource(fxaaMainData.tempColor);
 			const auto& resultResource = resources.GetImageResource(skyboxData.outputImage);
 
-			pipeline->SetImage(tempColorResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-			pipeline->SetImage(resultResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
+			pipeline->SetImage(tempColorResource.image, Sets::OTHER, 0, ImageAccess::Read);
+			pipeline->SetImage(resultResource.image, Sets::OTHER, 1, ImageAccess::Write);
 
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 

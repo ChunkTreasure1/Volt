@@ -5,6 +5,11 @@
 
 namespace Volt
 {
+	YAMLStreamReader::YAMLStreamReader()
+	{
+		m_nodeStack.reserve(100);
+	}
+
 	const bool YAMLStreamReader::OpenFile(const std::filesystem::path& filePath)
 	{
 		if (!std::filesystem::exists(filePath))

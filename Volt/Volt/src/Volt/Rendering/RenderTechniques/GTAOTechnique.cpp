@@ -96,13 +96,13 @@ namespace Volt
 			const auto& srcDepthResource = resources.GetImageResource(srcDepthHandle);
 			const auto& targetResource = resources.GetImageResource(data.prefilteredDepth);
 
-			prefilterDepthPipeline->SetImage(srcDepthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
+			prefilterDepthPipeline->SetImage(srcDepthResource.image, Sets::OTHER, 0, ImageAccess::Read);
 
-			prefilterDepthPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 1, 0, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 2, 1, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 3, 2, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 4, 3, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 5, 4, ImageAccess::Write);
+			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 1, 0, ImageAccess::Write);
+			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 2, 1, ImageAccess::Write);
+			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 3, 2, ImageAccess::Write);
+			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 4, 3, ImageAccess::Write);
+			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 5, 4, ImageAccess::Write);
 			prefilterDepthPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			prefilterDepthPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &myConstants, sizeof(GTAOConstants));
@@ -160,12 +160,12 @@ namespace Volt
 			const auto& aoOutputResource = resources.GetImageResource(data.aoOutput);
 			const auto& edgesOutputResource = resources.GetImageResource(data.edgesOutput);
 
-			mainPassPipeline->SetImage(prefilteredDepthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
+			mainPassPipeline->SetImage(prefilteredDepthResource.image, Sets::OTHER, 0, ImageAccess::Read);
 
-			mainPassPipeline->SetImage(aoOutputResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
-			mainPassPipeline->SetImage(edgesOutputResource.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+			mainPassPipeline->SetImage(aoOutputResource.image, Sets::OTHER, 1, ImageAccess::Write);
+			mainPassPipeline->SetImage(edgesOutputResource.image, Sets::OTHER, 2, ImageAccess::Write);
 
-			mainPassPipeline->SetImage(viewNormalsResource.image.lock(), Sets::OTHER, 3, ImageAccess::Read);
+			mainPassPipeline->SetImage(viewNormalsResource.image, Sets::OTHER, 3, ImageAccess::Read);
 
 			mainPassPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			mainPassPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &myConstants, sizeof(GTAOConstants));
@@ -235,16 +235,16 @@ namespace Volt
 
 				if ((i % 2) == 0)
 				{
-					currentPipeline->SetImage(aoTermResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-					currentPipeline->SetImage(finalOutputResource.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+					currentPipeline->SetImage(aoTermResource.image, Sets::OTHER, 0, ImageAccess::Write);
+					currentPipeline->SetImage(finalOutputResource.image, Sets::OTHER, 2, ImageAccess::Write);
 				}
 				else
 				{
-					currentPipeline->SetImage(finalOutputResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-					currentPipeline->SetImage(aoTermResource.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+					currentPipeline->SetImage(finalOutputResource.image, Sets::OTHER, 0, ImageAccess::Write);
+					currentPipeline->SetImage(aoTermResource.image, Sets::OTHER, 2, ImageAccess::Write);
 				}
 
-				currentPipeline->SetImage(edgeTermResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+				currentPipeline->SetImage(edgeTermResource.image, Sets::OTHER, 1, ImageAccess::Read);
 
 				currentPipeline->InsertImageBarrier(Sets::OTHER, 0, readWriteBarrierInfo);
 				currentPipeline->InsertImageBarrier(Sets::OTHER, 2, writeReadBarrierInfo);

@@ -1249,12 +1249,12 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawPinContextMenu()
 			{
 				if (SelectionManager::IsAnySelected() && ImGui::MenuItem("Assign Selected Entity"))
 				{
-					pin->data = Volt::Entity{ SelectionManager::GetSelectedEntities().at(0), myCurrentScene.get() };
+					pin->data = myCurrentScene->GetEntityFromUUID(SelectionManager::GetSelectedEntities().at(0));
 				}
 
 				if (ImGui::MenuItem("Assign Graph Entity"))
 				{
-					pin->data = Volt::Entity{ myOpenGraph->GetEntity(), myCurrentScene.get() };
+					pin->data = myCurrentScene->GetEntityFromUUID(myOpenGraph->GetEntity());
 				}
 			}
 		}

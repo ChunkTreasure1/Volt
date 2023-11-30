@@ -47,14 +47,14 @@ namespace Volt
 
 			auto samplerDescriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
 
-			for (uint32_t i = 1; i < targetResource.image.lock()->GetSpecification().mips; i++)
+			for (uint32_t i = 1; i < targetResource.image->GetSpecification().mips; i++)
 			{
 				downsampleData.texelSize.x = 1.f / glm::vec2(mipSize).x;
 				downsampleData.texelSize.y = 1.f / glm::vec2(mipSize).y;
 				downsampleData.mipLevel = i;
 
-				downsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 1, i - 1, ImageAccess::Write);
-				downsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, i, ImageAccess::Write);
+				downsamplePipeline->SetImage(targetResource.image, Sets::OTHER, 1, i - 1, ImageAccess::Write);
+				downsamplePipeline->SetImage(targetResource.image, Sets::OTHER, 0, i, ImageAccess::Write);
 
 				downsamplePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 				downsamplePipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), samplerDescriptorSet, Sets::SAMPLERS);
@@ -71,7 +71,7 @@ namespace Volt
 				subresource.baseMipLevel = i;
 				subresource.layerCount = 1;
 				subresource.levelCount = 1;
-				Utility::InsertImageMemoryBarrier(commandBuffer->GetCurrentCommandBuffer(), targetResource.image.lock()->GetHandle(), VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, subresource);
+				Utility::InsertImageMemoryBarrier(commandBuffer->GetCurrentCommandBuffer(), targetResource.image->GetHandle(), VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, subresource);
 
 				mipSize /= 2u;
 			}
@@ -100,13 +100,13 @@ namespace Volt
 			glm::uvec2 mipSize = myRenderSize;
 
 			auto samplerDescriptorSet = Renderer::GetBindlessData().globalDescriptorSets[Sets::SAMPLERS]->GetOrAllocateDescriptorSet(currentIndex);
-			for (uint32_t i = targetResource.image.lock()->GetSpecification().mips - 1; i >= 1; i--)
+			for (uint32_t i = targetResource.image->GetSpecification().mips - 1; i >= 1; i--)
 			{
-				mipSize.x = (uint32_t)glm::max(1.0f, glm::floor(float(targetResource.image.lock()->GetWidth()) / glm::pow(2.0f, float(i - 1))));
-				mipSize.y = (uint32_t)glm::max(1.0f, glm::floor(float(targetResource.image.lock()->GetHeight()) / glm::pow(2.0f, float(i - 1))));
+				mipSize.x = (uint32_t)glm::max(1.0f, glm::floor(float(targetResource.image->GetWidth()) / glm::pow(2.0f, float(i - 1))));
+				mipSize.y = (uint32_t)glm::max(1.0f, glm::floor(float(targetResource.image->GetHeight()) / glm::pow(2.0f, float(i - 1))));
 
-				upsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, i - 1, ImageAccess::Write);
-				upsamplePipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 1, i, ImageAccess::Write);
+				upsamplePipeline->SetImage(targetResource.image, Sets::OTHER, 0, i - 1, ImageAccess::Write);
+				upsamplePipeline->SetImage(targetResource.image, Sets::OTHER, 1, i, ImageAccess::Write);
 				upsamplePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 				upsamplePipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), samplerDescriptorSet, Sets::SAMPLERS);
 
@@ -126,7 +126,7 @@ namespace Volt
 				subresource.baseMipLevel = i - 1;
 				subresource.layerCount = 1;
 				subresource.levelCount = 1;
-				Utility::InsertImageMemoryBarrier(commandBuffer->GetCurrentCommandBuffer(), targetResource.image.lock()->GetHandle(), VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, subresource);
+				Utility::InsertImageMemoryBarrier(commandBuffer->GetCurrentCommandBuffer(), targetResource.image->GetHandle(), VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, subresource);
 			}
 
 			upsamplePipeline->ClearAllResources();
@@ -151,16 +151,16 @@ namespace Volt
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& bloomSrcImageResource = resources.GetImageResource(luminosityData.luminosityImage);
 
-			compositePipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			compositePipeline->SetImage(bloomSrcImageResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+			compositePipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
+			compositePipeline->SetImage(bloomSrcImageResource.image, Sets::OTHER, 1, ImageAccess::Read);
 			compositePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr float bloomStrength = 0.5f;
 			compositePipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &bloomStrength, sizeof(float));
 
 			constexpr uint32_t threadCount = 8;
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, compositePipeline, dispatchX, dispatchY, 1);
 		});

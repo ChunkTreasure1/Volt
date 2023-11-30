@@ -23,14 +23,12 @@ void Volt::Vision::OnEvent(Volt::Event& e)
 
 void Volt::Vision::Initialize()
 {
-	std::vector<entt::entity> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	std::vector<Volt::Entity> camEntIDs = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	myVTCams.clear();
 
-	for (auto ID : camEntIDs)
+	for (auto ent : camEntIDs)
 	{
-		Volt::Entity ent = { ID, myScene };
-
 		auto& camComp = ent.GetComponent<Volt::CameraComponent>();
 
 		camComp.priority = 0;
@@ -76,10 +74,8 @@ void Volt::Vision::Update(float aDeltaTime)
 	if (myVTCams.size() != cams.size())
 	{
 		myVTCams.clear();
-		for (auto& cam : cams)
+		for (auto& newCam : cams)
 		{
-			Volt::Entity newCam{ cam, myScene };
-
 			newCam.GetComponent<Volt::VisionCameraComponent>().Init(newCam);
 
 			myVTCams.push_back(newCam);
@@ -352,9 +348,10 @@ void Volt::Vision::SetActiveCamera(const Volt::Entity aCamEntity)
 	}
 }
 
-void Volt::Vision::SetActiveCamera(const entt::entity aEntityID, const float& aBlendTime, eBlendType blendType)
+void Volt::Vision::SetActiveCamera(const EntityID aEntityID, const float& aBlendTime, eBlendType blendType)
 {
-	Volt::Entity camEnt = Volt::Entity{ aEntityID, myScene };
+	Volt::Entity camEnt = myScene->GetEntityFromUUID(aEntityID);
+
 
 	if (camEnt)
 	{
@@ -378,9 +375,9 @@ void Volt::Vision::SetActiveCamera(const entt::entity aEntityID, const float& aB
 	}
 }
 
-void Volt::Vision::SetActiveCamera(const entt::entity aEntityID)
+void Volt::Vision::SetActiveCamera(const EntityID aEntityID)
 {
-	Volt::Entity ent = Volt::Entity{ aEntityID, myScene };
+	Volt::Entity ent = myScene->GetEntityFromUUID(aEntityID);
 
 	if (ent)
 	{

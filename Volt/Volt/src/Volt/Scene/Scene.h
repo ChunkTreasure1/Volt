@@ -7,11 +7,11 @@
 #include "Volt/Audio/AudioSystem.h"
 #include "Volt/Vision/TimelinePlayer.h"
 
+#include "Volt/Scene/EntityRegistry.h"
+
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
 #include <glm/glm.hpp>
-
-#include <entt.hpp>
 
 #include <map>
 #include <set>
@@ -110,13 +110,18 @@ namespace Volt
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
-		Entity CreateEntity(const std::string& tag = "", const entt::entity hintId = entt::null);
+		Entity CreateEntity(const std::string& tag = "");
+		Entity CreateEntityWithUUID(const EntityID& uuid, const std::string& tag = "");
+
+		Entity GetEntityFromUUID(const EntityID uuid) const;
+		entt::entity GetHandleFromUUID(const EntityID uuid) const;
+
 		void RemoveEntity(Entity entity);
 
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		void InvalidateEntityTransform(entt::entity entity);
+		void InvalidateEntityTransform(const EntityID& entityUUID);
 
 		Vision& GetVision() { return *m_visionSystem; }
 		TimelinePlayer& GetTimelinePlayer() { return m_timelinePlayer; };
@@ -124,18 +129,21 @@ namespace Volt
 		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
 		const TQS GetWorldTQS(Entity entity) const;
-
 		const Entity GetEntityWithName(std::string name);
+		const bool IsEntityValid(EntityID entityId) const;
 
 		inline ParticleSystem& GetParticleSystem() { return m_particleSystem; }
 
 		template<typename... T>
-		const std::vector<entt::entity> GetAllEntitiesWith() const;
+		const std::vector<Entity> GetAllEntitiesWith() const;
+		
+		template<typename... T>
+		std::vector<Entity> GetAllEntitiesWith();
 
 		template<typename... T, typename F>
 		void ForEachWithComponents(const F& func);
 
-		const std::vector<entt::entity> GetAllEntities() const;
+		const std::vector<Entity> GetAllEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
@@ -198,8 +206,10 @@ namespace Volt
 
 		std::vector<SceneLayer> m_sceneLayers;
 
-		mutable std::unordered_map<entt::entity, glm::mat4> m_cachedEntityTransforms;
+		mutable std::unordered_map<EntityID, glm::mat4> m_cachedEntityTransforms;
 		mutable std::shared_mutex m_cachedEntityTransformMutex;
+
+		EntityRegistry m_entityRegistry{};
 
 		uint32_t m_viewportWidth = 1;
 		uint32_t m_viewportHeight = 1;
@@ -217,14 +227,28 @@ namespace Volt
 	};
 
 	template<typename ...T>
-	inline const std::vector<entt::entity> Scene::GetAllEntitiesWith() const
+	inline std::vector<Entity> Scene::GetAllEntitiesWith()
 	{
-		std::vector<entt::entity> result{};
+		std::vector<Entity> result{};
 
 		auto view = m_registry.view<T...>();
 		for (const auto& ent : view)
 		{
-			result.emplace_back(ent);
+			result.emplace_back(GetEntityFromUUID(m_entityRegistry.GetUUIDFromHandle(ent)));
+		}
+
+		return result;
+	}
+
+	template<typename ...T>
+	inline const std::vector<Entity> Scene::GetAllEntitiesWith() const
+	{
+		std::vector<Entity> result{};
+
+		auto view = m_registry.view<T...>();
+		for (const auto& ent : view)
+		{
+			result.emplace_back(GetEntityFromUUID(m_entityRegistry.GetUUIDFromHandle(ent)));
 		}
 
 		return result;

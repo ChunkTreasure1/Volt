@@ -13,22 +13,14 @@ project "Launcher"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	linkoptions 
 	{
-		"/ignore:4006",
-		"/ignore:4099",
 		"/ignore:4098",
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
@@ -39,9 +31,6 @@ project "Launcher"
     defines
     {
         "GLFW_INCLUDE_NONE",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
     }
 
 	files
@@ -69,7 +58,6 @@ project "Launcher"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Optick}",
 		"%{IncludeDir.imgui_notify}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.fmod}",
@@ -85,7 +73,6 @@ project "Launcher"
 		"%{IncludeDir.steam}",
 		"%{IncludeDir.discord}",
 
-		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.ffmpeg}",
 

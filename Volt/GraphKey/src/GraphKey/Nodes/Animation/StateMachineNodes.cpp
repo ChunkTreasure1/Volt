@@ -220,7 +220,7 @@ namespace GraphKey
 		return "State Machine";
 	}
 
-	Ref<Node> StateMachineNode::CreateCopy(Graph* ownerGraph, entt::entity entity)
+	Ref<Node> StateMachineNode::CreateCopy(Graph* ownerGraph, Volt::EntityID entity)
 	{
 		Ref<Node> copy = Node::CreateCopy(ownerGraph, entity);
 		Ref<StateMachineNode> stateMachineNode = std::reinterpret_pointer_cast<StateMachineNode>(copy);

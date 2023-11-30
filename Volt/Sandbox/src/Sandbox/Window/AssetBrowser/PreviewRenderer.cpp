@@ -27,7 +27,7 @@ PreviewRenderer::PreviewRenderer()
 	{
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
-		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
+		Volt::Entity ent = skylightEntities.front();
 		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 
@@ -53,12 +53,12 @@ PreviewRenderer::~PreviewRenderer()
 
 void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
-	if (assetItem.expired())
+	if (!assetItem)
 	{
 		return;
 	}
 
-	auto itemPtr = assetItem.lock();
+	auto itemPtr = assetItem;
 	const auto assetType = Volt::AssetManager::GetAssetTypeFromHandle(itemPtr->handle);
 
 	const bool assetWasLoaded = Volt::AssetManager::Get().IsLoaded(itemPtr->handle);
@@ -102,7 +102,7 @@ void PreviewRenderer::RenderPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
-	auto itemPtr = assetItem.lock();
+	auto itemPtr = assetItem;
 
 	Ref<Volt::Mesh> mesh = Volt::AssetManager::QueueAsset<Volt::Mesh>(itemPtr->handle);
 	if (!mesh || !mesh->IsValid())
@@ -126,7 +126,7 @@ bool PreviewRenderer::RenderMeshPreview(Weak<AssetBrowser::AssetItem> assetItem)
 
 bool PreviewRenderer::RenderMaterialPreview(Weak<AssetBrowser::AssetItem> assetItem)
 {
-	auto itemPtr = assetItem.lock();
+	auto itemPtr = assetItem;
 
 	Ref<Volt::Material> material = Volt::AssetManager::QueueAsset<Volt::Material>(itemPtr->handle);
 	if (!material || !material->IsValid())

@@ -44,13 +44,13 @@ private:
 
 	std::string m_searchQuery;
 	bool m_hasSearchQuery = false;
-	entt::entity m_scrollToEntity = entt::null;
+	Volt::EntityID m_scrollToEntity = Volt::Entity::NullID();
 
 	bool m_isRenamingLayer = false;
 	uint32_t m_renamingLayer = 0;
 
-	std::vector<entt::entity> m_entityDrawList;
-	std::unordered_map<entt::entity, ImGuiID> m_entityToImGuiID;
+	std::vector<Volt::EntityID> m_entityDrawList;
+	std::unordered_map<Volt::EntityID, ImGuiID> m_entityToImGuiID;
 	bool m_rebuildDrawList = false;
 
 	Ref<Volt::Scene>& m_scene;

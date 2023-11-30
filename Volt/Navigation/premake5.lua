@@ -12,23 +12,11 @@ project "Navigation"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099"
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	files
 	{
@@ -60,7 +48,6 @@ project "Navigation"
 		"../Nexus/src",
 
 		"%{IncludeDir.yaml}",
-		"%{IncludeDir.Optick}",
 		"%{IncludeDir.spdlog}",
 
 		"%{IncludeDir.PhysX}",
@@ -87,16 +74,6 @@ project "Navigation"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.shaderc_glslc}",
 		"%{IncludeDir.shaderc_utils}"
-	}
-
-	defines
-	{
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED",
-
-		"_USE_MATH_DEFINES",
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	filter "files:vendor/**.c"
