@@ -3,6 +3,8 @@
 
 #include "Volt/Log/Log.h"
 
+#include "Volt/Core/Profiling.h"
+
 namespace Volt
 {
 	YAMLStreamReader::YAMLStreamReader()
@@ -12,6 +14,8 @@ namespace Volt
 
 	const bool YAMLStreamReader::OpenFile(const std::filesystem::path& filePath)
 	{
+		VT_PROFILE_FUNCTION();
+
 		if (!std::filesystem::exists(filePath))
 		{
 			return false;
@@ -29,6 +33,7 @@ namespace Volt
 
 		try
 		{
+			VT_PROFILE_SCOPE("Parse YAML");
 			m_rootNode = YAML::Load(strStream.str());
 			m_currentNode = m_rootNode;
 		}
