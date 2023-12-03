@@ -26,15 +26,15 @@ namespace Volt
 	public:
 		UUID32();
 		constexpr UUID32(uint32_t uuid)
-			: myUUID(uuid)
+			: m_uuid(uuid)
 		{}
 
 		UUID32(const UUID32&) = default;
 		~UUID32() = default;
 
-		operator uint32_t() const { return myUUID; }
+		operator uint32_t() const { return m_uuid; }
 	private:
-		uint32_t myUUID;
+		uint32_t m_uuid;
 	};
 }
 

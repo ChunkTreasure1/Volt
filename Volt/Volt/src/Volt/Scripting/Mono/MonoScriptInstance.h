@@ -62,6 +62,7 @@ namespace Volt
 	private:
 		bool GetFieldInternal(const std::string& name, void* outData);
 		bool GetFieldInternal(const std::string& name, std::string& outData);
+		bool GetFieldInternal(const std::string& name, EntityID& outData);
 
 		bool SetFieldInternal(const std::string& name, const void* value);
 		bool SetFieldInternal(const std::string& name, const std::string& value);
@@ -116,4 +117,13 @@ namespace Volt
 		GetFieldInternal(name, result);
 		return result;
 	}
+
+	//template<>
+	//inline const EntityID MonoScriptInstance::GetField(const std::string& name)
+	//{
+	//	EntityID entityID;
+
+	//	GetFieldInternal(name, entityID);
+	//	return entityID;
+	//}
 }

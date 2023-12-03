@@ -69,7 +69,11 @@ void Volt::Vision::Reset()
 void Volt::Vision::Update(float aDeltaTime)
 {
 	auto cams = myScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
-	cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetID()), cams.end());
+
+	if (myTransitionCamera)
+	{
+		cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetID()), cams.end());
+	}
 
 	if (myVTCams.size() != cams.size())
 	{

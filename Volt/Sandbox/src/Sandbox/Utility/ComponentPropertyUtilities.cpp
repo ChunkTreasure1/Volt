@@ -669,7 +669,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			// #TODO_Ivar: We probably should not have to check this here
 			if (!currentField->data.IsValid())
 			{
-				continue;
+				const auto& defaultValueData = defaultFieldValueMap.at(name)->data;
+				currentField->SetValue(defaultValueData.As<const void>(), defaultValueData.GetSize());
 			}
 
 			bool fontChanged = false;

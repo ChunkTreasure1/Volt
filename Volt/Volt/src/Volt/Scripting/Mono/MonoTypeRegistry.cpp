@@ -1,7 +1,7 @@
 #include "vtpch.h"
 #include "MonoTypeRegistry.h"
 
-#include <entt.hpp>
+#include "Volt/Scene/EntityID.h"
 
 namespace Volt
 {
@@ -47,7 +47,7 @@ namespace Volt
 		RegisterMonoType<glm::vec3>("Volt.Vector3", s_monoToNativeTypeMap);
 		RegisterMonoType<glm::vec4>("Volt.Vector4", s_monoToNativeTypeMap);
 		RegisterMonoType<glm::quat>("Volt.Quaternion", s_monoToNativeTypeMap);
-		RegisterMonoType<entt::entity>("Volt.Entity", s_monoToNativeTypeMap);
+		RegisterMonoType<Volt::EntityID>("Volt.Entity", s_monoToNativeTypeMap);
 		RegisterMonoType<glm::vec4, AssetType::None, MonoTypeFlags::Color>("Volt.Color", s_monoToNativeTypeMap);
 		RegisterMonoType<AssetHandle, AssetType::Animation>("Volt.Animation", s_monoToNativeTypeMap);
 		RegisterMonoType<AssetHandle, AssetType::Prefab>("Volt.Prefab", s_monoToNativeTypeMap);

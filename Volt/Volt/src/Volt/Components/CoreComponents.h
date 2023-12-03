@@ -55,6 +55,8 @@ namespace Volt
 			reflect.SetHidden();
 			reflect.AddMember(&IDComponent::id, "id", "ID", "", EntityID{}, ComponentMemberFlag::NoSerialize);
 		}
+
+		REGISTER_COMPONENT(IDComponent);
 	};
 
 	struct TransformComponent

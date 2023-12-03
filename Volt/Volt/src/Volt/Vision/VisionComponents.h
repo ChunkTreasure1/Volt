@@ -59,6 +59,8 @@ namespace Volt
 			reflect.AddMember(&VisionTriggerComponent::triggerCam, "triggerCam", "Trigger Camera", "", Entity::NullID());
 			reflect.AddMember(&VisionTriggerComponent::forceActiveCam, "forceActiveCam", "Force Active Camera", "", false);
 		}
+
+		REGISTER_COMPONENT(VisionTriggerComponent);
 	};
 
 	struct VisionCameraComponent
@@ -125,6 +127,8 @@ namespace Volt
 
 		float myTargetFoV = 0.f;
 		bool myIsLocked = false;
+
+		REGISTER_COMPONENT(VisionCameraComponent);
 
 	private:
 		float myYawDelta = { 0 };

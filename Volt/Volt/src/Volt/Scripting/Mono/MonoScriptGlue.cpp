@@ -117,7 +117,7 @@ namespace Volt
 		return scene->IsEntityValid(entityId);
 	}
 
-	inline static bool Entity_HasComponent(EntityID entityId, MonoString* componentType)
+	inline static bool Entity_HasComponent(uint32_t entityId, MonoString* componentType)
 	{
 		Scene* scene = MonoScriptEngine::GetSceneContext();
 		Entity entity = scene->GetEntityFromUUID(entityId);

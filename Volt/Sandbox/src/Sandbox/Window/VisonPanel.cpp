@@ -80,6 +80,12 @@ void VisionPanel::UpdateCameraProperties()
 
 	UI::PushID();
 
+	const int32_t cameraCount = static_cast<int32_t>(myVisionCams.size());
+	if (mySelectedCamera > cameraCount)
+	{
+		mySelectedCamera = cameraCount - 1;
+	}
+
 	if (mySelectedCamera == -1 || !myVisionCams[mySelectedCamera].IsValid())
 	{
 		UI::PopID();

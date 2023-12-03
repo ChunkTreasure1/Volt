@@ -730,8 +730,10 @@ namespace Volt
 
 		m_registry.each([&](entt::entity id)
 		{
-			id = otherScene->m_registry.create(id);
-			Entity::Copy(Entity{ id, this }, Entity{ id, otherScene }, EntityCopyFlags::None);
+			const EntityID uuid = m_registry.get<IDComponent>(id).id;
+
+			auto entity =  otherScene->CreateEntityWithUUID(uuid);
+			Entity::Copy(Entity{ id, this }, entity, EntityCopyFlags::None);
 		});
 	}
 

@@ -69,10 +69,16 @@ void SceneViewPanel::UpdateMainContent()
 
 		const auto flags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoPadInnerX;
 
-		constexpr uint32_t columnCount = 2;
+		const uint32_t columnCount = m_showEntityUUIDs ? 3 : 2;
 		if (ImGui::BeginTable("entitiesTable", columnCount, flags, ImGui::GetContentRegionAvail()))
 		{
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+
+			if (m_showEntityUUIDs)
+			{
+				ImGui::TableSetupColumn("UUID", ImGuiTableColumnFlags_WidthStretch);
+			}
+
 			ImGui::TableSetupColumn("Modifiers", ImGuiTableColumnFlags_WidthFixed, 70.f);
 
 			// Headers
@@ -231,14 +237,14 @@ void SceneViewPanel::UpdateMainContent()
 						// If there is a payload, assume it's all the selected entities
 						if (payload)
 						{
-							const size_t count = payload->DataSize / sizeof(entt::entity);
+							const size_t count = payload->DataSize / sizeof(Volt::EntityID);
 							std::vector<Ref<ParentChildData>> undoData;
 
 							for (size_t i = 0; i < count; i++)
 							{
-								entt::entity id = *(((entt::entity*)payload->Data) + i);
+								Volt::EntityID id = *(((Volt::EntityID*)payload->Data) + i);
 								//Volt::Entity parent(entity, myScene.get());
-								Volt::Entity entity(id, m_scene.get());
+								Volt::Entity entity = m_scene->GetEntityFromUUID(id);
 
 								//Ref<ParentChildData> data = CreateRef<ParentChildData>();
 								//data->myParent = parent;
@@ -355,13 +361,13 @@ void SceneViewPanel::UpdateMainContent()
 				// If there is a payload, assume it's all the selected entities
 				if (payload)
 				{
-					const size_t count = payload->DataSize / sizeof(entt::entity);
+					const size_t count = payload->DataSize / sizeof(Volt::EntityID);
 					std::vector<Ref<ParentChildData>> undoData;
 
 					for (size_t i = 0; i < count; i++)
 					{
-						entt::entity id = *(((entt::entity*)payload->Data) + i);
-						Volt::Entity child(id, m_scene.get());
+						Volt::EntityID id = *(((Volt::EntityID*)payload->Data) + i);
+						Volt::Entity child = m_scene->GetEntityFromUUID(id);
 
 						Ref<ParentChildData> data = CreateRef<ParentChildData>();
 						data->myParent = child.GetParent();
@@ -812,7 +818,7 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 				i++;
 			}
 
-			ImGui::SetDragDropPayload("scene_entity_hierarchy", selectedEntities.data(), selectedEntities.size() * sizeof(entt::entity));
+			ImGui::SetDragDropPayload("scene_entity_hierarchy", selectedEntities.data(), selectedEntities.size() * sizeof(Volt::EntityID));
 			ImGui::EndDragDropSource();
 		}
 	}
@@ -824,14 +830,14 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 		// If there is a payload, assume it's all the selected entities
 		if (payload)
 		{
-			const size_t count = payload->DataSize / sizeof(entt::entity);
+			const size_t count = payload->DataSize / sizeof(Volt::EntityID);
 			std::vector<Ref<ParentChildData>> undoData;
 
 			for (size_t i = 0; i < count; i++)
 			{
-				entt::entity id = *(((entt::entity*)payload->Data) + i);
+				Volt::EntityID id = *(((Volt::EntityID*)payload->Data) + i);
 				Volt::Entity newParent = entity;
-				Volt::Entity child(id, m_scene);
+				Volt::Entity child = m_scene->GetEntityFromUUID(id);
 
 				Ref<ParentChildData> data = CreateRef<ParentChildData>();
 				data->myParent = newParent;
@@ -944,6 +950,14 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 	}
 
 	ImGui::TableNextColumn();
+
+	// UUIDs
+	if (m_showEntityUUIDs)
+	{
+		const std::string text = std::to_string(entity.GetID());
+		ImGui::TextUnformatted(text.c_str());
+		ImGui::TableNextColumn();
+	}
 
 	// Modifiers
 	{
@@ -1444,6 +1458,9 @@ void SceneViewPanel::DrawMainRightClickPopup()
 			});
 			UI::Notify(NotificationType::Success, "8===D", "Brrrrrrrrrrrrrrrrrrrr");
 		}
+
+		ImGui::MenuItem("Show UUIDS", nullptr, &m_showEntityUUIDs);
+
 		ImGui::EndPopup();
 	}
 }

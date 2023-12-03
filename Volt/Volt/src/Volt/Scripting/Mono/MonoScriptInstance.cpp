@@ -304,4 +304,9 @@ namespace Volt
 
 		return true;
 	}
+
+	//bool MonoScriptInstance::GetFieldInternal(const std::string& name, EntityID& outData)
+	//{
+	//	return false;
+	//}
 }

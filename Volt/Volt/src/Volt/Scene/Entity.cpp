@@ -666,7 +666,7 @@ namespace Volt
 			const auto& srcFields = srcScene->GetScriptFieldCache().GetCache().at(srcComponent.scriptIds.at(i));
 			auto& dstFields = dstScene->GetScriptFieldCache().GetCache()[dstComponent.scriptIds[i]];
 
-			for (const auto& [name, field] : classFields)
+			for (const auto [name, field] : classFields)
 			{
 				if (!srcFields.contains(name))
 				{
@@ -676,10 +676,10 @@ namespace Volt
 				auto& srcField = srcFields.at(name);
 
 				dstFields[name] = CreateRef<MonoScriptFieldInstance>();
-				dstFields.at(name)->field = srcFields.at(name)->field;
+				dstFields.at(name)->field = srcField->field;
 
 				const void* dataPtr = srcField->data.As<void>();
-				dstFields.at(name)->SetValue(dataPtr, srcFields.at(name)->field.type.typeSize);
+				dstFields.at(name)->SetValue(dataPtr, srcField->field.type.typeSize);
 			}
 		}
 	}

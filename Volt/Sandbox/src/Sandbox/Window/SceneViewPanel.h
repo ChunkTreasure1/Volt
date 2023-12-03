@@ -53,5 +53,7 @@ private:
 	std::unordered_map<Volt::EntityID, ImGuiID> m_entityToImGuiID;
 	bool m_rebuildDrawList = false;
 
+	bool m_showEntityUUIDs = false;
+
 	Ref<Volt::Scene>& m_scene;
 };
