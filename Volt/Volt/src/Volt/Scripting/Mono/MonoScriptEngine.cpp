@@ -196,7 +196,7 @@ namespace Volt
 		s_monoData->coreScriptClass->GetMethod(".ctor", 2);
 
 		s_monoData->coreEntityClass = CreateRef<MonoScriptClass>(s_monoData->coreData.assemblyImage, "Volt", ENTITY_CLASS_NAME.c_str());
-		s_monoData->coreEntityClass->GetMethod(".ctor", 2);
+		s_monoData->coreEntityClass->GetMethod(".ctor", 1);
 
 		LoadAndCreateCoreMonoClasses(s_monoData->coreData.assembly);
 		LoadAndCreateMonoClasses(s_monoData->appData.assembly);
@@ -370,38 +370,13 @@ namespace Volt
 
 	void MonoScriptEngine::LoadAndCreateMonoClasses(MonoAssembly* assembly)
 	{
+		RegisterEnumsAndClasses(assembly);
+
 		MonoImage* image = mono_assembly_get_image(assembly);
 		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
 		const int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-
-		// Start finding all enums, as classes may depend on them
-		for (int32_t i = 0; i < numTypes; i++)
-		{
-			uint32_t cols[MONO_TYPEDEF_SIZE];
-			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-			const char* namespaceStr = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-			MonoClass* monoClass = mono_class_from_name(s_monoData->appData.assemblyImage, namespaceStr, name);
-			if (!monoClass)
-			{
-				continue;
-			}
-
-			if (!mono_class_is_enum(monoClass))
-			{
-				continue;
-			}
-
-			const std::string typeName = std::string(namespaceStr) + "." + name;
-			Ref<MonoEnum> monoEnum = CreateRef<MonoEnum>(image, namespaceStr, name);
-			s_monoData->monoEnums.emplace(typeName, monoEnum);
-
-			MonoTypeRegistry::RegisterEnum(typeName);
-		}
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
@@ -503,7 +478,7 @@ namespace Volt
 		s_monoData->coreScriptClass->GetMethod(".ctor", 2);
 
 		s_monoData->coreEntityClass = CreateRef<MonoScriptClass>(s_monoData->coreData.assemblyImage, "Volt", ENTITY_CLASS_NAME.c_str());
-		s_monoData->coreEntityClass->GetMethod(".ctor", 2);
+		s_monoData->coreEntityClass->GetMethod(".ctor", 1);
 
 		LoadAndCreateCoreMonoClasses(s_monoData->coreData.assembly);
 		LoadAndCreateMonoClasses(s_monoData->appData.assembly);
@@ -555,6 +530,57 @@ namespace Volt
 				if (field != nullptr)
 				{
 					mono_field_set_value(instanceObject, field, entityObject);
+				}
+			}
+			else if (fieldInstance->field.type.IsCustomMonoType())
+			{
+				EntityID fieldEnt = *fieldInstance->data.As<EntityID>();
+				auto fieldEntInstance = GetOrCreateMonoEntity(fieldEnt);
+
+				auto fieldEntity = s_monoData->sceneContext->GetEntityFromUUID(fieldEnt);
+				if (!fieldEntity)
+				{
+					continue;
+				}
+
+				if (!fieldEntity.HasComponent<MonoScriptComponent>())
+				{
+					continue;
+				}
+
+				auto wantedMonoScriptClass = MonoScriptEngine::GetScriptClass(fieldInstance->field.type.typeName);
+				if (!wantedMonoScriptClass)
+				{
+					continue;
+				}
+
+				auto instanceObject = MonoGCManager::GetObjectFromHandle(instance->GetHandle());
+
+				const auto& monoComp = fieldEntity.GetComponent<MonoScriptComponent>();
+				for (uint32_t i = 0; const auto& scriptName : monoComp.scriptNames)
+				{
+					auto currentMonoScriptClass = GetScriptClass(scriptName);
+					if (!currentMonoScriptClass)
+					{
+						continue;
+					}
+
+					if (scriptName == fieldInstance->field.type.typeName || currentMonoScriptClass->IsSubclassOf(wantedMonoScriptClass))
+					{
+						auto scriptInstance = MonoScriptEngine::GetInstanceFromId(monoComp.scriptIds.at(i));
+
+						if (scriptInstance)
+						{
+							auto scriptObject = MonoGCManager::GetObjectFromHandle(scriptInstance->GetHandle());
+							auto field = mono_class_get_field_from_name(scriptInstance->GetClass()->GetClass(), name.c_str());
+							if (field)
+							{
+								mono_field_set_value(instanceObject, fieldInstance->field.fieldPtr, scriptObject);
+							}
+						}
+					}
+
+					i++;
 				}
 			}
 			else if (fieldInstance->field.type.IsString())
@@ -786,6 +812,10 @@ namespace Volt
 		{
 			std::vector<uint64_t> scriptIds;
 			Entity entity = s_monoData->sceneContext->GetEntityFromUUID(id);
+			if (!entity)
+			{
+				return nullptr;
+			}
 
 			if (entity.HasComponent<MonoScriptComponent>())
 			{
@@ -965,7 +995,7 @@ namespace Volt
 
 	MonoMethod* MonoScriptEngine::GetEntityConstructor()
 	{
-		return s_monoData->coreEntityClass->GetMethod(".ctor", 2);
+		return s_monoData->coreEntityClass->GetMethod(".ctor", 1);
 	}
 
 	GCHandle MonoScriptEngine::InstantiateClass(const UUID id, MonoClass* monoClass)
@@ -1015,6 +1045,48 @@ namespace Volt
 			MonoAssembly* assembly = Utility::LoadCSharpAssembly(assemblyPath, true);
 
 			s_monoData->referencedAssemblies[name] = assembly;
+		}
+	}
+
+	void MonoScriptEngine::RegisterEnumsAndClasses(MonoAssembly* assembly)
+	{
+		MonoImage* image = mono_assembly_get_image(assembly);
+		MonoClass* monoScriptClass = mono_class_from_name(s_monoData->coreData.assemblyImage, "Volt", CORE_CLASS_NAME.c_str());
+
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+		const int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			const char* namespaceStr = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+
+			MonoClass* monoClass = mono_class_from_name(s_monoData->appData.assemblyImage, namespaceStr, name);
+			if (!monoClass)
+			{
+				continue;
+			}
+
+			if (monoClass == monoScriptClass || mono_class_is_delegate(monoClass))
+			{
+				continue;
+			}
+
+			const std::string typeName = std::string(namespaceStr) + "." + name;
+
+			if (mono_class_is_enum(monoClass))
+			{
+				Ref<MonoEnum> monoEnum = CreateRef<MonoEnum>(image, namespaceStr, name);
+				s_monoData->monoEnums.emplace(typeName, monoEnum);
+				MonoTypeRegistry::RegisterEnum(typeName);
+			}
+			else
+			{
+				MonoTypeRegistry::RegisterCustomType(typeName);
+			}
 		}
 	}
 }

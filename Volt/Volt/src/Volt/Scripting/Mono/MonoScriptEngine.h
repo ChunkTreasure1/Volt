@@ -108,6 +108,8 @@ namespace Volt
 		static void LoadAndCreateCoreMonoClasses(MonoAssembly* assembly);
 		static void LoadAndCreateMonoClasses(MonoAssembly* assembly);
 
+		static void RegisterEnumsAndClasses(MonoAssembly* assembly);
+
 		static void InitializeMono();
 		static void ShutdownMono();
 

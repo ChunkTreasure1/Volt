@@ -61,20 +61,23 @@ namespace Volt
 		RegisterMonoType<AssetHandle, AssetType::AnimationGraph>("Volt.AnimationGraph", s_monoToNativeTypeMap);
 	}
 
-	const MonoTypeInfo MonoTypeRegistry::GetTypeInfo(std::string_view monoTypeName)
+	const MonoTypeInfo& MonoTypeRegistry::GetTypeInfo(std::string_view monoTypeName)
 	{
 		const std::string strTypeName = std::string(monoTypeName);
 
 		if (!s_monoToNativeTypeMap.contains(strTypeName))
 		{
-			return {};
+			static MonoTypeInfo nullTypeInfo{};
+			return nullTypeInfo;
 		}
 
 		return s_monoToNativeTypeMap.at(strTypeName);
 	}
 
-	const MonoTypeInfo MonoTypeRegistry::GetTypeInfo(const std::type_index& typeIndex)
+	const MonoTypeInfo& MonoTypeRegistry::GetTypeInfo(const std::type_index& typeIndex)
 	{
+		static MonoTypeInfo nullTypeInfo{};
+
 		for (const auto& [monoTypeName, typeInfo] : s_monoToNativeTypeMap)
 		{
 			if (typeInfo.typeIndex == typeIndex)
@@ -83,11 +86,16 @@ namespace Volt
 			}
 		}
 
-		return {};
+		return nullTypeInfo;
 	}
 
 	void MonoTypeRegistry::RegisterEnum(const std::string& typeName)
 	{
 		RegisterMonoType<int32_t, AssetType::None, MonoTypeFlags::Enum>(typeName, s_monoToNativeTypeMap);
+	}
+
+	void MonoTypeRegistry::RegisterCustomType(const std::string& typeName)
+	{
+		RegisterMonoType<CustomMonoType>(typeName, s_monoToNativeTypeMap);
 	}
 }

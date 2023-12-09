@@ -54,6 +54,11 @@ namespace Volt
 		template<>
 		const std::string GetField(const std::string& name);
 
+		template<>
+		const EntityID GetField(const std::string& name);
+
+		EntityID GetCustomMonoTypeField(const std::string& name);
+
 		const void* GetFieldRaw(const std::string& name);
 
 		inline const Ref<MonoScriptClass> GetClass() const { return myMonoClass; }
@@ -118,12 +123,12 @@ namespace Volt
 		return result;
 	}
 
-	//template<>
-	//inline const EntityID MonoScriptInstance::GetField(const std::string& name)
-	//{
-	//	EntityID entityID;
+	template<>
+	inline const EntityID MonoScriptInstance::GetField(const std::string& name)
+	{
+		EntityID entityID;
 
-	//	GetFieldInternal(name, entityID);
-	//	return entityID;
-	//}
+		GetFieldInternal(name, entityID);
+		return entityID;
+	}
 }

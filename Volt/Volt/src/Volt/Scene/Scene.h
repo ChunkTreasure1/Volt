@@ -143,6 +143,9 @@ namespace Volt
 		template<typename... T, typename F>
 		void ForEachWithComponents(const F& func);
 
+		template<typename... T, typename F>
+		void ForEachParallelWithComponents(const F& func);
+
 		const std::vector<Entity> GetAllEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);

@@ -580,6 +580,14 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
 				}
 			}
+			else if (field.type.IsCustomMonoType())
+			{
+				Volt::EntityID value = scriptInstance->GetCustomMonoTypeField(name);
+				if (UI::PropertyEntityCustomMonoType(displayName, scene, value, field.type))
+				{
+
+				}
+			}
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
 			{
 				glm::vec4 value = scriptInstance->GetField<glm::vec4>(name);
@@ -719,6 +727,10 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
 			{
 				fieldChanged = UI::PropertyColor(displayName, *currentField->data.As<glm::vec4>());
+			}
+			else if (field.type.IsCustomMonoType())
+			{
+				fieldChanged = UI::PropertyEntityCustomMonoType(displayName, scene, *currentField->data.As<Volt::EntityID>(), field.type);
 			}
 			else if (field.type.IsEnum())
 			{

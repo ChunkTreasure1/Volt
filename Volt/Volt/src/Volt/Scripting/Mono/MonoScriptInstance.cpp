@@ -206,6 +206,40 @@ namespace Volt
 		SetFieldInternal(name, value);
 	}
 
+	EntityID MonoScriptInstance::GetCustomMonoTypeField(const std::string& name)
+	{
+		auto instance = MonoGCManager::GetObjectFromHandle(myHandle);
+		if (!instance)
+		{
+			return false;
+		}
+
+		const auto& fields = myMonoClass->GetFields();
+		if (!fields.contains(name))
+		{
+			return false;
+		}
+
+		const auto& field = fields.at(name);
+		MonoObject* monoObj = mono_field_get_value_object(MonoScriptEngine::GetAppDomain(), field.fieldPtr, instance);
+		if (!monoObj)
+		{
+			return false;
+		}
+
+		MonoClass* objectClass = mono_object_get_class(monoObj);
+
+		auto idFunction = mono_class_get_method_from_name(objectClass, "GetEntityID", 0);
+		if (!idFunction)
+		{
+			return false;
+		}
+
+		MonoObject* res = mono_runtime_invoke(idFunction, monoObj, nullptr, nullptr);
+		EntityID id = *reinterpret_cast<EntityID*>(mono_object_unbox(res));
+		return id;
+	}
+
 	const void* MonoScriptInstance::GetFieldRaw(const std::string& name)
 	{
 		myFieldBuffer.Allocate(DEFAULT_FIELD_ALLOC_SIZE);
@@ -305,8 +339,36 @@ namespace Volt
 		return true;
 	}
 
-	//bool MonoScriptInstance::GetFieldInternal(const std::string& name, EntityID& outData)
-	//{
-	//	return false;
-	//}
+	bool MonoScriptInstance::GetFieldInternal(const std::string& name, EntityID& outData)
+	{
+		auto instance = MonoGCManager::GetObjectFromHandle(myHandle);
+		if (!instance)
+		{
+			return false;
+		}
+
+		const auto& fields = myMonoClass->GetFields();
+		if (!fields.contains(name))
+		{
+			return false;
+		}
+
+		const auto& field = fields.at(name);
+		MonoObject* monoObj = mono_field_get_value_object(MonoScriptEngine::GetAppDomain(), field.fieldPtr, instance);
+		if (!monoObj)
+		{
+			return false;
+		}
+
+		auto idFunction = MonoScriptEngine::GetEntityClass()->GetMethod("GetID", 0);
+		if (!idFunction)
+		{
+			return false;
+		}
+
+		MonoObject* res = mono_runtime_invoke(idFunction, monoObj, nullptr, nullptr);
+		outData = *reinterpret_cast<EntityID*>(mono_object_unbox(res));
+
+		return true;
+	}
 }
