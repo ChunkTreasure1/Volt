@@ -16,6 +16,8 @@
 
 #include "Volt/Core/BinarySerializer.h"
 
+#include "Volt/Utility/Algorithms.h"
+
 namespace Volt
 {
 	template<typename T>
@@ -147,9 +149,10 @@ namespace Volt
 		streamReader.ExitScope();
 
 		const std::filesystem::path& scenePath = filePath;
-		std::filesystem::path folderPath = scenePath.parent_path();
+		std::filesystem::path directoryPath = scenePath.parent_path();
 
-		LoadSceneLayers(metadata, scene, folderPath);
+		LoadSceneLayers(metadata, scene, directoryPath);
+		LoadEntities(metadata, scene, directoryPath);
 		scene->SortScene();
 		return true;
 	}
@@ -158,13 +161,13 @@ namespace Volt
 	{
 		const Ref<Scene> scene = std::reinterpret_pointer_cast<Scene>(asset);
 
-		std::filesystem::path folderPath = AssetManager::GetFilesystemPath(metadata.filePath);
-		if (!std::filesystem::is_directory(folderPath))
+		std::filesystem::path directoryPath = AssetManager::GetFilesystemPath(metadata.filePath);
+		if (!std::filesystem::is_directory(directoryPath))
 		{
-			folderPath = folderPath.parent_path();
+			directoryPath = directoryPath.parent_path();
 		}
 
-		std::filesystem::path scenePath = folderPath / (metadata.filePath.stem().string() + ".vtscene");
+		std::filesystem::path scenePath = directoryPath / (metadata.filePath.stem().string() + ".vtscene");
 
 		YAMLStreamWriter streamWriter{ scenePath };
 		streamWriter.BeginMap();
@@ -174,7 +177,8 @@ namespace Volt
 		streamWriter.EndMap();
 		streamWriter.WriteToDisk();
 
-		SaveSceneLayers(metadata, scene, folderPath);
+		SaveSceneLayers(metadata, scene, directoryPath);
+		SaveEntities(metadata, scene, directoryPath);
 	}
 
 	void SceneImporter::LoadSceneLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
@@ -218,10 +222,10 @@ namespace Volt
 				sceneLayer.visible = streamReader.ReadKey("visible", true);
 				sceneLayer.locked = streamReader.ReadKey("locked", false);
 
-				streamReader.ForEach("Entities", [&]()
-				{
-					DeserializeEntity(scene, metadata, streamReader);
-				});
+				//streamReader.ForEach("Entities", [&]()
+				//{
+				//	DeserializeEntity(scene, metadata, streamReader);
+				//});
 			}
 			streamReader.ExitScope();
 		}
@@ -275,6 +279,98 @@ namespace Volt
 			streamWriter.EndMap();
 			streamWriter.WriteToDisk();
 		}
+	}
+
+	void SceneImporter::SaveEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
+	{
+		std::filesystem::path entitiesDirectoryPath = sceneDirectory / "Entities";
+		if (!std::filesystem::exists(entitiesDirectoryPath))
+		{
+			std::filesystem::create_directories(entitiesDirectoryPath);
+		}
+
+		const auto entities = scene->GetAllEntities();
+
+		Algo::ForEachParallel([entitiesDirectoryPath, entities, metadata, scene, this](uint32_t i) 
+		{
+			Entity entity = entities.at(i);
+			const auto entityPath = entitiesDirectoryPath / ("entity_" + entity.ToString() + ".entity");
+
+			YAMLStreamWriter streamWriter{ entityPath };
+			SerializeEntity(entity, metadata, scene, streamWriter);
+
+			streamWriter.WriteToDisk();
+		}, 
+		static_cast<uint32_t>(entities.size()));
+	}
+
+	void SceneImporter::LoadEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		std::filesystem::path layersFolderPath = sceneDirectory / "Entities";
+		if (!std::filesystem::exists(layersFolderPath))
+		{
+			return;
+		}
+
+		std::vector<std::filesystem::path> entityPaths;
+
+		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
+		{
+			if (!it.is_directory() && it.path().extension().string() == ".entity")
+			{
+				entityPaths.emplace_back(it.path());
+			}
+		}
+
+		scene->m_registry.reserve(entityPaths.size());
+
+		for (auto&& curr : scene->m_registry.storage())
+		{
+			curr.second.reserve(entityPaths.size());
+		}
+
+		std::vector<Ref<Scene>> dummyScenes{};
+
+		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t i)
+		{
+			Ref<Scene> dummyScene = CreateRef<Scene>();
+
+			const auto& path = entityPaths.at(i);
+
+			YAMLStreamReader streamReader{};
+			if (!streamReader.OpenFile(path))
+			{
+				return;
+			}
+
+			DeserializeEntity(dummyScene, metadata, streamReader);
+			dummyScenes.push_back(dummyScene);
+		},
+		static_cast<uint32_t>(entityPaths.size()));
+
+		for (auto& f : futures)
+		{
+			f.wait();
+		}
+
+		for (const auto& dummyScene : dummyScenes)
+		{
+			for (const auto& entity : dummyScene->GetAllEntities())
+			{
+				Entity realEntity = scene->CreateEntityWithUUID(entity.GetID());
+				Entity::Copy(entity, realEntity, Volt::EntityCopyFlags::None);
+			}
+		}
+	}
+
+	Entity SceneImporter::CreateEntityFromUUIDThreadSafe(EntityID entityId, const Ref<Scene>& scene) const
+	{
+		static std::mutex createEntityMutex;
+		std::scoped_lock lock{ createEntityMutex };
+
+		return scene->CreateEntityWithUUID(entityId);
 	}
 
 	void SceneImporter::SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
@@ -519,7 +615,7 @@ namespace Volt
 			return;
 		}
 
-		auto entity = scene->CreateEntityWithUUID(entityId);
+		auto entity = CreateEntityFromUUIDThreadSafe(entityId, scene);
 
 		streamReader.ForEach("components", [&]()
 		{

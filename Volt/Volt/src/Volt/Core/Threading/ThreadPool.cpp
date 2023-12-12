@@ -24,6 +24,7 @@ namespace Volt
 			}
 
 			m_hasBeenInitialized = true;
+			m_threadCount = threadCount;
 		});
 	}
 
