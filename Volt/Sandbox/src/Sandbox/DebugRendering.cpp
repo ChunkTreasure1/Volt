@@ -90,8 +90,8 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			glm::vec3 p = entity.GetPosition();
 
-			const float maxDist = 5000.f * 5000.f;
-			const float lerpStartDist = 4000.f * 4000.f;
+			const float maxDist = 50.f * 50.f;
+			const float lerpStartDist = 40.f * 40.f;
 			const float maxScale = 1.f;
 			const float minScale = 0.3f;
 			const float distance = glm::distance2(camera->GetPosition(), p);
@@ -124,8 +124,8 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			glm::vec3 p = entity.GetPosition();
 
-			const float maxDist = 5000.f;
-			const float lerpStartDist = 4000.f;
+			const float maxDist = 50.f;
+			const float lerpStartDist = 40.f;
 			const float maxScale = 1.f;
 			const float distance = glm::distance(camera->GetPosition(), p);
 
@@ -154,8 +154,8 @@ void Sandbox::RenderGizmos(Ref<Volt::Scene> scene, Ref<Volt::Camera> camera)
 
 			glm::vec3 p = entity.GetPosition();
 
-			const float maxDist = 5000.f;
-			const float lerpStartDist = 4000.f;
+			const float maxDist = 50.f;
+			const float lerpStartDist = 40.f;
 			const float maxScale = 1.f;
 			const float distance = glm::distance(camera->GetPosition(), p);
 

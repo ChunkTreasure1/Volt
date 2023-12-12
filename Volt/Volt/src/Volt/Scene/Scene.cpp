@@ -716,7 +716,7 @@ namespace Volt
 				auto ent = newScene->CreateEntity("Camera");
 				ent.AddComponent<CameraComponent>();
 
-				ent.SetPosition({ 0.f, 0.f, -500.f });
+				ent.SetPosition({ 0.f, 0.f, -5.f });
 			}
 		}
 

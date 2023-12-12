@@ -17,7 +17,7 @@
 EditorCameraController::EditorCameraController(float fov, float nearPlane, float farPlane)
 	: m_fov(fov), m_nearPlane(nearPlane), m_farPlane(farPlane)
 {
-	const glm::vec3 startPosition = { 500.f, 500.f, 500.f };
+	const glm::vec3 startPosition = { 5.f, 5.f, 5.f };
 	m_focalDistance = glm::distance(startPosition, m_focalPoint);
 	m_rotation = { 45.f, 135.f, 0.f };
 	m_position = startPosition;
@@ -111,10 +111,12 @@ void EditorCameraController::ArcBall(const glm::vec2& deltaPos)
 
 void EditorCameraController::ArcZoom(float deltaPos)
 {
+	constexpr float MAX_SPEED = 0.1f;
+
 	float distance = m_focalDistance * 0.2f;
 	distance = glm::max(distance, 0.0f);
 	float speed = distance * distance;
-	speed = glm::min(speed, 10.f); // max speed = 50
+	speed = glm::min(speed, MAX_SPEED); // max speed = 50
 
 	m_focalDistance -= deltaPos * speed;
 	m_position = m_focalPoint - m_camera->GetForward() * m_focalDistance;

@@ -32,7 +32,7 @@ CharacterEditorPanel::CharacterEditorPanel()
 	: EditorWindow("Character Editor", true)
 {
 	m_windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 
 	myScene = Volt::Scene::CreateDefaultScene("Character Editor", false);
 
