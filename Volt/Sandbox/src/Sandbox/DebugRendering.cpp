@@ -31,6 +31,10 @@ void Sandbox::RenderSelection(Ref<Volt::Camera> camera)
 	for (const auto& id : SelectionManager::GetSelectedEntities())
 	{
 		Volt::Entity entity = myRuntimeScene->GetEntityFromUUID(id);
+		if (!entity)
+		{
+			continue;
+		}
 
 		if (!entity.HasComponent<Volt::TransformComponent>())
 		{
