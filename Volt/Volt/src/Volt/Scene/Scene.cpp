@@ -369,7 +369,13 @@ namespace Volt
 		}
 		newEntity.AddComponent<CommonComponent>();
 		newEntity.AddComponent<RelationshipComponent>();
-		newEntity.AddComponent<IDComponent>();
+		
+		auto& idComp = newEntity.AddComponent<IDComponent>();
+
+		while (m_entityRegistry.Contains(idComp.id))
+		{
+			idComp.id = {};
+		}
 
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
