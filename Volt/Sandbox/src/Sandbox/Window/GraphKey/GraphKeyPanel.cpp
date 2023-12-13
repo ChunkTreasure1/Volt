@@ -24,7 +24,7 @@ bool GraphKeyPanel::SaveSettings(const std::string& data)
 	}
 
 	auto entityId = myOpenGraph->GetEntity();
-	Volt::Entity entity = { entityId, myCurrentScene.get() };
+	Volt::Entity entity = myCurrentScene->GetEntityFromUUID(entityId);
 
 	if (!entity)
 	{
@@ -50,7 +50,7 @@ size_t GraphKeyPanel::LoadSettings(std::string& data)
 	}
 
 	auto entityId = myOpenGraph->GetEntity();
-	Volt::Entity entity = { entityId, myCurrentScene.get() };
+	Volt::Entity entity = myCurrentScene->GetEntityFromUUID(entityId);
 
 	if (!entity)
 	{

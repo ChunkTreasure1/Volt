@@ -48,7 +48,7 @@ namespace Volt
 
 						for (auto [entityId, agentId] : agentMap)
 						{
-							auto entity = Volt::Entity(entityId, myActiveScene);
+							auto entity = myActiveScene->GetEntityFromUUID(entityId);
 
 							if (!entity || !entity.HasComponent<Volt::NavAgentComponent>())
 							{
@@ -74,7 +74,7 @@ namespace Volt
 
 							crowd->SetAgentPosition(entity, entity.GetPosition());
 
-							if (!crowd->GetAgentMap().contains(id))
+							if (!crowd->GetAgentMap().contains(entity.GetID()))
 							{
 								crowd->AddAgent(entity);
 								crowd->UpdateAgentParams(entity);
@@ -99,7 +99,7 @@ namespace Volt
 						VT_PROFILE_SCOPE("Update agent positions");
 						for (auto [entityId, agentId] : agentMap)
 						{
-							Volt::Entity entity(entityId, myActiveScene.get());
+							Volt::Entity entity = myActiveScene->GetEntityFromUUID(entityId);
 							if (entity.GetComponent<NavAgentComponent>().active)
 							{
 								SyncDetourPosition(entity, e.GetTimestep());

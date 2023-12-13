@@ -48,14 +48,12 @@ namespace Volt
 	{
 		void OnCreate(entt::entity entityID)
 		{
-			m_id = entityID;
-			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(m_id), "SpawnedObj");
+			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(entityID), "SpawnedObj");
 		}
 
 		void OnStart(Volt::Entity entity)
 		{
-			m_id = entity.GetID();
-			Amp::WwiseAudioManager::CreateAudioObject(static_cast<uint32_t>(m_id), entity.GetTag().c_str());
+			Amp::WwiseAudioManager::CreateAudioObject(entity, entity.GetTag().c_str());
 		}
 
 		bool PlayOneshotEvent(const char* aEventName, const glm::vec3& aPosition, const glm::vec3& aForward, const glm::vec3& aUp)

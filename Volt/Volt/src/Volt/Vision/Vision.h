@@ -33,8 +33,8 @@ namespace Volt
 		void SetActiveCamera(const std::string aCamName);
 		void SetActiveCamera(const size_t aIndex);
 		void SetActiveCamera(const Volt::Entity aCamEntity);
-		void SetActiveCamera(const entt::entity aEntityID);
-		void SetActiveCamera(const entt::entity aEntityID, const float& aBlendTime, Volt::eBlendType blendType);
+		void SetActiveCamera(const EntityID aEntityID);
+		void SetActiveCamera(const EntityID aEntityID, const float& aBlendTime, Volt::eBlendType blendType);
 
 		const Volt::Entity GetActiveCamera() { return myActiveCamera.IsValid() ? myActiveCamera : Volt::Entity::Null(); }
 		const Volt::Entity GetTriggerCamera() { return myActiveTiggerCamera.IsValid() ? myActiveTiggerCamera : Volt::Entity::Null(); }

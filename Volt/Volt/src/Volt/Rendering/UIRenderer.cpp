@@ -195,7 +195,7 @@ namespace Volt
 		vkCmdEndRendering(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer());
 		Renderer::EndSection(s_uiRendererData->commandBuffer);
 
-		s_uiRendererData->currentRenderTarget.lock()->TransitionToLayout(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		s_uiRendererData->currentRenderTarget->TransitionToLayout(s_uiRendererData->commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		s_uiRendererData->commandBuffer->End();
 		s_uiRendererData->commandBuffer->Submit();
@@ -378,7 +378,7 @@ namespace Volt
 			double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 			double y = 0.0;
 
-			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
 			const glm::vec2 halfSize = currentSize / 2.f;
 
 			const glm::vec3 remappedPosition = { Remap(position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), position.z };
@@ -490,7 +490,7 @@ namespace Volt
 		{
 			auto subMat = s_uiRendererData->quadData.quadMaterial->GetSubMaterialAt(0);
 
-			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+			const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
 			const glm::vec2 halfSize = currentSize / 2.f;
 
 			const glm::vec3 remappedPosition = { Remap(cmd.position.x, -CORE_SIZE.x, CORE_SIZE.x, -halfSize.x, halfSize.x), Remap(cmd.position.y, -CORE_SIZE.y, CORE_SIZE.y, -halfSize.y, halfSize.y), cmd.position.z };
@@ -543,12 +543,12 @@ namespace Volt
 
 	float UIRenderer::GetCurrentScaleModifier()
 	{
-		if (s_uiRendererData->currentRenderTarget.expired())
+		if (!s_uiRendererData->currentRenderTarget)
 		{
 			return 0.f;
 		}
 
-		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
 		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
 		const float minScale = glm::min(newScale.x, newScale.y);
 
@@ -557,12 +557,12 @@ namespace Volt
 
 	float UIRenderer::GetCurrentScaleModifierX()
 	{
-		if (s_uiRendererData->currentRenderTarget.expired())
+		if (!s_uiRendererData->currentRenderTarget)
 		{
 			return 0.f;
 		}
 
-		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget.lock()->GetWidth(), (float)s_uiRendererData->currentRenderTarget.lock()->GetHeight() };
+		const glm::vec2 currentSize = { (float)s_uiRendererData->currentRenderTarget->GetWidth(), (float)s_uiRendererData->currentRenderTarget->GetHeight() };
 		const glm::vec2 newScale = { currentSize.x / CORE_SIZE.x, currentSize.y / CORE_SIZE.y };
 
 		return newScale.x;

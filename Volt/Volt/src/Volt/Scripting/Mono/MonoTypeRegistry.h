@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Volt/Asset/Asset.h"
-
-#include <entt.hpp>
+#include "Volt/Scene/EntityID.h"
 
 #include <unordered_map>
 #include <string_view>
@@ -19,6 +18,14 @@ namespace Volt
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(MonoTypeFlags);
 
+	struct CustomMonoType
+	{
+		inline friend bool operator==(const CustomMonoType& lhs, const CustomMonoType& rhs)
+		{
+			return &rhs == &rhs;
+		}
+	};
+
 	struct MonoTypeInfo
 	{
 		std::string typeName;
@@ -30,10 +37,11 @@ namespace Volt
 		
 		std::function<bool(const void* lhs, const void* rhs)> equalFunc;
 
-		[[nodiscard]] inline const bool IsEntity() const { return typeIndex == typeid(entt::entity); }
+		[[nodiscard]] inline const bool IsEntity() const { return typeIndex == typeid(Volt::EntityID); }
 		[[nodiscard]] inline const bool IsAsset() const { return typeIndex == typeid(AssetHandle) && assetType != AssetType::None; }
 		[[nodiscard]] inline const bool IsString() const { return typeIndex == typeid(std::string); }
 		[[nodiscard]] inline const bool IsEnum() const { return (typeFlags & MonoTypeFlags::Enum) != MonoTypeFlags::None; }
+		[[nodiscard]] inline const bool IsCustomMonoType() const { return typeIndex == typeid(CustomMonoType); }
 	};
 
 	class MonoTypeRegistry
@@ -41,10 +49,11 @@ namespace Volt
 	public:
 		static void Initialize();
 
-		static const MonoTypeInfo GetTypeInfo(std::string_view monoTypeName);
-		static const MonoTypeInfo GetTypeInfo(const std::type_index& typeIndex);
+		static const MonoTypeInfo& GetTypeInfo(std::string_view monoTypeName);
+		static const MonoTypeInfo& GetTypeInfo(const std::type_index& typeIndex);
 
 		static void RegisterEnum(const std::string& typeName);
+		static void RegisterCustomType(const std::string& typeName);
 
 	private:
 		MonoTypeRegistry() = delete;

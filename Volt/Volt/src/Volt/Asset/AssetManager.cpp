@@ -1173,7 +1173,7 @@ namespace Volt
 	std::vector<std::filesystem::path> AssetManager::GetEngineMetaFiles()
 	{
 		std::vector<std::filesystem::path> files;
-		std::string ext(".vtmeta");
+		const std::string ext(".vtmeta");
 
 		// Engine Directory
 		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
@@ -1181,6 +1181,18 @@ namespace Volt
 			if (p.path().extension() == ext)
 			{
 				files.emplace_back(p.path());
+			}
+		}
+
+		const auto editorFolder = ProjectManager::GetEngineDirectory() / "Editor";
+		if (FileSystem::Exists(editorFolder))
+		{
+			for (auto& p : std::filesystem::recursive_directory_iterator(editorFolder))
+			{
+				if (p.path().extension() == ext)
+				{
+					files.emplace_back(p.path());
+				}
 			}
 		}
 

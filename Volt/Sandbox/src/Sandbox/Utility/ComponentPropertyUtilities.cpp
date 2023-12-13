@@ -113,12 +113,12 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 		s_initialized = true;
 	}
 
-	auto scenePtr = scene.lock();
+	auto scenePtr = scene;
 	auto& registry = scenePtr->GetRegistry();
 
 	for (auto&& curr : registry.storage())
 	{
-		if (auto& storage = curr.second; storage.contains(entity.GetID()))
+		if (auto& storage = curr.second; storage.contains(entity))
 		{
 			std::string_view typeName = storage.type().name();
 			const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
@@ -158,11 +158,11 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 						}
 					}
 
-					DrawComponent(scene, entity, compTypeDesc, storage.get(entity.GetID()), 0, open, false);
+					DrawComponent(scene, entity, compTypeDesc, storage.get(entity), 0, open, false);
 
 					if (removeComp)
 					{
-						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene.lock()->GetRegistry(), entity.GetID());
+						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene->GetRegistry(), entity);
 					}
 
 					break;
@@ -282,9 +282,9 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 	}
 
 	// Special case for entities
-	if (member.typeIndex == std::type_index{ typeid(entt::entity) })
+	if (member.typeIndex == std::type_index{ typeid(Volt::EntityID) })
 	{
-		if (UI::PropertyEntity(std::string(member.label), scene.lock(), *reinterpret_cast<entt::entity*>(&bytePtr[offset + member.offset])))
+		if (UI::PropertyEntity(std::string(member.label), scene, *reinterpret_cast<Volt::EntityID*>(&bytePtr[offset + member.offset])))
 		{
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
 		}
@@ -334,9 +334,9 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 	}
 
 	// Special case for entities
-	if (arrayMember.typeIndex == std::type_index{ typeid(entt::entity) })
+	if (arrayMember.typeIndex == std::type_index{ typeid(Volt::EntityID) })
 	{
-		if (UI::PropertyEntity(label, scene.lock(), *reinterpret_cast<entt::entity*>(elementData)))
+		if (UI::PropertyEntity(label, scene, *reinterpret_cast<Volt::EntityID*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
 		}
@@ -528,7 +528,7 @@ void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Vol
 
 		if (Sandbox::Get().GetSceneState() == SceneState::Edit)
 		{
-			auto scenePtr = scene.lock();
+			auto scenePtr = scene;
 
 			scenePtr->ShutdownEngineScripts();
 			scenePtr->InitializeEngineScripts();
@@ -545,7 +545,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 		return;
 	}
 
-	if (scene.lock()->IsPlaying() && scriptInstance)
+	if (scene->IsPlaying() && scriptInstance)
 	{
 		for (const auto& [name, field] : scriptInstance->GetClass()->GetFields())
 		{
@@ -573,11 +573,19 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			}
 			else if (field.type.IsEntity())
 			{
-				entt::entity value = scriptInstance->GetField<entt::entity>(name);
+				Volt::EntityID value = scriptInstance->GetField<Volt::EntityID>(name);
 				if (UI::PropertyEntity(displayName, scene, value))
 				{
 					scriptInstance->SetField(name, &value);
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+				}
+			}
+			else if (field.type.IsCustomMonoType())
+			{
+				Volt::EntityID value = scriptInstance->GetCustomMonoTypeField(name);
+				if (UI::PropertyEntityCustomMonoType(displayName, scene, value, field.type))
+				{
+
 				}
 			}
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
@@ -637,7 +645,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 		const auto& classFields = Volt::MonoScriptEngine::GetScriptClass(scriptEntry.name)->GetFields();
 		const auto& defaultFieldValueMap = Volt::MonoScriptEngine::GetDefaultScriptFieldMap(scriptEntry.name);
 
-		auto& entityFields = scene.lock()->GetScriptFieldCache().GetCache()[scriptEntry.id];
+		auto& entityFields = scene->GetScriptFieldCache().GetCache()[scriptEntry.id];
 
 		for (const auto& [name, field] : classFields)
 		{
@@ -669,7 +677,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			// #TODO_Ivar: We probably should not have to check this here
 			if (!currentField->data.IsValid())
 			{
-				continue;
+				const auto& defaultValueData = defaultFieldValueMap.at(name)->data;
+				currentField->SetValue(defaultValueData.As<const void>(), defaultValueData.GetSize());
 			}
 
 			bool fontChanged = false;
@@ -709,7 +718,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			}
 			else if (field.type.IsEntity())
 			{
-				fieldChanged = UI::PropertyEntity(displayName, scene, *currentField->data.As<entt::entity>());
+				fieldChanged = UI::PropertyEntity(displayName, scene, *currentField->data.As<Volt::EntityID>());
 			}
 			else if (field.type.IsAsset())
 			{
@@ -718,6 +727,10 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
 			{
 				fieldChanged = UI::PropertyColor(displayName, *currentField->data.As<glm::vec4>());
+			}
+			else if (field.type.IsCustomMonoType())
+			{
+				fieldChanged = UI::PropertyEntityCustomMonoType(displayName, scene, *currentField->data.As<Volt::EntityID>(), field.type);
 			}
 			else if (field.type.IsEnum())
 			{

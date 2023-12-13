@@ -1,6 +1,6 @@
 #pragma once
 
-#include <entt.hpp>
+#include "Volt/Scene/EntityID.h"
 
 extern "C"
 {
@@ -17,7 +17,7 @@ namespace Volt
 {
 	struct EntityParams
 	{
-		entt::entity id;
+		EntityID id;
 		MonoArray* scriptIds;
 	};
 
@@ -27,13 +27,13 @@ namespace Volt
 	class MonoScriptEntity
 	{
 	public:
-		MonoScriptEntity(const entt::entity& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass);
+		MonoScriptEntity(const EntityID& id, const std::vector<uint64_t>& scripts, Ref<MonoScriptClass> klass);
 		~MonoScriptEntity();
 
 		void UpdateTimers();
 
 		inline Ref<MonoScriptClass> GetClass() const { return myMonoClass; }
-		inline entt::entity GetEntityId() const { return myEntity; }
+		inline EntityID GetEntityId() const { return myEntity; }
 		inline const GCHandle GetHandle() const { return myHandle; }
 
 	private:
@@ -42,6 +42,6 @@ namespace Volt
 		MonoMethod* myUpdateTimersMethod = nullptr;
 
 		GCHandle myHandle = nullptr;
-		entt::entity myEntity;
+		EntityID myEntity;
 	};
 }

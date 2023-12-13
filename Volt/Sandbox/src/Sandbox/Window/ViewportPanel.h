@@ -94,7 +94,7 @@ private:
 
 	Volt::Entity m_createdEntity;
 
-	entt::entity m_entityToAddMesh = entt::null;
+	Volt::EntityID m_entityToAddMesh = Volt::Entity::NullID();
 	std::filesystem::path m_meshToImport;
 
 	Volt::AssetHandle m_sceneToOpen = Volt::Asset::Null();

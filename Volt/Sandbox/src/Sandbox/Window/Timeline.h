@@ -41,7 +41,7 @@ private:
 
 	bool CameraQuickshotKeyframe(Volt::KeyPressedEvent& e);
 	void AddKeyframe();
-	void AddClip(uint32_t entityId);
+	void AddClip(Volt::EntityID entityId);
 
 	void PreviewTimeline();
 
