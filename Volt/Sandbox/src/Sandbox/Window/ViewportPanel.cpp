@@ -153,7 +153,7 @@ void ViewportPanel::UpdateMainContent()
 			{
 				for (auto ent : SelectionManager::GetSelectedEntities())
 				{
-					if (Sandbox::Get().CheckForUpdateNavMesh(Volt::Entity(ent, m_editorScene.get())))
+					if (Sandbox::Get().CheckForUpdateNavMesh(m_editorScene->GetEntityFromUUID(ent)))
 					{
 						Sandbox::Get().BakeNavMesh();
 						break;
@@ -605,7 +605,7 @@ bool ViewportPanel::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 			auto selection = SelectionManager::GetSelectedEntities();
 			for (const auto& selectedEntity : selection)
 			{
-				Volt::Entity tempEnt = Volt::Entity(selectedEntity, m_editorScene.get());
+				Volt::Entity tempEnt = m_editorScene->GetEntityFromUUID(selectedEntity);
 				entitiesToRemove.push_back(tempEnt);
 
 				SelectionManager::Deselect(tempEnt.GetID());
@@ -852,7 +852,7 @@ void ViewportPanel::DuplicateSelection()
 			continue;
 		}
 
-		duplicated.emplace_back(Volt::Entity::Duplicate(Volt::Entity{ ent, m_editorScene }));
+		duplicated.emplace_back(Volt::Entity::Duplicate(m_editorScene->GetEntityFromUUID(ent)));
 	}
 
 	SelectionManager::DeselectAll();
@@ -883,7 +883,7 @@ void ViewportPanel::HandleSingleSelect()
 			SelectionManager::DeselectAll();
 		}
 
-		Volt::Entity entity{ pixelData, m_editorScene };
+		Volt::Entity entity = m_editorScene->GetEntityFromUUID(pixelData);
 
 		if (entity.IsValid())
 		{
@@ -938,9 +938,9 @@ void ViewportPanel::HandleMultiSelect()
 
 		for (const auto& d : data)
 		{
-			if (d != entt::null)
+			if (d != Volt::Entity::NullID())
 			{
-				SelectionManager::Select(static_cast<entt::entity>(d));
+				SelectionManager::Select(static_cast<Volt::EntityID>(d));
 			}
 		}
 	}
@@ -949,7 +949,7 @@ void ViewportPanel::HandleMultiSelect()
 void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 {
 	auto firstEntityId = SelectionManager::GetSelectedEntities().front();
-	Volt::Entity entity{ firstEntityId, m_editorScene };
+	Volt::Entity entity = m_editorScene->GetEntityFromUUID(firstEntityId);
 
 	if (!entity.HasComponent<Volt::RelationshipComponent>() || !entity.HasComponent<Volt::TransformComponent>())
 	{
@@ -978,9 +978,9 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 	glm::mat4 averageTransform = avgTransform;
 
-	if (relationshipComp.parent != entt::null)
+	if (relationshipComp.parent != Volt::Entity::NullID())
 	{
-		Volt::Entity parent(relationshipComp.parent, m_editorScene.get());
+		Volt::Entity parent = m_editorScene->GetEntityFromUUID(relationshipComp.parent);
 		auto pTransform = parent.GetTransform();
 
 		averageTransform = glm::inverse(pTransform) * averageTransform;
@@ -999,11 +999,11 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 {
-	std::vector<std::pair<entt::entity, Volt::TransformComponent>> previousTransforms;
+	std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> previousTransforms;
 
 	for (const auto& entId : SelectionManager::GetSelectedEntities())
 	{
-		Volt::Entity entity{ entId, m_editorScene };
+		Volt::Entity entity = m_editorScene->GetEntityFromUUID(entId);
 
 		if (SelectionManager::IsAnyParentSelected(entId, m_editorScene))
 		{
@@ -1025,9 +1025,9 @@ void ViewportPanel::HandleMultiGizmoInteraction(const glm::mat4& deltaTransform)
 
 		glm::mat4 entDeltaTransform = deltaTransform;
 
-		if (relationshipComp.parent != entt::null)
+		if (relationshipComp.parent != Volt::Entity::NullID())
 		{
-			Volt::Entity parent(relationshipComp.parent, m_editorScene.get());
+			Volt::Entity parent = m_editorScene->GetEntityFromUUID(relationshipComp.parent);
 			auto pTransform = parent.GetTransform();
 
 			entDeltaTransform = glm::inverse(pTransform) * entDeltaTransform;
@@ -1189,7 +1189,7 @@ glm::mat4 ViewportPanel::CalculateAverageTransform()
 
 	for (const auto& ent : SelectionManager::GetSelectedEntities())
 	{
-		const auto trs = m_editorScene->GetWorldTQS(Volt::Entity{ ent, m_editorScene.get() });
+		const auto trs = m_editorScene->GetWorldTQS(m_editorScene->GetEntityFromUUID(ent));
 
 		avgTranslation += trs.position;
 		avgRotation = trs.rotation;

@@ -396,7 +396,7 @@ namespace GraphKey
 		}
 	}
 
-	Ref<Node> LayeredBlendPerBoneNode::CreateCopy(Graph* ownerGraph, entt::entity entityId)
+	Ref<Node> LayeredBlendPerBoneNode::CreateCopy(Graph* ownerGraph, Volt::EntityID entityId)
 	{
 		Ref<Node> copy = Node::CreateCopy(ownerGraph, entityId);
 		Ref<LayeredBlendPerBoneNode> blendNode = std::reinterpret_pointer_cast<LayeredBlendPerBoneNode>(copy);

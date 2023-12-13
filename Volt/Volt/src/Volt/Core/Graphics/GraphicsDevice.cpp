@@ -171,11 +171,11 @@ namespace Volt
 	}
 
 	GraphicsDevice::GraphicsDevice(const GraphicsDeviceInfo& info)
-		: myQueueFamilies(info.physicalDevice.lock()->GetQueueFamilies())
+		: myQueueFamilies(info.physicalDevice->GetQueueFamilies())
 	{
 		myPhysicalDevice = info.physicalDevice;
 
-		auto physicalDevicePtr = info.physicalDevice.lock();
+		auto physicalDevicePtr = info.physicalDevice;
 		const auto& capabilities = physicalDevicePtr->GetCapabilities();
 
 		std::vector<VkDeviceQueueCreateInfo> deviceQueueInfos{};
@@ -248,7 +248,7 @@ namespace Volt
 			enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 #endif
 
-			if (myPhysicalDevice.lock()->GetCapabilities().supportsRayTracing)
+			if (myPhysicalDevice->GetCapabilities().supportsRayTracing)
 			{
 				EnableRayTracing(enabledExtensions);
 				myRayTracingFeatures.rayTracingPipelineFeature.pNext = &tempFeatures;
@@ -482,14 +482,14 @@ namespace Volt
 
 	VkCommandBuffer GraphicsDevice::GetSingleUseCommandBuffer(bool beginCommandBuffer, QueueType queueType)
 	{
-		if (myPhysicalDevice.expired())
+		if (!myPhysicalDevice)
 		{
 			return nullptr;
 		}
 
 		std::scoped_lock lock{ myCommandBufferDataMutex };
 
-		auto physDevicePtr = myPhysicalDevice.lock();
+		auto physDevicePtr = myPhysicalDevice;
 
 		const auto threadId = std::this_thread::get_id();
 

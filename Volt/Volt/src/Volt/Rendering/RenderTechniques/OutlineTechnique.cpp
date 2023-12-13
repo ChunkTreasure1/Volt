@@ -97,7 +97,7 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
-			material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(outlineGeomData.outputImage).image.lock());
+			material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(outlineGeomData.outputImage).image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
@@ -148,11 +148,11 @@ namespace Volt
 
 				if (index == 0)
 				{
-					material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(jumpFloodInitData.outputImage).image.lock());
+					material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(jumpFloodInitData.outputImage).image);
 				}
 				else
 				{
-					material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(data.outputImage[0]).image.lock());
+					material->GetSubMaterialAt(0)->Set(0, resources.GetImageResource(data.outputImage[0]).image);
 				}
 
 				material->GetSubMaterialAt(0)->SetValue("texelSize", floodPassData.texelSize);
@@ -189,8 +189,8 @@ namespace Volt
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& jumpFloodPassResource = resources.GetImageResource(jumpFloodPassData.outputImage[0]);
 
-			pipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			pipeline->SetImage(jumpFloodPassResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+			pipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
+			pipeline->SetImage(jumpFloodPassResource.image, Sets::OTHER, 1, ImageAccess::Read);
 			pipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			const glm::vec4 color = { 1.f, 0.5f, 0.f, 1.f };

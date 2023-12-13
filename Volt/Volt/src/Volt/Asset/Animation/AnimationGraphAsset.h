@@ -17,8 +17,8 @@ namespace Volt
 			: mySkeletonHandle(aSkeleton)
 		{
 		}
-
-		inline AnimationGraphAsset(AssetHandle aSkeleton, entt::entity entity)
+		
+		inline AnimationGraphAsset(AssetHandle aSkeleton, EntityID entity)
 			: GraphKey::Graph(entity), mySkeletonHandle(aSkeleton)
 		{
 		}
@@ -37,9 +37,7 @@ namespace Volt
 		static AssetType GetStaticType() { return Volt::AssetType::AnimationGraph; }
 		AssetType GetType() override { return GetStaticType(); };
 		
-		Ref<GraphKey::Node> GetRelevantAnimationNode();
-		
-		Ref<AnimationGraphAsset> CreateCopy(entt::entity entity = entt::null);
+		Ref<AnimationGraphAsset> CreateCopy(EntityID entity = Entity::NullID());
 
 	private:
 		friend class AnimationGraphImporter;

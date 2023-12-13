@@ -170,7 +170,7 @@ namespace Volt
 		return array;
 	}
 
-	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<entt::entity>& vector)
+	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<EntityID>& vector)
 	{
 		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
 		std::vector<MonoObject*> monoVector;
@@ -181,6 +181,29 @@ namespace Volt
 			if (!monoEnt)
 			{
 				monoEnt = MonoScriptEngine::GetOrCreateMonoEntity(vector[i]);
+			}
+			monoVector.emplace_back(MonoGCManager::GetObjectFromHandle(monoEnt->GetHandle()));
+		}
+
+		MonoArray* array = mono_array_new(coreAssembly.domain, MonoScriptEngine::GetEntityClass()->GetClass(), vector.size());
+		for (uint16_t i = 0; i < monoVector.size(); ++i)
+		{
+			mono_array_set(array, MonoObject*, i, monoVector[i]);
+		}
+		return array;
+	}
+
+	MonoArray* MonoScriptUtils::CreateMonoArrayEntity(const std::vector<Entity>& vector)
+	{
+		auto& coreAssembly = MonoScriptEngine::GetCoreAssembly();
+		std::vector<MonoObject*> monoVector;
+
+		for (uint16_t i = 0; i < vector.size(); ++i)
+		{
+			auto monoEnt = MonoScriptEngine::GetEntityFromId(vector[i].GetID());
+			if (!monoEnt)
+			{
+				monoEnt = MonoScriptEngine::GetOrCreateMonoEntity(vector[i].GetID());
 			}
 			monoVector.emplace_back(MonoGCManager::GetObjectFromHandle(monoEnt->GetHandle()));
 		}

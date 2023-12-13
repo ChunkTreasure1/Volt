@@ -6,7 +6,7 @@
 
 void SelectionManager::Init()
 {
-	myEntities[mySelectionKey] = std::vector<entt::entity>();
+	myEntities[mySelectionKey] = std::vector<Volt::EntityID>();
 }
 
 void SelectionManager::SetSelectionKey(const std::string& key)
@@ -14,7 +14,7 @@ void SelectionManager::SetSelectionKey(const std::string& key)
 	mySelectionKey = key;
 	if (!myEntities.contains(mySelectionKey))
 	{
-		myEntities[mySelectionKey] = std::vector<entt::entity>();
+		myEntities[mySelectionKey] = std::vector<Volt::EntityID>();
 	}
 }
 
@@ -23,7 +23,7 @@ void SelectionManager::ResetSelectionKey()
 	mySelectionKey = "";
 }
 
-bool SelectionManager::Select(entt::entity entity)
+bool SelectionManager::Select(Volt::EntityID entity)
 {
 	if (myLocked) return false;
 
@@ -36,7 +36,7 @@ bool SelectionManager::Select(entt::entity entity)
 	return true;
 }
 
-bool SelectionManager::Deselect(entt::entity entity)
+bool SelectionManager::Deselect(Volt::EntityID entity)
 {
 	if (myLocked) return false;
 
@@ -64,7 +64,7 @@ bool SelectionManager::IsAnySelected()
 	return !myEntities.at(mySelectionKey).empty();
 }
 
-bool SelectionManager::IsSelected(entt::entity entity)
+bool SelectionManager::IsSelected(Volt::EntityID entity)
 {
 	return std::find(myEntities.at(mySelectionKey).begin(), myEntities.at(mySelectionKey).end(), entity) != myEntities.at(mySelectionKey).end();
 }
@@ -75,16 +75,16 @@ void SelectionManager::Update(Ref<Volt::Scene> scene)
 
 	for (const auto& ent : GetSelectedEntities())
 	{
-		if (!scene->GetRegistry().valid(ent))
+		if (!scene->IsEntityValid(ent))
 		{
 			SelectionManager::Deselect(ent);
 		}
 	}
 }
 
-bool SelectionManager::IsAnyParentSelected(entt::entity id, Ref<Volt::Scene> scene)
+bool SelectionManager::IsAnyParentSelected(Volt::EntityID id, Ref<Volt::Scene> scene)
 {
-	Volt::Entity entity{ id, scene.get() };
+	Volt::Entity entity = scene->GetEntityFromUUID(id);
 
 	if (entity.GetParent())
 	{

@@ -9,7 +9,7 @@ namespace Volt
 	class YAMLStreamReader
 	{
 	public:
-		YAMLStreamReader() = default;
+		YAMLStreamReader();
 
 		const bool OpenFile(const std::filesystem::path& filePath);
 

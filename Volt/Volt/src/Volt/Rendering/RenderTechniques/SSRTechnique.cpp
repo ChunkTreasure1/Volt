@@ -56,9 +56,9 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
-			material->GetSubMaterialAt(0)->Set(0, preDepthResource.image.lock());
-			material->GetSubMaterialAt(0)->Set(1, viewNormalsResource.image.lock());
-			material->GetSubMaterialAt(0)->Set(2, colorResource.image.lock());
+			material->GetSubMaterialAt(0)->Set(0, preDepthResource.image);
+			material->GetSubMaterialAt(0)->Set(1, viewNormalsResource.image);
+			material->GetSubMaterialAt(0)->Set(2, colorResource.image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);
@@ -98,7 +98,7 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
-			material->GetSubMaterialAt(0)->Set(0, ssrResource.image.lock());
+			material->GetSubMaterialAt(0)->Set(0, ssrResource.image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, material, myGlobalDescriptorMap);

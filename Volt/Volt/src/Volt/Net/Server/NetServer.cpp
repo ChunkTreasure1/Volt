@@ -61,7 +61,7 @@ namespace Volt
 		{
 			auto ptr = m_registry.Get(repId);
 			const auto& repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
-			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene().lock().get());
+			auto entity = SceneManager::GetActiveScene()->GetEntityFromUUID(repEntity.GetEntityId());
 			if (!entity.IsValid()) continue;
 
 			const auto& pawnComp = entity.GetComponent<NetActorComponent>();
@@ -80,7 +80,7 @@ namespace Volt
 		}
 		if (m_reload)
 		{
-			AssetHandle handle = SceneManager::GetActiveScene().lock()->handle;
+			AssetHandle handle = SceneManager::GetActiveScene()->handle;
 			Nexus::Packet reloadPacket;
 			reloadPacket.id = Nexus::ePacketID::RELOAD_CONFIRMED;
 			reloadPacket << handle;
@@ -112,7 +112,7 @@ namespace Volt
 
 	void NetServer::Reload()
 	{
-		AssetHandle handle = SceneManager::GetActiveScene().lock()->handle;
+		AssetHandle handle = SceneManager::GetActiveScene()->handle;
 		Volt::OnSceneTransitionEvent loadEvent{ handle };
 		Volt::Application::Get().OnEvent(loadEvent);
 
@@ -168,7 +168,7 @@ namespace Volt
 			if (m_registry.Get(repId)->GetType() == Nexus::TYPE::eReplicatedType::ENTITY)
 			{
 				auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
-				Volt::SceneManager::GetActiveScene().lock()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().lock().get()));
+				Volt::SceneManager::GetActiveScene()->RemoveEntity(SceneManager::GetActiveScene()->GetEntityFromUUID(ent));
 			}
 			m_registry.Unregister(repId);
 		}
@@ -200,7 +200,7 @@ namespace Volt
 		{
 			Nexus::Packet confirmedPacket;
 			confirmedPacket.id = Nexus::ePacketID::RELOAD_CONFIRMED;
-			confirmedPacket << SceneManager::GetActiveScene().lock()->handle;
+			confirmedPacket << SceneManager::GetActiveScene()->handle;
 			m_relay.Transmit(confirmedPacket, m_currentPacket.first);
 			return;
 		}
@@ -245,9 +245,9 @@ namespace Volt
 
 		m_registry.Unregister(repId);
 		auto scene = SceneManager::GetActiveScene();
-		auto scenePtr = scene.lock();
+		auto scenePtr = scene;
 
-		scenePtr->RemoveEntity(Entity(repEnt->GetEntityId(), scenePtr.get()));
+		scenePtr->RemoveEntity(scenePtr->GetEntityFromUUID(repEnt->GetEntityId()));
 
 		auto tPack = m_currentPacket.second;
 		tPack.ownerID = 0;
@@ -262,13 +262,13 @@ namespace Volt
 		Nexus::TYPE::REP_ID registerEntityId = Nexus::RandRepID();
 		while (m_registry.IdExist(registerEntityId)) registerEntityId = Nexus::RandRepID();
 
-		auto gameMode = SceneManager::GetActiveScene().lock()->GetAllEntitiesWith<GameModeComponent>();
+		auto gameMode = SceneManager::GetActiveScene()->GetAllEntitiesWith<GameModeComponent>();
 		if (gameMode.size() != 1)
 		{
 			VT_CORE_CRITICAL("Something went wrong with GameModeComponent. Make sure there is only one in the scene");
 			return;
 		}
-		auto gameModeEnt = Entity(gameMode[0], SceneManager::GetActiveScene().lock().get());
+		auto gameModeEnt = gameMode[0];
 		auto gameModeComp = gameModeEnt.GetComponent<GameModeComponent>();
 		//auto spawnPointEnt = Entity(gameModeEnt.spawnPoint, SceneManager::GetActiveScene().get()).GetComponent<GameModeComponent>();
 
@@ -304,7 +304,7 @@ namespace Volt
 			if (repEnt->GetHandle() == 0) continue;
 			if (repEnt->GetPreplaced()) continue;
 
-			auto sceneEnt = Entity(repEnt->GetEntityId(), SceneManager::GetActiveScene().lock().get());
+			auto sceneEnt = SceneManager::GetActiveScene()->GetEntityFromUUID(repEnt->GetEntityId());
 			Nexus::Packet syncPacket;
 			syncPacket.id = Nexus::ePacketID::CREATE_ENTITY;
 			syncPacket < CreateTransformComponentData(repId, sceneEnt.GetComponent<TransformComponent>());
@@ -386,13 +386,13 @@ namespace Volt
 
 	void NetServer::CreateDebugEnemy()
 	{
-		auto gameMode = SceneManager::GetActiveScene().lock()->GetAllEntitiesWith<GameModeComponent>();
+		auto gameMode = SceneManager::GetActiveScene()->GetAllEntitiesWith<GameModeComponent>();
 		if (gameMode.size() != 1)
 		{
 			VT_CORE_CRITICAL("Something went wrong with GameModeComponent. Make sure there is only one in the scene");
 			return;
 		}
-		auto handle = Entity(gameMode[0], SceneManager::GetActiveScene().lock().get()).GetComponent<GameModeComponent>().enemy;
+		auto handle = gameMode[0].GetComponent<GameModeComponent>().enemy;
 		auto prefabData = CreatePrefabData(10, 0, handle);
 
 		ConstructPrefab(prefabData, m_registry);

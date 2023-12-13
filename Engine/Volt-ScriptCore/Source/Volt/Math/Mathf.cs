@@ -64,6 +64,11 @@ namespace Volt
             return value > max ? max : value;
         }
 
+        public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max)
+        {
+            return new Vector3(Clamp(value.x, min.x, max.x), Clamp(value.y, min.y, max.y), Clamp(value.z, min.z, max.z));
+        }
+
         public static float Asin(float x) => (float)Math.Asin(x);
         public static float Atan(float x) => (float)Math.Atan(x);
         public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);

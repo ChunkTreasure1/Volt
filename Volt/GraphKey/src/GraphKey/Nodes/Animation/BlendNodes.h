@@ -72,7 +72,7 @@ namespace GraphKey
 		inline std::vector<BlendFilter>& GetBlendIncludeFilters() { return myIncludeFilters; }
 		inline std::vector<BlendFilter>& GetBlendExcludeFilters() { return myExcludeFilters; }
 
-		Ref<Node> CreateCopy(Graph* ownerGraph, entt::entity entity = entt::null) override;
+		Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::EntityID(0)) override;
 
 	private:
 		void TryApplyLayeredBlendPerBone();

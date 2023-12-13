@@ -4,11 +4,14 @@
 
 namespace Volt
 {
+
 	class UUID
 	{
 	public:
 		UUID();
-		UUID(uint64_t uuid);
+		constexpr UUID(uint64_t uuid)
+			: myUUID(uuid)
+		{}
 
 		UUID(const UUID&) = default;
 		~UUID() = default;
@@ -16,6 +19,22 @@ namespace Volt
 		operator uint64_t() const { return myUUID; }
 	private:
 		uint64_t myUUID;
+	};
+
+	class UUID32
+	{
+	public:
+		UUID32();
+		constexpr UUID32(uint32_t uuid)
+			: m_uuid(uuid)
+		{}
+
+		UUID32(const UUID32&) = default;
+		~UUID32() = default;
+
+		operator uint32_t() const { return m_uuid; }
+	private:
+		uint32_t m_uuid;
 	};
 }
 
@@ -29,6 +48,15 @@ namespace std
 		std::size_t operator()(const Volt::UUID& uuid) const
 		{
 			return (uint64_t)uuid;
+		}
+	};
+
+	template<>
+	struct hash<Volt::UUID32>
+	{
+		std::size_t operator()(const Volt::UUID32& uuid) const
+		{
+			return (uint32_t)uuid;
 		}
 	};
 }

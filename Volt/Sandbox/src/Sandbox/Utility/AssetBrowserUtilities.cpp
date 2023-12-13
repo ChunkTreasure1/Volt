@@ -114,7 +114,7 @@ namespace AssetBrowser
 
 				for (const auto& ent : scene->GetAllEntitiesWith<Volt::MeshComponent>())
 				{
-					meshEntities.emplace_back(Volt::Entity(ent, scene.get()));
+					meshEntities.emplace_back(ent);
 				}
 
 				meshesToExport = Volt::MeshExporterUtilities::GetMeshes(meshEntities);

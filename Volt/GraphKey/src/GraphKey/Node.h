@@ -68,7 +68,7 @@ namespace GraphKey
 
 		virtual void Serialize(YAML::Emitter&) {}
 		virtual void Deserialize(const YAML::Node&) {}
-		virtual Ref<Node> CreateCopy(Graph* ownerGraph, entt::entity entity = entt::null);
+		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::Entity::NullID());
 
 		virtual const std::string GetName() = 0;
 		virtual const glm::vec4 GetColor() = 0;
@@ -100,7 +100,7 @@ namespace GraphKey
 		void SetOutputData(uint32_t index, const T& data);
 
 		Volt::UUID id{};
-		entt::entity nodeEntity = entt::null;
+		Volt::EntityID nodeEntity = Volt::Entity::NullID();
 
 		std::vector<Attribute> inputs;
 		std::vector<Attribute> outputs;

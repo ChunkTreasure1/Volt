@@ -20,9 +20,8 @@ AssetPreview::AssetPreview(const std::filesystem::path& path)
 
 	myScene = Volt::Scene::CreateDefaultScene("Asset Preview", false);
 
-	auto entId = myScene->GetAllEntitiesWith<Volt::SkylightComponent>().front();
+	auto skylightEnt = myScene->GetAllEntitiesWith<Volt::SkylightComponent>().front();
 
-	Volt::Entity skylightEnt{ entId, myScene.get() };
 	auto& skylightComp = skylightEnt.GetComponent<Volt::SkylightComponent>();
 	skylightComp.environmentHandle = Volt::AssetManager::GetAsset<Volt::Texture2D>("Editor/Textures/HDRIs/studio_small_08_4k.hdr")->handle;
 	skylightComp.lod = 2.f;
