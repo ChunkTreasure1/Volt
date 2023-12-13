@@ -4,6 +4,7 @@
 #include "Volt/Math/Math.h"
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Threading/ThreadPool.h"
+#include "Volt/Core/Base.h"
 
 namespace Volt::Algo
 {
@@ -42,6 +43,8 @@ namespace Volt::Algo
 
 	void ForEachParallel(std::function<void(uint32_t)>&& func, uint32_t iterationCount)
 	{
+		VT_CORE_ASSERT(iterationCount > 0, "Iteration count must be greater than zero!");
+
 		auto& threadPool = Application::GetThreadPool();
 
 		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());

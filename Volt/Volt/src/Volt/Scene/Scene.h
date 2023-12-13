@@ -40,6 +40,11 @@ namespace Volt
 		float intensity = 1.f;
 	};
 
+	struct SceneSettings
+	{
+		bool useWorldEngine = false;
+	};
+
 	struct SceneLayer
 	{
 		uint32_t id = 0;
@@ -100,6 +105,9 @@ namespace Volt
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
+		void MarkEntityAsEdited(const Entity& entity);
+		void ClearEditedEntities();
+
 		inline const uint32_t GetActiveLayer() const { return m_sceneLayers.at(m_activeLayerIndex).id; }
 		inline const std::vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
 		inline std::vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
@@ -107,6 +115,9 @@ namespace Volt
 		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
 		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
 		const bool IsRelatedTo(Entity entity, Entity otherEntity);
+
+		inline SceneSettings& GetSceneSettingsMutable() { return m_sceneSettings; }
+		inline const SceneSettings& GetSceneSettings() const { return m_sceneSettings; }
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
@@ -117,7 +128,6 @@ namespace Volt
 		entt::entity GetHandleFromUUID(const EntityID uuid) const;
 
 		void RemoveEntity(Entity entity);
-
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
@@ -143,10 +153,9 @@ namespace Volt
 		template<typename... T, typename F>
 		void ForEachWithComponents(const F& func);
 
-		template<typename... T, typename F>
-		void ForEachParallelWithComponents(const F& func);
-
 		const std::vector<Entity> GetAllEntities() const;
+		const std::vector<Entity> GetAllEditedEntities() const;
+		const std::vector<EntityID> GetAllRemovedEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
@@ -198,6 +207,7 @@ namespace Volt
 		//////////////////////////////
 
 		SceneEnvironment m_environment;
+		SceneSettings m_sceneSettings;
 		Statistics m_statistics;
 
 		bool m_isPlaying = false;

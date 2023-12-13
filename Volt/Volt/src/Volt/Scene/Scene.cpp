@@ -384,6 +384,7 @@ namespace Volt
 		const auto uuid = newEntity.GetComponent<IDComponent>().id;
 
 		m_entityRegistry.AddEntity(newEntity);
+		m_entityRegistry.MarkEntityAsEdited(newEntity);
 
 		InvalidateEntityTransform(uuid);
 		SortScene();
@@ -1257,6 +1258,16 @@ namespace Volt
 		return std::find_if(m_sceneLayers.begin(), m_sceneLayers.end(), [layerId](const auto& lhs) { return lhs.id == layerId; }) != m_sceneLayers.end();
 	}
 
+	void Scene::MarkEntityAsEdited(const Entity& entity)
+	{
+		m_entityRegistry.MarkEntityAsEdited(entity);
+	}
+
+	void Scene::ClearEditedEntities()
+	{
+		m_entityRegistry.ClearEditedEntities();
+	}
+
 	const std::vector<Entity> Scene::GetAllEntities() const
 	{
 		std::vector<Entity> result{};
@@ -1268,5 +1279,29 @@ namespace Volt
 		});
 
 		return result;
+	}
+
+	const std::vector<Entity> Scene::GetAllEditedEntities() const
+	{
+		std::vector<Entity> entities;
+
+		for (const auto& entity : m_entityRegistry.GetEditedEntities())
+		{
+			entities.push_back(GetEntityFromUUID(entity));
+		}
+
+		return entities;
+	}
+
+	const std::vector<EntityID> Scene::GetAllRemovedEntities() const
+	{
+		std::vector<EntityID> entities;
+
+		for (const auto& entity : m_entityRegistry.GetRemovedEntities())
+		{
+			entities.push_back(entity);
+		}
+
+		return entities;
 	}
 }

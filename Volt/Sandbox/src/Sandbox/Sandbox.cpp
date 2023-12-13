@@ -41,6 +41,7 @@
 #include "Sandbox/Window/Net/NetPanel.h"
 #include "Sandbox/Window/Net/NetContractPanel.h"
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
+#include "Sandbox/Window/SceneSettingsPanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -117,9 +118,6 @@ void Sandbox::OnAttach()
 
 	NewScene();
 
-	// WIP Panels.
-#ifndef VT_DIST 
-
 	// Shelved Panels (So panel tab doesn't get cluttered up).
 #ifdef VT_DEBUG
 	EditorLibrary::RegisterWithType<PrefabEditorPanel>("", Volt::AssetType::Prefab);
@@ -128,8 +126,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<TaigaPanel>("Advanced");
 	EditorLibrary::Register<ThemesPanel>("Advanced");
 	EditorLibrary::Register<CurveGraphPanel>("Advanced");
-#endif
-
 #endif
 
 	myNavigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", myRuntimeScene);
@@ -148,6 +144,7 @@ void Sandbox::OnAttach()
 
 	EditorLibrary::Register<NetPanel>("Advanced");
 	EditorLibrary::Register<NetContractPanel>("Advanced");
+	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
 
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{

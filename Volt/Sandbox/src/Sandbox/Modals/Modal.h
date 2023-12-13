@@ -4,6 +4,8 @@
 
 #include <string>
 
+typedef Volt::UUID ModalID;
+
 class Modal
 {
 public:
@@ -14,7 +16,7 @@ public:
 	void Close();
 	bool Update();
 
-	inline const Volt::UUID GetID() const { return m_id; }
+	inline const ModalID GetID() const { return m_id; }
 
 protected:
 	virtual void DrawModalContent() = 0;
@@ -26,6 +28,6 @@ private:
 
 	bool m_wasOpenLastFrame = false;
 
-	Volt::UUID m_id;
+	ModalID m_id;
 	std::string m_strId;
 };

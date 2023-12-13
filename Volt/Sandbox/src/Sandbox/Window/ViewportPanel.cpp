@@ -141,10 +141,17 @@ void ViewportPanel::UpdateMainContent()
 			const auto view = tempCamera->GetView();
 			const auto projection = tempCamera->GetProjection();
 
-			ImGuizmo::Manipulate(
+			if (ImGuizmo::Manipulate(
 				glm::value_ptr(view),
 				glm::value_ptr(projection),
-				m_gizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr);
+				m_gizmoOperation, gizmoMode, glm::value_ptr(averageTransform), glm::value_ptr(deltaMatrix), snap ? snapValues : nullptr))
+			{
+				for (const auto& entId : SelectionManager::GetSelectedEntities())
+				{
+					auto entity = m_editorScene->GetEntityFromUUID(entId);
+					EditorUtils::MarkEntityAsEdited(entity);
+				}
+			}
 
 			bool wasUsedPreviousFrame = isUsing;
 			isUsing = ImGuizmo::IsUsing();
@@ -706,7 +713,7 @@ void ViewportPanel::CheckDragDrop()
 	m_isInViewport = true;
 
 	const Volt::AssetHandle handle = GlobalEditorStates::dragAsset;
-	const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromHandle(handle);
+	const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
 
 	switch (type)
 	{
@@ -724,7 +731,7 @@ void ViewportPanel::CheckDragDrop()
 				meshComp.handle = mesh->handle;
 			}
 
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
 			m_createdEntity = newEntity;
 
 			break;
@@ -732,7 +739,7 @@ void ViewportPanel::CheckDragDrop()
 
 		case Volt::AssetType::MeshSource:
 		{
-			const std::filesystem::path meshSourcePath = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle);
+			const std::filesystem::path meshSourcePath = Volt::AssetManager::GetFilePathFromAssetHandle(handle);
 			const std::filesystem::path vtMeshPath = meshSourcePath.parent_path() / (meshSourcePath.stem().string() + ".vtmesh");
 
 			Volt::AssetHandle resultHandle = handle;
@@ -781,7 +788,7 @@ void ViewportPanel::CheckDragDrop()
 				particleEmitter.preset = preset->handle;
 			}
 
-			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::Get().GetFilePathFromAssetHandle(handle).stem().string();
+			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
 			m_createdEntity = newEntity;
 
 			break;
@@ -1086,7 +1093,7 @@ void ViewportPanel::HandleNonMeshDragDrop()
 	if (void* ptr = UI::DragDropTarget({ "ASSET_BROWSER_ITEM" }))
 	{
 		const Volt::AssetHandle handle = *(const Volt::AssetHandle*)ptr;
-		const Volt::AssetType type = Volt::AssetManager::Get().GetAssetTypeFromHandle(handle);
+		const Volt::AssetType type = Volt::AssetManager::GetAssetTypeFromHandle(handle);
 
 		switch (type)
 		{

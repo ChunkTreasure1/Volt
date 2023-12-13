@@ -5,6 +5,17 @@
 
 namespace Volt
 {
+	void EntityRegistry::MarkEntityAsEdited(const Entity& entity)
+	{
+		m_editedEntities.emplace(entity.GetID());
+	}
+
+	void EntityRegistry::ClearEditedEntities()
+	{
+		m_editedEntities.clear();
+		m_removedEntities.clear();
+	}
+
 	void EntityRegistry::AddEntity(const Entity& entity)
 	{
 		if (m_entityMap.contains(entity.GetID()) || m_handleMap.contains(entity))
@@ -27,6 +38,13 @@ namespace Volt
 		{
 			m_handleMap.erase(entity);
 		}
+
+		if (m_editedEntities.contains(entity.GetID()))
+		{
+			m_editedEntities.erase(entity.GetID());
+		}
+
+		m_removedEntities.emplace(entity.GetID());
 	}
 
 	EntityID EntityRegistry::GetUUIDFromHandle(entt::entity handle) const
