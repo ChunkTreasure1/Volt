@@ -52,7 +52,7 @@ namespace Volt
 		NetContract = BIT(24),
 		PostProcessingMaterial = BIT(25),
 		PostProcessingStack = BIT(26),
-		MotionWeaver = BIT(27),
+		MotionWeave = BIT(27),
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)

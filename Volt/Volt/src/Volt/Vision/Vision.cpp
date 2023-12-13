@@ -72,7 +72,7 @@ void Volt::Vision::Update(float aDeltaTime)
 
 	if (myTransitionCamera)
 	{
-		cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera.GetID()), cams.end());
+		cams.erase(std::remove(cams.begin(), cams.end(), myTransitionCamera), cams.end());
 	}
 
 	if (myVTCams.size() != cams.size())

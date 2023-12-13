@@ -39,6 +39,7 @@ namespace Volt
 		
 		Ref<AnimationGraphAsset> CreateCopy(EntityID entity = Entity::NullID());
 
+		Ref<GraphKey::Node> GetRelevantAnimationNode();
 	private:
 		friend class AnimationGraphImporter;
 

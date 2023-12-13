@@ -153,7 +153,7 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 
 			if (myCurrentPlaybackTime <= track.clips.at(0).startTime)
 			{
-				if (vision.GetActiveCamera() != track.clips[0].activeCamera)
+				if (vision.GetActiveCamera().GetID() != track.clips[0].activeCamera)
 				{
 					vision.SetActiveCamera(track.clips[0].activeCamera, 0, Volt::eBlendType::None);
 					myCurrentPlaybackTime += deltaTime;
