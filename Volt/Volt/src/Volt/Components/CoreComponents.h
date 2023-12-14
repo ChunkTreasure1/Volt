@@ -12,6 +12,25 @@
 
 namespace Volt
 {
+	enum class Movability : uint32_t
+	{
+		Static = 0,
+		Stationary,
+		Movable
+	};
+
+	static void ReflectType(TypeDesc<Movability>& reflect)
+	{
+		reflect.SetGUID("{2DC55D4C-63C8-432A-8037-1D6762C8DC33}"_guid);
+		reflect.SetLabel("Movability");
+		reflect.SetDefaultValue(Movability::Static);
+		reflect.AddConstant(Movability::Static, "static", "Static");
+		reflect.AddConstant(Movability::Stationary, "stationary", "Stationary");
+		reflect.AddConstant(Movability::Movable, "movable", "Movable");
+	}
+
+	REGISTER_ENUM(Movability);
+
 	struct CommonComponent
 	{
 		uint32_t layerId = 0;
@@ -65,6 +84,8 @@ namespace Volt
 		glm::quat rotation = glm::identity<glm::quat>();
 		glm::vec3 scale = { 1.f };
 
+		Movability movability = Movability::Static;
+
 		bool visible = true;
 		bool locked = false;
 
@@ -99,6 +120,7 @@ namespace Volt
 			reflect.AddMember(&TransformComponent::scale, "scale", "Scale", "", glm::vec3{ 1.f });
 			reflect.AddMember(&TransformComponent::visible, "visible", "Visible", "", true);
 			reflect.AddMember(&TransformComponent::locked, "locked", "Locked", "", false);
+			reflect.AddMember(&TransformComponent::movability, "movability", "Movability", "", Movability::Static);
 		}
 
 		REGISTER_COMPONENT(TransformComponent);

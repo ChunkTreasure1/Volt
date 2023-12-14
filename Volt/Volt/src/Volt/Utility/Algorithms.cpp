@@ -8,7 +8,7 @@
 
 namespace Volt::Algo
 {
-	std::vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t)>&& func, uint32_t iterationCount)
+	std::vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount)
 	{
 		auto& threadPool = Application::GetThreadPool();
 
@@ -27,11 +27,11 @@ namespace Volt::Algo
 				currThreadIterationCount = iterationCount - i * perThreadIterationCount;
 			}
 
-			futures.emplace_back(threadPool.SubmitTask([currThreadIterationCount, func, iterOffset]() 
+			futures.emplace_back(threadPool.SubmitTask([currThreadIterationCount, func, iterOffset, i]() 
 			{
 				for (uint32_t iter = 0; iter < currThreadIterationCount; iter++)
 				{
-					func(iter + iterOffset);
+					func(i, iter + iterOffset);
 				}
 			}));
 
@@ -41,7 +41,7 @@ namespace Volt::Algo
 		return futures;
 	}
 
-	void ForEachParallel(std::function<void(uint32_t)>&& func, uint32_t iterationCount)
+	void ForEachParallel(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount)
 	{
 		VT_CORE_ASSERT(iterationCount > 0, "Iteration count must be greater than zero!");
 
@@ -59,15 +59,25 @@ namespace Volt::Algo
 				currThreadIterationCount = iterationCount - i * perThreadIterationCount;
 			}
 
-			threadPool.SubmitTask([currThreadIterationCount, func, iterOffset]()
+			threadPool.SubmitTask([currThreadIterationCount, func, iterOffset, i]()
 			{
 				for (uint32_t iter = 0; iter < currThreadIterationCount; iter++)
 				{
-					func(iter + iterOffset);
+					func(i, iter + iterOffset);
 				}
 			});
 
 			iterOffset += currThreadIterationCount;
 		}
+	}
+
+	uint32_t GetThreadCountFromIterationCount(uint32_t iterationCount)
+	{
+		VT_CORE_ASSERT(iterationCount > 0, "Iteration count must be greater than zero!");
+
+		auto& threadPool = Application::GetThreadPool();
+		const uint32_t threadCount = std::min(iterationCount, threadPool.GetThreadCount());
+	
+		return threadCount;
 	}
 }

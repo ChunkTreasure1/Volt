@@ -152,6 +152,11 @@ namespace Volt
 		scene->m_sceneSettings.useWorldEngine = streamReader.ReadKey("useWorldEngine", false);
 		streamReader.ExitScope();
 
+		if (scene->m_sceneSettings.useWorldEngine)
+		{
+			DeserializeWorldEngine(scene, streamReader);
+		}
+
 		streamReader.ExitScope();
 
 		const std::filesystem::path& scenePath = filePath;
@@ -159,7 +164,8 @@ namespace Volt
 
 		if (scene->m_sceneSettings.useWorldEngine)
 		{
-			LoadEntities(metadata, scene, directoryPath);
+			LoadCellEntities(metadata, scene, directoryPath);
+			//LoadEntities(metadata, scene, directoryPath);
 		}
 		else
 		{
@@ -190,6 +196,11 @@ namespace Volt
 		streamWriter.BeginMapNamned("Settings");
 		streamWriter.SetKey("useWorldEngine", scene->m_sceneSettings.useWorldEngine);
 		streamWriter.EndMap();
+
+		if (scene->m_sceneSettings.useWorldEngine)
+		{
+			SerializeWorldEngine(scene, streamWriter);
+		}
 
 		streamWriter.EndMap();
 		streamWriter.EndMap();
@@ -316,7 +327,7 @@ namespace Volt
 		const auto entities = scene->GetAllEditedEntities();
 		if (!entities.empty())
 		{
-			Algo::ForEachParallel([entitiesDirectoryPath, entities, metadata, scene, this](uint32_t i)
+			Algo::ForEachParallel([entitiesDirectoryPath, entities, metadata, scene, this](uint32_t threadIdx, uint32_t i)
 			{
 				Entity entity = entities.at(i);
 				const auto entityPath = entitiesDirectoryPath / (entity.ToString() + ".entity");
@@ -332,7 +343,7 @@ namespace Volt
 		const auto removedEntities = scene->GetAllRemovedEntities();
 		if (!removedEntities.empty())
 		{
-			Algo::ForEachParallel([removedEntities, entitiesDirectoryPath](uint32_t i)
+			Algo::ForEachParallel([removedEntities, entitiesDirectoryPath](uint32_t threadIdx, uint32_t i)
 			{
 				EntityID id = removedEntities.at(i);
 
@@ -376,10 +387,15 @@ namespace Volt
 			return;
 		}
 
+		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
+
 		std::vector<Ref<Scene>> dummyScenes{};
-		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t i)
+		dummyScenes.resize(iterationCount);
+
+		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
 		{
 			Ref<Scene> dummyScene = CreateRef<Scene>();
+			dummyScenes[threadIdx] = dummyScene;
 
 			const auto& path = entityPaths.at(i);
 
@@ -390,7 +406,6 @@ namespace Volt
 			}
 
 			DeserializeEntity(dummyScene, metadata, streamReader);
-			dummyScenes.push_back(dummyScene);
 		},
 		static_cast<uint32_t>(entityPaths.size()));
 
@@ -405,6 +420,106 @@ namespace Volt
 			{
 				Entity realEntity = scene->CreateEntityWithUUID(entity.GetID());
 				Entity::Copy(entity, realEntity, Volt::EntityCopyFlags::None);
+			}
+		}
+	}
+
+	void SceneImporter::SerializeWorldEngine(const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const
+	{
+		auto& worldEngine = scene->m_worldEngine;
+
+		streamWriter.BeginMapNamned("WorldEngine");
+		streamWriter.SetKey("cellSize", worldEngine.GetSettings().cellSize);
+		streamWriter.SetKey("worldSize", worldEngine.GetSettings().worldSize);
+
+		streamWriter.EndMap();
+	}
+
+	void SceneImporter::DeserializeWorldEngine(const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
+	{
+		auto& worldEngine = scene->m_worldEngine;
+
+		streamReader.EnterScope("WorldEngine");
+		worldEngine.GetSettingsMutable().cellSize = streamReader.ReadKey("cellSize", 256);
+		worldEngine.GetSettingsMutable().worldSize = streamReader.ReadKey("worldSize", glm::uvec2{ 1280 });
+		
+		worldEngine.GenerateCells();
+
+		streamReader.ExitScope();
+	}
+
+	void SceneImporter::LoadCellEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		std::filesystem::path layersFolderPath = sceneDirectory / "Entities";
+		if (!std::filesystem::exists(layersFolderPath))
+		{
+			return;
+		}
+
+		std::vector<std::filesystem::path> entityPaths;
+
+		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
+		{
+			if (!it.is_directory() && it.path().extension().string() == ".entity")
+			{
+				entityPaths.emplace_back(it.path());
+			}
+		}
+
+		if (entityPaths.empty())
+		{
+			return;
+		}
+
+		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
+
+		std::vector<std::unordered_map<WorldCellID, std::vector<EntityID>>> threadCellEntities{};
+		threadCellEntities.resize(Algo::GetThreadCountFromIterationCount(iterationCount));
+
+		auto futures = Algo::ForEachParallelLockable([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		{
+			const auto& path = entityPaths.at(i);
+
+			YAMLStreamReader streamReader{};
+			if (!streamReader.OpenFile(path))
+			{
+				return;
+			}
+
+			streamReader.EnterScope("Entity");
+
+			EntityID entityId = streamReader.ReadKey("id", Entity::NullID());
+			WorldCellID cellId = streamReader.ReadKey("cellId", INVALID_WORLD_CELL_ID);
+
+			if (entityId == Entity::NullID())
+			{
+				return;
+			}
+
+			if (cellId == INVALID_WORLD_CELL_ID)
+			{
+				cellId = 0;
+			}
+
+			streamReader.ExitScope();
+		
+			threadCellEntities[threadIdx][cellId].push_back(entityId);
+		},
+		iterationCount);
+
+		for (auto& f : futures)
+		{
+			f.wait();
+		}
+
+		auto& worldEngine = scene->m_worldEngine;
+		for (const auto& tCellEntities : threadCellEntities)
+		{
+			for (const auto& [cellId, entities] : tCellEntities)
+			{
+				worldEngine.AddEntitiesToCell(cellId, entities);
 			}
 		}
 	}
@@ -427,6 +542,7 @@ namespace Volt
 		Entity entity{ id, scene };
 
 		streamWriter.SetKey("id", entity.GetID());
+		streamWriter.SetKey("cellId", scene->m_worldEngine.GetCellIDFromEntity(entity));
 		streamWriter.BeginSequence("components");
 		{
 			for (auto&& curr : registry.storage())
@@ -912,5 +1028,97 @@ namespace Volt
 			});
 			streamReader.ExitScope();
 		});
+	}
+
+	void SceneImporter::LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const
+	{
+		VT_PROFILE_FUNCTION();
+
+		if (worldCell.isLoaded)
+		{
+			VT_CORE_WARN("[SceneImporter]: World Cell is already loaded!");
+			return;
+		}
+
+		if (worldCell.cellEntities.empty())
+		{
+			VT_CORE_WARN("[SceneImporter]: Unable to load World Cell which contains zero entities!");
+			return;
+		}
+
+		const auto& metadata = AssetManager::GetMetadataFromHandle(scene->handle);
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+		const std::filesystem::path sceneDirectory = filePath.parent_path();
+
+		std::filesystem::path layersFolderPath = sceneDirectory / "Entities";
+		if (!std::filesystem::exists(layersFolderPath))
+		{
+			return;
+		}
+
+		std::vector<std::filesystem::path> entityPaths;
+
+		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
+		{
+			if (!it.is_directory() && it.path().extension().string() == ".entity")
+			{
+				entityPaths.emplace_back(it.path());
+			}
+		}
+
+		for (int32_t i = static_cast<int32_t>(entityPaths.size()) - 1; i >= 0; i--)
+		{
+			const auto& path = entityPaths.at(i);
+
+			const std::string stem = path.stem().string();
+			uint32_t entityId = std::stoul(stem);
+			auto it = std::ranges::find(worldCell.cellEntities, EntityID(entityId));
+
+			if (it == worldCell.cellEntities.end())
+			{
+				entityPaths.erase(entityPaths.begin() + i);
+			}
+		}
+
+		if (entityPaths.empty())
+		{
+			return;
+		}
+
+		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
+
+		std::vector<Ref<Scene>> dummyScenes{};
+		dummyScenes.resize(iterationCount);
+
+		auto futures = Algo::ForEachParallelLockable([&dummyScenes, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		{
+			Ref<Scene> dummyScene = CreateRef<Scene>();
+			dummyScenes[threadIdx] = dummyScene;
+
+			const auto& path = entityPaths.at(i);
+
+			YAMLStreamReader streamReader{};
+			if (!streamReader.OpenFile(path))
+			{
+				return;
+			}
+
+			DeserializeEntity(dummyScene, metadata, streamReader);
+		},
+		static_cast<uint32_t>(entityPaths.size()));
+
+		for (auto& f : futures)
+		{
+			f.wait();
+		}
+
+		for (const auto& dummyScene : dummyScenes)
+		{
+			for (const auto& entity : dummyScene->GetAllEntities())
+			{
+				Entity realEntity = scene->CreateEntityWithUUID(entity.GetID());
+				Entity::Copy(entity, realEntity, Volt::EntityCopyFlags::None);
+			}
+		}
 	}
 }

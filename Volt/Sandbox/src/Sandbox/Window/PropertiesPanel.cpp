@@ -151,7 +151,7 @@ void PropertiesPanel::UpdateMainContent()
 						ent.SetLocalPosition(transform.position);
 						myCurrentScene->InvalidateEntityTransform(entId);
 					
-						EditorUtils::MarkEntityAsEdited(ent);
+						EditorUtils::MarkEntityAndChildrenAsEdited(ent);
 					}
 				}
 

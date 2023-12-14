@@ -149,7 +149,7 @@ void ViewportPanel::UpdateMainContent()
 				for (const auto& entId : SelectionManager::GetSelectedEntities())
 				{
 					auto entity = m_editorScene->GetEntityFromUUID(entId);
-					EditorUtils::MarkEntityAsEdited(entity);
+					EditorUtils::MarkEntityAndChildrenAsEdited(entity);
 				}
 			}
 

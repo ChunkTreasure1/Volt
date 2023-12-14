@@ -984,3 +984,14 @@ void EditorUtils::MarkEntityAsEdited(const Volt::Entity& entity)
 	auto scene = entity.GetScene();
 	scene->MarkEntityAsEdited(entity);
 }
+
+void EditorUtils::MarkEntityAndChildrenAsEdited(const Volt::Entity& entity)
+{
+	auto scene = entity.GetScene();
+	scene->MarkEntityAsEdited(entity);
+
+	for (const auto& child : entity.GetChildren())
+	{
+		MarkEntityAndChildrenAsEdited(child);
+	}
+}

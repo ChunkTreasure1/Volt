@@ -42,6 +42,7 @@
 #include "Sandbox/Window/Net/NetContractPanel.h"
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
 #include "Sandbox/Window/SceneSettingsPanel.h"
+#include "Sandbox/Window/WorldEnginePanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -145,6 +146,7 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<NetPanel>("Advanced");
 	EditorLibrary::Register<NetContractPanel>("Advanced");
 	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
+	EditorLibrary::Register<WorldEnginePanel>("", myRuntimeScene);
 
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{

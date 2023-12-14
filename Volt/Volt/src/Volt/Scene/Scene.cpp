@@ -58,6 +58,12 @@ namespace Volt
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
+
+		m_worldEngine.Reset(this, 16, 4);
+	}
+
+	void Scene::PostInitialize()
+	{
 	}
 
 	Scene::Scene()
@@ -67,6 +73,8 @@ namespace Volt
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
+
+		m_worldEngine.Reset(this, 16, 4);
 	}
 
 	void Scene::OnEvent(Event& e)
@@ -313,9 +321,9 @@ namespace Volt
 
 		// Update scene data
 		{
-			SceneData sceneData;
-			sceneData.deltaTime = aDeltaTime;
-			sceneData.timeSinceStart = m_timeSinceStart;
+			//SceneData sceneData;
+			//sceneData.deltaTime = aDeltaTime;
+			//sceneData.timeSinceStart = m_timeSinceStart;
 
 			//Renderer::SetSceneData(sceneData);
 		}
@@ -385,6 +393,7 @@ namespace Volt
 
 		m_entityRegistry.AddEntity(newEntity);
 		m_entityRegistry.MarkEntityAsEdited(newEntity);
+		m_worldEngine.AddEntity(newEntity);
 
 		InvalidateEntityTransform(uuid);
 		SortScene();
@@ -424,9 +433,11 @@ namespace Volt
 		newEntity.GetComponent<IDComponent>().id = uuid;
 
 		m_entityRegistry.AddEntity(newEntity);
+		m_worldEngine.AddEntity(newEntity);
 
 		InvalidateEntityTransform(uuid);
 		SortScene();
+
 		return newEntity;
 	}
 
@@ -542,6 +553,11 @@ namespace Volt
 				{
 					m_cachedEntityTransforms.erase(currentUUID);
 				}
+			}
+
+			if (m_sceneSettings.useWorldEngine)
+			{
+				m_worldEngine.OnEntityMoved(ent);
 			}
 		}
 	}

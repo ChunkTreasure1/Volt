@@ -36,6 +36,8 @@ namespace Volt
 		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const;
 		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
 
+		void LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const;
+
 		[[nodiscard]] inline static const SceneImporter& Get() { return *s_instance; }
 		[[nodiscard]] inline static const auto& GetTypeDeserializers() { return s_typeDeserializers; }
 
@@ -47,6 +49,11 @@ namespace Volt
 
 		void SaveEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
 		void LoadEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
+
+		void SerializeWorldEngine(const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
+		void DeserializeWorldEngine(const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
+
+		void LoadCellEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
 
 		Entity CreateEntityFromUUIDThreadSafe(EntityID entityId, const Ref<Scene>& scene) const;
 
