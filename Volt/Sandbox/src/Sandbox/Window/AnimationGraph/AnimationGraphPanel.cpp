@@ -5,13 +5,16 @@
 
 #include <Volt/Animation/AnimationStateMachine.h>
 #include <Volt/Animation/AnimationTransitionGraph.h>
+
 #include <Volt/Asset/Animation/AnimationGraphAsset.h>
 #include <Volt/Asset/Importers/TextureImporter.h>
 #include <Volt/Asset/AssetManager.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 #include <GraphKey/Nodes/Animation/StateMachineNodes.h>
 #include <GraphKey/Nodes/Animation/BlendNodes.h>
+
 
 #include <builders.h>
 #include <typeindex>
@@ -286,7 +289,7 @@ void AnimationGraphPanel::DrawNodes()
 			// Node
 			{
 				auto id = ed::GetDoubleClickedNode();
-				auto state = GetLastEntry().stateMachine->GetStateById(id.Get());
+				auto state = GetLastEntry().stateMachine->GetAnimationStateById(id.Get());
 
 				if (state && state->stateGraph)
 				{
@@ -367,11 +370,11 @@ void AnimationGraphPanel::DrawLinks()
 
 			if (fromPos.y < toPos.y)
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId2), ed::PinId(toState->pinId), offset, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->bottomPinId), ed::PinId(toState->topPinId), offset, ax::NodeEditor::ArrowLocation::End);
 			}
 			else
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId), ed::PinId(toState->pinId2), offset, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->topPinId), ed::PinId(toState->bottomPinId), offset, ax::NodeEditor::ArrowLocation::End);
 			}
 		}
 
@@ -390,11 +393,11 @@ void AnimationGraphPanel::DrawLinks()
 
 			if (fromPos.y < toPos.y)
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId2), ed::PinId(toState->pinId), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->bottomPinId), ed::PinId(toState->topPinId), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
 			}
 			else
 			{
-				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->pinId), ed::PinId(toState->pinId2), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
+				ed::Link(ed::LinkId(t->id), ed::PinId(fromState->topPinId), ed::PinId(toState->bottomPinId), offset * -1.f, ax::NodeEditor::ArrowLocation::End);
 			}
 		}
 	}
@@ -420,7 +423,12 @@ void AnimationGraphPanel::DrawNodesPanel()
 	{
 		if (ImGui::Button("Add state"))
 		{
-			GetLastEntry().stateMachine->AddState("New State", false);
+			GetLastEntry().stateMachine->AddState("New State", Volt::StateMachineStateType::AnimationState);
+		}
+
+		if (ImGui::Button("Add Alias"))
+		{
+			GetLastEntry().stateMachine->AddState("New Alias", Volt::StateMachineStateType::AliasState);
 		}
 	}
 	ImGui::End();
@@ -462,7 +470,7 @@ void AnimationGraphPanel::OnDeleteNode(const Volt::UUID id)
 	{
 		auto stateMachine = GetLastEntry().stateMachine;
 		auto state = stateMachine->GetStateById(id);
-		if (state && !state->isEntry && !state->isAny)
+		if (state && state->stateType != Volt::StateMachineStateType::EntryState)
 		{
 			stateMachine->RemoveState(id);
 		}
@@ -483,11 +491,11 @@ void AnimationGraphPanel::DrawPropertiesPanel()
 		{
 			if (UI::BeginProperties("graphProperties"))
 			{
-				auto handle = myCurrentAsset->GetCharacterHandle();
+				/*auto handle = myCurrentAsset->GetCharacterHandle();
 				if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
 				{
 					myCurrentAsset->SetCharacterHandle(handle);
-				}
+				}*/
 
 
 				UI::EndProperties();
@@ -612,7 +620,7 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 			ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
 			ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
 
-			ed::BeginPin(ed::PinId(state->pinId), ed::PinKind::Input);
+			ed::BeginPin(ed::PinId(state->topPinId), ed::PinKind::Input);
 			ed::PinPivotRect(inputsRect.GetTL(), inputsRect.GetBR());
 			ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
 			ed::EndPin();
@@ -623,13 +631,32 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 
 		// Content
 		{
+			Ref<Volt::Texture2D> Icon;
+			if (state->stateType == Volt::StateMachineStateType::AnimationState)
+			{
+				Icon = EditorResources::GetEditorIcon(EditorIcon::StateMachineAnimationState);
+
+			}
+			else if (state->stateType == Volt::StateMachineStateType::AliasState)
+			{
+				Icon = EditorResources::GetEditorIcon(EditorIcon::StateMachineAliasState);
+			}
+
 			ImGui::BeginHorizontal("content_frame");
 			ImGui::Spring(1, padding);
 
 			ImGui::BeginVertical("content", ImVec2(0.0f, 0.0f));
-			ImGui::Dummy(ImVec2(160, 0));
+			ImGui::Dummy(ImVec2(160.f, 0));
 			ImGui::Spring(1);
+
+			ImGui::BeginHorizontal("contentinfo");
+			if (Icon)
+			{
+				ImGui::Image(UI::GetTextureID(Icon), ImVec2(20, 20));
+			}
 			ImGui::TextUnformatted(state->name.c_str());
+			ImGui::EndHorizontal();
+
 			ImGui::Spring(1);
 			ImGui::EndVertical();
 			contentRect = ImGui_GetItemRect();
@@ -650,7 +677,7 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 			ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.f);
 			ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
 			ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
-			ed::BeginPin(ed::PinId(state->pinId2), ed::PinKind::Output);
+			ed::BeginPin(ed::PinId(state->bottomPinId), ed::PinKind::Output);
 			ed::PinPivotRect(outputsRect.GetTL(), outputsRect.GetBR());
 			ed::PinRect(outputsRect.GetTL(), outputsRect.GetBR());
 			ed::EndPin();
@@ -725,11 +752,11 @@ void AnimationGraphPanel::DrawStateMachineNodes()
 
 		auto mainColor = IM_COL32(29, 29, 29, 200);
 
-		if (state->isEntry)
+		if (state->stateType == Volt::StateMachineStateType::EntryState)
 		{
 			mainColor = IM_COL32(255, 174, 0, 255);
 		}
-		else if (state->isAny)
+		else if (state->stateType == Volt::StateMachineStateType::EntryState)
 		{
 			mainColor = IM_COL32(92, 171, 255, 255);
 		}
@@ -803,23 +830,25 @@ void AnimationGraphPanel::OnBeginCreateStateMachine()
 				return false;
 			});
 
+			const bool endIsEntry = endState->stateType == Volt::StateMachineStateType::EntryState;
+			const bool endIsAlias = endState->stateType == Volt::StateMachineStateType::AliasState;
 			if (transitionsToEndCount > 1 || sameStateIt != startState->transitions.end())
 			{
 				ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
 				showLabel("x States are already connected", ImColor{ 255, 0, 0 });
 			}
-			else if (endState->isEntry)
+			else if (endIsEntry)
 			{
 				ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
 				showLabel("x You cannot go to Entry state!", ImColor{ 255, 0, 0 });
 			}
-			else if (endState->isAny)
+			else if (endIsAlias)
 			{
 				ed::RejectNewItem(ImColor{ 255, 0, 0 }, 2.f);
-				showLabel("x You cannot go to Any state!", ImColor{ 255, 0, 0 });
+				showLabel("x You cannot go to Alias state!", ImColor{ 255, 0, 0 });
 			}
 
-			if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f) && sameStateIt == startState->transitions.end() && !endState->isEntry && !endState->isAny)
+			if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f) && sameStateIt == startState->transitions.end() && !endIsAlias && !endIsAlias)
 			{
 				stateMachine->AddTransition(startState->id, endState->id);
 			}
@@ -857,11 +886,11 @@ void AnimationGraphPanel::DrawGraphProperties()
 			}
 		}
 
-		auto handle = myCurrentAsset->GetCharacterHandle();
-		if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
-		{
-			myCurrentAsset->SetCharacterHandle(handle);
-		}
+		//auto handle = myCurrentAsset->GetCharacterHandle();
+		//if (EditorUtils::Property("Character", handle, Volt::AssetType::AnimatedCharacter))
+		//{
+		//	myCurrentAsset->SetCharacterHandle(handle);
+		//}
 
 		UI::EndProperties();
 	}
@@ -895,12 +924,6 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 		UI::PushID();
 		if (UI::BeginProperties("transitionProperties"))
 		{
-			UI::Property("Has Exit Time", transition->hasExitTime);
-			if (transition->hasExitTime)
-			{
-				UI::Property("Blend Start Time", transition->exitStartValue);
-			}
-
 			UI::Property("Should Blend", transition->shouldBlend);
 
 			if (transition->shouldBlend)
@@ -914,8 +937,8 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 	}
 	else
 	{
-		auto node = GetLastEntry().stateMachine->GetStateById(selectedNodes.at(0));
-		if (!node)
+		auto selectedNode = GetLastEntry().stateMachine->GetStateById(selectedNodes.at(0));
+		if (!selectedNode)
 		{
 			return;
 		}
@@ -923,9 +946,36 @@ void AnimationGraphPanel::DrawStateMachineProperties()
 		UI::PushID();
 		if (UI::BeginProperties("stateProperties"))
 		{
-			if (node->name != "Entry")
+			if (selectedNode->name != "Entry")
 			{
-				UI::Property("Name", node->name);
+				UI::Property("Name", selectedNode->name);
+			}
+
+			if (selectedNode->stateType == Volt::StateMachineStateType::AliasState)
+			{
+				auto aliasState = reinterpret_cast<Volt::AliasState*>(selectedNode);
+
+				UI::Header("Transition from states");
+				for (auto state : GetLastEntry().stateMachine->GetStates())
+				{
+					if (state->stateType == Volt::StateMachineStateType::AnimationState)
+					{
+						auto it = std::find(aliasState->transitionFromStates.begin(), aliasState->transitionFromStates.end(), state->id);
+						bool value = it != aliasState->transitionFromStates.end();
+						if (UI::Property(state->name, value))
+						{
+							if (value) // changed from false to true
+							{
+								aliasState->transitionFromStates.push_back(state->id);
+							}
+							else //changed from true to false
+							{
+								aliasState->transitionFromStates.erase(it);
+							}
+						}
+					}
+				}
+
 			}
 
 			UI::EndProperties();

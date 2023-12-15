@@ -30,6 +30,8 @@ protected:
 
 private:
 	void UpgradeCurrentProject();
+	void ConvertMetaFilesFromV0();
+	void ConvertAnimationGraphsToV0_1_2();
 	void ConvertMetaFilesToV011();
 
 	void ConvertPrefabsToV113();

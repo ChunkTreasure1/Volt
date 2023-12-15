@@ -145,6 +145,20 @@ namespace Volt
 		REGISTER_COMPONENT(AnimationControllerComponent);
 	};
 
+	struct MotionWeaveComponent
+	{
+		AssetHandle motionWeave = Asset::Null();
+
+		static void ReflectType(TypeDesc<MotionWeaveComponent>& reflect)
+		{
+			reflect.SetGUID("{5D3B2C0D-5457-43D8-9623-98730E1556F4}"_guid);
+			reflect.SetLabel("Motion Weave Component");
+			reflect.AddMember(&MotionWeaveComponent::motionWeave, "motionGraph", "Motion Graph", "", Asset::Null(), AssetType::MotionWeave);
+		}
+
+		REGISTER_COMPONENT(MotionWeaveComponent);
+	};
+
 	struct VertexPaintedComponent
 	{
 		AssetHandle meshHandle = Asset::Null();

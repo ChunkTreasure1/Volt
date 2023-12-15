@@ -1,7 +1,8 @@
 #pragma once
 
 #include <imgui_internal.h>
-
+#include "Sandbox/Utility/EditorResources.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 enum class IconType : ImU32
 {
 	Flow,
@@ -9,7 +10,8 @@ enum class IconType : ImU32
 	Square,
 	Grid,
 	RoundSquare,
-	Diamond
+	Diamond,
+	AnimationPose
 };
 
 inline static void DrawIconKey(ImDrawList* drawList, const ImVec2& a, const ImVec2& b, IconType type, bool filled, ImU32 color, ImU32 innerColor)
@@ -83,6 +85,25 @@ inline static void DrawIconKey(ImDrawList* drawList, const ImVec2& a, const ImVe
 		}
 		else
 			drawList->PathFillConvex(color);
+	}
+	else if (type == IconType::AnimationPose)
+	{
+		Ref<Volt::Texture2D> texture;
+		if (filled)
+		{
+			texture = EditorResources::GetEditorIcon(EditorIcon::GraphPinAnimationPoseFilled);
+		}
+		else
+		{
+			texture = EditorResources::GetEditorIcon(EditorIcon::GraphPinAnimationPose);
+		}
+		if (texture)
+		{
+			if (texture->IsValid())
+			{
+				drawList->AddImage(UI::GetTextureID(texture), rect.Min, rect.Max, ImVec2(0, 0), ImVec2(1, 1), color);
+			}
+		}
 	}
 	else
 	{

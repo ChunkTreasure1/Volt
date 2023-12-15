@@ -1124,7 +1124,7 @@ namespace Volt
 				if (comp.environmentHandle != comp.lastEnvironmentHandle)
 				{
 					comp.lastEnvironmentHandle = comp.environmentHandle;
-					comp.currentSceneEnvironment = Renderer::GenerateEnvironmentMap(comp.environmentHandle);
+					//comp.currentSceneEnvironment = Renderer::GenerateEnvironmentMap(comp.environmentHandle);
 
 					myEnvironmentSettings.irradianceMap = comp.currentSceneEnvironment.irradianceMap;
 					myEnvironmentSettings.radianceMap = comp.currentSceneEnvironment.radianceMap;
@@ -1242,8 +1242,12 @@ namespace Volt
 		auto submitFunc = [&](uint32_t currentIndex, uint32_t threadIndex)
 		{
 			entt::entity id = meshComponentView[currentIndex];
-			Entity entity{ id, scenePtr };
-
+			Entity entity{ id, scenePtr};
+			if (entity.HasComponent<Volt::AnimationControllerComponent>())
+			{
+				return;
+			}
+			
 			const MeshComponent& meshComp = entity.GetComponent<MeshComponent>();
 			const TransformComponent& transComp = entity.GetComponent<TransformComponent>();
 			const CommonComponent& dataComp = entity.GetComponent<CommonComponent>();
@@ -1359,7 +1363,7 @@ namespace Volt
 
 		auto scenePtr = myScene;
 
-		scenePtr->ForEachWithComponents<AnimationControllerComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, AnimationControllerComponent& animComp, const TransformComponent& transformComp, const CommonComponent& dataComp) 
+		scenePtr->ForEachWithComponents<AnimationControllerComponent, MeshComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, AnimationControllerComponent& animComp, MeshComponent& meshComp, const TransformComponent& transformComp, const CommonComponent& dataComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1368,13 +1372,12 @@ namespace Volt
 
 			if (animComp.controller)
 			{
-				const auto characterHandle = animComp.controller->GetGraph()->GetCharacterHandle();
-
-				const auto character = AssetManager::QueueAsset<AnimatedCharacter>(animComp.controller->GetGraph()->GetCharacterHandle());
-				if (!character || !character->IsValid())
+				const auto skeleton = AssetManager::QueueAsset<Volt::Skeleton>(animComp.controller->GetGraph()->GetSkeletonHandle());
+				if (!skeleton || !skeleton->IsValid())
 				{
 					return;
 				}
+				auto skin = AssetManager::QueueAsset<Volt::Mesh>(meshComp.handle);
 
 				auto entity = Entity(id, scenePtr);
 
@@ -1386,7 +1389,6 @@ namespace Volt
 					entity.SetLocalPosition(entity.GetLocalPosition() + rootMotion.position);
 				}
 
-				auto skin = character->GetSkin();
 				if (animComp.skin != Asset::Null())
 				{
 					Ref<Mesh> overrideSkin = AssetManager::GetAsset<Mesh>(animComp.skin);
@@ -1418,20 +1420,8 @@ namespace Volt
 			}
 			else
 			{
-				auto animGraph = AssetManager::QueueAsset<AnimationGraphAsset>(animComp.animationGraph);
 
-				if (!animGraph || !animGraph->IsValid())
-				{
-					return;
-				}
-
-				auto character = AssetManager::QueueAsset<AnimatedCharacter>(animGraph->GetCharacterHandle());
-				if (!character || !character->IsValid())
-				{
-					return;
-				}
-
-				auto skin = character->GetSkin();
+				auto skin = AssetManager::GetAsset<Mesh>(meshComp.handle);
 				if (!skin || !skin->IsValid())
 				{
 					return;

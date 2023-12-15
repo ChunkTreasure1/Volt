@@ -1,0 +1,463 @@
+Layer:
+  name: Main
+  id: 0
+  visible: true
+  locked: false
+  Entities:
+    - Entity:
+        id: 1868519665
+        components:
+          - guid: [5524573352483143404, 11007889460122951339]
+            members:
+              - name: fieldOfView
+                data: 60
+              - name: nearPlane
+                data: 1
+              - name: farPlane
+                data: 100000
+              - name: priority
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: TransitionCamera
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 3811384406
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [131.705002, 0, -3.02999997]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: playerCharacter_sk
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [4626977537440075682, 8666096866538760379]
+            members:
+              - name: animationGraph
+                data: 9824459651317056180
+              - name: material
+                data: 0
+              - name: skin
+                data: 0
+              - name: applyRootMotion
+                data: false
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 15314435918099419685
+              - name: material
+                data: 0
+    - Entity:
+        id: 3674840423
+        components:
+          - guid: [5241627842114713378, 11179844935521484427]
+            members:
+              - name: bodyType
+                data: enum
+                enumValue: 0
+              - name: layerId
+                data: 0
+              - name: mass
+                data: 1
+              - name: linearDrag
+                data: 0.00999999978
+              - name: lockFlags
+                data: 0
+              - name: angularDrag
+                data: 0.0500000007
+              - name: collisionType
+                data: enum
+                enumValue: 0
+              - name: disableGravity
+                data: false
+              - name: isKinematic
+                data: false
+          - guid: [5594831065701184629, 5808174883320445581]
+            members:
+              - name: halfSize
+                data: [50, 50, 50]
+              - name: offset
+                data: [0, 0, 0]
+              - name: isTrigger
+                data: false
+              - name: material
+                data: 57928654030491085
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [1000, -20.3999996, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [10, 1, 10]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cube
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 10149696181569838305
+              - name: material
+                data: 0
+    - Entity:
+        id: 132488643
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Skylight
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5130770350572262273, 9533246575187293344]
+            members:
+              - name: environmentHandle
+                data: 0
+              - name: intensity
+                data: 1
+              - name: lod
+                data: 0
+              - name: turbidity
+                data: 2
+              - name: azimuth
+                data: 0
+              - name: inclination
+                data: 0
+              - name: show
+                data: true
+    - Entity:
+        id: 1868755325
+        components:
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0.866025448, 0, 0, 0.49999997]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Directional Light
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [4956947959302657279, 6431008363526150588]
+            members:
+              - name: intensity
+                data: 1
+              - name: color
+                data: [1, 1, 1]
+              - name: lightSize
+                data: 1
+              - name: softShadows
+                data: true
+              - name: castShadows
+                data: true
+    - Entity:
+        id: 2402376934
+        components:
+          - guid: [4801038614670344234, 17500621051426503811]
+            members:
+              - name: climbingMode
+                data: enum
+                enumValue: 0
+              - name: slopeLimit
+                data: 20
+              - name: invisibleWallHeight
+                data: 200
+              - name: maxJumpHeight
+                data: 100
+              - name: contactOffset
+                data: 1
+              - name: stepOffset
+                data: 10
+              - name: density
+                data: 1
+              - name: layer
+                data: 0
+              - name: hasGravity
+                data: true
+          - guid: [5272442441707063634, 16349525528562408586]
+            members:
+              - name: radius
+                data: 50
+              - name: height
+                data: 50
+              - name: offset
+                data: [0, 75, 0]
+              - name: isTrigger
+                data: false
+              - name: material
+                data: 13487565
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-80.8730011, 0.999992371, 0]
+              - name: rotation
+                data: [-2.77599663e-17, -0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: playerCharacter_sk
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [4626977537440075682, 8666096866538760379]
+            members:
+              - name: animationGraph
+                data: 4734108098716078210
+              - name: material
+                data: 10717049606619290080
+              - name: skin
+                data: 0
+              - name: applyRootMotion
+                data: false
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 15314435918099419685
+              - name: material
+                data: 10717049606619290080
+          - guid: [5428802467633469958, 3006162545260469436]
+            members:
+              []
+        MonoScripts:
+          - ScriptEntry:
+              name: Project.Player
+              id: 2236035842924872221
+              members:
+                - name: runSpeed
+                  data: 350
+                - name: acceleration
+                  data: 15
+                - name: sprintSpeed
+                  data: 472
+                - name: deceleration
+                  data: 30
+                - name: jumpForce
+                  data: 500
+                - name: rotationSpeed
+                  data: 15
+    - Entity:
+        id: 4018203657
+        components:
+          - guid: [5524573352483143404, 11007889460122951339]
+            members:
+              - name: fieldOfView
+                data: 60
+              - name: nearPlane
+                data: 1
+              - name: farPlane
+                data: 100000
+              - name: priority
+                data: 1
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-80.8730011, 118.999992, -234]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: VCam0
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 2795517839
+        components:
+          - guid: [5241627842114713378, 11179844935521484427]
+            members:
+              - name: bodyType
+                data: enum
+                enumValue: 0
+              - name: layerId
+                data: 0
+              - name: mass
+                data: 1
+              - name: linearDrag
+                data: 0.00999999978
+              - name: lockFlags
+                data: 0
+              - name: angularDrag
+                data: 0.0500000007
+              - name: collisionType
+                data: enum
+                enumValue: 0
+              - name: disableGravity
+                data: false
+              - name: isKinematic
+                data: false
+          - guid: [5594831065701184629, 5808174883320445581]
+            members:
+              - name: halfSize
+                data: [50, 50, 50]
+              - name: offset
+                data: [0, 0, 0]
+              - name: isTrigger
+                data: false
+              - name: material
+                data: 57928654030491085
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, -50, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [10, 1, 10]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: New Cube
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 10149696181569838305
+              - name: material
+                data: 0

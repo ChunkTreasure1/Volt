@@ -51,7 +51,8 @@ namespace Volt
 		Timeline = BIT(23),
 		NetContract = BIT(24),
 		PostProcessingMaterial = BIT(25),
-		PostProcessingStack = BIT(26)
+		PostProcessingStack = BIT(26),
+		MotionWeave = BIT(27),
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)

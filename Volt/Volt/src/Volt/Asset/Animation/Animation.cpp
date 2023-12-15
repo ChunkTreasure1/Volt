@@ -180,7 +180,7 @@ namespace Volt
 		const Pose& nextFrame = myFrames.at(nextFrameIndex);
 
 		const auto& joints = aSkeleton->GetJoints();
-
+		
 		if (currentFrame.localTRS.size() < joints.size())
 		{
 			return result;
@@ -248,6 +248,22 @@ namespace Volt
 		const int32_t frameCount = (int32_t)myFrames.size();
 		const int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
 		return currentFrameIndex;
+	}
+
+	const float Animation::GetNormalizedCurrentTimeFromStartTime(float startTime, float speed, bool looping)
+	{
+		const float localTime = AnimationManager::globalClock - startTime;
+		const float normalizedTime = localTime / (myDuration / speed);
+		
+		if (looping)
+		{
+			return fmodf(normalizedTime, 1.f);
+		}
+		else
+		{
+			return std::clamp(normalizedTime, 0.f, 1.f);
+		}
+		//return 0.0f;
 	}
 
 	const Animation::PoseData Animation::GetFrameDataFromAnimation(Animation& animation, const float aNormalizedTime)

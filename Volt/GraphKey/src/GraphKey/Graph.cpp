@@ -142,6 +142,10 @@ namespace GraphKey
 
 		if (output)
 		{
+			while (!output->links.empty())
+			{
+				RemoveLink(output->links.front());
+			}
 			output->links.emplace_back(newLink.id);
 		}
 

@@ -207,7 +207,12 @@ namespace Volt
 				}
 
 				auto& crowd = myNavMesh->GetCrowd();
-
+				if (!myActiveScene)
+				{
+					VT_CORE_ERROR("Could not initialize agents because active scene is null");
+					return;
+				}
+				
 				auto& registry = myActiveScene->GetRegistry();
 				auto view = registry.view<const Volt::NavAgentComponent>();
 				view.each([&](const entt::entity id, const Volt::NavAgentComponent& comp)
@@ -227,7 +232,6 @@ namespace Volt
 				{
 					crowd->ClearAgents();
 				}
-
 			}
 		}
 	}

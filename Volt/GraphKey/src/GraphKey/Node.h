@@ -24,6 +24,7 @@ namespace GraphKey
 	{
 		Flow,
 		Type,
+		AnimationPose,
 	};
 
 	enum class AttributeDirection
@@ -82,6 +83,9 @@ namespace GraphKey
 		Attribute AttributeConfigDefault(const std::string& name, AttributeDirection direction, const T& defaultValue, bool hidden = false, const std::function<void()>& function = nullptr, bool linkable = true);
 
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
+
+		template<typename T>
+		Attribute AttributeConfigAnimationPose(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
 
 		template<typename T>
 		const T& GetInput(uint32_t index);
@@ -144,6 +148,21 @@ namespace GraphKey
 		return attr;
 	}
 
+
+	template<typename T>
+	inline Attribute Node::AttributeConfigAnimationPose(const std::string& name, AttributeDirection direction, const std::function<void()>& function)
+	{
+		Attribute attr{};
+		attr.name = name;
+		attr.direction = direction;
+		attr.inputHidden = false;
+		attr.linkable = true;
+		attr.function = function;
+		attr.data = T();
+		attr.type = AttributeType::AnimationPose;
+		
+		return attr;
+	}
 
 	template<typename T>
 	inline const T& Node::GetInput(uint32_t index)
