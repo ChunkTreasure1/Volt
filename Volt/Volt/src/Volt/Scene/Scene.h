@@ -8,6 +8,7 @@
 #include "Volt/Vision/TimelinePlayer.h"
 
 #include "Volt/Scene/EntityRegistry.h"
+#include "Volt/Scene/WorldEngine/WorldEngine.h"
 
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
@@ -40,6 +41,11 @@ namespace Volt
 		float intensity = 1.f;
 	};
 
+	struct SceneSettings
+	{
+		bool useWorldEngine = false;
+	};
+
 	struct SceneLayer
 	{
 		uint32_t id = 0;
@@ -66,6 +72,8 @@ namespace Volt
 
 		Scene();
 		Scene(const std::string& name);
+
+		void PostInitialize();
 
 		inline entt::registry& GetRegistry() { return m_registry; }
 		inline const std::string& GetName() const { return m_name; }
@@ -100,13 +108,21 @@ namespace Volt
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
+		void MarkEntityAsEdited(const Entity& entity);
+		void ClearEditedEntities();
+
 		inline const uint32_t GetActiveLayer() const { return m_sceneLayers.at(m_activeLayerIndex).id; }
 		inline const std::vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
 		inline std::vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
 
 		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
 		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
-		const bool IsRelatedTo(Entity entity, Entity otherEntity);
+
+		inline SceneSettings& GetSceneSettingsMutable() { return m_sceneSettings; }
+		inline const SceneSettings& GetSceneSettings() const { return m_sceneSettings; }
+
+		inline const WorldEngine& GetWorldEngine() const { return m_worldEngine; }
+		inline WorldEngine& GetWorldEngineMutable() { return m_worldEngine; }
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
@@ -116,8 +132,8 @@ namespace Volt
 		Entity GetEntityFromUUID(const EntityID uuid) const;
 		entt::entity GetHandleFromUUID(const EntityID uuid) const;
 
+		const bool IsRelatedTo(Entity entity, Entity otherEntity);
 		void RemoveEntity(Entity entity);
-
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
@@ -143,10 +159,9 @@ namespace Volt
 		template<typename... T, typename F>
 		void ForEachWithComponents(const F& func);
 
-		template<typename... T, typename F>
-		void ForEachParallelWithComponents(const F& func);
-
 		const std::vector<Entity> GetAllEntities() const;
+		const std::vector<Entity> GetAllEditedEntities() const;
+		const std::vector<EntityID> GetAllRemovedEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
@@ -198,7 +213,9 @@ namespace Volt
 		//////////////////////////////
 
 		SceneEnvironment m_environment;
+		SceneSettings m_sceneSettings;
 		Statistics m_statistics;
+		WorldEngine m_worldEngine;
 
 		bool m_isPlaying = false;
 		float m_timeSinceStart = 0.f;

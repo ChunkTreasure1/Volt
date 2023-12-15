@@ -311,6 +311,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -320,6 +321,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (UI::PropertyColor(label, *reinterpret_cast<glm::vec3*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -329,6 +331,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (UI::PropertyColor(label, *reinterpret_cast<glm::vec4*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -339,6 +342,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (UI::PropertyEntity(label, scene, *reinterpret_cast<Volt::EntityID*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -351,6 +355,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 	if (s_propertyFunctions.at(typeIndex)(label, elementData, 0))
 	{
 		AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 }
 
@@ -383,6 +388,7 @@ void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::
 	{
 		currentValue = indexToValueMap.at(currentValue);
 		AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 }
 
@@ -446,6 +452,8 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 		{
 			arrayDesc->EmplaceBack(arrayPtr, nullptr);
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 
 		ImGui::TreePop();
@@ -566,7 +574,6 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				if (EditorUtils::Property(displayName, value, field.type.assetType))
 				{
 					scriptInstance->SetField(name, &value);
-					AddLocalChangeToEntity(entity, scriptEntry.name, name);
 				}
 
 				continue;
@@ -713,7 +720,7 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 						scriptInstance->SetField(name, str);
 					}
 
-					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+					fieldChanged = true;
 				}
 			}
 			else if (field.type.IsEntity())
@@ -762,7 +769,6 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			if (scriptInstance && fieldChanged)
 			{
 				scriptInstance->SetField(name, currentField->data.As<void>());
-
 				AddLocalChangeToEntity(entity, scriptEntry.name, name);
 			}
 
@@ -816,6 +822,8 @@ void ComponentPropertyUtility::AddLocalChangeToEntity(Volt::Entity entity, const
 	auto& newChange = prefabComp.componentLocalChanges.emplace_back();
 	newChange.componentGUID = componentGuid;
 	newChange.memberName = strMemberName;
+
+	EditorUtils::MarkEntityAsEdited(entity);
 }
 
 void ComponentPropertyUtility::AddLocalChangeToEntity(Volt::Entity entity, const std::string& scriptName, std::string_view memberName)
@@ -841,4 +849,6 @@ void ComponentPropertyUtility::AddLocalChangeToEntity(Volt::Entity entity, const
 	auto& newChange = prefabComp.scriptLocalChanges.emplace_back();
 	newChange.scriptName = scriptName;
 	newChange.memberName = memberName;
+
+	EditorUtils::MarkEntityAsEdited(entity);
 }

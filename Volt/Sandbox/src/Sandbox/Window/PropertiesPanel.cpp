@@ -61,7 +61,10 @@ void PropertiesPanel::UpdateMainContent()
 		if (firstEntity.HasComponent<Volt::TagComponent>())
 		{
 			auto& tag = firstEntity.GetComponent<Volt::TagComponent>();
-			UI::InputText("Name", tag.tag);
+			if (UI::InputText("Name", tag.tag))
+			{
+				EditorUtils::MarkEntityAsEdited(firstEntity);
+			}
 		}
 	}
 	else
@@ -110,6 +113,7 @@ void PropertiesPanel::UpdateMainContent()
 				if (entity.HasComponent<Volt::TagComponent>())
 				{
 					entity.GetComponent<Volt::TagComponent>().tag = inputText;
+					EditorUtils::MarkEntityAsEdited(entity);
 				}
 			}
 		}
@@ -146,6 +150,8 @@ void PropertiesPanel::UpdateMainContent()
 						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
 						ent.SetLocalPosition(transform.position);
 						myCurrentScene->InvalidateEntityTransform(entId);
+					
+						EditorUtils::MarkEntityAndChildrenAsEdited(ent);
 					}
 				}
 
@@ -169,6 +175,8 @@ void PropertiesPanel::UpdateMainContent()
 						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
 						ent.SetLocalRotation(transform.rotation);
 						myCurrentScene->InvalidateEntityTransform(entId);
+
+						EditorUtils::MarkEntityAsEdited(ent);
 					}
 				}
 
@@ -188,6 +196,8 @@ void PropertiesPanel::UpdateMainContent()
 						Volt::Entity ent = myCurrentScene->GetEntityFromUUID(entId);
 						ent.SetLocalScale(transform.scale);
 						myCurrentScene->InvalidateEntityTransform(entId);
+					
+						EditorUtils::MarkEntityAsEdited(ent);
 					}
 				}
 
@@ -316,9 +326,12 @@ void PropertiesPanel::AddComponentPopup()
 					{
 						for (auto& ent : SelectionManager::GetSelectedEntities())
 						{
-							if (!Volt::ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), myCurrentScene->GetHandleFromUUID(ent)))
+							auto entity = myCurrentScene->GetEntityFromUUID(ent);
+							EditorUtils::MarkEntityAsEdited(entity);
+
+							if (!Volt::ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity))
 							{
-								Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), myCurrentScene->GetHandleFromUUID(ent));
+								Volt::ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, myCurrentScene->GetRegistry(), entity);
 							}
 
 							if (newMonoScript)
@@ -394,6 +407,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 					for (auto& id : SelectionManager::GetSelectedEntities())
 					{
 						Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
+						EditorUtils::MarkEntityAsEdited(entity);
 
 						if (!entity.HasComponent<Volt::MonoScriptComponent>())
 						{
@@ -438,6 +452,7 @@ void PropertiesPanel::AddMonoScriptPopup()
 				for (auto& id : SelectionManager::GetSelectedEntities())
 				{
 					Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
+					EditorUtils::MarkEntityAsEdited(entity);
 
 					if (!entity.HasComponent<Volt::MonoScriptComponent>())
 					{
@@ -506,6 +521,7 @@ void PropertiesPanel::AcceptMonoDragDrop()
 				for (auto& id : SelectionManager::GetSelectedEntities())
 				{
 					Volt::Entity entity = myCurrentScene->GetEntityFromUUID(id);
+					EditorUtils::MarkEntityAsEdited(entity);
 
 					if (!entity.HasComponent<Volt::MonoScriptComponent>())
 					{

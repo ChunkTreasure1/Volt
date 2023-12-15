@@ -28,13 +28,13 @@ float4 Grid(float3 position, float scale)
     float4 color = float4(0.2f, 0.2f, 0.2f, 1.f - min(lin, 1.f));
 
 	// Z axis
-    if (position.x > -100.f * minX && position.x < 100.f * minX)
+    if (position.x > -1.f * minX && position.x < 1.f * minX)
     {
         color.z = 1.f;
     }
 
 	// X axis
-    if (position.z > -100.f * minZ && position.z < 100.f * minZ)
+    if (position.z > -1.f * minZ && position.z < 1.f * minZ)
     {
         color.x = 1.f;
     }
@@ -66,7 +66,7 @@ Output main(Input input)
     const float fading = max(0.f, (0.5f - linearDepth));
 
     Output output;
-    output.color = Grid(position, 0.01f) * float(t > 0);
+    output.color = Grid(position, 1.f) * float(t > 0);
     output.color.a *= fading;
     output.depth = ComputeDepth(position);
 

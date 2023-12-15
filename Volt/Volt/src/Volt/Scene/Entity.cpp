@@ -41,7 +41,7 @@ namespace Volt
 
 	const std::string Entity::ToString() const
 	{
-		return std::to_string(static_cast<uint32_t>(m_handle));
+		return std::to_string(static_cast<uint32_t>(GetComponent<IDComponent>().id));
 	}
 
 	const uint32_t Entity::GetLayerID() const

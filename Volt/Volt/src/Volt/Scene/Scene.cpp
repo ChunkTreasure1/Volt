@@ -58,6 +58,12 @@ namespace Volt
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
+
+		m_worldEngine.Reset(this, 16, 4);
+	}
+
+	void Scene::PostInitialize()
+	{
 	}
 
 	Scene::Scene()
@@ -67,6 +73,8 @@ namespace Volt
 
 		SetupComponentFunctions();
 		AddLayer("Main", 0);
+
+		m_worldEngine.Reset(this, 16, 4);
 	}
 
 	void Scene::OnEvent(Event& e)
@@ -313,9 +321,9 @@ namespace Volt
 
 		// Update scene data
 		{
-			SceneData sceneData;
-			sceneData.deltaTime = aDeltaTime;
-			sceneData.timeSinceStart = m_timeSinceStart;
+			//SceneData sceneData;
+			//sceneData.deltaTime = aDeltaTime;
+			//sceneData.timeSinceStart = m_timeSinceStart;
 
 			//Renderer::SetSceneData(sceneData);
 		}
@@ -369,7 +377,13 @@ namespace Volt
 		}
 		newEntity.AddComponent<CommonComponent>();
 		newEntity.AddComponent<RelationshipComponent>();
-		newEntity.AddComponent<IDComponent>();
+		
+		auto& idComp = newEntity.AddComponent<IDComponent>();
+
+		while (m_entityRegistry.Contains(idComp.id))
+		{
+			idComp.id = {};
+		}
 
 		newEntity.GetComponent<CommonComponent>().layerId = m_sceneLayers.at(m_activeLayerIndex).id;
 		newEntity.GetComponent<CommonComponent>().randomValue = Random::Float(0.f, 1.f);
@@ -378,6 +392,8 @@ namespace Volt
 		const auto uuid = newEntity.GetComponent<IDComponent>().id;
 
 		m_entityRegistry.AddEntity(newEntity);
+		m_entityRegistry.MarkEntityAsEdited(newEntity);
+		m_worldEngine.AddEntity(newEntity);
 
 		InvalidateEntityTransform(uuid);
 		SortScene();
@@ -417,9 +433,11 @@ namespace Volt
 		newEntity.GetComponent<IDComponent>().id = uuid;
 
 		m_entityRegistry.AddEntity(newEntity);
+		m_worldEngine.AddEntity(newEntity);
 
 		InvalidateEntityTransform(uuid);
 		SortScene();
+
 		return newEntity;
 	}
 
@@ -535,6 +553,11 @@ namespace Volt
 				{
 					m_cachedEntityTransforms.erase(currentUUID);
 				}
+			}
+
+			if (m_sceneSettings.useWorldEngine)
+			{
+				m_worldEngine.OnEntityMoved(ent);
 			}
 		}
 	}
@@ -710,7 +733,7 @@ namespace Volt
 				auto ent = newScene->CreateEntity("Camera");
 				ent.AddComponent<CameraComponent>();
 
-				ent.SetPosition({ 0.f, 0.f, -500.f });
+				ent.SetPosition({ 0.f, 0.f, -5.f });
 			}
 		}
 
@@ -1251,6 +1274,16 @@ namespace Volt
 		return std::find_if(m_sceneLayers.begin(), m_sceneLayers.end(), [layerId](const auto& lhs) { return lhs.id == layerId; }) != m_sceneLayers.end();
 	}
 
+	void Scene::MarkEntityAsEdited(const Entity& entity)
+	{
+		m_entityRegistry.MarkEntityAsEdited(entity);
+	}
+
+	void Scene::ClearEditedEntities()
+	{
+		m_entityRegistry.ClearEditedEntities();
+	}
+
 	const std::vector<Entity> Scene::GetAllEntities() const
 	{
 		std::vector<Entity> result{};
@@ -1262,5 +1295,29 @@ namespace Volt
 		});
 
 		return result;
+	}
+
+	const std::vector<Entity> Scene::GetAllEditedEntities() const
+	{
+		std::vector<Entity> entities;
+
+		for (const auto& entity : m_entityRegistry.GetEditedEntities())
+		{
+			entities.push_back(GetEntityFromUUID(entity));
+		}
+
+		return entities;
+	}
+
+	const std::vector<EntityID> Scene::GetAllRemovedEntities() const
+	{
+		std::vector<EntityID> entities;
+
+		for (const auto& entity : m_entityRegistry.GetRemovedEntities())
+		{
+			entities.push_back(entity);
+		}
+
+		return entities;
 	}
 }

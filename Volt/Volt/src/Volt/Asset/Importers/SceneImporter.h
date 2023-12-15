@@ -5,7 +5,7 @@
 #include "Volt/Utility/FileIO/YAMLStreamWriter.h"
 #include "Volt/Utility/FileIO/YAMLStreamReader.h"
 
-#include <entt.hpp>
+#include "Volt/Scene/Entity.h"
 
 #include <thread>
 #include <typeindex>
@@ -36,6 +36,8 @@ namespace Volt
 		void DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const;
 		void DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
 
+		void LoadWorldCell(const Ref<Scene>& scene, const WorldCell& worldCell) const;
+
 		[[nodiscard]] inline static const SceneImporter& Get() { return *s_instance; }
 		[[nodiscard]] inline static const auto& GetTypeDeserializers() { return s_typeDeserializers; }
 
@@ -44,6 +46,16 @@ namespace Volt
 
 		void LoadSceneLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
 		void SaveSceneLayers(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
+
+		void SaveEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
+		void LoadEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
+
+		void SerializeWorldEngine(const Ref<Scene>& scene, YAMLStreamWriter& streamWriter) const;
+		void DeserializeWorldEngine(const Ref<Scene>& scene, YAMLStreamReader& streamReader) const;
+
+		void LoadCellEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const;
+
+		Entity CreateEntityFromUUIDThreadSafe(EntityID entityId, const Ref<Scene>& scene) const;
 
 		void SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamWriter& streamWriter, bool isSubComponent) const;
 		void SerializeArray(const uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamWriter& streamWriter) const;
