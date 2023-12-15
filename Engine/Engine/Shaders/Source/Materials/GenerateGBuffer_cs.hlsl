@@ -220,14 +220,16 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const uint2 visibilityValues = constants.visibilityBuffer.Load2D(int3(pixelPosition, 0));
     
     const uint objectId = visibilityValues.x;
-    const uint triangleId = visibilityValues.y;
+    const uint triangleId = (visibilityValues.y >> 16) & 0xFFFF;
+    const uint meshletId = visibilityValues.y & 0xFFFF;
     
     const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
     const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+    const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
     
-    const uint triIndex0 = mesh.indexBuffer.Load(triangleId * 3 + 0) + mesh.vertexStartOffset;
-    const uint triIndex1 = mesh.indexBuffer.Load(triangleId * 3 + 1) + mesh.vertexStartOffset;
-    const uint triIndex2 = mesh.indexBuffer.Load(triangleId * 3 + 2) + mesh.vertexStartOffset;
+    const uint triIndex0 = mesh.meshletIndexBuffer.Load(triangleId * 3 + 0) + meshlet.vertexOffset;
+    const uint triIndex1 = mesh.meshletIndexBuffer.Load(triangleId * 3 + 1) + meshlet.vertexOffset;
+    const uint triIndex2 = mesh.meshletIndexBuffer.Load(triangleId * 3 + 2) + meshlet.vertexOffset;
     
     const VertexPositionData vPos0 = mesh.vertexPositionsBuffer.Load(triIndex0);
     const VertexPositionData vPos1 = mesh.vertexPositionsBuffer.Load(triIndex1);

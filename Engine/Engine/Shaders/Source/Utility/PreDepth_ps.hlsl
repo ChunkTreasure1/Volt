@@ -10,7 +10,6 @@ struct Input
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
-    
     uint vertexId : VERTEXID;
 };
 
@@ -19,7 +18,7 @@ Output main(Input input)
     float3 normal = normalize(input.normal);
     
     Output output;
-    output.normal = float4(input.vertexId, 0.f, 0.f, 1.f);    
+    output.normal = float4(normal, 1.f);    
 
     return output;
 }

@@ -6,7 +6,6 @@ namespace Volt
 {
 	struct DrawContext
 	{
-		ResourceHandle drawToInstanceOffset;
 		ResourceHandle instanceOffsetToObjectIDBuffer;
 
 		ResourceHandle drawIndexToObjectId;

@@ -1,5 +1,5 @@
 #include "CommonBuffers.hlsli"
-#include "DefaultVertex.hlsli"
+#include "DefaultVertexMeshlet.hlsli"
 
 struct Output
 {
@@ -14,10 +14,13 @@ Output main(in DefaultInput input)
     
     const uint triangleId = input.GetTriangleID();
     const uint objectId = input.GetObjectID();
+    const uint meshletId = input.GetMeshletID();
+    
+    const uint triMeshletId = (triangleId << 16) | meshletId;
     
     Output output;
     output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
-    output.visId = uint2(objectId, triangleId);
+    output.visId = uint2(objectId, triMeshletId);
     
     return output;
 }

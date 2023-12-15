@@ -29,7 +29,7 @@ struct DefaultInput
         const Constants constants = GetConstants < Constants > ();
         const DrawContext context = constants.drawContext.Load(0);
    
-        const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
+        const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
         return objectId;
         //return u_instanceOffsetToObjectID[instanceOffset + instanceId];
     }
@@ -49,6 +49,15 @@ struct DefaultInput
         return vertexId / 3;
     }
     
+    const uint GetMeshletID()
+    {
+        const Constants constants = GetConstants<Constants>();
+        const DrawContext context = constants.drawContext.Load(0);
+   
+        const uint meshletId = context.drawIndexToMeshletId.Load(drawIndex);
+        return meshletId;
+    }
+    
     const VertexPositionData GetVertexPositionData()
     {
         const Constants constants = GetConstants<Constants>();
@@ -62,10 +71,8 @@ struct DefaultInput
         const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
         const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
         
-        const uint index = mesh.meshletTrianglesBuffer.Load(vertexId);
-        
-        const uint vertexIndex = mesh.meshletsVertexRemappingBuffer.Load(index);
-        return mesh.vertexPositionsBuffer.Load(vertexIndex);
+        const uint index = mesh.meshletIndexBuffer.Load(vertexId) + meshlet.vertexOffset;
+        return mesh.vertexPositionsBuffer.Load(index);
     }
     
     const VertexMaterialData GetVertexMaterialData()
@@ -74,12 +81,15 @@ struct DefaultInput
         const GPUScene scene = constants.gpuScene.Load(0);
         const DrawContext context = constants.drawContext.Load(0);
    
-        const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
+        const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
+        const uint meshletId = context.drawIndexToMeshletId.Load(drawIndex);
+        
         const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
         const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+        const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
     
-        const uint vertexIndex = mesh.indexBuffer.Load(vertexId) + mesh.vertexStartOffset;
-        return mesh.vertexMaterialBuffer.Load(vertexIndex);
+        const uint index = mesh.meshletIndexBuffer.Load(vertexId) + meshlet.vertexOffset;
+        return mesh.vertexMaterialBuffer.Load(index);
     }
 
     const float4x4 GetTransform()
@@ -88,7 +98,7 @@ struct DefaultInput
         const GPUScene scene = constants.gpuScene.Load(0);
         const DrawContext context = constants.drawContext.Load(0);
    
-        const uint objectId = context.drawToInstanceOffset.Load(drawIndex);
+        const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
         const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
         
         return drawData.transform;
@@ -136,24 +146,21 @@ struct DefaultInput
     //    return mul(drawData.transform, float4(position, 1.f));
     //}
     
-    //const float3 GetNormal()
-    //{
-    //    const IndirectDrawData drawData = GetDrawData();
-    //    const uint vertexIndex = u_indexBuffers[drawData.meshId].Load<uint>(sizeof(uint) * vertexId) + drawData.vertexStartOffset;
-    
-    //    uint normalValues = u_vertexMaterialDataBuffers[drawData.meshId].Load(VERTEX_MATERIAL_DATA_SIZE * vertexIndex);
+    const float3 GetNormal()
+    {
+        const VertexMaterialData materialData = GetVertexMaterialData();
         
-    //    uint2 octIntNormal;
+        uint2 octIntNormal;
         
-    //    octIntNormal.x = (normalValues >> 8) & 0xFF;
-    //    octIntNormal.y = (normalValues >> 0) & 0xFF;
+        octIntNormal.x = (materialData.normal >> 0) & 0xFF;
+        octIntNormal.y = (materialData.normal >> 8) & 0xFF;
     
-    //    float2 octNormal = 0.f;
-    //    octNormal.x = octIntNormal.x / 255.f;
-    //    octNormal.y = octIntNormal.y / 255.f;
+        float2 octNormal = 0.f;
+        octNormal.x = octIntNormal.x / 255.f;
+        octNormal.y = octIntNormal.y / 255.f;
 
-    //    return OctNormalDecode(octNormal);
-    //}
+        return OctNormalDecode(octNormal);
+    }
     
     //const float3 GetTangent()
     //{    

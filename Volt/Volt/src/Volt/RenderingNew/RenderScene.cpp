@@ -330,6 +330,8 @@ namespace Volt
 				newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
 				newCommand.meshletId = subMesh.meshletStartOffset + meshletIdx;
 			}
+
+			index++;
 		}
 #endif
 	}

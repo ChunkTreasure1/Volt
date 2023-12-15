@@ -151,28 +151,28 @@ namespace Volt
 
 		AddPreDepthPass(renderGraph, rgBlackboard);
 
-		//AddVisibilityBufferPass(renderGraph, rgBlackboard);
-		//AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
+		AddVisibilityBufferPass(renderGraph, rgBlackboard);
+		AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
-		//PrefixSumTechnique prefixSum{ renderGraph, m_prefixSumPipeline };
-		//prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
+		PrefixSumTechnique prefixSum{ renderGraph, m_prefixSumPipeline };
+		prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
 
-		//AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
-		//AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
+		AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
+		AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
 
-		////For every material -> run compute shading shader using indirect args
-		//auto& gbufferData = rgBlackboard.Add<GBufferData>();
+		//For every material -> run compute shading shader using indirect args
+		auto& gbufferData = rgBlackboard.Add<GBufferData>();
 
-		//gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
-		//gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
-		//gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
+		gbufferData.albedo = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - Albedo" });
+		gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
+		gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
-		//for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
-		//{
-		//	AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
-		//}
+		for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
+		{
+			AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
+		}
 
-		//AddShadingPass(renderGraph, rgBlackboard);
+		AddShadingPass(renderGraph, rgBlackboard);
 
 		//if (m_visibilityVisualization != VisibilityVisualization::None)
 		//{
@@ -209,7 +209,6 @@ namespace Volt
 		builder.ReadResource(externalBuffers.drawContextBuffer);
 		builder.ReadResource(externalBuffers.drawIndexToMeshletId);
 		builder.ReadResource(externalBuffers.drawIndexToObjectId);
-		builder.ReadResource(externalBuffers.drawToInstanceOffsetBuffer);
 
 		builder.ReadResource(uniformBuffers.cameraDataBuffer);
 
@@ -329,11 +328,6 @@ namespace Volt
 		}
 
 		{
-			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetRenderObjectCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Draw To Instance Offset");
-			bufferData.drawToInstanceOffsetBuffer = renderGraph.CreateBuffer(desc);
-		}
-
-		{
 			const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetRenderObjectCount(), 1u), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU, "Instance Offset To Object ID");
 			bufferData.instanceOffsetToObjectIDBuffer = renderGraph.CreateBuffer(desc);
 		}
@@ -358,7 +352,6 @@ namespace Volt
 		// Upload draw context
 		{
 			DrawContext context{};
-			context.drawToInstanceOffset = renderGraph.GetBuffer(bufferData.drawToInstanceOffsetBuffer);
 			context.instanceOffsetToObjectIDBuffer = renderGraph.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer);
 			context.drawIndexToObjectId = renderGraph.GetBuffer(bufferData.drawIndexToObjectId);
 			context.drawIndexToMeshletId = renderGraph.GetBuffer(bufferData.drawIndexToMeshletId);
@@ -402,7 +395,6 @@ namespace Volt
 			builder.WriteResource(bufferData.indirectCommandsBuffer);
 			builder.WriteResource(bufferData.indirectCountsBuffer);
 			builder.WriteResource(bufferData.instanceOffsetToObjectIDBuffer);
-			builder.WriteResource(bufferData.drawToInstanceOffsetBuffer);
 
 			builder.SetHasSideEffect();
 		},
@@ -414,7 +406,6 @@ namespace Volt
 			context.BindPipeline(m_indirectSetupPipeline);
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.indirectCommandsBuffer));
-			context.SetConstant(resources.GetBuffer(bufferData.drawToInstanceOffsetBuffer));
 			context.SetConstant(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer));
 			context.SetConstant(commandCount);
 

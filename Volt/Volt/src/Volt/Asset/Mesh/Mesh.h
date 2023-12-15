@@ -96,10 +96,10 @@ namespace Volt
 		std::vector<SubMesh> m_subMeshes;
 
 		std::vector<Vertex> m_vertices;
-		std::vector<Meshlet> m_meshlets;
-		std::vector<uint32_t> m_meshletTriangles;
-		std::vector<uint32_t> m_meshletVertexRemapping;
 		std::vector<uint32_t> m_indices;
+
+		std::vector<Meshlet> m_meshlets;
+		std::vector<uint32_t> m_meshletIndices;
 
 		Ref<Material> m_material;
 
@@ -108,8 +108,7 @@ namespace Volt
 		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexAnimationBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_indexBuffer;
 
-		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletTrianglesBuffer;
-		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletVertexRemappingBuffer;
+		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletIndexBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_meshletsBuffer;
 
 		BoundingSphere m_boundingSphere;

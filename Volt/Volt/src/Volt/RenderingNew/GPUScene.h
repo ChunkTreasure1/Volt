@@ -22,15 +22,13 @@ namespace Volt
 		ResourceHandle vertexAnimationBuffer;
 		ResourceHandle indexBuffer;
 
-		ResourceHandle meshletTrianglesBuffer;
+		ResourceHandle meshletIndexBuffer;
 		ResourceHandle meshletsBuffer;
-		ResourceHandle meshletsVertexRemappingBuffer;
 
 		uint32_t vertexStartOffset;
 		uint32_t meshletCount;
 		uint32_t meshletStartOffset;
-		uint32_t meshletTriangleStartOffset;
-		uint32_t meshletVertexRemapStartOffset;
+		uint32_t meshletIndexStartOffset;
 
 		uint32_t lodCount = 0;
 		GPUMeshLOD lods[MAX_LOD_COUNT];

@@ -36,15 +36,13 @@ struct GPUMesh
     TypedBuffer<VertexAnimationData> vertexAnimationBuffer;
     TypedBuffer<uint> indexBuffer;
     
-    TypedBuffer<uint> meshletTrianglesBuffer;
+    TypedBuffer<uint> meshletIndexBuffer;
     TypedBuffer<Meshlet> meshletsBuffer;
-    TypedBuffer<uint> meshletsVertexRemappingBuffer;
     
     uint vertexStartOffset;
     uint meshletCount;
     uint meshletStartOffset;
     uint meshletTriangleStartOffset;
-    uint meshletVertexRemapStartOffset;
   
     uint lodCount;
     GPUMeshLOD lods[MAX_LOD_COUNT];

@@ -22,7 +22,6 @@ namespace Volt
 		RenderGraphResourceHandle indirectCountsBuffer;
 
 		RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
-		RenderGraphResourceHandle drawToInstanceOffsetBuffer;
 
 		RenderGraphResourceHandle drawContextBuffer;
 		RenderGraphResourceHandle objectDrawDataBuffer;
