@@ -12,23 +12,11 @@ project "Amp"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
-
-	disablewarnings
-	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099"
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
 	files
 	{
@@ -45,21 +33,13 @@ project "Amp"
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Optick}",
 		"%{IncludeDir.fmod}",
-		"%{IncludeDir.glm}",
 		"%{IncludeDir.wwise}"
 	}
 
 	defines
 	{
-		"NOMINMAX",
-		"_HAS_STD_BYTE=0",
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
 	}
 
 	filter "files:vendor/**.cpp"

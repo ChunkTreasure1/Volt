@@ -2,11 +2,13 @@
 #include "MeshExporterUtilities.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Components/Components.h"
+
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 
 namespace Volt
 {
-	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(Ref<Volt::Scene> scene, const std::vector<Wire::EntityId>& entities, Ref<Volt::Material> material, float unitModifier)
+	Ref<Volt::Mesh> MeshExporterUtilities::CombineMeshes(Ref<Volt::Scene> scene, const std::vector<entt::entity>& entities, Ref<Volt::Material> material, float unitModifier)
 	{
 		std::vector<Volt::Vertex> v;
 		std::vector<uint32_t> i;

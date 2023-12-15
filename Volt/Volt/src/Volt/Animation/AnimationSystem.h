@@ -1,9 +1,6 @@
 #pragma once
 
-namespace Wire
-{
-	class Registry;
-}
+#include <entt.hpp>
 
 namespace Volt
 {
@@ -14,9 +11,9 @@ namespace Volt
 	public:
 		AnimationSystem(Scene* scene);
 
-		void OnRuntimeStart(Wire::Registry& registry);
-		void OnRuntimeEnd(Wire::Registry& registry);
-		void Update(Wire::Registry& registry, float deltaTime);
+		void OnRuntimeStart(entt::registry& registry);
+		void OnRuntimeEnd(entt::registry& registry);
+		void Update(entt::registry& registry, float deltaTime);
 
 	private:
 		Scene* myScene;

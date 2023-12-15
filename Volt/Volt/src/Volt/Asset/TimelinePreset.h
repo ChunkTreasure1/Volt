@@ -1,6 +1,7 @@
 #pragma once
+
 #include "Volt/Asset/Asset.h"
-#include "Wire/Wire.h"
+#include "Volt/Scene/EntityID.h"
 
 namespace Volt
 {
@@ -44,7 +45,7 @@ namespace Volt
 		float startTime = 0.f;
 		float endTime = 0.f;
 
-		Wire::EntityId activeCamera = Wire::NullID;
+		EntityID activeCamera = EntityID(0);
 	};
 
 	struct Track
@@ -54,7 +55,7 @@ namespace Volt
 
 		TrackType trackType = TrackType::T_Animation;
 
-		Wire::EntityId targetEntity = Wire::NullID;
+		EntityID targetEntity = EntityID(0);
 
 		std::vector<Keyframe> keyframes = std::vector<Keyframe>();
 		std::vector<Clip> clips = std::vector<Clip>();

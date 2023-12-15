@@ -2,44 +2,88 @@
 
 #include "Volt/Asset/Asset.h"
 
-#include <Wire/Serialization.h>
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
+
 #include <glm/glm.hpp>
 
 namespace Volt
 {
-	SERIALIZE_COMPONENT((struct NavMeshComponent
+	struct NavMeshComponent
 	{
-		CREATE_COMPONENT_GUID("{6643C885-4A12-4527-8AA7-7894A730BAC5}"_guid);
-	}), NavMeshComponent);
+		static void ReflectType(TypeDesc<NavMeshComponent>& reflect)
+		{
+			reflect.SetGUID("{6643C885-4A12-4527-8AA7-7894A730BAC5}"_guid);
+			reflect.SetLabel("Nav Mesh Component");
+		}
 
-	SERIALIZE_COMPONENT((struct NavLinkComponent
+		REGISTER_COMPONENT(NavMeshComponent);
+	};
+
+	struct NavLinkComponent
 	{
-		PROPERTY(Name = Start, Visible = true) glm::vec3 start = { 0.f };
-		PROPERTY(Name = End, Visible = true) glm::vec3 end = { 0.f };
-		PROPERTY(Name = Bidirectional, Visible = true) bool bidirectional = true;
-		PROPERTY(Name = Active, Visible = true) bool active = true;
+		glm::vec3 start = { 0.f };
+		glm::vec3 end = { 0.f };
+		bool bidirectional = true;
+		bool active = true;
 
-		CREATE_COMPONENT_GUID("{7104A8A0-3657-4840-B172-89F5E79E64A6}"_guid);
-	}), NavLinkComponent);
+		static void ReflectType(TypeDesc<NavLinkComponent>& reflect)
+		{
+			reflect.SetGUID("{7104A8A0-3657-4840-B172-89F5E79E64A6}"_guid);
+			reflect.SetLabel("Nav Link Component");
+			reflect.AddMember(&NavLinkComponent::start, "start", "Start", "", glm::vec3{ 0.f });
+			reflect.AddMember(&NavLinkComponent::end, "end", "End", "", glm::vec3{ 0.f });
+			reflect.AddMember(&NavLinkComponent::bidirectional, "bidirectional", "Bidirectional", "", true);
+			reflect.AddMember(&NavLinkComponent::active, "active", "Active", "", true);
+		}
 
-	SERIALIZE_ENUM((enum class ObstacleAvoidanceQuality : uint32_t
+		REGISTER_COMPONENT(NavLinkComponent);
+	};
+
+	enum class ObstacleAvoidanceQuality : uint32_t
 	{
 		None = 0,
 		Low,
 		Medium,
 		High
-	}), ObstacleAvoidanceQuality);
+	};
 
-	SERIALIZE_COMPONENT((struct NavAgentComponent
+	static void ReflectType(TypeDesc<ObstacleAvoidanceQuality>& reflect)
 	{
-		PROPERTY(Name = Radius, Visible = true) float radius = 60.f;
-		PROPERTY(Name = Height, Visible = true) float height = 200.f;
-		PROPERTY(Name = MaxSpeed, Visible = true) float maxSpeed = 300.f;
-		PROPERTY(Name = Acceleration, Visible = true) float acceleration = 1000.f;
-		PROPERTY(Name = Separation Weight, Visible = true) float separationWeight = 0.f;
-		PROPERTY(Name = Obstacle Avoidance Quality, Visible = true, SpecialType = Enum) ObstacleAvoidanceQuality obstacleAvoidanceQuality = ObstacleAvoidanceQuality::None;
-		PROPERTY(Name = Active, Visible = true) bool active = true;
+		reflect.SetGUID("{E3DFBC11-375E-49BC-A39F-B66392B3AB98}"_guid);
+		reflect.SetLabel("Obstacle Avoidance Quality");
+		reflect.SetDefaultValue(ObstacleAvoidanceQuality::None);
+		reflect.AddConstant(ObstacleAvoidanceQuality::None, "none", "None");
+		reflect.AddConstant(ObstacleAvoidanceQuality::Low, "low", "Low");
+		reflect.AddConstant(ObstacleAvoidanceQuality::Medium, "medium", "Medium");
+		reflect.AddConstant(ObstacleAvoidanceQuality::High, "high", "High");
+	}
 
-		CREATE_COMPONENT_GUID("{2B4469CE-9B15-4FA9-ABA6-77BA83465357}"_guid);
-	}), NavAgentComponent);
+	REGISTER_ENUM(ObstacleAvoidanceQuality);
+
+	struct NavAgentComponent
+	{
+		float radius = 0.6f;
+		float height = 2.f;
+		float maxSpeed = 3.f;
+		float acceleration = 10.f;
+		float separationWeight = 0.f;
+		ObstacleAvoidanceQuality obstacleAvoidanceQuality = ObstacleAvoidanceQuality::None;
+		bool active = true;
+
+		static void ReflectType(TypeDesc<NavAgentComponent>& reflect)
+		{
+			reflect.SetGUID("{2B4469CE-9B15-4FA9-ABA6-77BA83465357}"_guid);
+			reflect.SetLabel("Nav Agent Component");
+			reflect.AddMember(&NavAgentComponent::radius, "radius", "Radius", "", 0.6f);
+			reflect.AddMember(&NavAgentComponent::height, "height", "Height", "", 2.f);
+			reflect.AddMember(&NavAgentComponent::maxSpeed, "maxSpeed", "Max Speed", "", 3.f);
+			reflect.AddMember(&NavAgentComponent::acceleration, "acceleration", "Acceleration", "", 10.f);
+			reflect.AddMember(&NavAgentComponent::separationWeight, "seperationWeight", "Seperation Weight", "", 0.f);
+			reflect.AddMember(&NavAgentComponent::obstacleAvoidanceQuality, "obstacleAvoidanceQuality", "Obstacle Avoidance Quality", "", ObstacleAvoidanceQuality::None);
+			reflect.AddMember(&NavAgentComponent::active, "active", "Active", "", false);
+		}
+
+		REGISTER_COMPONENT(NavAgentComponent);
+	};
 }

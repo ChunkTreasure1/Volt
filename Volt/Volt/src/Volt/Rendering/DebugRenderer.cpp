@@ -89,6 +89,11 @@ namespace Volt
 
 	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
 	{
+		if (!mesh)
+		{
+			return;
+		}
+
 		s_debugRenderData->functionQueue.emplace_back([mesh, position, rotation, scale](SceneRenderer::PerThreadData& data)
 		{
 			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, position)* glm::mat4_cast(glm::quat(rotation))* glm::scale(glm::mat4{ 1.f }, scale);
@@ -107,6 +112,11 @@ namespace Volt
 
 	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
+		if (!mesh)
+		{
+			return;
+		}
+
 		s_debugRenderData->functionQueue.emplace_back([mesh, transform](SceneRenderer::PerThreadData& data)
 		{
 			for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())
@@ -123,6 +133,11 @@ namespace Volt
 
 	void DebugRenderer::DrawMesh(Ref<Mesh> mesh, Ref<Material> material, const glm::mat4& transform, uint32_t id)
 	{
+		if (!material || !mesh)
+		{
+			return;
+		}
+
 		s_debugRenderData->functionQueue.emplace_back([mesh, transform, id, material](SceneRenderer::PerThreadData& data)
 		{
 			for (uint32_t i = 0; const auto & subMesh : mesh->GetSubMeshes())

@@ -48,10 +48,9 @@ namespace Volt
 
 						for (auto [entityId, agentId] : agentMap)
 						{
-							const auto& registry = myActiveScene->GetRegistry();
-							auto entity = Volt::Entity(entityId, myActiveScene.get());
+							auto entity = myActiveScene->GetEntityFromUUID(entityId);
 
-							if (!registry.Exists(entityId) || !registry.HasComponent<Volt::NavAgentComponent>(entityId))
+							if (!entity || !entity.HasComponent<Volt::NavAgentComponent>())
 							{
 								crowd->RemoveAgent(entity);
 							}
@@ -68,26 +67,27 @@ namespace Volt
 
 						auto& registry = myActiveScene->GetRegistry();
 
-						auto agentEntities = registry.GetComponentView<Volt::NavAgentComponent>();
-						for (auto entityId : agentEntities)
+						auto view = registry.view<const Volt::NavAgentComponent>();
+						view.each([&](const entt::entity id, const Volt::NavAgentComponent& comp) 
 						{
-							auto entity = Volt::Entity(entityId, myActiveScene.get());
+							auto entity = Volt::Entity(id, myActiveScene);
+
 							crowd->SetAgentPosition(entity, entity.GetPosition());
 
-							if (!crowd->GetAgentMap().contains(entityId))
+							if (!crowd->GetAgentMap().contains(entity.GetID()))
 							{
 								crowd->AddAgent(entity);
 								crowd->UpdateAgentParams(entity);
 							}
-							else if (!registry.GetComponent<Volt::NavAgentComponent>(entityId).active)
+							else if (!comp.active)
 							{
 								PauseAgent(entity, e.GetTimestep());
 							}
-							else if (registry.GetComponent<Volt::NavAgentComponent>(entityId).active)
+							else if (comp.active)
 							{
 								UnpauseAgent(entity);
 							}
-						}
+						});
 					}
 
 					{
@@ -99,7 +99,7 @@ namespace Volt
 						VT_PROFILE_SCOPE("Update agent positions");
 						for (auto [entityId, agentId] : agentMap)
 						{
-							Volt::Entity entity(entityId, myActiveScene.get());
+							Volt::Entity entity = myActiveScene->GetEntityFromUUID(entityId);
 							if (entity.GetComponent<NavAgentComponent>().active)
 							{
 								SyncDetourPosition(entity, e.GetTimestep());
@@ -144,10 +144,10 @@ namespace Volt
 
 		void NavigationSystem::PauseAgent(Volt::Entity entity, float deltaTime)
 		{
-			if (myEntityIdToTargetPosMap.contains(entity.GetId())) { return; }
+			if (myEntityIdToTargetPosMap.contains(entity.GetID())) { return; }
 			auto& crowd = myNavMesh->GetCrowd();
 
-			myEntityIdToTargetPosMap[entity.GetId()] = *(glm::vec3*)&crowd->GetAgent(entity.GetId())->targetPos;
+			myEntityIdToTargetPosMap[entity.GetID()] = *(glm::vec3*)&crowd->GetAgent(entity.GetID())->targetPos;
 			crowd->ResetAgentTarget(entity);
 
 			SyncDetourPosition(entity, deltaTime);
@@ -155,12 +155,12 @@ namespace Volt
 
 		void NavigationSystem::UnpauseAgent(Volt::Entity entity)
 		{
-			if (!myEntityIdToTargetPosMap.contains(entity.GetId())) { return; }
+			if (!myEntityIdToTargetPosMap.contains(entity.GetID())) { return; }
 
 			auto& crowd = myNavMesh->GetCrowd();
-			crowd->SetAgentTarget(entity, myEntityIdToTargetPosMap.at(entity.GetId()));
+			crowd->SetAgentTarget(entity, myEntityIdToTargetPosMap.at(entity.GetID()));
 
-			myEntityIdToTargetPosMap.erase(entity.GetId());
+			myEntityIdToTargetPosMap.erase(entity.GetID());
 		}
 
 		void NavigationSystem::SyncDetourPosition(Volt::Entity entity, float deltaTime)
@@ -187,7 +187,7 @@ namespace Volt
 					}
 					else
 					{
-						VT_CORE_ERROR("No valid actor controller found for entity {0}!", entity.GetId());
+						VT_CORE_ERROR("No valid actor controller found for entity {0}!", entity.GetID());
 					}
 				}
 			}
@@ -207,13 +207,19 @@ namespace Volt
 				}
 
 				auto& crowd = myNavMesh->GetCrowd();
-
-				auto agentEntities = myActiveScene->GetRegistry().GetComponentView<Volt::NavAgentComponent>();
-				for (auto entityId : agentEntities)
+				if (!myActiveScene)
 				{
-					Volt::Entity entity(entityId, myActiveScene.get());
-					crowd->AddAgent(entity);
+					VT_CORE_ERROR("Could not initialize agents because active scene is null");
+					return;
 				}
+				
+				auto& registry = myActiveScene->GetRegistry();
+				auto view = registry.view<const Volt::NavAgentComponent>();
+				view.each([&](const entt::entity id, const Volt::NavAgentComponent& comp)
+				{
+					Volt::Entity entity(id, myActiveScene);
+					crowd->AddAgent(entity);
+				});
 			}
 		}
 
@@ -226,7 +232,6 @@ namespace Volt
 				{
 					crowd->ClearAgents();
 				}
-
 			}
 		}
 	}

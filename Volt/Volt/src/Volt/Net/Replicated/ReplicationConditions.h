@@ -1,13 +1,24 @@
 #pragma once
 
-#include <Wire/Serialization.h>
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
+#include "Volt/Scene/Reflection/ComponentReflection.h"
 
 namespace Volt
 {
-	SERIALIZE_ENUM((enum class eRepCondition : uint32_t
+	enum class eRepCondition : uint32_t
 	{
 		OFF = 0,
 		CONTINUOUS,
 		NOTIFY,
-	}), eRepCondition);
+	};
+
+	inline static void ReflectType(TypeDesc<eRepCondition>& reflect)
+	{
+		reflect.SetGUID("{5A70DDBB-E05F-4854-B73B-4667E45997AB}"_guid);
+		reflect.SetLabel("Replication Condition");
+		reflect.SetDefaultValue(eRepCondition::OFF);
+		reflect.AddConstant(eRepCondition::OFF, "off", "Off");
+		reflect.AddConstant(eRepCondition::CONTINUOUS, "continuous", "Continuous");
+		reflect.AddConstant(eRepCondition::NOTIFY, "notify", "Notify");
+	}
 }

@@ -3,7 +3,6 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Core/Buffer.h"
 #include "Volt/Scene/Entity.h"
-#include <Wire/Wire.h>
 
 extern "C"
 {
@@ -55,12 +54,20 @@ namespace Volt
 		template<>
 		const std::string GetField(const std::string& name);
 
+		template<>
+		const EntityID GetField(const std::string& name);
+
+		EntityID GetCustomMonoTypeField(const std::string& name);
+
+		const void* GetFieldRaw(const std::string& name);
+
 		inline const Ref<MonoScriptClass> GetClass() const { return myMonoClass; }
 		inline const GCHandle GetHandle() const { return myHandle; }
 
 	private:
 		bool GetFieldInternal(const std::string& name, void* outData);
 		bool GetFieldInternal(const std::string& name, std::string& outData);
+		bool GetFieldInternal(const std::string& name, EntityID& outData);
 
 		bool SetFieldInternal(const std::string& name, const void* value);
 		bool SetFieldInternal(const std::string& name, const std::string& value);
@@ -90,12 +97,13 @@ namespace Volt
 
 		std::vector<std::string> myFieldNames;
 		inline static Buffer myFieldBuffer;
+		inline static constexpr uint32_t DEFAULT_FIELD_ALLOC_SIZE = 40;
 	};
 
 	template<typename T>
 	inline const T MonoScriptInstance::GetField(const std::string& name)
 	{
-		myFieldBuffer.Allocate(40); // Don't know why sizeof(T) doesn't work here...
+		myFieldBuffer.Allocate(DEFAULT_FIELD_ALLOC_SIZE); // Don't know why sizeof(T) doesn't work here...
 
 		bool success = GetFieldInternal(name, myFieldBuffer.As<void>());
 		if (!success)
@@ -113,5 +121,14 @@ namespace Volt
 
 		GetFieldInternal(name, result);
 		return result;
+	}
+
+	template<>
+	inline const EntityID MonoScriptInstance::GetField(const std::string& name)
+	{
+		EntityID entityID;
+
+		GetFieldInternal(name, entityID);
+		return entityID;
 	}
 }

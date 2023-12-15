@@ -16,14 +16,15 @@
 #include <Volt/Rendering/RenderPipeline/ShaderRegistry.h>
 #include <Volt/Rendering/SceneRenderer.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 #include <Volt/Asset/Mesh/MeshCompiler.h>
 
 PrefabEditorPanel::PrefabEditorPanel()
 	: EditorWindow("Prefab Editor", true)
 {
-	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Prefab Editor", false);
 
 	myScene->Clear();

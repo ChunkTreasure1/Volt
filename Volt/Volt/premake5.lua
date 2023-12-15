@@ -12,22 +12,15 @@ project "Volt"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
-	disablewarnings
+	buildoptions 
 	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099",
+		"/bigobj"
 	}
 
 	files
@@ -59,8 +52,6 @@ project "Volt"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.yaml}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.Wire}",
-		"%{IncludeDir.Optick}",
 		"%{IncludeDir.TinyGLTF}",
 		"%{IncludeDir.tinyddsloader}",
 		"%{IncludeDir.imgui_notify}",
@@ -78,6 +69,7 @@ project "Volt"
 		"%{IncludeDir.steam}",
 		"%{IncludeDir.discord}",
 		"%{IncludeDir.NFDExtended}",
+		"%{IncludeDir.entt}",
 
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ffmpeg}",
@@ -103,7 +95,6 @@ project "Volt"
 	{
 		"GLFW",
 		"ImGui",
-		"Wire",
 		"Optick",
 		"Navigation",
 		"msdf-atlas-gen",
@@ -121,14 +112,7 @@ project "Volt"
 
 	defines
 	{
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
-		"_CRT_SECURE_NO_WARNINGS",
-
 		"PX_PHYSX_STATIC_LIB",
-		"OPTICK_ENABLE_GPU_VULKAN",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
 	}
 
 	filter "files:vendor/**.cpp"

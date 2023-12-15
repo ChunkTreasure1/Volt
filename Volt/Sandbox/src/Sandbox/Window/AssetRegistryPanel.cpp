@@ -70,11 +70,11 @@ void AssetRegistryPanel::UpdateMainContent()
 		{
 			if (!mySearchQuery.empty())
 			{
-				auto path_lower = Utils::ToLower(metadata.filePath.string());
-				auto handle_lower = Utils::ToLower(std::to_string(handle));
-				auto search_lower = Utils::ToLower(mySearchQuery);
+				auto path_lower = Utility::ToLower(metadata.filePath.string());
+				auto handle_lower = Utility::ToLower(std::to_string(handle));
+				auto search_lower = Utility::ToLower(mySearchQuery);
 
-				if (!Utils::StringContains(path_lower, search_lower) && !Utils::StringContains(handle_lower, search_lower))
+				if (!Utility::StringContains(path_lower, search_lower) && !Utility::StringContains(handle_lower, search_lower))
 				{
 					continue;
 				}

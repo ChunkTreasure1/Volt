@@ -41,6 +41,8 @@
 #include "Sandbox/Window/Net/NetPanel.h"
 #include "Sandbox/Window/Net/NetContractPanel.h"
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
+#include "Sandbox/Window/SceneSettingsPanel.h"
+#include "Sandbox/Window/WorldEnginePanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -55,7 +57,7 @@
 
 #include <Volt/Asset/AssetManager.h>
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/LightComponents.h>
 
 #include <Volt/Asset/Mesh/SubMaterial.h>
@@ -110,15 +112,12 @@ void Sandbox::OnAttach()
 
 	Volt::Application::Get().GetWindow().Maximize();
 
-	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();
 
 	NewScene();
-
-	// WIP Panels.
-#ifndef VT_DIST 
 
 	// Shelved Panels (So panel tab doesn't get cluttered up).
 #ifdef VT_DEBUG
@@ -128,8 +127,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<TaigaPanel>("Advanced");
 	EditorLibrary::Register<ThemesPanel>("Advanced");
 	EditorLibrary::Register<CurveGraphPanel>("Advanced");
-#endif
-
 #endif
 
 	myNavigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", myRuntimeScene);
@@ -148,6 +145,8 @@ void Sandbox::OnAttach()
 
 	EditorLibrary::Register<NetPanel>("Advanced");
 	EditorLibrary::Register<NetContractPanel>("Advanced");
+	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
+	EditorLibrary::Register<WorldEnginePanel>("", myRuntimeScene);
 
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{
@@ -203,6 +202,11 @@ void Sandbox::OnAttach()
 	if (!userSettings.sceneSettings.lastOpenScene.empty())
 	{
 		OpenScene(userSettings.sceneSettings.lastOpenScene);
+	}
+
+	if(!myRuntimeScene)
+	{
+		NewScene();
 	}
 
 	constexpr int64_t discordAppId = 1108502963447681106;
@@ -505,7 +509,7 @@ void Sandbox::OnScenePlay()
 	{
 		myShouldMovePlayer = false;
 
-		myRuntimeScene->GetRegistry().ForEach<Volt::MonoScriptComponent>([&](Wire::EntityId id, const Volt::MonoScriptComponent& scriptComp)
+		myRuntimeScene->ForEachWithComponents<const Volt::MonoScriptComponent>([&](const entt::entity id, const Volt::MonoScriptComponent& scriptComp) 
 		{
 			for (const auto& name : scriptComp.scriptNames)
 			{
@@ -636,7 +640,7 @@ bool Sandbox::LoadScene(Volt::OnSceneTransitionEvent& e)
 
 bool Sandbox::CheckForUpdateNavMesh(Volt::Entity entity)
 {
-	for (auto child : entity.GetChilden())
+	for (auto child : entity.GetChildren())
 	{
 		if (CheckForUpdateNavMesh(child))
 		{
@@ -759,6 +763,8 @@ void Sandbox::InstallMayaTools()
 
 bool Sandbox::OnUpdateEvent(Volt::AppUpdateEvent& e)
 {
+	VT_PROFILE_FUNCTION();
+
 	EditorCommandStack::GetInstance().Update(100);
 
 	auto mousePos = Volt::Input::GetMousePosition();
@@ -894,7 +900,7 @@ void Sandbox::RenderGameView()
 			Volt::Entity cameraEntity{};
 			int32_t highestPrio = -1;
 
-			myRuntimeScene->GetRegistry().ForEach<Volt::CameraComponent>([&](Wire::EntityId id, const Volt::CameraComponent& camComp)
+			myRuntimeScene->ForEachWithComponents<const Volt::CameraComponent>([&](const entt::entity id, const Volt::CameraComponent& camComp)
 			{
 				if ((int32_t)camComp.priority > highestPrio)
 				{
@@ -1045,7 +1051,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 				for (const auto& id : SelectionManager::GetSelectedEntities())
 				{
-					Volt::Entity ent{ id, myRuntimeScene.get() };
+					Volt::Entity ent = myRuntimeScene->GetEntityFromUUID(id);
 					avgPos += ent.GetPosition();
 				}
 

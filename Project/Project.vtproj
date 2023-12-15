@@ -1,8 +1,9 @@
 Project:
-    Name: Project
-    CompanyName: Default
-    AssetsPath: Assets
-    AudioBanksPath: Audio/Banks # Starts in the defined assets path
-    IconPath: ""
-    CursorPath: ""
-    StartScene: ""
+  EngineVersion: 0.1.3
+  Name: Project
+  CompanyName: Default
+  AssetsDirectory: Assets
+  AudioBanksDirectory: Audio/Banks
+  IconPath: ""
+  CursorPath: ""
+  StartScenePath: ""

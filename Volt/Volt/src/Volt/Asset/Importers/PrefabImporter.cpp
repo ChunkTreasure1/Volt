@@ -1,255 +1,107 @@
 #include "vtpch.h"
 #include "PrefabImporter.h"
 
+#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Prefab.h"
-#include "Volt/Log/Log.h"
-#include "Volt/Components/Components.h"
-#include "Volt/Project/ProjectManager.h"
-
-#include "Volt/Utility/YAMLSerializationHelpers.h"
-#include "Volt/Utility/SerializationMacros.h"
 
 #include "Volt/Asset/Importers/SceneImporter.h"
-#include "Volt/Asset/AssetManager.h"
 
-#include "Volt/Scripting/Mono/MonoScriptEngine.h"
-#include "Volt/Scripting/Mono/MonoScriptClass.h"
-
-#include <GraphKey/Graph.h>
-
-#include <Wire/Wire.h>
-#include <yaml-cpp/yaml.h>
+#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
+#include "Volt/Utility/FileIO/YAMLStreamReader.h"
 
 namespace Volt
 {
+	PrefabImporter::PrefabImporter()
+	{
+		s_instance = this;
+	}
+
+	PrefabImporter::~PrefabImporter()
+	{
+		s_instance = nullptr;
+	}
+
 	bool PrefabImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		asset = CreateRef<Prefab>();
-		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
-
-		Wire::Registry registry;
-
-		if (!std::filesystem::exists(filePath))
-		{
-			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Missing, true);
-			return false;
-		}
-
-		std::ifstream file(filePath);
-		if (!file.is_open())
-		{
-			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
-
-		YAML::Node root;
-
-		try
-		{
-			root = YAML::Load(sstream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_ERROR("{0} contains invalid YAML! Please correct it! Error: {1}", metadata.filePath, e.what());
-			asset->SetFlag(AssetFlag::Invalid, true);
-			return false;
-		}
-
 		Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
 
-		uint32_t version = 0;
-		YAML::Node prefabNode = root["Prefab"];
-		VT_DESERIALIZE_PROPERTY(version, version, prefabNode, 0);
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
-		YAML::Node entitiesNode = prefabNode["entities"];
+		Ref<Scene> prefabScene = CreateRef<Scene>();
 
-		for (const auto& entityNode : entitiesNode)
+		YAMLStreamReader streamReader{};
+		if (!streamReader.OpenFile(filePath))
 		{
-			Wire::EntityId entityId = Wire::NullID;
-			VT_DESERIALIZE_PROPERTY(id, entityId, entityNode, (Wire::EntityId)Wire::NullID);
-
-			if (entityId == Wire::NullID)
-			{
-				continue;
-			}
-
-			registry.AddEntity(entityId);
-
-			YAML::Node componentsNode = entityNode["components"];
-			if (componentsNode)
-			{
-				for (auto compNode : componentsNode)
-				{
-					WireGUID componentGUID;
-					VT_DESERIALIZE_PROPERTY(guid, componentGUID, compNode, WireGUID::Null());
-					if (componentGUID == WireGUID::Null())
-					{
-						continue;
-					}
-
-					auto* componentData = (uint8_t*)registry.AddComponent(componentGUID, entityId);
-
-					YAML::Node propertiesNode = compNode["properties"];
-					if (propertiesNode)
-					{
-						auto regInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(componentGUID);
-
-						for (auto propNode : propertiesNode)
-						{
-							Wire::ComponentRegistry::PropertyType type;
-							Wire::ComponentRegistry::PropertyType vectorType;
-							std::string name;
-
-							VT_DESERIALIZE_PROPERTY(type, type, propNode, Wire::ComponentRegistry::PropertyType::Unknown);
-							VT_DESERIALIZE_PROPERTY(vectorType, vectorType, propNode, Wire::ComponentRegistry::PropertyType::Unknown);
-							VT_DESERIALIZE_PROPERTY(name, name, propNode, std::string("Null"));
-
-							if (type == Wire::ComponentRegistry::PropertyType::Unknown)
-							{
-								continue;
-							}
-
-							// Try to find property
-							auto it = std::find_if(regInfo.properties.begin(), regInfo.properties.end(), [name, type](const auto& prop)
-							{
-								return prop.name == name && prop.type == type;
-							});
-
-							if (it != regInfo.properties.end())
-							{
-								SceneImporter::GetPropertyDeserializers()[type](componentData, it->offset, it->vectorType, propNode);
-							}
-						}
-					}
-				}
-			}
-
-			YAML::Node monoNode = entityNode["MonoScripts"];
-			if (monoNode && registry.HasComponent<MonoScriptComponent>(entityId))
-			{
-				SceneImporter::DeserializeMono(entityId, prefab->myScriptFieldCache, entityNode);
-			}
-
-			YAML::Node graphNode = entityNode["Graph"];
-			if (graphNode && registry.HasComponent<VisualScriptingComponent>(entityId))
-			{
-				auto& vsComp = registry.GetComponent<VisualScriptingComponent>(entityId);
-				vsComp.graph = CreateRef<GraphKey::Graph>(entityId);
-
-				GraphKey::Graph::Deserialize(vsComp.graph, graphNode);
-			}
-
-			if (!registry.HasComponent<EntityDataComponent>(entityId))
-			{
-				registry.AddComponent<EntityDataComponent>(entityId);
-			}
-
-			if (!registry.HasComponent<PrefabComponent>(entityId))
-			{
-				registry.AddComponent<PrefabComponent>(entityId);
-			}
-
-			auto& prefabComp = registry.GetComponent<PrefabComponent>(entityId);
-			prefabComp.prefabAsset = metadata.handle;
-			prefabComp.prefabEntity = entityId;
-
-			if (prefab->myRootId == 0 && registry.HasComponent<RelationshipComponent>(entityId))
-			{
-				auto parent = registry.GetComponent<RelationshipComponent>(entityId).Parent;
-				if (parent == Wire::NullID)
-				{
-					prefab->myRootId = entityId;
-				}
-			}
+			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
+			asset->SetFlag(AssetFlag::Invalid, true);
+			return false;
 		}
 
-		prefab->myRegistry = registry;
-		prefab->myVersion = version;
+		streamReader.EnterScope("Prefab");
+		{
+			prefab->m_version = streamReader.ReadKey("version", uint32_t(0));
+			prefab->m_rootEntityId = streamReader.ReadKey("rootEntityId", Entity::NullID());
 
+			streamReader.ForEach("Entities", [&]() 
+			{
+				SceneImporter::Get().DeserializeEntity(prefabScene, metadata, streamReader);
+			});
+		
+			streamReader.ForEach("PrefabReferences", [&]() 
+			{
+				EntityID entityId = streamReader.ReadKey("entity", Entity::NullID());
+				AssetHandle prefabHandle = streamReader.ReadKey("prefabHandle", Asset::Null());
+				EntityID prefabEntityReference = streamReader.ReadKey("prefabEntityReference", Entity::NullID());
+
+				auto& prefabRefData = prefab->m_prefabReferencesMap[entityId];
+				prefabRefData.prefabAsset = prefabHandle;
+				prefabRefData.prefabReferenceEntity = prefabEntityReference;
+			});
+		}
+		streamReader.ExitScope();
+
+		prefab->m_prefabScene = prefabScene;
 		return true;
 	}
 
 	void PrefabImporter::Save(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
-		Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
-		auto& registry = prefab->myRegistry;
+		const Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
+	
+		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Prefab" << YAML::Value;
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("Prefab");
+
+		streamWriter.SetKey("version", prefab->m_version);
+		streamWriter.SetKey("rootEntityId", prefab->m_rootEntityId);
+
+		streamWriter.BeginSequence("Entities");
 		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(version, prefab->myVersion, out);
-
-			out << YAML::Key << "entities" << YAML::BeginSeq;
-			for (const auto& id : registry.GetAllEntities())
+			for (const auto id : prefab->m_prefabScene->GetAllEntities())
 			{
-				out << YAML::BeginMap;
-				VT_SERIALIZE_PROPERTY(id, id, out);
-				{
-
-					out << YAML::Key << "components" << YAML::BeginSeq;
-					for (const auto& [guid, pool] : registry.GetPools())
-					{
-						if (!pool->HasComponent(id))
-						{
-							continue;
-						}
-
-						auto* componentData = (uint8_t*)pool->GetComponent(id);
-						const auto& compInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-
-						out << YAML::BeginMap;
-						out << YAML::Key << "guid" << YAML::Value << guid;
-						out << YAML::Key << "properties" << YAML::BeginSeq;
-						for (const auto& prop : compInfo.properties)
-						{
-							if (prop.serializable)
-							{
-								out << YAML::BeginMap;
-								VT_SERIALIZE_PROPERTY(type, prop.type, out);
-								VT_SERIALIZE_PROPERTY(vectorType, prop.vectorType, out);
-								VT_SERIALIZE_PROPERTY(name, prop.name, out);
-
-								SceneImporter::GetPropertySerializers()[prop.type](componentData, prop.offset, prop.vectorType, out);
-
-								out << YAML::EndMap;
-							}
-						}
-						out << YAML::EndSeq;
-						out << YAML::EndMap;
-					}
-					out << YAML::EndSeq;
-
-					if (registry.HasComponent<MonoScriptComponent>(id))
-					{
-						SceneImporter::SerializeMono(id, prefab->myScriptFieldCache, registry, out);
-					}
-
-					if (registry.HasComponent<VisualScriptingComponent>(id))
-					{
-						auto* vsComp = (VisualScriptingComponent*)registry.GetComponentPtr(VisualScriptingComponent::comp_guid, id);
-						if (vsComp->graph)
-						{
-							GraphKey::Graph::Serialize(vsComp->graph, out);
-						}
-					}
-				}
-				out << YAML::EndMap;
+				SceneImporter::Get().SerializeEntity(id, metadata, prefab->m_prefabScene, streamWriter);
 			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap;
 		}
-		out << YAML::EndMap;
+		streamWriter.EndSequence();
 
-		std::ofstream fout(AssetManager::GetFilesystemPath(metadata.filePath));
-		fout << out.c_str();
-		fout.close();
+		streamWriter.BeginSequence("PrefabReferences");
+		{
+			for (const auto& ref : prefab->m_prefabReferencesMap)
+			{
+				streamWriter.BeginMap();
+				streamWriter.SetKey("entity", ref.first);
+				streamWriter.SetKey("prefabHandle", ref.second.prefabAsset);
+				streamWriter.SetKey("prefabEntityReference", ref.second.prefabReferenceEntity);
+				streamWriter.EndMap();
+			}
+		}
+		streamWriter.EndSequence();
+
+		streamWriter.EndMap();
+		streamWriter.EndMap();
+
+		streamWriter.WriteToDisk();
 	}
 }

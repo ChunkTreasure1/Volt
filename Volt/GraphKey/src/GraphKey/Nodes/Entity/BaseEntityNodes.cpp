@@ -26,7 +26,7 @@ namespace GraphKey
 	void CreateEntityNode::CreateEntity()
 	{
 		auto activeScene = Volt::SceneManager::GetActiveScene();
-		auto scenePtr = activeScene.lock();
+		auto scenePtr = activeScene;
 
 		if (scenePtr)
 		{
@@ -58,7 +58,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(outputs[0].data))
 		{
-			outputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get()};
+			outputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -81,7 +81,7 @@ namespace GraphKey
 		auto activeScene = Volt::SceneManager::GetActiveScene();
 		auto entity = GetInput<Volt::Entity>(1);
 
-		auto scenePtr = activeScene.lock();
+		auto scenePtr = activeScene;
 
 		if (scenePtr && entity)
 		{
@@ -108,7 +108,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[0].data))
 		{
-			inputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+			inputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -120,7 +120,7 @@ namespace GraphKey
 			return;
 		}
 
-		SetOutputData(0, (int32_t)entity.GetChilden().size());
+		SetOutputData(0, (int32_t)entity.GetChildren().size());
 	}
 
 	SelfNode::SelfNode()
@@ -133,7 +133,7 @@ namespace GraphKey
 
 	void SelfNode::Initialize()
 	{
-		outputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+		outputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 	}
 
 	void SelfNode::GetEntity()

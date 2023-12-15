@@ -1,3 +1,6 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f38545a2a33c0e664da25c88fd299cc0413c7907f504ea84c52e1c5c965a6d59
-size 145
+float4 main(float4 position : SV_Position) : SV_Target
+{
+    // #TODO_Ivar: Add skinning stuff
+    
+    return float4(1.f, 0.f, 0.f, 1.f);
+}

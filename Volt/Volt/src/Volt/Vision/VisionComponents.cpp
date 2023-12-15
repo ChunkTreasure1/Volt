@@ -1,7 +1,8 @@
 #include "vtpch.h"
 #include "VisionComponents.h"
 
-#include <Volt/Components/Components.h>
+#include <Volt/Components/CoreComponents.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/Entity.h"
@@ -58,7 +59,7 @@ void Volt::VisionCameraComponent::Init(Entity& camEntity)
 
 		if (damping > 0)
 		{
-			Volt::Entity target = Volt::Entity{ followId, camEntity.GetScene() };
+			Volt::Entity target = camEntity.GetScene()->GetEntityFromUUID(followId);
 
 			if (target)
 			{
@@ -95,9 +96,9 @@ void Volt::VisionCameraComponent::Update(Entity& camEntity, float aDeltaTime)
 
 void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDeltaTime)
 {
-	if (followId != 0)
+	if (followId != Entity::NullID())
 	{
-		Volt::Entity followEnt = Volt::Entity{ followId, camEntity.GetScene() };
+		Volt::Entity followEnt = camEntity.GetScene()->GetEntityFromUUID(followId);
 
 		if (followEnt)
 		{
@@ -119,9 +120,9 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 		}
 	}
 
-	if (lookAtId != 0)
+	if (lookAtId != Entity::NullID())
 	{
-		Entity lookAtEnt = Entity{ lookAtId, camEntity.GetScene() };
+		Entity lookAtEnt = camEntity.GetScene()->GetEntityFromUUID(lookAtId);
 
 		if (lookAtEnt)
 		{
@@ -133,7 +134,7 @@ void Volt::VisionCameraComponent::FreeController(Entity& camEntity, float aDelta
 
 void Volt::VisionCameraComponent::FPSController(Entity& camEntity, float aDeltaTime)
 {
-	Volt::Entity target = Volt::Entity{ followId, camEntity.GetScene() };
+	Volt::Entity target = camEntity.GetScene()->GetEntityFromUUID(followId);
 
 	if (!target) { return; }
 
@@ -170,7 +171,7 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 
 	myRotation.x = glm::clamp(myRotation.x, -1.35f, 1.35f);
 
-	Volt::Entity target = Volt::Entity{ followId, camEntity.GetScene() };
+	Volt::Entity target = camEntity.GetScene()->GetEntityFromUUID(followId);
 
 	if (target)
 	{
@@ -183,7 +184,7 @@ void Volt::VisionCameraComponent::TPSController(Entity& camEntity, float aDeltaT
 		const glm::vec3 dir = camEntity.GetPosition() - focalTargetPoint;
 		glm::vec3 position = { 0 };
 
-		Volt::Entity rayFocalPointEnt = Volt::Entity{ collisionRayPoint, camEntity.GetScene() };
+		Volt::Entity rayFocalPointEnt = camEntity.GetScene()->GetEntityFromUUID(collisionRayPoint);
 
 		if (isColliding)
 		{

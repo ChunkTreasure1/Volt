@@ -8,7 +8,7 @@
 #include "Volt/Input/Input.h"
 #include "Volt/Input/KeyCodes.h"
 
-#include <algorithm>
+#include "Volt/Rendering/Camera/Camera.h"
 
 Timeline::Timeline(Ref<Volt::Scene>& aScene, EditorCameraController* editorCamera)
 	:EditorWindow("Timeline", true), myCurrentScene(aScene), myEditorCamera(editorCamera)
@@ -172,7 +172,7 @@ void Timeline::HandleTimelineInfo()
 
 	if (auto ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 	{
-		Wire::EntityId entityId = *(Wire::EntityId*)ptr;
+		Volt::EntityID entityId = *(Volt::EntityID*)ptr;
 		AddClip(entityId);
 	}
 }
@@ -256,7 +256,7 @@ bool Timeline::CameraQuickshotKeyframe(Volt::KeyPressedEvent& e)
 		return false;
 	}
 
-	if (mySelectedTrack->targetEntity == 0)
+	if (mySelectedTrack->targetEntity == Volt::Entity::NullID())
 	{
 		UI::Notify(NotificationType::Error, "Timeline", "No entity in selected track!");
 		return false;
@@ -288,7 +288,7 @@ void Timeline::AddKeyframe()
 		return;
 	}
 
-	if (mySelectedTrack->targetEntity == 0)
+	if (mySelectedTrack->targetEntity == Volt::Entity::NullID())
 	{
 		UI::Notify(NotificationType::Error, "Timeline", "No entity in selected track!");
 		return;
@@ -298,7 +298,7 @@ void Timeline::AddKeyframe()
 	Volt::Keyframe newKeyframe;
 	newKeyframe.frame = GetFrameFromPos(myMPoint3);
 
-	Volt::Entity targetEnt = Volt::Entity{ mySelectedTrack->targetEntity, myCurrentScene.get() };
+	Volt::Entity targetEnt = myCurrentScene->GetEntityFromUUID(mySelectedTrack->targetEntity);
 	newKeyframe.position = targetEnt.GetPosition();
 	newKeyframe.rotation = targetEnt.GetRotation();
 
@@ -312,7 +312,7 @@ void Timeline::AddKeyframe()
 	SortTrack(*mySelectedTrack);
 }
 
-void Timeline::AddClip(uint32_t entityId)
+void Timeline::AddClip(Volt::EntityID entityId)
 {
 	if (mySelectedTrack == nullptr)
 	{
@@ -320,7 +320,7 @@ void Timeline::AddClip(uint32_t entityId)
 		return;
 	}
 
-	Volt::Entity cameraEnt = Volt::Entity{ entityId, myCurrentScene.get() };
+	Volt::Entity cameraEnt = myCurrentScene->GetEntityFromUUID(entityId);
 	if (!cameraEnt.HasComponent<Volt::VisionCameraComponent>())
 	{
 		UI::Notify(NotificationType::Error, "Timeline", "Entity needs to be a Vision Camera");
@@ -328,7 +328,7 @@ void Timeline::AddClip(uint32_t entityId)
 	}
 
 	Volt::Clip newClip;
-	newClip.activeCamera = cameraEnt.GetId();
+	newClip.activeCamera = cameraEnt.GetID();
 
 	const float markerTime = ((myMPoint3.x - myTimelinePos.x) / myTimelineSize.x) * (myTimelinePreset->maxLength / 30);
 	newClip.startTime = markerTime - 1.f;
@@ -499,7 +499,7 @@ void Timeline::DrawClipsOnTrack(int trackIndex)
 				drawlist->AddRectFilledMultiColor(ImVec2(trackXStartPos, trackMinPos.y), ImVec2(trackXEndPos, trackMinPos.y + myIndividualTrackSize.y), IM_COL32(150, 150, 150, 255), IM_COL32(150, 150, 150, 255), IM_COL32(100, 100, 100, 255), IM_COL32(100, 100, 100, 255));
 			}
 
-			Volt::Entity camEnt = Volt::Entity{ currClip.activeCamera, myCurrentScene.get() };
+			Volt::Entity camEnt = myCurrentScene->GetEntityFromUUID(currClip.activeCamera);
 			std::string entName;
 			if (camEnt)
 			{

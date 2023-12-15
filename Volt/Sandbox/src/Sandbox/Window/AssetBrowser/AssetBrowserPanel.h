@@ -9,7 +9,6 @@
 #include <Volt/Events/MouseEvent.h>
 
 #include <glm/glm.hpp>
-#include <Wire/Wire.h>
 
 namespace Volt
 {
@@ -57,8 +56,8 @@ private:
 	AssetBrowser::DirectoryItem* FindDirectoryWithPath(const std::filesystem::path& path);
 	AssetBrowser::DirectoryItem* FindDirectoryWithPathRecursivly(const std::vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path);
 
-	void CreatePrefabAndSetupEntities(Wire::EntityId entity);
-	void SetupEntityAsPrefab(Wire::EntityId entity, Volt::AssetHandle prefabId);
+	void CreatePrefabAndSetupEntities(Volt::EntityID entity);
+	void SetupEntityAsPrefab(Volt::EntityID entity, Volt::AssetHandle prefabId);
 
 	void RecursiveRemoveFolderContents(DirectoryData* aDir);
 	void RecursiceRenameFolderContents(DirectoryData* aDir, const std::filesystem::path& newDir);

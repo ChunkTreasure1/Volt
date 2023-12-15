@@ -2,26 +2,32 @@
 
 #include <GraphKey/Graph.h>
 
+namespace GraphKey
+{
+	struct Node;
+}
+
 namespace Volt
 {
 	class AnimationGraphAsset : public GraphKey::Graph
 	{
 	public:
 		inline AnimationGraphAsset() = default;
-		inline AnimationGraphAsset(AssetHandle character)
-			: myAnimatedCharacter(character)
+		inline AnimationGraphAsset(AssetHandle aSkeleton)
+			: mySkeletonHandle(aSkeleton)
 		{
 		}
-
-		inline AnimationGraphAsset(AssetHandle character, Wire::EntityId entity)
-			: GraphKey::Graph(entity), myAnimatedCharacter(character)
+		
+		inline AnimationGraphAsset(AssetHandle aSkeleton, EntityID entity)
+			: GraphKey::Graph(entity), mySkeletonHandle(aSkeleton)
 		{
 		}
 
 		~AnimationGraphAsset() override = default;
 
-		void SetCharacterHandle(AssetHandle handle);
-		inline const AssetHandle GetCharacterHandle() const { return myAnimatedCharacter; }
+		void SetSkeletonHandle(AssetHandle aSkeletonHandle);
+		inline const AssetHandle GetSkeletonHandle() const { return mySkeletonHandle; }
+
 		inline void SetState(const std::string& state) { myGraphState = state; }
 		inline const std::string& GetState() const { return myGraphState; }
 
@@ -30,13 +36,14 @@ namespace Volt
 
 		static AssetType GetStaticType() { return Volt::AssetType::AnimationGraph; }
 		AssetType GetType() override { return GetStaticType(); };
+		
+		Ref<AnimationGraphAsset> CreateCopy(EntityID entity = Entity::NullID());
 
-		Ref<AnimationGraphAsset> CreateCopy(Wire::EntityId entity = 0);
-
+		Ref<GraphKey::Node> GetRelevantAnimationNode();
 	private:
 		friend class AnimationGraphImporter;
 
-		AssetHandle myAnimatedCharacter = Asset::Null();
+		AssetHandle mySkeletonHandle = Asset::Null();
 		std::string myGraphState;
 	
 		float myStartTime = 0.f;

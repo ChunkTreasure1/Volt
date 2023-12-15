@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 9963684909373996543
+  assetHandle: 6095984363745051238
   filePath: Engine/Meshes/Primitives/SM_Cylinder.fbx
   type: 2
   Dependencies:
     []
+  Properties:
+    {}

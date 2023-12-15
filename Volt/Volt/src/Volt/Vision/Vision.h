@@ -33,12 +33,12 @@ namespace Volt
 		void SetActiveCamera(const std::string aCamName);
 		void SetActiveCamera(const size_t aIndex);
 		void SetActiveCamera(const Volt::Entity aCamEntity);
-		void SetActiveCamera(const Wire::EntityId aEntityID);
-		void SetActiveCamera(const Wire::EntityId aEntityID, const float& aBlendTime, Volt::eBlendType blendType);
+		void SetActiveCamera(const EntityID aEntityID);
+		void SetActiveCamera(const EntityID aEntityID, const float& aBlendTime, Volt::eBlendType blendType);
 
-		const Volt::Entity GetActiveCamera() { return !myActiveCamera.IsNull() ? myActiveCamera : Volt::Entity{ 0,nullptr }; }
-		const Volt::Entity GetTriggerCamera() { return !myActiveTiggerCamera.IsNull() ? myActiveTiggerCamera : Volt::Entity{ 0,nullptr }; }
-		const Volt::Entity GetLastActiveCamera() { return !myLastActiveCamera.IsNull() ? myLastActiveCamera : Volt::Entity{ 0,nullptr }; }
+		const Volt::Entity GetActiveCamera() { return myActiveCamera.IsValid() ? myActiveCamera : Volt::Entity::Null(); }
+		const Volt::Entity GetTriggerCamera() { return myActiveTiggerCamera.IsValid() ? myActiveTiggerCamera : Volt::Entity::Null(); }
+		const Volt::Entity GetLastActiveCamera() { return myLastActiveCamera.IsValid() ? myLastActiveCamera : Volt::Entity::Null(); }
 		const std::vector<Volt::Entity> GetAllCamerasInScene();
 
 		void SetLastActiveCamera(Volt::Entity aCamEnt) { myLastActiveCamera = aCamEnt; };
@@ -75,13 +75,13 @@ namespace Volt
 
 		std::vector<Volt::Entity> myVTCams;
 
-		Volt::Entity myActiveCamera = Volt::Entity{ 0,nullptr };
-		Volt::Entity myLastActiveCamera = Volt::Entity{ 0,nullptr };
+		Volt::Entity myActiveCamera{};
+		Volt::Entity myLastActiveCamera{};
 
-		Volt::Entity myCurrentShakeCamera = Volt::Entity{ 0,nullptr };
+		Volt::Entity myCurrentShakeCamera{};
 
-		Volt::Entity myTransitionCamera = Volt::Entity{ 0,nullptr };
-		Volt::Entity myActiveTiggerCamera = Volt::Entity{ 0,nullptr };
+		Volt::Entity myTransitionCamera{};
+		Volt::Entity myActiveTiggerCamera{};
 
 		glm::vec3 myNoiseSeeds = { 0 };
 

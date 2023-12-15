@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Volt/Core/Base.h>
+#include <Volt/Components/CoreComponents.h>
+
 #include <stack>
 #include "EditorCommand.h"
 #include "Volt/Scene/Entity.h"
 
-#include "Volt/Components/Components.h"
 
 #include <tuple>
 
@@ -63,7 +64,7 @@ struct GizmoCommand : EditorCommand
 		glm::vec3 previousScaleValue;
 
 		Weak<Volt::Scene> scene;
-		Wire::EntityId id;
+		Volt::EntityID id;
 	};
 
 	GizmoCommand(GizmoData aGizmoData)
@@ -97,9 +98,9 @@ struct GizmoCommand : EditorCommand
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
 
-		if (!myScene.expired())
+		if (myScene)
 		{
-			myScene.lock()->InvalidateEntityTransform(myID);
+			myScene->InvalidateEntityTransform(myID);
 		}
 	}
 
@@ -122,9 +123,9 @@ struct GizmoCommand : EditorCommand
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
 	
-		if (!myScene.expired())
+		if (myScene)
 		{
-			myScene.lock()->InvalidateEntityTransform(myID);
+			myScene->InvalidateEntityTransform(myID);
 		}
 	}
 
@@ -136,13 +137,13 @@ private:
 	const glm::quat myPreviousRotationValue;
 	const glm::vec3 myPreviousScaleValue;
 
-	Wire::EntityId myID;
+	Volt::EntityID myID;
 	Weak<Volt::Scene> myScene;
 };
 
 struct MultiGizmoCommand : EditorCommand
 {
-	MultiGizmoCommand(Weak<Volt::Scene> scene, const std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>>& entities)
+	MultiGizmoCommand(Weak<Volt::Scene> scene, const std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>>& entities)
 		: myPreviousTransforms(entities), myScene(scene)
 	{
 	}
@@ -151,23 +152,23 @@ struct MultiGizmoCommand : EditorCommand
 
 	void Undo() override
 	{
-		if (myScene.expired())
+		if (!myScene)
 		{
 			return;
 		}
 
-		auto scenePtr = myScene.lock();
-		std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> currentTransforms;
+		auto scenePtr = myScene;
+		std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity{ id, scenePtr.get() };
+			Volt::Entity entity = scenePtr->GetEntityFromUUID(id);
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
 
-			scenePtr->InvalidateEntityTransform(id);
+			scenePtr->InvalidateEntityTransform(entity.GetID());
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
@@ -176,23 +177,23 @@ struct MultiGizmoCommand : EditorCommand
 
 	void Redo() override
 	{
-		if (myScene.expired())
+		if (!myScene)
 		{
 			return;
 		}
 
-		auto scenePtr = myScene.lock();
-		std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> currentTransforms;
+		auto scenePtr = myScene;
+		std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity{ id, scenePtr.get() };
+			Volt::Entity entity = scenePtr->GetEntityFromUUID(id);
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
 
-			scenePtr->InvalidateEntityTransform(id);
+			scenePtr->InvalidateEntityTransform(entity.GetID());
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
@@ -200,7 +201,7 @@ struct MultiGizmoCommand : EditorCommand
 	}
 
 private:
-	std::vector<std::pair<Wire::EntityId, Volt::TransformComponent>> myPreviousTransforms;
+	std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> myPreviousTransforms;
 	Weak<Volt::Scene> myScene;
 };
 
@@ -252,8 +253,9 @@ struct ObjectStateCommand : EditorCommand
 
 			for (int i = 0; i < myEntities.size(); i++)
 			{
-				myEntities[i].GetScene()->GetRegistry().AddEntity(myEntities[i].GetId());
-				myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
+				// #TODO_Ivar: Reimplement
+				//myEntities[i].GetScene()->GetRegistry().AddEntity(myEntities[i].GetId());
+				//myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
 			}
 		}
 	}
@@ -278,8 +280,8 @@ struct ObjectStateCommand : EditorCommand
 
 			for (int i = 0; i < myEntities.size(); i++)
 			{
-				myEntities[i].GetScene()->GetRegistry().AddEntity(myEntities[i].GetId());
-				myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
+				//myEntities[i].GetScene()->GetRegistry().AddEntity(myEntities[i].GetId());
+				//myEntities[i].Copy(myRegistry, myEntities[i].GetScene()->GetRegistry(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
 			}
 		}
 	}
@@ -289,11 +291,11 @@ private:
 	{
 		for (int i = 0; i < myEntities.size(); i++)
 		{
-			Volt::Entity::Copy(myEntities[i].GetScene()->GetRegistry(), myRegistry, myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
+			//Volt::Entity::Copy(myEntities[i].GetScene()->GetRegistry(), myRegistry, myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetScene()->GetScriptFieldCache(), myEntities[i].GetId(), myEntities[i].GetId());
 		}
 	}
 
-	Wire::Registry myRegistry;
+	//Wire::Registry myRegistry;
 	std::vector<Volt::Entity> myEntities;
 	ObjectStateAction myAction;
 };

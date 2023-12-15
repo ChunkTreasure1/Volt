@@ -41,7 +41,9 @@ namespace Volt
 	int Main(const std::filesystem::path& appPath)
 	{
 		std::filesystem::path dmpPath;
+
 		CreateProxy(dmpPath, appPath);
+
 		return 0;
 	}
 }
@@ -52,7 +54,16 @@ namespace Volt
 
 int APIENTRY WinMain(HINSTANCE aHInstance, HINSTANCE aPrevHInstance, PSTR aCmdLine, int aCmdShow)
 {
-	return Volt::Main(aCmdLine);
+	LPWSTR* szArglist;
+	int nArgs = 0;
+	szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	
+	if (nArgs > 1)
+	{
+		return Volt::Main(szArglist[1]);
+	}
+
+	return Volt::Main("");
 }
 
 #else

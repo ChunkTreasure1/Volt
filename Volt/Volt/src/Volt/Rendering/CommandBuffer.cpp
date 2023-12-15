@@ -114,9 +114,9 @@ namespace Volt
 
 				device->FlushCommandBuffer(info, mySubmitFences.at(index), myQueueType);
 			}
-			else if (!myInheritedCommandBuffer.expired())
+			else if (myInheritedCommandBuffer)
 			{
-				auto cmdBufferPtr = myInheritedCommandBuffer.lock();
+				auto cmdBufferPtr = myInheritedCommandBuffer;
 				const uint32_t index = cmdBufferPtr->GetCurrentIndex();
 
 				auto currentCmdBuffer = myCommandBuffers.at(index);
@@ -153,7 +153,7 @@ namespace Volt
 			return index;
 		}
 
-		auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 		const uint32_t index = inheritedCmdBufferPtr->GetCurrentIndex();
 
 		return index;
@@ -166,7 +166,7 @@ namespace Volt
 			return myLastCommandPool;
 		}
 
-		auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 		const uint32_t index = inheritedCmdBufferPtr->GetLastIndex();
 
 		return index;
@@ -185,7 +185,7 @@ namespace Volt
 
 		if (myLevel == CommandBufferLevel::Secondary)
 		{
-			auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+			auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 			cmdBufferPtr = inheritedCmdBufferPtr.get();
 		}
 		else
@@ -214,7 +214,7 @@ namespace Volt
 
 		//if (myLevel == CommandBufferLevel::Secondary)
 		//{
-		//	auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		//	auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 		//	cmdBufferPtr = inheritedCmdBufferPtr.get();
 		//}
 		//else
@@ -395,39 +395,39 @@ namespace Volt
 
 	void CommandBuffer::FetchTimestampResults()
 	{
-		if (!myHasTimestampSupport || myLastAvailableTimestampQuery == 0)
-		{
-			return;
-		}
+		//if (!myHasTimestampSupport || myLastAvailableTimestampQuery == 0)
+		//{
+		//	return;
+		//}
 
-		auto device = GraphicsContext::GetDevice();
-		const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
+		//auto device = GraphicsContext::GetDevice();
+		//const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
 
-		vkGetQueryPoolResults(device->GetHandle(), myTimestampQueryPools.at(index), 0, myLastAvailableTimestampQuery, myLastAvailableTimestampQuery * sizeof(uint64_t), myTimestampQueryResults.at(index).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-		for (uint32_t i = 0; i < myLastAvailableTimestampQuery; i += 2)
-		{
-			const uint64_t startTime = myTimestampQueryResults.at(index).at(i);
-			const uint64_t endTime = myTimestampQueryResults.at(index).at(i + 1);
+		//vkGetQueryPoolResults(device->GetHandle(), myTimestampQueryPools.at(index), 0, myLastAvailableTimestampQuery, myLastAvailableTimestampQuery * sizeof(uint64_t), myTimestampQueryResults.at(index).data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		//for (uint32_t i = 0; i < myLastAvailableTimestampQuery; i += 2)
+		//{
+		//	const uint64_t startTime = myTimestampQueryResults.at(index).at(i);
+		//	const uint64_t endTime = myTimestampQueryResults.at(index).at(i + 1);
 
-			const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
-			myGPUExecutionTimes[index][i / 2] = nsTime * 0.000001f; // Convert to ms
-		}
+		//	const float nsTime = endTime > startTime ? (endTime - startTime) * GraphicsContext::GetPhysicalDevice()->GetCapabilities().timestampPeriod : 0.f;
+		//	myGPUExecutionTimes[index][i / 2] = nsTime * 0.000001f; // Convert to ms
+		//}
 	}
 
 	void CommandBuffer::FetchPipelineStatistics()
 	{
-		if (!myHasTimestampSupport)
-		{
-			return;
-		}
+		//if (!myHasTimestampSupport)
+		//{
+		//	return;
+		//}
 
-		auto device = GraphicsContext::GetDevice();
-		const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
+		//auto device = GraphicsContext::GetDevice();
+		//const uint32_t index = mySwapchainTarget ? Application::Get().GetWindow().GetSwapchain().GetCurrentFrame() : myLastCommandPool;
 
-		if (myQueueType == QueueType::Graphics)
-		{
-			vkGetQueryPoolResults(device->GetHandle(), myPipelineStatisticsQueryPools.at(index), 0, 1, sizeof(RenderPipelineStatistics), &myPipelineStatisticsResults.at(index), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-		}
+		//if (myQueueType == QueueType::Graphics)
+		//{
+		//	//vkGetQueryPoolResults(device->GetHandle(), myPipelineStatisticsQueryPools.at(index), 0, 1, sizeof(RenderPipelineStatistics), &myPipelineStatisticsResults.at(index), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		//}
 	}
 
 	void CommandBuffer::Release()

@@ -1,14 +1,17 @@
 #pragma once
 #include "Volt/Asset/Asset.h"
+#include "Volt/Core/Profiling.h"
 
 #include "Volt/Animation/AnimationSystem.h"
 #include "Volt/Particles/ParticleSystem.h"
 #include "Volt/Audio/AudioSystem.h"
 #include "Volt/Vision/TimelinePlayer.h"
 
+#include "Volt/Scene/EntityRegistry.h"
+#include "Volt/Scene/WorldEngine/WorldEngine.h"
+
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
-#include <Wire/Wire.h>
 #include <glm/glm.hpp>
 
 #include <map>
@@ -27,6 +30,8 @@ namespace Volt
 	class Event;
 	class Image2D;
 
+	class Entity;
+
 	struct SceneEnvironment
 	{
 		Ref<Image2D> irradianceMap;
@@ -34,6 +39,11 @@ namespace Volt
 
 		float lod = 0.f;
 		float intensity = 1.f;
+	};
+
+	struct SceneSettings
+	{
+		bool useWorldEngine = false;
 	};
 
 	struct SceneLayer
@@ -45,7 +55,7 @@ namespace Volt
 		bool locked = false;
 	};
 
-	class Scene : public Asset
+	class Scene : public Asset, public std::enable_shared_from_this<Scene>
 	{
 	public:
 		struct Statistics
@@ -63,11 +73,13 @@ namespace Volt
 		Scene();
 		Scene(const std::string& name);
 
-		inline Wire::Registry& GetRegistry() { return myRegistry; }
-		inline const std::string& GetName() const { return myName; }
-		inline const Statistics& GetStatistics() const { return myStatistics; }
-		inline const bool IsPlaying() const { return myIsPlaying; }
-		inline const float GetDeltaTime() const { return myCurrentDeltaTime; }
+		void PostInitialize();
+
+		inline entt::registry& GetRegistry() { return m_registry; }
+		inline const std::string& GetName() const { return m_name; }
+		inline const Statistics& GetStatistics() const { return m_statistics; }
+		inline const bool IsPlaying() const { return m_isPlaying; }
+		inline const float GetDeltaTime() const { return m_currentDeltaTime; }
 
 		void SetTimeScale(const float aTimeScale);
 
@@ -92,45 +104,64 @@ namespace Volt
 		void RemoveLayer(const std::string& layerName);
 		void RemoveLayer(uint32_t layerId);
 		void MoveToLayer(Entity entity, uint32_t targetLayer);
+		void SetLayers(const std::vector<SceneLayer>& sceneLayers); // #TODO_Ivar: We probably don't want to expose this
 		void SetActiveLayer(uint32_t layerId);
 		bool LayerExists(uint32_t layerId);
 
-		inline const uint32_t GetActiveLayer() const { return mySceneLayers.at(myActiveLayerIndex).id; }
-		inline const std::vector<SceneLayer>& GetLayers() const { return mySceneLayers; }
-		inline std::vector<SceneLayer>& GetLayersMutable() { return mySceneLayers; }
+		void MarkEntityAsEdited(const Entity& entity);
+		void ClearEditedEntities();
 
-		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return myMonoFieldCache; }
-		inline MonoScriptFieldCache& GetScriptFieldCache() { return myMonoFieldCache; }
+		inline const uint32_t GetActiveLayer() const { return m_sceneLayers.at(m_activeLayerIndex).id; }
+		inline const std::vector<SceneLayer>& GetLayers() const { return m_sceneLayers; }
+		inline std::vector<SceneLayer>& GetLayersMutable() { return m_sceneLayers; }
+
+		inline const MonoScriptFieldCache& GetScriptFieldCache() const { return m_monoFieldCache; }
+		inline MonoScriptFieldCache& GetScriptFieldCache() { return m_monoFieldCache; }
+
+		inline SceneSettings& GetSceneSettingsMutable() { return m_sceneSettings; }
+		inline const SceneSettings& GetSceneSettings() const { return m_sceneSettings; }
+
+		inline const WorldEngine& GetWorldEngine() const { return m_worldEngine; }
+		inline WorldEngine& GetWorldEngineMutable() { return m_worldEngine; }
 
 		void SetRenderSize(uint32_t aWidth, uint32_t aHeight);
 
 		Entity CreateEntity(const std::string& tag = "");
-		void RemoveEntity(Entity entity);
-		void RemoveEntity(Entity entity, float aTimeToDestroy);
+		Entity CreateEntityWithUUID(const EntityID& uuid, const std::string& tag = "");
 
+		Entity GetEntityFromUUID(const EntityID uuid) const;
+		entt::entity GetHandleFromUUID(const EntityID uuid) const;
+
+		const bool IsRelatedTo(Entity entity, Entity otherEntity);
+		void RemoveEntity(Entity entity);
 		void ParentEntity(Entity parent, Entity child);
 		void UnparentEntity(Entity entity);
 
-		glm::mat4 GetWorldSpaceTransform(Entity entity);
-		TQS GetWorldSpaceTRS(Entity entity);
+		void InvalidateEntityTransform(const EntityID& entityUUID);
 
-		void InvalidateEntityTransform(Wire::EntityId entity);
-
-		Vision& GetVision() { return *myVisionSystem; }
-		TimelinePlayer& GetTimelinePlayer() { return myTimelinePlayer; };
+		Vision& GetVision() { return *m_visionSystem; }
+		TimelinePlayer& GetTimelinePlayer() { return m_timelinePlayer; };
 
 		Entity InstantiateSplitMesh(AssetHandle meshHandle);
 
-		glm::vec3 GetWorldForward(Entity entity);
-		glm::vec3 GetWorldRight(Entity entity);
-		glm::vec3 GetWorldUp(Entity entity);
-
-		template<typename T>
-		const std::vector<Wire::EntityId> GetAllEntitiesWith() const;
-
+		const TQS GetWorldTQS(Entity entity) const;
 		const Entity GetEntityWithName(std::string name);
+		const bool IsEntityValid(EntityID entityId) const;
 
-		inline ParticleSystem& GetParticleSystem() { return myParticleSystem; }
+		inline ParticleSystem& GetParticleSystem() { return m_particleSystem; }
+
+		template<typename... T>
+		const std::vector<Entity> GetAllEntitiesWith() const;
+		
+		template<typename... T>
+		std::vector<Entity> GetAllEntitiesWith();
+
+		template<typename... T, typename F>
+		void ForEachWithComponents(const F& func);
+
+		const std::vector<Entity> GetAllEntities() const;
+		const std::vector<Entity> GetAllEditedEntities() const;
+		const std::vector<EntityID> GetAllRemovedEntities() const;
 
 		static const std::set<AssetHandle> GetDependencyList(const std::filesystem::path& scenePath);
 		static bool IsSceneFullyLoaded(const std::filesystem::path& scenePath);
@@ -149,50 +180,106 @@ namespace Volt
 
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 
-		void SetupComponentCreationFunctions();
-		void SetupComponentDeletionFunctions();
+		void SetupComponentFunctions();
 
 		void IsRecursiveChildOf(Entity mainParent, Entity currentEntity, bool& outChild);
 		void ConvertToWorldSpace(Entity entity);
 		void ConvertToLocalSpace(Entity entity);
 
+		void RemoveEntityInternal(Entity entity, bool removingParent);
+
 		void AddLayer(const std::string& layerName, uint32_t layerId);
 
-		SceneEnvironment myEnvironment;
-		Statistics myStatistics;
+		const glm::mat4 GetWorldTransform(Entity entity) const;
+		const std::vector<Entity> FlattenEntityHeirarchy(Entity entity);
 
-		bool myIsPlaying = false;
-		float myTimeSinceStart = 0.f;
-		float myCurrentDeltaTime = 0.f;
+		///// Component Functions /////
+		void RigidbodyComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void CharacterControllerComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void BoxColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void SphereColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void CapsuleColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void MeshColliderComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void CameraComponent_OnCreate(entt::registry& registry, entt::entity id);
 
-		std::string myName = "New Scene";
-		Wire::Registry myRegistry;
+		void RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void BoxColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void SphereColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void CapsuleColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		void MeshColliderComponent_OnDestroy(entt::registry& registry, entt::entity id);
+		//////////////////////////////
 
-		std::map<Wire::EntityId, bool> myEntityTimesToDestroyRemoved;
-		std::map<Wire::EntityId, float> myEntityTimesToDestroy;
+		SceneEnvironment m_environment;
+		SceneSettings m_sceneSettings;
+		Statistics m_statistics;
+		WorldEngine m_worldEngine;
 
-		std::vector<SceneLayer> mySceneLayers;
-		std::unordered_map<Wire::EntityId, glm::mat4> myCachedEntityTransforms;
-		std::shared_mutex myCachedEntityTransformMutex;
+		bool m_isPlaying = false;
+		float m_timeSinceStart = 0.f;
+		float m_currentDeltaTime = 0.f;
 
-		uint32_t myWidth = 1;
-		uint32_t myHeight = 1;
+		std::string m_name = "New Scene";
+		entt::registry m_registry;
 
-		uint32_t myLastLayerId = 1;
-		uint32_t myActiveLayerIndex = 0;
-		TimelinePlayer myTimelinePlayer;
+		std::vector<SceneLayer> m_sceneLayers;
 
-		ParticleSystem myParticleSystem;
-		AudioSystem myAudioSystem;
-		AnimationSystem myAnimationSystem;
-		MonoScriptFieldCache myMonoFieldCache;
+		mutable std::unordered_map<EntityID, glm::mat4> m_cachedEntityTransforms;
+		mutable std::shared_mutex m_cachedEntityTransformMutex;
 
-		Ref<Vision> myVisionSystem; // Needs to be of ptr type because of include loop
+		EntityRegistry m_entityRegistry{};
+
+		uint32_t m_viewportWidth = 1;
+		uint32_t m_viewportHeight = 1;
+
+		uint32_t m_lastLayerId = 1;
+		uint32_t m_activeLayerIndex = 0;
+		TimelinePlayer m_timelinePlayer;
+			
+		ParticleSystem m_particleSystem;
+		AudioSystem m_audioSystem;
+		AnimationSystem m_animationSystem;
+		MonoScriptFieldCache m_monoFieldCache;
+
+		Ref<Vision> m_visionSystem; // Needs to be of ptr type because of include loop
 	};
 
-	template<typename T>
-	inline const std::vector<Wire::EntityId> Scene::GetAllEntitiesWith() const
+	template<typename ...T>
+	inline std::vector<Entity> Scene::GetAllEntitiesWith()
 	{
-		return myRegistry.GetComponentView<T>();
+		std::vector<Entity> result{};
+
+		auto view = m_registry.view<T...>();
+		for (const auto& ent : view)
+		{
+			result.emplace_back(GetEntityFromUUID(m_entityRegistry.GetUUIDFromHandle(ent)));
+		}
+
+		return result;
+	}
+
+	template<typename ...T>
+	inline const std::vector<Entity> Scene::GetAllEntitiesWith() const
+	{
+		std::vector<Entity> result{};
+
+		auto view = m_registry.view<T...>();
+		for (const auto& ent : view)
+		{
+			result.emplace_back(GetEntityFromUUID(m_entityRegistry.GetUUIDFromHandle(ent)));
+		}
+
+		return result;
+	}
+
+	template<typename... T, typename F>
+	inline void Scene::ForEachWithComponents(const F& func)
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto view = m_registry.view<T...>();
+		view.each(func);
 	}
 }

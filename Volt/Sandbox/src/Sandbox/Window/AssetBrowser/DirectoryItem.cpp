@@ -39,6 +39,7 @@ namespace AssetBrowser
 			{
 				if (!item->isDirectory && item != this && FileSystem::Exists(Volt::ProjectManager::GetDirectory() / item->path))
 				{
+
 					Volt::AssetManager::Get().MoveAsset(Volt::AssetManager::GetAssetHandleFromFilePath(item->path), path);
 				}
 			}

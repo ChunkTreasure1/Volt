@@ -12,7 +12,6 @@
 #include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Prefab.h>
-#include <Volt/Components/Components.h>
 
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>

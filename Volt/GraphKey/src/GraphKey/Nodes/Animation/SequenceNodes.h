@@ -22,6 +22,9 @@ namespace GraphKey
 		Ref<Volt::Animation> GetAnimation();
 		const bool IsLooping();
 
+		float GetCurrentAnimationTime();
+		float GetCurrentAnimationTimeNormalized();
+
 	private:
 		void TrySampleAnimation();
 	

@@ -63,13 +63,13 @@ namespace Utility
 
 		const auto& param = *it;
 
-		const auto splitParam = Utils::SplitStringsByCharacter(paramName, ' ');
+		const auto splitParam = Utility::SplitStringsByCharacter(paramName, ' ');
 		if (splitParam.size() < 2)
 		{
 			return nullptr;
 		}
 
-		if (Utils::StringContains(Utils::ToLower(splitParam.at(0)), "set"))
+		if (Utility::StringContains(Utility::ToLower(splitParam.at(0)), "set"))
 		{
 			Ref<GraphKey::Node> node;
 			GK_CREATE_SET_PARAMETER_NODE(std::type_index(param.value.type()), param.id, node);
@@ -87,7 +87,7 @@ namespace Utility
 
 	inline Ref<GraphKey::Node> CreateCallNodeFromEventName(const std::string& nodeName, Volt::Entity pinEntity)
 	{
-		if (!pinEntity.HasComponent<Volt::VisualScriptingComponent>())
+		/*if (!pinEntity.HasComponent<Volt::VisualScriptingComponent>())
 		{
 			return nullptr;
 		}
@@ -115,43 +115,47 @@ namespace Utility
 		auto callType = std::reinterpret_pointer_cast<GraphKey::CallCustomEventNode>(newNode);
 		callType->eventId = (*it).id;
 
-		return newNode;
+		return newNode;*/
+	
+		return nullptr;
 	}
 
 	inline Ref<GraphKey::Node> CreateRecieveNodeFromEventName(const std::string& nodeName, Ref<GraphKey::Graph> graph, Ref<Volt::Scene> current)
 	{
-		auto entId = graph->GetEntity();
-		Volt::Entity entity{ entId, current.get() };
+		//auto entId = graph->GetEntity();
+		//Volt::Entity entity{ entId, current.get() };
 
-		if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-		{
-			return nullptr;
-		}
+		//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+		//{
+		//	return nullptr;
+		//}
 
-		auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-		if (!comp.graph)
-		{
-			return nullptr;
-		}
+		//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+		//if (!comp.graph)
+		//{
+		//	return nullptr;
+		//}
 
-		const auto& events = comp.graph->GetEvents();
-		const std::string eventName = nodeName.substr(nodeName.find_first_of(' ') + 1);
+		//const auto& events = comp.graph->GetEvents();
+		//const std::string eventName = nodeName.substr(nodeName.find_first_of(' ') + 1);
 
-		auto it = std::find_if(events.begin(), events.end(), [&eventName](const auto& lhs)
-		{
-			return lhs.name == eventName;
-		});
+		//auto it = std::find_if(events.begin(), events.end(), [&eventName](const auto& lhs)
+		//{
+		//	return lhs.name == eventName;
+		//});
 
-		if (it == events.end())
-		{
-			return nullptr;
-		}
+		//if (it == events.end())
+		//{
+		//	return nullptr;
+		//}
 
-		Ref<GraphKey::Node> newNode = GraphKey::Registry::Create("RecieveCustomEventNode");
-		auto callType = std::reinterpret_pointer_cast<GraphKey::RecieveCustomEventNode>(newNode);
-		callType->eventId = (*it).id;
+		//Ref<GraphKey::Node> newNode = GraphKey::Registry::Create("RecieveCustomEventNode");
+		//auto callType = std::reinterpret_pointer_cast<GraphKey::RecieveCustomEventNode>(newNode);
+		//callType->eventId = (*it).id;
 
-		return newNode;
+		//return newNode;
+
+		return nullptr;
 	}
 }
 
@@ -193,6 +197,13 @@ protected:
 
 private:
 	const IncompatiblePinReason CanLinkPins(const Volt::UUID input, const Volt::UUID output);
+
+	void AddNode(Ref<GraphKey::Node> node);
+	void CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output) override;
+	void AddLink(GraphKey::Link link);
+
+	void RemoveLink(const Volt::UUID linkId) override;
+	void RemoveNode(const Volt::UUID nodeId) override;
 
 	void DrawGraphDataPanel();
 	void DrawNodeContextMenu();
@@ -573,6 +584,53 @@ inline const IONodeGraphEditor<graphType, EditorBackend>::IncompatiblePinReason 
 }
 
 template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::AddNode(Ref<GraphKey::Node> node)
+{
+	std::vector<Volt::UUID> pins;
+	for (auto& i : node->inputs)
+	{
+		pins.emplace_back(i.id);
+	}
+
+	for (auto& o : node->outputs)
+	{
+		pins.emplace_back(o.id);
+	}
+
+	Editor::CreateNode(node->id, pins);
+	myOpenGraph->AddNode(node);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::CreateLink(const Volt::UUID id, const Volt::UUID input, const Volt::UUID output)
+{
+	Editor::CreateLink(id, input, output);
+	myOpenGraph->CreateLink(id, input, output);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::AddLink(GraphKey::Link link)
+{
+	Editor::CreateLink(link.id, link.input, link.output);
+	myOpenGraph->AddLink(link);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::RemoveLink(const Volt::UUID linkId)
+{
+	Editor::RemoveLink(linkId);
+	myOpenGraph->RemoveLink(linkId);
+
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
+inline void IONodeGraphEditor<TGraphType, EditorBackend>::RemoveNode(const Volt::UUID nodeId)
+{
+	Editor::RemoveNode(nodeId);
+	myOpenGraph->RemoveNode(nodeId);
+}
+
+template<GraphKey::GraphType TGraphType, typename EditorBackend>
 inline void IONodeGraphEditor<TGraphType, EditorBackend>::ReconstructGraph()
 {
 	auto& backend = GetBackend();
@@ -673,31 +731,41 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnBeginCreate()
 		}
 		else if (ed::AcceptNewItem(ImColor{ 1.f, 1.f, 1.f }, 2.f))
 		{
-			if (myGraphType == GraphKey::GraphType::Animation && startAttr->type == GraphKey::AttributeType::Flow)
+			auto inputDirAttr = startAttr->direction == GraphKey::AttributeDirection::Input ? startAttr : endAttr;
+			std::vector<Volt::UUID> linksToRemove{};
+			if (!inputDirAttr->links.empty())
 			{
-				std::vector<Volt::UUID> linksToRemove{};
-
-				if (!startAttr->links.empty())
-				{
-					linksToRemove.insert(linksToRemove.end(), startAttr->links.begin(), startAttr->links.end());
-				}
-
-				if (!endAttr->links.empty())
-				{
-					linksToRemove.insert(linksToRemove.end(), endAttr->links.begin(), endAttr->links.end());
-				}
-
-				for (const auto& l : linksToRemove)
-				{
-					RemoveLink(l);
-					myOpenGraph->RemoveLink(l);
-				}
+				linksToRemove.insert(linksToRemove.end(), inputDirAttr->links.begin(), inputDirAttr->links.end());
 			}
 
-			myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
+			for (const auto& l : linksToRemove)
+			{
+				RemoveLink(l);
+			}
 
-			auto newLink = GetBackend().CreateLink(endPinId.Get(), startPinId.Get());
-			myOpenGraph->CreateLink(newLink.id, newLink.input, newLink.output);
+			//if (myGraphType == GraphKey::GraphType::Animation && startAttr->type == GraphKey::AttributeType::AnimationPose)
+			//{
+			//	std::vector<Volt::UUID> linksToRemove{};
+
+			//	if (!startAttr->links.empty())
+			//	{
+			//		linksToRemove.insert(linksToRemove.end(), startAttr->links.begin(), startAttr->links.end());
+			//	}
+
+			//	if (!endAttr->links.empty())
+			//	{
+			//		linksToRemove.insert(linksToRemove.end(), endAttr->links.begin(), endAttr->links.end());
+			//	}
+
+			//	for (const auto& l : linksToRemove)
+			//	{
+			//		RemoveLink(l);
+			//	}
+			//}
+
+			myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
+			const Volt::UUID id{};
+			CreateLink(id, startPinId.Get(), endPinId.Get());
 		}
 	}
 
@@ -835,7 +903,7 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 							}
 						}
 
-						linksToCopy.emplace_back(std::pair(std::pair{ inputAttribute, outputAttribute }, *link));
+						linksToCopy.emplace_back(std::pair(std::pair{ inputAttribute, outputAttribute }, * link));
 					}
 				}
 			}
@@ -876,26 +944,12 @@ inline void IONodeGraphEditor<TGraphType, EditorBackend>::OnPaste()
 	for (const auto& n : myNodeCopies)
 	{
 		n->id = {};
-
-		std::vector<Volt::UUID> pins;
-		for (auto& i : n->inputs)
-		{
-			pins.emplace_back(i.id);
-		}
-
-		for (auto& o : n->outputs)
-		{
-			pins.emplace_back(o.id);
-		}
-
-		myOpenGraph->AddNode(n);
-		CreateNode(n->id, pins);
+		AddNode(n);
 	}
 
 	for (const auto& l : newLinks)
 	{
-		myOpenGraph->AddLink(l);
-		CreateLink(l.id, l.input, l.output);
+		AddLink(l);
 	}
 
 	myShouldMoveCopies = true;
@@ -1064,16 +1118,16 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 					}
 
 					bool visible = false;
-					const std::string lowerQuery = Utils::ToLower(query);
+					const std::string lowerQuery = Utility::ToLower(query);
 
 					for (const auto& n : names)
 					{
-						const std::string lowerName = Utils::ToLower(n);
-						visible |= Utils::StringContains(lowerName, lowerQuery);
+						const std::string lowerName = Utility::ToLower(n);
+						visible |= Utility::StringContains(lowerName, lowerQuery);
 					}
 
-					const std::string lowerCategory = Utils::ToLower(category);
-					visible |= Utils::StringContains(lowerCategory, lowerQuery);
+					const std::string lowerCategory = Utility::ToLower(category);
+					visible |= Utility::StringContains(lowerCategory, lowerQuery);
 
 					return visible;
 				};
@@ -1162,7 +1216,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 					for (const auto& name : tempNames)
 					{
 						const bool nodeHasPin = nodeHasPinOfType(name);
-						const bool containsQuery = Utils::StringContains(Utils::ToLower(name), Utils::ToLower(query));
+						const bool containsQuery = Utility::StringContains(Utility::ToLower(name), Utility::ToLower(query));
 
 						UI::RenderMatchingTextBackground(query, name, EditorTheme::MatchingTextBackground);
 						if (containsQuery && nodeHasPin && ImGui::MenuItem(name.c_str()) && myOpenGraph)
@@ -1190,21 +1244,7 @@ inline Ref<GraphKey::Node> IONodeGraphEditor<graphType, EditorBackend>::DrawNode
 							}
 
 							myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
-							myOpenGraph->AddNode(node);
-
-							std::vector<Volt::UUID> pinIds{};
-
-							for (const auto& i : node->inputs)
-							{
-								pinIds.emplace_back(i.id);
-							}
-
-							for (const auto& o : node->outputs)
-							{
-								pinIds.emplace_back(o.id);
-							}
-
-							CreateNode(node->id, pinIds);
+							AddNode(node);
 						}
 					}
 
@@ -1245,12 +1285,12 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawPinContextMenu()
 			{
 				if (SelectionManager::IsAnySelected() && ImGui::MenuItem("Assign Selected Entity"))
 				{
-					pin->data = Volt::Entity{ SelectionManager::GetSelectedEntities().at(0), myCurrentScene.get() };
+					pin->data = myCurrentScene->GetEntityFromUUID(SelectionManager::GetSelectedEntities().at(0));
 				}
 
 				if (ImGui::MenuItem("Assign Graph Entity"))
 				{
-					pin->data = Volt::Entity{ myOpenGraph->GetEntity(), myCurrentScene.get() };
+					pin->data = myCurrentScene->GetEntityFromUUID(myOpenGraph->GetEntity());
 				}
 			}
 		}
@@ -1330,7 +1370,6 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 
 							for (const auto& l : linksToRemove)
 							{
-								myOpenGraph->RemoveLink(l);
 								RemoveLink(l);
 							}
 						}
@@ -1343,7 +1382,6 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 									if (l.input == endId.Get())
 									{
 										RemoveLink(l.id);
-										myOpenGraph->RemoveLink(l.id);
 									}
 
 								}
@@ -1358,7 +1396,8 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawBackgroundContextMe
 						}
 
 						myCommandStack->AddCommand<NodeGraphGraphKeyCommand>(myOpenGraph);
-						const auto id = myOpenGraph->CreateLink(startId.Get(), endId.Get());
+
+						const Volt::UUID id{};
 						CreateLink(id, startId.Get(), endId.Get());
 
 						break;
@@ -1455,25 +1494,27 @@ inline const std::vector<std::string> IONodeGraphEditor<TGraphType, EditorBacken
 		return {};
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return{};
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return{};
+	//}
 
-	auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	if (!comp.graph)
-	{
-		return {};
-	}
+	//auto& comp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//if (!comp.graph)
+	//{
+	//	return {};
+	//}
 
-	const auto& events = comp.graph->GetEvents();
-	std::vector<std::string> result{};
-	for (const auto& e : events)
-	{
-		result.emplace_back(e.name);
-	}
+	//const auto& events = comp.graph->GetEvents();
+	//std::vector<std::string> result{};
+	//for (const auto& e : events)
+	//{
+	//	result.emplace_back(e.name);
+	//}
 
-	return result;
+	//return result;
+
+	return {};
 }
 
 template<GraphKey::GraphType graphType, typename EditorBackend>
@@ -1505,6 +1546,7 @@ inline void IONodeGraphEditor<graphType, EditorBackend>::DrawPinIcon(const Graph
 	{
 		case GraphKey::AttributeType::Flow: iconType = IconType::Flow;   break;
 		case GraphKey::AttributeType::Type: iconType = IconType::Circle;   break;
+		case GraphKey::AttributeType::AnimationPose: iconType = IconType::AnimationPose;   break;
 
 		default:
 			return;

@@ -135,7 +135,7 @@ namespace Volt
 
 	const std::vector<AssetHandle> AssetManager::GetAllAssetsWithDependency(const std::filesystem::path& dependencyFilePath)
 	{
-		const std::string pathString = Utils::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
+		const std::string pathString = ::Utility::ReplaceCharacter(GetRelativePath(dependencyFilePath).string(), '\\', '/');
 		std::vector<AssetHandle> result{};
 
 		auto& instance = Get();
@@ -263,6 +263,7 @@ namespace Volt
 		LoadAsset(handle, asset);
 	}
 
+	// #TODO_Ivar: This function does not seem to do what it's supposed to...
 	void AssetManager::SaveAssetAs(Ref<Asset> asset, const std::filesystem::path& targetFilePath)
 	{
 		auto& instance = Get();
@@ -289,6 +290,15 @@ namespace Volt
 			metaData.isLoaded = true;
 			metaData.type = asset->GetType();
 		}
+
+		AssetMetadata metadata = s_nullMetadata;
+		
+		{
+			ReadLock lock{ instance.m_assetRegistryMutex };
+			metadata = GetMetadataFromHandle(asset->handle);
+		}
+
+		instance.m_assetImporters[metadata.type]->Save(metadata, asset);
 
 		{
 			WriteLock lock{ instance.m_assetCacheMutex };
@@ -433,11 +443,11 @@ namespace Volt
 		std::vector<AssetHandle> filesToMove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::string sourceDirLower = Utils::ToLower(sourceDir.string());
+			const std::string sourceDirLower = ::Utility::ToLower(sourceDir.string());
 
 			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				const std::string filePathLower = Utils::ToLower(metaData.filePath.string());
+				const std::string filePathLower = ::Utility::ToLower(metaData.filePath.string());
 
 				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
@@ -453,7 +463,7 @@ namespace Volt
 				auto& metadata = GetMetadataFromHandleMutable(handle);
 
 				std::string newPath = metadata.filePath.string();
-				const size_t directoryStringLoc = Utils::ToLower(newPath).find(Utils::ToLower(sourceDir.string()));
+				const size_t directoryStringLoc = ::Utility::ToLower(newPath).find(::Utility::ToLower(sourceDir.string()));
 
 				if (directoryStringLoc == std::string::npos)
 				{
@@ -668,11 +678,11 @@ namespace Volt
 		std::vector<AssetHandle> filesToRemove{};
 		{
 			ReadLock lock{ m_assetRegistryMutex };
-			const std::string sourceDirLower = Utils::ToLower(folderPath.string());
+			const std::string sourceDirLower = ::Utility::ToLower(folderPath.string());
 
 			for (const auto& [handle, metaData] : m_assetRegistry)
 			{
-				const std::string filePathLower = Utils::ToLower(metaData.filePath.string());
+				const std::string filePathLower = ::Utility::ToLower(metaData.filePath.string());
 
 				if (auto it = filePathLower.find(sourceDirLower); it != std::string::npos)
 				{
@@ -748,11 +758,11 @@ namespace Volt
 
 	bool AssetManager::IsEngineAsset(const std::filesystem::path& path)
 	{
-		const auto pathSplit = Utils::SplitStringsByCharacter(path.string(), '/');
+		const auto pathSplit = ::Utility::SplitStringsByCharacter(path.string(), '/');
 		if (!pathSplit.empty())
 		{
-			std::string lowerFirstPart = Utils::ToLower(pathSplit.front());
-			if (Utils::StringContains(lowerFirstPart, "engine") || Utils::StringContains(lowerFirstPart, "editor"))
+			std::string lowerFirstPart = ::Utility::ToLower(pathSplit.front());
+			if (::Utility::StringContains(lowerFirstPart, "engine") || ::Utility::StringContains(lowerFirstPart, "editor"))
 			{
 				return true;
 			}
@@ -799,7 +809,7 @@ namespace Volt
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		std::string ext = Utils::ToLower(extension);
+		std::string ext = ::Utility::ToLower(extension);
 		if (!s_assetExtensionsMap.contains(ext))
 		{
 			return AssetType::None;
@@ -983,7 +993,6 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_CORE_ERROR("[AssetManager] Trying to queue invalid asset {0}!", assetHandle);
 			return;
 		}
 
@@ -1065,7 +1074,6 @@ namespace Volt
 
 		if (!metadata.IsValid())
 		{
-			VT_CORE_ERROR("[AssetManager] Trying to queue invalid asset {0}!", assetHandle);
 			return;
 		}
 
@@ -1158,14 +1166,14 @@ namespace Volt
 
 	const std::filesystem::path AssetManager::GetCleanAssetFilePath(const std::filesystem::path& filePath)
 	{
-		auto pathClean = Utils::ReplaceCharacter(filePath.string(), '\\', '/');
+		auto pathClean = ::Utility::ReplaceCharacter(filePath.string(), '\\', '/');
 		return pathClean;
 	}
 
 	std::vector<std::filesystem::path> AssetManager::GetEngineMetaFiles()
 	{
 		std::vector<std::filesystem::path> files;
-		std::string ext(".vtmeta");
+		const std::string ext(".vtmeta");
 
 		// Engine Directory
 		for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetEngineDirectory() / "Engine"))
@@ -1176,26 +1184,38 @@ namespace Volt
 			}
 		}
 
+		const auto editorFolder = ProjectManager::GetEngineDirectory() / "Editor";
+		if (FileSystem::Exists(editorFolder))
+		{
+			for (auto& p : std::filesystem::recursive_directory_iterator(editorFolder))
+			{
+				if (p.path().extension() == ext)
+				{
+					files.emplace_back(p.path());
+				}
+			}
+		}
+
 		return files;
 	}
 
 	std::vector<std::filesystem::path> AssetManager::GetProjectMetaFiles()
 	{
-		if (ProjectManager::IsCurrentProjectDeprecated())
+		if (ProjectManager::AreCurrentProjectMetaFilesDeprecated())
 		{
 			VT_CORE_ERROR("[AssetManager]: Unable to load metafiles as the loaded project is deprecated!");
 			return {};
 		}
 
-
 		std::vector<std::filesystem::path> files;
 		std::string ext(".vtmeta");
 
 		// Project Directory
+		const auto assetsDir = ProjectManager::GetProject().projectDirectory / ProjectManager::GetProject().assetsDirectory;
 
-		if (FileSystem::Exists(ProjectManager::GetAssetsDirectory()))
+		if (FileSystem::Exists(assetsDir))
 		{
-			for (auto& p : std::filesystem::recursive_directory_iterator(ProjectManager::GetAssetsDirectory()))
+			for (auto& p : std::filesystem::recursive_directory_iterator(assetsDir))
 			{
 				if (p.path().extension() == ext)
 				{

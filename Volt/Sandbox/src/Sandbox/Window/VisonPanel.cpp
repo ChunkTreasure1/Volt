@@ -10,6 +10,8 @@
 #include <Volt/Vision/VisionTrigger.h>
 #include <Volt/Vision/Vision.h>
 
+#include <Volt/Rendering/Camera/Camera.h>
+
 VisionPanel::VisionPanel(Ref<Volt::Scene>& aScene, EditorCameraController* aEditorCamera)
 	:EditorWindow("Vision", true), myCurrentScene(aScene), myEditorCamera(aEditorCamera)
 {
@@ -78,7 +80,13 @@ void VisionPanel::UpdateCameraProperties()
 
 	UI::PushID();
 
-	if (mySelectedCamera == -1 || myVisionCams[mySelectedCamera].IsNull())
+	const int32_t cameraCount = static_cast<int32_t>(myVisionCams.size());
+	if (mySelectedCamera > cameraCount)
+	{
+		mySelectedCamera = cameraCount - 1;
+	}
+
+	if (mySelectedCamera == -1 || !myVisionCams[mySelectedCamera].IsValid())
 	{
 		UI::PopID();
 		ImGui::End();
@@ -110,10 +118,15 @@ void VisionPanel::UpdateCameraProperties()
 	ImGui::LabelText("", "Core Settings");
 	if (UI::BeginProperties("Core Settings"))
 	{
-		auto& enumData = Wire::ComponentRegistry::EnumData();
+		{
+			const Volt::IEnumTypeDesc* camTypeDesc = Volt::GetTypeDesc<Volt::eCameraType>();
+			UI::ComboProperty("Camera Type", *(int32_t*)&visionCamComp.cameraType, camTypeDesc->GetConstantNames());
+		}
 
-		UI::ComboProperty("Camera Type", *(int32_t*)&visionCamComp.cameraType, enumData.at("eCameraType"));
-		UI::ComboProperty("Blend Type", *(int32_t*)&visionCamComp.blendType, enumData.at("eBlendType"));
+		{
+			const Volt::IEnumTypeDesc* camTypeDesc = Volt::GetTypeDesc<Volt::eBlendType>();
+			UI::ComboProperty("Blend Type", *(int32_t*)&visionCamComp.blendType, camTypeDesc->GetConstantNames());
+		}
 
 		if (visionCamComp.blendType != Volt::eBlendType::None)
 		{
@@ -146,14 +159,14 @@ void VisionPanel::UpdateCameraProperties()
 	{
 		if (UI::PropertyEntity("Follow", myCurrentScene, visionCamComp.followId, "Camera follows this entity"))
 		{
-			Volt::Entity followEnt = Volt::Entity({ visionCamComp.followId, myCurrentScene.get() });
+			Volt::Entity followEnt = myCurrentScene->GetEntityFromUUID(visionCamComp.followId);
 
 			visionCamComp.offset = myVisionCams[mySelectedCamera].GetPosition() - followEnt.GetPosition();
 		}
 
 		UI::PropertyEntity("LookAt", myCurrentScene, visionCamComp.lookAtId, "Camera looks at this entity");
 
-		if (visionCamComp.followId != 0)
+		if (visionCamComp.followId != Volt::Entity::NullID())
 		{
 			ImGui::LabelText("##Locks", "Constraints");
 
@@ -259,7 +272,7 @@ void VisionPanel::UpdateSetDetails()
 	static int selected = -1;
 	for (int n = 0; n < myVisionCams.size(); n++)
 	{
-		if (!myVisionCams[n].IsNull())
+		if (myVisionCams[n].IsValid())
 		{
 			auto& tagComp = myVisionCams[n].GetComponent<Volt::TagComponent>();
 
@@ -365,7 +378,7 @@ Volt::Entity VisionPanel::CreateNewTrigger()
 
 const std::vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 {
-	std::vector<Wire::EntityId> triggerIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	std::vector<Volt::Entity> triggerIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	if (triggerIDs.empty())
 	{
@@ -378,7 +391,7 @@ const std::vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 
 	for (auto& id : triggerIDs)
 	{
-		triggers.emplace_back(Volt::Entity{ id,myCurrentScene.get() });
+		triggers.emplace_back(id);
 	}
 
 	return triggers;
@@ -386,7 +399,7 @@ const std::vector<Volt::Entity> VisionPanel::GetAllCameraTriggers()
 
 const std::vector<Volt::Entity> VisionPanel::GetAllCameras()
 {
-	std::vector<Wire::EntityId> cameraIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
+	std::vector<Volt::Entity> cameraIDs = myCurrentScene->GetAllEntitiesWith<Volt::VisionCameraComponent>();
 
 	if (cameraIDs.empty())
 	{
@@ -399,7 +412,7 @@ const std::vector<Volt::Entity> VisionPanel::GetAllCameras()
 
 	for (auto& id : cameraIDs)
 	{
-		vtCams.emplace_back(Volt::Entity{ id,myCurrentScene.get() });
+		vtCams.emplace_back(id);
 	}
 
 	return vtCams;
@@ -407,7 +420,7 @@ const std::vector<Volt::Entity> VisionPanel::GetAllCameras()
 
 void VisionPanel::UpdateSelectedCamera()
 {
-	if (mySelectedCamera == -1 || myVisionCams[mySelectedCamera].IsNull())
+	if (mySelectedCamera == -1 || !myVisionCams[mySelectedCamera].IsValid())
 	{
 		return;
 	}
@@ -415,15 +428,15 @@ void VisionPanel::UpdateSelectedCamera()
 	Volt::Entity selectedEnt = myVisionCams[mySelectedCamera];
 	auto& visionCamComp = selectedEnt.GetComponent<Volt::VisionCameraComponent>();
 
-	if (visionCamComp.followId != 0)
+	if (visionCamComp.followId != Volt::Entity::NullID())
 	{
-		Volt::Entity target = Volt::Entity{ visionCamComp.followId, myCurrentScene.get() };
+		Volt::Entity target = myCurrentScene->GetEntityFromUUID(visionCamComp.followId);
 		selectedEnt.SetPosition(target.GetPosition() + visionCamComp.offset);
 	}
 
-	if (visionCamComp.lookAtId != 0)
+	if (visionCamComp.lookAtId != Volt::Entity::NullID())
 	{
-		Volt::Entity lookAtEnt = Volt::Entity{ visionCamComp.lookAtId, myCurrentScene.get() };
+		Volt::Entity lookAtEnt = myCurrentScene->GetEntityFromUUID(visionCamComp.lookAtId);
 		glm::vec3 lookAtPos = lookAtEnt.GetPosition();
 
 		selectedEnt.SetLocalRotation(glm::quatLookAtLH(glm::normalize(lookAtPos - selectedEnt.GetPosition()), { 0,1,0 }));

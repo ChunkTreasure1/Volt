@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:cd8b25e016cac420b58c821b46b59e9b8d85cf19b053ef786a5e152c9c497a03
-size 561
+#include "Vertex.hlsli"
+#include "SamplerStates.hlsli"
+
+#define XE_GTAO_OCCLUSION_TERM_SCALE                    (1.5f)      // for packing in UNORM (because raw, pre-denoised occlusion term can overshoot 1 but will later average out to 1)
+
+Texture2D<uint> u_gtaoOutput : register(t0, SPACE_MATERIAL);
+
+float4 main(DefaultFullscreenTriangleVertex input) : SV_Target0
+{
+    const float ao = (u_gtaoOutput.Load(uint3(input.position.xy, 0)).x >> 24) / 255.f;
+    const float result = min(ao * XE_GTAO_OCCLUSION_TERM_SCALE, 1.f);
+
+    return result;
+
+}

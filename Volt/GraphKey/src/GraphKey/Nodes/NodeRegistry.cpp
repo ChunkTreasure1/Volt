@@ -18,6 +18,7 @@
 #include "GraphKey/Nodes/Animation/TransitionNodes.h"
 #include "GraphKey/Nodes/Animation/AnimationSwitchNode.h"
 #include "GraphKey/Nodes/Animation/AnimationDurationNode.h"
+#include "GraphKey/Nodes/Animation/StateMachineTransitionNodes.h"
 
 #include "GraphKey/Nodes/CustomEventNode.h"
 
@@ -86,6 +87,11 @@ namespace GraphKey
 	GK_REGISTER_NODE(RotateBoneNode, "Animation", GraphType::Animation);
 	GK_REGISTER_NODE(AnimationSwitchNode, "Animation", GraphType::Animation);
 	GK_REGISTER_NODE(GetAnimationDurationNode, "Animation", GraphType::Animation);
+	
+	GK_REGISTER_NODE(GetRelevantAnimationLengthNode, "Animation", GraphType::Animation);
+	GK_REGISTER_NODE(GetRelevantAnimationTimeNode, "Animation", GraphType::Animation);
+	GK_REGISTER_NODE(GetRelevantAnimationTimeNormalizedNode, "Animation", GraphType::Animation);
+
 
 	GK_REGISTER_NODE(MaterialOutputNode, "Material", GraphType::Material);
 	GK_REGISTER_NODE(TextureSampleNode, "Material", GraphType::Material);

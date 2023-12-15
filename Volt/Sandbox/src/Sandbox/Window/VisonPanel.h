@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Vision/VisionComponents.h"
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Core/Base.h>

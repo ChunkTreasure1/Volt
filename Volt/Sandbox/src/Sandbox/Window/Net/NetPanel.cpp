@@ -335,11 +335,35 @@ void NetPanel::DrawVirtualPacketConstructor()
 		{
 			//UI::Property("Rep ID", m_eventSetting.repId);
 			static int addEvent = 0;
-			auto& enumData = Wire::ComponentRegistry::EnumData();
-			if (enumData.find("eNetEvent") != enumData.end())
+			
 			{
-				UI::ComboProperty("Manage Calls", addEvent, enumData.at("eNetEvent"));
+				const Volt::IEnumTypeDesc* netEnumType = reinterpret_cast<const Volt::IEnumTypeDesc*>(Volt::GetTypeDesc<Volt::eNetEvent>());
+
+				int32_t currentIndex = 0;
+
+				std::unordered_map<int32_t, int32_t> indexToValueMap;
+				std::vector<std::string> constantNames;
+
+				for (uint32_t index = 0; const auto & constant : netEnumType->GetConstants())
+				{
+					const std::string name = std::string(constant.label);
+					constantNames.emplace_back(name);
+					indexToValueMap[index] = constant.value;
+
+					if (constant.value == addEvent)
+					{
+						currentIndex = index;
+					}
+
+					index++;
+				}
+
+				if (UI::ComboProperty("Manage Calls", addEvent, constantNames))
+				{
+					addEvent = indexToValueMap.at(addEvent);
+				}
 			}
+
 			m_eventSetting.netEvent = static_cast<Volt::eNetEvent>(addEvent);
 			UI::EndProperties();
 		}

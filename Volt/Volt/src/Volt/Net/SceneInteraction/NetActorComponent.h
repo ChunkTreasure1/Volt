@@ -6,15 +6,25 @@
 
 namespace Volt
 {
-	SERIALIZE_COMPONENT((struct NetActorComponent
+	struct NetActorComponent
 	{
-		PROPERTY(Name = Condition, SpecialType = Enum) eRepCondition condition = eRepCondition::CONTINUOUS;
-		PROPERTY(Name = Update Position) int updateTransformPos = 1;
-		PROPERTY(Name = Update Rotation) int updateTransformRot = 1;
-		PROPERTY(Name = Update Scale) int updateTransformScale = 1;
-		PROPERTY(Name = RepId) uint64_t repId = Nexus::RandRepID();
-		PROPERTY(Name = cID) uint16_t clientId = 0;
+		eRepCondition condition = eRepCondition::CONTINUOUS;
+		bool updateTransformPos = true;
+		bool updateTransformRot = true;
+		bool updateTransformScale = true;
+		uint64_t repId = Nexus::RandRepID();
+		uint16_t clientId = 0;
 
-		CREATE_COMPONENT_GUID("{D5A9E480-C9D6-473C-B29E-9FE812320643}"_guid);
-	}), NetActorComponent);
+		static void ReflectType(TypeDesc<NetActorComponent>& reflect)
+		{
+			reflect.SetGUID("{D5A9E480-C9D6-473C-B29E-9FE812320643}"_guid);
+			reflect.SetLabel("Net Actor Component");
+			reflect.AddMember(&NetActorComponent::condition, "condition", "Condition", "", eRepCondition::CONTINUOUS);
+			reflect.AddMember(&NetActorComponent::updateTransformPos, "updateTransformPos", "Update Position", "", true);
+			reflect.AddMember(&NetActorComponent::updateTransformRot, "updateTransformRot", "Update Rotation", "", true);
+			reflect.AddMember(&NetActorComponent::updateTransformScale, "updateTransformScale", "Update Scale", "", true);
+			reflect.AddMember(&NetActorComponent::repId, "repId", "Replication ID", "", Nexus::RandRepID());
+			reflect.AddMember(&NetActorComponent::clientId, "clientId", "Client ID", "", 0);
+		}
+	};
 }

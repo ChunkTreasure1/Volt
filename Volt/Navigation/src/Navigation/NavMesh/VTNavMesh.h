@@ -8,7 +8,6 @@
 #include <Volt/Asset/Asset.h>
 #include <Volt/Asset/Mesh/Mesh.h>
 #include <Volt/Scene/Entity.h>
-#include <Volt/Components/Components.h>
 #include <Volt/Components/NavigationComponents.h>
 
 

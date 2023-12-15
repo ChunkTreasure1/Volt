@@ -22,7 +22,7 @@
 
 #include <Volt/Scene/Scene.h>
 #include <Volt/Scene/Entity.h>
-#include <Volt/Components/Components.h>
+#include <Volt/Components/RenderingComponents.h>
 #include <Volt/Components/LightComponents.h>
 
 #include <Volt/Utility/UIUtility.h>
@@ -48,7 +48,7 @@ MaterialEditorPanel::MaterialEditorPanel(Ref<Volt::Scene>& aScene)
 	{
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
-		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
+		Volt::Entity ent = skylightEntities.front();
 		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
@@ -71,7 +71,7 @@ void MaterialEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 	mySelectedMaterial = std::reinterpret_pointer_cast<Volt::Material>(asset);
 	mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
 
-	myPreviewEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = mySelectedMaterial->handle;
+	myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
 }
 
 void MaterialEditorPanel::OnEvent(Volt::Event& e)
@@ -98,7 +98,7 @@ void MaterialEditorPanel::OnOpen()
 	{
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
-		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
+		Volt::Entity ent = skylightEntities.front();
 		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 }
@@ -162,15 +162,15 @@ void MaterialEditorPanel::UpdateToolbar()
 		{
 			if (SelectionManager::GetSelectedCount() > 0)
 			{
-				auto entity = SelectionManager::GetSelectedEntities().front();
-				auto& registry = myEditorScene->GetRegistry();
+				auto id = SelectionManager::GetSelectedEntities().front();
+				Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
-				if (registry.HasComponent<Volt::MeshComponent>(entity))
+				if (entity.HasComponent<Volt::MeshComponent>())
 				{
-					auto& meshComp = registry.GetComponent<Volt::MeshComponent>(entity);
-					if (meshComp.overrideMaterial != Volt::Asset::Null())
+					auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+					if (meshComp.material != Volt::Asset::Null())
 					{
-						mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(meshComp.overrideMaterial);
+						mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(meshComp.material);
 						mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
 					}
 					else
@@ -184,7 +184,7 @@ void MaterialEditorPanel::UpdateToolbar()
 
 					if (mySelectedMaterial)
 					{
-						myPreviewEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = mySelectedMaterial->handle;
+						myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
 						myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
 					}
 				}
@@ -197,13 +197,13 @@ void MaterialEditorPanel::UpdateToolbar()
 		{
 			if (SelectionManager::GetSelectedCount() > 0 && mySelectedMaterial)
 			{
-				auto entity = SelectionManager::GetSelectedEntities().front();
-				auto& registry = myEditorScene->GetRegistry();
+				auto id = SelectionManager::GetSelectedEntities().front();
+				Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
-				if (registry.HasComponent<Volt::MeshComponent>(entity))
+				if (entity.HasComponent<Volt::MeshComponent>())
 				{
-					auto& meshComp = registry.GetComponent<Volt::MeshComponent>(entity);
-					meshComp.overrideMaterial = mySelectedMaterial->handle;
+					auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+					meshComp.material = mySelectedMaterial->handle;
 				}
 			}
 		}
@@ -803,7 +803,7 @@ void MaterialEditorPanel::UpdateMaterials()
 				const std::string materialName = metadata.filePath.stem().string();
 				if (myHasSearchQuery)
 				{
-					if (!Utils::StringContains(Utils::ToLower(materialName), Utils::ToLower(mySearchQuery)))
+					if (!Utility::StringContains(Utility::ToLower(materialName), Utility::ToLower(mySearchQuery)))
 					{
 						continue;
 					}
@@ -820,7 +820,7 @@ void MaterialEditorPanel::UpdateMaterials()
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 					mySelectedSubMaterial = mySelectedMaterial->GetSubMaterials().at(0);
 
-					myPreviewEntity.GetComponent<Volt::MeshComponent>().overrideMaterial = mySelectedMaterial->handle;
+					myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
 					myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
 				}
 			}

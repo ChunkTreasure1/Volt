@@ -146,4 +146,23 @@ namespace Math
 	{
 		return lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
 	}
+
+	template<typename T>
+	inline static T DivideRoundUp(const T& numerator, const T& denominator)
+	{
+		return (numerator + denominator - T{ 1 }) / denominator;
+	}
+
+	template<typename T>
+	concept Integer = std::is_integral<T>::value;
+
+	template<Integer T>
+	inline static T RoundToClosestMultiple(const T& number, const T& multiple)
+	{
+		T result = std::abs(number) + multiple / 2; 
+		result -= result % multiple; 
+		result *= number > 0 ? 1 : -1;
+
+		return result;
+	}
 }

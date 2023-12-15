@@ -1,5 +1,6 @@
 local VoltRootDirectory = os.getenv("VOLT_PATH")
 
+include "./scripts/premakeCustomization/premakeCommon.lua"
 include "./scripts/premakeCustomization/solution_items.lua"
 include "Dependencies.lua"
 
@@ -29,7 +30,6 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 group "Dependencies"
 include "Volt/vendor/glfw"
 include "Volt/vendor/imgui"
-include "Volt/vendor/Wire/Wire"
 include "Volt/vendor/Optick"
 include "Volt/vendor/ImGuizmo"
 include "Volt/vendor/imgui-node-editor"

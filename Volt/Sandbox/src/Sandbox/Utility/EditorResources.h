@@ -54,6 +54,13 @@ enum class EditorIcon
 	Swap,
 	Remove,
 
+	GraphPinAnimationPose,
+	GraphPinAnimationPoseFilled,
+
+	StateMachineAliasState,
+	StateMachineAnimationState,
+
+
 	Volt,
 };
 

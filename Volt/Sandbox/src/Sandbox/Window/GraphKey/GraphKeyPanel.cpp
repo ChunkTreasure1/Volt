@@ -24,20 +24,20 @@ bool GraphKeyPanel::SaveSettings(const std::string& data)
 	}
 
 	auto entityId = myOpenGraph->GetEntity();
-	Volt::Entity entity = { entityId, myCurrentScene.get() };
+	Volt::Entity entity = myCurrentScene->GetEntityFromUUID(entityId);
 
 	if (!entity)
 	{
 		return false;
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return false;
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return false;
+	//}
 
-	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	vsComp.graphState = data;
+	//auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//vsComp.graphState = data;
 
 	return true;
 }
@@ -50,20 +50,20 @@ size_t GraphKeyPanel::LoadSettings(std::string& data)
 	}
 
 	auto entityId = myOpenGraph->GetEntity();
-	Volt::Entity entity = { entityId, myCurrentScene.get() };
+	Volt::Entity entity = myCurrentScene->GetEntityFromUUID(entityId);
 
 	if (!entity)
 	{
 		return 0;
 	}
 
-	if (!entity.HasComponent<Volt::VisualScriptingComponent>())
-	{
-		return 0;
-	}
+	//if (!entity.HasComponent<Volt::VisualScriptingComponent>())
+	//{
+	//	return 0;
+	//}
 
-	auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
-	data = vsComp.graphState;
+	//auto& vsComp = entity.GetComponent<Volt::VisualScriptingComponent>();
+	//data = vsComp.graphState;
 
 	return data.size();
 }

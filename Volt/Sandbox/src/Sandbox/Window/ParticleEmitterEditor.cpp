@@ -10,21 +10,23 @@
 
 #include <Volt/Rendering/SceneRenderer.h>
 
+#include <Volt/Components/LightComponents.h>
+#include <Volt/Components/RenderingComponents.h>
+
 #include <Volt/Utility/UIUtility.h>
 
 #include <random>
-#include <Volt/Components/LightComponents.h>
 
 ParticleEmitterEditor::ParticleEmitterEditor()
 	: EditorWindow("Particle Editor")
 {
 	m_windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 	myPreviewScene = Volt::Scene::CreateDefaultScene("Particle Editor", false);
 	myReferenceModel = myPreviewScene->CreateEntity("Reference Entity");
 	myReferenceModel.AddComponent<Volt::MeshComponent>();
 
-	myLightEntity = Volt::Entity(myPreviewScene->GetAllEntitiesWith<Volt::DirectionalLightComponent>()[0], myPreviewScene.get());
+	myLightEntity = myPreviewScene->GetAllEntitiesWith<Volt::DirectionalLightComponent>()[0];
 	auto& tempComp = myLightEntity.GetComponent<Volt::DirectionalLightComponent>();
 	tempComp.castShadows = false;
 	tempComp.softShadows = false;
@@ -128,7 +130,7 @@ bool ParticleEmitterEditor::OnUpdateEvent(Volt::AppUpdateEvent& e)
 	{
 		return false;
 	}
-	myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene.get(), e.GetTimestep());
+	myPreviewScene->GetParticleSystem().Update(myPreviewScene->GetRegistry(), myPreviewScene, e.GetTimestep());
 	UpdateEmitter(e.GetTimestep());
 	return false;
 }
@@ -270,7 +272,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 					UI::PropertyAxisColor("Rotation", modelRot);
 					UI::PropertyAxisColor("Scale", modelScale);
 					EditorUtils::Property("Mesh", myReferenceModel.GetComponent<Volt::MeshComponent>().handle, Volt::AssetType::Mesh);
-					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().overrideMaterial, Volt::AssetType::Material);
+					EditorUtils::Property("Material", myReferenceModel.GetComponent<Volt::MeshComponent>().material, Volt::AssetType::Material);
 
 					myReferenceModel.SetPosition(modelPos);
 					myReferenceModel.SetRotation(modelRot);
@@ -293,7 +295,7 @@ bool ParticleEmitterEditor::DrawEditorPanel()
 				UI::Property("Camera speed", cameraSpeed);
 				myCameraController->SetTranslationSpeed(cameraSpeed);
 
-				EditorUtils::Property("Skybox", Volt::Entity(myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>()[0], myPreviewScene.get()).GetComponent<Volt::SkylightComponent>().environmentHandle, Volt::AssetType::Texture);
+				EditorUtils::Property("Skybox", myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>()[0].GetComponent<Volt::SkylightComponent>().environmentHandle, Volt::AssetType::Texture);
 				UI::EndProperties();
 			}
 		}

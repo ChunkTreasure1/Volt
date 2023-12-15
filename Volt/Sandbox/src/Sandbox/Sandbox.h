@@ -64,7 +64,8 @@ public:
 
 	inline static Sandbox& Get() { return *myInstance; }
 
-	Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
+	inline Ref<Volt::SceneRenderer>& GetSceneRenderer() { return mySceneRenderer; }
+	inline const SceneState GetSceneState() const { return mySceneState; }
 
 	void NewScene();
 	void OpenScene();

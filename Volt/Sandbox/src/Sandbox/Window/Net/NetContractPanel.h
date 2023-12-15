@@ -20,13 +20,13 @@ private:
 	void DrawCalls(Ref<Volt::NetContract> in_contract);
 	void DrawComponentRules(Ref<Volt::NetContract> in_contract);
 	void DrawChildRules(Ref<Volt::NetContract> in_contract);
-	void DrawChild(Ref<Volt::NetContract> in_contract, Wire::EntityId in_id);
+	void DrawChild(Ref<Volt::NetContract> in_contract, Volt::EntityID in_id);
 	void RuleEntry(const std::string& in_name, Volt::NetRule& in_rules, const std::string& in_id);
-	void DrawRuleSet(Ref<Volt::NetContract> in_contract, Wire::EntityId in_id);
+	void DrawRuleSet(Ref<Volt::NetContract> in_contract, Volt::EntityID in_id);
 
 	bool BlockStandardComponents(const std::string& in_name);
 	std::unordered_set<std::string> m_blocked;
 	Volt::AssetHandle m_handle = Volt::AssetHandle(0);
 	Ref<Volt::Scene> m_scene;
-	Wire::EntityId m_entityId;
+	Volt::EntityID m_entityId;
 };

@@ -11,6 +11,8 @@
 #include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
+#include "Volt/Scene/Entity.h"
+
 #include "Volt/Asset/AssetManager.h"
 
 namespace Volt
@@ -52,7 +54,7 @@ namespace Volt
 
 			if (newTrack.trackType == TrackType::T_Animation)
 			{
-				VT_DESERIALIZE_PROPERTY(targetEntId, newTrack.targetEntity, track, 0u);
+				VT_DESERIALIZE_PROPERTY(targetEntId, newTrack.targetEntity, track, Entity::NullID());
 
 				for (auto keyFrame : track["Keyframes"])
 				{
@@ -73,7 +75,7 @@ namespace Volt
 				{
 					Volt::Clip newClip = Volt::Clip();
 
-					VT_DESERIALIZE_PROPERTY(clipCamera, newClip.activeCamera, clip, 0u);
+					VT_DESERIALIZE_PROPERTY(clipCamera, newClip.activeCamera, clip, Entity::NullID());
 					VT_DESERIALIZE_PROPERTY(startTime, newClip.startTime, clip, 0.f);
 					VT_DESERIALIZE_PROPERTY(endTime, newClip.endTime, clip, 0.f);
 

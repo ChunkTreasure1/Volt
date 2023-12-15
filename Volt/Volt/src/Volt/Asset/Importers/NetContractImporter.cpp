@@ -55,9 +55,9 @@ namespace Volt
 				auto ruleNodeOuter = node["Rules"];
 				for (YAML::const_iterator it = ruleNodeOuter.begin(); it != ruleNodeOuter.end(); ++it)
 				{
-					auto outerKey = it->first.as<Wire::EntityId>();
+					auto outerKey = it->first.as<Volt::EntityID>();
 					std::unordered_map<std::string, NetRule> outerValue;
-					auto ruleNodeInner = ruleNodeOuter[std::to_string(outerKey).c_str()];
+					auto ruleNodeInner = ruleNodeOuter[std::to_string(static_cast<uint32_t>(outerKey)).c_str()];
 
 					for (YAML::const_iterator rulesIt = ruleNodeInner.begin(); rulesIt != ruleNodeInner.end(); ++rulesIt)
 					{
@@ -70,7 +70,7 @@ namespace Volt
 						outerValue.insert({ innerKey, innerValue });
 					}
 
-					std::pair<Wire::EntityId, std::unordered_map<std::string, NetRule>> entry{ outerKey,outerValue };
+					std::pair<EntityID, std::unordered_map<std::string, NetRule>> entry{ outerKey,outerValue };
 					rAsset->rules.insert(entry);
 				}
 			}

@@ -7,12 +7,12 @@
 #include <Volt/Core/Base.h>
 #include <Volt/Events/Event.h>
 
-#include <Wire/Entity.h>
-
 #include <any>
 #include <vector>
 #include <string>
 #include <functional>
+
+#include <entt.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -24,6 +24,7 @@ namespace GraphKey
 	{
 		Flow,
 		Type,
+		AnimationPose,
 	};
 
 	enum class AttributeDirection
@@ -67,7 +68,7 @@ namespace GraphKey
 
 		virtual void Serialize(YAML::Emitter&) {}
 		virtual void Deserialize(const YAML::Node&) {}
-		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Wire::EntityId entity = 0);
+		virtual Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::Entity::NullID());
 
 		virtual const std::string GetName() = 0;
 		virtual const glm::vec4 GetColor() = 0;
@@ -84,6 +85,9 @@ namespace GraphKey
 		Attribute AttributeConfig(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
 
 		template<typename T>
+		Attribute AttributeConfigAnimationPose(const std::string& name, AttributeDirection direction, const std::function<void()>& function = nullptr);
+
+		template<typename T>
 		const T& GetInput(uint32_t index);
 
 		const bool InputHasData(uint32_t index);
@@ -96,7 +100,7 @@ namespace GraphKey
 		void SetOutputData(uint32_t index, const T& data);
 
 		Volt::UUID id{};
-		Wire::EntityId nodeEntity = 0;
+		Volt::EntityID nodeEntity = Volt::Entity::NullID();
 
 		std::vector<Attribute> inputs;
 		std::vector<Attribute> outputs;
@@ -144,6 +148,21 @@ namespace GraphKey
 		return attr;
 	}
 
+
+	template<typename T>
+	inline Attribute Node::AttributeConfigAnimationPose(const std::string& name, AttributeDirection direction, const std::function<void()>& function)
+	{
+		Attribute attr{};
+		attr.name = name;
+		attr.direction = direction;
+		attr.inputHidden = false;
+		attr.linkable = true;
+		attr.function = function;
+		attr.data = T();
+		attr.type = AttributeType::AnimationPose;
+		
+		return attr;
+	}
 
 	template<typename T>
 	inline const T& Node::GetInput(uint32_t index)

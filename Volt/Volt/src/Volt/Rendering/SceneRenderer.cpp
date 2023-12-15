@@ -20,9 +20,9 @@
 #include "Volt/Core/Graphics/GraphicsDevice.h"
 #include "Volt/Core/Graphics/GraphicsContext.h"
 
-#include "Volt/Components/Components.h"
+#include "Volt/Components/RenderingComponents.h"
+#include "Volt/Components/CoreComponents.h"
 #include "Volt/Components/LightComponents.h"
-#include "Volt/Components/PostProcessingComponents.h"
 
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 
@@ -55,7 +55,6 @@
 
 #include "Volt/Rendering/UIRenderer.h"
 #include "Volt/Rendering/DebugRenderer.h"
-#include "Volt/Rendering/RayTracedSceneRenderer.h"
 
 #include "Volt/Rendering/FrameGraph/FrameGraph.h"
 
@@ -126,14 +125,6 @@ namespace Volt
 		CreateBillboardData();
 		CreateTextData();
 
-		if (mySettings.enableRayTracing)
-		{
-			RayTracedSceneRendererSpecification spec{};
-			spec.scene = myScene;
-
-			myRayTracedSceneRenderer = CreateScope<RayTracedSceneRenderer>(spec);
-		}
-
 		myIndirectPasses.reserve(100);
 	}
 
@@ -143,7 +134,6 @@ namespace Volt
 
 		myShaderStorageBufferSet = nullptr;
 		myUniformBufferSet = nullptr;
-		myRayTracedSceneRenderer = nullptr;
 		myGlobalDescriptorSets.clear();
 
 		// Remove line data
@@ -176,7 +166,7 @@ namespace Volt
 		Ref<Camera> camera = nullptr;
 		int32_t highestPrio = -1;
 
-		myScene.lock()->GetRegistry().ForEach<CameraComponent>([&](Wire::EntityId, const CameraComponent& camComp)
+		myScene->ForEachWithComponents<const CameraComponent>([&](entt::entity, const CameraComponent& camComp)
 		{
 			if ((int32_t)camComp.priority > highestPrio)
 			{
@@ -281,12 +271,6 @@ namespace Volt
 		myCurrentRenderMode = renderingMode;
 		myDeferredShadingPipeline->GetSpecializationConstantBuffer().SetValue("u_renderMode", (uint32_t)myCurrentRenderMode);
 		myDeferredShadingPipeline->Invalidate();
-	}
-
-	void SceneRenderer::UpdateRayTracingScene()
-	{
-		myRayTracedSceneRenderer->BuildBottomLevelAccelerationStructures();
-		myRayTracedSceneRenderer->BuildTopLevelAccelerationStructures();
 	}
 
 	const std::vector<SceneRenderer::Timestamp> SceneRenderer::GetTimestamps()
@@ -936,17 +920,16 @@ namespace Volt
 		FetchMeshCommands();
 		FetchAnimatedMeshCommands();
 
-		auto scenePtr = myScene.lock();
-		auto& registry = scenePtr->GetRegistry();
+		auto scenePtr = myScene;
 
-		registry.ForEach<DirectionalLightComponent, TransformComponent>([&](Wire::EntityId id, const DirectionalLightComponent& dirLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const DirectionalLightComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const TransformComponent& transformComp) 
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 
 			DirectionalLight light{};
 			light.colorIntensity = glm::vec4(dirLightComp.color.x, dirLightComp.color.y, dirLightComp.color.z, dirLightComp.intensity);
@@ -983,14 +966,14 @@ namespace Volt
 			GetCPUData().directionalLight = light;
 		});
 
-		registry.ForEach<PointLightComponent, TransformComponent>([&](Wire::EntityId id, const PointLightComponent& pointLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const PointLightComponent, const TransformComponent>([&](entt::entity id, const PointLightComponent& pointLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 			const auto position = lightEntity.GetPosition();
 
 			auto& pointLight = GetCPUData().pointLights.emplace_back();
@@ -1014,14 +997,14 @@ namespace Volt
 			}
 		});
 
-		registry.ForEach<SpotLightComponent, TransformComponent>([&](Wire::EntityId id, const SpotLightComponent& spotLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const SpotLightComponent, const TransformComponent>([&](entt::entity id, const SpotLightComponent& spotLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 
 			auto& spotLight = GetCPUData().spotLights.emplace_back();
 			spotLight.color = spotLightComp.color;
@@ -1087,14 +1070,14 @@ namespace Volt
 			}
 		}
 
-		registry.ForEach<SphereLightComponent, TransformComponent>([&](Wire::EntityId id, const SphereLightComponent& sphereLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const SphereLightComponent, const TransformComponent>([&](entt::entity id, const SphereLightComponent& sphereLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 
 			auto& sphereLight = GetCPUData().sphereLights.emplace_back();
 			sphereLight.position = lightEntity.GetPosition();
@@ -1103,14 +1086,14 @@ namespace Volt
 			sphereLight.radius = sphereLightComp.radius;
 		});
 
-		registry.ForEach<RectangleLightComponent, TransformComponent>([&](Wire::EntityId id, const RectangleLightComponent& rectangleLightComp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<const RectangleLightComponent, const TransformComponent>([&](entt::entity id, const RectangleLightComponent& rectangleLightComp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
 				return;
 			}
 
-			auto lightEntity = Entity{ id, scenePtr.get() };
+			auto lightEntity = Entity{ id, scenePtr };
 			const glm::vec3 dir = glm::rotate(lightEntity.GetRotation(), { 0.f, 0.f, 1.f });
 			const glm::vec3 left = glm::rotate(lightEntity.GetRotation(), { -1.f, 0.f, 0.f });
 			const glm::vec3 up = glm::rotate(lightEntity.GetRotation(), { 0.f, 1.f, 0.f });
@@ -1128,7 +1111,7 @@ namespace Volt
 			rectangleLight.left = left;
 		});
 
-		registry.ForEach<SkylightComponent, TransformComponent>([&](Wire::EntityId id, SkylightComponent& comp, const TransformComponent& transformComp)
+		scenePtr->ForEachWithComponents<SkylightComponent, const TransformComponent>([&](entt::entity id, SkylightComponent& comp, const TransformComponent& transformComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1141,7 +1124,7 @@ namespace Volt
 				if (comp.environmentHandle != comp.lastEnvironmentHandle)
 				{
 					comp.lastEnvironmentHandle = comp.environmentHandle;
-					comp.currentSceneEnvironment = Renderer::GenerateEnvironmentMap(comp.environmentHandle);
+					//comp.currentSceneEnvironment = Renderer::GenerateEnvironmentMap(comp.environmentHandle);
 
 					myEnvironmentSettings.irradianceMap = comp.currentSceneEnvironment.irradianceMap;
 					myEnvironmentSettings.radianceMap = comp.currentSceneEnvironment.radianceMap;
@@ -1162,20 +1145,20 @@ namespace Volt
 			myEnvironmentSettings.intensity = comp.intensity;
 		});
 
-		registry.ForEach<DecalComponent, TransformComponent, EntityDataComponent>([&](Wire::EntityId id, const DecalComponent& decalComp, const TransformComponent& transComp, const EntityDataComponent& dataComp)
+		scenePtr->ForEachWithComponents<const DecalComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, const DecalComponent& decalComp, const TransformComponent& transComp, const CommonComponent& dataComp)
 		{
 			if (!transComp.visible)
 			{
 				return;
 			}
 
-			Ref<Material> material = AssetManager::QueueAsset<Material>(decalComp.materialHandle);
+			Ref<Material> material = AssetManager::QueueAsset<Material>(decalComp.decalMaterial);
 			if (!material || !material->IsValid())
 			{
 				return;
 			}
 
-			Entity entity{ id, scenePtr.get() };
+			Entity entity{ id, scenePtr };
 
 			auto& newCmd = GetCPUData().decalCommands.emplace_back();
 			newCmd.material = material;
@@ -1184,7 +1167,7 @@ namespace Volt
 			newCmd.timeSinceCreation = dataComp.timeSinceCreation;
 		});
 
-		registry.ForEach<PostProcessingStackComponent>([&](Wire::EntityId id, const PostProcessingStackComponent& comp)
+		scenePtr->ForEachWithComponents<const PostProcessingStackComponent>([&](entt::entity id, const PostProcessingStackComponent& comp) 
 		{
 			Ref<PostProcessingStack> stack = AssetManager::GetAsset<PostProcessingStack>(comp.postProcessingStack);
 			if (!stack || !stack->IsValid())
@@ -1195,31 +1178,15 @@ namespace Volt
 			GetCPUData().postProcessingStack = stack;
 		});
 
-		registry.ForEach<GTAOEffectComponent>([&](Wire::EntityId id, const GTAOEffectComponent& comp)
+		scenePtr->ForEachWithComponents<const TextRendererComponent>([&](entt::entity id, const TextRendererComponent& comp)
 		{
-			myGTAOSettings.radius = comp.radius;
-			myGTAOSettings.radiusMultiplier = comp.radiusMultiplier;
-			myGTAOSettings.falloffRange = comp.falloffRange;
-			myGTAOSettings.finalValuePower = comp.finalValuePower;
-		});
-
-		registry.ForEach<GlobalFogComponent>([&](Wire::EntityId	id, const GlobalFogComponent& comp)
-		{
-			myVolumetricFogSettings.anisotropy = comp.anisotropy;
-			myVolumetricFogSettings.density = comp.density;
-			myVolumetricFogSettings.globalColor = comp.globalColor;
-			myVolumetricFogSettings.globalDensity = comp.globalDensity;
-		});
-
-		registry.ForEach<TextRendererComponent>([&](Wire::EntityId id, const TextRendererComponent& comp)
-		{
-			Ref<Font> fontAsset = AssetManager::GetAsset<Font>(comp.fontHandle);
+			Ref<Font> fontAsset = AssetManager::GetAsset<Font>(comp.font);
 			if (!fontAsset || !fontAsset->IsValid())
 			{
 				return;
 			}
 
-			Entity entity{ id, scenePtr.get() };
+			Entity entity{ id, scenePtr };
 
 			TextCommand textCmd{};
 			textCmd.text = comp.text;
@@ -1241,11 +1208,16 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 		auto& registry = scenePtr->GetRegistry();
 		auto& data = GetCPUData();
 
-		const auto& meshComponentView = (myShouldHideMeshes) ? std::vector<Wire::EntityId>() : registry.GetSingleComponentView<MeshComponent>();
+		if (myShouldHideMeshes)
+		{
+			return;
+		}
+
+		const auto& meshComponentView = registry.view<MeshComponent>();
 		data.submitCommands.reserve(meshComponentView.size());
 
 		const uint32_t hardwareConcurrency = std::thread::hardware_concurrency() * 2;
@@ -1269,12 +1241,16 @@ namespace Volt
 
 		auto submitFunc = [&](uint32_t currentIndex, uint32_t threadIndex)
 		{
-			Wire::EntityId id = meshComponentView.at(currentIndex);
-			Entity entity{ id, scenePtr.get() };
-
+			entt::entity id = meshComponentView[currentIndex];
+			Entity entity{ id, scenePtr};
+			if (entity.HasComponent<Volt::AnimationControllerComponent>())
+			{
+				return;
+			}
+			
 			const MeshComponent& meshComp = entity.GetComponent<MeshComponent>();
 			const TransformComponent& transComp = entity.GetComponent<TransformComponent>();
-			const EntityDataComponent& dataComp = entity.GetComponent<EntityDataComponent>();
+			const CommonComponent& dataComp = entity.GetComponent<CommonComponent>();
 
 			if (meshComp.handle == Asset::Null() || !transComp.visible)
 			{
@@ -1288,16 +1264,16 @@ namespace Volt
 			}
 
 			AssetHandle materialHandle = Asset::Null();
-			if (meshComp.overrideMaterial != Asset::Null())
+			if (meshComp.material != Asset::Null())
 			{
-				materialHandle = meshComp.overrideMaterial;
+				materialHandle = meshComp.material;
 			}
 			else
 			{
 				materialHandle = mesh->GetMaterial()->handle;
 			}
 
-			glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
+			glm::mat4 transform = entity.GetTransform();
 
 			auto& submitCommands = perThreadSubmitCommands.at(threadIndex);
 
@@ -1313,7 +1289,7 @@ namespace Volt
 				Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 				if (material && material->IsValid())
 				{
-					cmd.material = (meshComp.subMaterialIndex != -1) ? material->TryGetSubMaterialAt(meshComp.subMaterialIndex) : material->TryGetSubMaterialAt(subMesh.materialIndex);
+					cmd.material = material->TryGetSubMaterialAt(subMesh.materialIndex);
 				}
 				else
 				{
@@ -1323,7 +1299,7 @@ namespace Volt
 				cmd.subMesh = subMesh;
 				cmd.transform = transform * subMesh.transform;
 				cmd.subMeshIndex = i;
-				cmd.id = id;
+				cmd.id = entity.GetID();
 				cmd.timeSinceCreation = dataComp.timeSinceCreation;
 				cmd.randomValue = dataComp.randomValue;
 
@@ -1385,9 +1361,9 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
-		auto& registry = scenePtr->GetRegistry();
-		registry.ForEach<AnimationControllerComponent, TransformComponent, EntityDataComponent>([&](Wire::EntityId id, AnimationControllerComponent& animComp, const TransformComponent& transformComp, const EntityDataComponent& dataComp)
+		auto scenePtr = myScene;
+
+		scenePtr->ForEachWithComponents<AnimationControllerComponent, MeshComponent, const TransformComponent, const CommonComponent>([&](entt::entity id, AnimationControllerComponent& animComp, MeshComponent& meshComp, const TransformComponent& transformComp, const CommonComponent& dataComp)
 		{
 			if (!transformComp.visible)
 			{
@@ -1396,15 +1372,14 @@ namespace Volt
 
 			if (animComp.controller)
 			{
-				const auto characterHandle = animComp.controller->GetGraph()->GetCharacterHandle();
-
-				const auto character = AssetManager::QueueAsset<AnimatedCharacter>(animComp.controller->GetGraph()->GetCharacterHandle());
-				if (!character || !character->IsValid())
+				const auto skeleton = AssetManager::QueueAsset<Volt::Skeleton>(animComp.controller->GetGraph()->GetSkeletonHandle());
+				if (!skeleton || !skeleton->IsValid())
 				{
 					return;
 				}
+				auto skin = AssetManager::QueueAsset<Volt::Mesh>(meshComp.handle);
 
-				auto entity = Entity(id, scenePtr.get());
+				auto entity = Entity(id, scenePtr);
 
 				const auto anim = animComp.controller->Sample();
 
@@ -1414,10 +1389,9 @@ namespace Volt
 					entity.SetLocalPosition(entity.GetLocalPosition() + rootMotion.position);
 				}
 
-				auto skin = character->GetSkin();
-				if (animComp.overrideSkin != Asset::Null())
+				if (animComp.skin != Asset::Null())
 				{
-					Ref<Mesh> overrideSkin = AssetManager::GetAsset<Mesh>(animComp.overrideSkin);
+					Ref<Mesh> overrideSkin = AssetManager::GetAsset<Mesh>(animComp.skin);
 					if (overrideSkin && overrideSkin->IsValid())
 					{
 						skin = overrideSkin;
@@ -1430,9 +1404,9 @@ namespace Volt
 				}
 
 				Ref<Material> material = skin->GetMaterial();
-				if (animComp.overrideMaterial != Asset::Null())
+				if (animComp.material != Asset::Null())
 				{
-					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.overrideMaterial);
+					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.material);
 					if (overrideMaterial && overrideMaterial->IsValid())
 					{
 						material = overrideMaterial;
@@ -1441,104 +1415,34 @@ namespace Volt
 
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
-				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
-				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, id);
+				const glm::mat4 transform = entity.GetTransform();
+				SubmitMesh(skin, material, transform, anim, dataComp.timeSinceCreation, dataComp.randomValue, static_cast<uint32_t>(id));
 			}
 			else
 			{
-				auto animGraph = AssetManager::QueueAsset<AnimationGraphAsset>(animComp.animationGraph);
 
-				if (!animGraph || !animGraph->IsValid())
-				{
-					return;
-				}
-
-				auto character = AssetManager::QueueAsset<AnimatedCharacter>(animGraph->GetCharacterHandle());
-				if (!character || !character->IsValid())
-				{
-					return;
-				}
-
-				auto skin = character->GetSkin();
+				auto skin = AssetManager::GetAsset<Mesh>(meshComp.handle);
 				if (!skin || !skin->IsValid())
 				{
 					return;
 				}
 
-				auto entity = Entity(id, scenePtr.get());
+				auto entity = Entity(id, scenePtr);
 				myStatistics.triangleCount += skin->GetIndexCount() / 3;
 
 				Ref<Material> material = skin->GetMaterial();
-				if (animComp.overrideMaterial != Asset::Null())
+				if (animComp.material != Asset::Null())
 				{
-					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.overrideMaterial);
+					Ref<Material> overrideMaterial = AssetManager::GetAsset<Material>(animComp.material);
 					if (overrideMaterial && overrideMaterial->IsValid())
 					{
 						material = overrideMaterial;
 					}
 				}
 
-				const glm::mat4 transform = scenePtr->GetWorldSpaceTransform(entity);
-				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, id);
+				const glm::mat4 transform = entity.GetTransform();
+				SubmitMesh(skin, material, transform, dataComp.timeSinceCreation, dataComp.randomValue, entity.GetID());
 			}
-		});
-
-		registry.ForEach<AnimatedCharacterComponent, TransformComponent, EntityDataComponent>([&](Wire::EntityId id, const AnimatedCharacterComponent& charComp, const TransformComponent& transformComp, const EntityDataComponent& dataComp)
-		{
-			if (!transformComp.visible)
-			{
-				return;
-			}
-
-			Ref<AnimatedCharacter> character = AssetManager::QueueAsset<AnimatedCharacter>(charComp.animatedCharacter);
-
-			if (!character || !character->IsValid())
-			{
-				return;
-			}
-
-			if (!character->GetSkin() || !character->GetSkeleton())
-			{
-				return;
-			}
-
-			Volt::Entity ent{ id, scenePtr.get() };
-			std::vector<glm::mat4> anim{};
-
-			if (charComp.selectedFrame != -1)
-			{
-				anim = character->SampleAnimation(charComp.currentAnimation, (uint32_t)charComp.selectedFrame);
-			}
-			else if (charComp.isPlaying)
-			{
-				anim = character->SampleAnimation(charComp.currentAnimation, charComp.currentStartTime, charComp.isLooping);
-			}
-
-			if (!anim.empty())
-			{
-				for (const auto& [attachmentId, attachedEntities] : charComp.attachedEntities)
-				{
-					auto attachment = character->GetJointAttachmentFromID(attachmentId);
-					if (attachment.jointIndex == -1)
-					{
-						continue;
-					}
-
-					const glm::mat4 offsetTransform = glm::translate({ 1.f }, attachment.positionOffset) * glm::mat4_cast(attachment.rotationOffset);
-
-					glm::vec3 t, s;
-					glm::quat q;
-					Math::Decompose(anim[attachment.jointIndex] * offsetTransform * glm::inverse(character->GetSkeleton()->GetInverseBindPose().at(attachment.jointIndex)), t, q, s);
-
-					for (auto attachedEntity : attachedEntities)
-					{
-						attachedEntity.SetLocalPosition(t);
-						attachedEntity.SetLocalRotation(q);
-					}
-				}
-			}
-
-			SubmitMesh(character->GetSkin(), character->GetSkin()->GetMaterial(), ent.GetTransform(), anim, dataComp.timeSinceCreation, dataComp.randomValue, id);
 		});
 	}
 
@@ -1546,7 +1450,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 
 		const auto& particleStorage = scenePtr->GetParticleSystem().GetParticleStorage();
 		for (const auto& [entityId, storage] : particleStorage)
@@ -1559,7 +1463,7 @@ namespace Volt
 
 			const auto material = AssetManager::GetAsset<Material>(preset->material);
 
-			Entity entity{ entityId, scenePtr.get() };
+			Entity entity{ entityId, scenePtr };
 
 			if (preset->type == ParticlePreset::eType::PARTICLE)
 			{
@@ -1665,7 +1569,7 @@ namespace Volt
 
 		auto& textData = myTextData;
 
-		std::u32string utf32string = Utils::To_UTF32(cmd.text);
+		std::u32string utf32string = ::Utility::To_UTF32(cmd.text);
 		Ref<Texture2D> fontAtlas = cmd.font->GetAtlas();
 
 		if (!fontAtlas)
@@ -2299,12 +2203,12 @@ namespace Volt
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image)
 	{
-		UpdateGlobalDescriptorSet(globalDescriptorSet, set, binding, index, image, image.lock()->GetLayout());
+		UpdateGlobalDescriptorSet(globalDescriptorSet, set, binding, index, image, image->GetLayout());
 	}
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image2D> image, VkImageLayout targetLayout)
 	{
-		auto imagePtr = image.lock();
+		auto imagePtr = image;
 
 		VkDescriptorImageInfo descriptorInfo{};
 		descriptorInfo.imageLayout = targetLayout;
@@ -2320,7 +2224,7 @@ namespace Volt
 
 	void SceneRenderer::UpdateGlobalDescriptorSet(Ref<GlobalDescriptorSet> globalDescriptorSet, uint32_t set, uint32_t binding, uint32_t index, Weak<Image3D> image)
 	{
-		auto imagePtr = image.lock();
+		auto imagePtr = image;
 
 		VkDescriptorImageInfo descriptorInfo{};
 		descriptorInfo.imageLayout = imagePtr->GetLayout();
@@ -2340,7 +2244,7 @@ namespace Volt
 
 		for (const auto& image : images)
 		{
-			auto imagePtr = image.lock();
+			auto imagePtr = image;
 			auto& descriptorInfo = descriptorInfos.emplace_back();
 
 			descriptorInfo.imageLayout = targetLayout;
@@ -3087,6 +2991,8 @@ namespace Volt
 			renderingInfo.width = myRenderSize.x;
 			renderingInfo.height = myRenderSize.y;
 
+			renderingInfo.colorAttachmentInfo.at(0).clearValue.color.uint32[0] = Entity::NullID();
+
 			const auto& indirectPass = GetOrCreateIndirectPass(commandBuffer);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
@@ -3174,7 +3080,7 @@ namespace Volt
 			const auto outputImage = resources.GetImageResource(data.skybox);
 
 			myPreethamPipeline->Clear(currentIndex);
-			myPreethamPipeline->SetImage(outputImage.image.lock(), 0, 0, ImageAccess::Write);
+			myPreethamPipeline->SetImage(outputImage.image, 0, 0, ImageAccess::Write);
 			myPreethamPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			myPreethamPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushData, sizeof(PreethamData));
 			myPreethamPipeline->Dispatch(commandBuffer->GetCurrentCommandBuffer(), cubeMapSize / groupSize, cubeMapSize / groupSize, 6, currentIndex);
@@ -3232,13 +3138,13 @@ namespace Volt
 			if (myEnvironmentSettings.radianceMap)
 			{
 				const auto& envResource = resources.GetImageResource(data.radianceImage);
-				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, envResource.image.lock());
+				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, envResource.image);
 			}
 			else
 			{
 				const auto& preethamSkyData = frameGraph.GetBlackboard().Get<PreethamSkyData>();
 				const auto& preethamResource = resources.GetImageResource(preethamSkyData.skybox);
-				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, preethamResource.image.lock());
+				mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->Set(0, preethamResource.image);
 			}
 
 			mySkyboxMesh->GetMaterial()->GetSubMaterialAt(0)->SetValue("intensity", myEnvironmentSettings.intensity);
@@ -3378,11 +3284,11 @@ namespace Volt
 
 			const uint32_t currentIndex = commandBuffer->GetCurrentIndex();
 
-			shadingPipeline->SetImage(albedoResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-			shadingPipeline->SetImage(materialEmissiveResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-			shadingPipeline->SetImage(normalEmissiveResource.image.lock(), Sets::OTHER, 2, ImageAccess::Read);
-			shadingPipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 3, ImageAccess::Read);
-			shadingPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 4, ImageAccess::Write);
+			shadingPipeline->SetImage(albedoResource.image, Sets::OTHER, 0, ImageAccess::Read);
+			shadingPipeline->SetImage(materialEmissiveResource.image, Sets::OTHER, 1, ImageAccess::Read);
+			shadingPipeline->SetImage(normalEmissiveResource.image, Sets::OTHER, 2, ImageAccess::Read);
+			shadingPipeline->SetImage(depthResource.image, Sets::OTHER, 3, ImageAccess::Read);
+			shadingPipeline->SetImage(targetResource.image, Sets::OTHER, 4, ImageAccess::Write);
 
 			shadingPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			shadingPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets[Sets::RENDERER_BUFFERS]->GetOrAllocateDescriptorSet(currentIndex), Sets::RENDERER_BUFFERS);
@@ -3399,8 +3305,8 @@ namespace Volt
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (targetResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (targetResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (targetResource.image->GetHeight() / threadCount) + 1);
 			Renderer::DispatchComputePipeline(commandBuffer, shadingPipeline, dispatchX, dispatchY, 1);
 
 			shadingPipeline->ClearAllResources();
@@ -3450,7 +3356,7 @@ namespace Volt
 
 			for (const auto& decalCmd : commands)
 			{
-				decalCmd.material->GetSubMaterialAt(0)->Set(0, depthResource.image.lock());
+				decalCmd.material->GetSubMaterialAt(0)->Set(0, depthResource.image);
 				decalCmd.material->GetSubMaterialAt(0)->SetValue("targetSize", myRenderSize);
 				decalCmd.material->GetSubMaterialAt(0)->SetValue("transform", decalCmd.transform);
 				decalCmd.material->GetSubMaterialAt(0)->SetValue("materialIndex", Renderer::GetBindlessData().materialTable->GetIndexFromMaterial(decalCmd.material->TryGetSubMaterialAt(0).get()));
@@ -3541,11 +3447,11 @@ namespace Volt
 				if (mySettings.enableVolumetricFog)
 				{
 					const auto& fogResource = resources.GetImageResource(volumetricFogData.rayMarched);
-					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, fogResource.image3D.lock());
+					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, fogResource.image3D);
 				}
 				else
 				{
-					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, Renderer::GetDefaultData().black3DImage);
+					UpdateGlobalDescriptorSet(resourcesDescriptor, Sets::PBR_RESOURCES, Bindings::VOLUMETRIC_FOG_TEXTURE, index, Weak<Image3D>{Renderer::GetDefaultData().black3DImage});
 				}
 			}
 
@@ -3751,14 +3657,14 @@ namespace Volt
 				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 				const auto& outputBlurImage = resources.GetImageResource(data.blurOne);
 
-				auto diffuseImage = diffuseInputImage.image.lock();
+				auto diffuseImage = diffuseInputImage.image;
 				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), diffuseImage->GetHandle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, subresourceRange);
 
 				diffuseImage->TransitionToLayout(commandBuffer->GetCurrentCommandBuffer(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-				mySSSBlurPipeline[0]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+				mySSSBlurPipeline[0]->SetImage(diffuseInputImage.image, Sets::OTHER, 0, ImageAccess::Read);
+				mySSSBlurPipeline[0]->SetImage(depthInputImage.image, Sets::OTHER, 1, ImageAccess::Read);
+				mySSSBlurPipeline[0]->SetImage(outputBlurImage.image, Sets::OTHER, 2, ImageAccess::Write);
 
 				mySSSBlurPipeline[0]->Bind(commandBuffer->GetCurrentCommandBuffer());
 				mySSSBlurPipeline[0]->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
@@ -3766,8 +3672,8 @@ namespace Volt
 
 				constexpr uint32_t threadCount = 16;
 
-				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image.lock()->GetWidth() / threadCount) + 1);
-				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image.lock()->GetHeight() / threadCount) + 1);
+				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image->GetWidth() / threadCount) + 1);
+				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image->GetHeight() / threadCount) + 1);
 
 				ImageBarrierInfo imageBarrier{};
 				imageBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
@@ -3794,12 +3700,12 @@ namespace Volt
 				const auto& depthInputImage = resources.GetImageResource(depthData.preDepth);
 				const auto& outputBlurImage = resources.GetImageResource(data.blurTwo);
 
-				auto outputImage = outputBlurImage.image.lock();
+				auto outputImage = outputBlurImage.image;
 				Utility::TransitionImageLayout(commandBuffer->GetCurrentCommandBuffer(), outputImage->GetHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, subresourceRange);
 
-				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-				mySSSBlurPipeline[1]->SetImage(depthInputImage.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
-				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image.lock(), Sets::OTHER, 2, ImageAccess::Write);
+				mySSSBlurPipeline[1]->SetImage(diffuseInputImage.image, Sets::OTHER, 0, ImageAccess::Read);
+				mySSSBlurPipeline[1]->SetImage(depthInputImage.image, Sets::OTHER, 1, ImageAccess::Read);
+				mySSSBlurPipeline[1]->SetImage(outputBlurImage.image, Sets::OTHER, 2, ImageAccess::Write);
 
 				mySSSBlurPipeline[1]->Bind(commandBuffer->GetCurrentCommandBuffer());
 				mySSSBlurPipeline[1]->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &pushConstants, sizeof(PushConstants));
@@ -3807,8 +3713,8 @@ namespace Volt
 
 				constexpr uint32_t threadCount = 16;
 
-				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image.lock()->GetWidth() / threadCount) + 1);
-				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image.lock()->GetHeight() / threadCount) + 1);
+				const uint32_t dispatchX = std::max(1u, (outputBlurImage.image->GetWidth() / threadCount) + 1);
+				const uint32_t dispatchY = std::max(1u, (outputBlurImage.image->GetHeight() / threadCount) + 1);
 
 				Renderer::DispatchComputePipeline(commandBuffer, mySSSBlurPipeline[1], dispatchX, dispatchY, 1);
 			}
@@ -3839,14 +3745,14 @@ namespace Volt
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& sssBlurResource = resources.GetImageResource(blurData.blurTwo);
 
-			mySSSCompositePipeline->SetImage(sssBlurResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
-			mySSSCompositePipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 1, ImageAccess::Write);
+			mySSSCompositePipeline->SetImage(sssBlurResource.image, Sets::OTHER, 0, ImageAccess::Read);
+			mySSSCompositePipeline->SetImage(outputImageResource.image, Sets::OTHER, 1, ImageAccess::Write);
 			mySSSCompositePipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 16;
 
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, mySSSCompositePipeline, dispatchX, dispatchY, 1);
 			EndTimestamp();
@@ -3984,8 +3890,8 @@ namespace Volt
 			const auto& accumResource = resources.GetImageResource(forwardTransparentData.accumulation);
 			const auto& revealResource = resources.GetImageResource(forwardTransparentData.revealage);
 
-			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(0, accumResource.image.lock());
-			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(1, revealResource.image.lock());
+			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(0, accumResource.image);
+			myTransparentCompositeMaterial->GetSubMaterialAt(0)->Set(1, revealResource.image);
 
 			Renderer::BeginFrameGraphPass(commandBuffer, renderPassInfo, renderingInfo);
 			Renderer::DrawFullscreenTriangleWithMaterial(commandBuffer, myTransparentCompositeMaterial, myGlobalDescriptorSets);
@@ -4091,14 +3997,14 @@ namespace Volt
 			const auto& srcColorResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& targetResource = resources.GetImageResource(data.luminosityImage);
 
-			myLuminosityPipeline->SetImage(targetResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
-			myLuminosityPipeline->SetImage(srcColorResource.image.lock(), Sets::OTHER, 1, ImageAccess::Read);
+			myLuminosityPipeline->SetImage(targetResource.image, Sets::OTHER, 0, ImageAccess::Write);
+			myLuminosityPipeline->SetImage(srcColorResource.image, Sets::OTHER, 1, ImageAccess::Read);
 			myLuminosityPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (targetResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (targetResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (targetResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (targetResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myLuminosityPipeline, dispatchX, dispatchY, 1);
 
@@ -4135,7 +4041,7 @@ namespace Volt
 				BeginTimestamp(name);
 
 				const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
-				postMaterial->Render(commandBuffer, outputImageResource.image.lock());
+				postMaterial->Render(commandBuffer, outputImageResource.image);
 				EndTimestamp();
 			});
 		}
@@ -4160,13 +4066,13 @@ namespace Volt
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 
-			myACESPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+			myACESPipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
 			myACESPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myACESPipeline, dispatchX, dispatchY, 1);
 			EndTimestamp();
@@ -4192,13 +4098,13 @@ namespace Volt
 
 			const auto& outputImageResource = resources.GetImageResource(skyboxData.outputImage);
 
-			myGammaCorrectionPipeline->SetImage(outputImageResource.image.lock(), Sets::OTHER, 0, ImageAccess::Write);
+			myGammaCorrectionPipeline->SetImage(outputImageResource.image, Sets::OTHER, 0, ImageAccess::Write);
 			myGammaCorrectionPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 
 			constexpr uint32_t threadCount = 8;
 
-			const uint32_t dispatchX = std::max(1u, (outputImageResource.image.lock()->GetWidth() / threadCount) + 1);
-			const uint32_t dispatchY = std::max(1u, (outputImageResource.image.lock()->GetHeight() / threadCount) + 1);
+			const uint32_t dispatchX = std::max(1u, (outputImageResource.image->GetWidth() / threadCount) + 1);
+			const uint32_t dispatchY = std::max(1u, (outputImageResource.image->GetHeight() / threadCount) + 1);
 
 			Renderer::DispatchComputePipeline(commandBuffer, myGammaCorrectionPipeline, dispatchX, dispatchY, 1);
 			EndTimestamp();
@@ -4414,7 +4320,7 @@ namespace Volt
 			myLightCullPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
 			myLightCullPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &cullData, sizeof(LightCullData));
 
-			myLightCullPipeline->SetImage(depthResource.image.lock(), Sets::OTHER, 0, ImageAccess::Read);
+			myLightCullPipeline->SetImage(depthResource.image, Sets::OTHER, 0, ImageAccess::Read);
 			myLightCullPipeline->BindDescriptorSet(commandBuffer->GetCurrentCommandBuffer(), myGlobalDescriptorSets.at(Sets::RENDERER_BUFFERS)->GetOrAllocateDescriptorSet(commandBuffer->GetCurrentIndex()), Sets::RENDERER_BUFFERS);
 
 			{
@@ -4491,8 +4397,8 @@ namespace Volt
 			const auto& colorHistoryResource = resources.GetImageResource(skyboxData.outputImage);
 			const auto& motionVectorResource = resources.GetImageResource(motionVectorData.currentDepth);
 
-			myHistoryColor->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), colorHistoryResource.image.lock());
-			myHistoryDepth->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), motionVectorResource.image.lock());
+			myHistoryColor->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), colorHistoryResource.image);
+			myHistoryDepth->CopyFromImage(commandBuffer->GetCurrentCommandBuffer(), motionVectorResource.image);
 		});
 	}
 
@@ -4500,7 +4406,7 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
-		auto scenePtr = myScene.lock();
+		auto scenePtr = myScene;
 
 		const auto halfSize = myScaledSize / 2u;
 
@@ -4508,7 +4414,7 @@ namespace Volt
 		UIRenderer::SetProjection(glm::ortho(-(float)halfSize.x, (float)halfSize.x, -(float)halfSize.y, (float)halfSize.y, 0.1f, 100.f));
 		UIRenderer::SetView({ 1.f });
 
-		scenePtr->GetRegistry().ForEachSafe<MonoScriptComponent, TransformComponent>([&](Wire::EntityId id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
+		scenePtr->ForEachWithComponents<MonoScriptComponent, TransformComponent>([&](entt::entity id, const MonoScriptComponent& scriptComp, const TransformComponent& transComp)
 		{
 			if (!transComp.visible)
 			{

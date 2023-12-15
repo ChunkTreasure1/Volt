@@ -10,7 +10,6 @@
 #include <Volt/Events/MouseEvent.h>
 
 #include <glm/glm.hpp>
-#include <Wire/Entity.h>
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -20,7 +19,7 @@ struct GizmoEvent
 	//[0] = transform
 	//[1] = rotation
 	//[2] = scale
-	Wire::EntityId myEntityId;
+	entt::entity myEntityId;
 	std::array<glm::vec3, 3> myValue;
 };
 
@@ -77,7 +76,7 @@ private:
 	ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 	SceneState& m_sceneState;
 
-	const std::vector<float> m_snapToGridValues = { 1.f, 10.f, 25.f, 50.f, 100.f, 200.f, 500.f, 1000.f };
+	const std::vector<float> m_snapToGridValues = { 0.01f, 0.1f, 0.25f, 0.50f, 1.f, 2.f, 5.f, 10.f };
 	const std::vector<float> m_snapRotationValues = { 10.f, 30.f, 45.f, 90.f };
 	const std::vector<float> m_snapScaleValues = { 0.01f, 0.1f, 0.25f, 0.5f, 1.f };
 
@@ -95,7 +94,7 @@ private:
 
 	Volt::Entity m_createdEntity;
 
-	Wire::EntityId m_entityToAddMesh = Wire::NullID;
+	Volt::EntityID m_entityToAddMesh = Volt::Entity::NullID();
 	std::filesystem::path m_meshToImport;
 
 	Volt::AssetHandle m_sceneToOpen = Volt::Asset::Null();

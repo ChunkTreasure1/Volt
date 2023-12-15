@@ -18,20 +18,12 @@ namespace Volt
 
     public class Entity
     {
-        public readonly uint Id = 0;
-        ulong[] ScriptIds;
+        public readonly uint Id = UInt32.MaxValue;
 
-        private Dictionary<string, Component> myComponentCache = new Dictionary<string, Component>();
-        private GraphKeyScript myGraphKeyScript;
+        private Dictionary<string, Component> m_componentCache = new Dictionary<string, Component>();
 
         public Entity() { }
         public Entity(uint id) { Id = id; }
-
-        internal Entity(uint id, ulong[] scriptIds)
-        {
-            Id = id;
-            ScriptIds = scriptIds;
-        }
 
         public static bool Exists(Entity entity)
         {
@@ -107,21 +99,6 @@ namespace Volt
             return entity as Entity;
         }
 
-        public GraphKeyScript GetGraphKeyScript()
-        {
-            if (HasComponent<VisualScriptingComponent>())
-            {
-                if (myGraphKeyScript == null)
-                {
-                    myGraphKeyScript = new GraphKeyScript(this);
-                }
-
-                return myGraphKeyScript;
-            }
-
-            return null;
-        }
-
         public string name
         {
             get
@@ -139,19 +116,11 @@ namespace Volt
         {
             get
             {
-                if (!HasComponent<RelationshipComponent>())
-                {
-                    AddComponent<RelationshipComponent>();
-                }
                 return GetComponent<RelationshipComponent>().parent;
             }
 
             set
             {
-                if (!HasComponent<RelationshipComponent>())
-                {
-                    AddComponent<RelationshipComponent>();
-                }
                 GetComponent<RelationshipComponent>().parent = value;
             }
         }
@@ -352,21 +321,23 @@ namespace Volt
 
         public bool HasComponent<T>() where T : Component, new()
         {
-            Type componentType = typeof(T);
+            T tempVar = new T();
 
-            return InternalCalls.Entity_HasComponent(Id, componentType.Name);
+            return InternalCalls.Entity_HasComponent(Id, tempVar.GUID);
         }
 
         public void RemoveComponent<T>() where T : Component, new()
         {
-            Type componentType = typeof(T);
+            T tempVar = new T();
+
             if (!HasComponent<T>())
             {
+                Type componentType = typeof(T);
                 Log.Error($"Component with name {componentType.Name} does not exist on entity {Id}");
                 return;
             }
 
-            InternalCalls.Entity_RemoveComponent(Id, componentType.Name);
+            InternalCalls.Entity_RemoveComponent(Id, tempVar.GUID);
         }
 
         public T AddComponent<T>() where T : Component, new()
@@ -374,19 +345,19 @@ namespace Volt
             Type componentType = typeof(T);
             if (HasComponent<T>())
             {
-                return myComponentCache[componentType.Name] as T;
+                return m_componentCache[componentType.Name] as T;
             }
 
-            if (myComponentCache == null)
+            if (m_componentCache == null)
             {
-                this.myComponentCache = new Dictionary<string, Component>();
+                this.m_componentCache = new Dictionary<string, Component>();
             }
-
-            InternalCalls.Entity_AddComponent(Id, componentType.Name);
 
             T newComp = new T() { entity = this };
+            InternalCalls.Entity_AddComponent(Id, newComp.GUID);
 
-            myComponentCache[componentType.Name] = newComp;
+
+            m_componentCache[componentType.Name] = newComp;
 
             return newComp;
         }
@@ -398,19 +369,19 @@ namespace Volt
                 return null;
             }
 
-            if (myComponentCache == null)
+            if (m_componentCache == null)
             {
-                this.myComponentCache = new Dictionary<string, Component>();
+                this.m_componentCache = new Dictionary<string, Component>();
             }
 
             Type componentType = typeof(T);
-            if (myComponentCache.ContainsKey(componentType.Name))
+            if (m_componentCache.ContainsKey(componentType.Name))
             {
-                return myComponentCache[componentType.Name] as T;
+                return m_componentCache[componentType.Name] as T;
             }
 
             T newComp = new T() { entity = this };
-            myComponentCache.Add(componentType.Name, newComp);
+            m_componentCache.Add(componentType.Name, newComp);
             return newComp;
         }
 
@@ -454,12 +425,6 @@ namespace Volt
             var fullname = componentType.Namespace + "." + componentType.Name;
             InternalCalls.Entity_AddScript(Id, fullname, out ulong scriptId);
 
-            List<ulong> newScriptsList = new List<ulong>();
-            newScriptsList.AddRange(ScriptIds);
-            newScriptsList.Add(scriptId);
-
-            ScriptIds = newScriptsList.ToArray();
-
             return GetScript<T>();
         }
 
@@ -490,6 +455,11 @@ namespace Volt
                 return child.GetScript<T>();
             }
             return null;
+        }
+
+        public uint GetID()
+        {
+            return Id;
         }
     }
 }

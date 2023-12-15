@@ -12,22 +12,15 @@ project "GraphKey"
 
 	warnings "Extra"
 
-	flags
-	{
-		"FatalWarnings"
-	}
+	AddCommonFlags()
+	AddCommonWarnings()
+	AddCommonLinkOptions()
+	AddCommonIncludeDirs()
+	AddCommonDefines()
 
-	disablewarnings
+	buildoptions 
 	{
-		"4005",
-		"4201",
-		"4100"
-	}
-
-	linkoptions 
-	{
-		"/ignore:4006",
-		"/ignore:4099"
+		"/bigobj"
 	}
 
 	files
@@ -45,11 +38,8 @@ project "GraphKey"
 		"../Nexus/src",
 
 		"%{IncludeDir.yaml}",
-		"%{IncludeDir.Optick}",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.Wire}",
 
-		"%{IncludeDir.glm}",
 		"%{IncludeDir.fmod}",
 
 		"%{IncludeDir.ImGui}",
@@ -59,15 +49,12 @@ project "GraphKey"
 		"%{IncludeDir.VulkanSDK}",
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.half}",
+		"%{IncludeDir.entt}",
 	}
 
 	defines
 	{
-		"_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
-
-		"GLM_FORCE_DEPTH_ZERO_TO_ONE",
-		"GLM_FORCE_LEFT_HANDED"
 	}
 
 	filter "files:vendor/**.cpp"

@@ -9,7 +9,7 @@ namespace GraphKey
 	{
 		inputs =
 		{
-			AttributeConfigDefault<Volt::Entity>("Entity", AttributeDirection::Input, Volt::Entity{ 0, nullptr })
+			AttributeConfigDefault<Volt::Entity>("Entity", AttributeDirection::Input, Volt::Entity::Null())
 		};
 
 		outputs =
@@ -24,7 +24,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[0].data))
 		{
-			inputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+			inputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -76,7 +76,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[1].data))
 		{
-			inputs[1].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+			inputs[1].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -112,7 +112,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[1].data))
 		{
-			inputs[1].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+			inputs[1].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -146,7 +146,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[1].data))
 		{
-			inputs[1].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+			inputs[1].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -180,7 +180,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[1].data))
 		{
-			inputs[1].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene().lock().get() };
+			inputs[1].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
