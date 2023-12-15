@@ -39,7 +39,10 @@ void ConvertToWorldEngineModal::DrawModalContent()
 			}
 		}
 
-		Volt::AssetManager::SaveAsset(m_scene.GetSharedPtr());
+		if (Volt::AssetManager::ExistsInRegistry(m_scene->handle))
+		{
+			Volt::AssetManager::SaveAsset(m_scene.GetSharedPtr());
+		}
 		Close();
 	}
 
