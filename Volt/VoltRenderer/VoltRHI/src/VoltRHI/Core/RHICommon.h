@@ -343,7 +343,7 @@ namespace Volt::RHI
 		Miss = 0x00000800,
 		Intersection = 0x00001000,
 
-		Task = 0x00000040,
+		Amplification = 0x00000040,
 		Mesh = 0x00000080,
 
 		All = Vertex | Pixel | Hull | Domain | Geometry | Compute,

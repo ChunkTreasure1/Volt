@@ -392,6 +392,18 @@ namespace Volt::RHI
 		vkCmdDispatchIndirect(m_commandBuffers.at(index).commandBuffer, commandsBuffer->GetHandle<VkBuffer>(), offset);
 	}
 
+	void VulkanCommandBuffer::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdDrawMeshTasksEXT(m_commandBuffers.at(index).commandBuffer, groupCountX, groupCountY, groupCountZ);
+	}
+
+	void VulkanCommandBuffer::DispatchMeshTasksIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		vkCmdDrawMeshTasksIndirectEXT(m_commandBuffers.at(index).commandBuffer, commandsBuffer->GetHandle<VkBuffer>(), offset, drawCount, stride);
+	}
+
 	void VulkanCommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();

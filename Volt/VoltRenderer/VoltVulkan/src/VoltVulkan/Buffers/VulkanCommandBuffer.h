@@ -36,6 +36,9 @@ namespace Volt::RHI
 		void Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) override;
 		void DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset) override;
 
+		void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) override;
+		void DispatchMeshTasksIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) override;
+
 		void SetViewports(const std::vector<Viewport>& viewports) override;
 		void SetScissors(const std::vector<Rect2D>& scissors) override;
 

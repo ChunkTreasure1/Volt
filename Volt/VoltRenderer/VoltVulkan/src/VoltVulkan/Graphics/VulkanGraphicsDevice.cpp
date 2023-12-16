@@ -22,6 +22,7 @@ namespace Volt::RHI
 
 		// Extensions
 		VkPhysicalDeviceDescriptorBufferFeaturesEXT descriptorBufferFeaturesEXT;
+		VkPhysicalDeviceMeshShaderFeaturesEXT meshShaderFeaturesEXT;
 		VkDeviceDiagnosticsConfigCreateInfoNV aftermathDiagInfo{};
 	};
 
@@ -79,6 +80,13 @@ namespace Volt::RHI
 			//	chainEntryPoint = &s_enabledFeatures.descriptorBufferFeaturesEXT;
 			//}
 
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MESH_SHADER_EXTENSION_NAME))
+			{
+				s_enabledFeatures.meshShaderFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
+				s_enabledFeatures.meshShaderFeaturesEXT.meshShader = VK_TRUE;
+				s_enabledFeatures.meshShaderFeaturesEXT.taskShader = VK_TRUE;
+			}
+
 #ifdef VT_ENABLE_NV_AFTERMATH
 			s_enabledFeatures.aftermathDiagInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
 			s_enabledFeatures.aftermathDiagInfo.pNext = chainEntryPoint;
@@ -113,6 +121,11 @@ namespace Volt::RHI
 			//{
 			//	enabledExtensions.emplace_back(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
 			//}
+
+			if (physicalDevice->IsExtensionAvailiable(VK_EXT_MESH_SHADER_EXTENSION_NAME))
+			{
+				enabledExtensions.emplace_back(VK_EXT_MESH_SHADER_EXTENSION_NAME);
+			}
 
 #ifdef VT_ENABLE_NV_AFTERMATH
 			if (physicalDevice->IsExtensionAvailiable(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME))

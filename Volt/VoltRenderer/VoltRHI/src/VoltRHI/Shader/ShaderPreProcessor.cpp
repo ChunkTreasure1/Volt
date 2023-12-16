@@ -127,7 +127,7 @@ namespace Volt::RHI
 			case ShaderStage::ClosestHit:
 			case ShaderStage::Miss:
 			case ShaderStage::Intersection:
-			case ShaderStage::Task:
+			case ShaderStage::Amplification:
 			case ShaderStage::Mesh:
 			case ShaderStage::All:
 			case ShaderStage::Common:

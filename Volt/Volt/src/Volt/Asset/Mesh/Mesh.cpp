@@ -167,13 +167,13 @@ namespace Volt
 
 		// Meshlets
 		{
-			//for (size_t i = 0; i < extractedVertices.size(); i++)
-			//{
-			//	auto& currentVertices = extractedVertices.at(i);
-			//	auto& currentIndices = extractedIndices.at(i);
+			for (size_t i = 0; i < extractedVertices.size(); i++)
+			{
+				auto& currentVertices = extractedVertices.at(i);
+				auto& currentIndices = extractedIndices.at(i);
 
-			//	meshopt_optimizeOverdraw(currentIndices.data(), currentIndices.data(), currentIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), 1.05f);
-			//}
+				meshopt_optimizeOverdraw(currentIndices.data(), currentIndices.data(), currentIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), 1.05f);
+			}
 
 			constexpr size_t MAX_VERTICES = 64;
 			constexpr size_t MAX_TRIANGLES = 124;

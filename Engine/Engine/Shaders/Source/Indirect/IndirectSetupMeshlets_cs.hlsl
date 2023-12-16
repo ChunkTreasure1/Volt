@@ -28,6 +28,6 @@ void main(uint3 threadId : SV_DispatchThreadID)
     
     uint drawIndex;
     constants.countsBuffer.InterlockedAdd(0, 1, drawIndex);
-    constants.drawIndexToObjectId.Store(drawIndex, objectId);
-    constants.drawIndexToMeshletId.Store(drawIndex, meshletId);
+    constants.drawIndexToObjectId.Store(globalId, objectId);
+    constants.drawIndexToMeshletId.Store(globalId, meshletId);
 }

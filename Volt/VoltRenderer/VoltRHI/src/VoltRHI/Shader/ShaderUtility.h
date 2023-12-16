@@ -18,7 +18,7 @@ namespace Volt::RHI
 			switch (api)
 			{
 				case GraphicsAPI::Vulkan: subDir = "Vulkan"; break;
-				case GraphicsAPI::D3D12: subDir = "DX12"; break;
+				case GraphicsAPI::D3D12: subDir = "D3D12"; break;
 				case GraphicsAPI::MoltenVk: subDir = "MoltenVK"; break;
 			}
 
@@ -51,11 +51,11 @@ namespace Volt::RHI
 			{
 				return ShaderStage::Geometry;
 			}
-			else if (filename.find("_tes.glsl") != std::string::npos || filename.find("_hull.hlsl"))
+			else if (filename.find("_hs.glsl") != std::string::npos || filename.find("_hs.hlsl"))
 			{
 				return ShaderStage::Hull;
 			}
-			else if (filename.find("_tc.glsl") != std::string::npos || filename.find("_dom.hlsl"))
+			else if (filename.find("_ds.glsl") != std::string::npos || filename.find("_ds.hlsl"))
 			{
 				return ShaderStage::Domain;
 			}
@@ -79,11 +79,11 @@ namespace Volt::RHI
 			{
 				return ShaderStage::Intersection;
 			}
-			else if (filename.find("_task.hlsl") != std::string::npos)
+			else if (filename.find("_as.hlsl") != std::string::npos)
 			{
-				return ShaderStage::Task;
+				return ShaderStage::Amplification;
 			}
-			else if (filename.find("_mesh.hlsl") != std::string::npos)
+			else if (filename.find("_ms.hlsl") != std::string::npos)
 			{
 				return ShaderStage::Mesh;
 			}
@@ -108,8 +108,8 @@ namespace Volt::RHI
 				case ShaderStage::AnyHit:		return L"lib_6_6";
 				case ShaderStage::Intersection: return L"lib_6_6";
 			
-				case ShaderStage::Task:			return L"ms_6_6";
-				case ShaderStage::Mesh:			return L"as_6_6";
+				case ShaderStage::Amplification: return L"as_6_6";
+				case ShaderStage::Mesh:			 return L"ms_6_6";
 			}
 
 			assert(false);
@@ -122,8 +122,8 @@ namespace Volt::RHI
 			{
 				case ShaderStage::Vertex:		return ".vertex.cached";
 				case ShaderStage::Pixel:		return ".fragment.cached";
-				case ShaderStage::Hull:			return "tessControl.cached";
-				case ShaderStage::Domain:		return "tessEvaluation.cached";
+				case ShaderStage::Hull:			return "hull.cached";
+				case ShaderStage::Domain:		return "domain.cached";
 				case ShaderStage::Geometry:		return ".geometry.cached";
 				case ShaderStage::Compute:		return ".compute.cached";
 
@@ -133,7 +133,7 @@ namespace Volt::RHI
 				case ShaderStage::AnyHit:		return "rayahit.cached";
 				case ShaderStage::Intersection:	return "rayinter.cached";
 
-				case ShaderStage::Task:			return "task.cached";
+				case ShaderStage::Amplification:			return "amp.cached";
 				case ShaderStage::Mesh:			return "mesh.cached";
 			}
 			
@@ -158,7 +158,7 @@ namespace Volt::RHI
 				case ShaderStage::AnyHit: return "Any Hit";
 			
 				case ShaderStage::Mesh: return "Mesh";
-				case ShaderStage::Task: return "Task";
+				case ShaderStage::Amplification: return "Amplification";
 			}
 
 			return "Unsupported";

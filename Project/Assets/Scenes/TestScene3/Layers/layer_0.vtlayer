@@ -5,12 +5,18 @@ Layer:
   locked: false
   Entities:
     - Entity:
-        id: 4
+        id: 59
         components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
-                data: [464.455811, 0, 0]
+                data: [376.987, 0, 791.300171]
               - name: rotation
                 data: [0, 0, 0, 1]
               - name: scale
@@ -22,7 +28,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: New Cube
+                data: galil
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -34,13 +40,2042 @@ Layer:
               - name: children
                 data: array
                 values:
-                  - data: 0
+                  []
+    - Entity:
+        id: 58
+        components:
           - guid: [5579790378469427390, 5138106327942809248]
             members:
               - name: handle
-                data: 10149696181569838305
+                data: 4818559880424341597
               - name: material
                 data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-443.468201, 0, 1024.03894]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 57
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-372.848846, 0, -663.031189]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 56
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-616.561707, 0, -468.370911]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 55
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-609.19574, 0, 188.00502]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 54
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [207.282135, 0, 1008.51483]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 53
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-310.397461, 0, 902.610535]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 52
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-97.9301147, 0, 1034.52051]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 51
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-365.405273, 0, 843.425659]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 50
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-386.071716, 0, 968.144348]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 49
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-475.562256, 0, 611.818176]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 48
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-19.53932, 0, -657.575928]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 47
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-502.844421, 0, -296.552826]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 46
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-614.34906, 0, -143.499023]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 45
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-502.900085, 0, 398.195496]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 44
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-255.227448, 0, 830.484314]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 43
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-469.521423, 0, 743.961182]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 42
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-462.697845, 0, -435.933136]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 41
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-72.662384, 0, 817.039734]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 40
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-439.54657, 0, -325.546021]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 39
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-416.943634, 0, 253.808182]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 38
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-377.772827, 0, 800.223816]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 37
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-503.484741, 0, -8.23156071]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 36
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-517.829773, 0, 157.084686]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 35
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-295.094513, 0, 630.07135]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 34
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-384.00058, 0, 443.572174]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 33
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-394.257874, 0, -26.2536125]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 32
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [20.6605682, 0, 685.408386]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 31
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-310.180176, 0, -282.300781]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 30
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-338.607239, 0, -12.578023]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 29
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-157.244431, 0, 637.966064]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 28
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-333.857635, 0, 187.588226]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 27
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [295.216553, 0, 667.559326]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 26
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-79.1664276, 0, 617.063171]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 25
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [148.495987, 0, 504.176483]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 24
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-179.439453, 0, 468.034882]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 23
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [300.909546, 0, -148.450684]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 22
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-160.720367, 0, -264.69635]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 21
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-304.619965, 0, -61.592701]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 20
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [70.3514252, 0, -233.838989]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 19
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [480.332214, 0, 380.932831]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 18
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [47.3658867, 0, 587.932983]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 17
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-277.565979, 0, 139.778244]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 16
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-217.145111, 0, 227.972748]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 15
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-182.454483, 0, 345.516998]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 14
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-21.2782211, 0, 457.594818]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 13
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [204.728775, 0, 468.015045]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 12
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [307.445221, 0, 253.086807]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 11
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [160.793839, 0, 122.168228]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 10
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [456.046326, 0, 19.7600479]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 9
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [110.456596, 0, 251.01796]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 8
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-204.149857, 0, 28.7067795]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 7
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-96.5392456, 0, 169.415161]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 6
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [-61.4949341, 0, 285.151642]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 5
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [60.4993629, 0, 352.555969]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
+    - Entity:
+        id: 4
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4818559880424341597
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [208.68132, 0, 342.636627]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: galil
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 4294967295
+              - name: children
+                data: array
+                values:
+                  []
     - Entity:
         id: 3
         components:
@@ -197,10 +2232,16 @@ Layer:
                 data: false
               - name: isKinematic
                 data: false
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 10149696181569838305
+              - name: material
+                data: 0
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
-                data: [-224.257629, 0, 0]
+                data: [0, 0, 0]
               - name: rotation
                 data: [0, 0, 0, 1]
               - name: scale
@@ -220,24 +2261,8 @@ Layer:
           - guid: [5086337540049333714, 3220959922222851753]
             members:
               - name: parent
-                data: 4
+                data: 4294967295
               - name: children
                 data: array
                 values:
                   []
-          - guid: [5579790378469427390, 5138106327942809248]
-            members:
-              - name: handle
-                data: 10149696181569838305
-              - name: material
-                data: 0
-          - guid: [5428802467633469958, 3006162545260469436]
-            members:
-              []
-        MonoScripts:
-          - ScriptEntry:
-              name: Project.TestPlayer
-              id: 18129787707090351050
-              members:
-                - name: testFloat
-                  data: 0

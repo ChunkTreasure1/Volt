@@ -17,6 +17,11 @@ namespace Volt::RHI
 	inline PFN_vkCmdSetDescriptorBufferOffsetsEXT vkCmdSetDescriptorBufferOffsetsEXT;
 	inline PFN_vkGetDescriptorSetLayoutBindingOffsetEXT vkGetDescriptorSetLayoutBindingOffsetEXT;
 
+	// Mesh shaders
+	inline PFN_vkCmdDrawMeshTasksEXT vkCmdDrawMeshTasksEXT;
+	inline PFN_vkCmdDrawMeshTasksIndirectEXT vkCmdDrawMeshTasksIndirectEXT;
+	inline PFN_vkCmdDrawMeshTasksIndirectCountEXT vkCmdDrawMeshTasksIndirectCountEXT;
+
 	inline static void FindVulkanFunctions(VkInstance instance)
 	{
 		VT_GET_VULKAN_FUNCTION(vkSetDebugUtilsObjectNameEXT);
@@ -29,5 +34,10 @@ namespace Volt::RHI
 		VT_GET_VULKAN_FUNCTION(vkGetDescriptorEXT);
 		VT_GET_VULKAN_FUNCTION(vkCmdBindDescriptorBuffersEXT);
 		VT_GET_VULKAN_FUNCTION(vkCmdSetDescriptorBufferOffsetsEXT);
+
+		// Mesh shaders
+		VT_GET_VULKAN_FUNCTION(vkCmdDrawMeshTasksEXT);
+		VT_GET_VULKAN_FUNCTION(vkCmdDrawMeshTasksIndirectEXT);
+		VT_GET_VULKAN_FUNCTION(vkCmdDrawMeshTasksIndirectCountEXT);
 	}
 }
