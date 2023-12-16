@@ -718,4 +718,11 @@ namespace Volt::RHI
 		uint32_t y;
 		uint32_t z;
 	};
+
+	struct IndirectMeshTasksCommand
+	{
+		uint32_t x;
+		uint32_t y;
+		uint32_t z;
+	};
 }

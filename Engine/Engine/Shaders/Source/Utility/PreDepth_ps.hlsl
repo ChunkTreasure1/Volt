@@ -10,7 +10,6 @@ struct Input
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
-    uint vertexId : VERTEXID;
 };
 
 Output main(Input input)

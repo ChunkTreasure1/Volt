@@ -101,6 +101,18 @@ namespace Volt
 		m_commandBuffer->ClearBuffer(buffer, clearValue);
 	}
 
+	void RenderContext::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
+	{
+		BindDescriptorTableIfRequired();
+		m_commandBuffer->DispatchMeshTasks(groupCountX, groupCountY, groupCountZ);
+	}
+
+	void RenderContext::DispatchMeshTasksIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+		BindDescriptorTableIfRequired();
+		m_commandBuffer->DispatchMeshTasksIndirect(commandsBuffer, offset, drawCount, stride);
+	}
+
 	void RenderContext::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 		VT_PROFILE_FUNCTION();

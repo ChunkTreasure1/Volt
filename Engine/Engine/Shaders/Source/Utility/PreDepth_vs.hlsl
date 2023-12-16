@@ -6,7 +6,6 @@ struct Output
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
-    uint vertexId : VERTEXID;
 };
 
 Output main(in DefaultInput input)
@@ -20,6 +19,5 @@ Output main(in DefaultInput input)
     Output output;
     output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
     output.normal = normal;
-    output.vertexId = input.vertexId;
     return output;
 }
