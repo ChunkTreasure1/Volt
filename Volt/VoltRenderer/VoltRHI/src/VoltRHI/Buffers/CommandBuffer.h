@@ -45,6 +45,7 @@ namespace Volt::RHI
 
 		virtual void DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ) = 0;
 		virtual void DispatchMeshTasksIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride) = 0;
+		virtual void DispatchMeshTasksIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride) = 0;
 
 		virtual void SetViewports(const std::vector<Viewport>& viewports) = 0;
 		virtual void SetScissors(const std::vector<Rect2D>& scissors) = 0;

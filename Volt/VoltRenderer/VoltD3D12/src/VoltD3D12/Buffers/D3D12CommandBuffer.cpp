@@ -96,13 +96,25 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
+	{
+	}
+
+	void D3D12CommandBuffer::DispatchMeshTasksIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+	}
+
+	void D3D12CommandBuffer::DispatchMeshTasksIndirectCount(Ref<StorageBuffer> commandsBuffer, const size_t offset, Ref<StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
+	{
+	}
+
 	void D3D12CommandBuffer::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 	}
 
 	void D3D12CommandBuffer::DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset)
 	{
-	}
+	}+
 
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{

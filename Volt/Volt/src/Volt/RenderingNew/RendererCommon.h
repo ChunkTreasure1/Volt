@@ -33,6 +33,14 @@ namespace Volt
 		ResourceHandle indexBuffer;
 	};
 
+	struct IndirectMeshTaskCommand
+	{
+		RHI::IndirectMeshTasksCommand command{};
+		uint32_t objectId{};
+		uint32_t meshId{};
+		uint32_t padding[3];
+	};
+
 	///// Rendering Structures /////
 	struct CameraDataNew
 	{

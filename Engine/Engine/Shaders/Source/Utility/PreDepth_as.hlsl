@@ -11,10 +11,7 @@ struct Constants
 {
     TypedBuffer<GPUScene> gpuScene;
     TypedBuffer<DrawContext> drawContext;
-    
     TypedBuffer<CameraData> cameraData; // #TODO_Ivar: Should be uniform buffer
-    
-    uint meshletCount;
 };
 
 struct Payload
@@ -30,7 +27,7 @@ void main(uint dispatchThreadID : SV_DispatchThreadID, uint groupThreadID : SV_G
 {
     const Constants constants = GetConstants<Constants>();
     
-    const bool render = dispatchThreadID < constants.meshletCount;
+    const bool render = true;
     const uint taskCount = WaveActiveCountBits(render);
     
     if (groupThreadID.x == 0)

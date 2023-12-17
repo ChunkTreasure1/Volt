@@ -67,6 +67,9 @@ namespace Volt
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
 		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
 
+		void BuildMeshPassMeshShader(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
+		void RenderMeshesMeshShader(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
+
 		void CreatePipelines();
 
 		///// Passes //////

@@ -113,6 +113,12 @@ namespace Volt
 		m_commandBuffer->DispatchMeshTasksIndirect(commandsBuffer, offset, drawCount, stride);
 	}
 
+	void RenderContext::DispatchMeshTasksIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride)
+	{
+		BindDescriptorTableIfRequired();
+		m_commandBuffer->DispatchMeshTasksIndirectCount(commandsBuffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+	}
+
 	void RenderContext::Dispatch(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 		VT_PROFILE_FUNCTION();

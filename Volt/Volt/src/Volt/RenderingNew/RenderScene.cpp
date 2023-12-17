@@ -334,5 +334,22 @@ namespace Volt
 			index++;
 		}
 #endif
+
+		// Mesh shader commands
+		for (uint32_t index = 0; const auto & obj : m_renderObjects)
+		{
+			Entity entity{ obj.entity, m_scene };
+
+			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
+			
+			auto& newCommand = m_meshShaderCommands.emplace_back();
+			newCommand.command.x = subMesh.meshletCount;
+			newCommand.command.y = 1;
+			newCommand.command.z = 1;
+			newCommand.objectId = index;
+			newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
+
+			index++;
+		}
 	}
 }
