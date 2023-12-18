@@ -1,0 +1,4 @@
+name: "CullMeshlets"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Indirect/CullMeshlets_cs.hlsl"

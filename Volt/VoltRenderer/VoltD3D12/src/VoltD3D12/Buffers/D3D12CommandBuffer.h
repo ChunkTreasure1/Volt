@@ -51,6 +51,7 @@ namespace Volt::RHI
 
 		void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) override;
 		void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
+		void BindIndexBuffer(Ref<StorageBuffer> indexBuffer) override;
 		void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) override;
 
 		void BeginRendering(const RenderingInfo& renderingInfo) override;

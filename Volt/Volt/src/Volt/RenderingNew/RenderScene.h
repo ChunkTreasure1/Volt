@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Asset/Mesh/Mesh.h"
+
 #include "Volt/RenderingNew/RenderObject.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 
@@ -38,12 +40,16 @@ namespace Volt
 		inline const uint32_t GetMeshShaderCommandCount() const { return static_cast<uint32_t>(m_meshShaderCommands.size()); }
 		inline const uint32_t GetIndividualMeshCount() const { return m_currentIndividualMeshCount; }
 		inline const uint32_t GetIndividualMaterialCount() const { return static_cast<uint32_t>(m_individualMaterials.size()); }
+		inline const uint32_t GetMeshletCount() const { return static_cast<uint32_t>(m_sceneMeshlets.size()); }
+		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
+
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
 		const uint32_t GetMaterialIndex(Ref<SubMaterial> material) const;
 
 		inline const GlobalResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
 		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
 		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMaterialsBuffer() const { return *m_gpuMaterialsBuffer; }
+		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMeshletsBuffer() const { return *m_gpuMeshletsBuffer; }
 		inline const GlobalResource<RHI::StorageBuffer>& GetObjectDrawDataBuffer() const { return *m_objectDrawDataBuffer; }
 
 		std::vector<RenderObject>::iterator begin() { return m_renderObjects.begin(); }
@@ -56,12 +62,19 @@ namespace Volt
 		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }
 
 	private:
-		void UploadGPUMeshes();
-		void UploadObjectDrawData();
+		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
+		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
 		void UploadGPUScene();
 		void UploadGPUMaterials();
+		void UploadGPUMeshlets();
+
+		void BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
+		void BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
 
 		void BuildMeshCommands();
+		void BuildMeshletBuffer(std::vector<ObjectDrawData>& gpuMeshes);
+
+		std::vector<Meshlet> m_sceneMeshlets;
 
 		std::vector<RenderObject> m_renderObjects;
 		std::vector<IndirectGPUCommandNew> m_meshCommands;
@@ -76,9 +89,11 @@ namespace Volt
 		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMeshesBuffer;
 		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMaterialsBuffer;
 		Scope<GlobalResource<RHI::StorageBuffer>> m_objectDrawDataBuffer;
+		Scope<GlobalResource<RHI::StorageBuffer>> m_gpuMeshletsBuffer;
 
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;
+		uint32_t m_currentIndexCount = 0;
 
 		bool m_isInvalid = false;
 	};

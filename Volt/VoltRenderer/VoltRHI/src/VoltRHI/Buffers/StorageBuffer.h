@@ -6,6 +6,7 @@ namespace Volt::RHI
 {
 	class BufferView;
 	class Allocator;
+	class CommandBuffer;
 
 	class StorageBuffer : public RHIResource
 	{
@@ -20,6 +21,7 @@ namespace Volt::RHI
 
 		virtual void Unmap() = 0;
 		virtual void SetData(const void* data, const size_t size) = 0;
+		virtual void SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size) = 0;
 
 		virtual Ref<BufferView> GetView() = 0;
 

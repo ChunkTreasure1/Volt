@@ -519,7 +519,9 @@ namespace Volt::RHI
 		TransferDst = BIT(7),
 
 		IndirectArgument = BIT(8),
-		UnorderedAccess = BIT(9)
+		UnorderedAccess = BIT(9),
+
+		IndexBuffer = BIT(10)
 	};
 
 	VT_SETUP_ENUM_CLASS_OPERATORS(ResourceState);

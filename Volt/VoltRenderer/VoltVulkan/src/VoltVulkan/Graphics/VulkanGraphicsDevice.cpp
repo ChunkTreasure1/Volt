@@ -85,6 +85,9 @@ namespace Volt::RHI
 				s_enabledFeatures.meshShaderFeaturesEXT.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT;
 				s_enabledFeatures.meshShaderFeaturesEXT.meshShader = VK_TRUE;
 				s_enabledFeatures.meshShaderFeaturesEXT.taskShader = VK_TRUE;
+				s_enabledFeatures.meshShaderFeaturesEXT.pNext = chainEntryPoint;
+
+				chainEntryPoint = &s_enabledFeatures.meshShaderFeaturesEXT;
 			}
 
 #ifdef VT_ENABLE_NV_AFTERMATH

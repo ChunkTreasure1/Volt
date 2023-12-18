@@ -54,6 +54,7 @@ namespace Volt::RHI
 		virtual void BindPipeline(Ref<ComputePipeline> pipeline) = 0;
 		virtual void BindVertexBuffers(const std::vector<Ref<VertexBuffer>>& vertexBuffers, const uint32_t firstBinding) = 0;
 		virtual void BindIndexBuffer(Ref<IndexBuffer> indexBuffer) = 0;
+		virtual void BindIndexBuffer(Ref<StorageBuffer> indexBuffer) = 0;
 		virtual void BindDescriptorTable(Ref<DescriptorTable> descriptorTable) = 0;
 
 		virtual void BeginRendering(const RenderingInfo& renderingInfo) = 0;

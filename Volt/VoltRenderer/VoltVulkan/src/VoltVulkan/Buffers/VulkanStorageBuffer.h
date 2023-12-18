@@ -23,6 +23,7 @@ namespace Volt::RHI
 
 		void Unmap() override;
 		void SetData(const void* data, const size_t size) override;
+		void SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size) override;
 
 		Ref<BufferView> GetView() override;
 

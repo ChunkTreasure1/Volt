@@ -105,6 +105,38 @@ namespace Volt::RHI
 		});
 	}
 
+	void VulkanStorageBuffer::SetData(Ref<CommandBuffer> commandBuffer, const void* data, const size_t size)
+	{
+		Ref<Allocation> stagingAllocation = nullptr;
+
+		if (m_allocatedUsingCustomAllocator)
+		{
+			stagingAllocation = m_customAllocator->CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		}
+		else
+		{
+			stagingAllocation = GraphicsContext::GetDefaultAllocator().CreateBuffer(size, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
+		}
+
+		void* mappedPtr = stagingAllocation->Map<void>();
+		memcpy_s(mappedPtr, m_byteSize, data, size);
+		stagingAllocation->Unmap();
+
+		commandBuffer->CopyBufferRegion(stagingAllocation, 0, m_allocation, 0, size);
+
+		GraphicsContext::DestroyResource([allocatedUsingCustomAllocator = m_allocatedUsingCustomAllocator, customAllocator = m_customAllocator, allocation = stagingAllocation]()
+		{
+			if (allocatedUsingCustomAllocator)
+			{
+				customAllocator->DestroyBuffer(allocation);
+			}
+			else
+			{
+				GraphicsContext::GetDefaultAllocator().DestroyBuffer(allocation);
+			}
+		});
+	}
+
 	Ref<BufferView> VulkanStorageBuffer::GetView()
 	{
 		BufferViewSpecification spec{};

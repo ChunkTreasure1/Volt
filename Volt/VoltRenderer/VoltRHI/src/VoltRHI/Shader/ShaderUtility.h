@@ -51,11 +51,11 @@ namespace Volt::RHI
 			{
 				return ShaderStage::Geometry;
 			}
-			else if (filename.find("_hs.glsl") != std::string::npos || filename.find("_hs.hlsl"))
+			else if (filename.find("_hs.glsl") != std::string::npos || filename.find("_hs.hlsl") != std::string::npos)
 			{
 				return ShaderStage::Hull;
 			}
-			else if (filename.find("_ds.glsl") != std::string::npos || filename.find("_ds.hlsl"))
+			else if (filename.find("_ds.glsl") != std::string::npos || filename.find("_ds.hlsl") != std::string::npos)
 			{
 				return ShaderStage::Domain;
 			}

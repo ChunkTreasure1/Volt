@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 7856614486655388145
+  filePath: Engine/Shaders/Source/Indirect/CullMeshlets_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

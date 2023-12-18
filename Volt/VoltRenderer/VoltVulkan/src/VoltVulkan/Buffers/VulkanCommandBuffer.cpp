@@ -109,6 +109,12 @@ namespace Volt::RHI
 					return { VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT };
 					break;
 				}
+
+				case ResourceState::IndexBuffer:
+				{
+					return { VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_ACCESS_2_INDEX_READ_BIT };
+					break;
+				}
 			}
 
 			return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
@@ -175,6 +181,12 @@ namespace Volt::RHI
 				case ResourceState::Undefined:
 				{
 					return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
+					break;
+				}
+
+				case ResourceState::IndexBuffer:
+				{
+					return { VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_ACCESS_2_INDEX_READ_BIT };
 					break;
 				}
 			}
@@ -480,6 +492,15 @@ namespace Volt::RHI
 	}
 
 	void VulkanCommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);
+
+		constexpr VkDeviceSize offset = 0;
+		vkCmdBindIndexBuffer(m_commandBuffers.at(index).commandBuffer, indexBuffer->GetHandle<VkBuffer>(), offset, VK_INDEX_TYPE_UINT32);
+	}
+
+	void VulkanCommandBuffer::BindIndexBuffer(Ref<StorageBuffer> indexBuffer)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();
 		VT_PROFILE_GPU_CONTEXT(m_commandBuffers.at(index).commandBuffer);

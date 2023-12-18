@@ -67,9 +67,6 @@ namespace Volt
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
 		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
 
-		void BuildMeshPassMeshShader(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
-		void RenderMeshesMeshShader(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
-
 		void CreatePipelines();
 
 		///// Passes //////
@@ -78,6 +75,8 @@ namespace Volt
 		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddCullObjectsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
+		void AddCullMeshletsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
@@ -124,6 +123,8 @@ namespace Volt
 
 		// Meshlets
 		Ref<RHI::ComputePipeline> m_indirectSetupMeshletsPipeline;
+		Ref<RHI::ComputePipeline> m_cullObjectsPipeline;
+		Ref<RHI::ComputePipeline> m_cullMeshletsPipeline;
 		///////////
 
 		Ref<RHI::ComputePipeline> m_prefixSumPipeline;

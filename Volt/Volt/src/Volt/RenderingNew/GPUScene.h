@@ -37,10 +37,14 @@ namespace Volt
 	struct ObjectDrawData
 	{
 		glm::mat4 transform;
+		
 		uint32_t meshId;
 		uint32_t materialId;
+		uint32_t meshletStartOffset;
+		uint32_t padding;
 
-		glm::uvec2 padding;
+		float boundingSphereRadius;
+		glm::vec3 boundingSphereCenter;
 	};
 
 	struct GPUMaterialNew
@@ -58,5 +62,6 @@ namespace Volt
 		ResourceHandle meshesBuffer;
 		ResourceHandle materialsBuffer;
 		ResourceHandle objectDrawDataBuffer;
+		ResourceHandle meshletsBuffer;
 	};
 }

@@ -31,6 +31,18 @@ namespace Volt
 		RenderGraphResourceHandle drawIndexToMeshletId;
 	};
 
+	struct CullObjectsData
+	{
+		RenderGraphResourceHandle survivingMeshletsBuffer;
+		RenderGraphResourceHandle survivingMeshletCountBuffer;
+	};
+
+	struct CullMeshletsData
+	{
+		RenderGraphResourceHandle compactedIndexBuffer;
+		RenderGraphResourceHandle drawCommandsBuffer;
+	};
+
 	struct UniformBuffersData
 	{
 		RenderGraphResourceHandle cameraDataBuffer;

@@ -173,6 +173,11 @@ namespace Volt::RHI
 		return m_deviceProperties.descriptorBufferProperties.enabled;
 	}
 
+	const bool VulkanPhysicalGraphicsDevice::AreMeshShadersEnabled() const
+	{
+		return m_deviceProperties.meshShaderProperties.enabled;
+	}
+
 	void* VulkanPhysicalGraphicsDevice::GetHandleImpl() const
 	{
 		return m_physicalDevice;
@@ -208,6 +213,10 @@ namespace Volt::RHI
 		descriptorBufferProperties.pNext = firstChainPtr;
 		firstChainPtr = &descriptorBufferProperties;
 
+		VkPhysicalDeviceMeshShaderPropertiesEXT meshShaderProperties{};
+		meshShaderProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT;
+		meshShaderProperties.pNext = firstChainPtr;
+		firstChainPtr = &meshShaderProperties;
 
 		VkPhysicalDeviceProperties2	deviceProperties{};
 		deviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -257,6 +266,47 @@ namespace Volt::RHI
 			m_deviceProperties.descriptorBufferProperties.samplerDescriptorBufferAddressSpaceSize = descriptorBufferProperties.samplerDescriptorBufferAddressSpaceSize;
 			m_deviceProperties.descriptorBufferProperties.resourceDescriptorBufferAddressSpaceSize = descriptorBufferProperties.resourceDescriptorBufferAddressSpaceSize;
 			m_deviceProperties.descriptorBufferProperties.descriptorBufferAddressSpaceSize = descriptorBufferProperties.descriptorBufferAddressSpaceSize;
+		}
+
+		// VK_EXT_mesh_shader
+		{
+			m_deviceProperties.meshShaderProperties.enabled = false; // IsExtensionAvailiable(VK_EXT_MESH_SHADER_EXTENSION_NAME);
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupTotalCount = meshShaderProperties.maxTaskWorkGroupTotalCount;
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupCount[0] = meshShaderProperties.maxTaskWorkGroupCount[0];
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupCount[1] = meshShaderProperties.maxTaskWorkGroupCount[1];
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupCount[2] = meshShaderProperties.maxTaskWorkGroupCount[2];
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupInvocations = meshShaderProperties.maxTaskWorkGroupInvocations;
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupSize[0] = meshShaderProperties.maxTaskWorkGroupSize[0];
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupSize[1] = meshShaderProperties.maxTaskWorkGroupSize[1];
+			m_deviceProperties.meshShaderProperties.maxTaskWorkGroupSize[2] = meshShaderProperties.maxTaskWorkGroupSize[2];
+			m_deviceProperties.meshShaderProperties.maxTaskPayloadSize = meshShaderProperties.maxTaskPayloadSize;
+			m_deviceProperties.meshShaderProperties.maxTaskSharedMemorySize = meshShaderProperties.maxTaskSharedMemorySize;
+			m_deviceProperties.meshShaderProperties.maxTaskPayloadAndSharedMemorySize = meshShaderProperties.maxTaskPayloadAndSharedMemorySize;
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupTotalCount = meshShaderProperties.maxMeshWorkGroupTotalCount;
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupCount[0] = meshShaderProperties.maxMeshWorkGroupCount[0];
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupCount[1] = meshShaderProperties.maxMeshWorkGroupCount[1];
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupCount[2] = meshShaderProperties.maxMeshWorkGroupCount[2];
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupInvocations = meshShaderProperties.maxMeshWorkGroupInvocations;
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupSize[0] = meshShaderProperties.maxMeshWorkGroupSize[0];
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupSize[1] = meshShaderProperties.maxMeshWorkGroupSize[1];
+			m_deviceProperties.meshShaderProperties.maxMeshWorkGroupSize[2] = meshShaderProperties.maxMeshWorkGroupSize[2];
+			m_deviceProperties.meshShaderProperties.maxMeshSharedMemorySize = meshShaderProperties.maxMeshSharedMemorySize;
+			m_deviceProperties.meshShaderProperties.maxMeshPayloadAndSharedMemorySize = meshShaderProperties.maxMeshPayloadAndSharedMemorySize;
+			m_deviceProperties.meshShaderProperties.maxMeshOutputMemorySize = meshShaderProperties.maxMeshOutputMemorySize;
+			m_deviceProperties.meshShaderProperties.maxMeshPayloadAndOutputMemorySize = meshShaderProperties.maxMeshPayloadAndOutputMemorySize;
+			m_deviceProperties.meshShaderProperties.maxMeshOutputComponents = meshShaderProperties.maxMeshOutputComponents;
+			m_deviceProperties.meshShaderProperties.maxMeshOutputVertices = meshShaderProperties.maxMeshOutputVertices;
+			m_deviceProperties.meshShaderProperties.maxMeshOutputPrimitives = meshShaderProperties.maxMeshOutputPrimitives;
+			m_deviceProperties.meshShaderProperties.maxMeshOutputLayers = meshShaderProperties.maxMeshOutputLayers;
+			m_deviceProperties.meshShaderProperties.maxMeshMultiviewViewCount = meshShaderProperties.maxMeshMultiviewViewCount;
+			m_deviceProperties.meshShaderProperties.meshOutputPerVertexGranularity = meshShaderProperties.meshOutputPerVertexGranularity;
+			m_deviceProperties.meshShaderProperties.meshOutputPerPrimitiveGranularity = meshShaderProperties.meshOutputPerPrimitiveGranularity;
+			m_deviceProperties.meshShaderProperties.maxPreferredTaskWorkGroupInvocations = meshShaderProperties.maxPreferredTaskWorkGroupInvocations;
+			m_deviceProperties.meshShaderProperties.maxPreferredMeshWorkGroupInvocations = meshShaderProperties.maxPreferredMeshWorkGroupInvocations;
+			m_deviceProperties.meshShaderProperties.prefersLocalInvocationVertexOutput = meshShaderProperties.prefersLocalInvocationVertexOutput;
+			m_deviceProperties.meshShaderProperties.prefersLocalInvocationPrimitiveOutput = meshShaderProperties.prefersLocalInvocationPrimitiveOutput;
+			m_deviceProperties.meshShaderProperties.prefersCompactVertexOutput = meshShaderProperties.prefersCompactVertexOutput;
+			m_deviceProperties.meshShaderProperties.prefersCompactPrimitiveOutput = meshShaderProperties.prefersCompactPrimitiveOutput;
 		}
 
 		FetchMemoryProperties();

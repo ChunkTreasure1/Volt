@@ -101,6 +101,11 @@ namespace Volt
 		m_commandBuffer->ClearBuffer(buffer, clearValue);
 	}
 
+	void RenderContext::UploadBufferData(Ref<RHI::StorageBuffer> buffer, const void* data, const size_t size)
+	{
+		buffer->SetData(m_commandBuffer, data, size);
+	}
+
 	void RenderContext::DispatchMeshTasks(const uint32_t groupCountX, const uint32_t groupCountY, const uint32_t groupCountZ)
 	{
 		BindDescriptorTableIfRequired();
@@ -149,6 +154,18 @@ namespace Volt
 		m_commandBuffer->DrawIndirectCount(commandsBuffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
 	}
 
+	void RenderContext::DrawIndexedIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride)
+	{
+		BindDescriptorTableIfRequired();
+
+		if (drawCount == 0)
+		{
+			return;
+		}
+
+		m_commandBuffer->DrawIndexedIndirect(commandsBuffer, offset, drawCount, stride);
+	}
+
 	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
@@ -185,6 +202,11 @@ namespace Volt
 
 		m_descriptorTableIsBound = false;
 		m_currentDescriptorTable = GetOrCreateDescriptorTable(pipeline);
+	}
+
+	void RenderContext::BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer)
+	{
+		m_commandBuffer->BindIndexBuffer(indexBuffer);
 	}
 
 	void RenderContext::SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer)

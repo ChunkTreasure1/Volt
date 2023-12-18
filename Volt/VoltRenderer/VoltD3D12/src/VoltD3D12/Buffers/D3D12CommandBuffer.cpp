@@ -114,7 +114,7 @@ namespace Volt::RHI
 
 	void D3D12CommandBuffer::DispatchIndirect(Ref<StorageBuffer> commandsBuffer, const size_t offset)
 	{
-	}+
+	}
 
 	void D3D12CommandBuffer::SetViewports(const std::vector<Viewport>& viewports)
 	{
@@ -156,6 +156,10 @@ namespace Volt::RHI
 	}
 
 	void D3D12CommandBuffer::BindIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{
+	}
+
+	void D3D12CommandBuffer::BindIndexBuffer(Ref<StorageBuffer> indexBuffer)
 	{
 	}
 

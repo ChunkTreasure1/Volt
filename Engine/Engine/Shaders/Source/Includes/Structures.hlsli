@@ -23,6 +23,15 @@ struct IndirectDrawData
     
     uint padding;
 };
+
+struct IndirectIndexedCommand
+{
+    uint indexCount;
+    uint instanceCount;
+    uint firstIndex;
+    int vertexOffset;
+    uint firstInstance;
+};
     
 ///// Rendering Structures /////
 struct CommonResourcesData

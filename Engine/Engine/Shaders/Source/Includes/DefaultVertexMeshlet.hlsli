@@ -10,6 +10,11 @@
 static const uint VERTEX_MATERIAL_DATA_SIZE = 12;
 static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 
+#define MESHLET_ID_BITS 24u
+#define MESHLET_PRIMITIVE_ID_BITS 8u
+#define MESHLET_ID_MASK ((1u << MESHLET_ID_BITS) - 1u)
+#define MESHLET_PRIMITIVE_ID_MASK ((1u << MESHLET_PRIMITIVE_ID_BITS) - 1u)
+
 struct Constants
 {
     TypedBuffer<GPUScene> gpuScene;
@@ -46,33 +51,48 @@ struct DefaultInput
     
     const uint GetTriangleID()
     {
-        return vertexId / 3;
+        return vertexId & MESHLET_PRIMITIVE_ID_MASK;
+
     }
     
     const uint GetMeshletID()
     {
-        const Constants constants = GetConstants<Constants>();
-        const DrawContext context = constants.drawContext.Load(0);
+        return (vertexId >> MESHLET_PRIMITIVE_ID_BITS) & MESHLET_ID_MASK;
+        
+        //const Constants constants = GetConstants<Constants>();
+        //const DrawContext context = constants.drawContext.Load(0);
    
-        const uint meshletId = context.drawIndexToMeshletId.Load(drawIndex);
-        return meshletId;
+        //const uint meshletId = context.drawIndexToMeshletId.Load(drawIndex);
+        //return meshletId;
     }
     
     const VertexPositionData GetVertexPositionData()
     {
         const Constants constants = GetConstants<Constants>();
         const GPUScene scene = constants.gpuScene.Load(0);
-        const DrawContext context = constants.drawContext.Load(0);
-   
-        const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
-        const uint meshletId = context.drawIndexToMeshletId.Load(drawIndex);
+       
+        const uint meshletId = GetMeshletID();
         
-        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
-        const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
-        const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
+        const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
+        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
+        const GPUMesh mesh = scene.meshesBuffer.Load(meshlet.meshId);
         
-        const uint index = mesh.meshletIndexBuffer.Load(vertexId) + meshlet.vertexOffset;
+        const uint index = mesh.meshletIndexBuffer.Load(meshlet.triangleOffset + GetTriangleID()) + meshlet.vertexOffset;
         return mesh.vertexPositionsBuffer.Load(index);
+        
+        //const Constants constants = GetConstants<Constants>();
+        //const GPUScene scene = constants.gpuScene.Load(0);
+        //const DrawContext context = constants.drawContext.Load(0);
+   
+        //const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
+        //const uint meshletId = context.drawIndexToMeshletId.Load(drawIndex);
+        
+        //const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
+        //const GPUMesh mesh = scene.meshesBuffer.Load(drawData.meshId);
+        //const Meshlet meshlet = mesh.meshletsBuffer.Load(meshletId);
+        
+        //const uint index = mesh.meshletIndexBuffer.Load(vertexId) + meshlet.vertexOffset;
+        //return mesh.vertexPositionsBuffer.Load(index);
     }
     
     const VertexMaterialData GetVertexMaterialData()
@@ -94,14 +114,23 @@ struct DefaultInput
 
     const float4x4 GetTransform()
     {
-        const Constants constants = GetConstants<Constants>();
+        const Constants constants = GetConstants < Constants > ();
         const GPUScene scene = constants.gpuScene.Load(0);
-        const DrawContext context = constants.drawContext.Load(0);
-   
-        const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
-        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
+       
+        const uint meshletId = GetMeshletID();
         
+        const Meshlet meshlet = scene.meshletsBuffer.Load(meshletId);
+        const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(meshlet.objectId);
         return drawData.transform;
+        
+        //const Constants constants = GetConstants<Constants>();
+        //const GPUScene scene = constants.gpuScene.Load(0);
+        //const DrawContext context = constants.drawContext.Load(0);
+   
+        //const uint objectId = context.drawIndexToObjectId.Load(drawIndex);
+        //const ObjectDrawData drawData = scene.objectDrawDataBuffer.Load(objectId);
+        
+        //return drawData.transform;
     }
     
     //const GPUMesh GetMesh()

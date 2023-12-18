@@ -27,6 +27,9 @@ namespace Volt
 		uint32_t triangleOffset;
 		uint32_t vertexCount;
 		uint32_t triangleCount;
+
+		uint32_t objectId;
+		uint32_t meshId;
 	};
 
 	class Mesh : public Asset
