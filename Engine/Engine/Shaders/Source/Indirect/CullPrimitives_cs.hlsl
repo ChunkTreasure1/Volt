@@ -13,18 +13,15 @@
 
 struct Constants
 {
-    RWTypedBuffer<uint> survivingMeshlets;
-    RWTypedBuffer<uint> survivingMeshletCount;
-    
-    TypedBuffer<uint> meshletCount;
-    TypedBuffer<uint2> meshletToObjectIdAndOffset;
+    TypedBuffer<uint> survivingMeshlets;
+    TypedBuffer<uint> survivingMeshletCount;
     
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer<CameraData> cameraData;
 };
 
-[numthreads(256, 1, 1)]
+[numthreads(64, 1, 1)]
 void main(uint threadId : SV_DispatchThreadID)
 {
     const Constants constants = GetConstants<Constants>();

@@ -5,11 +5,11 @@
 
 struct Constants
 {
-    RWTypedBuffer<uint> survivingMeshlets;
-    RWTypedBuffer<uint> survivingMeshletCount;
+    RWTypedBuffer<uint> meshletCount;
+    RWTypedBuffer<uint2> meshletToObjectIdAndOffset;
     
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<GPUMesh> gpuMeshes;
+    TypedBuffer <GPUMesh>meshBuffer;
     TypedBuffer<CameraData> cameraData;
     
     uint objectCount;
@@ -46,18 +46,19 @@ void main(uint threadId : SV_DispatchThreadID)
     }
  
     const ObjectDrawData objectDrawData = constants.objectDrawDataBuffer.Load(threadId);
-    const GPUMesh gpuMesh = constants.gpuMeshes.Load(objectDrawData.meshId);
     
     bool visible = IsInFrustum(constants, objectDrawData.boundingSphereCenter, objectDrawData.boundingSphereRadius);
     
     if (visible)
     {
-        uint offset;
-        constants.survivingMeshletCount.InterlockedAdd(0, gpuMesh.meshletCount, offset);
+        const GPUMesh mesh = constants.meshBuffer.Load(objectDrawData.meshId);
         
-        for (uint i = 0; i < gpuMesh.meshletCount; ++i)
+        uint meshletOffset;
+        constants.meshletCount.InterlockedAdd(0, mesh.meshletCount, meshletOffset);
+        
+        for (uint i = 0; i < mesh.meshletCount; ++i)
         {
-            constants.survivingMeshlets.Store(offset + i, objectDrawData.meshletStartOffset + i);
+            constants.meshletToObjectIdAndOffset.Store(meshletOffset + i, uint2(threadId, meshletOffset));
         }
     }
 }

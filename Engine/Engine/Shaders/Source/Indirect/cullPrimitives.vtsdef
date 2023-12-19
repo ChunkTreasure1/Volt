@@ -1,0 +1,4 @@
+name: "CullPrimitives"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Indirect/CullPrimitives_cs.hlsl"

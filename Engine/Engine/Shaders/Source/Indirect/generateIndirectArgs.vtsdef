@@ -1,0 +1,4 @@
+name: "GenerateIndirectArgs"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Indirect/GenerateIndirectArgs_cs.hlsl"

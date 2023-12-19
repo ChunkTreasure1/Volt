@@ -75,8 +75,13 @@ namespace Volt
 		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		
+		void AddGenerateIndirectArgsPass(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, RenderGraphResourceHandle indirectArgsBuffer, uint32_t groupSize);
+
 		void AddCullObjectsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void AddCullMeshletsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
+		void AddCullPrimitivesPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
+
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
@@ -125,6 +130,7 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_indirectSetupMeshletsPipeline;
 		Ref<RHI::ComputePipeline> m_cullObjectsPipeline;
 		Ref<RHI::ComputePipeline> m_cullMeshletsPipeline;
+		Ref<RHI::ComputePipeline> m_generateIndirectArgsPipeline;
 		///////////
 
 		Ref<RHI::ComputePipeline> m_prefixSumPipeline;

@@ -16,7 +16,7 @@ float3 GetRandomColor(uint _seed)
 
 uint DivideRoundUp(uint dividend, uint divisor)
 {
-    return (dividend - 1) / divisor + 1;
+    return (dividend + divisor - 1) / divisor;
 }
 
 float4x4 ToFloat4x4(float4x3 transform)

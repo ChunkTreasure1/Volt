@@ -33,14 +33,14 @@ namespace Volt
 
 	struct CullObjectsData
 	{
-		RenderGraphResourceHandle survivingMeshletsBuffer;
-		RenderGraphResourceHandle survivingMeshletCountBuffer;
+		RenderGraphResourceHandle meshletToObjectIdAndOffset;
+		RenderGraphResourceHandle meshletCount;
 	};
 
 	struct CullMeshletsData
 	{
-		RenderGraphResourceHandle compactedIndexBuffer;
-		RenderGraphResourceHandle drawCommandsBuffer;
+		RenderGraphResourceHandle survivingMeshlets;
+		RenderGraphResourceHandle survivingMeshletCount;
 	};
 
 	struct UniformBuffersData
