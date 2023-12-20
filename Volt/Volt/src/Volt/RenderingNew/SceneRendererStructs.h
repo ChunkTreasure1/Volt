@@ -43,6 +43,13 @@ namespace Volt
 		RenderGraphResourceHandle survivingMeshletCount;
 	};
 
+
+	struct CullPrimitivesData
+	{
+		RenderGraphResourceHandle indexBuffer;
+		RenderGraphResourceHandle drawCommand;
+	};
+
 	struct UniformBuffersData
 	{
 		RenderGraphResourceHandle cameraDataBuffer;
@@ -52,6 +59,12 @@ namespace Volt
 	{
 		RenderGraphResourceHandle depth;
 		RenderGraphResourceHandle normals;
+	};
+
+	struct TestRenderData
+	{
+		RenderGraphResourceHandle outputTexture;
+		RenderGraphResourceHandle depth;
 	};
 
 	struct VisibilityBufferData

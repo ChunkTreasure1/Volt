@@ -47,7 +47,8 @@ void main(uint threadId : SV_DispatchThreadID)
  
     const ObjectDrawData objectDrawData = constants.objectDrawDataBuffer.Load(threadId);
     
-    bool visible = IsInFrustum(constants, objectDrawData.boundingSphereCenter, objectDrawData.boundingSphereRadius);
+    bool visible = true;
+    //IsInFrustum(constants, objectDrawData.boundingSphereCenter, objectDrawData.boundingSphereRadius);
     
     if (visible)
     {

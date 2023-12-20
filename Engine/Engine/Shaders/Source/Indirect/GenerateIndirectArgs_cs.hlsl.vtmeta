@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 15766634424732251093
+  filePath: Engine/Shaders/Source/Indirect/GenerateIndirectArgs_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

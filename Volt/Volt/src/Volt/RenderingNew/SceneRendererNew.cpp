@@ -148,6 +148,9 @@ namespace Volt
 		{
 			AddCullObjectsPass(renderGraph, rgBlackboard, camera);
 			AddCullMeshletsPass(renderGraph, rgBlackboard, camera);
+			AddCullPrimitivesPass(renderGraph, rgBlackboard, camera);
+		
+			AddTestRenderPass(renderGraph, rgBlackboard);
 		}
 
 		//AddSetupIndirectMeshletsPasses(renderGraph, rgBlackboard);
@@ -282,6 +285,7 @@ namespace Volt
 			m_indirectSetupMeshletsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("IndirectSetupMeshlets"));
 			m_cullObjectsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullObjects"));
 			m_cullMeshletsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullMeshlets"));
+			m_cullPrimitivesPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullPrimitives"));
 			m_generateIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateIndirectArgs"));
 		}
 	}
@@ -397,6 +401,8 @@ namespace Volt
 			}
 
 			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+		
+			builder.SetIsComputePass();
 		},
 		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
 		{
@@ -435,6 +441,8 @@ namespace Volt
 		{
 			builder.ReadResource(countBuffer);
 			builder.WriteResource(indirectArgsBuffer);
+
+			builder.SetIsComputePass();
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -476,6 +484,8 @@ namespace Volt
 			builder.ReadResource(cullObjectsData.meshletCount);
 			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
 			builder.ReadResource(argsBufferHandle, RHI::ResourceState::IndirectArgument);
+			
+			builder.SetIsComputePass();
 		},
 		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
@@ -497,7 +507,115 @@ namespace Volt
 
 	void SceneRendererNew::AddCullPrimitivesPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
 	{
+		auto renderScene = m_scene->GetRenderScene();
 
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+		const auto& cullMeshletsData = blackboard.Get<CullMeshletsData>();
+
+		const auto argsDesc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Cull Primitives Indirect Args");
+		RenderGraphResourceHandle argsBufferHandle = renderGraph.CreateBuffer(argsDesc);
+
+		AddGenerateIndirectArgsPass(renderGraph, cullMeshletsData.survivingMeshletCount, argsBufferHandle, 1);
+
+		blackboard.Add<CullPrimitivesData>() = renderGraph.AddPass<CullPrimitivesData>("Cull Primitives",
+		[&](RenderGraph::Builder& builder, CullPrimitivesData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(std::max(renderScene->GetIndexCount(), 1u), RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer, RHI::MemoryUsage::GPU, "Meshlet Index Buffer");
+				data.indexBuffer = builder.CreateBuffer(desc);
+			}
+
+			{
+				const auto desc = RGUtils::CreateBufferDesc<RHI::IndirectIndexedCommand>(1, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Meshlet Draw Command");
+				data.drawCommand = builder.CreateBuffer(desc);
+			}
+
+			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+			builder.ReadResource(cullMeshletsData.survivingMeshlets);
+			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
+			builder.ReadResource(argsBufferHandle, RHI::ResourceState::IndirectArgument);
+		
+			builder.SetIsComputePass();
+		},
+		[=](const CullPrimitivesData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			{
+				RHI::IndirectIndexedCommand command{};
+				command.indexCount = 0;
+				command.firstInstance = 0;
+				command.firstIndex = 0;
+				command.vertexOffset = 0;
+				command.instanceCount = 1;
+				context.UploadBufferData(resources.GetBufferRaw(data.drawCommand), &command, sizeof(RHI::IndirectIndexedCommand));
+			}
+
+			context.BindPipeline(m_cullPrimitivesPipeline);
+			context.SetConstant(resources.GetBuffer(data.indexBuffer));
+			context.SetConstant(resources.GetBuffer(data.drawCommand));
+			context.SetConstant(resources.GetBuffer(cullMeshletsData.survivingMeshlets));
+			context.SetConstant(resources.GetBuffer(cullMeshletsData.survivingMeshletCount));
+			context.SetConstant(renderScene->GetGPUMeshletsBuffer().GetResourceHandle());
+			context.SetConstant(renderScene->GetGPUMeshesBuffer().GetResourceHandle());
+			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
+			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+
+			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
+			context.DispatchIndirect(argsBuffer, 0);
+		});
+	}
+
+	void SceneRendererNew::AddTestRenderPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& cullPrimitivesData = blackboard.Get<CullPrimitivesData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
+
+		blackboard.Add<TestRenderData>() = renderGraph.AddPass<TestRenderData>("Test Render Pass",
+		[&](RenderGraph::Builder& builder, TestRenderData& data)
+		{
+			data.outputTexture = renderGraph.AddExternalImage2D(m_outputImage, "Output");
+
+			RenderGraphImageDesc desc{};
+			desc.width = m_width;
+			desc.height = m_height;
+			desc.format = RHI::PixelFormat::D32_SFLOAT;
+			desc.usage = RHI::ImageUsage::Attachment;
+			desc.name = "Depth";
+			data.depth = builder.CreateImage2D(desc);
+
+			builder.WriteResource(data.outputTexture);
+			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+			builder.ReadResource(externalBuffers.drawContextBuffer);
+			builder.ReadResource(cullPrimitivesData.indexBuffer, RHI::ResourceState::IndexBuffer);
+			builder.ReadResource(cullPrimitivesData.drawCommand, RHI::ResourceState::IndirectArgument);
+			builder.SetHasSideEffect();
+		},
+		[=](const TestRenderData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Weak<RHI::ImageView> colorView = resources.GetImage2DView(data.outputTexture);
+			Weak<RHI::ImageView> depthView = resources.GetImage2DView(data.depth);
+
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { colorView, depthView});
+
+			context.BeginRendering(info);
+			context.BindPipeline(m_preDepthPipeline);
+
+			const auto gpuSceneHandle = m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle();
+			const auto drawContextHandle = resources.GetBuffer(externalBuffers.drawContextBuffer);
+			const auto cameraDataHandle = resources.GetBuffer(uniformBuffers.cameraDataBuffer);
+
+			const auto indirectCommands = resources.GetBufferRaw(cullPrimitivesData.drawCommand);
+			const auto indexBuffer = resources.GetBufferRaw(cullPrimitivesData.indexBuffer);
+
+			context.BindIndexBuffer(indexBuffer);
+			context.SetConstant(gpuSceneHandle);
+			context.SetConstant(drawContextHandle);
+			context.SetConstant(cameraDataHandle);
+
+			context.DrawIndexedIndirect(indirectCommands, 0, 1, sizeof(RHI::IndirectIndexedCommand));
+
+			context.EndRendering();
+		});
 	}
 
 	void SceneRendererNew::AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)

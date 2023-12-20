@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 16886781851272798501
+  filePath: Engine/Shaders/Source/Indirect/CullPrimitives_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

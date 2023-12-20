@@ -3,14 +3,6 @@
 
 #include "GPUScene.hlsli"
 
-#define ITERATIONS_PER_GROUP 2
-#define THREAD_GROUP_SIZE 32
-
-#define MESHLET_ID_BITS 24u
-#define MESHLET_PRIMITIVE_ID_BITS 8u
-#define MESHLET_ID_MASK ((1u << MESHLET_ID_BITS) - 1u)
-#define MESHLET_PRIMITIVE_ID_MASK ((1u << MESHLET_PRIMITIVE_ID_BITS) - 1u)
-
 struct Constants
 {
     RWTypedBuffer<uint> survivingMeshlets;

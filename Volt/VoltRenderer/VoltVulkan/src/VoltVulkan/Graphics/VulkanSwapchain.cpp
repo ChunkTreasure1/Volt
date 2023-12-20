@@ -149,7 +149,6 @@ namespace Volt::RHI
 		}
 
 		VT_PROFILE_GPU_FLIP(m_swapchain);
-		VT_PROFILE_CATEGORY("Present", Optick::Category::Wait);
 
 		// Present to screen
 		{

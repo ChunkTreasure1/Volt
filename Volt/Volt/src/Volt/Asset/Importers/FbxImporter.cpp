@@ -80,13 +80,13 @@ namespace Volt
 
 		if (tgaMesh.Materials.empty())
 		{
-			mesh->m_material->CreateSubMaterial(ShaderMap::Get("Illum"));
+			mesh->m_material->CreateSubMaterial(ShaderMap::Get("VisibilityBuffer"));
 		}
 		else
 		{
 			for (const auto& material : tgaMesh.Materials)
 			{
-				mesh->m_material->CreateSubMaterial(ShaderMap::Get("Illum"), material.MaterialName);
+				mesh->m_material->CreateSubMaterial(ShaderMap::Get("VisibilityBuffer"), material.MaterialName);
 			}
 		}
 

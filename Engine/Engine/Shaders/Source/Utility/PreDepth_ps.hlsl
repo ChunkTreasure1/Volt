@@ -10,6 +10,7 @@ struct Input
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
+    float4 color : COLOR;
 };
 
 Output main(Input input)
@@ -17,7 +18,7 @@ Output main(Input input)
     float3 normal = normalize(input.normal);
     
     Output output;
-    output.normal = float4(normal, 1.f);    
+    output.normal = input.color; //float4(normal, 1.f);    
 
     return output;
 }

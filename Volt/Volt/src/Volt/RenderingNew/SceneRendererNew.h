@@ -82,6 +82,8 @@ namespace Volt
 		void AddCullMeshletsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void AddCullPrimitivesPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 
+		void AddTestRenderPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
@@ -130,6 +132,7 @@ namespace Volt
 		Ref<RHI::ComputePipeline> m_indirectSetupMeshletsPipeline;
 		Ref<RHI::ComputePipeline> m_cullObjectsPipeline;
 		Ref<RHI::ComputePipeline> m_cullMeshletsPipeline;
+		Ref<RHI::ComputePipeline> m_cullPrimitivesPipeline;
 		Ref<RHI::ComputePipeline> m_generateIndirectArgsPipeline;
 		///////////
 
