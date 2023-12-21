@@ -81,7 +81,7 @@ namespace Volt::RHI
 		}
 
 		void* mappedPtr = stagingAllocation->Map<void>();
-		memcpy_s(mappedPtr, m_byteSize, data, size);
+		memcpy_s(mappedPtr, size, data, size);
 		stagingAllocation->Unmap();
 
 		const Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create();

@@ -90,32 +90,41 @@ namespace Volt
 		}
 	}
 
-	inline static BoundingSphere GetBoundingSphereFromVertices(const std::vector<Vertex>& vertices)
+	inline static BoundingSphere GetBoundingSphereFromVertices(const Vertex* vertexPtr, const size_t size)
 	{
 		glm::vec3 minVertex(std::numeric_limits<float>::max());
-		glm::vec3 maxVertex(-std::numeric_limits<float>::max());
+		glm::vec3 maxVertex(std::numeric_limits<float>::min());
 
-		for (const auto& vertex : vertices)
+		for (size_t i = 0; i < size; i++)
 		{
+			const auto& vertex = vertexPtr[i];
+
 			minVertex = glm::min(minVertex, vertex.position);
 			maxVertex = glm::max(maxVertex, vertex.position);
 		}
 
-		const glm::vec3 center = (minVertex + maxVertex) * 0.5f;
+		glm::vec3 extents = (maxVertex - minVertex) * 0.5f;
+		glm::vec3 origin = extents + minVertex;
 
 		float radius = 0.0f;
-		for (const auto& vertex : vertices)
+		for (size_t i = 0; i < size; i++)
 		{
-			const float distanceSquared = glm::length2(vertex.position - center);
-			if (distanceSquared > radius)
-			{
-				radius = distanceSquared;
-			}
+			const auto& vertex = vertexPtr[i];
+
+			glm::vec3 offset = vertex.position - origin;
+			float distance = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
+
+			radius = std::max(radius, distance);
 		}
 
 		radius = std::sqrt(radius);
 
-		return { center, radius };
+		return { origin, radius };
+	}
+
+	inline static BoundingSphere GetBoundingSphereFromVertices(const std::vector<Vertex>& vertices)
+	{
+		return GetBoundingSphereFromVertices(vertices.data(), vertices.size());
 	}
 
 	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial)
@@ -162,122 +171,30 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(!m_indices.empty() && !m_vertices.empty(), "Indices and vertices must not be empty!");
 
-		//m_subMeshes.resize(1);
-
-		//auto extractedVertices = ExtractSubMeshVertices();
-		//auto extractedIndices = ExtractSubMeshIndices();
-
 		constexpr size_t MAX_VERTEX_COUNT = 64;
 		constexpr size_t MAX_TRIANGLE_COUNT = 64;
 		constexpr float CONE_WEIGHT = 0.f;
-
-		// Meshlets
-		//{
-		//	//for (size_t i = 0; i < extractedVertices.size(); i++)
-		//	//{
-		//	//	auto& currentVertices = extractedVertices.at(i);
-		//	//	auto& currentIndices = extractedIndices.at(i);
-
-		//	//	meshopt_optimizeOverdraw(currentIndices.data(), currentIndices.data(), currentIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), 1.05f);
-		//	//}
-
-
-		//	std::vector<Vertex> meshletVertices;
-
-		//	for (size_t i = 0; i < extractedVertices.size(); i++)
-		//	{
-		//		auto& currentVertices = extractedVertices.at(i);
-		//		auto& currentIndices = extractedIndices.at(i);
-
-		//		const size_t maxMeshlets = meshopt_buildMeshletsBound(currentIndices.size(), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
-
-		//		std::vector<meshopt_Meshlet> meshlets{ maxMeshlets };
-		//		std::vector<uint32_t> meshletVertexRemapping(maxMeshlets * MAX_VERTEX_COUNT);
-		//		std::vector<uint8_t> meshletIndices(maxMeshlets * MAX_TRIANGLE_COUNT * 3);
-
-		//		const size_t meshletCount = meshopt_buildMeshlets(meshlets.data(), meshletVertexRemapping.data(), meshletIndices.data(), currentIndices.data(), currentIndices.size(),
-		//			&currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT);
-
-		//		const meshopt_Meshlet& last = meshlets.at(meshletCount - 1);
-		//		meshletVertexRemapping.resize(last.vertex_offset + last.vertex_count);
-		//		meshletIndices.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
-		//		meshlets.resize(meshletCount);
-
-		//		const uint32_t vertexStartOffset = static_cast<uint32_t>(meshletVertices.size());
-		//		meshletVertices.resize(meshletVertices.size() + meshletVertexRemapping.size());
-
-		//		for (uint32_t index = 0; index < static_cast<uint32_t>(meshletVertexRemapping.size()); index++)
-		//		{
-		//			meshletVertices[vertexStartOffset + index] = currentVertices[meshletVertexRemapping.at(index)];
-		//		}
-
-		//		const size_t meshletIndexOffset = m_meshletIndices.size();
-
-		//		for (const auto& meshlet : meshlets)
-		//		{
-		//			for (uint32_t index = 0; index < meshlet.triangle_count * 3; index++)
-		//			{
-		//				const uint32_t triIndex = meshlet.triangle_offset + index;
-		//				m_meshletIndices.emplace_back(meshletIndices.at(triIndex));
-		//			}
-		//		}
-
-		//		const size_t meshletOffset = m_meshlets.size();
-		//		m_meshlets.reserve(meshletOffset + meshletCount);
-
-		//		auto& subMesh = m_subMeshes.at(i);
-		//		subMesh.meshletStartOffset = static_cast<uint32_t>(meshletOffset);
-		//		subMesh.meshletCount = static_cast<uint32_t>(meshlets.size());
-		//		subMesh.meshletIndexStartOffset = static_cast<uint32_t>(meshletIndexOffset);
-		//		subMesh.vertexStartOffset = vertexStartOffset;
-
-		//		uint32_t meshletTriOffset = 0;
-		//		for (const auto& meshlet : meshlets)
-		//		{
-		//			auto& newMeshlet = m_meshlets.emplace_back();
-		//			newMeshlet.vertexOffset = meshlet.vertex_offset;
-		//			newMeshlet.vertexCount = meshlet.vertex_count;
-		//			newMeshlet.triangleOffset = meshletTriOffset;
-		//			newMeshlet.triangleCount = meshlet.triangle_count;
-
-		//			meshletTriOffset += meshlet.triangle_count * 3;
-		//		}
-		//	}
-
-		//	m_vertices.clear();
-		//	m_indices.clear();
-
-		//	for (size_t i = 0; i < extractedVertices.size(); i++)
-		//	{
-		//		auto& currentIndices = extractedIndices.at(i);
-		//		auto& currentSubMesh = m_subMeshes.at(i);
-
-		//		auto& gpuMesh = m_gpuMeshes.emplace_back();
-		//		gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
-		//		gpuMesh.meshletStartOffset = currentSubMesh.meshletStartOffset;
-		//		gpuMesh.meshletCount = currentSubMesh.meshletCount;
-		//		gpuMesh.meshletIndexStartOffset = currentSubMesh.meshletIndexStartOffset;
-		//		m_indices.insert(m_indices.end(), currentIndices.begin(), currentIndices.end());
-		//	}
-
-		//	m_vertices = meshletVertices;
-		//}
 
 		std::vector<Vertex> finalVertices;
 		std::vector<uint32_t> finalIndices;
 
 		for (uint32_t si = 0; auto& subMesh : m_subMeshes)
 		{
+			std::vector<uint32_t> tempIndices;
+			tempIndices.resize(m_indices.size());
+
+			const uint32_t* indexStartPtr = &m_indices.at(subMesh.indexStartOffset);
+			const Vertex* vertexStartPtr = &m_vertices.at(subMesh.vertexStartOffset);
+
+			meshopt_optimizeOverdraw(tempIndices.data(), indexStartPtr, subMesh.indexCount, &vertexStartPtr[0].position.x, subMesh.vertexCount, sizeof(Vertex), 1.05f);
+
 			const size_t maxMeshletCount = meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
 
 			std::vector<meshopt_Meshlet> tempMeshlets(maxMeshletCount);
 			std::vector<uint32_t> meshletVertexRemap(maxMeshletCount * MAX_VERTEX_COUNT);
 			std::vector<uint8_t> meshletIndices(maxMeshletCount * MAX_TRIANGLE_COUNT * 3);
-
-			const uint32_t* indexStartPtr = &m_indices.at(subMesh.indexStartOffset);
-			const Vertex* vertexStartPtr = &m_vertices.at(subMesh.vertexStartOffset);
 			
-			const size_t meshletCount = meshopt_buildMeshlets(tempMeshlets.data(), meshletVertexRemap.data(), meshletIndices.data(), indexStartPtr, subMesh.indexCount,
+			const size_t meshletCount = meshopt_buildMeshlets(tempMeshlets.data(), meshletVertexRemap.data(), meshletIndices.data(), tempIndices.data(), subMesh.indexCount,
 				&vertexStartPtr[0].position.x, subMesh.vertexCount, sizeof(Vertex), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT);
 
 			tempMeshlets.resize(meshletCount);
@@ -329,6 +246,11 @@ namespace Volt
 				newMeshlet.vertexCount = meshlet.vertex_count;
 				newMeshlet.triangleOffset = triangleOffset;
 				newMeshlet.triangleCount = meshlet.triangle_count;
+
+				BoundingSphere boundingSphere = GetBoundingSphereFromVertices(&finalVertices[meshlet.vertex_offset], meshlet.vertex_count);
+				newMeshlet.boundingSphereCenter = boundingSphere.center;
+				newMeshlet.boundingSphereRadius = boundingSphere.radius;
+
 				triangleOffset += newMeshlet.triangleCount * 3;
 			}
 
@@ -344,68 +266,6 @@ namespace Volt
 
 		m_meshletIndices = finalIndices;
 		m_meshletVertices = finalVertices;
-
-		//// Optimize mesh
-		//{
-		//	for (size_t i = 0; i < extractedVertices.size(); i++)
-		//	{
-		//		auto& currentVertices = extractedVertices.at(i);
-		//		auto& currentIndices = extractedIndices.at(i);
-
-		//		meshopt_optimizeVertexCache(currentIndices.data(), currentIndices.data(), currentIndices.size(), currentVertices.size());
-		//		meshopt_optimizeVertexFetch(currentVertices.data(), currentIndices.data(), currentIndices.size(), currentVertices.data(), currentVertices.size(), sizeof(Vertex));
-		//	}
-		//}
-
-		//// Create LODs
-		//{
-		//	m_vertices.clear();
-		//	m_indices.clear();
-
-		//	// For every sub mesh
-		//	for (size_t i = 0; i < extractedVertices.size(); i++)
-		//	{
-		//		auto& currentVertices = extractedVertices.at(i);
-		//		auto& currentIndices = extractedIndices.at(i);
-		//		auto& currentSubMesh = m_subMeshes.at(i);
-
-		//		auto& gpuMesh = m_gpuMeshes.emplace_back();
-		//		gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
-
-		//		std::vector<uint32_t> lodIndices = currentIndices;
-		//		std::vector<uint32_t> resultIndices;
-
-		//		currentSubMesh.indexStartOffset = uint32_t(m_indices.size());
-
-		//		while (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
-		//		{
-		//			GPUMeshLOD& lod = gpuMesh.lods[gpuMesh.lodCount++];
-
-		//			lod.indexOffset = uint32_t(m_indices.size() + resultIndices.size());
-		//			lod.indexCount = uint32_t(lodIndices.size());
-
-		//			resultIndices.insert(resultIndices.end(), lodIndices.begin(), lodIndices.end());
-
-		//			if (gpuMesh.lodCount < GPUMesh::MAX_LOD_COUNT)
-		//			{
-		//				size_t nextIndicesTarget = size_t(double(lodIndices.size()) * 0.75);
-		//				size_t nextIndices = meshopt_simplify(lodIndices.data(), lodIndices.data(), lodIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), nextIndicesTarget, 1e-2f);
-
-		//				// Error bound reached
-		//				if (nextIndices == lodIndices.size())
-		//				{
-		//					break;
-		//				}
-
-		//				lodIndices.resize(nextIndices);
-		//				meshopt_optimizeVertexCache(lodIndices.data(), lodIndices.data(), lodIndices.size(), currentVertices.size());
-		//			}
-		//		}
-
-		//		m_vertices.insert(m_vertices.end(), currentVertices.begin(), currentVertices.end());
-		//		m_indices.insert(m_indices.end(), resultIndices.begin(), resultIndices.end());
-		//	}
-		//}
 
 		const std::string meshName = assetName;
 
@@ -490,14 +350,14 @@ namespace Volt
 		m_boundingBox = BoundingBox{ max, min };
 		m_boundingSphere = GetBoundingSphereFromVertices(m_vertices);
 
-		//for (uint32_t i = 0; auto & subMesh : m_subMeshes)
-		//{
-		//	std::vector<Vertex> subMeshVertices;
-		//	subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertices.begin(), subMesh.vertexStartOffset), std::next(m_vertices.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
+		for (uint32_t i = 0; auto & subMesh : m_subMeshes)
+		{
+			std::vector<Vertex> subMeshVertices;
+			subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertices.begin(), subMesh.vertexStartOffset), std::next(m_vertices.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
 
-		//	m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
-		//	i++;
-		//}
+			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
+			i++;
+		}
 	}
 
 	const std::vector<EncodedVertex> Mesh::GetEncodedVertices() const

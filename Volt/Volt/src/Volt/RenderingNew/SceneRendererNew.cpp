@@ -500,6 +500,17 @@ namespace Volt
 			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
 			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
 
+			const auto projection = camera->GetProjection();
+			const glm::mat4 projTranspose = glm::transpose(projection);
+
+			const glm::vec4 frustumX = Math::NormalizePlane(projTranspose[3] + projTranspose[0]);
+			const glm::vec4 frustumY = Math::NormalizePlane(projTranspose[3] + projTranspose[1]);
+
+			context.SetConstant(frustumX.x);
+			context.SetConstant(frustumX.z);
+			context.SetConstant(frustumY.y);
+			context.SetConstant(frustumY.z);
+
 			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
 			context.DispatchIndirect(argsBuffer, 0);
 		});

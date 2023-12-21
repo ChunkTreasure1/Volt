@@ -282,7 +282,7 @@ namespace Volt
 
 			const glm::mat4 transform = entity.GetTransform() * subMesh.transform;
 
-			BoundingSphere boundingSphere = renderObject.mesh->GetBoundingSphere();
+			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSpheres().at(renderObject.subMeshIndex);
 			const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
 			const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
 			const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
@@ -301,35 +301,6 @@ namespace Volt
 	{
 		m_meshCommands.clear();
 
-#if 0
-		for (uint32_t index = 0; const auto& obj : m_renderObjects)
-		{
-			Entity entity{ obj.entity, m_scene };
-
-			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
-			auto& newCommand = m_meshCommands.emplace_back();
-
-			//const size_t meshSubMeshHash = Utility::HashMeshSubMesh(obj.mesh, subMesh);
-			//if (meshSubMeshIndexMap.contains(meshSubMeshHash))
-			//{
-			//	const uint32_t cmdIndex = meshSubMeshIndexMap.at(meshSubMeshHash);
-			//	indirectCommands[cmdIndex].command.instanceCount++;
-			//}
-			//else
-			{
-				//meshSubMeshIndexMap[meshSubMeshHash] = m_currentActiveCommandCount;
-
-				newCommand.command.vertexCount = subMesh.indexCount;
-				newCommand.command.instanceCount = 1;
-				newCommand.command.firstVertex = subMesh.indexStartOffset;
-				newCommand.command.firstInstance = 0;
-				newCommand.objectId = index;
-				newCommand.meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
-			}
-
-			index++;
-		}
-#else
 		for (uint32_t index = 0; const auto & obj : m_renderObjects)
 		{
 			Entity entity{ obj.entity, m_scene };
@@ -353,7 +324,6 @@ namespace Volt
 
 			index++;
 		}
-#endif
 
 		// Mesh shader commands
 		for (uint32_t index = 0; const auto & obj : m_renderObjects)
@@ -397,6 +367,8 @@ namespace Volt
 				newMeshlet.triangleCount = currentMeshlet.triangleCount;
 				newMeshlet.objectId = index;
 				newMeshlet.meshId = meshId;
+				newMeshlet.boundingSphereRadius = currentMeshlet.boundingSphereRadius;
+				newMeshlet.boundingSphereCenter = currentMeshlet.boundingSphereCenter;
 
 				m_currentIndexCount += newMeshlet.triangleCount * 3;
 			}

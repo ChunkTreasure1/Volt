@@ -43,9 +43,6 @@ namespace Volt::RHI
 
 			assert(pushConstantRange.size <= 128 && "Push constant range must be less or equal to 128 bytes to support all platforms!");
 
-			// #TODO_Ivar: Remove
-			//const auto& setLayouts = vulkanShader->GetPaddedDescriptorSetLayouts();
-
 			const auto descriptorSetLayout = VulkanBindlessManager::GetGlobalDescriptorSetLayout();
 
 			VkPipelineLayoutCreateInfo info{};

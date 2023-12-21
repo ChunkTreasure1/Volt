@@ -30,6 +30,10 @@ struct Meshlet
     
     uint objectId;
     uint meshId;
+    uint2 padding;
+    
+    float3 boundingSphereCenter;
+    float boundingSphereRadius;
 };
 
 struct GPUMesh
@@ -60,8 +64,8 @@ struct ObjectDrawData
     uint meshletStartOffset;
     uint padding;
     
-    float boundingSphereRadius;
     float3 boundingSphereCenter;
+    float boundingSphereRadius;
 };
 
 struct GPUScene

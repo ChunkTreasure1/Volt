@@ -43,8 +43,8 @@ namespace Volt
 		uint32_t meshletStartOffset;
 		uint32_t padding;
 
-		float boundingSphereRadius;
 		glm::vec3 boundingSphereCenter;
+		float boundingSphereRadius;
 	};
 
 	struct GPUMaterialNew

@@ -30,6 +30,10 @@ namespace Volt
 
 		uint32_t objectId;
 		uint32_t meshId;
+		glm::uvec2 padding;
+
+		glm::vec3 boundingSphereCenter;
+		float boundingSphereRadius;
 	};
 
 	class Mesh : public Asset
