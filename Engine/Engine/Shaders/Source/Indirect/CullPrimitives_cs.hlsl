@@ -9,7 +9,7 @@
 #define MESHLET_ID_BITS 24u
 #define MESHLET_PRIMITIVE_BITS 8u
 #define MESHLET_ID_MASK ((1u << MESHLET_ID_BITS) - 1u)
-#define MESHLET_PRIMITIVE_ID_MASK ((1u << MESHLET_PRIMITIVE_BITS) - 1u)
+#define MESHLET_PRIMITIVE_MASK ((1u << MESHLET_PRIMITIVE_BITS) - 1u)
 
 struct Constants
 {
@@ -26,37 +26,46 @@ struct Constants
 };
 
 groupshared uint m_indexOffset;
+groupshared Meshlet m_meshlet;
+groupshared GPUMesh m_mesh;
+groupshared uint m_meshletIndex;
 
 [numthreads(64, 1, 1)]
-void main(uint threadId : SV_DispatchThreadID, uint2 groupId : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
+void main(uint2 groupId : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
 {
     const Constants constants = GetConstants<Constants>();
     
-    const uint meshletIndex = constants.survivingMeshlets.Load(groupId.x);
-    const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
+    if (groupThreadId == 0)
+    {
+        m_meshletIndex = constants.survivingMeshlets.Load(groupId.x);
+        m_meshlet = constants.gpuMeshlets.Load(m_meshletIndex);
+        m_mesh = constants.gpuMeshes.Load(m_meshlet.meshId);
+    }
+
+    GroupMemoryBarrierWithGroupSync();
     
-    if (groupThreadId >= meshlet.triangleCount)
+    if (groupThreadId >= m_meshlet.triangleCount)
     {
         return;
     }
     
-    const GPUMesh gpuMesh = constants.gpuMeshes.Load(meshlet.meshId);
-    const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(meshlet.objectId);
+    //const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(meshlet.objectId);
     
     const uint triangleId = groupThreadId * 3;
-    
-    GroupMemoryBarrierWithGroupSync();
+    const uint index0 = m_mesh.meshletIndexBuffer.Load(m_mesh.meshletIndexStartOffset + m_meshlet.triangleOffset + triangleId + 0);
+    const uint index1 = m_mesh.meshletIndexBuffer.Load(m_mesh.meshletIndexStartOffset + m_meshlet.triangleOffset + triangleId + 1);
+    const uint index2 = m_mesh.meshletIndexBuffer.Load(m_mesh.meshletIndexStartOffset + m_meshlet.triangleOffset + triangleId + 2);
     
     if (groupThreadId == 0)
     {
-        constants.drawCommand.InterlockedAdd(0, meshlet.triangleCount * 3, m_indexOffset);
+        constants.drawCommand.InterlockedAdd(0, m_meshlet.triangleCount * 3, m_indexOffset);
     }
     
     GroupMemoryBarrierWithGroupSync();
     
     const uint baseOffset = m_indexOffset + triangleId;
-    constants.indexBuffer.Store(baseOffset + 0, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((triangleId + 0) & MESHLET_PRIMITIVE_ID_MASK));
-    constants.indexBuffer.Store(baseOffset + 1, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((triangleId + 1) & MESHLET_PRIMITIVE_ID_MASK));
-    constants.indexBuffer.Store(baseOffset + 2, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((triangleId + 2) & MESHLET_PRIMITIVE_ID_MASK));
+    constants.indexBuffer.Store(baseOffset + 0, (m_meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index0) & MESHLET_PRIMITIVE_MASK));
+    constants.indexBuffer.Store(baseOffset + 1, (m_meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index1) & MESHLET_PRIMITIVE_MASK));
+    constants.indexBuffer.Store(baseOffset + 2, (m_meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index2) & MESHLET_PRIMITIVE_MASK));
 
 }

@@ -103,6 +103,7 @@ namespace Volt
 
 		std::vector<Meshlet> m_meshlets;
 		std::vector<uint32_t> m_meshletIndices;
+		std::vector<Vertex> m_meshletVertices;
 
 		Ref<Material> m_material;
 

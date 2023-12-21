@@ -1,8 +1,8 @@
 Metadata:
-  assetHandle: 4818559880424341597
+  assetHandle: 108690110403791515
   filePath: Assets/Meshes/TestFolder/galil.vtmesh
   type: 1
   Dependencies:
-    []
+    - 18284655244411307355
   Properties:
     {}

@@ -45,7 +45,7 @@ struct GPUMesh
     uint vertexStartOffset;
     uint meshletCount;
     uint meshletStartOffset;
-    uint meshletTriangleStartOffset;
+    uint meshletIndexStartOffset;
   
     uint lodCount;
     GPUMeshLOD lods[MAX_LOD_COUNT];

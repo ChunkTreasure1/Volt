@@ -162,101 +162,188 @@ namespace Volt
 	{
 		VT_CORE_ASSERT(!m_indices.empty() && !m_vertices.empty(), "Indices and vertices must not be empty!");
 
-		auto extractedVertices = ExtractSubMeshVertices();
-		auto extractedIndices = ExtractSubMeshIndices();
+		//m_subMeshes.resize(1);
+
+		//auto extractedVertices = ExtractSubMeshVertices();
+		//auto extractedIndices = ExtractSubMeshIndices();
+
+		constexpr size_t MAX_VERTEX_COUNT = 64;
+		constexpr size_t MAX_TRIANGLE_COUNT = 64;
+		constexpr float CONE_WEIGHT = 0.f;
 
 		// Meshlets
+		//{
+		//	//for (size_t i = 0; i < extractedVertices.size(); i++)
+		//	//{
+		//	//	auto& currentVertices = extractedVertices.at(i);
+		//	//	auto& currentIndices = extractedIndices.at(i);
+
+		//	//	meshopt_optimizeOverdraw(currentIndices.data(), currentIndices.data(), currentIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), 1.05f);
+		//	//}
+
+
+		//	std::vector<Vertex> meshletVertices;
+
+		//	for (size_t i = 0; i < extractedVertices.size(); i++)
+		//	{
+		//		auto& currentVertices = extractedVertices.at(i);
+		//		auto& currentIndices = extractedIndices.at(i);
+
+		//		const size_t maxMeshlets = meshopt_buildMeshletsBound(currentIndices.size(), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
+
+		//		std::vector<meshopt_Meshlet> meshlets{ maxMeshlets };
+		//		std::vector<uint32_t> meshletVertexRemapping(maxMeshlets * MAX_VERTEX_COUNT);
+		//		std::vector<uint8_t> meshletIndices(maxMeshlets * MAX_TRIANGLE_COUNT * 3);
+
+		//		const size_t meshletCount = meshopt_buildMeshlets(meshlets.data(), meshletVertexRemapping.data(), meshletIndices.data(), currentIndices.data(), currentIndices.size(),
+		//			&currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT);
+
+		//		const meshopt_Meshlet& last = meshlets.at(meshletCount - 1);
+		//		meshletVertexRemapping.resize(last.vertex_offset + last.vertex_count);
+		//		meshletIndices.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
+		//		meshlets.resize(meshletCount);
+
+		//		const uint32_t vertexStartOffset = static_cast<uint32_t>(meshletVertices.size());
+		//		meshletVertices.resize(meshletVertices.size() + meshletVertexRemapping.size());
+
+		//		for (uint32_t index = 0; index < static_cast<uint32_t>(meshletVertexRemapping.size()); index++)
+		//		{
+		//			meshletVertices[vertexStartOffset + index] = currentVertices[meshletVertexRemapping.at(index)];
+		//		}
+
+		//		const size_t meshletIndexOffset = m_meshletIndices.size();
+
+		//		for (const auto& meshlet : meshlets)
+		//		{
+		//			for (uint32_t index = 0; index < meshlet.triangle_count * 3; index++)
+		//			{
+		//				const uint32_t triIndex = meshlet.triangle_offset + index;
+		//				m_meshletIndices.emplace_back(meshletIndices.at(triIndex));
+		//			}
+		//		}
+
+		//		const size_t meshletOffset = m_meshlets.size();
+		//		m_meshlets.reserve(meshletOffset + meshletCount);
+
+		//		auto& subMesh = m_subMeshes.at(i);
+		//		subMesh.meshletStartOffset = static_cast<uint32_t>(meshletOffset);
+		//		subMesh.meshletCount = static_cast<uint32_t>(meshlets.size());
+		//		subMesh.meshletIndexStartOffset = static_cast<uint32_t>(meshletIndexOffset);
+		//		subMesh.vertexStartOffset = vertexStartOffset;
+
+		//		uint32_t meshletTriOffset = 0;
+		//		for (const auto& meshlet : meshlets)
+		//		{
+		//			auto& newMeshlet = m_meshlets.emplace_back();
+		//			newMeshlet.vertexOffset = meshlet.vertex_offset;
+		//			newMeshlet.vertexCount = meshlet.vertex_count;
+		//			newMeshlet.triangleOffset = meshletTriOffset;
+		//			newMeshlet.triangleCount = meshlet.triangle_count;
+
+		//			meshletTriOffset += meshlet.triangle_count * 3;
+		//		}
+		//	}
+
+		//	m_vertices.clear();
+		//	m_indices.clear();
+
+		//	for (size_t i = 0; i < extractedVertices.size(); i++)
+		//	{
+		//		auto& currentIndices = extractedIndices.at(i);
+		//		auto& currentSubMesh = m_subMeshes.at(i);
+
+		//		auto& gpuMesh = m_gpuMeshes.emplace_back();
+		//		gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
+		//		gpuMesh.meshletStartOffset = currentSubMesh.meshletStartOffset;
+		//		gpuMesh.meshletCount = currentSubMesh.meshletCount;
+		//		gpuMesh.meshletIndexStartOffset = currentSubMesh.meshletIndexStartOffset;
+		//		m_indices.insert(m_indices.end(), currentIndices.begin(), currentIndices.end());
+		//	}
+
+		//	m_vertices = meshletVertices;
+		//}
+
+		std::vector<Vertex> finalVertices;
+		std::vector<uint32_t> finalIndices;
+
+		for (uint32_t si = 0; auto& subMesh : m_subMeshes)
 		{
-			for (size_t i = 0; i < extractedVertices.size(); i++)
-			{
-				auto& currentVertices = extractedVertices.at(i);
-				auto& currentIndices = extractedIndices.at(i);
+			const size_t maxMeshletCount = meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
 
-				meshopt_optimizeOverdraw(currentIndices.data(), currentIndices.data(), currentIndices.size(), &currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), 1.05f);
+			std::vector<meshopt_Meshlet> tempMeshlets(maxMeshletCount);
+			std::vector<uint32_t> meshletVertexRemap(maxMeshletCount * MAX_VERTEX_COUNT);
+			std::vector<uint8_t> meshletIndices(maxMeshletCount * MAX_TRIANGLE_COUNT * 3);
+
+			const uint32_t* indexStartPtr = &m_indices.at(subMesh.indexStartOffset);
+			const Vertex* vertexStartPtr = &m_vertices.at(subMesh.vertexStartOffset);
+			
+			const size_t meshletCount = meshopt_buildMeshlets(tempMeshlets.data(), meshletVertexRemap.data(), meshletIndices.data(), indexStartPtr, subMesh.indexCount,
+				&vertexStartPtr[0].position.x, subMesh.vertexCount, sizeof(Vertex), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT);
+
+			tempMeshlets.resize(meshletCount);
+
+			const auto& lastMeshlet = tempMeshlets.back();
+			meshletVertexRemap.resize(lastMeshlet.vertex_offset + lastMeshlet.vertex_count);
+			meshletIndices.resize(lastMeshlet.triangle_offset + ((lastMeshlet.triangle_count * 3 + 3) & ~3));
+
+			const uint32_t subMeshVertexStartOffset = static_cast<uint32_t>(finalVertices.size());
+			finalVertices.resize(finalVertices.size() + meshletVertexRemap.size());
+
+			for (uint32_t i = 0; i < static_cast<uint32_t>(meshletVertexRemap.size()); i++)
+			{
+				finalVertices[subMeshVertexStartOffset + i] = vertexStartPtr[meshletVertexRemap.at(i)];
 			}
 
-			constexpr size_t MAX_VERTICES = 64;
-			constexpr size_t MAX_TRIANGLES = 124;
-			constexpr float CONE_WEIGHT = 0.f;
+			const uint32_t subMeshIndexStartOffset = static_cast<uint32_t>(finalIndices.size());
 
-			std::vector<Vertex> meshletVertices;
-
-			for (size_t i = 0; i < extractedVertices.size(); i++)
+			uint32_t meshletsTotalIndexCount = 0;
+			for (const auto& meshlet : tempMeshlets)
 			{
-				auto& currentVertices = extractedVertices.at(i);
-				auto& currentIndices = extractedIndices.at(i);
+				meshletsTotalIndexCount += meshlet.triangle_count * 3;
+			}
 
-				const size_t maxMeshlets = meshopt_buildMeshletsBound(currentIndices.size(), MAX_VERTICES, MAX_TRIANGLES);
+			finalIndices.reserve(finalIndices.size() + meshletsTotalIndexCount);
 
-				std::vector<meshopt_Meshlet> meshlets{ maxMeshlets };
-				std::vector<uint32_t> meshletVertexRemapping(maxMeshlets * MAX_VERTICES);
-				std::vector<uint8_t> meshletIndices(maxMeshlets * MAX_TRIANGLES * 3);
-
-				const size_t meshletCount = meshopt_buildMeshlets(meshlets.data(), meshletVertexRemapping.data(), meshletIndices.data(), currentIndices.data(), currentIndices.size(),
-					&currentVertices[0].position.x, currentVertices.size(), sizeof(Vertex), MAX_VERTICES, MAX_TRIANGLES, CONE_WEIGHT);
-
-				const meshopt_Meshlet& last = meshlets.at(meshletCount - 1);
-				meshletVertexRemapping.resize(last.vertex_offset + last.vertex_count);
-				meshletIndices.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
-				meshlets.resize(meshletCount);
-
-				meshletVertices.resize(meshletVertices.size() + meshletVertexRemapping.size());
-
-				for (uint32_t index = 0; index < static_cast<uint32_t>(meshletVertexRemapping.size()); index++)
+			for (const auto& meshlet : tempMeshlets)
+			{
+				for (uint32_t i = 0; i < meshlet.triangle_count * 3; i++)
 				{
-					meshletVertices[index] = currentVertices[meshletVertexRemapping.at(index)];
-				}
-
-				const size_t meshletIndexOffset = m_meshletIndices.size();
-
-				for (const auto& meshlet : meshlets)
-				{
-					for (uint32_t index = 0; index < meshlet.triangle_count * 3; index++)
-					{
-						const uint32_t triIndex = meshlet.triangle_offset + index;
-						m_meshletIndices.emplace_back(meshletIndices.at(triIndex));
-					}
-				}
-
-				const size_t meshletOffset = m_meshlets.size();
-				m_meshlets.reserve(meshletOffset + meshletCount);
-
-				auto& subMesh = m_subMeshes.at(i);
-				subMesh.meshletStartOffset = static_cast<uint32_t>(meshletOffset);
-				subMesh.meshletCount = static_cast<uint32_t>(meshlets.size());
-				subMesh.meshletIndexStartOffset = static_cast<uint32_t>(meshletIndexOffset);
-
-				uint32_t meshletTriOffset = 0;
-				for (const auto& meshlet : meshlets)
-				{
-					auto& newMeshlet = m_meshlets.emplace_back();
-					newMeshlet.vertexOffset = meshlet.vertex_offset;
-					newMeshlet.vertexCount = meshlet.vertex_count;
-					newMeshlet.triangleOffset = meshletTriOffset;
-					newMeshlet.triangleCount = meshlet.triangle_count;
-
-					meshletTriOffset += meshlet.triangle_count * 3;
+					const uint32_t index = meshlet.triangle_offset + i;
+					finalIndices.emplace_back(meshletIndices.at(index));
 				}
 			}
 
-			m_vertices.clear();
-			m_indices.clear();
+			const uint32_t subMeshMeshletStartOffset = static_cast<uint32_t>(m_meshlets.size());
+			m_meshlets.reserve(m_meshlets.size() + meshletCount);
 
-			for (size_t i = 0; i < extractedVertices.size(); i++)
+			subMesh.meshletStartOffset = subMeshMeshletStartOffset;
+			subMesh.meshletCount = static_cast<uint32_t>(meshletCount);
+			subMesh.meshletIndexStartOffset = subMeshIndexStartOffset;
+			subMesh.meshletVertexStartOffset = subMeshVertexStartOffset;
+
+			uint32_t triangleOffset = 0;
+			for (const auto& meshlet : tempMeshlets)
 			{
-				auto& currentIndices = extractedIndices.at(i);
-				auto& currentSubMesh = m_subMeshes.at(i);
-
-				auto& gpuMesh = m_gpuMeshes.emplace_back();
-				gpuMesh.vertexStartOffset = currentSubMesh.vertexStartOffset;
-				gpuMesh.meshletStartOffset = currentSubMesh.meshletStartOffset;
-				gpuMesh.meshletCount = currentSubMesh.meshletCount;
-				gpuMesh.meshletIndexStartOffset = currentSubMesh.meshletIndexStartOffset;
-				m_indices.insert(m_indices.end(), currentIndices.begin(), currentIndices.end());
+				auto& newMeshlet = m_meshlets.emplace_back();
+				newMeshlet.vertexOffset = meshlet.vertex_offset;
+				newMeshlet.vertexCount = meshlet.vertex_count;
+				newMeshlet.triangleOffset = triangleOffset;
+				newMeshlet.triangleCount = meshlet.triangle_count;
+				triangleOffset += newMeshlet.triangleCount * 3;
 			}
 
-			m_vertices = meshletVertices;
+			auto& gpuMesh = m_gpuMeshes.emplace_back();
+			gpuMesh.vertexStartOffset = subMesh.meshletVertexStartOffset;
+			gpuMesh.meshletStartOffset = subMesh.meshletStartOffset;
+			gpuMesh.meshletCount = subMesh.meshletCount;
+			gpuMesh.meshletIndexStartOffset = subMesh.meshletIndexStartOffset;
+
+			VT_CORE_TRACE("Mesh #{}", si);
+			si++;
 		}
+
+		m_meshletIndices = finalIndices;
+		m_meshletVertices = finalVertices;
 
 		//// Optimize mesh
 		//{
@@ -320,7 +407,6 @@ namespace Volt
 		//	}
 		//}
 
-		const auto encodedVertices = GetEncodedVertices();
 		const std::string meshName = assetName;
 
 		// Vertex positions
@@ -404,14 +490,14 @@ namespace Volt
 		m_boundingBox = BoundingBox{ max, min };
 		m_boundingSphere = GetBoundingSphereFromVertices(m_vertices);
 
-		for (uint32_t i = 0; auto & subMesh : m_subMeshes)
-		{
-			std::vector<Vertex> subMeshVertices;
-			subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertices.begin(), subMesh.vertexStartOffset), std::next(m_vertices.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
+		//for (uint32_t i = 0; auto & subMesh : m_subMeshes)
+		//{
+		//	std::vector<Vertex> subMeshVertices;
+		//	subMeshVertices.insert(subMeshVertices.end(), std::next(m_vertices.begin(), subMesh.vertexStartOffset), std::next(m_vertices.begin(), subMesh.vertexStartOffset + subMesh.vertexCount));
 
-			m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
-			i++;
-		}
+		//	m_subMeshBoundingSpheres[i] = GetBoundingSphereFromVertices(subMeshVertices);
+		//	i++;
+		//}
 	}
 
 	const std::vector<EncodedVertex> Mesh::GetEncodedVertices() const
@@ -504,9 +590,9 @@ namespace Volt
 	const std::vector<glm::vec3> Mesh::GetVertexPositions()
 	{
 		std::vector<glm::vec3> result{};
-		result.reserve(m_vertices.size());
+		result.reserve(m_meshletVertices.size());
 
-		for (const auto& vertex : m_vertices)
+		for (const auto& vertex : m_meshletVertices)
 		{
 			result.emplace_back(vertex.position);
 		}
@@ -517,9 +603,9 @@ namespace Volt
 	const std::vector<Mesh::VertexMaterialData> Mesh::GetVertexMaterialData()
 	{
 		std::vector<VertexMaterialData> result{};
-		result.reserve(m_vertices.size());
+		result.reserve(m_meshletVertices.size());
 
-		for (const auto& vertex : m_vertices)
+		for (const auto& vertex : m_meshletVertices)
 		{
 			auto& data = result.emplace_back();
 			
@@ -538,9 +624,9 @@ namespace Volt
 	const std::vector<Mesh::VertexAnimationData> Mesh::GetVertexAnimationData()
 	{
 		std::vector<VertexAnimationData> result{};
-		result.reserve(m_vertices.size());
+		result.reserve(m_meshletVertices.size());
 
-		for (const auto& vertex : m_vertices)
+		for (const auto& vertex : m_meshletVertices)
 		{
 			auto& data = result.emplace_back();
 			

@@ -30,6 +30,7 @@ namespace Volt
 		uint32_t meshletStartOffset = 0;
 		uint32_t meshletCount = 0;
 		uint32_t meshletIndexStartOffset = 0;
+		uint32_t meshletVertexStartOffset = 0;
 
 		glm::mat4 transform = { 1.f };
 		std::string name;

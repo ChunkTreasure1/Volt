@@ -6,7 +6,9 @@ struct Output
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
-    float4 color : COLOR;
+    nointerpolation float4 color : COLOR;
+    uint meshletId : MESHLETID;
+    uint triangleId : TRIANGLEID;
 };
 
 Output main(in DefaultInput input)
@@ -21,5 +23,7 @@ Output main(in DefaultInput input)
     output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
     output.normal = 1.f;
     output.color = float4(GetRandomColor(input.GetMeshletID()), 1.f);
+    output.meshletId = input.GetMeshletID();
+    output.triangleId = input.GetTriangleID();
     return output;
 }

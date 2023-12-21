@@ -53,7 +53,7 @@ namespace Volt
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderMap::Get("Illum"));
+			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderMap::Get("VisibilityBuffer"));
 			index++;
 		}
 

@@ -282,7 +282,7 @@ namespace Volt
 
 			const glm::mat4 transform = entity.GetTransform() * subMesh.transform;
 
-			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSpheres().at(renderObject.subMeshIndex);
+			BoundingSphere boundingSphere = renderObject.mesh->GetBoundingSphere();
 			const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
 			const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
 			const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);

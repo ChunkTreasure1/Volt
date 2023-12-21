@@ -10,7 +10,9 @@ struct Input
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
-    float4 color : COLOR;
+    nointerpolation float4 color : COLOR;
+    uint meshletId : MESHLETID;
+    uint triangleId : TRIANGLEID;
 };
 
 Output main(Input input)

@@ -549,6 +549,8 @@ namespace Volt
 				context.UploadBufferData(resources.GetBufferRaw(data.drawCommand), &command, sizeof(RHI::IndirectIndexedCommand));
 			}
 
+			context.ClearBuffer(resources.GetBufferRaw(data.indexBuffer), 0);
+
 			context.BindPipeline(m_cullPrimitivesPipeline);
 			context.SetConstant(resources.GetBuffer(data.indexBuffer));
 			context.SetConstant(resources.GetBuffer(data.drawCommand));
