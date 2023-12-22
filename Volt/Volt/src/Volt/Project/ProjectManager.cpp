@@ -36,6 +36,7 @@ namespace Volt
 			}
 		}
 
+		VT_CORE_INFO("[ProjectManager]: Loading project {0}", projectPath);
 		DeserializeProject();
 
 		m_currentEngineDirectory = std::filesystem::current_path();

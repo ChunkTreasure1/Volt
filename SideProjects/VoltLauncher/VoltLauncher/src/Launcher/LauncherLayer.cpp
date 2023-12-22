@@ -406,7 +406,11 @@ void LauncherLayer::UI_DrawProjectsContent()
 
 				if (ImGui::ImageButton(m_editIcon->GetDescriptorSet(), { 32, 32 }))
 				{
-					FileSystem::StartProcess(m_data.engineInfo.engineDirectory / "Sandbox.exe", project.path.wstring());
+					std::wstring tempProjectPath = project.path.wstring();
+					tempProjectPath.push_back('"');
+					tempProjectPath.insert(tempProjectPath.begin(), '"');
+
+					FileSystem::StartProcess(m_data.engineInfo.engineDirectory / "Sandbox.exe", tempProjectPath);
 				}
 
 				ImGui::SameLine();
