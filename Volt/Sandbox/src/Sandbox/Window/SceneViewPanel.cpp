@@ -646,6 +646,11 @@ void SceneViewPanel::DrawEntity(Volt::Entity entity, const std::string& filter)
 
 	auto isAnyDescendantSelected = [&](Volt::Entity ent, auto isAnyDescendantSelected)
 	{
+		if (!ent)
+		{
+			return false;
+		}
+
 		if (SelectionManager::IsSelected(ent.GetID()))
 		{
 			return true;

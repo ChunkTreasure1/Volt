@@ -20,6 +20,7 @@ namespace Volt::RHI
 
 		const size_t GetByteSize() const override;
 		const uint32_t GetSize() const override;
+		Weak<Allocation> GetAllocation() const override;
 
 		void Unmap() override;
 		void SetData(const void* data, const size_t size) override;

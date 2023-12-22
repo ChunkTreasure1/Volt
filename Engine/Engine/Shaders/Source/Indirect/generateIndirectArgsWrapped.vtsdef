@@ -1,0 +1,4 @@
+name: "GenerateIndirectArgsWrapped"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Indirect/GenerateIndirectArgsWrapped_cs.hlsl"

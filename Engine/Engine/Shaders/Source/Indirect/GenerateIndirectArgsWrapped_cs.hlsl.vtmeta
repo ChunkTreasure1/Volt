@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 4068773879293600241
+  filePath: Engine/Shaders/Source/Indirect/GenerateIndirectArgsWrapped_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

@@ -989,11 +989,10 @@ void ViewportPanel::HandleSingleGizmoInteraction(const glm::mat4& avgTransform)
 
 	glm::mat4 averageTransform = avgTransform;
 
-	if (relationshipComp.parent != Volt::Entity::NullID())
+	Volt::Entity parent = m_editorScene->GetEntityFromUUID(relationshipComp.parent);
+	if (parent)
 	{
-		Volt::Entity parent = m_editorScene->GetEntityFromUUID(relationshipComp.parent);
 		auto pTransform = parent.GetTransform();
-
 		averageTransform = glm::inverse(pTransform) * averageTransform;
 	}
 

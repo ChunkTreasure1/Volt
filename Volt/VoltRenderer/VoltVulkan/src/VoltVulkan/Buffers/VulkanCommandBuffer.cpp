@@ -287,6 +287,48 @@ namespace Volt::RHI
 		VT_VK_CHECK(vkEndCommandBuffer(m_commandBuffers.at(index).commandBuffer));
 	}
 
+	void VulkanCommandBuffer::RestartAfterFlush()
+	{
+		VT_PROFILE_FUNCTION();
+
+		auto device = GraphicsContext::GetDevice();
+		const uint32_t index = GetCurrentCommandBufferIndex();
+		const auto& currentCommandBuffer = m_commandBuffers.at(index);
+
+		if (!m_isSwapchainTarget)
+		{
+			CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence, VK_TRUE, UINT64_MAX));
+			VT_VK_CHECK(vkResetFences(device->GetHandle<VkDevice>(), 1, &currentCommandBuffer.fence));
+			VT_VK_CHECK(vkResetCommandPool(device->GetHandle<VkDevice>(), currentCommandBuffer.commandPool, 0));
+		}
+
+		// If the next timestamp query is zero, no frame has run before
+		if (m_nextAvailableTimestampQuery > 0)
+		{
+			FetchTimestampResults();
+		}
+
+		// Begin command buffer
+		{
+			VkCommandBufferBeginInfo beginInfo{};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			VT_VK_CHECK(vkBeginCommandBuffer(currentCommandBuffer.commandBuffer, &beginInfo));
+		}
+
+		if (m_hasTimestampSupport)
+		{
+			vkCmdResetQueryPool(currentCommandBuffer.commandBuffer, m_timestampQueryPools.at(index), 0, m_timestampQueryCount);
+			vkCmdWriteTimestamp2(currentCommandBuffer.commandBuffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestampQueryPools.at(index), 0);
+
+			m_timestampCounts[m_currentCommandBufferIndex] = m_nextAvailableTimestampQuery;
+			m_nextAvailableTimestampQuery = 2;
+		}
+
+		BeginMarker("CommandBuffer", { 1.f, 1.f, 1.f, 1.f });
+	}
+
 	void VulkanCommandBuffer::Execute()
 	{
 		VT_PROFILE_FUNCTION();

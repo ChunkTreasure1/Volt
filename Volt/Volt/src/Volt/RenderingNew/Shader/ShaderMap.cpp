@@ -50,6 +50,8 @@ namespace Volt
 
 		std::vector<std::future<void>> shaderFutures;
 
+		std::mutex shaderMapMutex;
+
 		for (const auto& searchPath : searchPaths)
 		{
 			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
@@ -76,7 +78,11 @@ namespace Volt
 					// #TODO: Fix force compile!
 					// We need to do this because the formats / input layouts are not created correctly otherwise
 					Ref<RHI::Shader> shader = RHI::Shader::Create(def->GetName(), def->GetSourceFiles(), true);
-					s_shaderMap[std::string(def->GetName())] = shader;
+
+					{
+						std::scoped_lock lock{ shaderMapMutex };
+						s_shaderMap[std::string(def->GetName())] = shader;
+					}
 				}));
 			}
 		}

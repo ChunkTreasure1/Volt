@@ -112,7 +112,7 @@ void Sandbox::OnAttach()
 
 	Volt::Application::Get().GetWindow().Maximize();
 
-	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
+	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 100000.f);
 
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();

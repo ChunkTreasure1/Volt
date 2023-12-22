@@ -23,6 +23,7 @@ namespace Volt::RHI
 
 		void* GetHandleImpl() const override;
 		void Begin() override;
+		void RestartAfterFlush() override;
 		void End() override;
 		void Execute() override;
 		void ExecuteAndWait() override;

@@ -14,7 +14,7 @@ struct Constants
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer<CameraData> cameraData;
-
+    
     float frustum0;
     float frustum1;
     float frustum2;
@@ -56,10 +56,9 @@ void main(uint threadId : SV_DispatchThreadID)
     const uint meshletIndex = objectData.meshletStartOffset + threadId - objectIdAndOffset.y;
     const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
     
-    bool isVisibile = true;
-    //IsInFrustum(constants, objectData.transform, meshlet.boundingSphereCenter, meshlet.boundingSphereRadius);
+    bool visible = true; /*IsInFrustum(constants, objectData.transform, meshlet.boundingSphereCenter, meshlet.boundingSphereRadius);*/
     
-    if (isVisibile)
+    if (visible)
     {
         uint offset;
         constants.survivingMeshletCount.InterlockedAdd(0, 1, offset);

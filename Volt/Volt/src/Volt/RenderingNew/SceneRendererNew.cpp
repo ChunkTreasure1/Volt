@@ -150,6 +150,8 @@ namespace Volt
 			AddCullMeshletsPass(renderGraph, rgBlackboard, camera);
 			AddCullPrimitivesPass(renderGraph, rgBlackboard, camera);
 		
+			//AddStatsReadbackPass(renderGraph, rgBlackboard);
+
 			AddTestRenderPass(renderGraph, rgBlackboard);
 		}
 
@@ -287,6 +289,7 @@ namespace Volt
 			m_cullMeshletsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullMeshlets"));
 			m_cullPrimitivesPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullPrimitives"));
 			m_generateIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateIndirectArgs"));
+			m_generateIndirectArgsWrappedPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateIndirectArgsWrapped"));
 		}
 	}
 
@@ -400,6 +403,11 @@ namespace Volt
 				data.meshletCount = builder.CreateBuffer(desc);
 			}
 
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferSrc, RHI::MemoryUsage::GPU, "Statistics");
+				data.statisticsBuffer = builder.CreateBuffer(desc);
+			}
+
 			builder.ReadResource(uniformBuffers.cameraDataBuffer);
 		
 			builder.SetIsComputePass();
@@ -410,10 +418,12 @@ namespace Volt
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
 
 			context.ClearBuffer(resources.GetBufferRaw(data.meshletCount), 0);
+			context.ClearBuffer(resources.GetBufferRaw(data.statisticsBuffer), 0);
 
 			context.BindPipeline(m_cullObjectsPipeline);
 			context.SetConstant(resources.GetBuffer(data.meshletCount));
 			context.SetConstant(resources.GetBuffer(data.meshletToObjectIdAndOffset));
+			context.SetConstant(resources.GetBuffer(data.statisticsBuffer));
 			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
 			context.SetConstant(renderScene->GetGPUMeshesBuffer().GetResourceHandle());
 			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
@@ -447,6 +457,27 @@ namespace Volt
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			context.BindPipeline(m_generateIndirectArgsPipeline);
+			context.SetConstant(resources.GetBuffer(indirectArgsBuffer));
+			context.SetConstant(resources.GetBuffer(countBuffer));
+			context.SetConstant(groupSize);
+
+			context.Dispatch(1, 1, 1);
+		});
+	}
+
+	void SceneRendererNew::AddGenerateIndirectArgsPassWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, RenderGraphResourceHandle indirectArgsBuffer, uint32_t groupSize)
+	{
+		renderGraph.AddPass("Generate Indirect Args",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.ReadResource(countBuffer);
+			builder.WriteResource(indirectArgsBuffer);
+
+			builder.SetIsComputePass();
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			context.BindPipeline(m_generateIndirectArgsWrappedPipeline);
 			context.SetConstant(resources.GetBuffer(indirectArgsBuffer));
 			context.SetConstant(resources.GetBuffer(countBuffer));
 			context.SetConstant(groupSize);
@@ -526,7 +557,7 @@ namespace Volt
 		const auto argsDesc = RGUtils::CreateBufferDesc<uint32_t>(3, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndirectBuffer, RHI::MemoryUsage::GPU, "Cull Primitives Indirect Args");
 		RenderGraphResourceHandle argsBufferHandle = renderGraph.CreateBuffer(argsDesc);
 
-		AddGenerateIndirectArgsPass(renderGraph, cullMeshletsData.survivingMeshletCount, argsBufferHandle, 1);
+		AddGenerateIndirectArgsPassWrapped(renderGraph, cullMeshletsData.survivingMeshletCount, argsBufferHandle, 1);
 
 		blackboard.Add<CullPrimitivesData>() = renderGraph.AddPass<CullPrimitivesData>("Cull Primitives",
 		[&](RenderGraph::Builder& builder, CullPrimitivesData& data)
@@ -571,9 +602,26 @@ namespace Volt
 			context.SetConstant(renderScene->GetGPUMeshesBuffer().GetResourceHandle());
 			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
 			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+			context.SetConstant(glm::vec2(m_width, m_height));
 
 			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
 			context.DispatchIndirect(argsBuffer, 0);
+		});
+	}
+
+	void SceneRendererNew::AddStatsReadbackPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& objectCullData = blackboard.Get<CullObjectsData>();
+
+		renderGraph.AddPass("Statistics Readback",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.ReadResource(objectCullData.statisticsBuffer);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			context.Flush();
+			Ref<RHI::StorageBuffer> testBuffer = context.GetReadbackBuffer(resources.GetBufferRaw(objectCullData.statisticsBuffer));
 		});
 	}
 

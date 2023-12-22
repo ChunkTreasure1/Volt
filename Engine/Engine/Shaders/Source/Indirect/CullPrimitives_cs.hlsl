@@ -1,6 +1,7 @@
 #include "Structures.hlsli"
 #include "Resources.hlsli"
 
+#include "ComputeUtilities.hlsli"
 #include "GPUScene.hlsli"
 
 #define ITERATIONS_PER_GROUP 2
@@ -23,49 +24,88 @@ struct Constants
     TypedBuffer<GPUMesh> gpuMeshes;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer<CameraData> cameraData;
+    
+    float2 renderSize;
 };
 
-groupshared uint m_indexOffset;
-groupshared Meshlet m_meshlet;
-groupshared GPUMesh m_mesh;
-groupshared uint m_meshletIndex;
-
 [numthreads(64, 1, 1)]
-void main(uint2 groupId : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
+void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
 {
     const Constants constants = GetConstants<Constants>();
+    const CameraData cameraData = constants.cameraData.Load(0);
     
-    if (groupThreadId == 0)
-    {
-        m_meshletIndex = constants.survivingMeshlets.Load(groupId.x);
-        m_meshlet = constants.gpuMeshlets.Load(m_meshletIndex);
-        m_mesh = constants.gpuMeshes.Load(m_meshlet.meshId);
-    }
-
-    GroupMemoryBarrierWithGroupSync();
+    uint groupId = UnwrapDispatchGroupId(gid);
     
-    if (groupThreadId >= m_meshlet.triangleCount)
+    const uint meshletIndex = constants.survivingMeshlets.Load(groupId);
+    const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
+    
+    if (groupThreadId >= meshlet.triangleCount)
     {
         return;
     }
     
-    //const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(meshlet.objectId);
+    const GPUMesh mesh = constants.gpuMeshes.Load(meshlet.meshId);
+    const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(meshlet.objectId);
     
     const uint triangleId = groupThreadId * 3;
-    const uint index0 = m_mesh.meshletIndexBuffer.Load(m_mesh.meshletIndexStartOffset + m_meshlet.triangleOffset + triangleId + 0);
-    const uint index1 = m_mesh.meshletIndexBuffer.Load(m_mesh.meshletIndexStartOffset + m_meshlet.triangleOffset + triangleId + 1);
-    const uint index2 = m_mesh.meshletIndexBuffer.Load(m_mesh.meshletIndexStartOffset + m_meshlet.triangleOffset + triangleId + 2);
+    const uint index0 = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId + 0);
+    const uint index1 = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId + 1);
+    const uint index2 = mesh.meshletIndexBuffer.Load(mesh.meshletIndexStartOffset + meshlet.triangleOffset + triangleId + 2);
     
-    if (groupThreadId == 0)
+    const uint vIndex0 = index0 + meshlet.vertexOffset + mesh.vertexStartOffset;
+    const uint vIndex1 = index1 + meshlet.vertexOffset + mesh.vertexStartOffset;
+    const uint vIndex2 = index2 + meshlet.vertexOffset + mesh.vertexStartOffset;
+    
+    float3 positions[3];
+    float3 vertexClip[3];
+   
+    positions[0] = mesh.vertexPositionsBuffer.Load(vIndex0).position;
+    positions[1] = mesh.vertexPositionsBuffer.Load(vIndex1).position;
+    positions[2] = mesh.vertexPositionsBuffer.Load(vIndex2).position;
+    
+    const float4x4 mvp = mul(cameraData.projection, mul(cameraData.view, objectData.transform));
+    
+    [unroll]
+    for (uint i = 0; i < 3; ++i)
     {
-        constants.drawCommand.InterlockedAdd(0, m_meshlet.triangleCount * 3, m_indexOffset);
+        float4 clipPosition = mul(mvp, float4(positions[i], 1.f));
+        vertexClip[i] = float3(clipPosition.xy / clipPosition.w, clipPosition.w);
     }
     
-    GroupMemoryBarrierWithGroupSync();
+    bool culled = false;
     
-    const uint baseOffset = m_indexOffset + triangleId;
-    constants.indexBuffer.Store(baseOffset + 0, (m_meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index0) & MESHLET_PRIMITIVE_MASK));
-    constants.indexBuffer.Store(baseOffset + 1, (m_meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index1) & MESHLET_PRIMITIVE_MASK));
-    constants.indexBuffer.Store(baseOffset + 2, (m_meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index2) & MESHLET_PRIMITIVE_MASK));
-
+    float2 pa = vertexClip[0].xy, pb = vertexClip[1].xy, pc = vertexClip[2].xy;
+    
+    float2 eb = pb - pa;
+    float2 ec = pc - pa;
+    
+    culled = culled || (eb.x * ec.y >= eb.y * ec.x);
+    
+    float2 bmin = (min(pa, min(pb, pc)) * 0.5f + 0.5f) * constants.renderSize;
+    float2 bmax = (max(pa, max(pb, pc)) * 0.5f + 0.5f) * constants.renderSize;
+    float sbprec = 1.f / 256.f;
+    
+    culled = culled || (round(bmin.x - sbprec) == round(bmax.x + sbprec) || round(bmin.y - sbprec) == round(bmax.y + sbprec));
+    culled = culled && (vertexClip[0].z > 0.f && vertexClip[1].z > 0.f && vertexClip[2].z > 0.f);
+    
+    const bool visible = !culled;
+    
+    uint visibleCount = WaveActiveCountBits(visible);
+    uint lanePrefix = WavePrefixCountBits(visible);
+    
+    uint waveOffset;
+    if (WaveIsFirstLane())
+    {
+        constants.drawCommand.InterlockedAdd(0, visibleCount * 3, waveOffset);
+    }
+    
+    waveOffset = WaveReadLaneFirst(waveOffset);
+    
+    if (visible)
+    {
+        const uint baseOffset = waveOffset + lanePrefix * 3;
+        constants.indexBuffer.Store(baseOffset + 0, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index0) & MESHLET_PRIMITIVE_MASK));
+        constants.indexBuffer.Store(baseOffset + 1, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index1) & MESHLET_PRIMITIVE_MASK));
+        constants.indexBuffer.Store(baseOffset + 2, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index2) & MESHLET_PRIMITIVE_MASK));
+    }
 }

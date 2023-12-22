@@ -62,6 +62,11 @@ namespace Volt::RHI
 		return m_size;
 	}
 
+	Weak<Allocation> VulkanStorageBuffer::GetAllocation() const
+	{
+		return m_allocation;
+	}
+
 	void VulkanStorageBuffer::Unmap()
 	{
 		m_allocation->Unmap();

@@ -1,2 +1,4 @@
 Scene:
   name: TestScene3
+  Settings:
+    useWorldEngine: false

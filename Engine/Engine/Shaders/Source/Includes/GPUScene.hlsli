@@ -34,6 +34,8 @@ struct Meshlet
     
     float3 boundingSphereCenter;
     float boundingSphereRadius;
+    
+    float4 cone;
 };
 
 struct GPUMesh

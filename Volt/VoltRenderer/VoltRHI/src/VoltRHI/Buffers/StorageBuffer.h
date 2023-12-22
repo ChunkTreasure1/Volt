@@ -7,6 +7,7 @@ namespace Volt::RHI
 	class BufferView;
 	class Allocator;
 	class CommandBuffer;
+	class Allocation;
 
 	class StorageBuffer : public RHIResource
 	{
@@ -18,6 +19,7 @@ namespace Volt::RHI
 
 		virtual const size_t GetByteSize() const = 0;
 		virtual const uint32_t GetSize() const = 0;
+		virtual Weak<Allocation> GetAllocation() const = 0;
 
 		virtual void Unmap() = 0;
 		virtual void SetData(const void* data, const size_t size) = 0;

@@ -5,6 +5,7 @@
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
 #include "Volt/Math/Math.h"
+#include "Volt/Utility/Algorithms.h"
 
 #include <VoltRHI/Buffers/VertexBuffer.h>
 #include <VoltRHI/Buffers/IndexBuffer.h>
@@ -173,15 +174,183 @@ namespace Volt
 
 		constexpr size_t MAX_VERTEX_COUNT = 64;
 		constexpr size_t MAX_TRIANGLE_COUNT = 64;
-		constexpr float CONE_WEIGHT = 0.f;
+		constexpr float CONE_WEIGHT = 0.4f;
+
+		const uint32_t subMeshCount = static_cast<uint32_t>(m_subMeshes.size());
+		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(subMeshCount);
+		
+		std::vector<std::vector<Vertex>> perThreadVertices(threadCount);
+		std::vector<std::vector<uint32_t>> perThreadIndices(threadCount);
+		std::vector<std::vector<Meshlet>> perThreadMeshlets(threadCount);
+
+		auto fu = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx) 
+		{
+			auto& subMesh = m_subMeshes.at(elementIdx);
+
+			std::vector<uint32_t> tempIndices;
+			tempIndices.resize(subMesh.indexCount);
+
+			const uint32_t* indexStartPtr = &m_indices.at(subMesh.indexStartOffset);
+			const Vertex* vertexStartPtr = &m_vertices.at(subMesh.vertexStartOffset);
+
+			meshopt_optimizeOverdraw(tempIndices.data(), indexStartPtr, subMesh.indexCount, &vertexStartPtr[0].position.x, subMesh.vertexCount, sizeof(Vertex), 1.05f);
+			const size_t maxMeshletCount = meshopt_buildMeshletsBound(subMesh.indexCount, MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT);
+
+			std::vector<meshopt_Meshlet> tempMeshlets(maxMeshletCount);
+			std::vector<uint32_t> meshletVertexRemap(maxMeshletCount * MAX_VERTEX_COUNT);
+			std::vector<uint8_t> meshletIndices(maxMeshletCount * MAX_TRIANGLE_COUNT * 3);
+
+			const size_t meshletCount = meshopt_buildMeshlets(tempMeshlets.data(), meshletVertexRemap.data(), meshletIndices.data(), tempIndices.data(), subMesh.indexCount,
+				&vertexStartPtr[0].position.x, subMesh.vertexCount, sizeof(Vertex), MAX_VERTEX_COUNT, MAX_TRIANGLE_COUNT, CONE_WEIGHT);
+
+			tempMeshlets.resize(meshletCount);
+
+			const auto& lastMeshlet = tempMeshlets.back();
+			meshletVertexRemap.resize(lastMeshlet.vertex_offset + lastMeshlet.vertex_count);
+			meshletIndices.resize(lastMeshlet.triangle_offset + ((lastMeshlet.triangle_count * 3 + 3) & ~3));
+
+			auto& currentVertices = perThreadVertices.at(threadIdx);
+			auto& currentIndices = perThreadIndices.at(threadIdx);
+			auto& currentMeshlets = perThreadMeshlets.at(threadIdx);
+
+			const uint32_t subMeshVertexStartOffset = static_cast<uint32_t>(currentVertices.size());
+			currentVertices.resize(currentVertices.size() + meshletVertexRemap.size());
+
+			for (uint32_t i = 0; i < static_cast<uint32_t>(meshletVertexRemap.size()); i++)
+			{
+				currentVertices[subMeshVertexStartOffset + i] = vertexStartPtr[meshletVertexRemap.at(i)];
+			}
+
+			const uint32_t subMeshIndexStartOffset = static_cast<uint32_t>(currentIndices.size());
+
+			uint32_t meshletsTotalIndexCount = 0;
+			for (const auto& meshlet : tempMeshlets)
+			{
+				meshletsTotalIndexCount += meshlet.triangle_count * 3;
+			}
+
+			currentIndices.reserve(currentIndices.size() + meshletsTotalIndexCount);
+
+			for (const auto& meshlet : tempMeshlets)
+			{
+				for (uint32_t i = 0; i < meshlet.triangle_count * 3; i++)
+				{
+					const uint32_t index = meshlet.triangle_offset + i;
+					currentIndices.emplace_back(meshletIndices.at(index));
+				}
+			}
+
+			const uint32_t subMeshMeshletStartOffset = static_cast<uint32_t>(currentMeshlets.size());
+			currentMeshlets.reserve(currentMeshlets.size() + meshletCount);
+
+			subMesh.meshletStartOffset = subMeshMeshletStartOffset;
+			subMesh.meshletCount = static_cast<uint32_t>(meshletCount);
+			subMesh.meshletIndexStartOffset = subMeshIndexStartOffset;
+			subMesh.meshletVertexStartOffset = subMeshVertexStartOffset;
+
+			uint32_t triangleOffset = 0;
+			for (const auto& meshlet : tempMeshlets)
+			{
+				auto& newMeshlet = currentMeshlets.emplace_back();
+				newMeshlet.vertexOffset = meshlet.vertex_offset;
+				newMeshlet.vertexCount = meshlet.vertex_count;
+				newMeshlet.triangleOffset = triangleOffset;
+				newMeshlet.triangleCount = meshlet.triangle_count;
+
+				BoundingSphere boundingSphere = GetBoundingSphereFromVertices(&currentVertices[meshlet.vertex_offset], meshlet.vertex_count);
+				newMeshlet.boundingSphereCenter = boundingSphere.center;
+				newMeshlet.boundingSphereRadius = boundingSphere.radius;
+
+				triangleOffset += newMeshlet.triangleCount * 3;
+
+				glm::vec3 triNormals[MAX_TRIANGLE_COUNT];
+
+				for (uint32_t i = 0; i < newMeshlet.triangleCount; i++)
+				{
+					const auto& v0 = currentVertices.at(currentIndices.at(newMeshlet.triangleOffset + i + 0) + newMeshlet.vertexOffset);
+					const auto& v1 = currentVertices.at(currentIndices.at(newMeshlet.triangleOffset + i + 1) + newMeshlet.vertexOffset);
+					const auto& v2 = currentVertices.at(currentIndices.at(newMeshlet.triangleOffset + i + 2) + newMeshlet.vertexOffset);
+
+					glm::vec3 p10 = v1.position - v0.position;
+					glm::vec3 p20 = v2.position - v0.position;
+				
+					glm::vec3 normal = glm::cross(p10, p20);
+
+					float area = glm::length(normal);
+					float invArea = area == 0.f ? 0.f : 1.f / area;
+
+					triNormals[i] = normal * invArea;
+				}
+
+				glm::vec3 avgNormal = 0.f;
+				for (uint32_t i = 0; i < newMeshlet.triangleCount; i++)
+				{
+					avgNormal += triNormals[i];
+				}
+
+				float avgLength = glm::length(avgNormal);
+
+				if (avgLength == 0.f)
+				{
+					avgNormal = { 1.f, 0.f, 0.f };
+				}
+				else
+				{
+					avgNormal /= avgLength;
+				}
+
+				float minDp = 1.f;
+
+				for (uint32_t i = 0; i < newMeshlet.triangleCount; i++)
+				{
+					float dp = glm::dot(triNormals[i], avgNormal);
+
+					minDp = glm::min(minDp, dp);
+				}
+
+				newMeshlet.cone = { avgNormal, minDp };
+			}
+
+		}, subMeshCount);
+
+		for (const auto& f : fu)
+		{
+			f.wait();
+		}
+
+		const auto meshletPrefixSums = Algo::ElementCountPrefixSum(perThreadMeshlets);
+		const auto vertexPrefixSums = Algo::ElementCountPrefixSum(perThreadVertices);
+		const auto indexPrefixSums = Algo::ElementCountPrefixSum(perThreadIndices);
+
+		auto fu2 = Algo::ForEachParallelLockable([&](uint32_t threadIdx, uint32_t elementIdx)
+		{
+			auto& subMesh = m_subMeshes.at(elementIdx);
+			
+			subMesh.meshletStartOffset += meshletPrefixSums.at(threadIdx);
+			subMesh.meshletVertexStartOffset += vertexPrefixSums.at(threadIdx);
+			subMesh.meshletIndexStartOffset += indexPrefixSums.at(threadIdx);
+
+		}, subMeshCount);
+
+		for (const auto& f : fu2)
+		{
+			f.wait();
+		}
 
 		std::vector<Vertex> finalVertices;
 		std::vector<uint32_t> finalIndices;
 
-		for (uint32_t si = 0; auto& subMesh : m_subMeshes)
+		for (size_t i = 0; i < perThreadVertices.size(); i++)
+		{
+			m_meshlets.insert(m_meshlets.end(), perThreadMeshlets.at(i).begin(), perThreadMeshlets.at(i).end());
+			finalVertices.insert(finalVertices.end(), perThreadVertices.at(i).begin(), perThreadVertices.at(i).end());
+			finalIndices.insert(finalIndices.end(), perThreadIndices.at(i).begin(), perThreadIndices.at(i).end());
+		}
+
+		/*for (uint32_t si = 0; auto& subMesh : m_subMeshes)
 		{
 			std::vector<uint32_t> tempIndices;
-			tempIndices.resize(m_indices.size());
+			tempIndices.resize(subMesh.indexCount);
 
 			const uint32_t* indexStartPtr = &m_indices.at(subMesh.indexStartOffset);
 			const Vertex* vertexStartPtr = &m_vertices.at(subMesh.vertexStartOffset);
@@ -262,7 +431,7 @@ namespace Volt
 
 			VT_CORE_TRACE("Mesh #{}", si);
 			si++;
-		}
+		}*/
 
 		m_meshletIndices = finalIndices;
 		m_meshletVertices = finalVertices;
@@ -308,9 +477,14 @@ namespace Volt
 			m_meshletsBuffer->GetResource()->SetData(m_meshlets.data(), m_meshlets.size() * sizeof(Meshlet));
 		}
 
-		// Set all buffers in the gpu meshes
-		for (auto& gpuMesh : m_gpuMeshes)
+		// Create GPU Meshes
+		for (const auto& subMesh : m_subMeshes)
 		{
+			auto& gpuMesh = m_gpuMeshes.emplace_back();
+			gpuMesh.vertexStartOffset = subMesh.meshletVertexStartOffset;
+			gpuMesh.meshletStartOffset = subMesh.meshletStartOffset;
+			gpuMesh.meshletCount = subMesh.meshletCount;
+			gpuMesh.meshletIndexStartOffset = subMesh.meshletIndexStartOffset;
 			gpuMesh.vertexPositionsBuffer = m_vertexPositionsBuffer->GetResourceHandle();
 			gpuMesh.vertexMaterialBuffer = m_vertexMaterialBuffer->GetResourceHandle();
 			gpuMesh.vertexAnimationBuffer = m_vertexAnimationBuffer->GetResourceHandle();

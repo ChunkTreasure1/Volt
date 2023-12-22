@@ -28,6 +28,8 @@ namespace Volt::RHI
 
 		virtual void Begin() = 0;
 		virtual void End() = 0;
+		virtual void RestartAfterFlush() = 0;
+
 		virtual void Execute() = 0;
 		virtual void ExecuteAndWait() = 0;
 		virtual void WaitForLastFence() = 0;

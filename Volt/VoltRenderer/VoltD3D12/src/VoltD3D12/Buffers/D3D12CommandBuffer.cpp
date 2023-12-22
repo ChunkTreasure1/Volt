@@ -34,6 +34,10 @@ namespace Volt::RHI
 		commandData.commandList->Reset(commandData.commandAllocator, nullptr);
 	}
 
+	void D3D12CommandBuffer::RestartAfterFlush()
+	{
+	}
+
 	void D3D12CommandBuffer::End()
 	{
 		auto& commandData = GetCommandData();

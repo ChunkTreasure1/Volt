@@ -5,24 +5,28 @@ Layer:
   locked: false
   Entities:
     - Entity:
-        id: 4
+        id: 3435485650
+        cellId: 0
         components:
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
                 data: [0, 0, 0]
               - name: rotation
-                data: [0, 0, 0, 1]
+                data: [0.866025448, 0, 0, 0.49999997]
               - name: scale
                 data: [1, 1, 1]
               - name: visible
                 data: true
               - name: locked
                 data: false
+              - name: movability
+                data: enum
+                enumValue: 0
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: New Entity
+                data: Directional Light
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -30,60 +34,29 @@ Layer:
           - guid: [5086337540049333714, 3220959922222851753]
             members:
               - name: parent
-                data: 4294967295
+                data: 0
               - name: children
                 data: array
                 values:
                   []
-          - guid: [5579790378469427390, 5138106327942809248]
+          - guid: [5292648669697150475, 12278682903067466634]
             members:
-              - name: handle
-                data: 0
-              - name: material
-                data: 0
-    - Entity:
-        id: 3
-        components:
-          - guid: [5524573352483143404, 11007889460122951339]
+              []
+          - guid: [4956947959302657279, 6431008363526150588]
             members:
-              - name: fieldOfView
-                data: 60
-              - name: nearPlane
+              - name: intensity
                 data: 1
-              - name: farPlane
-                data: 100000
-              - name: priority
-                data: 0
-          - guid: [5152712443922219371, 10617432012782403218]
-            members:
-              - name: position
-                data: [0, 0, 0]
-              - name: rotation
-                data: [0, 0, 0, 1]
-              - name: scale
+              - name: color
                 data: [1, 1, 1]
-              - name: visible
+              - name: lightSize
+                data: 1
+              - name: softShadows
                 data: true
-              - name: locked
-                data: false
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: New Entity
-          - guid: [5115013315947959062, 13305215203298195585]
-            members:
-              - name: layerid
-                data: 0
-          - guid: [5086337540049333714, 3220959922222851753]
-            members:
-              - name: parent
-                data: 4294967295
-              - name: children
-                data: array
-                values:
-                  []
+              - name: castShadows
+                data: true
     - Entity:
-        id: 2
+        id: 2281483434
+        cellId: 0
         components:
           - guid: [5152712443922219371, 10617432012782403218]
             members:
@@ -97,10 +70,13 @@ Layer:
                 data: true
               - name: locked
                 data: false
+              - name: movability
+                data: enum
+                enumValue: 0
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: New Entity
+                data: Skylight
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -108,11 +84,14 @@ Layer:
           - guid: [5086337540049333714, 3220959922222851753]
             members:
               - name: parent
-                data: 4294967295
+                data: 0
               - name: children
                 data: array
                 values:
                   []
+          - guid: [5292648669697150475, 12278682903067466634]
+            members:
+              []
           - guid: [5130770350572262273, 9533246575187293344]
             members:
               - name: environmentHandle
@@ -130,12 +109,23 @@ Layer:
               - name: show
                 data: true
     - Entity:
-        id: 1
+        id: 1091879980
+        cellId: 0
         components:
+          - guid: [5524573352483143404, 11007889460122951339]
+            members:
+              - name: fieldOfView
+                data: 60
+              - name: nearPlane
+                data: 0.00999999978
+              - name: farPlane
+                data: 1000
+              - name: priority
+                data: 0
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
-                data: [0, 0, 0]
+                data: [0, 0, -5]
               - name: rotation
                 data: [0, 0, 0, 1]
               - name: scale
@@ -144,10 +134,13 @@ Layer:
                 data: true
               - name: locked
                 data: false
+              - name: movability
+                data: enum
+                enumValue: 0
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: New Entity
+                data: Camera
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -155,20 +148,55 @@ Layer:
           - guid: [5086337540049333714, 3220959922222851753]
             members:
               - name: parent
-                data: 4294967295
+                data: 0
               - name: children
                 data: array
                 values:
                   []
-          - guid: [4956947959302657279, 6431008363526150588]
+          - guid: [5292648669697150475, 12278682903067466634]
             members:
-              - name: intensity
-                data: 1
-              - name: color
-                data: [1, 1, 1]
-              - name: lightSize
-                data: 1
-              - name: softShadows
+              []
+    - Entity:
+        id: 3703598940
+        cellId: 0
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 12840722902059650130
+              - name: material
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [3.65104246, 0, 3.24484253]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [0.00999999978, 0.00999999978, 0.00999999978]
+              - name: visible
                 data: true
-              - name: castShadows
-                data: true
+              - name: locked
+                data: false
+              - name: movability
+                data: enum
+                enumValue: 0
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: BistroExterior
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 0
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5292648669697150475, 12278682903067466634]
+            members:
+              []

@@ -65,6 +65,9 @@ namespace Volt
 
 		void BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer);
 
+		void Flush();
+		Ref<RHI::StorageBuffer> GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer);
+
 		template<typename T>
 		void SetConstant(const T& data);
 

@@ -34,6 +34,8 @@ namespace Volt
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
+
+		glm::vec4 cone;
 	};
 
 	class Mesh : public Asset

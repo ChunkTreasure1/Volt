@@ -8,7 +8,7 @@
 
 namespace Volt::Algo
 {
-	std::vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t, uint32_t)>&& func, uint32_t iterationCount)
+	std::vector<std::future<void>> ForEachParallelLockable(std::function<void(uint32_t threadIdx, uint32_t elementIdx)>&& func, uint32_t iterationCount)
 	{
 		auto& threadPool = Application::GetThreadPool();
 

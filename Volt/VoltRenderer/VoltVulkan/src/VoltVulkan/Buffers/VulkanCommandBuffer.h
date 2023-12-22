@@ -21,6 +21,7 @@ namespace Volt::RHI
 
 		void Begin() override;
 		void End() override;
+		void RestartAfterFlush() override;
 		void Execute() override;
 		void ExecuteAndWait() override;
 		void WaitForLastFence() override;

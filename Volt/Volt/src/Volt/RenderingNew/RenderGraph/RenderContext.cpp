@@ -209,6 +209,31 @@ namespace Volt
 		m_commandBuffer->BindIndexBuffer(indexBuffer);
 	}
 
+	void RenderContext::Flush()
+	{
+		m_commandBuffer->End();
+
+		GlobalResourceManager::Update();
+	
+		m_commandBuffer->ExecuteAndWait();
+		m_commandBuffer->RestartAfterFlush();
+	}
+
+	Ref<RHI::StorageBuffer> RenderContext::GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer)
+	{
+		Ref<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetByteSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+
+		Ref<RHI::CommandBuffer> tempCommandBuffer = RHI::CommandBuffer::Create();
+		tempCommandBuffer->Begin();
+
+		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetByteSize());
+
+		tempCommandBuffer->End();
+		tempCommandBuffer->ExecuteAndWait();
+
+		return readbackBuffer;
+	}
+
 	void RenderContext::SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer)
 	{
 		m_passConstantsBuffer = constantsBuffer;

@@ -7,6 +7,7 @@ struct Constants
 {
     RWTypedBuffer<uint> meshletCount;
     RWTypedBuffer<uint2> meshletToObjectIdAndOffset;
+    RWTypedBuffer<uint> statisticsBuffer;
     
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer <GPUMesh>meshBuffer;
@@ -65,7 +66,7 @@ void main(uint threadId : SV_DispatchThreadID, uint groupThreadId : SV_GroupThre
         }
     }
     
-#else
+#elif 1
     const Constants constants = GetConstants<Constants>();
     
     const uint waveSize = WaveGetLaneCount();
@@ -95,10 +96,46 @@ void main(uint threadId : SV_DispatchThreadID, uint groupThreadId : SV_GroupThre
     
     if (visible)
     {
+        constants.statisticsBuffer.InterlockedAdd(0, 1);
+        
         for (uint i = 0; i < meshletCount; ++i)
         {
             constants.meshletToObjectIdAndOffset.Store(laneOffset + i, uint2(threadId, laneOffset));
         }
+    }
+#else
+    const Constants constants = GetConstants<Constants>();
+    
+    const uint waveSize = WaveGetLaneCount();
+    const uint waveIndex = groupThreadId / THREAD_GROUP_SIZE;
+    const uint laneIndex = WaveGetLaneIndex();
+    
+    if (threadId >= constants.objectCount)
+    {
+        return;
+    }
+ 
+    const ObjectDrawData objectDrawData = constants.objectDrawDataBuffer.Load(threadId);
+    const GPUMesh mesh = constants.meshBuffer.Load(objectDrawData.meshId);
+    
+    bool visible = IsInFrustum(constants, objectDrawData.boundingSphereCenter, objectDrawData.boundingSphereRadius);
+    uint objectCount = WaveActiveCountBits(visible);
+    uint meshletCount = visible ? mesh.meshletCount : 0;
+    
+    meshletCount = WaveActiveSum(meshletCount);
+    
+    uint objectOffset;
+    if (WaveIsFirstLane())
+    {
+        constants.meshletCount.InterlockedAdd(0, objectCount, objectOffset);
+    }
+    
+    objectOffset = WaveReadLaneFirst(objectOffset);
+    uint laneOffset = objectOffset + WavePrefixCountBits(visible);
+    
+    if (visible)
+    {
+        constants.meshletToObjectIdAndOffset.Store(laneOffset, uint2(threadId, mesh.meshletCount));
     }
 #endif
 }
