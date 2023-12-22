@@ -48,6 +48,8 @@ namespace Volt
 			ProjectManager::GetAssetsDirectory()
 		};
 
+		std::vector<std::future<void>> shaderFutures;
+
 		for (const auto& searchPath : searchPaths)
 		{
 			for (const auto& path : std::filesystem::recursive_directory_iterator(searchPath))
@@ -69,14 +71,19 @@ namespace Volt
 
 				auto& threadPool = Application::GetThreadPool();
 
-				threadPool.SubmitTask([&, def = shaderDef]() 
+				shaderFutures.emplace_back(threadPool.SubmitTask([&, def = shaderDef]() 
 				{
 					// #TODO: Fix force compile!
 					// We need to do this because the formats / input layouts are not created correctly otherwise
 					Ref<RHI::Shader> shader = RHI::Shader::Create(def->GetName(), def->GetSourceFiles(), true);
 					s_shaderMap[std::string(def->GetName())] = shader;
-				});
+				}));
 			}
+		}
+
+		for (const auto& future : shaderFutures)
+		{
+			future.wait();
 		}
 	}
 

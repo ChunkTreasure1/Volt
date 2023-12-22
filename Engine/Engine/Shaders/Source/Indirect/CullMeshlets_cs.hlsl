@@ -56,7 +56,8 @@ void main(uint threadId : SV_DispatchThreadID)
     const uint meshletIndex = objectData.meshletStartOffset + threadId - objectIdAndOffset.y;
     const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
     
-    bool isVisibile = IsInFrustum(constants, objectData.transform, meshlet.boundingSphereCenter, meshlet.boundingSphereRadius);
+    bool isVisibile = true;
+    //IsInFrustum(constants, objectData.transform, meshlet.boundingSphereCenter, meshlet.boundingSphereRadius);
     
     if (isVisibile)
     {
