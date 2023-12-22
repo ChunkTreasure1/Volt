@@ -122,7 +122,11 @@ bool FileSystem::SetRegistryValue(const std::string& key, const std::string& val
 
 void FileSystem::StartProcess(const std::filesystem::path& processName, const std::wstring& commandLine)
 {
-	DWORD exitCode = 0;
+	std::wstring processDir = processName.parent_path().wstring();
+	std::wstring tempProcessName = processName.wstring();
+	tempProcessName.insert(tempProcessName.begin(), '\"');
+	tempProcessName.push_back('\"');
+
 	SHELLEXECUTEINFO ShExecInfo = { 0 };
 	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
@@ -130,7 +134,7 @@ void FileSystem::StartProcess(const std::filesystem::path& processName, const st
 	ShExecInfo.lpVerb = L"open";
 	ShExecInfo.lpFile = processName.c_str();
 	ShExecInfo.lpParameters = commandLine.c_str();
-	ShExecInfo.lpDirectory = processName.parent_path().c_str();
+	ShExecInfo.lpDirectory = processDir.c_str();
 	ShExecInfo.nShow = SW_SHOW;
 	ShExecInfo.hInstApp = NULL;
 	ShellExecuteEx(&ShExecInfo);
@@ -164,8 +168,24 @@ bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
 		return false;
 	}
 
-	ShellExecute(nullptr, L"explorer", absolutePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-	return true;
+	bool succeded = false;
+
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	if (SUCCEEDED(hr))
+	{
+		ITEMIDLIST* pidl = ILCreateFromPath(absolutePath.c_str());
+		if (pidl)
+		{
+			hr = SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+
+			succeded = SUCCEEDED(hr);
+
+			ILFree(pidl);
+		}
+	}
+
+	CoUninitialize();
+	return succeded;
 }
 
 std::filesystem::path FileSystem::PickFolderDialogue()

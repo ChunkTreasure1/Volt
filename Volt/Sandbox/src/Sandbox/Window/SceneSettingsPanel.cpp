@@ -19,7 +19,7 @@ void SceneSettingsPanel::UpdateMainContent()
 
 	if (UI::BeginProperties("sceneSettings"))
 	{
-		if (UI::Property("Use World Engine", sceneSettings.useWorldEngine))
+		if (UI::Property("Use World Engine", sceneSettings.useWorldEngine) && sceneSettings.useWorldEngine)
 		{
 			ModalSystem::GetModal<ConvertToWorldEngineModal>(m_convertionModal).SetCurrentScene(m_editorScene);
 			ModalSystem::GetModal<ConvertToWorldEngineModal>(m_convertionModal).Open();
