@@ -337,18 +337,52 @@ namespace YAML
 	};
 
 	template<>
-	struct convert<Volt::AssetHandle>
+	struct convert<UUID64>
 	{
-		static Node encode(const Volt::AssetHandle& rhs)
+		static Node encode(const UUID64& rhs)
 		{
 			Node node;
 			node.push_back((uint64_t)rhs);
 			return node;
 		};
 
-		static bool decode(const Node& node, Volt::AssetHandle& v)
+		static bool decode(const Node& node, UUID64& v)
 		{
 			v = node.as<uint64_t>();
+			return true;
+		};
+	};
+
+	template<>
+	struct convert<UUID32>
+	{
+		static Node encode(const UUID32& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, UUID32& v)
+		{
+			v = node.as<uint32_t>();
+			return true;
+		};
+	};
+
+	template<>
+	struct convert<Volt::EntityID>
+	{
+		static Node encode(const Volt::EntityID& rhs)
+		{
+			Node node;
+			node.push_back((uint32_t)rhs);
+			return node;
+		};
+
+		static bool decode(const Node& node, Volt::EntityID& v)
+		{
+			v = node.as<uint32_t>();
 			return true;
 		};
 	};

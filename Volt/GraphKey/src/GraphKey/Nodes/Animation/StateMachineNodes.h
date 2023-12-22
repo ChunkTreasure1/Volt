@@ -18,7 +18,7 @@ namespace GraphKey
 		void Deserialize(const YAML::Node& node) override;
 
 		const std::string GetName() override;
-		Ref<Node> CreateCopy(Graph* ownerGraph, entt::entity entity = entt::null) override;
+		Ref<Node> CreateCopy(Graph* ownerGraph, Volt::EntityID entity = Volt::Entity::NullID()) override;
 
 		inline const glm::vec4 GetColor() override { return { 1.f }; }
 		inline const Ref<Volt::AnimationStateMachine> GetStateMachine() const { return myStateMachine; }
@@ -27,4 +27,5 @@ namespace GraphKey
 		Ref<Volt::AnimationStateMachine> myStateMachine;
 		void SampleStateMachine();
 	};
+	
 }

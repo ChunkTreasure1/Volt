@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Volt/Scripting/Mono/MonoScriptClass.h"
-
-#include <entt.hpp>
+#include "Volt/Scene/Entity.h"
 
 #include <string>
 #include <unordered_map>
@@ -34,7 +33,8 @@ namespace Volt
 		static MonoArray* CreateMonoArray(const std::vector<T>& vector);
 		static MonoArray* CreateMonoArrayUInt32(const std::vector<uint32_t>& vector);
 		static MonoArray* CreateMonoArrayUInt64(const std::vector<uint64_t>& vector);
-		static MonoArray* CreateMonoArrayEntity(const std::vector<entt::entity>& vector);
+		static MonoArray* CreateMonoArrayEntity(const std::vector<EntityID>& vector);
+		static MonoArray* CreateMonoArrayEntity(const std::vector<Entity>& vector);
 
 		static bool CreateNewCSFile(std::string name, std::filesystem::path directoryFromAssets, bool regenerate);
 

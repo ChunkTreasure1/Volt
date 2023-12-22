@@ -22,7 +22,7 @@
 MeshPreviewPanel::MeshPreviewPanel()
 	: EditorWindow("Mesh Preview", true)
 {
-	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Mesh Preview", false);
 
 	// Preview entity

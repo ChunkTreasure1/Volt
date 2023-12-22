@@ -22,6 +22,7 @@ namespace Volt
 
 		inline const bool Initialized() const { ReadLock lock{ m_mutex };  return m_hasBeenInitialized; }
 		inline const bool IsRunning() const { ReadLock lock{ m_mutex };  return IsRunningImpl(); }
+		inline const uint32_t GetThreadCount() const { return m_threadCount; }
 
 	private:
 		inline const bool IsRunningImpl() const
@@ -36,6 +37,8 @@ namespace Volt
 		bool m_hasBeenInitialized = false;
 		bool m_shouldStop = false;
 		bool m_shouldCancel = false;
+
+		uint32_t m_threadCount = 0;
 
 		mutable ThreadSafeQueue<std::function<void()>> m_tasks;
 		mutable std::once_flag m_onceFlag;

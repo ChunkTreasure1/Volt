@@ -23,7 +23,7 @@
 PrefabEditorPanel::PrefabEditorPanel()
 	: EditorWindow("Prefab Editor", true)
 {
-	myCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 	myScene = Volt::Scene::CreateDefaultScene("Prefab Editor", false);
 
 	myScene->Clear();

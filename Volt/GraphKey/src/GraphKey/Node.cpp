@@ -49,7 +49,7 @@ namespace GraphKey
 		}
 	}
 
-	Ref<Node> Node::CreateCopy(Graph* ownerGraph, entt::entity entity)
+	Ref<Node> Node::CreateCopy(Graph* ownerGraph, Volt::EntityID entity)
 	{
 		Ref<Node> newNode = Registry::Create(GetRegistryName());
 

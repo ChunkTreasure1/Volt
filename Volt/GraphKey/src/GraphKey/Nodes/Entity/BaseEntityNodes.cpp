@@ -26,10 +26,11 @@ namespace GraphKey
 	void CreateEntityNode::CreateEntity()
 	{
 		auto activeScene = Volt::SceneManager::GetActiveScene();
+		auto scenePtr = activeScene;
 
-		if (activeScene)
+		if (scenePtr)
 		{
-			auto entity = activeScene->CreateEntity();
+			auto entity = scenePtr->CreateEntity();
 			entity.SetPosition(GetInput<glm::vec3>(2));
 			entity.SetLocalRotation(GetInput<glm::quat>(3));
 			entity.SetLocalScale(GetInput<glm::vec3>(4));
@@ -57,7 +58,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(outputs[0].data))
 		{
-			outputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene() };
+			outputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -80,9 +81,11 @@ namespace GraphKey
 		auto activeScene = Volt::SceneManager::GetActiveScene();
 		auto entity = GetInput<Volt::Entity>(1);
 
-		if (activeScene && entity)
+		auto scenePtr = activeScene;
+
+		if (scenePtr && entity)
 		{
-			activeScene->RemoveEntity(entity);
+			scenePtr->RemoveEntity(entity);
 		}
 
 		ActivateOutput(0);
@@ -105,7 +108,7 @@ namespace GraphKey
 	{
 		if (!std::any_cast<Volt::Entity>(inputs[0].data))
 		{
-			inputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene() };
+			inputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 		}
 	}
 
@@ -130,7 +133,7 @@ namespace GraphKey
 
 	void SelfNode::Initialize()
 	{
-		outputs[0].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene() };
+		outputs[0].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 	}
 
 	void SelfNode::GetEntity()

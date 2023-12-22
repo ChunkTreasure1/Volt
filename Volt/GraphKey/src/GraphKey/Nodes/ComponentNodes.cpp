@@ -8,7 +8,7 @@ namespace GraphKey
 {
 	void LightNode::Initialize()
 	{
-		inputs[1].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene() };
+		inputs[1].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 	}
 
 	void LightNode::SetProperties()
@@ -28,7 +28,7 @@ namespace GraphKey
 
 	void ChangeLightColorNode::Initialize()
 	{
-		inputs[1].data = Volt::Entity{ myGraph->GetEntity(), Volt::SceneManager::GetActiveScene() };
+		inputs[1].data = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(myGraph->GetEntity());
 	}
 
 	void ChangeLightColorNode::OnEvent(Volt::Event& e)

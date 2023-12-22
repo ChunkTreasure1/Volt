@@ -217,8 +217,8 @@ void AssetBrowserPanel::UpdateMainContent()
 
 			if (void* ptr = UI::DragDropTarget("scene_entity_hierarchy"))
 			{
-				entt::entity entity = *(entt::entity*)ptr;
-				if (entity != entt::null)
+				Volt::EntityID entity = *(Volt::EntityID*)ptr;
+				if (entity != Volt::Entity::NullID())
 				{
 					CreatePrefabAndSetupEntities(entity);
 					Reload();
@@ -1191,9 +1191,9 @@ AssetBrowser::DirectoryItem* AssetBrowserPanel::FindDirectoryWithPathRecursivly(
 	return nullptr;
 }
 
-void AssetBrowserPanel::CreatePrefabAndSetupEntities(entt::entity id)
+void AssetBrowserPanel::CreatePrefabAndSetupEntities(Volt::EntityID id)
 {
-	Volt::Entity entity{ id, myEditorScene };
+	Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
 	if (entity.HasComponent<Volt::PrefabComponent>())
 	{
@@ -1213,9 +1213,9 @@ void AssetBrowserPanel::CreatePrefabAndSetupEntities(entt::entity id)
 	Reload();
 }
 
-void AssetBrowserPanel::SetupEntityAsPrefab(entt::entity id, Volt::AssetHandle prefabId)
+void AssetBrowserPanel::SetupEntityAsPrefab(Volt::EntityID id, Volt::AssetHandle prefabId)
 {
-	Volt::Entity entity{ id, myEditorScene };
+	Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
 	if (!entity.HasComponent<Volt::PrefabComponent>())
 	{

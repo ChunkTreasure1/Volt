@@ -93,7 +93,7 @@ namespace GraphKey
 		}
 	}
 
-	Graph::Graph(entt::entity entity)
+	Graph::Graph(Volt::EntityID entity)
 		: myEntity(entity)
 	{
 	}
@@ -142,6 +142,10 @@ namespace GraphKey
 
 		if (output)
 		{
+			while (!output->links.empty())
+			{
+				RemoveLink(output->links.front());
+			}
 			output->links.emplace_back(newLink.id);
 		}
 
@@ -303,7 +307,7 @@ namespace GraphKey
 		{
 			Ref<GraphKey::Node> newNode;
 
-			if (dstGraph->GetEntity() != entt::null)
+			if (dstGraph->GetEntity() != Volt::Entity::NullID())
 			{
 				newNode = n->CreateCopy(dstGraph.get(), dstGraph->GetEntity());
 			}
@@ -323,7 +327,7 @@ namespace GraphKey
 			newLink.output = l.output;
 		}
 
-		if (dstGraph->myEntity == entt::null)
+		if (dstGraph->myEntity == Volt::Entity::NullID())
 		{
 			dstGraph->myEntity = srcGraph->myEntity;
 		}

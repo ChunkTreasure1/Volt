@@ -30,7 +30,7 @@ namespace Volt
 			return Entity::Null();
 		}
 
-		Entity newEntity = Entity::Duplicate(Entity{ m_rootEntityId, m_prefabScene }, targetScene);
+		Entity newEntity = Entity::Duplicate(m_prefabScene->GetEntityFromUUID(m_rootEntityId), targetScene);
 		if (targetScene->IsPlaying())
 		{
 			InitializeComponents(newEntity);
@@ -66,7 +66,7 @@ namespace Volt
 			return false;
 		}
 
-		const bool updateSucceded = UpdateEntityInPrefabInternal(srcEntity, srcEntity.GetComponent<PrefabComponent>().sceneRootEntity, entt::null);
+		const bool updateSucceded = UpdateEntityInPrefabInternal(srcEntity, srcEntity.GetComponent<PrefabComponent>().sceneRootEntity, Entity::NullID());
 
 		if (updateSucceded)
 		{
@@ -90,12 +90,12 @@ namespace Volt
 
 	void Prefab::UpdateEntityInScene(Entity sceneEntity)
 	{
-		UpdateEntityInSceneInternal(sceneEntity, entt::null);
+		UpdateEntityInSceneInternal(sceneEntity, Entity::NullID());
 	}
 
-	void Prefab::CopyPrefabEntity(Entity dstEntity, entt::entity srcPrefabEntityId, const EntityCopyFlags copyFlags) const
+	void Prefab::CopyPrefabEntity(Entity dstEntity, EntityID srcPrefabEntityId, const EntityCopyFlags copyFlags) const
 	{
-		Entity prefabEntity{ srcPrefabEntityId, m_prefabScene };
+		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(srcPrefabEntityId);
 		if (!prefabEntity)
 		{
 			return;
@@ -118,16 +118,16 @@ namespace Volt
 			return false;
 		}
 
-		const entt::entity prefabEntityId = entity.GetComponent<PrefabComponent>().prefabEntity;
+		const EntityID prefabEntityId = entity.GetComponent<PrefabComponent>().prefabEntity;
 
-		Entity prefabEntity{ prefabEntityId, m_prefabScene };
+		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
 		const bool isValid = prefabEntity.IsValid();
 		return isValid;
 	}
 
-	const bool Prefab::IsEntityValidInPrefab(entt::entity prefabEntityId) const
+	const bool Prefab::IsEntityValidInPrefab(EntityID prefabEntityId) const
 	{
-		return m_prefabScene->GetRegistry().valid(prefabEntityId);
+		return m_prefabScene->IsEntityValid(prefabEntityId);
 	}
 
 	const bool Prefab::IsEntityRoot(Entity entity) const
@@ -162,9 +162,14 @@ namespace Volt
 		return m_prefabReferencesMap.at(entity.GetComponent<PrefabComponent>().prefabEntity);
 	}
 
+	const Entity Prefab::GetRootEntity() const
+	{
+		return m_prefabScene->GetEntityFromUUID(m_rootEntityId);
+	}
+
 	void Prefab::InitializeComponents(Entity entity)
 	{
-		Entity prefabEntity{ entity.GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
+		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(entity.GetComponent<PrefabComponent>().prefabEntity);
 
 		if (prefabEntity.HasComponent<RigidbodyComponent>())
 		{
@@ -236,8 +241,8 @@ namespace Volt
 		m_rootEntityId = srcRootEntity.GetID();
 
 		AddEntityToPrefabRecursive(srcRootEntity, Entity::Null());
-		Entity rootPrefabEntity{ m_rootEntityId, m_prefabScene };
-		rootPrefabEntity.GetComponent<RelationshipComponent>().parent = entt::null;
+		Entity rootPrefabEntity = m_prefabScene->GetEntityFromUUID(m_rootEntityId);
+		rootPrefabEntity.GetComponent<RelationshipComponent>().parent = Entity::NullID();
 
 		rootPrefabEntity.SetPosition({ 0.f });
 		rootPrefabEntity.SetRotation(glm::identity<glm::quat>());
@@ -245,8 +250,8 @@ namespace Volt
 
 	void Prefab::AddEntityToPrefabRecursive(Entity srcEntity, Entity parentPrefabEntity)
 	{
-		entt::entity newEntityId = srcEntity.GetID();
-		auto newEntity = m_prefabScene->CreateEntity("", newEntityId);
+		EntityID newEntityId = srcEntity.GetID();
+		auto newEntity = m_prefabScene->CreateEntityWithUUID(newEntityId);
 
 		// If this entity already has a prefab component, it probably is another prefab. Add it as a reference
 		if (srcEntity.HasComponent<PrefabComponent>())
@@ -288,12 +293,12 @@ namespace Volt
 
 	void Prefab::ValidatePrefabUpdate(Entity srcEntity)
 	{
-		std::vector<entt::entity> entitiesToRemove;
+		std::vector<EntityID> entitiesToRemove;
 		std::vector<Entity> srcHeirarchy = FlattenEntityHeirarchy(srcEntity);
 
-		Entity srcPrefabEntity{ srcEntity.GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
+		Entity srcPrefabEntity = m_prefabScene->GetEntityFromUUID(srcEntity.GetComponent<PrefabComponent>().prefabEntity);
 
-		m_prefabScene->ForEachWithComponents<const PrefabComponent>([&](const entt::entity id, const PrefabComponent& prefabComp)
+		m_prefabScene->ForEachWithComponents<const PrefabComponent, const IDComponent>([&](const entt::entity id, const PrefabComponent& prefabComp, const IDComponent& idComponent)
 		{
 			bool exists = false;
 
@@ -304,7 +309,7 @@ namespace Volt
 
 			for (const auto& srcEnt : srcHeirarchy)
 			{
-				if (id == srcEnt.GetComponent<PrefabComponent>().prefabEntity)
+				if (idComponent.id == srcEnt.GetComponent<PrefabComponent>().prefabEntity)
 				{
 					exists = true;
 					break;
@@ -313,7 +318,7 @@ namespace Volt
 
 			if (!exists)
 			{
-				entitiesToRemove.emplace_back(id);
+				entitiesToRemove.emplace_back(idComponent.id);
 			}
 		});
 
@@ -325,17 +330,17 @@ namespace Volt
 				m_prefabReferencesMap.erase(id);
 			}
 
-			auto entity = Entity{ id, m_prefabScene };
+			auto entity = m_prefabScene->GetEntityFromUUID(id);
 			if (!entity)
 			{
 				continue;
 			}
 
-			m_prefabScene->RemoveEntity(Entity{ id, m_prefabScene });
+			m_prefabScene->RemoveEntity(entity);
 		}
 	}
 
-	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, entt::entity sceneRootId, entt::entity forcedPrefabEntity)
+	const bool Prefab::UpdateEntityInPrefabInternal(Entity srcEntity, EntityID sceneRootId, EntityID forcedPrefabEntity)
 	{
 		bool shouldAddEntity = !srcEntity.HasComponent<PrefabComponent>();
 		if (!shouldAddEntity)
@@ -356,7 +361,7 @@ namespace Volt
 			}
 
 			// Make sure we are not updating from another prefab
-			if (srcEntity.GetComponent<PrefabComponent>().prefabAsset != handle && forcedPrefabEntity == entt::null)
+			if (srcEntity.GetComponent<PrefabComponent>().prefabAsset != handle && forcedPrefabEntity == Entity::NullID())
 			{
 				shouldAddEntity = true;
 			}
@@ -368,7 +373,7 @@ namespace Volt
 
 			if (srcEntity.HasParent() && srcEntity.GetParent().HasComponent<PrefabComponent>())
 			{
-				prefabParent = { srcEntity.GetParent().GetComponent<PrefabComponent>().prefabEntity, m_prefabScene };
+				prefabParent = m_prefabScene->GetEntityFromUUID(srcEntity.GetParent().GetComponent<PrefabComponent>().prefabEntity);
 			}
 
 			AddEntityToPrefabRecursive(srcEntity, prefabParent);
@@ -381,8 +386,8 @@ namespace Volt
 			return false;
 		}
 
-		const entt::entity prefabEntityId = forcedPrefabEntity != entt::null ? forcedPrefabEntity : srcPrefabComp.prefabEntity;
-		Entity targetEntity{ prefabEntityId, m_prefabScene };
+		const EntityID prefabEntityId = forcedPrefabEntity != Entity::NullID() ? forcedPrefabEntity : srcPrefabComp.prefabEntity;
+		Entity targetEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
 		if (!targetEntity)
 		{
 			VT_CORE_WARN("[Prefab]: Trying to update an invalid entity in prefab!");
@@ -401,13 +406,13 @@ namespace Volt
 
 		for (const auto& srcChild : srcEntity.GetChildren())
 		{
-			UpdateEntityInPrefabInternal(srcChild, sceneRootId, entt::null);
+			UpdateEntityInPrefabInternal(srcChild, sceneRootId, Entity::NullID());
 		}
 
 		return true;
 	}
 
-	void Prefab::UpdateEntityInSceneInternal(Entity sceneEntity, entt::entity forcedPrefabEntity)
+	void Prefab::UpdateEntityInSceneInternal(Entity sceneEntity, EntityID forcedPrefabEntity)
 	{
 		if (!sceneEntity.HasComponent<PrefabComponent>())
 		{
@@ -415,7 +420,7 @@ namespace Volt
 		}
 
 		const auto& scenePrefabComp = sceneEntity.GetComponent<PrefabComponent>();
-		const entt::entity prefabEntityId = forcedPrefabEntity != entt::null ? forcedPrefabEntity : scenePrefabComp.prefabEntity;
+		const EntityID prefabEntityId = forcedPrefabEntity != Entity::NullID() ? forcedPrefabEntity : scenePrefabComp.prefabEntity;
 
 		if (m_prefabReferencesMap.contains(prefabEntityId))
 		{
@@ -425,7 +430,7 @@ namespace Volt
 			return;
 		}
 
-		Entity prefabEntity{ prefabEntityId, m_prefabScene };
+		Entity prefabEntity = m_prefabScene->GetEntityFromUUID(prefabEntityId);
 		if (!prefabEntity)
 		{
 			sceneEntity.GetScene()->RemoveEntity(sceneEntity);
@@ -487,7 +492,7 @@ namespace Volt
 
 	Entity Prefab::InstantiateEntity(Weak<Scene> targetScene, Entity prefabEntity)
 	{
-		Entity newEntity = Entity::Duplicate(Entity{ prefabEntity.GetID(), m_prefabScene }, targetScene);
+		Entity newEntity = Entity::Duplicate(prefabEntity, targetScene);
 		if (targetScene->IsPlaying())
 		{
 			InitializeComponents(newEntity);
@@ -516,7 +521,7 @@ namespace Volt
 		return result;
 	}
 
-	Prefab::Prefab(Ref<Scene> prefabScene, entt::entity rootEntityId, uint32_t version)
+	Prefab::Prefab(Ref<Scene> prefabScene, EntityID rootEntityId, uint32_t version)
 		: m_prefabScene(prefabScene), m_rootEntityId(rootEntityId), m_version(version)
 	{
 	}

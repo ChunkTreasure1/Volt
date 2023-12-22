@@ -113,11 +113,12 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 		s_initialized = true;
 	}
 
-	auto& registry = scene->GetRegistry();
+	auto scenePtr = scene;
+	auto& registry = scenePtr->GetRegistry();
 
 	for (auto&& curr : registry.storage())
 	{
-		if (auto& storage = curr.second; storage.contains(entity.GetID()))
+		if (auto& storage = curr.second; storage.contains(entity))
 		{
 			std::string_view typeName = storage.type().name();
 			const Volt::ICommonTypeDesc* typeDesc = Volt::ComponentRegistry::GetTypeDescFromName(typeName);
@@ -157,11 +158,11 @@ void ComponentPropertyUtility::DrawComponents(Weak<Volt::Scene> scene, Volt::Ent
 						}
 					}
 
-					DrawComponent(scene, entity, compTypeDesc, storage.get(entity.GetID()), 0, open, false);
+					DrawComponent(scene, entity, compTypeDesc, storage.get(entity), 0, open, false);
 
 					if (removeComp)
 					{
-						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene->GetRegistry(), entity.GetID());
+						Volt::ComponentRegistry::Helpers::RemoveComponentWithGUID(compTypeDesc->GetGUID(), scene->GetRegistry(), entity);
 					}
 
 					break;
@@ -281,9 +282,9 @@ void ComponentPropertyUtility::DrawComponentDefaultMember(Weak<Volt::Scene> scen
 	}
 
 	// Special case for entities
-	if (member.typeIndex == std::type_index{ typeid(entt::entity) })
+	if (member.typeIndex == std::type_index{ typeid(Volt::EntityID) })
 	{
-		if (UI::PropertyEntity(std::string(member.label), scene, *reinterpret_cast<entt::entity*>(&bytePtr[offset + member.offset])))
+		if (UI::PropertyEntity(std::string(member.label), scene, *reinterpret_cast<Volt::EntityID*>(&bytePtr[offset + member.offset])))
 		{
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
 		}
@@ -310,6 +311,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (EditorUtils::Property(label, *reinterpret_cast<Volt::AssetHandle*>(elementData), arrayMember.assetType))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -319,6 +321,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (UI::PropertyColor(label, *reinterpret_cast<glm::vec3*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -328,16 +331,18 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 		if (UI::PropertyColor(label, *reinterpret_cast<glm::vec4*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
 
 	// Special case for entities
-	if (arrayMember.typeIndex == std::type_index{ typeid(entt::entity) })
+	if (arrayMember.typeIndex == std::type_index{ typeid(Volt::EntityID) })
 	{
-		if (UI::PropertyEntity(label, scene, *reinterpret_cast<entt::entity*>(elementData)))
+		if (UI::PropertyEntity(label, scene, *reinterpret_cast<Volt::EntityID*>(elementData)))
 		{
 			AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 		return;
 	}
@@ -350,6 +355,7 @@ void ComponentPropertyUtility::DrawComponentDefaultMemberArray(Weak<Volt::Scene>
 	if (s_propertyFunctions.at(typeIndex)(label, elementData, 0))
 	{
 		AddLocalChangeToEntity(entity, arrayMember.ownerTypeDesc->GetGUID(), arrayMember.name);
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 }
 
@@ -382,6 +388,7 @@ void ComponentPropertyUtility::DrawComponentEnum(Weak<Volt::Scene> scene, Volt::
 	{
 		currentValue = indexToValueMap.at(currentValue);
 		AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+		EditorUtils::MarkEntityAsEdited(entity);
 	}
 }
 
@@ -445,6 +452,8 @@ void ComponentPropertyUtility::DrawComponentArray(Weak<Volt::Scene> scene, Volt:
 		{
 			arrayDesc->EmplaceBack(arrayPtr, nullptr);
 			AddLocalChangeToEntity(entity, member.ownerTypeDesc->GetGUID(), member.name);
+
+			EditorUtils::MarkEntityAsEdited(entity);
 		}
 
 		ImGui::TreePop();
@@ -527,8 +536,10 @@ void ComponentPropertyUtility::DrawMonoScript(Weak<Volt::Scene> scene, const Vol
 
 		if (Sandbox::Get().GetSceneState() == SceneState::Edit)
 		{
-			scene->ShutdownEngineScripts();
-			scene->InitializeEngineScripts();
+			auto scenePtr = scene;
+
+			scenePtr->ShutdownEngineScripts();
+			scenePtr->InitializeEngineScripts();
 		}
 	}
 }
@@ -563,18 +574,25 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 				if (EditorUtils::Property(displayName, value, field.type.assetType))
 				{
 					scriptInstance->SetField(name, &value);
-					AddLocalChangeToEntity(entity, scriptEntry.name, name);
 				}
 
 				continue;
 			}
 			else if (field.type.IsEntity())
 			{
-				entt::entity value = scriptInstance->GetField<entt::entity>(name);
+				Volt::EntityID value = scriptInstance->GetField<Volt::EntityID>(name);
 				if (UI::PropertyEntity(displayName, scene, value))
 				{
 					scriptInstance->SetField(name, &value);
 					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+				}
+			}
+			else if (field.type.IsCustomMonoType())
+			{
+				Volt::EntityID value = scriptInstance->GetCustomMonoTypeField(name);
+				if (UI::PropertyEntityCustomMonoType(displayName, scene, value, field.type))
+				{
+
 				}
 			}
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
@@ -666,7 +684,8 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			// #TODO_Ivar: We probably should not have to check this here
 			if (!currentField->data.IsValid())
 			{
-				continue;
+				const auto& defaultValueData = defaultFieldValueMap.at(name)->data;
+				currentField->SetValue(defaultValueData.As<const void>(), defaultValueData.GetSize());
 			}
 
 			bool fontChanged = false;
@@ -701,12 +720,12 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 						scriptInstance->SetField(name, str);
 					}
 
-					AddLocalChangeToEntity(entity, scriptEntry.name, name);
+					fieldChanged = true;
 				}
 			}
 			else if (field.type.IsEntity())
 			{
-				fieldChanged = UI::PropertyEntity(displayName, scene, *currentField->data.As<entt::entity>());
+				fieldChanged = UI::PropertyEntity(displayName, scene, *currentField->data.As<Volt::EntityID>());
 			}
 			else if (field.type.IsAsset())
 			{
@@ -715,6 +734,10 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			else if ((field.type.typeFlags & Volt::MonoTypeFlags::Color) != Volt::MonoTypeFlags::None)
 			{
 				fieldChanged = UI::PropertyColor(displayName, *currentField->data.As<glm::vec4>());
+			}
+			else if (field.type.IsCustomMonoType())
+			{
+				fieldChanged = UI::PropertyEntityCustomMonoType(displayName, scene, *currentField->data.As<Volt::EntityID>(), field.type);
 			}
 			else if (field.type.IsEnum())
 			{
@@ -746,7 +769,6 @@ void ComponentPropertyUtility::DrawMonoMembers(Weak<Volt::Scene> scene, const Vo
 			if (scriptInstance && fieldChanged)
 			{
 				scriptInstance->SetField(name, currentField->data.As<void>());
-
 				AddLocalChangeToEntity(entity, scriptEntry.name, name);
 			}
 
@@ -800,6 +822,8 @@ void ComponentPropertyUtility::AddLocalChangeToEntity(Volt::Entity entity, const
 	auto& newChange = prefabComp.componentLocalChanges.emplace_back();
 	newChange.componentGUID = componentGuid;
 	newChange.memberName = strMemberName;
+
+	EditorUtils::MarkEntityAsEdited(entity);
 }
 
 void ComponentPropertyUtility::AddLocalChangeToEntity(Volt::Entity entity, const std::string& scriptName, std::string_view memberName)
@@ -825,4 +849,6 @@ void ComponentPropertyUtility::AddLocalChangeToEntity(Volt::Entity entity, const
 	auto& newChange = prefabComp.scriptLocalChanges.emplace_back();
 	newChange.scriptName = scriptName;
 	newChange.memberName = memberName;
+
+	EditorUtils::MarkEntityAsEdited(entity);
 }

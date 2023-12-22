@@ -30,6 +30,7 @@ namespace Volt
 		const bool HasPassedTime(float startTime, float speed, float time);
 
 		const uint32_t GetFrameFromStartTime(float startTime, float speed);
+		const float GetNormalizedCurrentTimeFromStartTime(float startTime, float speed, bool looping);
 
 		inline const float GetDuration() const { return myDuration; }
 		inline const size_t GetFrameCount() const { return myFrames.size(); }

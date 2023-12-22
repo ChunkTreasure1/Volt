@@ -10,22 +10,22 @@ namespace GraphKey
 		inputs =
 		{
 			AttributeConfigDefault("Value", AttributeDirection::Input, int32_t(0)),
-			AttributeConfig("0", AttributeDirection::Input),
-			AttributeConfig("1", AttributeDirection::Input),
-			AttributeConfig("2", AttributeDirection::Input),
-			AttributeConfig("3", AttributeDirection::Input),
-			AttributeConfig("4", AttributeDirection::Input),
-			AttributeConfig("5", AttributeDirection::Input),
-			AttributeConfig("6", AttributeDirection::Input),
-			AttributeConfig("7", AttributeDirection::Input),
-			AttributeConfig("8", AttributeDirection::Input),
-			AttributeConfig("9", AttributeDirection::Input),
-			AttributeConfig("10", AttributeDirection::Input)
+			AttributeConfigAnimationPose<AnimationOutputData>("0", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("1", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("2", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("3", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("4", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("5", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("6", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("7", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("8", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("9", AttributeDirection::Input),
+			AttributeConfigAnimationPose<AnimationOutputData>("10", AttributeDirection::Input)
 		};
 
 		outputs =
 		{
-			AttributeConfig("Output", AttributeDirection::Output, GK_BIND_FUNCTION(AnimationSwitchNode::GetSwitchedAnimation))
+			AttributeConfigAnimationPose<AnimationOutputData>("Output", AttributeDirection::Output, GK_BIND_FUNCTION(AnimationSwitchNode::GetSwitchedAnimation))
 		};
 	}
 

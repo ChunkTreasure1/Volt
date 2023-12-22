@@ -21,6 +21,11 @@ namespace Volt
             NetScene.Notify(entity.Id, fieldName);
         }
 
+        public uint GetEntityID()
+        {
+            return entity.Id;
+        }
+
         // Available Functions.
 
         // private void OnAwake() { }

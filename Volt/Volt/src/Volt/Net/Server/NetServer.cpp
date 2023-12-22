@@ -61,7 +61,7 @@ namespace Volt
 		{
 			auto ptr = m_registry.Get(repId);
 			const auto& repEntity = *reinterpret_pointer_cast<RepEntity>(ptr);
-			auto entity = Entity(repEntity.GetEntityId(), SceneManager::GetActiveScene());
+			auto entity = SceneManager::GetActiveScene()->GetEntityFromUUID(repEntity.GetEntityId());
 			if (!entity.IsValid()) continue;
 
 			const auto& pawnComp = entity.GetComponent<NetActorComponent>();
@@ -168,7 +168,7 @@ namespace Volt
 			if (m_registry.Get(repId)->GetType() == Nexus::TYPE::eReplicatedType::ENTITY)
 			{
 				auto ent = reinterpret_cast<RepEntity*>(m_registry.Get(repId).get())->GetEntityId();
-				Volt::SceneManager::GetActiveScene()->RemoveEntity(Entity(ent, SceneManager::GetActiveScene().Get()));
+				Volt::SceneManager::GetActiveScene()->RemoveEntity(SceneManager::GetActiveScene()->GetEntityFromUUID(ent));
 			}
 			m_registry.Unregister(repId);
 		}
@@ -245,8 +245,9 @@ namespace Volt
 
 		m_registry.Unregister(repId);
 		auto scene = SceneManager::GetActiveScene();
+		auto scenePtr = scene;
 
-		scene->RemoveEntity(Entity(repEnt->GetEntityId(), scene.Get()));
+		scenePtr->RemoveEntity(scenePtr->GetEntityFromUUID(repEnt->GetEntityId()));
 
 		auto tPack = m_currentPacket.second;
 		tPack.ownerID = 0;
@@ -267,7 +268,7 @@ namespace Volt
 			VT_CORE_CRITICAL("Something went wrong with GameModeComponent. Make sure there is only one in the scene");
 			return;
 		}
-		auto gameModeEnt = Entity(gameMode[0], SceneManager::GetActiveScene().Get());
+		auto gameModeEnt = gameMode[0];
 		auto gameModeComp = gameModeEnt.GetComponent<GameModeComponent>();
 		//auto spawnPointEnt = Entity(gameModeEnt.spawnPoint, SceneManager::GetActiveScene().get()).GetComponent<GameModeComponent>();
 
@@ -303,7 +304,7 @@ namespace Volt
 			if (repEnt->GetHandle() == 0) continue;
 			if (repEnt->GetPreplaced()) continue;
 
-			auto sceneEnt = Entity(repEnt->GetEntityId(), SceneManager::GetActiveScene().Get());
+			auto sceneEnt = SceneManager::GetActiveScene()->GetEntityFromUUID(repEnt->GetEntityId());
 			Nexus::Packet syncPacket;
 			syncPacket.id = Nexus::ePacketID::CREATE_ENTITY;
 			syncPacket < CreateTransformComponentData(repId, sceneEnt.GetComponent<TransformComponent>());
@@ -391,7 +392,7 @@ namespace Volt
 			VT_CORE_CRITICAL("Something went wrong with GameModeComponent. Make sure there is only one in the scene");
 			return;
 		}
-		auto handle = Entity(gameMode[0], SceneManager::GetActiveScene().Get()).GetComponent<GameModeComponent>().enemy;
+		auto handle = gameMode[0].GetComponent<GameModeComponent>().enemy;
 		auto prefabData = CreatePrefabData(10, 0, handle);
 
 		ConstructPrefab(prefabData, m_registry);

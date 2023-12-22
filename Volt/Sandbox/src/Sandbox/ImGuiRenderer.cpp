@@ -490,7 +490,8 @@ float Sandbox::DrawTitlebar()
 	ImGui::SameLine();
 
 	const float w = ImGui::GetContentRegionAvail().x;
-	ImGui::InvisibleButton("##titlebarDragZone", ImVec2(w - buttonsAreaWidth, titlebarHeight));
+	const float titleBarDragWidth = w - buttonsAreaWidth;
+	ImGui::InvisibleButton("##titlebarDragZone", ImVec2(std::max(titleBarDragWidth, 1.0f), titlebarHeight));
 	myTitlebarHovered = ImGui::IsItemHovered();
 
 	ImGui::SameLine();

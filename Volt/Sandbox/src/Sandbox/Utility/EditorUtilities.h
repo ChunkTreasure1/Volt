@@ -36,7 +36,7 @@ struct NewCharacterData
 struct NewAnimationGraphData
 {
 	std::string name = "None";
-	Volt::AssetHandle characterHandle = Volt::Asset::Null();
+	Volt::AssetHandle skeletonHandle = Volt::Asset::Null();
 
 	std::filesystem::path destination = "Assets/Animations/";
 };
@@ -79,6 +79,9 @@ public:
 	static Ref<Volt::Texture2D> GenerateThumbnail(const std::filesystem::path& path);
 	static bool HasThumbnail(const std::filesystem::path& path);
 	static std::filesystem::path GetThumbnailPathFromPath(const std::filesystem::path& path);
+
+	static void MarkEntityAsEdited(const Volt::Entity& entity);
+	static void MarkEntityAndChildrenAsEdited(const Volt::Entity& entity);
 
 private:
 	static bool AssetBrowserPopupInternal(const std::string& id, Volt::AssetHandle& assetHandle, bool startState, Volt::AssetType wantedType = Volt::AssetType::None);

@@ -41,7 +41,7 @@ namespace Volt
 		streamReader.EnterScope("Prefab");
 		{
 			prefab->m_version = streamReader.ReadKey("version", uint32_t(0));
-			prefab->m_rootEntityId = streamReader.ReadKey("rootEntityId", (entt::entity)entt::null);
+			prefab->m_rootEntityId = streamReader.ReadKey("rootEntityId", Entity::NullID());
 
 			streamReader.ForEach("Entities", [&]() 
 			{
@@ -50,9 +50,9 @@ namespace Volt
 		
 			streamReader.ForEach("PrefabReferences", [&]() 
 			{
-				entt::entity entityId = streamReader.ReadKey("entity", (entt::entity)entt::null);
+				EntityID entityId = streamReader.ReadKey("entity", Entity::NullID());
 				AssetHandle prefabHandle = streamReader.ReadKey("prefabHandle", Asset::Null());
-				entt::entity prefabEntityReference = streamReader.ReadKey("prefabEntityReference", (entt::entity)entt::null);
+				EntityID prefabEntityReference = streamReader.ReadKey("prefabEntityReference", Entity::NullID());
 
 				auto& prefabRefData = prefab->m_prefabReferencesMap[entityId];
 				prefabRefData.prefabAsset = prefabHandle;

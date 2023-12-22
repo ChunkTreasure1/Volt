@@ -19,7 +19,7 @@ namespace Volt
 	class RepVariable : public Nexus::Replicated
 	{
 	public:
-		RepVariable(const std::string& in_variableName, Nexus::TYPE::REP_ID in_repOwner, Nexus::TYPE::CLIENT_ID in_ownerId, Ref<MonoScriptInstance> in_scriptInstance, MonoScriptField in_field, entt::entity in_entityId)
+		RepVariable(const std::string& in_variableName, Nexus::TYPE::REP_ID in_repOwner, Nexus::TYPE::CLIENT_ID in_ownerId, Ref<MonoScriptInstance> in_scriptInstance, MonoScriptField in_field, Volt::EntityID in_entityId)
 			: Replicated(Nexus::TYPE::eReplicatedType::VARIABLE, in_ownerId)
 			, m_varName(in_variableName)
 			, m_repOwner(in_repOwner)
@@ -27,7 +27,7 @@ namespace Volt
 			, m_field(in_field)
 			, m_entityId(in_entityId)
 		{
-			//auto monoClass = m_scriptInstance.lock()->GetClass();
+			//auto monoClass = m_scriptInstance->GetClass();
 			//MonoScriptEngine::NetFieldSetup(monoClass.get(), m_field);
 		}
 
@@ -46,7 +46,7 @@ namespace Volt
 		MonoScriptField m_field;
 		const std::string m_varName;
 		const Nexus::TYPE::REP_ID m_repOwner;
-		const entt::entity m_entityId;
+		const Volt::EntityID m_entityId;
 		bool m_changed = false;
 	};
 
@@ -61,7 +61,7 @@ namespace Volt
 		if (m_field.netData.boundFunction == "") return true;
 		auto monoClass = m_scriptInstance->GetClass();
 		std::string boundFunction = (monoClass->GetNamespace() + "." + monoClass->GetClassName() + "." + m_field.netData.boundFunction);
-		CallMonoMethod(Entity(m_entityId, SceneManager::GetActiveScene().Get()), boundFunction, std::vector<uint8_t>());
+		CallMonoMethod(SceneManager::GetActiveScene()->GetEntityFromUUID(m_entityId), boundFunction, std::vector<uint8_t>());
 
 		return true;
 	}

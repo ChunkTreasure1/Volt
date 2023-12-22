@@ -847,7 +847,7 @@ bool EditorUtils::NewAnimationGraphModal(const std::string& aId, Ref<Volt::Anima
 		if (UI::BeginProperties("NewGraph"))
 		{
 			UI::Property("Name", graphData.name);
-			EditorUtils::Property("Character", graphData.characterHandle, Volt::AssetType::AnimatedCharacter);
+			EditorUtils::Property("Skeleton", graphData.skeletonHandle, Volt::AssetType::Skeleton);
 			UI::PropertyDirectory("Destination", graphData.destination);
 
 			UI::EndProperties();
@@ -862,16 +862,16 @@ bool EditorUtils::NewAnimationGraphModal(const std::string& aId, Ref<Volt::Anima
 
 		if (ImGui::Button("Create"))
 		{
-			if (graphData.characterHandle == Volt::Asset::Null())
+			if (graphData.skeletonHandle == Volt::Asset::Null())
 			{
-				UI::Notify(NotificationType::Error, "Unable to create animation graph!", "Character must not be null!");
+				UI::Notify(NotificationType::Error, "Unable to create animation graph!", "Skeleton must not be null!");
 
 				UI::EndModal();
 				return false;
 			}
 
 			created = true;
-			auto newGraph = Volt::AssetManager::CreateAsset<Volt::AnimationGraphAsset>(graphData.destination, graphData.name + ".vtanimgraph", graphData.characterHandle);
+			auto newGraph = Volt::AssetManager::CreateAsset<Volt::AnimationGraphAsset>(graphData.destination, graphData.name + ".vtanimgraph", graphData.skeletonHandle);
 
 			if (outGraph)
 			{
@@ -978,4 +978,21 @@ bool EditorUtils::HasThumbnail(const std::filesystem::path& path)
 std::filesystem::path EditorUtils::GetThumbnailPathFromPath(const std::filesystem::path& path)
 {
 	return path.string() + ".vtthumb.png";
+}
+
+void EditorUtils::MarkEntityAsEdited(const Volt::Entity& entity)
+{
+	auto scene = entity.GetScene();
+	scene->MarkEntityAsEdited(entity);
+}
+
+void EditorUtils::MarkEntityAndChildrenAsEdited(const Volt::Entity& entity)
+{
+	auto scene = entity.GetScene();
+	scene->MarkEntityAsEdited(entity);
+
+	for (const auto& child : entity.GetChildren())
+	{
+		MarkEntityAndChildrenAsEdited(child);
+	}
 }

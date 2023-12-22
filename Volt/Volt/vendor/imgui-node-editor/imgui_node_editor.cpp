@@ -1409,7 +1409,7 @@ void ed::EditorContext::End()
 		ImDrawList_ChannelsGrow(drawList, userChannel + channelsToCopy);
 		for (int i = 0; i < channelsToCopy; ++i)
 			ImDrawList_SwapChannels(drawList, userChannel + i, c_UserLayerChannelStart + i);
-}
+	}
 # endif
 
 # if 0

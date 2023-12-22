@@ -59,10 +59,10 @@ namespace Volt
 			std::string state;
 			VT_DESERIALIZE_PROPERTY(state, state, graphNode, std::string(""));
 
-			AssetHandle characterHandle;
-			VT_DESERIALIZE_PROPERTY(character, characterHandle, graphNode, AssetHandle(0));
+			AssetHandle skeletonHandle;
+			VT_DESERIALIZE_PROPERTY(skeleton, skeletonHandle, graphNode, AssetHandle(0));
 
-			animGraph->myAnimatedCharacter = characterHandle;
+			animGraph->mySkeletonHandle = skeletonHandle;
 			animGraph->myGraphState = state;
 		}
 
@@ -74,6 +74,9 @@ namespace Volt
 				GraphKey::Graph::Deserialize(animGraph, graphSaveNode);
 			}
 		}
+
+
+		animGraph->SetSkeletonHandle(animGraph->mySkeletonHandle);
 		return true;
 	}
 
@@ -87,7 +90,7 @@ namespace Volt
 		{
 			out << YAML::BeginMap;
 			VT_SERIALIZE_PROPERTY(state, animGraph->myGraphState, out);
-			VT_SERIALIZE_PROPERTY(character, animGraph->myAnimatedCharacter, out);
+			VT_SERIALIZE_PROPERTY(skeleton, animGraph->mySkeletonHandle, out);
 			GraphKey::Graph::Serialize(animGraph, out);
 			out << YAML::EndMap;
 		}

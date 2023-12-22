@@ -19,18 +19,11 @@ namespace Volt
     public class Entity
     {
         public readonly uint Id = UInt32.MaxValue;
-        ulong[] ScriptIds;
 
         private Dictionary<string, Component> m_componentCache = new Dictionary<string, Component>();
 
         public Entity() { }
         public Entity(uint id) { Id = id; }
-
-        internal Entity(uint id, ulong[] scriptIds)
-        {
-            Id = id;
-            ScriptIds = scriptIds;
-        }
 
         public static bool Exists(Entity entity)
         {
@@ -432,12 +425,6 @@ namespace Volt
             var fullname = componentType.Namespace + "." + componentType.Name;
             InternalCalls.Entity_AddScript(Id, fullname, out ulong scriptId);
 
-            List<ulong> newScriptsList = new List<ulong>();
-            newScriptsList.AddRange(ScriptIds);
-            newScriptsList.Add(scriptId);
-
-            ScriptIds = newScriptsList.ToArray();
-
             return GetScript<T>();
         }
 
@@ -468,6 +455,11 @@ namespace Volt
                 return child.GetScript<T>();
             }
             return null;
+        }
+
+        public uint GetID()
+        {
+            return Id;
         }
     }
 }

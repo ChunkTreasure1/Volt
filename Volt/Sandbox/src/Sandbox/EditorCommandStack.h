@@ -64,7 +64,7 @@ struct GizmoCommand : EditorCommand
 		glm::vec3 previousScaleValue;
 
 		Weak<Volt::Scene> scene;
-		entt::entity id;
+		Volt::EntityID id;
 	};
 
 	GizmoCommand(GizmoData aGizmoData)
@@ -98,7 +98,7 @@ struct GizmoCommand : EditorCommand
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
 
-		if (!myScene)
+		if (myScene)
 		{
 			myScene->InvalidateEntityTransform(myID);
 		}
@@ -123,7 +123,7 @@ struct GizmoCommand : EditorCommand
 		*myRotationAdress = myPreviousRotationValue;
 		*myScaleAdress = myPreviousScaleValue;
 	
-		if (!myScene)
+		if (myScene)
 		{
 			myScene->InvalidateEntityTransform(myID);
 		}
@@ -137,13 +137,13 @@ private:
 	const glm::quat myPreviousRotationValue;
 	const glm::vec3 myPreviousScaleValue;
 
-	entt::entity myID;
+	Volt::EntityID myID;
 	Weak<Volt::Scene> myScene;
 };
 
 struct MultiGizmoCommand : EditorCommand
 {
-	MultiGizmoCommand(Weak<Volt::Scene> scene, const std::vector<std::pair<entt::entity, Volt::TransformComponent>>& entities)
+	MultiGizmoCommand(Weak<Volt::Scene> scene, const std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>>& entities)
 		: myPreviousTransforms(entities), myScene(scene)
 	{
 	}
@@ -152,22 +152,23 @@ struct MultiGizmoCommand : EditorCommand
 
 	void Undo() override
 	{
-		if (myScene)
+		if (!myScene)
 		{
 			return;
 		}
 
-		std::vector<std::pair<entt::entity, Volt::TransformComponent>> currentTransforms;
+		auto scenePtr = myScene;
+		std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity{ id, myScene.Get() };
+			Volt::Entity entity = scenePtr->GetEntityFromUUID(id);
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
 
-			myScene->InvalidateEntityTransform(id);
+			scenePtr->InvalidateEntityTransform(entity.GetID());
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
@@ -176,22 +177,23 @@ struct MultiGizmoCommand : EditorCommand
 
 	void Redo() override
 	{
-		if (myScene)
+		if (!myScene)
 		{
 			return;
 		}
 
-		std::vector<std::pair<entt::entity, Volt::TransformComponent>> currentTransforms;
+		auto scenePtr = myScene;
+		std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> currentTransforms;
 
 		for (const auto& [id, oldComp] : myPreviousTransforms)
 		{
-			Volt::Entity entity{ id, myScene.Get() };
+			Volt::Entity entity = scenePtr->GetEntityFromUUID(id);
 			Volt::TransformComponent transformComponent = entity.GetComponent<Volt::TransformComponent>();
 
 			currentTransforms.emplace_back(id, transformComponent);
 			entity.GetComponent<Volt::TransformComponent>() = oldComp;
 
-			myScene->InvalidateEntityTransform(id);
+			scenePtr->InvalidateEntityTransform(entity.GetID());
 		}
 
 		Ref<MultiGizmoCommand> command = CreateRef<MultiGizmoCommand>(myScene, currentTransforms);
@@ -199,7 +201,7 @@ struct MultiGizmoCommand : EditorCommand
 	}
 
 private:
-	std::vector<std::pair<entt::entity, Volt::TransformComponent>> myPreviousTransforms;
+	std::vector<std::pair<Volt::EntityID, Volt::TransformComponent>> myPreviousTransforms;
 	Weak<Volt::Scene> myScene;
 };
 

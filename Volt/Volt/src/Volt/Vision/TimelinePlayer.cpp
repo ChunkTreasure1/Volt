@@ -46,11 +46,11 @@ void Volt::TimelinePlayer::StartTimeline(const TimelinePreset timelinePreset, Sc
 	myEntityStartValues.resize(timelinePreset.myTracks.size(), StartValue());
 	for (size_t i = 0; i < timelinePreset.myTracks.size(); i++)
 	{
-		Entity ent{ timelinePreset.myTracks[i].targetEntity, scene };
+		Entity ent = scene->GetEntityFromUUID(timelinePreset.myTracks[i].targetEntity);
 
 		if (ent)
 		{
-			myEntityStartValues[i].entID = ent.GetID();
+			myEntityStartValues[i].entID = ent;
 			myEntityStartValues[i].Position = ent.GetPosition();
 			myEntityStartValues[i].Rotation = ent.GetRotation();
 		}
@@ -71,7 +71,7 @@ void Volt::TimelinePlayer::StopTimeline()
 
 	for (size_t i = 0; i < myTimelinePreset.myTracks.size(); i++)
 	{
-		Entity ent{ myTimelinePreset.myTracks[i].targetEntity, myCurrentScene };
+		Entity ent = myCurrentScene->GetEntityFromUUID(myTimelinePreset.myTracks[i].targetEntity);
 
 		if (ent)
 		{
@@ -93,9 +93,9 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 		{
 #pragma region AnimationTrack
 
-			if (track.keyframes.empty() || track.targetEntity == entt::null || myCurrentKeyAndTime[trackIndex].first == track.keyframes.size() - 1) { continue; }
+			if (track.keyframes.empty() || track.targetEntity == Entity::NullID() || myCurrentKeyAndTime[trackIndex].first == track.keyframes.size() - 1) { continue; }
 
-			Entity trackEntity{ track.targetEntity, scene };
+			Entity trackEntity = scene->GetEntityFromUUID(track.targetEntity);
 
 			if (myCurrentPlaybackTime <= track.keyframes.at(0).time)
 			{
@@ -118,12 +118,12 @@ void Volt::TimelinePlayer::PlayTimeline(const float& deltaTime, Scene* scene)
 				if (trackEntity.HasComponent<Volt::VisionCameraComponent>())
 				{
 					const auto& VCamComp = trackEntity.GetComponent<Volt::VisionCameraComponent>();
-					if (VCamComp.followId == entt::null)
+					if (VCamComp.followId == Entity::NullID())
 					{
 						trackEntity.SetPosition(glm::mix(fromKeyframe.position, toKeyframe.position, currentTimePercentage));
 					}
 
-					if (VCamComp.lookAtId == entt::null)
+					if (VCamComp.lookAtId == Entity::NullID())
 					{
 						trackEntity.SetRotation(glm::slerp(fromKeyframe.rotation, toKeyframe.rotation, currentTimePercentage));
 					}
@@ -206,9 +206,9 @@ void Volt::TimelinePlayer::GetPreviewOnTime(TimelinePreset& timelinePreset, cons
 	{
 		const Volt::Track track = timelinePreset.myTracks[trackIndex];
 
-		if (&selectedTrack == &timelinePreset.myTracks[trackIndex] || track.keyframes.empty() || track.targetEntity == entt::null) { continue; }
+		if (&selectedTrack == &timelinePreset.myTracks[trackIndex] || track.keyframes.empty() || track.targetEntity == Entity::NullID()) { continue; }
 
-		Entity trackEntity{ track.targetEntity, scene };
+		Entity trackEntity = scene->GetEntityFromUUID(track.targetEntity);
 
 		if (timeStamp <= track.keyframes.at(0).time)
 		{

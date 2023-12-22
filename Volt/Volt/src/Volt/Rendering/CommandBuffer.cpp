@@ -191,7 +191,7 @@ namespace Volt
 
 		//if (myLevel == CommandBufferLevel::Secondary)
 		//{
-		//	auto inheritedCmdBufferPtr = myInheritedCommandBuffer.lock();
+		//	auto inheritedCmdBufferPtr = myInheritedCommandBuffer;
 		//	cmdBufferPtr = inheritedCmdBufferPtr.get();
 		//}
 		//else

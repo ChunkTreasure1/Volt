@@ -1,6 +1,8 @@
 Metadata:
-  assetHandle: 5244042238809914408
+  assetHandle: 4608470111307946929
   filePath: Engine/Meshes/Primitives/SM_Cone.fbx
   type: 2
   Dependencies:
     []
+  Properties:
+    {}

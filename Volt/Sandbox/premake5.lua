@@ -22,10 +22,10 @@ project "Sandbox"
 	AddCommonLinkOptions()
 	AddCommonIncludeDirs()
 	AddCommonDefines()
-	
+
 	disablewarnings
 	{
-		"4927",
+		"4927"
 	}
 
 	linkoptions 

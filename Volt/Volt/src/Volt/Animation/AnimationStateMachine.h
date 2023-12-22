@@ -6,6 +6,8 @@
 
 #include <any>
 
+#include "Volt/Utility/EnumUtil.h"
+
 namespace GraphKey
 {
 	class Graph;
@@ -24,48 +26,71 @@ namespace Volt
 		UUID64 fromState;
 		UUID64 toState;
 
-		bool hasExitTime = false;
 		bool shouldBlend = true;
-		float exitStartValue = 1.f;
-
 		float blendTime = 1.f;
 
 		Ref<AnimationTransitionGraph> transitionGraph;
 	};
 
-	struct AnimationState
+	CREATE_ENUM_TYPED(StateMachineStateType, uint8_t,
+		AnimationState,
+		AliasState,
+		EntryState);
+
+	struct StateMachineState
 	{
-		AnimationState(const std::string& aName, bool aIsEntry, bool aIsAny)
-			: name(aName), isEntry(aIsEntry), isAny(aIsAny)
-		{}
+		StateMachineState(const std::string& aName, StateMachineStateType aStateType)
+			:name(aName), stateType(aStateType)
+		{
+
+		}
 
 		std::vector<UUID64> transitions;
 		std::string name;
 
-		Ref<AnimationGraphAsset> stateGraph;
 		UUID64 id{};
-		UUID64 pinId{};
-		UUID64 pinId2{};
+		UUID64 topPinId{};
+		UUID64 bottomPinId{};
 
+		const StateMachineStateType stateType;
+
+		//This is used by the node library to save the positions and stuff for the nodes
 		std::string editorState;
-		bool isEntry = false;
-		bool isAny = false;
+	};
+	struct AnimationState : public StateMachineState
+	{
+		AnimationState(const std::string& aName)
+			: StateMachineState(aName, StateMachineStateType::AnimationState)
+		{
+		}
+
+		Ref<AnimationGraphAsset> stateGraph;
+
 		float startTime = 0.f;
-		float speed = 1.f;
+	};
+
+	struct AliasState : public StateMachineState
+	{
+		AliasState(const std::string& aName)
+			: StateMachineState(aName, StateMachineStateType::AliasState)
+		{
+		}
+
+		std::vector<UUID64> transitionFromStates;
+
 	};
 
 	class AnimationStateMachine
 	{
 	public:
-		AnimationStateMachine(const std::string& name, AssetHandle characterHandle);
+		AnimationStateMachine(const std::string& name, AssetHandle aSkeletonHandle);
 
 		void Update(float deltaTime);
 		const GraphKey::AnimationOutputData Sample(Ref<Skeleton> skeleton);
 
-		void AddState(const std::string& name, bool isEntry = false, bool isAny = false);
+		Ref<StateMachineState> AddState(const std::string& name, StateMachineStateType aStateType, const UUID64 id = 0);
 		void AddTransition(const UUID64 startState, const UUID64 endState);
 
-		Ref<AnimationState> CreateState(const std::string& name, bool isEntry, const UUID64 id);
 		Ref<AnimationTransition> CreateTransition(UUID64 id);
 
 		void RemoveState(const UUID64 id);
@@ -73,39 +98,44 @@ namespace Volt
 
 		void SetStartState(const UUID64 stateId);
 
-		AnimationState* GetStateById(const UUID64 stateId) const;
+		StateMachineState* GetStateById(const UUID64 stateId) const;
+		AnimationState* GetAnimationStateById(const UUID64 stateId) const;
 		AnimationTransition* GetTransitionById(const UUID64 transitionId) const;
 
-		AnimationState* GetStateFromPin(const UUID64 outputId) const;
+		StateMachineState* GetStateFromPin(const UUID64 outputId) const;
 		const int32_t GetStateIndexFromId(const UUID64 stateId) const;
 
-		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, entt::entity entity = entt::null) const;
+		Ref<AnimationStateMachine> CreateCopy(GraphKey::Graph* ownerGraph, Volt::EntityID entity = Volt::EntityID(0)) const;
 
 		void OnEvent(Event& e);
 
-		inline const std::vector<Ref<AnimationState>>& GetStates() const { return myStates; }
+		inline const std::vector<Ref<StateMachineState>>& GetStates() const { return myStates; }
 		inline const std::vector<Ref<AnimationTransition>>& GetTransitions() const { return myTransitions; }
 		inline const std::string& GetEditorState() const { return myState; }
-		inline const AssetHandle GetCharacterHandle() const { return myCharacterHandle; }
+		inline const AssetHandle GetSkeletonHandle() const { return mySkeletonHandle; }
 
 		inline const std::string& GetName() const { return myName; }
-		inline void SetEditorState(const std::string& state) { myState = state; }
+		inline
+			void SetEditorState(const std::string& state) { myState = state; }
 		inline void SetName(const std::string& name) { myName = name; }
 
-		void SetCharacterHandle(AssetHandle handle);
+		void SetSkeletonHandle(AssetHandle aSkeletonHandle);
 
 		void Clear();
+		static Ref<AnimationState> AsAnimationState(Ref<StateMachineState> aState);
 
 	private:
 		const bool ShouldTransition(const UUID64 transitionId, const UUID64 currentStateId) const;
 		const GraphKey::AnimationOutputData CrossfadeTransition();
 		const GraphKey::AnimationOutputData SampleState(int32_t stateIndex);
-		
+
+		Ref<AnimationState> GetAnimationState(uint32_t aIndex);
+
 		void SetNextState(const UUID64 targetStateId, const UUID64 transitionId);
 
 		std::string myState;
 		std::string myName;
-		
+
 		int32_t myStartState = -1;
 		int32_t myCurrentState = -1;
 		int32_t myLastState = -1;
@@ -115,9 +145,9 @@ namespace Volt
 		float myCurrentBlendTotalTime = 0.f;
 		float myCurrentBlendingTime = 0.f;
 
-		std::vector<Ref<AnimationState>> myStates;
+		std::vector<Ref<StateMachineState>> myStates;
 		std::vector<Ref<AnimationTransition>> myTransitions;
 
-		AssetHandle myCharacterHandle = 0;
+		AssetHandle mySkeletonHandle = 0;
 	};
 }

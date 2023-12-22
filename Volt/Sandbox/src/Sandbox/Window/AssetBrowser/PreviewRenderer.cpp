@@ -24,7 +24,7 @@ PreviewRenderer::PreviewRenderer()
 	{
 		auto skylightEntities = myPreviewScene->GetAllEntitiesWith<Volt::SkylightComponent>();
 
-		Volt::Entity ent{ skylightEntities.front(), myPreviewScene.get() };
+		Volt::Entity ent = skylightEntities.front();
 		ent.GetComponent<Volt::SkylightComponent>().environmentHandle = Volt::AssetManager::GetAssetHandleFromFilePath("Engine/Textures/HDRIs/defaultHDRI.hdr");
 	}
 

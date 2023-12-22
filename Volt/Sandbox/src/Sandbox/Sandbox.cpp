@@ -40,6 +40,8 @@
 #include "Sandbox/Window/Net/NetPanel.h"
 #include "Sandbox/Window/Net/NetContractPanel.h"
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
+#include "Sandbox/Window/SceneSettingsPanel.h"
+#include "Sandbox/Window/WorldEnginePanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -110,15 +112,12 @@ void Sandbox::OnAttach()
 
 	Volt::Application::Get().GetWindow().Maximize();
 
-	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 1.f, 100000.f);
+	myEditorCameraController = CreateRef<EditorCameraController>(60.f, 0.01f, 1000.f);
 
 	UserSettingsManager::LoadUserSettings();
 	const auto& userSettings = UserSettingsManager::GetSettings();
 
 	NewScene();
-
-	// WIP Panels.
-#ifndef VT_DIST 
 
 	// Shelved Panels (So panel tab doesn't get cluttered up).
 #ifdef VT_DEBUG
@@ -128,8 +127,6 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<TaigaPanel>("Advanced");
 	EditorLibrary::Register<ThemesPanel>("Advanced");
 	EditorLibrary::Register<CurveGraphPanel>("Advanced");
-#endif
-
 #endif
 
 	myNavigationPanel = EditorLibrary::Register<NavigationPanel>("Advanced", myRuntimeScene);
@@ -148,6 +145,8 @@ void Sandbox::OnAttach()
 
 	EditorLibrary::Register<NetPanel>("Advanced");
 	EditorLibrary::Register<NetContractPanel>("Advanced");
+	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
+	EditorLibrary::Register<WorldEnginePanel>("", myRuntimeScene);
 
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{
@@ -203,6 +202,11 @@ void Sandbox::OnAttach()
 	if (!userSettings.sceneSettings.lastOpenScene.empty())
 	{
 		OpenScene(userSettings.sceneSettings.lastOpenScene);
+	}
+
+	if(!myRuntimeScene)
+	{
+		NewScene();
 	}
 
 	constexpr int64_t discordAppId = 1108502963447681106;
@@ -1052,7 +1056,7 @@ bool Sandbox::OnKeyPressedEvent(Volt::KeyPressedEvent& e)
 
 				for (const auto& id : SelectionManager::GetSelectedEntities())
 				{
-					Volt::Entity ent{ id, myRuntimeScene.get() };
+					Volt::Entity ent = myRuntimeScene->GetEntityFromUUID(id);
 					avgPos += ent.GetPosition();
 				}
 

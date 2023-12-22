@@ -2,7 +2,8 @@
 #include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Scene/Reflection/ComponentReflection.h"
 
-#include <entt.hpp>
+#include "Volt/Scene/Entity.h"
+
 #include <glm/glm.hpp>
 #include <string>
 
@@ -48,16 +49,18 @@ namespace Volt
 
 	struct VisionTriggerComponent
 	{
-		entt::entity triggerCam = entt::null;
+		EntityID triggerCam = Entity::NullID();
 		bool forceActiveCam = false;
 
 		static void ReflectType(TypeDesc<VisionTriggerComponent>& reflect)
 		{
 			reflect.SetGUID("{E846C1DE-F199-4BFF-9D15-9E73B8D1C941}"_guid);
 			reflect.SetLabel("Vision Trigger Component");
-			reflect.AddMember(&VisionTriggerComponent::triggerCam, "triggerCam", "Trigger Camera", "", entt::null);
+			reflect.AddMember(&VisionTriggerComponent::triggerCam, "triggerCam", "Trigger Camera", "", Entity::NullID());
 			reflect.AddMember(&VisionTriggerComponent::forceActiveCam, "forceActiveCam", "Force Active Camera", "", false);
 		}
+
+		REGISTER_COMPONENT(VisionTriggerComponent);
 	};
 
 	struct VisionCameraComponent
@@ -69,9 +72,9 @@ namespace Volt
 		eBlendType blendType = eBlendType::None;
 		float damping = 0.f;
 		glm::vec3 offset = { 0 };
-		entt::entity followId = entt::null;
-		entt::entity lookAtId = entt::null;
-		entt::entity collisionRayPoint = entt::null;
+		EntityID followId = Entity::NullID();
+		EntityID lookAtId = Entity::NullID();
+		EntityID collisionRayPoint = Entity::NullID();
 		float focalDistance = 1000.f;
 		float mouseSensitivity = 0.15f;
 		float collisionRadius = 100.f;
@@ -96,9 +99,9 @@ namespace Volt
 			reflect.AddMember(&VisionCameraComponent::blendType, "blendType", "Blend Type", "", eBlendType::None);
 			reflect.AddMember(&VisionCameraComponent::damping, "damping", "Damping", "", 0.f);
 			reflect.AddMember(&VisionCameraComponent::offset, "offset", "Offset", "", glm::vec3{ 0.f });
-			reflect.AddMember(&VisionCameraComponent::followId, "followId", "Follow ID", "", entt::null);
-			reflect.AddMember(&VisionCameraComponent::lookAtId, "lookAtId", "Look At ID", "", entt::null);
-			reflect.AddMember(&VisionCameraComponent::collisionRayPoint, "collisionRayPoint", "Collision Ray Point", "", entt::null);
+			reflect.AddMember(&VisionCameraComponent::followId, "followId", "Follow ID", "", Entity::NullID());
+			reflect.AddMember(&VisionCameraComponent::lookAtId, "lookAtId", "Look At ID", "", Entity::NullID());
+			reflect.AddMember(&VisionCameraComponent::collisionRayPoint, "collisionRayPoint", "Collision Ray Point", "", Entity::NullID());
 			reflect.AddMember(&VisionCameraComponent::focalDistance, "focalDistance", "Focal Distance", "", 1000.f);
 			reflect.AddMember(&VisionCameraComponent::mouseSensitivity, "mouseSensitivity", "Mouse Sensitivity", "", 0.15f);
 			reflect.AddMember(&VisionCameraComponent::collisionRadius, "collisionRadius", "Collision Radius", "", 100.f);
@@ -124,6 +127,8 @@ namespace Volt
 
 		float myTargetFoV = 0.f;
 		bool myIsLocked = false;
+
+		REGISTER_COMPONENT(VisionCameraComponent);
 
 	private:
 		float myYawDelta = { 0 };

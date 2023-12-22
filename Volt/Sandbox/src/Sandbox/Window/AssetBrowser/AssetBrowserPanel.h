@@ -56,8 +56,8 @@ private:
 	AssetBrowser::DirectoryItem* FindDirectoryWithPath(const std::filesystem::path& path);
 	AssetBrowser::DirectoryItem* FindDirectoryWithPathRecursivly(const std::vector<Ref<AssetBrowser::DirectoryItem>> dirList, const std::filesystem::path& path);
 
-	void CreatePrefabAndSetupEntities(entt::entity entity);
-	void SetupEntityAsPrefab(entt::entity entity, Volt::AssetHandle prefabId);
+	void CreatePrefabAndSetupEntities(Volt::EntityID entity);
+	void SetupEntityAsPrefab(Volt::EntityID entity, Volt::AssetHandle prefabId);
 
 	void RecursiveRemoveFolderContents(DirectoryData* aDir);
 	void RecursiceRenameFolderContents(DirectoryData* aDir, const std::filesystem::path& newDir);

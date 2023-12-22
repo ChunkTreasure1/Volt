@@ -64,6 +64,11 @@ namespace Volt
             return value > max ? max : value;
         }
 
+        public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max)
+        {
+            return new Vector3(Clamp(value.x, min.x, max.x), Clamp(value.y, min.y, max.y), Clamp(value.z, min.z, max.z));
+        }
+
         public static float Asin(float x) => (float)Math.Asin(x);
         public static float Atan(float x) => (float)Math.Atan(x);
         public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);
@@ -77,6 +82,10 @@ namespace Volt
         public static float Abs(float value) => Math.Abs(value);
         public static int Abs(int value) => Math.Abs(value);
 
+        public static float Pow(float value, float power) => (float)Math.Pow(value, power);
+
+
+
 
         public static Vector3 Abs(Vector3 value)
         {
@@ -84,8 +93,22 @@ namespace Volt
         }
 
         public static float Lerp(float p1, float p2, float t) => Interpolate.Linear(p1, p2, t);
+        //lerp angle
+        public static float LerpAngle(float p1, float p2, float t)
+        {
+            float num = Repeat(p2 - p1, 360.0f);
+            if (num > 180.0f)
+            {
+                num -= 360.0f;
+            }
+            return p1 + num * Clamp(t, 0.0f, 1.0f);
+        }
+
+        public static float Repeat(float t, float length) => t - Floor(t / length) * length;
+
+
         public static float BounceOut(float p1, float p2, float t, float duration) => Interpolate.BounceOut(t, p1, p2, duration);
-        public static float BounceIn(float p1, float p2, float t, float duration) 
+        public static float BounceIn(float p1, float p2, float t, float duration)
         {
             return p2 - BounceOut(p1, p2, duration - t, duration);
         }

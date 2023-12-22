@@ -91,7 +91,7 @@ bool ApplyComponentData(Ref<Volt::RepData> in_data, Nexus::ReplicationRegisty& i
 			auto netEnt = reinterpret_pointer_cast<Volt::RepEntity>(in_registry.Get(in_data->repId));
 			if (!netEnt) { *out_error = Volt::eNetErrorCode::MISSING_NET_ENTITY; return false; }
 
-			auto sceneEnt = Volt::Entity(netEnt->GetEntityId(), Volt::SceneManager::GetActiveScene());
+			auto sceneEnt = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(netEnt->GetEntityId());
 			if (!sceneEnt.IsValid()) { *out_error = Volt::eNetErrorCode::MISSING_SCENE_ENTITY; return false; }
 
 			if (sceneEnt.HasComponent<Volt::TransformComponent>())
@@ -310,9 +310,9 @@ Volt::RepVariableData::RepVariableData(const RepVariableData& in_data)
 #pragma endregion
 
 #pragma region Transform
-Nexus::Packet SerializeTransformPacket(entt::entity in_entityId, Nexus::TYPE::REP_ID in_repId, int pos, int rot, int scale)
+Nexus::Packet SerializeTransformPacket(Volt::EntityID in_entityId, Nexus::TYPE::REP_ID in_repId, int pos, int rot, int scale)
 {
-	Volt::Entity entity = Volt::Entity(in_entityId, Volt::SceneManager::GetActiveScene().Get());
+	Volt::Entity entity = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(in_entityId);
 	Volt::RepTransformComponentData entTransform;
 	entTransform.repId = in_repId;
 	entTransform.setPos = pos;
@@ -451,10 +451,10 @@ Nexus::Packet& operator>(Nexus::Packet& packet, Volt::RepRPCData& rpcData)
 }
 #pragma endregion 
 
-void HandleScript(entt::entity in_id, const std::string& id, bool in_keep)
+void HandleScript(Volt::EntityID in_id, const std::string& id, bool in_keep)
 {
 	if (in_keep) return;
-	auto ent = Volt::Entity(in_id, Volt::SceneManager::GetActiveScene());
+	auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
 	auto& scriptComp = ent.GetComponent<Volt::MonoScriptComponent>();
 
 	for (uint32_t i = 0; i < scriptComp.scriptIds.size(); ++i)
@@ -469,21 +469,19 @@ void HandleScript(entt::entity in_id, const std::string& id, bool in_keep)
 }
 
 #pragma region  Prefab
-void HandleComponent(entt::entity in_id, const std::string& in_comp, bool in_keep)
+void HandleComponent(Volt::EntityID in_id, const std::string& in_comp, bool in_keep)
 {
 	if (in_keep) return;
 
-	auto scenePtr = Volt::SceneManager::GetActiveScene();
-
-	auto ent = Volt::Entity(in_id, scenePtr);
+	auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
 	//scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
 }
 
-void RecursiveOwnerShipControll(entt::entity in_id, const Volt::RepPrefabData& data)
+void RecursiveOwnerShipControll(Volt::EntityID in_id, const Volt::RepPrefabData& data)
 {
 	//auto contract = Volt::NetContractContainer::GetContract(data.handle);
 
-	//auto scenePtr = Volt::SceneManager::GetActiveScene().lock();
+	//auto scenePtr = Volt::SceneManager::GetActiveScene();
 
 	//auto ent = Volt::Entity(in_id, scenePtr.get());
 	//const auto prefabData = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle);
@@ -530,9 +528,9 @@ void RecursiveOwnerShipControll(entt::entity in_id, const Volt::RepPrefabData& d
 }
 
 // #mmax: should be called on play :P
-void RecursiveHandleMono(entt::entity entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry, bool manageInstances)
+void RecursiveHandleMono(Volt::EntityID entId, Nexus::TYPE::REP_ID owner, Nexus::TYPE::REP_ID& varId, Nexus::ReplicationRegisty* registry, bool manageInstances)
 {
-	Volt::Entity entity = { entId,  Volt::SceneManager::GetActiveScene() };
+	Volt::Entity entity = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(entId);
 
 	auto repEnt = registry->GetAs<Volt::RepEntity>(owner);
 
