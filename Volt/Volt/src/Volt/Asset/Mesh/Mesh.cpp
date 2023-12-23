@@ -174,7 +174,7 @@ namespace Volt
 
 		constexpr size_t MAX_VERTEX_COUNT = 64;
 		constexpr size_t MAX_TRIANGLE_COUNT = 64;
-		constexpr float CONE_WEIGHT = 0.4f;
+		constexpr float CONE_WEIGHT = 0.f;
 
 		const uint32_t subMeshCount = static_cast<uint32_t>(m_subMeshes.size());
 		const uint32_t threadCount = Algo::GetThreadCountFromIterationCount(subMeshCount);
@@ -262,53 +262,6 @@ namespace Volt
 				newMeshlet.boundingSphereRadius = boundingSphere.radius;
 
 				triangleOffset += newMeshlet.triangleCount * 3;
-
-				glm::vec3 triNormals[MAX_TRIANGLE_COUNT];
-
-				for (uint32_t i = 0; i < newMeshlet.triangleCount; i++)
-				{
-					const auto& v0 = currentVertices.at(currentIndices.at(newMeshlet.triangleOffset + i + 0) + newMeshlet.vertexOffset);
-					const auto& v1 = currentVertices.at(currentIndices.at(newMeshlet.triangleOffset + i + 1) + newMeshlet.vertexOffset);
-					const auto& v2 = currentVertices.at(currentIndices.at(newMeshlet.triangleOffset + i + 2) + newMeshlet.vertexOffset);
-
-					glm::vec3 p10 = v1.position - v0.position;
-					glm::vec3 p20 = v2.position - v0.position;
-				
-					glm::vec3 normal = glm::cross(p10, p20);
-
-					float area = glm::length(normal);
-					float invArea = area == 0.f ? 0.f : 1.f / area;
-
-					triNormals[i] = normal * invArea;
-				}
-
-				glm::vec3 avgNormal = 0.f;
-				for (uint32_t i = 0; i < newMeshlet.triangleCount; i++)
-				{
-					avgNormal += triNormals[i];
-				}
-
-				float avgLength = glm::length(avgNormal);
-
-				if (avgLength == 0.f)
-				{
-					avgNormal = { 1.f, 0.f, 0.f };
-				}
-				else
-				{
-					avgNormal /= avgLength;
-				}
-
-				float minDp = 1.f;
-
-				for (uint32_t i = 0; i < newMeshlet.triangleCount; i++)
-				{
-					float dp = glm::dot(triNormals[i], avgNormal);
-
-					minDp = glm::min(minDp, dp);
-				}
-
-				newMeshlet.cone = { avgNormal, minDp };
 			}
 
 		}, subMeshCount);

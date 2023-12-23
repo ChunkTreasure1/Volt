@@ -10,9 +10,6 @@ struct Input
 {
     float4 position : SV_Position;
     float3 normal : NORMAL;
-    nointerpolation float4 color : COLOR;
-    uint meshletId : MESHLETID;
-    uint triangleId : TRIANGLEID;
 };
 
 Output main(Input input)
@@ -20,7 +17,7 @@ Output main(Input input)
     float3 normal = normalize(input.normal);
     
     Output output;
-    output.normal = input.color; //float4(normal, 1.f);    
+    output.normal = float4(normal, 1.f);    
 
     return output;
 }

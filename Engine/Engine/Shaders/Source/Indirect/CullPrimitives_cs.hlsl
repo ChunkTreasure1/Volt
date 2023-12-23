@@ -3,14 +3,10 @@
 
 #include "ComputeUtilities.hlsli"
 #include "GPUScene.hlsli"
+#include "MeshletHelpers.hlsli"
 
 #define ITERATIONS_PER_GROUP 2
 #define THREAD_GROUP_SIZE 32
-
-#define MESHLET_ID_BITS 24u
-#define MESHLET_PRIMITIVE_BITS 8u
-#define MESHLET_ID_MASK ((1u << MESHLET_ID_BITS) - 1u)
-#define MESHLET_PRIMITIVE_MASK ((1u << MESHLET_PRIMITIVE_BITS) - 1u)
 
 struct Constants
 {
@@ -104,8 +100,8 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     if (visible)
     {
         const uint baseOffset = waveOffset + lanePrefix * 3;
-        constants.indexBuffer.Store(baseOffset + 0, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index0) & MESHLET_PRIMITIVE_MASK));
-        constants.indexBuffer.Store(baseOffset + 1, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index1) & MESHLET_PRIMITIVE_MASK));
-        constants.indexBuffer.Store(baseOffset + 2, (meshletIndex << MESHLET_PRIMITIVE_BITS) | ((index2) & MESHLET_PRIMITIVE_MASK));
+        constants.indexBuffer.Store(baseOffset + 0, PackMeshletAndIndex(meshletIndex, triangleId + 0));
+        constants.indexBuffer.Store(baseOffset + 1, PackMeshletAndIndex(meshletIndex, triangleId + 1));
+        constants.indexBuffer.Store(baseOffset + 2, PackMeshletAndIndex(meshletIndex, triangleId + 2));
     }
 }

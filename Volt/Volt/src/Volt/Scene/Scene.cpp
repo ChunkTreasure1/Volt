@@ -1345,10 +1345,11 @@ namespace Volt
 	
 	void Scene::InvalidateRenderScene()
 	{
-		const auto& meshView = m_registry.view<MeshComponent>();
+		const auto& meshView = m_registry.view<MeshComponent, IDComponent>();
 		for (const auto& id : meshView)
 		{
 			auto& meshComp = m_registry.get<MeshComponent>(id);
+			auto& idComp = m_registry.get<IDComponent>(id);
 
 			for (const auto& uuid : meshComp.renderObjectIds)
 			{
@@ -1365,7 +1366,7 @@ namespace Volt
 
 			for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
 			{
-				auto uuid = m_renderScene->Register(id, mesh, static_cast<uint32_t>(i));
+				auto uuid = m_renderScene->Register(idComp.id, mesh, static_cast<uint32_t>(i));
 				meshComp.renderObjectIds.emplace_back(uuid);
 			}
 		}

@@ -31,7 +31,7 @@ namespace Volt
 		void SetValid();
 		void Invalidate();
 
-		const UUID64 Register(entt::entity entityId, Ref<Mesh> mesh, uint32_t subMeshIndex);
+		const UUID64 Register(EntityID entityId, Ref<Mesh> mesh, uint32_t subMeshIndex);
 		void Unregister(UUID64 id);
 
 		inline const bool IsInvalid() const { return m_isInvalid; }
@@ -57,6 +57,8 @@ namespace Volt
 
 		const std::vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
 		const std::vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
+
+		inline const RenderObject& GetRenderObjectAt(const uint32_t index) const { return m_renderObjects.at(index); }
 
 		inline std::span<const IndirectGPUCommandNew> GetMeshCommands() const { return m_meshCommands; }
 		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }

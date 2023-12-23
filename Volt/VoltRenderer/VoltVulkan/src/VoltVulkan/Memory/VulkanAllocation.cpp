@@ -11,6 +11,11 @@
 
 namespace Volt::RHI
 {
+	VulkanImageAllocation::VulkanImageAllocation(const size_t hash)
+	{
+		m_allocationHash = hash;
+	}
+
 	void VulkanImageAllocation::Unmap()
 	{
 		vmaUnmapMemory(GraphicsContext::GetDefaultAllocator().GetHandle<VmaAllocator>(), m_allocation);
@@ -36,6 +41,11 @@ namespace Volt::RHI
 	void* VulkanImageAllocation::GetHandleImpl() const
 	{
 		return m_allocation;
+	}
+
+	VulkanBufferAllocation::VulkanBufferAllocation(const size_t hash)
+	{
+		m_allocationHash = hash;
 	}
 
 	void VulkanBufferAllocation::Unmap()

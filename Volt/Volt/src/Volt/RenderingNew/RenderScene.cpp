@@ -10,8 +10,10 @@
 #include "Volt/RenderingNew/GPUScene.h"
 #include "Volt/RenderingNew/RendererNew.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/Rendering/Camera/Camera.h"
 
 #include "Volt/Math/Math.h"
+#include "Volt/Utility/Algorithms.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
@@ -128,7 +130,7 @@ namespace Volt
 		m_isInvalid = true;
 	}
 
-	const UUID64 RenderScene::Register(entt::entity entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
+	const UUID64 RenderScene::Register(EntityID entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
 	{
 		m_isInvalid = true;
 
@@ -244,7 +246,7 @@ namespace Volt
 		{
 			m_gpuMeshletsBuffer->GetResource()->Resize(static_cast<uint32_t>(m_sceneMeshlets.size()));
 			m_gpuMeshletsBuffer->MarkAsDirty();
-		}
+		}	
 
 		m_gpuMeshletsBuffer->GetResource()->SetData(m_sceneMeshlets.data(), sizeof(Meshlet) * m_sceneMeshlets.size());
 	}
@@ -270,7 +272,7 @@ namespace Volt
 	{
 		for (const auto& renderObject : m_renderObjects)
 		{
-			Entity entity{ renderObject.entity, m_scene };
+			Entity entity = m_scene->GetEntityFromUUID(renderObject.entity);
 			if (!entity)
 			{
 				continue;
@@ -282,7 +284,7 @@ namespace Volt
 
 			const glm::mat4 transform = entity.GetTransform() * subMesh.transform;
 
-			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSpheres().at(renderObject.subMeshIndex);
+			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSphere(renderObject.subMeshIndex);
 			const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
 			const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
 			const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
@@ -303,7 +305,11 @@ namespace Volt
 
 		for (uint32_t index = 0; const auto & obj : m_renderObjects)
 		{
-			Entity entity{ obj.entity, m_scene };
+			Entity entity = m_scene->GetEntityFromUUID(obj.entity);
+			if (!entity)
+			{
+				continue;
+			}
 
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
 			const auto& meshlets = obj.mesh->GetMeshlets();
@@ -328,7 +334,11 @@ namespace Volt
 		// Mesh shader commands
 		for (uint32_t index = 0; const auto & obj : m_renderObjects)
 		{
-			Entity entity{ obj.entity, m_scene };
+			Entity entity = m_scene->GetEntityFromUUID(obj.entity);
+			if (!entity)
+			{
+				continue;
+			}
 
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
 			
@@ -369,6 +379,7 @@ namespace Volt
 				newMeshlet.meshId = meshId;
 				newMeshlet.boundingSphereRadius = currentMeshlet.boundingSphereRadius;
 				newMeshlet.boundingSphereCenter = currentMeshlet.boundingSphereCenter;
+				newMeshlet.cone = currentMeshlet.cone;
 
 				m_currentIndexCount += newMeshlet.triangleCount * 3;
 			}

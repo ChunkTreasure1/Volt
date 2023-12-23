@@ -18,4 +18,6 @@ private:
 	std::vector<LogCallbackData> myCurrentLogMessages;
 
 	std::vector<std::string> myCategories;
+
+	std::mutex m_logMutex;
 };

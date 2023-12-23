@@ -30,6 +30,7 @@
 #include "Volt/Utility/UIUtility.h"
 
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
+#include <VoltRHI/Graphics/GraphicsContext.h>
 
 #include <Amp/AudioManager/AudioManager.h>
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
@@ -251,6 +252,8 @@ namespace Volt
 	void Application::MainUpdate()
 	{
 		m_hasSentMouseMovedEvent = false;
+
+		RHI::GraphicsContext::Update();
 
 		m_window->BeginFrame();
 

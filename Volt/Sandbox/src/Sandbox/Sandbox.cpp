@@ -890,7 +890,7 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 
 void Sandbox::RenderGameView()
 {
-	if (!myGameViewPanel->IsOpen() || !myGameSceneRenderer)
+	/*if (!myGameViewPanel->IsOpen() || !myGameSceneRenderer)
 	{
 		return;
 	}
@@ -929,7 +929,7 @@ void Sandbox::RenderGameView()
 			myGameSceneRenderer->OnRenderEditor(camera);
 			break;
 		}
-	}
+	}*/
 }
 
 bool Sandbox::OnRenderEvent(Volt::AppRenderEvent& e)

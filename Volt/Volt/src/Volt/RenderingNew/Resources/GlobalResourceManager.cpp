@@ -41,8 +41,8 @@ namespace Volt
 		{
 			auto& resources = GetResourceContainer<RHI::StorageBuffer>();
 			std::scoped_lock lock{ resources.accessMutex };
-
 			for (const auto& resource : resources.GetDirtyRange())
+
 			{
 				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource));
 				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource));

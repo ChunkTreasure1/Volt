@@ -45,6 +45,12 @@ namespace Volt::RHI
 		}
 	}
 
+	void GraphicsContext::Update()
+	{
+		Get().m_defaultAllocator->Update();
+		Get().m_transientAllocator->Update();
+	}
+
 	void GraphicsContext::LogUnformatted(Severity logSeverity, std::string_view message)
 	{
 		if (!s_logHook.enabled || !s_logHook.logCallback)

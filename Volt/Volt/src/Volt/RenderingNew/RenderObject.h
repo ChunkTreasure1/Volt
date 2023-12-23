@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Volt/Core/UUID.h"
+#include "Volt/Scene/EntityID.h"
 
 #include <entt.hpp>
 
@@ -11,7 +12,7 @@ namespace Volt
 	struct RenderObject
 	{
 		UUID64 id;
-		entt::entity entity;
+		EntityID entity;
 	
 		Weak<Mesh> mesh;
 		uint32_t subMeshIndex = 0;

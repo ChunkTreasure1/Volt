@@ -22,6 +22,9 @@ namespace Volt::RHI
 		virtual void DestroyBuffer(Ref<Allocation> allocation) = 0;
 		virtual void DestroyImage(Ref<Allocation> allocation) = 0;
 
+		// Used for allocation cache
+		virtual void Update() = 0;
+
 	protected:
 		Allocator() = default;
 	};

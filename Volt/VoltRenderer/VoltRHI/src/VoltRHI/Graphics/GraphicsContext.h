@@ -38,6 +38,8 @@ namespace Volt::RHI
 
 		static void DestroyResource(std::function<void()>&& function);
 
+		static void Update();
+
 	protected:
 		Ref<GraphicsDevice> m_graphicsDevice;
 		Ref<PhysicalGraphicsDevice> m_physicalDevice;

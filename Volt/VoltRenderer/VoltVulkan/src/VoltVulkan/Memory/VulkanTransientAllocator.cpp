@@ -11,6 +11,7 @@
 #include <VoltRHI/Memory/TransientHeap.h>
 #include <VoltRHI/Memory/MemoryUtility.h>
 #include <VoltRHI/Core/Profiling.h>
+#include <VoltRHI/Utility/HashUtility.h>
 
 #include <vulkan/vulkan.h>
 
@@ -30,6 +31,12 @@ namespace Volt::RHI
 	Ref<Allocation> VulkanTransientAllocator::CreateBuffer(const uint64_t size, BufferUsage usage, MemoryUsage memoryUsage)
 	{
 		VT_PROFILE_FUNCTION();
+
+		const size_t hash = Utility::GetHashFromBufferSpec(size, usage, memoryUsage);
+		if (auto buffer = m_allocationCache.TryGetBufferAllocationFromHash(hash))
+		{
+			return buffer;
+		}
 
 		TransientBufferCreateInfo info{};
 		info.size = size;
@@ -58,6 +65,12 @@ namespace Volt::RHI
 	{
 		VT_PROFILE_FUNCTION();
 
+		const size_t hash = Utility::GetHashFromImageSpec(imageSpecification, memoryUsage);
+		if (auto image = m_allocationCache.TryGetImageAllocationFromHash(hash))
+		{
+			return image;
+		}
+
 		MemoryRequirement memoryRequirement = Utility::GetImageRequirement(Utility::GetVkImageCreateInfo(imageSpecification));
 
 		TransientImageCreateInfo info{};
@@ -84,54 +97,12 @@ namespace Volt::RHI
 
 	void VulkanTransientAllocator::DestroyBuffer(Ref<Allocation> allocation)
 	{
-		VT_PROFILE_FUNCTION();
-
-		Ref<TransientHeap> parentHeap;
-
-		for (const auto& heap : m_bufferHeaps)
-		{
-			if (heap->GetHeapID() == allocation->GetHeapID())
-			{
-				parentHeap = heap;
-				break;
-			}
-		}
-
-		if (parentHeap)
-		{
-			parentHeap->ForfeitBuffer(allocation);
-		}
-		else
-		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
-			DestroyOrphanBuffer(allocation);
-		}
+		m_allocationCache.QueueBufferAllocationForRemoval(allocation);
 	}
 
 	void VulkanTransientAllocator::DestroyImage(Ref<Allocation> allocation)
 	{
-		VT_PROFILE_FUNCTION();
-
-		Ref<TransientHeap> parentHeap;
-
-		for (const auto& heap : m_bufferHeaps)
-		{
-			if (heap->GetHeapID() == allocation->GetHeapID())
-			{
-				parentHeap = heap;
-				break;
-			}
-		}
-
-		if (parentHeap)
-		{
-			parentHeap->ForfeitImage(allocation);
-		}
-		else
-		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
-			DestroyOrphanImage(allocation);
-		}
+		m_allocationCache.QueueImageAllocationForRemoval(allocation);
 	}
 
 	void* VulkanTransientAllocator::GetHandleImpl() const
@@ -158,6 +129,58 @@ namespace Volt::RHI
 		}
 	}
 
+	void VulkanTransientAllocator::DestroyBufferInternal(Ref<Allocation> allocation)
+	{
+		VT_PROFILE_FUNCTION();
+
+		Ref<TransientHeap> parentHeap;
+
+		for (const auto& heap : m_bufferHeaps)
+		{
+			if (heap->GetHeapID() == allocation->GetHeapID())
+			{
+				parentHeap = heap;
+				break;
+			}
+		}
+
+		if (parentHeap)
+		{
+			parentHeap->ForfeitBuffer(allocation);
+		}
+		else
+		{
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy buffer with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			DestroyOrphanBuffer(allocation);
+		}
+	}
+
+	void VulkanTransientAllocator::DestroyImageInternal(Ref<Allocation> allocation)
+	{
+		VT_PROFILE_FUNCTION();
+
+		Ref<TransientHeap> parentHeap;
+
+		for (const auto& heap : m_bufferHeaps)
+		{
+			if (heap->GetHeapID() == allocation->GetHeapID())
+			{
+				parentHeap = heap;
+				break;
+			}
+		}
+
+		if (parentHeap)
+		{
+			parentHeap->ForfeitImage(allocation);
+		}
+		else
+		{
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanTransientAllocation]", "Unable to destroy image with heap ID {0}!", static_cast<uint64_t>(allocation->GetHeapID()));
+			DestroyOrphanImage(allocation);
+		}
+	}
+
 	void VulkanTransientAllocator::DestroyOrphanBuffer(Ref<Allocation> allocation)
 	{
 		auto device = GraphicsContext::GetDevice();
@@ -168,5 +191,20 @@ namespace Volt::RHI
 	{
 		auto device = GraphicsContext::GetDevice();
 		vkDestroyImage(device->GetHandle<VkDevice>(), allocation->GetResourceHandle<VkImage>(), nullptr);
+	}
+
+	void VulkanTransientAllocator::Update()
+	{
+		const auto allocationsToRemove = m_allocationCache.UpdateAndGetAllocationsToDestroy();
+
+		for (const auto& alloc : allocationsToRemove.bufferAllocations)
+		{
+			DestroyBufferInternal(alloc);
+		}
+
+		for (const auto& alloc : allocationsToRemove.imageAllocations)
+		{
+			DestroyImageInternal(alloc);
+		}
 	}
 }

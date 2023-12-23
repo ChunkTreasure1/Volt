@@ -101,10 +101,6 @@ namespace Volt
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		
-		// Meshlets
-		void AddSetupIndirectMeshletsPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		///////////////////
-
 		Ref<RHI::Image2D> m_outputImage;
 
 		bool m_shouldResize = false;

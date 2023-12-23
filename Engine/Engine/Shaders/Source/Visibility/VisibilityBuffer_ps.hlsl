@@ -2,14 +2,14 @@
 
 struct Output
 {
-    [[vt::rg32ui]] uint2 visId : SV_Target0;
+    [[vt::r32ui]] uint visId : SV_Target0;
     [[vt::d32f]];
 };
 
 struct Input
 {
     float4 position : SV_Position;
-    uint2 visId : VISID;
+    uint visId : VISID;
 };
 
 Output main(Input input)

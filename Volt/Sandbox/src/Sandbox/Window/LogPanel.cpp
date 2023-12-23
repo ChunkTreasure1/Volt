@@ -33,6 +33,7 @@ LogPanel::LogPanel()
 			myLogMessages.erase(myLogMessages.begin());
 		}
 
+		std::scoped_lock lock{ m_logMutex };
 		myLogMessages.emplace_back(message);
 	});
 
@@ -41,6 +42,8 @@ LogPanel::LogPanel()
 
 void LogPanel::UpdateMainContent()
 {
+	std::scoped_lock lock{ m_logMutex };
+
 	if (ImGui::Button("Clear"))
 	{
 		myLogMessages.clear();

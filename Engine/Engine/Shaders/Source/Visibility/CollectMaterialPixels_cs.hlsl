@@ -1,12 +1,14 @@
 #include "Common.hlsli"
 #include "Resources.hlsli"
 #include "GPUScene.hlsli"
+#include "MeshletHelpers.hlsli"
 
 struct Constants
 {
-    TextureT<uint2> visibilityBuffer;
+    TextureT<uint> visibilityBuffer;
     TypedBuffer<ObjectDrawData> objectDrawData;
-    TypedBuffer<uint> materialStartBuffer;
+    TypedBuffer<Meshlet> meshletsBuffer;
+    TypedBuffer <uint>materialStartBuffer;
     
     RWTypedBuffer<uint> currentMaterialCountBuffer;
     RWTypedBuffer<uint2> pixelCollectionBuffer;
@@ -25,14 +27,15 @@ void main(uint3 threadId : SV_DispatchThreadID)
         return;
     }
     
-    const uint2 pixelValue = constants.visibilityBuffer.Load2D(int3(threadId.xy, 0));
+    const uint pixelValue = constants.visibilityBuffer.Load2D(int3(threadId.xy, 0));
     
-    if (pixelValue.x == UINT32_MAX)
+    if (pixelValue == UINT32_MAX)
     {
         return;
     }
     
-    const ObjectDrawData objectData = constants.objectDrawData.Load(pixelValue.x);
+    const Meshlet meshlet = constants.meshletsBuffer.Load(UnpackMeshletID(pixelValue));
+    const ObjectDrawData objectData = constants.objectDrawData.Load(meshlet.objectId);
     if (objectData.materialId == UINT32_MAX)
     {
         return;

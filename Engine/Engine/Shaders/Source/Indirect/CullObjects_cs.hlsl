@@ -31,7 +31,7 @@ bool IsInFrustum(in Constants constants, in float3 boundingSphereCenter, in floa
     
     visible = visible && center.z * constants.frustum1 - abs(center.x) * constants.frustum0 > -boundingSphereRadius;
     visible = visible && center.z * constants.frustum3 - abs(center.y) * constants.frustum2 > -boundingSphereRadius;
-    //visible = visible && center.z + boundingSphereRadius > cameraData.farPlane && center.z - boundingSphereRadius < cameraData.nearPlane;
+    visible = visible && center.z + boundingSphereRadius > cameraData.nearPlane && center.z - boundingSphereRadius < cameraData.farPlane;
     
     return visible;
 }

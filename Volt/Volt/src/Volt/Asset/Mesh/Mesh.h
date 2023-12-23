@@ -65,8 +65,8 @@ namespace Volt
 		inline const BoundingBox& GetBoundingBox() const { return m_boundingBox; }
 		inline const std::vector<GPUMesh>& GetGPUMeshes() const { return m_gpuMeshes; }
 
-		inline const std::map<uint32_t, BoundingSphere> GetSubMeshBoundingSpheres() const { return m_subMeshBoundingSpheres; }
-		
+		inline const BoundingSphere& GetSubMeshBoundingSphere(const uint32_t index) const { return m_subMeshBoundingSpheres.at(index);  }
+
 		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexPositionsBuffer() const { return m_vertexPositionsBuffer; }
 		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexMaterialBuffer() const { return m_vertexMaterialBuffer; }
 		inline Ref<GlobalResource<RHI::StorageBuffer>> GetVertexAnimationBuffer() const { return m_vertexAnimationBuffer; }
