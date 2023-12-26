@@ -1,26 +1,27 @@
 #pragma once
 
-#include "Volt/Rendering/FrameGraph/FrameGraphResourceHandle.h"
+#include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphResourceHandle.h"
 
 namespace Volt
 {
-	class FrameGraph;
-	class Camera;
-	class CommandBuffer;
-	class ComputePipeline;
+	class RenderGraph;
+	class RenderGraphBlackboard;
 
+	class Camera;
 	struct GTAOSettings;
 
 	class GTAOTechnique
 	{
 	public:
-		GTAOTechnique(Ref<Camera> camera, const glm::uvec2& renderSize, uint64_t frameIndex, const GTAOSettings& settings);
+		GTAOTechnique(uint64_t frameIndex, const GTAOSettings& settings);
 
-		void AddPrefilterDepthPass(FrameGraph& frameGraph, Ref<ComputePipeline> prefilterDepthPipeline, FrameGraphResourceHandle srcDepthHandle);
-		void AddMainPass(FrameGraph& frameGraph, Ref<ComputePipeline> mainPassPipeline, FrameGraphResourceHandle viewNormalsHandle);
-		void AddDenoisePass(FrameGraph& frameGraph, const std::vector<Ref<ComputePipeline>>& denoisePipelines);
+		void AddGTAOPasses(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize);
 
 	private:
+		void AddPrefilterDepthPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize);
+		void AddMainPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
+		void AddDenoisePass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
+
 		struct GTAOConstants
 		{
 			glm::uvec2 ViewportSize;
@@ -45,10 +46,8 @@ namespace Volt
 			float ThinOccluderCompensation = 0.f;
 			float DepthMIPSamplingOffset = 3.3f;
 			int NoiseIndex = 0;                         // frameIndex % 64 if using TAA or 0 otherwise
-		} myConstants;
+		} m_constants;
 
-		glm::uvec2 myRenderSize = {};
-
-		uint64_t myFrameIndex = 0;
+		uint64_t m_frameIndex = 0;
 	};
 }

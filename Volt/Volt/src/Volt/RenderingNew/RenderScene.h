@@ -27,9 +27,11 @@ namespace Volt
 		~RenderScene();
 
 		void PrepareForUpdate();
+		void Update();
 
 		void SetValid();
 		void Invalidate();
+		void InvalidateRenderObject(UUID64 renderObject);
 
 		const UUID64 Register(EntityID entityId, Ref<Mesh> mesh, uint32_t subMeshIndex);
 		void Unregister(UUID64 id);
@@ -79,6 +81,10 @@ namespace Volt
 		std::vector<Meshlet> m_sceneMeshlets;
 
 		std::vector<RenderObject> m_renderObjects;
+		std::vector<ObjectDrawData> m_objectDrawData;
+
+		std::vector<UUID64> m_invalidRenderObjects;
+
 		std::vector<IndirectGPUCommandNew> m_meshCommands;
 		std::vector<Weak<Mesh>> m_individualMeshes;
 		std::vector<Weak<SubMaterial>> m_individualMaterials;

@@ -229,12 +229,4 @@ namespace Volt
 		float globalDensity = 0.f;
 		glm::vec3 globalColor = { 1.f };
 	};
-
-	struct GTAOSettings
-	{
-		float radius = 50.f;
-		float radiusMultiplier = 1.457f;
-		float falloffRange = 0.615f;
-		float finalValuePower = 2.2f;
-	};
 }

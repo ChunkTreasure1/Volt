@@ -57,28 +57,28 @@ struct SamplersData
     uint3 padding;
 };
 
-struct CameraData
+struct ViewData
 {
+    // Camera
     float4x4 view;
     float4x4 projection;
-
     float4x4 inverseView;
     float4x4 inverseProjection;
-
     float4x4 viewProjection;
     float4x4 inverseViewProjection;
-    
-    float4 position;
-    
+    float4 cameraPosition;
     float2 depthUnpackConsts;
     float nearPlane;
     float farPlane;
+	
+    // Render Target
+    float2 renderSize;
+    float2 invRenderSize;
 };
 
 struct DirectionalLight
 {
     float4 direction;
-    
     float3 color;
     float intensity;
 };

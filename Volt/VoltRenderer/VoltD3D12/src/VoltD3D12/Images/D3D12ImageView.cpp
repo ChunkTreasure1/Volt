@@ -47,11 +47,16 @@ namespace Volt::RHI
 
 	const ImageAspect D3D12ImageView::GetImageAspect() const
 	{
-		return ImageAspect();
+		return m_specs.image->GetImageAspect();
 	}
 
 	const uint64_t D3D12ImageView::GetDeviceAddress() const
 	{
 		return m_viewID;
+	}
+
+	const ImageUsage D3D12ImageView::GetImageUsage() const
+	{
+		return m_specs.image->GetUsage();
 	}
 }

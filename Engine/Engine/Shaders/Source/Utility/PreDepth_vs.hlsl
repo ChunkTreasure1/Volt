@@ -11,13 +11,14 @@ struct Output
 Output main(in DefaultInput input)
 {
     const Constants constants = GetConstants<Constants>();
+    const ViewData viewData = constants.viewData.Load(0);
     
     const float4x4 transform = input.GetTransform();
     const float4 worldPosition = mul(transform, float4(input.GetVertexPositionData().position, 1.f));
-    const float3 normal = mul((float3x3) transform, input.GetNormal());
+    const float3 normal = mul((float3x3)mul(viewData.view, transform), input.GetNormal());
     
     Output output;
-    output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
+    output.position = mul(viewData.projection, mul(viewData.view, worldPosition)); // #TODO_Ivar: Switch to viewProjection
     output.normal = normal;
     return output;
 }

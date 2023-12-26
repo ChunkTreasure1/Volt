@@ -73,6 +73,7 @@ namespace Volt::RHI
 		void ClearImage(Ref<Image2D> image, std::array<float, 4> clearColor) override;
 		void ClearBuffer(Ref<StorageBuffer> buffer, const uint32_t value) override;
 
+		void UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data) override;
 		void CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size) override;
 		void CopyBufferToImage(Ref<Allocation> srcBuffer, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height, const uint32_t mip /* = 0 */) override;
 		void CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height) override;

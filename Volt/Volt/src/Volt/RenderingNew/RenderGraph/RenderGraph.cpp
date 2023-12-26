@@ -444,7 +444,7 @@ namespace Volt
 		{
 			for (const auto& resource : usedImage2Ds)
 			{
-				GlobalResourceManager::UnregisterResource<RHI::Image2D>(resource);
+				GlobalResourceManager::UnregisterResource<RHI::ImageView>(resource);
 			}
 
 			for (const auto& resource : usedBuffers)
@@ -541,7 +541,7 @@ namespace Volt
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
-		auto handle = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::ImageView>(image->GetView());
 
 		m_usedGlobalImage2DResourceHandles.insert(handle);
 
@@ -554,20 +554,20 @@ namespace Volt
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
-		auto handle = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::ImageView>(image->GetView());
 
 		m_usedGlobalImage2DResourceHandles.insert(handle);
 
 		return image;
 	}
 
-	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle)
+	ResourceHandle RenderGraph::GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip, const uint32_t layer)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
 
 		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
-		auto handle = GlobalResourceManager::RegisterResource<RHI::Image2D>(image);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::ImageView>(image->GetView(mip, layer));
 
 		if (imageDesc.trackGlobalResource)
 		{

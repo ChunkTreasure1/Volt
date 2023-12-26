@@ -11,7 +11,7 @@ struct Constants
     
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
     TypedBuffer <GPUMesh>meshBuffer;
-    TypedBuffer<CameraData> cameraData;
+    TypedBuffer<ViewData> viewData;
     
     uint objectCount;
     
@@ -23,15 +23,15 @@ struct Constants
 
 bool IsInFrustum(in Constants constants, in float3 boundingSphereCenter, in float boundingSphereRadius)
 {
-    const CameraData cameraData = constants.cameraData.Load(0);
+    const ViewData viewData = constants.viewData.Load(0);
     
-    const float3 center = mul(cameraData.view, float4(boundingSphereCenter, 1.f)).xyz;
+    const float3 center = mul(viewData.view, float4(boundingSphereCenter, 1.f)).xyz;
 
     bool visible = true;
     
     visible = visible && center.z * constants.frustum1 - abs(center.x) * constants.frustum0 > -boundingSphereRadius;
     visible = visible && center.z * constants.frustum3 - abs(center.y) * constants.frustum2 > -boundingSphereRadius;
-    visible = visible && center.z + boundingSphereRadius > cameraData.nearPlane && center.z - boundingSphereRadius < cameraData.farPlane;
+    visible = visible && center.z + boundingSphereRadius > viewData.nearPlane && center.z - boundingSphereRadius < viewData.farPlane;
     
     return visible;
 }

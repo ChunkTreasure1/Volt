@@ -42,28 +42,28 @@ namespace Volt
 	};
 
 	///// Rendering Structures /////
-	struct CameraDataNew
+	struct ViewData
 	{
+		// Camera
 		glm::mat4 view;
 		glm::mat4 projection;
-
 		glm::mat4 inverseView;
 		glm::mat4 inverseProjection;
-
 		glm::mat4 viewProjection;
 		glm::mat4 inverseViewProjection;
-
-		glm::vec4 position;
-		
+		glm::vec4 cameraPosition;
 		glm::vec2 depthUnpackConsts;
 		float nearPlane;
 		float farPlane;
+	
+		// Render Target
+		glm::vec2 renderSize;
+		glm::vec2 invRenderSize;
 	};
 
 	struct DirectionalLightData
 	{
 		glm::vec4 direction;
-
 		glm::vec3 color;
 		float intensity;
 	};

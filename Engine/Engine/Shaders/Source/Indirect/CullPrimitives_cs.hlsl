@@ -19,7 +19,7 @@ struct Constants
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<GPUMesh> gpuMeshes;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<CameraData> cameraData;
+    TypedBuffer<ViewData> viewData;
     
     float2 renderSize;
 };
@@ -28,7 +28,7 @@ struct Constants
 void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
 {
     const Constants constants = GetConstants<Constants>();
-    const CameraData cameraData = constants.cameraData.Load(0);
+    const ViewData viewData = constants.viewData.Load(0);
     
     uint groupId = UnwrapDispatchGroupId(gid);
     
@@ -59,7 +59,8 @@ void main(uint3 gid : SV_GroupID, uint groupThreadId : SV_GroupThreadID)
     positions[1] = mesh.vertexPositionsBuffer.Load(vIndex1).position;
     positions[2] = mesh.vertexPositionsBuffer.Load(vIndex2).position;
     
-    const float4x4 mvp = mul(cameraData.projection, mul(cameraData.view, objectData.transform));
+    // #TODO_Ivar: switch to viewProjection
+    const float4x4 mvp = mul(viewData.projection, mul(viewData.view, objectData.transform));
     
     [unroll]
     for (uint i = 0; i < 3; ++i)

@@ -16,7 +16,7 @@ struct Constants
     TypedBuffer<uint2> pixelCollection;
     
     TypedBuffer<GPUScene> gpuScene;
-    TypedBuffer<CameraData> cameraData;
+    TypedBuffer<ViewData> viewData;
     
     RWTexture<float4> albedo;
     RWTexture<float4> materialEmissive;
@@ -200,7 +200,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
 {
     const Constants constants = GetConstants<Constants>();
     const GPUScene scene = constants.gpuScene.Load(0);
-    const CameraData cameraData = constants.cameraData.Load(0);
+    const ViewData viewData = constants.viewData.Load(0);
     
     if (groupThreadIndex == 0)
     {
@@ -241,9 +241,9 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     const float2 screenPos = float2((pixelPosition.x / constants.viewSize.x) * 2.f - 1.f, -(pixelPosition.y / constants.viewSize.y) * 2.f + 1.f);
     
-    float4 pos0 = mul(cameraData.viewProjection, wPos0);
-    float4 pos1 = mul(cameraData.viewProjection, wPos1);
-    float4 pos2 = mul(cameraData.viewProjection, wPos2);
+    float4 pos0 = mul(viewData.viewProjection, wPos0);
+    float4 pos1 = mul(viewData.viewProjection, wPos1);
+    float4 pos2 = mul(viewData.viewProjection, wPos2);
     
     const float3 oneOverW = 1.f / float3(pos0.w, pos1.w, pos2.w);
     
@@ -257,10 +257,10 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     float interpW = 1.f / dot(oneOverW, derivatives.lambda);
     
     // Reconstruct pixel Z value
-    float z = interpW * cameraData.projection[2][2] + cameraData.projection[3][2];
+    float z = interpW * viewData.projection[2][2] + viewData.projection[3][2];
     
     // Calculate interpolated world position
-    float3 worldPosition = mul(cameraData.inverseViewProjection, float4(screenPos * interpW, z, interpW)).xyz;
+    float3 worldPosition = mul(viewData.inverseViewProjection, float4(screenPos * interpW, z, interpW)).xyz;
     
     float3x2 triTexCoords = 0.f;
     float3x3 triNormals = 0.f;
@@ -281,10 +281,10 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
 #if USE_RAY_DIFFERENTIALS
         const float2 twoOverRes = 2.f / constants.viewSize;
         
-        float3 positionDX = mul(cameraData.inverseViewProjection, float4((screenPos + twoOverRes.x / 2.f) * interpW, z, interpW)).xyz;
-        float3 positionDY = mul(cameraData.inverseViewProjection, float4((screenPos + twoOverRes.y / 2.f) * interpW, z, interpW)).xyz;
+        float3 positionDX = mul(viewData.inverseViewProjection, float4((screenPos + twoOverRes.x / 2.f) * interpW, z, interpW)).xyz;
+        float3 positionDY = mul(viewData.inverseViewProjection, float4((screenPos + twoOverRes.y / 2.f) * interpW, z, interpW)).xyz;
         
-        derivatives = CalculateRayBary(wPos0.xyz, wPos1.xyz, wPos2.xyz, worldPosition, positionDX, positionDY, cameraData.position.xyz);
+        derivatives = CalculateRayBary(wPos0.xyz, wPos1.xyz, wPos2.xyz, worldPosition, positionDX, positionDY, viewData.position.xyz);
 #endif
         
         const float3 triNormal0 = DecodeNormal(material0.normal);
@@ -297,7 +297,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     GradientInterpolationResults results = Interpolate2DWithDerivatives(derivatives, triTexCoords);
     
-    float linearZ = LinearizeDepth01(z / interpW, cameraData);
+    float linearZ = LinearizeDepth01(z / interpW, viewData);
     float mip = pow(pow(linearZ, 0.9f) * 5.f, 1.5f);
     
     float2 texCoordsDX = results.dx * mip;
@@ -335,7 +335,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     const float4 albedo = outputAlbedo;
     const float4 materialEmissive = float4(0.f, 0.9f, 0.f, 0.f);
-    const float4 normalEmissive = float4(resultNormal, 1.f);
+    const float4 normalEmissive = float4(resultNormal, 0.f);
     
     constants.albedo.Store2D(pixelPosition, albedo);
     constants.materialEmissive.Store2D(pixelPosition, materialEmissive);

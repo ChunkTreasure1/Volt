@@ -9,42 +9,42 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
+#include "Volt/Math/Math.h"
+
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Graphics/Swapchain.h>
 
 namespace Volt
 {
-	struct Samplers
+	namespace Utility
 	{
-		Ref<RHI::SamplerState> linear;
-		Ref<RHI::SamplerState> linearPoint;
+		inline static const size_t GetHashFromSamplerInfo(const RHI::SamplerStateCreateInfo& info)
+		{
+			size_t hash = std::hash<uint32_t>()(static_cast<uint32_t>(info.minFilter));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(info.magFilter)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(info.mipFilter)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(info.wrapMode)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(info.compareOperator)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(info.anisotropyLevel)));
+			hash = Math::HashCombine(hash, std::hash<float>()(info.mipLodBias));
+			hash = Math::HashCombine(hash, std::hash<float>()(info.minLod));
+			hash = Math::HashCombine(hash, std::hash<float>()(info.maxLod));
 
-		Ref<RHI::SamplerState> point;
-		Ref<RHI::SamplerState> pointLinear;
-
-		Ref<RHI::SamplerState> linearClamp;
-		Ref<RHI::SamplerState> linearPointClamp;
-
-		Ref<RHI::SamplerState> pointClamp;
-		Ref<RHI::SamplerState> pointLinearClamp;
-
-		Ref<RHI::SamplerState> anisotropic;
-	};
+			return hash;
+		}
+	}
 
 	struct RendererData
 	{
 		Ref<RHI::ShaderCompiler> shaderCompiler;
 		std::vector<FunctionQueue> deletionQueue;
 
-		// Data
-		Samplers samplers{};
-		SamplersData samplersData{};
+		std::unordered_map<size_t, Ref<GlobalResource<RHI::SamplerState>>> samplers;
 
 		inline void Shutdown()
 		{
-			samplers = {};
-			samplersData = {};
+			samplers.clear();
 			shaderCompiler = nullptr;
 
 			for (auto& resourceQueue : deletionQueue)
@@ -81,18 +81,12 @@ namespace Volt
 	void RendererNew::Initialize()
 	{
 		GlobalResourceManager::Initialize();
-
-		RegisterSamplers();
-
 		RenderGraphExecutionThread::Initialize();
 	}
 
 	void RendererNew::Shutdown()
 	{
 		RenderGraphExecutionThread::Shutdown();
-
-		UnregisterSamplers();
-
 		GlobalResourceManager::Shutdown();
 		
 		s_rendererData->Shutdown();
@@ -133,64 +127,17 @@ namespace Volt
 		//GlobalResourceManager::Update();
 	}
 
-	SamplersData RendererNew::GetSamplersData()
+	Ref<GlobalResource<RHI::SamplerState>> RendererNew::GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo)
 	{
-		return s_rendererData->samplersData;
-	}
-
-	template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None>
-	inline static Ref<RHI::SamplerState> CreateSamplerState()
-	{
-		RHI::SamplerStateCreateInfo info{};
-		info.minFilter = min;
-		info.magFilter = mag;
-		info.mipFilter = mip;
-		info.wrapMode = wrapMode;
-		info.anisotropyLevel = aniso;
-
-		return RHI::SamplerState::Create(info);
-	}
-
-	void RendererNew::RegisterSamplers()
-	{
-		// Create samplers
+		const size_t hash = Utility::GetHashFromSamplerInfo(samplerInfo);
+		if (s_rendererData->samplers.contains(hash))
 		{
-			s_rendererData->samplers.linear = CreateSamplerState<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>();
-			s_rendererData->samplers.linearPoint = CreateSamplerState<RHI::TextureFilter::Linear, RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear>();
-
-			s_rendererData->samplers.point = CreateSamplerState<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>();
-			s_rendererData->samplers.pointLinear = CreateSamplerState<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Nearest>();
-
-			s_rendererData->samplers.linearClamp = CreateSamplerState<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>();
-			s_rendererData->samplers.linearPointClamp = CreateSamplerState<RHI::TextureFilter::Linear, RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>();
-
-			s_rendererData->samplers.pointClamp = CreateSamplerState<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
-			s_rendererData->samplers.pointLinearClamp = CreateSamplerState<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
-		
-			s_rendererData->samplers.anisotropic = CreateSamplerState<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Repeat, RHI::AnisotropyLevel::X16>();
+			return s_rendererData->samplers.at(hash);
 		}
 
-		s_rendererData->samplersData.linearSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.linear);
-		s_rendererData->samplersData.linearPointSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.linearPoint);
-		s_rendererData->samplersData.pointSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.point);
-		s_rendererData->samplersData.pointLinearSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.pointLinear);
-		s_rendererData->samplersData.linearClampSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.linearClamp);
-		s_rendererData->samplersData.linearPointClampSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.linearPointClamp);
-		s_rendererData->samplersData.pointClampSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.pointClamp);
-		s_rendererData->samplersData.pointLinearClampSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.pointLinearClamp);
-		s_rendererData->samplersData.anisotropicSampler = GlobalResourceManager::RegisterResource<RHI::SamplerState>(s_rendererData->samplers.anisotropic);
-	}
+		Ref<GlobalResource<RHI::SamplerState>> samplerState = GlobalResource<RHI::SamplerState>::Create(RHI::SamplerState::Create(samplerInfo));
+		s_rendererData->samplers[hash] = samplerState;
 
-	void RendererNew::UnregisterSamplers()
-	{
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.linearSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.linearPointSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.pointSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.pointLinearSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.linearClampSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.linearPointClampSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.pointClampSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.pointLinearClampSampler);
-		GlobalResourceManager::UnregisterResource<RHI::SamplerState>(s_rendererData->samplersData.anisotropicSampler);
+		return samplerState;
 	}
 }

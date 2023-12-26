@@ -1121,6 +1121,18 @@ namespace Volt::RHI
 		}
 	}
 
+#define MAX_UPDATE_SIZE 65536
+
+	void VulkanCommandBuffer::UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)
+	{
+		assert(dataSize <= MAX_UPDATE_SIZE && "Size must not exceed MAX_UPDATE_SIZE!");
+		
+		VulkanStorageBuffer& vkBuffer = dstBuffer->AsRef<VulkanStorageBuffer>();
+		const uint32_t index = GetCurrentCommandBufferIndex();
+
+		vkCmdUpdateBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), dstOffset, dataSize, data);
+	}
+
 	void VulkanCommandBuffer::CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();

@@ -258,6 +258,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)
+	{
+	}
+
 	void D3D12CommandBuffer::CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size)
 	{
 	}

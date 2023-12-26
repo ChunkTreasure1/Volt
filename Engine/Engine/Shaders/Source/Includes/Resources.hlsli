@@ -100,6 +100,11 @@ struct RWTexture3DHandle
     uint handle;
 };
 
+struct SamplerStateHandle
+{
+    uint handle;
+};
+
 // #TODO_Ivar: Add ability to access resources uniformly
 struct VulkanResourceDescriptorHeapInternal
 {
@@ -116,6 +121,11 @@ struct VulkanResourceDescriptorHeapInternal
     ByteAddressBuffer operator[](UniformBufferHandle handle)
     {
         return u_UniformBuffer[handle.handle];
+    }
+    
+    SamplerState operator[](SamplerStateHandle handle)
+    {
+        return u_SamplerState[handle.handle];
     }
 
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(Texture1D)
@@ -134,6 +144,16 @@ static VulkanResourceDescriptorHeapInternal g_descriptorHeap;
 struct ResourceHandle
 {
     uint handle;
+};
+
+struct TextureSampler
+{
+    ResourceHandle handle;
+    
+    SamplerState Get()
+    {
+        return DESCRIPTOR_HEAP(SamplerStateHandle, handle);
+    }
 };
 
 struct RawByteBuffer
@@ -474,6 +494,21 @@ struct TextureT
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
         texture.GetDimensions(width, height, depth);
     }
+    
+    Texture1D<T> Get1D()
+    {
+        return DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);
+    }
+    
+    Texture2D<T> Get2D()
+    {
+        return DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
+    }
+    
+    Texture3D<T> Get3D()
+    {
+        return DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
+    }
 };
 
 template<typename T>
@@ -533,6 +568,21 @@ struct RWTexture
     {
         RWTexture3D<T> texture = DESCRIPTOR_HEAP(RWTexture3DHandle<T>, handle);
         texture.GetDimensions(width, height, depth);
+    }
+    
+    RWTexture1D<T> Get1D()
+    {
+        return DESCRIPTOR_HEAP(RWTexture1DHandle<T>, handle);
+    }
+    
+    RWTexture2D<T> Get2D()
+    {
+        return DESCRIPTOR_HEAP(RWTexture2DHandle<T>, handle);
+    }
+    
+    RWTexture3D<T> Get3D()
+    {
+        return DESCRIPTOR_HEAP(RWTexture3DHandle<T>, handle);
     }
 };
 

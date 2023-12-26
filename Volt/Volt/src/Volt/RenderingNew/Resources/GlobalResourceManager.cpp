@@ -6,6 +6,7 @@
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Images/ImageView.h>
 #include <VoltRHI/Shader/Shader.h>
 
 namespace Volt
@@ -53,16 +54,16 @@ namespace Volt
 
 		// Images
 		{
-			auto& resources = GetResourceContainer<RHI::Image2D>();
+			auto& resources = GetResourceContainer<RHI::ImageView>();
 			std::scoped_lock lock{ resources.accessMutex };
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource->GetView(), 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource));
 
-				if (resource->GetUsage() == RHI::ImageUsage::Storage || resource->GetUsage() == RHI::ImageUsage::AttachmentStorage)
+				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
-					s_globalDescriptorTable->SetImageView(resource->GetView(), 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource));
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource));
 				}
 			}
 

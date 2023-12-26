@@ -10,12 +10,14 @@
 #include "Volt/RenderingNew/GPUScene.h"
 #include "Volt/RenderingNew/RendererNew.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/RenderingNew/Utility/ScatteredBufferUpload.h"
 #include "Volt/Rendering/Camera/Camera.h"
 
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
 
 namespace Volt
 {
@@ -107,17 +109,30 @@ namespace Volt
 		std::vector<GPUMesh> gpuMeshes;
 		BuildGPUMeshes(gpuMeshes);
 
-		std::vector<ObjectDrawData> objectDrawData;
-		BuildObjectDrawData(objectDrawData);
-		BuildMeshletBuffer(objectDrawData);
+		BuildObjectDrawData(m_objectDrawData);
+		BuildMeshletBuffer(m_objectDrawData);
 
 		UploadGPUMeshes(gpuMeshes);
-		UploadObjectDrawData(objectDrawData);
+		UploadObjectDrawData(m_objectDrawData);
 		UploadGPUMeshlets();
 		UploadGPUMaterials();
 		UploadGPUScene();
 
 		BuildMeshCommands();
+	}
+
+	void RenderScene::Update()
+	{
+		if (m_invalidRenderObjects.empty())
+		{
+			return;
+		}
+
+		//ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_objectDrawDataBuffer->GetResource() };
+
+		//for (const auto& invalidObject : m_invalidRenderObjects)
+		//{
+		//}
 	}
 
 	void RenderScene::SetValid()
@@ -128,6 +143,17 @@ namespace Volt
 	void RenderScene::Invalidate()
 	{
 		m_isInvalid = true;
+	}
+
+	void RenderScene::InvalidateRenderObject(UUID64 renderObject)
+	{
+		auto it = std::find(m_renderObjects.begin(), m_renderObjects.end(), renderObject);
+		if (it == m_renderObjects.end())
+		{
+			return;
+		}
+
+		m_invalidRenderObjects.emplace_back(renderObject);
 	}
 
 	const UUID64 RenderScene::Register(EntityID entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
@@ -231,7 +257,7 @@ namespace Volt
 			for (const auto& texture : material->GetTextures())
 			{
 				gpuMat.textures[gpuMat.textureCount] = texture->GetResourceHandle();
-				gpuMat.samplers[gpuMat.textureCount] = RendererNew::GetSamplersData().linearSampler;
+				gpuMat.samplers[gpuMat.textureCount] = RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
 
 				gpuMat.textureCount++;
 			}

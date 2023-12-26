@@ -16,7 +16,7 @@ struct Constants
     TypedBuffer<GPUScene> gpuScene;
     TypedBuffer<DrawContext> drawContext;
     
-    TypedBuffer<CameraData> cameraData; // #TODO_Ivar: Should be uniform buffer
+    TypedBuffer<ViewData> viewData; // #TODO_Ivar: Should be uniform buffer
 };
 
 struct DefaultInput

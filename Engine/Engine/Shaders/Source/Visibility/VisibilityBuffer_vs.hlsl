@@ -10,12 +10,14 @@ struct Output
 Output main(in DefaultInput input)
 {
     const Constants constants = GetConstants<Constants>();
+    const ViewData viewData = constants.viewData.Load(0);
+    
     float4 worldPosition = mul(input.GetTransform(), float4(input.GetVertexPositionData().position, 1.f));
     
     const uint objectId = input.GetObjectID();
     
     Output output;
-    output.position = mul(constants.cameraData.Load(0).projection, mul(constants.cameraData.Load(0).view, worldPosition));
+    output.position = mul(viewData.projection, mul(viewData.view, worldPosition)); // #TODO_Ivar: Switch to viewProjection
     output.visId = input.GetPackedPrimitveID();
     
     return output;

@@ -68,6 +68,11 @@ namespace Volt::RHI
 		return m_specification.image->GetDeviceAddress();
 	}
 
+	const ImageUsage VulkanImageView::GetImageUsage() const
+	{
+		return m_specification.image->GetUsage();
+	}
+
 	void* VulkanImageView::GetHandleImpl() const
 	{
 		return m_imageView;

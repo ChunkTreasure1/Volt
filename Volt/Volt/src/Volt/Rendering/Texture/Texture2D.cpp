@@ -27,7 +27,7 @@ namespace Volt
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+			GlobalResourceManager::UnregisterResource<RHI::ImageView>(m_image->GetView());
 		}
 		
 		m_image = nullptr;
@@ -45,14 +45,14 @@ namespace Volt
 
 	ResourceHandle Texture2D::GetResourceHandle() const
 	{
-		return GlobalResourceManager::RegisterResource<RHI::Image2D>(m_image);
+		return GlobalResourceManager::RegisterResource<RHI::ImageView>(m_image->GetView());
 	}
 
 	void Texture2D::SetImage(Ref<RHI::Image2D> image)
 	{
 		if (m_image)
 		{
-			GlobalResourceManager::UnregisterResource<RHI::Image2D>(m_image);
+			GlobalResourceManager::UnregisterResource<RHI::ImageView>(m_image->GetView());
 		}
 
 		m_image = image;

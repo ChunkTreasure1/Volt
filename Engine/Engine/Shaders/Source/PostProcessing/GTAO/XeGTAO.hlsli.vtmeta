@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 8371476362612962359
+  filePath: Engine/Shaders/Source/PostProcessing/GTAO/XeGTAO.hlsli
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

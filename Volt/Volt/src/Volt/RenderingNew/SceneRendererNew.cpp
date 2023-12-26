@@ -14,7 +14,9 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
+
 #include "Volt/RenderingNew/RenderingTechniques/PrefixSumTechnique.h"
+#include "Volt/RenderingNew/RenderingTechniques/GTAOTechnique.h"
 
 #include "Volt/RenderingNew/DrawContext.h"
 
@@ -53,10 +55,6 @@
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
-inline static constexpr uint32_t CAMERA_BUFFER_BINDING = 0;
-inline static constexpr uint32_t DIRECTIONAL_LIGHT_BINDING = 1;
-inline static constexpr uint32_t SAMPLERS_BINDING = 2;
-
 namespace Volt
 {
 	namespace Utility
@@ -74,8 +72,6 @@ namespace Volt
 		: m_scene(specification.scene)
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
-
-		CreatePipelines();
 
 		// Create render target
 		{
@@ -153,10 +149,20 @@ namespace Volt
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
 			AddPreDepthPass(renderGraph, rgBlackboard);
+
+			GTAOSettings tempSettings{};
+			tempSettings.radius = 0.5f;
+			tempSettings.radiusMultiplier = 1.457f;
+			tempSettings.falloffRange = 0.615f;
+			tempSettings.finalValuePower = 2.2f;
+
+			GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
+			gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
+
 			AddVisibilityBufferPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
-			PrefixSumTechnique prefixSum{ renderGraph, m_prefixSumPipeline };
+			PrefixSumTechnique prefixSum{ renderGraph };
 			prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
 			
 			AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
@@ -177,26 +183,12 @@ namespace Volt
 			AddShadingPass(renderGraph, rgBlackboard);
 		}
 
-		//AddSetupIndirectMeshletsPasses(renderGraph, rgBlackboard);
-
-		////AddSetupIndirectPasses(renderGraph, rgBlackboard);
-
-		//AddPreDepthPass(renderGraph, rgBlackboard);
-
-
-
-
-		
-
-		//if (m_visibilityVisualization != VisibilityVisualization::None)
-		//{
-		//	AddVisibilityVisualizationPass(renderGraph, rgBlackboard);
-		//}
-
 		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalImagesData>().outputImage, RHI::ResourceState::PixelShaderRead);
 
 		renderGraph.Compile();
 		renderGraph.Execute();
+
+		m_frameIndex++;
 	}
 
 	void SceneRendererNew::Invalidate()
@@ -221,7 +213,7 @@ namespace Volt
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 		const auto& cullPrimitivesData = blackboard.Get<CullPrimitivesData>();
 
-		builder.ReadResource(uniformBuffers.cameraDataBuffer);
+		builder.ReadResource(uniformBuffers.viewDataBuffer);
 		builder.ReadResource(externalBuffers.drawContextBuffer);
 		builder.ReadResource(cullPrimitivesData.indexBuffer, RHI::ResourceState::IndexBuffer);
 		builder.ReadResource(cullPrimitivesData.drawCommand, RHI::ResourceState::IndirectArgument);
@@ -235,7 +227,7 @@ namespace Volt
 
 		const auto gpuSceneHandle = m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle();
 		const auto drawContextHandle = resources.GetBuffer(externalBuffers.drawContextBuffer);
-		const auto cameraDataHandle = resources.GetBuffer(uniformBuffers.cameraDataBuffer);
+		const auto viewDataHandle = resources.GetBuffer(uniformBuffers.viewDataBuffer);
 
 		const auto indirectCommands = resources.GetBufferRaw(cullPrimitivesData.drawCommand);
 		const auto indexBuffer = resources.GetBufferRaw(cullPrimitivesData.indexBuffer);
@@ -243,57 +235,9 @@ namespace Volt
 		context.BindIndexBuffer(indexBuffer);
 		context.SetConstant(gpuSceneHandle);
 		context.SetConstant(drawContextHandle);
-		context.SetConstant(cameraDataHandle);
+		context.SetConstant(viewDataHandle);
 
 		context.DrawIndexedIndirect(indirectCommands, 0, 1, sizeof(RHI::IndirectIndexedCommand));
-	}
-
-	void SceneRendererNew::CreatePipelines()
-	{
-		m_clearIndirectCountsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("ClearCountBuffer"));
-		m_indirectSetupPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("IndirectSetup"));
-
-		// Depth Only pipeline
-
-		{
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("PreDepth");
-			m_preDepthPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-		}
-
-		// Visibility Buffer pipeline
-		{
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("VisibilityBuffer");
-			pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
-			pipelineInfo.depthMode = RHI::DepthMode::Read;
-			m_visibilityPipeline = RHI::RenderPipeline::Create(pipelineInfo);
-		}
-
-		// Visibility buffer compute
-		{
-			//	m_visibilityVisualizationPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("VisibilityVisualization"));
-			m_generateMaterialCountPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialCount"));
-			m_collectMaterialPixelsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CollectMaterialPixels"));
-			m_generateMaterialIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateMaterialIndirectArgs"));
-			m_generateGBufferPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateGBuffer"));
-			m_shadingPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("Shading"));
-		}
-
-		// Utility
-		{
-			m_prefixSumPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("PrefixSum"));
-		}
-
-		// Meshlets
-		{
-			m_indirectSetupMeshletsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("IndirectSetupMeshlets"));
-			m_cullObjectsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullObjects"));
-			m_cullMeshletsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullMeshlets"));
-			m_cullPrimitivesPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("CullPrimitives"));
-			m_generateIndirectArgsPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateIndirectArgs"));
-			m_generateIndirectArgsWrappedPipeline = RHI::ComputePipeline::Create(ShaderMap::Get("GenerateIndirectArgsWrapped"));
-		}
 	}
 
 	void SceneRendererNew::UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
@@ -301,32 +245,62 @@ namespace Volt
 		auto& buffersData = blackboard.Add<UniformBuffersData>();
 
 		{
-			const auto desc = RGUtils::CreateBufferDesc<CameraDataNew>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Camera Data");
-			buffersData.cameraDataBuffer = renderGraph.CreateBuffer(desc);
+			const auto desc = RGUtils::CreateBufferDesc<ViewData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "View Data");
+			buffersData.viewDataBuffer = renderGraph.CreateBuffer(desc);
 
-			// Upload
-			CameraDataNew camData{};
-			camData.projection = camera->GetProjection();
-			camData.view = camera->GetView();
-			camData.inverseView = glm::inverse(camData.view);
-			camData.inverseProjection = glm::inverse(camData.projection);
-			camData.position = glm::vec4(camera->GetPosition(), 1.f);
-			camData.viewProjection = camData.projection * camData.view;
-			camData.inverseViewProjection = glm::inverse(camData.viewProjection);
-			camData.nearPlane = camera->GetNearPlane();
-			camData.farPlane = camera->GetFarPlane();
+			ViewData viewData{};
 
-			float depthLinearizeMul = (-camData.projection[3][2]);
-			float depthLinearizeAdd = (camData.projection[2][2]);
+			// Camera
+			viewData.projection = camera->GetProjection();
+			viewData.view = camera->GetView();
+			viewData.inverseView = glm::inverse(viewData.view);
+			viewData.inverseProjection = glm::inverse(viewData.projection);
+			viewData.viewProjection = viewData.projection * viewData.view;
+			viewData.inverseViewProjection = glm::inverse(viewData.viewProjection);
+			viewData.cameraPosition = glm::vec4(camera->GetPosition(), 1.f);
+			viewData.nearPlane = camera->GetNearPlane();
+			viewData.farPlane = camera->GetFarPlane();
+			
+			float depthLinearizeMul = (-viewData.projection[3][2]);
+			float depthLinearizeAdd = (viewData.projection[2][2]);
 
 			if (depthLinearizeMul * depthLinearizeAdd < 0.f)
 			{
 				depthLinearizeAdd = -depthLinearizeAdd;
 			}
 
-			camData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
+			viewData.depthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
 
-			renderGraph.AddMappedBufferUpload(buffersData.cameraDataBuffer, &camData, sizeof(CameraDataNew), "Upload Camera Data");
+			// Render Target
+			viewData.renderSize = { m_width, m_height };
+			viewData.invRenderSize = { 1.f / static_cast<float>(m_width), 1.f / static_cast<float>(m_height) };
+
+			renderGraph.AddMappedBufferUpload(buffersData.viewDataBuffer, &viewData, sizeof(ViewData), "Upload view data");
+		}
+
+		{
+			const auto desc = RGUtils::CreateBufferDesc<DirectionalLightData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Directional Light Data");
+			buffersData.directionalLightBuffer = renderGraph.CreateBuffer(desc);
+
+			DirectionalLightData data{};
+			data.intensity = 0.f;
+
+			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp) 
+			{
+				if (!comp.visible)
+				{
+					return;
+				}
+
+				auto entity = m_scene->GetEntityFromUUID(idComp.id);
+				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
+				
+				data.color = dirLightComp.color;
+				data.intensity = dirLightComp.intensity;
+				data.direction = { dir, 0.f };
+			});
+
+			renderGraph.AddMappedBufferUpload(buffersData.directionalLightBuffer, &data, sizeof(DirectionalLightData), "Upload directional light data");
 		}
 	}
 
@@ -411,7 +385,7 @@ namespace Volt
 				data.statisticsBuffer = builder.CreateBuffer(desc);
 			}
 
-			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
 		
 			builder.SetIsComputePass();
 		},
@@ -423,13 +397,15 @@ namespace Volt
 			context.ClearBuffer(resources.GetBufferRaw(data.meshletCount), 0);
 			context.ClearBuffer(resources.GetBufferRaw(data.statisticsBuffer), 0);
 
-			context.BindPipeline(m_cullObjectsPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("CullObjects");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetBuffer(data.meshletCount));
 			context.SetConstant(resources.GetBuffer(data.meshletToObjectIdAndOffset));
 			context.SetConstant(resources.GetBuffer(data.statisticsBuffer));
 			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
 			context.SetConstant(renderScene->GetGPUMeshesBuffer().GetResourceHandle());
-			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant(commandCount);
 
 			const auto projection = camera->GetProjection();
@@ -459,7 +435,9 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.BindPipeline(m_generateIndirectArgsPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgs");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetBuffer(indirectArgsBuffer));
 			context.SetConstant(resources.GetBuffer(countBuffer));
 			context.SetConstant(groupSize);
@@ -480,7 +458,9 @@ namespace Volt
 		},
 		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			context.BindPipeline(m_generateIndirectArgsWrappedPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("GenerateIndirectArgsWrapped");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetBuffer(indirectArgsBuffer));
 			context.SetConstant(resources.GetBuffer(countBuffer));
 			context.SetConstant(groupSize);
@@ -514,7 +494,7 @@ namespace Volt
 				data.survivingMeshletCount = builder.CreateBuffer(desc);
 			}
 
-			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(cullObjectsData.meshletCount);
 			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
 			builder.ReadResource(argsBufferHandle, RHI::ResourceState::IndirectArgument);
@@ -525,14 +505,16 @@ namespace Volt
 		{
 			context.ClearBuffer(resources.GetBufferRaw(data.survivingMeshletCount), 0);
 
-			context.BindPipeline(m_cullMeshletsPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("CullMeshlets");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetBuffer(data.survivingMeshlets));
 			context.SetConstant(resources.GetBuffer(data.survivingMeshletCount));
 			context.SetConstant(resources.GetBuffer(cullObjectsData.meshletCount));
 			context.SetConstant(resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
 			context.SetConstant(renderScene->GetGPUMeshletsBuffer().GetResourceHandle());
 			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
-			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
 
 			const auto projection = camera->GetProjection();
 			const glm::mat4 projTranspose = glm::transpose(projection);
@@ -575,7 +557,7 @@ namespace Volt
 				data.drawCommand = builder.CreateBuffer(desc);
 			}
 
-			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(cullMeshletsData.survivingMeshlets);
 			builder.ReadResource(cullMeshletsData.survivingMeshletCount);
 			builder.ReadResource(argsBufferHandle, RHI::ResourceState::IndirectArgument);
@@ -596,7 +578,9 @@ namespace Volt
 
 			context.ClearBuffer(resources.GetBufferRaw(data.indexBuffer), 0);
 
-			context.BindPipeline(m_cullPrimitivesPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("CullPrimitives");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetBuffer(data.indexBuffer));
 			context.SetConstant(resources.GetBuffer(data.drawCommand));
 			context.SetConstant(resources.GetBuffer(cullMeshletsData.survivingMeshlets));
@@ -604,7 +588,7 @@ namespace Volt
 			context.SetConstant(renderScene->GetGPUMeshletsBuffer().GetResourceHandle());
 			context.SetConstant(renderScene->GetGPUMeshesBuffer().GetResourceHandle());
 			context.SetConstant(renderScene->GetObjectDrawDataBuffer().GetResourceHandle());
-			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant(glm::vec2(m_width, m_height));
 
 			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
@@ -625,86 +609,6 @@ namespace Volt
 		{
 			context.Flush();
 			Ref<RHI::StorageBuffer> testBuffer = context.GetReadbackBuffer(resources.GetBufferRaw(objectCullData.statisticsBuffer));
-		});
-	}
-
-	void SceneRendererNew::AddTestRenderPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		blackboard.Add<TestRenderData>() = renderGraph.AddPass<TestRenderData>("Test Render Pass",
-		[&](RenderGraph::Builder& builder, TestRenderData& data)
-		{
-			data.outputTexture = renderGraph.AddExternalImage2D(m_outputImage, "Output");
-
-			RenderGraphImageDesc desc{};
-			desc.width = m_width;
-			desc.height = m_height;
-			desc.format = RHI::PixelFormat::D32_SFLOAT;
-			desc.usage = RHI::ImageUsage::Attachment;
-			desc.name = "Depth";
-			data.depth = builder.CreateImage2D(desc);
-
-			BuildMeshPass(builder, blackboard);
-
-			builder.WriteResource(data.outputTexture);
-			builder.SetHasSideEffect();
-		},
-		[=](const TestRenderData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			Weak<RHI::ImageView> colorView = resources.GetImage2DView(data.outputTexture);
-			Weak<RHI::ImageView> depthView = resources.GetImage2DView(data.depth);
-
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { colorView, depthView});
-
-			context.BeginRendering(info);
-			context.BindPipeline(m_preDepthPipeline);
-
-			RenderMeshes(context, resources, blackboard);
-
-			context.EndRendering();
-		});
-	}
-
-	void SceneRendererNew::AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		auto& bufferData = blackboard.Get<ExternalBuffersData>();
-
-		renderGraph.AddPass("Clear counts buffers", [&](RenderGraph::Builder& builder)
-		{
-			builder.WriteResource(bufferData.indirectCountsBuffer);
-			builder.SetHasSideEffect();
-		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			const uint32_t commandCount = m_scene->GetRenderScene()->GetMeshCommandCount();
-			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
-
-			context.BindPipeline(m_clearIndirectCountsPipeline);
-			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
-			context.SetConstant(commandCount);
-
-			context.Dispatch(dispatchCount, 1, 1);
-		});
-
-		renderGraph.AddPass("Setup Indirect Args", [&](RenderGraph::Builder& builder)
-		{
-			builder.WriteResource(bufferData.indirectCommandsBuffer);
-			builder.WriteResource(bufferData.indirectCountsBuffer);
-			builder.WriteResource(bufferData.instanceOffsetToObjectIDBuffer);
-
-			builder.SetHasSideEffect();
-		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			const uint32_t commandCount = m_scene->GetRenderScene()->GetMeshCommandCount();
-			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
-
-			context.BindPipeline(m_indirectSetupPipeline);
-			context.SetConstant(resources.GetBuffer(bufferData.indirectCountsBuffer));
-			context.SetConstant(resources.GetBuffer(bufferData.indirectCommandsBuffer));
-			context.SetConstant(resources.GetBuffer(bufferData.instanceOffsetToObjectIDBuffer));
-			context.SetConstant(commandCount);
-
-			context.Dispatch(dispatchCount, 1, 1);
 		});
 	}
 
@@ -736,8 +640,13 @@ namespace Volt
 
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { normalsImageView, depthImageView });
 
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("PreDepth");
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
 			context.BeginRendering(info);
-			context.BindPipeline(m_preDepthPipeline);
+			context.BindPipeline(pipeline);
 
 			RenderMeshes(context, resources, blackboard);
 
@@ -768,42 +677,20 @@ namespace Volt
 			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
 			info.renderingInfo.colorAttachments.At(0).SetClearColor(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max());
 
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("VisibilityBuffer");
+			pipelineInfo.depthCompareOperator = RHI::CompareOperator::Equal;
+			pipelineInfo.depthMode = RHI::DepthMode::Read;
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
 			context.BeginRendering(info);
-			context.BindPipeline(m_visibilityPipeline);
+			context.BindPipeline(pipeline);
 
 			RenderMeshes(context, resources, blackboard);
 
 			context.EndRendering();
 		});
-	}
-
-	void SceneRendererNew::AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		/*ExternalImagesData externalImagesData = blackboard.Get<ExternalImagesData>();
-		VisibilityBufferData visBufferData = blackboard.Get<VisibilityBufferData>();
-
-		renderGraph.AddPass("Visibility Visualization",
-		[&](RenderGraph::Builder& builder)
-		{
-			builder.WriteResource(externalImagesData.outputImage);
-
-			builder.ReadResource(visBufferData.visibility);
-
-			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
-		},
-		[=](RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			auto outputImage = resources.GetImage2D(externalImagesData.outputImage);
-
-			context.BindPipeline(m_visibilityVisualizationPipeline);
-			context.SetImageView(resources.GetImage2D(visBufferData.visibility)->GetView(), 0, 0);
-			context.SetImageView(outputImage->GetView(), 0, 1);
-
-			context.ClearImage(m_outputImage, { 0.1f, 0.1f, 0.1f, 1.f });
-			context.PushConstants(m_visibilityVisualization);
-			context.Dispatch(Math::DivideRoundUp(m_width, 16u), Math::DivideRoundUp(m_height, 16u), 1);
-		});*/
 	}
 
 	void SceneRendererNew::AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -837,7 +724,9 @@ namespace Volt
 			Ref<RHI::StorageBuffer> materialCountBuffer = resources.GetBufferRaw(data.materialCountBuffer);
 			context.ClearBuffer(materialCountBuffer, 0);
 
-			context.BindPipeline(m_generateMaterialCountPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialCount");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResourceHandle());
 			context.SetConstant(m_scene->GetRenderScene()->GetGPUMeshletsBuffer().GetResourceHandle());
@@ -881,7 +770,9 @@ namespace Volt
 			context.ClearBuffer(pixelCollectionBuffer, std::numeric_limits<uint32_t>::max());
 			context.ClearBuffer(currentMatCountBuffer, 0);
 
-			context.BindPipeline(m_collectMaterialPixelsPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("CollectMaterialPixels");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant(resources.GetBuffer(externalBuffersData.objectDrawDataBuffer));
 			context.SetConstant(m_scene->GetRenderScene()->GetGPUMeshletsBuffer().GetResourceHandle());
@@ -914,10 +805,11 @@ namespace Volt
 			Weak<RHI::StorageBuffer> indirectArgsBuffer = resources.GetBufferRaw(data.materialIndirectArgsBuffer);
 
 			context.ClearBuffer(indirectArgsBuffer, 0);
-
 			const uint32_t materialCount = m_scene->GetRenderScene()->GetIndividualMaterialCount();
 
-			context.BindPipeline(m_generateMaterialIndirectArgsPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("GenerateMaterialIndirectArgs");
+
+			context.BindPipeline(pipeline);
 			context.SetConstant(resources.GetBuffer(matCountData.materialCountBuffer));
 			context.SetConstant(resources.GetBuffer(data.materialIndirectArgsBuffer));
 			context.SetConstant(materialCount);
@@ -946,7 +838,7 @@ namespace Volt
 			builder.ReadResource(matCountData.materialCountBuffer);
 			builder.ReadResource(matCountData.materialStartBuffer);
 			builder.ReadResource(matPixelsData.pixelCollectionBuffer);
-			builder.ReadResource(uniformBuffers.cameraDataBuffer);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
 
 			builder.WriteResource(gbufferData.albedo);
 			builder.WriteResource(gbufferData.materialEmissive);
@@ -970,7 +862,8 @@ namespace Volt
 				context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
 			}
 
-			context.BindPipeline(m_generateGBufferPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("GenerateGBuffer");
+			context.BindPipeline(pipeline);
 
 			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant(resources.GetBuffer(matCountData.materialCountBuffer));
@@ -978,7 +871,7 @@ namespace Volt
 			context.SetConstant(resources.GetBuffer(matPixelsData.pixelCollectionBuffer));
 
 			context.SetConstant(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResourceHandle());
-			context.SetConstant(resources.GetBuffer(uniformBuffers.cameraDataBuffer));
+			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
 
 			context.SetConstant(resources.GetImage2D(gbufferData.albedo));
 			context.SetConstant(resources.GetImage2D(gbufferData.materialEmissive));
@@ -994,6 +887,8 @@ namespace Volt
 	void SceneRendererNew::AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& gbufferData = blackboard.Get<GBufferData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+		const auto& preDepthData = blackboard.Get<PreDepthData>();
 
 		blackboard.Add<FinalColorData>() = renderGraph.AddPass<FinalColorData>("Shading Pass",
 		[&](RenderGraph::Builder& builder, FinalColorData& data) 
@@ -1004,6 +899,11 @@ namespace Volt
 			builder.ReadResource(gbufferData.albedo);
 			builder.ReadResource(gbufferData.materialEmissive);
 			builder.ReadResource(gbufferData.normalEmissive);
+			builder.ReadResource(preDepthData.depth);
+
+			// PBR Constants
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.ReadResource(uniformBuffers.directionalLightBuffer);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
@@ -1014,11 +914,17 @@ namespace Volt
 
 			context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 0.f });
 
-			context.BindPipeline(m_shadingPipeline);
+			auto pipeline = ShaderMap::GetComputePipeline("Shading");
+			context.BindPipeline(pipeline);
+			context.SetConstant(resources.GetImage2D(data.finalColorOutput));
 			context.SetConstant(resources.GetImage2D(gbufferData.albedo));
 			context.SetConstant(resources.GetImage2D(gbufferData.materialEmissive));
 			context.SetConstant(resources.GetImage2D(gbufferData.normalEmissive));
-			context.SetConstant(resources.GetImage2D(data.finalColorOutput));
+			context.SetConstant(resources.GetImage2D(preDepthData.depth));
+			
+			// PBR Constants
+			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant(resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});

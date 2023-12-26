@@ -1,12 +1,17 @@
 #pragma once
 
 #include "Volt/RenderingNew/RendererStructs.h"
+#include "Volt/RenderingNew/Resources/GlobalResource.h"
+
+#include <VoltRHI/Images/SamplerState.h>
+#include <VoltRHI/Core/RHICommon.h>
 
 namespace Volt
 {
 	namespace RHI
 	{
 		class SamplerState;
+		struct SamplerStateCreateInfo;
 	}
 
 	class Mesh;
@@ -23,11 +28,21 @@ namespace Volt
 
 		static void Update();
 
-		static SamplersData GetSamplersData();
+		template<RHI::TextureFilter min, RHI::TextureFilter mag, RHI::TextureFilter mip, RHI::TextureWrap wrapMode = RHI::TextureWrap::Repeat, RHI::AnisotropyLevel aniso = RHI::AnisotropyLevel::None>
+		static Ref<GlobalResource<RHI::SamplerState>> GetSampler()
+		{
+			RHI::SamplerStateCreateInfo info{};
+			info.minFilter = min;
+			info.magFilter = mag;
+			info.mipFilter = mip;
+			info.wrapMode = wrapMode;
+			info.anisotropyLevel = aniso;
+
+			return GetSamplerInternal(info);
+		}
 
 	private:
-		static void RegisterSamplers();
-		static void UnregisterSamplers();
+		static Ref<GlobalResource<RHI::SamplerState>> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
 
 		RendererNew() = delete;
 	};

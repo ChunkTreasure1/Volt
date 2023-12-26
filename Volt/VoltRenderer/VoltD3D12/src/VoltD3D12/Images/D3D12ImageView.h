@@ -14,6 +14,7 @@ namespace Volt::RHI
 
 		const ImageAspect GetImageAspect() const override;
 		const uint64_t GetDeviceAddress() const override;
+		const ImageUsage GetImageUsage() const override;
 
 	private:
 		ImageViewSpecification m_specs;

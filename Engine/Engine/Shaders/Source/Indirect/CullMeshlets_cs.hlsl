@@ -13,7 +13,7 @@ struct Constants
     
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<CameraData> cameraData;
+    TypedBuffer<ViewData> viewData;
     
     float frustum0;
     float frustum1;
@@ -23,19 +23,19 @@ struct Constants
 
 bool IsInFrustum(in Constants constants, in float4x4 transform, in float3 boundingSphereCenter, in float boundingSphereRadius)
 {
-    const CameraData cameraData = constants.cameraData.Load(0);
+    const ViewData viewData = constants.viewData.Load(0);
     
     const float3 globalScale = float3(length(transform[0]), length(transform[1]), length(transform[2]));
     const float maxScale = max(max(globalScale.x, globalScale.y), globalScale.z);
     boundingSphereRadius *= maxScale;
     
-    const float3 center = mul(cameraData.view, mul(transform, float4(boundingSphereCenter, 1.f))).xyz;
+    const float3 center = mul(viewData.view, mul(transform, float4(boundingSphereCenter, 1.f))).xyz;
     
     bool visible = true;
     
     visible = visible && center.z * constants.frustum1 - abs(center.x) * constants.frustum0 > -boundingSphereRadius;
     visible = visible && center.z * constants.frustum3 - abs(center.y) * constants.frustum2 > -boundingSphereRadius;
-    visible = visible && center.z + boundingSphereRadius > cameraData.nearPlane && center.z - boundingSphereRadius < cameraData.farPlane;
+    visible = visible && center.z + boundingSphereRadius > viewData.nearPlane && center.z - boundingSphereRadius < viewData.farPlane;
     
     return visible;
 }
@@ -55,7 +55,6 @@ void main(uint threadId : SV_DispatchThreadID)
         return;
     }
  
-    const CameraData cameraData = constants.cameraData.Load(0);
     
     const uint2 objectIdAndOffset = constants.meshletToObjectIdAndOffset.Load(threadId);
     const ObjectDrawData objectData = constants.objectDrawDataBuffer.Load(objectIdAndOffset.x);
@@ -64,6 +63,8 @@ void main(uint threadId : SV_DispatchThreadID)
     const Meshlet meshlet = constants.gpuMeshlets.Load(meshletIndex);
     
     bool visible = IsInFrustum(constants, objectData.transform, meshlet.boundingSphereCenter, meshlet.boundingSphereRadius);
+    
+    //const ViewData viewData = constants.viewData.Load(0);
     //visible = visible && ConeCull(meshlet.boundingSphereCenter, meshlet.boundingSphereRadius, meshlet.cone.xyz, meshlet.cone.w, cameraData.position.xyz);
     
     if (visible)

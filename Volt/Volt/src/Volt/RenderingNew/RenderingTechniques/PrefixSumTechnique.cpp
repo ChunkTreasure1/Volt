@@ -8,13 +8,15 @@
 
 #include "Volt/Math/Math.h"
 
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
+
 #include <VoltRHI/Buffers/BufferView.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
 namespace Volt
 {
-	PrefixSumTechnique::PrefixSumTechnique(RenderGraph& rg, Ref<RHI::ComputePipeline> prefixSumPipeline)
-		: m_renderGraph(rg), m_pipeline(prefixSumPipeline)
+	PrefixSumTechnique::PrefixSumTechnique(RenderGraph& rg)
+		: m_renderGraph(rg)
 	{
 	}
 
@@ -36,6 +38,8 @@ namespace Volt
 
 		const uint32_t groupCount = Math::DivideRoundUp(valueCount, TG_SIZE);
 
+		auto pipeline = ShaderMap::GetComputePipeline("PrefixSum");
+
 		m_renderGraph.AddPass<PrefixSumData>("Prefix Sum",
 		[&](RenderGraph::Builder& builder, PrefixSumData& data)
 		{
@@ -49,7 +53,7 @@ namespace Volt
 			builder.SetIsComputePass();
 			builder.SetHasSideEffect();
 		},
-		[pipeline = m_pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			Weak<RHI::StorageBuffer> stateBuffer = resources.GetBufferRaw(data.stateBuffer);
 

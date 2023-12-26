@@ -54,7 +54,8 @@ namespace Volt
 
 	struct UniformBuffersData
 	{
-		RenderGraphResourceHandle cameraDataBuffer;
+		RenderGraphResourceHandle viewDataBuffer;
+		RenderGraphResourceHandle directionalLightBuffer;
 	};
 
 	struct PreDepthData
@@ -101,5 +102,13 @@ namespace Volt
 	struct FinalColorData
 	{
 		RenderGraphResourceHandle finalColorOutput;
+	};
+
+	struct GTAOSettings
+	{
+		float radius = 50.f;
+		float radiusMultiplier = 1.457f;
+		float falloffRange = 0.615f;
+		float finalValuePower = 2.2f;
 	};
 }

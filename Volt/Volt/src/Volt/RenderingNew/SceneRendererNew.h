@@ -67,8 +67,6 @@ namespace Volt
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
 		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
 
-		void CreatePipelines();
-
 		///// Passes //////
 		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 
@@ -85,13 +83,9 @@ namespace Volt
 
 		void AddStatsReadbackPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
-		void AddTestRenderPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-
-		void AddSetupIndirectPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-		void AddVisibilityVisualizationPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		void AddCollectMaterialPixelsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
@@ -112,35 +106,11 @@ namespace Volt
 		uint32_t m_resizeHeight = 1280;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
+		uint64_t m_frameIndex;
 
 		///// TEMP /////
 		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;
 		////////////////
-
-		///// Pipelines /////
-		Ref<RHI::ComputePipeline> m_indirectSetupPipeline;
-		Ref<RHI::ComputePipeline> m_clearIndirectCountsPipeline;
-		Ref<RHI::ComputePipeline> m_visibilityVisualizationPipeline;
-		Ref<RHI::ComputePipeline> m_generateMaterialCountPipeline;
-		Ref<RHI::ComputePipeline> m_collectMaterialPixelsPipeline;
-		Ref<RHI::ComputePipeline> m_generateMaterialIndirectArgsPipeline;
-		Ref<RHI::ComputePipeline> m_generateGBufferPipeline;
-		Ref<RHI::ComputePipeline> m_shadingPipeline;
-
-		// Meshlets
-		Ref<RHI::ComputePipeline> m_indirectSetupMeshletsPipeline;
-		Ref<RHI::ComputePipeline> m_cullObjectsPipeline;
-		Ref<RHI::ComputePipeline> m_cullMeshletsPipeline;
-		Ref<RHI::ComputePipeline> m_cullPrimitivesPipeline;
-		Ref<RHI::ComputePipeline> m_generateIndirectArgsPipeline;
-		Ref<RHI::ComputePipeline> m_generateIndirectArgsWrappedPipeline;
-		///////////
-
-		Ref<RHI::ComputePipeline> m_prefixSumPipeline;
-
-		Ref<RHI::RenderPipeline> m_preDepthPipeline;
-		Ref<RHI::RenderPipeline> m_visibilityPipeline;
-		/////////////////////
 
 		Ref<Scene> m_scene;
 	};

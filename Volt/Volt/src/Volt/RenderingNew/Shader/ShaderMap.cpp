@@ -7,11 +7,34 @@
 #include "Volt/Core/Application.h"
 
 #include "Volt/Project/ProjectManager.h"
+#include "Volt/Math/Math.h"
 
 #include <VoltRHI/Shader/Shader.h>
+#include <VoltRHI/Pipelines/RenderPipeline.h>
+#include <VoltRHI/Pipelines/ComputePipeline.h>
 
 namespace Volt
 {
+	namespace Utility
+	{
+		inline static const size_t GetComputeShaderHash(const std::string& name)
+		{
+			return std::hash<std::string>()(name);
+		}
+
+		inline static const size_t GetRenderPipelineHash(const RHI::RenderPipelineCreateInfo& pipelineInfo)
+		{
+			size_t hash = std::hash<std::string_view>()(pipelineInfo.shader->GetName());
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(pipelineInfo.topology)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(pipelineInfo.cullMode)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(pipelineInfo.fillMode)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(pipelineInfo.depthMode)));
+			hash = Math::HashCombine(hash, std::hash<uint32_t>()(static_cast<uint32_t>(pipelineInfo.depthCompareOperator)));
+		
+			return hash;
+		}
+	}
+
 	void ShaderMap::Initialize()
 	{
 		LoadShaders();
@@ -20,6 +43,8 @@ namespace Volt
 	void ShaderMap::Shutdown()
 	{
 		s_shaderMap.clear();
+		s_computePipelineCache.clear();
+		s_renderPipelineCache.clear();
 	}
 
 	void ShaderMap::ReloadAll()
@@ -38,6 +63,36 @@ namespace Volt
 		}
 
 		return s_shaderMap.at(name);
+	}
+
+	Ref<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name)
+	{
+		const size_t hash = Utility::GetComputeShaderHash(name);
+
+		if (s_computePipelineCache.contains(hash))
+		{
+			return s_computePipelineCache.at(hash);
+		}
+
+		Ref<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name));
+		s_computePipelineCache[hash] = pipeline;
+
+		return pipeline;
+	}
+
+	Ref<RHI::RenderPipeline> ShaderMap::GetRenderPipeline(const RHI::RenderPipelineCreateInfo& pipelineInfo)
+	{
+		const size_t hash = Utility::GetRenderPipelineHash(pipelineInfo);
+		
+		if (s_renderPipelineCache.contains(hash))
+		{
+			return s_renderPipelineCache.at(hash);
+		}
+
+		Ref<RHI::RenderPipeline> pipeline = RHI::RenderPipeline::Create(pipelineInfo);
+		s_renderPipelineCache[hash] = pipeline;
+
+		return pipeline;
 	}
 
 	void ShaderMap::LoadShaders()

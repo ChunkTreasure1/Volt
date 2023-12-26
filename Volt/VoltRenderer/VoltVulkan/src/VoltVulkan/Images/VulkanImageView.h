@@ -15,6 +15,7 @@ namespace Volt::RHI
 		const PixelFormat GetFormat() const;
 		const ImageAspect GetImageAspect() const override;
 		const uint64_t GetDeviceAddress() const override;
+		const ImageUsage GetImageUsage() const override;
 
 	protected:
 		void* GetHandleImpl() const override;

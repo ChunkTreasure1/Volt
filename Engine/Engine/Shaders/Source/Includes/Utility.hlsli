@@ -166,19 +166,19 @@ float3 decode_tangent(float3 normal, float diamond_tangent)
 }
 
 // Gives a linear depth value between near plane and far plane
-float LinearizeDepth(const float screenDepth, in const CameraData cameraData)
+float LinearizeDepth(const float screenDepth, in const ViewData viewData)
 {
-    float depthLinearizeMul = cameraData.depthUnpackConsts.x;
-    float depthLinearizeAdd = cameraData.depthUnpackConsts.y;
+    float depthLinearizeMul = viewData.depthUnpackConsts.x;
+    float depthLinearizeAdd = viewData.depthUnpackConsts.y;
     // Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
     return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
 }
 
 // Gives a linear depth value between near plane and far plane in range [0...1]
-float LinearizeDepth01(const float screenDepth, in const CameraData cameraData)
+float LinearizeDepth01(const float screenDepth, in const ViewData viewData)
 {
-    const float linearDepth = LinearizeDepth(screenDepth, cameraData);
-    return (linearDepth - cameraData.nearPlane) / (cameraData.farPlane - cameraData.nearPlane);
+    const float linearDepth = LinearizeDepth(screenDepth, viewData);
+    return (linearDepth - viewData.nearPlane) / (viewData.farPlane - viewData.nearPlane);
 }
 
 float3x3 CalculateTBN(float3 inNormal, float3 inTangent)
@@ -188,4 +188,18 @@ float3x3 CalculateTBN(float3 inNormal, float3 inTangent)
     const float3 bitangent = normalize(cross(normal, tangent));
     
     return transpose(float3x3(tangent, bitangent, normal));
+}
+
+float3 ReconstructWorldPosition(in ViewData viewData, float2 texCoords, float pixelDepth)
+{
+    float x = texCoords.x * 2.f - 1.f;
+    float y = texCoords.y * 2.f - 1.f;
+    
+    const float4 projSpacePos = float4(x, y, pixelDepth, 1.f);
+    float4 viewSpacePos = mul(viewData.inverseProjection, projSpacePos);
+    
+    viewSpacePos /= viewSpacePos.w;
+    
+    const float4 worldSpacePos = mul(viewData.inverseView, viewSpacePos);
+    return worldSpacePos.xyz;
 }
