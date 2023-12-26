@@ -62,8 +62,6 @@ namespace Volt
 	private:
 		void OnRender(Ref<Camera> camera);
 
-		void UploadIndirectCommands(RenderGraph& renderGraph, RenderGraphResourceHandle bufferHandle);
-
 		void BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard);
 		void RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard);
 
@@ -74,8 +72,8 @@ namespace Volt
 
 		void AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		
-		void AddGenerateIndirectArgsPass(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, RenderGraphResourceHandle indirectArgsBuffer, uint32_t groupSize);
-		void AddGenerateIndirectArgsPassWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, RenderGraphResourceHandle indirectArgsBuffer, uint32_t groupSize);
+		RenderGraphResourceHandle AddGenerateIndirectArgsPass(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName);
+		RenderGraphResourceHandle AddGenerateIndirectArgsPassWrapped(RenderGraph& renderGraph, RenderGraphResourceHandle countBuffer, uint32_t groupSize, std::string_view argsBufferName);
 
 		void AddCullObjectsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
 		void AddCullMeshletsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
@@ -106,7 +104,7 @@ namespace Volt
 		uint32_t m_resizeHeight = 1280;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
-		uint64_t m_frameIndex;
+		uint64_t m_frameIndex = 0;
 
 		///// TEMP /////
 		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;

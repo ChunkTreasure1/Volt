@@ -2,7 +2,6 @@
 
 #include "Defines.hlsli"
 #include "GPUScene.hlsli"
-#include "DrawContext.hlsli"
 
 #include "Structures.hlsli"
 #include "Utility.hlsli"
@@ -14,8 +13,6 @@ static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 struct Constants
 {
     TypedBuffer<GPUScene> gpuScene;
-    TypedBuffer<DrawContext> drawContext;
-    
     TypedBuffer<ViewData> viewData; // #TODO_Ivar: Should be uniform buffer
 };
 

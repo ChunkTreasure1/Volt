@@ -45,8 +45,8 @@ namespace Volt
 			for (const auto& resource : resources.GetDirtyRange())
 
 			{
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource));
-				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
 			}
 
 			resources.ClearDirty();
@@ -59,11 +59,11 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
 
 				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
-					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource));
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
 				}
 			}
 
@@ -77,7 +77,7 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetSamplerState(resource, 0, 10, resources.GetResourceHandle(resource));
+				s_globalDescriptorTable->SetSamplerState(resource, 0, 10, resources.GetResourceHandle(resource).Get());
 			}
 
 			resources.ClearDirty();

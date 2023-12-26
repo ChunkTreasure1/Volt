@@ -26,7 +26,7 @@ namespace Volt
 		}
 
 	private:
-		ResourceHandle m_resourceHandle = 0;
+		ResourceHandle m_resourceHandle = Resource::Invalid;
 		Ref<T> m_resource;
 	};
 	

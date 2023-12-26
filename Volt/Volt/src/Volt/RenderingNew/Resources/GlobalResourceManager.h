@@ -103,7 +103,7 @@ namespace Volt
 
 			const ResourceHandle resourceHandle = resourceToHandleMap.at(hash);
 
-			resources[resourceHandle] = Weak<T>{};
+			resources[resourceHandle.Get()] = Weak<T>{};
 			resourceToHandleMap.erase(hash);
 			availiableHandles.Push(resourceHandle);
 		}

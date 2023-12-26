@@ -51,7 +51,6 @@ namespace Volt
 			builder.ReadResource(inputBuffer);
 			builder.WriteResource(outputBuffer);
 			builder.SetIsComputePass();
-			builder.SetHasSideEffect();
 		},
 		[pipeline, groupCount, inputBuffer, outputBuffer, valueCount](const PrefixSumData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{

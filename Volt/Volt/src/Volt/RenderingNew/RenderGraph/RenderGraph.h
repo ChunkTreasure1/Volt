@@ -117,10 +117,12 @@ namespace Volt
 		Weak<RHI::CommandBuffer> m_commandBuffer;
 		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
 
-		ResourceHandle m_passConstantsBufferResourceHandle = 0;
+		ResourceHandle m_passConstantsBufferResourceHandle = Resource::Invalid;
 
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;
+
+		bool m_currentlyInBuilder = false;
 	};
 
 	template<typename T>
@@ -136,8 +138,10 @@ namespace Volt
 		m_passNodes.push_back(newNode);
 		m_resourceTransitions.emplace_back();
 
+		m_currentlyInBuilder = true;
 		Builder builder{ *this, newNode };
 		createFunc(builder, newNode->data);
+		m_currentlyInBuilder = false;
 
 		return newNode->data;
 	}

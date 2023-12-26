@@ -105,6 +105,8 @@ namespace Volt
 	template<typename T>
 	inline void RenderContext::SetConstant(const T& data)
 	{
+		// #TODO_Ivar: Add validation
+
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + m_currentPassConstantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - m_currentPassConstantsOffset, &data, sizeof(T));
 		m_currentPassConstantsOffset += sizeof(T);
 	}

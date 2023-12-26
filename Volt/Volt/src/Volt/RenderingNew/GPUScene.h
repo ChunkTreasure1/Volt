@@ -49,8 +49,8 @@ namespace Volt
 
 	struct GPUMaterialNew
 	{
-		uint32_t textures[16];
-		uint32_t samplers[16];
+		ResourceHandle textures[16];
+		ResourceHandle samplers[16];
 
 		uint32_t textureCount = 0;
 		uint32_t materialFlags = 0;

@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "RenderGraphPass.h"
 
+#include "Volt/RenderingNew/RenderGraph/RenderContext.h"
+
 namespace Volt
 {
 	const bool RenderGraphPassNodeBase::ReadsResource(RenderGraphResourceHandle handle) const

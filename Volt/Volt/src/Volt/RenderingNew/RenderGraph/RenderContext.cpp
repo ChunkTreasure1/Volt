@@ -265,7 +265,7 @@ namespace Volt
 
 		struct PushConstantsData
 		{
-			uint32_t constatsBufferIndex;
+			ResourceHandle constatsBufferIndex;
 			uint32_t constantsOffset;
 		} constantsData;
 

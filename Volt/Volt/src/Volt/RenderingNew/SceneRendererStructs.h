@@ -18,17 +18,11 @@ namespace Volt
 
 	struct ExternalBuffersData
 	{
-		RenderGraphResourceHandle indirectCommandsBuffer;
-		RenderGraphResourceHandle indirectCountsBuffer;
-
-		RenderGraphResourceHandle instanceOffsetToObjectIDBuffer;
-
 		RenderGraphResourceHandle drawContextBuffer;
 		RenderGraphResourceHandle objectDrawDataBuffer;
-
-		// Meshlets
-		RenderGraphResourceHandle drawIndexToObjectId;
-		RenderGraphResourceHandle drawIndexToMeshletId;
+		RenderGraphResourceHandle gpuMeshesBuffer;
+		RenderGraphResourceHandle gpuMeshletsBuffer;
+		RenderGraphResourceHandle gpuSceneBuffer;
 	};
 
 	struct CullObjectsData

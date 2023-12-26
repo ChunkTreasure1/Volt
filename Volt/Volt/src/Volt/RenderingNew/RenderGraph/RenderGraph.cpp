@@ -34,10 +34,16 @@ namespace Volt
 		for (auto& pass : m_passNodes)
 		{
 			pass->refCount = static_cast<uint32_t>(pass->resourceWrites.size());
+			pass->refCount += static_cast<uint32_t>(pass->resourceCreates.size());
 
 			for (const auto& access : pass->resourceReads)
 			{
 				m_resourceNodes.at(access.handle)->refCount++;
+			}
+
+			for (const auto& handle : pass->resourceCreates)
+			{
+				m_resourceNodes.at(handle)->producer = pass;
 			}
 
 			for (const auto& access : pass->resourceWrites)
@@ -61,8 +67,15 @@ namespace Volt
 			Weak<RenderGraphResourceNodeBase> unreferencedNode = unreferencedResources.back();
 			unreferencedResources.pop_back();
 
+			if (unreferencedNode->isExternal)
+			{
+				continue;
+			}
+
 			auto producer = unreferencedNode->producer;
-			if (!producer || producer->hasSideEffect)
+			VT_CORE_ASSERT(producer, "Node should always have a producer!");
+
+			if (producer->hasSideEffect)
 			{
 				continue;
 			}
@@ -327,6 +340,7 @@ namespace Volt
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
 		node->handle = resourceHandle;
+		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
 		node->resourceInfo.trackGlobalResource = trackGlobalResource;
 		node->resourceInfo.description.format = image->GetFormat();
@@ -342,6 +356,7 @@ namespace Volt
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
 		node->handle = resourceHandle;
+		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
 		node->resourceInfo.trackGlobalResource = trackGlobalResource;
 
@@ -356,6 +371,7 @@ namespace Volt
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
 		node->handle = resourceHandle;
+		node->isExternal = true;
 		node->resourceInfo.isExternal = true;
 		node->resourceInfo.trackGlobalResource = trackGlobalResource;
 
@@ -406,6 +422,7 @@ namespace Volt
 			{
 				VT_PROFILE_SCOPE(passNode->name.data());
 				m_renderContext.SetCurrentPassIndex(passNode->index);
+
 				passNode->Execute(*this, m_renderContext);
 			}
 
@@ -483,6 +500,7 @@ namespace Volt
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
+		node->isExternal = !m_currentlyInBuilder;
 
 		m_resourceNodes.push_back(node);
 
@@ -497,6 +515,7 @@ namespace Volt
 		Ref<RenderGraphResourceNode<RenderGraphTexture3D>> node = CreateRef<RenderGraphResourceNode<RenderGraphTexture3D>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
+		node->isExternal = !m_currentlyInBuilder;
 
 		m_resourceNodes.push_back(node);
 
@@ -511,6 +530,7 @@ namespace Volt
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
+		node->isExternal = !m_currentlyInBuilder;
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::StorageBuffer;
 
@@ -527,6 +547,7 @@ namespace Volt
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
+		node->isExternal = !m_currentlyInBuilder;
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::UniformBuffer;
 
@@ -614,7 +635,7 @@ namespace Volt
 		//const auto& resourceNode = m_resourceNodes.at(resourceHandle);
 		//const auto& bufferDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphBuffer>>().resourceInfo;
 
-		return 0;//m_transientResourceSystem.AquireUniformBuffer(resourceHandle, bufferDesc.description);
+		return Resource::Invalid;//m_transientResourceSystem.AquireUniformBuffer(resourceHandle, bufferDesc.description);
 	}
 
 	Weak<RHI::RHIResource> RenderGraph::GetResourceRaw(const RenderGraphResourceHandle resourceHandle)
