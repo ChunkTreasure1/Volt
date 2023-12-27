@@ -31,6 +31,7 @@ namespace Volt::RHI
 		inline constexpr ResourceType GetType() const override { return ResourceType::Image2D; }
 		void SetName(std::string_view name) override;
 		const uint64_t GetDeviceAddress() const override;
+		const uint64_t GetByteSize() const override;
 
 		const ImageLayout GetCurrentLayout() const { return m_currentImageLayout; }
 		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }

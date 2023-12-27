@@ -36,6 +36,9 @@ namespace Volt
 	class RenderGraph
 	{
 	public:
+		typedef std::function<void(Ref<RHI::CommandBuffer> commandBuffer)> MarkerFunction;
+		typedef std::function<void(const uint64_t allocatedSize)> TotalAllocatedSizeCallback;
+
 		RenderGraph(Ref<RHI::CommandBuffer> commandBuffer);
 		~RenderGraph();
 
@@ -70,9 +73,13 @@ namespace Volt
 		void AddPass(const std::string& name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 
 		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
-
 		void AddResourceTransition(RenderGraphResourceHandle resourceHandle, RHI::ResourceState newState);
 		void AddResourceTransition(RHI::ResourceState oldState, RHI::ResourceState newState);
+
+		void BeginMarker(const std::string& markerName, const glm::vec4& markerColor = 1.f);
+		void EndMarker();
+
+		void SetTotalAllocatedSizeCallback(TotalAllocatedSizeCallback&& callback);
 
 		RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource = true);
 		//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image, bool trackGlobalResource = true);
@@ -103,6 +110,7 @@ namespace Volt
 		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
+		std::vector<std::vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
 		std::vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;
 		std::vector<std::vector<RenderGraphResourceAccess>> m_resourceTransitions; // Pass -> Transitions
@@ -116,13 +124,14 @@ namespace Volt
 
 		Weak<RHI::CommandBuffer> m_commandBuffer;
 		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
-
 		ResourceHandle m_passConstantsBufferResourceHandle = Resource::Invalid;
 
 		TransientResourceSystem m_transientResourceSystem;
 		RenderContext m_renderContext;
 
 		bool m_currentlyInBuilder = false;
+
+		TotalAllocatedSizeCallback m_totalAllocatedSizeCallback;
 	};
 
 	template<typename T>
@@ -137,6 +146,7 @@ namespace Volt
 
 		m_passNodes.push_back(newNode);
 		m_resourceTransitions.emplace_back();
+		m_standaloneMarkers.emplace_back();
 
 		m_currentlyInBuilder = true;
 		Builder builder{ *this, newNode };

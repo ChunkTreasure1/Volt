@@ -15,7 +15,11 @@ Output main(in DefaultInput input)
     
     const float4x4 transform = input.GetTransform();
     const float4 worldPosition = mul(transform, float4(input.GetVertexPositionData().position, 1.f));
-    const float3 normal = mul((float3x3)mul(viewData.view, transform), input.GetNormal());
+    
+    const float3x3 worldNormalRotation = (float3x3)transform;
+    const float3x3 cameraNormalRotation = (float3x3)viewData.view;
+    
+    const float3 normal = mul(cameraNormalRotation, mul(worldNormalRotation, input.GetNormal()));
     
     Output output;
     output.position = mul(viewData.projection, mul(viewData.view, worldPosition)); // #TODO_Ivar: Switch to viewProjection

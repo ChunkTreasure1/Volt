@@ -30,6 +30,8 @@ namespace Volt
 
 		void AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource);
 
+		const uint64_t GetTotalAllocatedSize() const;
+
 	private:
 		std::unordered_map<RenderGraphResourceHandle, Ref<RHI::RHIResource>> m_allocatedResources;
 	};

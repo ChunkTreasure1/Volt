@@ -66,6 +66,11 @@ namespace Volt::RHI
 		return m_allocation->GetDeviceAddress();
 	}
 
+	const uint64_t VulkanIndexBuffer::GetByteSize() const
+	{
+		return m_allocation->GetSize();
+	}
+
 	void* VulkanIndexBuffer::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkBuffer>();

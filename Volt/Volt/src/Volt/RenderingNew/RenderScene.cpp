@@ -209,7 +209,7 @@ namespace Volt
 
 	void RenderScene::UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes)
 	{
-		if (m_gpuMeshesBuffer->GetResource()->GetSize() < static_cast<uint32_t>(gpuMeshes.size()))
+		if (m_gpuMeshesBuffer->GetResource()->GetCount() < static_cast<uint32_t>(gpuMeshes.size()))
 		{
 			m_gpuMeshesBuffer->GetResource()->Resize(static_cast<uint32_t>(gpuMeshes.size()));
 			m_gpuMeshesBuffer->MarkAsDirty();
@@ -219,7 +219,7 @@ namespace Volt
 
 	void RenderScene::UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData)
 	{
-		if (m_objectDrawDataBuffer->GetResource()->GetSize() < static_cast<uint32_t>(objectDrawData.size()))
+		if (m_objectDrawDataBuffer->GetResource()->GetCount() < static_cast<uint32_t>(objectDrawData.size()))
 		{
 			m_objectDrawDataBuffer->GetResource()->Resize(static_cast<uint32_t>(objectDrawData.size()));
 			m_objectDrawDataBuffer->MarkAsDirty();
@@ -241,7 +241,7 @@ namespace Volt
 
 	void RenderScene::UploadGPUMaterials()
 	{
-		if (m_gpuMaterialsBuffer->GetResource()->GetSize() < static_cast<uint32_t>(m_individualMaterials.size()))
+		if (m_gpuMaterialsBuffer->GetResource()->GetCount() < static_cast<uint32_t>(m_individualMaterials.size()))
 		{
 			m_gpuMaterialsBuffer->GetResource()->Resize(static_cast<uint32_t>(m_individualMaterials.size()));
 			m_gpuMaterialsBuffer->MarkAsDirty();
@@ -268,7 +268,7 @@ namespace Volt
 
 	void RenderScene::UploadGPUMeshlets()
 	{
-		if (m_gpuMeshletsBuffer->GetResource()->GetSize() < static_cast<uint32_t>(m_sceneMeshlets.size()))
+		if (m_gpuMeshletsBuffer->GetResource()->GetCount() < static_cast<uint32_t>(m_sceneMeshlets.size()))
 		{
 			m_gpuMeshletsBuffer->GetResource()->Resize(static_cast<uint32_t>(m_sceneMeshlets.size()));
 			m_gpuMeshletsBuffer->MarkAsDirty();

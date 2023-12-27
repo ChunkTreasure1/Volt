@@ -93,7 +93,7 @@ namespace Volt::RHI
 		bufferAddressInfo.buffer = m_resource;
 		return vkGetBufferDeviceAddress(GraphicsContext::GetDevice()->GetHandle<VkDevice>(), &bufferAddressInfo);
 	}
-	
+
 	void* VulkanTransientBufferAllocation::GetResourceHandleInternal() const
 	{
 		return m_resource;
@@ -124,7 +124,7 @@ namespace Volt::RHI
 	{
 		return 0;
 	}
-	
+
 	void* VulkanTransientImageAllocation::GetResourceHandleInternal() const
 	{
 		return m_resource;

@@ -17,6 +17,7 @@ namespace Volt
 	struct PrefilterDepthData
 	{
 		RenderGraphResourceHandle prefilteredDepth;
+		GTAOTechnique::GTAOConstants constants{};
 	};
 
 	struct GTAOData
@@ -50,9 +51,13 @@ namespace Volt
 
 	void GTAOTechnique::AddGTAOPasses(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize)
 	{
+		renderGraph.BeginMarker("GTAO", { 0.f, 1.f, 0.f, 1.f });
+
 		AddPrefilterDepthPass(renderGraph, blackboard, camera, renderSize);
 		AddMainPass(renderGraph, blackboard);
 		AddDenoisePass(renderGraph, blackboard);
+
+		renderGraph.EndMarker();
 	}
 
 	void GTAOTechnique::AddPrefilterDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize)
@@ -97,6 +102,7 @@ namespace Volt
 			desc.name = "GTAO Prefiltered Depth";
 
 			data.prefilteredDepth = builder.CreateImage2D(desc);
+			data.constants = m_constants;
 
 			builder.ReadResource(preDepthData.depth);
 			builder.SetIsComputePass();
@@ -104,7 +110,6 @@ namespace Volt
 		[=](const PrefilterDepthData& data, RenderContext& context, const RenderGraphPassResources& resources) 
 		{
 			auto pipeline = ShaderMap::GetComputePipeline("GTAODepthPrefilter");
-			
 			auto pointClampSampler = RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
@@ -115,199 +120,105 @@ namespace Volt
 			context.SetConstant(resources.GetImage2D(data.prefilteredDepth, 4));
 			context.SetConstant(resources.GetImage2D(preDepthData.depth));
 			context.SetConstant(pointClampSampler->GetResourceHandle());
-			context.SetConstant(m_constants);
+			context.SetConstant(0); // padding
+			context.SetConstant(data.constants);
 
-			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 8u);
-			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 8u);
+			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
+			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
 		
 			context.Dispatch(dispatchX, dispatchY, 1);
 		});
-
-		/*frameGraph.GetBlackboard().Add<PrefilterDepthData>() = frameGraph.AddRenderPass<PrefilterDepthData>("GTAO Prefilter Depth Pass",
-		[&](FrameGraph::Builder& builder, PrefilterDepthData& data)
-		{
-			FrameGraphTextureSpecification spec{};
-			spec.format = ImageFormat::R32F;
-			spec.width = myRenderSize.x;
-			spec.height = myRenderSize.y;
-			spec.usage = ImageUsage::Storage;
-			spec.mips = GTAO_PREFILTERED_DEPTH_MIP_COUNT;
-			spec.name = "GTAO Prefiltered Depth";
-
-			data.prefilteredDepth = builder.CreateTexture(spec);
-			builder.ReadResource(srcDepthHandle);
-			builder.SetIsComputePass();
-		},
-
-		[=](const PrefilterDepthData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
-		{
-			const auto& srcDepthResource = resources.GetImageResource(srcDepthHandle);
-			const auto& targetResource = resources.GetImageResource(data.prefilteredDepth);
-
-			prefilterDepthPipeline->SetImage(srcDepthResource.image, Sets::OTHER, 0, ImageAccess::Read);
-
-			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 1, 0, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 2, 1, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 3, 2, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 4, 3, ImageAccess::Write);
-			prefilterDepthPipeline->SetImage(targetResource.image, Sets::OTHER, 5, 4, ImageAccess::Write);
-			prefilterDepthPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
-
-			prefilterDepthPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &m_constants, sizeof(GTAOConstants));
-
-			const uint32_t dispatchX = (myRenderSize.x + 16 - 1) / 16;
-			const uint32_t dispatchY = (myRenderSize.y + 16 - 1) / 16;
-
-			Renderer::DispatchComputePipeline(commandBuffer, prefilterDepthPipeline, dispatchX, dispatchY, 1);
-
-			prefilterDepthPipeline->ClearAllResources();
-		});*/
 	}
 
 	void GTAOTechnique::AddMainPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		//const auto& prefilterDepthData = frameGraph.GetBlackboard().Get<PrefilterDepthData>();
+		const auto& prefilterDepthData = blackboard.Get<PrefilterDepthData>();
+		const auto& preDepthData = blackboard.Get<PreDepthData>();
 
-		//frameGraph.GetBlackboard().Add<GTAOData>() = frameGraph.AddRenderPass<GTAOData>("GTAO Main Pass",
-		//[&](FrameGraph::Builder& builder, GTAOData& data)
-		//{
-		//	// AO texture
-		//	{
-		//		FrameGraphTextureSpecification spec{};
-		//		spec.format = ImageFormat::R32UI;
-		//		spec.width = myRenderSize.x;
-		//		spec.height = myRenderSize.y;
-		//		spec.usage = ImageUsage::Storage;
-		//		spec.name = "GTAO AO Output";
+		const glm::uvec2 renderSize = m_constants.ViewportSize;
 
-		//		data.aoOutput = builder.CreateTexture(spec);
-		//	}
+		blackboard.Add<GTAOData>() = renderGraph.AddPass<GTAOData>("GTAO Main Pass",
+		[&](RenderGraph::Builder& builder, GTAOData& data) 
+		{
+			// AO Texture
+			{
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO AO Output");
+				data.aoOutput = builder.CreateImage2D(desc);
+			}
 
-		//	// Edges texture
-		//	{
-		//		FrameGraphTextureSpecification spec{};
-		//		spec.format = ImageFormat::R8U;
-		//		spec.width = myRenderSize.x;
-		//		spec.height = myRenderSize.y;
-		//		spec.usage = ImageUsage::Storage;
-		//		spec.name = "GTAO Edges Output";
+			// Edges Texture
+			{
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R8_UNORM>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Edges Output");
+				data.edgesOutput = builder.CreateImage2D(desc);
+			}
 
-		//		data.edgesOutput = builder.CreateTexture(spec);
-		//	}
+			builder.ReadResource(prefilterDepthData.prefilteredDepth);
+			builder.ReadResource(preDepthData.normals);
+			builder.SetIsComputePass();
+		},
+		[=](const GTAOData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		{
+			auto pipeline = ShaderMap::GetComputePipeline("GTAOMainPass");
+			auto pointClampSampler = RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
-		//	builder.ReadResource(prefilterDepthData.prefilteredDepth);
-		//	builder.ReadResource(viewNormalsHandle);
-		//	builder.SetIsComputePass();
-		//},
+			context.BindPipeline(pipeline);
+			context.SetConstant(resources.GetImage2D(data.aoOutput));
+			context.SetConstant(resources.GetImage2D(data.edgesOutput));
+			context.SetConstant(resources.GetImage2D(prefilterDepthData.prefilteredDepth));
+			context.SetConstant(resources.GetImage2D(preDepthData.normals));
+			context.SetConstant(pointClampSampler->GetResourceHandle());
+			context.SetConstant(glm::uvec3{ 0 }); // padding
+			context.SetConstant(prefilterDepthData.constants);
 
-		//[=](const GTAOData& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
-		//{
-		//	const auto& prefilteredDepthResource = resources.GetImageResource(prefilterDepthData.prefilteredDepth);
-		//	const auto& viewNormalsResource = resources.GetImageResource(viewNormalsHandle);
+			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
+			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
 
-		//	const auto& aoOutputResource = resources.GetImageResource(data.aoOutput);
-		//	const auto& edgesOutputResource = resources.GetImageResource(data.edgesOutput);
-
-		//	mainPassPipeline->SetImage(prefilteredDepthResource.image, Sets::OTHER, 0, ImageAccess::Read);
-
-		//	mainPassPipeline->SetImage(aoOutputResource.image, Sets::OTHER, 1, ImageAccess::Write);
-		//	mainPassPipeline->SetImage(edgesOutputResource.image, Sets::OTHER, 2, ImageAccess::Write);
-
-		//	mainPassPipeline->SetImage(viewNormalsResource.image, Sets::OTHER, 3, ImageAccess::Read);
-
-		//	mainPassPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
-		//	mainPassPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &m_constants, sizeof(GTAOConstants));
-
-		//	const uint32_t dispatchX = (myRenderSize.x + 16 - 1) / 16;
-		//	const uint32_t dispatchY = (myRenderSize.y + 16 - 1) / 16;
-
-		//	Renderer::DispatchComputePipeline(commandBuffer, mainPassPipeline, dispatchX, dispatchY, 1);
-
-		//	mainPassPipeline->ClearAllResources();
-		//});
+			context.Dispatch(dispatchX, dispatchY, 1);
+		});
 	}
 
 	void GTAOTechnique::AddDenoisePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		/*const auto& mainData = frameGraph.GetBlackboard().Get<GTAOData>();
+		const auto& gtaoData = blackboard.Get<GTAOData>();
+		const auto& prefilterDepthData = blackboard.Get<PrefilterDepthData>();
 
-		frameGraph.GetBlackboard().Add<GTAOOutput>() = frameGraph.AddRenderPass<GTAOOutput>("GTAO Denoise Pass",
-		[&](FrameGraph::Builder& builder, GTAOOutput& data)
+		const glm::uvec2 renderSize = m_constants.ViewportSize;
+
+		blackboard.Add<GTAOOutput>() = renderGraph.AddPass<GTAOOutput>("GTAO Denoise Pass 0",
+		[&](RenderGraph::Builder& builder, GTAOOutput& data) 
 		{
-			FrameGraphTextureSpecification spec{};
-			spec.format = ImageFormat::R32UI;
-			spec.width = myRenderSize.x;
-			spec.height = myRenderSize.y;
-			spec.usage = ImageUsage::Storage;
-			spec.name = "Final GTAO Output";
+			{
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Final Output");
+				data.outputImage = builder.CreateImage2D(desc);
+			}
 
-			data.outputImage = builder.CreateTexture(spec);
+			{
+				const auto desc = RGUtils::CreateImage2DDesc<RHI::PixelFormat::R32_UINT>(renderSize.x, renderSize.y, RHI::ImageUsage::Storage, "GTAO Temp Image");
+				data.tempImage = builder.CreateImage2D(desc);
+			}
 
-			builder.WriteResource(mainData.aoOutput);
-			builder.ReadResource(mainData.edgesOutput);
+			builder.ReadResource(gtaoData.aoOutput);
+			builder.ReadResource(gtaoData.edgesOutput);
+
 			builder.SetIsComputePass();
 		},
-
-		[=](const GTAOOutput& data, FrameGraphRenderPassResources& resources, Ref<CommandBuffer> commandBuffer)
+		[=](const GTAOOutput& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			const auto& aoTermResource = resources.GetImageResource(mainData.aoOutput);
-			const auto& edgeTermResource = resources.GetImageResource(mainData.edgesOutput);
-			const auto& finalOutputResource = resources.GetImageResource(data.outputImage);
+			auto pipeline = ShaderMap::GetComputePipeline("GTAODenoise");
+			auto pointClampSampler = RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
+		
+			context.BindPipeline(pipeline);
+			context.SetConstant(resources.GetImage2D(data.outputImage));
+			context.SetConstant(resources.GetImage2D(gtaoData.aoOutput));
+			context.SetConstant(resources.GetImage2D(gtaoData.edgesOutput));
+			context.SetConstant(pointClampSampler->GetResourceHandle());
+			context.SetConstant(prefilterDepthData.constants);
+		
+			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 8u);
+			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 8u);
 
-			VkImageSubresourceRange subresourceRange{};
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.baseMipLevel = 0;
-			subresourceRange.layerCount = 1;
-			subresourceRange.levelCount = 1;
-
-			ImageBarrierInfo writeReadBarrierInfo{};
-			writeReadBarrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-			writeReadBarrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-			writeReadBarrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-			writeReadBarrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-			writeReadBarrierInfo.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-			writeReadBarrierInfo.subresourceRange = subresourceRange;
-
-			ImageBarrierInfo readWriteBarrierInfo{};
-			readWriteBarrierInfo.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-			readWriteBarrierInfo.srcAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-			readWriteBarrierInfo.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-			readWriteBarrierInfo.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-			readWriteBarrierInfo.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-			readWriteBarrierInfo.subresourceRange = subresourceRange;
-
-			for (size_t i = 0; i < denoisePipelines.size(); i++)
-			{
-				auto currentPipeline = denoisePipelines.at(i);
-
-				if ((i % 2) == 0)
-				{
-					currentPipeline->SetImage(aoTermResource.image, Sets::OTHER, 0, ImageAccess::Write);
-					currentPipeline->SetImage(finalOutputResource.image, Sets::OTHER, 2, ImageAccess::Write);
-				}
-				else
-				{
-					currentPipeline->SetImage(finalOutputResource.image, Sets::OTHER, 0, ImageAccess::Write);
-					currentPipeline->SetImage(aoTermResource.image, Sets::OTHER, 2, ImageAccess::Write);
-				}
-
-				currentPipeline->SetImage(edgeTermResource.image, Sets::OTHER, 1, ImageAccess::Read);
-
-				currentPipeline->InsertImageBarrier(Sets::OTHER, 0, readWriteBarrierInfo);
-				currentPipeline->InsertImageBarrier(Sets::OTHER, 2, writeReadBarrierInfo);
-
-				currentPipeline->Bind(commandBuffer->GetCurrentCommandBuffer());
-				currentPipeline->PushConstants(commandBuffer->GetCurrentCommandBuffer(), &m_constants, sizeof(GTAOConstants));
-
-				const uint32_t dispatchX = (myRenderSize.x + 8 - 1) / 8;
-				const uint32_t dispatchY = (myRenderSize.y + 8 - 1) / 8;
-
-				Renderer::DispatchComputePipeline(commandBuffer, currentPipeline, dispatchX, dispatchY, 1);
-
-				currentPipeline->ClearAllResources();
-			}
-		});*/
+			context.Dispatch(dispatchX, dispatchY, 1);
+		});
 	}
 }
 

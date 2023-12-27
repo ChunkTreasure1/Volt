@@ -73,12 +73,6 @@ namespace Volt
 		FrameGraphResourceHandle downsampledImage;
 	};
 
-	struct GTAOOutput
-	{
-		FrameGraphResourceHandle tempImageHandle;
-		FrameGraphResourceHandle outputImage;
-	};
-
 	struct MotionVectorData
 	{
 		FrameGraphResourceHandle motionVectors;

@@ -12,6 +12,7 @@ struct Constants
     
     TextureT<float> sourceDepth;
     TextureSampler pointClampSampler;
+    uint padding;
     
     GTAOConstants constants;
 };

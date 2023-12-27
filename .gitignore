@@ -33,6 +33,7 @@ Project/Cache
 *.csproj
 *.csproj.user
 *.cached
+*.dmp
 
 !SideProjects/VoltLauncher/VoltLauncher.sln
 !SideProjects/VoltLauncher/VoltLauncher/VoltLauncher.csproj

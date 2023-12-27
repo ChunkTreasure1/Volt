@@ -66,6 +66,8 @@ namespace Volt
 
 			return result;
 		}
+
+
 	}
 
 	SceneRendererNew::SceneRendererNew(const SceneRendererSpecification& specification)
@@ -135,6 +137,11 @@ namespace Volt
 		RenderGraphBlackboard rgBlackboard{};
 		RenderGraph renderGraph{ m_commandBuffer };
 
+		renderGraph.SetTotalAllocatedSizeCallback([&](const uint64_t totalSize)
+		{
+			m_frameTotalGPUAllocation = totalSize;
+		});
+
 		AddExternalResources(renderGraph, rgBlackboard);
 		SetupDrawContext(renderGraph, rgBlackboard);
 
@@ -142,9 +149,13 @@ namespace Volt
 
 		if (m_scene->GetRenderScene()->GetRenderObjectCount() > 0)
 		{
+			renderGraph.BeginMarker("Culling", { 0.f, 1.f, 0.f, 1.f });
+
 			AddCullObjectsPass(renderGraph, rgBlackboard, camera);
 			AddCullMeshletsPass(renderGraph, rgBlackboard, camera);
 			AddCullPrimitivesPass(renderGraph, rgBlackboard, camera);
+
+			renderGraph.EndMarker();
 		
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
@@ -175,10 +186,14 @@ namespace Volt
 			gbufferData.materialEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - MaterialEmissive" });
 			gbufferData.normalEmissive = renderGraph.CreateImage2D({ RHI::PixelFormat::R16G16B16A16_SFLOAT, m_width, m_height, RHI::ImageUsage::AttachmentStorage, "GBuffer - NormalEmissive" });
 
+			renderGraph.BeginMarker("Materials");
+
 			for (uint32_t matId = 0; matId < m_scene->GetRenderScene()->GetIndividualMaterialCount(); matId++)
 			{
 				AddGenerateGBufferPass(renderGraph, rgBlackboard, matId == 0, matId);
 			}
+
+			renderGraph.EndMarker();
 
 			AddShadingPass(renderGraph, rgBlackboard);
 		}
@@ -198,6 +213,11 @@ namespace Volt
 		auto renderScene = m_scene->GetRenderScene();
 		renderScene->PrepareForUpdate();
 		renderScene->SetValid();
+	}
+
+	const uint64_t SceneRendererNew::GetFrameTotalGPUAllocationSize() const
+	{
+		return m_frameTotalGPUAllocation.load();
 	}
 
 	void SceneRendererNew::BuildMeshPass(RenderGraph::Builder& builder, RenderGraphBlackboard& blackboard)

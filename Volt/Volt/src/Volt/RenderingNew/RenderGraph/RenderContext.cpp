@@ -221,12 +221,12 @@ namespace Volt
 
 	Ref<RHI::StorageBuffer> RenderContext::GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer)
 	{
-		Ref<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetByteSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
+		Ref<RHI::StorageBuffer> readbackBuffer = RHI::StorageBuffer::Create(buffer->GetSize(), "Readback Buffer", RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPUToCPU);
 
 		Ref<RHI::CommandBuffer> tempCommandBuffer = RHI::CommandBuffer::Create();
 		tempCommandBuffer->Begin();
 
-		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetByteSize());
+		tempCommandBuffer->CopyBufferRegion(buffer->GetAllocation(), 0, readbackBuffer->GetAllocation(), 0, buffer->GetSize());
 
 		tempCommandBuffer->End();
 		tempCommandBuffer->ExecuteAndWait();
@@ -237,7 +237,7 @@ namespace Volt
 	void RenderContext::SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer)
 	{
 		m_passConstantsBuffer = constantsBuffer;
-		m_passConstantsBufferData.resize(constantsBuffer->GetByteSize());
+		m_passConstantsBufferData.resize(constantsBuffer->GetSize());
 		memset(m_passConstantsBufferData.data(), 0, m_passConstantsBufferData.size());
 	}
 
@@ -250,7 +250,7 @@ namespace Volt
 	void RenderContext::UploadConstantsData()
 	{
 		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
-		memcpy_s(mappedPtr, m_passConstantsBuffer->GetByteSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
+		memcpy_s(mappedPtr, m_passConstantsBuffer->GetSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
 		m_passConstantsBuffer->Unmap();
 	}
 

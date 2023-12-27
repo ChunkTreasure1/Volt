@@ -17,8 +17,8 @@ namespace Volt::RHI
 		virtual void ResizeByteSize(const size_t byteSize) = 0;
 		virtual void Resize(const uint32_t size) = 0;
 
-		virtual const size_t GetByteSize() const = 0;
-		virtual const uint32_t GetSize() const = 0;
+		virtual const size_t GetSize() const = 0;
+		virtual const uint32_t GetCount() const = 0;
 		virtual Weak<Allocation> GetAllocation() const = 0;
 
 		virtual void Unmap() = 0;

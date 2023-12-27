@@ -113,7 +113,7 @@ namespace Volt::RHI
 
 			if (type == ResourceType::StorageBuffer)
 			{
-				description.range = resource->AsRef<VulkanStorageBuffer>().GetByteSize();
+				description.range = resource->AsRef<VulkanStorageBuffer>().GetSize();
 			}
 
 			// Mapping for write descriptor does not exist
@@ -159,7 +159,7 @@ namespace Volt::RHI
 
 			if (type == ResourceType::StorageBuffer)
 			{
-				description.range = resource->AsRef<VulkanStorageBuffer>().GetByteSize();
+				description.range = resource->AsRef<VulkanStorageBuffer>().GetSize();
 			}
 
 			// Mapping for write descriptor does not exist

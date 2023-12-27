@@ -9,6 +9,7 @@
 #include <Volt/RenderingNew/SceneRendererNew.h>
 
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/StringUtility.h>
 
 EngineStatisticsPanel::EngineStatisticsPanel(Ref<Volt::Scene>& aScene, Ref<Volt::SceneRendererNew>& sceneRenderer, Ref<Volt::SceneRendererNew>& gameSceneRenderer)
 	: EditorWindow("Engine Statistics"), myScene(aScene), mySceneRenderer(sceneRenderer), myGameSceneRenderer(gameSceneRenderer)
@@ -52,6 +53,12 @@ void EngineStatisticsPanel::UpdateMainContent()
 		ImGui::Text("Pixel Shader Invocations: %d", pipelineStats.fragmentShaderInvocations);
 		ImGui::Text("Compute Shader Invocations: %d", pipelineStats.computeShaderInvocations);
 		ImGui::Text("Total Scene Triangle Count: %d", stats.triangleCount); */
+
+		UI::Header("Allocation");
+
+		std::string allocSizeStr = Utility::ToStringWithMetricPrefixCharacterForBytes(mySceneRenderer->GetFrameTotalGPUAllocationSize());
+
+		ImGui::Text("Frame Total GPU Allocation: %s", allocSizeStr.c_str());
 	}
 
 	if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))

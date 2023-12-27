@@ -30,6 +30,16 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 
+		// Validate standalone markers
+		size_t markerCount = 0;
+		for (const auto& markers : m_standaloneMarkers)
+		{
+			markerCount += markers.size();
+		}
+
+		markerCount;
+		VT_CORE_ASSERT(markerCount % 2u == 0, "There must be a EndMarker for every BeginMarker!");
+
 		///// Calculate Ref Count //////
 		for (auto& pass : m_passNodes)
 		{
@@ -427,6 +437,11 @@ namespace Volt
 			}
 
 			m_commandBuffer->EndMarker();
+
+			for (const auto& marker : m_standaloneMarkers.at(passNode->index))
+			{
+				marker(m_commandBuffer);
+			}
 		}
 
 		// Add the barriers specified after last pass
@@ -452,6 +467,12 @@ namespace Volt
 		GlobalResourceManager::Update();
 
 		m_commandBuffer->Execute();
+
+		if (m_totalAllocatedSizeCallback)
+		{
+			m_totalAllocatedSizeCallback(m_transientResourceSystem.GetTotalAllocatedSize());
+		}
+
 		DestroyResources();
 	}
 
@@ -736,6 +757,7 @@ namespace Volt
 
 		m_passNodes.push_back(newNode);
 		m_resourceTransitions.emplace_back();
+		m_standaloneMarkers.emplace_back();
 
 		Builder builder{ *this, newNode };
 		createFunc(builder);
@@ -767,6 +789,7 @@ namespace Volt
 
 		m_passNodes.push_back(newNode);
 		m_resourceTransitions.emplace_back();
+		m_standaloneMarkers.emplace_back();
 
 		m_temporaryAllocations.emplace_back(tempData);
 	}
@@ -797,6 +820,27 @@ namespace Volt
 		auto& newAccess = m_resourceTransitions.at(m_passIndex).emplace_back();
 		newAccess.oldState = oldState;
 		newAccess.newState = newState;
+	}
+
+	void RenderGraph::BeginMarker(const std::string& markerName, const glm::vec4& markerColor)
+	{
+		m_standaloneMarkers[m_passIndex - 1].emplace_back([markerName, markerColor](Ref<RHI::CommandBuffer> commandBuffer)
+			{
+				commandBuffer->BeginMarker(markerName, { markerColor.x, markerColor.y, markerColor.z, markerColor.w });
+			});
+	}
+
+	void RenderGraph::EndMarker()
+	{
+		m_standaloneMarkers[m_passIndex - 1].emplace_back([](Ref<RHI::CommandBuffer> commandBuffer)
+			{
+				commandBuffer->EndMarker();
+			});
+	}
+
+	void RenderGraph::SetTotalAllocatedSizeCallback(TotalAllocatedSizeCallback&& callback)
+	{
+		m_totalAllocatedSizeCallback = std::move(callback);
 	}
 
 	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState)

@@ -86,4 +86,16 @@ namespace Volt
 	{
 		m_allocatedResources[resourceHandle] = resource;
 	}
+
+	const uint64_t TransientResourceSystem::GetTotalAllocatedSize() const
+	{
+		uint64_t result = 0;
+
+		for (const auto& [handle, resource] : m_allocatedResources)
+		{
+			result += resource->GetByteSize();
+		}
+
+		return result;
+	}
 }

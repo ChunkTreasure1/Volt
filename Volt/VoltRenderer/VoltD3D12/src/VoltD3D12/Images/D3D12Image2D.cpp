@@ -158,4 +158,8 @@ namespace Volt::RHI
 	{
 		return 0;
 	}
+	const uint64_t D3D12Image2D::GetByteSize() const
+	{
+		return 0;
+	}
 }

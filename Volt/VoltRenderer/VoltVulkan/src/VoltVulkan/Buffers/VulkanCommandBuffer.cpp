@@ -741,7 +741,7 @@ namespace Volt::RHI
 					barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 					barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 					barrier.offset = 0;
-					barrier.size = vkBuffer.GetByteSize();
+					barrier.size = vkBuffer.GetSize();
 					barrier.buffer = vkBuffer.GetHandle<VkBuffer>();
 				}
 			}
@@ -1066,7 +1066,7 @@ namespace Volt::RHI
 			srcBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
 			srcBufferBarrier.pNext = nullptr;
 			srcBufferBarrier.buffer = vkBuffer.GetHandle<VkBuffer>();
-			srcBufferBarrier.size = vkBuffer.GetByteSize();
+			srcBufferBarrier.size = vkBuffer.GetSize();
 			srcBufferBarrier.offset = 0;
 			srcBufferBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_HOST_READ_BIT | VK_ACCESS_2_HOST_WRITE_BIT;
 			srcBufferBarrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
@@ -1089,7 +1089,7 @@ namespace Volt::RHI
 			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
 		}
 
-		vkCmdFillBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), 0, vkBuffer.GetByteSize(), value);
+		vkCmdFillBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), 0, vkBuffer.GetSize(), value);
 
 		// Second transition
 		{
@@ -1097,7 +1097,7 @@ namespace Volt::RHI
 			srcBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
 			srcBufferBarrier.pNext = nullptr;
 			srcBufferBarrier.buffer = vkBuffer.GetHandle<VkBuffer>();
-			srcBufferBarrier.size = vkBuffer.GetByteSize();
+			srcBufferBarrier.size = vkBuffer.GetSize();
 			srcBufferBarrier.offset = 0;
 			srcBufferBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
 			srcBufferBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;

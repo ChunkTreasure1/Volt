@@ -54,10 +54,15 @@ namespace Volt::RHI
 
 	const size_t VulkanStorageBuffer::GetByteSize() const
 	{
+		return m_allocation->GetSize();
+	}
+
+	const size_t VulkanStorageBuffer::GetSize() const
+	{
 		return m_byteSize;
 	}
 
-	const uint32_t VulkanStorageBuffer::GetSize() const
+	const uint32_t VulkanStorageBuffer::GetCount() const
 	{
 		return m_size;
 	}

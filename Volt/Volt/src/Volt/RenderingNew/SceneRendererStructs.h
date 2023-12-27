@@ -98,6 +98,12 @@ namespace Volt
 		RenderGraphResourceHandle finalColorOutput;
 	};
 
+	struct GTAOOutput
+	{
+		RenderGraphResourceHandle tempImage;
+		RenderGraphResourceHandle outputImage;
+	};
+
 	struct GTAOSettings
 	{
 		float radius = 50.f;

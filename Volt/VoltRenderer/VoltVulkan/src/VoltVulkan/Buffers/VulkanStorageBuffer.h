@@ -18,8 +18,8 @@ namespace Volt::RHI
 		void ResizeByteSize(const size_t byteSize) override;
 		void Resize(const uint32_t size) override;
 
-		const size_t GetByteSize() const override;
-		const uint32_t GetSize() const override;
+		const size_t GetSize() const override;
+		const uint32_t GetCount() const override;
 		Weak<Allocation> GetAllocation() const override;
 
 		void Unmap() override;
@@ -31,6 +31,7 @@ namespace Volt::RHI
 		inline constexpr ResourceType GetType() const override { return ResourceType::StorageBuffer; }
 		void SetName(std::string_view name) override;
 		const uint64_t GetDeviceAddress() const override;
+		const uint64_t GetByteSize() const override;
 
 	protected:
 		void* GetHandleImpl() const override;

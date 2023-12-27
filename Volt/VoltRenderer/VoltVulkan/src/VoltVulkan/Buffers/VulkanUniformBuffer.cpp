@@ -87,6 +87,11 @@ namespace Volt::RHI
 		return m_allocation->GetDeviceAddress();
 	}
 
+	const uint64_t VulkanUniformBuffer::GetByteSize() const
+	{
+		return m_allocation->GetSize();
+	}
+
 	void* VulkanUniformBuffer::MapInternal()
 	{
 		return m_allocation->Map<void>();

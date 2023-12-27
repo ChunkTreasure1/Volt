@@ -18,13 +18,15 @@ namespace Volt
 		void AddGTAOPasses(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize);
 
 	private:
+		friend struct PrefilterDepthData;
+
 		void AddPrefilterDepthPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera, const glm::uvec2& renderSize);
 		void AddMainPass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 		void AddDenoisePass(RenderGraph& frameGraph, RenderGraphBlackboard& blackboard);
 
 		struct GTAOConstants
 		{
-			glm::uvec2 ViewportSize;
+			glm::ivec2 ViewportSize;
 			glm::vec2 ViewportPixelSize;                  // .zw == 1.0 / ViewportSize.xy
 
 			glm::vec2 DepthUnpackConsts = { -0.01f, -1.e10f };

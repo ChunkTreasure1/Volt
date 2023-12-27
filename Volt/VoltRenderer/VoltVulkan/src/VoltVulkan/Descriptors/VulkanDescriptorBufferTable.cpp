@@ -140,7 +140,7 @@ namespace Volt::RHI
 
 		if (rawResource->GetType() == ResourceType::StorageBuffer)
 		{
-			addressInfo.range = rawResource->AsRef<VulkanStorageBuffer>().GetByteSize();
+			addressInfo.range = rawResource->AsRef<VulkanStorageBuffer>().GetSize();
 			descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			descriptorTypeSize = m_descriptorTypeOffsets.ssboSize;
 		}

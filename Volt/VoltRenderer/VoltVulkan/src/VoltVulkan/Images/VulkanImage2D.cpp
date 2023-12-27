@@ -335,6 +335,11 @@ namespace Volt::RHI
 		return m_allocation->GetDeviceAddress();
 	}
 
+	const uint64_t VulkanImage2D::GetByteSize() const
+	{
+		return m_allocation->GetSize();
+	}
+
 	void* VulkanImage2D::GetHandleImpl() const
 	{
 		return m_allocation->GetResourceHandle<VkImage>();

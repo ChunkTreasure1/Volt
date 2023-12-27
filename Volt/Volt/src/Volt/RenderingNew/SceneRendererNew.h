@@ -59,6 +59,8 @@ namespace Volt
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
 
+		const uint64_t GetFrameTotalGPUAllocationSize() const;
+
 	private:
 		void OnRender(Ref<Camera> camera);
 
@@ -105,6 +107,8 @@ namespace Volt
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 		uint64_t m_frameIndex = 0;
+
+		std::atomic<uint64_t> m_frameTotalGPUAllocation;
 
 		///// TEMP /////
 		VisibilityVisualization m_visibilityVisualization = VisibilityVisualization::TriangleID;
