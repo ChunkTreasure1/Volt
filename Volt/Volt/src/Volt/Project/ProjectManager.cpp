@@ -20,7 +20,6 @@ namespace Volt
 		{
 			m_currentProject->projectDirectory = projectPath.parent_path();
 			m_currentProject->projectFilePath = projectPath;
-
 		}
 		else
 		{
@@ -39,7 +38,8 @@ namespace Volt
 		VT_CORE_INFO("[ProjectManager]: Loading project {0}", projectPath);
 		DeserializeProject();
 
-		m_currentEngineDirectory = std::filesystem::current_path();
+		m_currentEngineDirectory = FileSystem::GetEnvVariable("VOLT_PATH");
+		std::filesystem::current_path(m_currentEngineDirectory);
 	}
 
 	void ProjectManager::SerializeProject()
