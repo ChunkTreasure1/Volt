@@ -27,6 +27,7 @@
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Rendering/PostProcessingMaterial.h>
 #include <Volt/Asset/Rendering/PostProcessingStack.h>
+#include <Volt/Asset/Animation/MotionWeaveAsset.h>
 
 #include <Volt/Animation/BlendSpace.h>
 
@@ -316,6 +317,7 @@ void AssetBrowserPanel::UpdateMainContent()
 
 	CreateNewShaderModal();
 	CreateNewMonoScriptModal();
+	CreateNewMotionWeaveGraphModal();
 	DeleteFilesModal();
 }
 
@@ -926,20 +928,29 @@ void AssetBrowserPanel::RenderWindowRightClickPopup()
 
 			if (ImGui::BeginMenu("Animation##Menu"))
 			{
-				if (ImGui::MenuItem("Animated Character"))
+				if (ImGui::MenuItem("Motion Weave Graph"))
 				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
+					CreateNewAssetInCurrentDirectory(Volt::AssetType::MotionWeave);
 				}
 
-				if (ImGui::MenuItem("Animation Graph"))
+				if (ImGui::BeginMenu("Legacy##Menu"))
 				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
+					if (ImGui::MenuItem("Animated Character"))
+					{
+						CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimatedCharacter);
+					}
+
+					if (ImGui::MenuItem("Animation Graph"))
+					{
+						CreateNewAssetInCurrentDirectory(Volt::AssetType::AnimationGraph);
+					}
+
+					if (ImGui::MenuItem("Blend Space"))
+					{
+						CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
+					}
 				}
 
-				if (ImGui::MenuItem("Blend Space"))
-				{
-					CreateNewAssetInCurrentDirectory(Volt::AssetType::BlendSpace);
-				}
 				ImGui::EndMenu();
 			}
 
@@ -1316,6 +1327,7 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 		case Volt::AssetType::MonoScript: originalName = "idk.cs"; break;
 		case Volt::AssetType::PostProcessingStack: originalName = "PPS_NewPostStack"; break;
 		case Volt::AssetType::PostProcessingMaterial: originalName = "PPM_NewPostMaterial"; break;
+		case Volt::AssetType::MotionWeave: originalName = "MW_NewMotionWeave"; break;
 	}
 
 	tempName = originalName;
@@ -1420,6 +1432,13 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 			Volt::AssetManager::SaveAsset(postStack);
 
 			newAssetHandle = postStack->handle;
+			break;
+		}
+
+		case Volt::AssetType::MotionWeave:
+		{
+			UI::OpenModal("New Motion Weave Graph##assetBrowser");
+			m_MotionWeaveTargetSkeleton = 0;
 			break;
 		}
 	}
@@ -1680,6 +1699,57 @@ void AssetBrowserPanel::CreateNewMonoScriptModal()
 			ImGui::CloseCurrentPopup();
 		}
 
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel"))
+		{
+			name = "";
+			ImGui::CloseCurrentPopup();
+		}
+
+		UI::EndModal();
+	}
+}
+
+void AssetBrowserPanel::CreateNewMotionWeaveGraphModal()
+{
+	if (UI::BeginModal("New Motion Weave Graph##assetBrowser"))
+	{
+		static std::string name;
+
+		if (UI::BeginProperties("MotionWeaveProperties"))
+		{
+			UI::Property("Name", name);
+			EditorUtils::Property("Target Skeleton", m_MotionWeaveTargetSkeleton, Volt::AssetType::Skeleton);
+
+			UI::EndProperties();
+		}
+
+		const bool cantCreate = m_MotionWeaveTargetSkeleton == 0;
+		ImGui::BeginDisabled(cantCreate);
+		if (ImGui::Button("Create"))
+		{
+			const std::string extension = Volt::AssetManager::GetExtensionFromAssetType(Volt::AssetType::MotionWeave);
+			Ref<Volt::MotionWeaveAsset> motionWeave = Volt::AssetManager::CreateAsset<Volt::MotionWeaveAsset>(
+				Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), name + extension, m_MotionWeaveTargetSkeleton);
+			Volt::AssetManager::SaveAsset(motionWeave);
+
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndDisabled();
+		if (cantCreate)
+		{
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			{
+				ImGui::BeginTooltip();
+				if (m_MotionWeaveTargetSkeleton == 0)
+				{
+					ImGui::Text("Need to select a skeleton to create");
+				}
+				ImGui::EndTooltip();
+			}
+
+		}
 		ImGui::SameLine();
 
 		if (ImGui::Button("Cancel"))
