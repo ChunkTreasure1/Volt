@@ -111,7 +111,6 @@ namespace Volt
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
 		std::vector<std::vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
-		std::vector<std::vector<RenderGraphResourceHandle>> m_resourcesToSurrender; // Pass -> Availiable resources
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
 		std::vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;
 		std::vector<std::vector<RenderGraphResourceAccess>> m_resourceTransitions; // Pass -> Transitions

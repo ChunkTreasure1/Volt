@@ -2,8 +2,6 @@
 
 #include "RenderGraphResource.h"
 
-#include "Volt/Math/Math.h"
-
 #include <VoltRHI/Images/Image2D.h>
 
 namespace Volt
@@ -36,24 +34,6 @@ namespace Volt
 
 		bool isCubeMap = false;
 	};
-
-	namespace Utility
-	{
-		inline static size_t GetHashFromImageDesc(const RenderGraphImageDesc& desc)
-		{
-			size_t result = std::hash<uint32_t>()(static_cast<uint32_t>(desc.format));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(static_cast<uint32_t>(desc.usage)));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(static_cast<uint32_t>(desc.clearMode)));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(desc.width));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(desc.height));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(desc.depth));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(desc.layers));
-			result = Math::HashCombine(result, std::hash<uint32_t>()(desc.mips));
-			result = Math::HashCombine(result, std::hash<bool>()(desc.isCubeMap));
-
-			return result;
-		}
-	}
 
 	struct RenderGraphImage2D
 	{
