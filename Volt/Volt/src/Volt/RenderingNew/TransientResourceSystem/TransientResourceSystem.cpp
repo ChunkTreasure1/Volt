@@ -32,6 +32,15 @@ namespace Volt
 			return m_allocatedResources.at(resourceHandle)->As<RHI::Image2D>();
 		}
 
+		const size_t hash = Utility::GetHashFromImageDesc(imageDesc);
+		if (m_surrenderedResources.contains(hash))
+		{
+			m_allocatedResources[resourceHandle] = m_surrenderedResources.at(hash);
+			m_surrenderedResources.erase(hash);
+
+			return m_allocatedResources[resourceHandle]->As<RHI::Image2D>();
+		}
+
 		RHI::ImageSpecification imageSpec{};
 		imageSpec.width = imageDesc.width;
 		imageSpec.height = imageDesc.height;
@@ -47,6 +56,7 @@ namespace Volt
 
 		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, RHI::GraphicsContext::GetTransientAllocator());
 		m_allocatedResources[resourceHandle] = image;
+		m_resourceHashes[resourceHandle] = Utility::GetHashFromImageDesc(imageDesc);
 
 		return image;
 	}
@@ -60,9 +70,19 @@ namespace Volt
 			return m_allocatedResources.at(resourceHandle)->As<RHI::StorageBuffer>();
 		}
 
+		const size_t hash = Utility::GetHashFromBufferDesc(bufferDesc);
+		if (m_surrenderedResources.contains(hash))
+		{
+			m_allocatedResources[resourceHandle] = m_surrenderedResources.at(hash);
+			m_surrenderedResources.erase(hash);
+
+			return m_allocatedResources[resourceHandle]->As<RHI::StorageBuffer>();
+		}
+
 		// #TODO_Ivar: Switch to transient allocations
 		Ref<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
 		m_allocatedResources[resourceHandle] = buffer;
+		m_resourceHashes[resourceHandle] = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		return buffer;
 	}
@@ -78,8 +98,19 @@ namespace Volt
 
 		Ref<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));
 		m_allocatedResources[resourceHandle] = buffer;
+		m_resourceHashes[resourceHandle] = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		return buffer;
+	}
+
+	void TransientResourceSystem::SurrenderResource(RenderGraphResourceHandle resourceHandle)
+	{
+		if (!m_resourceHashes.contains(resourceHandle))
+		{
+			return;
+		}
+
+		m_surrenderedResources[m_resourceHashes.at(resourceHandle)] = m_allocatedResources.at(resourceHandle);
 	}
 
 	void TransientResourceSystem::AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource)

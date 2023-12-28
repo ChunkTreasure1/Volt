@@ -28,11 +28,15 @@ namespace Volt
 		Weak<RHI::StorageBuffer> AquireBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 		Weak<RHI::UniformBuffer> AquireUniformBuffer(RenderGraphResourceHandle resourceHandle, const RenderGraphBufferDesc& bufferDesc);
 
+		void SurrenderResource(RenderGraphResourceHandle resourceHandle);
+
 		void AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource);
 
 		const uint64_t GetTotalAllocatedSize() const;
 
 	private:
 		std::unordered_map<RenderGraphResourceHandle, Ref<RHI::RHIResource>> m_allocatedResources;
+		std::unordered_map<RenderGraphResourceHandle, size_t> m_resourceHashes;
+		std::unordered_map<size_t, Weak<RHI::RHIResource>> m_surrenderedResources;
 	};
 }

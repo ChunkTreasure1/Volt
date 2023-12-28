@@ -133,6 +133,24 @@ namespace Volt
 			}
 		}
 
+		m_resourcesToSurrender.resize(m_passIndex);
+
+		for (const auto& resource : m_resourceNodes)
+		{
+			if (!resource->lastUsage)
+			{
+				continue;
+			}
+
+			// Last pass resources
+			if (resource->lastUsage->index == m_passIndex - 1)
+			{
+				return;
+			}
+
+			m_resourcesToSurrender.at(resource->lastUsage->index).emplace_back(resource->handle);
+		}
+
 		std::vector<std::vector<RenderGraphResourceAccess>> resultAccesses;
 		std::vector<std::unordered_map<RenderGraphResourceHandle, RenderGraphResourceAccess>> passAccesses; // Pass -> Resource -> Access info
 		std::vector<int32_t> lastResourceAccess(m_resourceNodes.size(), -1);
@@ -441,6 +459,12 @@ namespace Volt
 			for (const auto& marker : m_standaloneMarkers.at(passNode->index))
 			{
 				marker(m_commandBuffer);
+			}
+
+			// Surrender resources
+			for (const auto& resource : m_resourcesToSurrender.at(passNode->index))
+			{
+				m_transientResourceSystem.SurrenderResource(resource);
 			}
 		}
 
