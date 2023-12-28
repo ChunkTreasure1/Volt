@@ -133,6 +133,19 @@ namespace Volt
 			}
 		}
 
+		// Find surrenderable resources
+		m_surrenderableResources.resize(m_passIndex);
+		
+		for (const auto& resource : m_resourceNodes)
+		{
+			if (!resource->lastUsage || resource->isExternal)
+			{
+				continue;
+			}
+
+			m_surrenderableResources[resource->lastUsage->index].emplace_back(resource->handle);
+		}
+
 		std::vector<std::vector<RenderGraphResourceAccess>> resultAccesses;
 		std::vector<std::unordered_map<RenderGraphResourceHandle, RenderGraphResourceAccess>> passAccesses; // Pass -> Resource -> Access info
 		std::vector<int32_t> lastResourceAccess(m_resourceNodes.size(), -1);
@@ -442,6 +455,12 @@ namespace Volt
 			{
 				marker(m_commandBuffer);
 			}
+
+			for (const auto& resourceHandle : m_surrenderableResources.at(passNode->index))
+			{
+				const auto resource = m_resourceNodes.at(resourceHandle);
+				m_transientResourceSystem.SurrenderResource(resourceHandle, resource->hash);
+			}
 		}
 
 		// Add the barriers specified after last pass
@@ -522,6 +541,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = !m_currentlyInBuilder;
+		node->hash = Utility::GetHashFromImageDesc(textureDesc);
 
 		m_resourceNodes.push_back(node);
 
@@ -537,6 +557,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = textureDesc;
 		node->isExternal = !m_currentlyInBuilder;
+		node->hash = Utility::GetHashFromImageDesc(textureDesc);
 
 		m_resourceNodes.push_back(node);
 
@@ -552,6 +573,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
 		node->isExternal = !m_currentlyInBuilder;
+		node->hash = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::StorageBuffer;
 
@@ -569,6 +591,7 @@ namespace Volt
 		node->handle = resourceHandle;
 		node->resourceInfo.description = bufferDesc;
 		node->isExternal = !m_currentlyInBuilder;
+		node->hash = Utility::GetHashFromBufferDesc(bufferDesc);
 
 		node->resourceInfo.description.usage = node->resourceInfo.description.usage | RHI::BufferUsage::UniformBuffer;
 

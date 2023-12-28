@@ -201,6 +201,7 @@ namespace Volt
 			builder.ReadResource(gtaoData.edgesOutput);
 
 			builder.SetIsComputePass();
+			builder.SetHasSideEffect();
 		},
 		[=](const GTAOOutput& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{

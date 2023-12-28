@@ -30,6 +30,8 @@ namespace Volt
 		virtual ~RenderGraphResourceNodeBase() = default;
 
 		uint32_t refCount = 0;
+		size_t hash = 0;
+
 		Weak<RenderGraphPassNodeBase> producer;
 		Weak<RenderGraphPassNodeBase> lastUsage;
 

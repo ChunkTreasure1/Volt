@@ -29,7 +29,22 @@ namespace Volt
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return m_allocatedResources.at(resourceHandle)->As<RHI::Image2D>();
+			return m_allocatedResources.at(resourceHandle).resource->As<RHI::Image2D>();
+		}
+
+		const size_t hash = Utility::GetHashFromImageDesc(imageDesc);
+		if (m_surrenderedResources.contains(hash))
+		{
+			if (!m_surrenderedResources.at(hash).empty())
+			{
+				RenderGraphResourceHandle surrenderedHandle = m_surrenderedResources.at(hash).back();
+				m_surrenderedResources.at(hash).pop_back();
+
+				Ref<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
+				m_allocatedResources[resourceHandle].resource = resource;
+
+				return resource->As<RHI::Image2D>();
+			}
 		}
 
 		RHI::ImageSpecification imageSpec{};
@@ -46,7 +61,12 @@ namespace Volt
 		imageSpec.initializeImage = false;
 
 		Ref<RHI::Image2D> image = RHI::Image2D::Create(imageSpec, RHI::GraphicsContext::GetTransientAllocator());
-		m_allocatedResources[resourceHandle] = image;
+
+		ResourceInfo info{};
+		info.resource = image;
+		info.isOriginal = true;
+
+		m_allocatedResources[resourceHandle] = info;
 
 		return image;
 	}
@@ -57,12 +77,32 @@ namespace Volt
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return m_allocatedResources.at(resourceHandle)->As<RHI::StorageBuffer>();
+			return m_allocatedResources.at(resourceHandle).resource->As<RHI::StorageBuffer>();
+		}
+
+		const size_t hash = Utility::GetHashFromBufferDesc(bufferDesc);
+		if (m_surrenderedResources.contains(hash))
+		{
+			if (!m_surrenderedResources.at(hash).empty())
+			{
+				RenderGraphResourceHandle surrenderedHandle = m_surrenderedResources.at(hash).back();
+				m_surrenderedResources.at(hash).pop_back();
+
+				Ref<RHI::RHIResource> resource = m_allocatedResources.at(surrenderedHandle).resource;
+				m_allocatedResources[resourceHandle].resource = resource;
+
+				return resource->As<RHI::StorageBuffer>();
+			}
 		}
 
 		// #TODO_Ivar: Switch to transient allocations
 		Ref<RHI::StorageBuffer> buffer = RHI::StorageBuffer::Create(bufferDesc.size, bufferDesc.name, bufferDesc.usage, bufferDesc.memoryUsage);
-		m_allocatedResources[resourceHandle] = buffer;
+		
+		ResourceInfo info{};
+		info.resource = buffer;
+		info.isOriginal = true;
+		
+		m_allocatedResources[resourceHandle] = info;
 
 		return buffer;
 	}
@@ -73,27 +113,44 @@ namespace Volt
 
 		if (m_allocatedResources.contains(resourceHandle))
 		{
-			return m_allocatedResources.at(resourceHandle)->As<RHI::UniformBuffer>();
+			return m_allocatedResources.at(resourceHandle).resource->As<RHI::UniformBuffer>();
 		}
 
 		Ref<RHI::UniformBuffer> buffer = RHI::UniformBuffer::Create(static_cast<uint32_t>(bufferDesc.size));
-		m_allocatedResources[resourceHandle] = buffer;
+
+		ResourceInfo info{};
+		info.resource = buffer;
+		info.isOriginal = true;
+
+		m_allocatedResources[resourceHandle] = info;
 
 		return buffer;
 	}
 
+	void TransientResourceSystem::SurrenderResource(RenderGraphResourceHandle originalResource, size_t hash)
+	{
+		m_surrenderedResources[hash].emplace_back(originalResource);
+	}
+
 	void TransientResourceSystem::AddExternalResource(RenderGraphResourceHandle resourceHandle, Ref<RHI::RHIResource> resource)
 	{
-		m_allocatedResources[resourceHandle] = resource;
+		ResourceInfo info{};
+		info.resource = resource;
+		info.isOriginal = true;
+
+		m_allocatedResources[resourceHandle] = info;
 	}
 
 	const uint64_t TransientResourceSystem::GetTotalAllocatedSize() const
 	{
 		uint64_t result = 0;
 
-		for (const auto& [handle, resource] : m_allocatedResources)
+		for (const auto& [handle, info] : m_allocatedResources)
 		{
-			result += resource->GetByteSize();
+			if (info.isOriginal)
+			{
+				result += info.resource->GetByteSize();
+			}
 		}
 
 		return result;
