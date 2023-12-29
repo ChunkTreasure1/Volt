@@ -54,7 +54,7 @@ namespace Volt
 	public:
 		ConsoleVariable(std::string_view variableName, const T& defaultValue, std::string_view description);
 
-		const T& GetValue() const { return *reinterpret_cast<T*>(m_variableReference->Get()); }
+		const T& GetValue() const { return *reinterpret_cast<const T*>(m_variableReference->Get()); }
 		void SetValue(const T& value) { m_variableReference->Set(&value); }
 
 		T& operator=(const T& other)
