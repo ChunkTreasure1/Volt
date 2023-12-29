@@ -78,8 +78,12 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Platform/ThreadUtility.h"
 
+#include "Volt/Console/ConsoleVariableRegistry.h"
+
 namespace Volt
 {
+	static ConsoleVariable<int32_t> s_testCVar = ConsoleVariable<int32_t>("r.test", 0, "Test Variable");
+
 	namespace Utility
 	{
 		inline static Ref<RenderPipeline> CreateRenderPipeline(Ref<Shader> shader, std::vector<FramebufferAttachment> attachments, std::string_view name, CompareOperator depthCompare = CompareOperator::GreaterEqual)
