@@ -3,6 +3,9 @@
 
 #include <Volt/Log/Log.h>
 #include <Volt/Utility/UIUtility.h>
+#include <Volt/Utility/StringUtility.h>
+
+#include <Volt/Console/ConsoleVariableRegistry.h>
 
 namespace Utility
 {
@@ -52,9 +55,72 @@ void LogPanel::UpdateMainContent()
 	}
 
 	ImGui::SameLine();
+	ImGui::PushItemWidth(200.f);
+
+	static std::string commandStr;
+
+	if (ImGui::InputTextWithHintString("##commandLine", "Command...", &commandStr, ImGuiInputTextFlags_EnterReturnsTrue))
+	{
+		auto strings = Utility::SplitStringsByCharacter(commandStr, ' ');
+		if (!strings.empty())
+		{
+			if (Volt::ConsoleVariableRegistry::VariableExists(strings[0]))
+			{
+				auto variable = Volt::ConsoleVariableRegistry::GetVariable(strings[0]);
+
+				std::string message = std::string(variable->GetName()) + " = ";
+
+				if (strings.size() > 1)
+				{
+					if (variable->IsFloat())
+					{
+						const float value = std::stof(strings[1]);
+						variable->Set(&value);
+					}
+					else if (variable->IsInteger())
+					{
+						const int32_t value = std::stoi(strings[1]);
+						variable->Set(&value);
+					}
+					else if (variable->IsString())
+					{
+						variable->Set(&strings[1]);
+					}
+
+					message += strings[1];
+				}
+				else
+				{
+					if (variable->IsFloat())
+					{
+						message += std::to_string(*static_cast<const float*>(variable->Get()));
+					}
+					else if (variable->IsInteger())
+					{
+						message += std::to_string(*static_cast<const int32_t*>(variable->Get()));
+					}
+					else if (variable->IsString())
+					{
+						message += *static_cast<const std::string*>(variable->Get());
+					}
+
+				}
+
+				VT_CORE_TRACE(message);
+			}
+			else
+			{
+				VT_CORE_TRACE("Command {0} not found!", strings[0]);
+			}
+		}
+
+		commandStr = "";
+	}
+
+
+	ImGui::SameLine();
 	static int32_t logLevel = 0;
 
-	ImGui::PushItemWidth(200.f);
 	if (ImGui::Combo("##level", &logLevel, "Trace\0Info\0Warning\0Error\0Critical"))
 	{
 		switch (logLevel)

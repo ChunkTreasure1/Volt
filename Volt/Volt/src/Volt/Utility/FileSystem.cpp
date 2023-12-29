@@ -90,13 +90,29 @@ void FileSystem::MoveToRecycleBin(const std::filesystem::path& path)
 bool FileSystem::ShowDirectoryInExplorer(const std::filesystem::path& aPath)
 {
 	auto absolutePath = std::filesystem::canonical(aPath);
-	if (!Exists(absolutePath))
+	if (!std::filesystem::exists(absolutePath))
 	{
 		return false;
 	}
 
-	ShellExecute(nullptr, L"explorer", absolutePath.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-	return true;
+	bool succeded = false;
+
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	if (SUCCEEDED(hr))
+	{
+		PIDLIST_ABSOLUTE pidl = ILCreateFromPath(absolutePath.c_str());
+		if (pidl)
+		{
+			hr = SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+
+			succeded = SUCCEEDED(hr);
+
+			ILFree(pidl);
+		}
+	}
+
+	CoUninitialize();
+	return succeded;
 }
 
 void FileSystem::Initialize()
@@ -271,15 +287,20 @@ std::string FileSystem::GetCurrentUserName()
 
 void FileSystem::StartProcess(const std::filesystem::path& processPath)
 {
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
+	std::wstring processDir = processPath.parent_path().wstring();
+	std::wstring tempProcessName = processPath.wstring();
+	tempProcessName.insert(tempProcessName.begin(), '\"');
+	tempProcessName.push_back('\"');
 
-	ZeroMemory(&si, sizeof(STARTUPINFO));
-	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-
-	si.cb = sizeof(STARTUPINFO);
-
-	CreateProcess(processPath.wstring().c_str(), nullptr, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+	SHELLEXECUTEINFO ShExecInfo = { 0 };
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = L"open";
+	ShExecInfo.lpFile = tempProcessName.c_str();
+	ShExecInfo.lpParameters = L"";
+	ShExecInfo.lpDirectory = processDir.c_str();
+	ShExecInfo.nShow = SW_SHOW;
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
 }
