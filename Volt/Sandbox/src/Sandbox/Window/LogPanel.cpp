@@ -65,7 +65,7 @@ void LogPanel::UpdateMainContent()
 			{
 				auto variable = Volt::ConsoleVariableRegistry::GetVariable(strings[0]);
 
-				std::string message = strings[0] + " = ";
+				std::string message = std::string(variable->GetName()) + " = ";
 
 				if (strings.size() > 1)
 				{

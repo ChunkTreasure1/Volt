@@ -78,8 +78,6 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Platform/ThreadUtility.h"
 
-#include "Volt/Console/ConsoleVariableRegistry.h"
-
 namespace Volt
 {
 	namespace Utility
