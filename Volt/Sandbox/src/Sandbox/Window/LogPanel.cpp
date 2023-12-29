@@ -31,13 +31,13 @@ LogPanel::LogPanel()
 
 	Volt::Log::AddCallback([&](const LogCallbackData& message)
 	{
+		std::scoped_lock lock{ m_logMutex };
+		myLogMessages.emplace_back(message);
 		if (myLogMessages.size() >= myMaxMessages)
 		{
 			myLogMessages.erase(myLogMessages.begin());
 		}
 
-		std::scoped_lock lock{ m_logMutex };
-		myLogMessages.emplace_back(message);
 	});
 
 	myCategories.emplace_back("Default");
@@ -45,10 +45,10 @@ LogPanel::LogPanel()
 
 void LogPanel::UpdateMainContent()
 {
-	std::scoped_lock lock{ m_logMutex };
-
 	if (ImGui::Button("Clear"))
 	{
+		std::scoped_lock lock{ m_logMutex };
+
 		myLogMessages.clear();
 		myCategories.clear();
 		myCategories.emplace_back("Default");
@@ -117,6 +117,7 @@ void LogPanel::UpdateMainContent()
 		commandStr = "";
 	}
 
+	std::scoped_lock lock{ m_logMutex };
 
 	ImGui::SameLine();
 	static int32_t logLevel = 0;

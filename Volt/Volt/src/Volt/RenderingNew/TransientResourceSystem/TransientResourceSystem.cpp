@@ -6,6 +6,8 @@
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphTextureResource.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphBufferResource.h"
 
+#include "Volt/Console/ConsoleVariableRegistry.h"
+
 #include <VoltRHI/Core/RHIResource.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
 #include <VoltRHI/Buffers/UniformBuffer.h>
@@ -14,6 +16,8 @@
 
 namespace Volt
 {
+	static ConsoleVariable<int32_t> s_enableMemoryAliasingCVar = ConsoleVariable<int32_t>("r.enableMemoryAliasing", 1, "Control whether memory aliasing should be enabled");
+
 	TransientResourceSystem::TransientResourceSystem()
 	{
 	}
@@ -33,7 +37,7 @@ namespace Volt
 		}
 
 		const size_t hash = Utility::GetHashFromImageDesc(imageDesc);
-		if (m_surrenderedResources.contains(hash))
+		if (s_enableMemoryAliasingCVar.GetValue() && m_surrenderedResources.contains(hash))
 		{
 			if (!m_surrenderedResources.at(hash).empty())
 			{
@@ -81,7 +85,7 @@ namespace Volt
 		}
 
 		const size_t hash = Utility::GetHashFromBufferDesc(bufferDesc);
-		if (m_surrenderedResources.contains(hash))
+		if (s_enableMemoryAliasingCVar.GetValue() && m_surrenderedResources.contains(hash))
 		{
 			if (!m_surrenderedResources.at(hash).empty())
 			{

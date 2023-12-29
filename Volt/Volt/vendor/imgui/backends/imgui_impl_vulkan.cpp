@@ -1873,14 +1873,14 @@ static void ImGui_ImplVulkan_SwapBuffers(ImGuiViewport* viewport, void*)
     info.pSwapchains = &wd->Swapchain;
     info.pImageIndices = &present_index;
 
-    // VOLT_BEGIN_EDIT
+    // VOLT_SOURCE_MODIFICATION_BEGIN: add locking of queue submits
     auto vkQueue = Volt::RHI::GraphicsContext::GetDevice()->GetDeviceQueue(Volt::RHI::QueueType::Graphics)->As<Volt::RHI::VulkanDeviceQueue>();
 
     vkQueue->AquireLock();
     err = vkQueuePresentKHR(v->Queue, &info);
     vkQueue->ReleaseLock();
 
-    // VOLT_END_EDIT
+    // VOLT_SOURCE_MODIFICATION_END
 
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR)
         ImGui_ImplVulkanH_CreateOrResizeWindow(v->Instance, v->PhysicalDevice, v->Device, &vd->Window, v->QueueFamily, v->Allocator, (int)viewport->Size.x, (int)viewport->Size.y, v->MinImageCount);

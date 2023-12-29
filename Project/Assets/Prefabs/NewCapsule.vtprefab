@@ -1,6 +1,6 @@
 Prefab:
   version: 2
-  rootEntityId: 4294967295
+  rootEntityId: 0
   Entities:
     []
   PrefabReferences:
