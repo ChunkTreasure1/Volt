@@ -1,4 +1,5 @@
 #include "vtpch.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "UIUtility.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
@@ -434,8 +435,12 @@ bool UI::ImageButton(const std::string& id, ImTextureID textureId, const ImVec2&
 	const ImGuiID imId = window->GetID(id.c_str());
 
 	// Default to using texture ID as ID. User can still push string/integer prefixes.
-	const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : g.Style.FramePadding;
-	return ImGui::ImageButtonEx(imId, textureId, size, uv0, uv1, padding, bg_col, tint_col);
+	const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : g.Style.FramePadding; 
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, padding);
+	const bool returnVal =  ImGui::ImageButtonEx(imId, textureId, size, uv0, uv1, bg_col, tint_col);
+	ImGui::PopStyleVar();
+	
+	return returnVal;
 }
 
 bool UI::ImageButtonState(const std::string& id, bool state, ImTextureID textureId, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1)
@@ -818,8 +823,7 @@ void UI::OpenPopup(const std::string& name, ImGuiPopupFlags flags)
 
 bool UI::BeginModal(const std::string& name, ImGuiWindowFlags flags)
 {
-	const uint32_t nameHash = static_cast<uint32_t>(std::hash<std::string>()(name));
-	return ImGui::BeginPopupModal(name.c_str(), nameHash, nullptr, flags);
+	return ImGui::BeginPopupModal(name.c_str(), nullptr, flags);
 }
 
 void UI::EndModal()
@@ -908,7 +912,11 @@ bool UI::ImageButton(const std::string& id, ImTextureID textureId, const ImVec2&
 
 	// Default to using texture ID as ID. User can still push string/integer prefixes.
 	const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : g.Style.FramePadding;
-	return ImGui::ImageButtonEx(imId, textureId, size, uv0, uv1, padding, bg_col, tint_col);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, padding);
+	const bool returnVal = ImGui::ImageButtonEx(imId, textureId, size, uv0, uv1, bg_col, tint_col);
+	ImGui::PopStyleVar();
+
+	return returnVal;
 }
 
 void UI::PropertyInfoString(const std::string& key, const std::string& info)

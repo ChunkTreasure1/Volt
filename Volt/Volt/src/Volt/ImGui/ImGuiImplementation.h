@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Volt/Core/Base.h"
-
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 struct GLFWwindow;

@@ -26,7 +26,8 @@
 #include <GraphKey/Nodes/CustomEventNode.h>
 #include <GraphKey/TypeTraits.h>
 
-#include <imgui_internal.h>
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui.h>
 #include <builders.h>
 #include <typeindex>
 

@@ -19,3 +19,5 @@
 
 #include <glm/glm.hpp>
 #include <Volt/Log/Log.h>
+
+#define IMGUI_DEFINE_MATH_OPERATORS

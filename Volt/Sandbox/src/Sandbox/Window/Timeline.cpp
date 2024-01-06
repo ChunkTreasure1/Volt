@@ -565,7 +565,7 @@ void Timeline::DrawClipsOnTrack(int trackIndex)
 
 					drawlist->AddRectFilledMultiColor(blendMinPos, blendMaxPos, IM_COL32(100, 100, 100, 90), IM_COL32(100, 100, 100, 90), IM_COL32(50, 50, 50, 90), IM_COL32(50, 50, 50, 90));
 
-					drawlist->AddBezierCurve(blendMinPos, ImVec2(blendXMidPos, blendMaxPos.y), ImVec2(blendXMidPos, blendMinPos.y), blendMaxPos, IM_COL32(255, 255, 255, 90), 1);
+					drawlist->AddBezierCubic(blendMinPos, ImVec2(blendXMidPos, blendMaxPos.y), ImVec2(blendXMidPos, blendMinPos.y), blendMaxPos, IM_COL32(255, 255, 255, 90), 1);
 				}
 			}
 		}

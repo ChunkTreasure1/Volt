@@ -154,7 +154,7 @@ namespace ImGui
             return false;
 
         // header and spacing
-        int changed = SliderFloat4("##sf", P, 0, 1, "%.3f", 1.0f);
+        int changed = SliderFloat4("##sf", P, 0, 1, "%.3f");
         int hovered = IsItemActive() || IsItemHovered(); // IsItemDragged() ?
         Dummy(ImVec2(0, 3));
 
@@ -169,7 +169,7 @@ namespace ImGui
             return changed;
 
         const ImGuiID id = Window->GetID(label);
-        hovered |= 0 != ItemHoverable(ImRect(bb.Min, bb.Min + ImVec2(avail, dim)), id);
+        hovered |= 0 != ItemHoverable(ImRect(bb.Min, bb.Min + ImVec2(avail, dim)), id, GImGui->LastItemData.InFlags);
 
         RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, Style.FrameRounding);
 

@@ -2,7 +2,6 @@
 #include "BehaviorEditor.h"
 #include "BehaviorPanel.h"
 #include <Volt/Asset/Importers/BehaviorTreeImporter.h>
-#include <imgui_internal.h>
 #include <builders.h>
 #include <typeindex>
 #include <Volt/Utility/UIUtility.h>
