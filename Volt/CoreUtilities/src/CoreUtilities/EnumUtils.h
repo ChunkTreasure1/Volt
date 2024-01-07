@@ -1,7 +1,12 @@
 #pragma once
-#include "Volt/Core/Base.h"
 #include <unordered_map>
 #include <map>
+#include <string>
+#include <cassert>
+
+template<typename T>
+concept Enum = std::is_enum_v<T>;
+
 namespace Utils
 {
 	/// <summary>
@@ -10,19 +15,19 @@ namespace Utils
 	class EnumUtil
 	{
 	public:
-		template<typename EnumType>
+		template<Enum EnumType>
 		static std::string ToString(uint64_t aEnumValue)
 		{
-			VT_CORE_ASSERT(myRegistry.contains(typeid(EnumType).name()), "Tried to Convert enum to string with an enum that is not registered! EnumName: {0}", typeid(EnumType).name());
+			assert(myRegistry.contains(typeid(EnumType).name()) && "Tried to Convert enum to string with an enum that is not registered!");
 
 			return myRegistry[typeid(EnumType).name()][aEnumValue];
 		}
 
 		//to enum
-		template<typename EnumType>
+		template<Enum EnumType>
 		static EnumType ToEnum(std::string aEnumValue)
 		{
-			VT_CORE_ASSERT(myRegistry.contains(typeid(EnumType).name()), "Tried to convert string to enum that has not been registered! EnumName: {0}", typeid(EnumType).name());
+			assert(myRegistry.contains(typeid(EnumType).name()) && "Tried to convert string to enum that has not been registered!");
 			const auto& enumMap = myRegistry[typeid(EnumType).name()];
 			for (const auto& pair : enumMap)
 			{
@@ -31,7 +36,7 @@ namespace Utils
 					return static_cast<EnumType>(pair.first);
 				}
 			}
-			VT_CORE_ERROR("Tried to convert string to enum that does not exist! EnumName: {0}, EnumValue: {1}", typeid(EnumType).name(), aEnumValue);
+			//VT_CORE_ERROR("Tried to convert string to enum that does not exist! EnumName: {0}, EnumValue: {1}", typeid(EnumType).name(), aEnumValue);
 			return static_cast<EnumType>(0);
 		}
 
@@ -53,7 +58,7 @@ namespace Utils
 				std::string memberName = definitionData.substr(stringOffset, memberNameEndOffset - stringOffset);
 				uint64_t memberValue = 0;
 
-				VT_CORE_ASSERT(!memberName.empty(), "When Registering an enum, you must provide a name for each member");
+				assert(!memberName.empty() && "When Registering an enum, you must provide a name for each member");
 
 				//find the comma
 				size_t endOfMemberOffset = definitionData.find_first_of(',', memberNameEndOffset);
@@ -150,7 +155,7 @@ namespace Utils
 	};
 }
 
-template<typename T> inline static T ToEnum(const std::string& aEnumString)
+template<Enum T> inline static T ToEnum(const std::string& aEnumString)
 {
 	return Utils::EnumUtil::ToEnum<T>(aEnumString);
 };
@@ -200,3 +205,9 @@ enum class Test : uint32_t {
 	return EnumUtil::ToString("Test", static_cast<uint64_t>(aEnumValue));
 }
 */
+
+template<Enum T>
+inline static constexpr bool EnumValueContainsFlag(const T& value, const T& flag)
+{
+	return (value & flag) != static_cast<T>(0);
+}

@@ -6,7 +6,7 @@
 
 #include <any>
 
-#include "Volt/Utility/EnumUtil.h"
+#include <CoreUtilities/EnumUtils.h>
 
 namespace GraphKey
 {

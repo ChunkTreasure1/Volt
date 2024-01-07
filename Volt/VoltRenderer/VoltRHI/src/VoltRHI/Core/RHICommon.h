@@ -2,9 +2,11 @@
 #include "VoltRHI/Core/Core.h"
 
 #include <CoreUtilities/Containers/StackVector.h>
+#include <CoreUtilities/Variant.h>
 
 #include <array>
 #include <functional>
+#include <variant>
 
 namespace Volt::RHI
 {
@@ -504,27 +506,82 @@ namespace Volt::RHI
 		Image
 	};
 
-	enum class ResourceState
+	enum class BarrierStage : uint64_t
 	{
-		Undefined = 0,
-		RenderTarget = BIT(0),
-		DepthWrite = BIT(1),
-		DepthRead = BIT(2),
-		Present = BIT(3),
-
-		PixelShaderRead = BIT(4),
-		NonPixelShaderRead = BIT(5),
-
-		TransferSrc = BIT(6),
-		TransferDst = BIT(7),
-
-		IndirectArgument = BIT(8),
-		UnorderedAccess = BIT(9),
-
-		IndexBuffer = BIT(10)
+		None = 0,
+		All = BIT(0),
+		Draw = BIT(1), // ?
+		IndexInput = BIT(2),
+		VertexShader = BIT(3), // VERTEX_ATTRIBUTE_INPUT & VERTEX_SHADER
+		PixelShader = BIT(4), // FRAGMENT_SHADER
+		DepthStencil = BIT(5), // EARLY_FRAGMENT_TESTS & LATE_FRAGMENT_TESTS
+		RenderTarget = BIT(6), // COLOR_ATTACHMENT_OUTPUT
+		ComputeShader = BIT(7), // COMPUTE_SHADER
+		RayTracing = BIT(8), // RAY_TRACING
+		Copy = BIT(9), // COPY
+		Resolve = BIT(10), // RESOLVE,
+		Indirect = BIT(11), // DRAW_INDIRECT
+		AllGraphics = BIT(12), // ALL_GRAPHICS
+		VideoDecode = BIT(13),
+		VideoEncode = BIT(14),
+		BuildAccelerationStructure = BIT(15)
 	};
 
-	VT_SETUP_ENUM_CLASS_OPERATORS(ResourceState);
+	VT_SETUP_ENUM_CLASS_OPERATORS(BarrierStage);
+
+	enum class BarrierAccess : uint64_t
+	{
+		None = 0,
+		VertexBuffer = BIT(0), // VERTEX_ATTRIBUTE_READ
+		UniformBuffer = BIT(1), // UNIFORM_READ
+		IndexBuffer = BIT(2), // INDEX_READ
+		RenderTarget = BIT(3), // COLOR_ATTACHMENT_WRITE
+		ShaderWrite = BIT(4), // SHADER_WRITE
+		DepthStencilWrite = BIT(5), // DEPTH_STENCIL_ATTACHMENT_WRITE
+		DepthStencilRead = BIT(6), // DEPTH_STENCIL_ATTACHMENT_READ
+		IndirectArgument = BIT(7), // INDIRECT_COMMAND_READ
+		TransferSource = BIT(8),
+		TransferDestination = BIT(9),
+		ShaderRead = BIT(10),
+		ResolveSource = BIT(11), // ?
+		ResolveDestination = BIT(12), // ?
+		AccelerationStructureRead = BIT(13), // ACCELERATION_STRUCTURE_READ
+		AccelerationStructureWrite = BIT(14), // ACCELERATION_STRUCTURE_WRITEs
+		VideoDecodeRead = BIT(15),
+		VideoDecodeWrite = BIT(16),
+		VideoEncodeRead = BIT(17),
+		VideoEncodeWrite = BIT(18)
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(BarrierAccess);
+
+	enum class ImageLayout : uint64_t
+	{
+		Undefined = 0,
+		Present = BIT(0), // PRESENT_SRC
+		RenderTarget = BIT(1), // COLOR_ATTACHMENT_OPTIMAL
+		ShaderWrite = BIT(2), // GENERAL
+		DepthStencilWrite = BIT(3), // DEPTH_STENCIL_ATTACHMENT_WRITE
+		DepthStencilRead = BIT(4), // DEPTH_STENCIL_ATTACHMENT_READ
+		ShaderRead = BIT(5), // SHADER_READ_ONLY_OPTIMAL
+		TransferSource = BIT(6),
+		TransferDestination = BIT(7),
+		ResolveSource = BIT(8),
+		ResolveDestination = BIT(9),
+		VideoDecodeRead = BIT(10),
+		VideoDecodeWrite = BIT(11),
+		VideoEncodeRead = BIT(12),
+		VideoEncodeWrite = BIT(13),
+	};
+
+	VT_SETUP_ENUM_CLASS_OPERATORS(ImageLayout);
+
+	enum class BarrierType : uint64_t
+	{
+		Image = 0,
+		Buffer,
+		Global
+	};
 
 	// --- structures --- \\
 
@@ -689,12 +746,68 @@ namespace Volt::RHI
 		uint32_t layerCount = 1;
 	};
 
+	struct ImageBarrier
+	{
+		Weak<RHIResource> resource;
+
+		BarrierStage srcStage = BarrierStage::None;
+		BarrierStage dstStage = BarrierStage::None;
+	
+		BarrierAccess srcAccess = BarrierAccess::None;
+		BarrierAccess dstAccess = BarrierAccess::None;
+	
+		ImageLayout srcLayout = ImageLayout::Undefined;
+		ImageLayout dstLayout = ImageLayout::Undefined;
+	};
+
+	struct BufferBarrier
+	{
+		Weak<RHIResource> resource;
+
+		BarrierStage srcStage = BarrierStage::None;
+		BarrierStage dstStage = BarrierStage::None;
+
+		BarrierAccess srcAccess = BarrierAccess::None;
+		BarrierAccess dstAccess = BarrierAccess::None;
+
+		uint64_t size = 0;
+		uint64_t offset = 0;
+	};
+
+	struct GlobalBarrier
+	{
+		BarrierStage srcStage = BarrierStage::None;
+		BarrierStage dstStage = BarrierStage::None;
+
+		BarrierAccess srcAccess = BarrierAccess::None;
+		BarrierAccess dstAccess = BarrierAccess::None;
+	};
+
 	struct ResourceBarrierInfo
 	{
-		ResourceState oldState;
-		ResourceState newState;
+		~ResourceBarrierInfo() = default;
 
-		Ref<RHIResource> resource;
+		BarrierType type = BarrierType::Global;
+		
+		//ImageBarrier& imageBarrier() { return std::get<ImageBarrier>(m_barrier); }
+		//BufferBarrier& bufferBarrier() { return std::get<BufferBarrier>(m_barrier); }
+		//GlobalBarrier& globalBarrier() { return std::get<GlobalBarrier>(m_barrier); }
+
+		//const ImageBarrier& imageBarrier() const { return std::get<ImageBarrier>(m_barrier); }
+		//const BufferBarrier& bufferBarrier() const { return std::get<BufferBarrier>(m_barrier); }
+		//const GlobalBarrier& globalBarrier() const { return std::get<GlobalBarrier>(m_barrier); }
+
+		ImageBarrier& imageBarrier() { return m_barrier2.Get<ImageBarrier>(); }
+		BufferBarrier& bufferBarrier() { return m_barrier2.Get<BufferBarrier>(); }
+		GlobalBarrier& globalBarrier() { return m_barrier2.Get<GlobalBarrier>(); }
+
+		const ImageBarrier& imageBarrier() const { return m_barrier2.Get<ImageBarrier>(); }
+		const BufferBarrier& bufferBarrier() const { return m_barrier2.Get<BufferBarrier>(); }
+		const GlobalBarrier& globalBarrier() const { return m_barrier2.Get<GlobalBarrier>(); }
+
+	private:
+		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier2;
+		//std::variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier;
 	};
 
 	struct IndirectIndexedCommand

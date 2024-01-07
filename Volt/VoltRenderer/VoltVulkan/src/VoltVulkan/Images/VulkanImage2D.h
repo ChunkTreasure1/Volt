@@ -34,13 +34,13 @@ namespace Volt::RHI
 		const uint64_t GetByteSize() const override;
 
 		const ImageLayout GetCurrentLayout() const { return m_currentImageLayout; }
+		void SetCurrentLayout(ImageLayout layout) { m_currentImageLayout = layout; }
 		inline const ImageAspect GetImageAspect() const override { return m_imageAspect; }
 
 	protected:
 		void* GetHandleImpl() const override;
 
 	private:
-		friend class VulkanCommandBuffer;
 
 		void TransitionToLayout(ImageLayout targetLayout);
 

@@ -146,14 +146,14 @@ bool TestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	m_commandBuffer->SetScissors({ scissor });
 
 	// Render target barrier
-	{
+	/*{
 		RHI::ResourceBarrierInfo barrier{};
 		barrier.oldState = RHI::ResourceState::PixelShaderRead;
 		barrier.newState = RHI::ResourceState::RenderTarget;
 		barrier.resource = m_renderTarget;
 
 		m_commandBuffer->ResourceBarrier({ barrier });
-	}
+	}*/
 
 	RHI::AttachmentInfo attInfo{};
 	attInfo.view = m_renderTarget->GetView();
@@ -183,14 +183,14 @@ bool TestingLayer::OnRenderEvent(Volt::AppRenderEvent& e)
 	m_commandBuffer->CopyImageToBackBuffer(m_renderTarget);
 #else
 	// Shader read barrier
-	{
-		RHI::ResourceBarrierInfo barrier{};
-		barrier.oldState = RHI::ResourceState::RenderTarget;
-		barrier.newState = RHI::ResourceState::PixelShaderRead;
-		barrier.resource = m_renderTarget;
+	//{
+	//	RHI::ResourceBarrierInfo barrier{};
+	//	barrier.oldState = RHI::ResourceState::RenderTarget;
+	//	barrier.newState = RHI::ResourceState::PixelShaderRead;
+	//	barrier.resource = m_renderTarget;
 
-		m_commandBuffer->ResourceBarrier({ barrier });
-	}
+	//	m_commandBuffer->ResourceBarrier({ barrier });
+	//}
 #endif
 
 	m_commandBuffer->End();

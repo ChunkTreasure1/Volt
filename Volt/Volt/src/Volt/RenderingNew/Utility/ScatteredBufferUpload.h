@@ -74,9 +74,12 @@ namespace Volt
 		commandBuffer->Begin();
 
 		RHI::ResourceBarrierInfo barrier{};
-		barrier.resource = m_dstBuffer;
-		barrier.oldState = RHI::ResourceState::UnorderedAccess | RHI::ResourceState::PixelShaderRead | RHI::ResourceState::NonPixelShaderRead;
-		barrier.newState = RHI::ResourceState::TransferDst;
+		barrier.type = RHI::BarrierType::Buffer;
+		barrier.bufferBarrier().srcAccess = RHI::BarrierAccess::ShaderRead | RHI::BarrierAccess::ShaderWrite;
+		barrier.bufferBarrier().srcStage = RHI::BarrierStage::AllGraphics;
+		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
+		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
+		barrier.bufferBarrier().resource = m_dstBuffer;
 
 		commandBuffer->ResourceBarrier({ barrier });
 
@@ -88,7 +91,9 @@ namespace Volt
 			commandBuffer->UpdateBuffer(m_dstBuffer, offset, stride, element.data);
 		}
 
-		std::swap(barrier.oldState, barrier.newState);
+		std::swap(barrier.bufferBarrier().srcAccess, barrier.bufferBarrier().dstAccess);
+		std::swap(barrier.bufferBarrier().srcStage, barrier.bufferBarrier().dstStage);
+
 		commandBuffer->ResourceBarrier({ barrier });
 		commandBuffer->End();
 	}

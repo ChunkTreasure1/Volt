@@ -124,9 +124,14 @@ namespace Volt
 
 		{
 			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::Undefined;
-			barrier.newState = RHI::ResourceState::TransferDst;
-			barrier.resource = image;
+			barrier.type = RHI::BarrierType::Image;
+			barrier.imageBarrier().srcStage = RHI::BarrierStage::None;
+			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::None;
+			barrier.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::Copy;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::TransferDestination;
+			barrier.imageBarrier().resource = image;
 
 			commandBuffer->ResourceBarrier({ barrier });
 		}
@@ -160,9 +165,14 @@ namespace Volt
 		commandBuffer->Begin();
 		{
 			RHI::ResourceBarrierInfo barrier{};
-			barrier.oldState = RHI::ResourceState::TransferDst;
-			barrier.newState = RHI::ResourceState::PixelShaderRead;
-			barrier.resource = image;
+			barrier.type = RHI::BarrierType::Image;
+			barrier.imageBarrier().srcStage = RHI::BarrierStage::Copy;
+			barrier.imageBarrier().srcAccess = RHI::BarrierAccess::TransferDestination;
+			barrier.imageBarrier().srcLayout = RHI::ImageLayout::TransferDestination;
+			barrier.imageBarrier().dstStage = RHI::BarrierStage::PixelShader;
+			barrier.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+			barrier.imageBarrier().resource = image;
 
 			commandBuffer->ResourceBarrier({ barrier });
 		}

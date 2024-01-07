@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Volt
+namespace Allocator
 {
-	
+	extern void CheckAllocations();
 }

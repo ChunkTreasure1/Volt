@@ -2,6 +2,7 @@
 
 #include "Volt/Core/Application.h"
 #include "Volt/Platform/ExceptionHandling.h"
+#include "Volt/Core/Allocator.h"
 
 #include <filesystem>
 
@@ -44,6 +45,7 @@ namespace Volt
 
 		CreateProxy(dmpPath, appPath);
 
+		Allocator::CheckAllocations();
 		return 0;
 	}
 }

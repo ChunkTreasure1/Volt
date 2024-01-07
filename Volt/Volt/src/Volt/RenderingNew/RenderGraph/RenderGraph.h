@@ -33,6 +33,13 @@ namespace Volt
 	struct RenderGraphImageDesc;
 	struct RenderGraphBufferDesc;
 
+	struct ResourceUsageInfo
+	{
+		int32_t passIndex = -1;
+		RenderGraphResourceHandle handle;
+		RHI::ResourceBarrierInfo accessInfo;
+	};
+
 	class RenderGraph
 	{
 	public:
@@ -55,8 +62,8 @@ namespace Volt
 			void SetHasSideEffect();
 			void SetIsComputePass();
 
-			void ReadResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState = RHI::ResourceState::Undefined);
-			void WriteResource(RenderGraphResourceHandle handle, RHI::ResourceState forceState = RHI::ResourceState::Undefined);
+			void ReadResource(RenderGraphResourceHandle handle, RenderGraphResourceState forceState = RenderGraphResourceState::None);
+			void WriteResource(RenderGraphResourceHandle handle, RenderGraphResourceState forceState = RenderGraphResourceState::None);
 		
 		private:
 			RenderGraph& m_renderGraph;
@@ -73,8 +80,7 @@ namespace Volt
 		void AddPass(const std::string& name, std::function<void(Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc);
 
 		void AddMappedBufferUpload(RenderGraphResourceHandle bufferHandle, const void* data, const size_t size, std::string_view name);
-		void AddResourceTransition(RenderGraphResourceHandle resourceHandle, RHI::ResourceState newState);
-		void AddResourceTransition(RHI::ResourceState oldState, RHI::ResourceState newState);
+		void AddResourceBarrier(RenderGraphResourceHandle resourceHandle, const RenderGraphBarrierInfo& barrierInfo);
 
 		void BeginMarker(const std::string& markerName, const glm::vec4& markerColor = 1.f);
 		void EndMarker();
@@ -114,7 +120,9 @@ namespace Volt
 		std::vector<std::vector<RenderGraphResourceHandle>> m_surrenderableResources; // Pass -> Resources
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
 		std::vector<Ref<RenderGraphResourceNodeBase>> m_resourceNodes;
-		std::vector<std::vector<RenderGraphResourceAccess>> m_resourceTransitions; // Pass -> Transitions
+
+		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
+		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
 		std::set<ResourceHandle> m_usedGlobalImage2DResourceHandles;
 		std::set<ResourceHandle> m_usedGlobalBufferResourceHandles;
@@ -146,7 +154,7 @@ namespace Volt
 		newNode->index = m_passIndex++;
 
 		m_passNodes.push_back(newNode);
-		m_resourceTransitions.emplace_back();
+		m_resourceBarriers.emplace_back();
 		m_standaloneMarkers.emplace_back();
 
 		m_currentlyInBuilder = true;

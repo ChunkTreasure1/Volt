@@ -25,6 +25,15 @@ namespace Volt
 		UniformBuffer
 	};
 
+	struct RenderGraphBarrierInfo
+	{
+		RHI::BarrierStage dstStage;
+		RHI::BarrierAccess dstAccess;
+
+		// Only images
+		RHI::ImageLayout dstLayout;
+	};
+
 	struct RenderGraphResourceNodeBase
 	{
 		virtual ~RenderGraphResourceNodeBase() = default;
@@ -36,7 +45,7 @@ namespace Volt
 		Weak<RenderGraphPassNodeBase> lastUsage;
 
 		RenderGraphResourceHandle handle;
-		RHI::ResourceState currentState = RHI::ResourceState::Undefined;
+		RenderGraphBarrierInfo currentState;
 
 		bool isExternal = false;
 
@@ -84,8 +93,11 @@ namespace Volt
 
 	struct RenderGraphResourceAccess
 	{
-		RHI::ResourceState oldState;
-		RHI::ResourceState newState;
+		RHI::BarrierStage dstStage = RHI::BarrierStage::None;
+		RHI::BarrierAccess dstAccess = RHI::BarrierAccess::None;
+		
+		// Image only
+		RHI::ImageLayout dstLayout = RHI::ImageLayout::Undefined;
 
 		RenderGraphResourceHandle resourceHandle = std::numeric_limits<RenderGraphResourceHandle>::max();
  	};

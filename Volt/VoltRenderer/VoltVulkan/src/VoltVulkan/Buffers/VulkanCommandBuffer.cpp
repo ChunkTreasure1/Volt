@@ -32,6 +32,8 @@
 #include <VoltRHI/Core/Profiling.h>
 #include <VoltRHI/Utility/NsightAftermathHelpers.h>
 
+#include <CoreUtilities/EnumUtils.h>
+
 #ifdef VT_ENABLE_NV_AFTERMATH
 
 #include <GFSDK_Aftermath.h>
@@ -46,168 +48,183 @@ namespace Volt::RHI
 {
 	namespace Utility
 	{
-		std::pair<VkPipelineStageFlags2, VkAccessFlags2> GetSrcInfoFromResourceState(const ResourceState resourceState)
+		const VkPipelineStageFlags2 GetStageFromBarrierSync(const BarrierStage barrierSync)
 		{
-			switch (resourceState)
+			VkPipelineStageFlags2 result = VK_PIPELINE_STAGE_2_NONE;
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Draw))
 			{
-				case ResourceState::RenderTarget:
-				{
-					return { VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT };
-					break;
-				}
-
-				case ResourceState::Present:
-				{
-					return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
-					break;
-				}
-
-				case ResourceState::PixelShaderRead:
-				{
-					return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::NonPixelShaderRead:
-				{
-					return { VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::TransferSrc:
-				{
-					return { VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::TransferDst:
-				{
-					return { VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT };
-					break;
-				}
-
-				case ResourceState::Undefined:
-				{
-					return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
-					break;
-				}
-
-				case ResourceState::IndirectArgument:
-				{
-					return { VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT, VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT };
-					break;
-				}
-
-				case ResourceState::UnorderedAccess:
-				{
-					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::DepthWrite:
-				{
-					return { VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT };
-					break;
-				}
-
-				case ResourceState::IndexBuffer:
-				{
-					return { VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_ACCESS_2_INDEX_READ_BIT };
-					break;
-				}
+				result |= VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
 			}
 
-			return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::IndexInput))
+			{
+				result |= VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::VertexShader))
+			{
+				result |= VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::PixelShader))
+			{
+				result |= VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::DepthStencil))
+			{
+				result |= VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::RenderTarget))
+			{
+				result |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::ComputeShader))
+			{
+				result |= VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::RayTracing))
+			{
+				result |= VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Copy))
+			{
+				result |= VK_PIPELINE_STAGE_2_COPY_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Resolve))
+			{
+				result |= VK_PIPELINE_STAGE_2_RESOLVE_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::Indirect))
+			{
+				result |= VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::AllGraphics))
+			{
+				result |= VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::VideoDecode))
+			{
+				result |= VK_PIPELINE_STAGE_2_VIDEO_DECODE_BIT_KHR;
+			}
+
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::BuildAccelerationStructure))
+			{
+				result |= VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
+			}
+
+			return result;
 		}
 
-		std::pair<VkPipelineStageFlags2, VkAccessFlags2> GetDstInfoFromResourceState(const ResourceState resourceState)
+		const VkAccessFlags2 GetAccessFromBarrierAccess(const BarrierAccess barrierAccess)
 		{
-			switch (resourceState)
+			VkAccessFlags2 result = VK_ACCESS_2_NONE;
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VertexBuffer))
 			{
-				case ResourceState::RenderTarget:
-				{
-					return { VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT };
-					break;
-				}
-
-				case ResourceState::Present:
-				{
-					return { VK_PIPELINE_STAGE_2_NONE , 0 };
-					break;
-				}
-
-				case ResourceState::PixelShaderRead:
-				{
-					return { VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::NonPixelShaderRead:
-				{
-					return { VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::TransferSrc:
-				{
-					return { VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::TransferDst:
-				{
-					return { VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT };
-					break;
-				}
-
-				case ResourceState::IndirectArgument:
-				{
-					return { VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT, VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT };
-					break;
-				}
-
-				case ResourceState::UnorderedAccess:
-				{
-					return { VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT };
-					break;
-				}
-
-				case ResourceState::DepthWrite:
-				{
-					return { VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT };
-					break;
-				}
-
-				case ResourceState::Undefined:
-				{
-					return { VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, 0 };
-					break;
-				}
-
-				case ResourceState::IndexBuffer:
-				{
-					return { VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_ACCESS_2_INDEX_READ_BIT };
-					break;
-				}
+				result |= VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
 			}
 
-			return { VK_PIPELINE_STAGE_2_NONE, 0 };
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::UniformBuffer))
+			{
+				result |= VK_ACCESS_2_UNIFORM_READ_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::IndexBuffer))
+			{
+				result |= VK_ACCESS_2_INDEX_READ_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::RenderTarget))
+			{
+				result |= VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderWrite))
+			{
+				result |= VK_ACCESS_2_SHADER_WRITE_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilWrite))
+			{
+				result |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::DepthStencilRead))
+			{
+				result |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::IndirectArgument))
+			{
+				result |= VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::TransferSource))
+			{
+				result |= VK_ACCESS_2_TRANSFER_READ_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::TransferDestination))
+			{
+				result |= VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::ShaderRead))
+			{
+				result |= VK_ACCESS_2_SHADER_READ_BIT;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::AccelerationStructureRead))
+			{
+				result |= VK_ACCESS_2_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::AccelerationStructureWrite))
+			{
+				result |= VK_ACCESS_2_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VideoDecodeRead))
+			{
+				result |= VK_ACCESS_2_VIDEO_DECODE_READ_BIT_KHR;
+			}
+
+			if (EnumValueContainsFlag(barrierAccess, BarrierAccess::VideoDecodeWrite))
+			{
+				result |= VK_ACCESS_2_VIDEO_DECODE_WRITE_BIT_KHR;
+			}
+
+			return result;
 		}
 
-		const VkImageLayout GetDstLayoutFromResourceState(const ResourceState resourceState)
+		const VkImageLayout GetLayoutFromImageLayout(const ImageLayout imageLayout)
 		{
-			switch (resourceState)
+			switch (imageLayout)
 			{
-				case ResourceState::RenderTarget: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				case ResourceState::Present: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-				case ResourceState::PixelShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				case ResourceState::NonPixelShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				case ResourceState::TransferSrc: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				case ResourceState::TransferDst: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				case ResourceState::UnorderedAccess: return VK_IMAGE_LAYOUT_GENERAL;
-				case ResourceState::DepthWrite: return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+				case ImageLayout::Undefined: return VK_IMAGE_LAYOUT_UNDEFINED;
+				case ImageLayout::Present: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				case ImageLayout::RenderTarget: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				case ImageLayout::ShaderWrite: return VK_IMAGE_LAYOUT_GENERAL;
+				case ImageLayout::DepthStencilWrite: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				case ImageLayout::DepthStencilRead: return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				case ImageLayout::ShaderRead: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				case ImageLayout::TransferSource: return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				case ImageLayout::TransferDestination: return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				case ImageLayout::VideoDecodeRead: return VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR;
+				case ImageLayout::VideoDecodeWrite: return VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR;
 			}
-
+		
+			VT_ENSURE(false);
 			return VK_IMAGE_LAYOUT_UNDEFINED;
 		}
 	}
@@ -671,6 +688,57 @@ namespace Volt::RHI
 		vkCmdPushConstants(m_commandBuffers.at(index).commandBuffer, pipelineLayout, stageFlags, offset, size, data);
 	}
 
+	void AddGlobalBarrier(const ResourceBarrierInfo& barrierInfo, VkMemoryBarrier2& outBarrier)
+	{
+		outBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
+		outBarrier.pNext = nullptr;
+		outBarrier.srcAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.globalBarrier().srcAccess);
+		outBarrier.dstAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.globalBarrier().dstAccess);
+		outBarrier.srcStageMask = Utility::GetStageFromBarrierSync(barrierInfo.globalBarrier().srcStage);
+		outBarrier.dstStageMask = Utility::GetStageFromBarrierSync(barrierInfo.globalBarrier().dstStage);
+	}
+
+	void AddBufferBarrier(const ResourceBarrierInfo& barrierInfo, VkBufferMemoryBarrier2& outBarrier)
+	{
+		auto& vkBuffer = barrierInfo.bufferBarrier().resource->AsRef<VulkanStorageBuffer>();
+
+		outBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+		outBarrier.pNext = nullptr;
+		outBarrier.srcAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.bufferBarrier().srcAccess);
+		outBarrier.dstAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.bufferBarrier().dstAccess);
+		outBarrier.srcStageMask = Utility::GetStageFromBarrierSync(barrierInfo.bufferBarrier().srcStage);
+		outBarrier.dstStageMask = Utility::GetStageFromBarrierSync(barrierInfo.bufferBarrier().dstStage);
+		outBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		outBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		outBarrier.offset = barrierInfo.bufferBarrier().offset;
+		outBarrier.size = barrierInfo.bufferBarrier().size;
+		outBarrier.buffer = vkBuffer.GetHandle<VkBuffer>();
+	}
+
+	void AddImageBarrier(const ResourceBarrierInfo& barrierInfo, VkImageMemoryBarrier2& outBarrier)
+	{
+		auto& vkImage = barrierInfo.imageBarrier().resource->AsRef<VulkanImage2D>();
+		
+		outBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+		outBarrier.pNext = nullptr;
+		outBarrier.srcAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.imageBarrier().srcAccess);
+		outBarrier.dstAccessMask = Utility::GetAccessFromBarrierAccess(barrierInfo.imageBarrier().dstAccess);
+		outBarrier.srcStageMask = Utility::GetStageFromBarrierSync(barrierInfo.imageBarrier().srcStage);
+		outBarrier.dstStageMask = Utility::GetStageFromBarrierSync(barrierInfo.imageBarrier().dstStage);
+		outBarrier.oldLayout = Utility::GetLayoutFromImageLayout(barrierInfo.imageBarrier().srcLayout);
+		outBarrier.newLayout = Utility::GetLayoutFromImageLayout(barrierInfo.imageBarrier().dstLayout);
+		outBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		outBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		outBarrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
+		outBarrier.subresourceRange.baseArrayLayer = 0;
+		outBarrier.subresourceRange.baseMipLevel = 0;
+		outBarrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+		outBarrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		outBarrier.image = vkImage.GetHandle<VkImage>();
+
+		vkImage.SetCurrentLayout(static_cast<VulkanImage2D::ImageLayout>(outBarrier.newLayout));
+	}
+
 	void VulkanCommandBuffer::ResourceBarrier(const std::vector<ResourceBarrierInfo>& resourceBarriers)
 	{
 		VT_PROFILE_FUNCTION();
@@ -681,69 +749,19 @@ namespace Volt::RHI
 
 		for (const auto& resourceBarrier : resourceBarriers)
 		{
-			auto resourcePtr = resourceBarrier.resource;
-
-			if (!resourcePtr)
+			switch (resourceBarrier.type)
 			{
-				auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
-				auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
+				case BarrierType::Global:
+					AddGlobalBarrier(resourceBarrier, memoryBarriers.emplace_back());
+					break;
 
-				auto& barrier = memoryBarriers.emplace_back();
-				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
-				barrier.srcAccessMask = srcAccess;
-				barrier.srcStageMask = srcStage;
-				barrier.dstAccessMask = dstAccess;
-				barrier.dstStageMask = dstStage;
-			}
-			else
-			{
-				if (resourcePtr->GetType() == ResourceType::Image2D)
-				{
-					auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
-					auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
-					const auto dstLayout = Utility::GetDstLayoutFromResourceState(resourceBarrier.newState);
+				case BarrierType::Buffer:
+					AddBufferBarrier(resourceBarrier, bufferBarriers.emplace_back());
+					break;
 
-					auto& vkImage = resourceBarrier.resource->AsRef<VulkanImage2D>();
-
-					auto& barrier = imageBarriers.emplace_back();
-					barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-					barrier.pNext = nullptr;
-					barrier.srcStageMask = srcStage;
-					barrier.srcAccessMask = srcAccess;
-					barrier.dstStageMask = dstStage;
-					barrier.dstAccessMask = dstAccess;
-					barrier.newLayout = dstLayout;
-					barrier.oldLayout = static_cast<VkImageLayout>(vkImage.m_currentImageLayout);
-					barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-					barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-					barrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.m_imageAspect);
-					barrier.subresourceRange.baseArrayLayer = 0;
-					barrier.subresourceRange.baseMipLevel = 0;
-					barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-					barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-					barrier.image = vkImage.GetHandle<VkImage>();
-
-					vkImage.m_currentImageLayout = static_cast<uint32_t>(dstLayout);
-				}
-				else if (resourcePtr->GetType() == ResourceType::StorageBuffer)
-				{
-					auto [srcStage, srcAccess] = Utility::GetSrcInfoFromResourceState(resourceBarrier.oldState);
-					auto [dstStage, dstAccess] = Utility::GetDstInfoFromResourceState(resourceBarrier.newState);
-
-					auto& vkBuffer = resourceBarrier.resource->AsRef<VulkanStorageBuffer>();
-					auto& barrier = bufferBarriers.emplace_back();
-					barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
-					barrier.pNext = nullptr;
-					barrier.srcStageMask = srcStage;
-					barrier.srcAccessMask = srcAccess;
-					barrier.dstStageMask = dstStage;
-					barrier.dstAccessMask = dstAccess;
-					barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-					barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-					barrier.offset = 0;
-					barrier.size = vkBuffer.GetSize();
-					barrier.buffer = vkBuffer.GetHandle<VkBuffer>();
-				}
+				case BarrierType::Image:
+					AddImageBarrier(resourceBarrier, imageBarriers.emplace_back());
+					break;
 			}
 		}
 
@@ -1156,7 +1174,7 @@ namespace Volt::RHI
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
 
-		region.imageSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.m_imageAspect);
+		region.imageSubresource.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
 		region.imageSubresource.mipLevel = mip;
 		region.imageSubresource.baseArrayLayer = 0;
 		region.imageSubresource.layerCount = 1;
@@ -1164,7 +1182,7 @@ namespace Volt::RHI
 		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = { width, height, 1 };
 
-		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.m_currentImageLayout), 1, &region);
+		vkCmdCopyBufferToImage(m_commandBuffers.at(index).commandBuffer, srcBuffer->GetResourceHandle<VkBuffer>(), dstImage->GetHandle<VkImage>(), static_cast<VkImageLayout>(vkImage.GetCurrentLayout()), 1, &region);
 	}
 
 	void VulkanCommandBuffer::CopyImage(Ref<Image2D> srcImage, Ref<Image2D> dstImage, const uint32_t width, const uint32_t height)

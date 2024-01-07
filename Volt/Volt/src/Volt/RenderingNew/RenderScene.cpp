@@ -109,6 +109,7 @@ namespace Volt
 		std::vector<GPUMesh> gpuMeshes;
 		BuildGPUMeshes(gpuMeshes);
 
+		m_objectDrawData.clear();
 		BuildObjectDrawData(m_objectDrawData);
 		BuildMeshletBuffer(m_objectDrawData);
 

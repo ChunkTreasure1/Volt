@@ -198,7 +198,14 @@ namespace Volt
 			AddShadingPass(renderGraph, rgBlackboard);
 		}
 
-		renderGraph.AddResourceTransition(rgBlackboard.Get<ExternalImagesData>().outputImage, RHI::ResourceState::PixelShaderRead);
+		{
+			RenderGraphBarrierInfo barrier{};
+			barrier.dstStage = RHI::BarrierStage::PixelShader;
+			barrier.dstAccess = RHI::BarrierAccess::ShaderRead;
+			barrier.dstLayout = RHI::ImageLayout::ShaderRead;
+
+			renderGraph.AddResourceBarrier(rgBlackboard.Get<ExternalImagesData>().outputImage, barrier);
+		}
 
 		renderGraph.Compile();
 		renderGraph.Execute();
@@ -228,8 +235,8 @@ namespace Volt
 
 		builder.ReadResource(uniformBuffers.viewDataBuffer);
 		builder.ReadResource(externalBuffers.gpuSceneBuffer);
-		builder.ReadResource(cullPrimitivesData.indexBuffer, RHI::ResourceState::IndexBuffer);
-		builder.ReadResource(cullPrimitivesData.drawCommand, RHI::ResourceState::IndirectArgument);
+		builder.ReadResource(cullPrimitivesData.indexBuffer, RenderGraphResourceState::IndexBuffer);
+		builder.ReadResource(cullPrimitivesData.drawCommand, RenderGraphResourceState::IndirectArgument);
 	}
 
 	void SceneRendererNew::RenderMeshes(RenderContext& context, const RenderGraphPassResources& resources, const RenderGraphBlackboard blackboard)
@@ -508,7 +515,7 @@ namespace Volt
 			builder.ReadResource(cullObjectsData.meshletToObjectIdAndOffset);
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
-			builder.ReadResource(argsBufferHandle, RHI::ResourceState::IndirectArgument);
+			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
 			
 			builder.SetIsComputePass();
 		},
@@ -572,7 +579,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
-			builder.ReadResource(argsBufferHandle, RHI::ResourceState::IndirectArgument);
+			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
 		
 			builder.SetIsComputePass();
 		},
@@ -841,7 +848,7 @@ namespace Volt
 		renderGraph.AddPass(passName,
 		[&](RenderGraph::Builder& builder)
 		{
-			builder.ReadResource(indirectArgsData.materialIndirectArgsBuffer, RHI::ResourceState::IndirectArgument);
+			builder.ReadResource(indirectArgsData.materialIndirectArgsBuffer, RenderGraphResourceState::IndirectArgument);
 			builder.ReadResource(visBufferData.visibility);
 			builder.ReadResource(matCountData.materialCountBuffer);
 			builder.ReadResource(matCountData.materialStartBuffer);

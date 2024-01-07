@@ -13,7 +13,7 @@
 
 #include <GraphKey/Registry.h>
 
-#include "Volt/Utility/EnumUtil.h"
+#include <CoreUtilities/EnumUtils.h>
 
 namespace Volt
 {

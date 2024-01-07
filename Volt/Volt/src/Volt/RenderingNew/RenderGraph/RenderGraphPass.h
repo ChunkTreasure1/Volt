@@ -11,9 +11,17 @@ namespace Volt
 	class RenderGraph;
 	class RenderContext;
 
+	enum class RenderGraphResourceState
+	{
+		None = 0,
+		IndirectArgument,
+		IndexBuffer,
+		VertexBuffer
+	};
+
 	struct RenderGraphPassResourceAccess
 	{ 
-		RHI::ResourceState state;
+		RenderGraphResourceState forcedState = RenderGraphResourceState::None;
 		RenderGraphResourceHandle handle;
 	};
 
