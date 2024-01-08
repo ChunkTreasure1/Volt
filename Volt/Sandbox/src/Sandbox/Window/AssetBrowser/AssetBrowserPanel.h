@@ -70,6 +70,7 @@ private:
 	void CreateNewAssetInCurrentDirectory(Volt::AssetType type);
 	void CreateNewShaderModal();
 	void CreateNewMonoScriptModal();
+	void CreateNewMotionWeaveGraphModal();
 
 	struct NewShaderData
 	{
@@ -118,6 +119,9 @@ private:
 
 	///// Animation Graph creation /////
 	NewAnimationGraphData myNewAnimationGraphData{};
+
+	///// Motion Weave creation /////
+	Volt::AssetHandle m_MotionWeaveTargetSkeleton = 0;
 
 	Ref<AssetBrowser::DirectoryItem> ProcessDirectory(const std::filesystem::path& path, AssetBrowser::DirectoryItem* parent);
 	std::unordered_map <std::filesystem::path, Ref<AssetBrowser::DirectoryItem>> myDirectories;

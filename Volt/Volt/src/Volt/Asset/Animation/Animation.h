@@ -20,12 +20,18 @@ namespace Volt
 		struct Pose
 		{
 			std::vector<TRS> localTRS;
+
+			void BlendWith(const Pose& other, float weight);
+			std::vector<glm::mat4> GetGlobalTransforms(const std::vector<glm::mat4>& invBindPose) const;
 		};
 
 		const std::vector<glm::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
 		const std::vector<glm::mat4> Sample(uint32_t frameIndex, Ref<Skeleton> aSkeleton);
 
 		const std::vector<TRS> SampleTRS(float aStartTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
+
+		const Pose SamplePose(float aStartTime,float aCurrentTime, Ref<Skeleton> aSkeleton, bool looping, float speed = 1.f) const;
+		
 		const bool IsAtEnd(float startTime, float speed);
 		const bool HasPassedTime(float startTime, float speed, float time);
 

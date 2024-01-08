@@ -200,6 +200,50 @@ namespace Volt
 		return result;
 	}
 
+	const Animation::Pose Animation::SamplePose(float aStartTime, float aCurrentTime, Ref<Skeleton> aSkeleton, bool looping, float speed) const
+	{
+		VT_PROFILE_FUNCTION();
+		
+		const float finalDuration = myDuration / speed;
+
+		const float localTime = aCurrentTime - aStartTime;
+		const float normalizedTime = localTime / finalDuration;
+
+		const int32_t frameCount = (int32_t)myFrames.size();
+		int32_t currentFrameIndex = (int32_t)(std::floor(normalizedTime * (float)frameCount)) % frameCount;
+
+		if (normalizedTime > 1.f && !looping)
+		{
+			currentFrameIndex = frameCount - 1;
+		}
+
+		currentFrameIndex = std::clamp(currentFrameIndex, 0, frameCount - 1);
+
+		const float blendValue = (fmodf(normalizedTime, 1.f) * ((float)frameCount)) - (float)currentFrameIndex;
+
+		int32_t nextFrameIndex = currentFrameIndex + 1;
+
+		if (nextFrameIndex >= frameCount)
+		{
+			if (looping)
+			{
+				nextFrameIndex = 0;
+			}
+			else
+			{
+				nextFrameIndex = currentFrameIndex;
+			}
+		}
+
+		const Pose& currentFrame = myFrames.at(currentFrameIndex);
+		const Pose& nextFrame = myFrames.at(nextFrameIndex);
+
+		Pose result = currentFrame;
+		result.BlendWith(nextFrame, blendValue);
+
+		return result;
+	}
+
 	const bool Animation::IsAtEnd(float startTime, float speed)
 	{
 		const float localTime = AnimationManager::globalClock - startTime;
@@ -292,6 +336,32 @@ namespace Volt
 		animData.deltaTime = frameTime - (float)animData.currentFrameIndex;
 
 		return animData;
+	}
+	
+	void Animation::Pose::BlendWith(const Pose& other, float weight)
+	{
+		assert(localTRS.size() == other.localTRS.size());
+		for (size_t i = 0; i < localTRS.size(); i++)
+		{
+			// Blend			
+			localTRS[i].position = glm::mix(localTRS[i].position, other.localTRS[i].position, weight);
+			localTRS[i].rotation = glm::slerp(glm::normalize(localTRS[i].rotation), glm::normalize(other.localTRS[i].rotation), weight);
+			localTRS[i].scale = glm::mix(localTRS[i].scale, other.localTRS[i].scale, weight);
+		}
+	}
+	std::vector<glm::mat4> Animation::Pose::GetGlobalTransforms(const std::vector<glm::mat4>& invBindPose) const
+	{
+		std::vector<glm::mat4> result{};
+		result.resize(localTRS.size());
+
+		for (size_t i = 0; i < localTRS.size(); i++)
+		{
+			const Animation::TRS& trs = localTRS.at(i);
+
+			const glm::mat4 transform = glm::translate(glm::mat4{ 1.f }, trs.position)* glm::mat4_cast(trs.rotation)* glm::scale(glm::mat4{ 1.f }, trs.scale);
+			result[i] = transform * invBindPose[i];
+		}
+		return result;
 	}
 }
 

@@ -22,7 +22,10 @@ project "ImGui"
 		"imgui_tables.cpp",
 		"imgui_stdlib.cpp",
 		"imgui_stdlib.h",
-		"imgui_bezier.h"
+		"imgui_bezier.h",
+        "imgui_stacklayout.h",
+        "imgui_stacklayout.cpp",
+        "imgui_stacklayout_internal.h",
 	}
 
 	warnings "off"

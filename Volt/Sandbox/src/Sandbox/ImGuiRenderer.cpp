@@ -544,6 +544,7 @@ void Sandbox::DrawMenuBar()
 	const ImRect menuBarRect = { ImGui::GetCursorPos(), {ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()} };
 
 	ImGui::BeginGroup();
+	ImGui::GetCurrentWindow()->DC.IsSameLine = false; // have to explicitly set this to false, otherwise the menu bar will be offset on y after the first menu since SameLine isnt supported by Selectable
 	if (UI::BeginMenuBar(menuBarRect))
 	{
 		if (ImGui::BeginMenu("File"))
@@ -575,7 +576,7 @@ void Sandbox::DrawMenuBar()
 
 			ImGui::EndMenu();
 		}
-
+		
 		if (ImGui::BeginMenu("Edit"))
 		{
 			if (ImGui::MenuItem("Undo", "Ctrl + Z"))
@@ -729,7 +730,7 @@ void Sandbox::DrawMenuBar()
 				std::filesystem::path defaultPath = Volt::ProjectManager::GetAudioBanksDirectory();
 				std::vector<std::string> eventNames = Amp::WwiseAudioManager::GetAllEventNames(defaultPath);
 
-				Volt::EnumGenerator generator{ "WWiseEvents"};
+				Volt::EnumGenerator generator{ "WWiseEvents" };
 				for (auto& event : eventNames)
 				{
 					if (event.empty()) continue;
@@ -792,7 +793,7 @@ void Sandbox::SaveSceneAsModal()
 			}
 
 			const auto relPath = Volt::AssetManager::Get().GetRelativePath(destPath.string() + "\\" + mySaveSceneData.name + ".vtscene");
-			
+
 			//myRuntimeScene->CopyTo(myRuntimeScene);
 			myRuntimeScene->handle = {};
 

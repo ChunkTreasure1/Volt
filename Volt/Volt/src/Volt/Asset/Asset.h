@@ -82,6 +82,7 @@ namespace Volt
 		{ ".vtanim", AssetType::Animation },
 		{ ".vtchr", AssetType::AnimatedCharacter },
 		{ ".vtanimgraph", AssetType::AnimationGraph },
+		{ ".vtweave", AssetType::MotionWeave },
 
 		{ ".png", AssetType::Texture },
 		{ ".jpg", AssetType::Texture },

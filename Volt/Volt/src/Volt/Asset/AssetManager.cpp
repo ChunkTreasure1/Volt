@@ -19,6 +19,7 @@
 #include "Volt/Asset/Importers/BehaviorTreeImporter.h"
 #include "Volt/Asset/Importers/NetContractImporter.h"
 #include "Volt/Asset/Importers/ParticlePresetImporter.h"
+#include "Volt/Asset/Importers/MotionWeaveImporter.h"
 
 #include "Volt/Platform/ThreadUtility.h"
 
@@ -68,6 +69,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
 		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
 		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
+		m_assetImporters.emplace(AssetType::MotionWeave, CreateScope<MotionWeaveImporter>());
 
 		LoadAssetMetafiles();
 	}

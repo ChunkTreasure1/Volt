@@ -16,9 +16,13 @@ namespace ImGui
 		PushID((void*)(intptr_t)user_texture_id);
 		const ImGuiID id = window->GetID("#image");
 		PopID();
-
+		
 		const ImVec2 padding = (frame_padding >= 0) ? ImVec2((float)frame_padding, (float)frame_padding) : g.Style.FramePadding;
-		return ImageButtonEx(id, texId, size, uv0, uv1, padding, bg_col, tint_col);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+		const bool returnValue = ImageButtonEx(id, texId, size, uv0, uv1, bg_col, tint_col);
+		ImGui::PopStyleVar();
+		
+		return returnValue;
 	}
 
 	inline static bool TreeNodeBehaviorWidth(ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, float width)
@@ -107,7 +111,7 @@ namespace ImGui
 
 		ImGuiButtonFlags button_flags = ImGuiTreeNodeFlags_None;
 		if (flags & ImGuiTreeNodeFlags_AllowItemOverlap)
-			button_flags |= ImGuiButtonFlags_AllowItemOverlap;
+			button_flags |= ImGuiButtonFlags_AllowOverlap;
 		if (!is_leaf)
 			button_flags |= ImGuiButtonFlags_PressedOnDragDropHold;
 

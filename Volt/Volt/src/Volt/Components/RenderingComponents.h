@@ -10,6 +10,7 @@ namespace Volt
 {
 	class Camera;
 	class AnimationController;
+	class MotionWeaver;
 
 	struct MeshComponent
 	{
@@ -149,6 +150,7 @@ namespace Volt
 	{
 		AssetHandle motionWeave = Asset::Null();
 
+		Ref<MotionWeaver> weaver;
 		static void ReflectType(TypeDesc<MotionWeaveComponent>& reflect)
 		{
 			reflect.SetGUID("{5D3B2C0D-5457-43D8-9623-98730E1556F4}"_guid);
