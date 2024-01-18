@@ -195,6 +195,41 @@ const float3 DecodeTangent(float3 normal, float tangentFloat)
     return decode_tangent(normal, tangentFloat);
 }
 
+struct MaterialEvaluationData
+{
+    float2 texCoords;
+    float2 texCoordsDX;
+    float2 texCoordsDY;
+};
+
+struct EvaluatedMaterial
+{
+    float4 albedo;
+    float4 materialEmissive;
+    float4 normalEmissive;
+    
+    void Setup()
+    {
+        albedo = 1.f;
+    }
+};
+
+EvaluatedMaterial EvaluateMaterial(in GPUMaterial material, in MaterialEvaluationData evalData)
+{
+    EvaluatedMaterial result;
+    result.Setup();
+    
+    if (material.textureCount > 0)
+    {
+        SamplerState albedoSampler = GetSampler(material.samplers[0]);
+        TextureT<float4> albedoTexture = material.textures[0];
+        
+        result.albedo = albedoTexture.SampleGrad2D(albedoSampler, evalData.texCoords, evalData.texCoordsDX, evalData.texCoordsDY);
+    }
+    
+    return result;
+}
+
 [numthreads(256, 1, 1)]
 void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_GroupIndex)
 {
@@ -318,22 +353,20 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const float3 tangentNormal = float3(0.5f, 0.5f, 1.f);
     const float3x3 TBN = CalculateTBN(normal, tangent);
     
-    float4 outputAlbedo = 1.f;
-    
     const GPUMaterial material = scene.materialsBuffer.Load(constants.materialId);
-    if (material.textureCount > 0)
-    {
-        SamplerState albedoSampler = GetSampler(material.samplers[0]);
-        TextureT<float4> albedoTexture = material.textures[0];
-        
-        outputAlbedo = albedoTexture.SampleGrad2D(albedoSampler, texCoords, texCoordsDX, texCoordsDY);
-    }
+    
+    MaterialEvaluationData evalData;
+    evalData.texCoords = texCoords;
+    evalData.texCoordsDX = texCoordsDX;
+    evalData.texCoordsDY = texCoordsDY;
+    
+    EvaluatedMaterial evaluatedMaterial = EvaluateMaterial(material, evalData);
     
     float3 resultNormal = tangentNormal * 2.f - 1.f;
     resultNormal.z = sqrt(1.f - saturate(resultNormal.x * resultNormal.x + resultNormal.y * resultNormal.y));
     resultNormal = normalize(mul(TBN, normalize(resultNormal)));
     
-    const float4 albedo = outputAlbedo;
+    const float4 albedo = evaluatedMaterial.albedo;
     const float4 materialEmissive = float4(0.f, 0.9f, 0.f, 0.f);
     const float4 normalEmissive = float4(resultNormal, 0.f);
     

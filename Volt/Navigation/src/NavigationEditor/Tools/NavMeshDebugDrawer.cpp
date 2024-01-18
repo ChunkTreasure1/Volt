@@ -2,7 +2,7 @@
 #include "NavMeshDebugDrawer.h"
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Mesh/Material.h>
+#include <Volt/Asset/Rendering/Material.h>
 
 #include <Volt/Rendering/DebugRenderer.h>
 
@@ -198,7 +198,10 @@ Ref<Volt::Mesh> NavMeshDrawCompiler::GetDebugMesh() const
 	const auto path = Volt::AssetManager::GetRelativePath(NavMeshDebugDrawer::DebugMaterialPath);
 	auto material = Volt::AssetManager::GetAsset<Volt::Material>(path);
 
-	return CreateRef<Volt::Mesh>(myVertices, myIndices, material, mySubmeshes);
+	Volt::MaterialTable materialTable{};
+	materialTable.SetMaterial(material, 0);
+
+	return CreateRef<Volt::Mesh>(myVertices, myIndices, materialTable, mySubmeshes);
 }
 
 std::vector<NavMeshLine> NavMeshDrawCompiler::GetDebugLines() const

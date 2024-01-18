@@ -3,6 +3,8 @@
 #include "Volt/Asset/Asset.h"
 #include "Volt/Asset/Mesh/SubMesh.h"
 
+#include "Volt/Asset/Rendering/MaterialTable.h"
+
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/BoundingStructures.h"
 
@@ -43,7 +45,7 @@ namespace Volt
 	public:
 		Mesh() = default;
 		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial);
-		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial, const std::vector<SubMesh>& subMeshes);
+		Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes);
 		~Mesh() override;
 
 		void Construct();
@@ -51,8 +53,9 @@ namespace Volt
 
 		inline const std::vector<SubMesh>& GetSubMeshes() const { return m_subMeshes; }
 		inline std::vector<SubMesh>& GetSubMeshesMutable() { return m_subMeshes; }
-		inline const Ref<Material>& GetMaterial() const { return m_material; }
-		inline void SetMaterial(Ref<Material> material) { m_material = material; }
+
+		inline const MaterialTable& GetMaterialTable() const { return m_materialTable; }
+		void SetMaterial(Ref<Material> material, uint32_t index);
 
 		inline const size_t GetVertexCount() const { return m_vertices.size(); }
 		inline const size_t GetIndexCount() const { return m_indices.size(); }
@@ -111,7 +114,7 @@ namespace Volt
 		std::vector<uint32_t> m_meshletIndices;
 		std::vector<Vertex> m_meshletVertices;
 
-		Ref<Material> m_material;
+		MaterialTable m_materialTable;
 
 		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexPositionsBuffer;
 		Ref<GlobalResource<RHI::StorageBuffer>> m_vertexMaterialBuffer;

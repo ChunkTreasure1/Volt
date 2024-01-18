@@ -23,8 +23,6 @@
 #include <filesystem>
 #include <random>
 
-#include "Volt/Asset/Mesh/Material.h"
-
 #include "Volt/Core/Application.h"
 #include "Volt/Core/Threading/ThreadPool.h"
 

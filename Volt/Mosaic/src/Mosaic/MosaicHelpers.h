@@ -4,5 +4,6 @@
 
 namespace Mosaic::Helpers
 {
-	static std::string GetTypeNameFromTypeInfo(const TypeInfo& typeInfo);
+	extern std::string GetTypeNameFromTypeInfo(const TypeInfo& typeInfo);
+	extern TypeInfo GetPromotedTypeInfo(const TypeInfo& A, const TypeInfo& B);
 }

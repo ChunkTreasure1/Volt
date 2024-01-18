@@ -3,8 +3,10 @@
 
 #include "Volt/Log/Log.h"
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/SubMaterial.h"
+
+#include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Rendering/MaterialTable.h"
+
 #include "Volt/Asset/AssetManager.h"
 
 #include "Volt/RenderingNew/Shader/ShaderMap.h"
@@ -47,13 +49,11 @@ namespace Volt
 		}
 
 		Ref<Mesh> mesh = CreateRef<Mesh>();
-		mesh->m_material = CreateRef<Material>();
-		mesh->m_material->myName = path.stem().string() + "_mat";
 
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			mesh->m_material->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderMap::Get("VisibilityBuffer"));
+			mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", mat.name), index);
 			index++;
 		}
 
@@ -233,9 +233,9 @@ namespace Volt
 				subMesh.transform = node.transform;
 				subMesh.GenerateHash();
 
-				if (!outMesh->m_material->mySubMaterials.contains(subMesh.materialIndex))
+				if (!outMesh->m_materialTable.ContainsMaterialIndex(subMesh.materialIndex))
 				{
-					outMesh->m_material->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderMap::Get("Deferred"));
+					outMesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", inputModel.materials[subMesh.materialIndex].name), subMesh.materialIndex);
 				}
 			}
 		}

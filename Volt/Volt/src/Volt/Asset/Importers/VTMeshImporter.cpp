@@ -5,8 +5,9 @@
 
 #include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/SubMaterial.h"
+
+#include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Rendering/MaterialTable.h"
 
 #include "Volt/RenderingNew/Shader/ShaderMap.h"
 
@@ -40,9 +41,16 @@ namespace Volt
 		const uint32_t subMeshCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
 
-		const AssetHandle materialHandle = *(AssetHandle*)&totalData[offset];
-		mesh->m_material = AssetManager::GetAsset<Material>(materialHandle);
-		offset += sizeof(AssetHandle);
+		const uint32_t materialCount = *(uint32_t*)&totalData[offset];
+		offset += sizeof(uint32_t);
+
+		for (uint32_t i = 0; i < materialCount; i++)
+		{
+			const AssetHandle materialHandle = *(AssetHandle*)&totalData[offset];
+			offset += sizeof(AssetHandle);
+	
+			mesh->m_materialTable.SetMaterial(AssetManager::GetAsset<Material>(materialHandle), i);
+		}
 
 		const uint32_t vertexCount = *(uint32_t*)&totalData[offset];
 		offset += sizeof(uint32_t);
@@ -118,11 +126,14 @@ namespace Volt
 			subMesh.GenerateHash();
 		}
 
-		if (!mesh->m_material)
-		{
-			mesh->m_material = CreateRef<Material>();
-			mesh->m_material->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, ShaderMap::Get("VisibilityBuffer")));
-		}
+		//if (mesh->m_material)
+		//{
+		//	mesh->m_material = CreateRef<Material>();
+		//	mesh->m_material->mySubMaterials.emplace(0, SubMaterial::Create("Null", 0, ShaderMap::Get("VisibilityBuffer")));
+		//}
+
+		//// #TODO_Ivar: Should be removed
+		//mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", "None"), 0);
 
 		mesh->Construct();
 

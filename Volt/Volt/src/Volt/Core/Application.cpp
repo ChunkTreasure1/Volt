@@ -29,6 +29,8 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
 
+#include <Mosaic/Testing.h>
+
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
@@ -148,6 +150,8 @@ namespace Volt
 		{
 			m_steamImplementation = SteamImplementation::Create();
 		}
+
+		Mosaic::TestClass testT{};
 	}
 
 	Application::~Application()

@@ -85,7 +85,6 @@ namespace Volt
 
 		struct DefaultData
 		{
-			Ref<SubMaterial> defaultMaterial;
 			Ref<RenderPipeline> defaultRenderPipeline;
 			Ref<Shader> defaultShader;
 			Ref<Shader> defaultPostProcessingShader;
@@ -148,17 +147,11 @@ namespace Volt
 
 		static void AddShaderDependency(Ref<Shader> shader, RenderPipeline* renderPipeline);
 		static void AddShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline);
-		static void AddShaderDependency(Ref<Shader> shader, SubMaterial* subMaterial);
 		static void AddShaderDependency(Ref<Shader> shader, PostProcessingMaterial* subMaterial);
 
 		static void RemoveShaderDependency(Ref<Shader> shader, RenderPipeline* renderPipeline);
 		static void RemoveShaderDependency(Ref<Shader> shader, ComputePipeline* computePipeline);
-		static void RemoveShaderDependency(Ref<Shader> shader, SubMaterial* material);
 		static void RemoveShaderDependency(Ref<Shader> shader, PostProcessingMaterial* material);
-
-		static const uint32_t AddMaterial(SubMaterial* material);
-		static void RemoveMaterial(SubMaterial* material);
-		static void UpdateMaterial(SubMaterial* material);
 
 		static BindlessData& GetBindlessData();
 		static DefaultData& GetDefaultData();

@@ -8,7 +8,7 @@
 #include <Volt/Core/Application.h>
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Mesh/Material.h>
+#include <Volt/Asset/Rendering/Material.h>
 
 #include <Volt/Physics/MeshColliderCache.h>
 

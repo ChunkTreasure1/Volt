@@ -27,8 +27,6 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/SubMaterial.h"
 
 #include "Volt/Math/Math.h"
 

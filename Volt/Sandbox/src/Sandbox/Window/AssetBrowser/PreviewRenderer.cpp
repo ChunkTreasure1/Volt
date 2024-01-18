@@ -4,7 +4,7 @@
 #include "Sandbox/Window/AssetBrowser/AssetItem.h"
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Mesh/Material.h>
+#include <Volt/Asset/Rendering/Material.h>
 
 #include <Volt/Scene/Scene.h>
 

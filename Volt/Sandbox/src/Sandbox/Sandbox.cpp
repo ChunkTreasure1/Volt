@@ -42,6 +42,7 @@
 #include "Sandbox/Window/BehaviourGraph/BehaviorPanel.h"
 #include "Sandbox/Window/SceneSettingsPanel.h"
 #include "Sandbox/Window/WorldEnginePanel.h"
+#include "Sandbox/Window/MosaicEditor/MosaicEditorPanel.h"
 #include "Sandbox/VertexPainting/VertexPainterPanel.h"
 
 #include "Sandbox/Utility/EditorResources.h"
@@ -58,8 +59,6 @@
 
 #include <Volt/Components/CoreComponents.h>
 #include <Volt/Components/LightComponents.h>
-
-#include <Volt/Asset/Mesh/SubMaterial.h>
 
 #include <Volt/Scene/Entity.h>
 #include <Volt/Scene/Scene.h>
@@ -147,6 +146,8 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<NetContractPanel>("Advanced");
 	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
 	EditorLibrary::Register<WorldEnginePanel>("", myRuntimeScene);
+
+	EditorLibrary::Register<MosaicEditorPanel>("");
 
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Volt/Asset/Mesh/SubMaterial.h"
 #include "Volt/Rendering/FrameGraph/FrameGraphResource.h"
 
 #include <vulkan/vulkan.h>
@@ -64,7 +63,6 @@ namespace Volt
 	{
 		std::string_view name;
 		glm::vec4 color;
-		MaterialFlag materialFlags;
 		Ref<RenderPipeline> overridePipeline;
 	};
 }

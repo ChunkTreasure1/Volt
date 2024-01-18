@@ -3,9 +3,11 @@
 
 #include "Volt/Log/Log.h"
 
+#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/SubMaterial.h"
+
+#include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/Rendering/MaterialTable.h"
 
 #include "Volt/Asset/Animation/Skeleton.h"
 #include "Volt/Asset/Animation/Animation.h"
@@ -42,8 +44,6 @@ namespace Volt
 		}
 
 		Ref<Mesh> mesh = CreateRef<Mesh>();
-		mesh->m_material = CreateRef<Material>();
-		mesh->m_material->myName = path.stem().string() + "_mat";
 
 		for (const auto& element : tgaMesh.Elements)
 		{
@@ -80,13 +80,14 @@ namespace Volt
 
 		if (tgaMesh.Materials.empty())
 		{
-			mesh->m_material->CreateSubMaterial(ShaderMap::Get("VisibilityBuffer"));
+			mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", "None"), 0);
 		}
 		else
 		{
-			for (const auto& material : tgaMesh.Materials)
+			for (uint32_t index = 0; const auto& material : tgaMesh.Materials)
 			{
-				mesh->m_material->CreateSubMaterial(ShaderMap::Get("VisibilityBuffer"), material.MaterialName);
+				mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", material.MaterialName), index);
+				index++;
 			}
 		}
 

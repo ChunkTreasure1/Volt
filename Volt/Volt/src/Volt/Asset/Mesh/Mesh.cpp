@@ -133,9 +133,9 @@ namespace Volt
 		m_vertices = aVertices;
 		m_indices = aIndices;
 
-		m_material = aMaterial;
+		m_materialTable.SetMaterial(aMaterial, 0);
 
-		SubMesh subMesh;
+		SubMesh& subMesh = m_subMeshes.emplace_back();
 		subMesh.indexCount = (uint32_t)aIndices.size();
 		subMesh.vertexCount = (uint32_t)aVertices.size();
 		subMesh.vertexStartOffset = 0;
@@ -144,17 +144,15 @@ namespace Volt
 
 		subMesh.GenerateHash();
 
-		m_subMeshes.push_back(subMesh);
-
 		Construct();
 	}
 
-	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, Ref<Material> aMaterial, const std::vector<SubMesh>& subMeshes)
+	Mesh::Mesh(std::vector<Vertex> aVertices, std::vector<uint32_t> aIndices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes)
 	{
 		m_vertices = aVertices;
 		m_indices = aIndices;
 
-		m_material = aMaterial;
+		m_materialTable = materialTable;
 		m_subMeshes = subMeshes;
 
 		Construct();
@@ -540,6 +538,9 @@ namespace Volt
 		}
 
 		return result;
+	}
+	void Mesh::SetMaterial(Ref<Material> material, uint32_t index)
+	{
 	}
 	std::vector<std::vector<Vertex>> Mesh::ExtractSubMeshVertices()
 	{

@@ -11,8 +11,6 @@
 #include <Volt/RenderingNew/SceneRendererNew.h>
 #include <Volt/Rendering/Texture/Texture2D.h>
 
-#include <Volt/Asset/Mesh/Material.h>
-
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
 #include <Volt/Asset/Animation/Animation.h>
 #include <Volt/Asset/Animation/Skeleton.h>

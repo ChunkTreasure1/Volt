@@ -713,14 +713,15 @@ namespace Volt
 			// Cube
 			if (createDefaultMesh)
 			{
-				auto ent = newScene->CreateEntity("Cube");
+				// #TODO_Ivar: Readd
+				//auto ent = newScene->CreateEntity("Cube");
 
-				auto id = ent.GetComponent<IDComponent>();
+				//auto id = ent.GetComponent<IDComponent>();
 
-				auto& meshComp = ent.AddComponent<MeshComponent>();
-				meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
+				//auto& meshComp = ent.AddComponent<MeshComponent>();
+				//meshComp.handle = AssetManager::GetAssetHandleFromFilePath("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 
-				ent.AddComponent<RigidbodyComponent>();
+				//ent.AddComponent<RigidbodyComponent>();
 			}
 
 			// Light

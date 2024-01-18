@@ -19,6 +19,7 @@
 #include "Volt/Asset/Importers/BehaviorTreeImporter.h"
 #include "Volt/Asset/Importers/NetContractImporter.h"
 #include "Volt/Asset/Importers/ParticlePresetImporter.h"
+#include "Volt/Asset/Importers/MosaicGraphImporter.h"
 
 #include "Volt/Platform/ThreadUtility.h"
 
@@ -50,7 +51,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>());
 		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>());
 		m_assetImporters.emplace(AssetType::ShaderDefinition, CreateScope<ShaderDefinitionImporter>());
-		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
+		//m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
 		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>());
 		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>());
 		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>());
@@ -68,6 +69,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
 		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
 		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
+		m_assetImporters.emplace(AssetType::Material, CreateScope<MosaicGraphImporter>());
 
 		LoadAssetMetafiles();
 	}
@@ -179,32 +181,36 @@ namespace Volt
 			return;
 		}
 
-		{ 
+		AssetMetadata metadata;
+		{
 			ReadLock lock{ m_assetRegistryMutex };
+			metadata = GetMetadataFromHandleMutable(assetHandle);
+		}
 
-			AssetMetadata& metadata = GetMetadataFromHandleMutable(assetHandle);
-			if (!metadata.IsValid())
-			{
-				return;
-			}
+		if (!metadata.IsValid())
+		{
+			return;
+		}
 
-			if (!m_assetImporters.contains(metadata.type))
-			{
-				VT_CORE_WARN("[AssetManager] No importer for asset found!");
-				return;
-			}
+		if (!m_assetImporters.contains(metadata.type))
+		{
+			VT_CORE_WARN("[AssetManager] No importer for asset found!");
+			return;
+		}
 
-			m_assetImporters.at(metadata.type)->Load(metadata, asset);
-			if (!asset) { return; }
+		m_assetImporters.at(metadata.type)->Load(metadata, asset);
+		if (!asset) { return; }
 
 #ifdef VT_DEBUG
-			VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
+		VT_CORE_TRACE("[AssetManager] Loaded asset {0} with handle {1}!", metadata.filePath, assetHandle);
 #endif	
 
-			asset->handle = metadata.handle;
-			asset->assetName = metadata.filePath.stem().string();
+		asset->handle = metadata.handle;
+		asset->assetName = metadata.filePath.stem().string();
 
-			metadata.isLoaded = true;
+		{
+			WriteLock lock{ m_assetRegistryMutex };
+			GetMetadataFromHandleMutable(assetHandle).isLoaded = true;
 		}
 
 		{
@@ -292,7 +298,7 @@ namespace Volt
 		}
 
 		AssetMetadata metadata = s_nullMetadata;
-		
+
 		{
 			ReadLock lock{ instance.m_assetRegistryMutex };
 			metadata = GetMetadataFromHandle(asset->handle);

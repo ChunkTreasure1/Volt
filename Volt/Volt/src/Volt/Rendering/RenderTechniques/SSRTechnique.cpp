@@ -7,8 +7,6 @@
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/Rendering/CommandBuffer.h"
 
-#include "Volt/Asset/Mesh/Material.h"
-
 namespace Volt
 {
 	struct SSROutput

@@ -11,7 +11,6 @@
 namespace Volt
 {
 	class Mesh;
-	class SubMaterial;
 	class Texture2D;
 	class Font;
 
@@ -28,7 +27,6 @@ namespace Volt
 		std::vector<uint32_t> vertexColors;
 
 		Ref<Mesh> mesh;
-		Ref<SubMaterial> material;
 
 		float timeSinceCreation = 0.f;
 		float randomValue = 0.f;

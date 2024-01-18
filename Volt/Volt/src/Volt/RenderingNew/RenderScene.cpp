@@ -2,8 +2,7 @@
 #include "RenderScene.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
-#include "Volt/Asset/Mesh/Material.h"
-#include "Volt/Asset/Mesh/SubMaterial.h"
+#include "Volt/Asset/Rendering/Material.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Scene/Entity.h"
@@ -73,12 +72,12 @@ namespace Volt
 				m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 				m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
-				for (const auto& subMaterial : m_renderObjects[i].mesh->GetMaterial()->GetSubMaterials())
+				for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
 				{
-					const uint32_t materialIndex = GetMaterialIndex(subMaterial.second);
+					const uint32_t materialIndex = GetMaterialIndex(material);
 					if (materialIndex == std::numeric_limits<uint32_t>::max())
 					{
-						m_individualMaterials.push_back(subMaterial.second);
+						m_individualMaterials.push_back(material);
 					}
 				}
 			}
@@ -89,12 +88,12 @@ namespace Volt
 					m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 					m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
-					for (const auto& subMaterial : m_renderObjects[i].mesh->GetMaterial()->GetSubMaterials())
+					for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
 					{
-						const uint32_t materialIndex = GetMaterialIndex(subMaterial.second);
+						const uint32_t materialIndex = GetMaterialIndex(material);
 						if (materialIndex == std::numeric_limits<uint32_t>::max())
 						{
-							m_individualMaterials.push_back(subMaterial.second);
+							m_individualMaterials.push_back(material);
 						}
 					}
 				}
@@ -193,11 +192,11 @@ namespace Volt
 		return m_meshSubMeshToGPUMeshIndex.at(hash);
 	}
 
-	const uint32_t RenderScene::GetMaterialIndex(Ref<SubMaterial> material) const
+	const uint32_t RenderScene::GetMaterialIndex(Weak<Material> material) const
 	{
-		auto it = std::find_if(m_individualMaterials.begin(), m_individualMaterials.end(), [&](Weak<SubMaterial> lhs)
+		auto it = std::find_if(m_individualMaterials.begin(), m_individualMaterials.end(), [&](Weak<Material> lhs)
 		{
-			return lhs.Get() == material.get();
+			return lhs.Get() == material.Get();
 		});
 
 		if (it != m_individualMaterials.end())
@@ -250,7 +249,7 @@ namespace Volt
 
 		std::vector<GPUMaterialNew> gpuMaterials;
 
-		for (const auto & material : m_individualMaterials)
+		for (const auto& material : m_individualMaterials)
 		{
 			GPUMaterialNew& gpuMat = gpuMaterials.emplace_back();
 			gpuMat.textureCount = 0;
@@ -273,7 +272,7 @@ namespace Volt
 		{
 			m_gpuMeshletsBuffer->GetResource()->Resize(static_cast<uint32_t>(m_sceneMeshlets.size()));
 			m_gpuMeshletsBuffer->MarkAsDirty();
-		}	
+		}
 
 		m_gpuMeshletsBuffer->GetResource()->SetData(m_sceneMeshlets.data(), sizeof(Meshlet) * m_sceneMeshlets.size());
 	}
@@ -319,7 +318,7 @@ namespace Volt
 			ObjectDrawData& data = objectDrawData.emplace_back();
 			data.transform = transform;
 			data.meshId = meshId;
-			data.materialId = GetMaterialIndex(renderObject.mesh->GetMaterial()->GetSubMaterialAt(subMesh.materialIndex));
+			data.materialId = GetMaterialIndex(renderObject.mesh->GetMaterialTable().GetMaterial(subMesh.materialIndex));
 			data.meshletStartOffset = 0;
 			data.boundingSphereCenter = globalCenter;
 			data.boundingSphereRadius = boundingSphere.radius * maxScale;
@@ -368,7 +367,7 @@ namespace Volt
 			}
 
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
-			
+
 			auto& newCommand = m_meshShaderCommands.emplace_back();
 			newCommand.command.x = subMesh.meshletCount;
 			newCommand.command.y = 1;

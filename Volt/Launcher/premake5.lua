@@ -25,7 +25,8 @@ project "Launcher"
 		"/ignore:4217",
 		"/WHOLEARCHIVE:Volt",
 		"/WHOLEARCHIVE:PhysX",
-		"/WHOLEARCHIVE:GraphKey"
+		"/WHOLEARCHIVE:GraphKey",
+		"/WHOLEARCHIVE:Mosaic"
 	}
 
     defines

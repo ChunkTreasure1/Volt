@@ -49,6 +49,7 @@ namespace Volt
 		void RenameAssetFolder(AssetHandle asset, const std::filesystem::path& targetFilePath);
 
 		void RemoveAsset(AssetHandle asset);
+
 		void RemoveAsset(const std::filesystem::path& path);
 
 		void RemoveFromRegistry(AssetHandle asset);
@@ -114,7 +115,7 @@ namespace Volt
 		static Ref<T> QueueAsset(AssetHandle handle, const std::function<void()>& assetLoadedCallback);
 
 		template<typename T, typename... Args>
-		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args&&... args);
+		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& name, Args&&... args);
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateMemoryAsset(Args&&... args);
@@ -287,10 +288,16 @@ namespace Volt
 	}
 
 	template<typename T, typename ...Args>
-	inline Ref<T> AssetManager::CreateAsset(const std::filesystem::path& targetDir, const std::string& filename, Args && ...args)
+	inline Ref<T> AssetManager::CreateAsset(const std::filesystem::path& targetDir, const std::string& name, Args && ...args)
 	{
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
-		const std::filesystem::path filePath = ::Utility::ReplaceCharacter((targetDir / filename).string(), '\\', '/');
+
+		//#TODO_Ivar: Move to clean name function
+		std::string cleanName = name;
+		cleanName.erase(std::remove_if(cleanName.begin(), cleanName.end(), [](char c) { return c == ':'; }), cleanName.end());
+
+		const auto& fileExtension = GetExtensionFromAssetType(T::GetStaticType());
+		const std::filesystem::path filePath = ::Utility::ReplaceCharacter((targetDir / (cleanName + fileExtension)).string(), '\\', '/');
 
 		WriteLock lockCache{ Get().m_assetCacheMutex };
 		WriteLock lockRegistry{ Get().m_assetRegistryMutex };
@@ -301,7 +308,7 @@ namespace Volt
 		metadata.type = T::GetStaticType();
 		metadata.isLoaded = true;
 
-		asset->assetName = metadata.filePath.stem().string();
+		asset->assetName = cleanName;
 
 		AssetManager::Get().m_assetRegistry.emplace(asset->handle, metadata);
 		AssetManager::Get().m_assetCache.emplace(asset->handle, asset);

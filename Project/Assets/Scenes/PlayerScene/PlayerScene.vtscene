@@ -1,4 +1,0 @@
-Scene:
-  name: PlayerScene
-  Settings:
-    useWorldEngine: false

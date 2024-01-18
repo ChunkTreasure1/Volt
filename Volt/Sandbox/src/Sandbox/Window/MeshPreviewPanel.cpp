@@ -6,8 +6,7 @@
 #include "Sandbox/Utility/EditorResources.h"
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Mesh/Material.h>
-#include <Volt/Asset/Mesh/SubMaterial.h>
+#include <Volt/Asset/Rendering/Material.h>
 
 #include <Volt/Utility/UIUtility.h>
 
@@ -138,11 +137,11 @@ void MeshPreviewPanel::UpdateProperties()
 		{
 			if (myCurrentMesh)
 			{
-				Volt::AssetHandle handle = myCurrentMesh->GetMaterial()->handle;
-				if (EditorUtils::Property("Material", handle, Volt::AssetType::Material))
-				{
-					myCurrentMesh->SetMaterial(Volt::AssetManager::GetAsset<Volt::Material>(handle));
-				}
+				//Volt::AssetHandle handle = myCurrentMesh->GetMaterial()->handle;
+				//if (EditorUtils::Property("Material", handle, Volt::AssetType::Material))
+				//{
+				//	myCurrentMesh->SetMaterial(Volt::AssetManager::GetAsset<Volt::Material>(handle));
+				//}
 			}
 
 			UI::EndProperties();
@@ -160,10 +159,10 @@ void MeshPreviewPanel::UpdateProperties()
 			if (mySelectedSubMesh != -1)
 			{
 				std::vector<std::string> subMaterialNames;
-				for (const auto& [index, subMat] : myCurrentMesh->GetMaterial()->GetSubMaterials())
-				{
-					subMaterialNames.emplace_back(subMat->GetName());
-				}
+				//for (const auto& [index, subMat] : myCurrentMesh->GetMaterial()->GetSubMaterials())
+				//{
+				//	subMaterialNames.emplace_back(subMat->GetName());
+				//}
 
 				UI::PushID();
 				if (UI::BeginProperties("subMeshProperties"))
@@ -271,7 +270,7 @@ void MeshPreviewPanel::SaveCurrentMesh()
 		return;
 	}
 
-	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, currentMeshMeta.filePath, myCurrentMesh->GetMaterial()->handle))
+	if (!Volt::MeshCompiler::TryCompile(myCurrentMesh, currentMeshMeta.filePath, myCurrentMesh->GetMaterialTable()))
 	{
 		UI::Notify(NotificationType::Error, "Unable to save Mesh!", std::format("Unable to save mesh {0}!", currentMeshMeta.filePath.string()));
 	}

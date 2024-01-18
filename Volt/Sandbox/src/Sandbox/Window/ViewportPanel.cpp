@@ -20,7 +20,6 @@
 #include "Sandbox/Utility/Theme.h"
 
 #include <Volt/Asset/Mesh/Mesh.h>
-#include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Asset/ParticlePreset.h>
 #include <Volt/Asset/Prefab.h>
 
@@ -1102,11 +1101,11 @@ void ViewportPanel::HandleNonMeshDragDrop()
 		{
 			case Volt::AssetType::Material:
 			{
-				auto material = Volt::AssetManager::GetAsset<Volt::Material>(handle);
-				if (!material || !material->IsValid())
-				{
-					break;
-				}
+				//auto material = Volt::AssetManager::GetAsset<Volt::Material>(handle);
+				//if (!material || !material->IsValid())
+				//{
+				//	break;
+				//}
 
 				//glm::vec2 perspectiveSize = myPerspectiveBounds[1] - myPerspectiveBounds[0];
 

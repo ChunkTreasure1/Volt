@@ -18,7 +18,7 @@ namespace Volt
 	}
 
 	class Scene;
-	class SubMaterial;
+	class Material;
 
 	class RenderScene
 	{
@@ -46,7 +46,7 @@ namespace Volt
 		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
 
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
-		const uint32_t GetMaterialIndex(Ref<SubMaterial> material) const;
+		const uint32_t GetMaterialIndex(Weak<Material> material) const;
 
 		inline const GlobalResource<RHI::StorageBuffer>& GetGPUSceneBuffer() const { return *m_gpuSceneBuffer; }
 		inline const GlobalResource<RHI::StorageBuffer>& GetGPUMeshesBuffer() const { return *m_gpuMeshesBuffer; }
@@ -87,7 +87,7 @@ namespace Volt
 
 		std::vector<IndirectGPUCommandNew> m_meshCommands;
 		std::vector<Weak<Mesh>> m_individualMeshes;
-		std::vector<Weak<SubMaterial>> m_individualMaterials;
+		std::vector<Weak<Material>> m_individualMaterials;
 		std::unordered_map<size_t, uint32_t> m_meshSubMeshToGPUMeshIndex;
 
 		// Mesh Shader rendering

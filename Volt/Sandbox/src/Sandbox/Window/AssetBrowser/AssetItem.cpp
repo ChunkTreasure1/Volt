@@ -18,7 +18,6 @@
 
 
 #include <Volt/Asset/AssetManager.h>
-#include <Volt/Asset/Mesh/Material.h>
 #include <Volt/Input/KeyCodes.h>
 #include <Volt/Utility/PremadeCommands.h>
 
@@ -110,12 +109,6 @@ namespace AssetBrowser
 		if (aNewName.empty()) { return false; }
 
 		Volt::AssetManager::Get().RenameAsset(handle, aNewName);
-		switch (type)
-		{
-			case Volt::AssetType::Material:
-				Volt::AssetManager::GetAsset<Volt::Material>(handle)->SetName(myCurrentRenamingName);
-				break;
-		}
 
 		return true;
 	}
