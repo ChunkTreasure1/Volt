@@ -45,6 +45,9 @@ public:
 	bool SaveNodeSettings(const UUID64 nodeId, const std::string& data);
 	size_t LoadNodeSettings(const UUID64 nodeId, std::string& data);
 
+	void OpenAsset(Ref<Volt::Asset> asset) override;
+	void OnClose() override;
+
 private:
 	const IncompatiblePinReason CanLinkPins(const UUID64 startParam, const UUID64 endParam);
 
@@ -72,7 +75,7 @@ private:
 	MosaicEditorContext m_context;
 
 	Ref<Volt::Texture2D> m_headerTexture;
-	Ref<Volt::Material> m_mosaicAsset;
+	Ref<Volt::Material> m_material;
 
 	UUID64 m_newLinkPinId = 0;
 	bool m_createNewNode = false;

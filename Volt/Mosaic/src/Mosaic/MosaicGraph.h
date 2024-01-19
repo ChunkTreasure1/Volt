@@ -36,6 +36,8 @@ namespace Mosaic
 		
 		const std::string Compile() const;
 
+		static Scope<MosaicGraph> CreateDefaultGraph();
+
 		Graph<Ref<MosaicNode>, Ref<MosaicEdge>> m_graph;
 
 	private:

@@ -186,6 +186,16 @@ namespace Volt
 		}
 	}
 
+	Weak<Material> RenderScene::GetMaterialFromID(const uint32_t materialId) const
+	{
+		if (static_cast<size_t>(materialId) >= m_individualMaterials.size())
+		{
+			return {};
+		}
+
+		return m_individualMaterials.at(materialId);
+	}
+
 	const uint32_t RenderScene::GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const
 	{
 		const size_t hash = Math::HashCombine(mesh.GetHash(), std::hash<uint32_t>()(subMeshIndex));

@@ -147,7 +147,7 @@ void Sandbox::OnAttach()
 	EditorLibrary::Register<SceneSettingsPanel>("", myRuntimeScene);
 	EditorLibrary::Register<WorldEnginePanel>("", myRuntimeScene);
 
-	EditorLibrary::Register<MosaicEditorPanel>("");
+	EditorLibrary::RegisterWithType<MosaicEditorPanel>("", Volt::AssetType::Material);
 
 	if (userSettings.sceneSettings.lowMemoryUsage)
 	{
@@ -161,7 +161,7 @@ void Sandbox::OnAttach()
 	myAssetBrowserPanel = EditorLibrary::Register<AssetBrowserPanel>("", myRuntimeScene, "##Main");
 
 	EditorLibrary::RegisterWithType<CharacterEditorPanel>("Animation", Volt::AssetType::AnimatedCharacter);
-	EditorLibrary::RegisterWithType<MaterialEditorPanel>("", Volt::AssetType::Material, myRuntimeScene);
+	//EditorLibrary::RegisterWithType<MaterialEditorPanel>("", , myRuntimeScene);
 	EditorLibrary::RegisterWithType<ParticleEmitterEditor>("", Volt::AssetType::ParticlePreset);
 	EditorLibrary::RegisterWithType<AnimationGraphPanel>("Animation", Volt::AssetType::AnimationGraph, myRuntimeScene);
 	EditorLibrary::RegisterWithType<BehaviorPanel>("", Volt::AssetType::BehaviorGraph);

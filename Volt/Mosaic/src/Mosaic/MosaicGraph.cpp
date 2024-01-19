@@ -35,10 +35,30 @@ namespace Mosaic
 
 		const auto& node = m_graph.GetNodeFromID(outputId);
 
+		if (!node.nodeData)
+		{
+			return {};
+		}
+
 		std::string outShaderCode;
 		node.nodeData->GetShaderCode(node, 0, outShaderCode);
 
 		return outShaderCode;
+	}
+
+	Scope<MosaicGraph> MosaicGraph::CreateDefaultGraph()
+	{
+		Scope<MosaicGraph> graph = CreateScope<MosaicGraph>();
+
+		constexpr VoltGUID Float4ContantGUID = "{D79FF174-FF12-4070-8AEB-DA3B2F2F8AF4}"_guid;
+		constexpr VoltGUID PBROutputNodeGUID = "{343B2C0A-C4E3-41BB-8629-F9939795AC76}"_guid;
+
+		auto colorConstantNode = graph->m_graph.AddNode(NodeRegistry::CreateNode(Float4ContantGUID, graph.get()));
+		auto pbrOutputNode = graph->m_graph.AddNode(NodeRegistry::CreateNode(PBROutputNodeGUID, graph.get()));
+
+		graph->m_graph.LinkNodes(colorConstantNode, pbrOutputNode, CreateRef<MosaicEdge>(0, 0));
+
+		return graph;
 	}
 
 	void MosaicGraph::AddNode(const UUID64 uuid, const VoltGUID guid)

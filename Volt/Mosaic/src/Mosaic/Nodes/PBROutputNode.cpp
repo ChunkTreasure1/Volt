@@ -22,8 +22,8 @@ namespace Mosaic
 		constexpr const char* nodeStr = "EvaluatedMaterial materialResult;\n"
 										"materialResult.Setup();\n"
 										"materialResult.albedo = {0};\n"
-										"materialResult.materialEmissive = float4({1}, {2}, {3}, {4});\n"
-										"materialResult.normalEmissive = float4({5}, {6});\n"
+										//"materialResult.materialEmissive = float4({1}, {2}, {3}, {4});\n"
+										//"materialResult.normalEmissive = float4({5}, {6});\n"
 										"return materialResult;\n";
 
 		std::string paramStrings[4];

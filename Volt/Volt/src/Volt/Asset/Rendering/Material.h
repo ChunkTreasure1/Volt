@@ -9,6 +9,11 @@
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class ComputePipeline;
+	}
+
 	enum class MaterialFlag : uint16_t
 	{
 		None = 0,
@@ -34,6 +39,7 @@ namespace Volt
 		void RemoveTexture(uint32_t index);
 
 		inline const std::vector<Ref<Texture2D>>& GetTextures() const { return m_textures; }
+		inline Ref<RHI::ComputePipeline> GetComputePipeline() const { return m_computePipeline; } // #TODO_Ivar: Used for binding, should probably be done in a different way
 	
 		inline Mosaic::MosaicGraph& GetGraph() { return *m_graph; }
 		inline const Mosaic::MosaicGraph& GetGraph() const { return *m_graph; }
@@ -46,5 +52,10 @@ namespace Volt
 
 		Scope<Mosaic::MosaicGraph> m_graph;
 		std::vector<Ref<Texture2D>> m_textures;
+
+		Ref<RHI::ComputePipeline> m_computePipeline;
+
+		bool m_isEngineMaterial = false;
+		VoltGUID m_materialGUID;
 	};
 }

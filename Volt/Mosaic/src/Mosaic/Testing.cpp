@@ -14,7 +14,7 @@ namespace Mosaic
 	{
 		Ref<MosaicGraph> mosaicGraph = CreateRef<MosaicGraph>();
 
-		auto constantNode = mosaicGraph->m_graph.AddNode(CreateRef<ConstantNode<glm::vec4, ValueBaseType::Float, 4, "{75DD7D2C-3B74-48C4-9F5C-062EBF53F44A}"_guid>>(mosaicGraph.get()));
+		auto constantNode = mosaicGraph->m_graph.AddNode(CreateRef<ConstantNode<glm::vec4, 0.f, ValueBaseType::Float, 4, "{75DD7D2C-3B74-48C4-9F5C-062EBF53F44A}"_guid>>(mosaicGraph.get()));
 		auto addNode = mosaicGraph->m_graph.AddNode(CreateRef<AddNode>(mosaicGraph.get()));
 		auto sampleTextureNode = mosaicGraph->m_graph.AddNode(CreateRef<SampleTextureNode>(mosaicGraph.get()));
 

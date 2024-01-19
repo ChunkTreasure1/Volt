@@ -27,6 +27,7 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Asset/Mesh/Mesh.h"
+#include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Math/Math.h"
 
@@ -64,8 +65,6 @@ namespace Volt
 
 			return result;
 		}
-
-
 	}
 
 	SceneRendererNew::SceneRendererNew(const SceneRendererSpecification& specification)
@@ -843,6 +842,8 @@ namespace Volt
 
 		const std::string passName = std::format("Generate GBuffer Data: Material {0}", materialId);
 
+		const auto& renderScene = m_scene->GetRenderScene();
+
 		renderGraph.AddPass(passName,
 		[&](RenderGraph::Builder& builder)
 		{
@@ -875,8 +876,8 @@ namespace Volt
 				context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
 			}
 
-			auto pipeline = ShaderMap::GetComputePipeline("GenerateGBuffer");
-			context.BindPipeline(pipeline);
+			auto material = renderScene->GetMaterialFromID(materialId); //ShaderMap::GetComputePipeline("GenerateGBuffer");
+			context.BindPipeline(material->GetComputePipeline());
 
 			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant(resources.GetBuffer(matCountData.materialCountBuffer));

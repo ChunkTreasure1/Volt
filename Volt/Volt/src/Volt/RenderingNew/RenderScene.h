@@ -45,6 +45,8 @@ namespace Volt
 		inline const uint32_t GetMeshletCount() const { return static_cast<uint32_t>(m_sceneMeshlets.size()); }
 		inline const uint32_t GetIndexCount() const { return m_currentIndexCount; }
 
+		Weak<Material> GetMaterialFromID(const uint32_t materialId) const;
+
 		const uint32_t GetMeshID(Weak<Mesh> mesh, uint32_t subMeshIndex) const;
 		const uint32_t GetMaterialIndex(Weak<Material> material) const;
 

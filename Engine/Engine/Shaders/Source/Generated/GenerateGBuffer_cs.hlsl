@@ -351,13 +351,13 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     
     EvaluatedMaterial evaluatedMaterial = EvaluateMaterial(material, evalData);
     
-    float3 resultNormal = evaluatedMaterial.normalEmissive.xyz * 2.f - 1.f;
-    resultNormal.z = sqrt(1.f - saturate(resultNormal.x * resultNormal.x + resultNormal.y * resultNormal.y));
-    resultNormal = normalize(mul(TBN, normalize(resultNormal)));
+    //float3 resultNormal = evaluatedMaterial.normalEmissive.xyz * 2.f - 1.f;
+    //resultNormal.z = sqrt(1.f - saturate(resultNormal.x * resultNormal.x + resultNormal.y * resultNormal.y));
+    //resultNormal = normalize(mul(TBN, normalize(resultNormal)));
     
     const float4 albedo = evaluatedMaterial.albedo;
-    const float4 materialEmissive = float4(0.f, 0.9f, 0.f, 0.f);
-    const float4 normalEmissive = float4(resultNormal, 0.f);
+    const float4 materialEmissive = float4(0.9f, 0.f, 0.f, 0.f);
+    const float4 normalEmissive = float4(normal, 0.f);
     
     constants.albedo.Store2D(pixelPosition, albedo);
     constants.materialEmissive.Store2D(pixelPosition, materialEmissive);

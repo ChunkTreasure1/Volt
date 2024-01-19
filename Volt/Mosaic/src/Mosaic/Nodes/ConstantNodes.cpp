@@ -5,13 +5,13 @@
 
 namespace Mosaic
 {
-	REGISTER_NODE_TEMPLATE(ConstantFloat, (ConstantNode<float, ValueBaseType::Float, 1, "{5AAE4158-7282-43F9-9D6A-2259024E17B3}"_guid>));
-	REGISTER_NODE_TEMPLATE(ConstantFloat2, (ConstantNode<glm::vec2, ValueBaseType::Float, 2, "{3E369B4E-3945-4760-B81B-3A99F9AC3872}"_guid>));
-	REGISTER_NODE_TEMPLATE(ConstantFloat3, (ConstantNode<glm::vec3, ValueBaseType::Float, 3, "{8B7AEC16-DF23-40F8-AF64-67AF694EDDAC}"_guid>));
-	REGISTER_NODE_TEMPLATE(ConstantFloat4, (ConstantNode<glm::vec4, ValueBaseType::Float, 4, "{D79FF174-FF12-4070-8AEB-DA3B2F2F8AF4}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantFloat, (ConstantNode<float, 0.f, ValueBaseType::Float, 1, "{5AAE4158-7282-43F9-9D6A-2259024E17B3}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantFloat2, (ConstantNode<glm::vec2, 0.f, ValueBaseType::Float, 2, "{3E369B4E-3945-4760-B81B-3A99F9AC3872}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantFloat3, (ConstantNode<glm::vec3, 0.f, ValueBaseType::Float, 3, "{8B7AEC16-DF23-40F8-AF64-67AF694EDDAC}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantFloat4, (ConstantNode<glm::vec4, 1.f, ValueBaseType::Float, 4, "{D79FF174-FF12-4070-8AEB-DA3B2F2F8AF4}"_guid>));
 
-	REGISTER_NODE_TEMPLATE(ConstantInt, (ConstantNode<int32_t, ValueBaseType::Int, 1, "{25A28EE3-73D1-4C60-81AD-31B32DEB5952}"_guid>));
-	REGISTER_NODE_TEMPLATE(ConstantInt2, (ConstantNode<glm::ivec2, ValueBaseType::Int, 2, "{8ABCB1A5-9BA2-4377-8E3C-66824D93D9B6}"_guid>));
-	REGISTER_NODE_TEMPLATE(ConstantInt3, (ConstantNode<glm::ivec3, ValueBaseType::Int, 3, "{FBB241A6-8C6D-4CEB-8F4E-63A14B765FBB}"_guid>));
-	REGISTER_NODE_TEMPLATE(ConstantInt4, (ConstantNode<glm::ivec4, ValueBaseType::Int, 4, "{271B6C2F-492D-4502-A71C-399835782446}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantInt, (ConstantNode<int32_t, 0, ValueBaseType::Int, 1, "{25A28EE3-73D1-4C60-81AD-31B32DEB5952}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantInt2, (ConstantNode<glm::ivec2, 0, ValueBaseType::Int, 2, "{8ABCB1A5-9BA2-4377-8E3C-66824D93D9B6}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantInt3, (ConstantNode<glm::ivec3, 0, ValueBaseType::Int, 3, "{FBB241A6-8C6D-4CEB-8F4E-63A14B765FBB}"_guid>));
+	REGISTER_NODE_TEMPLATE(ConstantInt4, (ConstantNode<glm::ivec4, 0, ValueBaseType::Int, 4, "{271B6C2F-492D-4502-A71C-399835782446}"_guid>));
 }

@@ -3,11 +3,17 @@
 
 #include "Volt/Project/ProjectManager.h"
 
+#include <CoreUtilities/GUIDUtilities.h>
+
+#include <VoltRHI/Pipelines/ComputePipeline.h>
+#include <VoltRHI/Shader/Shader.h>
+
 namespace Volt
 {
 	Material::Material()
 	{
-		m_graph = CreateScope<Mosaic::MosaicGraph>();
+		m_graph = Mosaic::MosaicGraph::CreateDefaultGraph();
+		m_materialGUID = GUIDUtilities::GenerateGUID();
 	}
 
 	const std::string& Material::GetName() const
@@ -43,7 +49,7 @@ namespace Volt
 	void Material::Compile()
 	{
 		constexpr const char* REPLACE_STRING = "GENERATED_SHADER";
-		constexpr const char* BASE_OUTPUT_PATH = "Generated/Materials";
+		constexpr const char* BASE_OUTPUT_PATH = "Generated\\Materials";
 		constexpr const char* BASE_SHADER_PATH = "Engine\\Shaders\\Source\\Generated\\GenerateGBuffer_cs.hlsl";
 
 		constexpr size_t REPLACE_STRING_SIZE = 16;
@@ -51,7 +57,13 @@ namespace Volt
 		const auto baseShaderPath = ProjectManager::GetEngineDirectory() / BASE_SHADER_PATH;
 		const std::string compilationResult = m_graph->Compile();
 
-		std::ifstream input(baseShaderPath);
+		// #TODO_Ivar: Temporary barrier
+		if (compilationResult.empty())
+		{
+			return;
+		}
+
+		std::ifstream input(baseShaderPath, std::ios::in | std::ios::binary);
 		VT_CORE_ASSERT(input.is_open(), "Could not open file!");
 
 		std::string resultShader;
@@ -66,13 +78,20 @@ namespace Volt
 		const size_t replaceOffset = resultShader.find(REPLACE_STRING);
 		resultShader.replace(replaceOffset, REPLACE_STRING_SIZE, compilationResult);
 
-		const std::filesystem::path outShaderPath = BASE_OUTPUT_PATH / std::filesystem::path(assetName + "_cs.hlsl");
+		const std::filesystem::path outShaderPath = ProjectManager::GetProjectDirectory() / BASE_OUTPUT_PATH / std::filesystem::path(assetName + "-" + m_materialGUID.ToString() + "_cs.hlsl");
+
+		if (!std::filesystem::exists(outShaderPath.parent_path()))
+		{
+			std::filesystem::create_directories(outShaderPath.parent_path());
+		}
 
 		std::ofstream output(outShaderPath);
 		VT_CORE_ASSERT(output.is_open(), "Could not open file!");
 
 		output.write(resultShader.c_str(), resultShader.size());
 		output.close();
+
+		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(assetName, { outShaderPath }, true));
 	}
 }
 

@@ -25,6 +25,7 @@ Project/*.csproj
 Project/*.sln
 Project/Log
 Project/Cache
+Project/Generated
 
 *.sln
 *.vcxproj

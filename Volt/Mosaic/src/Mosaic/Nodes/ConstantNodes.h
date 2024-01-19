@@ -20,7 +20,7 @@ namespace Mosaic
 	//	const std::string GetShaderCode(const GraphNode<Ref<class MosaicNode>, Ref<MosaicEdge>>& underlyingNode) const override;
 	//};
 
-	template<typename ValueType, ValueBaseType BASE_TYPE, uint32_t VECTOR_SIZE, VoltGUID GUID>
+	template<typename ValueType, ValueType DEFAULT_VALUE, ValueBaseType BASE_TYPE, uint32_t VECTOR_SIZE, VoltGUID GUID>
 	class ConstantNode : public MosaicNode
 	{
 	public:
@@ -28,6 +28,7 @@ namespace Mosaic
 			: MosaicNode(ownerGraph)
 		{
 			AddOutputParameter("Value", BASE_TYPE, VECTOR_SIZE);
+			GetOutputParameter(0).Get<ValueType>() = DEFAULT_VALUE;
 		}
 
 		inline const std::string GetName() const override { return Helpers::GetTypeNameFromTypeInfo(TYPE_INFO) + " Constant"; }

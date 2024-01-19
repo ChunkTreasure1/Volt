@@ -41,6 +41,7 @@ namespace Volt
 
 		streamReader.EnterScope("MosaicGraph");
 		
+		mosaicAsset->m_materialGUID = streamReader.ReadKey("guid", VoltGUID::Null());
 		mosaicAsset->m_graph->GetEditorState() = streamReader.ReadKey("state", std::string(""));
 		
 		auto& underlyingGraph = mosaicAsset->m_graph->GetUnderlyingGraph();
@@ -67,6 +68,10 @@ namespace Volt
 		});
 
 		streamReader.ExitScope();
+
+		// #TODO_Ivar: Should probably not happen here
+		mosaicAsset->Compile();
+
 		return true;
 	}
 
@@ -78,6 +83,7 @@ namespace Volt
 		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("MosaicGraph");
+		streamWriter.SetKey("guid", mosaicAsset->m_materialGUID);
 		streamWriter.SetKey("state", graph.GetEditorState());
 
 		streamWriter.BeginSequence("Nodes");
