@@ -4,13 +4,14 @@
 #include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Asset/AssetManager.h"
+#include "Volt/Utility/YAMLSerializationHelpers.h"
 
 #include <Mosaic/MosaicGraph.h>
 #include <Mosaic/MosaicNode.h>
 #include <Mosaic/NodeRegistry.h>
 
-#include <Volt/Utility/FileIO/YAMLStreamReader.h>
-#include <Volt/Utility/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
 
 namespace Volt
 {
@@ -41,16 +42,16 @@ namespace Volt
 
 		streamReader.EnterScope("MosaicGraph");
 		
-		mosaicAsset->m_materialGUID = streamReader.ReadKey("guid", VoltGUID::Null());
-		mosaicAsset->m_graph->GetEditorState() = streamReader.ReadKey("state", std::string(""));
+		mosaicAsset->m_materialGUID = streamReader.ReadAtKey("guid", VoltGUID::Null());
+		mosaicAsset->m_graph->GetEditorState() = streamReader.ReadAtKey("state", std::string(""));
 		
 		auto& underlyingGraph = mosaicAsset->m_graph->GetUnderlyingGraph();
 
 		streamReader.ForEach("Nodes", [&]() 
 		{
-			const UUID64 nodeId = streamReader.ReadKey("id", UUID64(0));
-			const VoltGUID guid = streamReader.ReadKey("guid", VoltGUID::Null());
-			const std::string state = streamReader.ReadKey("state", std::string());
+			const UUID64 nodeId = streamReader.ReadAtKey("id", UUID64(0));
+			const VoltGUID guid = streamReader.ReadAtKey("guid", VoltGUID::Null());
+			const std::string state = streamReader.ReadAtKey("state", std::string());
 
 			mosaicAsset->m_graph->AddNode(nodeId, guid);
 			underlyingGraph.GetNodeFromID(nodeId).nodeData->GetEditorState() = state;
@@ -58,11 +59,11 @@ namespace Volt
 
 		streamReader.ForEach("Edges", [&]() 
 		{
-			const UUID64 edgeId = streamReader.ReadKey("id", UUID64(0));
-			const UUID64 startNodeId = streamReader.ReadKey("startNode", UUID64(0));
-			const UUID64 endNodeId = streamReader.ReadKey("endNode", UUID64(0));
-			const uint32_t inputIndex = streamReader.ReadKey("inputIndex", uint32_t(0));
-			const uint32_t outputIndex = streamReader.ReadKey("outputIndex", uint32_t(0));
+			const UUID64 edgeId = streamReader.ReadAtKey("id", UUID64(0));
+			const UUID64 startNodeId = streamReader.ReadAtKey("startNode", UUID64(0));
+			const UUID64 endNodeId = streamReader.ReadAtKey("endNode", UUID64(0));
+			const uint32_t inputIndex = streamReader.ReadAtKey("inputIndex", uint32_t(0));
+			const uint32_t outputIndex = streamReader.ReadAtKey("outputIndex", uint32_t(0));
 			
 			underlyingGraph.LinkNodes(edgeId, startNodeId, endNodeId, CreateRef<Mosaic::MosaicEdge>(inputIndex, outputIndex));
 		});

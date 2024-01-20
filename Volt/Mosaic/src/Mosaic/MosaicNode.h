@@ -6,6 +6,9 @@
 #include <CoreUtilities/VoltGUID.h>
 #include <CoreUtilities/Containers/Graph.h>
 
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -42,6 +45,9 @@ namespace Mosaic
 		virtual const VoltGUID GetGUID() const = 0;
 		virtual void Reset() {}
 
+		virtual void SeraializeCustom(YAMLStreamWriter& streamWriter) const {}
+		virtual void DeserializeCustom() {}
+
 		virtual const ResultInfo GetShaderCode(const GraphNode<Ref<class MosaicNode>, Ref<MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const = 0;
 
 		inline const std::vector<Parameter>& GetInputParameters() const { return m_inputParameters; }
@@ -62,6 +68,12 @@ namespace Mosaic
 		void AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize);
 		void AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize);
 
+		template<typename T>
+		void AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue);
+
+		template<typename T>
+		void AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue);
+
 		MosaicGraph* m_graph = nullptr;
 
 	private:
@@ -70,4 +82,28 @@ namespace Mosaic
 
 		std::string m_editorState;
 	};
+
+	template<typename T>
+	inline void MosaicNode::AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue)
+	{
+		auto& param = m_inputParameters.emplace_back();
+		param.name = name;
+		param.typeInfo.baseType = baseType;
+		param.typeInfo.vectorSize = vectorSize;
+		param.direction = ParameterDirection::Input;
+		param.index = static_cast<uint32_t>(m_inputParameters.size() - 1);
+		param.Get<T>() = defaultValue;
+	}
+
+	template<typename T>
+	inline void MosaicNode::AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue)
+	{
+		auto& param = m_outputParameters.emplace_back();
+		param.name = name;
+		param.typeInfo.baseType = baseType;
+		param.typeInfo.vectorSize = vectorSize;
+		param.direction = ParameterDirection::Output;
+		param.index = static_cast<uint32_t>(m_outputParameters.size() - 1);
+		param.Get<T>() = defaultValue;
+	}
 }

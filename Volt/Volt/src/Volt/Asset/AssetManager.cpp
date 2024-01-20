@@ -24,8 +24,10 @@
 #include "Volt/Platform/ThreadUtility.h"
 
 #include "Volt/Utility/FileSystem.h"
+
 #include "Volt/Utility/YAMLSerializationHelpers.h"
-#include "Volt/Utility/SerializationMacros.h"
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
 
 namespace Volt
 {
@@ -1242,35 +1244,31 @@ namespace Volt
 			return;
 		}
 
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Metadata" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(assetHandle, metadata.handle, out);
-			VT_SERIALIZE_PROPERTY(filePath, metadata.filePath, out);
-			VT_SERIALIZE_PROPERTY(type, (uint32_t)metadata.type, out);
-
-			out << YAML::Key << "Dependencies" << YAML::Value << metadata.dependencies;
-
-			out << YAML::Key << "Properties" << YAML::Value;
-			out << YAML::BeginMap;
-			for (const auto& [name, data] : metadata.properties)
-			{
-				out << YAML::Key << name << YAML::Value << data;
-			}
-			out << YAML::EndMap;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-		out << YAML::EndMap;
-
 		auto metaPath = GetFilesystemPath(assetHandle);
 		metaPath.replace_filename(metaPath.filename().string() + ".vtmeta");
 
-		std::ofstream fout(metaPath);
-		fout << out.c_str();
-		fout.close();
+		YAMLStreamWriter streamWriter{ metaPath };
+
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("Metadata");
+		
+		streamWriter.SetKey("assetHandle", metadata.handle);
+		streamWriter.SetKey("filePath", metadata.filePath);
+		streamWriter.SetKey("type", (uint32_t)metadata.type);
+
+		streamWriter.SetKey("Dependencies", metadata.dependencies);
+
+		streamWriter.BeginMapNamned("Properties");
+		for (const auto& [name, data] : metadata.properties)
+		{
+			streamWriter.SetKey(name, data);
+		}
+		streamWriter.EndMap();
+
+		streamWriter.EndMap();
+		streamWriter.EndMap();
+
+		streamWriter.WriteToDisk();
 	}
 
 	bool AssetManager::HasAssetMetaFile(AssetHandle assetHandle)
@@ -1288,66 +1286,53 @@ namespace Volt
 			return;
 		}
 
-		std::ifstream file(metaFilePath);
-		if (!file.is_open())
+		YAMLStreamReader streamReader{};
+
+		if (!streamReader.OpenFile(metaFilePath))
 		{
 			VT_CORE_CRITICAL("[AssetManager] Failed to open asset registry file: {0}!", metaFilePath.string().c_str());
 			return;
 		}
 
-		std::stringstream strStream;
-		strStream << file.rdbuf();
-		file.close();
+		streamReader.EnterScope("Metadata");
 
-		YAML::Node root;
-		try
-		{
-			root = YAML::Load(strStream.str());
-		}
-		catch (std::exception& e)
-		{
-			VT_CORE_CRITICAL("[AssetManager] Meta file {0} contains invalid YAML! Please correct it! Error: {1}", metaFilePath, e.what());
-			return;
-		}
-
-		YAML::Node metaRoot = root["Metadata"];
-
-		if (!metaRoot["assetHandle"])
+		if (!streamReader.HasKey("assetHandle"))
 		{
 			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing an asset handle! Please correct it!", metaFilePath);
 			return;
 		}
 
-		AssetHandle assetHandle = metaRoot["assetHandle"].as<uint64_t>();
+		AssetHandle assetHandle = streamReader.ReadAtKey("assetHandle", uint64_t(0));
 
-		if (!metaRoot["filePath"])
+		if (!streamReader.HasKey("filePath"))
 		{
 			VT_CORE_CRITICAL("[AssetManager] Meta file {0} is missing a file path! Please correct it!", metaFilePath);
 			return;
 		}
 
-		std::filesystem::path filePath = metaRoot["filePath"].as<std::string>();
+		std::filesystem::path filePath = streamReader.ReadAtKey("filePath", std::string());
 
 		std::vector<AssetHandle> dependencies;
-		if (metaRoot["Dependencies"])
+		if (streamReader.HasKey("Dependencies"))
 		{
-			for (const auto& d : metaRoot["Dependencies"])
+			streamReader.ForEach("Dependencies", [&]() 
 			{
-				dependencies.emplace_back(d.as<uint64_t>());
-			}
+				dependencies.emplace_back(streamReader.ReadValue<uint64_t>());
+			});
 		}
 
 		std::unordered_map<std::string, std::string> assetProperties;
 
-		if (metaRoot["Properties"])
+		if (streamReader.HasKey("Properties"))
 		{
-			for (const auto& node : metaRoot["Properties"])
+			streamReader.ForEach("Properties", [&]()
 			{
-				const auto key = node.first.as<std::string>();
-				const auto value = node.as<std::string>();
+				const auto key = streamReader.ReadKeyValue<std::string>();
+				const auto value = streamReader.ReadValue<std::string>();
 
 				assetProperties[key] = value;
-			}
+			});
+
 		}
 
 		{
@@ -1358,7 +1343,9 @@ namespace Volt
 			metadata.dependencies = dependencies;
 			metadata.properties = assetProperties;
 
-			VT_DESERIALIZE_PROPERTY(type, *(uint32_t*)&metadata.type, metaRoot, 0);
+			metadata.type = (AssetType)streamReader.ReadAtKey<uint32_t>("type", 0u);
 		}
+
+		streamReader.ExitScope();
 	}
 }

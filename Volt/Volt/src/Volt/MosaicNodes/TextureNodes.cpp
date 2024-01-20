@@ -1,12 +1,12 @@
-#include "mcpch.h"
+#include "vtpch.h"
 #include "TextureNodes.h"
 
-#include "Mosaic/MosaicGraph.h"
-#include "Mosaic/NodeRegistry.h"
+#include <Mosaic/MosaicGraph.h>
+#include <Mosaic/NodeRegistry.h>
 
-namespace Mosaic
+namespace Volt
 {
-	static void GetCorrectedVariableName(ResultInfo& resultInfo, uint32_t outputIndex)
+	static void GetCorrectedVariableName(Mosaic::ResultInfo& resultInfo, uint32_t outputIndex)
 	{
 		if (outputIndex == 0)
 		{
@@ -35,17 +35,17 @@ namespace Mosaic
 		}
 	}
 
-	SampleTextureNode::SampleTextureNode(MosaicGraph* ownerGraph)
-		: MosaicNode(ownerGraph)
+	SampleTextureNode::SampleTextureNode(Mosaic::MosaicGraph* ownerGraph)
+		: Mosaic::MosaicNode(ownerGraph)
 	{
-		AddInputParameter("UV", ValueBaseType::Float, 2);
+		AddInputParameter("UV", Mosaic::ValueBaseType::Float, 2);
 	
-		AddOutputParameter("RGB", ValueBaseType::Float, 3);
-		AddOutputParameter("R", ValueBaseType::Float, 1);
-		AddOutputParameter("G", ValueBaseType::Float, 1);
-		AddOutputParameter("B", ValueBaseType::Float, 1);
-		AddOutputParameter("A", ValueBaseType::Float, 1);
-		AddOutputParameter("RGBA", ValueBaseType::Float, 4);
+		AddOutputParameter("RGB", Mosaic::ValueBaseType::Float, 3);
+		AddOutputParameter("R", Mosaic::ValueBaseType::Float, 1);
+		AddOutputParameter("G", Mosaic::ValueBaseType::Float, 1);
+		AddOutputParameter("B", Mosaic::ValueBaseType::Float, 1);
+		AddOutputParameter("A", Mosaic::ValueBaseType::Float, 1);
+		AddOutputParameter("RGBA", Mosaic::ValueBaseType::Float, 4);
 	
 		if (m_graph)
 		{
@@ -66,7 +66,7 @@ namespace Mosaic
 		m_evaluated = false;
 	}
 
-	const ResultInfo SampleTextureNode::GetShaderCode(const GraphNode<Ref<class MosaicNode>, Ref<MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const
+	const Mosaic::ResultInfo SampleTextureNode::GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const
 	{
 		constexpr const char* nodeStr = "SamplerState {0} = material.samplers[{1}]; \n"
 										"TextureT<float4> {2} = material.textures[{3}]; \n"
@@ -74,7 +74,7 @@ namespace Mosaic
 
 		if (m_evaluated)
 		{
-			ResultInfo tempInfo = m_evaluatedResultInfo;
+			Mosaic::ResultInfo tempInfo = m_evaluatedResultInfo;
 			GetCorrectedVariableName(tempInfo, outputIndex);
 
 			return tempInfo;
@@ -94,19 +94,19 @@ namespace Mosaic
 			const auto& uvEdge = underlyingNode.GetEdgeFromID(underlyingNode.GetInputEdges().front());
 			const auto& uvNode = underlyingNode.GetNodeFromID(uvEdge.startNode);
 
-			const ResultInfo info = uvNode.nodeData->GetShaderCode(uvNode, uvEdge.metaDataType->GetParameterOutputIndex(), appendableShaderString);
+			const Mosaic::ResultInfo info = uvNode.nodeData->GetShaderCode(uvNode, uvEdge.metaDataType->GetParameterOutputIndex(), appendableShaderString);
 			texCoordsVarName = info.resultParamName;
 		}
 
 		std::string result = std::format(nodeStr, samplerVarName, index, textureVarName, index, valueVarName, textureVarName, samplerVarName, texCoordsVarName);
 		appendableShaderString.append(result);
 
-		ResultInfo resultInfo{};
+		Mosaic::ResultInfo resultInfo{};
 		resultInfo.resultParamName = valueVarName;
-		resultInfo.resultType = TypeInfo{ ValueBaseType::Float, 1 };
+		resultInfo.resultType = Mosaic::TypeInfo{ Mosaic::ValueBaseType::Float, 1 };
 
 		const_cast<bool&>(m_evaluated) = true;
-		const_cast<ResultInfo&>(m_evaluatedResultInfo) = resultInfo;
+		const_cast<Mosaic::ResultInfo&>(m_evaluatedResultInfo) = resultInfo;
 
 		GetCorrectedVariableName(resultInfo, outputIndex);
 

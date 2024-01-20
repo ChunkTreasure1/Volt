@@ -66,8 +66,8 @@ namespace GraphKey
 		inline const std::string GetName() override { return "Layered blend per bone"; }
 		inline const glm::vec4 GetColor() override { return { 1.f }; }
 
-		void Serialize(YAML::Emitter& out) override;
-		void Deserialize(const YAML::Node& node) override;
+		void Serialize(YAMLStreamWriter& out) override;
+		void Deserialize(YAMLStreamReader& node) override;
 
 		inline std::vector<BlendFilter>& GetBlendIncludeFilters() { return myIncludeFilters; }
 		inline std::vector<BlendFilter>& GetBlendExcludeFilters() { return myExcludeFilters; }

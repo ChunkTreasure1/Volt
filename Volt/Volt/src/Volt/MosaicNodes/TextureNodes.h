@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Mosaic/MosaicNode.h"
+#include <Mosaic/MosaicNode.h>
 
-namespace Mosaic
+namespace Volt
 {
-	class SampleTextureNode : public MosaicNode
+	class SampleTextureNode : public Mosaic::MosaicNode
 	{
 	public:
-		SampleTextureNode(MosaicGraph* ownerGraph);
+		SampleTextureNode(Mosaic::MosaicGraph* ownerGraph);
 		~SampleTextureNode() override;
 
 		inline const std::string GetName() const override { return "Sample Texture"; }
@@ -17,12 +17,12 @@ namespace Mosaic
 
 		void Reset() override;
 
-		const ResultInfo GetShaderCode(const GraphNode<Ref<class MosaicNode>, Ref<MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const override;
+		const Mosaic::ResultInfo GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const override;
 
 	private:
 		uint32_t m_textureIndex = 0;
 
 		bool m_evaluated = false;
-	    ResultInfo m_evaluatedResultInfo;
+		Mosaic::ResultInfo m_evaluatedResultInfo;
 	};
 }

@@ -16,6 +16,8 @@
 
 #include "Volt/Core/BinarySerializer.h"
 
+#include "Volt/Utility/YAMLSerializationHelpers.h"
+
 #include "Volt/Utility/Algorithms.h"
 #include "Volt/Utility/FileSystem.h"
 
@@ -40,7 +42,7 @@ namespace Volt
 
 		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
 		{
-			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T());
+			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadAtKey("data", T());
 		};
 	}
 
@@ -146,10 +148,10 @@ namespace Volt
 		}
 
 		streamReader.EnterScope("Scene");
-		scene->m_name = streamReader.ReadKey("name", std::string("New Scene"));
+		scene->m_name = streamReader.ReadAtKey("name", std::string("New Scene"));
 
 		streamReader.EnterScope("Settings");
-		scene->m_sceneSettings.useWorldEngine = streamReader.ReadKey("useWorldEngine", false);
+		scene->m_sceneSettings.useWorldEngine = streamReader.ReadAtKey("useWorldEngine", false);
 		streamReader.ExitScope();
 
 		if (scene->m_sceneSettings.useWorldEngine)
@@ -253,10 +255,10 @@ namespace Volt
 
 			streamReader.EnterScope("Layer");
 			{
-				sceneLayer.name = streamReader.ReadKey("name", std::string("Null"));
-				sceneLayer.id = streamReader.ReadKey("id", 0u);
-				sceneLayer.visible = streamReader.ReadKey("visible", true);
-				sceneLayer.locked = streamReader.ReadKey("locked", false);
+				sceneLayer.name = streamReader.ReadAtKey("name", std::string("Null"));
+				sceneLayer.id = streamReader.ReadAtKey("id", 0u);
+				sceneLayer.visible = streamReader.ReadAtKey("visible", true);
+				sceneLayer.locked = streamReader.ReadAtKey("locked", false);
 
 				streamReader.ForEach("Entities", [&]()
 				{
@@ -441,8 +443,8 @@ namespace Volt
 		auto& worldEngine = scene->m_worldEngine;
 
 		streamReader.EnterScope("WorldEngine");
-		worldEngine.GetSettingsMutable().cellSize = streamReader.ReadKey("cellSize", 256);
-		worldEngine.GetSettingsMutable().worldSize = streamReader.ReadKey("worldSize", glm::uvec2{ 1280 });
+		worldEngine.GetSettingsMutable().cellSize = streamReader.ReadAtKey("cellSize", 256);
+		worldEngine.GetSettingsMutable().worldSize = streamReader.ReadAtKey("worldSize", glm::uvec2{ 1280 });
 		
 		worldEngine.GenerateCells();
 
@@ -491,8 +493,8 @@ namespace Volt
 
 			streamReader.EnterScope("Entity");
 
-			EntityID entityId = streamReader.ReadKey("id", Entity::NullID());
-			WorldCellID cellId = streamReader.ReadKey("cellId", INVALID_WORLD_CELL_ID);
+			EntityID entityId = streamReader.ReadAtKey("id", Entity::NullID());
+			WorldCellID cellId = streamReader.ReadAtKey("cellId", INVALID_WORLD_CELL_ID);
 
 			if (entityId == Entity::NullID())
 			{
@@ -769,7 +771,7 @@ namespace Volt
 
 		streamReader.EnterScope("Entity");
 
-		EntityID entityId = streamReader.ReadKey("id", Entity::NullID());
+		EntityID entityId = streamReader.ReadAtKey("id", Entity::NullID());
 
 		if (entityId == Entity::NullID())
 		{
@@ -782,7 +784,7 @@ namespace Volt
 		{
 			VT_PROFILE_SCOPE("Component");
 
-			VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
+			VoltGUID compGuid = streamReader.ReadAtKey("guid", VoltGUID::Null());
 			if (compGuid == VoltGUID::Null())
 			{
 				return;
@@ -863,7 +865,7 @@ namespace Volt
 
 		streamReader.ForEach("members", [&]()
 		{
-			const std::string memberName = streamReader.ReadKey("name", std::string(""));
+			const std::string memberName = streamReader.ReadAtKey("name", std::string(""));
 			if (memberName.empty())
 			{
 				return;
@@ -888,7 +890,7 @@ namespace Volt
 
 					case ValueType::Enum:
 					{
-						*reinterpret_cast<int32_t*>(&data[offset + componentMember->offset]) = streamReader.ReadKey("enumValue", int32_t(0));
+						*reinterpret_cast<int32_t*>(&data[offset + componentMember->offset]) = streamReader.ReadAtKey("enumValue", int32_t(0));
 						break;
 					}
 
@@ -943,7 +945,7 @@ namespace Volt
 					}
 
 					case ValueType::Enum:
-						*reinterpret_cast<int32_t*>(&tempDataStorage) = streamReader.ReadKey("enumValue", int32_t(0));
+						*reinterpret_cast<int32_t*>(&tempDataStorage) = streamReader.ReadAtKey("enumValue", int32_t(0));
 						break;
 
 					case ValueType::Array:
@@ -982,8 +984,8 @@ namespace Volt
 				entity.AddComponent<MonoScriptComponent>();
 			}
 
-			const std::string scriptName = streamReader.ReadKey("name", std::string(""));
-			const UUID64 scriptId = streamReader.ReadKey("id", UUID64(0));
+			const std::string scriptName = streamReader.ReadAtKey("name", std::string(""));
+			const UUID64 scriptId = streamReader.ReadAtKey("id", UUID64(0));
 
 			auto scriptClass = MonoScriptEngine::GetScriptClass(scriptName);
 			if (!scriptClass)
@@ -1001,7 +1003,7 @@ namespace Volt
 
 			streamReader.ForEach("members", [&]()
 			{
-				const std::string memberName = streamReader.ReadKey("name", std::string(""));
+				const std::string memberName = streamReader.ReadAtKey("name", std::string(""));
 
 				if (!classFields.contains(memberName))
 				{
@@ -1015,7 +1017,7 @@ namespace Volt
 
 				if (field->field.type.IsString())
 				{
-					const std::string str = streamReader.ReadKey("data", std::string(""));
+					const std::string str = streamReader.ReadAtKey("data", std::string(""));
 					field->SetValue(str, str.size());
 				}
 				else
