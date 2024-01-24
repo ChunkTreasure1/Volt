@@ -31,15 +31,27 @@ void main()
     GET_TEXTURES_WITH_TYPES(RWTexture1D, 0)
     GET_TEXTURES_WITH_TYPES(RWTexture2D, 0)
     GET_TEXTURES_WITH_TYPES(RWTexture3D, 0)
+    GET_TEXTURES_WITH_TYPES(RWTexture2DArray, 0)
     
     USE_TEXTURES_WITH_TYPES(Texture1D, 0)
     USE_TEXTURES_WITH_TYPES(Texture2D, uint2(0, 0))
     USE_TEXTURES_WITH_TYPES(Texture3D, uint3(0, 0, 0))
+    
+    SamplerState samplerS = u_SamplerState[0];
+    
+    RWTexture2DArray_f1[uint3(0, 0, 0)] = TextureCube_f1.SampleLevel(samplerS, 0.f, 0.f);
+    RWTexture2DArray_f2[uint3(0, 0, 0)] = TextureCube_f2.SampleLevel(samplerS, 0.f, 0.f);
+    RWTexture2DArray_f3[uint3(0, 0, 0)] = TextureCube_f3.SampleLevel(samplerS, 0.f, 0.f);
+    RWTexture2DArray_f4[uint3(0, 0, 0)] = TextureCube_f4.SampleLevel(samplerS, 0.f, 0.f);
+    
+    //RWTexture2DArray_u1[uint3(0, 0, 0)] = TextureCube_u1.SampleLevel(samplerS, 0.f, 0.f);
+    //RWTexture2DArray_u2[uint3(0, 0, 0)] = TextureCube_u2.SampleLevel(samplerS, 0.f, 0.f);     
+    //RWTexture2DArray_u3[uint3(0, 0, 0)] = TextureCube_u3.SampleLevel(samplerS, 0.f, 0.f);     
+    //RWTexture2DArray_u4[uint3(0, 0, 0)] = TextureCube_u4.SampleLevel(samplerS, 0.f, 0.f);
 
     ByteAddressBuffer buffVal = u_ByteAddressBuffer[0];
     RWByteAddressBuffer buffValRW = u_RWByteAddressBuffer[0];
     ByteAddressBuffer uniBuffVal = u_UniformBuffer[0];
-    SamplerState samplerS = u_SamplerState[0];
     
     buffValRW.Store(0, buffVal.Load(0));
     buffValRW.Store(0, uniBuffVal.Load(0));

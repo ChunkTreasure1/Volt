@@ -66,7 +66,7 @@ void MaterialEditorPanel::UpdateContent()
 void MaterialEditorPanel::OpenAsset(Ref<Volt::Asset> asset)
 {
 	mySelectedMaterial = std::reinterpret_pointer_cast<Volt::Material>(asset);
-	myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
+	//myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
 }
 
 void MaterialEditorPanel::OnEvent(Volt::Event& e)
@@ -160,27 +160,27 @@ void MaterialEditorPanel::UpdateToolbar()
 				auto id = SelectionManager::GetSelectedEntities().front();
 				Volt::Entity entity = myEditorScene->GetEntityFromUUID(id);
 
-				if (entity.HasComponent<Volt::MeshComponent>())
-				{
-					auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-					if (meshComp.material != Volt::Asset::Null())
-					{
-						mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(meshComp.material);
-					}
-					else
-					{
-						if (meshComp.GetHandle() != Volt::Asset::Null())
-						{
-							//mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle())->GetMaterial();
-						}
-					}
+				//if (entity.HasComponent<Volt::MeshComponent>())
+				//{
+				//	auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+				//	if (meshComp.material != Volt::Asset::Null())
+				//	{
+				//		mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(meshComp.material);
+				//	}
+				//	else
+				//	{
+				//		if (meshComp.GetHandle() != Volt::Asset::Null())
+				//		{
+				//			//mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Mesh>(meshComp.GetHandle())->GetMaterial();
+				//		}
+				//	}
 
-					if (mySelectedMaterial)
-					{
-						myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
-						myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
-					}
-				}
+				//	if (mySelectedMaterial)
+				//	{
+				//		myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
+				//		myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
+				//	}
+				//}
 			}
 		}
 
@@ -195,8 +195,8 @@ void MaterialEditorPanel::UpdateToolbar()
 
 				if (entity.HasComponent<Volt::MeshComponent>())
 				{
-					auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
-					meshComp.material = mySelectedMaterial->handle;
+					//auto& meshComp = entity.GetComponent<Volt::MeshComponent>();
+					//meshComp.material = mySelectedMaterial->handle;
 				}
 			}
 		}
@@ -812,8 +812,8 @@ void MaterialEditorPanel::UpdateMaterials()
 				{
 					mySelectedMaterial = Volt::AssetManager::GetAsset<Volt::Material>(material);
 
-					myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
-					myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
+					//myPreviewEntity.GetComponent<Volt::MeshComponent>().material = mySelectedMaterial->handle;
+					//myPreviewEntity.GetComponent<Volt::MeshComponent>().subMaterialIndex = 0;
 				}
 			}
 		}

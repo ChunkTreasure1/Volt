@@ -11,6 +11,8 @@
 
 #include "Volt/Math/Math.h"
 
+#include "Volt/Rendering/Texture/Texture2D.h"
+
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Graphics/Swapchain.h>
@@ -41,6 +43,8 @@ namespace Volt
 		std::vector<FunctionQueue> deletionQueue;
 
 		std::unordered_map<size_t, Ref<GlobalResource<RHI::SamplerState>>> samplers;
+
+		DefaultResources defaultResources;
 
 		inline void Shutdown()
 		{
@@ -82,6 +86,8 @@ namespace Volt
 	{
 		GlobalResourceManager::Initialize();
 		RenderGraphExecutionThread::Initialize();
+
+		CreaDefaultResources();
 	}
 
 	void RendererNew::Shutdown()
@@ -122,6 +128,11 @@ namespace Volt
 		s_rendererData->deletionQueue.at(currentFrame).Push(std::move(function));
 	}
 
+	const DefaultResources& RendererNew::GetDefaultResources()
+	{
+		return s_rendererData->defaultResources;
+	}
+
 	void RendererNew::Update()
 	{
 		//GlobalResourceManager::Update();
@@ -139,5 +150,15 @@ namespace Volt
 		s_rendererData->samplers[hash] = samplerState;
 
 		return samplerState;
+	}
+
+	void RendererNew::CreaDefaultResources()
+	{
+		// Full white 1x1
+		{
+			constexpr uint32_t PIXEL_DATA = 0xffffffff;
+			s_rendererData->defaultResources.whiteTexture = Texture2D::Create(RHI::PixelFormat::R8G8B8A8_UNORM, 1, 1, &PIXEL_DATA);
+			s_rendererData->defaultResources.whiteTexture->handle = 0;
+		}
 	}
 }

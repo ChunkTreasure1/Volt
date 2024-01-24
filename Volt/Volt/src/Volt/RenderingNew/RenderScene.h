@@ -33,7 +33,7 @@ namespace Volt
 		void Invalidate();
 		void InvalidateRenderObject(UUID64 renderObject);
 
-		const UUID64 Register(EntityID entityId, Ref<Mesh> mesh, uint32_t subMeshIndex);
+		const UUID64 Register(EntityID entityId, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex);
 		void Unregister(UUID64 id);
 
 		inline const bool IsInvalid() const { return m_isInvalid; }

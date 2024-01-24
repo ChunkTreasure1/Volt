@@ -37,6 +37,8 @@ DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture1D, u4, space0)
 DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture2D, u5, space0)
 DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture3D, u6, space0)
 
+DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture2DArray, u11, space0)
+
 ByteAddressBuffer u_ByteAddressBuffer[] : register(t7, space0);
 RWByteAddressBuffer u_RWByteAddressBuffer[] : register(u8, space0);
 
@@ -100,6 +102,12 @@ struct RWTexture3DHandle
     uint handle;
 };
 
+template<typename T>
+struct RWTexture2DArrayHandle
+{
+    uint handle;
+};
+
 struct SamplerStateHandle
 {
     uint handle;
@@ -135,6 +143,7 @@ struct VulkanResourceDescriptorHeapInternal
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture1D)
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2D)
     DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture3D)
+    DEFINE_TEXTURE_TYPE_TEMPLATE_SPECIALIZATION_DECL_MULTI(RWTexture2DArray)
 };
 
 static VulkanResourceDescriptorHeapInternal g_descriptorHeap;
@@ -395,7 +404,7 @@ struct RWTypedBuffer
 };
 
 template<typename T>
-struct TextureT
+struct TTexture
 {
     ResourceHandle handle;
     
@@ -435,6 +444,12 @@ struct TextureT
         return texture.Sample(samplerState, location);
     }
     
+    T SampleCube(in SamplerState samplerState, in float3 location)
+    {
+        TextureCube<T> texture = DESCRIPTOR_HEAP(TextureCubeHandle<T>, handle);
+        return texture.Sample(samplerState, location);
+    }
+    
     T SampleLevel1D(in SamplerState samplerState, in float location, in float lod)
     {
         Texture1D<T> texture = DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);
@@ -450,6 +465,12 @@ struct TextureT
     T SampleLevel3D(in SamplerState samplerState, in float3 location, in float lod)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
+        return texture.SampleLevel(samplerState, location, lod);
+    }
+    
+    T SampleLevelCube(in SamplerState samplerState, in float3 location, in float lod)
+    {
+        TextureCube<T> texture = DESCRIPTOR_HEAP(TextureCubeHandle<T>, handle);
         return texture.SampleLevel(samplerState, location, lod);
     }
     
@@ -509,6 +530,11 @@ struct TextureT
     {
         return DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
     }
+    
+    TextureCube<T> GetCube()
+    {
+        return DESCRIPTOR_HEAP(TextureCubeHandle<T>, handle);
+    }
 };
 
 template<typename T>
@@ -534,6 +560,12 @@ struct RWTexture
         return texture.Load(location);
     }
     
+    T Load2DArray(in int4 location)
+    {
+        RWTexture2DArray<T> texture = DESCRIPTOR_HEAP(RWTexture2DArrayHandle<T>, handle);
+        return texture.Load(location);
+    }
+    
     void Store1D(in uint location, T value)
     {
         RWTexture1D<T> texture = DESCRIPTOR_HEAP(RWTexture1DHandle<T>, handle);
@@ -549,6 +581,12 @@ struct RWTexture
     void Store3D(in uint3 location, T value)
     {
         RWTexture3D<T> texture = DESCRIPTOR_HEAP(RWTexture3DHandle<T>, handle);
+        texture[location] = value;
+    }
+    
+    void Store2DArray(in uint3 location, T value)
+    {
+        RWTexture2DArray<T> texture = DESCRIPTOR_HEAP(RWTexture2DArrayHandle<T>, handle);
         texture[location] = value;
     }
     

@@ -5,50 +5,6 @@ Layer:
   locked: false
   Entities:
     - Entity:
-        id: 148812143
-        cellId: 0
-        components:
-          - guid: [5579790378469427390, 5138106327942809248]
-            members:
-              - name: handle
-                data: 4222760517092149508
-              - name: material
-                data: 0
-          - guid: [5152712443922219371, 10617432012782403218]
-            members:
-              - name: position
-                data: [4.46888876, 0, 3.10889673]
-              - name: rotation
-                data: [0, 0, 0, 1]
-              - name: scale
-                data: [1, 1, 1]
-              - name: visible
-                data: true
-              - name: locked
-                data: false
-              - name: movability
-                data: enum
-                enumValue: 0
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: SponzaForLamp
-          - guid: [5115013315947959062, 13305215203298195585]
-            members:
-              - name: layerid
-                data: 0
-          - guid: [5086337540049333714, 3220959922222851753]
-            members:
-              - name: parent
-                data: 0
-              - name: children
-                data: array
-                values:
-                  []
-          - guid: [5292648669697150475, 12278682903067466634]
-            members:
-              []
-    - Entity:
         id: 822155506
         cellId: 0
         components:
@@ -159,9 +115,9 @@ Layer:
               - name: position
                 data: [0, 0, 0]
               - name: rotation
-                data: [0.866025448, 0, 0, 0.49999997]
+                data: [0.834567428, 0.231294498, 0.133537933, 0.481837779]
               - name: scale
-                data: [1, 1, 1]
+                data: [0.999999344, 1.00000036, 1.00000048]
               - name: visible
                 data: true
               - name: locked
@@ -191,7 +147,7 @@ Layer:
           - guid: [4956947959302657279, 6431008363526150588]
             members:
               - name: intensity
-                data: 1
+                data: 0.5
               - name: color
                 data: [1, 1, 1]
               - name: lightSize
@@ -200,3 +156,49 @@ Layer:
                 data: true
               - name: castShadows
                 data: true
+    - Entity:
+        id: 2242625271
+        cellId: 0
+        components:
+          - guid: [5579790378469427390, 5138106327942809248]
+            members:
+              - name: handle
+                data: 4414967050601633116
+              - name: materials
+                data: array
+                values:
+                  - data: 3865421504965442699
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, 0]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+              - name: movability
+                data: enum
+                enumValue: 0
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Icosphere
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 0
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5292648669697150475, 12278682903067466634]
+            members:
+              []

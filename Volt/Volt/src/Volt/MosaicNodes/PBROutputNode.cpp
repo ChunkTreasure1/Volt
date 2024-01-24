@@ -11,10 +11,10 @@ namespace Volt
 	PBROutputNode::PBROutputNode(Mosaic::MosaicGraph* ownerGraph)
 		: Mosaic::MosaicNode(ownerGraph)
 	{
-		AddInputParameter("Base Color", Mosaic::ValueBaseType::Float, 4, 1.f);
-		AddInputParameter("Roughness", Mosaic::ValueBaseType::Float, 1, 0.9f);
-		AddInputParameter("Metallic", Mosaic::ValueBaseType::Float, 1, 0.f);
-		AddInputParameter("Normal", Mosaic::ValueBaseType::Float, 3, glm::vec3(0.5f, 0.5f, 1.f));
+		AddInputParameter("Base Color", Mosaic::ValueBaseType::Float, 4, 1.f, false);
+		AddInputParameter("Metallic", Mosaic::ValueBaseType::Float, 1, 0.f, false);
+		AddInputParameter("Roughness", Mosaic::ValueBaseType::Float, 1, 0.9f, false);
+		AddInputParameter("Normal", Mosaic::ValueBaseType::Float, 3, glm::vec3(0.5f, 0.5f, 1.f), false);
 	}
 
 	const Mosaic::ResultInfo PBROutputNode::GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const
@@ -22,8 +22,8 @@ namespace Volt
 		constexpr const char* nodeStr = "EvaluatedMaterial materialResult;\n"
 										"materialResult.Setup();\n"
 										"materialResult.albedo = {0};\n"
-										"materialResult.roughness = {1};\n"
-										"materialResult.metallic = {2};\n"
+										"materialResult.metallic = {1};\n"
+										"materialResult.roughness = {2};\n"
 										"materialResult.normal = {3};\n"
 										"materialResult.emissive = {4};\n\n"
 			

@@ -10,10 +10,12 @@
 
 #include "Volt/Physics/PhysicsLayer.h"
 
-#include "Volt/Utility/SerializationMacros.h"
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 
 #include "Volt/Utility/FileSystem.h"
+
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -40,57 +42,50 @@ namespace Volt
 			return;
 		}
 
-		std::ifstream file(FileSystem::GetPhysicsSettingsPath());
-		if (!file.is_open())
+		YAMLStreamReader streamReader{};
+		if (!streamReader.OpenFile(FileSystem::GetPhysicsSettingsPath()))
 		{
 			return;
 		}
 
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
+		streamReader.EnterScope("PhysicsSettings");
 
-		YAML::Node root = YAML::Load(sstream.str());
-		YAML::Node settingsNode = root["PhysicsSettings"];
+		mySettings.gravity = streamReader.ReadAtKey("gravity", glm::vec3(0.f, -9.81f, 0.f));
+		mySettings.worldBoundsMin = streamReader.ReadAtKey("worldBoundsMin", glm::vec3{ -100.f });
+		mySettings.worldBoundsMax = streamReader.ReadAtKey("worldBoundsMax", glm::vec3{ 100.f });
+		mySettings.worldBoundsSubDivisions = streamReader.ReadAtKey("worldBoundsSubDivisions", 2);
+		mySettings.solverIterations = streamReader.ReadAtKey("solverIterations", 8);
+		mySettings.solverVelocityIterations = streamReader.ReadAtKey("solverVelocityIterations", 2);
+		mySettings.broadphaseAlgorithm = (BroadphaseType)streamReader.ReadAtKey("broadphaseAlgorithm", (uint32_t)BroadphaseType::AutomaticBoxPrune);
+		mySettings.frictionModel = (FrictionType)streamReader.ReadAtKey("frictionModel", (uint32_t)FrictionType::Patch);
 
-		VT_DESERIALIZE_PROPERTY(gravity, mySettings.gravity, settingsNode, glm::vec3(0.f, -9.81f, 0.f));
-		VT_DESERIALIZE_PROPERTY(worldBoundsMin, mySettings.worldBoundsMin, settingsNode, glm::vec3(-100.f));
-		VT_DESERIALIZE_PROPERTY(worldBoundsMax, mySettings.worldBoundsMax, settingsNode, glm::vec3(100.f));
-		VT_DESERIALIZE_PROPERTY(worldBoundsSubDivisions, mySettings.worldBoundsSubDivisions, settingsNode, 2);
-		VT_DESERIALIZE_PROPERTY(solverIterations, mySettings.solverIterations, settingsNode, 8);
-		VT_DESERIALIZE_PROPERTY(solverVelocityIterations, mySettings.solverVelocityIterations, settingsNode, 2);
-
-		mySettings.broadphaseAlgorithm = settingsNode["broadphaseAlgorithm"] ? (BroadphaseType)settingsNode["broadphaseAlgorithm"].as<uint32_t>() : BroadphaseType::AutomaticBoxPrune;
-		mySettings.frictionModel = settingsNode["frictionModel"] ? (FrictionType)settingsNode["frictionModel"].as<uint32_t>() : FrictionType::Patch;
+		streamReader.ExitScope();
 	}
 
 	void Physics::SaveSettings()
 	{
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "PhysicsSettings" << YAML::Value;
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(gravity, mySettings.gravity, out);
-			VT_SERIALIZE_PROPERTY(broadphaseAlgorithm, (uint32_t)mySettings.broadphaseAlgorithm, out);
-			VT_SERIALIZE_PROPERTY(frictionModel, (uint32_t)mySettings.frictionModel, out);
-			VT_SERIALIZE_PROPERTY(worldBoundsMin, mySettings.worldBoundsMin, out);
-			VT_SERIALIZE_PROPERTY(worldBoundsMax, mySettings.worldBoundsMax, out);
-			VT_SERIALIZE_PROPERTY(worldBoundsSubDivisions, mySettings.worldBoundsSubDivisions, out);
-			VT_SERIALIZE_PROPERTY(solverIterations, mySettings.solverIterations, out);
-			VT_SERIALIZE_PROPERTY(solverVelocityIterations, mySettings.solverVelocityIterations, out);
-			out << YAML::EndMap;
-		}
-		out << YAML::EndMap;
-
 		if (!FileSystem::Exists(FileSystem::GetPhysicsSettingsPath().parent_path()))
 		{
 			std::filesystem::create_directories(FileSystem::GetPhysicsSettingsPath().parent_path());
 		}
 
-		std::ofstream fout(FileSystem::GetPhysicsSettingsPath());
-		fout << out.c_str();
-		fout.close();
+		YAMLStreamWriter streamWriter{ FileSystem::GetPhysicsSettingsPath() };
+		streamWriter.BeginMap();
+		streamWriter.BeginMapNamned("PhysicsSettings");
+
+		streamWriter.SetKey("gravity", mySettings.gravity);
+		streamWriter.SetKey("broadphaseAlgorithm", (uint32_t)mySettings.broadphaseAlgorithm);
+		streamWriter.SetKey("frictionModel", (uint32_t)mySettings.frictionModel);
+		streamWriter.SetKey("worldBoundsMin", mySettings.worldBoundsMin);
+		streamWriter.SetKey("worldBoundsMax", mySettings.worldBoundsMax);
+		streamWriter.SetKey("worldBoundsSubDivisions", mySettings.worldBoundsSubDivisions);
+		streamWriter.SetKey("solverIterations", mySettings.solverIterations);
+		streamWriter.SetKey("solverVelocityIterations", mySettings.solverVelocityIterations);
+
+		streamWriter.EndMap();
+		streamWriter.EndMap();
+
+		streamWriter.WriteToDisk();
 	}
 
 	void Physics::LoadLayers()
@@ -100,59 +95,55 @@ namespace Volt
 			return;
 		}
 
-		std::ifstream file(FileSystem::GetPhysicsLayersPath());
-		if (!file.is_open())
+		YAMLStreamReader streamReader{};
+		if (!streamReader.OpenFile(FileSystem::GetPhysicsLayersPath()))
 		{
 			return;
 		}
 
 		PhysicsLayerManager::Clear();
 
-		std::stringstream sstream;
-		sstream << file.rdbuf();
-		file.close();
-
-		YAML::Node root = YAML::Load(sstream.str());
-		YAML::Node layersNode = root["PhysicsLayers"];
-
-		for (const auto& node : layersNode)
+		streamReader.ForEach("PhysicsLayers", [&]() 
 		{
 			PhysicsLayer layer{};
 
-			VT_DESERIALIZE_PROPERTY(layerId, layer.layerId, node, 0);
-			VT_DESERIALIZE_PROPERTY(bitValue, layer.bitValue, node, 0);
-			VT_DESERIALIZE_PROPERTY(collidesWith, layer.collidesWith, node, 0);
-			VT_DESERIALIZE_PROPERTY(name, layer.name, node, std::string());
+			layer.layerId = streamReader.ReadAtKey("layerId", 0);
+			layer.bitValue = streamReader.ReadAtKey("bitValue", 0);
+			layer.collidesWith = streamReader.ReadAtKey("collidesWith", 0);
+			layer.name = streamReader.ReadAtKey("name", std::string());
 
 			PhysicsLayerManager::AddLayer(layer);
-		}
+		});
 	}
 
 	void Physics::SaveLayers()
 	{
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "PhysicsLayers" << YAML::BeginSeq;
-		for (const auto& layer : PhysicsLayerManager::GetLayers())
-		{
-			out << YAML::BeginMap;
-			VT_SERIALIZE_PROPERTY(layerId, layer.layerId, out);
-			VT_SERIALIZE_PROPERTY(bitValue, layer.bitValue, out);
-			VT_SERIALIZE_PROPERTY(collidesWith, layer.collidesWith, out);
-			VT_SERIALIZE_PROPERTY(name, layer.name, out);
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
-
 		if (!FileSystem::Exists(FileSystem::GetPhysicsLayersPath().parent_path()))
 		{
 			std::filesystem::create_directories(FileSystem::GetPhysicsLayersPath().parent_path());
 		}
 
-		std::ofstream fout(FileSystem::GetPhysicsLayersPath());
-		fout << out.c_str();
-		fout.close();
+		YAMLStreamWriter streamWriter{ FileSystem::GetPhysicsLayersPath() };
+
+		streamWriter.BeginMap();
+		streamWriter.BeginSequence("PhysicsLayers");
+
+		for (const auto& layer : PhysicsLayerManager::GetLayers())
+		{
+			streamWriter.BeginMap();
+
+			streamWriter.SetKey("layerId", layer.layerId);
+			streamWriter.SetKey("bitValue", layer.bitValue);
+			streamWriter.SetKey("collidesWith", layer.collidesWith);
+			streamWriter.SetKey("name", layer.name);
+
+			streamWriter.EndMap();
+		}
+
+		streamWriter.EndSequence();
+		streamWriter.EndMap();
+
+		streamWriter.WriteToDisk();
 	}
 
 	void Physics::CreateScene(Scene* scene)

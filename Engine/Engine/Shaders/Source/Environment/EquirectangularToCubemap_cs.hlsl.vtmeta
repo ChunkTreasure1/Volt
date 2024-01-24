@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 6039177339231943227
+  filePath: Engine/Shaders/Source/Environment/EquirectangularToCubemap_cs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

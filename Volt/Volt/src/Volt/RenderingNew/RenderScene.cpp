@@ -67,19 +67,25 @@ namespace Volt
 
 		for (size_t i = 0; i < m_renderObjects.size(); i++)
 		{
+			const uint32_t materialIndex = GetMaterialIndex(m_renderObjects[i].material);
+			if (materialIndex == std::numeric_limits<uint32_t>::max())
+			{
+				m_individualMaterials.push_back(m_renderObjects[i].material);
+			}
+
 			if (i == 0)
 			{
 				m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 				m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
-				for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
+				/*for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
 				{
 					const uint32_t materialIndex = GetMaterialIndex(material);
 					if (materialIndex == std::numeric_limits<uint32_t>::max())
 					{
 						m_individualMaterials.push_back(material);
 					}
-				}
+				}*/
 			}
 			else
 			{
@@ -88,14 +94,14 @@ namespace Volt
 					m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 					m_individualMeshes.push_back(m_renderObjects[i].mesh);
 
-					for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
-					{
-						const uint32_t materialIndex = GetMaterialIndex(material);
-						if (materialIndex == std::numeric_limits<uint32_t>::max())
-						{
-							m_individualMaterials.push_back(material);
-						}
-					}
+					//for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
+					//{
+					//	const uint32_t materialIndex = GetMaterialIndex(material);
+					//	if (materialIndex == std::numeric_limits<uint32_t>::max())
+					//	{
+					//		m_individualMaterials.push_back(material);
+					//	}
+					//}
 				}
 			}
 		}
@@ -156,7 +162,7 @@ namespace Volt
 		m_invalidRenderObjects.emplace_back(renderObject);
 	}
 
-	const UUID64 RenderScene::Register(EntityID entityId, Ref<Mesh> mesh, uint32_t subMeshIndex)
+	const UUID64 RenderScene::Register(EntityID entityId, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex)
 	{
 		m_isInvalid = true;
 
@@ -166,6 +172,7 @@ namespace Volt
 		newObj.id = newId;
 		newObj.entity = entityId;
 		newObj.mesh = mesh;
+		newObj.material = material;
 		newObj.subMeshIndex = subMeshIndex;
 
 		return newId;
@@ -328,7 +335,7 @@ namespace Volt
 			ObjectDrawData& data = objectDrawData.emplace_back();
 			data.transform = transform;
 			data.meshId = meshId;
-			data.materialId = GetMaterialIndex(renderObject.mesh->GetMaterialTable().GetMaterial(subMesh.materialIndex));
+			data.materialId = GetMaterialIndex(renderObject.material); //GetMaterialIndex(renderObject.mesh->GetMaterialTable().GetMaterial(subMesh.materialIndex));
 			data.meshletStartOffset = 0;
 			data.boundingSphereCenter = globalCenter;
 			data.boundingSphereRadius = boundingSphere.radius * maxScale;

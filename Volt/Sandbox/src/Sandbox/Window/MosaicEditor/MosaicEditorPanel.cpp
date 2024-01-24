@@ -2,6 +2,7 @@
 #include "MosaicEditorPanel.h"
 
 #include "Sandbox/NodeGraph/NodeGraphEditorPinUtility.h"
+#include "Sandbox/NodeGraph/IONodeGraphEditorHelpers.h"
 #include "Sandbox/Utility/EditorUtilities.h"
 #include "Sandbox/Utility/Theme.h"
 
@@ -55,7 +56,7 @@ namespace Utility
 		return false;
 	}
 
-	inline void ClearLinkksFromParameter(Mosaic::MosaicGraph& graph, const UUID64 paramId)
+	inline void ClearLinksFromParameter(Mosaic::MosaicGraph& graph, const UUID64 paramId)
 	{
 		std::vector<UUID64> edgesToRemove;
 
@@ -100,6 +101,48 @@ namespace Utility
 		}
 
 		ImGui::Dummy(size);
+	}
+
+	inline void DrawAttribute(Mosaic::Parameter& parameter)
+	{
+		if (parameter.typeInfo.baseType == Mosaic::ValueBaseType::Float)
+		{
+			if (parameter.typeInfo.vectorSize == 1)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<float>());
+			}
+			else if (parameter.typeInfo.vectorSize == 2)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<glm::vec2>());
+			}
+			else if (parameter.typeInfo.vectorSize == 3)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<glm::vec3>());
+			}
+			else if (parameter.typeInfo.vectorSize == 4)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<glm::vec4>());
+			}
+		}
+		else if (parameter.typeInfo.baseType == Mosaic::ValueBaseType::Int)
+		{
+			if (parameter.typeInfo.vectorSize == 1)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<int32_t>());
+			}
+			else if (parameter.typeInfo.vectorSize == 2)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<glm::ivec2>());
+			}
+			else if (parameter.typeInfo.vectorSize == 3)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<glm::ivec3>());
+			}
+			else if (parameter.typeInfo.vectorSize == 4)
+			{
+				IONodeGraphEditorHelpers::Attribute(parameter.Get<glm::ivec4>());
+			}
+		}
 	}
 
 	inline glm::vec4 GetColorFromTypeInfo(const Mosaic::TypeInfo& typeInfo)
@@ -570,6 +613,8 @@ void MosaicEditorPanel::DrawNodes()
 			builder.EndHeader();
 		}
 
+		IONodeGraphEditorHelpers::BeginAttributes();
+
 		for (auto& input : node.nodeData->GetInputParameters())
 		{
 			float alpha = ImGui::GetStyle().Alpha;
@@ -593,6 +638,12 @@ void MosaicEditorPanel::DrawNodes()
 			ImGui::Spring(0.f);
 			ImGui::TextUnformatted(input.name.c_str());
 
+			if (!connected && input.typeInfo.baseType != Mosaic::ValueBaseType::Dynamic && input.showAttribute)
+			{
+				Utility::DrawAttribute(input);
+			}
+
+			ImGui::Spring(0.f);
 			builder.EndInput();
 		}
 
@@ -614,6 +665,11 @@ void MosaicEditorPanel::DrawNodes()
 			const bool connected = Utility::IsParameterLinked(m_material->GetGraph(), output.id);
 			ImGui::Spring(0.f);
 
+			if (output.typeInfo.baseType != Mosaic::ValueBaseType::Dynamic && output.showAttribute)
+			{
+				Utility::DrawAttribute(output);
+			}
+
 			ImGui::TextUnformatted(output.name.c_str());
 			ImGui::Spring(0.f);
 
@@ -623,6 +679,10 @@ void MosaicEditorPanel::DrawNodes()
 
 			builder.EndOutput();
 		}
+
+		IONodeGraphEditorHelpers::EndAttributes();
+
+		node.nodeData->RenderCustomWidget();
 
 		builder.End();
 	}
@@ -751,7 +811,7 @@ void MosaicEditorPanel::OnBeginCreate()
 		{
 			auto& inputDirParam = startParam.direction == Mosaic::ParameterDirection::Input ? startParam : endParam;
 
-			Utility::ClearLinkksFromParameter(m_material->GetGraph(), inputDirParam.id);
+			Utility::ClearLinksFromParameter(m_material->GetGraph(), inputDirParam.id);
 
 			const auto startNode = Utility::GetNodeIdFromParameter(m_material->GetGraph(), startParam.id);
 			const auto endNode = Utility::GetNodeIdFromParameter(m_material->GetGraph(), endParam.id);

@@ -2,6 +2,12 @@
 #include "Material.h"
 
 #include "Volt/Project/ProjectManager.h"
+#include "Volt/MosaicNodes/TextureNodes.h"
+#include "Volt/Asset/AssetManager.h"
+
+#include "Volt/RenderingNew/RendererNew.h"
+
+#include <Mosaic/MosaicNode.h>
 
 #include <CoreUtilities/GUIDUtilities.h>
 
@@ -53,6 +59,7 @@ namespace Volt
 		constexpr const char* BASE_SHADER_PATH = "Engine\\Shaders\\Source\\Generated\\GenerateGBuffer_cs.hlsl";
 
 		constexpr size_t REPLACE_STRING_SIZE = 16;
+		constexpr VoltGUID TEXTURE_NODE_GUID = "{DB60F69D-EFC5-4AA4-BF5A-C89D58942D3F}"_guid;
 
 		const auto baseShaderPath = ProjectManager::GetEngineDirectory() / BASE_SHADER_PATH;
 		const std::string compilationResult = m_graph->Compile();
@@ -90,6 +97,29 @@ namespace Volt
 
 		output.write(resultShader.c_str(), resultShader.size());
 		output.close();
+
+		// Find all textures
+		{
+			m_textures.clear();
+			m_textures.resize(m_graph->GetTextureCount());
+
+			for (const auto& node : m_graph->GetUnderlyingGraph().GetNodes())
+			{
+				if (node.nodeData->GetGUID() == TEXTURE_NODE_GUID)
+				{
+					auto textureNode = std::reinterpret_pointer_cast<SampleTextureNode>(node.nodeData);
+					const auto textureInfo = textureNode->GetTextureInfo();
+
+					Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureInfo.textureHandle);
+					if (!texture)
+					{
+						texture = RendererNew::GetDefaultResources().whiteTexture;
+					}
+
+					m_textures.at(textureInfo.textureIndex) = texture;
+				}
+			}
+		}
 
 		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(assetName, { outShaderPath }, true));
 	}

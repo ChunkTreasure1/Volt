@@ -78,6 +78,8 @@ namespace Mosaic
 	
 	uint32_t MosaicGraph::GetNextTextureIndex()
 	{
+		m_textureCount++;
+
 		if (!m_availiableTextureIndices.empty())
 		{
 			const uint32_t index = m_availiableTextureIndices.back();
@@ -97,5 +99,6 @@ namespace Mosaic
 	void MosaicGraph::ForfeitTextureIndex(uint32_t textureIndex)
 	{
 		m_availiableTextureIndices.emplace_back(textureIndex);
+		m_textureCount--;
 	}
 }

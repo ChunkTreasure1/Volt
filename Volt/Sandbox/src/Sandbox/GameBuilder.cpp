@@ -9,7 +9,6 @@
 #include <Volt/Scripting/Mono/MonoScriptClass.h>
 
 #include <Volt/Utility/YAMLSerializationHelpers.h>
-#include <Volt/Utility/SerializationMacros.h>
 
 #include <yaml-cpp/yaml.h>
 

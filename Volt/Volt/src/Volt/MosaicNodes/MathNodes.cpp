@@ -10,10 +10,10 @@ namespace Volt
 	AddNode::AddNode(Mosaic::MosaicGraph* ownerGraph)
 		: Mosaic::MosaicNode(ownerGraph)
 	{
-		AddInputParameter("A", Mosaic::ValueBaseType::Dynamic, 1);
-		AddInputParameter("B", Mosaic::ValueBaseType::Dynamic, 1);
+		AddInputParameter("A", Mosaic::ValueBaseType::Dynamic, 1, false);
+		AddInputParameter("B", Mosaic::ValueBaseType::Dynamic, 1, false);
 
-		AddOutputParameter("", Mosaic::ValueBaseType::Dynamic, 1);
+		AddOutputParameter("", Mosaic::ValueBaseType::Dynamic, 1, false);
 	}
 
 	const Mosaic::ResultInfo AddNode::GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const

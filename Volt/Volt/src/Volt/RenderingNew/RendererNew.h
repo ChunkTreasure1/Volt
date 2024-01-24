@@ -14,6 +14,13 @@ namespace Volt
 		struct SamplerStateCreateInfo;
 	}
 
+	class Texture2D;
+
+	struct DefaultResources
+	{
+		Ref<Texture2D> whiteTexture;
+	};
+
 	class Mesh;
 	class RendererNew
 	{
@@ -25,6 +32,8 @@ namespace Volt
 		static void Flush();
 		static const uint32_t GetFramesInFlight();
 		static void DestroyResource(std::function<void()>&& function);
+
+		static const DefaultResources& GetDefaultResources();
 
 		static void Update();
 
@@ -43,6 +52,7 @@ namespace Volt
 
 	private:
 		static Ref<GlobalResource<RHI::SamplerState>> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
+		static void CreaDefaultResources();
 
 		RendererNew() = delete;
 	};

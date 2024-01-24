@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Scene/Reflection/ComponentReflection.h"
+
 #include <CoreUtilities/Core.h>
 
 #include <vector>
@@ -24,7 +26,7 @@ namespace Volt
 
 		const std::vector<Ref<Material>>::const_iterator begin() const { return m_materials.cbegin(); }
 		const std::vector<Ref<Material>>::const_iterator end() const { return m_materials.cend(); }
-
+		
 	private:
 		std::vector<Ref<Material>> m_materials;
 	};

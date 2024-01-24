@@ -4221,7 +4221,7 @@ namespace Volt
 			return false;
 		}
 
-		return entity.GetComponent<MeshComponent>().material != Asset::Null();
+		return false;  //entity.GetComponent<MeshComponent>().material != Asset::Null();
 	}
 
 	inline static void MeshComponent_SetOverrideMaterial(EntityID id, uint64_t materialHandle)
@@ -4239,7 +4239,7 @@ namespace Volt
 			return;
 		}
 
-		entity.GetComponent<MeshComponent>().material = materialHandle;
+		//entity.GetComponent<MeshComponent>().material = materialHandle;
 	}
 
 	inline static uint64_t MeshComponent_GetOverrideMaterial(EntityID id)
@@ -4257,7 +4257,7 @@ namespace Volt
 			return 0;
 		}
 
-		return entity.GetComponent<MeshComponent>().material;
+		return 0; //entity.GetComponent<MeshComponent>().material;
 	}
 #pragma endregion 
 

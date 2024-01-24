@@ -111,7 +111,7 @@ void EditorCameraController::ArcBall(const glm::vec2& deltaPos)
 
 void EditorCameraController::ArcZoom(float deltaPos)
 {
-	constexpr float MAX_SPEED = 0.1f;
+	constexpr float MAX_SPEED = 0.01f;
 
 	float distance = m_focalDistance * 0.2f;
 	distance = glm::max(distance, 0.0f);

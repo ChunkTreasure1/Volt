@@ -10,7 +10,7 @@
 
 struct Constants
 {
-    TextureT<uint> visibilityBuffer;
+    TTexture<uint> visibilityBuffer;
     TypedBuffer<uint> materialCountBuffer;
     TypedBuffer<uint> materialStartBuffer;
     TypedBuffer<uint2> pixelCollection;
@@ -314,7 +314,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         float3 positionDX = mul(viewData.inverseViewProjection, float4((screenPos + twoOverRes.x / 2.f) * interpW, z, interpW)).xyz;
         float3 positionDY = mul(viewData.inverseViewProjection, float4((screenPos + twoOverRes.y / 2.f) * interpW, z, interpW)).xyz;
         
-        derivatives = CalculateRayBary(wPos0.xyz, wPos1.xyz, wPos2.xyz, worldPosition, positionDX, positionDY, viewData.position.xyz);
+        derivatives = CalculateRayBary(wPos0.xyz, wPos1.xyz, wPos2.xyz, worldPosition, positionDX, positionDY, viewData.cameraPosition.xyz);
 #endif
         
         const float3 triNormal0 = DecodeNormal(material0.normal);
@@ -328,7 +328,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     GradientInterpolationResults results = Interpolate2DWithDerivatives(derivatives, triTexCoords);
     
     float linearZ = LinearizeDepth01(z / interpW, viewData);
-    float mip = log2(linearZ);
+    float mip = pow(pow(linearZ, 0.9f) * 5.0f, 1.5f);
     
     float2 texCoordsDX = results.dx * mip;
     float2 texCoordsDY = results.dy * mip;
@@ -360,9 +360,11 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     resultNormal.z = sqrt(1.f - saturate(resultNormal.x * resultNormal.x + resultNormal.y * resultNormal.y));
     resultNormal = normalize(mul(TBN, normalize(resultNormal)));
     
-    const float4 albedo = evaluatedMaterial.albedo;
-    const float4 materialEmissive = float4(evaluatedMaterial.roughness, evaluatedMaterial.metallic, evaluatedMaterial.emissive.x, evaluatedMaterial.emissive.y);
-    const float4 normalEmissive = float4(normal, evaluatedMaterial.emissive.z);
+    float4 albedo = evaluatedMaterial.albedo;
+    albedo.xyz = SRGBToLinear(albedo.xyz);
+    
+    const float4 materialEmissive = float4(evaluatedMaterial.metallic, evaluatedMaterial.roughness, evaluatedMaterial.emissive.x, evaluatedMaterial.emissive.y);
+    const float4 normalEmissive = float4(resultNormal, evaluatedMaterial.emissive.z);
     
     constants.albedo.Store2D(pixelPosition, albedo);
     constants.materialEmissive.Store2D(pixelPosition, materialEmissive);

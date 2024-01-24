@@ -42,13 +42,14 @@
 #include <Volt/Utility/FileSystem.h>
 #include <Volt/Utility/UIUtility.h>
 #include <Volt/Utility/YAMLSerializationHelpers.h>
-#include <Volt/Utility/SerializationMacros.h>
 #include <Volt/Utility/PremadeCommands.h>
 
 #include <Volt/Scripting/Mono/MonoScriptUtils.h>
 
 #include <Volt/Input/Input.h>
 #include <Volt/Input/KeyCodes.h>
+
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -1620,19 +1621,18 @@ void AssetBrowserPanel::CreateNewShaderModal()
 			{
 				using namespace Volt; // YAML Serialization helpers
 
-				YAML::Emitter out;
-				out << YAML::BeginMap;
-				VT_SERIALIZE_PROPERTY(name, myNewShaderData.name, out);
-				VT_SERIALIZE_PROPERTY(internal, false, out);
+				YAMLStreamWriter streamWriter{ definitionDestinationPath };
+				streamWriter.BeginMap();
 
-				out << YAML::Key << "paths" << YAML::Value << shaderPaths;
-				out << YAML::Key << "inputTextures" << YAML::BeginSeq;
-				out << YAML::EndSeq;
-				out << YAML::EndMap;
+				streamWriter.SetKey("name", myNewShaderData.name);
+				streamWriter.SetKey("internal", false);
+				streamWriter.SetKey("paths", shaderPaths);
 
-				std::ofstream fout(definitionDestinationPath);
-				fout << out.c_str();
-				fout.close();
+				streamWriter.BeginSequence("inputTextures");
+				streamWriter.EndSequence();
+				streamWriter.EndMap();
+
+				streamWriter.WriteToDisk();
 
 				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName, tempName, shaderPaths, false);
 				//Volt::ShaderRegistry::Register(tempName, newShader);

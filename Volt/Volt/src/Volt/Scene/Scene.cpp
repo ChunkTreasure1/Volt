@@ -7,6 +7,7 @@
 #include "Volt/Asset/Animation/Animation.h"
 #include "Volt/Asset/Animation/AnimatedCharacter.h"
 #include "Volt/Asset/Video/Video.h"
+#include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -1365,9 +1366,23 @@ namespace Volt
 				continue;
 			}
 
+			const auto& materialTable = mesh->GetMaterialTable();
+
 			for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
 			{
-				auto uuid = m_renderScene->Register(idComp.id, mesh, static_cast<uint32_t>(i));
+				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
+
+				Ref<Material> mat = materialTable.GetMaterial(materialIndex);																							 
+				if (meshComp.materials.at(materialIndex) != mat->handle)
+				{
+					Ref<Material> tempMat = AssetManager::GetAsset<Material>(meshComp.materials.at(materialIndex));
+					if (tempMat && tempMat->IsValid())
+					{
+						mat = tempMat;
+					}
+				}
+
+				auto uuid = m_renderScene->Register(idComp.id, mesh, mat, static_cast<uint32_t>(i));
 				meshComp.renderObjectIds.emplace_back(uuid);
 			}
 		}

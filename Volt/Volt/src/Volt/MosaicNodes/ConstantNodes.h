@@ -15,7 +15,7 @@ namespace Volt
 		ConstantNode(Mosaic::MosaicGraph* ownerGraph)
 			: Mosaic::MosaicNode(ownerGraph)
 		{
-			AddOutputParameter("Value", BASE_TYPE, VECTOR_SIZE, DEFAULT_VALUE);
+			AddOutputParameter("Value", BASE_TYPE, VECTOR_SIZE, DEFAULT_VALUE, true);
 		}
 
 		inline const std::string GetName() const override { return Mosaic::Helpers::GetTypeNameFromTypeInfo(TYPE_INFO) + " Constant"; }

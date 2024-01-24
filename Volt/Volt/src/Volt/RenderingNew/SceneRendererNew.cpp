@@ -876,8 +876,15 @@ namespace Volt
 				context.ClearImage(normalEmissiveImage, { 0.f, 0.f, 0.f, 0.f });
 			}
 
-			auto material = renderScene->GetMaterialFromID(materialId); //ShaderMap::GetComputePipeline("GenerateGBuffer");
-			context.BindPipeline(material->GetComputePipeline());
+			auto material = renderScene->GetMaterialFromID(materialId);
+			auto pipeline = material->GetComputePipeline();
+
+			if (!pipeline)
+			{
+				pipeline = ShaderMap::GetComputePipeline("GenerateGBuffer");
+			}
+
+			context.BindPipeline(pipeline);
 
 			context.SetConstant(resources.GetImage2D(visBufferData.visibility));
 			context.SetConstant(resources.GetBuffer(matCountData.materialCountBuffer));

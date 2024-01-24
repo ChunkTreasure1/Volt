@@ -10,7 +10,7 @@
 
 struct Constants
 {
-    TextureT<uint> visibilityBuffer;
+    TTexture<uint> visibilityBuffer;
     TypedBuffer<uint> materialCountBuffer;
     TypedBuffer<uint> materialStartBuffer;
     TypedBuffer<uint2> pixelCollection;
@@ -221,8 +221,9 @@ EvaluatedMaterial EvaluateMaterial(in GPUMaterial material, in MaterialEvaluatio
     
     if (material.textureCount > 0)
     {
-        SamplerState albedoSampler = GetSampler(material.samplers[0]);
-        TextureT<float4> albedoTexture = material.textures[0];
+        TextureSampler texSampler = material.samplers[0];
+        SamplerState albedoSampler = texSampler.Get();
+        TTexture<float4> albedoTexture = material.textures[0];
         
         result.albedo = albedoTexture.SampleGrad2D(albedoSampler, evalData.texCoords, evalData.texCoordsDX, evalData.texCoordsDY);
     }

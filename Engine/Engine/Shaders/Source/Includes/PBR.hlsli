@@ -66,7 +66,7 @@ LightOutput CalculateDirectionalLight(in DirectionalLight light, in float3 dirTo
     
     LightOutput output;
     output.diffuse = diffuseBRDF * Lradiance * cosLi;
-    output.specular = diffuseBRDF * Lradiance * cosLi;
+    output.specular = specularBRDF * Lradiance * cosLi;
 
     return output;
 }
@@ -84,6 +84,8 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
     lightOutput.diffuse = 0.f;
     lightOutput.specular = 0.f;
     
+    float3 ambient = 0.03f * input.albedo.xyz;
+    
     // Directional Light
     {
         LightOutput result = CalculateDirectionalLight(constants.DirectionalLight.Load(0), dirToCamera, baseReflectivity);
@@ -91,6 +93,6 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
         lightOutput.specular += result.specular;
     }
     
-    const float3 compositeLighting = lightOutput.diffuse + lightOutput.specular + m_pbrInput.emissive;
+    const float3 compositeLighting = lightOutput.diffuse + lightOutput.specular + m_pbrInput.emissive + ambient;
     return compositeLighting;
 }

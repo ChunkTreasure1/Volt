@@ -28,12 +28,14 @@ namespace Mosaic
 
 		void ForfeitTextureIndex(uint32_t textureIndex);
 
+		inline const uint32_t GetTextureCount() { return m_textureCount; }
+
 		inline std::string& GetEditorState() { return m_editorState; }
 		inline const std::string& GetEditorState() const { return m_editorState; }
 
 		inline Graph<Ref<MosaicNode>, Ref<MosaicEdge>>& GetUnderlyingGraph() { return m_graph; }
 		inline const Graph<Ref<MosaicNode>, Ref<MosaicEdge>>& GetUnderlyingGraph() const { return m_graph; }
-		
+
 		const std::string Compile() const;
 
 		static Scope<MosaicGraph> CreateDefaultGraph();
@@ -45,6 +47,8 @@ namespace Mosaic
 		std::string m_editorState;
 
 		std::vector<uint32_t> m_availiableTextureIndices;
+
+		uint32_t m_textureCount = 0;
 		uint32_t m_currentTextureIndex = 0;
 	};
 }

@@ -118,7 +118,7 @@ namespace Volt
 		static Ref<T> CreateAsset(const std::filesystem::path& targetDir, const std::string& name, Args&&... args);
 
 		template<typename T, typename... Args>
-		static Ref<T> CreateMemoryAsset(Args&&... args);
+		static Ref<T> CreateMemoryAsset(const std::string& name, Args&&... args);
 
 		template<typename ImporterType, typename Type>
 		static const ImporterType& GetImporterForType();
@@ -319,10 +319,11 @@ namespace Volt
 	}
 
 	template<typename T, typename ...Args>
-	inline Ref<T> AssetManager::CreateMemoryAsset(Args&& ...args)
+	inline Ref<T> AssetManager::CreateMemoryAsset(const std::string& name, Args&& ...args)
 	{
 		Ref<T> asset = CreateRef<T>(std::forward<Args>(args)...);
-		
+		asset->assetName = name;
+
 		AssetMetadata metadata{};
 		metadata.filePath = "";
 		metadata.handle = asset->handle;

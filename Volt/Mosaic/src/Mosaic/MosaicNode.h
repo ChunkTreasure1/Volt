@@ -44,9 +44,10 @@ namespace Mosaic
 		virtual const glm::vec4 GetColor() const = 0;
 		virtual const VoltGUID GetGUID() const = 0;
 		virtual void Reset() {}
+		virtual void RenderCustomWidget() {}
 
-		virtual void SeraializeCustom(YAMLStreamWriter& streamWriter) const {}
-		virtual void DeserializeCustom() {}
+		virtual void SerializeCustom(YAMLStreamWriter& streamWriter) const {}
+		virtual void DeserializeCustom(YAMLStreamReader& streamReader) {}
 
 		virtual const ResultInfo GetShaderCode(const GraphNode<Ref<class MosaicNode>, Ref<MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const = 0;
 
@@ -65,14 +66,14 @@ namespace Mosaic
 		inline std::string& GetEditorState() { return m_editorState; }
 
 	protected:
-		void AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize);
-		void AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize);
+		void AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, bool showAttribute);
+		void AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, bool showAttribute);
 
 		template<typename T>
-		void AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue);
+		void AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue, bool showAttribute);
 
 		template<typename T>
-		void AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue);
+		void AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue, bool showAttribute);
 
 		MosaicGraph* m_graph = nullptr;
 
@@ -84,7 +85,7 @@ namespace Mosaic
 	};
 
 	template<typename T>
-	inline void MosaicNode::AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue)
+	inline void MosaicNode::AddInputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue, bool showAttribute)
 	{
 		auto& param = m_inputParameters.emplace_back();
 		param.name = name;
@@ -92,11 +93,22 @@ namespace Mosaic
 		param.typeInfo.vectorSize = vectorSize;
 		param.direction = ParameterDirection::Input;
 		param.index = static_cast<uint32_t>(m_inputParameters.size() - 1);
+		param.showAttribute = showAttribute;
 		param.Get<T>() = defaultValue;
+
+		param.serializationFunc = [](YAMLStreamWriter& streamWriter, const Parameter& parameter)
+		{
+			streamWriter.SetKey("data", parameter.Get<T>());
+		};
+
+		param.deserializationFunc = [](YAMLStreamReader& streamReader, Parameter& parameter)
+		{
+			parameter.Get<T>() = streamReader.ReadAtKey("data", T{});
+		};
 	}
 
 	template<typename T>
-	inline void MosaicNode::AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue)
+	inline void MosaicNode::AddOutputParameter(const std::string& name, ValueBaseType baseType, uint32_t vectorSize, const T& defaultValue, bool showAttribute)
 	{
 		auto& param = m_outputParameters.emplace_back();
 		param.name = name;
@@ -104,6 +116,17 @@ namespace Mosaic
 		param.typeInfo.vectorSize = vectorSize;
 		param.direction = ParameterDirection::Output;
 		param.index = static_cast<uint32_t>(m_outputParameters.size() - 1);
+		param.showAttribute = showAttribute;
 		param.Get<T>() = defaultValue;
+
+		param.serializationFunc = [](YAMLStreamWriter& streamWriter, const Parameter& parameter)
+		{
+			streamWriter.SetKey("data", parameter.Get<T>());
+		};
+
+		param.deserializationFunc = [](YAMLStreamReader& streamReader, Parameter& parameter)
+		{
+			parameter.Get<T>() = streamReader.ReadAtKey("data", T{});
+		};
 	}
 }

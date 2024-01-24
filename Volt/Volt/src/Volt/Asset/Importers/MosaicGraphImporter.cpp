@@ -53,8 +53,39 @@ namespace Volt
 			const VoltGUID guid = streamReader.ReadAtKey("guid", VoltGUID::Null());
 			const std::string state = streamReader.ReadAtKey("state", std::string());
 
-			mosaicAsset->m_graph->AddNode(nodeId, guid);
-			underlyingGraph.GetNodeFromID(nodeId).nodeData->GetEditorState() = state;
+			mosaicAsset->m_graph->AddNode(nodeId, guid); 
+			auto& node = underlyingGraph.GetNodeFromID(nodeId);
+
+			node.nodeData->GetEditorState() = state;
+
+			if (streamReader.HasKey("custom"))
+			{
+				streamReader.EnterScope("custom");
+				node.nodeData->DeserializeCustom(streamReader);
+				streamReader.ExitScope();
+			}
+
+			streamReader.ForEach("inputParams", [&]()
+			{
+				const uint32_t index = streamReader.ReadAtKey("index", 0u);
+				auto& param = node.nodeData->GetInputParameter(index);
+
+				if (param.deserializationFunc)
+				{
+					param.deserializationFunc(streamReader, param);
+				}
+			});
+
+			streamReader.ForEach("outputParams", [&]()
+			{
+				const uint32_t index = streamReader.ReadAtKey("index", 0u);
+				auto& param = node.nodeData->GetOutputParameter(index);
+
+				if (param.deserializationFunc)
+				{
+					param.deserializationFunc(streamReader, param);
+				}
+			});
 		});
 
 		streamReader.ForEach("Edges", [&]() 
@@ -94,6 +125,40 @@ namespace Volt
 			streamWriter.SetKey("id", node.id);
 			streamWriter.SetKey("guid", node.nodeData->GetGUID());
 			streamWriter.SetKey("state", node.nodeData->GetEditorState());
+			
+			streamWriter.BeginMapNamned("custom");
+			node.nodeData->SerializeCustom(streamWriter);
+			streamWriter.EndMap();
+
+			streamWriter.BeginSequence("inputParams");
+			for (const auto& input : node.nodeData->GetInputParameters())
+			{
+				streamWriter.BeginMap();
+				streamWriter.SetKey("index", input.index);
+
+				if (input.serializationFunc)
+				{
+					input.serializationFunc(streamWriter, input);
+				}
+
+				streamWriter.EndMap();
+			}
+			streamWriter.EndSequence();
+
+			streamWriter.BeginSequence("outputParams");
+			for (const auto& output : node.nodeData->GetOutputParameters())
+			{
+				streamWriter.BeginMap();
+				streamWriter.SetKey("index", output.index);
+
+				if (output.serializationFunc)
+				{
+					output.serializationFunc(streamWriter, output);
+				}
+
+				streamWriter.EndMap();
+			}
+			streamWriter.EndSequence();
 
 			streamWriter.EndMap();
 		}

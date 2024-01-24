@@ -733,6 +733,9 @@ void ViewportPanel::CheckDragDrop()
 
 			newEntity.GetComponent<Volt::TagComponent>().tag = Volt::AssetManager::GetFilePathFromAssetHandle(handle).stem().string();
 			m_createdEntity = newEntity;
+
+			Volt::MeshComponent::OnMemberChanged(meshComp, newEntity);
+
 			m_editorScene->InvalidateRenderScene();
 
 			break;

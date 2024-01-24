@@ -22,6 +22,8 @@ namespace Volt
 	static constexpr uint32_t BYTEADDRESSBUFFER_BINDING = 7;
 	static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
 
+	static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
+
 	void GlobalResourceManager::Initialize()
 	{
 		RHI::DescriptorTableCreateInfo info{};
@@ -59,11 +61,18 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-
-				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
+				if (resource->GetViewType() == RHI::ImageViewType::View2D)
 				{
-					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+
+					if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
+					{
+						s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+					}
+				}
+				else if (resource->GetViewType() == RHI::ImageViewType::View2DArray)
+				{
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
 				}
 			}
 

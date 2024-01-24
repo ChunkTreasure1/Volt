@@ -15,6 +15,8 @@ namespace Volt
 		EntityID entity;
 	
 		Weak<Mesh> mesh;
+		Weak<Material> material;
+
 		uint32_t subMeshIndex = 0;
 		uint32_t vertexBufferIndex = 0;
 	};

@@ -1,8 +1,11 @@
 #pragma once
 
-#include <string>
-
 #include <CoreUtilities/UUID.h>
+#include <CoreUtilities/FileIO/YAMLStreamWriter.h>
+#include <CoreUtilities/FileIO/YAMLStreamReader.h>
+
+#include <string>
+#include <functional>
 
 namespace Mosaic
 {
@@ -39,6 +42,8 @@ namespace Mosaic
 		UUID64 id{};
 		uint32_t index = 0;
 
+		bool showAttribute;
+
 		template<typename T>
 		inline T& Get()
 		{
@@ -50,6 +55,9 @@ namespace Mosaic
 		{
 			return *reinterpret_cast<const T*>(dataArray);
 		}
+
+		std::function<void(YAMLStreamWriter& streamWriter, const Parameter& parameter)> serializationFunc;
+		std::function<void(YAMLStreamReader& streamReader, Parameter& parameter)> deserializationFunc;
 	};
 
 	struct ResultInfo

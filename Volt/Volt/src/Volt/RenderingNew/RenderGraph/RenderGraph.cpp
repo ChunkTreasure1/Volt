@@ -739,6 +739,22 @@ namespace Volt
 		return handle;
 	}
 
+	ResourceHandle RenderGraph::GetImage2DArray(const RenderGraphResourceHandle resourceHandle, const uint32_t mip)
+	{
+		const auto& resourceNode = m_resourceNodes.at(resourceHandle);
+		const auto& imageDesc = resourceNode->As<RenderGraphResourceNode<RenderGraphImage2D>>().resourceInfo;
+
+		auto image = m_transientResourceSystem.AquireImage2D(resourceHandle, imageDesc.description);
+		auto handle = GlobalResourceManager::RegisterResource<RHI::ImageView>(image->GetArrayView(mip));
+
+		if (imageDesc.trackGlobalResource)
+		{
+			m_usedGlobalImage2DResourceHandles.insert(handle);
+		}
+
+		return handle;
+	}
+
 	ResourceHandle RenderGraph::GetBuffer(const RenderGraphResourceHandle resourceHandle)
 	{
 		const auto& resourceNode = m_resourceNodes.at(resourceHandle);

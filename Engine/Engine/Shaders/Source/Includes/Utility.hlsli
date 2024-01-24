@@ -203,3 +203,22 @@ float3 ReconstructWorldPosition(in ViewData viewData, float2 texCoords, float pi
     const float4 worldSpacePos = mul(viewData.inverseView, viewSpacePos);
     return worldSpacePos.xyz;
 }
+
+//Frostbite accurate SRGB to linear conversion
+float3 SRGBToLinear(in float3 color)
+{
+    float3 linearRGBLo = color / 12.92f;
+    float3 linearRGBHi = pow((color + 0.055f) / 1.055f, 2.4f);
+    float3 linearRGB = select((color <= 0.04045f), linearRGBLo, linearRGBHi);
+
+    return linearRGB;
+}
+
+float3 LinearToSRGB(in float3 color)
+{
+    float3 sRGBLo = color * 12.92f;
+    float3 sRGBHi = pow(abs(color), 1.f / 2.4f) * 1.055f - 0.055f;
+    float3 sRGB = select((color <= 0.0031308f), sRGBLo, sRGBHi);
+
+    return sRGB;
+}
