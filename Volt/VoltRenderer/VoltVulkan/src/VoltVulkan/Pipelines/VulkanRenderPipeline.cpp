@@ -67,6 +67,11 @@ namespace Volt::RHI
 	{
 		Release();
 
+		if (m_createInfo.enablePrimitiveRestart)
+		{
+			VT_ENSURE(m_createInfo.topology != Topology::TriangleList && m_createInfo.topology != Topology::LineList && m_createInfo.topology != Topology::PatchList && m_createInfo.topology != Topology::PointList);
+		}
+
 		auto device = GraphicsContext::GetDevice();
 		const auto& shaderResources = m_createInfo.shader->GetResources();
 		Ref<VulkanShader> vulkanShader = m_createInfo.shader->As<VulkanShader>();
@@ -115,7 +120,7 @@ namespace Volt::RHI
 			VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 			inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 			inputAssemblyInfo.topology = Utility::VoltToVulkanTopology(m_createInfo.topology);
-			inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+			inputAssemblyInfo.primitiveRestartEnable = m_createInfo.enablePrimitiveRestart ? VK_TRUE : VK_FALSE;
 
 			VkPipelineViewportStateCreateInfo viewportInfo{};
 			viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
