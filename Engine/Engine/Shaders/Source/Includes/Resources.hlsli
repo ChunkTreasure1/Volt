@@ -629,6 +629,8 @@ SamplerState GetSampler(uint samplerIndex)
     return u_SamplerState[NonUniformResourceIndex(samplerIndex)];
 }
 
+#ifndef NO_RENDERGRAPH
+
 struct PushContantData
 {
     uint constantsBufferIndex;
@@ -642,3 +644,5 @@ T GetConstants()
 {
     return u_ByteAddressBuffer[u_pushConstantData.constantsBufferIndex].Load<T>(u_pushConstantData.constantsOffset);
 }
+
+#endif

@@ -730,10 +730,10 @@ namespace Volt::RHI
 		outBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		outBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		outBarrier.subresourceRange.aspectMask = static_cast<VkImageAspectFlags>(vkImage.GetImageAspect());
-		outBarrier.subresourceRange.baseArrayLayer = 0;
-		outBarrier.subresourceRange.baseMipLevel = 0;
-		outBarrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-		outBarrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		outBarrier.subresourceRange.baseArrayLayer = barrierInfo.imageBarrier().subResource.baseArrayLayer;
+		outBarrier.subresourceRange.baseMipLevel = barrierInfo.imageBarrier().subResource.baseMipLevel;
+		outBarrier.subresourceRange.layerCount = barrierInfo.imageBarrier().subResource.layerCount == std::numeric_limits<uint32_t>::max() ? VK_REMAINING_ARRAY_LAYERS : barrierInfo.imageBarrier().subResource.layerCount;
+		outBarrier.subresourceRange.levelCount = barrierInfo.imageBarrier().subResource.levelCount == std::numeric_limits<uint32_t>::max() ? VK_REMAINING_MIP_LEVELS : barrierInfo.imageBarrier().subResource.levelCount;
 		outBarrier.image = vkImage.GetHandle<VkImage>();
 
 		vkImage.SetCurrentLayout(static_cast<VulkanImage2D::ImageLayout>(outBarrier.newLayout));

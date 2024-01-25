@@ -2,20 +2,25 @@
 #include "RendererNew.h"
 
 #include "Volt/Core/Application.h"
+#include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Utility/FunctionQueue.h"
 
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/RenderingNew/Shader/ShaderMap.h"
+#include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Math/Math.h"
-
-#include "Volt/Rendering/Texture/Texture2D.h"
 
 #include <VoltRHI/Shader/ShaderCompiler.h>
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Graphics/Swapchain.h>
+#include <VoltRHI/Images/Image2D.h>
+#include <VoltRHI/Buffers/CommandBuffer.h>
+#include <VoltRHI/Images/ImageUtility.h>
 
 namespace Volt
 {
@@ -94,7 +99,7 @@ namespace Volt
 	{
 		RenderGraphExecutionThread::Shutdown();
 		GlobalResourceManager::Shutdown();
-		
+
 		s_rendererData->Shutdown();
 		s_rendererData = nullptr;
 	}
@@ -131,6 +136,243 @@ namespace Volt
 	const DefaultResources& RendererNew::GetDefaultResources()
 	{
 		return s_rendererData->defaultResources;
+	}
+
+	SceneEnvironment RendererNew::GenerateEnvironmentTextures(AssetHandle baseTextureHandle)
+	{
+		Ref<Texture2D> environmentTexture = AssetManager::GetAsset<Texture2D>(baseTextureHandle);
+		if (!environmentTexture || !environmentTexture->IsValid())
+		{
+			return {};
+		}
+
+		constexpr uint32_t CUBE_MAP_SIZE = 1024;
+		constexpr uint32_t IRRADIANCE_MAP_SIZE = 32;
+		constexpr uint32_t CONVERSION_THREAD_GROUP_SIZE = 32;
+
+		Ref<RHI::Image2D> environmentUnfiltered;
+		Ref<RHI::Image2D> environmentFiltered;
+		Ref<RHI::Image2D> irradianceMap;
+
+		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		commandBuffer->Begin();
+
+		// Unfiltered - Conversion
+		{
+			RHI::ImageSpecification imageSpec{};
+			imageSpec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
+			imageSpec.width = CUBE_MAP_SIZE;
+			imageSpec.height = CUBE_MAP_SIZE;
+			imageSpec.usage = RHI::ImageUsage::Storage;
+			imageSpec.layers = 6;
+			imageSpec.isCubeMap = true;
+
+			environmentUnfiltered = RHI::Image2D::Create(imageSpec);
+
+			{
+				RHI::ResourceBarrierInfo barrierInfo{};
+				barrierInfo.type = RHI::BarrierType::Image;
+				barrierInfo.imageBarrier().srcStage = RHI::BarrierStage::None;
+				barrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::None;
+				barrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+				barrierInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+				barrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+				barrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
+				barrierInfo.imageBarrier().resource = environmentUnfiltered;
+				commandBuffer->ResourceBarrier({ barrierInfo });
+			}
+
+			struct Constants
+			{
+				ResourceHandle output;
+				ResourceHandle equirectangularMap;
+				ResourceHandle linearSampler;
+
+				glm::uvec2 textureSize;
+			} constants;
+
+			constants.output = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentUnfiltered->GetArrayView());
+			constants.equirectangularMap = environmentTexture->GetResourceHandle();
+			constants.linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
+			constants.textureSize = { imageSpec.width, imageSpec.height };
+
+			auto conversionPipeline = ShaderMap::GetComputePipeline("EquirectangularToCubemap");
+			commandBuffer->BindPipeline(conversionPipeline);
+			commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
+
+			const uint32_t groupCount = Math::DivideRoundUp(CUBE_MAP_SIZE, CONVERSION_THREAD_GROUP_SIZE);
+			commandBuffer->Dispatch(groupCount, groupCount, 6);
+
+			{
+				RHI::ResourceBarrierInfo imageBarrierInfo{};
+				imageBarrierInfo.type = RHI::BarrierType::Image;
+				imageBarrierInfo.imageBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+				imageBarrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
+				imageBarrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::ShaderWrite;
+				imageBarrierInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+				imageBarrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+				imageBarrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+				imageBarrierInfo.imageBarrier().resource = environmentUnfiltered;
+
+				RHI::ResourceBarrierInfo barrierInfo{};
+				barrierInfo.type = RHI::BarrierType::Global;
+				barrierInfo.globalBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
+				barrierInfo.globalBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+				barrierInfo.globalBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+				barrierInfo.globalBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+				commandBuffer->ResourceBarrier({ barrierInfo, imageBarrierInfo });
+			}
+		}
+
+		// Filtered
+		{
+			RHI::ImageSpecification imageSpec{};
+			imageSpec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
+			imageSpec.width = CUBE_MAP_SIZE;
+			imageSpec.height = CUBE_MAP_SIZE;
+			imageSpec.usage = RHI::ImageUsage::Storage;
+			imageSpec.layers = 6;
+			imageSpec.isCubeMap = true;
+			imageSpec.mips = RHI::Utility::CalculateMipCount(CUBE_MAP_SIZE, CUBE_MAP_SIZE);
+
+			environmentFiltered = RHI::Image2D::Create(imageSpec);
+
+			for (uint32_t i = 0; i < imageSpec.mips; i++)
+			{
+				environmentFiltered->GetArrayView(i);
+			}
+
+			{
+				RHI::ResourceBarrierInfo barrierInfo{};
+				barrierInfo.type = RHI::BarrierType::Image;
+				barrierInfo.imageBarrier().srcStage = RHI::BarrierStage::None;
+				barrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::None;
+				barrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+				barrierInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+				barrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+				barrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
+				barrierInfo.imageBarrier().resource = environmentFiltered;
+				commandBuffer->ResourceBarrier({ barrierInfo });
+			}
+
+			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentMipFilter");
+
+			struct Constants
+			{
+				ResourceHandle output;
+				ResourceHandle input;
+				ResourceHandle linearSampler;
+
+				float roughness;
+				glm::uvec2 outputSize;
+				glm::uvec2 inputSize;
+			} constants;
+
+			constants.linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
+			constants.input = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentUnfiltered->GetView());
+
+			const float deltaRoughness = 1.f / glm::max(static_cast<float>(imageSpec.mips) - 1.f, 1.f);
+			for (uint32_t i = 0, size = CUBE_MAP_SIZE; i < imageSpec.mips; i++, size /= 2)
+			{
+				const uint32_t numGroups = glm::max(1u, Math::DivideRoundUp(size, 32u));
+
+				float roughness = i * deltaRoughness;
+				roughness = glm::max(roughness, 0.05f);
+
+				constants.output = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentFiltered->GetArrayView(i));
+				constants.outputSize = { size, size };
+				constants.inputSize = { CUBE_MAP_SIZE, CUBE_MAP_SIZE };
+
+				commandBuffer->BindPipeline(pipeline);
+				commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
+				commandBuffer->Dispatch(numGroups, numGroups, 6);
+
+				RHI::ResourceBarrierInfo imageBarrierInfo{};
+				imageBarrierInfo.type = RHI::BarrierType::Image;
+				imageBarrierInfo.imageBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+				imageBarrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
+				imageBarrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::ShaderWrite;
+				imageBarrierInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+				imageBarrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+				imageBarrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+				imageBarrierInfo.imageBarrier().subResource.levelCount = 1;
+				imageBarrierInfo.imageBarrier().subResource.baseMipLevel = i;
+				imageBarrierInfo.imageBarrier().resource = environmentFiltered;
+
+				commandBuffer->ResourceBarrier({ imageBarrierInfo });
+			}
+		}
+
+		// Irradiance
+		{
+			RHI::ImageSpecification imageSpec{};
+			imageSpec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
+			imageSpec.width = IRRADIANCE_MAP_SIZE;
+			imageSpec.height = IRRADIANCE_MAP_SIZE;
+			imageSpec.usage = RHI::ImageUsage::Storage;
+			imageSpec.layers = 6;
+			imageSpec.isCubeMap = true;
+			imageSpec.mips = RHI::Utility::CalculateMipCount(IRRADIANCE_MAP_SIZE, IRRADIANCE_MAP_SIZE);
+
+			irradianceMap = RHI::Image2D::Create(imageSpec);
+		
+			{
+				RHI::ResourceBarrierInfo barrierInfo{};
+				barrierInfo.type = RHI::BarrierType::Image;
+				barrierInfo.imageBarrier().srcStage = RHI::BarrierStage::None;
+				barrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::None;
+				barrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::Undefined;
+				barrierInfo.imageBarrier().dstStage = RHI::BarrierStage::ComputeShader;
+				barrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderWrite;
+				barrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderWrite;
+				barrierInfo.imageBarrier().resource = irradianceMap;
+				commandBuffer->ResourceBarrier({ barrierInfo });
+			}
+
+			struct Constants
+			{
+				ResourceHandle input;
+				ResourceHandle output;
+				ResourceHandle linearSampler;
+
+				glm::uvec2 textureSize;
+			} constants;
+
+			constants.input = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentFiltered->GetView());
+			constants.output = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(irradianceMap->GetArrayView());
+			constants.linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
+			constants.textureSize = { IRRADIANCE_MAP_SIZE, IRRADIANCE_MAP_SIZE };
+
+			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentIrradiance");
+			commandBuffer->BindPipeline(pipeline);
+			commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
+
+			const uint32_t groupCount = Math::DivideRoundUp(IRRADIANCE_MAP_SIZE, CONVERSION_THREAD_GROUP_SIZE);
+			commandBuffer->Dispatch(groupCount, groupCount, 6);
+
+			{
+				RHI::ResourceBarrierInfo imageBarrierInfo{};
+				imageBarrierInfo.type = RHI::BarrierType::Image;
+				imageBarrierInfo.imageBarrier().srcStage = RHI::BarrierStage::ComputeShader;
+				imageBarrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
+				imageBarrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::ShaderWrite;
+				imageBarrierInfo.imageBarrier().dstStage = RHI::BarrierStage::All;
+				imageBarrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
+				imageBarrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
+				imageBarrierInfo.imageBarrier().resource = irradianceMap;
+
+				commandBuffer->ResourceBarrier({ imageBarrierInfo });
+			}
+		}
+
+		commandBuffer->End();
+		commandBuffer->ExecuteAndWait();
+
+		SceneEnvironment result{};
+		result.irradianceMap = irradianceMap;
+		result.radianceMap = environmentFiltered;
+
+		return result;
 	}
 
 	void RendererNew::Update()

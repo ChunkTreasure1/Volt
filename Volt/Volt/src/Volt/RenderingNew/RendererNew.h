@@ -3,6 +3,8 @@
 #include "Volt/RenderingNew/RendererStructs.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 
+#include "Volt/Scene/Scene.h"
+
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Core/RHICommon.h>
 
@@ -34,6 +36,7 @@ namespace Volt
 		static void DestroyResource(std::function<void()>&& function);
 
 		static const DefaultResources& GetDefaultResources();
+		static SceneEnvironment GenerateEnvironmentTextures(AssetHandle baseTextureHandle);
 
 		static void Update();
 

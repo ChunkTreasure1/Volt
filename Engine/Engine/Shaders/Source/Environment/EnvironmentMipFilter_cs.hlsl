@@ -1,3 +1,4 @@
+#define NO_RENDERGRAPH
 #include "Resources.hlsli"
 
 static const float m_pi = 3.1415926535897932384626433832795f;
@@ -11,14 +12,16 @@ static const uint m_numMips = 1;
 
 struct Constants
 {
-    RWTexture<float4> output;
-    TTexture<float4> input;
+    RWTexture<float3> output;
+    TTexture<float3> input;
     TextureSampler linearSampler;
     
     float roughness;
     uint2 outputSize;
     uint2 inputSize;
 };
+
+PUSH_CONSTANT(Constants, u_constants);
 
 float RadicalInverse_VdC(uint bits)
 {
@@ -111,7 +114,7 @@ float3 SampleHemisphere(float u1, float u2)
 [numthreads(32, 32, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-    const Constants constants = GetConstants<Constants>();
+    const Constants constants = u_constants;
     
     if (dispatchId.x >= constants.outputSize.x || dispatchId.y >= constants.outputSize.y)
     {
@@ -148,5 +151,5 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
     }
 
     color /= weight;
-    constants.output.Store2DArray(dispatchId, float4(color, 1.f));
+    constants.output.Store2DArray(dispatchId, color);
 }

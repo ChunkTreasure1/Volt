@@ -19,6 +19,11 @@
 
 namespace Volt
 {
+	namespace RHI
+	{
+		class Image2D;
+	}
+
 	class ParticleSystem;
 	class Vision;
 	class AudioSystem;
@@ -28,15 +33,14 @@ namespace Volt
 	class Skeleton;
 	class AnimatedCharacter;
 	class Event;
-	class Image2D;
 
 	class Entity;
 	class RenderScene;
 
 	struct SceneEnvironment
 	{
-		Ref<Image2D> irradianceMap;
-		Ref<Image2D> radianceMap;
+		Ref<RHI::Image2D> irradianceMap;
+		Ref<RHI::Image2D> radianceMap;
 
 		float lod = 0.f;
 		float intensity = 1.f;

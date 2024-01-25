@@ -1,3 +1,4 @@
+#define NO_RENDERGRAPH
 #include "Resources.hlsli"
 
 static const float m_pi = 3.1415926535897932384626433832795f;
@@ -78,17 +79,19 @@ float3 SampleHemisphere(float u1, float u2)
 
 struct Constants
 {
-    TTexture<float4> input;
-    RWTexture<float4> output;
+    TTexture<float3> input;
+    RWTexture<float3> output;
     TextureSampler linearSampler;
     
     uint2 textureSize;
 };
 
+PUSH_CONSTANT(Constants, u_constants);
+
 [numthreads(32, 32, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-    const Constants constants = GetConstants<Constants>();
+    const Constants constants = u_constants;
     
     float3 N = GetCubeMapTexCoord(dispatchId, constants.textureSize);
 
@@ -108,5 +111,5 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
     }
 
     irradiance /= float(samples);
-    constants.output.Store2DArray(dispatchId, float4(irradiance, 1.f));
+    constants.output.Store2DArray(dispatchId, irradiance);
 }

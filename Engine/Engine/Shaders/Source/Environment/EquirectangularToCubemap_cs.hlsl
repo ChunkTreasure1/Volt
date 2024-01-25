@@ -1,16 +1,19 @@
+#define NO_RENDERGRAPH
 #include "Resources.hlsli"
 
 static const float m_pi = 3.14159265359f;
 
 struct Constants
 {
-    RWTexture<float4> output;
+    RWTexture<float3> output;
     
     TTexture<float4> equirectangularMap;
     TextureSampler linearSampler;
     
     uint2 textureSize;
 };
+
+PUSH_CONSTANT(Constants, u_constants);
 
 float3 GetCubeMapTexCoord(uint3 dispatchId, uint2 textureSize)
 {
@@ -46,7 +49,7 @@ float3 GetCubeMapTexCoord(uint3 dispatchId, uint2 textureSize)
 [numthreads(32, 32, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-    const Constants constants = GetConstants<Constants>();
+    const Constants constants = u_constants;
     
     float3 cubeTexCoord = GetCubeMapTexCoord(dispatchId, constants.textureSize);
 
@@ -57,5 +60,5 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
     float theta = acos(cubeTexCoord.y);
 
     float4 color = constants.equirectangularMap.SampleLevel2D(constants.linearSampler.Get(), float2(phi / (m_pi * 2.f), theta / m_pi), 0);
-    constants.output.Store2DArray(dispatchId, color);
+    constants.output.Store2DArray(dispatchId, color.xyz);
 }
