@@ -166,6 +166,11 @@ namespace Volt
 		m_commandBuffer->DrawIndexedIndirect(commandsBuffer, offset, drawCount, stride);
 	}
 
+	void RenderContext::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
+	{
+		m_commandBuffer->DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	}
+
 	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
@@ -207,6 +212,16 @@ namespace Volt
 	void RenderContext::BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer)
 	{
 		m_commandBuffer->BindIndexBuffer(indexBuffer);
+	}
+
+	void RenderContext::BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer)
+	{
+		m_commandBuffer->BindIndexBuffer(indexBuffer);
+	}
+
+	void RenderContext::BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	{
+		m_commandBuffer->BindVertexBuffers(vertexBuffers, firstBinding);
 	}
 
 	void RenderContext::Flush()

@@ -15,6 +15,8 @@ namespace Volt
 	{
 		class CommandBuffer;
 		class StorageBuffer;
+		class VertexBuffer;
+		class IndexBuffer;
 
 		class RenderPipeline;
 		class ComputePipeline;
@@ -59,11 +61,14 @@ namespace Volt
 		
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 		void DrawIndexedIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
+		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance);
 
 		void BindPipeline(Ref<RHI::RenderPipeline> pipeline);
 		void BindPipeline(Ref<RHI::ComputePipeline> pipeline);
 
 		void BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer);
+		void BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer);
+		void BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
 
 		void Flush();
 		Ref<RHI::StorageBuffer> GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer);
