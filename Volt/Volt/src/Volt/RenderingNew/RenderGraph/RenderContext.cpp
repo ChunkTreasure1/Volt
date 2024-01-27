@@ -171,6 +171,11 @@ namespace Volt
 		m_commandBuffer->DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
+	void RenderContext::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
+	{
+		m_commandBuffer->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
 	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
