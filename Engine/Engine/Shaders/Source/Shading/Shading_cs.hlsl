@@ -61,7 +61,6 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     pbrInput.emissive = emissive;
     pbrInput.worldPosition = worldPosition;
     
-    const float3 ambiance = 0.1f;
     const float3 outputColor = CalculatePBR(pbrInput, constants.pbrConstants);
     
     constants.output.Store2D(threadId.xy, float4(LinearToSRGB(outputColor), 1.f));

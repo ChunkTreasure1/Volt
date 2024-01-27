@@ -103,7 +103,12 @@ std::unordered_map<Volt::AssetType, EditorAssetData> EditorAssetRegistry::myAsse
 		EditorAssetData(
 			ASSET_BROWSER_POPUP_DATA_FUNCTION_IDENTIFIER(aAssetHandle)
 			{
-				auto asset = Volt::AssetManager::GetAsset<Volt::Texture2D>(aAssetHandle);
+				auto asset = Volt::AssetManager::QueueAsset<Volt::Texture2D>(aAssetHandle);
+				if (!asset || !asset->IsValid())
+				{
+					return {};
+				}
+
 				std::vector<std::pair<std::string, std::string>> data =
 				{
 					std::make_pair("Width", std::to_string(asset->GetWidth())),

@@ -83,6 +83,9 @@ namespace Volt
 
 			m_outputImage = RHI::Image2D::Create(spec);
 		}
+
+		m_sceneEnvironment.radianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
+		m_sceneEnvironment.irradianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 	}
 
 	SceneRendererNew::~SceneRendererNew()
@@ -344,6 +347,8 @@ namespace Volt
 	{
 		auto& imageData = blackboard.Add<ExternalImagesData>();
 		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
+		imageData.black1x1Cube = renderGraph.AddExternalImage2D(RendererNew::GetDefaultResources().blackCubeTexture);
+		imageData.BRDFLuT = renderGraph.AddExternalImage2D(RendererNew::GetDefaultResources().BRDFLuT);
 
 		auto& bufferData = blackboard.Add<ExternalBuffersData>();
 		bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResource(), false);
@@ -907,9 +912,25 @@ namespace Volt
 
 	void SceneRendererNew::AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+		const auto& externalImages = blackboard.Get<ExternalImagesData>();
+
+		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
+
+		m_scene->ForEachWithComponents<SkylightComponent>([&](entt::entity id, SkylightComponent& skylightComp)
+		{
+			if (skylightComp.environmentHandle != skylightComp.lastEnvironmentHandle)
+			{
+				skylightComp.currentSceneEnvironment = RendererNew::GenerateEnvironmentTextures(skylightComp.environmentHandle);
+				skylightComp.lastEnvironmentHandle = skylightComp.environmentHandle;
+			}
+
+			m_sceneEnvironment = skylightComp.currentSceneEnvironment;
+		});
+
+		RenderGraphResourceHandle irradianceHandle = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.irradianceMap) : externalImages.black1x1Cube;
+		RenderGraphResourceHandle radianceHandle = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : externalImages.black1x1Cube;
 
 		blackboard.Add<FinalColorData>() = renderGraph.AddPass<FinalColorData>("Shading Pass",
 		[&](RenderGraph::Builder& builder, FinalColorData& data) 
@@ -925,6 +946,9 @@ namespace Volt
 			// PBR Constants
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(uniformBuffers.directionalLightBuffer);
+			builder.ReadResource(externalImages.BRDFLuT);
+			builder.ReadResource(irradianceHandle);
+			builder.ReadResource(radianceHandle);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
@@ -946,6 +970,11 @@ namespace Volt
 			// PBR Constants
 			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant(resources.GetBuffer(uniformBuffers.directionalLightBuffer));
+			context.SetConstant(RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
+			context.SetConstant(RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
+			context.SetConstant(resources.GetImage2D(externalImages.BRDFLuT));
+			context.SetConstant(resources.GetImage2D(irradianceHandle));
+			context.SetConstant(resources.GetImage2D(radianceHandle));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
 		});

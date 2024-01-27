@@ -65,7 +65,7 @@ namespace Volt
 		return s_shaderMap.at(name);
 	}
 
-	Ref<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name)
+	Ref<RHI::ComputePipeline> ShaderMap::GetComputePipeline(const std::string& name, bool useGlobalResouces)
 	{
 		const size_t hash = Utility::GetComputeShaderHash(name);
 
@@ -74,7 +74,7 @@ namespace Volt
 			return s_computePipelineCache.at(hash);
 		}
 
-		Ref<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name));
+		Ref<RHI::ComputePipeline> pipeline = RHI::ComputePipeline::Create(Get(name), useGlobalResouces);
 		s_computePipelineCache[hash] = pipeline;
 
 		return pipeline;

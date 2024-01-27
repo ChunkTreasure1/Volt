@@ -516,6 +516,12 @@ struct TTexture
         texture.GetDimensions(width, height, depth);
     }
     
+    void GetDimensionsCube(in uint mipLevel, out uint width, out uint height, out uint numberOfLevels)
+    {
+        TextureCube<T> texture = DESCRIPTOR_HEAP(TextureCubeHandle<T>, handle);
+        texture.GetDimensions(mipLevel, width, height, numberOfLevels);
+    }
+    
     Texture1D<T> Get1D()
     {
         return DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);

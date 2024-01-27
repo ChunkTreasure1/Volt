@@ -12,6 +12,8 @@
 
 #include "Volt/Scripting/Mono/MonoScriptFieldCache.h"
 
+#include "Volt/RenderingNew/RendererStructs.h"
+
 #include <glm/glm.hpp>
 
 #include <map>
@@ -19,11 +21,6 @@
 
 namespace Volt
 {
-	namespace RHI
-	{
-		class Image2D;
-	}
-
 	class ParticleSystem;
 	class Vision;
 	class AudioSystem;
@@ -36,15 +33,6 @@ namespace Volt
 
 	class Entity;
 	class RenderScene;
-
-	struct SceneEnvironment
-	{
-		Ref<RHI::Image2D> irradianceMap;
-		Ref<RHI::Image2D> radianceMap;
-
-		float lod = 0.f;
-		float intensity = 1.f;
-	};
 
 	struct SceneSettings
 	{

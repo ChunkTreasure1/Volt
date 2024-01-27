@@ -21,6 +21,9 @@ namespace Volt
 	struct DefaultResources
 	{
 		Ref<Texture2D> whiteTexture;
+
+		Ref<RHI::Image2D> BRDFLuT;
+		Ref<RHI::Image2D> blackCubeTexture;
 	};
 
 	class Mesh;
@@ -55,7 +58,8 @@ namespace Volt
 
 	private:
 		static Ref<GlobalResource<RHI::SamplerState>> GetSamplerInternal(const RHI::SamplerStateCreateInfo& samplerInfo);
-		static void CreaDefaultResources();
+		static void CreateDefaultResources();
+		static void GenerateBRDFLuT();
 
 		RendererNew() = delete;
 	};

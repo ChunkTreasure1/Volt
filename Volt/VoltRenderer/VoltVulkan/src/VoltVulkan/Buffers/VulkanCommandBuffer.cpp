@@ -122,6 +122,11 @@ namespace Volt::RHI
 				result |= VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
 			}
 
+			if (EnumValueContainsFlag(barrierSync, BarrierStage::All))
+			{
+				result |= VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			}
+
 			return result;
 		}
 

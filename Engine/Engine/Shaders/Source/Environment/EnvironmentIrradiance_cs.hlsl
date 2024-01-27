@@ -1,5 +1,6 @@
-#define NO_RENDERGRAPH
-#include "Resources.hlsli"
+RWTexture2DArray<float3> o_output : register(u0, space0);
+TextureCube<float3> u_input : register(t1, space0);
+SamplerState u_linearSampler : register(s2, space0);
 
 static const float m_pi = 3.1415926535897932384626433832795f;
 static const float m_twoPi = m_pi * 2.0f;
@@ -26,9 +27,14 @@ float2 SampleHammersley(uint i, uint samples)
     return float2(i * invSamples, RadicalInverse_VdC(i));
 }
 
-float3 GetCubeMapTexCoord(uint3 dispatchId, uint2 textureSize)
+float3 GetCubeMapTexCoord(uint3 dispatchId)
 {
-    float2 ST = dispatchId.xy / float2(textureSize.x, textureSize.y);
+    uint2 texSize;
+    uint elements;
+
+    o_output.GetDimensions(texSize.x, texSize.y, elements);
+
+    float2 ST = dispatchId.xy / float2(texSize.x, texSize.y);
     float2 UV = 2.f * float2(ST.x, 1.f - ST.y) - 1.f;
 
     float3 result = 0.f;
@@ -77,23 +83,10 @@ float3 SampleHemisphere(float u1, float u2)
     return float3(cos(m_twoPi * u2) * u1p, sin(m_twoPi * u2) * u1p, u1);
 }
 
-struct Constants
-{
-    TTexture<float3> input;
-    RWTexture<float3> output;
-    TextureSampler linearSampler;
-    
-    uint2 textureSize;
-};
-
-PUSH_CONSTANT(Constants, u_constants);
-
 [numthreads(32, 32, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-    const Constants constants = u_constants;
-    
-    float3 N = GetCubeMapTexCoord(dispatchId, constants.textureSize);
+    float3 N = GetCubeMapTexCoord(dispatchId);
 
     float3 S, T;
     ComputeBasisVector(N, S, T);
@@ -107,9 +100,9 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
         float3 Li = TangentToWorld(SampleHemisphere(sample.x, sample.y), N, S, T);
         float cosTheta = max(0.f, dot(Li, N));
 
-        irradiance += 2.f * constants.input.SampleLevelCube(constants.linearSampler.Get(), Li, 0).rgb * cosTheta;
+        irradiance += 2.f * u_input.SampleLevel(u_linearSampler, Li, 0).rgb * cosTheta;
     }
 
     irradiance /= float(samples);
-    constants.output.Store2DArray(dispatchId, irradiance);
+    o_output[dispatchId] = irradiance;
 }

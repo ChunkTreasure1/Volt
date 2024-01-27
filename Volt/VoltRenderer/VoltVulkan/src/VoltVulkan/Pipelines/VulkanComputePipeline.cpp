@@ -13,8 +13,8 @@
 
 namespace Volt::RHI
 {
-	VulkanComputePipeline::VulkanComputePipeline(Ref<Shader> shader)
-		: m_shader(shader)
+	VulkanComputePipeline::VulkanComputePipeline(Ref<Shader> shader, bool useGlobalResources)
+		: m_shader(shader), m_useGlobalResouces(useGlobalResources)
 	{
 		Invalidate();
 	}
@@ -48,8 +48,18 @@ namespace Volt::RHI
 			VkPipelineLayoutCreateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			info.pNext = nullptr;
-			info.setLayoutCount = 1;
-			info.pSetLayouts = &descriptorSetLayout;
+
+			if (m_useGlobalResouces)
+			{
+				info.setLayoutCount = 1;
+				info.pSetLayouts = &descriptorSetLayout;
+			}
+			else
+			{
+				info.setLayoutCount = static_cast<uint32_t>(vulkanShader->GetDescriptorSetLayouts().size());
+				info.pSetLayouts = vulkanShader->GetDescriptorSetLayouts().data();
+			}
+
 			info.pushConstantRangeCount = shaderResources.constants.size > 0 ? 1 : 0;
 			info.pPushConstantRanges = &pushConstantRange;
 

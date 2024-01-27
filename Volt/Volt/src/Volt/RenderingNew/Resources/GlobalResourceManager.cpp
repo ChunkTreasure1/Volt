@@ -29,6 +29,7 @@ namespace Volt
 		RHI::DescriptorTableCreateInfo info{};
 		info.shader = RHI::Shader::Create("GlobalResourcesDescriptor", { "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" }, true);
 		info.count = 1;
+		info.isGlobal = true;
 
 		s_globalDescriptorTable = RHI::DescriptorTable::Create(info);
 	}
@@ -56,6 +57,8 @@ namespace Volt
 
 		// Images
 		{
+			// #TODO_Ivar: Seperate out differenct view types into different resource containers
+
 			auto& resources = GetResourceContainer<RHI::ImageView>();
 			std::scoped_lock lock{ resources.accessMutex };
 
@@ -73,6 +76,10 @@ namespace Volt
 				else if (resource->GetViewType() == RHI::ImageViewType::View2DArray)
 				{
 					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+				}
+				else if (resource->GetViewType() == RHI::ImageViewType::ViewCube)
+				{
+					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
 				}
 			}
 

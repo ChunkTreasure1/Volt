@@ -1,23 +1,18 @@
-#define NO_RENDERGRAPH
-#include "Resources.hlsli"
+RWTexture2DArray<float3> o_output : register(u0, space0);
+Texture2D<float4> u_equirectangularMap : register(t1, space0);
+
+SamplerState u_linearSampler : register(s2, space0);
 
 static const float m_pi = 3.14159265359f;
 
-struct Constants
+float3 GetCubeMapTexCoord(uint3 dispatchId)
 {
-    RWTexture<float3> output;
-    
-    TTexture<float4> equirectangularMap;
-    TextureSampler linearSampler;
-    
-    uint2 textureSize;
-};
+    uint2 texSize;
+    uint elements;
 
-PUSH_CONSTANT(Constants, u_constants);
+    o_output.GetDimensions(texSize.x, texSize.y, elements);
 
-float3 GetCubeMapTexCoord(uint3 dispatchId, uint2 textureSize)
-{
-    float2 ST = dispatchId.xy / float2(textureSize.x, textureSize.y);
+    float2 ST = dispatchId.xy / float2(texSize.x, texSize.y);
     float2 UV = 2.f * float2(ST.x, 1.f - ST.y) - 1.f;
 
     float3 result = 0.f;
@@ -49,9 +44,7 @@ float3 GetCubeMapTexCoord(uint3 dispatchId, uint2 textureSize)
 [numthreads(32, 32, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-    const Constants constants = u_constants;
-    
-    float3 cubeTexCoord = GetCubeMapTexCoord(dispatchId, constants.textureSize);
+    float3 cubeTexCoord = GetCubeMapTexCoord(dispatchId);
 
 	// Calculate sampling coords for equirectangular texture
 	// https://en.wikipedia.org/wiki/Spherical_coordinate_system#Cartesian_coordinates
@@ -59,6 +52,6 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
     float phi = atan2(cubeTexCoord.z, cubeTexCoord.x);
     float theta = acos(cubeTexCoord.y);
 
-    float4 color = constants.equirectangularMap.SampleLevel2D(constants.linearSampler.Get(), float2(phi / (m_pi * 2.f), theta / m_pi), 0);
-    constants.output.Store2DArray(dispatchId, color.xyz);
+    float4 color = u_equirectangularMap.SampleLevel(u_linearSampler, float2(phi / (m_pi * 2.f), theta / m_pi), 0);
+    o_output[dispatchId] = color.rgb;
 }

@@ -5,57 +5,17 @@ Layer:
   locked: false
   Entities:
     - Entity:
-        id: 822155506
+        id: 2242625271
         cellId: 0
         components:
-          - guid: [5524573352483143404, 11007889460122951339]
+          - guid: [5579790378469427390, 5138106327942809248]
             members:
-              - name: fieldOfView
-                data: 60
-              - name: nearPlane
-                data: 0.00999999978
-              - name: farPlane
-                data: 1000
-              - name: priority
-                data: 0
-          - guid: [5152712443922219371, 10617432012782403218]
-            members:
-              - name: position
-                data: [0, 0, -5]
-              - name: rotation
-                data: [0, 0, 0, 1]
-              - name: scale
-                data: [1, 1, 1]
-              - name: visible
-                data: true
-              - name: locked
-                data: false
-              - name: movability
-                data: enum
-                enumValue: 0
-          - guid: [5177849256600380923, 13689713549658374275]
-            members:
-              - name: tag
-                data: Camera
-          - guid: [5115013315947959062, 13305215203298195585]
-            members:
-              - name: layerid
-                data: 0
-          - guid: [5086337540049333714, 3220959922222851753]
-            members:
-              - name: parent
-                data: 0
-              - name: children
+              - name: handle
+                data: 4414967050601633116
+              - name: materials
                 data: array
                 values:
-                  []
-          - guid: [5292648669697150475, 12278682903067466634]
-            members:
-              []
-    - Entity:
-        id: 605186825
-        cellId: 0
-        components:
+                  - data: 3865421504965442699
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
@@ -74,7 +34,7 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: Skylight
+                data: Icosphere
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid
@@ -90,22 +50,6 @@ Layer:
           - guid: [5292648669697150475, 12278682903067466634]
             members:
               []
-          - guid: [5130770350572262273, 9533246575187293344]
-            members:
-              - name: environmentHandle
-                data: 0
-              - name: intensity
-                data: 1
-              - name: lod
-                data: 0
-              - name: turbidity
-                data: 2
-              - name: azimuth
-                data: 0
-              - name: inclination
-                data: 0
-              - name: show
-                data: true
     - Entity:
         id: 2942108846
         cellId: 0
@@ -157,17 +101,9 @@ Layer:
               - name: castShadows
                 data: true
     - Entity:
-        id: 2242625271
+        id: 605186825
         cellId: 0
         components:
-          - guid: [5579790378469427390, 5138106327942809248]
-            members:
-              - name: handle
-                data: 4414967050601633116
-              - name: materials
-                data: array
-                values:
-                  - data: 3865421504965442699
           - guid: [5152712443922219371, 10617432012782403218]
             members:
               - name: position
@@ -186,7 +122,71 @@ Layer:
           - guid: [5177849256600380923, 13689713549658374275]
             members:
               - name: tag
-                data: Icosphere
+                data: Skylight
+          - guid: [5115013315947959062, 13305215203298195585]
+            members:
+              - name: layerid
+                data: 0
+          - guid: [5086337540049333714, 3220959922222851753]
+            members:
+              - name: parent
+                data: 0
+              - name: children
+                data: array
+                values:
+                  []
+          - guid: [5292648669697150475, 12278682903067466634]
+            members:
+              []
+          - guid: [5130770350572262273, 9533246575187293344]
+            members:
+              - name: environmentHandle
+                data: 14289325807771642018
+              - name: intensity
+                data: 1
+              - name: lod
+                data: 0
+              - name: turbidity
+                data: 2
+              - name: azimuth
+                data: 0
+              - name: inclination
+                data: 0
+              - name: show
+                data: true
+    - Entity:
+        id: 822155506
+        cellId: 0
+        components:
+          - guid: [5524573352483143404, 11007889460122951339]
+            members:
+              - name: fieldOfView
+                data: 60
+              - name: nearPlane
+                data: 0.00999999978
+              - name: farPlane
+                data: 1000
+              - name: priority
+                data: 0
+          - guid: [5152712443922219371, 10617432012782403218]
+            members:
+              - name: position
+                data: [0, 0, -5]
+              - name: rotation
+                data: [0, 0, 0, 1]
+              - name: scale
+                data: [1, 1, 1]
+              - name: visible
+                data: true
+              - name: locked
+                data: false
+              - name: movability
+                data: enum
+                enumValue: 0
+          - guid: [5177849256600380923, 13689713549658374275]
+            members:
+              - name: tag
+                data: Camera
           - guid: [5115013315947959062, 13305215203298195585]
             members:
               - name: layerid

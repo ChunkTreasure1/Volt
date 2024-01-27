@@ -21,6 +21,8 @@
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Images/ImageUtility.h>
+#include <VoltRHI/Descriptors/DescriptorTable.h>
+#include <VoltRHI/Pipelines/ComputePipeline.h>
 
 namespace Volt
 {
@@ -92,7 +94,7 @@ namespace Volt
 		GlobalResourceManager::Initialize();
 		RenderGraphExecutionThread::Initialize();
 
-		CreaDefaultResources();
+		CreateDefaultResources();
 	}
 
 	void RendererNew::Shutdown()
@@ -154,6 +156,8 @@ namespace Volt
 		Ref<RHI::Image2D> environmentFiltered;
 		Ref<RHI::Image2D> irradianceMap;
 
+		auto linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>();
+
 		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
 		commandBuffer->Begin();
 
@@ -182,23 +186,18 @@ namespace Volt
 				commandBuffer->ResourceBarrier({ barrierInfo });
 			}
 
-			struct Constants
-			{
-				ResourceHandle output;
-				ResourceHandle equirectangularMap;
-				ResourceHandle linearSampler;
+			auto conversionPipeline = ShaderMap::GetComputePipeline("EquirectangularToCubemap", false);
 
-				glm::uvec2 textureSize;
-			} constants;
+			RHI::DescriptorTableCreateInfo tableInfo{};
+			tableInfo.shader = conversionPipeline->GetShader();
 
-			constants.output = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentUnfiltered->GetArrayView());
-			constants.equirectangularMap = environmentTexture->GetResourceHandle();
-			constants.linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
-			constants.textureSize = { imageSpec.width, imageSpec.height };
+			Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+			descriptorTable->SetImageView("o_output", environmentUnfiltered->GetArrayView(), 0);
+			descriptorTable->SetImageView("u_equirectangularMap", environmentTexture->GetImage()->GetView(), 0);
+			descriptorTable->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
 
-			auto conversionPipeline = ShaderMap::GetComputePipeline("EquirectangularToCubemap");
 			commandBuffer->BindPipeline(conversionPipeline);
-			commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
+			commandBuffer->BindDescriptorTable(descriptorTable);
 
 			const uint32_t groupCount = Math::DivideRoundUp(CUBE_MAP_SIZE, CONVERSION_THREAD_GROUP_SIZE);
 			commandBuffer->Dispatch(groupCount, groupCount, 6);
@@ -255,21 +254,19 @@ namespace Volt
 				commandBuffer->ResourceBarrier({ barrierInfo });
 			}
 
-			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentMipFilter");
+			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentMipFilter", false);
+			RHI::DescriptorTableCreateInfo tableInfo{};
+			tableInfo.shader = pipeline->GetShader();
+			tableInfo.count = imageSpec.mips;
+
+			Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+			descriptorTable->SetImageView("u_input", environmentUnfiltered->GetView(), 0);
+			descriptorTable->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
 
 			struct Constants
 			{
-				ResourceHandle output;
-				ResourceHandle input;
-				ResourceHandle linearSampler;
-
 				float roughness;
-				glm::uvec2 outputSize;
-				glm::uvec2 inputSize;
 			} constants;
-
-			constants.linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
-			constants.input = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentUnfiltered->GetView());
 
 			const float deltaRoughness = 1.f / glm::max(static_cast<float>(imageSpec.mips) - 1.f, 1.f);
 			for (uint32_t i = 0, size = CUBE_MAP_SIZE; i < imageSpec.mips; i++, size /= 2)
@@ -279,11 +276,12 @@ namespace Volt
 				float roughness = i * deltaRoughness;
 				roughness = glm::max(roughness, 0.05f);
 
-				constants.output = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentFiltered->GetArrayView(i));
-				constants.outputSize = { size, size };
-				constants.inputSize = { CUBE_MAP_SIZE, CUBE_MAP_SIZE };
+				constants.roughness = roughness;
+
+				descriptorTable->SetImageView("o_output", environmentFiltered->GetArrayView(i), 0);
 
 				commandBuffer->BindPipeline(pipeline);
+				commandBuffer->BindDescriptorTable(descriptorTable);
 				commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
 				commandBuffer->Dispatch(numGroups, numGroups, 6);
 
@@ -329,23 +327,17 @@ namespace Volt
 				commandBuffer->ResourceBarrier({ barrierInfo });
 			}
 
-			struct Constants
-			{
-				ResourceHandle input;
-				ResourceHandle output;
-				ResourceHandle linearSampler;
+			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentIrradiance", false);
+			RHI::DescriptorTableCreateInfo tableInfo{};
+			tableInfo.shader = pipeline->GetShader();
 
-				glm::uvec2 textureSize;
-			} constants;
+			Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+			descriptorTable->SetImageView("o_output", irradianceMap->GetArrayView(), 0);
+			descriptorTable->SetImageView("u_input", environmentFiltered->GetView(), 0);
+			descriptorTable->SetSamplerState("u_linearSampler", linearSampler->GetResource(), 0);
 
-			constants.input = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(environmentFiltered->GetView());
-			constants.output = GlobalResourceManager::GetResourceHandle<RHI::ImageView>(irradianceMap->GetArrayView());
-			constants.linearSampler = GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
-			constants.textureSize = { IRRADIANCE_MAP_SIZE, IRRADIANCE_MAP_SIZE };
-
-			auto pipeline = ShaderMap::GetComputePipeline("EnvironmentIrradiance");
 			commandBuffer->BindPipeline(pipeline);
-			commandBuffer->PushConstants(&constants, sizeof(Constants), 0);
+			commandBuffer->BindDescriptorTable(descriptorTable);
 
 			const uint32_t groupCount = Math::DivideRoundUp(IRRADIANCE_MAP_SIZE, CONVERSION_THREAD_GROUP_SIZE);
 			commandBuffer->Dispatch(groupCount, groupCount, 6);
@@ -356,17 +348,20 @@ namespace Volt
 				imageBarrierInfo.imageBarrier().srcStage = RHI::BarrierStage::ComputeShader;
 				imageBarrierInfo.imageBarrier().srcAccess = RHI::BarrierAccess::ShaderWrite;
 				imageBarrierInfo.imageBarrier().srcLayout = RHI::ImageLayout::ShaderWrite;
-				imageBarrierInfo.imageBarrier().dstStage = RHI::BarrierStage::All;
+				imageBarrierInfo.imageBarrier().dstStage = RHI::BarrierStage::PixelShader | RHI::BarrierStage::ComputeShader;
 				imageBarrierInfo.imageBarrier().dstAccess = RHI::BarrierAccess::ShaderRead;
 				imageBarrierInfo.imageBarrier().dstLayout = RHI::ImageLayout::ShaderRead;
 				imageBarrierInfo.imageBarrier().resource = irradianceMap;
 
 				commandBuffer->ResourceBarrier({ imageBarrierInfo });
 			}
+
 		}
 
 		commandBuffer->End();
 		commandBuffer->ExecuteAndWait();
+
+		irradianceMap->GenerateMips();
 
 		SceneEnvironment result{};
 		result.irradianceMap = irradianceMap;
@@ -394,7 +389,7 @@ namespace Volt
 		return samplerState;
 	}
 
-	void RendererNew::CreaDefaultResources()
+	void RendererNew::CreateDefaultResources()
 	{
 		// Full white 1x1
 		{
@@ -402,5 +397,53 @@ namespace Volt
 			s_rendererData->defaultResources.whiteTexture = Texture2D::Create(RHI::PixelFormat::R8G8B8A8_UNORM, 1, 1, &PIXEL_DATA);
 			s_rendererData->defaultResources.whiteTexture->handle = 0;
 		}
+
+		// Full black cube 1x1
+		{
+			constexpr uint32_t PIXEL_DATA[6] = { 0, 0, 0, 0, 0, 0 };
+
+			RHI::ImageSpecification imageSpec{};
+			imageSpec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
+			imageSpec.usage = RHI::ImageUsage::Texture;
+			imageSpec.width = 1;
+			imageSpec.height = 1;
+			imageSpec.layers = 6;
+			imageSpec.isCubeMap = true;
+
+			s_rendererData->defaultResources.blackCubeTexture = RHI::Image2D::Create(imageSpec, PIXEL_DATA);
+		}
+
+		GenerateBRDFLuT();
+	}
+	
+	void RendererNew::GenerateBRDFLuT()
+	{
+		constexpr uint32_t BRDFSize = 512;
+
+		RHI::ImageSpecification spec{};
+		spec.format = RHI::PixelFormat::R16G16_SFLOAT;
+		spec.usage = RHI::ImageUsage::Storage;
+		spec.width = BRDFSize;
+		spec.height = BRDFSize;
+
+		s_rendererData->defaultResources.BRDFLuT = RHI::Image2D::Create(spec);
+
+		auto pipeline = ShaderMap::GetComputePipeline("BRDFGeneration", false);
+		RHI::DescriptorTableCreateInfo tableInfo{};
+		tableInfo.shader = pipeline->GetShader();
+
+		Ref<RHI::DescriptorTable> descriptorTable = RHI::DescriptorTable::Create(tableInfo);
+		descriptorTable->SetImageView("LUT", s_rendererData->defaultResources.BRDFLuT->GetView(), 0);
+		
+		Ref<RHI::CommandBuffer> commandBuffer = RHI::CommandBuffer::Create();
+		commandBuffer->Begin();
+
+		commandBuffer->BindPipeline(pipeline);
+		commandBuffer->BindDescriptorTable(descriptorTable);
+
+		const uint32_t groupCount = Math::DivideRoundUp(BRDFSize, 32u);
+		commandBuffer->Dispatch(groupCount, groupCount, 1);
+		commandBuffer->End();
+		commandBuffer->Execute();
 	}
 }

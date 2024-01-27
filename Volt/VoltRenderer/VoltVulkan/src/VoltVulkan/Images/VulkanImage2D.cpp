@@ -230,8 +230,8 @@ namespace Volt::RHI
 			}
 		}
 
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.newLayout = Utility::ToVulkanLayout(m_currentImageLayout);
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -240,7 +240,7 @@ namespace Volt::RHI
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.baseMipLevel = 0;
 
-		vkCmdPipelineBarrier(vkCmdBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier(vkCmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		commandBuffer->End();
 		commandBuffer->Execute();
@@ -267,6 +267,14 @@ namespace Volt::RHI
 
 		if (m_specification.isCubeMap)
 		{
+			spec.layerCount = 6;
+
+			// When using cube array, layer specifies which cubemap index
+			if (m_specification.layers > 6 && layer != -1)
+			{
+				spec.baseArrayLayer = layer * 6u;
+			}
+
 			spec.viewType = ImageViewType::ViewCube;
 		}
 		else if (m_specification.layers > 1)
@@ -274,9 +282,11 @@ namespace Volt::RHI
 			spec.viewType = ImageViewType::View2DArray;
 		}
 
-		if (m_specification.isCubeMap && m_specification.layers > 6)
+		if (m_specification.isCubeMap && m_specification.layers > 6 && layer == -1)
 		{
 			spec.viewType = ImageViewType::ViewCubeArray;
+
+			spec.layerCount = m_specification.layers;
 		}
 
 		spec.image = As<Image2D>();
@@ -363,7 +373,7 @@ namespace Volt::RHI
 	void VulkanImage2D::InitializeWithData(const void* data)
 	{
 		// #TODO_Ivar: Implement correct size for layer + mip
-		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format);
+		const VkDeviceSize bufferSize = m_specification.width * m_specification.height * Utility::GetByteSizePerPixelFromFormat(m_specification.format) * m_specification.layers;
 
 		Ref<Allocation> stagingAlloc = GraphicsContext::GetDefaultAllocator().CreateBuffer(bufferSize, BufferUsage::TransferSrc, MemoryUsage::CPUToGPU);
 

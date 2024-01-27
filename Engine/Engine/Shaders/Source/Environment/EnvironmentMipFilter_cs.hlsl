@@ -1,5 +1,8 @@
-#define NO_RENDERGRAPH
-#include "Resources.hlsli"
+#include "Defines.hlsli"
+
+RWTexture2DArray<float3> o_output : register(u0, space0);
+TextureCube<float3> u_input : register(t1, space0);
+SamplerState u_linearSampler : register(s2, space0);
 
 static const float m_pi = 3.1415926535897932384626433832795f;
 static const float m_twoPi = m_pi * 2.0f;
@@ -10,18 +13,12 @@ static const float m_invNumSamples = 1.0f / float(m_numSamples);
 
 static const uint m_numMips = 1;
 
-struct Constants
+struct PushConstants
 {
-    RWTexture<float3> output;
-    TTexture<float3> input;
-    TextureSampler linearSampler;
-    
     float roughness;
-    uint2 outputSize;
-    uint2 inputSize;
 };
 
-PUSH_CONSTANT(Constants, u_constants);
+PUSH_CONSTANT(PushConstants, u_pushConstants);
 
 float RadicalInverse_VdC(uint bits)
 {
@@ -60,9 +57,14 @@ float NDFGGX(float cosLh, float roughness)
     return alphaSq / (m_pi * denom * denom);
 }
 
-float3 GetCubeMapTexCoord(uint3 dispatchId, uint2 textureSize)
+float3 GetCubeMapTexCoord(uint3 dispatchId)
 {
-    float2 ST = dispatchId.xy / float2(textureSize.x, textureSize.y);
+    uint2 texSize;
+    uint elements;
+
+    o_output.GetDimensions(texSize.x, texSize.y, elements);
+
+    float2 ST = dispatchId.xy / float2(texSize.x, texSize.y);
     float2 UV = 2.f * float2(ST.x, 1.f - ST.y) - 1.f;
 
     float3 result = 0.f;
@@ -114,15 +116,22 @@ float3 SampleHemisphere(float u1, float u2)
 [numthreads(32, 32, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-    const Constants constants = u_constants;
-    
-    if (dispatchId.x >= constants.outputSize.x || dispatchId.y >= constants.outputSize.y)
+    uint2 outputSize;
+    uint outputElements;
+
+    o_output.GetDimensions(outputSize.x, outputSize.y, outputElements);
+
+    if (dispatchId.x >= outputSize.x || dispatchId.y >= outputSize.y)
     {
         return;
     }
 
-    float wt = 4.f * m_pi / (6.f * constants.inputSize.x * constants.inputSize.y);
-    float3 N = GetCubeMapTexCoord(dispatchId, constants.outputSize);
+    float2 inputSize;
+    float inputElements;
+    u_input.GetDimensions(0, inputSize.x, inputSize.y, inputElements);
+
+    float wt = 4.f * m_pi / (6.f * inputSize.x * inputSize.y);
+    float3 N = GetCubeMapTexCoord(dispatchId);
     float3 Lo = N;
 
     float3 S, T;
@@ -134,22 +143,22 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
     for (uint i = 0; i < m_numSamples; i++)
     {
         float2 u = SampleHammersley(i);
-        float3 Lh = TangentToWorld(SampleGGX(u.x, u.y, constants.roughness), N, S, T);
+        float3 Lh = TangentToWorld(SampleGGX(u.x, u.y, u_pushConstants.roughness), N, S, T);
 
         float3 Li = 2.f * dot(Lo, Lh) * Lh - Lo;
         float cosLi = dot(N, Li);
         if (cosLi > 0.f)
         {
             float cosLh = max(dot(N, Lh), 0.f);
-            float pdf = NDFGGX(cosLh, constants.roughness) * 0.25f;
+            float pdf = NDFGGX(cosLh, u_pushConstants.roughness) * 0.25f;
             float ws = 1.f / (m_numSamples * pdf);
 
             float mipLevel = max(0.5f * log2(ws / wt) + 1.f, 0.f);
-            color += constants.input.SampleLevelCube(constants.linearSampler.Get(), Li, mipLevel).rgb * cosLi;
+            color += u_input.SampleLevel(u_linearSampler, Li, mipLevel).rgb * cosLi;
             weight += cosLi;
         }
     }
 
     color /= weight;
-    constants.output.Store2DArray(dispatchId, color);
+    o_output[dispatchId] = color;
 }

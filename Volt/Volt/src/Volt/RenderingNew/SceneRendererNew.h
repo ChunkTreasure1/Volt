@@ -5,6 +5,7 @@
 #include "Volt/RenderingNew/RendererCommon.h"
 #include "Volt/RenderingNew/SceneRendererStructs.h"
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
+#include "Volt/RenderingNew/RendererStructs.h"
 
 // #TODO_Ivar: Maybe remove from here
 #include "Volt/RenderingNew/RenderGraph/RenderGraph.h"
@@ -115,5 +116,6 @@ namespace Volt
 		////////////////
 
 		Ref<Scene> m_scene;
+		SceneEnvironment m_sceneEnvironment;
 	};
 }

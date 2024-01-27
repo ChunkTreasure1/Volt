@@ -14,6 +14,8 @@ namespace Volt
 	struct ExternalImagesData
 	{
 		RenderGraphResourceHandle outputImage;
+		RenderGraphResourceHandle black1x1Cube;
+		RenderGraphResourceHandle BRDFLuT;
 	};
 
 	struct ExternalBuffersData
