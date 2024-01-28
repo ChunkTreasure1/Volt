@@ -163,12 +163,16 @@ namespace Volt::RHI
 		}
 
 		auto vertexLayout = m_resources.vertexLayout;
+		auto instanceLayout = m_resources.instanceLayout;
 		auto outputFormats = m_resources.outputFormats;
+		auto renderGraphConstants = m_resources.renderGraphConstantsData;
 
 		Release();
 
 		m_resources.outputFormats = outputFormats;
 		m_resources.vertexLayout = vertexLayout;
+		m_resources.instanceLayout = instanceLayout;
+		m_resources.renderGraphConstantsData = renderGraphConstants;
 
 		LoadAndCreateShaders(m_shaderData);
 		ReflectAllStages(m_shaderData);

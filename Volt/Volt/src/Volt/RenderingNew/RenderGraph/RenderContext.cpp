@@ -264,7 +264,6 @@ namespace Volt
 	void RenderContext::SetCurrentPassIndex(const uint32_t passIndex)
 	{
 		m_currentPassIndex = passIndex;
-		m_currentPassConstantsOffset = 0;
 	}
 
 	void RenderContext::UploadConstantsData()
@@ -272,6 +271,18 @@ namespace Volt
 		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, m_passConstantsBuffer->GetSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
 		m_passConstantsBuffer->Unmap();
+	}
+
+	RHI::ShaderRenderGraphConstantsData RenderContext::GetRenderGraphConstantsData()
+	{
+		if (m_currentRenderPipeline)
+		{
+			return m_currentRenderPipeline->GetShader()->GetResources().renderGraphConstantsData;
+		}
+		else
+		{
+			return m_currentComputePipeline->GetShader()->GetResources().renderGraphConstantsData;
+		}
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()

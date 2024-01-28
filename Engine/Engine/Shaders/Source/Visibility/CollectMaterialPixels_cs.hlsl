@@ -8,7 +8,7 @@ struct Constants
     TextureT<uint> visibilityBuffer;
     TypedBuffer<ObjectDrawData> objectDrawData;
     TypedBuffer<Meshlet> meshletsBuffer;
-    TypedBuffer <uint>materialStartBuffer;
+    TypedBuffer<uint> materialStartBuffer;
     
     RWTypedBuffer<uint> currentMaterialCountBuffer;
     RWTypedBuffer<uint2> pixelCollectionBuffer;

@@ -83,6 +83,14 @@ namespace Volt::RHI
 		ShaderStage	stageFlags = ShaderStage::None;
 	};
 
+	struct ShaderRenderGraphConstantsData
+	{
+		inline bool IsValid() const { return !uniforms.empty() && size > 0; }
+
+		std::unordered_map<std::string, ShaderUniform> uniforms;
+		size_t size = 0;
+	};
+
 	// Representation of shader types
 	struct ShaderConstantBuffer
 	{
@@ -136,7 +144,9 @@ namespace Volt::RHI
 
 		ShaderConstantData constants{};
 		ShaderDataBuffer constantsBuffer{};
+		ShaderRenderGraphConstantsData renderGraphConstantsData{};
 		BufferLayout vertexLayout{};
+		BufferLayout instanceLayout{};
 	
 		std::vector<PixelFormat> outputFormats;
 	};
