@@ -37,7 +37,7 @@ bool IsInFrustum(in Constants constants, in float4x4 transform, in float3 boundi
     visible = visible && center.z * constants.frustum3 - abs(center.y) * constants.frustum2 > -boundingSphereRadius;
     visible = visible && center.z + boundingSphereRadius > viewData.nearPlane && center.z - boundingSphereRadius < viewData.farPlane;
     
-    return visible;
+    return true;
 }
 
 bool ConeCull(in float3 center, in float radius, float3 coneAxis, float coneCutoff, float3 cameraPosition)

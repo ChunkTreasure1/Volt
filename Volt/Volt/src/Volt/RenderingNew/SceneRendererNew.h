@@ -70,6 +70,7 @@ namespace Volt
 
 		///// Passes //////
 		void UploadUniformBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera);
+		void UploadLightBuffers(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void SetupDrawContext(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 

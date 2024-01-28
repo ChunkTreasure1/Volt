@@ -16,6 +16,7 @@ namespace Volt::RHI
 		FillMode fillMode = FillMode::Solid;
 		DepthMode depthMode = DepthMode::ReadWrite;
 		CompareOperator depthCompareOperator = CompareOperator::GreaterEqual;
+		bool enablePrimitiveRestart = false;
 
 		std::string name;
 	};

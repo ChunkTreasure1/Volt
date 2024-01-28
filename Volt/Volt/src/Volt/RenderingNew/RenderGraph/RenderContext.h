@@ -15,6 +15,8 @@ namespace Volt
 	{
 		class CommandBuffer;
 		class StorageBuffer;
+		class VertexBuffer;
+		class IndexBuffer;
 
 		class RenderPipeline;
 		class ComputePipeline;
@@ -59,17 +61,21 @@ namespace Volt
 		
 		void DrawIndirectCount(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, Ref<RHI::StorageBuffer> countBuffer, const size_t countBufferOffset, const uint32_t maxDrawCount, const uint32_t stride);
 		void DrawIndexedIndirect(Ref<RHI::StorageBuffer> commandsBuffer, const size_t offset, const uint32_t drawCount, const uint32_t stride);
+		void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance);
+		void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
 
 		void BindPipeline(Ref<RHI::RenderPipeline> pipeline);
 		void BindPipeline(Ref<RHI::ComputePipeline> pipeline);
 
 		void BindIndexBuffer(Ref<RHI::StorageBuffer> indexBuffer);
+		void BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer);
+		void BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding);
 
 		void Flush();
 		Ref<RHI::StorageBuffer> GetReadbackBuffer(Ref<RHI::StorageBuffer> buffer);
 
 		template<typename T>
-		void SetConstant(const T& data);
+		void SetConstant(const std::string& name, const T& data);
 
 	private:
 		friend class RenderGraph;
@@ -79,6 +85,8 @@ namespace Volt
 		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
 		void SetCurrentPassIndex(const uint32_t passIndex);
 		void UploadConstantsData();
+
+		RHI::ShaderRenderGraphConstantsData GetRenderGraphConstantsData();
 
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::RenderPipeline> renderPipeline);
 		Ref<RHI::DescriptorTable> GetOrCreateDescriptorTable(Ref<RHI::ComputePipeline> computePipeline);
@@ -99,15 +107,20 @@ namespace Volt
 	
 		// #TODO_Ivar: Should be changed
 		std::vector<uint8_t> m_passConstantsBufferData;
-		uint32_t m_currentPassConstantsOffset = 0;
 	};
 
 	template<typename T>
-	inline void RenderContext::SetConstant(const T& data)
+	inline void RenderContext::SetConstant(const std::string& name, const T& data)
 	{
 		// #TODO_Ivar: Add validation
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + m_currentPassConstantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - m_currentPassConstantsOffset, &data, sizeof(T));
-		m_currentPassConstantsOffset += sizeof(T);
+		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+
+		VT_ENSURE(constantsData.uniforms.contains(name));
+		const auto& uniform = constantsData.uniforms.at(name);
+		VT_ENSURE(sizeof(T) == uniform.size);
+
+		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(T));
 	}
 }

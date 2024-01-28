@@ -166,6 +166,16 @@ namespace Volt
 		m_commandBuffer->DrawIndexedIndirect(commandsBuffer, offset, drawCount, stride);
 	}
 
+	void RenderContext::DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
+	{
+		m_commandBuffer->DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	}
+
+	void RenderContext::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
+	{
+		m_commandBuffer->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
 	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
@@ -209,6 +219,16 @@ namespace Volt
 		m_commandBuffer->BindIndexBuffer(indexBuffer);
 	}
 
+	void RenderContext::BindIndexBuffer(Ref<RHI::IndexBuffer> indexBuffer)
+	{
+		m_commandBuffer->BindIndexBuffer(indexBuffer);
+	}
+
+	void RenderContext::BindVertexBuffers(const std::vector<Ref<RHI::VertexBuffer>>& vertexBuffers, const uint32_t firstBinding)
+	{
+		m_commandBuffer->BindVertexBuffers(vertexBuffers, firstBinding);
+	}
+
 	void RenderContext::Flush()
 	{
 		m_commandBuffer->End();
@@ -244,7 +264,6 @@ namespace Volt
 	void RenderContext::SetCurrentPassIndex(const uint32_t passIndex)
 	{
 		m_currentPassIndex = passIndex;
-		m_currentPassConstantsOffset = 0;
 	}
 
 	void RenderContext::UploadConstantsData()
@@ -252,6 +271,18 @@ namespace Volt
 		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, m_passConstantsBuffer->GetSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
 		m_passConstantsBuffer->Unmap();
+	}
+
+	RHI::ShaderRenderGraphConstantsData RenderContext::GetRenderGraphConstantsData()
+	{
+		if (m_currentRenderPipeline)
+		{
+			return m_currentRenderPipeline->GetShader()->GetResources().renderGraphConstantsData;
+		}
+		else
+		{
+			return m_currentComputePipeline->GetShader()->GetResources().renderGraphConstantsData;
+		}
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()

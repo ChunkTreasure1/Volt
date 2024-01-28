@@ -562,6 +562,10 @@ namespace Volt
 			{
 				continue;
 			}
+			else if (componentDesc->GetGUID() == GetTypeGUID<IDComponent>() && (copyFlags & EntityCopyFlags::SkipID) != EntityCopyFlags::None)
+			{
+				continue;
+			}
 
 			CopyComponent(reinterpret_cast<const uint8_t*>(storage.get(srcEntity)), componentData, 0, componentDesc);
 		}
@@ -575,7 +579,7 @@ namespace Volt
 
 		Entity newEntity = scene->CreateEntity();
 
-		Copy(srcEntity, newEntity);
+		Copy(srcEntity, newEntity, EntityCopyFlags::SkipID);
 
 		if (newEntity.HasComponent<NetActorComponent>())
 		{

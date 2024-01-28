@@ -1372,13 +1372,17 @@ namespace Volt
 			{
 				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
 
-				Ref<Material> mat = materialTable.GetMaterial(materialIndex);																							 
-				if (meshComp.materials.at(materialIndex) != mat->handle)
+				Ref<Material> mat = materialTable.GetMaterial(materialIndex);			
+
+				if (static_cast<uint32_t>(meshComp.materials.size()) > materialIndex)
 				{
-					Ref<Material> tempMat = AssetManager::GetAsset<Material>(meshComp.materials.at(materialIndex));
-					if (tempMat && tempMat->IsValid())
+					if (meshComp.materials.at(materialIndex) != mat->handle)
 					{
-						mat = tempMat;
+						Ref<Material> tempMat = AssetManager::GetAsset<Material>(meshComp.materials.at(materialIndex));
+						if (tempMat && tempMat->IsValid())
+						{
+							mat = tempMat;
+						}
 					}
 				}
 

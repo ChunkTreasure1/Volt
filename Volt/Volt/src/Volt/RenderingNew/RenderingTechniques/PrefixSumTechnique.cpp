@@ -59,10 +59,10 @@ namespace Volt
 			context.ClearBuffer(stateBuffer, 0);
 
 			context.BindPipeline(pipeline);
-			context.SetConstant(resources.GetBuffer(inputBuffer));
-			context.SetConstant(resources.GetBuffer(outputBuffer));
-			context.SetConstant(resources.GetBuffer(data.stateBuffer));
-			context.SetConstant(valueCount);
+			context.SetConstant("inputValues", resources.GetBuffer(inputBuffer));
+			context.SetConstant("outputValues", resources.GetBuffer(outputBuffer));
+			context.SetConstant("stateBuffer", resources.GetBuffer(data.stateBuffer));
+			context.SetConstant("valueCount", valueCount);
 
 			context.Dispatch(groupCount, 1, 1);
 		});

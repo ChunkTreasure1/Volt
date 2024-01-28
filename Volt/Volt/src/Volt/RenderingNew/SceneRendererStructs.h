@@ -54,6 +54,12 @@ namespace Volt
 		RenderGraphResourceHandle directionalLightBuffer;
 	};
 
+	struct LightBuffersData
+	{
+		RenderGraphResourceHandle pointLightsBuffer;
+		RenderGraphResourceHandle spotLightsBuffer;
+	};
+
 	struct PreDepthData
 	{
 		RenderGraphResourceHandle depth;
