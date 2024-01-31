@@ -82,7 +82,8 @@ project "Volt"
 
 		"%{IncludeDir.vma}",
 		"%{IncludeDir.VulkanSDK}",
-		"%{IncludeDir.cityhash}"
+		"%{IncludeDir.cityhash}",
+		"%{IncludeDir.METIS}"
 	}
 
 	links
@@ -100,6 +101,9 @@ project "Volt"
 		"NFD-Extended",
 		"TGAFBX",
 		"cityhash",
+		"METIS",
+		"GKLib",
+
 		"CoreUtilities",
 		"Mosaic",
 

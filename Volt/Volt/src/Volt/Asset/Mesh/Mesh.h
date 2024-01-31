@@ -7,6 +7,7 @@
 
 #include "Volt/Rendering/Vertex.h"
 #include "Volt/Rendering/BoundingStructures.h"
+#include "Volt/Rendering/Mesh/MeshCommon.h"
 
 #include "Volt/RenderingNew/Resources/GlobalResource.h"
 #include "Volt/RenderingNew/GPUScene.h"
@@ -22,23 +23,6 @@ namespace Volt
 	}
 
 	class Material;
-
-	struct Meshlet
-	{
-		uint32_t vertexOffset;
-		uint32_t triangleOffset;
-		uint32_t vertexCount;
-		uint32_t triangleCount;
-
-		uint32_t objectId;
-		uint32_t meshId;
-		glm::uvec2 padding;
-
-		glm::vec3 boundingSphereCenter;
-		float boundingSphereRadius;
-
-		glm::vec4 cone;
-	};
 
 	class Mesh : public Asset
 	{

@@ -29,8 +29,6 @@
 #include "Volt/Utility/Noise.h"
 #include "Volt/Utility/UIUtility.h"
 
-#include <Mosaic/Testing.h>
-
 #include <VoltRHI/ImGui/ImGuiImplementation.h>
 #include <VoltRHI/Graphics/GraphicsContext.h>
 
@@ -38,6 +36,12 @@
 #include <Amp/WwiseAudioManager/WwiseAudioManager.h>
 #include <Amp/WWiseEngine/WWiseEngine.h>
 #include <Navigation/Core/NavigationSystem.h>
+
+
+
+
+#include "Volt/RenderingNew/ShapeLibrary.h"
+#include "Volt/Rendering/Mesh/MeshProcessor.h"
 
 namespace Volt
 {
@@ -151,7 +155,8 @@ namespace Volt
 			m_steamImplementation = SteamImplementation::Create();
 		}
 
-		Mosaic::TestClass testT{};
+		Ref<Mesh> cube = ShapeLibrary::GetSphere();
+		MeshProcessor::ProcessMesh(cube->GetVertices(), cube->GetIndices(), cube->GetMaterialTable(), cube->GetSubMeshes());
 	}
 
 	Application::~Application()

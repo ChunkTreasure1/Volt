@@ -38,6 +38,8 @@ IncludeDir["NFDExtended"] = "%{wks.location}/Volt/vendor/nfd-extended/src/includ
 IncludeDir["TGAFbx"] = "%{wks.location}/Volt/vendor/TGAFbx/src"
 IncludeDir["entt"] = "%{wks.location}/Volt/vendor/entt/include"
 IncludeDir["cityhash"] = "%{wks.location}/Volt/vendor/cityhash/src"
+IncludeDir["METIS"] = "%{wks.location}/Volt/vendor/METIS/include"
+IncludeDir["GKLib"] = "%{wks.location}/Volt/vendor/GKLib"
 
 IncludeDir["P4"] = "%{wks.location}/Sandbox/vendor/p4/include/"
 IncludeDir["OpenSSL"] = "%{wks.location}/Sandbox/vendor/OpenSSL/include/"
