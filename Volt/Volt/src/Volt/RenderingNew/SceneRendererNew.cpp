@@ -435,7 +435,7 @@ namespace Volt
 			data.argsBufferHandle = builder.CreateBuffer(argsDesc);
 			outHandle = data.argsBufferHandle;
 
-			builder.ReadResource(countBuffer);
+			builder.ReadResource (countBuffer);
 			builder.SetIsComputePass();
 		},
 		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)

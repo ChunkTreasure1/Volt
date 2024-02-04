@@ -417,46 +417,46 @@ struct TextureT
         return texture.Load(location);
     }
     
-    T Sample1D(in SamplerState samplerState, in float location)
+    T Sample1D(in TextureSampler samplerState, in float location)
     {
         Texture1D<T> texture = DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);
-        return texture.Sample(samplerState, location);
+        return texture.Sample(samplerState.Get(), location);
     }
     
-    T Sample2D(in SamplerState samplerState, in float2 location)
+    T Sample2D(in TextureSampler samplerState, in float2 location)
     {
         Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
-        return texture.Sample(samplerState, location);
+        return texture.Sample(samplerState.Get(), location);
     }
     
-    T Sample3D(in SamplerState samplerState, in float3 location)
+    T Sample3D(in TextureSampler samplerState, in float3 location)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
-        return texture.Sample(samplerState, location);
+        return texture.Sample(samplerState.Get(), location);
     }
     
-    T SampleLevel1D(in SamplerState samplerState, in float location, in float lod)
+    T SampleLevel1D(in TextureSampler samplerState, in float location, in float lod)
     {
         Texture1D<T> texture = DESCRIPTOR_HEAP(Texture1DHandle<T>, handle);
-        return texture.SampleLevel(samplerState, location, lod);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
     }
     
-    T SampleLevel2D(in SamplerState samplerState, in float2 location, in float lod)
+    T SampleLevel2D(in TextureSampler samplerState, in float2 location, in float lod)
     {
         Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
-        return texture.SampleLevel(samplerState, location, lod);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
     }
     
-    T SampleLevel3D(in SamplerState samplerState, in float3 location, in float lod)
+    T SampleLevel3D(in TextureSampler samplerState, in float3 location, in float lod)
     {
         Texture3D<T> texture = DESCRIPTOR_HEAP(Texture3DHandle<T>, handle);
-        return texture.SampleLevel(samplerState, location, lod);
+        return texture.SampleLevel(samplerState.Get(), location, lod);
     }
     
-    T SampleGrad2D(in SamplerState samplerState, in float2 location, in float2 ddx, in float2 ddy)
+    T SampleGrad2D(in TextureSampler samplerState, in float2 location, in float2 ddx, in float2 ddy)
     {
         Texture2D<T> texture = DESCRIPTOR_HEAP(Texture2DHandle<T>, handle);
-        return texture.SampleGrad(samplerState, location, ddx, ddy);
+        return texture.SampleGrad(samplerState.Get(), location, ddx, ddy);
     }
     
     void GetDimensions(in uint mipLevel, out uint width, out uint numberOfLevels)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <xhash>
 
 namespace Volt
 {
@@ -68,7 +69,7 @@ namespace Volt
 			if (rhs.value == 0)
 			{
 				// You might want to handle this case differently based on your requirements
-				std::cerr << "Error: Division by zero." << std::endl;
+				//std::cerr << "Error: Division by zero." << std::endl;
 				return ResourceHandle();
 			}
 			return ResourceHandle(lhs.value / rhs.value);
@@ -109,9 +110,22 @@ namespace Volt
 		uint32_t value;
 	};
 
-
 	namespace Resource
 	{
 		constexpr ResourceHandle Invalid = ResourceHandle{ std::numeric_limits<uint32_t>::max() };
 	}
+}
+
+namespace std
+{
+	template <typename T> struct hash;
+
+	template<>
+	struct hash<Volt::ResourceHandle>
+	{
+		std::size_t operator()(const Volt::ResourceHandle& handle) const
+		{
+			return (uint32_t)handle.Get();
+		}
+	};
 }

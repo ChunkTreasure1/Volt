@@ -532,7 +532,7 @@ namespace Volt
 
 			{
 				VT_PROFILE_SCOPE(passNode->name.data());
-				m_renderContext.SetCurrentPassIndex(passNode->index);
+				m_renderContext.SetCurrentPassIndex(passNode);
 
 				passNode->Execute(*this, m_renderContext);
 			}

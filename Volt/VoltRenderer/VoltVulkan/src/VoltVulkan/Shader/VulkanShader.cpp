@@ -21,115 +21,23 @@ namespace Volt::RHI
 	{
 		inline static const ShaderUniformType GetShaderUniformTypeFromSPIRV(const spirv_cross::SPIRType& type)
 		{
-			if (type.columns == 4)
+			ShaderUniformType resultType;
+
+			switch (type.basetype)
 			{
-				switch (type.basetype)
-				{
-					case spirv_cross::SPIRType::Float: return ShaderUniformType::Float4x4;
-				}
-			}
-			else
-			{
-				switch (type.basetype)
-				{
-					case spirv_cross::SPIRType::Boolean: return ShaderUniformType::Bool;
-					case spirv_cross::SPIRType::UInt:
-					{
-						if (type.vecsize == 1) return ShaderUniformType::UInt;
-						if (type.vecsize == 2) return ShaderUniformType::UInt2;
-						if (type.vecsize == 3) return ShaderUniformType::UInt3;
-						if (type.vecsize == 4) return ShaderUniformType::UInt4;
-
-						break;
-					}
-
-					case spirv_cross::SPIRType::Int:
-					{
-						if (type.vecsize == 1) return ShaderUniformType::Int;
-						if (type.vecsize == 2) return ShaderUniformType::Int2;
-						if (type.vecsize == 3) return ShaderUniformType::Int3;
-						if (type.vecsize == 4) return ShaderUniformType::Int4;
-
-						break;
-					}
-
-					case spirv_cross::SPIRType::Float:
-					{
-						if (type.vecsize == 1) return ShaderUniformType::Float;
-						if (type.vecsize == 2) return ShaderUniformType::Float2;
-						if (type.vecsize == 3) return ShaderUniformType::Float3;
-						if (type.vecsize == 4) return ShaderUniformType::Float4;
-					}
-				}
+				case spirv_cross::SPIRType::Boolean: resultType.baseType = ShaderUniformBaseType::Bool; break;
+				case spirv_cross::SPIRType::UInt: resultType.baseType = ShaderUniformBaseType::UInt; break;
+				case spirv_cross::SPIRType::Int: resultType.baseType = ShaderUniformBaseType::Int; break;
+				case spirv_cross::SPIRType::Float: resultType.baseType = ShaderUniformBaseType::Float; break;
+				case spirv_cross::SPIRType::Half: resultType.baseType = ShaderUniformBaseType::Half; break;
+				case spirv_cross::SPIRType::Short: resultType.baseType = ShaderUniformBaseType::Short; break;
+				case spirv_cross::SPIRType::UShort: resultType.baseType = ShaderUniformBaseType::UShort; break;
 			}
 
-			return ShaderUniformType::Invalid;
-		}
+			resultType.columns = type.columns;
+			resultType.vecsize = type.vecsize;
 
-		inline static const ElementType GetBufferElementTypeFromSPIRV(const spirv_cross::SPIRType& type)
-		{
-			if (type.columns == 4)
-			{
-				switch (type.basetype)
-				{
-					case spirv_cross::SPIRType::Float: return ElementType::Float4x4;
-				}
-			}
-			else if (type.columns == 3)
-			{
-				switch (type.basetype)
-				{
-					case spirv_cross::SPIRType::Float: return ElementType::Float3x3;
-				}
-			}
-			else
-			{
-				switch (type.basetype)
-				{
-					case spirv_cross::SPIRType::Boolean: return ElementType::Bool;
-					case spirv_cross::SPIRType::UInt:
-					{
-						if (type.vecsize == 1) return ElementType::UInt;
-						if (type.vecsize == 2) return ElementType::UInt2;
-						if (type.vecsize == 3) return ElementType::UInt3;
-						if (type.vecsize == 4) return ElementType::UInt4;
-
-						break;
-					}
-
-					case spirv_cross::SPIRType::Int:
-					{
-						if (type.vecsize == 1) return ElementType::Int;
-						if (type.vecsize == 2) return ElementType::Int2;
-						if (type.vecsize == 3) return ElementType::Int3;
-						if (type.vecsize == 4) return ElementType::Int4;
-
-						break;
-					}
-
-					case spirv_cross::SPIRType::Float:
-					{
-						if (type.vecsize == 1) return ElementType::Float;
-						if (type.vecsize == 2) return ElementType::Float2;
-						if (type.vecsize == 3) return ElementType::Float3;
-						if (type.vecsize == 4) return ElementType::Float4;
-
-						break;
-					}
-
-					case spirv_cross::SPIRType::Half:
-					{
-						if (type.vecsize == 1) return ElementType::Half;
-						if (type.vecsize == 2) return ElementType::Half2;
-						if (type.vecsize == 3) return ElementType::Half3;
-						if (type.vecsize == 4) return ElementType::Half4;
-
-						break;
-					}
-				}
-			}
-
-			return ElementType::Float;
+			return resultType;
 		}
 	}
 

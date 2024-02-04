@@ -391,6 +391,17 @@ namespace Volt::RHI
 		CheckWaitReturnValue(vkWaitForFences(device->GetHandle<VkDevice>(), static_cast<uint32_t>(fences.size()), fences.data(), VK_TRUE, UINT64_MAX));
 	}
 
+	void VulkanCommandBuffer::SetEvent(Ref<Event> event)
+	{
+		VkDependencyInfo depInfo{};
+		depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+		depInfo.pNext = nullptr;
+		depInfo.dependencyFlags = 0;
+		//depInfo.
+
+		//vkCmdSetEvent2()
+	}
+
 	void VulkanCommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
 	{
 		const uint32_t index = GetCurrentCommandBufferIndex();

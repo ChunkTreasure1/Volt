@@ -34,4 +34,21 @@ namespace Volt
 	{
 		return isCulled && !hasSideEffect;
 	}
+
+#ifdef VT_DEBUG
+	const bool RenderGraphPassNodeBase::ReadsResource(ResourceHandle handle) const
+	{
+		return ReadsResource(m_resourceHandleMapping.at(handle));
+	}
+
+	const bool RenderGraphPassNodeBase::WritesResource(ResourceHandle handle) const
+	{
+		return WritesResource(m_resourceHandleMapping.at(handle));
+	}
+
+	const bool RenderGraphPassNodeBase::CreatesResource(ResourceHandle handle) const
+	{
+		return CreatesResource(m_resourceHandleMapping.at(handle));
+	}
+#endif
 }
