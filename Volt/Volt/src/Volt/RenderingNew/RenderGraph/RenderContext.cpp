@@ -4,6 +4,8 @@
 
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
+#include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
+
 #include "Volt/Core/Profiling.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
@@ -261,9 +263,10 @@ namespace Volt
 		memset(m_passConstantsBufferData.data(), 0, m_passConstantsBufferData.size());
 	}
 
-	void RenderContext::SetCurrentPassIndex(const uint32_t passIndex)
+	void RenderContext::SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode)
 	{
-		m_currentPassIndex = passIndex;
+		m_currentPassIndex = currentPassNode->index;
+		m_currentPassNode = currentPassNode;
 	}
 
 	void RenderContext::UploadConstantsData()
@@ -351,5 +354,41 @@ namespace Volt
 		//m_descriptorTableCache[ptr] = descriptorTable;
 
 		return GlobalResourceManager::GetDescriptorTable();
+	}
+
+	template<>
+	void RenderContext::SetConstant(const std::string& name, const ResourceHandle& data)
+	{
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer)
+		{
+			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture)
+		{
+			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+		}
+		//else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler) // #TODO_Ivar: Should we validate samplers?
+		//{
+		//	VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		//}
+#endif
+
+		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
 	}
 }

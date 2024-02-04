@@ -43,7 +43,6 @@ namespace Volt::RHI
 		static ElementType FindElementTypeFromTag(std::string_view tagStr);
 
 		static ShaderUniformType FindUniformTypeFromString(std::string_view str);
-		static size_t GetSizeFromShaderUniformType(ShaderUniformType type);
 
 		static void ErasePreProcessData(PreProcessorResult& outResult);
 

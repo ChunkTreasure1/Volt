@@ -801,14 +801,6 @@ namespace Volt::RHI
 		~ResourceBarrierInfo() = default;
 
 		BarrierType type = BarrierType::Global;
-		
-		//ImageBarrier& imageBarrier() { return std::get<ImageBarrier>(m_barrier); }
-		//BufferBarrier& bufferBarrier() { return std::get<BufferBarrier>(m_barrier); }
-		//GlobalBarrier& globalBarrier() { return std::get<GlobalBarrier>(m_barrier); }
-
-		//const ImageBarrier& imageBarrier() const { return std::get<ImageBarrier>(m_barrier); }
-		//const BufferBarrier& bufferBarrier() const { return std::get<BufferBarrier>(m_barrier); }
-		//const GlobalBarrier& globalBarrier() const { return std::get<GlobalBarrier>(m_barrier); }
 
 		ImageBarrier& imageBarrier() { return m_barrier2.Get<ImageBarrier>(); }
 		BufferBarrier& bufferBarrier() { return m_barrier2.Get<BufferBarrier>(); }
@@ -820,7 +812,6 @@ namespace Volt::RHI
 
 	private:
 		Variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier2;
-		//std::variant<ImageBarrier, BufferBarrier, GlobalBarrier> m_barrier;
 	};
 
 	struct IndirectIndexedCommand

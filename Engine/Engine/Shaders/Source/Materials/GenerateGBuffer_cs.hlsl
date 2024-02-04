@@ -222,10 +222,9 @@ EvaluatedMaterial EvaluateMaterial(in GPUMaterial material, in MaterialEvaluatio
     if (material.textureCount > 0)
     {
         TextureSampler texSampler = material.samplers[0];
-        SamplerState albedoSampler = texSampler.Get();
         TTexture<float4> albedoTexture = material.textures[0];
         
-        result.albedo = albedoTexture.SampleGrad2D(albedoSampler, evalData.texCoords, evalData.texCoordsDX, evalData.texCoordsDY);
+        result.albedo = albedoTexture.SampleGrad2D(texSampler, evalData.texCoords, evalData.texCoordsDX, evalData.texCoordsDY);
     }
     
     return result;

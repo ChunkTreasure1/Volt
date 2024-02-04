@@ -14,27 +14,70 @@
 
 namespace Volt::RHI
 {
-	enum class ShaderUniformType
+	enum class ShaderUniformBaseType : uint8_t
 	{
 		Invalid,
 		Bool,
+		
+		Short,
+		UShort,
 
 		UInt,
-		UInt2,
-		UInt3,
-		UInt4,
-
 		Int,
-		Int2,
-		Int3,
-		Int4,
+		
+		Int64,
+		UInt64,
 
+		Double,
 		Float,
-		Float2,
-		Float3,
-		Float4,
+		Half,
 
-		Float4x4
+		Buffer,
+		Texture,
+		RWBuffer,
+		RWTexture,
+		Sampler
+	};
+
+	struct ShaderUniformType
+	{
+		ShaderUniformBaseType baseType = ShaderUniformBaseType::Invalid;
+		uint32_t vecsize = 1;
+		uint32_t columns = 1;
+
+		inline const size_t GetSize() const
+		{
+			size_t size = 0;
+
+			switch (baseType)
+			{
+				case ShaderUniformBaseType::Bool: size = 4; break; // HLSL Bool size
+				case ShaderUniformBaseType::UInt: size = 4; break;
+				case ShaderUniformBaseType::Int: size = 4; break;
+				case ShaderUniformBaseType::Float: size = 4; break;
+				case ShaderUniformBaseType::Half: size = 2; break;
+				case ShaderUniformBaseType::Short: size = 2; break;
+				case ShaderUniformBaseType::UShort: size = 2; break;
+				case ShaderUniformBaseType::Double: size = 8; break;
+				case ShaderUniformBaseType::Int64: size = 8; break;
+				case ShaderUniformBaseType::UInt64: size = 8; break;
+
+				case ShaderUniformBaseType::Buffer: size = 4; break;
+				case ShaderUniformBaseType::Texture: size = 4; break;
+				case ShaderUniformBaseType::RWBuffer: size = 4; break;
+				case ShaderUniformBaseType::RWTexture: size = 4; break;
+				case ShaderUniformBaseType::Sampler: size = 4; break;
+ 			}
+
+			size = size * vecsize * columns;
+
+			return size;
+		}
+
+		inline bool operator==(const ShaderUniformType& rhs)
+		{
+			return baseType == rhs.baseType && vecsize == rhs.vecsize && columns == rhs.columns;
+		}
 	};
 
 	struct ShaderUniform
@@ -43,9 +86,10 @@ namespace Volt::RHI
 		ShaderUniform() = default;
 		~ShaderUniform() = default;
 
+		ShaderUniformType type;
+
 		size_t size = 0;
 		size_t offset = 0;
-		ShaderUniformType type = ShaderUniformType::Invalid;
 	};
 
 	class ShaderDataBuffer

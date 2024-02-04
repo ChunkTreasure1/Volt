@@ -3,11 +3,13 @@
 #include "Volt/Core/Base.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraphCommon.h"
 #include "Volt/RenderingNew/RenderGraph/Resources/RenderGraphResourceHandle.h"
+#include "Volt/RenderingNew/Resources/ResourceHandle.h"
 
 #include <VoltRHI/Core/RHICommon.h>
 #include <VoltRHI/Shader/Shader.h>
 	
 #include <glm/glm.hpp>
+#include <half/half.hpp>
 
 namespace Volt
 {
@@ -35,6 +37,110 @@ namespace Volt
 		RHI::Viewport viewport{};
 		RHI::RenderingInfo renderingInfo{};
 	};
+
+	template<typename T>
+	inline static constexpr RHI::ShaderUniformType TryGetTypeFromType()
+	{
+		RHI::ShaderUniformType resultType{};
+
+		if constexpr (std::is_same_v<T, bool>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Bool;
+		}
+		else if constexpr (std::is_same_v<T, int16_t>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Short;
+		}
+		else if constexpr (std::is_same_v<T, uint16_t>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::UShort;
+		}
+		else if constexpr (std::is_same_v<T, uint32_t>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::UInt;
+		}
+		else if constexpr (std::is_same_v<T, int32_t>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Int;
+		}
+		else if constexpr (std::is_same_v<T, int64_t>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Int64;
+		}
+		else if constexpr (std::is_same_v<T, uint64_t>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::UInt64;
+		}
+		else if constexpr (std::is_same_v<T, double>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Double;
+		}
+		else if constexpr (std::is_same_v<T, float>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Float;
+		}
+		else if constexpr (std::is_same_v<T, half_float::half>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Half;
+		}
+
+		else if constexpr (std::is_same_v<T, glm::vec2>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Float;
+			resultType.vecsize = 2;
+		}
+		else if constexpr (std::is_same_v<T, glm::vec3>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Float;
+			resultType.vecsize = 3;
+		}
+		else if constexpr (std::is_same_v<T, glm::vec4>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Float;
+			resultType.vecsize = 4;
+		}
+		else if constexpr (std::is_same_v<T, glm::uvec2>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::UInt;
+			resultType.vecsize = 2;
+		}
+		else if constexpr (std::is_same_v<T, glm::uvec3>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::UInt;
+			resultType.vecsize = 3;
+		}
+		else if constexpr (std::is_same_v<T, glm::uvec4>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::UInt;
+			resultType.vecsize = 4;
+		}
+		else if constexpr (std::is_same_v<T, glm::ivec2>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Int;
+			resultType.vecsize = 2;
+		}
+		else if constexpr (std::is_same_v<T, glm::ivec3>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Int;
+			resultType.vecsize = 3;
+		}
+		else if constexpr (std::is_same_v<T, glm::ivec4>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Int;
+			resultType.vecsize = 4;
+		}
+
+		else if constexpr (std::is_same_v<T, glm::mat4>)
+		{
+			resultType.baseType = RHI::ShaderUniformBaseType::Float;
+			resultType.vecsize = 4;
+			resultType.columns = 4;
+		}
+
+		return resultType;
+	}
+
+	struct RenderGraphPassNodeBase;
 
 	class RenderContext
 	{
@@ -77,13 +183,22 @@ namespace Volt
 		template<typename T>
 		void SetConstant(const std::string& name, const T& data);
 
+		template<>
+		void SetConstant(const std::string& name, const ResourceHandle& data);
+
+		template<typename F>
+		void SetConstant(const std::string& name, const std::vector<F>& data);
+
+		template<typename F, size_t COUNT>
+		void SetConstant(const std::string& name, const std::array<F, COUNT>& data);
+
 	private:
 		friend class RenderGraph;
 
 		void BindDescriptorTableIfRequired();
 
 		void SetPassConstantsBuffer(Weak<RHI::StorageBuffer> constantsBuffer);
-		void SetCurrentPassIndex(const uint32_t passIndex);
+		void SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode);
 		void UploadConstantsData();
 
 		RHI::ShaderRenderGraphConstantsData GetRenderGraphConstantsData();
@@ -99,7 +214,9 @@ namespace Volt
 		Ref<RHI::DescriptorTable> m_currentDescriptorTable;
 
 		Weak<RHI::StorageBuffer> m_passConstantsBuffer;
+
 		uint32_t m_currentPassIndex = 0;
+		Weak<RenderGraphPassNodeBase> m_currentPassNode;
 
 		Ref<RHI::CommandBuffer> m_commandBuffer;
 
@@ -116,11 +233,48 @@ namespace Volt
 		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
 
 		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
-
 		VT_ENSURE(constantsData.uniforms.contains(name));
+
 		const auto& uniform = constantsData.uniforms.at(name);
-		VT_ENSURE(sizeof(T) == uniform.size);
+
+#ifdef VT_DEBUG
+		VT_ENSURE(uniform.type == TryGetTypeFromType<T>());
+#endif
 
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(T));
+	}
+
+	template<typename F>
+	inline void RenderContext::SetConstant(const std::string& name, const std::vector<F>& data)
+	{
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+		
+		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		VT_ENSURE(uniform.type == TryGetTypeFromType<F>());
+#endif
+
+		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), data.size() * sizeof(F));
+	}
+
+	template<typename F, size_t COUNT>
+	inline void RenderContext::SetConstant(const std::string& name, const std::array<F, COUNT>& data)
+	{
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		VT_ENSURE(uniform.type == TryGetTypeFromType<F>());
+#endif
+
+		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), COUNT * sizeof(F));
 	}
 }

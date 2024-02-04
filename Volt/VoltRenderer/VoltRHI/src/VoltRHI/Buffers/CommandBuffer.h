@@ -20,6 +20,8 @@ namespace Volt::RHI
 	class StorageBuffer;
 	class Allocation;
 
+	class Event;
+
 	class CommandBuffer : public RHIInterface
 	{
 	public:
@@ -34,6 +36,8 @@ namespace Volt::RHI
 		virtual void ExecuteAndWait() = 0;
 		virtual void WaitForLastFence() = 0;
 		virtual void WaitForFences() = 0;
+
+		virtual void SetEvent(Ref<Event> event) = 0;
 
 		virtual void Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 		virtual void DrawIndexed(const uint32_t indexCount, const uint32_t instanceCount, const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance) = 0;

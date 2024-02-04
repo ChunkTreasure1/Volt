@@ -70,6 +70,10 @@ namespace Volt::RHI
 	{
 	}
 
+	void D3D12CommandBuffer::SetEvent(Ref<Event> event)
+	{
+	}
+
 	void D3D12CommandBuffer::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
 	{
 		auto& commandData = GetCommandData();

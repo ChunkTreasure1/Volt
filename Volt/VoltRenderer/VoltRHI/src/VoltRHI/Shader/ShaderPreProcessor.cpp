@@ -486,13 +486,9 @@ namespace Volt::RHI
 			const std::string typeStr = memberSubStr.substr(0, spaceCharPos);
 			const std::string nameStr = memberSubStr.substr(firstNamePos, memberSubStr.size() - firstNamePos);
 
-			ShaderUniformType elementType = ShaderUniformType::Invalid;
+			ShaderUniformType elementType{};
 
-			if (Utility::IsResourceType(typeStr))
-			{
-				elementType = ShaderUniformType::UInt;
-			}
-			else if (!Utility::IsDefaultType(typeStr))
+			if (!Utility::IsDefaultType(typeStr) && !Utility::IsResourceType(typeStr))
 			{
 				GetConstantsInformationFromMemberStructRecursive(typeStr, nameStr, data, outResult);
 			}
@@ -501,9 +497,9 @@ namespace Volt::RHI
 				elementType = FindUniformTypeFromString(typeStr);
 			}
 
-			if (elementType != ShaderUniformType::Invalid)
+			if (elementType.baseType != ShaderUniformBaseType::Invalid)
 			{
-				const size_t typeSize = GetSizeFromShaderUniformType(elementType);
+				const size_t typeSize = elementType.GetSize();
 
 				const std::string uniformName = !parentMemberName.empty() ? parentMemberName + "." + nameStr : nameStr;
 				outResult.renderGraphConstants.uniforms[uniformName] = ShaderUniform(elementType, typeSize, outResult.renderGraphConstants.size);
@@ -726,97 +722,127 @@ namespace Volt::RHI
 
 	ShaderUniformType ShaderPreProcessor::FindUniformTypeFromString(std::string_view str)
 	{
-		if (str == "bool")
+		ShaderUniformType resultType{};
+		bool isResourceType = false;
+
+		if (str.find("TextureSampler") != std::string_view::npos)
 		{
-			return ShaderUniformType::Bool;
+			resultType.baseType = ShaderUniformBaseType::Sampler;
+			isResourceType = true;
 		}
-		else if (str == "uint")
+		else if (str.find("RWRawByteBuffer") != std::string_view::npos)
 		{
-			return ShaderUniformType::UInt;
+			resultType.baseType = ShaderUniformBaseType::RWBuffer;
+			isResourceType = true;
 		}
-		else if (str == "uint2")
+		else if (str.find("RawByteBuffer") != std::string_view::npos)
 		{
-			return ShaderUniformType::UInt2;
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
 		}
-		else if (str == "uint3")
+		else if (str.find("UniformBuffer") != std::string_view::npos)
 		{
-			return ShaderUniformType::UInt3;
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
 		}
-		else if (str == "uint4")
+		else if (str.find("RWTypedBuffer") != std::string_view::npos)
 		{
-			return ShaderUniformType::UInt4;
+			resultType.baseType = ShaderUniformBaseType::RWBuffer;
+			isResourceType = true;
 		}
-		else if (str == "int")
+		else if (str.find("TypedBuffer") != std::string_view::npos)
 		{
-			return ShaderUniformType::Int;
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
 		}
-		else if (str == "int2")
+		else if (str.find("RWTexture") != std::string_view::npos)
 		{
-			return ShaderUniformType::Int2;
+			resultType.baseType = ShaderUniformBaseType::RWTexture;
+			isResourceType = true;
 		}
-		else if (str == "int3")
+		else if (str.find("TextureT") != std::string_view::npos)
 		{
-			return ShaderUniformType::Int3;
-		}
-		else if (str == "int4")
-		{
-			return ShaderUniformType::Int4;
-		}
-		else if (str == "float")
-		{
-			return ShaderUniformType::Float;
-		}
-		else if (str == "float2")
-		{
-			return ShaderUniformType::Float2;
-		}
-		else if (str == "float3")
-		{
-			return ShaderUniformType::Float3;
-		}
-		else if (str == "float4")
-		{
-			return ShaderUniformType::Float4;
-		}
-		else if (str == "float4x4")
-		{
-			return ShaderUniformType::Float4x4;
+			resultType.baseType = ShaderUniformBaseType::Texture;
+			isResourceType = true;
 		}
 
-		return ShaderUniformType::Invalid;
-	}
-
-	size_t ShaderPreProcessor::GetSizeFromShaderUniformType(ShaderUniformType type)
-	{
-		switch (type)
+		else if (str.find("bool") != std::string_view::npos)
 		{
-			case ShaderUniformType::Bool: return 1;
-
-			case ShaderUniformType::Float:
-			case ShaderUniformType::Int:
-			case ShaderUniformType::UInt: 
-				return 4;
-			
-			case ShaderUniformType::Float2:
-			case ShaderUniformType::Int2:
-			case ShaderUniformType::UInt2:
-				return 2 * 4;
-
-			case ShaderUniformType::UInt3:
-			case ShaderUniformType::Int3:
-			case ShaderUniformType::Float3:
-				return 3 * 4;
-
-			case ShaderUniformType::UInt4:
-			case ShaderUniformType::Int4:
-			case ShaderUniformType::Float4:
-				return 4 * 4;
-
-			case ShaderUniformType::Float4x4:
-				return 4 * 4 * 4;
+			resultType.baseType = ShaderUniformBaseType::Bool;
+		}
+		else if (str.find("int16_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Short;
+		}
+		else if (str.find("uint16_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UShort;
+		}
+		else if (str.find("int64_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Int64;
+		}
+		else if (str.find("uint64_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UInt64;
+		}
+		else if (str.find("uint32_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UInt;
+		}
+		else if (str.find("int32_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Int;
+		}
+		else if (str.find("float64_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Double;
+		}
+		else if (str.find("uint") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UInt;
+		}
+		else if (str.find("int") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Int;
+		}
+		else if (str.find("double") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Double;
+		}
+		else if (str.find("float") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Float;
+		}
+		else if (str.find("half") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Half;
 		}
 
-		return 0;
+		if (!isResourceType)
+		{
+			size_t tTypeOffset = str.find("_t");
+			size_t findOffset = std::string_view::npos;
+
+			if (tTypeOffset != std::string_view::npos)
+			{
+				findOffset = tTypeOffset;
+			}
+
+			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz", findOffset);
+			if (lastNumOffset != std::string_view::npos)
+			{
+				std::string_view postfixStr = str.substr(lastNumOffset, str.size() - lastNumOffset);
+				resultType.vecsize = static_cast<uint32_t>(std::stoi(std::string(1, postfixStr[0])));
+
+				if (postfixStr.size() > 1)
+				{
+					resultType.columns = static_cast<uint32_t>(std::stoi(std::to_string(postfixStr[postfixStr.size() - 1])));
+				}
+			}
+		}
+
+		return resultType;
 	}
 
 	PixelFormat ShaderPreProcessor::FindDefaultFormatFromString(std::string_view str)

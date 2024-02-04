@@ -46,6 +46,19 @@ namespace Volt
 		const bool WritesResource(RenderGraphResourceHandle handle) const;
 		const bool CreatesResource(RenderGraphResourceHandle handle) const;
 		const bool IsCulled() const;
+
+#ifdef VT_DEBUG
+		const bool ReadsResource(ResourceHandle handle) const;
+		const bool WritesResource(ResourceHandle handle) const;
+		const bool CreatesResource(ResourceHandle handle) const;
+#endif
+
+	private:
+		friend class RenderGraphPassResources;
+
+#ifdef VT_DEBUG
+		std::unordered_map<ResourceHandle, RenderGraphResourceHandle> m_resourceHandleMapping;
+#endif
 	};
 
 	template<typename T>
