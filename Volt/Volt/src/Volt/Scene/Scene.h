@@ -208,6 +208,8 @@ namespace Volt
 		void AudioSourceComponent_OnCreate(entt::registry& registry, entt::entity id);
 		void AudioListenerComponent_OnCreate(entt::registry& registry, entt::entity id);
 		void CameraComponent_OnCreate(entt::registry& registry, entt::entity id);
+		void LandscapeComponent_OnCreate(entt::registry& registry, entt::entity id);
+		
 
 		void RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id);
 		void CharacterControllerComponent_OnDestroy(entt::registry& registry, entt::entity id);

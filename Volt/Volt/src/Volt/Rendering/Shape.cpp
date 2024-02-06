@@ -127,4 +127,42 @@ namespace Volt
 
 		return mesh;
 	}
+	Ref<Mesh> Shape::CreateLandscapePlane()
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		
+		vertices.reserve(81);
+		
+		const float vertSpacing = 1.f / 8.f;
+		for (uint32_t z = 0; z < 9; z++)
+		{
+			for (uint32_t x = 0; x < 9; x++)
+			{
+				Vertex& vertex = vertices.emplace_back();
+				vertex.position = glm::vec3(x * vertSpacing, 0.0f, z * vertSpacing);
+			}
+		}
+	
+		
+		constexpr uint32_t intMax = std::numeric_limits<uint32_t>().max();
+		//Generate indices as a triangle strip
+		for (int y = 0; y < 8; y++)
+		{
+			for (int x = 0; x < 9; x++)
+			{
+				indices.push_back(y * 9 + x);
+				indices.push_back((y + 1) * 9 + x);
+			}
+
+			//Restart triangle strip
+			indices.push_back(intMax);
+		}
+
+		//Ref<Material> material = AssetManager::GetAsset<Material>("Assets/Materials/M_Landscape.vtmat");
+		Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
+		Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, material);
+		
+		return mesh;
+	}
 }

@@ -1,0 +1,5 @@
+name: "Landscape"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Landscape/Landscape_vs.hlsl"
+  - "Engine/Shaders/Source/Landscape/Landscape_ps.hlsl"

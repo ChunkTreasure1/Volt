@@ -180,4 +180,24 @@ namespace Volt
 			return result;
 		}
 	};
+
+	struct LandscapeVertex
+	{
+		float altitude;
+		uint16_t pitch;
+		uint16_t yaw;
+
+		inline static const BufferLayout GetVertexLayout()
+		{
+			BufferLayout result =
+			{
+				{ ElementType::Float, "ALTITUDE" },
+				{ ElementType::UShort, "PITCH" },
+				{ ElementType::UShort, "YAW" },
+			};
+
+			return result;
+		}
+
+	};
 }

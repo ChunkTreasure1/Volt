@@ -38,6 +38,9 @@
 #include "Volt/Rendering/Camera/Camera.h"
 #include "Volt/RenderingNew/RenderGraph/RenderGraphExecutionThread.h"
 
+#include "VoltRHI/Buffers/IndexBuffer.h"
+#include "VoltRHI/Core/RHICommon.h"
+
 #include "Volt/Vision/Vision.h"
 #include "Volt/Utility/Random.h"
 
@@ -868,6 +871,7 @@ namespace Volt
 		m_registry.on_construct<AudioSourceComponent>().connect<&Scene::AudioSourceComponent_OnCreate>(this);
 		m_registry.on_construct<AudioListenerComponent>().connect<&Scene::AudioListenerComponent_OnCreate>(this);
 		m_registry.on_construct<CameraComponent>().connect<&Scene::CameraComponent_OnCreate>(this);
+		m_registry.on_construct<LandscapeComponent>().connect<&Scene::LandscapeComponent_OnCreate>(this);
 
 		m_registry.on_destroy<RigidbodyComponent>().connect<&Scene::RigidbodyComponent_OnDestroy>(this);
 		m_registry.on_destroy<CharacterControllerComponent>().connect<&Scene::CharacterControllerComponent_OnDestroy>(this);
@@ -876,6 +880,7 @@ namespace Volt
 		m_registry.on_destroy<CapsuleColliderComponent>().connect<&Scene::CapsuleColliderComponent_OnDestroy>(this);
 		m_registry.on_destroy<MeshColliderComponent>().connect<&Scene::MeshColliderComponent_OnDestroy>(this);
 		m_registry.on_destroy<MeshComponent>().connect<&Scene::MeshComponent_OnDestroy>(this);
+		
 	}
 
 	const bool Scene::IsRelatedTo(Entity entity, Entity otherEntity)
@@ -1129,6 +1134,62 @@ namespace Volt
 	{
 		CameraComponent& camComp = registry.get<CameraComponent>(id);
 		camComp.camera = CreateRef<Camera>(camComp.fieldOfView, 1.f, float(m_viewportWidth) / float(m_viewportHeight), camComp.nearPlane, camComp.farPlane);
+	}
+
+	void Scene::LandscapeComponent_OnCreate(entt::registry& registry, entt::entity id)
+	{
+		LandscapeComponent& landscape = registry.get<LandscapeComponent>(id);
+
+		//we want to generate a sin wave heightmap on x and z
+		for (int zCell = 0; zCell < landscape.sideCellCount; zCell++)
+		{
+			for (int xCell = 0; xCell < landscape.sideCellCount; xCell++)
+			{
+				std::array<float, 81>& heightMap = landscape.heightMaps[xCell + zCell * landscape.sideCellCount];
+
+				for (int zVertex = 0; zVertex < 9; zVertex++)
+				{
+					for (int xVertex = 0; xVertex < 9; xVertex++)
+					{
+						float x = (xCell * 8 + xVertex) / 8.0f;
+						float z = (zCell * 8 + zVertex) / 8.0f;
+
+						float height = sin(x * 2.0f * 3.1415f) * sin(z * 2.0f * 3.1415f) * 0.5f + 0.5f;
+
+						heightMap[xVertex + zVertex * 9] = height;
+					}
+				}
+			}
+		}
+		
+#pragma push_macro("PixelFormat")
+#undef PixelFormat
+		landscape.heightMapTexture = Texture2D::Create(RHI::PixelFormat::R32_SFLOAT, landscape.sideCellCount * 9, landscape.sideCellCount * 9, landscape.heightMaps.data());
+#pragma pop_macro("PixelFormat")
+
+
+		std::array<uint32_t, 152> indices; // 8(rows of quads) * 9(vertices per line) * 2(vertices per quad) + 8(for primitive restart)
+
+		int32_t index = 0;
+
+		constexpr uint32_t intMax = std::numeric_limits<uint32_t>().max();
+		//Generate indices as a triangle strip
+		for (int y = 0; y < 8; y++)
+		{
+			for (int x = 0; x < 9; x++)
+			{
+				indices[index] = y * 9 + x;
+				index++;
+				indices[index] = (y + 1) * 9 + x;
+				index++;
+			}
+
+			//Restart triangle strip
+			indices[index] = intMax;
+			index++;
+		}
+
+		landscape.indexBuffer = RHI::IndexBuffer::Create(indices);
 	}
 
 	void Scene::RigidbodyComponent_OnDestroy(entt::registry& registry, entt::entity id)

@@ -111,4 +111,11 @@ namespace Volt
 		float falloffRange = 0.615f;
 		float finalValuePower = 2.2f;
 	};
+
+	struct LandscapeData
+	{
+		RenderGraphResourceHandle heightMapsBuffer;
+
+		std::vector<RenderGraphResourceHandle> heightMaps;
+	};
 }

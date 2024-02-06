@@ -1,0 +1,8 @@
+Metadata:
+  assetHandle: 16820157030008419000
+  filePath: Engine/Shaders/Source/Landscape/Landscape_vs.hlsl
+  type: 128
+  Dependencies:
+    []
+  Properties:
+    {}

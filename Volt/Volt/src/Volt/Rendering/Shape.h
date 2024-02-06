@@ -10,5 +10,6 @@ namespace Volt
 	public:
 		static Ref<Mesh> CreateUnitCube();
 		static Ref<Mesh> CreateCapsule(float radius, float height);
+		static Ref<Mesh> CreateLandscapePlane();
 	};
 }

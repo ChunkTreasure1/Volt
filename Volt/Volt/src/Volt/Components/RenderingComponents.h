@@ -5,11 +5,17 @@
 #include "Volt/Scene/Entity.h"
 
 #include "Volt/Asset/Asset.h"
+#include "Volt/Rendering/Texture/Texture2D.h"
 
 namespace Volt
 {
 	class Camera;
 	class AnimationController;
+	namespace RHI
+	{
+	class IndexBuffer;
+		
+	}
 
 	struct MeshComponent
 	{
@@ -75,6 +81,25 @@ namespace Volt
 		}
 
 		REGISTER_COMPONENT(AnimatedCharacterComponent);
+	};
+
+	struct LandscapeComponent
+	{
+		bool initialized = false;
+		static constexpr uint32_t sideCellCount = 1; // HARDCODED FOR NOW, ALSO HARDCODED IN Landscape_vs
+		std::array<std::array<float, 81>, sideCellCount * sideCellCount> heightMaps;
+
+		Ref<Texture2D> heightMapTexture;
+		
+		Ref<RHI::IndexBuffer> indexBuffer;
+
+		static void ReflectType(TypeDesc<LandscapeComponent>& reflect)
+		{
+			reflect.SetGUID("{F55EE798-9EDC-4133-ACFD-322FD849AA9F}"_guid);
+			reflect.SetLabel("Landscape Component");
+		}
+
+		REGISTER_COMPONENT(LandscapeComponent);
 	};
 
 	struct TextRendererComponent

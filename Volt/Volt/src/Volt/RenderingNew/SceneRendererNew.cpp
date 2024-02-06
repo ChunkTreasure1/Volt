@@ -20,6 +20,8 @@
 
 #include "Volt/RenderingNew/DrawContext.h"
 
+#include "Volt/Rendering/Shape.h"
+
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Core/Profiling.h"
 
@@ -45,6 +47,7 @@
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Buffers/UniformBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
+#include <VoltRHI/Buffers/IndexBuffer.h>
 
 #include <VoltRHI/Buffers/UniformBufferSet.h>
 #include <VoltRHI/Buffers/StorageBufferSet.h>
@@ -52,6 +55,8 @@
 #include <VoltRHI/Graphics/GraphicsContext.h>
 #include <VoltRHI/Graphics/GraphicsDevice.h>
 #include <VoltRHI/Graphics/DeviceQueue.h>
+
+#include <VoltRHI/Memory/Allocation.h>
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
@@ -156,7 +161,7 @@ namespace Volt
 			AddCullPrimitivesPass(renderGraph, rgBlackboard, camera);
 
 			renderGraph.EndMarker();
-		
+
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
 			AddPreDepthPass(renderGraph, rgBlackboard);
@@ -175,7 +180,7 @@ namespace Volt
 
 			PrefixSumTechnique prefixSum{ renderGraph };
 			prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
-			
+
 			AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
 
@@ -194,6 +199,8 @@ namespace Volt
 			}
 
 			renderGraph.EndMarker();
+
+			AddLandscapePass(renderGraph, rgBlackboard);
 
 			AddShadingPass(renderGraph, rgBlackboard);
 		}
@@ -278,7 +285,7 @@ namespace Volt
 			viewData.cameraPosition = glm::vec4(camera->GetPosition(), 1.f);
 			viewData.nearPlane = camera->GetNearPlane();
 			viewData.farPlane = camera->GetFarPlane();
-			
+
 			float depthLinearizeMul = (-viewData.projection[3][2]);
 			float depthLinearizeAdd = (viewData.projection[2][2]);
 
@@ -303,7 +310,7 @@ namespace Volt
 			DirectionalLightData data{};
 			data.intensity = 0.f;
 
-			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp) 
+			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp)
 			{
 				if (!comp.visible)
 				{
@@ -312,7 +319,7 @@ namespace Volt
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
-				
+
 				data.color = dirLightComp.color;
 				data.intensity = dirLightComp.intensity;
 				data.direction = { dir, 0.f };
@@ -385,7 +392,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			const uint32_t commandCount = renderScene->GetRenderObjectCount();
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
@@ -516,7 +523,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
-			
+
 			builder.SetIsComputePass();
 		},
 		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -580,7 +587,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
-		
+
 			builder.SetIsComputePass();
 		},
 		[=](const CullPrimitivesData& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -667,6 +674,97 @@ namespace Volt
 
 			RenderMeshes(context, resources, blackboard);
 
+			context.EndRendering();
+		});
+	}
+
+	void SceneRendererNew::AddLandscapePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& gbufferData = blackboard.Get<GBufferData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+		const auto& preDepthData = blackboard.Get<PreDepthData>();
+
+
+
+		LandscapeData& landscapeData = blackboard.Add<LandscapeData>();
+
+		{
+			std::vector<Entity> landscapeEntities = m_scene->GetAllEntitiesWith<Volt::LandscapeComponent>();
+			if (!landscapeEntities.empty())
+			{
+				//We only allow one landscape at the moment
+				LandscapeComponent& landscape = landscapeEntities.front().GetComponent<LandscapeComponent>();
+
+				const auto desc = RGUtils::CreateBufferDesc<ViewData>(landscape.heightMaps.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Landscape Height Map Data");
+				landscapeData.heightMapsBuffer = renderGraph.CreateBuffer(desc);
+
+				landscapeData.heightMaps.push_back(landscape.heightMapTexture->GetResourceHandle());
+
+				renderGraph.AddMappedBufferUpload(landscapeData.heightMapsBuffer, landscape.heightMaps.data(), sizeof(landscape.heightMaps), "Upload Landscape Height Map Data");
+			}
+		}
+
+
+		renderGraph.AddPass("Landscape Pass",
+	   [&](RenderGraph::Builder& builder)
+		{
+			// Register vertex buffer and index buffer as external buffer and mark them as write
+			builder.WriteResource(gbufferData.albedo);
+			builder.WriteResource(gbufferData.materialEmissive);
+			builder.WriteResource(gbufferData.normalEmissive);
+			builder.WriteResource(preDepthData.depth);
+
+			//for (int i = 0; i < landscapeData.heightMaps.size(); i++)
+			//{
+			//	builder.ReadResource(landscapeData.heightMaps[i]);
+			//}
+
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.ReadResource(landscapeData.heightMapsBuffer);
+		},
+	   [=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			std::vector<Entity> landscapeEntities = m_scene->GetAllEntitiesWith<Volt::LandscapeComponent>();
+			if (landscapeEntities.empty())
+			{
+				return;
+			}
+
+			//We only allow one landscape at the moment
+			LandscapeComponent& landscape = landscapeEntities.front().GetComponent<LandscapeComponent>();
+
+			if (!landscape.initialized)
+			{
+				landscape.initialized = true;
+
+				
+			}
+
+			Weak<RHI::ImageView> albedo = resources.GetImage2DView(gbufferData.albedo);
+			Weak<RHI::ImageView> materialEmissive = resources.GetImage2DView(gbufferData.materialEmissive);
+			Weak<RHI::ImageView> normalEmissive = resources.GetImage2DView(gbufferData.normalEmissive);
+			Ref<RHI::ImageView> depthView = resources.GetImage2DView(preDepthData.depth);
+
+			const RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { albedo, materialEmissive, normalEmissive, depthView  });
+
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("Landscape");
+			pipelineInfo.topology = RHI::Topology::TriangleStrip;
+			pipelineInfo.enablePrimitiveRestart = true;
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+
+			context.BeginRendering(info);
+			context.BindPipeline(pipeline);
+
+			context.BindIndexBuffer(landscape.indexBuffer);
+
+			context.SetConstant(uniformBuffers.viewDataBuffer);
+			context.SetConstant(landscapeData.heightMapsBuffer);
+
+			context.SetConstant(RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
+
+			context.DrawIndexed(152, landscape.sideCellCount * landscape.sideCellCount, 0, 0, 0);
 			context.EndRendering();
 		});
 	}
@@ -897,6 +995,8 @@ namespace Volt
 
 			context.DispatchIndirect(indirectArgsBuffer, sizeof(RHI::IndirectDispatchCommand) * materialId); // Should be offset with material ID
 		});
+
+
 	}
 
 	void SceneRendererNew::AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
@@ -906,7 +1006,7 @@ namespace Volt
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
 
 		blackboard.Add<FinalColorData>() = renderGraph.AddPass<FinalColorData>("Shading Pass",
-		[&](RenderGraph::Builder& builder, FinalColorData& data) 
+		[&](RenderGraph::Builder& builder, FinalColorData& data)
 		{
 			data.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
 
@@ -936,7 +1036,7 @@ namespace Volt
 			context.SetConstant(resources.GetImage2D(gbufferData.materialEmissive));
 			context.SetConstant(resources.GetImage2D(gbufferData.normalEmissive));
 			context.SetConstant(resources.GetImage2D(preDepthData.depth));
-			
+
 			// PBR Constants
 			context.SetConstant(resources.GetBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant(resources.GetBuffer(uniformBuffers.directionalLightBuffer));
