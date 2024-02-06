@@ -26,7 +26,13 @@ namespace Volt
 	ResourceHandle RenderGraphPassResources::GetImage2D(const RenderGraphResourceHandle resourceHandle, const uint32_t mip, const uint32_t layer) const
 	{
 		ValidateResourceAccess(resourceHandle);
-		return m_renderGraph.GetImage2D(resourceHandle, mip, layer);
+		auto handle = m_renderGraph.GetImage2D(resourceHandle, mip, layer);
+
+#ifdef VT_DEBUG
+		m_pass.m_resourceHandleMapping[handle] = resourceHandle;
+#endif
+
+		return handle;
 	}
 
 	Weak<RHI::StorageBuffer> RenderGraphPassResources::GetBufferRaw(const RenderGraphResourceHandle resourceHandle) const
@@ -38,13 +44,25 @@ namespace Volt
 	ResourceHandle RenderGraphPassResources::GetBuffer(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
-		return m_renderGraph.GetBuffer(resourceHandle);
+		auto handle = m_renderGraph.GetBuffer(resourceHandle);
+		
+#ifdef VT_DEBUG
+		m_pass.m_resourceHandleMapping[handle] = resourceHandle;
+#endif
+		
+		return handle;
 	}
 
 	ResourceHandle RenderGraphPassResources::GetUniformBuffer(const RenderGraphResourceHandle resourceHandle) const
 	{
 		ValidateResourceAccess(resourceHandle);
-		return m_renderGraph.GetUniformBuffer(resourceHandle);
+		auto handle = m_renderGraph.GetUniformBuffer(resourceHandle);
+
+#ifdef VT_DEBUG
+		m_pass.m_resourceHandleMapping[handle] = resourceHandle;
+#endif
+
+		return handle;
 	}
 
 	void RenderGraphPassResources::ValidateResourceAccess(const RenderGraphResourceHandle resourceHandle) const

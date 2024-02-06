@@ -210,6 +210,22 @@ namespace Volt::RHI
 			else if (shaderStage == ShaderStage::Vertex)
 			{
 				vulkanShader.m_resources.vertexLayout = result.vertexLayout;
+				vulkanShader.m_resources.instanceLayout = result.instanceLayout;
+			}
+
+			if (!vulkanShader.m_resources.renderGraphConstantsData.IsValid())
+			{
+				vulkanShader.m_resources.renderGraphConstantsData = result.renderGraphConstants;
+			}
+			else if(result.renderGraphConstants.IsValid())
+			{
+				for (const auto& [name, uniform] : vulkanShader.m_resources.renderGraphConstantsData.uniforms)
+				{
+					if (!result.renderGraphConstants.uniforms.contains(name) || uniform.type != result.renderGraphConstants.uniforms.at(name).type)
+					{
+						GraphicsContext::LogTagged(Severity::Error, "[VulkanShaderCompiler]", "All shader stages must have equal constant struct definition!");
+					}
+				}
 			}
 
 			processedSource = result.preProcessedResult;

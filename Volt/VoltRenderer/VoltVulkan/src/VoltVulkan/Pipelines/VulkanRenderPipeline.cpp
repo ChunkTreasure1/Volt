@@ -23,19 +23,19 @@ namespace Volt::RHI
 
 	namespace Utility
 	{
-		static VertexAttributeData CreateVertexLayout(const BufferLayout& bufferLayout)
+		static VertexAttributeData CreateVertexLayout(const BufferLayout& vertexLayout, const BufferLayout& instanceLayout)
 		{
-			assert(!bufferLayout.GetElements().empty());
+			assert(!vertexLayout.GetElements().empty());
 
 			VertexAttributeData result{};
 
 			VkVertexInputBindingDescription& bindingDesc = result.bindingDescriptions.emplace_back();
 			bindingDesc.binding = 0;
-			bindingDesc.stride = bufferLayout.GetStride();
+			bindingDesc.stride = vertexLayout.GetStride();
 			bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			uint32_t attributeIndex = 0;
-			for (const auto& element : bufferLayout.GetElements())
+			for (const auto& element : vertexLayout.GetElements())
 			{
 				VkVertexInputAttributeDescription& desc = result.attributeDescriptions.emplace_back();
 				desc.binding = 0;
@@ -46,7 +46,24 @@ namespace Volt::RHI
 				attributeIndex++;
 			}
 
-			// #TODO: instance layout
+			if (instanceLayout.IsValid())
+			{
+				VkVertexInputBindingDescription& instanceBindingDesc = result.bindingDescriptions.emplace_back();
+				instanceBindingDesc.binding = 1;
+				instanceBindingDesc.stride = instanceLayout.GetStride();
+				instanceBindingDesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+			
+				for (const auto& element : instanceLayout.GetElements())
+				{
+					VkVertexInputAttributeDescription& desc = result.attributeDescriptions.emplace_back();
+					desc.binding = 1;
+					desc.location = attributeIndex;
+					desc.format = VoltToVulkanElementFormat(element.type);
+					desc.offset = static_cast<uint32_t>(element.offset);
+
+					attributeIndex++;
+				}
+			}
 
 			return result;
 		}
@@ -80,7 +97,7 @@ namespace Volt::RHI
 
 		if (shaderResources.vertexLayout.IsValid())
 		{
-			vertexAttrData = Utility::CreateVertexLayout(shaderResources.vertexLayout);
+			vertexAttrData = Utility::CreateVertexLayout(shaderResources.vertexLayout, shaderResources.instanceLayout);
 		}
 
 		// Create pipeline layout

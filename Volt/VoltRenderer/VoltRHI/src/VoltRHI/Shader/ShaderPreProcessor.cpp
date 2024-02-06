@@ -11,10 +11,49 @@ namespace Volt::RHI
 	{
 		inline static bool IsDefaultType(std::string_view str)
 		{
-			if (str.find("float") != std::string::npos || str.find("int") != std::string::npos ||
-				str.find("uint") != std::string::npos || str.find("half") != std::string::npos)
+			static std::vector<std::string_view> baseTypes =
 			{
-				return true;
+				"bool",
+				"int",
+				"uint",
+				"dword",
+				"half",
+				"float",
+				"double",
+				"min16float",
+				"min10float",
+				"min16int",
+				"min12int",
+				"min16uint",
+				"uint64_t",
+				"int64_t",
+				"float16_t",
+				"uint16_t",
+				"ínt16_t"
+			};
+
+			for (const auto& baseType : baseTypes)
+			{
+				if (str == baseType)
+				{
+					return true;
+				}
+
+				for (uint32_t i = 2; i <= 4; i++)
+				{
+					if (str == std::string(baseType) + std::to_string(i))
+					{
+						return true;
+					}
+
+					for (uint32_t j = 1; j <= 4; j++)
+					{
+						if (str == std::string(baseType) + std::to_string(i) + "x" + std::to_string(j))
+						{
+							return true;
+						}
+					}
+				}
 			}
 
 			return false;
@@ -48,8 +87,8 @@ namespace Volt::RHI
 
 		inline static void RemoveAllNonLettNumCharacters(std::string& outResult)
 		{
-			auto newEnd = std::remove_if(outResult.begin(), outResult.end(), [](char c) 
-			{ 
+			auto newEnd = std::remove_if(outResult.begin(), outResult.end(), [](char c)
+			{
 				std::string cStr{ c };
 				if (cStr.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_") != std::string::npos)
 				{
@@ -64,7 +103,7 @@ namespace Volt::RHI
 
 		inline static const bool IsSystemValueSemantic(std::string_view semanticName)
 		{
-			static constexpr std::string_view svSemantics[] = 
+			static constexpr std::string_view svSemantics[] =
 			{
 				"sv_clipdistance",
 				"sv_culldistance",
@@ -109,10 +148,29 @@ namespace Volt::RHI
 		{
 			return valueStr.find("[[vk::builtin") != std::string_view::npos;
 		}
+
+		inline static const bool IsResourceType(std::string_view valueStr)
+		{
+			if (valueStr.find("TextureSampler") != std::string_view::npos ||
+				valueStr.find("RawByteBuffer") != std::string_view::npos ||
+				valueStr.find("RWRawByteBuffer") != std::string_view::npos ||
+				valueStr.find("UniformBuffer") != std::string_view::npos ||
+				valueStr.find("TypedBuffer") != std::string_view::npos ||
+				valueStr.find("RWTypedBuffer") != std::string_view::npos ||
+				valueStr.find("TextureT") != std::string_view::npos ||
+				valueStr.find("RWTexture") != std::string_view::npos)
+			{
+				return true;
+			}
+		
+			return false;
+		}
 	}
 
 	bool ShaderPreProcessor::PreProcessShaderSource(const PreProcessorData& data, PreProcessorResult& outResult)
 	{
+		GenerateConstantsInformation(data, outResult);
+
 		switch (data.shaderStage)
 		{
 			case ShaderStage::Pixel: return PreProcessPixelSource(data, outResult); break;
@@ -137,7 +195,6 @@ namespace Volt::RHI
 		}
 
 		outResult.preProcessedResult = data.shaderSource;
-
 		return true;
 	}
 
@@ -213,7 +270,7 @@ namespace Volt::RHI
 		std::string structSubStr = outputSubStr.substr(structPos);
 		size_t openBracketPos = structSubStr.find_first_of('{') + 1;
 		const size_t closingBracketPos = structSubStr.find_first_of('}');
-		
+
 		openBracketPos = structSubStr.find_first_not_of("\n ", openBracketPos);
 
 		std::string structBracketSubStr = structSubStr.substr(openBracketPos, closingBracketPos - openBracketPos);
@@ -247,7 +304,7 @@ namespace Volt::RHI
 			currentSemicolon = structBracketSubStr.find_first_of(';');
 		}
 
- 		return true;
+		return true;
 	}
 
 	bool ShaderPreProcessor::PreProcessVertexSource(const PreProcessorData& data, PreProcessorResult& outResult)
@@ -273,7 +330,7 @@ namespace Volt::RHI
 
 		const auto arguments = Utility::SplitStringsByCharacter(parenthesesSubStr, ' ');
 		std::string inputStruct;
-		
+
 		// #TODO: Handle non struct inputs
 		for (const auto& arg : arguments)
 		{
@@ -298,6 +355,7 @@ namespace Volt::RHI
 		std::string structSubStr = processedSource.substr(openBracketLoc, closeBracketLoc - openBracketLoc);
 
 		std::vector<BufferElement> inputElements{};
+		std::vector<BufferElement> instanceInputElements{};
 
 		size_t currentInputSemiColLoc = structSubStr.find_first_of(';');
 		while (currentInputSemiColLoc != std::string::npos)
@@ -318,19 +376,40 @@ namespace Volt::RHI
 			if (!Utility::IsSystemValueSemantic(nameStr) && !Utility::IsVulkanBuiltIn(currentValueStr))
 			{
 				ElementType elementType = ElementType::Bool;
+				bool isPerInstance = false;
 
-				const size_t typeTagLoc = currentValueStr.find("[[vt::");
-				if (typeTagLoc != std::string::npos)
+				size_t typeTagLoc = currentValueStr.find("[[vt::");
+				while (typeTagLoc != std::string::npos)
 				{
-					const std::string lowerStr = Utility::ToLower(currentValueStr);
-					elementType = FindElementTypeFromTag(lowerStr);
+					std::string tagSubstr = currentValueStr.substr(typeTagLoc, currentValueStr.find_first_of("]]", typeTagLoc) + 2 - typeTagLoc);
+					const std::string lowerStr = Utility::ToLower(tagSubstr);
+
+					if (lowerStr == "[[vt::instance]]")
+					{
+						isPerInstance = true;
+					}
+					else
+					{
+						elementType = FindElementTypeFromTag(lowerStr);
+					}
+
+					constexpr uint32_t TAG_LENGTH = 5;
+					typeTagLoc = currentValueStr.find("[[vt::", typeTagLoc + TAG_LENGTH);
 				}
-				else
+
+				if (typeTagLoc == std::string::npos)
 				{
 					elementType = FindDefaultElementTypeFromString(currentValueStr);
 				}
 
-				inputElements.emplace_back(elementType, nameStr);
+				if (!isPerInstance)
+				{
+					inputElements.emplace_back(elementType, nameStr);
+				}
+				else
+				{
+					instanceInputElements.emplace_back(elementType, nameStr);
+				}
 			}
 
 			structSubStr = structSubStr.substr(currentInputSemiColLoc + 1);
@@ -340,6 +419,95 @@ namespace Volt::RHI
 		outResult.vertexLayout = inputElements;
 
 		return true;
+	}
+
+	bool ShaderPreProcessor::GenerateConstantsInformation(const PreProcessorData& data, PreProcessorResult& outResult)
+	{
+		constexpr const char* CONSTANTS_FUNC = "GetConstants<";
+		constexpr uint32_t CONSTANTS_FUNC_LENGTH = 13;
+
+		std::string processedSource = data.shaderSource;
+		const size_t getConstantsFuncOffset = processedSource.find(CONSTANTS_FUNC);
+		if (getConstantsFuncOffset == std::string::npos)
+		{
+			return false;
+		}
+
+		const std::string constantsStructName = processedSource.substr(getConstantsFuncOffset + CONSTANTS_FUNC_LENGTH, processedSource.find_first_of('>', getConstantsFuncOffset) - getConstantsFuncOffset - CONSTANTS_FUNC_LENGTH);
+
+		GetConstantsInformationFromMemberStructRecursive(constantsStructName, "", data, outResult);
+
+		return true;
+	}
+
+	void ShaderPreProcessor::GetConstantsInformationFromMemberStructRecursive(const std::string& memberType, const std::string& parentMemberName, const PreProcessorData& data, PreProcessorResult& outResult)
+	{
+		std::string processedSource = data.shaderSource;
+		
+		size_t constantsStructDefOffset = processedSource.find("struct " + memberType);
+		if (constantsStructDefOffset == std::string::npos)
+		{
+			return;
+		}
+
+		constantsStructDefOffset = processedSource.find_first_of("{", constantsStructDefOffset);
+
+		// Find end point of struct
+		uint32_t scopeDepth = 1;
+		size_t offset = constantsStructDefOffset;
+
+		while (scopeDepth > 0)
+		{
+			const size_t scopeEndPos = processedSource.find("}", offset + 1);
+			const std::string scopeSubStr = processedSource.substr(offset + 1, scopeEndPos + 1 - offset);
+
+			if (scopeSubStr.find("{") != std::string::npos)
+			{
+				scopeDepth++;
+			}
+			else
+			{
+				scopeDepth--;
+			}
+
+			offset = scopeEndPos;
+		}
+
+		const std::string constantsStructDef = processedSource.substr(constantsStructDefOffset, offset - constantsStructDefOffset + 1);
+		size_t currentMemberStartPos = constantsStructDef.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		while (currentMemberStartPos != std::string::npos)
+		{
+			size_t currentMemberEndPos = constantsStructDef.find_first_of(";", currentMemberStartPos);
+			const std::string memberSubStr = constantsStructDef.substr(currentMemberStartPos, currentMemberEndPos - currentMemberStartPos);
+
+			const size_t spaceCharPos = memberSubStr.find_last_of(' ');
+			const size_t firstNamePos = memberSubStr.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", spaceCharPos);
+
+			const std::string typeStr = memberSubStr.substr(0, spaceCharPos);
+			const std::string nameStr = memberSubStr.substr(firstNamePos, memberSubStr.size() - firstNamePos);
+
+			ShaderUniformType elementType{};
+
+			if (!Utility::IsDefaultType(typeStr) && !Utility::IsResourceType(typeStr))
+			{
+				GetConstantsInformationFromMemberStructRecursive(typeStr, nameStr, data, outResult);
+			}
+			else
+			{
+				elementType = FindUniformTypeFromString(typeStr);
+			}
+
+			if (elementType.baseType != ShaderUniformBaseType::Invalid)
+			{
+				const size_t typeSize = elementType.GetSize();
+
+				const std::string uniformName = !parentMemberName.empty() ? parentMemberName + "." + nameStr : nameStr;
+				outResult.renderGraphConstants.uniforms[uniformName] = ShaderUniform(elementType, typeSize, outResult.renderGraphConstants.size);
+				outResult.renderGraphConstants.size += typeSize;
+			}
+
+			currentMemberStartPos = constantsStructDef.find_first_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", currentMemberEndPos);
+		}
 	}
 
 	void ShaderPreProcessor::ErasePreProcessData(PreProcessorResult& outResult)
@@ -550,6 +718,131 @@ namespace Volt::RHI
 		}
 
 		return ElementType::Bool;
+	}
+
+	ShaderUniformType ShaderPreProcessor::FindUniformTypeFromString(std::string_view str)
+	{
+		ShaderUniformType resultType{};
+		bool isResourceType = false;
+
+		if (str.find("TextureSampler") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Sampler;
+			isResourceType = true;
+		}
+		else if (str.find("RWRawByteBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::RWBuffer;
+			isResourceType = true;
+		}
+		else if (str.find("RawByteBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
+		}
+		else if (str.find("UniformBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
+		}
+		else if (str.find("RWTypedBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::RWBuffer;
+			isResourceType = true;
+		}
+		else if (str.find("TypedBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
+		}
+		else if (str.find("RWTexture") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::RWTexture;
+			isResourceType = true;
+		}
+		else if (str.find("TextureT") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Texture;
+			isResourceType = true;
+		}
+
+		else if (str.find("bool") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Bool;
+		}
+		else if (str.find("int16_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Short;
+		}
+		else if (str.find("uint16_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UShort;
+		}
+		else if (str.find("int64_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Int64;
+		}
+		else if (str.find("uint64_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UInt64;
+		}
+		else if (str.find("uint32_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UInt;
+		}
+		else if (str.find("int32_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Int;
+		}
+		else if (str.find("float64_t") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Double;
+		}
+		else if (str.find("uint") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::UInt;
+		}
+		else if (str.find("int") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Int;
+		}
+		else if (str.find("double") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Double;
+		}
+		else if (str.find("float") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Float;
+		}
+		else if (str.find("half") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Half;
+		}
+
+		if (!isResourceType)
+		{
+			size_t tTypeOffset = str.find("_t");
+			size_t findOffset = std::string_view::npos;
+
+			if (tTypeOffset != std::string_view::npos)
+			{
+				findOffset = tTypeOffset;
+			}
+
+			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz", findOffset);
+			if (lastNumOffset != std::string_view::npos)
+			{
+				std::string_view postfixStr = str.substr(lastNumOffset, str.size() - lastNumOffset);
+				resultType.vecsize = static_cast<uint32_t>(std::stoi(std::string(1, postfixStr[0])));
+
+				if (postfixStr.size() > 1)
+				{
+					resultType.columns = static_cast<uint32_t>(std::stoi(std::to_string(postfixStr[postfixStr.size() - 1])));
+				}
+			}
+		}
+
+		return resultType;
 	}
 
 	PixelFormat ShaderPreProcessor::FindDefaultFormatFromString(std::string_view str)

@@ -10,7 +10,7 @@ struct Constants
     RWTypedBuffer<uint> statisticsBuffer;
     
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer <GPUMesh>meshBuffer;
+    TypedBuffer<GPUMesh> meshBuffer;
     TypedBuffer<ViewData> viewData;
     
     uint objectCount;

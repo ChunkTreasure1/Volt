@@ -4,6 +4,8 @@
 
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
+#include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
+
 #include "Volt/Core/Profiling.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
@@ -171,6 +173,11 @@ namespace Volt
 		m_commandBuffer->DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
+	void RenderContext::Draw(const uint32_t vertexCount, const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
+	{
+		m_commandBuffer->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
 	void RenderContext::BindPipeline(Ref<RHI::RenderPipeline> pipeline)
 	{
 		VT_PROFILE_FUNCTION();
@@ -256,10 +263,10 @@ namespace Volt
 		memset(m_passConstantsBufferData.data(), 0, m_passConstantsBufferData.size());
 	}
 
-	void RenderContext::SetCurrentPassIndex(const uint32_t passIndex)
+	void RenderContext::SetCurrentPassIndex(Weak<RenderGraphPassNodeBase> currentPassNode)
 	{
-		m_currentPassIndex = passIndex;
-		m_currentPassConstantsOffset = 0;
+		m_currentPassIndex = currentPassNode->index;
+		m_currentPassNode = currentPassNode;
 	}
 
 	void RenderContext::UploadConstantsData()
@@ -267,6 +274,18 @@ namespace Volt
 		uint8_t* mappedPtr = m_passConstantsBuffer->Map<uint8_t>();
 		memcpy_s(mappedPtr, m_passConstantsBuffer->GetSize(), m_passConstantsBufferData.data(), m_passConstantsBufferData.size());
 		m_passConstantsBuffer->Unmap();
+	}
+
+	RHI::ShaderRenderGraphConstantsData RenderContext::GetRenderGraphConstantsData()
+	{
+		if (m_currentRenderPipeline)
+		{
+			return m_currentRenderPipeline->GetShader()->GetResources().renderGraphConstantsData;
+		}
+		else
+		{
+			return m_currentComputePipeline->GetShader()->GetResources().renderGraphConstantsData;
+		}
 	}
 
 	void RenderContext::BindDescriptorTableIfRequired()
@@ -335,5 +354,41 @@ namespace Volt
 		//m_descriptorTableCache[ptr] = descriptorTable;
 
 		return GlobalResourceManager::GetDescriptorTable();
+	}
+
+	template<>
+	void RenderContext::SetConstant(const std::string& name, const ResourceHandle& data)
+	{
+		VT_ENSURE(m_currentRenderPipeline || m_currentComputePipeline);
+
+		RHI::ShaderRenderGraphConstantsData constantsData = GetRenderGraphConstantsData();
+		VT_ENSURE(constantsData.uniforms.contains(name));
+
+		const auto& uniform = constantsData.uniforms.at(name);
+
+#ifdef VT_DEBUG
+		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer)
+		{
+			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture)
+		{
+			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+		}
+		//else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler) // #TODO_Ivar: Should we validate samplers?
+		//{
+		//	VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		//}
+#endif
+
+		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
 	}
 }

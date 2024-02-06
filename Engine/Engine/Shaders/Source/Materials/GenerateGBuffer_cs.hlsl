@@ -323,10 +323,8 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
     const GPUMaterial material = scene.materialsBuffer.Load(constants.materialId);
     if (material.textureCount > 0)
     {
-        SamplerState albedoSampler = GetSampler(material.samplers[0]);
         TextureT<float4> albedoTexture = material.textures[0];
-        
-        outputAlbedo = albedoTexture.SampleGrad2D(albedoSampler, texCoords, texCoordsDX, texCoordsDY);
+        outputAlbedo = albedoTexture.SampleGrad2D(material.samplers[0], texCoords, texCoordsDX, texCoordsDY);
     }
     
     float3 resultNormal = tangentNormal * 2.f - 1.f;

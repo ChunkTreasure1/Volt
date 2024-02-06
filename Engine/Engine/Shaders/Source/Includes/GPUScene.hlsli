@@ -8,7 +8,7 @@
 struct GPUMaterial
 {
     TextureT<float4> textures[16];
-    uint samplers[16];
+    TextureSampler samplers[16];
     
     uint textureCount;
     uint materialFlags;

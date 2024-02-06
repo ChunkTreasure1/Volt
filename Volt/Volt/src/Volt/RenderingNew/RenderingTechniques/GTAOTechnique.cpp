@@ -113,15 +113,31 @@ namespace Volt
 			auto pointClampSampler = RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
-			context.SetConstant(resources.GetImage2D(data.prefilteredDepth, 0));
-			context.SetConstant(resources.GetImage2D(data.prefilteredDepth, 1));
-			context.SetConstant(resources.GetImage2D(data.prefilteredDepth, 2));
-			context.SetConstant(resources.GetImage2D(data.prefilteredDepth, 3));
-			context.SetConstant(resources.GetImage2D(data.prefilteredDepth, 4));
-			context.SetConstant(resources.GetImage2D(preDepthData.depth));
-			context.SetConstant(pointClampSampler->GetResourceHandle());
-			context.SetConstant(0); // padding
-			context.SetConstant(data.constants);
+			context.SetConstant("outDepthMIP0", resources.GetImage2D(data.prefilteredDepth, 0));
+			context.SetConstant("outDepthMIP1", resources.GetImage2D(data.prefilteredDepth, 1));
+			context.SetConstant("outDepthMIP2", resources.GetImage2D(data.prefilteredDepth, 2));
+			context.SetConstant("outDepthMIP3", resources.GetImage2D(data.prefilteredDepth, 3));
+			context.SetConstant("outDepthMIP4", resources.GetImage2D(data.prefilteredDepth, 4));
+			context.SetConstant("sourceDepth", resources.GetImage2D(preDepthData.depth));
+			context.SetConstant("pointClampSampler", pointClampSampler->GetResourceHandle());
+			context.SetConstant("constants.ViewportSize", data.constants.ViewportSize);
+			context.SetConstant("constants.ViewportPixelSize", data.constants.ViewportPixelSize);
+			context.SetConstant("constants.DepthUnpackConsts", data.constants.DepthUnpackConsts);
+			context.SetConstant("constants.CameraTanHalfFOV", data.constants.CameraTanHalfFOV);
+			context.SetConstant("constants.NDCToViewMul", data.constants.NDCToViewMul);
+			context.SetConstant("constants.NDCToViewAdd", data.constants.NDCToViewAdd);
+			context.SetConstant("constants.NDCToViewMul_x_PixelSize", data.constants.NDCToViewMul_x_PixelSize);
+			context.SetConstant("constants.EffectRadius", data.constants.EffectRadius);
+			context.SetConstant("constants.EffectFalloffRange", data.constants.EffectFalloffRange);
+			context.SetConstant("constants.RadiusMultiplier", data.constants.RadiusMultiplier);
+			context.SetConstant("constants.Padding0", data.constants.Padding0);
+			context.SetConstant("constants.FinalValuePower", data.constants.FinalValuePower);
+			context.SetConstant("constants.DenoiseBlurBeta", data.constants.DenoiseBlurBeta);
+			context.SetConstant("constants.SampleDistributionPower", data.constants.SampleDistributionPower);
+			context.SetConstant("constants.ThinOccluderCompensation", data.constants.ThinOccluderCompensation);
+			context.SetConstant("constants.DepthMIPSamplingOffset", data.constants.DepthMIPSamplingOffset);
+			context.SetConstant("constants.NoiseIndex", data.constants.NoiseIndex);
+
 
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
@@ -162,13 +178,28 @@ namespace Volt
 			auto pointClampSampler = RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 
 			context.BindPipeline(pipeline);
-			context.SetConstant(resources.GetImage2D(data.aoOutput));
-			context.SetConstant(resources.GetImage2D(data.edgesOutput));
-			context.SetConstant(resources.GetImage2D(prefilterDepthData.prefilteredDepth));
-			context.SetConstant(resources.GetImage2D(preDepthData.normals));
-			context.SetConstant(pointClampSampler->GetResourceHandle());
-			context.SetConstant(glm::uvec3{ 0 }); // padding
-			context.SetConstant(prefilterDepthData.constants);
+			context.SetConstant("aoTerm", resources.GetImage2D(data.aoOutput));
+			context.SetConstant("edges", resources.GetImage2D(data.edgesOutput));
+			context.SetConstant("srcDepth", resources.GetImage2D(prefilterDepthData.prefilteredDepth));
+			context.SetConstant("viewspaceNormals", resources.GetImage2D(preDepthData.normals));
+			context.SetConstant("pointClampSampler", pointClampSampler->GetResourceHandle());
+			context.SetConstant("constants.ViewportSize", prefilterDepthData.constants.ViewportSize);
+			context.SetConstant("constants.ViewportPixelSize", prefilterDepthData.constants.ViewportPixelSize);
+			context.SetConstant("constants.DepthUnpackConsts", prefilterDepthData.constants.DepthUnpackConsts);
+			context.SetConstant("constants.CameraTanHalfFOV", prefilterDepthData.constants.CameraTanHalfFOV);
+			context.SetConstant("constants.NDCToViewMul", prefilterDepthData.constants.NDCToViewMul);
+			context.SetConstant("constants.NDCToViewAdd", prefilterDepthData.constants.NDCToViewAdd);
+			context.SetConstant("constants.NDCToViewMul_x_PixelSize", prefilterDepthData.constants.NDCToViewMul_x_PixelSize);
+			context.SetConstant("constants.EffectRadius", prefilterDepthData.constants.EffectRadius);
+			context.SetConstant("constants.EffectFalloffRange", prefilterDepthData.constants.EffectFalloffRange);
+			context.SetConstant("constants.RadiusMultiplier", prefilterDepthData.constants.RadiusMultiplier);
+			context.SetConstant("constants.Padding0", prefilterDepthData.constants.Padding0);
+			context.SetConstant("constants.FinalValuePower", prefilterDepthData.constants.FinalValuePower);
+			context.SetConstant("constants.DenoiseBlurBeta", prefilterDepthData.constants.DenoiseBlurBeta);
+			context.SetConstant("constants.SampleDistributionPower", prefilterDepthData.constants.SampleDistributionPower);
+			context.SetConstant("constants.ThinOccluderCompensation", prefilterDepthData.constants.ThinOccluderCompensation);
+			context.SetConstant("constants.DepthMIPSamplingOffset", prefilterDepthData.constants.DepthMIPSamplingOffset);
+			context.SetConstant("constants.NoiseIndex", prefilterDepthData.constants.NoiseIndex);
 
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 16u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 16u);
@@ -209,11 +240,27 @@ namespace Volt
 			auto pointClampSampler = RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureWrap::Clamp>();
 		
 			context.BindPipeline(pipeline);
-			context.SetConstant(resources.GetImage2D(data.outputImage));
-			context.SetConstant(resources.GetImage2D(gtaoData.aoOutput));
-			context.SetConstant(resources.GetImage2D(gtaoData.edgesOutput));
-			context.SetConstant(pointClampSampler->GetResourceHandle());
-			context.SetConstant(prefilterDepthData.constants);
+			context.SetConstant("finalAOTerm", resources.GetImage2D(data.outputImage));
+			context.SetConstant("aoTerm", resources.GetImage2D(gtaoData.aoOutput));
+			context.SetConstant("edges", resources.GetImage2D(gtaoData.edgesOutput));
+			context.SetConstant("pointClampSampler", pointClampSampler->GetResourceHandle());
+			context.SetConstant("constants.ViewportSize", prefilterDepthData.constants.ViewportSize);
+			context.SetConstant("constants.ViewportPixelSize", prefilterDepthData.constants.ViewportPixelSize);
+			context.SetConstant("constants.DepthUnpackConsts", prefilterDepthData.constants.DepthUnpackConsts);
+			context.SetConstant("constants.CameraTanHalfFOV", prefilterDepthData.constants.CameraTanHalfFOV);
+			context.SetConstant("constants.NDCToViewMul", prefilterDepthData.constants.NDCToViewMul);
+			context.SetConstant("constants.NDCToViewAdd", prefilterDepthData.constants.NDCToViewAdd);
+			context.SetConstant("constants.NDCToViewMul_x_PixelSize", prefilterDepthData.constants.NDCToViewMul_x_PixelSize);
+			context.SetConstant("constants.EffectRadius", prefilterDepthData.constants.EffectRadius);
+			context.SetConstant("constants.EffectFalloffRange", prefilterDepthData.constants.EffectFalloffRange);
+			context.SetConstant("constants.RadiusMultiplier", prefilterDepthData.constants.RadiusMultiplier);
+			context.SetConstant("constants.Padding0", prefilterDepthData.constants.Padding0);
+			context.SetConstant("constants.FinalValuePower", prefilterDepthData.constants.FinalValuePower);
+			context.SetConstant("constants.DenoiseBlurBeta", prefilterDepthData.constants.DenoiseBlurBeta);
+			context.SetConstant("constants.SampleDistributionPower", prefilterDepthData.constants.SampleDistributionPower);
+			context.SetConstant("constants.ThinOccluderCompensation", prefilterDepthData.constants.ThinOccluderCompensation);
+			context.SetConstant("constants.DepthMIPSamplingOffset", prefilterDepthData.constants.DepthMIPSamplingOffset);
+			context.SetConstant("constants.NoiseIndex", prefilterDepthData.constants.NoiseIndex);
 		
 			const uint32_t dispatchX = Math::DivideRoundUp(renderSize.x, 8u);
 			const uint32_t dispatchY = Math::DivideRoundUp(renderSize.y, 8u);
