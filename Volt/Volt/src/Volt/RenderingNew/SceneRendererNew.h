@@ -96,6 +96,8 @@ namespace Volt
 		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
+		void AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		
 		Ref<RHI::Image2D> m_outputImage;
 

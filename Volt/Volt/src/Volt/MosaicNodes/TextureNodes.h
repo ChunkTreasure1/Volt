@@ -36,7 +36,7 @@ namespace Volt
 		uint32_t m_textureIndex = 0;
 		AssetHandle m_textureHandle = Asset::Null();
 
-		bool m_evaluated = false;
-		Mosaic::ResultInfo m_evaluatedResultInfo;
+		mutable bool m_evaluated = false;
+		mutable Mosaic::ResultInfo m_evaluatedResultInfo;
 	};
 }

@@ -107,9 +107,8 @@ namespace Volt
 	const Mosaic::ResultInfo SampleTextureNode::GetShaderCode(const GraphNode<Ref<class Mosaic::MosaicNode>, Ref<Mosaic::MosaicEdge>>& underlyingNode, uint32_t outputIndex, std::string& appendableShaderString) const
 	{
 		constexpr const char* nodeStr = "TextureSampler {0} = material.samplers[{1}]; \n"
-										"SamplerState {2} = {3}.Get(); \n"
-										"TTexture<float4> {4} = material.textures[{5}]; \n"
-										"const float4 {6} = {7}.SampleGrad2D({8}, {9}, evalData.texCoordsDX, evalData.texCoordsDY); \n";
+										"TTexture<float4> {2} = material.textures[{3}]; \n"
+										"const float4 {4} = {5}.SampleGrad2D({6}, {7}, evalData.texCoordsDX, evalData.texCoordsDY); \n";
 										//"const float4 {6} = {7}.SampleLevel2D({8}, {9}, 0.f); \n";
 
 		if (m_evaluated)
@@ -121,7 +120,6 @@ namespace Volt
 		}
 
 		const std::string texSamplerVarName = m_graph->GetNextVariableName();
-		const std::string samplerVarName = m_graph->GetNextVariableName();
 		const std::string textureVarName = m_graph->GetNextVariableName();
 		const std::string valueVarName = m_graph->GetNextVariableName();
 
@@ -139,15 +137,15 @@ namespace Volt
 			texCoordsVarName = info.resultParamName;
 		}
 
-		std::string result = std::format(nodeStr, texSamplerVarName, index, samplerVarName, texSamplerVarName, textureVarName, index, valueVarName, textureVarName, samplerVarName, texCoordsVarName);
+		std::string result = std::format(nodeStr, texSamplerVarName, index, textureVarName, index, valueVarName, textureVarName, texSamplerVarName, texCoordsVarName);
 		appendableShaderString.append(result);
 
 		Mosaic::ResultInfo resultInfo{};
 		resultInfo.resultParamName = valueVarName;
 		resultInfo.resultType = Mosaic::TypeInfo{ Mosaic::ValueBaseType::Float, 1 };
 
-		const_cast<bool&>(m_evaluated) = true;
-		const_cast<Mosaic::ResultInfo&>(m_evaluatedResultInfo) = resultInfo;
+		m_evaluated = true;
+		m_evaluatedResultInfo = resultInfo;
 
 		GetCorrectedVariableName(resultInfo, outputIndex);
 

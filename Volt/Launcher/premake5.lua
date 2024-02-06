@@ -125,7 +125,8 @@ project "Launcher"
 		"%{Library.discord}",
 		
 		"%{Library.Vulkan}",
-		"%{Library.dxc}"
+		"%{Library.dxc}",
+		"%{Library.METIS}"
     }
 	
 	debugargs 

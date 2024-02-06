@@ -59,7 +59,7 @@ float3 CalculateSpecular(float cosLi, float NdotV, in float3 F, float D, float G
 LightOutput CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivity)
 {
     const float NdotV = max(dot(m_pbrInput.normal, dirToCamera), EPSILON);
-    const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevelCube(m_pbrConstants.linearSampler.Get(), m_pbrInput.normal, 0.f);
+    const float3 irradiance = m_pbrConstants.environmentIrradiance.SampleLevelCube(m_pbrConstants.linearSampler, m_pbrInput.normal, 0.f);
     
     const float3 F = FresnelSchlickRoughness(baseReflectivity, NdotV, m_pbrInput.roughness);
     const float3 kD = lerp(1.f - F, 0.f, m_pbrInput.metallic);
@@ -71,9 +71,9 @@ LightOutput CalculateSkyAmbiance(in float3 dirToCamera, in float3 baseReflectivi
     m_pbrConstants.environmentRadiance.GetDimensionsCube(0, width, height, radianceTextureLevels);
     
     const float3 R = 2.f * NdotV * m_pbrInput.normal - dirToCamera;
-    const float3 specularIrradiance = m_pbrConstants.environmentRadiance.SampleLevelCube(m_pbrConstants.linearSampler.Get(), R, m_pbrInput.roughness * radianceTextureLevels);
+    const float3 specularIrradiance = m_pbrConstants.environmentRadiance.SampleLevelCube(m_pbrConstants.linearSampler, R, m_pbrInput.roughness * radianceTextureLevels);
 
-    const float2 BRDF = m_pbrConstants.BRDFLuT.SampleLevel2D(m_pbrConstants.pointLinearClampSampler.Get(), float2(NdotV, m_pbrInput.roughness), 0);
+    const float2 BRDF = m_pbrConstants.BRDFLuT.SampleLevel2D(m_pbrConstants.pointLinearClampSampler, float2(NdotV, m_pbrInput.roughness), 0);
     const float3 specularIBL = (baseReflectivity * BRDF.x + BRDF.y) * specularIrradiance;
     
     LightOutput output;

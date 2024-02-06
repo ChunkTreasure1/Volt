@@ -12,13 +12,15 @@ namespace Volt
 {
 	struct ProcessedMeshResult
 	{
-
+		std::vector<MeshletNew> meshlets;
+		std::vector<uint32_t> meshletIndices; // Index and vertex remapping
 	};
 
 	struct MeshletGenerationResult
 	{
 		std::vector<MeshletNew> meshlets;
-		std::vector<uint32_t> meshletData; // Index and vertex remapping
+		std::vector<uint32_t> meshletIndices; // Index and vertex remapping
+		std::vector<uint32_t> meshletVertices;
 
 		std::vector<uint32_t> nonOffsetedIndices;
 	};
@@ -30,6 +32,7 @@ namespace Volt
 
 	private:
 		static MeshletGenerationResult GenerateMeshlets(const Vertex* vertices, const uint32_t* indices, uint32_t indexCount, uint32_t vertexCount);
+		static MeshletGenerationResult GenerateMeshlets2(std::span<const Vertex> vertices, std::span<const uint32_t> indices);
 
 		MeshProcessor() = delete;
 	};

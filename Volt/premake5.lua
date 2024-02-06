@@ -47,8 +47,6 @@ include "Volt/vendor/stb_image"
 include "Volt/vendor/vma"
 include "Volt/vendor/cityhash"
 include "Volt/vendor/tracy"
-include "Volt/vendor/METIS"
-include "Volt/vendor/GKLib"
 
 group "Core"
 include "Amp"

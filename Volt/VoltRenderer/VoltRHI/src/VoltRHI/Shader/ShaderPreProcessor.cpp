@@ -760,7 +760,7 @@ namespace Volt::RHI
 			resultType.baseType = ShaderUniformBaseType::RWTexture;
 			isResourceType = true;
 		}
-		else if (str.find("TextureT") != std::string_view::npos)
+		else if (str.find("TTexture") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::Texture;
 			isResourceType = true;
@@ -829,7 +829,7 @@ namespace Volt::RHI
 				findOffset = tTypeOffset;
 			}
 
-			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz", findOffset);
+			size_t lastNumOffset = str.find_last_not_of("abcdefghijklmnopqrstuvwxyz<>[]", findOffset);
 			if (lastNumOffset != std::string_view::npos)
 			{
 				std::string_view postfixStr = str.substr(lastNumOffset, str.size() - lastNumOffset);

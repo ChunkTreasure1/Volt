@@ -101,8 +101,6 @@ project "Volt"
 		"NFD-Extended",
 		"TGAFBX",
 		"cityhash",
-		"METIS",
-		"GKLib",
 
 		"CoreUtilities",
 		"Mosaic",

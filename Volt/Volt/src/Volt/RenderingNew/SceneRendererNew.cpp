@@ -54,6 +54,9 @@
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
+#include "Volt/RenderingNew/ShapeLibrary.h"
+#include "Volt/Rendering/Mesh/MeshProcessor.h"
+
 namespace Volt
 {
 	namespace Utility
@@ -67,10 +70,17 @@ namespace Volt
 		}
 	}
 
+	static ProcessedMeshResult s_meshResult;
+	static Ref<Mesh> s_cube;
+
 	SceneRendererNew::SceneRendererNew(const SceneRendererSpecification& specification)
 		: m_scene(specification.scene)
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
+
+		Ref<Mesh> cube = ShapeLibrary::GetCube();
+		s_cube = cube;
+		s_meshResult = MeshProcessor::ProcessMesh(cube->GetVertices(), cube->GetIndices(), cube->GetMaterialTable(), cube->GetSubMeshes());
 
 		// Create render target
 		{
@@ -79,7 +89,7 @@ namespace Volt
 			spec.height = specification.initialResolution.y;
 			spec.usage = RHI::ImageUsage::AttachmentStorage;
 			spec.generateMips = false;
-			spec.format = RHI::PixelFormat::R16G16B16A16_SFLOAT;
+			spec.format = RHI::PixelFormat::B10G11R11_UFLOAT_PACK32;
 
 			m_outputImage = RHI::Image2D::Create(spec);
 		}
@@ -198,6 +208,8 @@ namespace Volt
 			renderGraph.EndMarker();
 
 			AddShadingPass(renderGraph, rgBlackboard);
+		
+			AddTestPass(renderGraph, rgBlackboard);
 		}
 
 		{
@@ -1072,6 +1084,64 @@ namespace Volt
 			context.SetConstant("pbrConstants.spotLights", resources.GetBuffer(lightBuffers.spotLightsBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
+		});
+	}
+
+	void SceneRendererNew::AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+
+		const auto& gbufferData = blackboard.Get<GBufferData>();
+		const auto& preDepthData = blackboard.Get<PreDepthData>();
+
+		RenderGraphResourceHandle posHandle = renderGraph.AddExternalBuffer(s_cube->GetVertexPositionsBuffer()->GetResource(), false);
+
+		struct TestData
+		{
+			RenderGraphResourceHandle indexBufferHandle;
+		};
+
+		renderGraph.AddPass<TestData>("Test Pass",
+		[&](RenderGraph::Builder& builder, TestData& data)
+		{
+			{
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(s_meshResult.meshlets.at(0).triangleCount * 3, RHI::BufferUsage::IndexBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPU, "IndexBuffer");
+				data.indexBufferHandle = builder.CreateBuffer(desc);
+			}
+
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.ReadResource(posHandle);
+
+			builder.WriteResource(gbufferData.albedo);
+			builder.WriteResource(preDepthData.depth);
+
+			builder.SetHasSideEffect();
+		},
+		[=](const TestData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Weak<RHI::ImageView> albedoImage = resources.GetImage2DView(gbufferData.albedo);
+			Weak<RHI::ImageView> depthImage = resources.GetImage2DView(preDepthData.depth);
+
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("TestShader");
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { albedoImage, depthImage });
+
+			Weak<RHI::StorageBuffer> indexBuffer = resources.GetBufferRaw(data.indexBufferHandle);
+			context.UploadBufferData(indexBuffer, s_meshResult.meshletIndices.data(), sizeof(uint32_t)* s_meshResult.meshlets.at(0).triangleCount * 3);
+
+			context.BeginRendering(info);
+			context.BindPipeline(pipeline);
+
+			context.BindIndexBuffer(indexBuffer);
+
+			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("positions", resources.GetBuffer(posHandle));
+			context.DrawIndexed(s_meshResult.meshlets.at(0).triangleCount * 3, 1, 0, 0, 0);
+			context.EndRendering();
+
 		});
 	}
 }
