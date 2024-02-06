@@ -37,8 +37,8 @@
  Specifies the data type that will hold floating-point style information.
 
  Possible values:
-   32 : single precision floating point (float)
-   64 : double precision floating point (double)
+   32 : single precission floating point (float)
+   64 : double precission floating point (double)
 --------------------------------------------------------------------------*/
 #define REALTYPEWIDTH 32
 
@@ -72,10 +72,10 @@ typedef __int64 int64_t;
 #define PRId64       "I64d"
 #define SCNd32       "ld"
 #define SCNd64       "I64d"
-#define INT32_MIN    ((int32_t)_I32_MIN)
-#define INT32_MAX    _I32_MAX
-#define INT64_MIN    ((int64_t)_I64_MIN)
-#define INT64_MAX    _I64_MAX
+//#define INT32_MIN    ((int32_t)_I32_MIN)
+//#define INT32_MAX    _I32_MAX
+//#define INT64_MIN    ((int64_t)_I64_MIN)
+//#define INT64_MAX    _I64_MAX
 #else
 #include <inttypes.h>
 #endif
@@ -156,8 +156,8 @@ typedef __int64 int64_t;
 *-------------------------------------------------------------------------*/
 /* Metis's version number */
 #define METIS_VER_MAJOR         5
-#define METIS_VER_MINOR         2
-#define METIS_VER_SUBMINOR      1
+#define METIS_VER_MINOR         1
+#define METIS_VER_SUBMINOR      0
 
 /* The maximum length of the options[] array */
 #define METIS_NOPTIONS          40
@@ -228,11 +228,6 @@ METIS_API(int) METIS_NodeRefine(idx_t nvtxs, idx_t *xadj, idx_t *vwgt, idx_t *ad
                    idx_t *where, idx_t *hmarker, real_t ubfactor);
 
 
-/* These functions are used by DGL */
-
-METIS_API(int) METIS_CacheFriendlyReordering(idx_t nvtxs, idx_t *xadj, idx_t *adjncy,
-                   idx_t *part, idx_t *old2new);
-
 #ifdef __cplusplus
 }
 #endif
@@ -267,23 +262,18 @@ typedef enum {
   METIS_OPTION_IPTYPE,
   METIS_OPTION_RTYPE,
   METIS_OPTION_DBGLVL,
-  METIS_OPTION_NIPARTS,
   METIS_OPTION_NITER,
   METIS_OPTION_NCUTS,
   METIS_OPTION_SEED,
-  METIS_OPTION_ONDISK,
-  METIS_OPTION_MINCONN,
+  METIS_OPTION_NO2HOP,
   METIS_OPTION_CONTIG,
+  METIS_OPTION_MINCONN,
   METIS_OPTION_COMPRESS,
   METIS_OPTION_CCORDER,
   METIS_OPTION_PFACTOR,
   METIS_OPTION_NSEPS,
   METIS_OPTION_UFACTOR,
   METIS_OPTION_NUMBERING,
-  METIS_OPTION_DROPEDGES,
-  METIS_OPTION_NO2HOP,
-  METIS_OPTION_TWOHOP,
-  METIS_OPTION_FAST,
 
   /* Used for command-line parameter purposes */
   METIS_OPTION_HELP,
@@ -344,7 +334,7 @@ typedef enum {
   METIS_DBG_SEPINFO    = 64, 	  /*!< Show info on vertex moves during sep refinement */
   METIS_DBG_CONNINFO   = 128,     /*!< Show info on minimization of subdomain connectivity */
   METIS_DBG_CONTIGINFO = 256,     /*!< Show info on elimination of connected components */ 
-  METIS_DBG_MEMORY     = 2048     /*!< Show info related to wspace allocation */
+  METIS_DBG_MEMORY     = 2048,    /*!< Show info related to wspace allocation */
 } mdbglvl_et;
 
 
