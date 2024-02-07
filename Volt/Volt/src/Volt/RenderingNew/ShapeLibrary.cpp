@@ -18,76 +18,71 @@ namespace Volt
 
 	static AssetHandle CreateCube()
 	{
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-
-		vertices.resize(24);
-		indices.resize(36);
-
-		constexpr float SIDE = 0.5f;
-
-		const glm::vec3 positions[8] =
+		std::vector<Vertex> vertices =
 		{
-			{ -SIDE, SIDE, -SIDE },
-			{ SIDE, SIDE, -SIDE },
-			{ SIDE, -SIDE, -SIDE },
-			{ -SIDE, -SIDE, -SIDE },
-			{ -SIDE, SIDE, SIDE },
-			{ SIDE, SIDE, SIDE },
-			{ SIDE, -SIDE, SIDE },
-			{ -SIDE, -SIDE, SIDE }
+			// Front face
+			Vertex{ { -0.5f,  0.5f, -0.5f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f }  },
+			Vertex{ {  0.5f,  0.5f, -0.5f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f, 0.f }, { 1.f, 0.f }  },
+			Vertex{ {  0.5f, -0.5f, -0.5f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f }  },
+			Vertex{ { -0.5f, -0.5f, -0.5f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f }  },
+
+			// Right face
+			Vertex{ {  0.5f,  0.5f, -0.5f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f, 1.f }, { 0.f, 0.f }  },
+			Vertex{ {  0.5f,  0.5f,  0.5f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f, 1.f }, { 1.f, 0.f }  },
+			Vertex{ {  0.5f, -0.5f,  0.5f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f, 1.f }, { 1.f, 1.f }  },
+			Vertex{ {  0.5f, -0.5f, -0.5f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f, 1.f }, { 0.f, 1.f }  },
+
+			// Back face
+			Vertex{ {  0.5f,  0.5f,  0.5f }, { 0.f, 0.f, 1.f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f }  },
+			Vertex{ { -0.5f,  0.5f,  0.5f }, { 0.f, 0.f, 1.f }, { -1.f, 0.f, 0.f }, { 1.f, 0.f }  },
+			Vertex{ { -0.5f, -0.5f,  0.5f }, { 0.f, 0.f, 1.f }, { -1.f, 0.f, 0.f }, { 1.f, 1.f }  },
+			Vertex{ {  0.5f, -0.5f,  0.5f }, { 0.f, 0.f, 1.f }, { -1.f, 0.f, 0.f }, { 0.f, 1.f }  },
+
+			// Left face
+			Vertex{ { -0.5f,  0.5f,  0.5f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f }  },
+			Vertex{ { -0.5f,  0.5f, -0.5f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f }  },
+			Vertex{ { -0.5f, -0.5f, -0.5f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f, -1.f }, { 1.f, 1.f }  },
+			Vertex{ { -0.5f, -0.5f,  0.5f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f, -1.f }, { 0.f, 1.f }  },
+
+			// Top face
+			Vertex{ { -0.5f,  0.5f,  0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f }  },
+			Vertex{ {  0.5f,  0.5f,  0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 0.f }  },
+			Vertex{ {  0.5f,  0.5f,  0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f }  },
+			Vertex{ { -0.5f,  0.5f, -0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f }  },
+
+			// Bottom face
+			Vertex{ { -0.5f, -0.5f, -0.5f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f }  },
+			Vertex{ {  0.5f, -0.5f, -0.5f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 0.f }  },
+			Vertex{ {  0.5f, -0.5f,  0.5f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f }  },
+			Vertex{ { -0.5f, -0.5f,  0.5f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f }  },
 		};
 
-		const glm::vec3 normals[6] =
+		std::vector<uint32_t> indices =
 		{
-			{ 0.f, 0.f, -1.f },
-			{ 0.f, 0.f, 1.f },
-			{ 0.f, 1.f, 0.f },
-			{ 0.f, -1.f, 0.f },
-			{ -1.f, 0.f, 0.f },
-			{ 1.f, 0.f, 0.f }
+			// Front face
+			0, 1, 2,
+			3, 1, 2,
+
+			// Right face
+			4, 5, 7,
+			7, 5, 6,
+
+			// Back face
+			8, 9, 11,
+			11, 8, 10,
+			
+			// Left face
+			12, 13, 15,
+			15, 13, 14,
+
+			// Top face
+			16, 17, 19,
+			19, 17, 18,
+
+			// Bottom face
+			20, 21, 23,
+			23, 21, 22
 		};
-
-		const glm::vec3 tangents[6] =
-		{
-			{ 1.f, 0.f, 0.f },
-			{ -1.f, 0.f, 0.f },
-			{ 1.f, 0.f, 0.f },
-			{ 1.f, 0.f, 0.f },
-			{ 0.f, 0.f, -1.f },
-			{ 0.f, 0.f, 1.f }
-		};
-
-		const glm::vec2 uvs[4] =
-		{
-			{ 0.f, 1.f },
-			{ 1.f, 1.f },
-			{ 1.f, 0.f },
-			{ 0.f, 0.f }
-		};
-
-		for (size_t i = 0; i < 6; i++)
-		{
-			for (size_t j = 0; j < 4; j++)
-			{
-				const size_t vertexIndex = i * 4 + j;
-				vertices[vertexIndex].position = positions[i * 2 + (j % 2)];
-				vertices[vertexIndex].normal = normals[i];
-				vertices[vertexIndex].tangent = tangents[i];
-				vertices[vertexIndex].texCoords = uvs[j];
-			}
-		}
-
-		for (uint32_t i = 0; i < 6; i++)
-		{
-			const uint32_t baseIndex = i * 6;
-			indices[baseIndex + 0] = i * 4;
-			indices[baseIndex + 1] = i * 4 + 1;
-			indices[baseIndex + 2] = i * 4 + 2;
-			indices[baseIndex + 3] = i * 4;
-			indices[baseIndex + 4] = i * 4 + 2;
-			indices[baseIndex + 5] = i * 4 + 3;
-		}
 
 		Ref<Material> material = AssetManager::CreateMemoryAsset<Material>("Default");
 		material->Compile();
@@ -112,7 +107,7 @@ namespace Volt
 		{
 			auto& vertex = vertices.emplace_back();
 			vertex.position = position;
-			vertex.texCoords = texCoords;
+			vertex.uv = texCoords;
 
 			return static_cast<uint32_t>(vertices.size()) - 1;
 		};
@@ -192,7 +187,7 @@ namespace Volt
 			// Calculate UVs using spherical coordinates
 			float theta = std::atan2(vertex.position.z, vertex.position.x) + glm::pi<float>();
 			float phi = std::acos(vertex.position.y);
-			vertex.texCoords = glm::vec2(theta / (2.0f * glm::pi<float>()), phi / glm::pi<float>());
+			vertex.uv = glm::vec2(theta / (2.0f * glm::pi<float>()), phi / glm::pi<float>());
 		}
 
 		std::vector<uint32_t> indices;

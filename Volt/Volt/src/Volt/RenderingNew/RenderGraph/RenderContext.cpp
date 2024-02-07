@@ -385,6 +385,10 @@ namespace Volt
 		{
 			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
 		}
+		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer)
+		{
+			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+		}
 		//else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler) // #TODO_Ivar: Should we validate samplers?
 		//{
 		//	VT_ENSURE(m_currentPassNode->ReadsResource(data));

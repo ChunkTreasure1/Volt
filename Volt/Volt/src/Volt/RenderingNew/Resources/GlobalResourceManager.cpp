@@ -21,6 +21,8 @@ namespace Volt
 
 	static constexpr uint32_t BYTEADDRESSBUFFER_BINDING = 7;
 	static constexpr uint32_t RWBYTEADDRESSBUFFER_BINDING = 8;
+	static constexpr uint32_t UNIFORMBUFFER_BINDING = 9;
+	static constexpr uint32_t SAMPLERSTATES_BINDING = 10;
 
 	static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
 
@@ -41,12 +43,25 @@ namespace Volt
 
 	void GlobalResourceManager::Update()
 	{
+		// Uniform Buffers
+		{
+			auto& resources = GetResourceContainer<RHI::StorageBuffer, ResourceSpecialization::UniformBuffer>();
+			std::scoped_lock lock{ resources.accessMutex };
+
+			for (const auto& resource : resources.GetDirtyRange())
+			{
+				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, UNIFORMBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
+			}
+
+			resources.ClearDirty();
+		}
+
 		// Buffers
 		{
 			auto& resources = GetResourceContainer<RHI::StorageBuffer>();
 			std::scoped_lock lock{ resources.accessMutex };
-			for (const auto& resource : resources.GetDirtyRange())
 
+			for (const auto& resource : resources.GetDirtyRange())
 			{
 				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, BYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
 				s_globalDescriptorTable->SetBufferView(resource->GetView(), 0, RWBYTEADDRESSBUFFER_BINDING, resources.GetResourceHandle(resource).Get());
@@ -55,36 +70,102 @@ namespace Volt
 			resources.ClearDirty();
 		}
 
-		// Images
+		// Image1D
 		{
-			// #TODO_Ivar: Seperate out differenct view types into different resource containers
-
-			auto& resources = GetResourceContainer<RHI::ImageView>();
+			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::Texture1D>();
 			std::scoped_lock lock{ resources.accessMutex };
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				if (resource->GetViewType() == RHI::ImageViewType::View2D)
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE1D_BINDING, resources.GetResourceHandle(resource).Get());
+
+				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
 				{
 					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-
-					if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
-					{
-						s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-					}
-				}
-				else if (resource->GetViewType() == RHI::ImageViewType::View2DArray)
-				{
-					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
-				}
-				else if (resource->GetViewType() == RHI::ImageViewType::ViewCube)
-				{
-					s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
 				}
 			}
 
 			resources.ClearDirty();
 		}
+
+		// Image2D
+		{
+			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::Texture2D>();
+			std::scoped_lock lock{ resources.accessMutex };
+
+			for (const auto& resource : resources.GetDirtyRange())
+			{
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+			
+				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
+				{
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+				}
+			}
+
+			resources.ClearDirty();
+		}
+
+		// ImageCube
+		{
+			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::TextureCube>();
+			std::scoped_lock lock{ resources.accessMutex };
+
+			for (const auto& resource : resources.GetDirtyRange())
+			{
+				s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
+			}
+
+			resources.ClearDirty();
+		}
+
+		// Image2DArray
+		{
+			auto& resources = GetResourceContainer<RHI::ImageView, ResourceSpecialization::Texture2DArray>();
+			std::scoped_lock lock{ resources.accessMutex };
+
+			for (const auto& resource : resources.GetDirtyRange())
+			{
+				s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+			}
+
+			resources.ClearDirty();
+		}
+
+		// Image3D
+		{
+
+		}
+
+		//// Images
+		//{
+		//	// #TODO_Ivar: Seperate out differenct view types into different resource containers
+		//	auto& resources = GetResourceContainer<RHI::ImageView>();
+		//	std::scoped_lock lock{ resources.accessMutex };
+
+		//	for (const auto& resource : resources.GetDirtyRange())
+		//	{
+		//		if (resource->GetViewType() == RHI::ImageViewType::View2D)
+		//		{
+		//			s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+
+		//			if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
+		//			{
+		//				s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
+		//			}
+		//		}
+		//		else if (resource->GetViewType() == RHI::ImageViewType::View2DArray)
+		//		{
+		//			s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+		//		}
+		//		else if (resource->GetViewType() == RHI::ImageViewType::ViewCube)
+		//		{
+		//			s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
+		//		}
+		//	}
+
+		//	resources.ClearDirty();
+		//}
 
 		// Samplers
 		{
@@ -93,7 +174,7 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetSamplerState(resource, 0, 10, resources.GetResourceHandle(resource).Get());
+				s_globalDescriptorTable->SetSamplerState(resource, 0, SAMPLERSTATES_BINDING, resources.GetResourceHandle(resource).Get());
 			}
 
 			resources.ClearDirty();

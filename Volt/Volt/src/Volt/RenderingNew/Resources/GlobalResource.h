@@ -5,7 +5,7 @@
 
 namespace Volt
 {
-	template<typename T>
+	template<typename T, ResourceSpecialization SPECIALIZATION = ResourceSpecialization::None>
 	class GlobalResource
 	{
 	public:
@@ -20,9 +20,9 @@ namespace Volt
 
 		void MarkAsDirty() const;
 
-		inline static Scope<GlobalResource<T>> Create(Ref<T> resource)
+		inline static Scope<GlobalResource<T, SPECIALIZATION>> Create(Ref<T> resource)
 		{
-			return CreateScope<GlobalResource<T>>(resource);
+			return CreateScope<GlobalResource<T, SPECIALIZATION>>(resource);
 		}
 
 	private:
@@ -30,22 +30,22 @@ namespace Volt
 		Ref<T> m_resource;
 	};
 	
-	template<typename T>
-	inline GlobalResource<T>::GlobalResource(Ref<T> resource)
+	template<typename T, ResourceSpecialization SPECIALIZATION>
+	inline GlobalResource<T, SPECIALIZATION>::GlobalResource(Ref<T> resource)
 		: m_resource(resource)
 	{
-		m_resourceHandle = GlobalResourceManager::RegisterResource<T>(resource);
+		m_resourceHandle = GlobalResourceManager::RegisterResource<T, SPECIALIZATION>(resource);
 	}
 
-	template<typename T>
-	inline GlobalResource<T>::~GlobalResource()
+	template<typename T, ResourceSpecialization SPECIALIZATION>
+	inline GlobalResource<T, SPECIALIZATION>::~GlobalResource()
 	{
-		GlobalResourceManager::UnregisterResource<T>(m_resourceHandle);
+		GlobalResourceManager::UnregisterResource<T, SPECIALIZATION>(m_resourceHandle);
 	}
 
-	template<typename T>
-	inline void GlobalResource<T>::MarkAsDirty() const
+	template<typename T, ResourceSpecialization SPECIALIZATION>
+	inline void GlobalResource<T, SPECIALIZATION>::MarkAsDirty() const
 	{
-		GlobalResourceManager::MarkAsDirty<T>(m_resourceHandle);
+		GlobalResourceManager::MarkAsDirty<T, SPECIALIZATION>(m_resourceHandle);
 	}
 }

@@ -148,7 +148,7 @@ void NavMeshDrawCompiler::vertex(const float* pos, unsigned int color, const flo
 {
 	Volt::Vertex vertex;
 	vertex.position = *(glm::vec3*)pos;
-	vertex.texCoords = *(glm::vec2*)uv;
+	vertex.uv = *(glm::vec2*)uv;
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{
@@ -166,7 +166,7 @@ void NavMeshDrawCompiler::vertex(const float x, const float y, const float z, un
 {
 	Volt::Vertex vertex;
 	vertex.position = glm::vec3(x, y, z);
-	vertex.texCoords = glm::vec2(u, v);
+	vertex.uv = glm::vec2(u, v);
 
 	if (myPrimitive == DU_DRAW_TRIS)
 	{

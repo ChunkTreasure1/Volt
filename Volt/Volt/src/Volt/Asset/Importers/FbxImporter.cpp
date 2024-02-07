@@ -70,7 +70,7 @@ namespace Volt
 				newVertex.position = *reinterpret_cast<const glm::vec4*>(tgaVertex.Position);
 				newVertex.normal = *reinterpret_cast<const glm::vec3*>(tgaVertex.Normal);
 				newVertex.tangent = *reinterpret_cast<const glm::vec3*>(tgaVertex.Tangent);
-				newVertex.texCoords = *reinterpret_cast<const glm::vec2*>(tgaVertex.UVs[0]);
+				newVertex.uv = *reinterpret_cast<const glm::vec2*>(tgaVertex.UVs[0]);
 				newVertex.influences = *reinterpret_cast<const glm::uvec4*>(tgaVertex.BoneIDs);
 				newVertex.weights = *reinterpret_cast<const glm::vec4*>(tgaVertex.BoneWeights);
 			}

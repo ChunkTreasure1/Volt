@@ -11,7 +11,7 @@ struct Output
 Output main(in DefaultInput input)
 {
     const Constants constants = GetConstants<Constants>();
-    const ViewData viewData = constants.viewData.Load(0);
+    const ViewData viewData = constants.viewData.Load();
     
     const float4x4 transform = input.GetTransform();
     const float4 worldPosition = mul(transform, float4(input.GetVertexPositionData().position, 1.f));

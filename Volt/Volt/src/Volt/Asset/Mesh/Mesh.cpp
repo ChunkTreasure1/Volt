@@ -516,8 +516,8 @@ namespace Volt
 
 			// Tex coords
 			{
-				encodedVertex.texCoords[0] = static_cast<half_float::half>(vertex.texCoords.x);
-				encodedVertex.texCoords[1] = static_cast<half_float::half>(vertex.texCoords.y);
+				encodedVertex.texCoords[0] = static_cast<half_float::half>(vertex.uv.x);
+				encodedVertex.texCoords[1] = static_cast<half_float::half>(vertex.uv.y);
 			}
 
 			// Influences
@@ -602,8 +602,8 @@ namespace Volt
 			data.normal.x = uint8_t(octNormal.x * 255);
 			data.normal.y = uint8_t(octNormal.y * 255);
 			data.tangent = Utility::EncodeTangent(vertex.normal, vertex.tangent);
-			data.texCoords.x = static_cast<half_float::half>(vertex.texCoords.x);
-			data.texCoords.y = static_cast<half_float::half>(vertex.texCoords.y);
+			data.texCoords.x = static_cast<half_float::half>(vertex.uv.x);
+			data.texCoords.y = static_cast<half_float::half>(vertex.uv.y);
 		}
 
 		return result;

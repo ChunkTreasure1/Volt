@@ -155,9 +155,9 @@ namespace Volt
 						Vertex vert{};
 						vert.position = positionBuffer ? *(glm::vec3*)&positionBuffer[v * 3] : glm::vec3();
 						vert.normal = glm::normalize(normalBuffer ? *(glm::vec3*)&normalBuffer[v * 3] : glm::vec3(0.f, 1.f, 0.f));
-						vert.texCoords = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
+						vert.uv = texCoordsBuffer ? *(glm::vec2*)&texCoordsBuffer[v * 2] : glm::vec2();
 
-						vert.texCoords.y = 1.f - vert.texCoords.y;
+						vert.uv.y = 1.f - vert.uv.y;
 
 						glm::vec4 tangent = tangentBuffer ? *(glm::vec4*)&tangentBuffer[v * 4] : glm::vec4();
 

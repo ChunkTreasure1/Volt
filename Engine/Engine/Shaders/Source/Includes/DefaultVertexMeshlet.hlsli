@@ -13,7 +13,7 @@ static const uint VERTEX_ANIMATION_DATA_SIZE = 16;
 struct Constants
 {
     TypedBuffer<GPUScene> gpuScene;
-    TypedBuffer<ViewData> viewData; // #TODO_Ivar: Should be uniform buffer
+    UniformBuffer<ViewData> viewData;
 };
 
 struct DefaultInput

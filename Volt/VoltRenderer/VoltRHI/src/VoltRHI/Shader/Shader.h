@@ -33,6 +33,7 @@ namespace Volt::RHI
 		Half,
 
 		Buffer,
+		UniformBuffer,
 		Texture,
 		RWBuffer,
 		RWTexture,
@@ -63,6 +64,7 @@ namespace Volt::RHI
 				case ShaderUniformBaseType::UInt64: size = 8; break;
 
 				case ShaderUniformBaseType::Buffer: size = 4; break;
+				case ShaderUniformBaseType::UniformBuffer: size = 4; break;
 				case ShaderUniformBaseType::Texture: size = 4; break;
 				case ShaderUniformBaseType::RWBuffer: size = 4; break;
 				case ShaderUniformBaseType::RWTexture: size = 4; break;

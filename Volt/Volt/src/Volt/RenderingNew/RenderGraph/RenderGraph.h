@@ -112,6 +112,17 @@ namespace Volt
 		void DestroyResources();
 		void AllocateConstantsBuffer();
 
+		struct GlobalResourceInfo
+		{
+			ResourceHandle handle;
+			ResourceSpecialization specialization = ResourceSpecialization::None;
+
+			friend bool operator<(const GlobalResourceInfo& lhs, const GlobalResourceInfo& rhs)
+			{
+				return lhs.handle < rhs.handle;
+			}
+		};
+
 		Weak<RHI::ImageView> GetImage2DView(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::Image2D> GetImage2DRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
@@ -125,8 +136,8 @@ namespace Volt
 		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
 		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
-		std::set<ResourceHandle> m_usedGlobalImage2DResourceHandles;
-		std::set<ResourceHandle> m_usedGlobalBufferResourceHandles;
+		std::set<GlobalResourceInfo> m_usedGlobalImageResourceHandles;
+		std::set<GlobalResourceInfo> m_usedGlobalBufferResourceHandles;
 		std::vector<uint8_t*> m_temporaryAllocations;
 
 		uint32_t m_passIndex = 0;

@@ -6,7 +6,7 @@
 
 struct PBRConstants
 {
-    TypedBuffer<ViewData> viewData;
+    UniformBuffer<ViewData> viewData;
     
     TypedBuffer<DirectionalLight> DirectionalLight;
     TypedBuffer<PointLight> pointLights;
@@ -212,7 +212,7 @@ float3 CalculatePBR(in PBRInput input, in PBRConstants constants)
     m_pbrInput = input;
     m_pbrConstants = constants;
     
-    const ViewData viewData = constants.viewData.Load(0);
+    const ViewData viewData = constants.viewData.Load();
     
     const float3 dirToCamera = normalize(viewData.cameraPosition.xyz - m_pbrInput.worldPosition);
     const float3 baseReflectivity = lerp(m_dielectricBase, m_pbrInput.albedo.xyz, m_pbrInput.metallic);

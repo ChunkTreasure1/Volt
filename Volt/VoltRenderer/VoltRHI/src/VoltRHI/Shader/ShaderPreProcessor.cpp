@@ -158,7 +158,13 @@ namespace Volt::RHI
 				valueStr.find("TypedBuffer") != std::string_view::npos ||
 				valueStr.find("RWTypedBuffer") != std::string_view::npos ||
 				valueStr.find("TTexture") != std::string_view::npos ||
-				valueStr.find("RWTexture") != std::string_view::npos)
+				valueStr.find("RWTexture") != std::string_view::npos ||
+				valueStr.find("UniformRawByteBuffer") != std::string_view::npos ||
+				valueStr.find("UniformRWRawByteBuffer") != std::string_view::npos ||
+				valueStr.find("UniformTypedBuffer") != std::string_view::npos ||
+				valueStr.find("UniformRWTypedBuffer") != std::string_view::npos ||
+				valueStr.find("UniformTexture") != std::string_view::npos ||
+				valueStr.find("UniformRWTexture") != std::string_view::npos)
 			{
 				return true;
 			}
@@ -742,7 +748,7 @@ namespace Volt::RHI
 		}
 		else if (str.find("UniformBuffer") != std::string_view::npos)
 		{
-			resultType.baseType = ShaderUniformBaseType::Buffer;
+			resultType.baseType = ShaderUniformBaseType::UniformBuffer;
 			isResourceType = true;
 		}
 		else if (str.find("RWTypedBuffer") != std::string_view::npos)

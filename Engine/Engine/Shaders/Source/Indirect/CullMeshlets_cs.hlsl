@@ -13,7 +13,7 @@ struct Constants
     
     TypedBuffer<Meshlet> gpuMeshlets;
     TypedBuffer<ObjectDrawData> objectDrawDataBuffer;
-    TypedBuffer<ViewData> viewData;
+    UniformBuffer<ViewData> viewData;
     
     float frustum0;
     float frustum1;
@@ -23,7 +23,7 @@ struct Constants
 
 bool IsInFrustum(in Constants constants, in float4x4 transform, in float3 boundingSphereCenter, in float boundingSphereRadius)
 {
-    const ViewData viewData = constants.viewData.Load(0);
+    const ViewData viewData = constants.viewData.Load();
     
     const float3 globalScale = float3(length(transform[0]), length(transform[1]), length(transform[2]));
     const float maxScale = max(max(globalScale.x, globalScale.y), globalScale.z);

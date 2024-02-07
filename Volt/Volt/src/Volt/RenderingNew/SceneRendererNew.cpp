@@ -78,7 +78,7 @@ namespace Volt
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
 
-		Ref<Mesh> cube = ShapeLibrary::GetCube();
+		Ref<Mesh> cube = ShapeLibrary::GetSphere();
 		s_cube = cube;
 		s_meshResult = MeshProcessor::ProcessMesh(cube->GetVertices(), cube->GetIndices(), cube->GetMaterialTable(), cube->GetSubMeshes());
 
@@ -154,7 +154,6 @@ namespace Volt
 
 		AddExternalResources(renderGraph, rgBlackboard);
 		SetupDrawContext(renderGraph, rgBlackboard);
-
 
 		UploadUniformBuffers(renderGraph, rgBlackboard, camera);
 		UploadLightBuffers(renderGraph, rgBlackboard);
@@ -260,7 +259,7 @@ namespace Volt
 		const auto& cullPrimitivesData = blackboard.Get<CullPrimitivesData>();
 
 		const auto gpuSceneHandle = resources.GetBuffer(externalBuffers.gpuSceneBuffer);
-		const auto viewDataHandle = resources.GetBuffer(uniformBuffers.viewDataBuffer);
+		const auto viewDataHandle = resources.GetUniformBuffer(uniformBuffers.viewDataBuffer);
 
 		const auto indirectCommands = resources.GetBufferRaw(cullPrimitivesData.drawCommand);
 		const auto indexBuffer = resources.GetBufferRaw(cullPrimitivesData.indexBuffer);
@@ -278,7 +277,7 @@ namespace Volt
 
 		{
 			const auto desc = RGUtils::CreateBufferDesc<ViewData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "View Data");
-			buffersData.viewDataBuffer = renderGraph.CreateBuffer(desc);
+			buffersData.viewDataBuffer = renderGraph.CreateUniformBuffer(desc);
 
 			ViewData viewData{};
 
@@ -505,7 +504,7 @@ namespace Volt
 			context.SetConstant("statisticsBuffer", resources.GetBuffer(data.statisticsBuffer));
 			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
 			context.SetConstant("meshBuffer", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
-			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("objectCount", commandCount);
 
 			const auto projection = camera->GetProjection();
@@ -636,7 +635,7 @@ namespace Volt
 			context.SetConstant("meshletToObjectIdAndOffset", resources.GetBuffer(cullObjectsData.meshletToObjectIdAndOffset));
 			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
 			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 
 			const auto projection = camera->GetProjection();
 			const glm::mat4 projTranspose = glm::transpose(projection);
@@ -711,7 +710,7 @@ namespace Volt
 			context.SetConstant("gpuMeshlets", resources.GetBuffer(externalBuffers.gpuMeshletsBuffer));
 			context.SetConstant("gpuMeshes", resources.GetBuffer(externalBuffers.gpuMeshesBuffer));
 			context.SetConstant("objectDrawDataBuffer", resources.GetBuffer(externalBuffers.objectDrawDataBuffer));
-			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("renderSize", glm::vec2(m_width, m_height));
 
 			auto argsBuffer = resources.GetBufferRaw(argsBufferHandle);
@@ -999,7 +998,7 @@ namespace Volt
 			context.SetConstant("pixelCollection", resources.GetBuffer(matPixelsData.pixelCollectionBuffer));
 
 			context.SetConstant("gpuScene", resources.GetBuffer(externalBuffersData.gpuSceneBuffer));
-			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 
 			context.SetConstant("albedo", resources.GetImage2D(gbufferData.albedo));
 			context.SetConstant("materialEmissive", resources.GetImage2D(gbufferData.materialEmissive));
@@ -1073,7 +1072,7 @@ namespace Volt
 			context.SetConstant("depthTexture", resources.GetImage2D(preDepthData.depth));
 			
 			// PBR Constants
-			context.SetConstant("pbrConstants.viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("pbrConstants.viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("pbrConstants.DirectionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 			context.SetConstant("pbrConstants.linearSampler", RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.pointLinearClampSampler", RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
@@ -1137,7 +1136,7 @@ namespace Volt
 
 			context.BindIndexBuffer(indexBuffer);
 
-			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("positions", resources.GetBuffer(posHandle));
 			context.DrawIndexed(s_meshResult.meshlets.at(0).triangleCount * 3, 1, 0, 0, 0);
 			context.EndRendering();

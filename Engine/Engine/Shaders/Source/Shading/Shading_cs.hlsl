@@ -39,7 +39,7 @@ void main(uint3 threadId : SV_DispatchThreadID, uint groupThreadIndex : SV_Group
         return;
     }
     
-    const ViewData viewData = constants.pbrConstants.viewData.Load(0);
+    const ViewData viewData = constants.pbrConstants.viewData.Load();
     const float2 texCoords = float2(float(threadId.x) * viewData.invRenderSize.x, 1.f - float(threadId.y) * viewData.invRenderSize.y);
     
     const float4 materialEmissive = constants.materialEmissive.Load2D(int3(threadId.xy, 0));

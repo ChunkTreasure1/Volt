@@ -168,7 +168,7 @@ namespace Volt
 
 	MeshletGenerationResult MeshProcessor::GenerateMeshlets2(std::span<const Vertex> vertices, std::span<const uint32_t> indices)
 	{
-		constexpr size_t MAX_TRIANGLE_COUNT = 6;
+		constexpr size_t MAX_TRIANGLE_COUNT = 64;
 
 		std::vector<idx_t> xadj;
 		xadj.resize(vertices.size() + 1);
@@ -254,9 +254,9 @@ namespace Volt
 			std::vector<std::vector<uint32_t>> perMeshletIndices;
 			perMeshletIndices.resize(numParts);
 
-			for (uint32_t i = 0; i < static_cast<uint32_t>(indices.size()); ++i)
+			for (uint32_t i = 0; i < static_cast<uint32_t>(vertices.size()); ++i)
 			{
-				const uint32_t v0 = indices[i];
+				const uint32_t v0 = i;
 				const uint32_t partitionIndex = part[v0];
 
 				perMeshletIndices[partitionIndex].push_back(v0);
@@ -266,10 +266,28 @@ namespace Volt
 			{
 				auto& newMeshlet = result.meshlets.emplace_back();
 				newMeshlet.vertexCount = static_cast<uint8_t>(elementCount[i]);
-				newMeshlet.triangleCount = static_cast<uint8_t>(values.size() / 3);
 				newMeshlet.dataOffset = static_cast<uint32_t>(result.meshletIndices.size());
-				
-				result.meshletIndices.insert(result.meshletIndices.end(), values.begin(), values.end());
+				//
+				//result.meshletIndices.insert(result.meshletIndices.end(), values.begin(), values.end());
+
+				std::unordered_map<uint32_t, uint32_t> vertexMap;
+				uint32_t newIndex = 0;
+
+				for (uint32_t index : values)
+				{
+					vertexMap[index] = newIndex++;
+				}
+
+				for (const uint32_t index : indices)
+				{
+					if (vertexMap.contains(index))
+					{
+						result.meshletIndices.push_back(vertexMap[index]);
+					}
+				}
+
+				newMeshlet.triangleCount = static_cast<uint8_t>(result.meshletIndices.size() / 3);
+
 				i++;
 			}
 		}
