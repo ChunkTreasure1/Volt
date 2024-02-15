@@ -97,7 +97,7 @@ namespace Volt
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
-		void AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle indexBuffer, RenderGraphResourceHandle positionsBuffer, size_t meshletIndex);
 		
 		Ref<RHI::Image2D> m_outputImage;
 

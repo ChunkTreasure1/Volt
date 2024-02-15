@@ -8,6 +8,7 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraphCommon.h"
 
 #include "Volt/RenderingNew/RendererNew.h"
+#include "Volt/Console/ConsoleVariableRegistry.h"
 
 #include "Volt/Core/Profiling.h"
 
@@ -18,6 +19,8 @@
 
 namespace Volt
 {
+	static ConsoleVariable<int32_t> s_enableRenderGraphValidation = ConsoleVariable<int32_t>("r.renderGraph.enableValidation", 1, "Controls whether RenderGraph validation is enabled or not");
+
 	namespace Utility
 	{
 		inline static bool IsSame(const RHI::ResourceBarrierInfo& lhs, const RHI::ResourceBarrierInfo& rhs, RHI::BarrierType type)

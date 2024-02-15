@@ -39,6 +39,17 @@ namespace Volt
 
 	struct Edge
 	{
+		explicit Edge(uint32_t iv0, uint32_t iv1)
+		{
+			if (iv0 > iv1)
+			{
+				std::swap(iv0, iv1);
+			}
+
+			v0 = iv0;
+			v1 = iv1;
+		}
+
 		uint32_t v0;
 		uint32_t v1;
 

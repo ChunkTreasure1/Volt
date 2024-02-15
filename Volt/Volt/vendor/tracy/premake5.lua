@@ -21,7 +21,8 @@ project "tracy"
 
 	defines
 	{
-		"TRACY_ENABLE"
+		"TRACY_ENABLE",
+		"TRACY_ON_DEMAND"
 	}
 
 	warnings "off"

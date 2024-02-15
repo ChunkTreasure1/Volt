@@ -7,6 +7,7 @@
 #include "Volt/RenderingNew/RenderGraph/RenderGraphPass.h"
 
 #include "Volt/Core/Profiling.h"
+#include "Volt/Console/ConsoleVariableRegistry.h"
 
 #include <VoltRHI/Buffers/CommandBuffer.h>
 #include <VoltRHI/Buffers/StorageBuffer.h>
@@ -48,17 +49,8 @@ namespace Volt
 
 	const RenderingInfo RenderContext::CreateRenderingInfo(const uint32_t width, const uint32_t height, const std::vector<Ref<RHI::ImageView>>& attachments)
 	{
-		RHI::Rect2D scissor = { 0, 0, width, height };
-		RHI::Viewport viewport{};
-		viewport.width = static_cast<float>(width);
-		viewport.height = static_cast<float>(height);
-		viewport.x = 0.f;
-		viewport.y = 0.f;
-		viewport.minDepth = 0.f;
-		viewport.maxDepth = 1.f;
-
-		StackVector<RHI::AttachmentInfo, RHI::MAX_COLOR_ATTACHMENT_COUNT> colorAttachments;
-		RHI::AttachmentInfo depthAttachment{};
+		RHI::RenderingInfo renderingInfo;
+		renderingInfo.renderArea = { 0, 0, width, height };
 
 		for (const auto& view : attachments)
 		{
@@ -69,25 +61,25 @@ namespace Volt
 				attachment.clearColor = { 0.f, 0.f, 0.f, 0.f };
 				attachment.view = view;
 
-				colorAttachments.Push(attachment);
+				renderingInfo.colorAttachments.Push(attachment);
 			}
 			else
 			{
-				depthAttachment.clearMode = RHI::ClearMode::Clear;
-				depthAttachment.clearColor = { 0.f };
-				depthAttachment.view = view;
+				renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Clear;
+				renderingInfo.depthAttachmentInfo.clearColor = { 0.f };
+				renderingInfo.depthAttachmentInfo.view = view;
 			}
 		}
 
-		RHI::RenderingInfo renderingInfo{};
-		renderingInfo.colorAttachments = colorAttachments;
-		renderingInfo.depthAttachmentInfo = depthAttachment;
-		renderingInfo.renderArea = scissor;
-
 		RenderingInfo result{};
 		result.renderingInfo = renderingInfo;
-		result.scissor = scissor;
-		result.viewport = viewport;
+		result.scissor = { 0, 0, width, height };
+		result.viewport.width = static_cast<float>(width);
+		result.viewport.height = static_cast<float>(height);
+		result.viewport.x = 0.f;
+		result.viewport.y = 0.f;
+		result.viewport.minDepth = 0.f;
+		result.viewport.maxDepth = 1.f;
 
 		return result;
 	}
@@ -238,7 +230,7 @@ namespace Volt
 		m_commandBuffer->End();
 
 		GlobalResourceManager::Update();
-	
+
 		m_commandBuffer->ExecuteAndWait();
 		m_commandBuffer->RestartAfterFlush();
 	}
@@ -368,33 +360,38 @@ namespace Volt
 
 		const auto& uniform = constantsData.uniforms.at(name);
 
-#ifdef VT_DEBUG
-		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
+#ifndef VT_DIST
+		ConsoleVariableRef<int32_t> enableValidation("r.renderGraph.enableValidation");
+
+		if (enableValidation.GetValue())
 		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
+			if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
+			{
+				VT_ENSURE(m_currentPassNode->ReadsResource(data));
+			}
+			else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer)
+			{
+				VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+			}
+			else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture)
+			{
+				VT_ENSURE(m_currentPassNode->ReadsResource(data));
+			}
+			else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture)
+			{
+				VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
+			}
+			else if (uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer)
+			{
+				VT_ENSURE(m_currentPassNode->ReadsResource(data));
+			}
+			//else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler) // #TODO_Ivar: Should we validate samplers?
+			//{
+			//	VT_ENSURE(m_currentPassNode->ReadsResource(data));
+			//}
 		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer)
-		{
-			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
-		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Texture)
-		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture)
-		{
-			VT_ENSURE(m_currentPassNode->WritesResource(data) || m_currentPassNode->CreatesResource(data));
-		}
-		else if (uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer)
-		{
-			VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		}
-		//else if (uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler) // #TODO_Ivar: Should we validate samplers?
-		//{
-		//	VT_ENSURE(m_currentPassNode->ReadsResource(data));
-		//}
 #endif
 
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, &data, sizeof(ResourceHandle));
-	}
+}
 }

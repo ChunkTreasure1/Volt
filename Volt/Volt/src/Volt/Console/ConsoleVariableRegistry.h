@@ -77,7 +77,7 @@ namespace Volt
 	public:
 		ConsoleVariableRef(std::string_view variableName);
 
-		const T& GetValue() const { return *reinterpret_cast<T*>(m_variableReference->Get()); }
+		const T& GetValue() const { return *reinterpret_cast<const T*>(m_variableReference->Get()); }
 		void SetValue(const T& value) { m_variableReference->Set(&value); }
 
 		T& operator=(const T& other)
@@ -173,7 +173,7 @@ namespace Volt
 	template<ValidConsoleVariableType T>
 	inline ConsoleVariableRef<T>::ConsoleVariableRef(std::string_view variableName)
 	{
-		m_variableReference = ConsoleVariableRegistry::FindVariable(variableName);
+		m_variableReference = ConsoleVariableRegistry::FindVariable<T>(std::string(variableName));
 		VT_CORE_ASSERT(m_variableReference, "Variable with name not found!");
 	}
 

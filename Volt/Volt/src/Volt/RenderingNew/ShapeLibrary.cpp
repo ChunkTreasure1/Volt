@@ -47,7 +47,7 @@ namespace Volt
 			// Top face
 			Vertex{ { -0.5f,  0.5f,  0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f }  },
 			Vertex{ {  0.5f,  0.5f,  0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 0.f }  },
-			Vertex{ {  0.5f,  0.5f,  0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f }  },
+			Vertex{ {  0.5f,  0.5f, -0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f }  },
 			Vertex{ { -0.5f,  0.5f, -0.5f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f }  },
 
 			// Bottom face
@@ -60,7 +60,7 @@ namespace Volt
 		std::vector<uint32_t> indices =
 		{
 			// Front face
-			0, 1, 2,
+			0, 1, 3,
 			3, 1, 2,
 
 			// Right face
@@ -69,7 +69,7 @@ namespace Volt
 
 			// Back face
 			8, 9, 11,
-			11, 8, 10,
+			11, 9, 10,
 			
 			// Left face
 			12, 13, 15,

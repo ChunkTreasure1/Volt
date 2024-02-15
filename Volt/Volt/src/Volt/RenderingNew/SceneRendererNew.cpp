@@ -28,6 +28,7 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Math/Math.h"
 
@@ -78,7 +79,7 @@ namespace Volt
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
 
-		Ref<Mesh> cube = ShapeLibrary::GetSphere();
+		Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("Assets/Icosphere.vtmesh");
 		s_cube = cube;
 		s_meshResult = MeshProcessor::ProcessMesh(cube->GetVertices(), cube->GetIndices(), cube->GetMaterialTable(), cube->GetSubMeshes());
 
@@ -167,7 +168,7 @@ namespace Volt
 			AddCullPrimitivesPass(renderGraph, rgBlackboard, camera);
 
 			renderGraph.EndMarker();
-		
+
 			//AddStatsReadbackPass(renderGraph, rgBlackboard);
 
 			AddPreDepthPass(renderGraph, rgBlackboard);
@@ -186,7 +187,7 @@ namespace Volt
 
 			PrefixSumTechnique prefixSum{ renderGraph };
 			prefixSum.Execute(rgBlackboard.Get<MaterialCountData>().materialCountBuffer, rgBlackboard.Get<MaterialCountData>().materialStartBuffer, m_scene->GetRenderScene()->GetIndividualMaterialCount());
-			
+
 			AddCollectMaterialPixelsPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialIndirectArgsPass(renderGraph, rgBlackboard);
 
@@ -207,8 +208,19 @@ namespace Volt
 			renderGraph.EndMarker();
 
 			AddShadingPass(renderGraph, rgBlackboard);
-		
-			AddTestPass(renderGraph, rgBlackboard);
+
+			{
+				RenderGraphResourceHandle posHandle = renderGraph.AddExternalBuffer(s_meshResult.vertexPositionsBuffer->GetResource(), false);
+
+				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(s_meshResult.meshletIndices.size(), RHI::BufferUsage::IndexBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::CPUToGPU, "IndexBuffer");
+				RenderGraphResourceHandle indexBufferHandle = renderGraph.CreateBuffer(desc);
+				renderGraph.AddMappedBufferUpload(indexBufferHandle, s_meshResult.meshletIndices.data(), s_meshResult.meshletIndices.size() * sizeof(uint32_t), "Upload Indices");
+
+				for (size_t index = 0; index < s_meshResult.meshlets.size(); index++)
+				{
+					AddTestPass(renderGraph, rgBlackboard, indexBufferHandle, posHandle, index);
+				}
+			}
 		}
 
 		{
@@ -291,7 +303,7 @@ namespace Volt
 			viewData.cameraPosition = glm::vec4(camera->GetPosition(), 1.f);
 			viewData.nearPlane = camera->GetNearPlane();
 			viewData.farPlane = camera->GetFarPlane();
-			
+
 			float depthLinearizeMul = (-viewData.projection[3][2]);
 			float depthLinearizeAdd = (viewData.projection[2][2]);
 
@@ -336,7 +348,7 @@ namespace Volt
 			DirectionalLightData data{};
 			data.intensity = 0.f;
 
-			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp) 
+			m_scene->ForEachWithComponents<const DirectionalLightComponent, const IDComponent, const TransformComponent>([&](entt::entity id, const DirectionalLightComponent& dirLightComp, const IDComponent& idComp, const TransformComponent& comp)
 			{
 				if (!comp.visible)
 				{
@@ -345,7 +357,7 @@ namespace Volt
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
 				const glm::vec3 dir = glm::rotate(entity.GetRotation(), { 0.f, 0.f, 1.f }) * -1.f;
-				
+
 				data.color = dirLightComp.color;
 				data.intensity = dirLightComp.intensity;
 				data.direction = { dir, 0.f };
@@ -371,7 +383,7 @@ namespace Volt
 				}
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
-				
+
 				auto& data = pointLights.emplace_back();
 				data.position = entity.GetPosition();
 				data.radius = comp.radius;
@@ -382,7 +394,7 @@ namespace Volt
 
 			const auto desc = RGUtils::CreateBufferDesc<PointLightData>(1, RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Point light Data");
 			buffersData.pointLightsBuffer = renderGraph.CreateBuffer(desc);
-			
+
 			if (!pointLights.empty())
 			{
 				renderGraph.AddMappedBufferUpload(buffersData.pointLightsBuffer, pointLights.data(), sizeof(PointLightData) * pointLights.size(), "Upload point light data");
@@ -401,7 +413,7 @@ namespace Volt
 				}
 
 				auto entity = m_scene->GetEntityFromUUID(idComp.id);
-				
+
 				auto& data = spotLights.emplace_back();
 				data.position = entity.GetPosition();
 				data.color = comp.color;
@@ -488,7 +500,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.SetIsComputePass();
 		},
-		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources) 
+		[=](const CullObjectsData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
 			const uint32_t commandCount = renderScene->GetRenderObjectCount();
 			const uint32_t dispatchCount = Math::DivideRoundUp(commandCount, 256u);
@@ -538,7 +550,7 @@ namespace Volt
 			data.argsBufferHandle = builder.CreateBuffer(argsDesc);
 			outHandle = data.argsBufferHandle;
 
-			builder.ReadResource (countBuffer);
+			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
 		},
 		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -619,7 +631,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshletsBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
-			
+
 			builder.SetIsComputePass();
 		},
 		[=](const CullMeshletsData& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -683,7 +695,7 @@ namespace Volt
 			builder.ReadResource(externalBuffers.gpuMeshesBuffer);
 			builder.ReadResource(externalBuffers.objectDrawDataBuffer);
 			builder.ReadResource(argsBufferHandle, RenderGraphResourceState::IndirectArgument);
-		
+
 			builder.SetIsComputePass();
 		},
 		[=](const CullPrimitivesData& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -1035,7 +1047,7 @@ namespace Volt
 		RenderGraphResourceHandle radianceHandle = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : externalImages.black1x1Cube;
 
 		blackboard.Add<FinalColorData>() = renderGraph.AddPass<FinalColorData>("Shading Pass",
-		[&](RenderGraph::Builder& builder, FinalColorData& data) 
+		[&](RenderGraph::Builder& builder, FinalColorData& data)
 		{
 			data.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
 
@@ -1070,7 +1082,7 @@ namespace Volt
 			context.SetConstant("materialEmissive", resources.GetImage2D(gbufferData.materialEmissive));
 			context.SetConstant("normalEmissive", resources.GetImage2D(gbufferData.normalEmissive));
 			context.SetConstant("depthTexture", resources.GetImage2D(preDepthData.depth));
-			
+
 			// PBR Constants
 			context.SetConstant("pbrConstants.viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("pbrConstants.DirectionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));
@@ -1086,39 +1098,28 @@ namespace Volt
 		});
 	}
 
-	void SceneRendererNew::AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	void SceneRendererNew::AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle indexBufferHandle, RenderGraphResourceHandle positionsBuffer, size_t index)
 	{
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 
-		const auto& gbufferData = blackboard.Get<GBufferData>();
+		const auto& finalColorData = blackboard.Get<FinalColorData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
 
-		RenderGraphResourceHandle posHandle = renderGraph.AddExternalBuffer(s_cube->GetVertexPositionsBuffer()->GetResource(), false);
-
-		struct TestData
+		renderGraph.AddPass("Test Pass",
+		[&](RenderGraph::Builder& builder)
 		{
-			RenderGraphResourceHandle indexBufferHandle;
-		};
-
-		renderGraph.AddPass<TestData>("Test Pass",
-		[&](RenderGraph::Builder& builder, TestData& data)
-		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(s_meshResult.meshlets.at(0).triangleCount * 3, RHI::BufferUsage::IndexBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPU, "IndexBuffer");
-				data.indexBufferHandle = builder.CreateBuffer(desc);
-			}
-
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.ReadResource(posHandle);
+			builder.ReadResource(positionsBuffer);
+			builder.ReadResource(indexBufferHandle);
 
-			builder.WriteResource(gbufferData.albedo);
+			builder.WriteResource(finalColorData.finalColorOutput);
 			builder.WriteResource(preDepthData.depth);
 
 			builder.SetHasSideEffect();
 		},
-		[=](const TestData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::ImageView> albedoImage = resources.GetImage2DView(gbufferData.albedo);
+			Weak<RHI::ImageView> albedoImage = resources.GetImage2DView(finalColorData.finalColorOutput);
 			Weak<RHI::ImageView> depthImage = resources.GetImage2DView(preDepthData.depth);
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
@@ -1127,9 +1128,10 @@ namespace Volt
 			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
 
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { albedoImage, depthImage });
+			info.renderingInfo.colorAttachments.At(0).clearMode = RHI::ClearMode::Load;
+			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
 
-			Weak<RHI::StorageBuffer> indexBuffer = resources.GetBufferRaw(data.indexBufferHandle);
-			context.UploadBufferData(indexBuffer, s_meshResult.meshletIndices.data(), sizeof(uint32_t)* s_meshResult.meshlets.at(0).triangleCount * 3);
+			Weak<RHI::StorageBuffer> indexBuffer = resources.GetBufferRaw(indexBufferHandle);
 
 			context.BeginRendering(info);
 			context.BindPipeline(pipeline);
@@ -1137,8 +1139,9 @@ namespace Volt
 			context.BindIndexBuffer(indexBuffer);
 
 			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("positions", resources.GetBuffer(posHandle));
-			context.DrawIndexed(s_meshResult.meshlets.at(0).triangleCount * 3, 1, 0, 0, 0);
+			context.SetConstant("positions", resources.GetBuffer(positionsBuffer));
+			context.SetConstant("meshletIndex", static_cast<uint32_t>(index));
+			context.DrawIndexed(s_meshResult.meshlets.at(index).triangleCount * 3, 1, s_meshResult.meshlets.at(index).triangleOffset, 0, 0);
 			context.EndRendering();
 
 		});

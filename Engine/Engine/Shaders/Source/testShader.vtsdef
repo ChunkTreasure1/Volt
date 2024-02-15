@@ -1,0 +1,5 @@
+name: "TestShader"
+internal: true
+paths:
+  - "Engine/Shaders/Source/TestShader_vs.hlsl"
+  - "Engine/Shaders/Source/TestShader_ps.hlsl"
