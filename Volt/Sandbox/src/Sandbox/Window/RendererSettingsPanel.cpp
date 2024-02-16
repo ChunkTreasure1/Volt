@@ -19,21 +19,10 @@ void RendererSettingsPanel::UpdateMainContent()
 		mySceneRenderer->Invalidate();
 	}
 
-	static Volt::AssetHandle handle;
+	constexpr uint32_t min = 0;
+	constexpr uint32_t max = 10;
 
-	if (UI::BeginProperties(""))
-	{
-		if (EditorUtils::Property("EnvMap", handle, Volt::AssetType::Texture))
-		{
-		}
-
-		if (handle != Volt::Asset::Null())
-		{
-			Volt::RendererNew::GenerateEnvironmentTextures(handle);
-		}
-
-		UI::EndProperties();
-	}
+	ImGui::SliderScalar("LOD level", ImGuiDataType_U32, &mySceneRenderer->GetLODLevel(), &min, &max);
 
 	//UI::Header("Settings");
 

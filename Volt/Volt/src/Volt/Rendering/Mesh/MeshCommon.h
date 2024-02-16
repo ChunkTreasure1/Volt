@@ -17,7 +17,9 @@ namespace Volt
 
 		uint32_t objectId;
 		uint32_t meshId;
-		glm::uvec2 padding;
+		uint32_t padding;
+
+		float clusterError = 0.f;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;

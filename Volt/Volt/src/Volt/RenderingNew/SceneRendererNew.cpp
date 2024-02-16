@@ -216,7 +216,9 @@ namespace Volt
 				RenderGraphResourceHandle indexBufferHandle = renderGraph.CreateBuffer(desc);
 				renderGraph.AddMappedBufferUpload(indexBufferHandle, s_meshResult.meshletIndices.data(), s_meshResult.meshletIndices.size() * sizeof(uint32_t), "Upload Indices");
 
-				for (size_t index = 0; index < s_meshResult.meshlets.size(); index++)
+				const auto& lod = s_meshResult.lods.at(std::min(m_lodLevel, static_cast<uint32_t>(s_meshResult.lods.size() - 1)));
+
+				for (size_t index = lod.meshletOffset; index < lod.meshletOffset + lod.meshletCount; index++)
 				{
 					AddTestPass(renderGraph, rgBlackboard, indexBufferHandle, posHandle, index);
 				}

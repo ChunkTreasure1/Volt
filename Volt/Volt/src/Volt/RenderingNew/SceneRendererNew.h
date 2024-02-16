@@ -59,6 +59,7 @@ namespace Volt
 
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
+		inline uint32_t& GetLODLevel() { return m_lodLevel; }
 
 		const uint64_t GetFrameTotalGPUAllocationSize() const;
 
@@ -98,7 +99,8 @@ namespace Volt
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle indexBuffer, RenderGraphResourceHandle positionsBuffer, size_t meshletIndex);
-		
+		uint32_t m_lodLevel = 0;
+
 		Ref<RHI::Image2D> m_outputImage;
 
 		bool m_shouldResize = false;

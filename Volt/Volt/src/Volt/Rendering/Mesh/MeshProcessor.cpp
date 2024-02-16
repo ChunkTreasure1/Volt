@@ -39,6 +39,26 @@ namespace Volt
 		
 		const auto& meshlets = meshletGenerationResult.meshlets;
 
+		constexpr size_t GROUP_SIZE = 4;
+
+		auto GenerateSingleGroup = [&]()
+		{
+			std::vector<MeshletGroup> result(1);
+			result.back().meshletIndices.resize(meshlets.size());
+
+			for (uint32_t i = 0; i < static_cast<uint32_t>(meshlets.size()); i++)
+			{
+				result.back().meshletIndices[i] = i;
+			}
+
+			return result;
+		};
+
+		if (meshlets.size() < GROUP_SIZE * 2)
+		{
+			return GenerateSingleGroup();
+		}
+
 		std::unordered_map<Edge, std::unordered_set<size_t>> edges2Meshlets;
 		std::unordered_map<size_t, std::vector<Edge>> meshlets2Edges;
 
@@ -76,9 +96,9 @@ namespace Volt
 		{
 			return pair.second.size() <= 1;
 		});
-		
+
 		idx_t vertexCount = static_cast<idx_t>(meshlets.size());
-		idx_t partitionCount = static_cast<idx_t>(std::max(vertexCount / 4u, 2u));
+		idx_t partitionCount = static_cast<idx_t>(std::max(vertexCount / static_cast<uint32_t>(GROUP_SIZE), 2u));
 		idx_t numConstraints = 1;
 		idx_t options[METIS_NOPTIONS];
 		METIS_SetDefaultOptions(options);
@@ -180,7 +200,7 @@ namespace Volt
 		return groups;
 	}
 
-	std::vector<MeshProcessor::GroupedMeshletResult> MeshProcessor::MergeMeshletGroups(std::span<const MeshletGroup> groups, std::span<const Meshlet> parentMeshlets, std::span<const uint32_t> indices)
+	std::vector<MeshProcessor::GroupedMeshletResult> MeshProcessor::MergeMeshletGroups(std::span<const MeshletGroup> groups, std::span<const Meshlet> generatedMeshlets, std::span<const uint32_t> indices)
 	{
 		std::vector<GroupedMeshletResult> result;
 
@@ -190,7 +210,7 @@ namespace Volt
 
 			for (const auto& meshletIndex : group.meshletIndices)
 			{
-				const auto& meshlet = parentMeshlets[meshletIndex];
+				const auto& meshlet = generatedMeshlets[meshletIndex];
 
 				size_t start = groupIndices.size();
 				groupIndices.resize(start + static_cast<size_t>(meshlet.triangleCount * 3));
@@ -211,7 +231,7 @@ namespace Volt
 		{
 			auto& simplifiedGroup = result.emplace_back();
 
-			float targetError = 0.5f;
+			float targetError = 1e-1f;
 			const float threshold = 0.5f;
 			const size_t targetIndexCount = static_cast<size_t>(group.groupedMeshletIndices.size() * threshold);
 			const uint32_t options = meshopt_SimplifyLockBorder;
@@ -219,10 +239,14 @@ namespace Volt
 			simplifiedGroup.simplifiedIndices.resize(group.groupedMeshletIndices.size());
 			float error = 0.f;
 
-			size_t simplifiedIndexCount = meshopt_simplify(simplifiedGroup.simplifiedIndices.data(), group.groupedMeshletIndices.data(), group.groupedMeshletIndices.size(), &vertices[0].position.x, vertices.size(), sizeof(Vertex), targetIndexCount, targetError, options, &error);
+			std::vector<uint32_t> tempIndices(group.groupedMeshletIndices.size());
+
+			meshopt_generateShadowIndexBuffer(tempIndices.data(), group.groupedMeshletIndices.data(), group.groupedMeshletIndices.size(), vertices.data(), vertices.size(), sizeof(Vertex), sizeof(Vertex));
+
+			size_t simplifiedIndexCount = meshopt_simplify(simplifiedGroup.simplifiedIndices.data(), tempIndices.data(), tempIndices.size(), &vertices[0].position.x, vertices.size(), sizeof(Vertex), targetIndexCount, targetError, options, &error);
 			simplifiedGroup.simplifiedIndices.resize(simplifiedIndexCount);
-			//simplifiedGroup.simplifiedIndices = group.groupedMeshletIndices;
 			simplifiedGroup.simplifiedIndices.shrink_to_fit();
+			simplifiedGroup.simplificationError = error * meshopt_simplifyScale(&vertices[0].position.x, vertices.size(), sizeof(Vertex));
 		}
 
 		return result;
@@ -232,22 +256,48 @@ namespace Volt
 	{
 		MeshletGenerationResult result;
 
-		for (const auto& group : groups)
+		for (uint32_t groupIndex = 0; const auto& group : groups)
 		{
 			auto meshletData = GenerateMeshlets(vertices, group.simplifiedIndices);
 
-			const size_t groupOffset = result.meshletIndices.size();
-			result.meshletIndices.insert(result.meshletIndices.end(), meshletData.meshletIndices.begin(), meshletData.meshletIndices.end());
+			const size_t groupIndexOffset = result.meshletIndices.size();
+			const size_t groupMeshletOffset = result.meshlets.size();
 
-			for (auto& meshlet : meshletData.meshlets)
+			result.meshletIndices.insert(result.meshletIndices.end(), meshletData.meshletIndices.begin(), meshletData.meshletIndices.end());
+			result.meshletIndexToGroupID.resize(result.meshletIndexToGroupID.size() + meshletData.meshlets.size());
+
+			for (uint32_t meshletIndex = 0; auto& meshlet : meshletData.meshlets)
 			{
-				meshlet.triangleOffset += static_cast<uint32_t>(groupOffset);
+				meshlet.triangleOffset += static_cast<uint32_t>(groupIndexOffset);
+				meshlet.clusterError = group.simplificationError;
+
+				result.meshletIndexToGroupID[groupMeshletOffset + meshletIndex] = groupIndex;
+				meshletIndex++;
 			}
 
 			result.meshlets.insert(result.meshlets.end(), meshletData.meshlets.begin(), meshletData.meshlets.end());
+			groupIndex++;
 		}
 
 		return result;
+	}
+
+	void MeshProcessor::AddLODLevel(const MeshletGenerationResult& meshletGenerationResult, ProcessedMeshResult& result)
+	{
+		const size_t lodIndexOffset = result.meshletIndices.size();
+		const size_t lodMeshletOffset = result.meshlets.size();
+
+		auto& lodLevel = result.lods.emplace_back();
+		lodLevel.meshletCount = static_cast<uint32_t>(meshletGenerationResult.meshlets.size());
+		lodLevel.meshletOffset = static_cast<uint32_t>(lodMeshletOffset);
+
+		for (const auto& meshlet : meshletGenerationResult.meshlets)
+		{
+			result.meshlets.emplace_back(meshlet);
+			result.meshlets.back().triangleOffset += static_cast<uint32_t>(lodIndexOffset);
+		}
+
+		result.meshletIndices.insert(result.meshletIndices.end(), meshletGenerationResult.meshletIndices.begin(), meshletGenerationResult.meshletIndices.end());
 	}
 
 	ProcessedMeshResult MeshProcessor::ProcessMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const MaterialTable& materialTable, const std::vector<SubMesh>& subMeshes)
@@ -261,13 +311,32 @@ namespace Volt
 
 		for (auto& subMesh : resultSubMeshes)
 		{
-			std::vector<uint32_t> tempIndices;
-			tempIndices.resize(subMesh.indexCount);
+			const uint32_t* indexStartPtr = &indices.at(subMesh.indexStartOffset);
+			const Vertex* vertexStartPtr = &vertices.at(subMesh.vertexStartOffset);
+
+			std::vector<uint32_t> subMeshIndices(subMesh.indexCount);
+			std::vector<Vertex> subMeshVertices(subMesh.vertexCount);
+
+			{
+				std::vector<uint32_t> remapTable(subMesh.indexCount);
+				size_t newVertexCount = meshopt_generateVertexRemap(remapTable.data(), indexStartPtr, static_cast<size_t>(subMesh.indexCount), vertexStartPtr, static_cast<size_t>(subMesh.vertexCount), sizeof(Vertex));
+				subMeshVertices.resize(newVertexCount);
+
+				const size_t vertexCount = static_cast<size_t>(newVertexCount);
+				const size_t indexCount = static_cast<size_t>(subMesh.indexCount);
+
+				meshopt_remapIndexBuffer(subMeshIndices.data(), indices.data(), indexCount, remapTable.data());
+				meshopt_remapVertexBuffer(subMeshVertices.data(), vertices.data(), vertexCount, sizeof(Vertex), remapTable.data());
+
+				//meshopt_optimizeVertexCache(subMeshIndices.data(), subMeshIndices.data(), indexCount, vertexCount);
+				//meshopt_optimizeOverdraw(subMeshIndices.data(), subMeshIndices.data(), indexCount, &subMeshVertices[0].position.x, vertexCount, sizeof(Vertex), 1.05f);
+				//meshopt_optimizeVertexFetch(subMeshVertices.data(), subMeshIndices.data(), indexCount, subMeshVertices.data(), vertexCount, sizeof(Vertex));
+			}
 
 			{
 				std::vector<glm::vec3> vertexPositions;
-				vertexPositions.reserve(vertices.size());
-				for (const auto& vertex : vertices)
+				vertexPositions.reserve(subMeshVertices.size());
+				for (const auto& vertex : subMeshVertices)
 				{
 					vertexPositions.emplace_back(vertex.position);
 				}
@@ -276,33 +345,68 @@ namespace Volt
 				result.vertexPositionsBuffer->GetResource()->SetData(vertexPositions.data(), vertexPositions.size() * sizeof(glm::vec3));
 			}
 
-			const uint32_t* indexStartPtr = &indices.at(subMesh.indexStartOffset);
-			const Vertex* vertexStartPtr = &vertices.at(subMesh.vertexStartOffset);
-
-			meshopt_optimizeOverdraw(tempIndices.data(), indexStartPtr, subMesh.indexCount, &vertexStartPtr[0].position.x, subMesh.vertexCount, sizeof(Vertex), 1.05f);
-			
-			auto subMeshVertices = std::span<const Vertex>(vertexStartPtr, subMesh.vertexCount);
-			auto subMeshIndices = std::span<const uint32_t>(indexStartPtr, subMesh.indexCount);
-
 			auto lod0MeshletData = GenerateMeshlets(subMeshVertices, subMeshIndices);
+			AddLODLevel(lod0MeshletData, result);
 
-			auto groups = GroupMeshlets(lod0MeshletData);
-			auto mergedGroups = MergeMeshletGroups(groups, lod0MeshletData.meshlets, lod0MeshletData.meshletIndices);
-			auto simplifiedGroups = SimplifyGroups(mergedGroups, subMeshVertices);
-			auto lod1MeshletData = SplitGroups(simplifiedGroups, vertices);
+			for (uint32_t i = 0; const auto& meshlet : lod0MeshletData.meshlets)
+			{
+				result.lods.back().lodMeshletNodeIDs.emplace_back() = result.lodGraph.AddNode({ meshlet.clusterError, i });
+				i++;
+			}
 
-			groups = GroupMeshlets(lod1MeshletData);
-			mergedGroups = MergeMeshletGroups(groups, lod1MeshletData.meshlets, lod1MeshletData.meshletIndices);
-			simplifiedGroups = SimplifyGroups(mergedGroups, subMeshVertices);
-			auto lod2MeshletData = SplitGroups(simplifiedGroups, vertices);
+			size_t meshletCount = lod0MeshletData.meshlets.size();
+			MeshletGenerationResult previousResult = std::move(lod0MeshletData);
 
-			result.meshlets = lod2MeshletData.meshlets;
-			result.meshletIndices = lod2MeshletData.meshletIndices;
+			while (meshletCount > 1)
+			{
+				auto groups = GroupMeshlets(previousResult);
+				auto mergedGroups = MergeMeshletGroups(groups, previousResult.meshlets, previousResult.meshletIndices);
+				auto simplifiedGroups = SimplifyGroups(mergedGroups, subMeshVertices);
+
+				bool failed = false;
+
+				for (size_t groupIndex = 0; groupIndex < simplifiedGroups.size(); groupIndex++)
+				{
+					if (mergedGroups.at(groupIndex).groupedMeshletIndices.size() == simplifiedGroups.at(groupIndex).simplifiedIndices.size())
+					{
+						failed = true;
+					}
+				}
+
+				if (failed)
+				{
+					break;
+				}
+
+				auto meshletData = SplitGroups(simplifiedGroups, vertices);
+
+				AddLODLevel(meshletData, result);
+
+				for (uint32_t i = 0; const auto& meshlet : meshletData.meshlets)
+				{
+					const auto nodeId = result.lodGraph.AddNode({ meshlet.clusterError, i });
+					result.lods.back().lodMeshletNodeIDs.emplace_back(nodeId);
+
+					auto& previousLOD = result.lods.at(result.lods.size() - 2);
+
+					const uint32_t groupIndex = meshletData.meshletIndexToGroupID.at(i);
+					for (const auto& parentMeshletIndex : groups.at(groupIndex).meshletIndices)
+					{
+						result.lodGraph.LinkNodes(nodeId, previousLOD.lodMeshletNodeIDs.at(parentMeshletIndex));
+					}
+
+					i++;
+
+				}
+
+				meshletCount = meshletData.meshlets.size();
+				previousResult = std::move(meshletData);
+			}
 
 			subMesh.meshletStartOffset = static_cast<uint32_t>(resultMeshlets.size());
-			subMesh.meshletIndexStartOffset = static_cast<uint32_t>(resultIndices.size());
 			subMesh.meshletVertexStartOffset = static_cast<uint32_t>(resultVertices.size());
-			subMesh.meshletCount = static_cast<uint32_t>(lod0MeshletData.meshlets.size());
+			subMesh.meshletCount = static_cast<uint32_t>(result.meshlets.size());
+			subMesh.meshletIndexStartOffset = static_cast<uint32_t>(resultIndices.size());
 		}
 
 		return result;
