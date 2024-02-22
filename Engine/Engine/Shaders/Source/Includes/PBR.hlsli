@@ -8,16 +8,16 @@ struct PBRConstants
 {
     UniformBuffer<ViewData> viewData;
     
-    TypedBuffer<DirectionalLight> DirectionalLight;
-    TypedBuffer<PointLight> pointLights;
-    TypedBuffer<SpotLight> spotLights;
+    UniformTypedBuffer<DirectionalLight> DirectionalLight;
+    UniformTypedBuffer<PointLight> pointLights;
+    UniformTypedBuffer<SpotLight> spotLights;
     
     TextureSampler linearSampler;
     TextureSampler pointLinearClampSampler;
     
-    TTexture<float2> BRDFLuT;
-    TTexture<float3> environmentIrradiance;
-    TTexture<float3> environmentRadiance;
+    UniformTexture<float2> BRDFLuT;
+    UniformTexture<float3> environmentIrradiance;
+    UniformTexture<float3> environmentRadiance;
 };
 
 struct PBRInput

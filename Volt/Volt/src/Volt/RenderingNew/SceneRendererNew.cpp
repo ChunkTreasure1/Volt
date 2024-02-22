@@ -18,6 +18,7 @@
 #include "Volt/RenderingNew/RenderingTechniques/PrefixSumTechnique.h"
 #include "Volt/RenderingNew/RenderingTechniques/GTAOTechnique.h"
 
+#include "Volt/RenderingNew/ShapeLibrary.h"
 #include "Volt/RenderingNew/DrawContext.h"
 
 #include "Volt/Project/ProjectManager.h"
@@ -28,6 +29,7 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/AssetManager.h"
 
 #include "Volt/Math/Math.h"
 
@@ -54,9 +56,6 @@
 
 #include <VoltRHI/Descriptors/DescriptorTable.h>
 
-#include "Volt/RenderingNew/ShapeLibrary.h"
-#include "Volt/Rendering/Mesh/MeshProcessor.h"
-
 namespace Volt
 {
 	namespace Utility
@@ -70,17 +69,10 @@ namespace Volt
 		}
 	}
 
-	static ProcessedMeshResult s_meshResult;
-	static Ref<Mesh> s_cube;
-
 	SceneRendererNew::SceneRendererNew(const SceneRendererSpecification& specification)
 		: m_scene(specification.scene)
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
-
-		Ref<Mesh> cube = ShapeLibrary::GetSphere();
-		s_cube = cube;
-		s_meshResult = MeshProcessor::ProcessMesh(cube->GetVertices(), cube->GetIndices(), cube->GetMaterialTable(), cube->GetSubMeshes());
 
 		// Create render target
 		{
@@ -96,6 +88,8 @@ namespace Volt
 
 		m_sceneEnvironment.radianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
 		m_sceneEnvironment.irradianceMap = RendererNew::GetDefaultResources().blackCubeTexture;
+
+		m_skyboxMesh = AssetManager::GetAsset<Mesh>("Engine/Meshes/Primitives/SM_Cube.vtmesh");
 	}
 
 	SceneRendererNew::~SceneRendererNew()
@@ -206,9 +200,8 @@ namespace Volt
 
 			renderGraph.EndMarker();
 
+			AddSkyboxPass(renderGraph, rgBlackboard);
 			AddShadingPass(renderGraph, rgBlackboard);
-		
-			AddTestPass(renderGraph, rgBlackboard);
 		}
 
 		{
@@ -446,16 +439,48 @@ namespace Volt
 
 	void SceneRendererNew::AddExternalResources(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		auto& imageData = blackboard.Add<ExternalImagesData>();
-		imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
-		imageData.black1x1Cube = renderGraph.AddExternalImage2D(RendererNew::GetDefaultResources().blackCubeTexture);
-		imageData.BRDFLuT = renderGraph.AddExternalImage2D(RendererNew::GetDefaultResources().BRDFLuT);
+		// Core images
+		{
+			auto& imageData = blackboard.Add<ExternalImagesData>();
+			imageData.outputImage = renderGraph.AddExternalImage2D(m_outputImage);
+			imageData.black1x1Cube = renderGraph.AddExternalImage2D(RendererNew::GetDefaultResources().blackCubeTexture);
+			imageData.BRDFLuT = renderGraph.AddExternalImage2D(RendererNew::GetDefaultResources().BRDFLuT);
+		}
 
-		auto& bufferData = blackboard.Add<ExternalBuffersData>();
-		bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResource(), false);
-		bufferData.gpuMeshesBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshesBuffer().GetResource(), false);
-		bufferData.gpuMeshletsBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshletsBuffer().GetResource(), false);
-		bufferData.gpuSceneBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResource(), false);
+		// Core buffers
+		{
+			auto& bufferData = blackboard.Add<ExternalBuffersData>();
+			bufferData.objectDrawDataBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetObjectDrawDataBuffer().GetResource(), false);
+			bufferData.gpuMeshesBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshesBuffer().GetResource(), false);
+			bufferData.gpuMeshletsBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUMeshletsBuffer().GetResource(), false);
+			bufferData.gpuSceneBuffer = renderGraph.AddExternalBuffer(m_scene->GetRenderScene()->GetGPUSceneBuffer().GetResource(), false);
+		}
+
+		// Environment map
+		{
+			m_scene->ForEachWithComponents<SkylightComponent>([&](entt::entity id, SkylightComponent& skylightComp)
+			{
+				if (skylightComp.environmentHandle != skylightComp.lastEnvironmentHandle)
+				{
+					skylightComp.currentSceneEnvironment = RendererNew::GenerateEnvironmentTextures(skylightComp.environmentHandle);
+					skylightComp.lastEnvironmentHandle = skylightComp.environmentHandle;
+				}
+
+				m_sceneEnvironment = skylightComp.currentSceneEnvironment;
+			});
+
+			const auto& imageData = blackboard.Get<ExternalImagesData>();
+
+			auto& environmentTexturesData = blackboard.Add<EnvironmentTexturesData>();
+			environmentTexturesData.irradiance = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.irradianceMap) : imageData.black1x1Cube;
+			environmentTexturesData.radiance = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : imageData.black1x1Cube;
+		}
+
+		// Color output
+		{
+			auto& finalColorData = blackboard.Add<FinalColorData>();
+			finalColorData.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
+		}
 	}
 
 	void SceneRendererNew::AddCullObjectsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, Ref<Camera> camera)
@@ -788,8 +813,8 @@ namespace Volt
 		},
 		[=](const VisibilityBufferData& data, RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Ref<RHI::ImageView> visibilityView = resources.GetImage2DView(data.visibility);
-			Ref<RHI::ImageView> depthView = resources.GetImage2DView(preDepthHandle);
+			Weak<RHI::ImageView> visibilityView = resources.GetImage2DView(data.visibility);
+			Weak<RHI::ImageView> depthView = resources.GetImage2DView(preDepthHandle);
 
 			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { visibilityView, depthView });
 			info.renderingInfo.depthAttachmentInfo.clearMode = RHI::ClearMode::Load;
@@ -1011,35 +1036,65 @@ namespace Volt
 		});
 	}
 
+	void SceneRendererNew::AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		const auto& finalColorData = blackboard.Get<FinalColorData>();
+		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
+		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
+
+		RenderGraphResourceHandle meshVertexBufferHandle = renderGraph.AddExternalBuffer(m_skyboxMesh->GetVertexPositionsBuffer()->GetResource(), false);
+
+		renderGraph.AddPass("Skybox Pass",
+		[&](RenderGraph::Builder& builder)
+		{
+			builder.ReadResource(environmentTexturesData.radiance);
+			builder.ReadResource(meshVertexBufferHandle);
+			builder.ReadResource(uniformBuffers.viewDataBuffer);
+			builder.WriteResource(finalColorData.finalColorOutput);
+		},
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Weak<RHI::ImageView> outputImage = resources.GetImage2DView(finalColorData.finalColorOutput);
+
+			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { outputImage });
+			
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("Skybox");
+			pipelineInfo.cullMode = RHI::CullMode::Front;
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+			context.BindPipeline(pipeline);
+
+			context.SetConstant("vertexPositions", resources.GetBuffer(meshVertexBufferHandle));
+			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("environmentTexture", resources.GetImage2D(environmentTexturesData.radiance));
+			context.SetConstant("linearSampler", RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
+			context.SetConstant("lod", 0.f);
+			context.SetConstant("intensity", 1.f);
+
+			context.BindIndexBuffer(m_skyboxMesh->GetIndexStorageBuffer()->GetResource());
+			context.DrawIndexed(static_cast<uint32_t>(m_skyboxMesh->GetIndexCount()), 1, 0, 0, 0);
+			context.EndRendering();
+		});
+	}
+
 	void SceneRendererNew::AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 		const auto& externalImages = blackboard.Get<ExternalImagesData>();
+		const auto& environmentTexturesData = blackboard.Get<EnvironmentTexturesData>();
+		const auto& finalColorData = blackboard.Get<FinalColorData>();
 		const auto& lightBuffers = blackboard.Get<LightBuffersData>();
 
 		const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
 
-		m_scene->ForEachWithComponents<SkylightComponent>([&](entt::entity id, SkylightComponent& skylightComp)
+		renderGraph.AddPass("Shading Pass",
+		[&](RenderGraph::Builder& builder) 
 		{
-			if (skylightComp.environmentHandle != skylightComp.lastEnvironmentHandle)
-			{
-				skylightComp.currentSceneEnvironment = RendererNew::GenerateEnvironmentTextures(skylightComp.environmentHandle);
-				skylightComp.lastEnvironmentHandle = skylightComp.environmentHandle;
-			}
-
-			m_sceneEnvironment = skylightComp.currentSceneEnvironment;
-		});
-
-		RenderGraphResourceHandle irradianceHandle = m_sceneEnvironment.irradianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.irradianceMap) : externalImages.black1x1Cube;
-		RenderGraphResourceHandle radianceHandle = m_sceneEnvironment.radianceMap ? renderGraph.AddExternalImage2D(m_sceneEnvironment.radianceMap) : externalImages.black1x1Cube;
-
-		blackboard.Add<FinalColorData>() = renderGraph.AddPass<FinalColorData>("Shading Pass",
-		[&](RenderGraph::Builder& builder, FinalColorData& data) 
-		{
-			data.finalColorOutput = renderGraph.AddExternalImage2D(m_outputImage);
-
-			builder.WriteResource(data.finalColorOutput);
+			builder.WriteResource(finalColorData.finalColorOutput);
 			builder.ReadResource(gbufferData.albedo);
 			builder.ReadResource(gbufferData.materialEmissive);
 			builder.ReadResource(gbufferData.normalEmissive);
@@ -1049,23 +1104,23 @@ namespace Volt
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(uniformBuffers.directionalLightBuffer);
 			builder.ReadResource(externalImages.BRDFLuT);
-			builder.ReadResource(irradianceHandle);
-			builder.ReadResource(radianceHandle);
+			builder.ReadResource(environmentTexturesData.irradiance);
+			builder.ReadResource(environmentTexturesData.radiance);
 			builder.ReadResource(lightBuffers.pointLightsBuffer);
 			builder.ReadResource(lightBuffers.spotLightsBuffer);
 
 			builder.SetHasSideEffect();
 			builder.SetIsComputePass();
 		},
-		[=](const FinalColorData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		[=](RenderContext& context, const RenderGraphPassResources& resources)
 		{
-			Weak<RHI::Image2D> outputImage = resources.GetImage2DRaw(data.finalColorOutput);
+			Weak<RHI::Image2D> outputImage = resources.GetImage2DRaw(finalColorData.finalColorOutput);
 
-			context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 0.f });
+			//context.ClearImage(outputImage, { 0.1f, 0.1f, 0.1f, 0.f });
 
 			auto pipeline = ShaderMap::GetComputePipeline("Shading");
 			context.BindPipeline(pipeline);
-			context.SetConstant("output", resources.GetImage2D(data.finalColorOutput));
+			context.SetConstant("output", resources.GetImage2D(finalColorData.finalColorOutput));
 			context.SetConstant("albedo", resources.GetImage2D(gbufferData.albedo));
 			context.SetConstant("materialEmissive", resources.GetImage2D(gbufferData.materialEmissive));
 			context.SetConstant("normalEmissive", resources.GetImage2D(gbufferData.normalEmissive));
@@ -1077,70 +1132,12 @@ namespace Volt
 			context.SetConstant("pbrConstants.linearSampler", RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.pointLinearClampSampler", RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureWrap::Clamp>()->GetResourceHandle());
 			context.SetConstant("pbrConstants.BRDFLuT", resources.GetImage2D(externalImages.BRDFLuT));
-			context.SetConstant("pbrConstants.environmentIrradiance", resources.GetImage2D(irradianceHandle));
-			context.SetConstant("pbrConstants.environmentRadiance", resources.GetImage2D(radianceHandle));
+			context.SetConstant("pbrConstants.environmentIrradiance", resources.GetImage2D(environmentTexturesData.irradiance));
+			context.SetConstant("pbrConstants.environmentRadiance", resources.GetImage2D(environmentTexturesData.radiance));
 			context.SetConstant("pbrConstants.pointLights", resources.GetBuffer(lightBuffers.pointLightsBuffer));
 			context.SetConstant("pbrConstants.spotLights", resources.GetBuffer(lightBuffers.spotLightsBuffer));
 
 			context.Dispatch(Math::DivideRoundUp(m_width, 8u), Math::DivideRoundUp(m_height, 8u), 1u);
-		});
-	}
-
-	void SceneRendererNew::AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
-	{
-		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
-
-		const auto& gbufferData = blackboard.Get<GBufferData>();
-		const auto& preDepthData = blackboard.Get<PreDepthData>();
-
-		RenderGraphResourceHandle posHandle = renderGraph.AddExternalBuffer(s_cube->GetVertexPositionsBuffer()->GetResource(), false);
-
-		struct TestData
-		{
-			RenderGraphResourceHandle indexBufferHandle;
-		};
-
-		renderGraph.AddPass<TestData>("Test Pass",
-		[&](RenderGraph::Builder& builder, TestData& data)
-		{
-			{
-				const auto desc = RGUtils::CreateBufferDesc<uint32_t>(s_meshResult.meshlets.at(0).triangleCount * 3, RHI::BufferUsage::IndexBuffer | RHI::BufferUsage::TransferDst, RHI::MemoryUsage::GPU, "IndexBuffer");
-				data.indexBufferHandle = builder.CreateBuffer(desc);
-			}
-
-			builder.ReadResource(uniformBuffers.viewDataBuffer);
-			builder.ReadResource(posHandle);
-
-			builder.WriteResource(gbufferData.albedo);
-			builder.WriteResource(preDepthData.depth);
-
-			builder.SetHasSideEffect();
-		},
-		[=](const TestData& data, RenderContext& context, const RenderGraphPassResources& resources)
-		{
-			Weak<RHI::ImageView> albedoImage = resources.GetImage2DView(gbufferData.albedo);
-			Weak<RHI::ImageView> depthImage = resources.GetImage2DView(preDepthData.depth);
-
-			RHI::RenderPipelineCreateInfo pipelineInfo{};
-			pipelineInfo.shader = ShaderMap::Get("TestShader");
-
-			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
-
-			RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { albedoImage, depthImage });
-
-			Weak<RHI::StorageBuffer> indexBuffer = resources.GetBufferRaw(data.indexBufferHandle);
-			context.UploadBufferData(indexBuffer, s_meshResult.meshletIndices.data(), sizeof(uint32_t)* s_meshResult.meshlets.at(0).triangleCount * 3);
-
-			context.BeginRendering(info);
-			context.BindPipeline(pipeline);
-
-			context.BindIndexBuffer(indexBuffer);
-
-			context.SetConstant("viewData", resources.GetUniformBuffer(uniformBuffers.viewDataBuffer));
-			context.SetConstant("positions", resources.GetBuffer(posHandle));
-			context.DrawIndexed(s_meshResult.meshlets.at(0).triangleCount * 3, 1, 0, 0, 0);
-			context.EndRendering();
-
 		});
 	}
 }

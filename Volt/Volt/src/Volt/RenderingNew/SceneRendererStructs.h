@@ -27,6 +27,12 @@ namespace Volt
 		RenderGraphResourceHandle gpuSceneBuffer;
 	};
 
+	struct EnvironmentTexturesData
+	{
+		RenderGraphResourceHandle radiance;
+		RenderGraphResourceHandle irradiance;
+	};
+
 	struct CullObjectsData
 	{
 		RenderGraphResourceHandle meshletToObjectIdAndOffset;

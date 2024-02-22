@@ -446,6 +446,11 @@ namespace Volt
 
 	RenderGraphResourceHandle RenderGraph::AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource)
 	{
+		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(image); registeredHandle != INVALID_RESOURCE_HANDLE)
+		{
+			return registeredHandle;
+		}
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphImage2D>> node = CreateRef<RenderGraphResourceNode<RenderGraphImage2D>>();
 		node->handle = resourceHandle;
@@ -457,11 +462,18 @@ namespace Volt
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, image);
 
+		RegisterExternalResource(image, INVALID_RESOURCE_HANDLE);
+
 		return resourceHandle;
 	}
 
 	RenderGraphResourceHandle RenderGraph::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource)
 	{
+		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(buffer); registeredHandle != INVALID_RESOURCE_HANDLE)
+		{
+			return registeredHandle;
+		}
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphBuffer>>();
 		node->handle = resourceHandle;
@@ -472,11 +484,18 @@ namespace Volt
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
 
+		RegisterExternalResource(buffer, INVALID_RESOURCE_HANDLE);
+
 		return resourceHandle;
 	}
 
 	RenderGraphResourceHandle RenderGraph::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource)
 	{
+		if (RenderGraphResourceHandle registeredHandle = TryGetRegisteredExternalResource(buffer); registeredHandle != INVALID_RESOURCE_HANDLE)
+		{
+			return registeredHandle;
+		}
+
 		RenderGraphResourceHandle resourceHandle = m_resourceIndex++;
 		Ref<RenderGraphResourceNode<RenderGraphUniformBuffer>> node = CreateRef<RenderGraphResourceNode<RenderGraphUniformBuffer>>();
 		node->handle = resourceHandle;
@@ -486,6 +505,8 @@ namespace Volt
 
 		m_resourceNodes.push_back(node);
 		m_transientResourceSystem.AddExternalResource(resourceHandle, std::reinterpret_pointer_cast<RHI::RHIResource>(buffer));
+
+		RegisterExternalResource(buffer, INVALID_RESOURCE_HANDLE);
 
 		return resourceHandle;
 	}
@@ -948,41 +969,19 @@ namespace Volt
 		return result;
 	}
 
-	RenderGraph::Builder::Builder(RenderGraph& renderGraph, Ref<RenderGraphPassNodeBase> pass)
-		: m_renderGraph(renderGraph), m_pass(pass)
+	RenderGraphResourceHandle RenderGraph::TryGetRegisteredExternalResource(Weak<RHI::RHIResource> resource)
 	{
+		if (m_registeredExternalResources.contains(resource))
+		{
+			return m_registeredExternalResources.at(resource);
+		}
+
+		return INVALID_RESOURCE_HANDLE;
 	}
 
-	RenderGraphResourceHandle RenderGraph::Builder::CreateImage2D(const RenderGraphImageDesc& textureDesc)
+	void RenderGraph::RegisterExternalResource(Weak<RHI::RHIResource> resource, RenderGraphResourceHandle handle)
 	{
-		const auto resourceId = m_renderGraph.CreateImage2D(textureDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
-
-		return resourceId;
-	}
-
-	RenderGraphResourceHandle RenderGraph::Builder::CreateImage3D(const RenderGraphImageDesc& textureDesc)
-	{
-		const auto resourceId = m_renderGraph.CreateImage3D(textureDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
-
-		return resourceId;
-	}
-
-	RenderGraphResourceHandle RenderGraph::Builder::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
-	{
-		const auto resourceId = m_renderGraph.CreateBuffer(bufferDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
-
-		return resourceId;
-	}
-
-	RenderGraphResourceHandle RenderGraph::Builder::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
-	{
-		const auto resourceId = m_renderGraph.CreateUniformBuffer(bufferDesc);
-		m_pass->resourceCreates.emplace_back(resourceId);
-
-		return resourceId;
+		m_registeredExternalResources[resource] = handle;
 	}
 
 	void RenderGraph::AddPass(const std::string& name, std::function<void(RenderGraph::Builder&)> createFunc, std::function<void(RenderContext&, const RenderGraphPassResources&)>&& executeFunc)
@@ -1080,22 +1079,74 @@ namespace Volt
 	void RenderGraph::BeginMarker(const std::string& markerName, const glm::vec4& markerColor)
 	{
 		m_standaloneMarkers[m_passIndex - 1].emplace_back([markerName, markerColor](Ref<RHI::CommandBuffer> commandBuffer)
-			{
-				commandBuffer->BeginMarker(markerName, { markerColor.x, markerColor.y, markerColor.z, markerColor.w });
-			});
+		{
+			commandBuffer->BeginMarker(markerName, { markerColor.x, markerColor.y, markerColor.z, markerColor.w });
+		});
 	}
 
 	void RenderGraph::EndMarker()
 	{
 		m_standaloneMarkers[m_passIndex - 1].emplace_back([](Ref<RHI::CommandBuffer> commandBuffer)
-			{
-				commandBuffer->EndMarker();
-			});
+		{
+			commandBuffer->EndMarker();
+		});
 	}
 
 	void RenderGraph::SetTotalAllocatedSizeCallback(TotalAllocatedSizeCallback&& callback)
 	{
 		m_totalAllocatedSizeCallback = std::move(callback);
+	}
+
+	RenderGraph::Builder::Builder(RenderGraph& renderGraph, Ref<RenderGraphPassNodeBase> pass)
+		: m_renderGraph(renderGraph), m_pass(pass)
+	{
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::CreateImage2D(const RenderGraphImageDesc& textureDesc)
+	{
+		const auto resourceId = m_renderGraph.CreateImage2D(textureDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::CreateImage3D(const RenderGraphImageDesc& textureDesc)
+	{
+		const auto resourceId = m_renderGraph.CreateImage3D(textureDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::CreateBuffer(const RenderGraphBufferDesc& bufferDesc)
+	{
+		const auto resourceId = m_renderGraph.CreateBuffer(bufferDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc)
+	{
+		const auto resourceId = m_renderGraph.CreateUniformBuffer(bufferDesc);
+		m_pass->resourceCreates.emplace_back(resourceId);
+
+		return resourceId;
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource)
+	{
+		return m_renderGraph.AddExternalImage2D(image, trackGlobalResource);
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource)
+	{
+		return m_renderGraph.AddExternalBuffer(buffer, trackGlobalResource);
+	}
+
+	RenderGraphResourceHandle RenderGraph::Builder::AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource)
+	{
+		return m_renderGraph.AddExternalUniformBuffer(buffer, trackGlobalResource);
 	}
 
 	void RenderGraph::Builder::ReadResource(RenderGraphResourceHandle handle, RenderGraphResourceState forceState)

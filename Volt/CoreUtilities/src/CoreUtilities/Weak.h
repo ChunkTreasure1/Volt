@@ -169,7 +169,7 @@ namespace std
 	{
 		std::size_t operator()(const Weak<Ty> ptr) const
 		{
-			return std::hash<void*>()(ptr.Get());
+			return std::hash<const void*>()(reinterpret_cast<const void*>(ptr.Get()));
 		}
 	};
 }

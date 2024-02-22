@@ -28,6 +28,7 @@ namespace Volt
 		class DescriptorTable;
 	}
 
+	class Mesh;
 	class Camera;
 	class Scene;
 	class RenderScene;
@@ -94,12 +95,12 @@ namespace Volt
 		void AddGenerateMaterialIndirectArgsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateGBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, bool first, const uint32_t materialId);
+		void AddSkyboxPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddShadingPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
-
-		void AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 		
 		Ref<RHI::Image2D> m_outputImage;
+		Ref<Mesh> m_skyboxMesh;
 
 		bool m_shouldResize = false;
 

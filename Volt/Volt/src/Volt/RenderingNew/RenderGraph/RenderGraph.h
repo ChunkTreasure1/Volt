@@ -59,6 +59,11 @@ namespace Volt
 			RenderGraphResourceHandle CreateBuffer(const RenderGraphBufferDesc& bufferDesc);
 			RenderGraphResourceHandle CreateUniformBuffer(const RenderGraphBufferDesc& bufferDesc);
 
+			RenderGraphResourceHandle AddExternalImage2D(Ref<RHI::Image2D> image, bool trackGlobalResource = true);
+			//RenderGraphResourceHandle AddExternalImage3D(Ref<RHI::Image3D> image, bool trackGlobalResource = true);
+			RenderGraphResourceHandle AddExternalBuffer(Ref<RHI::StorageBuffer> buffer, bool trackGlobalResource = true);
+			RenderGraphResourceHandle AddExternalUniformBuffer(Ref<RHI::UniformBuffer> buffer, bool trackGlobalResource = true);
+
 			void SetHasSideEffect();
 			void SetIsComputePass();
 
@@ -108,6 +113,8 @@ namespace Volt
 		friend class Builder;
 		friend class RenderGraphExecutionThread;
 
+		inline static constexpr RenderGraphResourceHandle INVALID_RESOURCE_HANDLE = std::numeric_limits<RenderGraphResourceHandle>::max();
+
 		void ExecuteInternal();
 		void DestroyResources();
 		void AllocateConstantsBuffer();
@@ -128,6 +135,9 @@ namespace Volt
 		Weak<RHI::StorageBuffer> GetBufferRaw(const RenderGraphResourceHandle resourceHandle);
 		Weak<RHI::RHIResource> GetResourceRaw(const RenderGraphResourceHandle resourceHandle);
 
+		RenderGraphResourceHandle TryGetRegisteredExternalResource(Weak<RHI::RHIResource> resource);
+		void RegisterExternalResource(Weak<RHI::RHIResource> resource, RenderGraphResourceHandle handle);
+
 		std::vector<std::vector<MarkerFunction>> m_standaloneMarkers; // Pass -> Markers
 		std::vector<std::vector<RenderGraphResourceHandle>> m_surrenderableResources; // Pass -> Resources
 		std::vector<Ref<RenderGraphPassNodeBase>> m_passNodes;
@@ -136,6 +146,8 @@ namespace Volt
 		std::vector<std::vector<ResourceUsageInfo>> m_resourceBarriers; // Pass -> Transitions
 		std::vector<std::vector<ResourceUsageInfo>> m_standaloneBarriers;
 		
+		std::unordered_map<Weak<RHI::RHIResource>, RenderGraphResourceHandle> m_registeredExternalResources;
+
 		std::set<GlobalResourceInfo> m_usedGlobalImageResourceHandles;
 		std::set<GlobalResourceInfo> m_usedGlobalBufferResourceHandles;
 		std::vector<uint8_t*> m_temporaryAllocations;

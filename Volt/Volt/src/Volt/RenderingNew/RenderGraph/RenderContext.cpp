@@ -369,6 +369,13 @@ namespace Volt
 		const auto& uniform = constantsData.uniforms.at(name);
 
 #ifdef VT_DEBUG
+		VT_ENSURE(uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWBuffer ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::Texture ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::RWTexture ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::UniformBuffer ||
+				uniform.type.baseType == RHI::ShaderUniformBaseType::Sampler);
+
 		if (uniform.type.baseType == RHI::ShaderUniformBaseType::Buffer)
 		{
 			VT_ENSURE(m_currentPassNode->ReadsResource(data));

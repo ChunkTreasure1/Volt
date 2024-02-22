@@ -412,7 +412,7 @@ namespace Volt
 
 		// Indices
 		{
-			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName));
+			m_indexBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(static_cast<uint32_t>(m_indices.size()), sizeof(uint32_t), "Index Buffer - " + meshName, RHI::BufferUsage::StorageBuffer | RHI::BufferUsage::IndexBuffer));
 			m_indexBuffer->GetResource()->SetData(m_indices.data(), m_indices.size() * sizeof(uint32_t));
 		}
 

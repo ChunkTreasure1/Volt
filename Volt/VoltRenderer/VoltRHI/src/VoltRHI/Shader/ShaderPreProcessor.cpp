@@ -736,6 +736,38 @@ namespace Volt::RHI
 			resultType.baseType = ShaderUniformBaseType::Sampler;
 			isResourceType = true;
 		}
+
+		else if (str.find("UniformRWRawByteBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::RWBuffer;
+			isResourceType = true;
+		}
+		else if (str.find("UniformRawByteBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
+		}
+		else if (str.find("UniformRWTypedBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::RWBuffer;
+			isResourceType = true;
+		}
+		else if (str.find("UniformTypedBuffer") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Buffer;
+			isResourceType = true;
+		}
+		else if (str.find("UniformRWTexture") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::RWTexture;
+			isResourceType = true;
+		}
+		else if (str.find("UniformTexture") != std::string_view::npos)
+		{
+			resultType.baseType = ShaderUniformBaseType::Texture;
+			isResourceType = true;
+		}
+
 		else if (str.find("RWRawByteBuffer") != std::string_view::npos)
 		{
 			resultType.baseType = ShaderUniformBaseType::RWBuffer;
