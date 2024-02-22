@@ -71,7 +71,9 @@ namespace Volt
 		}
 	}
 
+	// TEMP
 	static ProcessedMeshResult s_meshResult;
+	static ViewData s_viewData;
 	static Ref<Mesh> s_cube;
 
 	SceneRendererNew::SceneRendererNew(const SceneRendererSpecification& specification)
@@ -79,7 +81,7 @@ namespace Volt
 	{
 		m_commandBuffer = RHI::CommandBuffer::Create(3, RHI::QueueType::Graphics);
 
-		Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("Assets/Icosphere.vtmesh");
+		Ref<Mesh> cube = AssetManager::GetAsset<Mesh>("Assets/SM_Cube.vtmesh");
 		s_cube = cube;
 		s_meshResult = MeshProcessor::ProcessMesh(cube->GetVertices(), cube->GetIndices(), cube->GetMaterialTable(), cube->GetSubMeshes());
 
@@ -121,6 +123,44 @@ namespace Volt
 	Ref<RHI::Image2D> SceneRendererNew::GetFinalImage()
 	{
 		return m_outputImage;
+	}
+
+	inline std::vector<uint32_t> GetMeshletsToDraw()
+	{
+		//const auto& rootLod = s_meshResult.lods.back();
+		//const auto& lodGraph = s_meshResult.lodGraph;
+
+		std::vector<uint32_t> result;
+		//std::queue<UUID64> nodeQueue;
+
+		constexpr float threshold = 1.f;
+
+		//VT_CORE_INFO("Beginning LOD selection");
+
+		for (uint32_t lodIndex = 0; const auto& lod : s_meshResult.lods)
+		{
+			for (uint32_t meshletIndex = lod.meshletOffset; meshletIndex < lod.meshletOffset + lod.meshletCount; meshletIndex++)
+			{
+				const auto& meshlet = s_meshResult.meshlets.at(meshletIndex);
+
+				const glm::vec4 projectedPosition = s_viewData.projection * s_viewData.view * glm::vec4(meshlet.boundingSphereCenter, 1.f);
+				const glm::vec4 parentProjectedPosition = s_viewData.projection * s_viewData.view * glm::vec4(meshlet.parentSphereCenter, 1.f);
+				
+				const float projectedScreenSize = s_viewData.screenScale * meshlet.clusterError / projectedPosition.w;
+				const float parentProjectedScreenSize = s_viewData.screenScale * meshlet.parentError / parentProjectedPosition.w;
+
+				if (parentProjectedScreenSize > threshold && projectedScreenSize <= threshold)
+				{
+					//VT_CORE_INFO("Selecting meshlet {0} with error: {1} and in LOD: {2}", meshletIndex, meshlet.clusterError, lodIndex);
+					result.emplace_back(meshletIndex);
+				}
+			}
+
+			lodIndex++;
+		}
+		//VT_CORE_INFO("Ending LOD selection");
+
+		return result;
 	}
 
 	void SceneRendererNew::OnRender(Ref<Camera> camera)
@@ -216,9 +256,12 @@ namespace Volt
 				RenderGraphResourceHandle indexBufferHandle = renderGraph.CreateBuffer(desc);
 				renderGraph.AddMappedBufferUpload(indexBufferHandle, s_meshResult.meshletIndices.data(), s_meshResult.meshletIndices.size() * sizeof(uint32_t), "Upload Indices");
 
-				const auto& lod = s_meshResult.lods.at(std::min(m_lodLevel, static_cast<uint32_t>(s_meshResult.lods.size() - 1)));
+				//const auto& lod = s_meshResult.lods.at(std::min(m_lodLevel, static_cast<uint32_t>(s_meshResult.lods.size() - 1)));
+				//const uint32_t index = lod.meshletOffset + std::min(m_meshletIndex, lod.meshletCount - 1);
 
-				for (size_t index = lod.meshletOffset; index < lod.meshletOffset + lod.meshletCount; index++)
+				const auto meshletsToRender = GetMeshletsToDraw();
+
+				for (const auto index : meshletsToRender)
 				{
 					AddTestPass(renderGraph, rgBlackboard, indexBufferHandle, posHandle, index);
 				}
@@ -320,6 +363,10 @@ namespace Volt
 			viewData.renderSize = { m_width, m_height };
 			viewData.invRenderSize = { 1.f / static_cast<float>(m_width), 1.f / static_cast<float>(m_height) };
 
+			viewData.projectionScale.x = glm::abs(viewData.projection[0][0]);
+			viewData.projectionScale.y = glm::abs(viewData.projection[1][1]);
+			viewData.screenScale = glm::max(viewData.renderSize.x * 0.5f * viewData.projectionScale.x, viewData.renderSize.y * 0.5f * viewData.projectionScale.y);
+
 			m_scene->ForEachWithComponents<const PointLightComponent, const IDComponent, const TransformComponent>([&](entt::entity entityId, const PointLightComponent& comp, const IDComponent& idComp, const TransformComponent& transComp)
 			{
 				if (!transComp.visible)
@@ -339,6 +386,8 @@ namespace Volt
 
 				viewData.spotLightCount++;
 			});
+
+			s_viewData = viewData;
 
 			renderGraph.AddMappedBufferUpload(buffersData.viewDataBuffer, &viewData, sizeof(ViewData), "Upload view data");
 		}

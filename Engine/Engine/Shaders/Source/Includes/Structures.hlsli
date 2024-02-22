@@ -52,10 +52,13 @@ struct ViewData
     float nearPlane;
     float farPlane;
 	
+    float2 projectionScale;
+    float screenScale;
+
     // Render Target
     float2 renderSize;
     float2 invRenderSize;
-    
+
     // Temp lights
     uint pointLightCount;
     uint spotLightCount;

@@ -17,7 +17,7 @@ struct Input
 Output main(Input input)
 {
     Output output;
-    output.albedo = GetRandomColor(input.meshletIndex);    
+    output.albedo = GetRandomColor(input.primitiveId);    
 
     return output;
 }

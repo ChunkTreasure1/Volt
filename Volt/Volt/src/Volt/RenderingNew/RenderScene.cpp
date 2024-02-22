@@ -409,6 +409,7 @@ namespace Volt
 			const size_t meshletStartOffset = m_sceneMeshlets.size();
 			const uint32_t meshId = GetMeshID(obj.mesh, obj.subMeshIndex);
 
+			m_sceneMeshlets.reserve(m_sceneMeshlets.size() + meshlets.size());
 			for (uint32_t meshletIdx = 0; meshletIdx < subMesh.meshletCount; meshletIdx++)
 			{
 				const auto& currentMeshlet = meshlets.at(subMesh.meshletStartOffset + meshletIdx);

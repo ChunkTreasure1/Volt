@@ -56,6 +56,12 @@ namespace Volt
 		float nearPlane;
 		float farPlane;
 	
+		glm::vec2 projectionScale;
+
+		// Can be used to calculate sphere size in pixels
+		// Usage screenScale * sphereRadius / projectedSpherePos.w
+		float screenScale;
+
 		// Render Target
 		glm::vec2 renderSize;
 		glm::vec2 invRenderSize;

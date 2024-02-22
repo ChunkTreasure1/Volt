@@ -60,6 +60,7 @@ namespace Volt
 		// #TODO_Ivar: TEMP, Should not be public!
 		void Invalidate();
 		inline uint32_t& GetLODLevel() { return m_lodLevel; }
+		inline uint32_t& GetMeshletIndex() { return m_meshletIndex; }
 
 		const uint64_t GetFrameTotalGPUAllocationSize() const;
 
@@ -100,6 +101,7 @@ namespace Volt
 
 		void AddTestPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard, RenderGraphResourceHandle indexBuffer, RenderGraphResourceHandle positionsBuffer, size_t meshletIndex);
 		uint32_t m_lodLevel = 0;
+		uint32_t m_meshletIndex = 0;
 
 		Ref<RHI::Image2D> m_outputImage;
 

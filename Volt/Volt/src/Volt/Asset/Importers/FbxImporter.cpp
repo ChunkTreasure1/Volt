@@ -34,7 +34,7 @@ namespace Volt
 		}
 		catch (const std::exception& e)
 		{
-			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
+			VT_CORE_ERROR("[FBXImporter] Unable to import mesh! Reason: {0}", e.what());
 			return nullptr;
 		}
 
@@ -116,7 +116,7 @@ namespace Volt
 		}
 		catch (const std::exception& e)
 		{
-			VT_CORE_ERROR("[FBXImporter] Unable to import animation! Reason: {0}", e.what());
+			VT_CORE_ERROR("[FBXImporter] Unable to import skeleton! Reason: {0}", e.what());
 			return nullptr;
 		}
 

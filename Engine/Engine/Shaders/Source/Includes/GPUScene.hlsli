@@ -30,8 +30,12 @@ struct Meshlet
     
     uint objectId;
     uint meshId;
-    uint2 padding;
-    
+    uint padding;
+    float clusterError;
+
+    float parentError;
+    float3 parentBoundingSphereCenter;    
+
     float3 boundingSphereCenter;
     float boundingSphereRadius;
     

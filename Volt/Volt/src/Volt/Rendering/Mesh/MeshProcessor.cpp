@@ -3,6 +3,7 @@
 
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
+#include "Volt/Rendering/BoundingStructures.h"
 
 #include <VoltRHI/Buffers/StorageBuffer.h>
 
@@ -252,6 +253,35 @@ namespace Volt
 		return result;
 	}
 
+	inline BoundingSphere CalculateBoundingSphereFromVertices(std::span<const Vertex> vertices, std::span<const uint32_t> indices)
+	{
+		glm::vec3 minVertex(std::numeric_limits<float>::max());
+		glm::vec3 maxVertex(std::numeric_limits<float>::min());
+
+		for (const auto& index : indices)
+		{
+			const auto& vertex = vertices[index];
+			minVertex = glm::min(minVertex, vertex.position);
+			maxVertex = glm::min(maxVertex, vertex.position);
+		}
+
+		glm::vec3 extents = (maxVertex - minVertex) * 0.5f;
+		glm::vec3 origin = extents + minVertex;
+
+		float radius = 0.f;
+		for (const auto& index : indices)
+		{
+			const auto& vertex = vertices[index];
+			
+			glm::vec3 offset = vertex.position - origin;
+			float distance = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
+			radius = std::max(radius, distance);
+		}
+
+		radius = glm::sqrt(radius);
+		return { origin, radius };
+	}
+
 	MeshletGenerationResult MeshProcessor::SplitGroups(std::span<const SimplifiedGroupResult> groups, const std::span<const Vertex> vertices)
 	{
 		MeshletGenerationResult result;
@@ -263,6 +293,8 @@ namespace Volt
 			const size_t groupIndexOffset = result.meshletIndices.size();
 			const size_t groupMeshletOffset = result.meshlets.size();
 
+			const BoundingSphere groupBoundingSphere = CalculateBoundingSphereFromVertices(vertices, meshletData.meshletIndices);
+
 			result.meshletIndices.insert(result.meshletIndices.end(), meshletData.meshletIndices.begin(), meshletData.meshletIndices.end());
 			result.meshletIndexToGroupID.resize(result.meshletIndexToGroupID.size() + meshletData.meshlets.size());
 
@@ -270,6 +302,8 @@ namespace Volt
 			{
 				meshlet.triangleOffset += static_cast<uint32_t>(groupIndexOffset);
 				meshlet.clusterError = group.simplificationError;
+				meshlet.boundingSphereCenter = groupBoundingSphere.center;
+				meshlet.boundingSphereRadius = groupBoundingSphere.radius;
 
 				result.meshletIndexToGroupID[groupMeshletOffset + meshletIndex] = groupIndex;
 				meshletIndex++;
@@ -291,6 +325,7 @@ namespace Volt
 		lodLevel.meshletCount = static_cast<uint32_t>(meshletGenerationResult.meshlets.size());
 		lodLevel.meshletOffset = static_cast<uint32_t>(lodMeshletOffset);
 
+		result.meshlets.reserve(result.meshlets.size() + meshletGenerationResult.meshlets.size());
 		for (const auto& meshlet : meshletGenerationResult.meshlets)
 		{
 			result.meshlets.emplace_back(meshlet);
@@ -346,11 +381,13 @@ namespace Volt
 			}
 
 			auto lod0MeshletData = GenerateMeshlets(subMeshVertices, subMeshIndices);
+			auto lod0MeshletData2 = GenerateMeshlets2(std::span<const Vertex>(vertexStartPtr, subMesh.vertexCount), std::span<const uint32_t>(indexStartPtr, subMesh.indexCount));
+
 			AddLODLevel(lod0MeshletData, result);
 
 			for (uint32_t i = 0; const auto& meshlet : lod0MeshletData.meshlets)
 			{
-				result.lods.back().lodMeshletNodeIDs.emplace_back() = result.lodGraph.AddNode({ meshlet.clusterError, i });
+				result.lods.back().lodMeshletNodeIDs.emplace_back() = result.lodGraph.AddNode({ meshlet.clusterError, std::numeric_limits<float>::max(), i });
 				i++;
 			}
 
@@ -384,19 +421,31 @@ namespace Volt
 
 				for (uint32_t i = 0; const auto& meshlet : meshletData.meshlets)
 				{
-					const auto nodeId = result.lodGraph.AddNode({ meshlet.clusterError, i });
-					result.lods.back().lodMeshletNodeIDs.emplace_back(nodeId);
-
+					const uint32_t groupIndex = meshletData.meshletIndexToGroupID.at(i);
 					auto& previousLOD = result.lods.at(result.lods.size() - 2);
 
-					const uint32_t groupIndex = meshletData.meshletIndexToGroupID.at(i);
+					auto GetParentMeshlet = [&](uint32_t index) -> Meshlet&
+					{
+						return result.meshlets.at(previousLOD.meshletOffset + index);
+					};
+
+					const float nodeError = GetParentMeshlet(groups.at(groupIndex).meshletIndices.at(0)).clusterError + meshlet.clusterError;
+
+					const auto nodeId = result.lodGraph.AddNode({ nodeError, nodeError, i, static_cast<uint32_t>(result.lods.size()) });
+					result.lods.back().lodMeshletNodeIDs.emplace_back(nodeId);
+
 					for (const auto& parentMeshletIndex : groups.at(groupIndex).meshletIndices)
 					{
-						result.lodGraph.LinkNodes(nodeId, previousLOD.lodMeshletNodeIDs.at(parentMeshletIndex));
+						const auto prevNodeId = previousLOD.lodMeshletNodeIDs.at(parentMeshletIndex);
+						result.lodGraph.LinkNodes(nodeId, prevNodeId);
+						
+						result.lodGraph.GetNodeFromID(prevNodeId).nodeData.parentError = nodeError;
+
+						result.meshlets.at(previousLOD.meshletOffset + parentMeshletIndex).parentError = nodeError;
+						result.meshlets.at(previousLOD.meshletOffset + parentMeshletIndex).parentSphereCenter = meshlet.boundingSphereCenter;
 					}
 
 					i++;
-
 				}
 
 				meshletCount = meshletData.meshlets.size();
@@ -509,134 +558,165 @@ namespace Volt
 
 	MeshletGenerationResult MeshProcessor::GenerateMeshlets2(std::span<const Vertex> vertices, std::span<const uint32_t> indices)
 	{
-		constexpr size_t MAX_TRIANGLE_COUNT = 64;
+		//constexpr size_t MAX_TRIANGLE_COUNT = 64;
 
-		std::vector<idx_t> xadj;
-		xadj.resize(vertices.size() + 1);
+		const uint32_t triangleCount = static_cast<uint32_t>(indices.size() / 3);
 
-		std::vector<idx_t> adjcny;
+		std::vector<idx_t> adjacencyOffset(triangleCount + 1);
+		std::vector<idx_t> adjecency;
 
-		std::vector<std::set<uint32_t>> adjecencies;
-		adjecencies.resize(vertices.size());
+		std::unordered_map<Edge, std::vector<uint32_t>> edge2TriIndex;
 
-		for (size_t i = 0; i < indices.size(); i += 3)
+		auto GetPosition = [&](uint32_t index) -> const glm::vec3&
 		{
-			uint32_t v0 = indices[i + 0];
-			uint32_t v1 = indices[i + 1];
-			uint32_t v2 = indices[i + 2];
-
-			adjecencies[v0].insert(v1);
-			adjecencies[v0].insert(v2);
-
-			adjecencies[v1].insert(v0);
-			adjecencies[v1].insert(v2);
-
-			adjecencies[v2].insert(v0);
-			adjecencies[v2].insert(v1);
-		}
-
-		memset(xadj.data(), 0, sizeof(idx_t) * vertices.size() + 1);
-
-		for (size_t i = 0; i < adjecencies.size(); i++)
-		{
-			if (i > 0)
-			{
-				xadj[i] = xadj[i - 1] + static_cast<uint32_t>(adjecencies.at(i - 1).size());
-			}
-
-			for (const auto& adj : adjecencies.at(i))
-			{
-				adjcny.push_back(adj);
-			}
-		}
-
-		xadj[vertices.size()] = static_cast<uint32_t>(adjcny.size());
-
-		idx_t numParts = static_cast<idx_t>(Math::DivideRoundUp(indices.size(), MAX_TRIANGLE_COUNT));
-		idx_t numConstraints = 1;
-		idx_t edgesCut = 0;
-
-		idx_t numVertices = static_cast<idx_t>(vertices.size());
-
-		idx_t options[METIS_NOPTIONS];
-		METIS_SetDefaultOptions(options);
-
-		std::vector<idx_t> part(numVertices, 0);
-		int r = METIS_PartGraphKway(&numVertices, &numConstraints, xadj.data(), adjcny.data(), nullptr, nullptr, nullptr, &numParts, nullptr, nullptr, nullptr, &edgesCut, part.data());
-
-		MeshletGenerationResult result{};
-
-		struct Range
-		{
-			uint32_t begin;
-			uint32_t end;
+			return vertices[indices[index]].position;
 		};
 
-		if (r == METIS_OK)
+		for (uint32_t triIndex = 0; triIndex < triangleCount; triIndex++)
 		{
-			std::vector<uint32_t> elementCount(numParts, 0);
-			std::vector<Range> ranges(numParts);
-
-			for (size_t i = 0; i < part.size(); i++)
+			for (uint32_t index = 0; index < 3; index++)
 			{
-				elementCount[part[i]]++;
-			}
+				uint32_t v1 = triIndex * 3 + index;
+				uint32_t v2 = triIndex * 3 + (index + 1) % 3;
 
-			uint32_t begin = 0;
-			for (int32_t partIndex = 0; partIndex < numParts; partIndex++)
-			{
-				ranges[partIndex] = { begin, begin + elementCount[partIndex] };
-				begin += elementCount[partIndex];
-				//elementCount[partIndex] = 0;
-			}
-
-			result.meshletIndices.reserve(indices.size());
-
-			std::vector<std::vector<uint32_t>> perMeshletIndices;
-			perMeshletIndices.resize(numParts);
-
-			for (uint32_t i = 0; i < static_cast<uint32_t>(vertices.size()); ++i)
-			{
-				const uint32_t v0 = i;
-				const uint32_t partitionIndex = part[v0];
-
-				perMeshletIndices[partitionIndex].push_back(v0);
-			}
-
-			for (uint32_t i = 0; const auto& values : perMeshletIndices)
-			{
-				auto& newMeshlet = result.meshlets.emplace_back();
-				newMeshlet.vertexCount = static_cast<uint8_t>(elementCount[i]);
-				//newMeshlet.dataOffset = static_cast<uint32_t>(result.meshletIndices.size());
-				//
-				//result.meshletIndices.insert(result.meshletIndices.end(), values.begin(), values.end());
-
-				std::unordered_map<uint32_t, uint32_t> vertexMap;
-				uint32_t newIndex = 0;
-
-				for (uint32_t index : values)
+				if (v1 > v2)
 				{
-					vertexMap[index] = newIndex++;
+					std::swap(v1, v2);
 				}
 
-				for (const uint32_t index : indices)
-				{
-					if (vertexMap.contains(index))
-					{
-						result.meshletIndices.push_back(vertexMap[index]);
-					}
-				}
-
-				newMeshlet.triangleCount = static_cast<uint8_t>(result.meshletIndices.size() / 3);
-
-				i++;
+				Edge edge{ v1, v2, GetPosition };
+				edge2TriIndex[edge].push_back(triIndex);
 			}
 		}
-		else
-		{
-			VT_CORE_ERROR("Dum dum");
-		}
 
-		return result;
+		return {};
+
+		//std::vector<idx_t> xadj;
+		//xadj.resize(vertices.size() + 1);
+
+		//std::vector<idx_t> adjcny;
+
+		//std::vector<std::set<uint32_t>> adjecencies;
+		//adjecencies.resize(vertices.size());
+
+		//for (size_t i = 0; i < indices.size(); i += 3)
+		//{
+		//	uint32_t v0 = indices[i + 0];
+		//	uint32_t v1 = indices[i + 1];
+		//	uint32_t v2 = indices[i + 2];
+
+		//	adjecencies[v0].insert(v1);
+		//	adjecencies[v0].insert(v2);
+
+		//	adjecencies[v1].insert(v0);
+		//	adjecencies[v1].insert(v2);
+
+		//	adjecencies[v2].insert(v0);
+		//	adjecencies[v2].insert(v1);
+		//}
+
+		//memset(xadj.data(), 0, sizeof(idx_t) * vertices.size() + 1);
+
+		//for (size_t i = 0; i < adjecencies.size(); i++)
+		//{
+		//	if (i > 0)
+		//	{
+		//		xadj[i] = xadj[i - 1] + static_cast<uint32_t>(adjecencies.at(i - 1).size());
+		//	}
+
+		//	for (const auto& adj : adjecencies.at(i))
+		//	{
+		//		adjcny.push_back(adj);
+		//	}
+		//}
+
+		//xadj[vertices.size()] = static_cast<uint32_t>(adjcny.size());
+
+		//idx_t numParts = static_cast<idx_t>(Math::DivideRoundUp(indices.size(), MAX_TRIANGLE_COUNT));
+		//idx_t numConstraints = 1;
+		//idx_t edgesCut = 0;
+
+		//idx_t numVertices = static_cast<idx_t>(vertices.size());
+
+		//idx_t options[METIS_NOPTIONS];
+		//METIS_SetDefaultOptions(options);
+
+		//std::vector<idx_t> part(numVertices, 0);
+		//int r = METIS_PartGraphKway(&numVertices, &numConstraints, xadj.data(), adjcny.data(), nullptr, nullptr, nullptr, &numParts, nullptr, nullptr, nullptr, &edgesCut, part.data());
+
+		//MeshletGenerationResult result{};
+
+		//struct Range
+		//{
+		//	uint32_t begin;
+		//	uint32_t end;
+		//};
+
+		//if (r == METIS_OK)
+		//{
+		//	std::vector<uint32_t> elementCount(numParts, 0);
+		//	std::vector<Range> ranges(numParts);
+
+		//	for (size_t i = 0; i < part.size(); i++)
+		//	{
+		//		elementCount[part[i]]++;
+		//	}
+
+		//	uint32_t begin = 0;
+		//	for (int32_t partIndex = 0; partIndex < numParts; partIndex++)
+		//	{
+		//		ranges[partIndex] = { begin, begin + elementCount[partIndex] };
+		//		begin += elementCount[partIndex];
+		//		//elementCount[partIndex] = 0;
+		//	}
+
+		//	result.meshletIndices.reserve(indices.size());
+
+		//	std::vector<std::vector<uint32_t>> perMeshletIndices;
+		//	perMeshletIndices.resize(numParts);
+
+		//	for (uint32_t i = 0; i < static_cast<uint32_t>(vertices.size()); ++i)
+		//	{
+		//		const uint32_t v0 = i;
+		//		const uint32_t partitionIndex = part[v0];
+
+		//		perMeshletIndices[partitionIndex].push_back(v0);
+		//	}
+
+		//	for (uint32_t i = 0; const auto& values : perMeshletIndices)
+		//	{
+		//		auto& newMeshlet = result.meshlets.emplace_back();
+		//		newMeshlet.vertexCount = static_cast<uint8_t>(elementCount[i]);
+		//		//newMeshlet.dataOffset = static_cast<uint32_t>(result.meshletIndices.size());
+		//		//
+		//		//result.meshletIndices.insert(result.meshletIndices.end(), values.begin(), values.end());
+
+		//		std::unordered_map<uint32_t, uint32_t> vertexMap;
+		//		uint32_t newIndex = 0;
+
+		//		for (uint32_t index : values)
+		//		{
+		//			vertexMap[index] = newIndex++;
+		//		}
+
+		//		for (const uint32_t index : indices)
+		//		{
+		//			if (vertexMap.contains(index))
+		//			{
+		//				result.meshletIndices.push_back(vertexMap[index]);
+		//			}
+		//		}
+
+		//		newMeshlet.triangleCount = static_cast<uint8_t>(result.meshletIndices.size() / 3);
+
+		//		i++;
+		//	}
+		//}
+		//else
+		//{
+		//	VT_CORE_ERROR("Dum dum");
+		//}
+
+		//return result;
 	}
 }

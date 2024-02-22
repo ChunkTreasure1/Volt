@@ -30,7 +30,10 @@ namespace Volt
 	struct MeshLODGraphData
 	{
 		float clusterError = 0.f;
+		float parentError = std::numeric_limits<float>::max();
+
 		uint32_t meshletIndex = 0;
+		uint32_t lodIndex = 0;
 	};
 
 	struct MeshLODEdgeData {};

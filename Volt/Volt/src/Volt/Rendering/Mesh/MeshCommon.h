@@ -18,8 +18,10 @@ namespace Volt
 		uint32_t objectId;
 		uint32_t meshId;
 		uint32_t padding;
-
 		float clusterError = 0.f;
+		
+		float parentError = 0.f;
+		glm::vec3 parentSphereCenter;
 
 		glm::vec3 boundingSphereCenter;
 		float boundingSphereRadius;
@@ -50,10 +52,37 @@ namespace Volt
 
 			v0 = iv0;
 			v1 = iv1;
+
+			hash = 0;
+		}
+
+		explicit Edge(uint32_t iv0, uint32_t iv1, const std::function<const glm::vec3&(uint32_t index)>& getPosition)
+		{
+			if (iv0 > iv1)
+			{
+				std::swap(iv0, iv1);
+			}
+
+			v0 = iv0;
+			v1 = iv1;
+
+			const auto& v0Pos = getPosition(v0);
+			const auto& v1Pos = getPosition(v1);
+
+			hash = Math::HashCombine(std::hash<uint32_t>()(v0), std::hash<uint32_t>()(v1));
+			hash = Math::HashCombine(hash, std::hash<float>()(v0Pos.x));
+			hash = Math::HashCombine(hash, std::hash<float>()(v0Pos.y));
+			hash = Math::HashCombine(hash, std::hash<float>()(v0Pos.z));
+
+			hash = Math::HashCombine(hash, std::hash<float>()(v1Pos.x));
+			hash = Math::HashCombine(hash, std::hash<float>()(v1Pos.y));
+			hash = Math::HashCombine(hash, std::hash<float>()(v1Pos.z));
 		}
 
 		uint32_t v0;
 		uint32_t v1;
+
+		size_t hash;
 
 		inline bool operator==(const Edge& rhs) const
 		{
@@ -71,7 +100,7 @@ namespace std
 	{
 		std::size_t operator()(const Volt::Edge& edge) const
 		{
-			return Math::HashCombine(std::hash<uint32_t>()(edge.v0), std::hash<uint32_t>()(edge.v1));
+			return edge.hash != 0 ? edge.hash : Math::HashCombine(std::hash<uint32_t>()(edge.v0), std::hash<uint32_t>()(edge.v1));
 		}
 	};
 }

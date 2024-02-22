@@ -23,6 +23,7 @@ void RendererSettingsPanel::UpdateMainContent()
 	constexpr uint32_t max = 10;
 
 	ImGui::SliderScalar("LOD level", ImGuiDataType_U32, &mySceneRenderer->GetLODLevel(), &min, &max);
+	ImGui::SliderScalar("Meshlet index", ImGuiDataType_U32, &mySceneRenderer->GetMeshletIndex(), &min, &max);
 
 	//UI::Header("Settings");
 
