@@ -76,7 +76,7 @@ namespace Volt
 
 		for (const auto& mat : tempMaterialTable)
 		{
-			serializer.Serialize<AssetHandle>(mat->handle);
+			serializer.Serialize<AssetHandle>(mat);
 		}
 
 		serializer.Serialize<uint32_t>(vertexCount);
@@ -157,8 +157,10 @@ namespace Volt
 
 		for (auto& material : mesh->m_materialTable)
 		{
-			AssetManager::Get().MoveAsset(material, materialPath);
-			AssetManager::SaveAsset(material);
+			auto asset = AssetManager::GetAsset<Material>(material);
+
+			AssetManager::Get().MoveAsset(asset, materialPath);
+			AssetManager::SaveAsset(asset);
 		}
 	}
 }

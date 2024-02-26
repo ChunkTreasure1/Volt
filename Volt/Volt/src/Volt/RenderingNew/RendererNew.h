@@ -17,6 +17,7 @@ namespace Volt
 	}
 
 	class Texture2D;
+	class Material;
 
 	struct DefaultResources
 	{
@@ -24,6 +25,8 @@ namespace Volt
 
 		Ref<RHI::Image2D> BRDFLuT;
 		Ref<RHI::Image2D> blackCubeTexture;
+
+		Ref<Material> defaultMaterial;
 	};
 
 	class Mesh;

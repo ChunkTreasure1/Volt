@@ -62,7 +62,8 @@ namespace Volt
 		const std::vector<RenderObject>::const_iterator cbegin() const { return m_renderObjects.cbegin(); }
 		const std::vector<RenderObject>::const_iterator cend() const { return m_renderObjects.cend(); }
 
-		inline const RenderObject& GetRenderObjectAt(const uint32_t index) const { return m_renderObjects.at(index); }
+		inline const RenderObject& GetRenderObjectAt(const size_t index) const { return m_renderObjects.at(index); }
+		const RenderObject& GetRenderObjectFromID(UUID64 id) const;
 
 		inline std::span<const IndirectGPUCommandNew> GetMeshCommands() const { return m_meshCommands; }
 		inline std::span<const IndirectMeshTaskCommand> GetMeshShaderCommands() const { return m_meshShaderCommands; }
@@ -71,11 +72,14 @@ namespace Volt
 		void UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
 		void UploadObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
 		void UploadGPUScene();
-		void UploadGPUMaterials();
 		void UploadGPUMeshlets();
+
+		void UploadGPUMaterials();
+		void BuildGPUMaterial(Weak<Material> material, GPUMaterialNew& gpuMaterial);
 
 		void BuildGPUMeshes(std::vector<GPUMesh>& gpuMeshes);
 		void BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData);
+		void BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject);
 
 		void BuildMeshCommands();
 		void BuildMeshletBuffer(std::vector<ObjectDrawData>& gpuMeshes);
@@ -85,7 +89,18 @@ namespace Volt
 		std::vector<RenderObject> m_renderObjects;
 		std::vector<ObjectDrawData> m_objectDrawData;
 
-		std::vector<UUID64> m_invalidRenderObjects;
+		std::vector<size_t> m_invalidRenderObjectIndices;
+
+		struct InvalidMaterial
+		{
+			Weak<Material> material;
+			size_t index;
+		};
+
+		std::vector<InvalidMaterial> m_invalidMaterials;
+
+		std::unordered_map<UUID64, uint32_t> m_objectIndexFromRenderObjectID;
+		std::unordered_map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
 
 		std::vector<IndirectGPUCommandNew> m_meshCommands;
 		std::vector<Weak<Mesh>> m_individualMeshes;
@@ -104,6 +119,8 @@ namespace Volt
 		Scene* m_scene = nullptr;
 		uint32_t m_currentIndividualMeshCount = 0;
 		uint32_t m_currentIndexCount = 0;
+
+		UUID64 m_materialChangedCallbackID;
 
 		bool m_isInvalid = false;
 	};

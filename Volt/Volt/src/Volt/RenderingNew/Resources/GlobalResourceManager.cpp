@@ -25,6 +25,7 @@ namespace Volt
 	static constexpr uint32_t SAMPLERSTATES_BINDING = 10;
 
 	static constexpr uint32_t RWTEXTURE2DARRAY_BINDING = 11;
+	static constexpr uint32_t TEXTURE2DARRAY_BINDING = 12;
 
 	void GlobalResourceManager::Initialize()
 	{
@@ -126,7 +127,12 @@ namespace Volt
 
 			for (const auto& resource : resources.GetDirtyRange())
 			{
-				s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+				//res_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+
+				if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
+				{
+					s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
+				}
 			}
 
 			resources.ClearDirty();
@@ -136,36 +142,6 @@ namespace Volt
 		{
 
 		}
-
-		//// Images
-		//{
-		//	// #TODO_Ivar: Seperate out differenct view types into different resource containers
-		//	auto& resources = GetResourceContainer<RHI::ImageView>();
-		//	std::scoped_lock lock{ resources.accessMutex };
-
-		//	for (const auto& resource : resources.GetDirtyRange())
-		//	{
-		//		if (resource->GetViewType() == RHI::ImageViewType::View2D)
-		//		{
-		//			s_globalDescriptorTable->SetImageView(resource, 0, TEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-
-		//			if (resource->GetImageUsage() == RHI::ImageUsage::Storage || resource->GetImageUsage() == RHI::ImageUsage::AttachmentStorage)
-		//			{
-		//				s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2D_BINDING, resources.GetResourceHandle(resource).Get());
-		//			}
-		//		}
-		//		else if (resource->GetViewType() == RHI::ImageViewType::View2DArray)
-		//		{
-		//			s_globalDescriptorTable->SetImageView(resource, 0, RWTEXTURE2DARRAY_BINDING, resources.GetResourceHandle(resource).Get());
-		//		}
-		//		else if (resource->GetViewType() == RHI::ImageViewType::ViewCube)
-		//		{
-		//			s_globalDescriptorTable->SetImageView(resource, 0, TEXTURECUBE_BINDING, resources.GetResourceHandle(resource).Get());
-		//		}
-		//	}
-
-		//	resources.ClearDirty();
-		//}
 
 		// Samplers
 		{

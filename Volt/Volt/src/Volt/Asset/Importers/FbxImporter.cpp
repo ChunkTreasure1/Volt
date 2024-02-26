@@ -80,13 +80,15 @@ namespace Volt
 
 		if (tgaMesh.Materials.empty())
 		{
-			mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", "None"), 0);
+			auto newMaterial = AssetManager::CreateAsset<Material>("", "None");
+			mesh->m_materialTable.SetMaterial(newMaterial->handle, 0);
 		}
 		else
 		{
 			for (uint32_t index = 0; const auto& material : tgaMesh.Materials)
 			{
-				mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", material.MaterialName), index);
+				auto newMaterial = AssetManager::CreateAsset<Material>("", material.MaterialName);
+				mesh->m_materialTable.SetMaterial(newMaterial->handle, index);
 				index++;
 			}
 		}

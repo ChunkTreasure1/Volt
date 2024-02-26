@@ -3,6 +3,7 @@
 
 #include "Volt/Core/Application.h"
 #include "Volt/Asset/AssetManager.h"
+#include "Volt/Asset/Rendering/Material.h"
 
 #include "Volt/Project/ProjectManager.h"
 #include "Volt/Utility/FunctionQueue.h"
@@ -414,6 +415,11 @@ namespace Volt
 		}
 
 		GenerateBRDFLuT();
+
+		// Default material
+		{
+			s_rendererData->defaultResources.defaultMaterial = AssetManager::CreateMemoryAsset<Material>("DefaultMaterial", ShaderMap::GetComputePipeline("OpaqueDefault"));
+		}
 	}
 	
 	void RendererNew::GenerateBRDFLuT()

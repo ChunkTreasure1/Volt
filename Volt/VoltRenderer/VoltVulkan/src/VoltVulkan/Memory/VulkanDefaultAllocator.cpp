@@ -43,7 +43,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			VulkanDefaultAllocator::DestroyImage(m_activeImageAllocations.at(i));
+			VulkanDefaultAllocator::DestroyImageInternal(m_activeImageAllocations.at(i));
 		}
 
 		for (int32_t i = static_cast<int32_t>(m_activeBufferAllocations.size()) - 1; i >= 0; i--)
@@ -54,7 +54,7 @@ namespace Volt::RHI
 				continue;
 			}
 
-			VulkanDefaultAllocator::DestroyBuffer(m_activeBufferAllocations.at(i));
+			VulkanDefaultAllocator::DestroyBufferInternal(m_activeBufferAllocations.at(i));
 		}
 
 		vmaDestroyAllocator(m_allocator);

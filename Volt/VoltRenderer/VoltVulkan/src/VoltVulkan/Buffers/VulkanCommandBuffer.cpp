@@ -1155,16 +1155,74 @@ namespace Volt::RHI
 		}
 	}
 
-#define MAX_UPDATE_SIZE 65536
-
 	void VulkanCommandBuffer::UpdateBuffer(Ref<StorageBuffer> dstBuffer, const size_t dstOffset, const size_t dataSize, const void* data)
 	{
+		constexpr size_t MAX_UPDATE_SIZE = 65536;
+
 		assert(dataSize <= MAX_UPDATE_SIZE && "Size must not exceed MAX_UPDATE_SIZE!");
 		
 		VulkanStorageBuffer& vkBuffer = dstBuffer->AsRef<VulkanStorageBuffer>();
 		const uint32_t index = GetCurrentCommandBufferIndex();
 
+		// First transition
+		{
+			VkBufferMemoryBarrier2 srcBufferBarrier{};
+			srcBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+			srcBufferBarrier.pNext = nullptr;
+			srcBufferBarrier.buffer = vkBuffer.GetHandle<VkBuffer>();
+			srcBufferBarrier.size = vkBuffer.GetSize();
+			srcBufferBarrier.offset = 0;
+			srcBufferBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_HOST_READ_BIT | VK_ACCESS_2_HOST_WRITE_BIT;
+			srcBufferBarrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			srcBufferBarrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			srcBufferBarrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcBufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcBufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+			VkDependencyInfo depInfo{};
+			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+			depInfo.pNext = nullptr;
+			depInfo.dependencyFlags = 0;
+			depInfo.memoryBarrierCount = 0;
+			depInfo.pMemoryBarriers = nullptr;
+			depInfo.imageMemoryBarrierCount = 0;
+			depInfo.pImageMemoryBarriers = nullptr;
+			depInfo.bufferMemoryBarrierCount = 1;
+			depInfo.pBufferMemoryBarriers = &srcBufferBarrier;
+
+			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
+		}
+
 		vkCmdUpdateBuffer(m_commandBuffers.at(index).commandBuffer, vkBuffer.GetHandle<VkBuffer>(), dstOffset, dataSize, data);
+
+		// Second transition
+		{
+			VkBufferMemoryBarrier2 srcBufferBarrier{};
+			srcBufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+			srcBufferBarrier.pNext = nullptr;
+			srcBufferBarrier.buffer = vkBuffer.GetHandle<VkBuffer>();
+			srcBufferBarrier.size = vkBuffer.GetSize();
+			srcBufferBarrier.offset = 0;
+			srcBufferBarrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			srcBufferBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+			srcBufferBarrier.dstAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT | VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_HOST_READ_BIT | VK_ACCESS_2_HOST_WRITE_BIT;
+			srcBufferBarrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			srcBufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcBufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+			VkDependencyInfo depInfo{};
+			depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+			depInfo.pNext = nullptr;
+			depInfo.dependencyFlags = 0;
+			depInfo.memoryBarrierCount = 0;
+			depInfo.pMemoryBarriers = nullptr;
+			depInfo.imageMemoryBarrierCount = 0;
+			depInfo.pImageMemoryBarriers = nullptr;
+			depInfo.bufferMemoryBarrierCount = 1;
+			depInfo.pBufferMemoryBarriers = &srcBufferBarrier;
+
+			vkCmdPipelineBarrier2(m_commandBuffers.at(index).commandBuffer, &depInfo);
+		}
 	}
 
 	void VulkanCommandBuffer::CopyBufferRegion(Ref<Allocation> srcResource, const size_t srcOffset, Ref<Allocation> dstResource, const size_t dstOffset, const size_t size)

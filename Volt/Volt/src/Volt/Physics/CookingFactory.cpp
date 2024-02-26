@@ -264,7 +264,7 @@ namespace Volt
 				Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
 
 				MaterialTable materialTable{};
-				materialTable.SetMaterial(material, 0);
+				materialTable.SetMaterial(material->handle, 0);
 
 				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, materialTable, subMeshes);
 				MeshColliderCache::AddTriangleDebugMesh(colliderComp.colliderMesh, mesh);
@@ -337,7 +337,7 @@ namespace Volt
 				Ref<Material> material = AssetManager::GetAsset<Material>("Engine/Meshes/Primitives/SM_Cube.vtmat");
 
 				MaterialTable materialTable{};
-				materialTable.SetMaterial(material, 0);
+				materialTable.SetMaterial(material->handle, 0);
 
 				Ref<Mesh> mesh = CreateRef<Mesh>(vertices, indices, materialTable, subMeshes);
 				MeshColliderCache::AddConvexDebugMesh(colliderComp.colliderMesh, mesh);

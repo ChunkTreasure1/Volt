@@ -67,9 +67,16 @@ namespace Volt
 
 	struct DirectionalLightData
 	{
+		inline static constexpr uint32_t CASCADE_COUNT = 5;
+
 		glm::vec4 direction;
 		glm::vec3 color;
 		float intensity;
+
+		uint32_t enableShadows = 1;
+
+		float cascadeDistances[CASCADE_COUNT];
+		glm::mat4 viewProjections[CASCADE_COUNT];
 	};
 
 	struct PointLightData

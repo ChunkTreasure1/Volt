@@ -35,7 +35,12 @@ namespace Volt
 
 				for (size_t i = 0; i < mesh->GetSubMeshes().size(); i++)
 				{
-					auto uuid = renderScene->Register(idComp.id, mesh, materialTable.GetMaterial(mesh->GetSubMeshes().at(i).materialIndex), static_cast<uint32_t>(i));
+					auto material = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(mesh->GetSubMeshes().at(i).materialIndex));
+					if (!material->IsValid())
+					{
+					}
+
+					auto uuid = renderScene->Register(idComp.id, mesh, material, static_cast<uint32_t>(i));
 					data.renderObjectIds.emplace_back(uuid);
 				}
 
@@ -43,7 +48,7 @@ namespace Volt
 
 				for (const auto& material : materialTable)
 				{
-					data.materials.emplace_back(material->handle);
+					data.materials.emplace_back(material);
 				}
 			}
 

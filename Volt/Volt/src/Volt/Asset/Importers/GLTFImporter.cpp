@@ -53,7 +53,8 @@ namespace Volt
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", mat.name), index);
+			auto newMaterial = AssetManager::CreateAsset<Material>("", mat.name);
+			mesh->m_materialTable.SetMaterial(newMaterial->handle, index);
 			index++;
 		}
 
@@ -235,7 +236,8 @@ namespace Volt
 
 				if (!outMesh->m_materialTable.ContainsMaterialIndex(subMesh.materialIndex))
 				{
-					outMesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", inputModel.materials[subMesh.materialIndex].name), subMesh.materialIndex);
+					auto newMaterial = AssetManager::CreateAsset<Material>("", inputModel.materials[subMesh.materialIndex].name);
+					outMesh->m_materialTable.SetMaterial(newMaterial->handle, subMesh.materialIndex);
 				}
 			}
 		}

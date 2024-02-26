@@ -274,6 +274,8 @@ namespace Volt
 			VT_PROFILE_SCOPE("Application::Update");
 			AppUpdateEvent updateEvent(m_currentDeltaTime * m_timeScale);
 			OnEvent(updateEvent);
+
+			AssetManager::Update();
 		}
 
 		{

@@ -17,7 +17,6 @@ namespace Volt
 {
 	bool MosaicGraphImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<Material>();
 		Ref<Material> mosaicAsset = std::reinterpret_pointer_cast<Material>(asset);
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);

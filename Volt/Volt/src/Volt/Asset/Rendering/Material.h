@@ -30,6 +30,7 @@ namespace Volt
 	{
 	public:
 		Material();
+		Material(Ref<RHI::ComputePipeline> computePipeline);
 		~Material() override = default;
 
 		void Compile();

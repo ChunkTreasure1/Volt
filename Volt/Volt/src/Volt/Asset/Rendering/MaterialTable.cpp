@@ -3,7 +3,7 @@
 
 namespace Volt
 {
-	void MaterialTable::SetMaterial(Ref<Material> material, uint32_t index)
+	void MaterialTable::SetMaterial(AssetHandle material, uint32_t index)
 	{
 		if (static_cast<size_t>(index) >= m_materials.size())
 		{
@@ -13,7 +13,7 @@ namespace Volt
 		m_materials[index] = material;
 	}
 
-	Ref<Material> MaterialTable::GetMaterial(uint32_t index) const
+	AssetHandle MaterialTable::GetMaterial(uint32_t index) const
 	{
 		VT_CORE_ASSERT(static_cast<size_t>(index) < m_materials.size(), "Trying to access invalid material!");
 		return m_materials.at(index);

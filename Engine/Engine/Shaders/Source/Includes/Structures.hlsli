@@ -61,11 +61,18 @@ struct ViewData
     uint spotLightCount;
 };
 
+#define DIRECTIONAL_SHADOW_CASCADE_COUNT 5
+
 struct DirectionalLight
 {
     float4 direction;
     float3 color;
     float intensity;
+
+    uint enableShadows;
+
+    float cascadeDistances[DIRECTIONAL_SHADOW_CASCADE_COUNT];
+    float4x4 viewProjections[DIRECTIONAL_SHADOW_CASCADE_COUNT];
 };
 
 struct PointLight

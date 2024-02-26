@@ -53,6 +53,7 @@ DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture2D, u5, space0)
 DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture3D, u6, space0)
 
 DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(RWTexture2DArray, u11, space0)
+DEFINE_TEXTURE_TYPES_AND_FORMATS_SLOTS(Texture2DArray, t12, space0)
 
 ByteAddressBuffer u_ByteAddressBuffer[] : register(t7, space0);
 RWByteAddressBuffer u_RWByteAddressBuffer[] : register(u8, space0);

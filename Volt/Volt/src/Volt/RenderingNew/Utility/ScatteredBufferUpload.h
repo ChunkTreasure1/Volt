@@ -12,7 +12,7 @@ namespace Volt
 	}
 
 	template<typename T>
-	concept IsTrivial = std::is_trivial<T>::value;
+	concept IsTrivial = std::is_trivially_copyable<T>::value;
 
 	template<IsTrivial T>
 	class ScatteredBufferUpload
@@ -80,6 +80,7 @@ namespace Volt
 		barrier.bufferBarrier().dstAccess = RHI::BarrierAccess::TransferDestination;
 		barrier.bufferBarrier().dstStage = RHI::BarrierStage::Copy;
 		barrier.bufferBarrier().resource = m_dstBuffer;
+		barrier.bufferBarrier().size = m_dstBuffer->GetByteSize();
 
 		commandBuffer->ResourceBarrier({ barrier });
 
@@ -88,7 +89,7 @@ namespace Volt
 		for (const auto& element : m_data)
 		{
 			const size_t offset = stride * element.bufferIndex;
-			commandBuffer->UpdateBuffer(m_dstBuffer, offset, stride, element.data);
+			commandBuffer->UpdateBuffer(m_dstBuffer, offset, stride, &element.data);
 		}
 
 		std::swap(barrier.bufferBarrier().srcAccess, barrier.bufferBarrier().dstAccess);

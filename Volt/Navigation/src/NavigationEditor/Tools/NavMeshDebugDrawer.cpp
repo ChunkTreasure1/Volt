@@ -199,7 +199,7 @@ Ref<Volt::Mesh> NavMeshDrawCompiler::GetDebugMesh() const
 	auto material = Volt::AssetManager::GetAsset<Volt::Material>(path);
 
 	Volt::MaterialTable materialTable{};
-	materialTable.SetMaterial(material, 0);
+	materialTable.SetMaterial(material->handle, 0);
 
 	return CreateRef<Volt::Mesh>(myVertices, myIndices, materialTable, mySubmeshes);
 }

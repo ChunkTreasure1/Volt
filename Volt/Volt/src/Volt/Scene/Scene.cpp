@@ -34,6 +34,7 @@
 #include "Volt/Math/Math.h"
 
 #include "Volt/RenderingNew/RenderScene.h"
+#include "Volt/RenderingNew/RendererNew.h"
 
 #include "Volt/Rendering/RendererStructs.h"
 #include "Volt/Rendering/Camera/Camera.h"
@@ -254,6 +255,8 @@ namespace Volt
 	{
 		VT_PROFILE_FUNCTION();
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.alive());
+		
+		m_renderScene->Update();
 
 		AnimationManager::Update(aDeltaTime);
 		Physics::GetScene()->Simulate(aDeltaTime);
@@ -261,15 +264,6 @@ namespace Volt
 
 		m_timeSinceStart += aDeltaTime;
 		m_currentDeltaTime = aDeltaTime;
-
-		// Update scene data
-		{
-			//SceneData sceneData;
-			//sceneData.deltaTime = aDeltaTime;
-			//sceneData.timeSinceStart = myTimeSinceStart;
-
-			//Renderer::SetSceneData(sceneData);
-		}
 
 		GraphKey::TimerManager::Update(aDeltaTime);
 
@@ -327,16 +321,8 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.size());
+		m_renderScene->Update();
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
-
-		// Update scene data
-		{
-			//SceneData sceneData;
-			//sceneData.deltaTime = aDeltaTime;
-			//sceneData.timeSinceStart = m_timeSinceStart;
-
-			//Renderer::SetSceneData(sceneData);
-		}
 
 		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)
 		{
@@ -569,9 +555,16 @@ namespace Volt
 			{
 				m_worldEngine.OnEntityMoved(ent);
 			}
-		}
 
-		m_renderScene->Invalidate();
+			if (ent.HasComponent<MeshComponent>())
+			{
+				const auto& renderObjectsComp = ent.GetComponent<MeshComponent>();
+				for (const auto& renderObjId : renderObjectsComp.renderObjectIds)
+				{
+					m_renderScene->InvalidateRenderObject(renderObjId);
+				}
+			}
+		}
 	}
 
 	Entity Scene::InstantiateSplitMesh(AssetHandle meshHandle)
@@ -1372,17 +1365,14 @@ namespace Volt
 			{
 				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
 
-				Ref<Material> mat = materialTable.GetMaterial(materialIndex);			
+				Ref<Material> mat = AssetManager::GetAsset<Material>(materialTable.GetMaterial(materialIndex));
 
 				if (static_cast<uint32_t>(meshComp.materials.size()) > materialIndex)
 				{
 					if (meshComp.materials.at(materialIndex) != mat->handle)
 					{
-						Ref<Material> tempMat = AssetManager::GetAsset<Material>(meshComp.materials.at(materialIndex));
-						if (tempMat && tempMat->IsValid())
-						{
-							mat = tempMat;
-						}
+						Ref<Material> tempMat = AssetManager::QueueAsset<Material>(meshComp.materials.at(materialIndex));
+						mat = tempMat;
 					}
 				}
 

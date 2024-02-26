@@ -1,0 +1,4 @@
+name: "DirectionalShadow"
+internal: true
+paths:
+  - "Engine/Shaders/Source/Shadows/DirectionalShadow_vs.hlsl"

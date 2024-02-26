@@ -4,6 +4,8 @@
 #include "Volt/Rendering/Renderer.h"
 #include "Volt/RenderingNew/Resources/GlobalResourceManager.h"
 
+#include "Volt/Asset/Rendering/Material.h"
+
 #include "Volt/Math/Math.h"
 #include "Volt/Utility/Algorithms.h"
 
@@ -133,7 +135,7 @@ namespace Volt
 		m_vertices = aVertices;
 		m_indices = aIndices;
 
-		m_materialTable.SetMaterial(aMaterial, 0);
+		m_materialTable.SetMaterial(aMaterial->handle, 0);
 
 		SubMesh& subMesh = m_subMeshes.emplace_back();
 		subMesh.indexCount = (uint32_t)aIndices.size();

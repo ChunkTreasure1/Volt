@@ -88,6 +88,9 @@ namespace Volt
 
 		void AddPreDepthPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
+		void AddGenerateDirectionalShadowRenderCommand(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+		void AddDirectionalShadowPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
+
 		void AddVisibilityBufferPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);
 
 		void AddGenerateMaterialCountsPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard);

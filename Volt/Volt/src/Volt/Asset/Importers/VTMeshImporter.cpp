@@ -49,7 +49,7 @@ namespace Volt
 			const AssetHandle materialHandle = *(AssetHandle*)&totalData[offset];
 			offset += sizeof(AssetHandle);
 	
-			mesh->m_materialTable.SetMaterial(AssetManager::GetAsset<Material>(materialHandle), i);
+			mesh->m_materialTable.SetMaterial(materialHandle, i);
 		}
 
 		const uint32_t vertexCount = *(uint32_t*)&totalData[offset];

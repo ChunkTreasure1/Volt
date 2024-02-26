@@ -101,6 +101,12 @@ namespace Volt::RHI
 			}
 		}
 
+		// #TODO_Ivar: This is a dumb hack for vertex only shaders
+		if (vulkanShader.m_shaderSources.contains(RHI::ShaderStage::Vertex) && !vulkanShader.m_shaderSources.contains(RHI::ShaderStage::Pixel))
+		{
+			vulkanShader.m_resources.outputFormats.emplace_back(RHI::PixelFormat::D32_SFLOAT);
+		}
+
 		return CompilationResult::Success;
 	}
 

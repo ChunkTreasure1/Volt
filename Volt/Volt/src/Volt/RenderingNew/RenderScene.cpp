@@ -3,6 +3,7 @@
 
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Rendering/Material.h"
+#include "Volt/Asset/AssetManager.h"
 #include "Volt/Rendering/Texture/Texture2D.h"
 
 #include "Volt/Scene/Entity.h"
@@ -28,10 +29,22 @@ namespace Volt
 		m_gpuMaterialsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(GPUMaterialNew), "GPU Materials", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
 		m_objectDrawDataBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(ObjectDrawData), "Object Draw Data", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
 		m_gpuMeshletsBuffer = GlobalResource<RHI::StorageBuffer>::Create(RHI::StorageBuffer::Create(1, sizeof(Meshlet), "GPU Meshlets", RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::GPU));
+
+		m_materialChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Material, [&](AssetHandle handle, AssetChangedState state) 
+		{
+			if (!m_materialIndexFromAssetHandle.contains(handle) || state != AssetChangedState::Updated)
+			{
+				return;
+			}
+
+			Ref<Material> material = AssetManager::GetAsset<Material>(handle);
+			m_invalidMaterials.emplace_back(material, m_materialIndexFromAssetHandle.at(handle));
+		});
 	}
 
 	RenderScene::~RenderScene()
 	{
+		AssetManager::UnregisterAssetChangedCallback(AssetType::Material, m_materialChangedCallbackID);
 	}
 
 	void RenderScene::PrepareForUpdate()
@@ -64,6 +77,11 @@ namespace Volt
 		m_currentIndividualMeshCount = 0;
 		m_individualMeshes.clear();
 		m_individualMaterials.clear();
+		m_materialIndexFromAssetHandle.clear();
+		m_objectIndexFromRenderObjectID.clear();
+
+		m_invalidRenderObjectIndices.clear();
+		m_invalidMaterials.clear();
 
 		for (size_t i = 0; i < m_renderObjects.size(); i++)
 		{
@@ -77,15 +95,6 @@ namespace Volt
 			{
 				m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 				m_individualMeshes.push_back(m_renderObjects[i].mesh);
-
-				/*for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
-				{
-					const uint32_t materialIndex = GetMaterialIndex(material);
-					if (materialIndex == std::numeric_limits<uint32_t>::max())
-					{
-						m_individualMaterials.push_back(material);
-					}
-				}*/
 			}
 			else
 			{
@@ -93,15 +102,6 @@ namespace Volt
 				{
 					m_currentIndividualMeshCount += static_cast<uint32_t>(m_renderObjects[i].mesh->GetSubMeshes().size());
 					m_individualMeshes.push_back(m_renderObjects[i].mesh);
-
-					//for (const auto& material : m_renderObjects[i].mesh->GetMaterialTable())
-					//{
-					//	const uint32_t materialIndex = GetMaterialIndex(material);
-					//	if (materialIndex == std::numeric_limits<uint32_t>::max())
-					//	{
-					//		m_individualMaterials.push_back(material);
-					//	}
-					//}
 				}
 			}
 		}
@@ -129,16 +129,36 @@ namespace Volt
 
 	void RenderScene::Update()
 	{
-		if (m_invalidRenderObjects.empty())
+		if (!m_invalidRenderObjectIndices.empty())
 		{
-			return;
+			ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_objectDrawDataBuffer->GetResource() };
+
+			for (const auto& invalidObjectIndex : m_invalidRenderObjectIndices)
+			{
+				const auto& renderObject = GetRenderObjectAt(invalidObjectIndex);
+
+				const uint32_t index = m_objectIndexFromRenderObjectID.at(renderObject.id);
+				auto& data = bufferUpload.AddUploadItem(index);
+				BuildSinlgeObjectDrawData(data, renderObject);
+			}
+
+			bufferUpload.UploadAndWait();
+			m_invalidRenderObjectIndices.clear();
 		}
 
-		//ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_objectDrawDataBuffer->GetResource() };
+		if (!m_invalidMaterials.empty())
+		{
+			ScatteredBufferUpload<GPUMaterialNew> bufferUpload{ m_gpuMaterialsBuffer->GetResource() };
+			
+			for (const auto& invalidMaterial : m_invalidMaterials)
+			{
+				auto& data = bufferUpload.AddUploadItem(invalidMaterial.index);
+				BuildGPUMaterial(invalidMaterial.material, data);
+			}
 
-		//for (const auto& invalidObject : m_invalidRenderObjects)
-		//{
-		//}
+			bufferUpload.UploadAndWait();
+			m_invalidMaterials.clear();
+		}
 	}
 
 	void RenderScene::SetValid()
@@ -159,7 +179,7 @@ namespace Volt
 			return;
 		}
 
-		m_invalidRenderObjects.emplace_back(renderObject);
+		m_invalidRenderObjectIndices.emplace_back(std::distance(m_renderObjects.begin(), it));
 	}
 
 	const UUID64 RenderScene::Register(EntityID entityId, Ref<Mesh> mesh, Ref<Material> material, uint32_t subMeshIndex)
@@ -224,6 +244,22 @@ namespace Volt
 		return std::numeric_limits<uint32_t>::max();
 	}
 
+	const RenderObject& RenderScene::GetRenderObjectFromID(UUID64 id) const
+	{
+		auto it = std::find_if(m_renderObjects.begin(), m_renderObjects.end(), [id](const auto& renderObject)
+		{
+			return renderObject.id == id;
+		});
+
+		if (it == m_renderObjects.end())
+		{
+			static RenderObject nullObject;
+			return nullObject;
+		}
+
+		return *it;
+	}
+
 	void RenderScene::UploadGPUMeshes(std::vector<GPUMesh>& gpuMeshes)
 	{
 		if (m_gpuMeshesBuffer->GetResource()->GetCount() < static_cast<uint32_t>(gpuMeshes.size()))
@@ -268,19 +304,30 @@ namespace Volt
 
 		for (const auto& material : m_individualMaterials)
 		{
+			m_materialIndexFromAssetHandle[material->handle] = gpuMaterials.size();
+
 			GPUMaterialNew& gpuMat = gpuMaterials.emplace_back();
-			gpuMat.textureCount = 0;
-
-			for (const auto& texture : material->GetTextures())
-			{
-				gpuMat.textures[gpuMat.textureCount] = texture->GetResourceHandle();
-				gpuMat.samplers[gpuMat.textureCount] = RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
-
-				gpuMat.textureCount++;
-			}
+			BuildGPUMaterial(material, gpuMat);
 		}
 
 		m_gpuMaterialsBuffer->GetResource()->SetData(gpuMaterials.data(), sizeof(GPUMaterialNew) * gpuMaterials.size());
+	}
+
+	void RenderScene::BuildGPUMaterial(Weak<Material> material, GPUMaterialNew& gpuMaterial)
+	{
+		gpuMaterial.textureCount = 0;
+		if (!material->IsValid())
+		{
+			material = RendererNew::GetDefaultResources().defaultMaterial;
+		}
+
+		for (const auto& texture : material->GetTextures())
+		{
+			gpuMaterial.textures[gpuMaterial.textureCount] = texture->GetResourceHandle();
+			gpuMaterial.samplers[gpuMaterial.textureCount] = RendererNew::GetSampler<RHI::TextureFilter::Linear, RHI::TextureFilter::Linear, RHI::TextureFilter::Linear>()->GetResourceHandle();
+
+			gpuMaterial.textureCount++;
+		}
 	}
 
 	void RenderScene::UploadGPUMeshlets()
@@ -313,33 +360,40 @@ namespace Volt
 
 	void RenderScene::BuildObjectDrawData(std::vector<ObjectDrawData>& objectDrawData)
 	{
+		m_objectIndexFromRenderObjectID.clear();
+
 		for (const auto& renderObject : m_renderObjects)
 		{
-			Entity entity = m_scene->GetEntityFromUUID(renderObject.entity);
-			if (!entity)
-			{
-				continue;
-			}
-
-			const auto& subMesh = renderObject.mesh->GetSubMeshes().at(renderObject.subMeshIndex);
-			const size_t hash = Math::HashCombine(renderObject.mesh.GetHash(), std::hash<uint32_t>()(renderObject.subMeshIndex));
-			const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.at(hash);
-
-			const glm::mat4 transform = entity.GetTransform() * subMesh.transform;
-
-			BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSphere(renderObject.subMeshIndex);
-			const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
-			const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
-			const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
-
-			ObjectDrawData& data = objectDrawData.emplace_back();
-			data.transform = transform;
-			data.meshId = meshId;
-			data.materialId = GetMaterialIndex(renderObject.material); //GetMaterialIndex(renderObject.mesh->GetMaterialTable().GetMaterial(subMesh.materialIndex));
-			data.meshletStartOffset = 0;
-			data.boundingSphereCenter = globalCenter;
-			data.boundingSphereRadius = boundingSphere.radius * maxScale;
+			BuildSinlgeObjectDrawData(objectDrawData.emplace_back(), renderObject);
+			m_objectIndexFromRenderObjectID[renderObject.id] = static_cast<uint32_t>(objectDrawData.size() - 1);
 		}
+	}
+
+	void RenderScene::BuildSinlgeObjectDrawData(ObjectDrawData& objectDrawData, const RenderObject& renderObject)
+	{
+		Entity entity = m_scene->GetEntityFromUUID(renderObject.entity);
+		if (!entity)
+		{
+			return;
+		}
+
+		const auto& subMesh = renderObject.mesh->GetSubMeshes().at(renderObject.subMeshIndex);
+		const size_t hash = Math::HashCombine(renderObject.mesh.GetHash(), std::hash<uint32_t>()(renderObject.subMeshIndex));
+		const uint32_t meshId = m_meshSubMeshToGPUMeshIndex.at(hash);
+
+		const glm::mat4 transform = entity.GetTransform() * subMesh.transform;
+
+		BoundingSphere boundingSphere = renderObject.mesh->GetSubMeshBoundingSphere(renderObject.subMeshIndex);
+		const glm::vec3 globalScale = { glm::length(transform[0]), glm::length(transform[1]), glm::length(transform[2]) };
+		const float maxScale = glm::max(glm::max(globalScale.x, globalScale.y), globalScale.z);
+		const glm::vec3 globalCenter = transform * glm::vec4(boundingSphere.center, 1.f);
+
+		objectDrawData.transform = transform;
+		objectDrawData.meshId = meshId;
+		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
+		objectDrawData.meshletStartOffset = 0;
+		objectDrawData.boundingSphereCenter = globalCenter;
+		objectDrawData.boundingSphereRadius = boundingSphere.radius * maxScale;
 	}
 
 	void RenderScene::BuildMeshCommands()

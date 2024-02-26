@@ -72,10 +72,10 @@ namespace Volt
 		RenderGraphResourceHandle normals;
 	};
 
-	struct TestRenderData
+	struct DirectionalShadowData
 	{
-		RenderGraphResourceHandle outputTexture;
-		RenderGraphResourceHandle depth;
+		RenderGraphResourceHandle shadowTexture;
+		glm::uvec2 renderSize;
 	};
 
 	struct VisibilityBufferData

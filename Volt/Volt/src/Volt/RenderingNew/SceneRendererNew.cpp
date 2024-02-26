@@ -37,6 +37,8 @@
 #include "Volt/Components/RenderingComponents.h"
 #include "Volt/Components/CoreComponents.h"
 
+#include "Volt/Utility/ShadowMappingUtility.h"
+
 #include <VoltRHI/Images/Image2D.h>
 #include <VoltRHI/Images/SamplerState.h>
 #include <VoltRHI/Shader/Shader.h>
@@ -175,6 +177,8 @@ namespace Volt
 			GTAOTechnique gtaoTechnique{ 0 /*m_frameIndex*/, tempSettings };
 			gtaoTechnique.AddGTAOPasses(renderGraph, rgBlackboard, camera, { m_width, m_height });
 
+			AddDirectionalShadowPass(renderGraph, rgBlackboard);
+
 			AddVisibilityBufferPass(renderGraph, rgBlackboard);
 			AddGenerateMaterialCountsPass(renderGraph, rgBlackboard);
 
@@ -240,6 +244,7 @@ namespace Volt
 		const auto& externalBuffers = blackboard.Get<ExternalBuffersData>();
 
 		builder.ReadResource(uniformBuffers.viewDataBuffer);
+		builder.ReadResource(uniformBuffers.directionalLightBuffer);
 		builder.ReadResource(externalBuffers.gpuSceneBuffer);
 		builder.ReadResource(cullPrimitivesData.indexBuffer, RenderGraphResourceState::IndexBuffer);
 		builder.ReadResource(cullPrimitivesData.drawCommand, RenderGraphResourceState::IndirectArgument);
@@ -260,6 +265,7 @@ namespace Volt
 		context.BindIndexBuffer(indexBuffer);
 		context.SetConstant("gpuScene", gpuSceneHandle);
 		context.SetConstant("viewData", viewDataHandle);
+		context.SetConstant("directionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));
 
 		context.DrawIndexedIndirect(indirectCommands, 0, 1, sizeof(RHI::IndirectIndexedCommand));
 	}
@@ -342,6 +348,30 @@ namespace Volt
 				data.color = dirLightComp.color;
 				data.intensity = dirLightComp.intensity;
 				data.direction = { dir, 0.f };
+				data.enableShadows = static_cast<uint32_t>(dirLightComp.castShadows);
+
+				if (dirLightComp.castShadows)
+				{
+					const std::vector<float> cascades = { camera->GetFarPlane() / 50.f, camera->GetFarPlane() / 25.f, camera->GetFarPlane() / 10.f, camera->GetFarPlane() / 5.f };
+					const auto lightMatrices = Utility::CalculateCascadeMatrices(camera, dir, cascades);
+
+					for (size_t i = 0; i < lightMatrices.size(); i++)
+					{
+						data.viewProjections[i] = lightMatrices.at(i);
+					}
+
+					for (size_t i = 0; i < cascades.size(); i++)
+					{
+						if (i < cascades.size())
+						{
+							data.cascadeDistances[i] = cascades.at(i);
+						}
+						else
+						{
+							data.cascadeDistances[i] = camera->GetFarPlane();
+						}
+					}
+				}
 			});
 
 			renderGraph.AddMappedBufferUpload(buffersData.directionalLightBuffer, &data, sizeof(DirectionalLightData), "Upload directional light data");
@@ -787,6 +817,52 @@ namespace Volt
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("PreDepth");
+
+			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
+
+			context.BeginRendering(info);
+			context.BindPipeline(pipeline);
+
+			RenderMeshes(context, resources, blackboard);
+
+			context.EndRendering();
+		});
+	}
+
+	void SceneRendererNew::AddDirectionalShadowPass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
+	{
+		blackboard.Add<DirectionalShadowData>() = renderGraph.AddPass<DirectionalShadowData>("Directional Shadow",
+		[&](RenderGraph::Builder& builder, DirectionalShadowData& data)
+		{
+			data.renderSize = { 1024, 1024 };
+
+			RenderGraphImageDesc imageDesc{};
+			imageDesc.format = RHI::PixelFormat::D32_SFLOAT;
+			imageDesc.width = data.renderSize.x;
+			imageDesc.height = data.renderSize.y;
+			imageDesc.usage = RHI::ImageUsage::Attachment;
+			imageDesc.layers = 5;
+			imageDesc.isCubeMap = false;
+			imageDesc.name = "Directional Shadow";
+
+			data.shadowTexture = builder.CreateImage2D(imageDesc);
+
+			BuildMeshPass(builder, blackboard);
+
+			builder.SetHasSideEffect();
+
+		},
+		[=](const DirectionalShadowData& data, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			Weak<RHI::ImageView> shadowImage = resources.GetImage2DView(data.shadowTexture);
+
+			RenderingInfo info = context.CreateRenderingInfo(data.renderSize.x, data.renderSize.y, { shadowImage });
+			info.renderingInfo.layerCount = DirectionalLightData::CASCADE_COUNT;
+			info.renderingInfo.depthAttachmentInfo.SetClearColor(1.f, 1.f, 1.f, 1.f);
+
+			RHI::RenderPipelineCreateInfo pipelineInfo{};
+			pipelineInfo.shader = ShaderMap::Get("DirectionalShadow");
+			pipelineInfo.depthCompareOperator = RHI::CompareOperator::LessEqual;
 
 			auto pipeline = ShaderMap::GetRenderPipeline(pipelineInfo);
 

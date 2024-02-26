@@ -14,6 +14,7 @@ struct Constants
 {
     TypedBuffer<GPUScene> gpuScene;
     UniformBuffer<ViewData> viewData;
+    UniformTypedBuffer<DirectionalLight> directionalLight;
 };
 
 struct DefaultInput
