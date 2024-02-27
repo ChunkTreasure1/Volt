@@ -61,7 +61,6 @@ namespace Volt
 
 	bool ShaderDefinitionImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<ShaderDefinition>();
 		Ref<ShaderDefinition> shaderDef = std::reinterpret_pointer_cast<ShaderDefinition>(asset);
 
 		const auto filesytemPath = AssetManager::GetFilesystemPath(metadata.filePath);
@@ -82,6 +81,7 @@ namespace Volt
 		}
 
 		std::string name = streamReader.ReadAtKey("name", std::string("Unnamed"));
+		std::string entryPoint = streamReader.ReadAtKey("entryPoint", std::string("main"));
 		bool isInternal = streamReader.ReadAtKey("internal", false);
 
 		if (!streamReader.HasKey("paths"))
@@ -97,9 +97,20 @@ namespace Volt
 			paths.emplace_back(streamReader.ReadValue<std::string>());
 		});
 
+		std::vector<std::string> permutationValues;
+		if (streamReader.HasKey("permutations"))
+		{
+			streamReader.ForEach("permutations", [&]() 
+			{
+				permutationValues.emplace_back(streamReader.ReadValue<std::string>());
+			});
+		}
+
 		shaderDef->m_isInternal = isInternal;
 		shaderDef->m_name = name;
 		shaderDef->m_sourceFiles = paths;
+		shaderDef->m_permutaionValues = permutationValues;
+		shaderDef->m_entryPoint = entryPoint;
 
 		return true;
 	}
@@ -111,6 +122,7 @@ namespace Volt
 		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 		streamWriter.BeginMap();
 		streamWriter.SetKey("name", shaderDef->GetName());
+		streamWriter.SetKey("entryPoint", shaderDef->GetEntryPoint());
 		streamWriter.SetKey("internal", shaderDef->IsInternal());
 
 		streamWriter.BeginSequence("paths");

@@ -127,7 +127,7 @@ namespace Volt
 		BuildMeshCommands();
 	}
 
-	void RenderScene::Update()
+	void RenderScene::Update(RenderGraph& renderGraph)
 	{
 		if (!m_invalidRenderObjectIndices.empty())
 		{
@@ -142,7 +142,7 @@ namespace Volt
 				BuildSinlgeObjectDrawData(data, renderObject);
 			}
 
-			bufferUpload.UploadAndWait();
+			bufferUpload.Upload(renderGraph);
 			m_invalidRenderObjectIndices.clear();
 		}
 
@@ -156,7 +156,7 @@ namespace Volt
 				BuildGPUMaterial(invalidMaterial.material, data);
 			}
 
-			bufferUpload.UploadAndWait();
+			bufferUpload.Upload(renderGraph);
 			m_invalidMaterials.clear();
 		}
 	}

@@ -13,14 +13,19 @@ namespace Volt
 		AssetType GetType() override { return GetStaticType(); }
 
 		[[nodiscard]] inline const std::vector<std::filesystem::path>& GetSourceFiles() { return m_sourceFiles; }
+		[[nodiscard]] inline const std::vector<std::string>& GetPermutations() { return m_permutaionValues; }
 		[[nodiscard]] inline std::string_view GetName() const { return m_name; }
+		[[nodiscard]] inline std::string_view GetEntryPoint() const { return m_entryPoint; }
 		[[nodiscard]] inline const bool IsInternal() const { return m_isInternal; }
 
 	private:
 		friend class ShaderDefinitionImporter;
 
 		std::vector<std::filesystem::path> m_sourceFiles;
+		std::vector<std::string> m_permutaionValues;
+
 		std::string m_name;
+		std::string m_entryPoint;
 		bool m_isInternal = false;
 	};
 }

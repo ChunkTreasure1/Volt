@@ -256,8 +256,6 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.alive());
 		
-		m_renderScene->Update();
-
 		AnimationManager::Update(aDeltaTime);
 		Physics::GetScene()->Simulate(aDeltaTime);
 		m_visionSystem->Update(aDeltaTime);
@@ -321,7 +319,6 @@ namespace Volt
 		VT_PROFILE_FUNCTION();
 
 		m_statistics.entityCount = static_cast<uint32_t>(m_registry.size());
-		m_renderScene->Update();
 		m_particleSystem.Update(m_registry, shared_from_this(), aDeltaTime);
 
 		ForEachWithComponents<CameraComponent, const TransformComponent>([&](entt::entity id, CameraComponent& cameraComp, const TransformComponent& transComp)

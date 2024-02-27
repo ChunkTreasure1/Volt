@@ -19,6 +19,7 @@ namespace Volt
 
 	class Scene;
 	class Material;
+	class RenderGraph;
 
 	class RenderScene
 	{
@@ -27,7 +28,7 @@ namespace Volt
 		~RenderScene();
 
 		void PrepareForUpdate();
-		void Update();
+		void Update(RenderGraph& renderGraph);
 
 		void SetValid();
 		void Invalidate();

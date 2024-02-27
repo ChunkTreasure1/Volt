@@ -126,7 +126,12 @@ namespace Volt
 			}
 		}
 
-		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(assetName, { outShaderPath }, true));
+		RHI::ShaderSpecification shaderSpecification;
+		shaderSpecification.name = assetName;
+		shaderSpecification.sourceFiles = { outShaderPath };
+		shaderSpecification.forceCompile = true;
+
+		m_computePipeline = RHI::ComputePipeline::Create(RHI::Shader::Create(shaderSpecification));
 	}
 }
 

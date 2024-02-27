@@ -30,7 +30,13 @@ namespace Volt
 	void GlobalResourceManager::Initialize()
 	{
 		RHI::DescriptorTableCreateInfo info{};
-		info.shader = RHI::Shader::Create("GlobalResourcesDescriptor", { "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" }, true);
+
+		RHI::ShaderSpecification shaderSpec{};
+		shaderSpec.name = "GlobalResourcesDescriptor";
+		shaderSpec.sourceFiles = { "Engine/Shaders/Source/Utility/GlobalDescriptorsShader_cs.hlsl" };
+		shaderSpec.forceCompile = true;
+
+		info.shader = RHI::Shader::Create(shaderSpec);
 		info.count = 1;
 		info.isGlobal = true;
 

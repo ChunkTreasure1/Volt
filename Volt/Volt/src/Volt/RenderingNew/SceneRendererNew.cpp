@@ -148,6 +148,8 @@ namespace Volt
 			m_frameTotalGPUAllocation = totalSize;
 		});
 
+		m_scene->GetRenderScene()->Update(renderGraph);
+
 		AddExternalResources(renderGraph, rgBlackboard);
 		SetupDrawContext(renderGraph, rgBlackboard);
 

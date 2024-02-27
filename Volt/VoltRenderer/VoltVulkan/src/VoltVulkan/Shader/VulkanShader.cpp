@@ -41,16 +41,16 @@ namespace Volt::RHI
 		}
 	}
 
-	VulkanShader::VulkanShader(std::string_view name, const std::vector<std::filesystem::path>& sourceFiles, bool forceCompile)
-		: m_name(name), m_sourceFiles(sourceFiles)
+	VulkanShader::VulkanShader(const ShaderSpecification& specification)
+		: m_specification(specification)
 	{
-		if (sourceFiles.empty())
+		if (m_specification.sourceFiles.empty())
 		{
-			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Trying to create a shader {0} without any sources!", name);
+			GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Trying to create a shader {0} without any sources!", m_specification.name);
 			return;
 		}
 
-		Reload(forceCompile);
+		Reload(m_specification.forceCompile);
 	}
 
 	VulkanShader::~VulkanShader()
@@ -92,7 +92,7 @@ namespace Volt::RHI
 
 	std::string_view VulkanShader::GetName() const
 	{
-		return m_name;
+		return m_specification.name;
 	}
 
 	const ShaderResources& VulkanShader::GetResources() const
@@ -116,7 +116,7 @@ namespace Volt::RHI
 
 	const std::vector<std::filesystem::path>& VulkanShader::GetSourceFiles() const
 	{
-		return m_sourceFiles;
+		return m_specification.sourceFiles;
 	}
 
 	ShaderDataBuffer VulkanShader::GetConstantsBuffer() const
@@ -132,7 +132,7 @@ namespace Volt::RHI
 
 	void VulkanShader::LoadShaderFromFiles()
 	{
-		for (const auto& path : m_sourceFiles)
+		for (const auto& path : m_specification.sourceFiles)
 		{
 			const ShaderStage stage = Utility::GetShaderStageFromFilename(path.filename().string());
 			std::string source = Utility::ReadStringFromFile(path);
@@ -178,6 +178,7 @@ namespace Volt::RHI
 	{
 		ShaderCompiler::Specification compileSpec{};
 		compileSpec.forceCompile = forceCompile;
+		compileSpec.entryPoint = m_specification.entryPoint;
 
 		ShaderCompiler::CompilationResult result = ShaderCompiler::TryCompile(compileSpec, *this);
 		return result == ShaderCompiler::CompilationResult::Success;
@@ -201,7 +202,7 @@ namespace Volt::RHI
 
 	void VulkanShader::ReflectAllStages(const std::unordered_map<ShaderStage, std::vector<uint32_t>>& shaderData)
 	{
-		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "Reflecting {0}", m_name);
+		GraphicsContext::LogTagged(Severity::Trace, "[VulkanShader]", "Reflecting {0}", m_specification.name);
 		for (const auto& [stage, data] : shaderData)
 		{
 			ReflectStage(stage, data);
@@ -239,7 +240,7 @@ namespace Volt::RHI
 
 			if (name == "$Globals")
 			{
-				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Shader {0} seems to have incorrectly defined global variables!", m_name);
+				GraphicsContext::LogTagged(Severity::Error, "[VulkanShader]", "Shader {0} seems to have incorrectly defined global variables!", m_specification.name);
 				continue;
 			}
 
