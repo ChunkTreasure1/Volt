@@ -1350,8 +1350,8 @@ namespace Volt
 
 			meshComp.renderObjectIds.clear();
 
-			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshComp.handle);
-			if (!mesh || !mesh->IsValid())
+			Ref<Mesh> mesh = AssetManager::QueueAsset<Mesh>(meshComp.handle);
+			if (!mesh)
 			{
 				continue;
 			}
@@ -1362,7 +1362,7 @@ namespace Volt
 			{
 				const auto materialIndex = mesh->GetSubMeshes().at(i).materialIndex;
 
-				Ref<Material> mat = AssetManager::GetAsset<Material>(materialTable.GetMaterial(materialIndex));
+				Ref<Material> mat = AssetManager::QueueAsset<Material>(materialTable.GetMaterial(materialIndex));
 
 				if (static_cast<uint32_t>(meshComp.materials.size()) > materialIndex)
 				{

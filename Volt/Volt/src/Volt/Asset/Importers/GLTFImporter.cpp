@@ -19,12 +19,13 @@
 
 namespace Volt
 {
-	Ref<Mesh> GLTFImporter::ImportMeshImpl(const std::filesystem::path& path)
+	void GLTFImporter::ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
-			return nullptr;
+			mesh->SetFlag(AssetFlag::Missing, true);
+			return;
 		}
 
 		tinygltf::Model gltfInput;
@@ -45,10 +46,8 @@ namespace Volt
 		if (!loaded)
 		{
 			VT_CORE_ERROR("Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
-			return nullptr;
+			return mesh->SetFlag(AssetFlag::Invalid, true);
 		}
-
-		Ref<Mesh> mesh = CreateRef<Mesh>();
 
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
@@ -66,8 +65,6 @@ namespace Volt
 		}
 
 		mesh->Construct();
-
-		return mesh;
 	}
 
 	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node*, Ref<Mesh> outMesh)

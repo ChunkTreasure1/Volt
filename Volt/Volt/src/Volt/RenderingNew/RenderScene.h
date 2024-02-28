@@ -98,10 +98,19 @@ namespace Volt
 			size_t index;
 		};
 
+		struct InvalidMesh
+		{
+			Weak<Mesh> mesh;
+			uint32_t subMeshIndex;
+			size_t index;
+		};
+
 		std::vector<InvalidMaterial> m_invalidMaterials;
+		std::vector<InvalidMesh> m_invalidMeshes;
 
 		std::unordered_map<UUID64, uint32_t> m_objectIndexFromRenderObjectID;
 		std::unordered_map<AssetHandle, size_t> m_materialIndexFromAssetHandle;
+		std::unordered_map<size_t, size_t> m_meshIndexFromMeshAssetHash;
 
 		std::vector<IndirectGPUCommandNew> m_meshCommands;
 		std::vector<Weak<Mesh>> m_individualMeshes;
@@ -122,6 +131,7 @@ namespace Volt
 		uint32_t m_currentIndexCount = 0;
 
 		UUID64 m_materialChangedCallbackID;
+		UUID64 m_meshChangedCallbackID;
 
 		bool m_isInvalid = false;
 	};

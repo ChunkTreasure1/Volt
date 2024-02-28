@@ -40,11 +40,30 @@ namespace Volt
 			Ref<Material> material = AssetManager::GetAsset<Material>(handle);
 			m_invalidMaterials.emplace_back(material, m_materialIndexFromAssetHandle.at(handle));
 		});
+
+		m_meshChangedCallbackID = AssetManager::RegisterAssetChangedCallback(AssetType::Mesh, [&](AssetHandle handle, AssetChangedState state)
+		{
+			if (state != AssetChangedState::Updated)
+			{
+				return;
+			}
+
+			Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>(handle);
+			for (uint32_t subMeshIndex = 0; subMeshIndex < static_cast<uint32_t>(mesh->GetSubMeshes().size()); subMeshIndex++)
+			{
+				const size_t assetHash = Math::HashCombine(handle, std::hash<uint32_t>()(subMeshIndex));
+				if (m_meshIndexFromMeshAssetHash.contains(assetHash))
+				{
+					m_invalidMeshes.emplace_back(mesh, subMeshIndex, m_meshIndexFromMeshAssetHash.at(assetHash));
+				}
+			}
+		});
 	}
 
 	RenderScene::~RenderScene()
 	{
 		AssetManager::UnregisterAssetChangedCallback(AssetType::Material, m_materialChangedCallbackID);
+		AssetManager::UnregisterAssetChangedCallback(AssetType::Mesh, m_meshChangedCallbackID);
 	}
 
 	void RenderScene::PrepareForUpdate()
@@ -131,24 +150,22 @@ namespace Volt
 	{
 		if (!m_invalidRenderObjectIndices.empty())
 		{
-			ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_objectDrawDataBuffer->GetResource() };
+			ScatteredBufferUpload<ObjectDrawData> bufferUpload{ m_invalidRenderObjectIndices.size() };
 
 			for (const auto& invalidObjectIndex : m_invalidRenderObjectIndices)
 			{
 				const auto& renderObject = GetRenderObjectAt(invalidObjectIndex);
-
-				const uint32_t index = m_objectIndexFromRenderObjectID.at(renderObject.id);
-				auto& data = bufferUpload.AddUploadItem(index);
+				auto& data = bufferUpload.AddUploadItem(invalidObjectIndex);
 				BuildSinlgeObjectDrawData(data, renderObject);
 			}
 
-			bufferUpload.Upload(renderGraph);
+			bufferUpload.UploadTo(renderGraph, *m_objectDrawDataBuffer);
 			m_invalidRenderObjectIndices.clear();
 		}
 
 		if (!m_invalidMaterials.empty())
 		{
-			ScatteredBufferUpload<GPUMaterialNew> bufferUpload{ m_gpuMaterialsBuffer->GetResource() };
+			ScatteredBufferUpload<GPUMaterialNew> bufferUpload{ m_invalidMaterials.size() };
 			
 			for (const auto& invalidMaterial : m_invalidMaterials)
 			{
@@ -156,7 +173,7 @@ namespace Volt
 				BuildGPUMaterial(invalidMaterial.material, data);
 			}
 
-			bufferUpload.Upload(renderGraph);
+			bufferUpload.UploadTo(renderGraph, *m_gpuMaterialsBuffer);
 			m_invalidMaterials.clear();
 		}
 	}
@@ -352,6 +369,9 @@ namespace Volt
 				const size_t hash = Math::HashCombine(mesh.GetHash(), std::hash<uint32_t>()(subMeshIndex));
 				m_meshSubMeshToGPUMeshIndex[hash] = currentIndex;
 
+				const size_t assetHash = Math::HashCombine(mesh->handle, std::hash<uint32_t>()(subMeshIndex));
+				m_meshIndexFromMeshAssetHash[assetHash] = currentIndex;
+
 				currentIndex++;
 				subMeshIndex++;
 			}
@@ -391,7 +411,7 @@ namespace Volt
 		objectDrawData.transform = transform;
 		objectDrawData.meshId = meshId;
 		objectDrawData.materialId = GetMaterialIndex(renderObject.material);
-		objectDrawData.meshletStartOffset = 0;
+		objectDrawData.meshletStartOffset = renderObject.meshletStartOffset;
 		objectDrawData.boundingSphereCenter = globalCenter;
 		objectDrawData.boundingSphereRadius = boundingSphere.radius * maxScale;
 	}
@@ -455,7 +475,7 @@ namespace Volt
 		m_sceneMeshlets.clear();
 		m_currentIndexCount = 0;
 
-		for (uint32_t index = 0; const auto & obj : m_renderObjects)
+		for (uint32_t index = 0; auto& obj : m_renderObjects)
 		{
 			const auto& subMesh = obj.mesh->GetSubMeshes().at(obj.subMeshIndex);
 			const auto& meshlets = obj.mesh->GetMeshlets();
@@ -482,6 +502,7 @@ namespace Volt
 			}
 
 			objectDrawData[index].meshletStartOffset = static_cast<uint32_t>(meshletStartOffset);
+			obj.meshletStartOffset = static_cast<uint32_t>(meshletStartOffset);
 			index++;
 		}
 	}

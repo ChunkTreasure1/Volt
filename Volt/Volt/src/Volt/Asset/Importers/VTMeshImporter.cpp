@@ -13,12 +13,13 @@
 
 namespace Volt
 {
-	Ref<Mesh> VTMeshImporter::ImportMeshImpl(const std::filesystem::path& path)
+	void VTMeshImporter::ImportMeshImpl(const std::filesystem::path& path, Ref<Mesh>& mesh)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
-			return nullptr;
+			mesh->SetFlag(AssetFlag::Missing, true);
+			return;
 		}
 
 		std::ifstream file(path, std::ios::in | std::ios::binary);
@@ -33,8 +34,6 @@ namespace Volt
 		file.seekg(0, std::ios::beg);
 		file.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
 		file.close();
-
-		Ref<Mesh> mesh = CreateRef<Mesh>();
 
 		size_t offset = 0;
 
@@ -70,7 +69,7 @@ namespace Volt
 		{
 			VT_CORE_ERROR("Mesh {0} is invalid! It needs to be recompiled!", path.string());
 			mesh->SetFlag(AssetFlag::Invalid, true);
-			return mesh;
+			return;
 		}
 
 		mesh->m_boundingSphere.center = *(glm::vec3*)&totalData[offset];
@@ -136,8 +135,6 @@ namespace Volt
 		//mesh->m_materialTable.SetMaterial(AssetManager::CreateAsset<Material>("", "None"), 0);
 
 		mesh->Construct();
-
-		return mesh;
 	}
 
 	bool VTMeshImporter::IsValid(uint32_t subMeshCount, uint32_t vertexCount, uint32_t indexCount, size_t srcSize) const
