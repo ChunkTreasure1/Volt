@@ -1,6 +1,8 @@
 #include "vtpch.h"
 #include "UUID.h"
 
+#include "Volt/Utility/FileIO/BinaryStreamWriter.h"
+
 #include <random>
 #include <unordered_map>
 
@@ -15,6 +17,11 @@ namespace Volt
 	UUID::UUID()
 		: myUUID(s_UniformDistribution(s_Engine))
 	{
+	}
+
+	void UUID::Serialize(BinaryStreamWriter& streamWriter, const UUID& data)
+	{
+		streamWriter.Write(data.myUUID);
 	}
 
 	UUID32::UUID32()

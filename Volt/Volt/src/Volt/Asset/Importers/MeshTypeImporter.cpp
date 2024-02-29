@@ -21,19 +21,19 @@ namespace Volt
 		myImporters.clear();
 	}
 
-	Ref<Mesh> MeshTypeImporter::ImportMesh(const std::filesystem::path& path)
+	bool MeshTypeImporter::ImportMesh(const std::filesystem::path& path, Mesh& dstMesh)
 	{
-		return myImporters[FormatFromExtension(path)]->ImportMeshImpl(path);
+		return myImporters[FormatFromExtension(path)]->ImportMeshImpl(path, dstMesh);
 	}
 
-	Ref<Skeleton> MeshTypeImporter::ImportSkeleton(const std::filesystem::path& path)
+	bool MeshTypeImporter::ImportSkeleton(const std::filesystem::path& path, Skeleton& dstSkeleton)
 	{
-		return myImporters[FormatFromExtension(path)]->ImportSkeletonImpl(path);
+		return myImporters[FormatFromExtension(path)]->ImportSkeletonImpl(path, dstSkeleton);
 	}
 
-	Ref<Animation> MeshTypeImporter::ImportAnimation(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton)
+	bool MeshTypeImporter::ImportAnimation(const std::filesystem::path& path, Ref<Skeleton> targetSkeleton, Animation& dstAnimation)
 	{
-		return myImporters[FormatFromExtension(path)]->ImportAnimationImpl(path, targetSkeleton);
+		return myImporters[FormatFromExtension(path)]->ImportAnimationImpl(path, targetSkeleton, dstAnimation);
 	}
 
 	void MeshTypeImporter::ExportMesh(std::vector<Ref<Mesh>> assets, const std::filesystem::path& path)

@@ -24,8 +24,6 @@ namespace Volt
 		template<typename K, typename T>
 		void SetKey(const K& key, const T& value);
 
-
-
 		const bool WriteToDisk();
 
 	private:

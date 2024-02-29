@@ -4,6 +4,7 @@
 
 namespace Volt
 {
+	class BinaryStreamWriter;
 
 	class UUID
 	{
@@ -17,6 +18,9 @@ namespace Volt
 		~UUID() = default;
 
 		operator uint64_t() const { return myUUID; }
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const UUID& data);
+
 	private:
 		uint64_t myUUID;
 	};

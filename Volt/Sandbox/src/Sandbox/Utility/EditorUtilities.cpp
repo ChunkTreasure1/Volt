@@ -234,8 +234,8 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 	{
 		case Volt::AssetType::Animation:
 		{
-			Ref<Volt::Animation> newAnim = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / sourcePath, targetSkeleton);
-			if (!newAnim)
+			Ref<Volt::Animation> newAnim = CreateRef<Volt::Animation>();
+			if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / sourcePath, targetSkeleton, *newAnim))
 			{
 				UI::Notify(NotificationType::Error, "Unable to re import animation!", std::format("Failed to import animation from {0}!", sourcePath.string()));
 				break;
@@ -253,8 +253,8 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 
 		case Volt::AssetType::Skeleton:
 		{
-			Ref<Volt::Skeleton> newSkel = Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / sourcePath);
-			if (!newSkel)
+			Ref<Volt::Skeleton> newSkel = CreateRef<Volt::Skeleton>();
+			if (!Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / sourcePath, *newSkel))
 			{
 				UI::Notify(NotificationType::Error, "Unable to re import skeleton!", std::format("Failed to import skeleton from {0}!", sourcePath.string()));
 				break;
@@ -274,8 +274,8 @@ bool EditorUtils::ReimportSourceMesh(Volt::AssetHandle assetHandle, Ref<Volt::Sk
 		{
 			Ref<Volt::Mesh> originalMesh = std::reinterpret_pointer_cast<Volt::Mesh>(originalAsset);
 
-			Ref<Volt::Mesh> newMesh = Volt::MeshTypeImporter::ImportMesh(Volt::ProjectManager::GetDirectory() / sourcePath);
-			if (!newMesh || !newMesh->IsValid())
+			Ref<Volt::Mesh> newMesh = CreateRef<Volt::Mesh>();
+			if (!Volt::MeshTypeImporter::ImportMesh(Volt::ProjectManager::GetDirectory() / sourcePath, *newMesh))
 			{
 				UI::Notify(NotificationType::Error, "Unable to re import mesh!", std::format("Failed to import mesh from {0}!", sourcePath.string()));
 				break;
@@ -503,8 +503,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 
 			if (aImportData.importSkeleton)
 			{
-				Ref<Volt::Skeleton> skeleton = Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / aMeshToImport);
-				if (!skeleton)
+				Ref<Volt::Skeleton> skeleton = CreateRef<Volt::Skeleton>();
+				if (!Volt::MeshTypeImporter::ImportSkeleton(Volt::ProjectManager::GetDirectory() / aMeshToImport, *skeleton))
 				{
 					UI::Notify(NotificationType::Error, "Failed to import skeleton!", std::format("Failed to import skeleton from {}!", aMeshToImport.string()));
 				}
@@ -527,8 +527,8 @@ ImportState EditorUtils::MeshImportModal(const std::string& aId, MeshImportData&
 				}
 				else
 				{
-					Ref<Volt::Animation> animation = Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport, targetSkeleton);
-					if (!animation)
+					Ref<Volt::Animation> animation = CreateRef<Volt::Animation>();
+					if (!Volt::MeshTypeImporter::ImportAnimation(Volt::ProjectManager::GetDirectory() / aMeshToImport, targetSkeleton, *animation))
 					{
 						UI::Notify(NotificationType::Error, "Failed to import animation!", std::format("Failed to import animaition from {}!", aMeshToImport.string()));
 					}

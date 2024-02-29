@@ -17,12 +17,12 @@
 
 namespace Volt
 {
-	Ref<Mesh> GLTFImporter::ImportMeshImpl(const std::filesystem::path& path)
+	bool GLTFImporter::ImportMeshImpl(const std::filesystem::path& path, Mesh& dstMesh)
 	{
 		if (!std::filesystem::exists(path))
 		{
 			VT_CORE_ERROR("File does not exist: {0}", path.string().c_str());
-			return nullptr;
+			return false;
 		}
 
 		tinygltf::Model gltfInput;
@@ -43,17 +43,16 @@ namespace Volt
 		if (!loaded)
 		{
 			VT_CORE_ERROR("Unable to load GLTF file {0}! Error: {1}, warning {2}", path.string().c_str(), error.c_str(), warning.c_str());
-			return nullptr;
+			return false;
 		}
 
-		Ref<Mesh> mesh = CreateRef<Mesh>();
-		mesh->myMaterial = CreateRef<Material>();
-		mesh->myMaterial->myName = path.stem().string() + "_mat";
+		dstMesh.myMaterial = CreateRef<Material>();
+		dstMesh.myMaterial->myName = path.stem().string() + "_mat";
 
 		uint32_t index = 0;
 		for (const auto& mat : gltfInput.materials)
 		{
-			mesh->myMaterial->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderRegistry::GetShader("Illum"));
+			dstMesh.myMaterial->mySubMaterials[index] = SubMaterial::Create(mat.name, index, ShaderRegistry::GetShader("Illum"));
 			index++;
 		}
 
@@ -61,15 +60,14 @@ namespace Volt
 		for (int i : scene.nodes)
 		{
 			const tinygltf::Node& node = gltfInput.nodes[i];
-			LoadNode(node, gltfInput, nullptr, mesh);
+			LoadNode(node, gltfInput, nullptr, dstMesh);
 		}
 
-		mesh->Construct();
-
-		return mesh;
+		dstMesh.Construct();
+		return true;
 	}
 
-	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node*, Ref<Mesh> outMesh)
+	void GLTFImporter::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model& inputModel, GLTF::Node*, Mesh& outMesh)
 	{
 		GLTF::Node node{};
 
@@ -104,8 +102,8 @@ namespace Volt
 
 			for (const tinygltf::Primitive& gltfPrimitive : mesh.primitives)
 			{
-				uint32_t firstIndex = (uint32_t)outMesh->myIndices.size();
-				uint32_t firstVertex = (uint32_t)outMesh->myVertices.size();
+				uint32_t firstIndex = (uint32_t)outMesh.myIndices.size();
+				uint32_t firstVertex = (uint32_t)outMesh.myVertices.size();
 				uint32_t indexCount = 0;
 				size_t vertexCount = 0;
 
@@ -163,7 +161,7 @@ namespace Volt
 
 						vert.tangent = glm::vec3(tangent.x, tangent.y, tangent.z);
 
-						outMesh->myVertices.emplace_back(vert);
+						outMesh.myVertices.emplace_back(vert);
 					}
 				}
 
@@ -182,7 +180,7 @@ namespace Volt
 							const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh.myIndices.emplace_back(buf[index]);
 							}
 
 							break;
@@ -193,7 +191,7 @@ namespace Volt
 							const int16_t* buf = reinterpret_cast<const int16_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh.myIndices.emplace_back(buf[index]);
 							}
 							break;
 						}
@@ -203,7 +201,7 @@ namespace Volt
 							const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh.myIndices.emplace_back(buf[index]);
 							}
 							break;
 						}
@@ -213,7 +211,7 @@ namespace Volt
 							const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + view.byteOffset]);
 							for (size_t index = 0; index < accessor.count; index++)
 							{
-								outMesh->myIndices.emplace_back(buf[index]);
+								outMesh.myIndices.emplace_back(buf[index]);
 							}
 							break;
 						}
@@ -224,7 +222,7 @@ namespace Volt
 					}
 				}
 
-				auto& subMesh = outMesh->mySubMeshes.emplace_back();
+				auto& subMesh = outMesh.mySubMeshes.emplace_back();
 				subMesh.indexCount = indexCount;
 				subMesh.vertexCount = (uint32_t)vertexCount;
 				subMesh.indexStartOffset = firstIndex;
@@ -233,9 +231,9 @@ namespace Volt
 				subMesh.transform = node.transform;
 				subMesh.GenerateHash();
 
-				if (!outMesh->myMaterial->mySubMaterials.contains(subMesh.materialIndex))
+				if (!outMesh.myMaterial->mySubMaterials.contains(subMesh.materialIndex))
 				{
-					outMesh->myMaterial->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderRegistry::GetShader("Deferred"));
+					outMesh.myMaterial->mySubMaterials[subMesh.materialIndex] = SubMaterial::Create(inputModel.materials[subMesh.materialIndex].name, subMesh.materialIndex, ShaderRegistry::GetShader("Deferred"));
 				}
 			}
 		}
