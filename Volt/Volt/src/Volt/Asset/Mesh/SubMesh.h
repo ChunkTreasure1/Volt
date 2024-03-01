@@ -6,6 +6,9 @@
 
 namespace Volt
 {
+	class BinaryStreamWriter;
+	class BinaryStreamReader;
+
 	struct SubMesh
 	{
 		SubMesh(uint32_t aMaterialIndex, uint32_t aVertexCount, uint32_t aIndexCount, uint32_t aVertexStartOffset, uint32_t aIndexStartOffset);
@@ -27,6 +30,9 @@ namespace Volt
 
 		glm::mat4 transform = { 1.f };
 		std::string name;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const SubMesh& data);
+		static void Deserialize(BinaryStreamReader& streamReader, SubMesh& outData);
 
 	private:
 		size_t m_hash = 0;

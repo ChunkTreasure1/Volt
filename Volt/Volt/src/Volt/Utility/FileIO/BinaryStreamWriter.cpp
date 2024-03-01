@@ -3,6 +3,13 @@
 
 namespace Volt
 {
+	void BinaryStreamWriter::WriteToDisk(const std::filesystem::path& targetFilepath)
+	{
+		std::ofstream stream(targetFilepath, std::ios::out | std::ios::binary);
+		stream.write(reinterpret_cast<const char*>(m_data.data()), m_data.size());
+		stream.close();
+	}
+
 	void BinaryStreamWriter::WriteData(const void* data, const size_t size, const TypeHeader& typeHeader)
 	{
 		constexpr size_t typeHeaderSize = sizeof(TypeHeader);

@@ -5,6 +5,7 @@
 #include "Volt/Asset/Serialization/AssetSerializationCommon.h"
 
 #include "Volt/Utility/FileIO/BinaryStreamWriter.h"
+#include "Volt/Utility/FileIO/BinaryStreamReader.h"
 
 namespace Volt
 {
@@ -17,5 +18,6 @@ namespace Volt
 		virtual bool Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const = 0;
 
 		static void WriteMetadata(const AssetMetadata& metadata, const uint32_t version, BinaryStreamWriter& streamWriter);
+		static SerializedAssetMetadata ReadMetadata(BinaryStreamReader& streamReader);
 	};
 }

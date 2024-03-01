@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Volt/Utility/FileIO/StreamCommon.h"
+
 #include <vector>
 #include <array>
 #include <string>
@@ -11,6 +13,9 @@ namespace Volt
 	class BinaryStreamWriter
 	{
 	public:
+		void WriteToDisk(const std::filesystem::path& targetFilepath);
+		[[nodiscard]] const size_t GetSize() const { return m_data.size(); }
+
 		template<typename T>
 		[[nodiscard]] const size_t GetBinarySizeOfType(const T& object) const;
 
@@ -29,6 +34,9 @@ namespace Volt
 		template<typename F>
 		void Write(const std::vector<F>& data);
 
+		template<typename F>
+		void WriteRaw(const std::vector<F>& data);
+
 		template<typename F, size_t COUNT>
 		void Write(const std::array<F, COUNT>& data);
 
@@ -38,15 +46,7 @@ namespace Volt
 		template<typename Key, typename Value>
 		void Write(const std::unordered_map<Key, Value>& data);
 
-		[[nodiscard]] const size_t GetSize() const { return m_data.size(); }
-
 	private:
-		struct TypeHeader
-		{
-			uint16_t baseTypeSize;
-			uint32_t totalTypeSize;
-		};
-
 		void WriteData(const void* data, const size_t size, const TypeHeader& typeHeader);
 		void WriteData(const void* data, const size_t size);
 
@@ -153,6 +153,16 @@ namespace Volt
 		}
 	}
 
+	template<typename F>
+	inline void BinaryStreamWriter::WriteRaw(const std::vector<F>& data)
+	{
+		TypeHeader header{};
+		header.baseTypeSize = sizeof(std::vector<F>);
+		header.totalTypeSize = static_cast<uint32_t>(data.size() * sizeof(F));
+
+		WriteData(data.data(), data.size() * sizeof(F), header);
+	}
+
 	template<typename F, size_t COUNT>
 	inline void BinaryStreamWriter::Write(const std::array<F, COUNT>& data)
 	{
@@ -162,7 +172,7 @@ namespace Volt
 
 		if constexpr (std::is_trivial_v<F>)
 		{
-			WriteData(data.data(), data.size() * sizeof(F), header);
+			WriteData(data.data(), COUNT * sizeof(F), header);
 		}
 		else
 		{
@@ -200,12 +210,34 @@ namespace Volt
 				Value::Serialize(*this, value);
 			}
 		}
-
-
 	}
 
 	template<typename Key, typename Value>
 	inline void BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
 	{
+		TypeHeader header{};
+		header.baseTypeSize = sizeof(std::unordered_map<Key, Value>&data);
+		header.totalTypeSize = data.size() * sizeof(Key) + data.size() * sizeof(Value);
+
+		for (const auto& [key, value] : data)
+		{
+			if constexpr (std::is_trivial_v<Key>)
+			{
+				WriteData(&key, sizeof(Key));
+			}
+			else
+			{
+				Key::Serialize(*this, key);
+			}
+
+			if constexpr (std::is_trivial_v<Value>)
+			{
+				WriteData(&value, sizeof(Value));
+			}
+			else
+			{
+				Value::Serialize(*this, value);
+			}
+		}
 	}
 }

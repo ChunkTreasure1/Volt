@@ -4,12 +4,10 @@
 
 namespace Volt
 {
-	class MeshImporter : public AssetSerializer
+	class MeshSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
 		bool Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const override;
-
-	private:
 	};
 }

@@ -57,7 +57,7 @@ namespace Volt
 
 		friend class FbxImporter;
 		friend class MeshCompiler;
-		friend class MeshImporter;
+		friend class MeshSerializer;
 		friend class MeshExporterUtilities;
 		friend class VTMeshImporter;
 		friend class GLTFImporter;
