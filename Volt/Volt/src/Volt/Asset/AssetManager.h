@@ -170,7 +170,7 @@ namespace Volt
 			return nullptr;
 		}
 
-		Ref<Asset> asset;
+		Ref<Asset> asset = CreateRef<T>();
 		Get().LoadAsset(assetHandle, asset);
 
 		if (asset)

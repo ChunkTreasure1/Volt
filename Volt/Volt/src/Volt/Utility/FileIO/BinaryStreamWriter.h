@@ -13,7 +13,7 @@ namespace Volt
 	class BinaryStreamWriter
 	{
 	public:
-		void WriteToDisk(const std::filesystem::path& targetFilepath);
+		void WriteToDisk(const std::filesystem::path& targetFilepath, bool compress, size_t compressedDataOffset);
 		[[nodiscard]] const size_t GetSize() const { return m_data.size(); }
 
 		template<typename T>
@@ -47,6 +47,8 @@ namespace Volt
 		void Write(const std::unordered_map<Key, Value>& data);
 
 	private:
+		bool GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset = 0);
+
 		void WriteData(const void* data, const size_t size, const TypeHeader& typeHeader);
 		void WriteData(const void* data, const size_t size);
 
@@ -146,6 +148,8 @@ namespace Volt
 		}
 		else
 		{
+			WriteData(&header, sizeof(header));
+
 			for (const auto& obj : data)
 			{
 				F::Serialize(*this, obj);
@@ -176,6 +180,8 @@ namespace Volt
 		}
 		else
 		{
+			WriteData(&header, sizeof(header));
+
 			for (const auto& obj : data)
 			{
 				F::Serialize(*this, obj);
@@ -189,6 +195,8 @@ namespace Volt
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::map<Key, Value>& data);
 		header.totalTypeSize = data.size() * sizeof(Key) + data.size() * sizeof(Value);
+
+		WriteData(&header, sizeof(header));
 
 		for (const auto& [key, value] : data)
 		{
@@ -218,6 +226,8 @@ namespace Volt
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::unordered_map<Key, Value>&data);
 		header.totalTypeSize = data.size() * sizeof(Key) + data.size() * sizeof(Value);
+
+		WriteData(&header, sizeof(header));
 
 		for (const auto& [key, value] : data)
 		{

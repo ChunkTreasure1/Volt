@@ -43,7 +43,11 @@ namespace Volt
 		TypeHeader ReadTypeHeader();
 		void ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader);
 
-		std::ifstream m_stream{};
+		bool Decompress(size_t compressedDataOffset);
+
+		std::vector<uint8_t> m_data;
+		size_t m_currentOffset = 0;
+		bool m_streamValid = false;
 	};
 
 	template<typename T>

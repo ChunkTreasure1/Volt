@@ -259,7 +259,7 @@ namespace Volt
 	{
 		Unload(handle);
 
-		Ref<Asset> asset;
+		Ref<Asset> asset = CreateRef<Asset>();
 		LoadAsset(handle, asset);
 	}
 
