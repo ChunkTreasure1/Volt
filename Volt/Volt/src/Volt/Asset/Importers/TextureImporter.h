@@ -16,10 +16,10 @@ namespace Volt
 		static void Initialize();
 		static void Shutdown();
 
-		static Ref<Texture2D> ImportTexture(const std::filesystem::path& path);
+		static bool ImportTexture(const std::filesystem::path& path, Texture2D& outTexture);
 
 	protected:
-		virtual Ref<Texture2D> ImportTextureImpl(const std::filesystem::path& path) = 0;
+		virtual bool ImportTextureImpl(const std::filesystem::path& path, Texture2D& outTexture) = 0;
 
 	private:
 		enum class TextureFormat

@@ -49,7 +49,7 @@ namespace Volt
 		Ref<Mesh> mesh = std::reinterpret_pointer_cast<Mesh>(asset);
 
 		BinaryStreamWriter streamWriter{};
-		AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
 
 		MeshSerializationData serializationData{}; 
 		serializationData.materialHandle = mesh->GetMaterial()->handle;
@@ -62,7 +62,7 @@ namespace Volt
 		streamWriter.Write(serializationData);
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
-		streamWriter.WriteToDisk(filePath, true, sizeof(SerializedAssetMetadata));
+		streamWriter.WriteToDisk(filePath, false, compressedDataOffset);
 	}
 
 	bool MeshSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const

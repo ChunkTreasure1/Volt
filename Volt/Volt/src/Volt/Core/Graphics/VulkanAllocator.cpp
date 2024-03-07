@@ -170,6 +170,13 @@ namespace Volt
 		return allocation;
 	}
 
+	const size_t VulkanAllocator::GetAllocationSize(VmaAllocation allocation)
+	{
+		VmaAllocationInfo allocInfo{};
+		vmaGetAllocationInfo(s_allocatorData->allocator, allocation, &allocInfo);
+		return allocInfo.size;
+	}
+
 	void VulkanAllocator::Free(VmaAllocation allocation)
 	{
 		VT_CORE_ASSERT(allocation, "Unable to free null allocation!");

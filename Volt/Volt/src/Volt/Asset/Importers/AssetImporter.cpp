@@ -32,7 +32,8 @@ namespace Volt
 {
 	bool TextureSourceImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<Texture2D>();
+		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(asset);
+
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
@@ -41,17 +42,14 @@ namespace Volt
 			asset->SetFlag(AssetFlag::Missing, true);
 			return false;
 		}
-		auto mesh = TextureImporter::ImportTexture(filePath);
 
-		if (!mesh)
+		if (!TextureImporter::ImportTexture(filePath, *texture))
 		{
 			asset->SetFlag(AssetFlag::Invalid, true);
 			return false;
 		}
 
-		asset = mesh;
-
-		Renderer::AddTexture(std::reinterpret_pointer_cast<Texture2D>(asset)->GetImage());
+		Renderer::AddTexture(texture->GetImage());
 		return true;
 	}
 

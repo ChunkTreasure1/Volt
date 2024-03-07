@@ -2,12 +2,13 @@
 #include "DefaultTextureImporter.h"
 
 #include "Volt/Rendering/Texture/Texture2D.h"
+#include "Volt/Rendering/Texture/Image2D.h"
 
 #include <stb/stb_image.h>
 
 namespace Volt
 {
-	Ref<Texture2D> DefaultTextureImporter::ImportTextureImpl(const std::filesystem::path& path)
+	bool DefaultTextureImporter::ImportTextureImpl(const std::filesystem::path& path, Texture2D& outTexture)
 	{
 		int32_t width;
 		int32_t height;
@@ -34,9 +35,17 @@ namespace Volt
 			format = ImageFormat::RGBA32F;
 		}
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>(format, width, height, data);
+		ImageSpecification imageSpec{};
+		imageSpec.format = format;
+		imageSpec.usage = ImageUsage::Texture;
+		imageSpec.width = width;
+		imageSpec.height = height;
+
+		Ref<Image2D> image = Image2D::Create(imageSpec, data);
+		outTexture.myImage = image;
+
 		stbi_image_free(data);
 
-		return texture;
+		return true;
 	}
 }

@@ -17,9 +17,9 @@ namespace Volt
 		s_importers.clear();
 	}
 
-	Ref<Texture2D> TextureImporter::ImportTexture(const std::filesystem::path& path)
+	bool TextureImporter::ImportTexture(const std::filesystem::path& path, Texture2D& outTexture)
 	{
-		return s_importers[FormatFromExtension(path)]->ImportTextureImpl(path);
+		return s_importers[FormatFromExtension(path)]->ImportTextureImpl(path, outTexture);
 	}
 
 	TextureImporter::TextureFormat TextureImporter::FormatFromExtension(const std::filesystem::path& path)

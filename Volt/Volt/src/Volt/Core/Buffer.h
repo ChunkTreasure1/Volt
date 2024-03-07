@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Volt/Log/Log.h"
 #include "Volt/Core/Base.h"
 
 #include <fstream>

@@ -35,6 +35,11 @@ namespace Volt
 				m_streamValid = false; 
 			}
 		}
+		else
+		{
+			// Decompress automatically removes compression encoding header
+			m_currentOffset += compressionEncodingHeaderSize;
+		}
 	}
 
 	void BinaryStreamReader::ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader)

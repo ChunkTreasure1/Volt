@@ -53,6 +53,7 @@ namespace Volt
 		PostProcessingMaterial = BIT(25),
 		PostProcessingStack = BIT(26),
 		MotionWeave = BIT(27),
+		TextureSource = BIT(28)
 	};
 
 	inline AssetType operator|(AssetType aLhs, AssetType aRhs)

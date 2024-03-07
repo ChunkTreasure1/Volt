@@ -177,6 +177,7 @@ namespace Volt
 	private:
 		friend class Entity;
 		friend class SceneImporter;
+		friend class SceneSerializer;
 
 		void MoveToLayerRecursive(Entity entity, uint32_t targetLayer);
 

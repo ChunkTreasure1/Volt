@@ -1,12 +1,12 @@
 #include "vtpch.h"
-#include "SourceMeshImporter.h"
+#include "SourceTextureSerializer.h"
 
 #include "Volt/Asset/AssetManager.h"
-#include "Volt/Asset/Importers/MeshTypeImporter.h"
+#include "Volt/Asset/Importers/TextureImporter.h"
 
 namespace Volt
 {
-	bool SourceMeshImporter::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
+	bool SourceTextureSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
 	{
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
@@ -17,8 +17,8 @@ namespace Volt
 			return false;
 		}
 
-		Ref<Mesh> destinationMesh = std::reinterpret_pointer_cast<Mesh>(destinationAsset);
-		if (!MeshTypeImporter::ImportMesh(filePath, *destinationMesh))
+		Ref<Texture2D> destinationTexture = std::reinterpret_pointer_cast<Texture2D>(destinationAsset);
+		if (!TextureImporter::ImportTexture(filePath, *destinationTexture))
 		{
 			destinationAsset->SetFlag(AssetFlag::Invalid, true);
 			return false;

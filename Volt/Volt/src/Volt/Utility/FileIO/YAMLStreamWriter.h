@@ -11,7 +11,7 @@ namespace Volt
 	class YAMLStreamWriter
 	{
 	public:
-		YAMLStreamWriter(const std::filesystem::path& targetFilePath);
+		virtual ~YAMLStreamWriter() = default;
 
 		void BeginMap();
 		void EndMap();
@@ -24,10 +24,7 @@ namespace Volt
 		template<typename K, typename T>
 		void SetKey(const K& key, const T& value);
 
-		const bool WriteToDisk();
-
-	private:
-		std::filesystem::path m_targetFilePath;
+	protected:
 		YAML::Emitter m_emitter;
 	};
 	

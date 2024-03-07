@@ -42,6 +42,7 @@ namespace Volt
 			emptyEncodingHeader.fill(0);
 
 			m_data.insert(m_data.begin(), emptyEncodingHeader.begin(), emptyEncodingHeader.end());
+			size = m_data.size();
 		}
 
 		stream.write(reinterpret_cast<const char*>(writePtr), size);
@@ -100,24 +101,19 @@ namespace Volt
 		return true;
 	}
 
-	void BinaryStreamWriter::WriteData(const void* data, const size_t size, const TypeHeader& typeHeader)
+	void BinaryStreamWriter::WriteTypeHeader(const TypeHeader& typeHeader)
 	{
 		constexpr size_t typeHeaderSize = sizeof(TypeHeader);
 
-		const size_t writeSize = size + typeHeaderSize;
-		size_t currentOffset = m_data.size();
-		m_data.resize(currentOffset + writeSize);
-
-		memcpy_s(&m_data[currentOffset], writeSize, &typeHeader, typeHeaderSize);
-		currentOffset += typeHeaderSize;
-	
-		memcpy_s(&m_data[currentOffset], writeSize - typeHeaderSize, data, size);
+		const size_t offset = m_data.size();
+		m_data.resize(m_data.size() + typeHeaderSize);
+		memcpy_s(&m_data[offset], typeHeaderSize, &typeHeader, typeHeaderSize);
 	}
 
 	void BinaryStreamWriter::WriteData(const void* data, const size_t size)
 	{
 		const size_t writeSize = size;
-		size_t currentOffset = m_data.size();
+		const size_t currentOffset = m_data.size();
 		m_data.resize(currentOffset + writeSize);
 
 		memcpy_s(&m_data[currentOffset], writeSize, data, size);

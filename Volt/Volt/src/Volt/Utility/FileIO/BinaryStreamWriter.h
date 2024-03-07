@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Volt/Core/Buffer.h"
 #include "Volt/Utility/FileIO/StreamCommon.h"
 
 #include <vector>
@@ -26,30 +27,33 @@ namespace Volt
 		template<typename Key, typename Value> [[nodiscard]] const size_t GetBinarySizeOfType(const std::unordered_map<Key, Value>& object) const;
 
 		template<typename T>
-		void Write(const T& data);
+		size_t Write(const T& data);
 
 		template<>
-		void Write(const std::string& data);
+		size_t Write(const std::string& data);
+
+		template<>
+		size_t Write(const Buffer& buffer);
 
 		template<typename F>
-		void Write(const std::vector<F>& data);
+		size_t Write(const std::vector<F>& data);
 
 		template<typename F>
-		void WriteRaw(const std::vector<F>& data);
+		size_t WriteRaw(const std::vector<F>& data);
 
 		template<typename F, size_t COUNT>
-		void Write(const std::array<F, COUNT>& data);
+		size_t Write(const std::array<F, COUNT>& data);
 
 		template<typename Key, typename Value>
-		void Write(const std::map<Key, Value>& data);
+		size_t Write(const std::map<Key, Value>& data);
 
 		template<typename Key, typename Value>
-		void Write(const std::unordered_map<Key, Value>& data);
+		size_t Write(const std::unordered_map<Key, Value>& data);
 
 	private:
 		bool GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset = 0);
 
-		void WriteData(const void* data, const size_t size, const TypeHeader& typeHeader);
+		void WriteTypeHeader(const TypeHeader& typeHeader);
 		void WriteData(const void* data, const size_t size);
 
 		std::vector<uint8_t> m_data;
@@ -107,40 +111,62 @@ namespace Volt
 	}
 
 	template<typename T>
-	inline void BinaryStreamWriter::Write(const T& data)
+	inline size_t BinaryStreamWriter::Write(const T& data)
 	{
 		constexpr size_t typeSize = sizeof(T);
 
+		TypeHeader header{};
+		header.baseTypeSize = typeSize;
+		header.totalTypeSize = typeSize;
+
+		WriteTypeHeader(header);
+
 		if constexpr (std::is_trivial<T>())
 		{
-			TypeHeader header{};
-			header.baseTypeSize = typeSize;
-			header.totalTypeSize = typeSize;
-
-			WriteData(&data, typeSize, header);
+			WriteData(&data, typeSize);
 		}
 		else
 		{
 			T::Serialize(*this, data);
 		}
+
+		return m_data.size();
 	}
 
 	template<>
-	inline void BinaryStreamWriter::Write(const std::string& data)
+	inline size_t BinaryStreamWriter::Write(const std::string& data)
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::string);
 		header.totalTypeSize = static_cast<uint32_t>(data.size());
 
-		WriteData(data.data(), data.size(), header);
+		WriteTypeHeader(header);
+		WriteData(data.data(), data.size());
+
+		return m_data.size();
+	}
+
+	template<>
+	inline size_t BinaryStreamWriter::Write(const Buffer& buffer)
+	{
+		TypeHeader header{};
+		header.baseTypeSize = sizeof(Buffer);
+		header.totalTypeSize = static_cast<uint32_t>(buffer.GetSize());
+	
+		WriteTypeHeader(header);
+		WriteData(buffer.As<void>(), buffer.GetSize());
+
+		return m_data.size();
 	}
 
 	template<typename F>
-	inline void BinaryStreamWriter::Write(const std::vector<F>& data)
+	inline size_t BinaryStreamWriter::Write(const std::vector<F>& data)
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::vector<F>);
-		header.totalTypeSize = static_cast<uint32_t>(data.size() * sizeof(F));
+		header.totalTypeSize = static_cast<uint32_t>(data.size());
+
+		WriteTypeHeader(header);
 
 		if constexpr (std::is_trivial_v<F>)
 		{
@@ -148,55 +174,70 @@ namespace Volt
 		}
 		else
 		{
-			WriteData(&header, sizeof(header));
-
 			for (const auto& obj : data)
 			{
+				TypeHeader objectHeader{};
+				objectHeader.baseTypeSize = sizeof(F);
+				objectHeader.totalTypeSize = sizeof(F);
+
+				WriteTypeHeader(objectHeader);
 				F::Serialize(*this, obj);
 			}
 		}
+
+		return m_data.size();
 	}
 
 	template<typename F>
-	inline void BinaryStreamWriter::WriteRaw(const std::vector<F>& data)
+	inline size_t BinaryStreamWriter::WriteRaw(const std::vector<F>& data)
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::vector<F>);
-		header.totalTypeSize = static_cast<uint32_t>(data.size() * sizeof(F));
+		header.totalTypeSize = static_cast<uint32_t>(data.size());
 
-		WriteData(data.data(), data.size() * sizeof(F), header);
+		WriteTypeHeader(header);
+		WriteData(data.data(), data.size() * sizeof(F));
+
+		return m_data.size();
 	}
 
 	template<typename F, size_t COUNT>
-	inline void BinaryStreamWriter::Write(const std::array<F, COUNT>& data)
+	inline size_t BinaryStreamWriter::Write(const std::array<F, COUNT>& data)
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::array<F, COUNT>);
-		header.totalTypeSize = COUNT * sizeof(F);
+		header.totalTypeSize = COUNT;
+
+		WriteTypeHeader(header);
 
 		if constexpr (std::is_trivial_v<F>)
 		{
-			WriteData(data.data(), COUNT * sizeof(F), header);
+			WriteData(data.data(), COUNT * sizeof(F));
 		}
 		else
 		{
-			WriteData(&header, sizeof(header));
-
 			for (const auto& obj : data)
 			{
+				TypeHeader objectHeader{};
+				objectHeader.baseTypeSize = sizeof(F);
+				objectHeader.totalTypeSize = sizeof(F);
+
+				WriteTypeHeader(objectHeader);
 				F::Serialize(*this, obj);
 			}
 		}
+
+		return m_data.size();
 	}
 
 	template<typename Key, typename Value>
-	inline void BinaryStreamWriter::Write(const std::map<Key, Value>& data)
+	inline size_t BinaryStreamWriter::Write(const std::map<Key, Value>& data)
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::map<Key, Value>& data);
-		header.totalTypeSize = data.size() * sizeof(Key) + data.size() * sizeof(Value);
+		header.totalTypeSize = data.size();
 
-		WriteData(&header, sizeof(header));
+		WriteTypeHeader(header);
 
 		for (const auto& [key, value] : data)
 		{
@@ -218,14 +259,16 @@ namespace Volt
 				Value::Serialize(*this, value);
 			}
 		}
+
+		return m_data.size();
 	}
 
 	template<typename Key, typename Value>
-	inline void BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
+	inline size_t BinaryStreamWriter::Write(const std::unordered_map<Key, Value>& data)
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(std::unordered_map<Key, Value>&data);
-		header.totalTypeSize = data.size() * sizeof(Key) + data.size() * sizeof(Value);
+		header.totalTypeSize = data.size();
 
 		WriteData(&header, sizeof(header));
 
@@ -249,5 +292,7 @@ namespace Volt
 				Value::Serialize(*this, value);
 			}
 		}
+
+		return m_data.size();
 	}
 }

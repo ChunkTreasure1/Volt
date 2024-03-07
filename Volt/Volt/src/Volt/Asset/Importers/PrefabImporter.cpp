@@ -6,7 +6,7 @@
 
 #include "Volt/Asset/Importers/SceneImporter.h"
 
-#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamWriter.h"
 #include "Volt/Utility/FileIO/YAMLStreamReader.h"
 
 namespace Volt
@@ -69,7 +69,7 @@ namespace Volt
 	{
 		const Ref<Prefab> prefab = std::reinterpret_pointer_cast<Prefab>(asset);
 	
-		YAMLStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
+		YAMLFileStreamWriter streamWriter{ AssetManager::GetFilesystemPath(metadata.filePath) };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Prefab");

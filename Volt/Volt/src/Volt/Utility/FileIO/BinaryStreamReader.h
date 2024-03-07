@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Volt/Core/Buffer.h"
 #include "Volt/Utility/FileIO/StreamCommon.h"
 
 #include <fstream>
@@ -23,6 +24,9 @@ namespace Volt
 
 		template<>
 		void Read(std::string& data);
+
+		template<>
+		void Read(Buffer& data);
 
 		template<typename F>
 		void Read(std::vector<F>& data);
@@ -53,19 +57,21 @@ namespace Volt
 	template<typename T>
 	inline void BinaryStreamReader::Read(T& outData)
 	{
+		constexpr size_t typeSize = sizeof(T);
+
+		TypeHeader typeHeader{};
+		typeHeader.baseTypeSize = static_cast<uint16_t>(typeSize);
+		typeHeader.totalTypeSize = static_cast<uint32_t>(typeSize);
+
+		TypeHeader serializedTypeHeader = ReadTypeHeader();
+
 		if constexpr (std::is_trivial<T>())
 		{
-			constexpr size_t typeSize = sizeof(T);
-
-			TypeHeader typeHeader{};
-			typeHeader.baseTypeSize = static_cast<uint16_t>(typeSize);
-			typeHeader.totalTypeSize = static_cast<uint32_t>(typeSize);
-		
-			TypeHeader serializedTypeHeader = ReadTypeHeader();
 			ReadData(&outData, serializedTypeHeader, typeHeader);
 		}
 		else
 		{
+			VT_CORE_ASSERT(serializedTypeHeader.baseTypeSize == typeHeader.baseTypeSize, "Base Type sizes must match!");
 			T::Deserialize(*this, outData);
 		}
 	}
@@ -81,6 +87,17 @@ namespace Volt
 		ReadData(data.data(), serializedTypeHeader, typeHeader);
 	}
 
+	template<>
+	inline void BinaryStreamReader::Read(Buffer& data)
+	{
+		TypeHeader typeHeader{};
+		typeHeader.baseTypeSize = sizeof(Buffer);
+		TypeHeader serializedTypeHeader = ReadTypeHeader();
+
+		data.Resize(serializedTypeHeader.totalTypeSize);
+		ReadData(data.As<void>(), serializedTypeHeader, typeHeader);
+	}
+
 	template<typename F>
 	inline void BinaryStreamReader::Read(std::vector<F>& data)
 	{
@@ -88,16 +105,21 @@ namespace Volt
 		typeHeader.baseTypeSize = sizeof(std::vector<F>);
 		TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-		data.resize(serializedTypeHeader.totalTypeSize / sizeof(F));
+		data.resize(serializedTypeHeader.totalTypeSize);
 
 		if constexpr (std::is_trivial<F>())
 		{
+			// We must multiply type size to get correct byte size
+			serializedTypeHeader.totalTypeSize *= sizeof(F);
 			ReadData(data.data(), serializedTypeHeader, typeHeader);
 		}
 		else
 		{
 			for (size_t i = 0; i < data.size(); i++)
 			{
+				TypeHeader serializedObjectTypeHeader = ReadTypeHeader();
+				VT_CORE_ASSERT(serializedObjectTypeHeader.baseTypeSize == sizeof(F), "Type sizes must match!");
+
 				F::Deserialize(*this, data[i]);
 			}
 		}
@@ -110,7 +132,8 @@ namespace Volt
 		typeHeader.baseTypeSize = sizeof(std::vector<F>);
 		TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-		data.resize(serializedTypeHeader.totalTypeSize / sizeof(F));
+		data.resize(serializedTypeHeader.totalTypeSize);
+		serializedTypeHeader.totalTypeSize *= sizeof(F);
 		ReadData(data.data(), serializedTypeHeader, typeHeader);
 	}
 
@@ -123,12 +146,17 @@ namespace Volt
 
 		if constexpr (std::is_trivial<F>())
 		{
+			// We must multiply type size to get correct byte size
+			serializedTypeHeader.totalTypeSize *= sizeof(F);
 			ReadData(data.data(), serializedTypeHeader, typeHeader);
 		}
 		else
 		{
 			for (size_t i = 0; i < data.size(); i++)
 			{
+				TypeHeader serializedObjectTypeHeader = ReadTypeHeader();
+				VT_CORE_ASSERT(serializedObjectTypeHeader.baseTypeSize == sizeof(F), "Type sizes must match!");
+
 				F::Deserialize(*this, data[i]);
 			}
 		}
@@ -141,7 +169,7 @@ namespace Volt
 		typeHeader.baseTypeSize = sizeof(std::map<Key, Value>);
 		TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-		const size_t elementCount = serializedTypeHeader.totalTypeSize / (sizeof(Key) + sizeof(Value));
+		const size_t elementCount = serializedTypeHeader.totalTypeSize;
 
 		for (size_t i = 0; i < elementCount; i++)
 		{
@@ -186,7 +214,7 @@ namespace Volt
 		typeHeader.baseTypeSize = sizeof(std::unordered_map<Key, Value>);
 		TypeHeader serializedTypeHeader = ReadTypeHeader();
 
-		const size_t elementCount = serializedTypeHeader.totalTypeSize / (sizeof(Key) + sizeof(Value));
+		const size_t elementCount = serializedTypeHeader.totalTypeSize;
 
 		for (size_t i = 0; i < elementCount; i++)
 		{

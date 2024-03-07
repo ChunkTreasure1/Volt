@@ -4,7 +4,7 @@
 
 namespace Volt
 {
-	class SourceMeshImporter : public AssetSerializer
+	class SourceTextureSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override {} // Type is not serializable

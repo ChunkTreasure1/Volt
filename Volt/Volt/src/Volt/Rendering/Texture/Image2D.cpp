@@ -559,6 +559,12 @@ namespace Volt
 		GraphicsContext::GetDevice()->FlushCommandBuffer(commandBuffer);
 	}
 
+	const size_t Image2D::GetAllocationSize() const
+	{
+		VulkanAllocator allocator{};
+		return allocator.GetAllocationSize(myAllocation);
+	}
+
 	Ref<Image2D> Image2D::Create(const ImageSpecification& specification, const void* data)
 	{
 		return CreateRef<Image2D>(specification, data);

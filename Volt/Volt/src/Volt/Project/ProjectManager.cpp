@@ -8,7 +8,7 @@
 #include "Volt/Utility/SerializationMacros.h"
 
 #include "Volt/Utility/FileIO/YAMLStreamReader.h"
-#include "Volt/Utility/FileIO/YAMLStreamWriter.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamWriter.h"
 
 namespace Volt
 {
@@ -44,7 +44,7 @@ namespace Volt
 
 	void ProjectManager::SerializeProject()
 	{
-		YAMLStreamWriter streamWriter{ m_currentProject->projectFilePath };
+		YAMLFileStreamWriter streamWriter{ m_currentProject->projectFilePath };
 
 		streamWriter.BeginMap();
 		streamWriter.BeginMapNamned("Project");

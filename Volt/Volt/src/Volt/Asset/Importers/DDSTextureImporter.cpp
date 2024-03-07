@@ -59,6 +59,9 @@ namespace Volt
 
 				case tdl::DDSFile::DXGIFormat::BC5_UNorm: return ImageFormat::BC5;
 
+				case tdl::DDSFile::DXGIFormat::BC6H_SF16: return ImageFormat::BC6H_SF16;
+				case tdl::DDSFile::DXGIFormat::BC6H_UF16: return ImageFormat::BC6H_UF16;
+
 				case tdl::DDSFile::DXGIFormat::BC7_UNorm: return ImageFormat::BC7;
 				case tdl::DDSFile::DXGIFormat::BC7_UNorm_SRGB: return ImageFormat::BC7SRGB;
 			}
@@ -67,7 +70,7 @@ namespace Volt
 		}
 	}
 
-	Ref<Texture2D> DDSTextureImporter::ImportTextureImpl(const std::filesystem::path& path)
+	bool DDSTextureImporter::ImportTextureImpl(const std::filesystem::path& path, Texture2D& outTexture)
 	{
 		tdl::DDSFile dds;
 		auto returnCode = dds.Load(path.string().c_str());
@@ -79,7 +82,7 @@ namespace Volt
 		if (dds.GetTextureDimension() != tdl::DDSFile::TextureDimension::Texture2D)
 		{
 			VT_CORE_ERROR("Texture {0} is not 2D!", path.string().c_str());
-			return nullptr;
+			return false;
 		}
 
 		auto imageData = dds.GetImageData();
@@ -171,9 +174,8 @@ namespace Volt
 		Utility::TransitionImageLayout(image->GetHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		image->OverrideLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		Ref<Texture2D> texture = CreateRef<Texture2D>();
-		texture->myImage = image;
+		outTexture.myImage = image;
 
-		return texture;
+		return true;
 	}
 }

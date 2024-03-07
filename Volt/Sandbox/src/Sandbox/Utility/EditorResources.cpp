@@ -142,9 +142,10 @@ Ref<Volt::Mesh> EditorResources::GetEditorMesh(EditorMesh mesh)
 
 Ref<Volt::Texture2D> EditorResources::TryLoadIcon(const std::filesystem::path& path)
 {
-	Ref<Volt::Texture2D> texture = Volt::TextureImporter::ImportTexture(path);
+	Ref<Volt::Texture2D> texture = CreateRef<Volt::Texture2D>();
+	Volt::TextureImporter::ImportTexture(path, *texture);
 
-	if (!texture)
+	if (!texture->IsValid())
 	{
 		texture = Volt::Renderer::GetDefaultData().whiteTexture;
 	}

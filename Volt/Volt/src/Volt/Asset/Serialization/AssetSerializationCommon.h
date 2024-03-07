@@ -16,9 +16,4 @@ namespace Volt
 		static void Serialize(BinaryStreamWriter& streamWriter, const SerializedAssetMetadata& data);
 		static void Deserialize(BinaryStreamReader& streamReader, SerializedAssetMetadata& outData);
 	};
-
-	struct SerializedAssetMetadataHeader
-	{
-		size_t assetMetadataSize;
-	};
 }

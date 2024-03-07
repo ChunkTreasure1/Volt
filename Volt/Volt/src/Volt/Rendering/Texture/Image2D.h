@@ -59,6 +59,8 @@ namespace Volt
 
 		void Unmap();
 
+		const size_t GetAllocationSize() const;
+
 		static Ref<Image2D> Create(const ImageSpecification& specification, const void* data = nullptr);
 		static Ref<Image2D> Create(const ImageSpecification& specification, bool transitionTolayout);
 
