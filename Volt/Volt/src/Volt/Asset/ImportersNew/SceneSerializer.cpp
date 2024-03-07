@@ -20,7 +20,7 @@
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Utility/FileIO/YAMLMemoryStreamWriter.h"
-#include "Volt/Utility/FileIO/YAMLStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamReader.h"
 
 namespace Volt
 {
@@ -40,11 +40,11 @@ namespace Volt
 	}
 
 	template<typename T>
-	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&, uint8_t*, const size_t)>>& outTypes)
+	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLFileStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLFileStreamReader& streamReader, uint8_t* data, const size_t offset)
 		{
 			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T());
 		};
@@ -136,6 +136,11 @@ namespace Volt
 			directoryPath = directoryPath.parent_path();
 		}
 
+		if (!std::filesystem::exists(directoryPath))
+		{
+			std::filesystem::create_directories(directoryPath);
+		}
+
 		std::filesystem::path scenePath = directoryPath / (metadata.filePath.stem().string() + ".vtasset");
 
 		// Serialize scene file
@@ -164,13 +169,38 @@ namespace Volt
 			sceneFileWriter.Write(buffer);
 			buffer.Release();
 
-			sceneFileWriter.WriteToDisk(scenePath, true, compressedDataOffset); // #TODO_Ivar: Fix compressed offset
+			sceneFileWriter.WriteToDisk(scenePath, true, compressedDataOffset);
+		}
+
+		if (scene->m_sceneSettings.useWorldEngine)
+		{
+			SerializeEntities(metadata, scene, directoryPath);
 		}
 	}
 
 	bool SceneSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
 	{
-		return false;
+		Ref<Scene> scene = reinterpret_pointer_cast<Scene>(destinationAsset);
+
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+
+		if (!std::filesystem::exists(filePath))
+		{
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Missing, true);
+			return false;
+		}
+
+		BinaryStreamReader streamReader{ filePath };
+		if (!streamReader.IsStreamValid())
+		{
+			VT_CORE_ERROR("Failed to open file {0}!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+
+		return true;
 	}
 
 	void SceneSerializer::SerializeEntity(entt::entity id, const AssetMetadata& metadata, const Ref<Scene>& scene, YAMLMemoryStreamWriter& streamWriter) const

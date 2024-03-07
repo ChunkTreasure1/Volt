@@ -45,6 +45,7 @@
 #include <imgui.h>
 
 #include "Volt/Asset/ImportersNew/MeshSerializer.h"
+#include "Volt/Asset/ImportersNew/SceneSerializer.h"
 
 namespace Volt
 {
@@ -146,9 +147,15 @@ namespace Volt
 		metadata.filePath = "Assets/TestCube.vtasset";
 
 		serializer->Serialize(metadata, mesh);
-		
+
 		Ref<Mesh> testMesh = CreateRef<Mesh>();
 		serializer->Deserialize(metadata, testMesh);
+
+		Ref<SceneSerializer> sceneSerializer = CreateRef<SceneSerializer>();
+		Ref<Scene> scene = Scene::CreateDefaultScene("TestScene");
+
+		metadata.filePath = "Assets/TestScene/TestScene.vtasset";
+		sceneSerializer->Serialize(metadata, scene);
 	}
 
 	Application::~Application()

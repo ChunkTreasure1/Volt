@@ -34,11 +34,11 @@ namespace Volt
 	}
 
 	template<typename T>
-	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLStreamReader&, uint8_t*, const size_t)>>& outTypes)
+	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLFileStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLFileStreamReader& streamReader, uint8_t* data, const size_t offset)
 		{
 			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T());
 		};
@@ -136,7 +136,7 @@ namespace Volt
 			return false;
 		}
 
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(filePath))
 		{
@@ -244,7 +244,7 @@ namespace Volt
 
 			auto& sceneLayer = sceneLayers.emplace_back();
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(layerPath))
 			{
 				continue;
@@ -399,7 +399,7 @@ namespace Volt
 
 			const auto& path = entityPaths.at(i);
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(path))
 			{
 				return;
@@ -435,7 +435,7 @@ namespace Volt
 		streamWriter.EndMap();
 	}
 
-	void SceneImporter::DeserializeWorldEngine(const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeWorldEngine(const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const
 	{
 		auto& worldEngine = scene->m_worldEngine;
 
@@ -482,7 +482,7 @@ namespace Volt
 		{
 			const auto& path = entityPaths.at(i);
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(path))
 			{
 				return;
@@ -762,7 +762,7 @@ namespace Volt
 		streamWriter.EndSequence();
 	}
 
-	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -856,7 +856,7 @@ namespace Volt
 		streamReader.ExitScope();
 	}
 
-	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -909,7 +909,7 @@ namespace Volt
 		});
 	}
 
-	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -966,7 +966,7 @@ namespace Volt
 		});
 	}
 
-	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLStreamReader& streamReader) const
+	void SceneImporter::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLFileStreamReader& streamReader) const
 	{
 		VT_PROFILE_FUNCTION();
 
@@ -1097,7 +1097,7 @@ namespace Volt
 
 			const auto& path = entityPaths.at(i);
 
-			YAMLStreamReader streamReader{};
+			YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(path))
 			{
 				return;

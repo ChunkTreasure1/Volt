@@ -11,6 +11,7 @@ namespace Volt
 		streamWriter.Write(data.handle);
 		streamWriter.Write(data.type);
 		streamWriter.Write(data.version);
+		streamWriter.Write(data.dependencies);
 	}
 
 	void SerializedAssetMetadata::Deserialize(BinaryStreamReader& streamReader, SerializedAssetMetadata& outData)
@@ -18,5 +19,6 @@ namespace Volt
 		streamReader.Read(outData.handle);
 		streamReader.Read(outData.type);
 		streamReader.Read(outData.version);
+		streamReader.Read(outData.dependencies);
 	}
 }

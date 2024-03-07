@@ -151,7 +151,7 @@ namespace Volt
 	{
 		TypeHeader header{};
 		header.baseTypeSize = sizeof(Buffer);
-		header.totalTypeSize = static_cast<uint32_t>(buffer.GetSize());
+		header.totalTypeSize = static_cast<uint32_t>(buffer.GetSize()); 
 	
 		WriteTypeHeader(header);
 		WriteData(buffer.As<void>(), buffer.GetSize());
@@ -176,12 +176,7 @@ namespace Volt
 		{
 			for (const auto& obj : data)
 			{
-				TypeHeader objectHeader{};
-				objectHeader.baseTypeSize = sizeof(F);
-				objectHeader.totalTypeSize = sizeof(F);
-
-				WriteTypeHeader(objectHeader);
-				F::Serialize(*this, obj);
+				Write(obj);
 			}
 		}
 
@@ -218,12 +213,7 @@ namespace Volt
 		{
 			for (const auto& obj : data)
 			{
-				TypeHeader objectHeader{};
-				objectHeader.baseTypeSize = sizeof(F);
-				objectHeader.totalTypeSize = sizeof(F);
-
-				WriteTypeHeader(objectHeader);
-				F::Serialize(*this, obj);
+				Write(obj);
 			}
 		}
 

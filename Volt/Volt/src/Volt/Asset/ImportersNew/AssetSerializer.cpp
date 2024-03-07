@@ -9,6 +9,7 @@ namespace Volt
 		serializedMetadata.handle = metadata.handle;
 		serializedMetadata.type = metadata.type;
 		serializedMetadata.version = version;
+		serializedMetadata.dependencies = metadata.dependencies;
 
 		return streamWriter.Write(serializedMetadata);
 	}

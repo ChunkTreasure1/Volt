@@ -6,7 +6,7 @@
 #include <Volt/Asset/Prefab.h>
 
 #include <Volt/Utility/UIUtility.h>
-#include <Volt/Utility/FileIO/YAMLStreamReader.h>
+#include <Volt/Utility/FileIO/YAMLFileStreamReader.h>
 
 #include <Volt/Asset/Asset.h>
 #include <Volt/Asset/Animation/AnimatedCharacter.h>
@@ -58,7 +58,7 @@ struct TypeIndexContainer
 };
 
 static std::unordered_map<PreV113PropertyType, TypeIndexContainer> s_preV113PropTypeToTypeIndexMap;
-static std::unordered_map<std::type_index, std::function<void(Volt::YAMLStreamReader&, uint8_t*, const size_t)>> s_arrayDeserializers;
+static std::unordered_map<std::type_index, std::function<void(Volt::YAMLFileStreamReader&, uint8_t*, const size_t)>> s_arrayDeserializers;
 static std::unordered_map<VoltGUID, std::unordered_map<std::string, std::string>> s_componentMemberRemap;
 
 static bool s_initialize = false;
@@ -66,7 +66,7 @@ static bool s_initialize = false;
 template<typename T>
 void RegisterArrayDeserializationFunction()
 {
-	s_arrayDeserializers[std::type_index{ typeid(T) }] = [](Volt::YAMLStreamReader& streamReader, uint8_t* data, const size_t offset)
+	s_arrayDeserializers[std::type_index{ typeid(T) }] = [](Volt::YAMLFileStreamReader& streamReader, uint8_t* data, const size_t offset)
 	{
 		*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("value", T());
 	};
@@ -291,7 +291,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 	{
 		for (const auto& characterPath : characterAssets)
 		{
-			Volt::YAMLStreamReader metaStreamReader{};
+			Volt::YAMLFileStreamReader metaStreamReader{};
 
 			if (!metaStreamReader.OpenFile(characterPath.string() + ".vtmeta"))
 			{
@@ -306,7 +306,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 
 			if (characterAssetHandle == handle)
 			{
-				Volt::YAMLStreamReader charStreamReader{};
+				Volt::YAMLFileStreamReader charStreamReader{};
 
 				if (!charStreamReader.OpenFile(characterPath))
 				{
@@ -337,7 +337,7 @@ void ProjectUpgradeModal::ConvertAnimationGraphsToV0_1_2()
 		AnimGraphDescriptor& descriptor = animGraphDescriptors.emplace_back();
 		{ // convert the animgraph
 			{// parse meta
-				Volt::YAMLStreamReader metaStreamReader{};
+				Volt::YAMLFileStreamReader metaStreamReader{};
 
 				if (!metaStreamReader.OpenFile(animGraphPath.string() + ".vtmeta"))
 				{
@@ -677,7 +677,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 
 		// Load scene name
 		{
-			Volt::YAMLStreamReader streamReader{};
+			Volt::YAMLFileStreamReader streamReader{};
 			if (!streamReader.OpenFile(sceneFilePath))
 			{
 				VT_CORE_ERROR("[Project Upgrade]: Unable to open scene file! Skipping!");
@@ -717,7 +717,7 @@ void ProjectUpgradeModal::ConvertScenesToV113()
 
 void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& filePath)
 {
-	Volt::YAMLStreamReader streamReader{};
+	Volt::YAMLFileStreamReader streamReader{};
 	if (!streamReader.OpenFile(filePath))
 	{
 		return;
@@ -768,7 +768,7 @@ void ProjectUpgradeModal::ConvertPreV113Prefab(const std::filesystem::path& file
 
 void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, Volt::SceneLayer& sceneLayer, const std::filesystem::path& layerPath, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping)
 {
-	Volt::YAMLStreamReader streamReader{};
+	Volt::YAMLFileStreamReader streamReader{};
 
 	if (!streamReader.OpenFile(layerPath))
 	{
@@ -790,7 +790,7 @@ void ProjectUpgradeModal::DeserializePreV113SceneLayer(Ref<Volt::Scene> scene, V
 	streamReader.ExitScope();
 }
 
-void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity)
+void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt::YAMLFileStreamReader& streamReader, std::map<Volt::EntityID, Volt::EntityID>& entityRemapping, bool isPrefabEntity)
 {
 	if (!isPrefabEntity)
 	{
@@ -927,7 +927,7 @@ void ProjectUpgradeModal::DeserializePreV113Entity(Ref<Volt::Scene> scene, Volt:
 	}
 }
 
-void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLStreamReader& streamReader)
+void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, const Volt::IComponentTypeDesc* componentDesc, Volt::YAMLFileStreamReader& streamReader)
 {
 	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
 
@@ -1009,7 +1009,7 @@ void ProjectUpgradeModal::DeserializePreV113Component(uint8_t* componentData, co
 	});
 }
 
-void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, Volt::YAMLStreamReader& streamReader)
+void ProjectUpgradeModal::DeserializePreV113MonoScripts(Ref<Volt::Scene> scene, const Volt::EntityID entityId, Volt::YAMLFileStreamReader& streamReader)
 {
 	Volt::Entity entity = scene->GetEntityFromUUID(entityId);
 	const auto& typeDeserializers = Volt::SceneImporter::GetTypeDeserializers();
@@ -1288,7 +1288,7 @@ const Volt::ComponentMember* ProjectUpgradeModal::TryGetComponentMemberFromName(
 
 std::pair<std::filesystem::path, Volt::AssetHandle> ProjectUpgradeModal::DeserializeV0MetaFile(const std::filesystem::path& metaPath)
 {
-	Volt::YAMLStreamReader streamReader{};
+	Volt::YAMLFileStreamReader streamReader{};
 
 	if (!streamReader.OpenFile(metaPath))
 	{

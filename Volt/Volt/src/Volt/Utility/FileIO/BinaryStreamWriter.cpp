@@ -42,6 +42,7 @@ namespace Volt
 			emptyEncodingHeader.fill(0);
 
 			m_data.insert(m_data.begin(), emptyEncodingHeader.begin(), emptyEncodingHeader.end());
+			writePtr = m_data.data();
 			size = m_data.size();
 		}
 

@@ -117,10 +117,7 @@ namespace Volt
 		{
 			for (size_t i = 0; i < data.size(); i++)
 			{
-				TypeHeader serializedObjectTypeHeader = ReadTypeHeader();
-				VT_CORE_ASSERT(serializedObjectTypeHeader.baseTypeSize == sizeof(F), "Type sizes must match!");
-
-				F::Deserialize(*this, data[i]);
+				Read(data[i]);
 			}
 		}
 	}
@@ -154,10 +151,7 @@ namespace Volt
 		{
 			for (size_t i = 0; i < data.size(); i++)
 			{
-				TypeHeader serializedObjectTypeHeader = ReadTypeHeader();
-				VT_CORE_ASSERT(serializedObjectTypeHeader.baseTypeSize == sizeof(F), "Type sizes must match!");
-
-				F::Deserialize(*this, data[i]);
+				Read(data[i]);
 			}
 		}
 	}

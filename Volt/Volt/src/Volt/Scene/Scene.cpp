@@ -737,6 +737,8 @@ namespace Volt
 			}
 		}
 
+		newScene->m_sceneSettings.useWorldEngine = true;
+
 		return newScene;
 	}
 

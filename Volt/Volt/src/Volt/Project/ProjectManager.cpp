@@ -7,7 +7,7 @@
 #include "Volt/Utility/YAMLSerializationHelpers.h"
 #include "Volt/Utility/SerializationMacros.h"
 
-#include "Volt/Utility/FileIO/YAMLStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLFileStreamReader.h"
 #include "Volt/Utility/FileIO/YAMLFileStreamWriter.h"
 
 namespace Volt
@@ -65,7 +65,7 @@ namespace Volt
 
 	void ProjectManager::DeserializeProject()
 	{
-		YAMLStreamReader streamReader{};
+		YAMLFileStreamReader streamReader{};
 
 		if (!streamReader.OpenFile(m_currentProject->projectFilePath))
 		{
