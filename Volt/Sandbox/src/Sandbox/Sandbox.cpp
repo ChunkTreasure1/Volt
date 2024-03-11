@@ -90,6 +90,9 @@
 
 #include <imgui.h>
 
+#include "Volt/Asset/ImportersNew/SourceTextureSerializer.h"
+#include "Volt/Asset/ImportersNew/TextureSerializer.h"
+
 Sandbox::Sandbox()
 {
 	VT_ASSERT(!myInstance, "Sandbox already exists!");
@@ -100,6 +103,8 @@ Sandbox::~Sandbox()
 {
 	myInstance = nullptr;
 }
+
+static Ref<Volt::Texture2D> tex;
 
 void Sandbox::OnAttach()
 {
@@ -223,6 +228,20 @@ void Sandbox::OnAttach()
 	Volt::DiscordSDK::UpdateRichPresence();
 
 	myRuntimeScene->InitializeEngineScripts();
+
+	Volt::AssetMetadata metadata;
+	Ref<Volt::SourceTextureSerializer> texSourceImporter = CreateRef<Volt::SourceTextureSerializer>();
+	metadata.filePath = "Assets/Player Test/CH_Player_01_MAT_C.dds";
+
+	Ref<Volt::Texture2D> sourceTex = CreateRef<Volt::Texture2D>();
+	texSourceImporter->Deserialize(metadata, sourceTex);
+
+	Ref<Volt::TextureSerializer> texSerializer = CreateRef<Volt::TextureSerializer>();
+	metadata.filePath = "Assets/Player Test/CH_Player_01_MAT_C.vtasset";
+	texSerializer->Serialize(metadata, sourceTex);
+
+	tex = CreateRef<Volt::Texture2D>();
+	texSerializer->Deserialize(metadata, tex);
 
 	m_isInitialized = true;
 }
@@ -878,6 +897,13 @@ bool Sandbox::OnImGuiUpdateEvent(Volt::AppImGuiUpdateEvent& e)
 	{
 		const float buildProgess = GameBuilder::GetBuildProgress();
 		RenderProgressBar(buildProgess);
+	}
+
+	if (ImGui::Begin("Test"))
+	{
+		ImGui::Image(UI::GetTextureID(tex), { 512, 512 });
+
+		ImGui::End();
 	}
 
 	return false;

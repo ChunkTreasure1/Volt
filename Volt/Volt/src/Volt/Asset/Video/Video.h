@@ -50,8 +50,9 @@ namespace Volt
 
 	public:
 		Video() = default;
-		Video(const std::filesystem::path& aPath);
 		~Video();
+
+		void Initialize(const std::filesystem::path& filePath);
 
 		void Play(bool aLoop = false);
 		void Pause();

@@ -191,10 +191,10 @@ namespace Volt
 			HLSL
 		};
 
-		Shader(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile);
 		Shader() = default;
 		~Shader();
 
+		void Initialize(const std::string& name, const std::vector<std::filesystem::path>& shaderFiles, bool forceCompile);
 		const bool Reload(bool forceCompile);
 
 		VkDescriptorSet AllocateDescriptorSet(uint32_t set, VkDescriptorPool pool);
@@ -216,6 +216,7 @@ namespace Volt
 
 	private:
 		friend class ShaderImporter;
+		friend class ShaderSerializer;
 
 		struct TypeCount
 		{

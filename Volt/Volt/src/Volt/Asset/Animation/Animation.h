@@ -2,6 +2,9 @@
 
 #include "Volt/Asset/Asset.h"
 
+#include "Volt/Utility/FileIO/BinaryStreamWriter.h"
+#include "Volt/Utility/FileIO/BinaryStreamReader.h"
+
 #include <glm/glm.hpp>
 
 namespace Volt
@@ -15,11 +18,35 @@ namespace Volt
 			glm::vec3 position = { 0.f };
 			glm::quat rotation = { 1.f, 0.f, 0.f, 0.f };
 			glm::vec3 scale = { 1.f };
+
+			static void Serialize(BinaryStreamWriter& streamWriter, const TRS& data)
+			{
+				streamWriter.Write(data.position);
+				streamWriter.Write(data.rotation);
+				streamWriter.Write(data.scale);
+			}
+
+			static void Deserialize(BinaryStreamReader& streamReader, TRS& outData)
+			{
+				streamReader.Read(outData.position);
+				streamReader.Read(outData.rotation);
+				streamReader.Read(outData.scale);
+			}
 		};
 
 		struct Pose
 		{
 			std::vector<TRS> localTRS;
+
+			static void Serialize(BinaryStreamWriter& streamWriter, const Pose& data)
+			{
+				streamWriter.WriteRaw(data.localTRS);
+			}
+
+			static void Deserialize(BinaryStreamReader& streamReader, Pose& outData)
+			{
+				streamReader.ReadRaw(outData.localTRS);
+			}
 		};
 
 		const std::vector<glm::mat4> Sample(float aStartTime, Ref<Skeleton> aSkeleton, bool looping);
@@ -51,6 +78,7 @@ namespace Volt
 
 		friend class FbxImporter;
 		friend class AnimationImporter;
+		friend class AnimationSerializer;
 
 		std::vector<Pose> myFrames;
 

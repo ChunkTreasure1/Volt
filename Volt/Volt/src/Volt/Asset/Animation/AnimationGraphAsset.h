@@ -42,6 +42,7 @@ namespace Volt
 		Ref<GraphKey::Node> GetRelevantAnimationNode();
 	private:
 		friend class AnimationGraphImporter;
+		friend class AnimationGraphSerializer;
 
 		AssetHandle mySkeletonHandle = Asset::Null();
 		std::string myGraphState;

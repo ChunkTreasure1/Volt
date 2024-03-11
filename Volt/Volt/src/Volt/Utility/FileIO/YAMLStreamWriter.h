@@ -24,6 +24,8 @@ namespace Volt
 		template<typename K, typename T>
 		void SetKey(const K& key, const T& value);
 
+		inline YAML::Emitter& GetEmitter() { return m_emitter; }
+
 	protected:
 		YAML::Emitter m_emitter;
 	};

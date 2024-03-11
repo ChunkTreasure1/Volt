@@ -19,8 +19,9 @@ namespace Volt
 		{
 		public:
 			NavMesh() = default;
-			NavMesh(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache = nullptr);
 			virtual ~NavMesh() = default;
+
+			void Initialize(Ref<dtNavMesh> navmesh, Ref<dtTileCache> tilecache = nullptr);
 
 			Ref<DtNavMesh>& GetNavMesh() { return myNavMesh; }
 			Ref<DtCrowd>& GetCrowd() { return myCrowd; }
@@ -30,6 +31,7 @@ namespace Volt
 
 		private:
 			friend class NavigationSystem;
+
 			void Update(float deltaTime);
 
 			Ref<DtNavMesh> myNavMesh = nullptr;

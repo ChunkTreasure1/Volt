@@ -1638,7 +1638,9 @@ void AssetBrowserPanel::CreateNewShaderModal()
 				fout << out.c_str();
 				fout.close();
 
-				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + ".vtsdef", tempName, shaderPaths, false);
+				Ref<Volt::Shader> newShader = Volt::AssetManager::CreateAsset<Volt::Shader>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + ".vtsdef");
+				newShader->Initialize(tempName, shaderPaths, false);
+
 				Volt::ShaderRegistry::Register(tempName, newShader);
 			}
 

@@ -14,7 +14,7 @@ namespace Volt
 {
 	using AssetHandle = UUID;
 
-	enum class AssetFlag : uint16_t
+	enum class AssetFlag : uint8_t
 	{
 		None = 0,
 		Missing = BIT(0),
@@ -22,7 +22,7 @@ namespace Volt
 		Queued = BIT(2)
 	};
 
-	enum class AssetType : uint32_t
+	enum class AssetType : uint64_t
 	{
 		None = 0,
 		Mesh = BIT(0),
@@ -206,7 +206,7 @@ namespace Volt
 	public:
 		virtual ~Asset() = default;
 
-		inline bool IsValid() const { return ((assetFlags & (uint16_t)AssetFlag::Missing) | (assetFlags & (uint16_t)AssetFlag::Invalid) | (assetFlags & (uint16_t)AssetFlag::Queued)) == 0; }
+		inline bool IsValid() const { return ((assetFlags & (uint8_t)AssetFlag::Missing) | (assetFlags & (uint8_t)AssetFlag::Invalid) | (assetFlags & (uint8_t)AssetFlag::Queued)) == 0; }
 
 		inline virtual bool operator==(const Asset& other)
 		{
@@ -218,16 +218,16 @@ namespace Volt
 			return !(*this == other);
 		}
 
-		inline bool IsFlagSet(AssetFlag flag) { return (assetFlags & (uint16_t)flag) != 0; }
+		inline bool IsFlagSet(AssetFlag flag) { return (assetFlags & (uint8_t)flag) != 0; }
 		inline void SetFlag(AssetFlag flag, bool state)
 		{
 			if (state)
 			{
-				assetFlags |= (uint16_t)flag;
+				assetFlags |= (uint8_t)flag;
 			}
 			else
 			{
-				assetFlags &= ~(uint16_t)flag;
+				assetFlags &= ~(uint8_t)flag;
 			}
 		}
 
@@ -235,8 +235,9 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetType() { assert(false); return AssetType::None; }
+		//virtual uint32_t GetVersion() = 0; // #TODO_Ivar: Implement
 
-		uint16_t assetFlags = (uint16_t)AssetFlag::None;
+		uint8_t assetFlags = (uint8_t)AssetFlag::None;
 		AssetHandle handle = {};
 		std::string assetName;
 	};

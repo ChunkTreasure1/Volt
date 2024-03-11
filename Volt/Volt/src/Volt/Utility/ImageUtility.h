@@ -789,6 +789,55 @@ namespace Volt
 			return 0;
 		}
 
+		inline uint32_t GetFormatMinimumSize(ImageFormat format)
+		{
+			switch (format)
+			{
+				case ImageFormat::None: return 0;
+
+				case ImageFormat::R8U: return 1 * 1;
+
+				case ImageFormat::R16F: return 1 * 2;
+
+				case ImageFormat::R32F: return 1 * 4;
+				case ImageFormat::R32SI: return 1 * 4;
+				case ImageFormat::R32UI: return 1 * 4;
+
+				case ImageFormat::RGBA: return 4 * 1;
+				case ImageFormat::RGBA16F: return 4 * 2;
+				case ImageFormat::RGBA32F: return 4 * 4;
+				case ImageFormat::SRGB: return 4 * 1;
+
+				case ImageFormat::RG32UI: return 2 * 4;
+				case ImageFormat::RG16F: return 2 * 2;
+				case ImageFormat::RG32F: return 2 * 4;
+
+				case ImageFormat::DEPTH32F: return 1 * 4;
+				case ImageFormat::DEPTH24STENCIL8: return 4;
+
+				case ImageFormat::BC1: return 8;
+				case ImageFormat::BC1SRGB: return 8;
+
+				case ImageFormat::BC2: return 16;
+				case ImageFormat::BC2SRGB: return 16;
+
+				case ImageFormat::BC3: return 16;
+				case ImageFormat::BC3SRGB: return 16;
+
+				case ImageFormat::BC4: return 8;
+
+				case ImageFormat::BC5: return 16;
+
+				case ImageFormat::BC6H_SF16: return 16;
+				case ImageFormat::BC6H_UF16: return 16;
+
+				case ImageFormat::BC7: return 16;
+				case ImageFormat::BC7SRGB: return 16;
+			}
+
+			return 1;
+		}
+
 		inline static uint32_t CalculateMipCount(uint32_t width, uint32_t height)
 		{
 			return static_cast<uint32_t>(std::floor(std::log2(std::min(width, height)))) + 1;

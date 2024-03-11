@@ -1,0 +1,83 @@
+#include "vtpch.h"
+#include "AnimationSerializer.h"
+
+#include "Volt/Asset/AssetManager.h"
+#include "Volt/Asset/Animation/Animation.h"
+
+namespace Volt
+{
+	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
+
+	struct AnimationSerializationData
+	{
+		float duration;
+		uint32_t framesPerSecond;
+		std::vector<Animation::Pose> frames;
+
+		static void Serialize(BinaryStreamWriter& streamWriter, const AnimationSerializationData& data)
+		{
+			streamWriter.Write(data.duration);
+			streamWriter.Write(data.framesPerSecond);
+			streamWriter.Write(data.frames);
+		}
+
+		static void Deserialize(BinaryStreamReader& streamReader, AnimationSerializationData& outData)
+		{
+			streamReader.Read(outData.duration);
+			streamReader.Read(outData.framesPerSecond);
+			streamReader.Read(outData.frames);
+		}
+	};
+
+	void AnimationSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	{
+		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(asset);
+
+		BinaryStreamWriter streamWriter{};
+
+		AnimationSerializationData serializationData{};
+		serializationData.duration = animation->myDuration;
+		serializationData.framesPerSecond = animation->myFramesPerSecond;
+		serializationData.frames = animation->myFrames;
+	
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		streamWriter.Write(serializationData);
+
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+		streamWriter.WriteToDisk(filePath, true, compressedDataOffset);
+	}
+
+	bool AnimationSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
+	{
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+
+		if (!std::filesystem::exists(filePath))
+		{
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Missing, true);
+			return false;
+		}
+
+		BinaryStreamReader streamReader{ filePath };
+
+		if (!streamReader.IsStreamValid())
+		{
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+
+		AnimationSerializationData serializationData{};
+		streamReader.Read(serializationData);
+
+		Ref<Animation> animation = std::reinterpret_pointer_cast<Animation>(destinationAsset);
+
+		animation->myDuration = serializationData.duration;
+		animation->myFramesPerSecond = serializationData.framesPerSecond;
+		animation->myFrames = serializationData.frames;
+
+		return true;
+	}
+}

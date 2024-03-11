@@ -14,6 +14,18 @@ namespace Volt
 		{
 			std::string name;
 			int32_t parentIndex = -1;
+
+			static void Serialize(BinaryStreamWriter& streamWriter, const Joint& data)
+			{
+				streamWriter.Write(data.name);
+				streamWriter.Write(data.parentIndex);
+			}
+
+			static void Deserialize(BinaryStreamReader& streamReader, Joint& outData)
+			{
+				streamReader.Read(outData.name);
+				streamReader.Read(outData.parentIndex);
+			}
 		};
 
 		Skeleton() = default;
@@ -39,6 +51,7 @@ namespace Volt
 	private:
 		friend class FbxImporter;
 		friend class SkeletonImporter;
+		friend class SkeletonSerializer;
 
 		std::vector<Joint> myJoints;
 		std::vector<Animation::TRS> myRestPose;

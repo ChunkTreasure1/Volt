@@ -42,6 +42,7 @@ namespace Volt
 
 	private:
 		friend class PrefabImporter;
+		friend class PrefabSerializer;
 
 		[[nodiscard]] const Entity GetRootEntity() const;
 

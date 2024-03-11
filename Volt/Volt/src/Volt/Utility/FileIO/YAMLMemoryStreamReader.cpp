@@ -31,4 +31,12 @@ namespace Volt
 
 		return true;
 	}
+
+	const bool YAMLMemoryStreamReader::ConsumeBuffer(Buffer& buffer)
+	{
+		const bool success = ReadBuffer(buffer);
+		buffer.Release();
+
+		return success;
+	}
 }

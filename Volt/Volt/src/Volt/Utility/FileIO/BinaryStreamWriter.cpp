@@ -119,4 +119,16 @@ namespace Volt
 
 		memcpy_s(&m_data[currentOffset], writeSize, data, size);
 	}
+
+	size_t BinaryStreamWriter::Write(const void* data, const size_t size)
+	{
+		TypeHeader header{};
+		header.baseTypeSize = sizeof(void*);
+		header.totalTypeSize = static_cast<uint32_t>(size);
+
+		WriteTypeHeader(header);
+		WriteData(data, size);
+
+		return m_data.size();
+	}
 }

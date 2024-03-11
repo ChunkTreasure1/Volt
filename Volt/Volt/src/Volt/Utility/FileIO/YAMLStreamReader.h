@@ -12,7 +12,6 @@ namespace Volt
 		YAMLStreamReader();
 		virtual ~YAMLStreamReader() = default;
 
-
 		const bool HasKey(const std::string& key);
 		const bool IsSequenceEmpty(const std::string& key);
 
@@ -23,6 +22,8 @@ namespace Volt
 		const T ReadKey(const std::string& key, const T& defaultValue);
 
 		void ForEach(const std::string& key, std::function<void()> function);
+
+		inline YAML::Node& GetCurrentNode() { return m_currentNode; }
 
 	protected:
 		YAML::Node m_currentNode;

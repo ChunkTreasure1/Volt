@@ -43,6 +43,8 @@ namespace Volt
 		template<typename Key, typename Value>
 		void Read(std::unordered_map<Key, Value>& data);
 
+		void Read(void* data);
+
 	private:
 		TypeHeader ReadTypeHeader();
 		void ReadData(void* outData, const TypeHeader& serializedTypeHeader, const TypeHeader& constructedTypeHeader);

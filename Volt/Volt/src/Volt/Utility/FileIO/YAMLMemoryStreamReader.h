@@ -12,5 +12,6 @@ namespace Volt
 		~YAMLMemoryStreamReader() override = default;
 
 		const bool ReadBuffer(const Buffer& buffer);
+		const bool ConsumeBuffer(Buffer& buffer);
 	};
 }

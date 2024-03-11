@@ -131,6 +131,15 @@ namespace Volt
 		return m_streamValid;
 	}
 
+	void BinaryStreamReader::Read(void* data)
+	{
+		TypeHeader typeHeader{};
+		typeHeader.baseTypeSize = sizeof(void*);
+
+		TypeHeader serializedTypeHeader = ReadTypeHeader();
+		ReadData(data, serializedTypeHeader, typeHeader);
+	}
+
 	TypeHeader BinaryStreamReader::ReadTypeHeader()
 	{
 		constexpr size_t typeHeaderSize = sizeof(TypeHeader);

@@ -20,7 +20,7 @@
 #include "Volt/Utility/FileSystem.h"
 
 #include "Volt/Utility/FileIO/YAMLMemoryStreamWriter.h"
-#include "Volt/Utility/FileIO/YAMLFileStreamReader.h"
+#include "Volt/Utility/FileIO/YAMLMemoryStreamReader.h"
 
 namespace Volt
 {
@@ -40,11 +40,11 @@ namespace Volt
 	}
 
 	template<typename T>
-	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLFileStreamReader&, uint8_t*, const size_t)>>& outTypes)
+	void RegisterDeserializationFunction(std::unordered_map<std::type_index, std::function<void(YAMLMemoryStreamReader&, uint8_t*, const size_t)>>& outTypes)
 	{
 		VT_PROFILE_FUNCTION();
 
-		outTypes[std::type_index{ typeid(T) }] = [](YAMLFileStreamReader& streamReader, uint8_t* data, const size_t offset)
+		outTypes[std::type_index{ typeid(T) }] = [](YAMLMemoryStreamReader& streamReader, uint8_t* data, const size_t offset)
 		{
 			*reinterpret_cast<T*>(&data[offset]) = streamReader.ReadKey("data", T());
 		};
@@ -172,10 +172,7 @@ namespace Volt
 			sceneFileWriter.WriteToDisk(scenePath, true, compressedDataOffset);
 		}
 
-		if (scene->m_sceneSettings.useWorldEngine)
-		{
-			SerializeEntities(metadata, scene, directoryPath);
-		}
+		SerializeEntities(metadata, scene, directoryPath);
 	}
 
 	bool SceneSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
@@ -199,7 +196,43 @@ namespace Volt
 			return false;
 		}
 
+		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
 
+		// Scene File
+		{
+			Buffer buffer{};
+			streamReader.Read(buffer);
+
+			YAMLMemoryStreamReader yamlStreamReader{};
+			if (!yamlStreamReader.ConsumeBuffer(buffer))
+			{
+				destinationAsset->SetFlag(AssetFlag::Invalid, true);
+				return false;
+			}
+
+			yamlStreamReader.EnterScope("Scene");
+			scene->m_name = yamlStreamReader.ReadKey("name", std::string("New Scene"));
+
+			yamlStreamReader.EnterScope("Settings");
+			{
+				scene->m_sceneSettings.useWorldEngine = yamlStreamReader.ReadKey("useWorldEngine", true);
+			}
+			yamlStreamReader.ExitScope();
+
+			if (scene->m_sceneSettings.useWorldEngine)
+			{
+				DeserializeWorldEngine(scene, yamlStreamReader);
+			}
+
+			yamlStreamReader.ExitScope();
+		}
+
+		const std::filesystem::path& scenePath = filePath;
+		std::filesystem::path directoryPath = scenePath.parent_path();
+
+		LoadCellEntities(metadata, scene, directoryPath);
+
+		scene->SortScene();
 		return true;
 	}
 
@@ -265,6 +298,160 @@ namespace Volt
 		streamWriter.EndMap();
 	}
 
+	void SceneSerializer::DeserializeEntity(const Ref<Scene>& scene, const AssetMetadata& metadata, YAMLMemoryStreamReader& streamReader) const
+	{
+		streamReader.EnterScope("Entity");
+
+		EntityID entityId = streamReader.ReadKey("id", Entity::NullID());
+
+		if (entityId == Entity::NullID())
+		{
+			return;
+		}
+
+		auto entity = CreateEntityFromUUIDThreadSafe(entityId, scene);
+
+		streamReader.ForEach("components", [&]()
+		{
+			VT_PROFILE_SCOPE("Component");
+
+			VoltGUID compGuid = streamReader.ReadKey("guid", VoltGUID::Null());
+			if (compGuid == VoltGUID::Null())
+			{
+				return;
+			}
+
+			const ICommonTypeDesc* typeDesc = ComponentRegistry::GetTypeDescFromGUID(compGuid);
+			if (!typeDesc)
+			{
+				return;
+			}
+
+			switch (typeDesc->GetValueType())
+			{
+				case ValueType::Component:
+				{
+					if (!ComponentRegistry::Helpers::HasComponentWithGUID(compGuid, scene->GetRegistry(), entity))
+					{
+						ComponentRegistry::Helpers::AddComponentWithGUID(compGuid, scene->GetRegistry(), entity);
+					}
+
+					void* voidCompPtr = ComponentRegistry::Helpers::GetComponentWithGUID(compGuid, scene->GetRegistry(), entity);
+					uint8_t* componentData = reinterpret_cast<uint8_t*>(voidCompPtr);
+
+					const IComponentTypeDesc* componentDesc = reinterpret_cast<const IComponentTypeDesc*>(typeDesc);
+					DeserializeClass(componentData, 0, componentDesc, streamReader);
+					break;
+				}
+			}
+
+		});
+
+		if (scene->GetRegistry().any_of<MonoScriptComponent>(entity))
+		{
+			DeserializeMono(entity, scene, streamReader);
+		}
+
+		if (scene->GetRegistry().any_of<VertexPaintedComponent>(entity))
+		{
+			std::filesystem::path vpPath = metadata.filePath.parent_path();
+			vpPath = ProjectManager::GetDirectory() / vpPath / "Layers" / ("ent_" + std::to_string((uint32_t)entityId) + ".entVp");
+
+			if (std::filesystem::exists(vpPath))
+			{
+				auto& vpComp = scene->GetRegistry().get<VertexPaintedComponent>(entity);
+
+				std::ifstream vpFile(vpPath, std::ios::in | std::ios::binary);
+				if (!vpFile.is_open())
+				{
+					VT_CORE_ERROR("Could not open entVp file!");
+				}
+
+				std::vector<uint8_t> totalData;
+				const size_t srcSize = vpFile.seekg(0, std::ios::end).tellg();
+				totalData.resize(srcSize);
+				vpFile.seekg(0, std::ios::beg);
+				vpFile.read(reinterpret_cast<char*>(totalData.data()), totalData.size());
+				vpFile.close();
+
+				memcpy_s(&vpComp.meshHandle, sizeof(vpComp.meshHandle), totalData.data() + totalData.size() - sizeof(vpComp.meshHandle), sizeof(vpComp.meshHandle));
+				totalData.resize(totalData.size() - sizeof(vpComp.meshHandle));
+
+				vpComp.vertexColors.reserve(totalData.size() / sizeof(uint32_t));
+				for (size_t offset = 0; offset < totalData.size(); offset += sizeof(uint32_t))
+				{
+					uint32_t vpColor;
+					memcpy_s(&vpColor, sizeof(uint32_t), totalData.data() + offset, sizeof(uint32_t));
+					vpComp.vertexColors.push_back(vpColor);
+				}
+			}
+		}
+
+		streamReader.ExitScope();
+	}
+
+	void SceneSerializer::DeserializeMono(entt::entity id, const Ref<Scene>& scene, YAMLMemoryStreamReader& streamReader) const
+	{
+		Entity entity{ id, scene };
+
+		streamReader.ForEach("MonoScripts", [&]()
+		{
+			streamReader.EnterScope("ScriptEntry");
+
+			if (!entity.HasComponent<MonoScriptComponent>())
+			{
+				entity.AddComponent<MonoScriptComponent>();
+			}
+
+			const std::string scriptName = streamReader.ReadKey("name", std::string(""));
+			const UUID scriptId = streamReader.ReadKey("id", UUID(0));
+
+			auto scriptClass = MonoScriptEngine::GetScriptClass(scriptName);
+			if (!scriptClass)
+			{
+				streamReader.ExitScope();
+				return;
+			}
+
+			auto& scriptComp = entity.GetComponent<MonoScriptComponent>();
+			scriptComp.scriptIds.emplace_back(scriptId);
+			scriptComp.scriptNames.emplace_back(scriptName);
+
+			const auto& classFields = scriptClass->GetFields();
+			auto& fieldCache = scene->GetScriptFieldCache().GetCache()[scriptId];
+
+			streamReader.ForEach("members", [&]()
+			{
+				const std::string memberName = streamReader.ReadKey("name", std::string(""));
+
+				if (!classFields.contains(memberName))
+				{
+					return;
+				}
+
+				fieldCache[memberName] = CreateRef<MonoScriptFieldInstance>();
+
+				auto field = fieldCache[memberName];
+				field->field = classFields.at(memberName);
+
+				if (field->field.type.IsString())
+				{
+					const std::string str = streamReader.ReadKey("data", std::string(""));
+					field->SetValue(str, str.size());
+				}
+				else
+				{
+					if (s_typeDeserializers.contains(field->field.type.typeIndex))
+					{
+						field->data.Allocate(field->field.type.typeSize);
+						s_typeDeserializers.at(field->field.type.typeIndex)(streamReader, field->data.As<uint8_t>(), 0);
+					}
+				}
+			});
+			streamReader.ExitScope();
+		});
+	}
+
 	void SceneSerializer::SerializeWorldEngine(const Ref<Scene>& scene, YAMLMemoryStreamWriter& streamWriter) const
 	{
 		auto& worldEngine = scene->m_worldEngine;
@@ -274,6 +461,17 @@ namespace Volt
 		streamWriter.SetKey("worldSize", worldEngine.GetSettings().worldSize);
 
 		streamWriter.EndMap();
+	}
+
+	void SceneSerializer::DeserializeWorldEngine(const Ref<Scene>& scene, YAMLMemoryStreamReader& streamReader) const
+	{
+		auto& worldEngine = scene->m_worldEngine;
+
+		streamReader.EnterScope("WorldEngine");
+		worldEngine.GetSettingsMutable().cellSize = streamReader.ReadKey("cellSize", 256);
+		worldEngine.GetSettingsMutable().worldSize = streamReader.ReadKey("worldSize", glm::uvec2{ 1280 });
+		worldEngine.GenerateCells();
+		streamReader.ExitScope();
 	}
 
 	void SceneSerializer::SerializeEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
@@ -315,7 +513,7 @@ namespace Volt
 			{
 				EntityID id = removedEntities.at(i);
 
-				const std::filesystem::path entityFilePath = entitiesDirectoryPath / (std::to_string(id) + ".entity");
+				const std::filesystem::path entityFilePath = entitiesDirectoryPath / (std::to_string(id) + ".vtasset");
 				if (std::filesystem::exists(entityFilePath))
 				{
 					FileSystem::MoveToRecycleBin(entityFilePath);
@@ -328,6 +526,106 @@ namespace Volt
 		VT_CORE_INFO("[SceneImporter]: Removed {0} entities!", removedEntities.size());
 
 		scene->ClearEditedEntities();
+	}
+
+	void SceneSerializer::LoadCellEntities(const AssetMetadata& metadata, const Ref<Scene>& scene, const std::filesystem::path& sceneDirectory) const
+	{
+		std::filesystem::path layersFolderPath = sceneDirectory / "Entities";
+		if (!std::filesystem::exists(layersFolderPath))
+		{
+			return;
+		}
+
+		std::vector<std::filesystem::path> entityPaths;
+
+		for (const auto& it : std::filesystem::directory_iterator(layersFolderPath))
+		{
+			if (!it.is_directory() && it.path().extension().string() == ".vtasset")
+			{
+				entityPaths.emplace_back(it.path());
+			}
+		}
+
+		if (entityPaths.empty())
+		{
+			return;
+		}
+
+		const uint32_t iterationCount = static_cast<uint32_t>(entityPaths.size());
+
+		std::vector<std::unordered_map<WorldCellID, std::vector<EntityID>>> threadCellEntities{};
+		threadCellEntities.resize(Algo::GetThreadCountFromIterationCount(iterationCount));
+
+		auto futures = Algo::ForEachParallelLockable([&threadCellEntities, entityPaths, metadata, this](uint32_t threadIdx, uint32_t i)
+		{
+			const auto& path = entityPaths.at(i);
+
+			BinaryStreamReader streamReader{ path };
+			if (!streamReader.IsStreamValid())
+			{
+				return;
+			}
+
+			uint32_t magicVal = 0;
+			streamReader.Read(magicVal);
+
+			if (magicVal != ENTITY_MAGIC_VAL)
+			{
+				VT_CORE_ERROR("[SceneSerializer]: File is not a valid entity!");
+				return;
+			}
+
+			Buffer buffer{};
+			streamReader.Read(buffer);
+
+			YAMLMemoryStreamReader yamlStreamReader{};
+			if (!yamlStreamReader.ConsumeBuffer(buffer))
+			{
+				return;
+			}
+
+			yamlStreamReader.EnterScope("Entity");
+
+			EntityID entityId = yamlStreamReader.ReadKey("id", Entity::NullID());
+			WorldCellID cellId = yamlStreamReader.ReadKey("cellId", INVALID_WORLD_CELL_ID);
+
+			if (entityId == Entity::NullID())
+			{
+				return;
+			}
+
+			if (cellId == INVALID_WORLD_CELL_ID)
+			{
+				cellId = 0;
+			}
+
+			yamlStreamReader.ExitScope();
+
+			threadCellEntities[threadIdx][cellId].push_back(entityId);
+		},
+		iterationCount);
+
+		for (auto& f : futures)
+		{
+			f.wait();
+		}
+
+		auto& worldEngine = scene->m_worldEngine;
+		for (const auto& tCellEntities : threadCellEntities)
+		{
+			for (const auto& [cellId, entities] : tCellEntities)
+			{
+				worldEngine.AddEntitiesToCell(cellId, entities);
+			}
+		}
+	}
+
+	Entity SceneSerializer::CreateEntityFromUUIDThreadSafe(EntityID entityId, const Ref<Scene>& scene) const
+	{
+		static std::mutex createEntityMutex;
+		std::scoped_lock lock{ createEntityMutex };
+
+		return scene->CreateEntityWithUUID(entityId);
 	}
 	
 	void SceneSerializer::SerializeClass(const uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLMemoryStreamWriter& streamWriter, bool isSubComponent) const
@@ -496,5 +794,111 @@ namespace Volt
 			}
 		}
 		streamWriter.EndSequence();
+	}
+
+	void SceneSerializer::DeserializeClass(uint8_t* data, const size_t offset, const IComponentTypeDesc* compDesc, YAMLMemoryStreamReader& streamReader) const
+	{
+		streamReader.ForEach("members", [&]()
+		{
+			const std::string memberName = streamReader.ReadKey("name", std::string(""));
+			if (memberName.empty())
+			{
+				return;
+			}
+
+			const ComponentMember* componentMember = const_cast<IComponentTypeDesc*>(compDesc)->FindMemberByName(memberName);
+			if (!componentMember)
+			{
+				return;
+			}
+
+			if (componentMember->typeDesc != nullptr)
+			{
+				switch (componentMember->typeDesc->GetValueType())
+				{
+					case ValueType::Component:
+					{
+						const IComponentTypeDesc* memberCompType = reinterpret_cast<const IComponentTypeDesc*>(componentMember->typeDesc);
+						DeserializeClass(data, offset + componentMember->offset, memberCompType, streamReader);
+						break;
+					}
+
+					case ValueType::Enum:
+					{
+						*reinterpret_cast<int32_t*>(&data[offset + componentMember->offset]) = streamReader.ReadKey("enumValue", int32_t(0));
+						break;
+					}
+
+					case ValueType::Array:
+					{
+						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(componentMember->typeDesc);
+						DeserializeArray(data, offset + componentMember->offset, arrayTypeDesc, streamReader);
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (s_typeDeserializers.contains(componentMember->typeIndex))
+				{
+					s_typeDeserializers.at(componentMember->typeIndex)(streamReader, data, offset + componentMember->offset);
+				}
+			}
+		});
+	}
+
+	void SceneSerializer::DeserializeArray(uint8_t* data, const size_t offset, const IArrayTypeDesc* arrayDesc, YAMLMemoryStreamReader& streamReader) const
+	{
+		void* arrayPtr = &data[offset];
+
+		const bool isNonDefaultType = arrayDesc->GetElementTypeDesc() != nullptr;
+		const auto& typeIndex = arrayDesc->GetElementTypeIndex();
+
+		if (!isNonDefaultType && !s_typeSerializers.contains(typeIndex))
+		{
+			return;
+		}
+
+		streamReader.ForEach("values", [&]()
+		{
+			void* tempDataStorage = nullptr;
+			arrayDesc->DefaultConstructElement(tempDataStorage);
+
+			uint8_t* tempBytePtr = reinterpret_cast<uint8_t*>(tempDataStorage);
+
+			if (isNonDefaultType)
+			{
+				switch (arrayDesc->GetElementTypeDesc()->GetValueType())
+				{
+					case ValueType::Component:
+					{
+						const IComponentTypeDesc* compType = reinterpret_cast<const IComponentTypeDesc*>(arrayDesc->GetElementTypeDesc());
+						DeserializeClass(tempBytePtr, 0, compType, streamReader);
+						break;
+					}
+
+					case ValueType::Enum:
+						*reinterpret_cast<int32_t*>(&tempDataStorage) = streamReader.ReadKey("enumValue", int32_t(0));
+						break;
+
+					case ValueType::Array:
+					{
+						const IArrayTypeDesc* arrayTypeDesc = reinterpret_cast<const IArrayTypeDesc*>(arrayDesc->GetElementTypeDesc());
+						DeserializeArray(tempBytePtr, 0, arrayTypeDesc, streamReader);
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (s_typeDeserializers.contains(typeIndex))
+				{
+					s_typeDeserializers.at(typeIndex)(streamReader, tempBytePtr, 0);
+				}
+			}
+
+			arrayDesc->PushBack(arrayPtr, tempDataStorage);
+			arrayDesc->DestroyElement(tempDataStorage);
+		});
 	}
 }

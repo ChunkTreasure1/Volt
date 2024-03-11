@@ -67,6 +67,7 @@ namespace Volt
 
 	private:
 		friend class AnimatedCharacterImporter;
+		friend class AnimatedCharacterSerializer;
 
 		Ref<Skeleton> mySkeleton;
 		Ref<Mesh> mySkin;

@@ -156,6 +156,11 @@ namespace Volt
 
 		metadata.filePath = "Assets/TestScene/TestScene.vtasset";
 		sceneSerializer->Serialize(metadata, scene);
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+		Ref<Scene> testScene = CreateRef<Scene>();
+		sceneSerializer->Deserialize(metadata, testScene);
 	}
 
 	Application::~Application()

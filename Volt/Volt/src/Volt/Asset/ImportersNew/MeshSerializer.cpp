@@ -62,7 +62,7 @@ namespace Volt
 		streamWriter.Write(serializationData);
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
-		streamWriter.WriteToDisk(filePath, false, compressedDataOffset);
+		streamWriter.WriteToDisk(filePath, true, compressedDataOffset);
 	}
 
 	bool MeshSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const

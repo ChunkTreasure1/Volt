@@ -50,6 +50,8 @@ namespace Volt
 		template<typename Key, typename Value>
 		size_t Write(const std::unordered_map<Key, Value>& data);
 
+		size_t Write(const void* data, const size_t size);
+
 	private:
 		bool GetCompressed(std::vector<uint8_t>& result, size_t compressedDataOffset = 0);
 
@@ -170,7 +172,7 @@ namespace Volt
 
 		if constexpr (std::is_trivial_v<F>)
 		{
-			WriteData(data.data(), data.size() * sizeof(F), header);
+			WriteData(data.data(), data.size() * sizeof(F));
 		}
 		else
 		{

@@ -602,7 +602,8 @@ namespace Volt
 			return false;
 		}
 
-		asset = CreateRef<Font>(filePath);
+		asset = CreateRef<Font>();
+		std::reinterpret_pointer_cast<Font>(asset)->Initialize(filePath);
 		return true;
 	}
 
@@ -685,7 +686,8 @@ namespace Volt
 			return false;
 		}
 
-		asset = CreateRef<Video>(filePath);
+		asset = CreateRef<Video>();
+		std::reinterpret_pointer_cast<Video>(asset)->Initialize(filePath);
 		return true;
 	}
 

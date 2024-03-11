@@ -30,6 +30,7 @@ namespace Volt
 	private:
 		friend class DDSTextureImporter;
 		friend class DefaultTextureImporter;
+		friend class TextureSerializer;
 
 		Ref<Image2D> myImage;
 	};
