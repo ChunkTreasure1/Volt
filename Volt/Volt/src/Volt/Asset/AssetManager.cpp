@@ -63,9 +63,9 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::Font, CreateScope<FontImporter>()); // Done
 		m_assetImporters.emplace(AssetType::PhysicsMaterial, CreateScope<PhysicsMaterialImporter>()); // Done
 		m_assetImporters.emplace(AssetType::Video, CreateScope<VideoImporter>()); // Done
-		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>());
-		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());
-		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>());
+		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>()); // Done
+		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());  // Done
+		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
 		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
 		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
 

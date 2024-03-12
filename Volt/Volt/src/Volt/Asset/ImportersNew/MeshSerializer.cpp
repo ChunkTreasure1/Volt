@@ -1,11 +1,10 @@
 #include "vtpch.h"
 #include "MeshSerializer.h"
 
+#include "Volt/Asset/AssetManager.h"
 #include "Volt/Asset/Mesh/Mesh.h"
 #include "Volt/Asset/Mesh/Material.h"
 #include "Volt/Asset/Serialization/AssetSerializationCommon.h"
-
-#include "Volt/Asset/AssetManager.h"
 
 namespace Volt
 {

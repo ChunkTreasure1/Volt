@@ -31,6 +31,7 @@ namespace Volt
 
 	private:
 		friend class PostProcessingStackImporter;
+		friend class PostProcessingStackSerializer;
 
 		std::vector<PostProcessingEffect> myPostProcessingStack;
 	};

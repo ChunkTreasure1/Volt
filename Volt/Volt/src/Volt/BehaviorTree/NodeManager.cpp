@@ -3,11 +3,11 @@
 
 namespace Volt::BehaviorTree
 {
-	Ref<Node> NodeManager::GetNodeFromUUID(const UUID& in_uuid)
+	Ref<Node> NodeManager::GetNodeFromUUID(const UUID& in_uuid) const
 	{
 		if (m_nodes.find(in_uuid) == m_nodes.end())
 			return nullptr;
-		return m_nodes[in_uuid];
+		return m_nodes.at(in_uuid);
 	}
 
 	const std::vector<Link>& NodeManager::GetLinksFromUUID(const UUID& in_uuid)
