@@ -3,6 +3,7 @@
 #include "Volt/Core/Base.h"
 #include "Volt/Scene/Scene.h"
 #include "Volt/Scene/EntityID.h"
+#include "Volt/Scene/Reflection/VoltGUID.h"
 
 #include <entt.hpp>
 
@@ -106,6 +107,7 @@ namespace Volt
 		template<typename T, typename... Args> T& AddComponent(Args&&... args);
 		template<typename T> void RemoveComponent();
 
+		void RemoveComponent(const VoltGUID& guid);
 		const bool HasComponent(std::string_view componentName) const;
 
 		Entity& operator=(const Entity& entity);

@@ -388,6 +388,11 @@ namespace Volt
 		return parentEntity.IsValid();
 	}
 
+	void Entity::RemoveComponent(const VoltGUID& guid)
+	{
+		ComponentRegistry::Helpers::RemoveComponentWithGUID(guid, m_scene->GetRegistry(), m_handle);
+	}
+
 	const bool Entity::HasComponent(std::string_view componentName) const
 	{
 		const std::string lowerCompName = ::Utility::ToLower(std::string(componentName));

@@ -13,6 +13,7 @@
 #include "Volt/Net/SceneInteraction/NetContract.h"
 #include "Volt/Scripting/Mono/MonoScriptEngine.h"
 #include "Volt/Components/PhysicsComponents.h"
+#include "Volt/Scene/Reflection/ComponentRegistry.h"
 #include "Volt/Physics/PhysicsScene.h"
 #include "Volt/Physics/Physics.h"
 
@@ -474,57 +475,75 @@ void HandleComponent(Volt::EntityID in_id, const std::string& in_comp, bool in_k
 	if (in_keep) return;
 
 	auto ent = Volt::SceneManager::GetActiveScene()->GetEntityFromUUID(in_id);
-	//scenePtr->GetRegistry().RemoveComponent(Wire::ComponentRegistry::GetRegistryDataFromName(in_comp).guid, in_id);
+	ent.RemoveComponent(Volt::ComponentRegistry::GetGUIDFromTypeName(in_comp));
 }
 
 void RecursiveOwnerShipControll(Volt::EntityID in_id, const Volt::RepPrefabData& data)
 {
-	//auto contract = Volt::NetContractContainer::GetContract(data.handle);
+	auto contract = Volt::NetContractContainer::GetContract(data.handle);
 
-	//auto scenePtr = Volt::SceneManager::GetActiveScene();
+	auto scenePtr = Volt::SceneManager::GetActiveScene();
 
-	//auto ent = Volt::Entity(in_id, scenePtr.get());
-	//const auto prefabData = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle);
-	//const auto& prefabComponent = ent.GetComponent<Volt::PrefabComponent>();
+	auto ent = scenePtr->GetEntityFromUUID(in_id);
+	const auto prefabData = Volt::AssetManager::GetAsset<Volt::Prefab>(data.handle);
+	const auto& prefabComponent = ent.GetComponent<Volt::PrefabComponent>();
 
-	// #TODO_Ivar: Reimplement
-	//auto prefabRegistry = prefabData->GetRegistry();
-	//auto sceneRegistry = scenePtr->GetRegistry();
+	auto& registry = scenePtr->GetRegistry();
 
-	//auto isOwner = Volt::Application::Get().GetNetHandler().IsOwner(data.repId);
-	//auto isHost = Volt::Application::Get().GetNetHandler().IsHost();
+	auto isOwner = Volt::Application::Get().GetNetHandler().IsOwner(data.repId);
+	auto isHost = Volt::Application::Get().GetNetHandler().IsHost();
 
-	//// Components
-	//if (contract) if (contract->rules.contains(prefabComponent.prefabEntity))
-	//{
-	//	for (const auto& [guid, pool] : sceneRegistry.GetPools())
-	//	{
-	//		if (!sceneRegistry.HasComponent(guid, in_id)) continue;
-	//		const auto& registryInfo = Wire::ComponentRegistry::GetRegistryDataFromGUID(guid);
-	//		if (!Volt::NetContractContainer::RuleExists(data.handle, registryInfo.name, prefabComponent.prefabEntity) && registryInfo.guid != Volt::MonoScriptComponent::comp_guid) continue;
-	//		if (registryInfo.guid == Volt::MonoScriptComponent::comp_guid)
-	//		{
-	//			auto& monoScriptComponent = sceneRegistry.GetComponent<Volt::MonoScriptComponent>(in_id);
-	//			for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
-	//			{
-	//				if (!contract->rules.at(prefabComponent.prefabEntity).contains(monoScriptComponent.scriptNames[i])) continue;
-	//				HandleScript(in_id, monoScriptComponent.scriptNames[i], contract->rules.at(prefabComponent.prefabEntity).at(monoScriptComponent.scriptNames[i]).ShouldKeep(isHost, isOwner));
-	//			}
-	//		}
-	//		else
-	//		{
-	//			HandleComponent(in_id, registryInfo.name, contract->rules.at(prefabComponent.prefabEntity)[registryInfo.name].ShouldKeep(isHost, isOwner));
-	//		}
-	//	}
-	//}
+	// Components
+	if (contract)
+	{
+		if (contract->rules.contains(prefabComponent.prefabEntity))
+		{
+			for (auto&& curr : registry.storage())
+			{
+				auto& storage = curr.second;
 
-	//// Children
-	//if (!ent.HasComponent<Volt::RelationshipComponent>()) return;
-	//auto children = ent.GetComponent<Volt::RelationshipComponent>().Children;
-	//for (const auto& c : children)
-	//{
-	//	RecursiveOwnerShipControll(c, data);
-	//}
+				if (!storage.contains(ent))
+				{
+					continue;
+				}
+
+				const std::string componentName = std::string(storage.type().name());
+				const Volt::ICommonTypeDesc* compTypeDesc = Volt::ComponentRegistry::GetTypeDescFromName(componentName);
+
+				// #TODO_Ivar: Name matching might not work anymore, should move to GUIDs
+				if (!Volt::NetContractContainer::RuleExists(data.handle, componentName, prefabComponent.prefabEntity) && compTypeDesc->GetGUID() != Volt::GetTypeGUID<Volt::MonoScriptComponent>())
+				{
+					continue;
+				}
+
+				if (compTypeDesc->GetGUID() == Volt::GetTypeGUID<Volt::MonoScriptComponent>())
+				{
+					auto& monoScriptComponent = ent.GetComponent<Volt::MonoScriptComponent>();
+					for (uint32_t i = 0; i < monoScriptComponent.scriptIds.size(); i++)
+					{
+						if (!contract->rules.at(prefabComponent.prefabEntity).contains(monoScriptComponent.scriptNames[i]))
+						{
+							continue;
+						}
+
+						HandleScript(in_id, monoScriptComponent.scriptNames[i], contract->rules.at(prefabComponent.prefabEntity).at(monoScriptComponent.scriptNames[i]).ShouldKeep(isHost, isOwner));
+					}
+				}
+				else
+				{
+					HandleComponent(in_id, componentName, contract->rules.at(prefabComponent.prefabEntity)[componentName].ShouldKeep(isHost, isOwner));
+				}
+			}
+		}
+	}
+
+	// Children
+	if (!ent.HasComponent<Volt::RelationshipComponent>()) return;
+	auto children = ent.GetComponent<Volt::RelationshipComponent>().children;
+	for (const auto& c : children)
+	{
+		RecursiveOwnerShipControll(c, data);
+	}
 }
 
 // #mmax: should be called on play :P

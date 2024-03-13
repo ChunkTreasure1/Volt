@@ -113,21 +113,29 @@ namespace Volt
 
 		bool NavigationSystem::OnSceneLoadedEvent(Volt::OnSceneLoadedEvent& e)
 		{
-			//#TODO_Ivar: Reimplement
+			myActiveScene = e.GetScene();
+			const auto& metadata = AssetManager::GetMetadataFromHandle(myActiveScene->handle);
 
-			//myActiveScene = e.GetScene();
-			//if (myActiveScene->path.empty() && myActiveScene->GetName() != "New Scene") { return false; }
+			if (!metadata.IsValid())
+			{
+				return false;
+			}
 
-			//auto scenePath = myActiveScene->path;
-			//scenePath.replace_extension(".vtnavmesh");
+			auto scenePath = metadata.filePath;
+			if (std::filesystem::is_directory(scenePath))
+			{
+				scenePath /= (myActiveScene->assetName + ".vtasset");
+			}
 
-			//SetVTNavMesh(Volt::AssetManager::Get().GetAsset<Volt::AI::NavMesh>(scenePath));
+			scenePath.replace_extension(".vtnavmesh");
 
-			//if (myActiveScene->IsPlaying())
-			//{
-			//	ClearAgents();
-			//	InitAgents();
-			//}
+			SetVTNavMesh(Volt::AssetManager::GetAsset<Volt::AI::NavMesh>(scenePath));
+
+			if (myActiveScene->IsPlaying())
+			{
+				ClearAgents();
+				InitAgents();
+			}
 			return false;
 		}
 
