@@ -8,8 +8,6 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	struct MeshSerializationData
 	{
 		AssetHandle materialHandle;
@@ -48,7 +46,7 @@ namespace Volt
 		Ref<Mesh> mesh = std::reinterpret_pointer_cast<Mesh>(asset);
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 
 		MeshSerializationData serializationData{}; 
 		serializationData.materialHandle = mesh->GetMaterial()->handle;
@@ -85,6 +83,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		MeshSerializationData serializationData{};
 		streamReader.Read(serializationData);

@@ -235,7 +235,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetType() { assert(false); return AssetType::None; }
-		//virtual uint32_t GetVersion() = 0; // #TODO_Ivar: Implement
+		virtual uint32_t GetVersion() const { return 1; }
 
 		uint8_t assetFlags = (uint8_t)AssetFlag::None;
 		AssetHandle handle = {};

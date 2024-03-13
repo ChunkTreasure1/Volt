@@ -6,8 +6,6 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	struct ParticlePresetSerializationData
 	{
 		bool looping;
@@ -146,7 +144,7 @@ namespace Volt
 		serializationData.colors = particlePreset->colors;
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 
 		streamWriter.Write(serializationData);
 
@@ -175,6 +173,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!")
 
 		ParticlePresetSerializationData serializationData{};
 		streamReader.Read(serializationData);

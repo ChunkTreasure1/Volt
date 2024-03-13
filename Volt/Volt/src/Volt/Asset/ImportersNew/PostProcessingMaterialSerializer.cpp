@@ -10,8 +10,6 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	struct SerializedMember
 	{
 		std::string name;
@@ -117,7 +115,7 @@ namespace Volt
 		}
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 		streamWriter.Write(serializationData);
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
@@ -151,6 +149,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!")
 
 		PostProcessingMaterialSerializationData serializationData{};
 		streamReader.Read(serializationData);

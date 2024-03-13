@@ -24,7 +24,6 @@
 
 namespace Volt
 {
-	inline static constexpr uint32_t CURRENT_ASSET_VERSION = 1;
 	inline static constexpr uint32_t ENTITY_MAGIC_VAL = 1515;
 
 	template<typename T>
@@ -163,7 +162,7 @@ namespace Volt
 			streamWriter.EndMap();
 		
 			BinaryStreamWriter sceneFileWriter{};
-			const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, sceneFileWriter);
+			const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), sceneFileWriter);
 
 			auto buffer = streamWriter.WriteAndGetBuffer();
 			sceneFileWriter.Write(buffer);
@@ -197,6 +196,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!")
 
 		// Scene File
 		{

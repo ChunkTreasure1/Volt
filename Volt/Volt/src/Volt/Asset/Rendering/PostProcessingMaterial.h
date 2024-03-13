@@ -41,6 +41,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::PostProcessingMaterial; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 	
 	private:
 		std::unordered_map<uint32_t, TextureInfo> myTextures;

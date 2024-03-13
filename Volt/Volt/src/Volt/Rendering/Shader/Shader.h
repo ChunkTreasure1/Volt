@@ -211,6 +211,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Shader; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 
 		static Ref<Shader> Create(const std::string& name, std::vector<std::filesystem::path> paths, bool forceCompile = false);
 

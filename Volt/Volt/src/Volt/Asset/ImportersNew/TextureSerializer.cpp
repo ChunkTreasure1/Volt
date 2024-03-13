@@ -87,8 +87,6 @@ namespace Volt
 		std::vector<Mip> mips;
 	};
 
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	void TextureSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Texture2D> texture = std::reinterpret_pointer_cast<Texture2D>(asset);
@@ -117,7 +115,7 @@ namespace Volt
 		}
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 
 		streamWriter.Write(header);
 		streamWriter.Write(dataBuffer);
@@ -147,6 +145,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		TextureHeader textureHeader{};
 		streamReader.Read(textureHeader);

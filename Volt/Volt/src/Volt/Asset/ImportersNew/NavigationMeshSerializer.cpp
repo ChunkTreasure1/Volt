@@ -8,14 +8,12 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	void NavigationMeshSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<AI::NavMesh> navMesh = std::reinterpret_pointer_cast<AI::NavMesh>(asset);
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 
 		AI::NavMeshImporter::SaveNavMesh(streamWriter, navMesh);
 
@@ -44,6 +42,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		auto dtnm = CreateRef<dtNavMesh>();
 		AI::NavMeshImporter::LoadNavMesh(streamReader, dtnm);

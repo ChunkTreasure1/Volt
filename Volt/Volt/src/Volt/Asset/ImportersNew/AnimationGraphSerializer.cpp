@@ -8,8 +8,6 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	void AnimationGraphSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		const Ref<AnimationGraphAsset> animGraph = std::reinterpret_pointer_cast<AnimationGraphAsset>(asset);
@@ -27,7 +25,7 @@ namespace Volt
 		yamlStreamWriter.EndMap();
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 
 		Buffer buffer = yamlStreamWriter.WriteAndGetBuffer();
 		streamWriter.Write(buffer);
@@ -58,6 +56,7 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		Buffer yamlBuffer{};
 		streamReader.Read(yamlBuffer);

@@ -30,6 +30,7 @@ namespace Volt
 
 		static AssetType GetStaticType() { return AssetType::Material; }
 		AssetType GetType() override { return GetStaticType(); }
+		uint32_t GetVersion() const override { return 1; }
 
 		static Ref<Material> Create(Ref<Shader> shader, const uint32_t subMaterialCount = 1);
 		static Ref<Material> Create(const RenderPipelineSpecification& specification, const uint32_t subMaterialCount = 1);

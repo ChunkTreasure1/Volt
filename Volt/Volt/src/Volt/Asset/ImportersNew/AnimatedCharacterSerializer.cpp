@@ -7,8 +7,6 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	struct SerializedAnimationEvent
 	{
 		uint32_t frameIndex;
@@ -140,7 +138,7 @@ namespace Volt
 		}
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 		streamWriter.Write(serializationData);
 
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
@@ -168,6 +166,8 @@ namespace Volt
 		}
 
 		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
 
 		AnimatedCharacterSerializationData serializationData{};
 		streamReader.Read(serializationData);

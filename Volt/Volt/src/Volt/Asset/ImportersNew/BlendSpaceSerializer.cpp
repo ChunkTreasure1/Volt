@@ -6,8 +6,6 @@
 
 namespace Volt
 {
-	constexpr uint32_t CURRENT_ASSET_VERSION = 1;
-
 	struct SerializedAnimation
 	{
 		AssetHandle handle;
@@ -56,7 +54,7 @@ namespace Volt
 		}
 
 		BinaryStreamWriter streamWriter{};
-		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, CURRENT_ASSET_VERSION, streamWriter);
+		const size_t compressedDataOffset = AssetSerializer::WriteMetadata(metadata, asset->GetVersion(), streamWriter);
 
 		streamWriter.Write(serializationData);
 
@@ -66,6 +64,40 @@ namespace Volt
 
 	bool BlendSpaceSerializer::Deserialize(const AssetMetadata& metadata, Ref<Asset> destinationAsset) const
 	{
-		return false;
+		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
+
+		if (!std::filesystem::exists(filePath))
+		{
+			VT_CORE_ERROR("File {0} not found!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Missing, true);
+			return false;
+		}
+
+		BinaryStreamReader streamReader{ filePath };
+
+		if (!streamReader.IsStreamValid())
+		{
+			VT_CORE_ERROR("Failed to open file: {0}!", metadata.filePath);
+			destinationAsset->SetFlag(AssetFlag::Invalid, true);
+			return false;
+		}
+
+		SerializedAssetMetadata serializedMetadata = AssetSerializer::ReadMetadata(streamReader);
+		VT_CORE_ASSERT(serializedMetadata.version == destinationAsset->GetVersion(), "Incompatible version!");
+
+		BlendSpaceSerializationData serializationData{};
+		streamReader.Read(serializationData);
+
+		Ref<BlendSpace> blendSpace = std::reinterpret_pointer_cast<BlendSpace>(destinationAsset);
+		for (const auto& serAnim : serializationData.animations)
+		{
+			blendSpace->myAnimations.emplace_back(serAnim.value, serAnim.handle);
+		}
+
+		blendSpace->myDimension = serializationData.dimension;
+		blendSpace->myHorizontalValues = serializationData.horizontalValues;
+		blendSpace->myVerticalValues = serializationData.verticalValues;
+
+		return true;
 	}
 }
