@@ -20,6 +20,8 @@ namespace Volt
 			static bool SaveNavMesh(BinaryStreamWriter& output, Ref<NavMesh>& asset);
 			static bool LoadNavMesh(BinaryStreamReader& input, Ref<dtNavMesh>& asset);
 
+			static bool LoadNavMeshLegacy(std::ifstream& input, Ref<dtNavMesh>& asset);
+
 		private:
 			struct NavMeshSetHeader
 			{
@@ -40,6 +42,8 @@ namespace Volt
 
 			static bool LoadSingleNavMesh(BinaryStreamReader& input, const NavMeshSetHeader& header, Ref<dtNavMesh>& asset);
 			static bool LoadTiledNavMesh(BinaryStreamReader& input, const NavMeshSetHeader& header, Ref<dtNavMesh>& asset);
+		
+			static bool LoadSingleNavMeshLegacy(std::ifstream& input, Ref<dtNavMesh>& asset);
 		};
 	}
 }

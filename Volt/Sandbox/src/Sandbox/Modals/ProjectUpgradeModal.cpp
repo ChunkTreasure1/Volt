@@ -201,7 +201,7 @@ void ProjectUpgradeModal::UpgradeCurrentProject()
 		ConvertAnimationGraphsToV0_1_2();
 	}
 
-	if (projectVersion.GetMinor() < 3 && projectVersion.GetMajor() == 0)
+	if (projectVersion.GetPatch() < 3 && projectVersion.GetMinor() < 2 && projectVersion.GetMajor() == 0)
 	{
 		ConvertPrefabsToV113();
 		ConvertScenesToV113();

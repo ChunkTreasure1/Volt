@@ -44,9 +44,6 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
-#include "Volt/Asset/ImportersNew/MeshSerializer.h"
-#include "Volt/Asset/ImportersNew/SceneSerializer.h"
-
 namespace Volt
 {
 	Application::Application(const ApplicationInfo& info)
@@ -138,29 +135,6 @@ namespace Volt
 		{
 			m_steamImplementation = SteamImplementation::Create();
 		}
-
-
-		Ref<MeshSerializer> serializer = CreateRef<MeshSerializer>();
-		Ref<Mesh> mesh = AssetManager::GetAsset<Mesh>("Assets/SM_Cube.vtmesh");
-
-		AssetMetadata metadata{};
-		metadata.filePath = "Assets/TestCube.vtasset";
-
-		serializer->Serialize(metadata, mesh);
-
-		Ref<Mesh> testMesh = CreateRef<Mesh>();
-		serializer->Deserialize(metadata, testMesh);
-
-		Ref<SceneSerializer> sceneSerializer = CreateRef<SceneSerializer>();
-		Ref<Scene> scene = Scene::CreateDefaultScene("TestScene");
-
-		metadata.filePath = "Assets/TestScene/TestScene.vtasset";
-		sceneSerializer->Serialize(metadata, scene);
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		Ref<Scene> testScene = CreateRef<Scene>();
-		sceneSerializer->Deserialize(metadata, testScene);
 	}
 
 	Application::~Application()

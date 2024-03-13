@@ -28,14 +28,14 @@ namespace Volt
 		}
 
 		auto dtnm = CreateRef<dtNavMesh>();
-		//if (!AI::NavMeshImporter::LoadNavMesh(file, dtnm))
-		//{
-		//	return false;
-		//}
+		if (!AI::NavMeshImporter::LoadNavMeshLegacy(file, dtnm))
+		{
+			return false;
+		}
 
 		file.close();
 
-		asset = CreateRef<AI::NavMesh>();
+		std::reinterpret_pointer_cast<AI::NavMesh>(asset)->Initialize(dtnm);
 		return true;
 	}
 

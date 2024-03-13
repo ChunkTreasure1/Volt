@@ -300,7 +300,6 @@ namespace Volt
 				material->InvalidatePipeline(shader);
 			}
 
-
 			auto materialDataNode = materialNode["data"];
 			if (materialDataNode)
 			{
@@ -868,8 +867,6 @@ namespace Volt
 
 	bool PostProcessingMaterialImporter::Load(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		asset = CreateRef<PostProcessingMaterial>();
-
 		const auto filePath = AssetManager::GetFilesystemPath(metadata.filePath);
 
 		if (!std::filesystem::exists(filePath))
@@ -922,7 +919,6 @@ namespace Volt
 			shader = Renderer::GetDefaultData().defaultPostProcessingShader;
 		}
 
-		asset = CreateRef<PostProcessingMaterial>();
 		Ref<PostProcessingMaterial> postMat = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
 		postMat->Initialize(shader);
 
