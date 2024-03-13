@@ -922,8 +922,9 @@ namespace Volt
 			shader = Renderer::GetDefaultData().defaultPostProcessingShader;
 		}
 
-		asset = CreateRef<PostProcessingMaterial>(shader);
+		asset = CreateRef<PostProcessingMaterial>();
 		Ref<PostProcessingMaterial> postMat = std::reinterpret_pointer_cast<PostProcessingMaterial>(asset);
+		postMat->Initialize(shader);
 
 		YAML::Node specializationDataNode = rootMaterialNode["specializationData"];
 		if (specializationDataNode && postMat->myMaterialData.IsValid())

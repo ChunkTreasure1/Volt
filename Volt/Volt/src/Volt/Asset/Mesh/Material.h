@@ -38,6 +38,7 @@ namespace Volt
 		friend class FbxImporter;
 		friend class VTMeshImporter;
 		friend class MaterialImporter;
+		friend class MaterialSerializer;
 		friend class GLTFImporter;
 
 		std::string myName;

@@ -1416,7 +1416,8 @@ void AssetBrowserPanel::CreateNewAssetInCurrentDirectory(Volt::AssetType type)
 
 		case Volt::AssetType::PostProcessingMaterial:
 		{
-			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension, Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
+			Ref<Volt::PostProcessingMaterial> postStack = Volt::AssetManager::CreateAsset<Volt::PostProcessingMaterial>(Volt::AssetManager::GetRelativePath(myCurrentDirectory->path), tempName + extension);
+			postStack->Initialize(Volt::Renderer::GetDefaultData().defaultPostProcessingShader);
 			Volt::AssetManager::SaveAsset(postStack);
 
 			newAssetHandle = postStack->handle;

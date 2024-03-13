@@ -22,8 +22,9 @@ namespace Volt
 		};
 
 		PostProcessingMaterial() = default;
-		PostProcessingMaterial(Ref<Shader> shader);
 		~PostProcessingMaterial() override;
+
+		void Initialize(Ref<Shader> shader);
 
 		void Invalidate();
 		void SetShader(Ref<Shader> shader);
@@ -45,6 +46,7 @@ namespace Volt
 		std::unordered_map<uint32_t, TextureInfo> myTextures;
 
 		friend class PostProcessingMaterialImporter;
+		friend class PostProcessingMaterialSerializer;
 
 		Ref<Shader> myShader;
 		Ref<ComputePipeline> myPipeline;

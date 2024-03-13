@@ -30,7 +30,7 @@ namespace Volt
 		inline T* As(size_t offset = 0) const;
 
 	private:
-		uint8_t* myData = nullptr;
+		Ref<uint8_t[]> myData = nullptr;
 		size_t mySize = 0;
 	};
 
@@ -45,11 +45,7 @@ namespace Volt
 
 	inline void Buffer::Release()
 	{
-		if (myData)
-		{
-			delete[] myData;
-			myData = nullptr;
-		}
+		myData = nullptr;
 	}
 
 	inline void Buffer::Allocate(size_t aSize)
@@ -60,27 +56,26 @@ namespace Volt
 		}
 
 		Release();
-		myData = new uint8_t[aSize];
-		memset(myData, 0, aSize);
+		myData = Ref<uint8_t[]>(new uint8_t[aSize]);
+		memset(myData.get(), 0, aSize);
 
 		mySize = aSize;
 	}
 
 	inline void Buffer::Clear()
 	{
-		memset(myData, 0, mySize);
+		memset(myData.get(), 0, mySize);
 	}
 
 	inline void Buffer::Resize(size_t aSize)
 	{
 		if (mySize < aSize)
 		{
-			uint8_t* newBuffer = new uint8_t[aSize];
+			Ref<uint8_t[]> newBuffer = Ref<uint8_t[]>(new uint8_t[aSize]);
 
 			if (myData)
 			{
-				memcpy_s(newBuffer, aSize, myData, mySize);
-				delete[] myData;
+				memcpy_s(newBuffer.get(), aSize, myData.get(), mySize);
 			}
 
 			mySize = aSize;
@@ -96,7 +91,7 @@ namespace Volt
 		}
 
 		VT_CORE_ASSERT(aOffset + aSize <= mySize, "Cannot copy into buffer of lesser size!");
-		memcpy_s(myData + aOffset, mySize, aSrcData, aSize);
+		memcpy_s(myData.get() + aOffset, mySize, aSrcData, aSize);
 	}
 
 	inline const bool Buffer::IsValid() const
@@ -117,7 +112,7 @@ namespace Volt
 			return false;
 		}
 
-		file.write(reinterpret_cast<char*>(buffer.myData), buffer.mySize);
+		file.write(reinterpret_cast<char*>(buffer.myData.get()), buffer.mySize);
 		file.close();
 
 		return true;
@@ -152,6 +147,6 @@ namespace Volt
 	template<typename T>
 	inline T* Buffer::As(size_t offset) const
 	{
-		return reinterpret_cast<T*>(myData + offset);
+		return reinterpret_cast<T*>(myData.get() + offset);
 	}
 }

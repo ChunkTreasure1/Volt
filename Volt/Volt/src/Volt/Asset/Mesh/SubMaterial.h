@@ -110,6 +110,7 @@ namespace Volt
 
 	private:
 		friend class MaterialImporter;
+		friend class MaterialSerializer;
 
 		void SetupMaterialFromPipeline();
 		void InvalidateDescriptorSets();

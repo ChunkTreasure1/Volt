@@ -50,7 +50,7 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::MeshSource, CreateScope<MeshSourceImporter>()); // Done
 		m_assetImporters.emplace(AssetType::Texture, CreateScope<TextureSourceImporter>()); // Done
 		m_assetImporters.emplace(AssetType::Shader, CreateScope<ShaderImporter>()); // Done
-		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>());
+		m_assetImporters.emplace(AssetType::Material, CreateScope<MaterialImporter>()); // Done
 		m_assetImporters.emplace(AssetType::Mesh, CreateScope<MeshSourceImporter>()); // Done
 		m_assetImporters.emplace(AssetType::NavMesh, CreateScope<VTNavMeshImporter>()); // Done
 		m_assetImporters.emplace(AssetType::Scene, CreateScope<SceneImporter>()); // Done
@@ -66,8 +66,8 @@ namespace Volt
 		m_assetImporters.emplace(AssetType::BehaviorGraph, CreateScope<BehaviorTreeImporter>()); // Done
 		m_assetImporters.emplace(AssetType::BlendSpace, CreateScope<BlendSpaceImporter>());  // Done
 		m_assetImporters.emplace(AssetType::PostProcessingStack, CreateScope<PostProcessingStackImporter>()); // Done
-		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>());
-		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>());
+		m_assetImporters.emplace(AssetType::PostProcessingMaterial, CreateScope<PostProcessingMaterialImporter>()); // Done
+		m_assetImporters.emplace(AssetType::NetContract, CreateScope<NetContractImporter>()); // Done
 
 		LoadAssetMetafiles();
 	}
