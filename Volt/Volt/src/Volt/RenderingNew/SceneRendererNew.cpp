@@ -200,9 +200,9 @@ namespace Volt
 
 			renderGraph.EndMarker();
 
-			AddLandscapePass(renderGraph, rgBlackboard);
-
 			AddShadingPass(renderGraph, rgBlackboard);
+
+			AddLandscapePass(renderGraph, rgBlackboard);
 		}
 
 		{
@@ -442,7 +442,7 @@ namespace Volt
 			data.argsBufferHandle = builder.CreateBuffer(argsDesc);
 			outHandle = data.argsBufferHandle;
 
-			builder.ReadResource (countBuffer);
+			builder.ReadResource(countBuffer);
 			builder.SetIsComputePass();
 		},
 		[=](const Output& data, RenderContext& context, const RenderGraphPassResources& resources)
@@ -680,50 +680,61 @@ namespace Volt
 
 	void SceneRendererNew::AddLandscapePass(RenderGraph& renderGraph, RenderGraphBlackboard& blackboard)
 	{
-		const auto& gbufferData = blackboard.Get<GBufferData>();
+		const auto& finalColorData = blackboard.Get<FinalColorData>();
+		//const auto& gbufferData = blackboard.Get<GBufferData>();
 		const auto& uniformBuffers = blackboard.Get<UniformBuffersData>();
 		const auto& preDepthData = blackboard.Get<PreDepthData>();
 
 
 
-		LandscapeData& landscapeData = blackboard.Add<LandscapeData>();
-
+		blackboard.Add<LandscapeData>() = renderGraph.AddPass<LandscapeData>("Upload Landscape data Pass",
+	   [&](RenderGraph::Builder& builder, LandscapeData& landscapeData)
 		{
 			std::vector<Entity> landscapeEntities = m_scene->GetAllEntitiesWith<Volt::LandscapeComponent>();
 			if (!landscapeEntities.empty())
 			{
+				LandscapeComponent& landscape = landscapeEntities.front().GetComponent<LandscapeComponent>();
+				landscapeData.heightMapsRenderGraphHandles.push_back(renderGraph.AddExternalImage2D(landscape.heightMapTexture->GetImage(), true));
+				for (auto& RenderGraphHandle : landscapeData.heightMapsRenderGraphHandles)
+				{
+					builder.ReadResource(RenderGraphHandle);
+				}
+
+				const auto desc = RGUtils::CreateBufferDesc<ResourceHandle>(landscape.heightMaps.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Landscape Height Map Data");
+
+				landscapeData.heightMapsBuffer = builder.CreateBuffer(desc);
+			}
+		},
+	   [=](const LandscapeData& landscapeData, RenderContext& context, const RenderGraphPassResources& resources)
+		{
+			std::vector<Entity> landscapeEntities = m_scene->GetAllEntitiesWith<Volt::LandscapeComponent>();
+			if (!landscapeEntities.empty() && landscapeData.heightMapsBuffer)
+			{
 				//We only allow one landscape at the moment
 				LandscapeComponent& landscape = landscapeEntities.front().GetComponent<LandscapeComponent>();
-
-				const auto desc = RGUtils::CreateBufferDesc<ViewData>(landscape.heightMaps.size(), RHI::BufferUsage::StorageBuffer, RHI::MemoryUsage::CPUToGPU, "Landscape Height Map Data");
-				landscapeData.heightMapsBuffer = renderGraph.CreateBuffer(desc);
-
-				landscapeData.heightMaps.push_back(landscape.heightMapTexture->GetResourceHandle());
-
-				renderGraph.AddMappedBufferUpload(landscapeData.heightMapsBuffer, landscape.heightMaps.data(), sizeof(landscape.heightMaps), "Upload Landscape Height Map Data");
+				Volt::ResourceHandle handle = landscape.heightMapTexture->GetResourceHandle();
+				context.UploadBufferData(resources.GetBufferRaw(landscapeData.heightMapsBuffer), &handle, sizeof(Volt::ResourceHandle));
 			}
-		}
+		});
 
-
-		renderGraph.AddPass("Landscape Pass",
-	   [&](RenderGraph::Builder& builder)
+		renderGraph.AddPass<LandscapeData>("Landscape Pass",
+	   [&](RenderGraph::Builder& builder, LandscapeData& landscapeData)
 		{
 			// Register vertex buffer and index buffer as external buffer and mark them as write
-			builder.WriteResource(gbufferData.albedo);
-			builder.WriteResource(gbufferData.materialEmissive);
-			builder.WriteResource(gbufferData.normalEmissive);
-			builder.WriteResource(preDepthData.depth);
-
-			//for (int i = 0; i < landscapeData.heightMaps.size(); i++)
-			//{
-			//	builder.ReadResource(landscapeData.heightMaps[i]);
-			//}
+			builder.WriteResource(finalColorData.finalColorOutput);
 
 			builder.ReadResource(uniformBuffers.viewDataBuffer);
 			builder.ReadResource(landscapeData.heightMapsBuffer);
+
+			builder.WriteResource(preDepthData.depth);
 		},
-	   [=](RenderContext& context, const RenderGraphPassResources& resources)
+	   [=](const LandscapeData& landscapeData, RenderContext& context, const RenderGraphPassResources& resources)
 		{
+			if (!landscapeData.heightMapsBuffer)
+			{
+				return;
+			}
+
 			std::vector<Entity> landscapeEntities = m_scene->GetAllEntitiesWith<Volt::LandscapeComponent>();
 			if (landscapeEntities.empty())
 			{
@@ -733,19 +744,15 @@ namespace Volt
 			//We only allow one landscape at the moment
 			LandscapeComponent& landscape = landscapeEntities.front().GetComponent<LandscapeComponent>();
 
-			if (!landscape.initialized)
+			if (!landscape.indexBuffer)
 			{
-				landscape.initialized = true;
-
-				
+				return;
 			}
 
-			Weak<RHI::ImageView> albedo = resources.GetImage2DView(gbufferData.albedo);
-			Weak<RHI::ImageView> materialEmissive = resources.GetImage2DView(gbufferData.materialEmissive);
-			Weak<RHI::ImageView> normalEmissive = resources.GetImage2DView(gbufferData.normalEmissive);
+			Ref<RHI::ImageView> finalColorOutput = resources.GetImage2DView(finalColorData.finalColorOutput);
 			Ref<RHI::ImageView> depthView = resources.GetImage2DView(preDepthData.depth);
 
-			const RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { albedo, materialEmissive, normalEmissive, depthView  });
+			const RenderingInfo info = context.CreateRenderingInfo(m_width, m_height, { finalColorOutput, depthView });
 
 			RHI::RenderPipelineCreateInfo pipelineInfo{};
 			pipelineInfo.shader = ShaderMap::Get("Landscape");
@@ -759,10 +766,10 @@ namespace Volt
 
 			context.BindIndexBuffer(landscape.indexBuffer);
 
-			context.SetConstant(uniformBuffers.viewDataBuffer);
-			context.SetConstant(landscapeData.heightMapsBuffer);
+			context.SetConstant("viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
+			context.SetConstant("heightMaps", resources.GetBuffer(landscapeData.heightMapsBuffer));
 
-			context.SetConstant(RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
+			context.SetConstant("PointSampler", RendererNew::GetSampler<RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest, RHI::TextureFilter::Nearest>()->GetResourceHandle());
 
 			context.DrawIndexed(152, landscape.sideCellCount * landscape.sideCellCount, 0, 0, 0);
 			context.EndRendering();
@@ -1036,7 +1043,7 @@ namespace Volt
 			context.SetConstant("materialEmissive", resources.GetImage2D(gbufferData.materialEmissive));
 			context.SetConstant("normalEmissive", resources.GetImage2D(gbufferData.normalEmissive));
 			context.SetConstant("depthTexture", resources.GetImage2D(preDepthData.depth));
-			
+
 			// PBR Constants
 			context.SetConstant("pbrConstants.viewData", resources.GetBuffer(uniformBuffers.viewDataBuffer));
 			context.SetConstant("pbrConstants.DirectionalLight", resources.GetBuffer(uniformBuffers.directionalLightBuffer));

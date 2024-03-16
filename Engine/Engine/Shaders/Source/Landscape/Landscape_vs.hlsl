@@ -7,6 +7,7 @@
 struct Output
 {
     float4 position : SV_Position;
+    float3 normal : NORMAL;
     float4 color : COLOR;
 };
 
@@ -48,14 +49,16 @@ Output main(in Input input)
     
     float chunkSideSize = SIDE_CELL_COUNT * cellSideSize;
     const float2 uv = localXZPosition / chunkSideSize;
-    const float height = heightmap.SampleLevel2D(constants.PointSampler.Get(), uv, 0);
+    const float height = heightmap.SampleLevel2D(constants.PointSampler, uv, 0);
     
     float4 localPosition = float4(localXZPosition.x, height, localXZPosition.y, 1.f);
     float4 worldPosition = localPosition;
     
     Output output;
-    output.position = localPosition; //mul(viewData.projection, mul(viewData.view, worldPosition));
+    output.position = mul(viewData.projection, mul(viewData.view, worldPosition));
     output.color = float4(0.f, 1.f, 0.f, 1.f);
+    output.normal = float3(0.f, 1.f, 0.f);
+    output.normal = float3(0.f, 1.f, 0.f);
     
     return output;
 }

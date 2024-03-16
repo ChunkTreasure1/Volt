@@ -192,8 +192,6 @@ namespace Volt
 		template<typename F, size_t COUNT>
 		void SetConstant(const std::string& name, const std::array<F, COUNT>& data);
 
-		void SetConstant(const void* data, uint32_t size);
-
 	private:
 		friend class RenderGraph;
 
@@ -280,11 +278,4 @@ namespace Volt
 		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + uniform.offset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE, data.data(), COUNT * sizeof(F));
 	}
 
-	inline void RenderContext::SetConstant(const void* data, uint32_t size)
-	{
-		// #TODO_Ivar: Add validation
-
-		memcpy_s(&m_passConstantsBufferData[m_currentPassIndex * RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE + m_currentPassConstantsOffset], RenderGraphCommon::MAX_PASS_CONSTANTS_SIZE - m_currentPassConstantsOffset, &data, size);
-		m_currentPassConstantsOffset += size;
-	}
 }

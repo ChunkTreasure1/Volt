@@ -116,6 +116,6 @@ namespace Volt
 	{
 		RenderGraphResourceHandle heightMapsBuffer;
 
-		std::vector<RenderGraphResourceHandle> heightMaps;
+		std::vector<RenderGraphResourceHandle> heightMapsRenderGraphHandles;
 	};
 }

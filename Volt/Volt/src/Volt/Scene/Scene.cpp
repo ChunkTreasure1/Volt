@@ -1152,9 +1152,9 @@ namespace Volt
 					for (int xVertex = 0; xVertex < 9; xVertex++)
 					{
 						float x = (xCell * 8 + xVertex) / 8.0f;
-						float z = (zCell * 8 + zVertex) / 8.0f;
+						//float z = (zCell * 8 + zVertex) / 8.0f;
 
-						float height = sin(x * 2.0f * 3.1415f) * sin(z * 2.0f * 3.1415f) * 0.5f + 0.5f;
+						float height = sin(x);
 
 						heightMap[xVertex + zVertex * 9] = height;
 					}

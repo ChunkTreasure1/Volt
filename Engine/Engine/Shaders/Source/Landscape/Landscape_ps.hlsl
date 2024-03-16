@@ -1,22 +1,38 @@
 struct Output
 {
-    [[vt::rgba16f]] float4 albedo : SV_Target0;
-    [[vt::rgba16f]] float4 materialEmissive : SV_Target1;
-    [[vt::rgba16f]] float4 normalEmissive : SV_Target2;
+    [[vt::rgba16f]] float4 finalColorOutput : SV_Target0;
     [[vt::d32f]];
 };
 
 struct Input
 {
     float4 position : SV_Position;
+    float3 normal : NORMAL;
     float4 color : COLOR;
 };
 
 Output main(Input input)
 {
     Output output;
-    output.albedo = input.color;
-    output.materialEmissive = float4(0.f, 1.f, 0.f, 0.f);
-    output.normalEmissive = float4(0.f, 1.f, 0.f, 0.f);
+    // Normalize the normal vector
+    float3 N = normalize(input.normal);
+
+    // Normalize the light direction
+    const float3 lightDirection = { 0.577f, 0.577f, 0.577f };
+    float3 L = normalize(lightDirection);
+
+    // Diffuse lighting factor (how much the surface faces the light)
+    float diffuseFactor = max(0.0, dot(N, L));
+
+    // Final color calculation
+    const float3 objectColor = { 0.0f, 1.0f, 0.0f };
+    const float3 lightColor = { 1.0f, 1.0f, 1.0f };
+    const float ambientIntensity = 0.1f;
+    
+    float3 diffuseColor = diffuseFactor * lightColor * objectColor;
+    float3 ambientColor = ambientIntensity * objectColor;
+
+    float4 finalColor = float4(ambientColor + diffuseColor, 1.0);
+    output.finalColorOutput = finalColor;
     return output;
 }
